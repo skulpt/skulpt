@@ -482,7 +482,7 @@ Exercises
    but it can't because the expression is not syntactically legal. Instead, it
    prints the error message::
 
-          File "", line 1
+          File "<stdin>", line 1
             1 2
               ^
         SyntaxError: invalid syntax
@@ -501,7 +501,7 @@ Exercises
    something like this::
 
         Traceback (most recent call last):
-          File "", line 1, in ?
+          File "<stdin>", line 1, in ?
         NameError: name 'cheese' is not defined
 
    This is a run-time error; specifically, it is a NameError, and even more
