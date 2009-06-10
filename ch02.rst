@@ -115,6 +115,9 @@ diagram** because it shows what state each of the variables is in (think of it
 as the variable's state of mind). This diagram shows the result of the
 assignment statements:
 
+.. image:: illustrations/state2.png
+   :alt: State diagram 
+
 The print statement also works with variables.
 
 .. sourcecode:: python

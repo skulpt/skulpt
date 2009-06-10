@@ -483,7 +483,8 @@ To start gasp, try the following:
 Before the last command, which closes the graphics canvas, you should see a
 graphics window that looks like this:
 
-
+.. image:: illustrations/gasp01.png
+   :alt: GASP image 1 
 
 We will be using gasp from here on to illustrate (pun intended) computer
 programming concepts and to add to our fun while learning.
