@@ -825,8 +825,8 @@ file
 
 mode
     A distinct method of operation within a computer program.  Files in Python
-    can be openned in one of three modes: read ('r'), write ('w'), and append
-    ('a').
+    can be openned in one of three modes: read (``'r'``), write (``'w'``), and
+    append (``'a'``).
 
 path
     A sequence of directory names that specifies the exact location of a file.
@@ -876,10 +876,10 @@ Jython
     the Jython home page at `http://www.jython.org <http://www.jython.org>`__
     for more information.)
 
- ``argv``:
-     ``argv`` is short for *argument vector* and is a variable in the ``sys``
-     module which stores a list of command line arguments passed to a program
-     at run time.
+``argv``:
+    ``argv`` is short for *argument vector* and is a variable in the ``sys``
+    module which stores a list of command line arguments passed to a program
+    at run time.
 
 
 Exercises
@@ -920,12 +920,13 @@ Exercises
    system. Use this approach to start ``pydoc`` and take a look at the ``math`` 
    module.
 
-    * How many functions are in the ``math`` module?
-    * What does ``math.ceil`` do? What about ``math.floor``? ( *hint:* both
+   a. How many functions are in the ``math`` module?
+   b. What does ``math.ceil`` do? What about ``math.floor``? ( *hint:* both
       ``floor`` and ``ceil`` expect floating point arguments.)
-    * Describe how we have been computing the same value as ``math.sqrt``
+   c. Describe how we have been computing the same value as ``math.sqrt``
       without using the ``math`` module.
-    * What are the two data contstants in the ``math`` module?
+   d. What are the two data contstants in the ``math`` module?
+
    Record detailed notes of your investigation in this exercise.
 #. Use ``pydoc`` to investigate the ``copy`` module. What does ``deepcopy``
    do? In which exercises from last chapter would ``deepcopy`` have come in
@@ -985,29 +986,29 @@ Exercises
 #. Give the Python interpreter's response to each of the following from a
    continuous interpreter session:
 
-    *
-    .. sourcecode:: python
+   a.  
+      .. sourcecode:: python
         
           >>> s = "If we took the bones out, it wouldn't be crunchy, would it?"
           >>> s.split()
 
-    *
-    .. sourcecode:: python
+   b.
+      .. sourcecode:: python
         
           >>> type(s.split())
           
-    *
-    .. sourcecode:: python
+   c.
+      .. sourcecode:: python
         
           >>> s.split('o')
 
-    *
-    .. sourcecode:: python
+   d.
+      .. sourcecode:: python
         
           >>> s.split('i')
           
-    *
-    .. sourcecode:: python
+   e.
+      .. sourcecode:: python
         
           >>> '0'.join(s.split('o'))
           
@@ -1116,7 +1117,7 @@ Exercises
    order to a file named ``sorted_fruits.txt``.
 #. Answer the following questions about ``countletters.py``:
 
-    * Explain in detail what the three lines do:
+   a. Explain in detail what the three lines do:
 
       .. sourcecode:: python
         
@@ -1124,22 +1125,22 @@ Exercises
             text = infile.read()
             infile.close()
 
-       What is would ``type(text)`` return after these lines have been executed?
-    * What does the expression ``128 * [0]`` evaluate to? Read about `ASCII
-       <http://en.wikipedia.org/wiki/ASCII>`__ in Wikipedia and explain why you 
-       think the variable, ``counts`` is assigned to ``128 * [0]`` in light of
-       what you read.
-    * What does
+      What is would ``type(text)`` return after these lines have been executed?
+   b. What does the expression ``128 * [0]`` evaluate to? Read about `ASCII
+      <http://en.wikipedia.org/wiki/ASCII>`__ in Wikipedia and explain why you 
+      think the variable, ``counts`` is assigned to ``128 * [0]`` in light of
+      what you read.
+   c. What does
 
       .. sourcecode:: python
         
             for letter in text:
                 counts[ord(letter)] += 1
 
-       do to ``counts``?
-    * Explain the purpose of the ``display`` function. Why does it check for
+      do to ``counts``?
+   d. Explain the purpose of the ``display`` function. Why does it check for
       values ``10``, ``13``, and ``32``? What is special about those values?
-    * Describe in detail what the lines
+   e. Describe in detail what the lines
 
       .. sourcecode:: python
         
@@ -1147,8 +1148,8 @@ Exercises
             outfile.write("%-12s%s\n" % ("Character", "Count"))
             outfile.write("=================\n")
 
-       do. What will be in ``alice_counts.dat`` when they finish executing?
-    * Finally, explain in detail what
+      do. What will be in ``alice_counts.dat`` when they finish executing?
+   f. Finally, explain in detail what
 
       .. sourcecode:: python
         
@@ -1156,7 +1157,7 @@ Exercises
                 if counts[i]:
                     outfile.write("%-12s%d\n" % (display(i), counts[i]))
 
-       does. What is the purpose of ``if counts[i]``?
+      does. What is the purpose of ``if counts[i]``?
 
 #. Write a program named ``mean.py`` that takes a sequence of numbers on the
    command line and returns the mean of their values.::
