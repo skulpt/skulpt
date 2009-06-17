@@ -21,6 +21,9 @@ another level, you will use programming as a means to an end. As we go along,
 that end will become clearer.
 
 
+.. index:: programming language, portable, high-level language,
+           low-level language, compile, interpret
+
 The Python programming language
 -------------------------------
 
@@ -160,6 +163,8 @@ That may be a little vague, but we will come back to this topic later when we
 talk about **algorithms**.
 
 
+.. index:: debugging, bug
+
 What is debugging?
 ------------------
 
@@ -174,6 +179,8 @@ Three kinds of errors can occur in a program: `syntax errors
 <http://en.wikipedia.org/wiki/Logic_error>`__.  It is useful to
 distinguish between them in order to track them down more quickly.
 
+
+.. index:: syntax, syntax error
 
 Syntax errors
 -------------
@@ -193,6 +200,8 @@ will probably spend a lot of time tracking down syntax errors. As you gain
 experience, though, you will make fewer errors and find them faster.
 
 
+.. index:: runtime error, exception, safe language
+
 Runtime errors
 --------------
 
@@ -204,6 +213,8 @@ bad) has happened.
 Runtime errors are rare in the simple programs you will see in the first few
 chapters, so it might be a while before you encounter one.
 
+
+.. index:: semantics, semantic error
 
 Semantic errors
 ---------------
@@ -218,6 +229,11 @@ write. The meaning of the program (its semantics) is wrong.  Identifying
 semantic errors can be tricky because it requires you to work backward by
 looking at the output of the program and trying to figure out what it is doing.
 
+
+.. index::
+    single: Holmes, Sherlock
+    single: Doyle, Arthur Conan 
+    single: Linux
 
 Experimental debugging
 ----------------------
@@ -247,11 +263,21 @@ For example, Linux is an operating system that contains thousands of lines of
 code, but it started out as a simple program Linus Torvalds used to explore the
 Intel 80386 chip. According to Larry Greenfield, one of Linus's earlier
 projects was a program that would switch between printing AAAA and BBBB. This
-later evolved to Linux ( *The Linux Users' Guide* Beta Version 1).
+later evolved to Linux (*The Linux Users' Guide* Beta Version 1).
 
 Later chapters will make more suggestions about debugging and other programming
 practices.
 
+
+.. index::
+    single: formal language
+    single: natural language
+    single: parse
+    single: ambiguity
+    single: redundancy
+    single: literalness
+    single: poetry
+    single: prose
 
 Formal and natural languages
 ----------------------------
@@ -343,6 +369,10 @@ like spelling errors and bad punctuation, which you can get away with in
 natural languages, can make a big difference in a formal language.
 
 
+.. index::
+    single: "hello world!"
+    single: print statement
+
 The first program
 -----------------
 
@@ -373,103 +403,107 @@ possible.
 Glossary
 --------
 
-algorithm
-    A general process for solving a category of problems.
+.. glossary::
 
-bug
-    An error in a program.
+    algorithm
+        A general process for solving a category of problems.
 
-byte code
-    An intermediate language between source code and object code. Many modern
-    languages first compile source code into byte code and then interpret the
-    byte code with a program called a *virtual machine*.
+    bug
+        An error in a program.
 
-compile
-    To translate a program written in a high-level language into a low-level
-    language all at once, in preparation for later execution.
+    byte code
+        An intermediate language between source code and object code. Many
+        modern languages first compile source code into byte code and then
+        interpret the byte code with a program called a *virtual machine*.
 
-debugging
-    The process of finding and removing any of the three kinds of programming
-    errors.
+    compile
+        To translate a program written in a high-level language into a
+        low-level language all at once, in preparation for later execution.
 
-exception
-    Another name for a runtime error.
+    debugging
+        The process of finding and removing any of the three kinds of
+        programming errors.
 
-executable
-    Another name for object code that is ready to be executed.
+    exception
+        Another name for a runtime error.
 
-formal language
-    Any one of the languages that people have designed for specific purposes,
-    such as representing mathematical ideas or computer programs; all
-    programming languages are formal languages.
+    executable
+        Another name for object code that is ready to be executed.
 
-high-level language
-    A programming language like Python that is designed to be easy for humans
-    to read and write.
+    formal language
+        Any one of the languages that people have designed for specific
+        purposes, such as representing mathematical ideas or computer programs;
+        all programming languages are formal languages.
 
-interpret
-    To execute a program in a high-level language by translating it one line at 
-    a time.
+    high-level language
+        A programming language like Python that is designed to be easy for
+        humans to read and write.
 
-low-level language
-    A programming language that is designed to be easy for a computer to
-    execute; also called machine language or assembly language.
+    interpret
+        To execute a program in a high-level language by translating it one
+        line at a time.
 
-natural language
-    Any one of the languages that people speak that evolved naturally.
+    low-level language
+        A programming language that is designed to be easy for a computer to
+        execute; also called machine language or assembly language.
 
-object code
-    The output of the compiler after it translates the program.
+    natural language
+        Any one of the languages that people speak that evolved naturally.
 
-parse
-    To examine a program and analyze the syntactic structure.
+    object code
+        The output of the compiler after it translates the program.
 
-portability
-    A property of a program that can run on more than one kind of computer.
+    parse
+        To examine a program and analyze the syntactic structure.
 
-print statement
-    An instruction that causes the Python interpreter to display a value on the     screen.
+    portability
+        A property of a program that can run on more than one kind of computer.
 
-problem solving
-    The process of formulating a problem, finding a solution, and expressing
-    the solution.
+    print statement
+        An instruction that causes the Python interpreter to display a value on
+        the screen.
 
-program
-    a sequence of instructions that specifies to a computer actions and
-    computations to be performed.
+    problem solving
+        The process of formulating a problem, finding a solution, and
+        expressing the solution.
 
-Python shell
-    An interactive user interface to the Python interpreter. The user of a
-    Python shell types commands at the prompt (>>>), and presses the return key 
-    to send these commands immediately to the interpreter for processing.
+    program
+        a sequence of instructions that specifies to a computer actions and
+        computations to be performed.
 
-runtime error
-    An error that does not occur until the program has started to execute but
-    that prevents the program from continuing.
+    Python shell
+        An interactive user interface to the Python interpreter. The user of a
+        Python shell types commands at the prompt (>>>), and presses the return
+        key to send these commands immediately to the interpreter for
+        processing.
 
-script
-    A program stored in a file (usually one that will be interpreted).
+    runtime error
+        An error that does not occur until the program has started to execute
+        but that prevents the program from continuing.
 
-semantic error
-    An error in a program that makes it do something other than what the
-    programmer intended.
+    script
+        A program stored in a file (usually one that will be interpreted).
 
-semantics
-    The meaning of a program.
+    semantic error
+        An error in a program that makes it do something other than what the
+        programmer intended.
 
-source code
-    A program in a high-level language before being compiled.
+    semantics
+        The meaning of a program.
 
-syntax
-    The structure of a program.
+    source code
+        A program in a high-level language before being compiled.
 
-syntax error
-    An error in a program that makes it impossible to parse (and therefore
-    impossible to interpret).
+    syntax
+        The structure of a program.
 
-token
-    One of the basic elements of the syntactic structure of a program,
-    analogous to a word in a natural language.
+    syntax error
+        An error in a program that makes it impossible to parse --- and
+        therefore impossible to interpret.
+
+    token
+        One of the basic elements of the syntactic structure of a program,
+        analogous to a word in a natural language.
 
 
 Exercises

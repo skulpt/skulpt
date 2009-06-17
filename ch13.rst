@@ -407,43 +407,59 @@ has the same location as the old one but new dimensions:
         return new_box
 
 
-
 Glossary
 --------
 
-:class:: A user-defined compound type. A class can also be thought of
-  as a template for the objects that are instances of it.
-:instantiate:: To create an instance of a class.
-:instance:: An object that belongs to a class.
-:object:: A compound data type that is often used to model a thing or
-  concept in the real world.
-:constructor:: A method used to create new objects.
-:attribute:: One of the named data items that makes up an instance.
-:shallow equality:: Equality of references, or two references that
-  point to the same object.
-:deep equality:: Equality of values, or two references that point to
-  objects that have the same value.
-:shallow copy:: To copy the contents of an object, including any
-  references to embedded objects; implemented by the ``copy`` function in
-  the ``copy`` module.
-:deep copy:: To copy the contents of an object as well as any embedded
-  objects, and any objects embedded in them, and so on; implemented by
-  the ``deepcopy`` function in the ``copy`` module.
+.. glossary::
 
+    class
+        A user-defined compound type. A class can also be thought of as a
+        template for the objects that are instances of it.
+
+    instantiate
+        To create an instance of a class.
+
+    instance
+        An object that belongs to a class.
+
+    object
+        A compound data type that is often used to model a thing or concept in
+        the real world.
+
+    constructor
+        A method used to create new objects.
+
+    attribute
+        One of the named data items that makes up an instance.
+
+    shallow equality
+        Equality of references, or two references that point to the same object.
+
+    deep equality
+        Equality of values, or two references that point to objects that have
+        the same value.
+
+    shallow copy
+        To copy the contents of an object, including any references to embedded
+        objects; implemented by the ``copy`` function in the ``copy`` module.
+
+    deep copy
+        To copy the contents of an object as well as any embedded objects, and
+        any objects embedded in them, and so on; implemented by the
+        ``deepcopy`` function in the ``copy`` module.
 
 
 Exercises
 ---------
 
-
 #. Create and print a ``Point`` object, and then use ``id`` to print the
-   object's unique identifier. Translate the hexadecimal form into
-   decimal and confirm that they match.
+   object's unique identifier. Translate the hexadecimal form into decimal and
+   confirm that they match.
 #. Rewrite the ``distance`` function from chapter 5 so that it takes two
-   ``Point``s as parameters instead of four numbers.
+   ``Point``\ s as parameters instead of four numbers.
 #. Write a function named ``move_rect`` that takes a ``Rectangle`` and two
    parameters named ``dx`` and ``dy``. It should change the location of the
    rectangle by adding ``dx`` to the ``x`` coordinate of ``corner`` and adding
    ``dy`` to the ``y`` coordinate of ``corner``.
-#. Rewrite ``move_rect`` so that it creates and returns a new
-   ``Rectangle`` instead of modifying the old one.
+#. Rewrite ``move_rect`` so that it creates and returns a new ``Rectangle``
+   instead of modifying the old one.

@@ -1,6 +1,13 @@
 Iteration
 =========
 
+.. index::
+    single: iteration
+    single: assignment
+    single: assignment statement
+    single: statement; assignment
+    single: multiple assignment
+    single: assignment; multiple 
 
 Multiple assignment
 -------------------
@@ -87,6 +94,16 @@ Updating a variable by adding 1 is called an **increment**; subtracting 1 is
 called a **decrement**.
 
 
+.. index::
+    single: while
+    single: while statement
+    single: while loop
+    single: iteration
+    single: loop
+    single: loop body
+    single: infinite loop
+    single: condition
+
 The ``while`` statement
 -----------------------
 
@@ -170,6 +187,11 @@ Particular values aside, the interesting question is whether we can prove that
 this program terminates for *all* values of ``n``. So far, no one has been able
 to prove it *or* disprove it!
 
+
+.. index::
+    single: program tracing
+    single: hand trace
+    single: tracing a program
 
 Tracing a program
 -----------------
@@ -307,6 +329,11 @@ There are also abbreviations for ``-=``, ``*=``, ``/=``, and ``%=``:
     1
 
 
+.. index:: table, logarithm, Intel, Pentium
+
+.. index::
+    single: escape sequence
+
 Tables
 ------
 
@@ -372,6 +399,9 @@ Because of the tab characters between the columns, the position of the second
 column does not depend on the number of digits in the first column.
 
 
+.. index::
+    single: two-dimensional table
+
 Two-dimensional tables
 ----------------------
 
@@ -404,6 +434,11 @@ The output of the program is::
 
 So far, so good. The next step is to **encapsulate** and **generalize**.
 
+
+.. index::
+    single: encapsulation
+    single: generalization
+    single: program development
 
 Encapsulation and generalization
 --------------------------------
@@ -489,6 +524,10 @@ This development plan is particularly useful if you don't know how to divide
 the program into functions when you start writing. This approach lets you
 design as you go along.
 
+
+.. index::
+    single: local variable
+    single: variable, local
 
 Local variables
 ---------------
@@ -617,6 +656,8 @@ and you get::
     7      14     21     28     35     42     49
 
 
+.. index:: function
+
 Functions
 ---------
 
@@ -632,6 +673,9 @@ them:
 #. Well-designed functions are often useful for many programs. Once you write
    and debug one, you can reuse it.
 
+
+.. index::
+    single: Newton's method
 
 Newton's Method
 ---------------
@@ -663,6 +707,8 @@ the previous one, we can write a function for computing the square root:
 
 Try calling this function with ``25`` as an argument to confirm that it returns ``5.0``.
 
+
+.. index:: algorithm 
 
 Algorithms
 ----------
@@ -701,82 +747,84 @@ explain *how* we do it, at least not in the form of an algorithm.
 Glossary
 --------
 
-multiple assignment
-    Making more than one assignment to the same variable during the execution
-    of a program.
+.. glossary::
 
-initialization (of a variable)
-    To initialize a variable is to give it an initial value, usually in the
-    context of multiple assignment.  Since in Python variables don't exist
-    until they are assigned values, they are initialized when they are created. 
-    In other programming languages this is not the case, and variables can be
-    created without being initialized, in which case they have either default
-    or *garbage* values.
+    multiple assignment
+        Making more than one assignment to the same variable during the
+        execution of a program.
 
-increment
-    Both as a noun and as a verb, increment means to increase by 1.
+    initialization (of a variable)
+        To initialize a variable is to give it an initial value, usually in the
+        context of multiple assignment.  Since in Python variables don't exist
+        until they are assigned values, they are initialized when they are
+        created.  In other programming languages this is not the case, and
+        variables can be created without being initialized, in which case they
+        have either default or *garbage* values.
 
-decrement
-    Decrease by 1.
+    increment
+        Both as a noun and as a verb, increment means to increase by 1.
 
-iteration
-    Repeated execution of a set of programming statements.
+    decrement
+        Decrease by 1.
 
-loop
-    A statement or group of statements that execute repeatedly until a
-    terminating condition is satisfied.
+    iteration
+        Repeated execution of a set of programming statements.
 
-infinite loop
-    A loop in which the terminating condition is never satisfied.
+    loop
+        A statement or group of statements that execute repeatedly until a
+        terminating condition is satisfied.
 
-trace
-    To follow the flow of execution of a program by hand, recording the change
-    of state of the variables and any output produced.
+    infinite loop
+        A loop in which the terminating condition is never satisfied.
 
-counter
-    A variable used to count something, usually initialized to zero and
-    incremented in the body of a loop.
+    trace
+        To follow the flow of execution of a program by hand, recording the
+        change of state of the variables and any output produced.
 
-body
-    The statements inside a loop.
+    counter
+        A variable used to count something, usually initialized to zero and
+        incremented in the body of a loop.
 
-loop variable
-    A variable used as part of the terminating condition of a loop.
+    body
+        The statements inside a loop.
 
-tab
-    A special character that causes the cursor to move to the next tab stop on
-    the current line.
+    loop variable
+        A variable used as part of the terminating condition of a loop.
 
-newline
-    A special character that causes the cursor to move to the beginning of the
-    next line.
+    tab
+        A special character that causes the cursor to move to the next tab stop
+        on the current line.
 
-cursor
-    An invisible marker that keeps track of where the next character will be
-    printed.
+    newline
+        A special character that causes the cursor to move to the beginning of
+        the next line.
 
-escape sequence
-    An escape character, \, followed by one or more printable characters used
-    to designate a nonprintable character.
+    cursor
+        An invisible marker that keeps track of where the next character will
+        be printed.
 
-encapsulate
-    To divide a large complex program into components (like functions) and
-    isolate the components from each other (by using local variables, for
-    example).
+    escape sequence
+        An escape character, \, followed by one or more printable characters
+        used to designate a nonprintable character.
 
-generalize
-    To replace something unnecessarily specific (like a constant value) with
-    something appropriately general (like a variable or parameter).
-    Generalization makes code more versatile, more likely to be reused, and
-    sometimes even easier to write.
+    encapsulate
+        To divide a large complex program into components (like functions) and
+        isolate the components from each other (by using local variables, for
+        example).
 
-development plan
-    A process for developing a program. In this chapter, we demonstrated a
-    style of development based on developing code to do simple, specific things 
-    and then encapsulating and generalizing.
+    generalize
+        To replace something unnecessarily specific (like a constant value)
+        with something appropriately general (like a variable or parameter).
+        Generalization makes code more versatile, more likely to be reused, and
+        sometimes even easier to write.
 
-algorithm
-    A step-by-step process for solving a category of problems.
+    development plan
+        A process for developing a program. In this chapter, we demonstrated a
+        style of development based on developing code to do simple, specific
+        things and then encapsulating and generalizing.
+
+    algorithm
+        A step-by-step process for solving a category of problems.
 
 
 Exercises

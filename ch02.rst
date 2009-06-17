@@ -1,6 +1,9 @@
 Variables, expressions and statements
 =====================================
 
+
+.. index:: value, type, string, integer, int, float
+
 Values and types
 ----------------
 
@@ -80,6 +83,12 @@ list of three items to be printed. So remember not to put commas in your
 integers.
 
 
+.. index:: variable, assignment
+
+.. index::
+    single: assignment statement
+    single: state diagram
+
 Variables
 ---------
 
@@ -143,6 +152,10 @@ types; again, we can ask the interpreter what they are.
 
 The type of a variable is the type of the value it refers to.
 
+
+.. index::
+    single: keyword
+    single: underscore character
 
 Variable names and keywords
 ---------------------------
@@ -273,6 +286,11 @@ produces no output at all. How would you change the script to display the
 values of these four expressions?
 
 
+.. index:: operator, operand, expression
+
+.. index::
+    single: integer division
+
 Operators and operands
 ----------------------
 
@@ -322,6 +340,10 @@ the chapter 4 how to convert integer values and variables to floating-point
 values.
 
 
+.. index::
+    single: order of operations
+    single: rules of precedence
+
 Order of operations
 -------------------
 
@@ -347,6 +369,10 @@ is a useful way to remember the order of operations:
    right to left, the result would have been ``59*1``, which is 59, which is
    wrong.
 
+
+.. index::
+    single: string operations
+    single: concatenation
 
 Operations on strings
 ---------------------
@@ -387,6 +413,10 @@ think of a property that addition and multiplication have that string
 concatenation and repetition do not?
 
 
+.. index::
+    single: input
+    single: keyboard input
+
 Input
 -----
 
@@ -410,6 +440,9 @@ A sample run of this script would look something like this::
 Each of these functions allows a *prompt* to be given to the function between
 the parentheses.
 
+
+.. index::
+    single: composition of functions
 
 Composition
 -----------
@@ -452,6 +485,8 @@ example, the left-hand side of an assignment statement has to be a *variable*
 name, not an expression. So, the following is illegal: ``minute+1 = hour``.
 
 
+.. index:: comment
+
 Comments
 --------
 
@@ -484,104 +519,111 @@ the ever-surprising behavior of integer division.
 Glossary
 --------
 
-value
-    A number or string (or other thing to be named later) that can be stored in
-    a variable or computed in an expression.
+.. glossary::
 
-type
-    A set of values. The type of a value determines how it can be used in
-    expressions. So far, the types you have seen are integers (type ``int``),
-    floating-point numbers (type ``float``), and strings (type ``string``).
+    value
+        A number or string (or other thing to be named later) that can be
+        stored in a variable or computed in an expression.  
 
-int
-    A Python data type that holds positive and negative whole numbers.
+    type
+        A set of values. The type of a value determines how it can be used in
+        expressions. So far, the types you have seen are integers (type
+        ``int``), floating-point numbers (type ``float``), and strings (type
+        ``string``).
 
-str
-    A Python data type that holds a string of characters.
+    int
+        A Python data type that holds positive and negative whole numbers.
 
-float
-    A Python data type which stores *floating-point* numbers.  Floating-point
-    numbers are stored internally in two parts: a *base* and an *exponent*.
-    When printed in the standard format, they look like decimal numbers.
-    Beware of rounding errors when you use ``float``\ s, and remember that they     are only approximate values.
+    str
+        A Python data type that holds a string of characters.
 
-variable
-    A name that refers to a value.
+    float
+        A Python data type which stores *floating-point* numbers.
+        Floating-point numbers are stored internally in two parts: a *base* and
+        an *exponent*. When printed in the standard format, they look like
+        decimal numbers. Beware of rounding errors when you use ``float``\ s,
+        and remember that they are only approximate values.
 
-assignment statement
-    A statement that assigns a value to a name (variable). To the left of the
-    assignment operator, ``=``, is a name. To the right of the assignment
-    operator is an expression which is evaluated by the Python interpreter and
-    then assigned to the name. The difference between the left and right hand
-    sides of the assignment statement is often confusing to new programmers. In 
-    the following assignment:
+    variable
+        A name that refers to a value.
 
-    .. sourcecode:: python
+    assignment statement
+        A statement that assigns a value to a name (variable). To the left of
+        the assignment operator, ``=``, is a name. To the right of the
+        assignment operator is an expression which is evaluated by the Python
+        interpreter and then assigned to the name. The difference between the
+        left and right hand sides of the assignment statement is often
+        confusing to new programmers. In the following assignment:
+
+        .. sourcecode:: python
     
-        n = n + 1
+             n = n + 1
 
-    ``n`` plays a very different role on each side of the ``=``. On the right
-    it is a *value* and makes up part of the *expression* which will be
-    evaluated by the Python interpreter before assigning it to the name on the
-    left.
+        ``n`` plays a very different role on each side of the ``=``. On the
+        right it is a *value* and makes up part of the *expression* which will
+        be evaluated by the Python interpreter before assigning it to the name
+        on the left.
 
-assignment operator
-    ``=`` is Python's assignment operator, which should not be confused with
-    the mathematical comparison operator using the same symbol.
+    assignment operator
+        ``=`` is Python's assignment operator, which should not be confused
+        with the mathematical comparison operator using the same symbol.
 
-state diagram
-    A graphical representation of a set of variables and the values to which
-    they refer.
+    state diagram
+        A graphical representation of a set of variables and the values to
+        which they refer.
 
-variable name
-    A name given to a variable. Variable names in Python consist of a sequence
-    of letters (a..z, A..Z, and _) and digits (0..9) that begins with a letter. 
-    In best programming practice, variable names should be choosen so that they 
-    describe their use in the program, making the program *self documenting*.
+    variable name
+        A name given to a variable. Variable names in Python consist of a
+        sequence of letters (a..z, A..Z, and _) and digits (0..9) that begins
+        with a letter.  In best programming practice, variable names should be
+        choosen so that they describe their use in the program, making the
+        program *self documenting*.
 
-keyword
-    A reserved word that is used by the compiler to parse program; you cannot
-    use keywords like ``if``, ``def``, and ``while`` as variable names.
+    keyword
+        A reserved word that is used by the compiler to parse program; you
+        cannot use keywords like ``if``, ``def``, and ``while`` as variable
+        names.
 
-statement
-    An instruction that the Python interpreter can execute.  Examples of
-    statements include the assignment statement and the print statement.
+    statement
+        An instruction that the Python interpreter can execute.  Examples of
+        statements include the assignment statement and the print statement.
 
-expression
-    A combination of variables, operators, and values that represents a single
-    result value.
+    expression
+        A combination of variables, operators, and values that represents a
+        single result value.
 
-evaluate
-    To simplify an expression by performing the operations in order to yield a
-    single value.
+    evaluate
+        To simplify an expression by performing the operations in order to
+        yield a single value.
 
-operator
-    A special symbol that represents a simple computation like addition,
-    multiplication, or string concatenation.
+    operator
+        A special symbol that represents a simple computation like addition,
+        multiplication, or string concatenation.
 
-operand
-    One of the values on which an operator operates.
+    operand
+        One of the values on which an operator operates.
 
-integer division
-    An operation that divides one integer by another and yields an integer.
-    Integer division yields only the whole number of times that the numerator
-    is divisible by the denominator and discards any remainder.
+    integer division
+        An operation that divides one integer by another and yields an integer.
+        Integer division yields only the whole number of times that the
+        numerator is divisible by the denominator and discards any remainder.
 
-rules of precedence
-    The set of rules governing the order in which expressions involving
-    multiple operators and operands are evaluated.
+    rules of precedence
+        The set of rules governing the order in which expressions involving
+        multiple operators and operands are evaluated.
 
-concatenate
-    To join two operands end-to-end.
+    concatenate
+        To join two operands end-to-end.
 
-composition
-    The ability to combine simple expressions and statements into compound
-    statements and expressions in order to represent complex computations
-    concisely.
+    composition
+        The ability to combine simple expressions and statements into compound
+        statements and expressions in order to represent complex computations
+        concisely.
 
-comment
-    Information in a program that is meant for other programmers (or anyone
-    reading the source code) and has no effect on the execution of the program.
+    comment
+        Information in a program that is meant for other programmers (or anyone
+        reading the source code) and has no effect on the execution of the
+        program.
 
 
 Exercises

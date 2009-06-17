@@ -727,159 +727,162 @@ You are asked to write similar programs as exercises.
 Glossary
 --------
 
-module
-    A file containing Python definitions and statements intended for use in
-    other Python programs. The contents of a module are made available to the
-    other program by using the ``import`` statement.
+.. glossary::
 
-standard library
-    A library is a collection of software used as tools in the development of
-    other software. The standard library of a programming language is the set
-    of such tools that are distributed with the core programming language.
-    Python comes with an extensive standard library.
+    module
+        A file containing Python definitions and statements intended for use in
+        other Python programs. The contents of a module are made available to
+        the other program by using the ``import`` statement.
 
-pydoc
-    A documentation generator that comes with the Python standard library.
+    standard library
+        A library is a collection of software used as tools in the development
+        of other software. The standard library of a programming language is
+        the set of such tools that are distributed with the core programming
+        language.  Python comes with an extensive standard library.
 
-command prompt
-    A string displayed by a `command line interface
-    <http://en.wikipedia.org/wiki/Command_line>`__ indicating that commands can 
-    be entered.
+    pydoc
+        A documentation generator that comes with the Python standard library.
 
-import statement
-    A statement which makes the objects contained in a module available for
-    use. There are two forms for the import statement. Using a hypothetical
-    module named ``mymod`` containing functions ``f1`` and ``f2``, and
-    variables ``v1`` and ``v2``, examples of these two forms include:
+    command prompt
+        A string displayed by a `command line interface
+        <http://en.wikipedia.org/wiki/Command_line>`__ indicating that commands
+        can be entered.
 
-    .. sourcecode:: python
-    
-        import mymod 
+    import statement
+        A statement which makes the objects contained in a module available for
+        use. There are two forms for the import statement. Using a hypothetical
+        module named ``mymod`` containing functions ``f1`` and ``f2``, and
+        variables ``v1`` and ``v2``, examples of these two forms include:
 
-    The first form.
+        .. sourcecode:: python
+        
+            import mymod 
 
-    .. sourcecode:: python
+        The first form.
 
-        from mymod import f1, f2, v1, v2 
+        .. sourcecode:: python
 
-    Import all objects
+            from mymod import f1, f2, v1, v2 
 
-namespace
-    A syntactic container providing a context for names so that the same name
-    can reside in different namespaces without ambiguity. In Python, modules,
-    classes, functions and methods all form namespaces.
+        Import all objects
 
-naming collision
-    A situation in which two or more names in a given namespace cannot be
-    unambiguously resolved. Using
+    namespace
+        A syntactic container providing a context for names so that the same
+        name can reside in different namespaces without ambiguity. In Python,
+        modules, classes, functions and methods all form namespaces.
 
-    .. sourcecode:: python
+    naming collision
+        A situation in which two or more names in a given namespace cannot be
+        unambiguously resolved. Using
 
-        import string
+        .. sourcecode:: python
 
-    instead of
+            import string
 
-    .. sourcecode:: python
-    
-        from string import *
+        instead of
 
-    prevents naming collisions.
+        .. sourcecode:: python
+        
+            from string import *
 
-attribute
-    A variable defined inside a module (or class or instance -- as we will see
-    later). Module attributes are accessed by using the **dot operator**
-    ( ``.``).
+        prevents naming collisions.
 
-dot operator
-    The dot operator ( ``.``) permits access to attributes and functions of a
-    module (or attributes and methods of a class or instance -- as we will see
-    later).
+    attribute
+        A variable defined inside a module (or class or instance -- as we will
+        see later). Module attributes are accessed by using the **dot
+        operator** ( ``.``).
 
-method
-    Function-like attribute of an object. Methods are *invoked* (called) on an
-    object using the dot operator. For example:
+    dot operator
+        The dot operator ( ``.``) permits access to attributes and functions of
+        a module (or attributes and methods of a class or instance -- as we
+        will see later).
 
-    .. sourcecode:: python
-    
-        >>> s = "this is a string."
-        >>> s.upper()
-        'THIS IS A STRING.'
-        >>>
+    method
+        Function-like attribute of an object. Methods are *invoked* (called) on
+        an object using the dot operator. For example:
 
-    We say that the method, ``upper`` is invoked on the string, ``s``. ``s`` is
-    implicitely the first argument to ``upper``.
+        .. sourcecode:: python
+        
+            >>> s = "this is a string."
+            >>> s.upper()
+            'THIS IS A STRING.'
+            >>>
 
-volatile memory
-    Memory which requires an electrical current to maintain state. The
-    *main memory* or RAM of a computer is volatile.  Information stored in RAM
-    is lost when the computer is turned off.
-    
-non-volatile memory
-    Memory that can maintain its state without power. Hard drives, flash
-    drives, and rewritable compact disks (CD-RW) are each examples of
-    non-volatile memory.
+        We say that the method, ``upper`` is invoked on the string, ``s``.
+        ``s`` is implicitely the first argument to ``upper``.
 
-file
-    A named entity, usually stored on a hard drive, floppy disk, or CD-ROM,
-    that contains a stream of characters.
+    volatile memory
+        Memory which requires an electrical current to maintain state. The
+        *main memory* or RAM of a computer is volatile.  Information stored in
+        RAM is lost when the computer is turned off.
+        
+    non-volatile memory
+        Memory that can maintain its state without power. Hard drives, flash
+        drives, and rewritable compact disks (CD-RW) are each examples of
+        non-volatile memory.
 
-mode
-    A distinct method of operation within a computer program.  Files in Python
-    can be openned in one of three modes: read (``'r'``), write (``'w'``), and
-    append (``'a'``).
+    file
+        A named entity, usually stored on a hard drive, floppy disk, or CD-ROM,
+        that contains a stream of characters.
 
-path
-    A sequence of directory names that specifies the exact location of a file.
+    mode
+        A distinct method of operation within a computer program.  Files in
+        Python can be openned in one of three modes: read (``'r'``), write
+        (``'w'``), and append (``'a'``).
 
-text file
-    A file that contains printable characters organized into lines separated by 
-    newline characters.
+    path
+        A sequence of directory names that specifies the exact location of a
+        file.
 
-continue statement
-    A statement that causes the current iteration of a loop to end. The flow of 
-    execution goes to the top of the loop, evaluates the condition, and
-    proceeds accordingly.
+    text file
+        A file that contains printable characters organized into lines
+        separated by newline characters.
 
-file system
-    A method for naming, accessing, and organizing files and the data they
-    contain.
+    continue statement
+        A statement that causes the current iteration of a loop to end. The
+        flow of execution goes to the top of the loop, evaluates the condition,
+        and proceeds accordingly.
 
-directory
-    A named collection of files, also called a folder.  Directories can contain 
-    files and other directories, which are refered to as *subdirectories* of
-    the directory that contains them.
+    file system
+        A method for naming, accessing, and organizing files and the data they
+        contain.
 
-path
-    The name and location of a file within a file system. For example::
+    directory
+        A named collection of files, also called a folder.  Directories can
+        contain files and other directories, which are refered to as
+        *subdirectories* of the directory that contains them.
 
-        /usr/share/dict/words
+    path
+        The name and location of a file within a file system. For example::
 
-    indicates a file named ``words`` found in the ``dict`` subdirectory of the
-    ``share`` subdirectory of the ``usr`` directory.
+            /usr/share/dict/words
 
-delimiter
-    A sequence of one or more characters used to specify the boundary between
-    separate parts of text.
+        indicates a file named ``words`` found in the ``dict`` subdirectory of
+        the ``share`` subdirectory of the ``usr`` directory.
 
-command line
-    The sequence of characters read into the *command interpreter* in a
-    *command line interface* (see the Wikipedia article on
-    `command line interface <http://en.wikipedia.org/wiki/Command_line>`__ for
-    more information).
+    delimiter
+        A sequence of one or more characters used to specify the boundary
+        between separate parts of text.
 
-command line argument
-    A value passed to a program along with the program's invocation at the
-    *command prompt* of a command line interface (CLI).
+    command line
+        The sequence of characters read into the *command interpreter* in a
+        *command line interface* (see the Wikipedia article on
+        `command line interface <http://en.wikipedia.org/wiki/Command_line>`__
+        for more information).
 
-Jython
-    An implementation of the Python programming language written in Java. (see
-    the Jython home page at `http://www.jython.org <http://www.jython.org>`__
-    for more information.)
+    command line argument
+        A value passed to a program along with the program's invocation at the
+        *command prompt* of a command line interface (CLI).
 
-``argv``:
-    ``argv`` is short for *argument vector* and is a variable in the ``sys``
-    module which stores a list of command line arguments passed to a program
-    at run time.
+    Jython
+        An implementation of the Python programming language written in Java.
+        (see the Jython home page at `http://www.jython.org
+        <http://www.jython.org>`__ for more information.)
+
+    argv
+        ``argv`` is short for *argument vector* and is a variable in the
+        ``sys`` module which stores a list of command line arguments passed to
+        a program at run time.
 
 
 Exercises

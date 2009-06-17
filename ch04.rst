@@ -2,6 +2,10 @@ Conditionals
 ============
 
 
+.. index::
+    single: modulus operator
+    single: operator; modulus
+
 The modulus operator
 --------------------
 
@@ -29,6 +33,14 @@ Also, you can extract the right-most digit or digits from a number.  For
 example, ``x % 10`` yields the right-most digit of ``x`` (in base 10).
 Similarly ``x % 100`` yields the last two digits.
 
+
+.. index::
+    single: boolean value
+    single: value; boolean
+    single: boolean expression
+    single: expression; boolean
+    single: logical operator
+    single: operator; logical 
 
 Boolean values and expressions
 ------------------------------
@@ -95,6 +107,24 @@ is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
 ``y``.
 
 
+.. index::
+    single: conditional branching
+    single: conditional execution
+    single: if
+    single: elif
+    single: else
+    single: if statement
+    single: statement; if
+    single: compound statement
+    single: compound statement; header
+    single: compound statement; body
+    single: statement block
+    single: block
+    single: body
+    single: pass
+    single: pass statement
+    single: statement; pass
+
 Conditional execution
 ---------------------
 
@@ -144,6 +174,10 @@ does nothing.
         pass          # so this is always executed, but it does nothing
 
 
+.. index::
+    single: alternative execution
+    single: branch
+
 Alternative execution
 ---------------------
 
@@ -187,6 +221,10 @@ When you call it, you can provide any integer expression as an argument.
     >>> print_parity(y+1)
     42 is even.
 
+
+.. index::
+    single: chained conditional 
+    single: conditional; chained
 
 Chained conditionals
 --------------------
@@ -281,6 +319,11 @@ This condition is semantically the same as the compound boolean expression and
 the nested conditional.
 
 
+.. index::
+    single: return
+    single: return statement
+    single: statement; return
+
 The ``return`` statement
 ------------------------
 
@@ -304,6 +347,8 @@ displays an error message and then uses ``return`` to exit the function. The
 flow of execution immediately returns to the caller, and the remaining lines of
 the function are not executed.
 
+
+.. index:: prompt
 
 Keyboard input
 --------------
@@ -371,6 +416,10 @@ expression by putting quotes around it, it would not have given an error:
 To avoid this kind of error, it is a good idea to use ``raw_input`` to get a
 string and then use conversion commands to convert it to other types.
 
+
+.. index::
+    single: type conversion
+    single: type; conversion
 
 Type conversion
 ---------------
@@ -460,6 +509,8 @@ like integers and floating-points, zero values are false and non-zero values
 are true. For strings, empty strings are false and non-empty strings are true.
 
 
+.. index:: GASP
+
 GASP
 ----
 
@@ -493,61 +544,64 @@ programming concepts and to add to our fun while learning.
 Glossary
 --------
 
-modulus operator
-    An operator, denoted with a percent sign ( ``%``), that works on integers
-    and yields the remainder when one number is divided by another.
+.. glossary::
 
-boolean value
-    There are exactly two boolean values: ``True`` and ``False``. Boolean
-    values result when a boolean expression is evaluated by the Python
-    interepreter.  They have type ``bool``.
+    modulus operator
+        An operator, denoted with a percent sign ( ``%``), that works on
+        integers and yields the remainder when one number is divided by
+        another.
 
-boolean expression
-    An expression that is either true or false.
+    boolean value
+        There are exactly two boolean values: ``True`` and ``False``. Boolean
+        values result when a boolean expression is evaluated by the Python
+        interepreter.  They have type ``bool``.
 
-comparison operator
-    One of the operators that compares two values: ``==``, ``!=``, ``>``,
-    ``<``, ``>=``, and ``<=``.
+    boolean expression
+        An expression that is either true or false.
 
-logical operator
-    One of the operators that combines boolean expressions: ``and``, ``or``,
-    and ``not``.
+    comparison operator
+        One of the operators that compares two values: ``==``, ``!=``, ``>``,
+        ``<``, ``>=``, and ``<=``.
 
-conditional statement
-    A statement that controls the flow of execution depending on some
-    condition. In Python the keywords ``if``, ``elif``, and ``else`` are used
-    for conditional statements.
+    logical operator
+        One of the operators that combines boolean expressions: ``and``,
+        ``or``, and ``not``.
 
-condition
-    The boolean expression in a conditional statement that determines which
-    branch is executed.
+    conditional statement
+        A statement that controls the flow of execution depending on some
+        condition. In Python the keywords ``if``, ``elif``, and ``else`` are
+        used for conditional statements.
 
-block
-    A group of consecutive statements with the same indentation.
+    condition
+        The boolean expression in a conditional statement that determines which
+        branch is executed.
 
-body
-    The block of statements in a compound statement that follows
-    the header.
+    block
+        A group of consecutive statements with the same indentation.
 
-branch
-    One of the possible paths of the flow of execution determined by
-    conditional execution.
+    body
+        The block of statements in a compound statement that follows the
+        header.
 
-chained conditional
-    A conditional branch with more than two possible flows of execution. In
-    Python chained conditionals are written with ``if ... elif ... else``
-    statements.
+    branch
+        One of the possible paths of the flow of execution determined by
+        conditional execution.
 
-nesting
-    One program structure within another, such as a conditional statement
-    inside a branch of another conditional statement.
+    chained conditional
+        A conditional branch with more than two possible flows of execution. In
+        Python chained conditionals are written with ``if ... elif ... else``
+        statements.
 
-prompt
-    A visual cue that tells the user to input data.
+    nesting
+        One program structure within another, such as a conditional statement
+        inside a branch of another conditional statement.
 
-type conversion
-    An explicit statement that takes a value of one type and computes a
-    corresponding value of another type.
+    prompt
+        A visual cue that tells the user to input data.
+
+    type conversion
+        An explicit statement that takes a value of one type and computes a
+        corresponding value of another type.
 
 
 Exercises

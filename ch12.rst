@@ -958,41 +958,44 @@ return values. These are left as an exercise.
 Glossary
 --------
 
-dictionary
-    A collection of key-value pairs that maps from keys to values. The keys can 
-    be any immutable type, and the values can be any type.
+.. glossary::
 
-mapping type
-    A mapping type is a data type comprised of a collection of keys and
-    associated values. Python's only built-in mapping type is the dictionary.
-    Dictionaries implement the
-    `associative array <http://en.wikipedia.org/wiki/Associative_array>`__
-    abstract data type.
+    dictionary
+        A collection of key-value pairs that maps from keys to values. The keys
+        can be any immutable type, and the values can be any type.
 
-key
-    A data item that is *mapped to* a value in a dictionary. Keys are used to
-    look up values in a dictionary.
+    mapping type
+        A mapping type is a data type comprised of a collection of keys and
+        associated values. Python's only built-in mapping type is the
+        dictionary.  Dictionaries implement the
+        `associative array <http://en.wikipedia.org/wiki/Associative_array>`__
+        abstract data type.
 
-key-value pair
-    One of the pairs of items in a dictionary. Values are looked up in a
-    dictionary by key.
+    key
+        A data item that is *mapped to* a value in a dictionary. Keys are used
+        to look up values in a dictionary.
 
-hint
-    Temporary storage of a precomputed value to avoid redundant computation.
+    key-value pair
+        One of the pairs of items in a dictionary. Values are looked up in a
+        dictionary by key.
 
-event
-    A signal such as a keyboard press, mouse click, or message from another
-    program.
+    hint
+        Temporary storage of a precomputed value to avoid redundant
+        computation.
 
-event-driven program
-    <fill in definition here>
+    event
+        A signal such as a keyboard press, mouse click, or message from another
+        program.
 
-event loop
-    A programming construct that waits for events and processes them.
+    event-driven program
+        <fill in definition here>
 
-overflow
-    A numerical result that is too large to be represented in a numerical
-    format.
+    event loop
+        A programming construct that waits for events and processes them.
+
+    overflow
+        A numerical result that is too large to be represented in a numerical
+        format.
 
 
 Exercises

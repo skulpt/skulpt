@@ -2,6 +2,17 @@ Fruitful functions
 ==================
 
 
+.. index::
+    single: return
+    single: return statement
+    single: return value
+    single: temporary variable
+    single: variable; temporary 
+    single: dead code
+    single: None
+    single: NoneType
+    single: value; None
+
 Return values
 -------------
 
@@ -102,6 +113,10 @@ case, the return value is a special value called **None**:
 
 All Python functions return ``None`` whenever they do not return another value.
 
+
+.. index::
+    single: scaffolding
+    single: incremental development
 
 Program development
 -------------------
@@ -223,6 +238,10 @@ The key aspects of the process are:
    but only if it does not make the program difficult to read.
 
 
+.. index::
+    single: composition
+    single: function composition
+
 Composition
 -----------
 
@@ -272,6 +291,9 @@ composing the function calls:
     def area2(xc, yc, xp, yp):
         return area(distance(xc, yc, xp, yp))
 
+
+.. index::
+    single: boolean function
 
 Boolean functions
 -----------------
@@ -396,6 +418,9 @@ few pointers will be helpful already:
   bottom of the program
 
 
+.. index::
+    single: triple quoted string
+
 Triple quoted strings
 ---------------------
 
@@ -431,6 +456,10 @@ Finally, triple quoted strings can span multiple lines:
     lines.
     >>>
 
+
+.. index::
+    single: unit testing
+    single: doctest
 
 Unit testing with ``doctest``
 -----------------------------
@@ -557,42 +586,45 @@ Run this script now with the ``-v`` command line option and see what you get.
 Glossary
 --------
 
-fruitful function
-    A function that yields a return value.
+.. glossary::
 
-return value
-    The value provided as the result of a function call.
+    fruitful function
+        A function that yields a return value.
 
-temporary variable
-    A variable used to store an intermediate value in a complex calculation.
+    return value
+        The value provided as the result of a function call.
 
-dead code
-    Part of a program that can never be executed, often because it appears
-    after a ``return`` statement.
+    temporary variable
+        A variable used to store an intermediate value in a complex
+        calculation.
 
-``None``
-    A special Python value returned by functions that have no return statement, 
-    or a return statement without an argument. ``None`` is the only value of
-    the type, ``NoneType``.
+    dead code
+        Part of a program that can never be executed, often because it appears
+        after a ``return`` statement.
 
-incremental development
-    A program development plan intended to avoid debugging by adding and
-    testing only a small amount of code at a time.
+    None
+        A special Python value returned by functions that have no return
+        statement, or a return statement without an argument. ``None`` is the
+        only value of the type, ``NoneType``.
 
-scaffolding
-    Code that is used during program development but is not part of the final
-    version.
+    incremental development
+        A program development plan intended to avoid debugging by adding and
+        testing only a small amount of code at a time.
 
-boolean function
-    A function that returns a boolean value.
+    scaffolding
+        Code that is used during program development but is not part of the
+        final version.
 
-composition (of functions)
-    Calling one function from within the body of another, or using the return
-    value of one function as an argument to the call of another.
+    boolean function
+        A function that returns a boolean value.
 
-unit testing
-    An automatic procedure used to validate that individual units of code are
-    working properly. Python has ``doctest`` built in for this purpose.
+    composition (of functions)
+        Calling one function from within the body of another, or using the
+        return value of one function as an argument to the call of another.
+
+    unit testing
+        An automatic procedure used to validate that individual units of code
+        are working properly. Python has ``doctest`` built in for this purpose.
 
 
 Exercises

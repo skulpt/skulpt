@@ -992,69 +992,72 @@ the list in the resultant string.
 Glossary
 --------
 
-list
-    A named collection of objects, where each object is identified by an index.
+.. glossary::
 
-index
-    An integer variable or value that indicates an element of a list.
+    list
+        A named collection of objects, where each object is identified by an
+        index.
 
-element
-    One of the values in a list (or other sequence). The bracket operator
-    selects elements of a list.
+    index
+        An integer variable or value that indicates an element of a list.
 
-sequence
-    Any of the data types that consist of an ordered set of elements, with
-    each element identified by an index.
+    element
+        One of the values in a list (or other sequence). The bracket operator
+        selects elements of a list.
 
-nested list
-    A list that is an element of another list.
+    sequence
+        Any of the data types that consist of an ordered set of elements, with
+        each element identified by an index.
 
-step size
-    The interval between successive elements of a linear sequence. The third
-    (and optional argument) to the ``range`` function is called the step size.
-    If not specified, it defaults to 1.
+    nested list
+        A list that is an element of another list.
 
-list traversal
-    The sequential accessing of each element in a list.
-    
-mutable type
-    A data type in which the elements can be modified. All mutable types are
-    compound types. Lists are mutable data types; strings are not.
+    step size
+        The interval between successive elements of a linear sequence. The
+        third (and optional argument) to the ``range`` function is called the
+        step size.  If not specified, it defaults to 1.
 
-object
-    A thing to which a variable can refer.
+    list traversal
+        The sequential accessing of each element in a list.
+        
+    mutable type
+        A data type in which the elements can be modified. All mutable types
+        are compound types. Lists are mutable data types; strings are not.
 
-aliases
-    Multiple variables that contain references to the same object.
+    object
+        A thing to which a variable can refer.
 
-clone
-    To create a new object that has the same value as an existing object.
-    Copying a reference to an object creates an alias but doesn't clone the
-    object.
+    aliases
+        Multiple variables that contain references to the same object.
 
-modifier
-    A function which changes its arguments inside the function body. Only
-    mutable types can be changed by modifiers.
-    
-side effect
-    A change in the state of a program made by calling a function that is not a 
-    result of reading the return value from the function. Side effects can only 
-    be produced by modifiers.
+    clone
+        To create a new object that has the same value as an existing object.
+        Copying a reference to an object creates an alias but doesn't clone the
+        object.
 
-pure function
-    A function which has no side effects. Pure functions only make changes to
-    the calling program through their return values.
+    modifier
+        A function which changes its arguments inside the function body. Only
+        mutable types can be changed by modifiers.
+        
+    side effect
+        A change in the state of a program made by calling a function that is
+        not a result of reading the return value from the function. Side
+        effects can only be produced by modifiers.
 
-test-driven development (TDD)
-    A software development practice which arrives at a desired feature through
-    a series of small, iterative steps motivated by automated tests which are
-    *written first* that express increasing refinements of the desired feature. 
-    (see the Wikipedia article on `Test-driven development
-    <http://en.wikipedia.org/wiki/Test_driven_development>`__ for more
-    information.)
+    pure function
+        A function which has no side effects. Pure functions only make changes
+        to the calling program through their return values.
 
-delimiter
-    A character or string used to indicate where a string should be split.
+    test-driven development (TDD)
+        A software development practice which arrives at a desired feature
+        through a series of small, iterative steps motivated by automated tests
+        which are *written first* that express increasing refinements of the
+        desired feature.  (see the Wikipedia article on `Test-driven
+        development <http://en.wikipedia.org/wiki/Test_driven_development>`__
+        for more information.)
+
+    delimiter
+        A character or string used to indicate where a string should be split.
 
 
 Exercises
