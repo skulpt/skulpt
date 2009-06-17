@@ -419,6 +419,7 @@ After watching the messages flash by, you will be presented with the end of a
 long traceback that ends in with the following:
 
 .. sourcecode:: python
+
       ...
       File "infinite_recursion.py", line 3, in recursion_depth
         recursion_depth(number + 1)

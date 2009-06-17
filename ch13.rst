@@ -279,13 +279,14 @@ object!
     box.corner.x = 0.0
     box.corner.y = 0.0
 
-
-The dot operator composes. The expression ``box.corner.x`` means, Go to
-the object ``box`` refers to and select the attribute named ``corner``;
-then go to that object and select the attribute named ``x``.
+The dot operator composes. The expression ``box.corner.x`` means, Go to the
+object ``box`` refers to and select the attribute named ``corner``; then go to
+that object and select the attribute named ``x``.
 
 The figure shows the state of this object:
 
+.. image:: illustrations/point.png
+   :alt: Point state diagram 
 
 
 Instances as return values

@@ -212,9 +212,8 @@ For example, the script
     x = 2
     print x
 
-produces the output
+produces the output::
 
-.. sourcecode:: python
     1
     2
 

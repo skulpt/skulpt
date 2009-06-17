@@ -1025,41 +1025,41 @@ Exercises
 #. Give the Python interpreter's response to each of the following from a
    continuous interpreter session:
 
-   * 
+   #.
    .. sourcecode:: python
         
           >>> d = {'apples': 15, 'bananas': 35, 'grapes': 12} 
           >>> d['banana'] 
 
-   *
+   #.
    .. sourcecode:: python
         
           >>> d['oranges'] = 20
           >>> len(d) 
 
-   *
+   #.
    .. sourcecode:: python
         
           >>> d.has_key('grapes')
           
-   *
+   #.
    .. sourcecode:: python
         
           >>> d['pears']
           
-   *
+   #.
    .. sourcecode:: python
         
           >>> d.get('pears', 0)
           
-   *
+   #.
    .. sourcecode:: python
         
           >>> fruits = d.keys()
           >>> fruits.sort()
           >>> print fruits
           
-   *
+   #.
    .. sourcecode:: python
         
           >>> del d['apples']

@@ -887,22 +887,23 @@ Exercises
 
 #. Complete the following:
 
-    * Start the pydoc server with the command ``pydoc -g`` at the command
-      prompt.
-    * Click on the open browser button in the pydoc tk window.
-    * Find the ``calendar`` module and click on it.
-    * While looking at the *Functions* section, try out the following in a
-      Python shell:
+   * Start the pydoc server with the command ``pydoc -g`` at the command
+     prompt.
+   * Click on the open browser button in the pydoc tk window.
+   * Find the ``calendar`` module and click on it.
+   * While looking at the *Functions* section, try out the following in a
+     Python shell:
 
-      .. sourcecode:: python
+     .. sourcecode:: python
         
           >>> import calendar
           >>> year = calendar.calendar(2008)
           >>> print year                      # What happens here?
 
-    * Experiment with ``calendar.isleap``. What does it expect as an
-      argument? What does it return as a result? What kind of a function is
-      this?
+   * Experiment with ``calendar.isleap``. What does it expect as an
+     argument? What does it return as a result? What kind of a function is
+     this?
+
    Make detailed notes about what you learned from this exercise.
 #. If you don't have ``Tkinter`` installed on your computer, then ``pydoc
    -g`` will return an error, since the graphics window that it opens

@@ -330,7 +330,7 @@ but the extra comparison is unnecessary.
 
 
 The ``function`` type
--------------------
+---------------------
 
 A function is another type in Python, joining ``int``, ``float``, ``str``,
 ``bool``, and ``NoneType``.
@@ -448,7 +448,7 @@ function or script. They consist of sample interpreter sessions with a series
 of inputs to a Python prompt followed by the expected output from the Python
 interpreter.
 
-The ``doctest`` module automatically runs any statement begining with ``>>> ``
+The ``doctest`` module automatically runs any statement begining with >>> 
 and compares the following line with the output from the interpreter.
 
 To see how this works, put the following in a script named ``myfunctions.py``:
@@ -647,6 +647,7 @@ doctests for your new function pass.
              >>> hypotenuse(9, 12)
              15.0
            """
+
    When you are finished add your completed function with the doctests to
    ``ch05.py`` and confirm that the doctests pass.
 #. Write a function ``slope(x1, y1, x2, y2)`` that returns the slope of
@@ -706,6 +707,7 @@ doctests for your new function pass.
              >>> is_factor(7, 15)
              False
            """
+
    Add a body to ``is_factor`` to make the doctests pass.
 #.
    .. sourcecode:: python
@@ -723,6 +725,7 @@ doctests for your new function pass.
              >>> is_multiple(12, 7)
              False
            """
+
    Add a body to ``is_multiple`` to make the doctests pass. Can you find a way
    to use ``is_factor`` in your definition of ``is_multiple``?
 #.
@@ -745,6 +748,7 @@ doctests for your new function pass.
              >>> f2c(39)
              4
            """
+
    Write a body for the function definition of ``f2c`` designed to return the
    integer value of the nearest degree Celsius for given tempurature in
    Fahrenheit. ( *hint:* you may want to make use of the built-in function,

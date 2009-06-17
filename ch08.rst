@@ -598,8 +598,8 @@ Exercises
    press the during the execution of ``play_round``. What happens when you
    press this key? Why?
 #. List the main body of the final version of ``catch.py``. Describe
-  *in detail* what each line of code does. Which statement calls the function
-  that starts the game?
+   *in detail* what each line of code does. Which statement calls the function
+   that starts the game?
 #. Identify the function responsible for displaying the ball and the mitt. What    other operations are provided by this function?
 #. Which function keeps track of the score? Is this also the function that
    displays the score? Justify your answer by discussing specific parts of the

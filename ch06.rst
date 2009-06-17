@@ -832,6 +832,7 @@ Exercises
              >>> num_digits(-12345)
              5
            """
+
    Add your function body to ``num_digits`` and confirm that it passes the
    doctests.
 #. Add the following to the ``ch06.py``:
@@ -851,6 +852,7 @@ Exercises
              >>> num_even_digits(20)
              2
            """
+
    Write a body for ``num_even_digits`` so that it works as expected.
 #. Add the following to ``ch06.py``:
 
