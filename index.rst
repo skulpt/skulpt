@@ -3,6 +3,7 @@ How to Think Like a Computer Scientist: Learning with Python
 
 .. toctree::
     :maxdepth: 1
+    :numbered:
 
     self
     foreword.rst
