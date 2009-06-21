@@ -3,12 +3,15 @@ How to Think Like a Computer Scientist: Learning with Python
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
-    self
     foreword.rst
     preface.rst
     contrib.rst
+
+.. toctree::
+    :maxdepth: 1
+    :numbered:
+
     ch01.rst
     ch02.rst
     ch03.rst
@@ -22,6 +25,10 @@ How to Think Like a Computer Scientist: Learning with Python
     ch11.rst
     ch12.rst
     ch13.rst
+
+.. toctree::
+    :maxdepth: 1
+
     app_a.rst
 
 
