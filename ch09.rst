@@ -630,7 +630,7 @@ Since the list object is shared by two frames, we drew it between them.
 If a function modifies a list parameter, the caller sees the change.
 
 
-.. _pfm:
+.. _pure-func-mod:
 
 Pure functions and modifiers
 ----------------------------
@@ -1091,7 +1091,7 @@ Exercises
    Add each of the following sets of doctests to the docstring at the top of
    the file and write Python code to make the doctests pass.
 
-    *
+    #.
       .. sourcecode:: python
         
         """
@@ -1103,7 +1103,7 @@ Exercises
           8
         """
 
-    *
+    #.
        .. sourcecode:: python
         
         """
@@ -1114,7 +1114,7 @@ Exercises
           'Young'
         """
 
-    *
+    #.
        .. sourcecode:: python
         
         """
@@ -1130,7 +1130,7 @@ Exercises
           True
         """
 
-    *
+    #.
        .. sourcecode:: python
         
         """
@@ -1173,7 +1173,7 @@ Exercises
 #. Open a file named ``ch09e06.py`` and use the same procedure as in exercise 2 
    to make the following doctests pass:
 
-    *
+    #.
        .. sourcecode:: python
         
         """
@@ -1187,7 +1187,7 @@ Exercises
           [3, 7, 27]
         """
 
-    *
+    #.
        .. sourcecode:: python
         
         """
@@ -1199,7 +1199,7 @@ Exercises
           5
         """
 
-    *
+    #.
        .. sourcecode:: python
         
         """

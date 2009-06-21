@@ -167,8 +167,9 @@ we intended. This is an example of a semantic error.
 Pure functions and modifiers revisited
 --------------------------------------
 
-In :ref:`pfm` we discussed *pure functions* and *modifiers* as related to
-lists.  Since tuples are immutable we can not write modifiers on them.
+In :ref:`pure-func-mod` we discussed *pure functions* and *modifiers* as
+related to lists.  Since tuples are immutable we can not write modifiers on
+them.
 
 Here is a modifier that inserts a new value into the middle of a list:
 
@@ -1054,29 +1055,29 @@ Exercises
    input is valid.
 #. Give the Python interpreter's response to each of the following:
 
+   #. 
+     .. sourcecode:: python
+        
+         >>> nums = [1, 2, 3, 4]
+         >>> [x**3 for x in nums]
+
    #.
-   .. sourcecode:: python
+     .. sourcecode:: python
         
-        >>> nums = [1, 2, 3, 4]
-        >>> [x**3 for x in nums]
+         >>> nums = [1, 2, 3, 4]
+         >>> [x**2 for x in nums if x**2 != 4]
 
-    #.
-    .. sourcecode:: python
+   #.
+     .. sourcecode:: python
         
-        >>> nums = [1, 2, 3, 4]
-        >>> [x**2 for x in nums if x**2 != 4]
+         >>> nums = [1, 2, 3, 4]
+         >>> [(x, y) for x in nums for y in nums]
 
-    #.
-    .. sourcecode:: python
+   #.
+     .. sourcecode:: python
         
-        >>> nums = [1, 2, 3, 4]
-        >>> [(x, y) for x in nums for y in nums]
-
-    #.
-    .. sourcecode:: python
-        
-        >>> nums = [1, 2, 3, 4]
-        >>> [(x, y) for x in nums for y in nums if x != y]
+         >>> nums = [1, 2, 3, 4]
+         >>> [(x, y) for x in nums for y in nums if x != y]
 
    You should anticipate the results *before* you try them in the interpreter.
 #. Use either ``pydoc`` or the on-line documentation at `http://pydoc.org

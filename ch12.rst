@@ -1029,41 +1029,41 @@ Exercises
    continuous interpreter session:
 
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> d = {'apples': 15, 'bananas': 35, 'grapes': 12} 
           >>> d['banana'] 
 
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> d['oranges'] = 20
           >>> len(d) 
 
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> d.has_key('grapes')
           
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> d['pears']
           
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> d.get('pears', 0)
           
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> fruits = d.keys()
           >>> fruits.sort()
           >>> print fruits
           
    #.
-   .. sourcecode:: python
+      .. sourcecode:: python
         
           >>> del d['apples']
           >>> d.has_key('apples') 

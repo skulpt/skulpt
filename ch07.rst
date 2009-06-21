@@ -878,13 +878,13 @@ Exercises
 #. Try each of the following formatted string operations in a Python shell and
    record the results:
 
-   * "%s %d %f" % (5, 5, 5)
-   * "%-.2f" % 3
-   * "%-10.2f%-10.2f" % (7, 1.0/2)
-   * print " $%5.2f\n $%5.2f\n $%5.2f" % (3, 4.5, 11.2)
+   #. "%s %d %f" % (5, 5, 5)
+   #. "%-.2f" % 3
+   #. "%-10.2f%-10.2f" % (7, 1.0/2)
+   #. print " $%5.2f\n $%5.2f\n $%5.2f" % (3, 4.5, 11.2)
 
 #. The following formatted strings have errors. Fix them:
 
-   * "%s %s %s %s" % ('this', 'that', 'something')
-   * "%s %s %s" % ('yes', 'no', 'up', 'down')
-   * "%d %f %f" % (3, 3, 'three')
+   #. "%s %s %s %s" % ('this', 'that', 'something')
+   #. "%s %s %s" % ('yes', 'no', 'up', 'down')
+   #. "%d %f %f" % (3, 3, 'three')
