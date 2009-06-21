@@ -208,6 +208,6 @@ can increase the quality of materials available for our use and save valuable
 time. I invite you to join our community and look forward to hearing from you.
 Please write to me at `jeff@elkner.net <mailto:jeff@elkner.net>`__.
 
-Jeffrey Elkner
-Arlington Public Schools
-Arlington, Virginia
+| Jeffrey Elkner
+| Arlington Public Schools
+| Arlington, Virginia

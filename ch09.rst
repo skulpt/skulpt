@@ -630,6 +630,8 @@ Since the list object is shared by two frames, we drew it between them.
 If a function modifies a list parameter, the caller sees the change.
 
 
+.. _pfm:
+
 Pure functions and modifiers
 ----------------------------
 

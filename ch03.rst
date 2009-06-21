@@ -4,7 +4,7 @@ Functions
 .. index::
     single: function
     single: function definition
-    single: function; definition
+    single: definition; function
 
 Definitions and use
 -------------------

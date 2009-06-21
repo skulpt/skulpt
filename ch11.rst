@@ -167,8 +167,8 @@ we intended. This is an example of a semantic error.
 Pure functions and modifiers revisited
 --------------------------------------
 
-In Chapter 9 we discussed *pure functions* and *modifiers* as related to lists.
-Since tuples are immutable we can not write modifiers on them.
+In :ref:`pfm` we discussed *pure functions* and *modifiers* as related to
+lists.  Since tuples are immutable we can not write modifiers on them.
 
 Here is a modifier that inserts a new value into the middle of a list:
 
