@@ -124,6 +124,8 @@ get immediate feedback. Think of it as scratch paper used to help you work out
 problems. Anything longer than a few lines should be put into a script.
 
 
+.. index:: program, algorithm
+
 What is a program?
 ------------------
 
@@ -269,15 +271,7 @@ Later chapters will make more suggestions about debugging and other programming
 practices.
 
 
-.. index::
-    single: formal language
-    single: natural language
-    single: parse
-    single: ambiguity
-    single: redundancy
-    single: literalness
-    single: poetry
-    single: prose
+.. index:: formal language, natural language, parse
 
 Formal and natural languages
 ----------------------------
@@ -324,40 +318,44 @@ understand the general implication of this sentence.
 Although formal and natural languages have many features in common --- tokens,
 structure, syntax, and semantics --- there are many differences:
 
-ambiguity
-    Natural languages are full of ambiguity, which people deal with by using
-    contextual clues and other information. Formal languages are designed to be
-    nearly or completely unambiguous, which means that any statement has
-    exactly one meaning, regardless of context.
+.. glossary::
 
-redundancy
-    In order to make up for ambiguity and reduce misunderstandings, natural
-    languages employ lots of redundancy. As a result, they are often verbose.
-    Formal languages are less redundant and more concise.
+    ambiguity
+        Natural languages are full of ambiguity, which people deal with by
+        using contextual clues and other information. Formal languages are
+        designed to be nearly or completely unambiguous, which means that any
+        statement has exactly one meaning, regardless of context.
 
-literalness
-    Natural languages are full of idiom and metaphor. If someone says, The
-    other shoe fell, there is probably no shoe and nothing falling. Formal
-    languages mean exactly what they say.
+    redundancy
+        In order to make up for ambiguity and reduce misunderstandings, natural
+        languages employ lots of redundancy. As a result, they are often
+        verbose.  Formal languages are less redundant and more concise.
+
+    literalness
+        Natural languages are full of idiom and metaphor. If someone says, The
+        other shoe fell, there is probably no shoe and nothing falling. Formal
+        languages mean exactly what they say.
 
 People who grow up speaking a natural language---everyone---often have a hard
 time adjusting to formal languages. In some ways, the difference between formal
 and natural language is like the difference between poetry and prose, but more
 so:
 
-Poetry
-    Words are used for their sounds as well as for their
-    meaning, and the whole poem together creates an effect or emotional
-    response. Ambiguity is not only common but often deliberate.
+.. glossary::
 
-Prose
-    The literal meaning of words is more important, and the structure
-    contributes more meaning. Prose is more amenable to analysis than poetry
-    but still often ambiguous.
+    Poetry
+        Words are used for their sounds as well as for their meaning, and the
+        whole poem together creates an effect or emotional response. Ambiguity
+        is not only common but often deliberate.
 
-Programs
-    The meaning of a computer program is unambiguous and literal, and can be
-    understood entirely by analysis of the tokens and structure.
+    Prose
+        The literal meaning of words is more important, and the structure
+        contributes more meaning. Prose is more amenable to analysis than
+        poetry but still often ambiguous.
+
+    Programs
+        The meaning of a computer program is unambiguous and literal, and can
+        be understood entirely by analysis of the tokens and structure.
 
 Here are some suggestions for reading programs (and other formal languages).
 First, remember that formal languages are much more dense than natural
@@ -369,9 +367,7 @@ like spelling errors and bad punctuation, which you can get away with in
 natural languages, can make a big difference in a formal language.
 
 
-.. index::
-    single: "hello world!"
-    single: print statement
+.. index:: "hello world!", print statement
 
 The first program
 -----------------
@@ -529,10 +525,16 @@ Exercises
 
    In many cases, Python indicates where the syntax error occurred, but it is
    not always right, and it doesn't give you much information about what is
-   wrong. So, for the most part, the burden is on you to learn the syntax
-   rules. In this case, Python is complaining because there is no operator
-   between the numbers. Write down three more examples of strings that will
-   produce error messages when you enter them at the Python prompt. Explain why    each example is not valid Python syntax.
+   wrong.
+   
+   So, for the most part, the burden is on you to learn the syntax rules.
+   
+   In this case, Python is complaining because there is no operator between the
+   numbers.
+   
+   Write down three more examples of strings that will produce error messages
+   when you enter them at the Python prompt. Explain why each example is not
+   valid Python syntax.
 #. Type `print 'hello'`. Python executes this statement, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
    used to enclose the string are not part of the output.  Now type
@@ -548,8 +550,10 @@ Exercises
    specifically, it is an error because the name `cheese` is not defined. If
    you don't know what that means yet, you will soon.
 #. Type ``'This is a test...'`` at the Python prompt and hit enter.  Record what
-   happens. Now create a python script named ``test1.py`` with the following
-   contents (be sure to save it before you try to run it):
+   happens.
+   
+   Now create a python script named ``test1.py`` with the following contents
+   (be sure to save it before you try to run it):
 
    .. sourcecode:: python
     
@@ -561,9 +565,13 @@ Exercises
     
        print 'This is a test...'
 
-   and run it again. What happened this time? Whenever an *expression* is typed 
-   at the Python prompt, it is *evaluated* and the result is printed on the
-   line below. ``'This is a test...'`` is an expression, which evaluates to
-   ``'This is a test...'`` (just like the expression ``42`` evaluates to
-   ``42``). In a script, however, evaluations of expressions are not sent to
-   the program output, so it is necessary to explicitly print it.
+   and run it again.
+   
+   What happened this time?
+   
+   Whenever an *expression* is typed at the Python prompt, it is *evaluated*
+   and the result is printed on the line below. ``'This is a test...'`` is an
+   expression, which evaluates to ``'This is a test...'`` (just like the
+   expression ``42`` evaluates to ``42``). In a script, however, evaluations of
+   expressions are not sent to the program output, so it is necessary to
+   explicitly print it.

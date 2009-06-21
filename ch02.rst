@@ -83,11 +83,7 @@ list of three items to be printed. So remember not to put commas in your
 integers.
 
 
-.. index:: variable, assignment
-
-.. index::
-    single: assignment statement
-    single: state diagram
+.. index:: variable, assignment, assignment statement, state diagram
 
 Variables
 ---------
@@ -153,9 +149,7 @@ types; again, we can ask the interpreter what they are.
 The type of a variable is the type of the value it refers to.
 
 
-.. index::
-    single: keyword
-    single: underscore character
+.. index:: keyword, underscore character
 
 Variable names and keywords
 ---------------------------
@@ -204,6 +198,8 @@ You might want to keep this list handy. If the interpreter complains about one
 of your variable names and you don't know why, see if it is on this list.
 
 
+.. index:: statement
+
 Statements
 ----------
 
@@ -232,6 +228,8 @@ produces the output::
 
 Again, the assignment statement produces no output.
 
+
+.. index:: expression
 
 Evaluating expressions
 ----------------------
@@ -286,10 +284,7 @@ produces no output at all. How would you change the script to display the
 values of these four expressions?
 
 
-.. index:: operator, operand, expression
-
-.. index::
-    single: integer division
+.. index:: operator, operand, expression, integer division
 
 Operators and operands
 ----------------------
@@ -340,9 +335,7 @@ the chapter 4 how to convert integer values and variables to floating-point
 values.
 
 
-.. index::
-    single: order of operations
-    single: rules of precedence
+.. index:: order of operations, rules of precedence
 
 Order of operations
 -------------------
@@ -370,9 +363,7 @@ is a useful way to remember the order of operations:
    wrong.
 
 
-.. index::
-    single: string operations
-    single: concatenation
+.. index:: string operations, concatenation
 
 Operations on strings
 ---------------------
@@ -413,9 +404,7 @@ think of a property that addition and multiplication have that string
 concatenation and repetition do not?
 
 
-.. index::
-    single: input
-    single: keyboard input
+.. index:: input, keyboard input
 
 Input
 -----
@@ -441,8 +430,7 @@ Each of these functions allows a *prompt* to be given to the function between
 the parentheses.
 
 
-.. index::
-    single: composition of functions
+.. index:: composition of functions
 
 Composition
 -----------
