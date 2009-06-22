@@ -514,9 +514,14 @@ are true. For strings, empty strings are false and non-empty strings are true.
 GASP
 ----
 
-GASP ( **G**\ raphics **A**\ PI for **S**\ tudents of **P**\ ython) will enable us to write programs involving graphics.
+GASP (**G**\ raphics **A**\ PI for **S**\ tudents of **P**\ ython) will enable
+us to write programs involving graphics.  Before you can use GASP, it needs
+to be installed on your machine.  If you are running Ubuntu GNU/Linux, see
+:ref:`installing-gasp` in `Appendix A <app_a.html>`__.  Current instructions
+for installing GASP on other platforms can be found at
+http://dev.laptop.org/pub/gasp/downloads.
 
-To start gasp, try the following:
+To start gasp after it is installed, try the following:
 
 .. sourcecode:: python
     

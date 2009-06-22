@@ -51,6 +51,9 @@ prompt::
 
     vimtutor
 
+
+.. _installing-gasp:
+
 GASP
 ----
 
