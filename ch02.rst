@@ -370,7 +370,7 @@ Operations on strings
 
 In general, you cannot perform mathematical operations on strings, even if the
 strings look like numbers. The following are illegal (assuming that ``message``
-has type ``string``):
+has type string):
 
 .. sourcecode:: python
     
@@ -378,8 +378,8 @@ has type ``string``):
 
 Interestingly, the ``+`` operator does work with strings, although it does not
 do exactly what you might expect. For strings, the ``+`` operator represents
-**concatenation**, which means joining the two
-operands by linking them end-to-end. For example:
+**concatenation**, which means joining the two operands by linking them
+end-to-end. For example:
 
 .. sourcecode:: python
     
@@ -435,8 +435,8 @@ the parentheses.
 Composition
 -----------
 
-So far, we have looked at the elements of a program---variables, expressions,
-and statements---in isolation, without talking about how to combine them.
+So far, we have looked at the elements of a program --- variables, expressions,
+and statements --- in isolation, without talking about how to combine them.
 
 One of the most useful features of programming languages is their ability to
 take small building blocks and **compose** them. For example, we know how to
@@ -468,9 +468,10 @@ This ability may not seem impressive now, but you will see other examples where
 composition makes it possible to express complex computations neatly and
 concisely.
 
-Warning: There are limits on where you can use certain expressions.  For
-example, the left-hand side of an assignment statement has to be a *variable*
-name, not an expression. So, the following is illegal: ``minute+1 = hour``.
+    Warning: There are limits on where you can use certain expressions.  For
+    example, the left-hand side of an assignment statement has to be a
+    *variable* name, not an expression. So, the following is illegal:
+    ``minute+1 = hour``.
 
 
 .. index:: comment
@@ -498,8 +499,8 @@ comments at the end of a line:
     
     percentage = (minute * 100) / 60     # caution: integer division
 
-Everything from the ``#`` to the end of the line is ignored---it has no effect
-on the program. The message is intended for the programmer or for future
+Everything from the ``#`` to the end of the line is ignored --- it has no
+effect on the program. The message is intended for the programmer or for future
 programmers who might use this code. In this case, it reminds the reader about
 the ever-surprising behavior of integer division.
 
