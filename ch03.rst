@@ -148,8 +148,7 @@ In other words, the function definition has to be executed before the first
 time it is called.
 
 
-.. index::
-    single: flow of execution
+.. index:: flow of execution
 
 Flow of execution
 -----------------
@@ -229,7 +228,7 @@ Another built-in function that takes more than one argument is ``max``.
     11
     >>> max(4, 1, 17, 2, 12)
     17
-    >>> max(3*11, 5**3, 512-9, 1024**0)
+    >>> max(3 * 11, 5**3, 512 - 9, 1024**0)
     503
 
 ``max`` can be sent any number of arguments, separated by commas, and will
@@ -381,7 +380,7 @@ Each function is represented by a **frame**. A frame is a box with the name of
 a function beside it and the parameters and variables of the function inside
 it. The stack diagram for the previous example looks like this:
 
-.. image:: illustrations/stack.png
+.. image:: illustrations/stack.svg
    :alt: Stack diagram 
 
 The order of the stack shows the flow of execution. ``print_twice`` was called
@@ -421,7 +420,7 @@ message like this:
 .. sourcecode:: python
     
     Traceback (innermost last):
-      File "tryme2.py", line 11, in 
+      File "tryme2.py", line 11, in <module>
         cat_twice(chant1, chant2)
       File "tryme2.py", line 7, in cat_twice
         print_twice(cat)

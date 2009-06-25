@@ -13,9 +13,9 @@ provided you agree to answer user feedback concerning it.
 
 Thanks!
 
-`Jeffrey Elkner <mailto:jeff@elkner.net>`__
-Arlington Public Schools
-Arlington, Virginia
+| `Jeffrey Elkner <mailto:jeff@elkner.net>`__
+| Arlington Public Schools
+| Arlington, Virginia
 
 
 Vim
