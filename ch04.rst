@@ -107,22 +107,14 @@ is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
 ``y``.
 
 
+.. index:: conditional branching, conditional execution, if, elif, else,
+           if statement, compound statement, statement block, block, body,
+           pass, pass statement
+
 .. index::
-    single: conditional branching
-    single: conditional execution
-    single: if
-    single: elif
-    single: else
-    single: if statement
     single: statement; if
-    single: compound statement
     single: compound statement; header
     single: compound statement; body
-    single: statement block
-    single: block
-    single: body
-    single: pass
-    single: pass statement
     single: statement; pass
 
 Conditional execution
@@ -174,9 +166,7 @@ does nothing.
         pass          # so this is always executed, but it does nothing
 
 
-.. index::
-    single: alternative execution
-    single: branch
+.. index:: alternative execution, branch
 
 Alternative execution
 ---------------------
@@ -263,6 +253,10 @@ and so on. If one of them is true, the corresponding branch executes, and the
 statement ends. Even if more than one condition is true, only the first true
 branch executes.
 
+
+.. index::
+    single: nested conditionals
+    single: conditionals; nested
 
 Nested conditionals
 -------------------
@@ -353,9 +347,9 @@ the function are not executed.
 Keyboard input
 --------------
 
-In chapter 2 we were introduced to Python's built-in functions that get input
-from the keyboard: ``raw_input`` and ``input``. Now let's look at these again
-in greater depth.
+In :ref:`input` we were introduced to Python's built-in functions that get
+input from the keyboard: ``raw_input`` and ``input``. Now let's look at these
+again in greater depth.
 
 When either of these functions are called, the program stops and waits for the
 user to type something. When the user presses Return or the Enter key, the
@@ -435,7 +429,6 @@ otherwise:
     32
     >>> int("Hello")
     ValueError: invalid literal for int() with base 10: 'Hello'
-
 
 ``int`` can also convert floating-point values to integers, but remember
 that it truncates the fractional part:
@@ -540,7 +533,7 @@ Before the last command, which closes the graphics canvas, you should see a
 graphics window that looks like this:
 
 .. image:: illustrations/gasp01.png
-   :alt: GASP image 1 
+   :alt: GASP illustration 1 
 
 We will be using gasp from here on to illustrate (pun intended) computer
 programming concepts and to add to our fun while learning.
@@ -642,8 +635,10 @@ Exercises
    than, and equal to the second argument.
 #. To better understand boolean expressions, it is helpful to construct truth
    tables. Two boolean expressions are *logically equivalent* if and only if
-   they have the same truth table. The following Python script prints out the
-   truth table for the any boolean expression in two variables: p and q:
+   they have the same truth table.
+   
+   The following Python script prints out the truth table for the any boolean
+   expression in two variables: p and q:
 
    .. sourcecode:: python
     
@@ -709,7 +704,9 @@ Exercises
     #. not(p) and not(q)
 
    Which of these are logically equivalent?
-#. Enter the following expressions into the Python shell::
+#. Enter the following expressions into the Python shell:
+
+   .. sourcecode:: python
 
        True or False
        True and False
@@ -758,7 +755,9 @@ Exercises
 #. Write a function named ``is_divisible_by_3`` that takes a single integer as
    an argument and prints "This number is divisible by three." if the argument
    is evenly divisible by 3 and "This number is not divisible by three."
-   otherwise. Now write a similar function named ``is_divisible_by_5``.
+   otherwise.
+   
+   Now write a similar function named ``is_divisible_by_5``.
 #. Generalize the functions you wrote in the previous exercise into a function
    named ``is_divisible_by_n(x, n)`` that takes two integer arguments and
    prints out whether the first is divisible by the second.  Save this in a
@@ -809,14 +808,18 @@ Exercises
                                    # anyway, since the script ends here, but it 
                                    # is better to be explicit).
 
-    * Run this script and confirm that you get a window that looks like
-      this:
-    * Wrap the house code in a function named ``draw_house()``.
-    * Run the script now. Do you see a house? Why not?
-    * Add a call to ``draw_house()`` at the botton of the script so that the
+   Run this script and confirm that you get a window that looks like
+   this:
+
+   .. image:: illustrations/gasp02.png
+      :alt: GASP illustration 2 
+    
+   #. Wrap the house code in a function named ``draw_house()``.
+   #. Run the script now. Do you see a house? Why not?
+   #. Add a call to ``draw_house()`` at the botton of the script so that the
       house returns to the screen.
-    * *Parameterize* the function with x and y parameters -- the header
+   #. *Parameterize* the function with x and y parameters -- the header
       should then become ``def draw_house(x, y):``, so that you can pass in
       the location of the house on the canvas.
-    * Use ``draw_house`` to place five houses on the canvas in different
+   #. Use ``draw_house`` to place five houses on the canvas in different
       locations.

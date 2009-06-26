@@ -406,6 +406,8 @@ concatenation and repetition do not?
 
 .. index:: input, keyboard input
 
+.. _input:
+
 Input
 -----
 
