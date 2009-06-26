@@ -1,7 +1,15 @@
 Configuring Ubuntu for Python Development
 =========================================
 
-What follows are instructions for setting up an Ubuntu 8.10 (Intrepid) home
+    *Note:* the following instructions assume that you are connected to
+    the Internet and that you have both the ``main`` and ``universe``
+    package repositories enabled.  All unix shell commands are assumed to
+    be running from your home directory ($HOME).  Finally, any command that
+    begins with ``sudo`` assums that you have administrative rights on your
+    machine.  If you do not --- please ask your system administrator about
+    installing the software you need.
+
+What follows are instructions for setting up an Ubuntu 9.10 (Karmic) home
 environment for use with this book. I use Ubuntu GNU/Linux for both development
 and testing of the book, so it is the only system about which I can personally
 answer setup and configuration questions.
@@ -27,10 +35,9 @@ default, so it doesn't support color syntax highlighting or auto-indenting.
 
 To use Vim, do the following:
 
-
 #. From the unix command prompt, run::
 
-       sudo apt-get install vim-gnome
+       $ sudo apt-get install vim-gnome
 
 #. Create a file in your home directory named `.vimrc` that contains the
    following::
@@ -49,7 +56,7 @@ bring you back to the editor when the program completes.
 To learn to use vim, run the following command at a unix command
 prompt::
 
-    vimtutor
+    $ vimtutor
 
 
 .. _installing-gasp:
@@ -60,28 +67,23 @@ GASP
 Several of the case studies use GASP (Graphics API for Students for Python),
 which is the only additional library needed to use this book.
 
-To install GASP, do the following:
+To install GASP on Ubuntu 9.04 (Jaunty) or later, run the following command
+at a unix command prompt::
 
-#. Add Mathew Gallagher's personal package archive to your apt sources:
+    $ sudo apt-get install python-gasp
 
-    * click `System -> Administration -> Software Sources`
-    * select the `Third-Party Software` tab
-    * click the `+ Add` button
-    * paste the following into the `APT line:` text entry box::
-        
-        deb http://ppa.launchpad.net/gasp-deb/ubuntu intrepid main
+or use the synaptic package manager.
 
-    * click the `Close` button
-    * click the `Reload` button in `The information about available
-      software is out-of-date` dialog box
-    * click the `Close` button of the `Software Sources` window
 
-#. Install GASP by typing the following at a command prompt::
+Getting GASP from Launchpad
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        sudo apt-get install python-gasp
+To install the latest version of GASP into your home directory, run the
+following commands at a unix command prompt::
 
-   Or use the synaptic package manager.
-
+    $ sudo apt-get install bzr
+    $ bzr branch lp:gasp-code    
+    
 
 `$HOME` environment
 -------------------
@@ -92,8 +94,8 @@ adding your own Python libraries and executable scripts:
 #. From the command prompt in your home directory, create `bin` and
    `lib/python` subdirectories by running the following commands::
 
-        mkdir bin lib
-        mkdir lib/python
+        $ mkdir bin lib
+        $ mkdir lib/python
 
 #. Add the following lines to the bottom of your `.bashrc` in your home
    directory::
@@ -118,14 +120,14 @@ process:
 
 #. Add this line as the first line in the script:
 
-.. sourcecode:: python
+   .. sourcecode:: python
     
-    #!/usr/bin/env python
+       #!/usr/bin/env python
 
 #. At the unix command prompt, type the following to make `myscript.py`
    executable::
 
-       chmod +x myscript.py
+       $ chmod +x myscript.py
 
 #. Move `myscript.py` into your `bin` directory, and it will be runnable from
    anywhere.
