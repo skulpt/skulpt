@@ -2,16 +2,12 @@ Fruitful functions
 ==================
 
 
+.. index:: return, return statement, return value, temporary variable,
+           dead code, None, NoneType
+
 .. index::
-    single: return
-    single: return statement
-    single: return value
-    single: temporary variable
-    single: variable; temporary 
-    single: dead code
-    single: None
-    single: NoneType
     single: value; None
+    single: variable; temporary 
 
 Return values
 -------------
@@ -28,7 +24,7 @@ we usually assign to a variable or use as part of an expression.
 But so far, none of the functions we have written has returned a value.
 
 In this chapter, we are going to write functions that return values, which we
-will call **fruitful functions**, for want of a better name.  The first example
+will call *fruitful functions*, for want of a better name.  The first example
 is ``area``, which returns the area of a circle with the given radius:
 
 .. sourcecode:: python
@@ -114,9 +110,7 @@ case, the return value is a special value called **None**:
 All Python functions return ``None`` whenever they do not return another value.
 
 
-.. index::
-    single: scaffolding
-    single: incremental development
+.. index:: scaffolding, incremental development
 
 Program development
 -------------------
@@ -132,8 +126,8 @@ avoid long debugging sessions by adding and testing only a small amount of code
 at a time.
 
 As an example, suppose you want to find the distance between two points, given
-by the coordinates (x 1 , y 1 ) and (x 2 , y 2 ). By the Pythagorean theorem,
-the distance is:
+by the coordinates (x\ :sub:`1`\ , y\ :sub:`1`\ ) and
+(x\ :sub:`2`\ , y\ :sub:`2`\ ).  By the Pythagorean theorem, the distance is:
 
 .. image:: illustrations/distance_formula.png
    :alt: Distance formula 
@@ -172,9 +166,9 @@ we can start adding lines of code. After each incremental change, we test the
 function again. If an error occurs at any point, we know where it must be --- in
 the last line we added.
 
-A logical first step in the computation is to find the differences x2 - x1 and
-y2 - y1 . We will store those values in temporary variables named ``dx`` and
-``dy`` and print them.
+A logical first step in the computation is to find the differences
+x\ :sub:`2`\ - x\ :sub:`1`\ and y\ :sub:`2`\ - y\ :sub:`1`\ .  We will store
+those values in temporary variables named ``dx`` and ``dy`` and print them.
 
 .. sourcecode:: python
     
@@ -238,9 +232,7 @@ The key aspects of the process are:
    but only if it does not make the program difficult to read.
 
 
-.. index::
-    single: composition
-    single: function composition
+.. index:: composition, function composition
 
 Composition
 -----------
@@ -292,8 +284,7 @@ composing the function calls:
         return area(distance(xc, yc, xp, yp))
 
 
-.. index::
-    single: boolean function
+.. index:: boolean function
 
 Boolean functions
 -----------------
@@ -424,8 +415,8 @@ few pointers will be helpful already:
 Triple quoted strings
 ---------------------
 
-In addition to the single and double quoted strings we first saw in Chapter 2,
-Python also has *triple quoted strings*:
+In addition to the single and double quoted strings we first saw in
+:ref:`values_n_types`, Python also has *triple quoted strings*:
 
 .. sourcecode:: python
     
@@ -457,9 +448,7 @@ Finally, triple quoted strings can span multiple lines:
     >>>
 
 
-.. index::
-    single: unit testing
-    single: doctest
+.. index:: unit testing, doctest
 
 Unit testing with ``doctest``
 -----------------------------
@@ -477,8 +466,8 @@ function or script. They consist of sample interpreter sessions with a series
 of inputs to a Python prompt followed by the expected output from the Python
 interpreter.
 
-The ``doctest`` module automatically runs any statement begining with >>> 
-and compares the following line with the output from the interpreter.
+The ``doctest`` module automatically runs any statement begining with >>> and
+compares the following line with the output from the interpreter.
 
 To see how this works, put the following in a script named ``myfunctions.py``:
 
@@ -719,8 +708,12 @@ doctests for your new function pass.
    ``intercept`` should pass the doctests above.
 #. Write a function called ``is_even(n)`` that takes an integer as an argument
    and returns ``True`` if the argument is an **even number** and ``False`` if
-   it is **odd**. Add your own doctests to this function.
-#. Now write the function ``is_odd(n)`` that returns ``True`` when ``n`` is odd    and ``False`` otherwise. Include doctests for this function as you write it. 
+   it is **odd**.
+   
+   Add your own doctests to this function.
+#. Now write the function ``is_odd(n)`` that returns ``True`` when ``n`` is odd
+   and ``False`` otherwise. Include doctests for this function as you write it. 
+
    Finally, modify it so that it uses a call to ``is_even`` to determine if its 
    argument is an odd integer.
 #.
@@ -783,7 +776,7 @@ doctests for your new function pass.
 
    Write a body for the function definition of ``f2c`` designed to return the
    integer value of the nearest degree Celsius for given tempurature in
-   Fahrenheit. ( *hint:* you may want to make use of the built-in function,
+   Fahrenheit. (*hint:* you may want to make use of the built-in function,
    ``round``. Try printing ``round.__doc__`` in a Python shell and
    experimenting with round until you are comfortable with how it works.)
 #.

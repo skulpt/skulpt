@@ -1,12 +1,11 @@
 Iteration
 =========
 
+
+.. index:: iteration, assignment, assignment statement, multiple assignment
+
 .. index::
-    single: iteration
-    single: assignment
-    single: assignment statement
     single: statement; assignment
-    single: multiple assignment
     single: assignment; multiple 
 
 Multiple assignment
@@ -30,7 +29,7 @@ which is why both outputs appear on the same line.
 
 Here is what **multiple assignment** looks like in a state diagram:
 
-.. image:: illustrations/assign2.png
+.. image:: illustrations/mult_assign.svg
    :alt: Multiple assignment 
 
 With multiple assignment it is especially important to distinguish between an
@@ -94,15 +93,8 @@ Updating a variable by adding 1 is called an **increment**; subtracting 1 is
 called a **decrement**.
 
 
-.. index::
-    single: while
-    single: while statement
-    single: while loop
-    single: iteration
-    single: loop
-    single: loop body
-    single: infinite loop
-    single: condition
+.. index:: while, while statement, while loop, iteration, loop, loop body,
+           infinite loop, condition
 
 The ``while`` statement
 -----------------------
@@ -188,10 +180,7 @@ this program terminates for *all* values of ``n``. So far, no one has been able
 to prove it *or* disprove it!
 
 
-.. index::
-    single: program tracing
-    single: hand trace
-    single: tracing a program
+.. index:: program tracing, hand trace, tracing a program
 
 Tracing a program
 -----------------
@@ -213,10 +202,10 @@ To keep track of all this as you hand trace a program, make a column heading on
 a piece of paper for each variable created as the program runs and another one
 for output. Our trace so far would look something like this::
     
-      n               output
-      --              ------
-      3               3
-      10
+    n               output
+    --              ------
+    3               3
+    10
 
 Since ``10 != 1`` evaluates to ``True``, the loop body is again executed,
 and 10 is printed. ``10 % 2 == 0`` is true, so the ``if`` branch is
@@ -237,8 +226,8 @@ Tracing can be a bit tedious and error prone (that's why we get computers to do
 this stuff in the first place!), but it is an essential skill for a programmer
 to have. From this trace we can learn a lot about the way our code works. We
 can observe that as soon as n becomes a power of 2, for example, the program
-will require log 2 (n) executions of the loop body to complete. We can also see
-that the final 1 will not be printed as output.
+will require log\ :sub:`2`\ (n) executions of the loop body to complete. We can
+also see that the final 1 will not be printed as output.
 
 
 Counting digits

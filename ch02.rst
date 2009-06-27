@@ -4,12 +4,14 @@ Variables, expressions and statements
 
 .. index:: value, type, string, integer, int, float
 
+.. _values_n_types:
+
 Values and types
 ----------------
 
-A **value** is one of the fundamental things---like a letter or a number---that
-a program manipulates. The values we have seen so far are ``2`` (the result
-when we added ``1 + 1``), and ``"Hello, World!"``.
+A **value** is one of the fundamental things --- like a letter or a number ---
+that a program manipulates. The values we have seen so far are ``2`` (the
+result when we added ``1 + 1``), and ``"Hello, World!"``.
 
 These values belong to different **types**: ``2`` is an *integer*, and
 ``"Hello, World!"`` is a *string*, so-called because it contains a string of
@@ -120,7 +122,7 @@ diagram** because it shows what state each of the variables is in (think of it
 as the variable's state of mind). This diagram shows the result of the
 assignment statements:
 
-.. image:: illustrations/state2.png
+.. image:: illustrations/state.svg
    :alt: State diagram 
 
 The print statement also works with variables.

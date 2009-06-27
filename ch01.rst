@@ -291,13 +291,15 @@ molecules. And most importantly:
 
 Formal languages tend to have strict rules about syntax. For example, ``3+3=6``
 is a syntactically correct mathematical statement, but ``3=+6$`` is not.
-``H 2 O`` is a syntactically correct chemical name, but ``2 Zz`` is not.
+H\ :sub:`2`\ O is a syntactically correct chemical name, but :sub:`2`\ Zz is
+not.
 
 Syntax rules come in two flavors, pertaining to **tokens** and structure.
 Tokens are the basic elements of the language, such as words, numbers, and
 chemical elements. One of the problems with ``3=+6$`` is that ``$`` is not a
-legal token in mathematics (at least as far as we know). Similarly, ``2 Zz``
-is not legal because there is no element with the abbreviation ``Zz``.
+legal token in mathematics (at least as far as we know). Similarly,
+:sub:`2`\ Zz is not legal because there is no element with the abbreviation
+``Zz``.
 
 The second type of syntax rule pertains to the structure of a statement--- that
 is, the way the tokens are arranged. The statement ``3=+6$`` is structurally
