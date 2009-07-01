@@ -539,8 +539,8 @@ Exercises
    valid Python syntax.
 #. Type `print 'hello'`. Python executes this statement, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
-   used to enclose the string are not part of the output.  Now type
-   ``print 'hello'`` and describe and explain your result.
+   used to enclose the string are not part of the output.  Now type ``"hello"``
+   and describe and explain your result.
 #. Type ``print cheese`` without the quotation marks. The output will look
    something like this::
 

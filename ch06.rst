@@ -318,10 +318,8 @@ There are also abbreviations for ``-=``, ``*=``, ``/=``, and ``%=``:
     1
 
 
-.. index:: table, logarithm, Intel, Pentium
-
-.. index::
-    single: escape sequence
+.. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
+           cursor
 
 Tables
 ------
@@ -353,7 +351,7 @@ left column and 2 raised to the power of that value in the right column:
         print x, '\t', 2**x
         x += 1
 
-The string ``'\t'`` represents a **tab** character. The backslash character in
+The string ``'\t'`` represents a **tab character**. The backslash character in
 ``'\t'`` indicates the beginning of an **escape sequence**.  Escape sequences
 are used to represent invisible characters like tabs and newlines. The sequence
 ``\n`` represents a **newline**.
@@ -388,8 +386,7 @@ Because of the tab characters between the columns, the position of the second
 column does not depend on the number of digits in the first column.
 
 
-.. index::
-    single: two-dimensional table
+.. index:: two-dimensional table
 
 Two-dimensional tables
 ----------------------
@@ -405,14 +402,14 @@ one line:
     
     i = 1
     while i <= 6:
-        print 2*i, '   ',
+        print 2 * i, '   ',
         i += 1
     print
 
 The first line initializes a variable named ``i``, which acts as a counter or
 **loop variable**. As the loop executes, the value of ``i`` increases from 1 to
 6. When ``i`` is 7, the loop terminates. Each time through the loop, it
-displays the value of ``2*i``, followed by three spaces.
+displays the value of ``2 * i``, followed by three spaces.
 
 Again, the comma in the ``print`` statement suppresses the newline.  After the
 loop completes, the second ``print`` statement starts a new line.
@@ -424,10 +421,7 @@ The output of the program is::
 So far, so good. The next step is to **encapsulate** and **generalize**.
 
 
-.. index::
-    single: encapsulation
-    single: generalization
-    single: program development
+.. index:: encapsulation, generalization, program development
 
 Encapsulation and generalization
 --------------------------------
@@ -449,7 +443,7 @@ multiples of ``n``:
     def print_multiples(n):
         i = 1
         while i <= 6:
-            print n*i, '\t',
+            print n * i, '\t',
             i += 1
         print
 
@@ -477,9 +471,8 @@ can use another loop:
         print_multiples(i)
         i += 1
 
-
-Notice how similar this loop is to the one inside ``print_multiples``.
-All we did was replace the ``print`` statement with a function call.
+Notice how similar this loop is to the one inside ``print_multiples``.  All we
+did was replace the ``print`` statement with a function call.
 
 The output of this program is a multiplication table::
 
@@ -490,6 +483,8 @@ The output of this program is a multiplication table::
     5      10     15     20     25     30
     6      12     18     24     30     36
 
+
+.. index:: development plan
 
 More encapsulation
 ------------------
@@ -516,7 +511,7 @@ design as you go along.
 
 .. index::
     single: local variable
-    single: variable, local
+    single: variable; local
 
 Local variables
 ---------------
@@ -537,8 +532,8 @@ The stack diagram for this program shows that the two variables named ``i`` are
 not the same variable. They can refer to different values, and changing one
 does not affect the other.
 
-.. image:: illustrations/stack4.png
-   :alt: Stack 4 diagram 
+.. image:: illustrations/stack2.svg
+   :alt: Stack 2 diagram 
 
 The value of ``i`` in ``print_mult_table`` goes from 1 to 6. In the diagram it
 happens to be 3. The next time through the loop it will be 4. Each time through
