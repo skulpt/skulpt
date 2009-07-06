@@ -2,18 +2,20 @@ Strings
 =======
 
 
+.. index:: compound data types, character, bracket operator, index
+
 A compound data type
 --------------------
 
 So far we have seen five types: ``int``, ``float``, ``bool``, ``NoneType`` and
 ``str``.  Strings are qualitatively different from the other four because they
-are made up of smaller pieces --- characters.
+are made up of smaller pieces --- **characters**.
 
 Types that comprise smaller pieces are called **compound data types**.
 Depending on what we are doing, we may want to treat a compound data type as a
 single thing, or we may want to access its parts. This ambiguity is useful.
 
-The bracket operator selects a single character from a string:
+The **bracket operator** selects a single character from a string:
 
 .. sourcecode:: python
     
@@ -49,6 +51,13 @@ of an ordered set, in this case the set of characters in the string. The index
 expression.
 
 
+.. index::
+    single: len function
+    single: function; len
+    single: runtime error
+    single: negative index
+    single: index; negative
+
 Length
 ------
 
@@ -79,10 +88,12 @@ numbered 0 to 5. To get the last character, we have to subtract 1 from
     length = len(fruit)
     last = fruit[length-1]
 
-Alternatively, we can use negative indices, which count backward from the end
-of the string. The expression ``fruit[-1]`` yields the last letter,
+Alternatively, we can use **negative indices**, which count backward from the
+end of the string. The expression ``fruit[-1]`` yields the last letter,
 ``fruit[-2]`` yields the second to last, and so on.
 
+
+.. index:: traversal, for loop
 
 Traversal and the ``for`` loop
 ------------------------------
@@ -107,7 +118,7 @@ executed. The last character accessed is the one with the index
 ``len(fruit)-1``, which is the last character in the string.
 
 Using an index to traverse a set of values is so common that Python provides an
-alternative, simpler syntax---the ``for`` loop:
+alternative, simpler syntax --- the ``for`` loop:
 
 .. sourcecode:: python
     
