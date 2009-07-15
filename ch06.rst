@@ -237,6 +237,8 @@ will require log\ :sub:`2`\ (n) executions of the loop body to complete. We can
 also see that the final 1 will not be printed as output.
 
 
+.. _counting:
+
 Counting digits
 ---------------
 

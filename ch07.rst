@@ -100,7 +100,11 @@ end of the string. The expression ``fruit[-1]`` yields the last letter,
 ``fruit[-2]`` yields the second to last, and so on.
 
 
-.. index:: traversal, for loop
+.. index:: traversal, for loop, concatenation, abecedarian series
+
+.. index::
+    single: McCloskey, Robert
+    single: Make Way for Ducklings    
 
 Traversal and the ``for`` loop
 ------------------------------
@@ -165,6 +169,8 @@ Of course, that's not quite right because Ouack and Quack are misspelled.
 You'll fix this as an exercise below.
 
 
+.. index:: slice, string slice
+
 String slices
 -------------
 
@@ -204,6 +210,8 @@ end of the string. Thus:
 What do you think ``s[:]`` means?
 
 
+.. index:: string comparison, comparison of strings
+
 String comparison
 -----------------
 
@@ -238,6 +246,8 @@ format, such as all lowercase, before performing the comparison. A more
 difficult problem is making the program realize that zebras are not fruit.
 
 
+.. index:: mutable, immutable, runtime error
+
 Strings are immutable
 ---------------------
 
@@ -265,6 +275,11 @@ best you can do is create a new string that is a variation on the original:
 The solution here is to concatenate a new first letter onto a slice of
 ``greeting``. This operation has no effect on the original string.
 
+
+.. index::
+    single: in
+    single: in operator
+    single: operator; in
 
 The ``in`` operator
 -------------------
@@ -307,6 +322,9 @@ write a function that removes all the vowels from a string:
 Test this function to confirm that it does what we wanted it to do.
 
 
+.. index:: traversal, eureka traversal, pattern of computation,
+           computation pattern
+
 A ``find`` function
 -------------------
 
@@ -338,11 +356,14 @@ This pattern of computation is sometimes called a eureka traversal because as
 soon as we find what we are looking for, we can cry Eureka!  and stop looking.
 
 
+.. index:: counting pattern
+
 Looping and counting
 --------------------
 
 The following program counts the number of times the letter ``a`` appears in a
-string, and is another example of the counter pattern introduced in chapter 6:
+string, and is another example of the counter pattern introduced in
+:ref:`counting`:
 
 .. sourcecode:: python
     
@@ -353,6 +374,8 @@ string, and is another example of the counter pattern introduced in chapter 6:
             count += 1
     print count
 
+
+.. index:: optional parameter, default value
 
 Optional parameters
 -------------------
@@ -411,6 +434,9 @@ beginning of the string instead of the end. Note that we needed to check for a
 lower bound for ``index`` in the while loop as well as an upper bound to
 accomodate this change.
 
+
+.. index:: module, string module, dir function, dot notation, function type,
+           docstring
 
 The ``string`` module
 ---------------------
@@ -519,6 +545,9 @@ In this example, the search fails because the letter *b* does not appear in the
 index range from ``1`` to ``2`` (not including ``2``).
 
 
+.. index:: character classification, uppercase, lowercase, dot notation,
+           whitespace, string module, Python Library Reference
+
 Character classification
 ------------------------
 
@@ -579,6 +608,8 @@ intended to be a reference manual. On the other hand, the *Python Library
 Reference* is. Along with a wealth of other documentation, it's available from
 the Python website, `http://www.python.org <http://www.python.org>`__.
 
+
+.. index:: string formating, operations on strings
 
 String formatting
 -----------------
@@ -713,7 +744,7 @@ Glossary
     slice
         A part of a string (substring) specified by a range of indices. More
         generally, a subsequence of any sequence type in Python can be created
-        using the slice operator (`` *sequence*[ *start*: *stop*]``).
+        using the slice operator (``sequence[start:stop]``).
 
     immutable
         A compound data types whose elements can not be assigned new values.
