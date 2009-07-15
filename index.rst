@@ -9,6 +9,7 @@ Learning with Python 2nd Edition
 
 by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 
+* `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__
 * `Preface <preface.html>`__
 * `Contributor List <contrib.html>`__
@@ -26,11 +27,13 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 12 <ch12.html>`__ *Dictionaries*
 * `Chapter 13 <ch13.html>`__ *Classes and objects*
 * `Appendix A <app_a.html>`__ *Configuring Ubuntu for Python Development*
+* `GNU Free Document License <fdl-1.3.html>`__ 
 
 .. toctree::
     :maxdepth: 1
     :hidden:
 
+    copyright.rst
     foreword.rst
     preface.rst
     contrib.rst
@@ -59,5 +62,6 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     :hidden:
 
     app_a.rst
+    fdl-1.3.rst
 
 * :ref:`search`
