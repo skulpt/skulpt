@@ -605,8 +605,8 @@ Exercises
    to the version of ``catch.py`` in section 8.8 so that the program displays
    this message when the ball is caught?
 #. Trace the flow of execution in the final version of ``catch.py`` when you
-   press the 'escape' key during the execution of ``play_round``. What happens
-   when you press this key? Why?
+   press the ``escape`` key during the execution of ``play_round``. What
+   happens when you press this key? Why?
 #. List the main body of the final version of ``catch.py``. Describe
    *in detail* what each line of code does. Which statement calls the function
    that starts the game?
