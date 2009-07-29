@@ -377,6 +377,8 @@ string, and is another example of the counter pattern introduced in
 
 .. index:: optional parameter, default value
 
+.. _optional_parameters:
+
 Optional parameters
 -------------------
 
@@ -429,10 +431,10 @@ backward:
             index += step 
         return -1
 
-Passing in a value of ``-1`` for ``step`` will make it search toward the
-beginning of the string instead of the end. Note that we needed to check for a
-lower bound for ``index`` in the while loop as well as an upper bound to
-accomodate this change.
+Passing in a value of ``len(strng)-1`` for start and ``-1`` for ``step`` will
+make it search toward the beginning of the string instead of the end. Note that
+we needed to check for a lower bound for ``index`` in the while loop as well as
+an upper bound to accomodate this change.
 
 
 .. index:: module, string module, dir function, dot notation, function type,
@@ -803,9 +805,9 @@ Exercises
    in a function named ``count_letters``, and generalize it so that it accepts
    the string and the letter as arguments.
 #. Now rewrite the ``count_letters`` function so that instead of traversing the 
-   string, it repeatedly calls ``find`` (the version from section 8.10), with
-   the optional third parameter to locate new occurences of the letter being
-   counted.
+   string, it repeatedly calls ``find`` (the version from
+   :ref:`optional_parameters`), with the optional third parameter to locate
+   new occurences of the letter being counted.
 #. Which version of ``is_lower`` do you think will be fastest? Can you think of 
    other reasons besides speed to prefer one version or the other?
 #. Create a file named ``stringtools.py`` and put the following in it:

@@ -284,7 +284,7 @@ The dot operator can also be used to access built-in methods of list objects:
     >>>
 
 ``append`` is a list method which adds the argument passed to it to the end of
-the list. Continuing with this example, we several other list methods:
+the list. Continuing with this example, we show several other list methods:
 
 .. sourcecode:: python
     
@@ -541,7 +541,7 @@ located:
     
     >>> wordsfile = open('/usr/share/dict/words', 'r')
     >>> wordlist = wordsfile.readlines()
-    >>> print wordlist[:5]
+    >>> print wordlist[:6]
     ['\n', 'A\n', "A's\n", 'AOL\n', "AOL's\n", 'Aachen\n']
 
 This example opens a file named ``words`` that resides in a directory named
@@ -589,7 +589,7 @@ argument and returns its character representation:
     >>>
 
 The following program, ``countletters.py`` counts the number of times each
-character occurs in the book `Alice in Wonderland <resources/ch10/alice_in_wonderland.txt>`__:
+character occurs in the book `Alice in Wonderland <./resources/ch10/alice_in_wonderland.txt>`__:
 
 .. sourcecode:: python
     

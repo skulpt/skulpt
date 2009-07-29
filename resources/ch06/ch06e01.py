@@ -1,1 +1,0 @@
-print 'produces\nthis\noutput.'
