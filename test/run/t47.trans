@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Function_(decorators=null, name=test, argnames=y,x, defaults=Const_(value='K'),Const_(value='Z'), varargs=false, kwargs=false, doc=null, code=Stmt(nodes=Print(nodes=Add(left=Name(name=x), right=Name(name=y)), dest=null, nl=true))),Discard(expr=CallFunc(node=Name(name=test), args=Const_(value='O'), star_args=null, dstar_args=null))))

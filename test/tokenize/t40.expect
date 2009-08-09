@@ -1,0 +1,6 @@
+File "test/tokenize/t40.py", line 1
+a = r'''this is some
+more stuff
+
+    ^
+TokenError: EOF in multi-line string

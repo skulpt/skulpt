@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=Subscript(expr=CallFunc(node=Getattr(expr=Const_(value="X-OK-Y"), attrname=split), args=Const_(value="-"), star_args=null, dstar_args=null), flags=OP_APPLY, subs=Const_(value=1)), dest=null, nl=true)))

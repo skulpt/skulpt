@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=Mul(left=Const_(value=2), right=Power(left=Const_(value=3), right=Const_(value=2))), dest=null, nl=true)))

@@ -1,0 +1,34 @@
+file_input
+  stmt
+    simple_stmt
+      small_stmt
+        print_stmt
+          T_NAME: "print"
+          test
+            or_test
+              and_test
+                not_test
+                  comparison
+                    expr
+                      xor_expr
+                        and_expr
+                          shift_expr
+                            arith_expr
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_NAME: "x"
+                              T_PLUS: "+"
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_NUMBER: "2"
+                                T_STAR: "*"
+                                factor
+                                  power
+                                    atom
+                                      T_NUMBER: "3"
+      T_NEWLINE: "\n"
+  T_ENDMARKER: ""

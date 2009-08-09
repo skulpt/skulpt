@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=Compare(expr=Const_(value=1), ops=in,Dict(items=Const_(value=1),Const_(value=2))), dest=null, nl=true)))

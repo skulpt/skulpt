@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=z, flags=OP_ASSIGN), expr=Const_(value=0)),For_(assign=Name(name=x), list=List(nodes=Const_(value=1),Const_(value=2),Const_(value=3)), body=Stmt(nodes=AugAssign(node=Name(name=z), op=+=, expr=Name(name=x))), else_=null),Print(nodes=Name(name=z), dest=null, nl=true)))

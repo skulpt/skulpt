@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Name(name=ord), args=CallFunc(node=Name(name=chr), args=Const_(value=128), star_args=null, dstar_args=null), star_args=null, dstar_args=null), dest=null, nl=true)))

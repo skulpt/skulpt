@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="turtle_green.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_green.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.2347438"
+     inkscape:cx="405.35974"
+     inkscape:cy="545.58427"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1192"
+     inkscape:window-height="1024"
+     inkscape:window-x="129"
+     inkscape:window-y="25" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="arc"
+       style="fill:#63904b;fill-opacity:1"
+       id="path2387"
+       sodipodi:cx="527.14288"
+       sodipodi:cy="325.21933"
+       sodipodi:rx="55.714287"
+       sodipodi:ry="90"
+       d="M 582.85717,325.21933 A 55.714287,90 0 1 1 471.4286,325.21933 A 55.714287,90 0 1 1 582.85717,325.21933 z"
+       transform="matrix(1,0,0,0.7777778,-108.57143,26.556673)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <rect
+       style="fill:#63904b;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3161"
+       width="77.14286"
+       height="134.28572"
+       x="-142.26715"
+       y="392.12665"
+       ry="37.142857"
+       transform="matrix(0.7071068,-0.7071068,0.7071068,0.7071068,0,0)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <rect
+       style="fill:#63904b;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3159"
+       width="77.14286"
+       height="134.28572"
+       x="-100.04282"
+       y="818.61304"
+       ry="37.142857"
+       transform="matrix(0.7071068,-0.7071068,0.7071068,0.7071068,0,0)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <rect
+       style="fill:#63904b;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3163"
+       width="77.14286"
+       height="134.28572"
+       x="655.05347"
+       y="-197.80254"
+       ry="37.142857"
+       transform="matrix(0.7071068,0.7071068,-0.7071068,0.7071068,0,0)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <rect
+       style="fill:#63904b;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3165"
+       width="77.14286"
+       height="134.28572"
+       x="612.82916"
+       y="228.68391"
+       ry="37.142857"
+       transform="matrix(0.7071068,0.7071068,-0.7071068,0.7071068,0,0)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       style="fill:#63904b;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       id="path3189"
+       d="M 484.76739,682.17097 C 476.57015,690.96993 470.88195,701.12521 464.81267,711.04072 C 459.44199,719.60175 455.59567,728.81594 449.17648,736.86487 C 356.7776,793.51739 374.45812,754.82792 397.92558,764.1697 L 346.11707,781.86085 C 508.25558,700.60354 359.39825,775.21006 353.5578,778.11807 C 352.2866,778.75101 356.0944,776.83606 357.2842,776.09529 C 358.48371,775.34847 359.43411,774.30863 360.71139,773.66419 C 381.73366,763.05743 402.99147,752.79978 424.13151,742.36757 C 447.85428,731.05371 413.31613,747.49993 371.87861,768.44138 C 370.75966,769.00687 374.67748,766.88451 375.81008,766.33948 C 380.02983,764.3088 377.97765,765.33589 381.70861,762.60743 C 382.78305,761.8217 383.98594,761.17599 385.12461,760.46026 C 392.83324,753.11782 397.02648,744.04813 402.066,735.24955 C 408.31143,725.56922 413.36788,715.39254 420.31802,706.05762 L 484.76739,682.17097 z"
+       sodipodi:nodetypes="cccccssscssscccc"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#63904b;fill-opacity:1;stroke:#000000;stroke-width:8;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path3217"
+       sodipodi:cx="604.28571"
+       sodipodi:cy="595.2193"
+       sodipodi:rx="170"
+       sodipodi:ry="211.42857"
+       d="M 774.28571,595.2193 A 170,211.42857 0 1 1 434.28571,595.2193 A 170,211.42857 0 1 1 774.28571,595.2193 z"
+       transform="translate(-186.85966,-69.97294)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#abc41f;stroke-width:28.86964226;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 418.3824,336.08609 L 418.3824,713.78979"
+       id="path3215"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:8;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path2385"
+       sodipodi:cx="604.28571"
+       sodipodi:cy="595.2193"
+       sodipodi:rx="170"
+       sodipodi:ry="211.42857"
+       d="M 774.28571,595.2193 A 170,211.42857 0 1 1 434.28571,595.2193 A 170,211.42857 0 1 1 774.28571,595.2193 z"
+       transform="translate(-186.85966,-69.97294)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;fill-opacity:1;stroke:#b4bc0a;stroke-width:32.11426926;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3219"
+       sodipodi:cx="604.28571"
+       sodipodi:cy="595.2193"
+       sodipodi:rx="170"
+       sodipodi:ry="211.42857"
+       d="M 774.28571,595.2193 A 170,211.42857 0 1 1 434.28571,595.2193 A 170,211.42857 0 1 1 774.28571,595.2193 z"
+       transform="matrix(0.9053503,0,0,0.9130766,-130.0491,-18.387727)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#abc41f;stroke-width:29.96955108999999950;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 275.34555,453.06282 L 555.59605,449.79284"
+       id="path3221"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#abc41f;stroke-width:29.92419624;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 277.76626,598.85097 L 556.41488,595.56311"
+       id="path3225"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3229"
+       sodipodi:cx="393.60391"
+       sodipodi:cy="261.91483"
+       sodipodi:rx="6.4790769"
+       sodipodi:ry="6.4790769"
+       d="M 400.08299,261.91483 A 6.4790769,6.4790769 0 1 1 387.12484,261.91483 A 6.4790769,6.4790769 0 1 1 400.08299,261.91483 z"
+       transform="matrix(2.5,0,0,2.5,-592.49146,-392.87225)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3231"
+       sodipodi:cx="393.60391"
+       sodipodi:cy="261.91483"
+       sodipodi:rx="6.4790769"
+       sodipodi:ry="6.4790769"
+       d="M 400.08299,261.91483 A 6.4790769,6.4790769 0 1 1 387.12484,261.91483 A 6.4790769,6.4790769 0 1 1 400.08299,261.91483 z"
+       transform="matrix(2.5,0,0,2.5,-537.34703,-392.87225)"
+       inkscape:export-filename="/home/sgraham/skulpt/turtle/turtle_small.png"
+       inkscape:export-xdpi="10.063671"
+       inkscape:export-ydpi="10.063671" />
+  </g>
+</svg>

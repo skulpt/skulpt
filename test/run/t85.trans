@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Getattr(expr=Const_(value="234"), attrname=replace), args=Const_(value="\r\n"),Const_(value="\n"), star_args=null, dstar_args=null), dest=null, nl=true)))

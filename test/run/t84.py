@@ -1,0 +1,1 @@
+print "..bbb..".replace("..", "X")

@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=If_(tests=Compare(expr=Name(name=None), ops=is,Name(name=None)),Stmt(nodes=Print(nodes=Const_(value="OK"), dest=null, nl=true)), else_=null)))

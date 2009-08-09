@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=Subscript(expr=Dict(items=Tuple(nodes=Const_(value=1),Const_(value=3)),Const_(value='OK')), flags=OP_APPLY, subs=Tuple(nodes=Const_(value=1),Const_(value=3))), dest=null, nl=true)))

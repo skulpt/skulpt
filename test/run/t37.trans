@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=For_(assign=Name(name=k), list=Dict(items=Const_(value='OK'),Const_(value=0)), body=Stmt(nodes=Print(nodes=Name(name=k), dest=null, nl=true)), else_=null)))

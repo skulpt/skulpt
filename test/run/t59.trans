@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Name(name=len), args=Dict(items=Const_(value='a'),Const_(value=1),Const_(value='b'),Const_(value=2)), star_args=null, dstar_args=null), dest=null, nl=true)))

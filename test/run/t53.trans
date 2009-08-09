@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Print(nodes=Subscript(expr=Const_(value="xOK"), flags=OP_APPLY, subs=Sliceobj(nodes=Const_(value=1),null)), dest=null, nl=true)))

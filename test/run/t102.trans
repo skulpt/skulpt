@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=For_(assign=Name(name=i), list=Const_(value="skulpt"), body=Stmt(nodes=Print(nodes=Name(name=i), dest=null, nl=true)), else_=null)))

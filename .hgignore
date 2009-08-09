@@ -1,0 +1,9 @@
+syntax: glob
+tdop/*
+tags
+rhinobin/*
+tmp/*
+*.pyc
+.d8_history
+*.swp
+dist/*

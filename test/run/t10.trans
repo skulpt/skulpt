@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Assign(nodes=AssTuple(nodes=AssName(name=a, flags=OP_ASSIGN),AssName(name=b, flags=OP_ASSIGN)), expr=Tuple(nodes=Const_(value=1),Const_(value=2))),Print(nodes=Add(left=Name(name=a), right=Name(name=b)), dest=null, nl=true)))

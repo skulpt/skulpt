@@ -1,0 +1,1 @@
+Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=x, flags=OP_ASSIGN), expr=List(nodes=)),Discard(expr=CallFunc(node=Getattr(expr=Name(name=x), attrname=append), args=Name(name=x), star_args=null, dstar_args=null)),Print(nodes=Subscript(expr=Dict(items=Name(name=x),Const_(value='OK')), flags=OP_APPLY, subs=Name(name=x)), dest=null, nl=true)))

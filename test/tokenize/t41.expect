@@ -1,0 +1,3 @@
+T_NAME       "print"       (1, 0) (1, 5)
+T_STRING     "\"\"\"wee wa (1, 6) (3, 10)
+T_ENDMARKER  ""            (4, 0) (4, 0)
