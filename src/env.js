@@ -257,8 +257,6 @@ function str(x)
         ret = x.__str__();
     else if (x.__repr__ !== undefined)
         ret = x.__repr__();
-    else
-        ret = "<" + x.constructor.name + " instance>";
     return new Str$(ret);
 }
 
@@ -269,8 +267,6 @@ function repr(x)
         ret = x.toString();
     else if (x.__repr__ !== undefined)
         ret = x.__repr__();
-    else
-        ret = "<" + x.constructor.name + " instance>";
     return new Str$(ret);
 }
 
@@ -321,4 +317,8 @@ object.prototype.__setattr__ = function(k,v)
 object.prototype.__getattr__ = function(k)
 {
     return this.__dict__[k];
+};
+object.prototype.__repr__ = function(k)
+{
+    return new Str$("<__main__." + this.__name__ + " instance>");
 };

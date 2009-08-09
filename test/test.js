@@ -218,13 +218,17 @@ function testInteractive(name)
         //print("LINE:"+lines[i]);
         js = ic.evalLine(lines[i] + "\n");
         //print("JS now:'"+js+"'");
-        if (js !== false) break;
+        if (js !== false)
+        {
+            try {
+                var ret = eval(js);
+                if (ret !== undefined && ret.__repr__ !== undefined)
+                    got += ret.__repr__().v + "\n";
+            }
+            catch (e) { got += "EXCEPTION: " + e.message + "\n" + e.stack + "\n"; }
+            ic = new Skulpt.InteractiveContext();
+        }
     }
-
-    try {
-        eval(js);
-    }
-    catch (e) { got = "EXCEPTION: " + e.message + "\n" + e.stack + "\n"; }
 
     if (expect !== got)
     {
@@ -278,7 +282,7 @@ function main()
     }
     print(sprintf("interactive: %d/%d", interactivepass, interactivepass + interactivefail));
 
-    quit(tokenizefail + parsefail + transformfail + runfail);
+    quit(tokenizefail + parsefail + transformfail + runfail + interactivefail);
 }
 
 main();

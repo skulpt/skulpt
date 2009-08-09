@@ -174,6 +174,9 @@ def regenruntests():
     for f in glob.glob("test/interactive/*.py"):
         p = Popen("python -i > %s.real" % f, shell=True, stdin=PIPE)
         p.communicate(open(f).read() + "\004")
+        forcename = f + ".real.force"
+        if os.path.exists(forcename):
+            os.system("cp %s %s.real" % (forcename, f))
 
 
 def upload():

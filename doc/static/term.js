@@ -115,9 +115,9 @@ function initTerminal(w, h)
                 evaled = true;
                 //console.log(js);
                 var evret = eval.call(window, js);
-                if (evret !== undefined)
+                if (evret !== undefined && evret.__repr__ !== undefined)
                 {
-                    got += new Str$(evret).v + "\n";
+                    got += evret.__repr__().v + "\n";
                 }
             }
         }

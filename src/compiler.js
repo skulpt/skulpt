@@ -671,11 +671,16 @@ Class_: function(ast, o)
                 this.visit(ast.bases[0], o);
                 o.push("();");
             }
+            o.push(ast.name);
+            o.push(".prototype.__name__='");
+            o.push(ast.name);
+            o.push("';");
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
                 this.visit(ast.code.nodes[i], o, {klass:ast.name});
                 o.push("\n");
             }
+            o.push("undefined"); // no return in repl
         },
 
 Add: function(ast, o) { this.binopfunc(ast, o, "sk$add"); },
