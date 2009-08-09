@@ -201,10 +201,15 @@ function testRun(name)
 
 var interactivepass = 0;
 var interactivefail = 0;
+var interactivedisabled = 0;
 function testInteractive(name)
 {
     try { var input = read(name + ".py"); }
-    catch (e) { return; }
+    catch (e) {
+        try { read(name + ".py.disabled"); interactivedisabled += 1;}
+        catch (e) {}
+        return;
+    }
 
     var expect = read(name + ".py.real");
 
@@ -238,6 +243,7 @@ function testInteractive(name)
         print(got);
         print("-----\nWANTED:\n-----");
         print(expect);
+        interactivefail += 1;
     }
     else
     {
@@ -279,7 +285,7 @@ function main()
     {
         testInteractive(sprintf("test/interactive/t%02d", i));
     }
-    print(sprintf("interactive: %d/%d", interactivepass, interactivepass + interactivefail));
+    print(sprintf("interactive: %d/%d (+%d disabled)", interactivepass, interactivepass + interactivefail, interactivedisabled));
 
     quit(tokenizefail + parsefail + transformfail + runfail + interactivefail);
 }
