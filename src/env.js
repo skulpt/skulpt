@@ -161,31 +161,9 @@ function sk$in(lhs, rhs)
 
 function range(start, stop, step)
 {
-    var i;
-    if (!stop && !step)
-    {
-        stop = start;
-        start = 0;
-    }
-    start = start || 0;
-    stop = stop || 0;
-    step = step || 1;
-    // todo; detect (?) 170 and use yield instead
     var ret = [];
-    if (stop < start)
-    {
-        for (i = start; i >= stop; i += step)
-        {
-            ret.push(i);
-        }
-    }
-    else
-    {
-        for (i = start; i < stop; i += step)
-        {
-            ret.push(i);
-        }
-    }
+    var s = new Slice$(start, stop, step);
+    s.sssiter$(0, function(i) { ret.push(i); });
     return new List$(ret);
 }
 

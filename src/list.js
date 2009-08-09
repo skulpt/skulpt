@@ -52,10 +52,14 @@ List$.prototype.sort = function()
 List$.prototype.__setitem__ = function(index, value)
 {
     if (typeof index === "number")
+    {
+        if (index < 0) index = this.v.length + index;
+        if (index < 0 || index >= this.v.length) throw new IndexError("list assignment index out of range");
         this.v[index] = value;
+    }
     else if (index instanceof Slice$)
     {
-        var sss = index.getsss$(this);
+        var sss = index.indices(this);
         if (sss[2] === 1)
         {
             // can do non-same-size replaces here (no fancy steps)
@@ -84,7 +88,11 @@ List$.prototype.__setitem__ = function(index, value)
 List$.prototype.__getitem__ = function(index)
 {
     if (typeof index === "number")
+    {
+        if (index < 0) index = this.v.length + index;
+        if (index < 0 || index >= this.v.length) throw new IndexError("list index out of range");
         return this.v[index];
+    }
     else if (index instanceof Slice$)
     {
         var ret = [];

@@ -30,3 +30,4 @@ function IndentationError(msg, file, lnum, col, line) { return makeStdError(this
 function SyntaxError(msg, file, lnum, col, line) { return makeStdError(this, "SyntaxError", arguments); }
 function ValueError(msg, file, lnum, col, line) { return makeStdError(this, "ValueError", arguments); }
 function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "TypeError", arguments); }
+function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }

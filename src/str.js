@@ -58,12 +58,17 @@ Str$.prototype.re_escape$ = function(s)
 Str$.prototype.__getitem__ = function(index)
 {
     if (typeof index === "number")
+    {
+        if (index < 0) index = this.v.length + index;
+        if (index < 0 || index >= this.v.length) throw new IndexError("string index out of range");
         return new Str$(this.v[index]);
+    }
     else if (index instanceof Slice$)
     {
         var ret = '';
         index.sssiter$(this, function(i, wrt) {
-                ret += wrt.v[i];
+                if (i >= 0 && i < wrt.v.length)
+                    ret += wrt.v[i];
                 });
         return new Str$(ret);
     }

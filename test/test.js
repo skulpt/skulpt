@@ -260,13 +260,14 @@ function main()
     for (i = 0; i <= 200; ++i)
     {
         // todo; worth maintaining all the .trans files?
-        if (i > 112 && i < 144) continue;
+        if ((i > 112 && i < 144) || i >= 149) continue;
         testTransform(sprintf("test/run/t%02d", i));
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 147; ++i)
+    for (i = 0; i <= 200; ++i)
     {
+        if (i === 148) continue; // todo; __call__
         testRun(sprintf("test/run/t%02d", i));
     }
     print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
