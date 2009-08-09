@@ -124,9 +124,6 @@ List$.prototype.__delitem__ = function(index)
     return this;
 };
 
-List$.prototype.sa$ = function(name, value) { this[name] = value; }
-List$.prototype.ga$ = function(name) { return this[name]; }
-
 List$.prototype.__repr__ = function()
 {
     var asStrs = [];

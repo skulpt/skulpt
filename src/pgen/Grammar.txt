@@ -130,7 +130,7 @@ testlist: test (',' test)* [',']
 dictsetmaker: ( (test ':' test (comp_for | (',' test ':' test)* [','])) |
                 (test (comp_for | (',' test)* [','])) )
 
-classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
+classdef: 'class' NAME ['(' [testlist] ')'] ':' suite
 
 arglist: (argument ',')* (argument [',']
                          |'*' test (',' argument)* [',' '**' test] 
@@ -142,8 +142,5 @@ comp_for: 'for' exprlist 'in' testlist_safe [comp_iter]
 comp_if: 'if' old_test [comp_iter]
 
 testlist1: test (',' test)*
-
-# not used in grammar, but may appear in "node" passed from Parser to Compiler
-encoding_decl: NAME
 
 yield_expr: 'yield' [testlist]

@@ -732,7 +732,7 @@ Transformer.prototype.funcdef = function(nodelist)
 Transformer.prototype.com_bases = function(node)
 {
     var bases = [];
-    for (var i = 1; i < node.children.length; i += 2)
+    for (var i = 0; i < node.children.length; i += 2)
     {
         bases.push(this.dispatch(node.children[i]));
     }

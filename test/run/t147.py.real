@@ -1,4 +1,5 @@
-  File "test/run/t147.py", line 6
-    print "KO")
-              ^
-SyntaxError: invalid syntax
+at2
+at1
+at0
+OK
+at3

@@ -169,7 +169,12 @@ Getattr: function(ast, args)
                  print(JSON.stringify(ast.expr));
                  throw "todo;";
              }
-         }
+         },
+Name: function(ast, args)
+      {
+          // todo; might be too aggressive?
+          if (ast.name === args.origname) ast.name = "this";
+      }
 };
 
 //
@@ -477,7 +482,7 @@ Function_: function(ast, o, args)
                var inclass = args !== undefined;
                var argstart = inclass ? 1 : 0; // todo; staticmethod
 
-               if (inclass) o.push(args.klass + "$.prototype.");
+               if (inclass) o.push(args.klass + ".prototype.");
 
                o.push(ast.name); // todo; safeize?
                o.push("=function(");
@@ -506,6 +511,18 @@ Function_: function(ast, o, args)
                }
                this.visit(ast.code, o);
                o.push("};");
+               if (inclass)
+               {
+                   // for direct calls to base, like Base.__init__(self, ...)
+                   o.push(args.klass);
+                   o.push(".");
+                   o.push(ast.name);
+                   o.push("=function(){");
+                   o.push(args.klass);
+                   o.push(".prototype.");
+                   o.push(ast.name);
+                   o.push(".apply(arguments[0], Array.prototype.slice.call(arguments, 1));};");
+               }
            },
 
 Return_: function(ast, o)
@@ -644,17 +661,21 @@ ListComp: function(ast, o)
 Class_: function(ast, o)
         {
             //print(JSON.stringify(ast, null, 2));
-            o.push("var " + ast.name + "$=function(args){this.__init__.apply(this, args);};");
+            o.push("var " + ast.name + "=sk$makeClass();\n");
             if (ast.bases === null || ast.bases.length === 0)
-                o.push(ast.name + "$.prototype=new object();");
+                o.push(ast.name + ".prototype=new object();\n");
             else
-                throw "todo; bases";
+            {
+                if (ast.bases.length > 1) throw "todo; multiple bases";
+                o.push(ast.name + ".prototype=new ");
+                this.visit(ast.bases[0], o);
+                o.push("();");
+            }
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
                 this.visit(ast.code.nodes[i], o, {klass:ast.name});
-                //o.push("\n");
+                o.push("\n");
             }
-            o.push("function " + ast.name + "(){return new " + ast.name + "$(arguments);}");
         },
 
 Add: function(ast, o) { this.binopfunc(ast, o, "sk$add"); },

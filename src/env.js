@@ -59,11 +59,11 @@ function sk$add(self, other)
     {
         return self + other;
     }
-    else if (self.constructor === Str$ && other.constructor === Str$)
+    else if (self instanceof Str$ && other instanceof Str$)
     {
         return self.v + other.v;
     }
-    else if (self.constructor === List$ && other.constructor === List$)
+    else if (self instanceof List$ && other instanceof List$)
     {
         var ret = self.v.slice();
         for (var i = 0; i < other.v.length; ++i)
@@ -317,12 +317,27 @@ function ga$(o, attrname)
     return v;
 }
 
+function sk$makeClass()
+{
+    return function(args, doinit)
+    {
+        if (!(this instanceof arguments.callee))
+        {
+            return new arguments.callee(arguments, true);
+        }
+        if (doinit && this.__init__ !== undefined)
+            this.__init__.apply(this, args);
+        return this;
+    };
+}
+
 var object = function()
 {
     this.__dict__ = {};
-}
+};
 object.prototype.__setattr__ = function(k,v)
 {
+    //print("in __setattr__",k,v);
     this.__dict__[k] = v;
 };
 object.prototype.__getattr__ = function(k)
