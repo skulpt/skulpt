@@ -311,6 +311,8 @@ if (!Function.prototype.bind)
 function ga$(o, attrname)
 {
     var v = o[attrname];
+    if (v === undefined && o.__getattr__ !== undefined)
+        v = o.__getattr__(attrname);
     if (v instanceof Function) return v.bind(o);
     return v;
 }
@@ -322,4 +324,8 @@ var object = function()
 object.prototype.__setattr__ = function(k,v)
 {
     this.__dict__[k] = v;
+};
+object.prototype.__getattr__ = function(k)
+{
+    return this.__dict__[k];
 };

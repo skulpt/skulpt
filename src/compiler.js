@@ -142,6 +142,34 @@ Assign: function(ast, args)
 //
 var hRenameAccessesToSelf = {
 visit: genericVisit,
+AssAttr: function(ast, args)
+         {
+             var origname = args.origname;
+             if (ast.expr.nodeName === "Name")
+             {
+                 if (ast.expr.name === origname)
+                     ast.expr.name = "this";
+             }
+             else
+             {
+                 print(JSON.stringify(ast.expr));
+                 throw "todo;";
+             }
+         },
+Getattr: function(ast, args)
+         {
+             var origname = args.origname;
+             if (ast.expr.nodeName === "Name")
+             {
+                 if (ast.expr.name === origname)
+                     ast.expr.name = "this";
+             }
+             else
+             {
+                 print(JSON.stringify(ast.expr));
+                 throw "todo;";
+             }
+         }
 };
 
 //
@@ -278,7 +306,7 @@ AssAttr: function(ast, o, tmp)
              {
                  if (!tmp) throw "expecting tmp node to assign from";
                  this.visit(ast.expr, o);
-                 o.push(".sa$('" + ast.attrname + "',");
+                 o.push(".__setattr__('" + ast.attrname + "',");
                  o.push(tmp);
                  o.push(")");
              }
@@ -616,13 +644,17 @@ ListComp: function(ast, o)
 Class_: function(ast, o)
         {
             //print(JSON.stringify(ast, null, 2));
-            o.push("var " + ast.name + "$=function(args){this.__init__.apply(this, args);};\n");
+            o.push("var " + ast.name + "$=function(args){this.__init__.apply(this, args);};");
+            if (ast.bases === null || ast.bases.length === 0)
+                o.push(ast.name + "$.prototype=new object();");
+            else
+                throw "todo; bases";
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
                 this.visit(ast.code.nodes[i], o, {klass:ast.name});
-                o.push("\n");
+                //o.push("\n");
             }
-            o.push("function " + ast.name + "(){return new " + ast.name + "$(arguments);}\n");
+            o.push("function " + ast.name + "(){return new " + ast.name + "$(arguments);}");
         },
 
 Add: function(ast, o) { this.binopfunc(ast, o, "sk$add"); },
