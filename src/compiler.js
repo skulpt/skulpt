@@ -339,23 +339,11 @@ For_: function(ast, o)
           o.push("})");
       },
 
-Or: function(ast, o)
-    {
-        for (var i = 0; i < ast.nodes.length; ++i)
-        {
-            this.visit(ast.nodes[i], o);
-            if (i !== ast.nodes.length - 1) o.push("||");
-        }
-    },
-
-And: function(ast, o)
-    {
-        for (var i = 0; i < ast.nodes.length; ++i)
-        {
-            this.visit(ast.nodes[i], o);
-            if (i !== ast.nodes.length - 1) o.push("&&");
-        }
-    },
+Or: function(ast, o) { this.binopop(ast, o, "||"); },
+And: function(ast, o) { this.binopop(ast, o, "&&"); },
+Bitor: function(ast, o) { this.binopop(ast, o, "|"); },
+Bitxor: function(ast, o) { this.binopop(ast, o, "^"); },
+Bitand: function(ast, o) { this.binopop(ast, o, "&"); },
 
 simpleRemapOp: {
                     "==": "==",
@@ -601,7 +589,15 @@ binopfunc: function(ast, o, opstr)
            o.push(",");
            this.visit(ast.right, o);
            o.push(")");
-       }
+       },
+binopop: function(ast, o, opstr)
+         {
+             for (var i = 0; i < ast.nodes.length; ++i)
+             {
+                 this.visit(ast.nodes[i], o);
+                 if (i !== ast.nodes.length - 1) o.push(opstr);
+             }
+         }
 };
 
 
