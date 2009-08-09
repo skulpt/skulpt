@@ -314,3 +314,12 @@ function ga$(o, attrname)
     if (v instanceof Function) return v.bind(o);
     return v;
 }
+
+var object = function()
+{
+    this.__dict__ = {};
+}
+object.prototype.__setattr__ = function(k,v)
+{
+    this.__dict__[k] = v;
+};
