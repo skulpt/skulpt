@@ -752,7 +752,7 @@ Transformer.prototype.classdef = function(nodelist)
     }
     else
     {
-        bases = this.com_bases(nodelist.children[3]);
+        bases = this.com_bases(nodelist[3]);
     }
 
     // code for class

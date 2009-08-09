@@ -257,7 +257,7 @@ function main()
     }
     print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
 
-    for (i = 0; i <= 145; ++i)
+    for (i = 0; i <= 200; ++i)
     {
         // todo; worth maintaining all the .trans files?
         if (i > 112 && i < 144) continue;
