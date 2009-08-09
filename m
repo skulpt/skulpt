@@ -35,6 +35,14 @@ TestFiles = [
         "test/test.js"
         ]
 
+DebugFiles = [
+        'test/sprintf.js',
+        'test/tokname.js',
+        'gen/ast_debug.js',
+        "test/json2.js",
+        "test/uneval.js",
+        ]
+
 def isClean():
     out, err = Popen("hg status", shell=True, stdout=PIPE).communicate()
     return out == ""
@@ -175,10 +183,27 @@ def upload():
         print "Couldn't upload."
         raise SystemExit()
 
+def debug(fn):
+    """pretty print the compilation of fn, and then start a debug console with
+    the environment loaded."""
+    f = open("support/tmp/compiledump.js", "w")
+    f.write("""
+var input = read('%s');
+print("sk$output = print;");
+print(Skulpt.compileStr('%s', input));
+    """ % (fn, fn))
+    f.close()
+    os.system("support/d8/d8 --trace_exception %s test/footer_test.js support/tmp/compiledump.js > support/tmp/dump.js" % (
+        ' '.join(getFileList('test'))))
+    os.system("support/js-beautify/bin/beautify_js support/tmp/dump.js")
+    os.system("support/d8/d8 --shell --trace_exception %s test/footer_test.js %s" % (
+        ' '.join(getFileList('test')),
+        ' '.join(DebugFiles)))
+
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: build {test|dist|parser|regenruntests|upload}"
+        print "usage: build {test|dist|parser|regenruntests|upload|debug}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -188,6 +213,8 @@ if __name__ == "__main__":
         test()
     elif cmd == "dist":
         dist()
+    elif cmd == "debug":
+        debug(sys.argv[2])
     elif cmd == "parser":
         parser()
     elif cmd == "regenruntests":
