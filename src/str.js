@@ -102,6 +102,11 @@ Str$.prototype.__repr__ = function()
     return this.quote$(this.v);
 };
 
+Str$.prototype.__str__ = function()
+{
+    return this.v;
+};
+
 Str$.prototype.capitalize = function() { throw "todo; capitalize"; };
 Str$.prototype.center = function() { throw "todo; center"; };
 Str$.prototype.count = function() { throw "todo; count"; };

@@ -52,40 +52,6 @@ function sk$iter(pyobj, callback)
     }
 }
 
-/*
-function sk$slice(pyiter, start, end, step)
-{
-    if (!pyiter) throw "bad slice";
-    var iter = pyiter.v; // todo; are other things iterable than lists?
-    start = start || 0;
-    end = end || iter.length;
-    step = step || 1;
-    if (start < 0) start = iter.length + start;
-    if (end < 0) end = iter.length + end;
-    if (start < 0) start = 0;
-    if (end > iter.length) end = iter.length;
-    if (typeof iter === "string")
-    {
-        if (step !== 1) throw "unhandled step in string slice";
-        return new Str$(iter.substring(start, end));
-    }
-    else if (typeof iter === "object" && Object.prototype.toString.apply(iter) === "[object Array]")
-    {
-        if (step !== 1) throw "unhandled step in array slice";
-        var ret = [];
-        for (var i = start; i < end; ++i)
-        {
-            ret.push(iter[i]);
-        }
-        return new List$(ret);
-    }
-    else
-    {
-        throw "unhandled type in slice";
-    }
-}
-*/
-
 // todo; these all need to dispatch to methods if defined
 function sk$add(self, other)
 {
@@ -302,6 +268,20 @@ function dir(x)
     }
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new List$(names);
+}
+
+function str(x)
+{
+    var ret;
+    if (typeof x === "number")
+        ret = x.toString();
+    else if (x.__str__ !== undefined)
+        ret = x.__str__();
+    else if (x.__repr__ !== undefined)
+        ret = x.__repr__();
+    else
+        ret = "<" + x.constructor.name + " instance>";
+    return new Str$(ret);
 }
 
 function repr(x)
