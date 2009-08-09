@@ -295,3 +295,22 @@ function repr(x)
         ret = "<" + x.constructor.name + " instance>";
     return new Str$(ret);
 }
+
+// stupid language.
+if (!Function.prototype.bind)
+{
+    Function.prototype.bind = function(object)
+    {
+        var __method = this;
+        return function()
+        {
+            return __method.apply(object, arguments);
+        };
+    };
+}
+function ga$(o, attrname)
+{
+    var v = o[attrname];
+    if (v instanceof Function) return v.bind(o);
+    return v;
+}

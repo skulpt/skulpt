@@ -91,6 +91,8 @@ Assign: function(ast, args)
 
             func.walkChildren(hFindGlobals, globals);
 
+            //print(JSON.stringify(ast.nodes, null, 2));
+
             var names = [];
             for (i = 0; i < ast.nodes.length; ++i)
             {
@@ -98,6 +100,10 @@ Assign: function(ast, args)
                 if (node instanceof AssName)
                 {
                     names.push(node.name);
+                }
+                else if (node instanceof AssAttr)
+                {
+                    names.push(node.expr.name);
                 }
                 else
                 {
@@ -130,6 +136,13 @@ Assign: function(ast, args)
         }
 };
 
+//
+// for the body of methods, renames all accesses to the 0th parameter
+// (typically 'self') to be 'this' instead.
+//
+var hRenameAccessesToSelf = {
+visit: genericVisit,
+};
 
 //
 // main code generation handler
@@ -184,7 +197,7 @@ Assign: function(ast, o)
                         throw "unexpected flags";
                     }
                 }
-                else if (type === "Subscript")
+                else if (type === "Subscript" || type === "AssAttr")
                 {
                     this.visit(ast.nodes[i], o, tmp);
                 }
@@ -258,6 +271,23 @@ Subscript: function(ast, o, tmp)
                }
            },
 
+AssAttr: function(ast, o, tmp)
+         {
+             //print(JSON.stringify(ast.nodes, null, 2));
+             if (ast.flags === OP_ASSIGN)
+             {
+                 if (!tmp) throw "expecting tmp node to assign from";
+                 this.visit(ast.expr, o);
+                 o.push(".sa$('" + ast.attrname + "',");
+                 o.push(tmp);
+                 o.push(")");
+             }
+             else
+             {
+                 throw "unexpected AssAttr flags:" + ast.flags;
+             }
+         },
+
 Sliceobj: function(ast, o)
           {
               //print(JSON.stringify(ast, null, 2));
@@ -277,9 +307,11 @@ Sliceobj: function(ast, o)
 
 Getattr: function(ast, o)
          {
+             o.push("ga$(");
              this.visit(ast.expr, o);
-             o.push(".");
+             o.push(",'");
              o.push(ast.attrname);
+             o.push("')");
          },
 
 AugAssign: function(ast, o)
@@ -411,19 +443,23 @@ Const_: function(ast, o)
             o.push(")");
         },
 
-Function_: function(ast, o)
+Function_: function(ast, o, args)
            {
                var i;
-               o.push("function ");
+               var inclass = args !== undefined;
+               var argstart = inclass ? 1 : 0; // todo; staticmethod
+
+               if (inclass) o.push(args.klass + "$.prototype.");
+
                o.push(ast.name); // todo; safeize?
-               o.push("(");
-               for (i = 0; i < ast.argnames.length; ++i)
+               o.push("=function(");
+               for (i = argstart; i < ast.argnames.length; ++i)
                {
                    o.push(ast.argnames[i]);
                    if (i !== ast.argnames.length - 1) o.push(",");
                }
                o.push("){");
-               for (i = 0; i < ast.argnames.length; ++i)
+               for (i = argstart; i < ast.argnames.length; ++i)
                {
                    if (!ast.defaults[i]) continue;
                    o.push("if(");
@@ -436,8 +472,12 @@ Function_: function(ast, o)
                }
                // todo; varargs, kwargs
                ast.code.walkChildren(hDeclareLocals, { func: ast, o: o });
+               if (inclass)
+               {
+                   ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
+               }
                this.visit(ast.code, o);
-               o.push("}");
+               o.push("};");
            },
 
 Return_: function(ast, o)
@@ -572,6 +612,18 @@ ListComp: function(ast, o)
               // end wrapper to make whole thing an expression
               o.push("})()");
           },
+
+Class_: function(ast, o)
+        {
+            //print(JSON.stringify(ast, null, 2));
+            o.push("var " + ast.name + "$=function(args){this.__init__.apply(this, args);};\n");
+            for (var i = 0; i < ast.code.nodes.length; ++i)
+            {
+                this.visit(ast.code.nodes[i], o, {klass:ast.name});
+                o.push("\n");
+            }
+            o.push("function " + ast.name + "(){return new " + ast.name + "$(arguments);}\n");
+        },
 
 Add: function(ast, o) { this.binopfunc(ast, o, "sk$add"); },
 Sub: function(ast, o) { this.binopfunc(ast, o, "sk$sub"); },

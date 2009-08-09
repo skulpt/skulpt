@@ -86,6 +86,28 @@ And.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function AssAttr(expr, attrname, flags, lineno)
+{
+    this.nodeName = "AssAttr";
+    this.expr = expr;
+    this.attrname = attrname;
+    this.flags = flags;
+    this.lineno = lineno;
+}
+
+AssAttr.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.expr, args);
+    if (ret !== undefined) this.expr = ret;
+    ret = handler.visit(this.attrname, args);
+    if (ret !== undefined) this.attrname = ret;
+    ret = handler.visit(this.flags, args);
+    if (ret !== undefined) this.flags = ret;
+};
+
+
+// --------------------------------------------------------
 function AssList(nodes, lineno)
 {
     this.nodeName = "AssList";

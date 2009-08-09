@@ -257,14 +257,15 @@ function main()
     }
     print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
 
-    // todo; worth maintaining all the .trans files?
-    for (i = 0; i <= 112; ++i)
+    for (i = 0; i <= 145; ++i)
     {
+        // todo; worth maintaining all the .trans files?
+        if (i > 112 && i < 144) continue;
         testTransform(sprintf("test/run/t%02d", i));
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 200; ++i)
+    for (i = 0; i <= 144; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }

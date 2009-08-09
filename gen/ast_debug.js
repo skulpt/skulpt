@@ -26,6 +26,10 @@ if (node.nodeName === 'And') {
     return sprintf("And(nodes=%s)", astDump(node.nodes));
 }
 
+if (node.nodeName === 'AssAttr') {
+    return sprintf("AssAttr(expr=%s, attrname=%s, flags=%s)", astDump(node.expr), astDump(node.attrname), astDump(node.flags));
+}
+
 if (node.nodeName === 'AssList') {
     return sprintf("AssList(nodes=%s)", astDump(node.nodes));
 }

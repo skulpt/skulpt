@@ -83,7 +83,6 @@ List$.prototype.__setitem__ = function(index, value)
 };
 List$.prototype.__getitem__ = function(index)
 {
-    // todo; dispatch to __getitem__
     if (typeof index === "number")
         return this.v[index];
     else if (index instanceof Slice$)
@@ -124,6 +123,9 @@ List$.prototype.__delitem__ = function(index)
     }
     return this;
 };
+
+List$.prototype.sa$ = function(name, value) { this[name] = value; }
+List$.prototype.ga$ = function(name) { return this[name]; }
 
 List$.prototype.__repr__ = function()
 {

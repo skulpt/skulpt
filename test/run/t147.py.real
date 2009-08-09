@@ -1,0 +1,4 @@
+  File "test/run/t147.py", line 6
+    print "KO")
+              ^
+SyntaxError: invalid syntax

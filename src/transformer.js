@@ -499,7 +499,12 @@ Transformer.prototype.com_assign_trailer = function(primary, node, assigning)
         return this.com_subscriptlist(primary, node.children[1], assigning);
     if (t === T_LPAR)
         throw new SyntaxError("can't assign to function call");
-    throw new SyntaxError("unknown trailer type: " + this.grammer.number2symbol[t]);
+    throw new SyntaxError("unknown trailer type: " + this.grammar.number2symbol[t]);
+};
+
+Transformer.prototype.com_assign_attr = function(primary, nodelist, assigning)
+{
+    return new AssAttr(primary, nodelist.value, assigning, nodelist.context);
 };
 
 Transformer.prototype.com_subscriptlist = function(primary, nodelist, assigning)
@@ -722,29 +727,40 @@ Transformer.prototype.funcdef = function(nodelist)
 
         return Lambda(names, defaults, flags, code, lineno=nodelist[1][2])
     old_lambdef = lambdef
-
-    def classdef(self, nodelist):
-        # classdef: 'class' NAME ['(' [testlist] ')'] ':' suite
-
-        name = nodelist[1][1]
-        doc = self.get_docstring(nodelist[-1])
-        if nodelist[2][0] == token.COLON:
-            bases = []
-        elif nodelist[3][0] == token.RPAR:
-            bases = []
-        else:
-            bases = self.com_bases(nodelist[3])
-
-        # code for class
-        code = self.com_node(nodelist[-1])
-
-        if doc is not None:
-            assert isinstance(code, Stmt)
-            assert isinstance(code.nodes[0], Discard)
-            del code.nodes[0]
-
-        return Class(name, bases, doc, code, lineno=nodelist[1][2])
 */
+
+Transformer.prototype.com_bases = function(node)
+{
+    var bases = [];
+    for (var i = 1; i < node.children.length; i += 2)
+    {
+        bases.push(this.dispatch(node.children[i]));
+    }
+    return bases;
+};
+
+Transformer.prototype.classdef = function(nodelist)
+{
+    // classdef: 'class' NAME ['(' [testlist] ')'] ':' suite
+    //print(JSON.stringify(nodelist, null, 2));
+    var name = nodelist[1].value;
+    var bases;
+    if (nodelist[2].type === T_COLON ||
+            nodelist[3].type === T_RPAR)
+    {
+        bases = [];
+    }
+    else
+    {
+        bases = this.com_bases(nodelist.children[3]);
+    }
+
+    // code for class
+    var code = this.dispatch(nodelist[nodelist.length - 1]);
+
+    return new Class_(name, bases, null, code, /*decorators*/ null);
+};
+
 
 Transformer.prototype.print_stmt = function(nodelist)
 {

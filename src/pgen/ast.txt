@@ -39,6 +39,7 @@ Assign: nodes!, expr
 AssTuple: nodes!
 AssList: nodes!
 AssName: name*, flags*
+AssAttr: expr, attrname*, flags*
 ListComp: expr, quals!
 ListCompFor: assign, list, ifs!
 ListCompIf: test
