@@ -8,7 +8,12 @@
 // todo; sort out doing enough analysis so we can rename invocations of
 // standard python functions (like len, range) to sk$len, sk$range.
 
-function sk$output(x){} // replaceable output redirection (called from print, etc)
+
+// replaceable output redirection (called from print, etc)
+var sk$output = function(x){};
+if (this.print !== undefined) sk$output = this.print;
+if (this.console !== undefined && this.console.log !== undefined) sk$output = this.console.log;
+
 
 var Str$, List$, Tuple$, Dict$, Slice$;
 

@@ -192,7 +192,6 @@ def debug(fn):
     f = open("support/tmp/compiledump.js", "w")
     f.write("""
 var input = read('%s');
-print("sk$output = print;");
 print(Skulpt.compileStr('%s', input));
     """ % (fn, fn))
     f.close()
