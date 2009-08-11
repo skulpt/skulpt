@@ -115,9 +115,12 @@ function initTerminal(w, h)
                 evaled = true;
                 //console.log(js);
                 var evret = eval.call(window, js);
-                if (evret !== undefined && evret.__repr__ !== undefined)
+                if (evret !== undefined)
                 {
-                    got += evret.__repr__().v + "\n";
+                    if (evret.__repr__ !== undefined)
+                        got += evret.__repr__().v + "\n";
+                    else
+                        got += evret.toString() + "\n";
                 }
             }
         }

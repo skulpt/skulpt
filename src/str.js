@@ -104,7 +104,7 @@ Str$.prototype.quote$ = function(string)
 
 Str$.prototype.__repr__ = function()
 {
-    return this.quote$(this.v);
+    return new Str$(this.quote$(this.v));
 };
 
 Str$.prototype.__str__ = function()
