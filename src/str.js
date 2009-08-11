@@ -112,6 +112,8 @@ Str$.prototype.__str__ = function()
     return this.v;
 };
 
+Str$.prototype.__class__ = new Type$('str', [sk$TypeObject], {});
+
 Str$.prototype.capitalize = function() { throw "todo; capitalize"; };
 Str$.prototype.center = function() { throw "todo; center"; };
 Str$.prototype.count = function() { throw "todo; count"; };

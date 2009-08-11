@@ -9,6 +9,7 @@ import glob
 Files = [
         'src/env.js',
         'src/errors.js',
+        'src/type.js',
         'src/str.js',
         'src/list.js',
         'src/tuple.js',

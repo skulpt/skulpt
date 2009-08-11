@@ -15,7 +15,7 @@ if (this.print !== undefined) sk$output = this.print;
 if (this.console !== undefined && this.console.log !== undefined) sk$output = this.console.log;
 
 
-var Str$, List$, Tuple$, Dict$, Slice$;
+var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
 
 function sk$print(x)
 {
@@ -273,6 +273,24 @@ function repr(x)
     else if (x.__repr__ !== undefined)
         ret = x.__repr__();
     return new Str$(ret);
+}
+
+function type(name, bases, dict)
+{
+    if (bases === undefined && dict === undefined)
+    {
+        // type function, rather than type constructor
+        var obj = name;
+        // todo; less assey
+        if (typeof obj === "number")
+            return sk$TypeInt;
+        else
+            return obj.__class__;
+    }
+    else
+    {
+        return new Type$(name, bases, dict);
+    }
 }
 
 // stupid language.

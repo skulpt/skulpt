@@ -105,3 +105,4 @@ Dict$.prototype.__repr__ = function()
             });
     return new Str$("{" + ret.join(", ") + "}");
 };
+Dict$.prototype.__class__ = new Type$('dict', [sk$TypeObject], {});

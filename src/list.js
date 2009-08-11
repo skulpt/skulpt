@@ -138,3 +138,5 @@ List$.prototype.__repr__ = function()
     sk$iter(this, function(v) { asStrs.push(repr(v).v); });
     return new Str$("[" + asStrs.join(", ") + "]");
 };
+
+List$.prototype.__class__ = new Type$('list', [sk$TypeObject], {});
