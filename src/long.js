@@ -24,12 +24,21 @@ Long$.mask$ = (1 << Long$.bpe$) - 1; // & to chop to bpe bits
 Long$.radix$ = Long$.mask$ + 1; // 2^bpe == 10..0 to left of last bit of mask
 
 // convert t into a a long with at least the given number of bits
-// bpe-bit chunks, little endian (data$[0] is the least significat word)
+// bpe-bit chunks, little endian (.v[0] is the least significant word)
 // it will be padded so that there's at least minSize elements
 // there will always be at least one leading 0 element
 Long$.fromInt = function(t, bits, minSize)
 {
+    if (bits === 0)
+    {
+        for (var i = 0; i < 32; ++i)
+        {
+            if (t & (1 << i))
+                bits = i;
+        }
+    }
     var k = Math.max(minSize, Math.ceil(bits / Long$.bpe$) + 1);
+    //print("fromInt: elems: ", k);
     var ret = new Long$(new Array(k));
     Long$.copyInt_(ret, t);
     return ret;
@@ -39,9 +48,12 @@ Long$.fromInt = function(t, bits, minSize)
 Long$.copyInt_ = function(x, y)
 {
     var i, c;
+    //print("x.v.length:"+x.v.length);
     for (i = 0, c = y; i < x.v.length; ++i)
     {
         x.v[i] = c & Long$.mask$;
+        //print("Long$.mask$", Long$.mask$);
+        //print("i:",i,"c:",c,"x.v[i]:", x.v[i]);
         c >>= Long$.bpe$;
     }
 };
@@ -84,6 +96,7 @@ Long$.prototype.__repr__ = function()
     while (s6.__nonzero__())
     {
         var t = Long$.divInt_(s6, 10);
+        //print("t:",t);
         ret = "0123456789".substring(t, t + 1) + ret;
     }
     if (ret.length === 0) ret = "0";
@@ -94,14 +107,62 @@ Long$.prototype.__repr__ = function()
 Long$.divInt_ = function(x, n)
 {
     var r = 0, s;
+    //print("initial:",x.v[1], x.v[0]);
     for (var i = x.v.length - 1; i >= 0; --i)
     {
-        //print(i, x.v[i]);
+        //print("divint:", i, x.v[i]);
         s = r * Long$.radix$ + x.v[i];
         x.v[i] = Math.floor(s / n);
         r = s % n;
     }
     return r;
+};
+
+Long$.prototype.__add__ = function(other)
+{
+    var ret = Long$.expand(this, Math.max(this.v.length, other.v.length));
+    //print(ret.v[0], other.v[0]);
+    Long$.add_(ret, other);
+    //print(ret.v[0], other.v[0]);
+    return Long$.trim(ret, 1);
+};
+
+// return x with exactly k leading zero elements
+Long$.trim = function trim(x, k)
+{
+    for (var i = x.v.length; i > 0 && x.v[i-1] === 0; i--) {}
+    var ret = new Long$(new Array(i + k));
+    //print("ret:",ret.v.length, i, k);
+    Long$.copy_(ret, x);
+    //print("ret:",ret.v.length, i, k, x.v[0]);
+    return ret;
+};
+
+//return a copy of x with at least n elements, adding leading zeros if needed
+Long$.expand = function(x, n)
+{
+    var ret = Long$.fromInt(0, Math.max(x.v.length, n) * Long$.bpe$, 0);
+    Long$.copy_(ret, x);
+    return ret;
+};
+
+Long$.add_ = function(x, y)
+{
+    //print("add_");
+    var i, c;
+    var k = Math.min(x.v.length, y.v.length);
+    for (c = 0, i = 0; i < k; ++i)
+    {
+        c += x.v[i] + y.v[i];
+        x.v[i] = c & Long$.mask$;
+        c >>= Long$.bpe$;
+    }
+    for (i = k; c !== 0 && i < x.v.length; ++i)
+    {
+        c += x.v[i];
+        x.v[i] = c & Long$.mask$;
+        c >>= Long$.bpe$;
+    }
 };
 
 /*
