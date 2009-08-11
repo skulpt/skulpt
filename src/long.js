@@ -89,9 +89,19 @@ s6 = new Long$([]);
 Long$.prototype.__repr__ = function()
 {
     var ret = "";
+    var isNeg = false;
 
     if (s6.v.length !== this.v.length) s6 = Long$.dup(this);
     else Long$.copy_(s6, this);
+
+    if (Long$.negative(s6))
+    {
+        // convert from 2's compl
+        // todo; test this more
+        var isNeg = true;
+        Long$.not_(s6);
+        Long$.addInt_(s6, 1);
+    }
 
     while (s6.__nonzero__())
     {
@@ -100,7 +110,7 @@ Long$.prototype.__repr__ = function()
         ret = "0123456789".substring(t, t + 1) + ret;
     }
     if (ret.length === 0) ret = "0";
-    return new Str$(ret + "L");
+    return new Str$((isNeg ? "-" : "") + ret + "L");
 };
 
 // do x = floor(x / n) for bigInt x and integer n, and return the remainder
@@ -118,9 +128,40 @@ Long$.divInt_ = function(x, n)
     return r;
 };
 
+Long$.not_ = function(x)
+{
+    for (var i = 0; i < x.v.length; ++i)
+    {
+    i
+        x.v[i] = (~x.v[i]) & Long$.mask$;
+    }
+};
+
+// small n only
+Long$.addInt_ = function(x, n)
+{
+    var b;
+    x.v[0] += n;
+    var k = x.v.length;
+    var c = 0;
+    for (var i = 0; i < k; ++i)
+    {
+        c += x.v[i];
+        b = 0;
+        if (c < 0)
+        {
+            b = -(c >> Long$.bpe$);
+            c += b * Long$.radix$;
+        }
+        x.v[i] = c & Long$.mask$;
+        c = (c >> Long$.bpe$) - b;
+        if (c === 0) return;
+    }
+};
+
 Long$.prototype.__add__ = function(other)
 {
-    var ret = Long$.expand(this, Math.max(this.v.length, other.v.length));
+    var ret = Long$.expand(this, Math.max(this.v.length, other.v.length) + 1);
     //print(ret.v[0], other.v[0]);
     Long$.add_(ret, other);
     //print(ret.v[0], other.v[0]);
@@ -163,6 +204,37 @@ Long$.add_ = function(x, y)
         x.v[i] = c & Long$.mask$;
         c >>= Long$.bpe$;
     }
+};
+
+Long$.prototype.__sub__ = function(other)
+{
+    var ret = Long$.expand(this, Math.max(this.v.length, other.v.length) + 1);
+    Long$.sub_(ret, other);
+    return Long$.trim(ret, 0);
+};
+
+Long$.sub_ = function(x, y)
+{
+    var i, c;
+    var k = Math.min(x.v.length, y.v.length);
+    for (c = 0, i = 0; i < k; ++i)
+    {
+        c += x.v[i] - y.v[i];
+        x.v[i] = c & Long$.mask$;
+        c >>= Long$.bpe$;
+    }
+    for (i = k; c !== 0 && i < x.v.length; ++i)
+    {
+        c += x.v[i];
+        x.v[i] = c & Long$.mask$;
+        c >>= Long$.bpe$;
+    }
+}
+
+Long$.negative = function(x)
+{
+    var ret = ((x.v[x.v.length - 1] >> (Long$.bpe$ - 1)) & 1) !== 0;
+    return ret;
 };
 
 /*
