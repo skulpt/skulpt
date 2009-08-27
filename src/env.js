@@ -16,6 +16,7 @@ if (this.console !== undefined && this.console.log !== undefined) sk$output = th
 
 
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
+var sk$TypeObject, sk$TypeInt;
 
 function sk$print(x)
 {
