@@ -103,6 +103,15 @@ Long$.prototype.__sub__ = function(other)
     return z;
 };
 
+Long$.prototype.__mul__ = function(other)
+{
+    // todo; upconvert
+    var z = Long$.mul$(this, other);
+	if (this.size$ * other.size$ < 0)
+		z.size$ = -z.size$;
+    return z;
+};
+
 Long$.normalize$ = function(v)
 {
     var j = Math.abs(v.size$);
@@ -170,7 +179,7 @@ Long$.sub$ = function(a, b)
     {
 		// Find highest digit where a and b differ
 		i = size_a;
-		while (--i >= 0 && a.digit$[i] == b.digit$[i])
+		while (--i >= 0 && a.digit$[i] === b.digit$[i])
 			;
 		if (i < 0) return new Long$(0);
 		if (a.digit$[i] < b.digit$[i])
@@ -202,6 +211,41 @@ Long$.sub$ = function(a, b)
 	if (sign < 0)
 		z.size$ = -z.size$;
 	return Long$.normalize$(z);
+};
+
+// "grade school" multiplication, ignoring the signs.
+// returns abs of product.
+// todo; karatsuba is O better after a few 100 digits long, but more
+// complicated for now.
+Long$.mul$ = function(a, b)
+{
+    var size_a = Math.abs(a.size$);
+    var size_b = Math.abs(b.size$);
+    var z = new Long$(size_a + size_b);
+    for (var i = 0; i < size_a + size_b; ++i) z.digit$[i] = 0;
+
+    //print("size_a",size_a,"size_b",size_b,"tot", size_a+size_b);
+    for (var i = 0; i < size_a; ++i)
+    {
+        var carry = 0;
+        var k = i;
+        var f = a.digit$[i];
+        for (var j = 0; j < size_b; ++j)
+        {
+            carry += z.digit$[k] + b.digit$[j] * f;
+            //print("@",k,j,carry);
+            z.digit$[k++] = carry & Long$.MASK$;
+            //print("stored:",z.digit$[i]);
+            carry >>= Long$.SHIFT$;
+            //print("carry shifted to:",carry);
+            if (carry > Long$.MASK$) throw "assert";
+        }
+        if (carry)
+            z.digit$[k++] += carry & Long$.MASK$;
+    }
+
+    Long$.normalize$(z);
+    return z;
 };
 
 Long$.prototype.__nonzero__ = function()

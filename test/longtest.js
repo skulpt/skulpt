@@ -3,7 +3,7 @@ function check(a, b)
     var tostr = a.__repr__().v;
     if (tostr !== b)
     {
-        print("GOT", tostr, a, "\nWANTED", b);
+        print("GOT", tostr, a.digit$, a.size$, "\nWANTED", b);
     }
     print("\twanted",b);
 }
@@ -57,8 +57,7 @@ check((Long$.fromInt$(0)).__sub__(Long$.fromInt$(1000000)), "-1000000L");
 check((Long$.fromInt$(65535)).__sub__(Long$.fromInt$(32767)), "32768L");
 check((Long$.fromInt$(65535)).__sub__(Long$.fromInt$(32768)), "32767L");
 check((Long$.fromInt$(32767)).__sub__(Long$.fromInt$(32768)), "-1L");
-/*
-print("mul");
+print("----------------------mul");
 check((Long$.fromInt$(0)).__mul__(Long$.fromInt$(0)), "0L");
 check((Long$.fromInt$(100)).__mul__(Long$.fromInt$(0)), "0L");
 check((Long$.fromInt$(100)).__mul__(Long$.fromInt$(100)), "10000L");
@@ -69,4 +68,3 @@ check((Long$.fromInt$(1000)).__mul__(Long$.fromInt$(1000)), "1000000L");
 check((Long$.fromInt$(10000)).__mul__(Long$.fromInt$(10000)), "100000000L");
 check((Long$.fromInt$(1234567)).__mul__(Long$.fromInt$(987654)), "1219325035818L");
 check((Long$.fromInt$(-4)).__mul__(Long$.fromInt$(100)), "-400L");
-*/
