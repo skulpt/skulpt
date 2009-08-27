@@ -79,6 +79,30 @@ Long$.prototype.__add__ = function(other)
     return z;
 };
 
+Long$.prototype.__sub__ = function(other)
+{
+    // todo; upconvert other
+
+    var z;
+    if (this.size$ < 0)
+    {
+        if (other.size$ < 0)
+            z = Long$.sub$(this, other);
+        else
+            z = Long$.add$(this, other);
+        if (z.size$ !== 0)
+            z.size$ = -z.size$;
+    }
+    else
+    {
+        if (other.size < 0)
+            z = Long$.add$(this, other);
+        else
+            z = Long$.sub$(this, other);
+    }
+    return z;
+};
+
 Long$.normalize$ = function(v)
 {
     var j = Math.abs(v.size$);
