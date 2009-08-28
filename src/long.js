@@ -185,7 +185,7 @@ Long$.prototype.__neg__ = function()
     var ret = this.clone();
     ret.size$ = -ret.size$;
     return ret;
-}
+};
 
 Long$.divrem$ = function(other)
 {
@@ -405,7 +405,7 @@ Long$.prototype.__repr__ = function()
 Long$.prototype.__str__ = function()
 {
     return new Str$(this.str$());
-}
+};
 
 Long$.prototype.str$ = function()
 {
