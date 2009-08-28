@@ -226,7 +226,7 @@ Str$.prototype.__mod__ = function(rhs)
             if (alternateForm)
             {
                 if (base === 16) prefix += '0x';
-                else if (base === 8 && !precZeroPadded) prefix += '0';
+                else if (base === 8 && !precZeroPadded && r !== "0") prefix += '0';
             }
 
             if (fieldWidth)

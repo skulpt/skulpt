@@ -433,7 +433,7 @@ Long$.prototype.__str__ = function()
 
 Long$.prototype.str$ = function(base, sign)
 {
-    if (this.size$ === 0) return new Str$("0");
+    if (this.size$ === 0) return "0";
 
     if (base === undefined) base = 10;
     if (sign === undefined) sign = true;
