@@ -73,3 +73,6 @@ check((Long$.fromInt$(0)).__pow__(Long$.fromInt$(0)), "1L");
 check((Long$.fromInt$(2)).__pow__(Long$.fromInt$(5)), "32L");
 check((Long$.fromInt$(2)).__pow__(Long$.fromInt$(100)), "1267650600228229401496703205376L");
 check((Long$.fromInt$(45)).__pow__(Long$.fromInt$(123)), "221380413535717951381719900889598385877985018125157963549526209949411353588054056060808889443572049605826203407737866682728901508127084151522949268748976128136645054322872994134741020388901233673095703125L");
+check((Long$.fromInt$(-1)).__pow__(Long$.fromInt$(1)), "-1L");
+check((Long$.fromInt$(-2)).__pow__(Long$.fromInt$(15)), "-32768L");
+check((Long$.fromInt$(-2)).__pow__(Long$.fromInt$(16)), "-65536L");

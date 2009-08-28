@@ -142,6 +142,7 @@ Long$.prototype.__pow__ = function(n)
         x = Long$.mul$(x, x);
         n.divremInt$(2);
     }
+    if (this.size$ < 0) ret.size$ = -ret.size$;
     return ret;
 };
 
