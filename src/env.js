@@ -16,7 +16,7 @@ if (this.console !== undefined && this.console.log !== undefined) sk$output = th
 
 
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
-var sk$TypeObject, sk$TypeInt;
+var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
 function sk$print(x)
 {
@@ -63,24 +63,21 @@ function sk$add(self, other)
 {
     if (typeof self === "number" && typeof other === "number")
     {
-        return self + other;
-    }
-    else if (self instanceof Str$ && other instanceof Str$)
-    {
-        return self.v + other.v;
-    }
-    else if (self instanceof List$ && other instanceof List$)
-    {
-        var ret = self.v.slice();
-        for (var i = 0; i < other.v.length; ++i)
+        var ans = self + other;
+        if (ans > Long$.threshold$ || ans < -Long$.threshold$)
         {
-            ret.push(other.v[i]);
+            self = Long$.fromInt$(self);
+            other = Long$.fromInt$(other);
         }
-        return new List$(ret);
+        return ans;
+    }
+    if (self.__add__ !== undefined)
+    {
+        return self.__add__(other);
     }
     else
     {
-        throw "TypeError: cannot concatenate '" + typeof self + "' and '" + typeof other + "' objects";
+        throw new TypeError("cannot concatenate '" + typeof self + "' and '" + typeof other + "' objects");
     }
 }
 
@@ -106,8 +103,34 @@ function sk$mod(self, other)
 }
 function sk$pow(self, other)
 {
-    if (typeof self !== "number" || typeof other !== "number") throw "TypeError";
-    return Math.pow(self, other);
+    if (typeof self === "number" && typeof other === "number")
+    {
+        var ans = Math.pow(self, other);
+        if (ans > Long$.threshold$ || ans < -Long$.threshold$)
+        {
+            self = Long$.fromInt$(self);
+            other = Long$.fromInt$(other);
+        }
+        else
+        {
+            return ans;
+        }
+    }
+    else if (self.__class__ === Long$.prototype.__class__
+            || other.__class__ === Long$.prototype.__class__)
+    {
+        if (typeof self === "number") self = Long$.fromInt$(self);
+        if (typeof other === "number") other = Long$.fromInt$(other);
+    }
+    if (self.__pow__ !== undefined)
+    {
+        return self.__pow__(other);
+    }
+    else
+    {
+        throw new TypeError("unsupported operand type(s) for ** or pow(): '" +
+                typeof self + "' and '" + typeof other + "'");
+    }
 }
 
 function sk$unpack(lhsnames, rhs)
@@ -286,7 +309,9 @@ function type(name, bases, dict)
         if (typeof obj === "number")
             return sk$TypeInt;
         else
+        {
             return obj.__class__;
+        }
     }
     else
     {
@@ -317,7 +342,7 @@ function ga$(o, attrname)
 
 function sk$makeClass()
 {
-    return function(args, doinit)
+    var ret = function(args, doinit)
     {
         if (!(this instanceof arguments.callee))
         {
@@ -327,6 +352,8 @@ function sk$makeClass()
             this.__init__.apply(this, args);
         return this;
     };
+    ret.__class__ = sk$TypeType;
+    return ret;
 }
 
 var object = function()

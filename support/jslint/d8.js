@@ -11,7 +11,7 @@
         print("jslint: Couldn't open file '" + a[0] + "'.");
         quit(1);
     }
-    if (!JSLINT(input, {bitwise: true, eqeqeq: true, immed: true,
+    if (!JSLINT(input, {bitwise: false, eqeqeq: true, immed: true,
             newcap: true, nomen: true, onevar: false, plusplus: false,
             evil: true, sub: false, nomen: false, 
             regexp: true, rhino: true, undef: true, white: false, indent: false, laxbreak:true})) {

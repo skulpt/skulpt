@@ -102,6 +102,11 @@ Str$.prototype.quote$ = function(string)
         "'" + string + "'";
 };
 
+Str$.prototype.__add__ = function(other)
+{
+    return new Str$(this.v + other.v);
+};
+
 Str$.prototype.__repr__ = function()
 {
     return new Str$(this.quote$(this.v));

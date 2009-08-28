@@ -132,6 +132,16 @@ List$.prototype.__delitem__ = function(index)
     return this;
 };
 
+List$.prototype.__add__ = function(other)
+{
+    var ret = this.v.slice();
+    for (var i = 0; i < other.v.length; ++i)
+    {
+        ret.push(other.v[i]);
+    }
+    return new List$(ret);
+};
+
 List$.prototype.__repr__ = function()
 {
     var asStrs = [];

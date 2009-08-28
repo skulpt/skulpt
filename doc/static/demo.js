@@ -24,6 +24,13 @@ window.addEvent('domready', function() {
                 term.writeStr("[x*x for x in range(20) if x % 2 == 0]", false, true);
                 term.doEnter();
             }));
+    $('codeexample4').addEvent('click', (function(e)
+            {
+                e.stop();
+                term.doClear();
+                term.writeStr("45**123", false, true);
+                term.doEnter();
+            }));
 
     term.writeStr("Skulpt demo REPL - " + new Date().toLocaleString() + "\n");
     term.writeStr(term.PS1, true);

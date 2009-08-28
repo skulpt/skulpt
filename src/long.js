@@ -26,6 +26,7 @@ Long$ = function(size)
 Long$.SHIFT$ = 15;
 Long$.BASE$ = 1 << Long$.SHIFT$;
 Long$.MASK$ = Long$.BASE$ - 1;
+Long$.threshold$ = Math.pow(2, 30);
 
 Long$.fromInt$ = function(ival)
 {
@@ -157,28 +158,28 @@ Long$.divrem$ = function(other)
         throw new ZeroDivisionError("long division or modulo by zero");
 
     if (size_a < size_b ||
-            a.digit$[size_a - 1] < b.digit$[size_b - 1])
+            this.digit$[size_a - 1] < other.digit$[size_b - 1])
     {
-        // |a| < |b|
-        return [0, a];
+        // |this| < |other|
+        return [0, this];
     }
     if (size_b === 1)
     {
-        z = a.clone();
-        var remi = z.divremInt$(b.digit$[0]);
+        z = this.clone();
+        var remi = z.divremInt$(other.digit$[0]);
         rem = new Long$(1);
         rem.digit$[0] = remi;
     }
 	else
     {
-        var tmp = Long$.divremFull$(a, b);
+        var tmp = Long$.divremFull$(this, other);
         z = tmp[0];
         rem = tmp[1];
 	}
-    // z has sign of a*b, remainder has sign of a so that a=b*z+r
-    if ((a.size$ < 0) !== (b.size$ < 0))
+    // z has sign of this*other, remainder has sign of a so that this=other*z+r
+    if ((this.size$ < 0) !== (other.size$ < 0))
         z.size$ = -z.size$;
-    if (a.size$ < 0 && rem.size$ !== 0)
+    if (this.size$ < 0 && rem.size$ !== 0)
         rem.size$ = -rem.size$;
     return [z, rem];
 };
@@ -205,7 +206,7 @@ Long$.normalize$ = function(v)
 	if (i !== j)
         v.size$ = v.size$ < 0 ? -i : i;
 	return v;
-}
+};
 
 // Add the absolute values of two longs
 Long$.add$ = function(a, b)
@@ -238,7 +239,7 @@ Long$.add$ = function(a, b)
 	}
 	z.digit$[i] = carry;
 	return Long$.normalize$(z);
-}
+};
 
 // Subtract the absolute values of two longs
 
@@ -250,25 +251,28 @@ Long$.sub$ = function(a, b)
     var i;
     var sign = 1;
     var borrow = 0;
+    var tmp;
 
 	// Ensure a is the larger of the two
     if (size_a < size_b)
     {
         sign = -1;
-        var tmp = a; a = b; b = tmp;
+        tmp = a; a = b; b = tmp;
         tmp = size_a; size_a = size_b; size_b = tmp;
     }
-	else if (size_a == size_b)
+	else if (size_a === size_b)
     {
 		// Find highest digit where a and b differ
 		i = size_a;
 		while (--i >= 0 && a.digit$[i] === b.digit$[i])
-			;
+        {
+            // nothing
+        }
 		if (i < 0) return new Long$(0);
 		if (a.digit$[i] < b.digit$[i])
         {
 			sign = -1;
-            var tmp = a; a = b; b = tmp;
+            tmp = a; a = b; b = tmp;
 		}
 		size_a = size_b = i + 1;
 	}
@@ -305,10 +309,11 @@ Long$.mul$ = function(a, b)
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
     var z = new Long$(size_a + size_b);
-    for (var i = 0; i < size_a + size_b; ++i) z.digit$[i] = 0;
+    var i;
+    for (i = 0; i < size_a + size_b; ++i) z.digit$[i] = 0;
 
     //print("size_a",size_a,"size_b",size_b,"tot", size_a+size_b);
-    for (var i = 0; i < size_a; ++i)
+    for (i = 0; i < size_a; ++i)
     {
         var carry = 0;
         var k = i;
@@ -369,3 +374,5 @@ Long$.prototype.__repr__ = function()
     }
     return new Str$((this.size$ < 0 ? "-" : "") + ret + "L");
 };
+
+Long$.prototype.__class__ = new Type$('long', [sk$TypeObject], {});

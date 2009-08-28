@@ -14,6 +14,7 @@ Files = [
         'src/list.js',
         'src/tuple.js',
         'src/dict.js',
+        'src/long.js',
         'src/slice.js',
         ('src/header.js', 'dist'),
         'src/tokenize.js',
@@ -173,7 +174,7 @@ def regenruntests():
         if os.path.exists(forcename):
             os.system("cp %s %s.real" % (forcename, f))
     for f in glob.glob("test/interactive/*.py"):
-        p = Popen("python -i > %s.real" % f, shell=True, stdin=PIPE)
+        p = Popen("python -i > %s.real 2>/dev/null" % f, shell=True, stdin=PIPE)
         p.communicate(open(f).read() + "\004")
         forcename = f + ".real.force"
         if os.path.exists(forcename):
