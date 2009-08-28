@@ -58,6 +58,13 @@ function sk$iter(pyobj, callback)
     }
 }
 
+function sk$typename(o)
+{
+    if (typeof o === "number") return sk$TypeInt.name;
+    if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
+    return o.__class__.name;
+}
+
 // todo; these all need to dispatch to methods if defined
 function sk$add(self, other)
 {
@@ -70,7 +77,7 @@ function sk$add(self, other)
         return self.__add__(other);
     else
     {
-        throw new TypeError("cannot concatenate '" + typeof self + "' and '" + typeof other + "' objects");
+        throw new TypeError("cannot concatenate '" + sk$typename(self) + "' and '" + sk$typename(other) + "' objects");
     }
 }
 
@@ -86,7 +93,7 @@ function sk$sub(self, other)
     else
     {
         throw new TypeError("unsupported operand type(s) for -: '" +
-                typeof self + "' and '" + typeof other + "'");
+                sk$typename(self) + "' and '" + sk$typename(other) + "'");
     }
 }
 function sk$mul(self, other)
@@ -98,10 +105,12 @@ function sk$mul(self, other)
 
     if (self.__mul__ !== undefined)
         return self.__mul__(other);
+    else if (other.__mul__ !== undefined) // todo; i think this is wrong; makes 40*"str" work for now
+        return other.__mul__(self);
     else
     {
         throw new TypeError("unsupported operand type(s) for *: '" +
-                typeof self + "' and '" + typeof other + "'");
+                sk$typename(self) + "' and '" + sk$typename(other) + "'");
     }
 }
 function sk$truediv(self, other)
@@ -126,7 +135,7 @@ function sk$pow(self, other)
     else
     {
         throw new TypeError("unsupported operand type(s) for ** or pow(): '" +
-                typeof self + "' and '" + typeof other + "'");
+                sk$typename(self) + "' and '" + sk$typename(other) + "'");
     }
 }
 

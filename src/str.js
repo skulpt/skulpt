@@ -107,6 +107,17 @@ Str$.prototype.__add__ = function(other)
     return new Str$(this.v + other.v);
 };
 
+Str$.prototype.__mul__ = function(other)
+{
+    if (typeof other !== "number") throw "TypeError"; // todo; long, better error
+    var ret = "";
+    for (var i = 0; i < other; ++i)
+    {
+        ret += this.v;
+    }
+    return new Str$(ret);
+};
+
 Str$.prototype.__repr__ = function()
 {
     return new Str$(this.quote$(this.v));

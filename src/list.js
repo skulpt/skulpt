@@ -142,6 +142,20 @@ List$.prototype.__add__ = function(other)
     return new List$(ret);
 };
 
+List$.prototype.__mul__ = function(other)
+{
+    if (typeof other !== "number") throw "TypeError"; // todo; long, better error
+    var ret = [];
+    for (var i = 0; i < other; ++i)
+    {
+        for (var j = 0; j < this.v.length; ++ j)
+        {
+            ret.push(this.v[j]);
+        }
+    }
+    return new List$(ret);
+};
+
 List$.prototype.__repr__ = function()
 {
     var asStrs = [];

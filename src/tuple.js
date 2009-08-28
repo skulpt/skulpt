@@ -45,4 +45,18 @@ Tuple$.prototype.__repr__ = function()
         return new Str$("(" + asStrs.join(", ") + ")");
 };
 
+Tuple$.prototype.__mul__ = function(other)
+{
+    if (typeof other !== "number") throw "TypeError"; // todo; long, better error
+    var ret = [];
+    for (var i = 0; i < other; ++i)
+    {
+        for (var j = 0; j < this.v.length; ++ j)
+        {
+            ret.push(this.v[j]);
+        }
+    }
+    return new Tuple$(ret);
+};
+
 function tuple(L) { return new Tuple$(L.v); }
