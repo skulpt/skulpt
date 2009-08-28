@@ -118,6 +118,173 @@ Str$.prototype.__mul__ = function(other)
     return new Str$(ret);
 };
 
+Str$.prototype.__mod__ = function(rhs)
+{
+    // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)
+
+    // From http://docs.python.org/library/stdtypes.html#string-formatting the
+    // format looks like:
+    // 1. The '%' character, which marks the start of the specifier.
+    // 2. Mapping key (optional), consisting of a parenthesised sequence of characters (for example, (somename)).
+    // 3. Conversion flags (optional), which affect the result of some conversion types.
+    // 4. Minimum field width (optional). If specified as an '*' (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
+    // 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*' (an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
+    // 6. Length modifier (optional).
+    // 7. Conversion type.
+    //
+    // length modifier is ignored
+
+    // todo; mapping/dict rhs
+    if (rhs.constructor === Dict$) throw "todo; dict format";
+
+    if (rhs.constructor !== Tuple$) rhs = new Tuple$([rhs]);
+    
+    // general approach is to use a regex that matches the format above, and
+    // do an re.sub with a function as replacement to make the subs.
+
+    //           1 2222222222222222   33333333   444444444   5555555555555  66666  777777777777777777
+    var regex = /%(\([a-zA-Z0-9]+\))?([#0 +-]+)?(\*|[0-9]+)?(\.(\*|[0-9]+))?[hlL]?([diouxXeEfFgGcrs%])/g;
+    var index = 0;
+    var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, lengthModifier, conversionType)
+    {
+        /*
+        print("replace:");
+        print("  index", index);
+        print("  substring", substring);
+        print("  mappingKey", mappingKey);
+        print("  conversionFlags", conversionFlags);
+        print("  fieldWidth", fieldWidth);
+        print("  precision", precision);
+        print("  conversionType", conversionType);
+        */
+
+        if (mappingKey !== undefined) throw "todo;";
+        var i = index++;
+
+        var zeroPad = false;
+        var leftAdjust = false;
+        var blankBeforePositive = false;
+        var precedeWithSign = false;
+        var alternateForm = false;
+        if (conversionFlags)
+        {
+            if (conversionFlags.indexOf("-") !== -1) leftAdjust = true;
+            else if (conversionFlags.indexOf("0") !== -1) zeroPad = true;
+
+            if (conversionFlags.indexOf("+") !== -1) precedeWithSign = true;
+            else if (conversionFlags.indexOf(" ") !== -1) blankBeforePositive = true;
+
+            alternateForm = conversionFlags.indexOf("#") !== -1;
+        }
+
+        if (precision)
+        {
+            precision = parseInt(precision.substr(1), 10);
+        }
+
+        var formatNumber = function(n, base)
+        {
+            // todo; lots
+            var r;
+            var neg = false;
+            var didSign = false;
+            if (typeof n === "number")
+            {
+                if (n < 0)
+                {
+                    n = -n;
+                    neg = true;
+                }
+                r = n.toString(base);
+            }
+            else if (n.constructor === Long$)
+            {
+                r = n.str$(base, false);
+                neg = n.size$ < 0;
+            }
+
+            if (r === undefined) throw "unhandled number format";
+
+            var precZeroPadded = false;
+
+            if (precision)
+            {
+                //print("r.length",r.length,"precision",precision);
+                for (var j = r.length; j < precision; ++j)
+                {
+                    r = '0' + r;
+                    precZeroPadded = true;
+                }
+            }
+
+            var prefix = '';
+
+            if (neg) prefix = "-";
+            else if (precedeWithSign) prefix = "+" + prefix;
+            else if (blankBeforePositive) prefix = " " + prefix;
+
+            if (alternateForm)
+            {
+                if (base === 16) prefix += '0x';
+                else if (base === 8 && !precZeroPadded) prefix += '0';
+            }
+
+            if (fieldWidth)
+            {
+                fieldWidth = parseInt(fieldWidth, 10);
+                var totLen = r.length + prefix.length;
+                if (zeroPad)
+                    for (var j = totLen; j < fieldWidth; ++j)
+                        r = '0' + r;
+                else if (leftAdjust)
+                    for (var j = totLen; j < fieldWidth; ++j)
+                        r = r + ' ';
+                else
+                    for (var j = totLen; j < fieldWidth; ++j)
+                        prefix = ' ' + prefix;
+            }
+            return prefix + r;
+        };
+
+        var base = 10;
+        switch (conversionType)
+        {
+            case 'd':
+            case 'i':
+                return formatNumber(rhs.v[i], 10);
+            case 'o':
+                return formatNumber(rhs.v[i], 8);
+            case 'x':
+                return formatNumber(rhs.v[i], 16);
+            case 'X':
+                return formatNumber(rhs.v[i], 16).toUpperCase();
+
+            case 'e':
+            case 'E':
+            case 'f':
+            case 'F':
+            case 'g':
+            case 'G':
+                throw "todo;";
+
+            case 'c':
+                throw "todo;";
+
+            case 'r':
+                var r = repr(rhs.v[i]);
+                if (precision) return r.substr(0, precision);
+            case 's':
+                var r = str(rhs.v[i]);
+                if (precision) return r.substr(0, precision);
+            case '%':
+                return '%';
+        };
+    };
+    
+    var ret = this.v.replace(regex, replFunc);
+    return new Str$(ret);
+};
+
 Str$.prototype.__repr__ = function()
 {
     return new Str$(this.quote$(this.v));

@@ -204,10 +204,20 @@ print(Skulpt.compileStr('%s', input));
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
 
+def nrt():
+    """open a new run test"""
+    for i in range(100000):
+        fn = "test/run/t%02d.py" % i
+        disfn = fn + ".disabled"
+        if not os.path.exists(fn) and not os.path.exists(disfn):
+            os.system("vim " + fn)
+            print "don't forget to ./m regenruntests"
+            break
+
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: build {test|dist|parser|regenruntests|upload|debug}"
+        print "usage: build {test|dist|parser|regenruntests|upload|debug|nrt}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -225,5 +235,7 @@ if __name__ == "__main__":
         regenruntests()
     elif cmd == "upload":
         upload()
+    elif cmd == "nrt":
+        nrt()
     else:
         usage()

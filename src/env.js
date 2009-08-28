@@ -120,8 +120,18 @@ function sk$truediv(self, other)
 }
 function sk$mod(self, other)
 {
-    if (typeof self !== "number" || typeof other !== "number") throw "TypeError";
-    return self % other;
+    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a % b; });
+    if (typeof tmp === "number") return tmp;
+    self = tmp[0];
+    other = tmp[1];
+
+    if (self.__mod__ !== undefined)
+        return self.__mod__(other);
+    else
+    {
+        throw new TypeError("unsupported operand type(s) for *: '" +
+                sk$typename(self) + "' and '" + sk$typename(other) + "'");
+    }
 }
 function sk$pow(self, other)
 {

@@ -78,17 +78,41 @@ Long$.mulInt$ = function(a, n)
     return Long$.normalize$(z);
 };
 
-// base 10 js string (not Str$) -> long. used to create longs in transformer.
+// js string (not Str$) -> long. used to create longs in transformer, respects
+// 0x, 0o, 0b, etc.
 Long$.fromJsStr$ = function(s)
 {
+    //print("initial fromJsStr:",s);
+    var base = 10;
+    if (s.substr(0, 2) === "0x" || s.substr(0, 2) === "0X")
+    {
+        s = s.substr(2);
+        base = 16;
+    }
+    else if (s.substr(0, 2) === "0o")
+    {
+        s = s.substr(2);
+        base = 8;
+    }
+    else if (s.substr(0, 1) === "0")
+    {
+        s = s.substr(1);
+        base = 8;
+    }
+    else if (s.substr(0, 2) === "0b")
+    {
+        s = s.substr(2);
+        base = 2;
+    }
+    //print("base:",base, "rest:",s);
     var ret = Long$.fromInt$(0);
     var col = Long$.fromInt$(1);
     var add;
     for (var i = s.length - 1; i >= 0; --i)
     {
-        add = Long$.mulInt$(col, parseInt(s.substr(i, 1), 10));
+        add = Long$.mulInt$(col, parseInt(s.substr(i, 1), 16));
         ret = ret.__add__(add);
-        col = Long$.mulInt$(col, 10);
+        col = Long$.mulInt$(col, base);
         //print("i", i, "ret", ret.digit$, ret.size$, "col", col.digit$, col.size$, ":",s.substr(i, 1), ":",parseInt(s.substr(i, 1), 10));
     }
     return ret;
@@ -407,21 +431,25 @@ Long$.prototype.__str__ = function()
     return new Str$(this.str$());
 };
 
-Long$.prototype.str$ = function()
+Long$.prototype.str$ = function(base, sign)
 {
     if (this.size$ === 0) return new Str$("0");
+
+    if (base === undefined) base = 10;
+    if (sign === undefined) sign = true;
+
     var ret = "";
 
     var tmp = this.clone();
     while (tmp.__nonzero__())
     {
         //print("before d:",tmp.digit$, "s:",tmp.size$);
-        var t = tmp.divremInt$(10);
+        var t = tmp.divremInt$(base);
         //print("after d:",tmp.digit$, "s:",tmp.size$);
         //print("t:",t);
-        ret = "0123456789".substring(t, t + 1) + ret;
+        ret = "0123456789abcdef".substring(t, t + 1) + ret;
     }
-    return (this.size$ < 0 ? "-" : "") + ret;
+    return (sign && this.size$ < 0 ? "-" : "") + ret;
 };
 
 Long$.prototype.__class__ = new Type$('long', [sk$TypeObject], {});
