@@ -1153,7 +1153,7 @@ Transformer.prototype[T_NUMBER] = function(nodelist)
     }
     else
     {
-        var k = eval(nodelist[0].value);
+        k = eval(nodelist[0].value);
         if ((k > Long$.threshold$ || k < -Long$.threshold$)
                 && Math.floor(k) === k) // todo; what to do with floats?
         {

@@ -143,9 +143,9 @@ Str$.prototype.__mod__ = function(rhs)
     // do an re.sub with a function as replacement to make the subs.
 
     //           1 2222222222222222   33333333   444444444   5555555555555  66666  777777777777777777
-    var regex = /%(\([a-zA-Z0-9]+\))?([#0 +-]+)?(\*|[0-9]+)?(\.(\*|[0-9]+))?[hlL]?([diouxXeEfFgGcrs%])/g;
+    var regex = /%(\([a-zA-Z0-9]+\))?([#0 +\-]+)?(\*|[0-9]+)?(\.(\*|[0-9]+))?[hlL]?([diouxXeEfFgGcrs%])/g;
     var index = 0;
-    var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, lengthModifier, conversionType)
+    var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
         /*
         print("replace:");
@@ -184,7 +184,7 @@ Str$.prototype.__mod__ = function(rhs)
 
         var formatNumber = function(n, base)
         {
-            // todo; lots
+            var j;
             var r;
             var neg = false;
             var didSign = false;
@@ -210,7 +210,7 @@ Str$.prototype.__mod__ = function(rhs)
             if (precision)
             {
                 //print("r.length",r.length,"precision",precision);
-                for (var j = r.length; j < precision; ++j)
+                for (j = r.length; j < precision; ++j)
                 {
                     r = '0' + r;
                     precZeroPadded = true;
@@ -234,18 +234,19 @@ Str$.prototype.__mod__ = function(rhs)
                 fieldWidth = parseInt(fieldWidth, 10);
                 var totLen = r.length + prefix.length;
                 if (zeroPad)
-                    for (var j = totLen; j < fieldWidth; ++j)
+                    for (j = totLen; j < fieldWidth; ++j)
                         r = '0' + r;
                 else if (leftAdjust)
-                    for (var j = totLen; j < fieldWidth; ++j)
+                    for (j = totLen; j < fieldWidth; ++j)
                         r = r + ' ';
                 else
-                    for (var j = totLen; j < fieldWidth; ++j)
+                    for (j = totLen; j < fieldWidth; ++j)
                         prefix = ' ' + prefix;
             }
             return prefix + r;
         };
 
+        var r;
         var base = 10;
         switch (conversionType)
         {
@@ -271,14 +272,16 @@ Str$.prototype.__mod__ = function(rhs)
                 throw "todo;";
 
             case 'r':
-                var r = repr(rhs.v[i]);
+                r = repr(rhs.v[i]);
                 if (precision) return r.substr(0, precision);
+                return r;
             case 's':
-                var r = str(rhs.v[i]);
+                r = str(rhs.v[i]);
                 if (precision) return r.substr(0, precision);
+                return r;
             case '%':
                 return '%';
-        };
+        }
     };
     
     var ret = this.v.replace(regex, replFunc);
