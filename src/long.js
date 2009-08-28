@@ -59,6 +59,41 @@ Long$.fromInt$ = function(ival)
     return ret;
 };
 
+
+// mul by single digit, ignoring sign
+Long$.mulInt$ = function(a, n)
+{
+    var size_a = Math.abs(a.size$);
+    var z = new Long$(size_a + 1);
+    var carry = 0;
+    var i;
+
+    for (i = 0; i < size_a; ++i)
+    {
+        carry += a.digit$[i] * n;
+        z.digit$[i] = carry & Long$.MASK$;
+        carry >>= Long$.SHIFT$;
+    }
+    z.digit$[i] = carry;
+    return Long$.normalize$(z);
+};
+
+// base 10 js string (not Str$) -> long. used to create longs in transformer.
+Long$.fromJsStr$ = function(s)
+{
+    var ret = Long$.fromInt$(0);
+    var col = Long$.fromInt$(1);
+    var add;
+    for (var i = s.length - 1; i >= 0; --i)
+    {
+        add = Long$.mulInt$(col, parseInt(s.substr(i, 1), 10));
+        ret = ret.__add__(add);
+        col = Long$.mulInt$(col, 10);
+        //print("i", i, "ret", ret.digit$, ret.size$, "col", col.digit$, col.size$, ":",s.substr(i, 1), ":",parseInt(s.substr(i, 1), 10));
+    }
+    return ret;
+};
+
 Long$.prototype.clone = function()
 {
     var ret = new Long$(this.size$);
@@ -76,8 +111,7 @@ Long$.prototype.__add__ = function(other)
         if (other.size$ < 0)
         {
             z = Long$.add$(this, other);
-            if (z && z.size$ !== 0)
-                z.size$ = -z.size$;
+            z.size$ = -z.size$;
         }
         else
         {
@@ -105,8 +139,7 @@ Long$.prototype.__sub__ = function(other)
             z = Long$.sub$(this, other);
         else
             z = Long$.add$(this, other);
-        if (z.size$ !== 0)
-            z.size$ = -z.size$;
+        z.size$ = -z.size$;
     }
     else
     {
@@ -146,6 +179,13 @@ Long$.prototype.__pow__ = function(n)
     if (this.size$ < 0) ret.size$ = -ret.size$;
     return ret;
 };
+
+Long$.prototype.__neg__ = function()
+{
+    var ret = this.clone();
+    ret.size$ = -ret.size$;
+    return ret;
+}
 
 Long$.divrem$ = function(other)
 {
@@ -357,10 +397,19 @@ Long$.prototype.divremInt$ = function(n)
     return rem;
 };
 
-// todo; always base 10 right now, not sure if/where the magic belongs for other bases
 Long$.prototype.__repr__ = function()
 {
-    if (this.size$ === 0) return new Str$("0L");
+    return new Str$(this.str$() + "L");
+};
+
+Long$.prototype.__str__ = function()
+{
+    return new Str$(this.str$());
+}
+
+Long$.prototype.str$ = function()
+{
+    if (this.size$ === 0) return new Str$("0");
     var ret = "";
 
     var tmp = this.clone();
@@ -372,7 +421,34 @@ Long$.prototype.__repr__ = function()
         //print("t:",t);
         ret = "0123456789".substring(t, t + 1) + ret;
     }
-    return new Str$((this.size$ < 0 ? "-" : "") + ret + "L");
+    return (this.size$ < 0 ? "-" : "") + ret;
 };
 
 Long$.prototype.__class__ = new Type$('long', [sk$TypeObject], {});
+
+// handle upconverting a/b from number to long if op causes too big/small a
+// result, or if either of the ops are already longs
+Long$.numOpAndPromotion$ = function(a, b, op)
+{
+    if (typeof a === "number" && typeof b === "number")
+    {
+        var ans = op(a, b);
+        if (ans > Long$.threshold$ || ans < -Long$.threshold$)
+        {
+            // todo; handle float
+            a = Long$.fromInt$(a);
+            b = Long$.fromInt$(b);
+        }
+        else
+        {
+            return ans;
+        }
+    }
+    else if (a.__class__ === Long$.prototype.__class__
+            || b.__class__ === Long$.prototype.__class__)
+    {
+        if (typeof a === "number") a = Long$.fromInt$(a);
+        if (typeof b === "number") b = Long$.fromInt$(b);
+    }
+    return [a, b];
+};

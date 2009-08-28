@@ -19,6 +19,7 @@ function genericVisit(ast, o, argrest)
 }
 
 var gensymCounter = 0;
+var globalObject = this;
 function gensym()
 {
     gensymCounter += 1;
@@ -441,8 +442,9 @@ Compare: function(ast, o)
 
 UnarySub: function(ast, o)
           {
-              o.push("-");
+              o.push("sk$neg(");
               this.visit(ast.expr, o);
+              o.push(")");
           },
 
 Not: function(ast, o)
@@ -468,6 +470,13 @@ Const_: function(ast, o)
             else if (ast.value === null)
             {
                 o.push('null');
+            }
+            else if (ast.value.constructor === Long$)
+            {
+                // todo; lame way of "saving" the object between compiler/runtime envs
+                var tmp = gensym();
+                globalObject[tmp] = ast.value;
+                o.push(tmp);
             }
             else
             {

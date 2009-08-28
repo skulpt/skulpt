@@ -1145,7 +1145,12 @@ Transformer.prototype[T_BACKQUOTE] = function(nodelist)
 
 Transformer.prototype[T_NUMBER] = function(nodelist)
 {
-    var k = eval(nodelist[0].value); // todo;
+    var k = eval(nodelist[0].value);
+    if ((k > Long$.threshold$ || k < -Long$.threshold$)
+            && Math.floor(k) === k) // todo; what to do with floats?
+    {
+        k = Long$.fromJsStr$(nodelist[0].value);
+    }
     return new Const_(k, nodelist[0].context);
 };
 

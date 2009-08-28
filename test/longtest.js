@@ -5,7 +5,7 @@ function check(a, b)
     {
         print("GOT", tostr, a.digit$, a.size$, "\nWANTED", b);
     }
-    print("\twanted",b);
+    //print("\twanted",b);
 }
 
 print("----------------------repr");
@@ -46,6 +46,8 @@ check((Long$.fromInt$(-100)).__add__(Long$.fromInt$(100)), "0L");
 check((Long$.fromInt$(-100)).__add__(Long$.fromInt$(1000000000)), "999999900L");
 check((Long$.fromInt$(1000000000)).__add__(Long$.fromInt$(-100)), "999999900L");
 check((Long$.fromInt$(0)).__add__(Long$.fromInt$(-100)), "-100L");
+check((Long$.fromInt$(0)).__add__(Long$.fromInt$(100)), "100L");
+check((new Long$(0)).__add__(Long$.fromInt$(100)), "100L");
 print("----------------------sub");
 check((Long$.fromInt$(100)).__sub__(Long$.fromInt$(100)), "0L");
 check((Long$.fromInt$(0)).__sub__(Long$.fromInt$(100)), "-100L");

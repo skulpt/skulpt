@@ -61,20 +61,13 @@ function sk$iter(pyobj, callback)
 // todo; these all need to dispatch to methods if defined
 function sk$add(self, other)
 {
-    if (typeof self === "number" && typeof other === "number")
-    {
-        var ans = self + other;
-        if (ans > Long$.threshold$ || ans < -Long$.threshold$)
-        {
-            self = Long$.fromInt$(self);
-            other = Long$.fromInt$(other);
-        }
-        return ans;
-    }
+    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a + b; });
+    if (typeof tmp === "number") return tmp;
+    self = tmp[0];
+    other = tmp[1];
+
     if (self.__add__ !== undefined)
-    {
         return self.__add__(other);
-    }
     else
     {
         throw new TypeError("cannot concatenate '" + typeof self + "' and '" + typeof other + "' objects");
@@ -83,13 +76,33 @@ function sk$add(self, other)
 
 function sk$sub(self, other)
 {
-    if (typeof self !== "number" || typeof other !== "number") throw "TypeError";
-    return self - other;
+    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a - b; });
+    if (typeof tmp === "number") return tmp;
+    self = tmp[0];
+    other = tmp[1];
+
+    if (self.__sub__ !== undefined)
+        return self.__sub__(other);
+    else
+    {
+        throw new TypeError("unsupported operand type(s) for -: '" +
+                typeof self + "' and '" + typeof other + "'");
+    }
 }
 function sk$mul(self, other)
 {
-    if (typeof self !== "number" || typeof other !== "number") throw "TypeError";
-    return self * other;
+    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a * b; });
+    if (typeof tmp === "number") return tmp;
+    self = tmp[0];
+    other = tmp[1];
+
+    if (self.__mul__ !== undefined)
+        return self.__mul__(other);
+    else
+    {
+        throw new TypeError("unsupported operand type(s) for *: '" +
+                typeof self + "' and '" + typeof other + "'");
+    }
 }
 function sk$truediv(self, other)
 {
@@ -103,33 +116,35 @@ function sk$mod(self, other)
 }
 function sk$pow(self, other)
 {
-    if (typeof self === "number" && typeof other === "number")
-    {
-        var ans = Math.pow(self, other);
-        if (ans > Long$.threshold$ || ans < -Long$.threshold$)
-        {
-            self = Long$.fromInt$(self);
-            other = Long$.fromInt$(other);
-        }
-        else
-        {
-            return ans;
-        }
-    }
-    else if (self.__class__ === Long$.prototype.__class__
-            || other.__class__ === Long$.prototype.__class__)
-    {
-        if (typeof self === "number") self = Long$.fromInt$(self);
-        if (typeof other === "number") other = Long$.fromInt$(other);
-    }
+    var tmp = Long$.numOpAndPromotion$(self, other, Math.pow);
+    if (typeof tmp === "number") return tmp;
+    self = tmp[0];
+    other = tmp[1];
+
     if (self.__pow__ !== undefined)
-    {
         return self.__pow__(other);
-    }
     else
     {
         throw new TypeError("unsupported operand type(s) for ** or pow(): '" +
                 typeof self + "' and '" + typeof other + "'");
+    }
+}
+
+function sk$neg(self)
+{
+    if (typeof self === "number")
+    {
+        return -self;
+    }
+
+    if (self.__neg__ !== undefined)
+    {
+        return self.__neg__();
+    }
+    else
+    {
+        throw new TypeError("bad operand type for unary -: '" +
+                typeof self + "'");
     }
 }
 
