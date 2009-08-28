@@ -48,7 +48,7 @@ function sk$iter(pyobj, callback)
         len = s.length;
         for (i = 0; i < len; ++i)
         {
-            ret = callback.call(null, s.substr(i, 1));
+            ret = callback.call(null, new Str$(s.substr(i, 1)));
             if (ret === false) break;
         }
     }
