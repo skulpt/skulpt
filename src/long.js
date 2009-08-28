@@ -1,5 +1,19 @@
 // long aka "bigint" implementation
-// it's better not to think about how many processor-level instructions this is causing!
+//
+// the representation used is similar to python 2.6's:
+//
+// - each 'digit' of the long is 15 bits, which gives enough space in each to
+// perform a multiplication without losing precision in the mantissa of
+// javascript's number representation (a double).
+//
+// - the numbers are stored as the absolute value of the number, with an
+// additional size field that's the number of digits in the long. if size < 0,
+// the number is negative, and it's 0 if the long is 0.
+//
+// some of the implementation is also ported from longobject.c in python2.6.
+//
+// it's better not to think about how many processor-level instructions this
+// is causing!
 
 
 Long$ = function(size)
@@ -110,6 +124,74 @@ Long$.prototype.__mul__ = function(other)
 	if (this.size$ * other.size$ < 0)
 		z.size$ = -z.size$;
     return z;
+};
+
+Long$.prototype.__pow__ = function(n)
+{
+    // todo; upconvert n
+
+    var ret = Long$.fromInt$(1);
+    var x = this.clone();
+    while (n.size$ > 0)
+    {
+        if (n.digit$[0] % 2 !== 0) // odd
+        {
+            ret = Long$.mul$(ret, x);
+            n.digit$[0] &= ~1;
+        }
+        x = Long$.mul$(x, x);
+        n.divremInt$(2);
+    }
+    return ret;
+};
+
+Long$.divrem$ = function(other)
+{
+    var size_a = Math.abs(this.size$);
+    var size_b = Math.abs(other.size$);
+    var z;
+    var rem;
+
+    if (other.size$ === 0)
+        throw new ZeroDivisionError("long division or modulo by zero");
+
+    if (size_a < size_b ||
+            a.digit$[size_a - 1] < b.digit$[size_b - 1])
+    {
+        // |a| < |b|
+        return [0, a];
+    }
+    if (size_b === 1)
+    {
+        z = a.clone();
+        var remi = z.divremInt$(b.digit$[0]);
+        rem = new Long$(1);
+        rem.digit$[0] = remi;
+    }
+	else
+    {
+        var tmp = Long$.divremFull$(a, b);
+        z = tmp[0];
+        rem = tmp[1];
+	}
+    // z has sign of a*b, remainder has sign of a so that a=b*z+r
+    if ((a.size$ < 0) !== (b.size$ < 0))
+        z.size$ = -z.size$;
+    if (a.size$ < 0 && rem.size$ !== 0)
+        rem.size$ = -rem.size$;
+    return [z, rem];
+};
+
+Long$.divremFull$ = function(v1, w1)
+{
+    throw "todo;";
+    /*
+    var size_v = Math.abs(v1.size$);
+    var size_w = Math.abs(w1.size$);
+    var d = Long$.BASE$ / (w1.digit[size_w - 1] + 1);
+    var v = Long$.mulInt$(v1, d);
+    var w = Long$.mulInt$(w1, d);
+    */
 };
 
 Long$.normalize$ = function(v)
@@ -254,7 +336,7 @@ Long$.prototype.__nonzero__ = function()
 };
 
 // divide this by non-zero digit n (inplace). return remainder.
-Long$.prototype.divrem_$ = function(n)
+Long$.prototype.divremInt$ = function(n)
 {
     var rem;
     var cur = Math.abs(this.size$);
@@ -279,7 +361,7 @@ Long$.prototype.__repr__ = function()
     while (tmp.__nonzero__())
     {
         //print("before d:",tmp.digit$, "s:",tmp.size$);
-        var t = tmp.divrem_$(10);
+        var t = tmp.divremInt$(10);
         //print("after d:",tmp.digit$, "s:",tmp.size$);
         //print("t:",t);
         ret = "0123456789".substring(t, t + 1) + ret;

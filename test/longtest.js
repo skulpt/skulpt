@@ -68,3 +68,8 @@ check((Long$.fromInt$(1000)).__mul__(Long$.fromInt$(1000)), "1000000L");
 check((Long$.fromInt$(10000)).__mul__(Long$.fromInt$(10000)), "100000000L");
 check((Long$.fromInt$(1234567)).__mul__(Long$.fromInt$(987654)), "1219325035818L");
 check((Long$.fromInt$(-4)).__mul__(Long$.fromInt$(100)), "-400L");
+print("----------------------pow");
+check((Long$.fromInt$(0)).__pow__(Long$.fromInt$(0)), "1L");
+check((Long$.fromInt$(2)).__pow__(Long$.fromInt$(5)), "32L");
+check((Long$.fromInt$(2)).__pow__(Long$.fromInt$(100)), "1267650600228229401496703205376L");
+check((Long$.fromInt$(45)).__pow__(Long$.fromInt$(123)), "221380413535717951381719900889598385877985018125157963549526209949411353588054056060808889443572049605826203407737866682728901508127084151522949268748976128136645054322872994134741020388901233673095703125L");

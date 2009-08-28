@@ -31,3 +31,4 @@ function SyntaxError(msg, file, lnum, col, line) { return makeStdError(this, "Sy
 function ValueError(msg, file, lnum, col, line) { return makeStdError(this, "ValueError", arguments); }
 function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "TypeError", arguments); }
 function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }
+function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); }
