@@ -713,21 +713,24 @@ Transformer.prototype.funcdef = function(nodelist)
     return new Function_(decorators, name, names, defaults, varargs, varkeywords, doc, code, lineno);
 };
 
-/*
-    def lambdef(self, nodelist):
-        # lambdef: 'lambda' [varargslist] ':' test
-        if nodelist[2][0] == symbol.varargslist:
-            names, defaults, flags = self.com_arglist(nodelist[2][1:])
-        else:
-            names = defaults = ()
-            flags = 0
+Transformer.prototype.lambdef = function(nodelist)
+{
+    // lambdef: 'lambda' [varargslist] ':' test
 
-        # code for lambda
-        code = self.com_node(nodelist[-1])
+    var names = [];
+    var defaults = [];
+    var flags = 0;
+    if (nodelist.children[1].type == this.sym.varargslist)
+    {
+        var ret = this.com_arglist(nodelist.children[1].children);
+        names = ret[0];
+        defaults = ret[1];
+        flags = ret[2];
+    }
 
-        return Lambda(names, defaults, flags, code, lineno=nodelist[1][2])
-    old_lambdef = lambdef
-*/
+    var code = this.dispatch(nodelist.children[nodelist.children.length - 1]);
+    return new Lambda(names, defaults, flags, null, code, nodelist.context);
+};
 
 Transformer.prototype.com_bases = function(node)
 {

@@ -485,54 +485,67 @@ Const_: function(ast, o)
             o.push(")");
         },
 
+makeFuncBody: function(ast, o, args, islamb)
+              {
+                  var i;
+                  var inclass = args !== undefined;
+                  var argstart = inclass ? 1 : 0; // todo; staticmethod
+
+                  if (inclass) o.push(args.klass + ".prototype.");
+
+                  o.push(ast.name); // todo; safeize?
+                  if (!islamb) o.push("="); // lambdas are compiled as "values"
+                  o.push("function(");
+                  for (i = argstart; i < ast.argnames.length; ++i)
+                  {
+                      o.push(ast.argnames[i]);
+                      if (i !== ast.argnames.length - 1) o.push(",");
+                  }
+                  o.push("){");
+                  for (i = argstart; i < ast.argnames.length; ++i)
+                  {
+                      if (!ast.defaults[i]) continue;
+                      o.push("if(");
+                      o.push(ast.argnames[i]); // todo; safeize
+                      o.push("===undefined){");
+                      o.push(ast.argnames[i]);
+                      o.push("=");
+                      this.visit(ast.defaults[i], o);
+                      o.push(";}");
+                  }
+                  // todo; varargs, kwargs
+                  ast.code.walkChildren(hDeclareLocals, { func: ast, o: o });
+                  if (islamb) o.push("return(");
+                  if (inclass)
+                  {
+                      ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
+                  }
+                  this.visit(ast.code, o);
+                  if (islamb) o.push(");");
+                  o.push("};");
+                  if (inclass)
+                  {
+                      // for direct calls to base, like Base.__init__(self, ...)
+                      o.push(args.klass);
+                      o.push(".");
+                      o.push(ast.name);
+                      o.push("=function(){");
+                      o.push(args.klass);
+                      o.push(".prototype.");
+                      o.push(ast.name);
+                      o.push(".apply(arguments[0],Array.prototype.slice.call(arguments,1));};");
+                  }
+              },
+
 Function_: function(ast, o, args)
            {
-               var i;
-               var inclass = args !== undefined;
-               var argstart = inclass ? 1 : 0; // todo; staticmethod
-
-               if (inclass) o.push(args.klass + ".prototype.");
-
-               o.push(ast.name); // todo; safeize?
-               o.push("=function(");
-               for (i = argstart; i < ast.argnames.length; ++i)
-               {
-                   o.push(ast.argnames[i]);
-                   if (i !== ast.argnames.length - 1) o.push(",");
-               }
-               o.push("){");
-               for (i = argstart; i < ast.argnames.length; ++i)
-               {
-                   if (!ast.defaults[i]) continue;
-                   o.push("if(");
-                   o.push(ast.argnames[i]); // todo; safeize
-                   o.push("===undefined){");
-                   o.push(ast.argnames[i]);
-                   o.push("=");
-                   this.visit(ast.defaults[i], o);
-                   o.push(";}");
-               }
-               // todo; varargs, kwargs
-               ast.code.walkChildren(hDeclareLocals, { func: ast, o: o });
-               if (inclass)
-               {
-                   ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
-               }
-               this.visit(ast.code, o);
-               o.push("};");
-               if (inclass)
-               {
-                   // for direct calls to base, like Base.__init__(self, ...)
-                   o.push(args.klass);
-                   o.push(".");
-                   o.push(ast.name);
-                   o.push("=function(){");
-                   o.push(args.klass);
-                   o.push(".prototype.");
-                   o.push(ast.name);
-                   o.push(".apply(arguments[0], Array.prototype.slice.call(arguments, 1));};");
-               }
+               this.makeFuncBody(ast, o, args, false);
            },
+
+Lambda: function(ast, o)
+        {
+            this.makeFuncBody(ast, o, undefined, true);
+        },
 
 Return_: function(ast, o)
          {
