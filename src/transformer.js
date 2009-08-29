@@ -720,7 +720,7 @@ Transformer.prototype.lambdef = function(nodelist)
     var names = [];
     var defaults = [];
     var flags = 0;
-    if (nodelist.children[1].type == this.sym.varargslist)
+    if (nodelist.children[1].type === this.sym.varargslist)
     {
         var ret = this.com_arglist(nodelist.children[1].children);
         names = ret[0];
