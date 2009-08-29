@@ -273,12 +273,12 @@ Str$.prototype.__mod__ = function(rhs)
 
             case 'r':
                 r = repr(rhs.v[i]);
-                if (precision) return r.substr(0, precision);
-                return r;
+                if (precision) return r.v.substr(0, precision);
+                return r.v;
             case 's':
                 r = str(rhs.v[i]);
-                if (precision) return r.substr(0, precision);
-                return r;
+                if (precision) return r.v.substr(0, precision);
+                return r.v;
             case '%':
                 return '%';
         }
