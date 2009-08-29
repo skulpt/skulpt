@@ -147,17 +147,6 @@ Str$.prototype.__mod__ = function(rhs)
     var index = 0;
     var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
-        /*
-        print("replace:");
-        print("  index", index);
-        print("  substring", substring);
-        print("  mappingKey", mappingKey);
-        print("  conversionFlags", conversionFlags);
-        print("  fieldWidth", fieldWidth);
-        print("  precision", precision);
-        print("  conversionType", conversionType);
-        */
-
         if (mappingKey !== undefined) throw "todo;";
         var i = index++;
 
@@ -266,10 +255,25 @@ Str$.prototype.__mod__ = function(rhs)
             case 'F':
             case 'g':
             case 'G':
-                throw "todo;";
+                print("replace:");
+                print("  index", index);
+                print("  substring", substring);
+                print("  mappingKey", mappingKey);
+                print("  conversionFlags", conversionFlags);
+                print("  fieldWidth", fieldWidth);
+                print("  precision", precision);
+                print("  conversionType", conversionType);
+                throw "todo";
 
             case 'c':
-                throw "todo;";
+                if (typeof rhs.v[i] === "number")
+                    return String.fromCharCode(rhs.v[i]);
+                else if (rhs.v[i].constructor === Long$)
+                    return String.fromCharCode(rhs.v[i].digit$[0] & 255);
+                else if (rhs.v[i].constructor === Str$)
+                    return rhs.v[i].v.substr(0, 1);
+                else
+                    throw new TypeError("an integer is required");
 
             case 'r':
                 r = repr(rhs.v[i]);
