@@ -314,6 +314,7 @@ function dir(x)
 function str(x)
 {
     var ret;
+    if (x === undefined) throw "error: trying to str undefined (should be at least null)";
     if (typeof x === "number")
         ret = x.toString();
     else if (x.__str__ !== undefined)

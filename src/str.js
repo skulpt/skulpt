@@ -134,10 +134,7 @@ Str$.prototype.__mod__ = function(rhs)
     //
     // length modifier is ignored
 
-    // todo; mapping/dict rhs
-    if (rhs.constructor === Dict$) throw "todo; dict format";
-
-    if (rhs.constructor !== Tuple$) rhs = new Tuple$([rhs]);
+    if (rhs.constructor !== Tuple$ && (rhs.__getitem__ === undefined || rhs.constructor === Str$)) rhs = new Tuple$([rhs]);
     
     // general approach is to use a regex that matches the format above, and
     // do an re.sub with a function as replacement to make the subs.
@@ -147,8 +144,8 @@ Str$.prototype.__mod__ = function(rhs)
     var index = 0;
     var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
-        if (mappingKey !== undefined) throw "todo;";
-        var i = index++;
+        var i;
+        if (mappingKey === undefined) i = index++;
 
         var zeroPad = false;
         var leftAdjust = false;
@@ -218,6 +215,13 @@ Str$.prototype.__mod__ = function(rhs)
                 else if (base === 8 && !precZeroPadded && r !== "0") prefix += '0';
             }
 
+            return [prefix, r];
+        };
+
+        var handleWidth = function(args)
+        {
+            var prefix = args[0];
+            var r = args[1];
             if (fieldWidth)
             {
                 fieldWidth = parseInt(fieldWidth, 10);
@@ -235,19 +239,29 @@ Str$.prototype.__mod__ = function(rhs)
             return prefix + r;
         };
 
+        var value;
+        //print("Rhs:",rhs, "ctor", rhs.constructor);
+        if (rhs.constructor === Tuple$) value = rhs.v[i];
+        else if (rhs.__getitem__ !== undefined)
+        {
+            var mk = mappingKey.substring(1, mappingKey.length - 1);
+            //print("mk",mk);
+            value = rhs.__getitem__(new Str$(mk));
+        }
+        else throw new AttributeError(rhs.__class__.name + " instance has no attribute '__getitem__'");
         var r;
         var base = 10;
         switch (conversionType)
         {
             case 'd':
             case 'i':
-                return formatNumber(rhs.v[i], 10);
+                return handleWidth(formatNumber(value, 10));
             case 'o':
-                return formatNumber(rhs.v[i], 8);
+                return handleWidth(formatNumber(value, 8));
             case 'x':
-                return formatNumber(rhs.v[i], 16);
+                return handleWidth(formatNumber(value, 16));
             case 'X':
-                return formatNumber(rhs.v[i], 16).toUpperCase();
+                return handleWidth(formatNumber(value, 16)).toUpperCase();
 
             case 'e':
             case 'E':
@@ -255,6 +269,29 @@ Str$.prototype.__mod__ = function(rhs)
             case 'F':
             case 'g':
             case 'G':
+                var convName = ['toExponential', 'toFixed', 'toPrecision']['efg'.indexOf(conversionType.toLowerCase())];
+                var result = (value)[convName](precision);
+                if ('EFG'.indexOf(conversionType) !== -1) result = result.toUpperCase();
+                // todo; signs etc.
+                return handleWidth(['', result]);
+
+            case 'c':
+                if (typeof value === "number")
+                    return String.fromCharCode(value);
+                else if (value.constructor === Long$)
+                    return String.fromCharCode(value.digit$[0] & 255);
+                else if (value.constructor === Str$)
+                    return value.v.substr(0, 1);
+                else
+                    throw new TypeError("an integer is required");
+
+            case 'r':
+                r = repr(value);
+                if (precision) return r.v.substr(0, precision);
+                return r.v;
+            case 's':
+                /*
+                print("value",value);
                 print("replace:");
                 print("  index", index);
                 print("  substring", substring);
@@ -263,24 +300,8 @@ Str$.prototype.__mod__ = function(rhs)
                 print("  fieldWidth", fieldWidth);
                 print("  precision", precision);
                 print("  conversionType", conversionType);
-                throw "todo";
-
-            case 'c':
-                if (typeof rhs.v[i] === "number")
-                    return String.fromCharCode(rhs.v[i]);
-                else if (rhs.v[i].constructor === Long$)
-                    return String.fromCharCode(rhs.v[i].digit$[0] & 255);
-                else if (rhs.v[i].constructor === Str$)
-                    return rhs.v[i].v.substr(0, 1);
-                else
-                    throw new TypeError("an integer is required");
-
-            case 'r':
-                r = repr(rhs.v[i]);
-                if (precision) return r.v.substr(0, precision);
-                return r.v;
-            case 's':
-                r = str(rhs.v[i]);
+                */
+                r = str(value);
                 if (precision) return r.v.substr(0, precision);
                 return r.v;
             case '%':
