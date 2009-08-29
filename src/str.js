@@ -222,6 +222,7 @@ Str$.prototype.__mod__ = function(rhs)
         {
             var prefix = args[0];
             var r = args[1];
+            var j;
             if (fieldWidth)
             {
                 fieldWidth = parseInt(fieldWidth, 10);
@@ -284,6 +285,7 @@ Str$.prototype.__mod__ = function(rhs)
                     return value.v.substr(0, 1);
                 else
                     throw new TypeError("an integer is required");
+                break; // stupid lint
 
             case 'r':
                 r = repr(value);

@@ -32,3 +32,4 @@ function ValueError(msg, file, lnum, col, line) { return makeStdError(this, "Val
 function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "TypeError", arguments); }
 function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }
 function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); }
+function AttributeError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
