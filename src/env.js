@@ -419,7 +419,7 @@ function sk$call(obj)
             throw new AttributeError(obj.__class__.name + " instance has no __call__ method");
         }
     }
-};
+}
 
 var object = function()
 {

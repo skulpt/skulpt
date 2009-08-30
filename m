@@ -7,8 +7,8 @@ import glob
 
 # order is important!
 Files = [
-        'src/env.js',
         'src/errors.js',
+        'src/env.js',
         'src/type.js',
         'src/str.js',
         'src/list.js',
