@@ -191,6 +191,9 @@ def upload():
 def debug(fn):
     """pretty print the compilation of fn, and then start a debug console with
     the environment loaded."""
+    if not os.path.exists(fn):
+        print "%s doesn't exist" % fn
+        raise SystemExit()
     f = open("support/tmp/compiledump.js", "w")
     f.write("""
 var input = read('%s');
@@ -200,7 +203,7 @@ print(Skulpt.compileStr('%s', input));
     os.system("support/d8/d8 --trace_exception %s test/footer_test.js support/tmp/compiledump.js > support/tmp/dump.js" % (
         ' '.join(getFileList('test'))))
     os.system("support/js-beautify/bin/beautify_js support/tmp/dump.js")
-    os.system("support/d8/d8 --shell --trace_exception %s test/footer_test.js %s" % (
+    os.system("support/d8/d8 --shell --trace_exception %s test/footer_test.js %s support/tmp/dump.js" % (
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
 

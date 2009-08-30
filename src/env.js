@@ -366,7 +366,7 @@ if (!Function.prototype.bind)
         };
     };
 }
-function ga$(o, attrname)
+function sk$ga(o, attrname)
 {
     var v = o[attrname];
     if (v === undefined && o.__getattr__ !== undefined)
@@ -383,17 +383,48 @@ function sk$makeClass()
         {
             return new arguments.callee(arguments, true);
         }
+
         if (doinit && this.__init__ !== undefined)
             this.__init__.apply(this, args);
+
         return this;
     };
     ret.__class__ = sk$TypeType;
     return ret;
 }
 
+// unfortunately (at least pre-ecmascript 5) there's no way to make objects be
+// both callable and have arbitrary prototype chains.
+// http://stackoverflow.com/questions/548487/how-do-i-make-a-callable-js-object-with-an-arbitrary-prototype
+// todo; look into modifying Function.prototype call/apply.. does that work properly?
+// so, in order to support __call__ on objects we have to wrap all
+// python-level calls in a call that checks if the target is an object that
+// has a __call__ attribute so we can dispatch to it. sucky.
+function sk$call(obj)
+{
+    var args = Array.prototype.slice.call(arguments);
+    args.shift();
+    try
+    {
+        return obj.apply(this, args);
+    }
+    catch (e)
+    {
+        if (obj.__call__ !== undefined)
+        {
+            return obj.__call__.apply(obj, args);
+        }
+        else
+        {
+            throw new AttributeError(obj.__class__.name + " instance has no __call__ method");
+        }
+    }
+};
+
 var object = function()
 {
     this.__dict__ = {};
+    return this;
 };
 object.prototype.__setattr__ = function(k,v)
 {
@@ -406,5 +437,6 @@ object.prototype.__getattr__ = function(k)
 };
 object.prototype.__repr__ = function(k)
 {
+    // todo; modules, obviously
     return new Str$("<__main__." + this.__name__ + " instance>");
 };

@@ -341,7 +341,7 @@ Sliceobj: function(ast, o)
 
 Getattr: function(ast, o)
          {
-             o.push("ga$(");
+             o.push("sk$ga(");
              this.visit(ast.expr, o);
              o.push(",'");
              o.push(ast.attrname);
@@ -571,9 +571,10 @@ Discard: function(ast, o)
 
 CallFunc: function(ast, o)
           {
-              o.push("(");
+              // see comment in env.js about sk$call
+              o.push("sk$call(");
               this.visit(ast.node, o);
-              o.push(")(");
+              if (ast.args.length !== 0) o.push(", ");
               for (var i = 0; i < ast.args.length; ++i)
               {
                   this.visit(ast.args[i], o);
