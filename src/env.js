@@ -354,6 +354,30 @@ function type(name, bases, dict)
     }
 }
 
+function hash(value)
+{
+    if (value instanceof Object && value.__hash__ !== undefined)
+    {
+        if (value.__hash) return value.__hash;
+        value.__hash = 'custom ' + value.__hash__();
+        return value.__hash;
+    }
+
+    if (value instanceof Object)
+    {
+        if (value.__id === undefined)
+        {
+            hash.current += 1;
+            value.__id = 'object ' + hash.current;
+        }
+        return value.__id;
+    }
+    return (typeof value) + ' ' + String(value);
+
+    // todo; throw properly for unhashable types
+}
+hash.current = 0;
+
 // stupid language.
 if (!Function.prototype.bind)
 {

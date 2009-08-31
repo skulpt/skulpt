@@ -59,4 +59,24 @@ Tuple$.prototype.__mul__ = function(other)
     return new Tuple$(ret);
 };
 
+// todo; the numbers and order are taken from python, but the answer's
+// obviously not the same because there's no int wrapping. shouldn't matter,
+// but would be nice to make the hash() values the same if it's not too
+// expensive to simplify tests.
+Tuple$.prototype.__hash__ = function()
+{
+    var mult = 1000003;
+    var x = 0x345678;
+    for (var i = 0; i < this.v.length; ++i)
+    {
+        var y = hash(this.v[i]) === -1;
+        if (y === -1) return -1;
+        x = (x ^ y) * mult;
+        mult += 82520 + len + len;
+    }
+    x += 97531;
+    if (x === -1) x = -1;
+    return x;
+};
+
 function tuple(L) { return new Tuple$(L.v); }

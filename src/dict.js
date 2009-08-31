@@ -12,15 +12,8 @@ Dict$ = function(L)
 
 Dict$.prototype.key$ = function(value)
 {
-    /*if (value instanceof Object && value.hasOwnProperty('__hash__'))
-        value.__hash = value.__hash__();*/
-    arguments.callee.current += 1;
-	return value instanceof Object ? (value.__hash ||
-		(value.__hash = 'object ' + arguments.callee.current)) :
-		(typeof value) + ' ' + String(value);
+    return hash(value);
 };
-
-Dict$.prototype.key$.current = 0;
 
 Dict$.prototype.clear = function() { throw "todo; dict.clear"; };
 Dict$.prototype.copy = function() { throw "todo; dict.copy"; };
