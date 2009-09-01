@@ -13,9 +13,12 @@ Slice$ = function(start, stop, step)
     this.step = step;
 };
 
-Slice$.prototype.toString = function()
+Slice$.prototype.__str__ = function()
 {
-    return "slice(" + new Str$(this.start).v + ", " + new Str$(this.stop).v + ", " + new Str$(this.step).v + ")";
+    var a = repr(this.start).v;
+    var b = repr(this.stop).v;
+    var c = repr(this.step).v;
+    return new Str$("slice(" + a + ", " + b + ", " + c + ")");
 };
 
 Slice$.prototype.indices = function(length)

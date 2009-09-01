@@ -1,7 +1,7 @@
 Type$ = function(name, bases, dict)
 {
-    this.name = name;
-    this.bases = bases;
+    this.__name__ = name;
+    this.__bases__ = bases;
     this.dict = dict;
 };
 
@@ -12,10 +12,10 @@ Type$.prototype.mro = function()
 
 Type$.prototype.__repr__ = function()
 {
-    return new Str$("<type '" + this.name + "'>");
+    return new Str$("<type '" + this.__name__ + "'>");
 };
 
 sk$TypeObject = new Type$('object', [], {});
-sk$TypeObject.bases.push(sk$TypeObject);
+sk$TypeObject.__bases__.push(sk$TypeObject);
 sk$TypeType = new Type$('type', [sk$TypeObject], {});
 sk$TypeInt = new Type$('int', [sk$TypeObject], {});

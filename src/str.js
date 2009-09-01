@@ -1,19 +1,8 @@
 Str$ = function(val)
 {
+    if (val && val.constructor === Str$) return val; // todo; shouldn't be necessary?
     if (val === undefined) val = "";
-    if (val === null) val = "None";
-    if (val === false) val = "False";
-    if (val === true) val = "True";
-    if (val.constructor === Str$)
-    {
-        return val;
-    }
-    if (val.__str__ !== undefined)
-        val = val.__str__().v;
-    else if (val.__repr__ !== undefined)
-        val = val.__repr__().v;
-    else
-        val = val.toString();
+    if (typeof val !== "string") throw "Str$ constructor expecting js string, got " + typeof val;
 
     // interning required for strings in py
     if (Str$.prototype.internStrings$.hasOwnProperty(val))

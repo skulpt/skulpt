@@ -20,7 +20,7 @@ var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
 function sk$print(x)
 {
-    var s = new Str$(x);
+    var s = str(x);
     sk$output(s.v);
 }
 
@@ -62,7 +62,7 @@ function sk$typename(o)
 {
     if (typeof o === "number") return sk$TypeInt.name;
     if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
-    return o.__class__.name;
+    return o.__class__.__name__;
 }
 
 // todo; these all need to dispatch to methods if defined
@@ -315,22 +315,30 @@ function str(x)
 {
     var ret;
     if (x === undefined) throw "error: trying to str undefined (should be at least null)";
-    if (typeof x === "number")
+    else if (x === true) ret = "True";
+    else if (x === false) ret = "False";
+    else if (x === null) ret = "None";
+    else if (x && x.constructor === Str$) return x;
+    else if (typeof x === "number")
         ret = x.toString();
+    else if (typeof x === "string")
+        ret = x;
     else if (x.__str__ !== undefined)
         ret = x.__str__();
-    else if (x.__repr__ !== undefined)
-        ret = x.__repr__();
+    else
+        return repr(x);
     return new Str$(ret);
 }
 
 function repr(x)
 {
     var ret;
-    if (typeof x === "number")
-        ret = x.toString();
+    if (typeof x === "number") ret = x.toString();
+    else if (x === true) ret = "True";
+    else if (x === false) ret = "False";
+    else if (x === null) ret = "None";
     else if (x.__repr__ !== undefined)
-        ret = x.__repr__();
+        return x.__repr__();
     return new Str$(ret);
 }
 
@@ -344,9 +352,7 @@ function type(name, bases, dict)
         if (typeof obj === "number")
             return sk$TypeInt;
         else
-        {
             return obj.__class__;
-        }
     }
     else
     {
@@ -399,6 +405,7 @@ function sk$ga(o, attrname)
     return v;
 }
 
+/*
 function sk$makeClass()
 {
     var ret = function(args, doinit)
@@ -411,11 +418,14 @@ function sk$makeClass()
         if (doinit && this.__init__ !== undefined)
             this.__init__.apply(this, args);
 
+        this.__class__ = arguments.callee;
+
         return this;
     };
     ret.__class__ = sk$TypeType;
     return ret;
 }
+*/
 
 // unfortunately (at least pre-ecmascript 5) there's no way to make objects be
 // both callable and have arbitrary prototype chains.
@@ -434,13 +444,16 @@ function sk$call(obj)
     }
     catch (e)
     {
+        print(e.toString());
         if (obj.__call__ !== undefined)
         {
             return obj.__call__.apply(obj, args);
         }
         else
         {
-            throw new AttributeError(obj.__class__.name + " instance has no __call__ method");
+            if (obj.__class__ === undefined)
+                throw new AttributeError("trying to call uncallable and non-class?");
+            throw new AttributeError(obj.__class__.__name__ + " instance has no __call__ method");
         }
     }
 }
@@ -462,5 +475,5 @@ object.prototype.__getattr__ = function(k)
 object.prototype.__repr__ = function(k)
 {
     // todo; modules, obviously
-    return new Str$("<__main__." + this.__name__ + " instance>");
+    return new Str$("<__main__." + this.__class__.__name__ + " instance>");
 };

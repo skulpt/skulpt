@@ -684,7 +684,7 @@ ListComp: function(ast, o)
 Class_: function(ast, o)
         {
             //print(JSON.stringify(ast, null, 2));
-            o.push("var " + ast.name + "=sk$makeClass();\n");
+            o.push("var " + ast.name + "=function(){if(!(this instanceof arguments.callee)) return new arguments.callee(arguments); if(this.__init__!==undefined)this.__init__.apply(this, arguments);return this;};");
             if (ast.bases === null || ast.bases.length === 0)
                 o.push(ast.name + ".prototype=new object();\n");
             else
@@ -694,10 +694,10 @@ Class_: function(ast, o)
                 this.visit(ast.bases[0], o);
                 o.push("();");
             }
-            o.push(ast.name);
-            o.push(".prototype.__name__='");
-            o.push(ast.name);
-            o.push("';");
+            o.push(ast.name + ".__class__=sk$TypeType;");
+            o.push(ast.name + ".__name__='" + ast.name + "';");
+            o.push(ast.name + ".__repr__=function(){return new Str$(\"<class '__main__." + ast.name + "'>\");};");
+            o.push(ast.name + ".prototype.__class__=" + ast.name +";");
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
                 this.visit(ast.code.nodes[i], o, {klass:ast.name});
