@@ -405,28 +405,6 @@ function sk$ga(o, attrname)
     return v;
 }
 
-/*
-function sk$makeClass()
-{
-    var ret = function(args, doinit)
-    {
-        if (!(this instanceof arguments.callee))
-        {
-            return new arguments.callee(arguments, true);
-        }
-
-        if (doinit && this.__init__ !== undefined)
-            this.__init__.apply(this, args);
-
-        this.__class__ = arguments.callee;
-
-        return this;
-    };
-    ret.__class__ = sk$TypeType;
-    return ret;
-}
-*/
-
 // unfortunately (at least pre-ecmascript 5) there's no way to make objects be
 // both callable and have arbitrary prototype chains.
 // http://stackoverflow.com/questions/548487/how-do-i-make-a-callable-js-object-with-an-arbitrary-prototype
@@ -444,7 +422,7 @@ function sk$call(obj)
     }
     catch (e)
     {
-        print(e.toString());
+        //print(e.toString());
         if (obj.__call__ !== undefined)
         {
             return obj.__call__.apply(obj, args);

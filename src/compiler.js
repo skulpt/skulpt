@@ -684,7 +684,13 @@ ListComp: function(ast, o)
 Class_: function(ast, o)
         {
             //print(JSON.stringify(ast, null, 2));
-            o.push("var " + ast.name + "=function(){if(!(this instanceof arguments.callee)) return new arguments.callee(arguments); if(this.__init__!==undefined)this.__init__.apply(this, arguments);return this;};");
+            o.push("var " + ast.name + "=function(args,doinit){if(!(this instanceof ");
+            o.push(ast.name);
+            o.push(")) return new ");
+            o.push(ast.name);
+            // doinit is a hack to not call __init__ when we're just setting
+            // up prototype chains.
+            o.push("(arguments,true);if(doinit&&this.__init__!==undefined)this.__init__.apply(this, args);return this;};");
             if (ast.bases === null || ast.bases.length === 0)
                 o.push(ast.name + ".prototype=new object();\n");
             else
