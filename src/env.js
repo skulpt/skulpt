@@ -18,12 +18,6 @@ if (this.console !== undefined && this.console.log !== undefined) sk$output = th
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
-function sk$print(x)
-{
-    var s = str(x);
-    sk$output(s.v);
-}
-
 function sk$iter(pyobj, callback)
 {
     var i, obj, s, len, ret;
@@ -311,6 +305,18 @@ function dir(x)
     return new List$(names);
 }
 
+function repr(x)
+{
+    var ret;
+    if (typeof x === "number") ret = x.toString();
+    else if (x === true) ret = "True";
+    else if (x === false) ret = "False";
+    else if (x === null) ret = "None";
+    else if (x.__repr__ !== undefined)
+        return x.__repr__();
+    return new Str$(ret);
+}
+
 function str(x)
 {
     var ret;
@@ -327,18 +333,6 @@ function str(x)
         ret = x.__str__();
     else
         return repr(x);
-    return new Str$(ret);
-}
-
-function repr(x)
-{
-    var ret;
-    if (typeof x === "number") ret = x.toString();
-    else if (x === true) ret = "True";
-    else if (x === false) ret = "False";
-    else if (x === null) ret = "None";
-    else if (x.__repr__ !== undefined)
-        return x.__repr__();
     return new Str$(ret);
 }
 
@@ -383,6 +377,13 @@ function hash(value)
     // todo; throw properly for unhashable types
 }
 hash.current = 0;
+
+function sk$print(x)
+{
+    var s = str(x);
+    sk$output(s.v);
+}
+
 
 // stupid language.
 if (!Function.prototype.bind)
