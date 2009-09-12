@@ -115,7 +115,7 @@ function initTerminal(w, h)
                 evaled = true;
                 //console.log(js);
                 var evret = eval.call(window, js);
-                if (evret !== undefined)
+                if (evret)
                 {
                     if (evret.__repr__ !== undefined)
                         got += evret.__repr__().v + "\n";

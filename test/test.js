@@ -227,7 +227,7 @@ function testInteractive(name)
         {
             try {
                 var ret = eval(js);
-                if (ret !== undefined && ret.__repr__ !== undefined)
+                if (ret && ret.__repr__ !== undefined)
                     got += ret.__repr__().v + "\n";
             }
             catch (e) { got += "EXCEPTION: " + e.message + "\n" + e.stack + "\n"; }
