@@ -163,32 +163,19 @@ function sk$neg(self)
 
 function sk$unpack(lhsnames, rhs)
 {
-    var i;
     var newRHS = [];
-    if (rhs.constructor === Str$)
-    {
-        // explode str
-        rhs = rhs.v;
-        for (i = 0; i < rhs.length; ++i)
-        {
-            newRHS.push(new Str$(rhs[i]));
-        }
-        rhs = newRHS;
-    }
-    else
-    {
-        sk$iter(rhs, function(v) { newRHS.push(v); });
-        rhs = newRHS;
-    }
+    for (var iter = rhs.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
+        newRHS.push(i);
+    rhs = newRHS;
 
     if (lhsnames.length !== rhs.length)
     {
         throw "ValueError: unpack had " + lhsnames.length  + " on the left, but " + rhs.length + " on the right.";
     }
     // todo; what the heck is 'this' here?
-    for (i = 0; i < lhsnames.length; ++i)
+    for (var j = 0; j < lhsnames.length; ++j)
     {
-        this[lhsnames[i]] = rhs[i];
+        this[lhsnames[j]] = rhs[j];
     }
 }
 
@@ -201,16 +188,15 @@ function sk$in(lhs, rhs)
     else
     {
         var ret = false;
-        sk$iter(rhs, function(v)
-                {
-                    //print(JSON.stringify(lhs, null, 2) + " VS " + JSON.stringify(v, null, 2));
-                    // todo; this needs to be actual eq
-                    if (lhs === v)
-                    {
-                        ret = true;
-                        return false; // iter stop
-                    }
-                });
+        for (var iter = rhs.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
+        {
+            // todo; this needs to be actual eq
+            if (lhs === i)
+            {
+                ret = true;
+                break;
+            }
+        }
         return ret;
     }
 }

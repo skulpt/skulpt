@@ -74,8 +74,23 @@ Dict$.prototype.__delitem__ = function(key)
 	return this;
 };
 
-Dict$.prototype.iter$ = function(f)
+Dict$.prototype.__repr__ = function()
 {
+    var ret = [];
+    for (var iter = this.__iter__(), k = iter.next();
+            k !== undefined;
+            k = iter.next())
+    {
+        var v = this.__getitem__(k);
+        ret.push(repr(k).v + ": " + repr(v).v);
+    }
+    return new Str$("{" + ret.join(", ") + "}");
+};
+Dict$.prototype.__class__ = new Type$('dict', [sk$TypeObject], {});
+
+Dict$.prototype.__iter__ = function()
+{
+    var allkeys = [];
     for (var k in this)
     {
         if (this.hasOwnProperty(k))
@@ -83,19 +98,24 @@ Dict$.prototype.iter$ = function(f)
             var i = this[k];
             if (i && i.hasOwnProperty('lhs')) // skip internal stuff. todo; merge pyobj and this
             {
-                if (f.call(null, i.lhs, i.rhs) === false) break;
+                allkeys.push(k);
             }
         }
     }
-};
+    //print(allkeys);
 
-Dict$.prototype.__repr__ = function()
-{
-    var ret = [];
-    this.iter$(function(k, v)
-            {
-                ret.push(repr(k).v + ": " + repr(v).v);
-            });
-    return new Str$("{" + ret.join(", ") + "}");
+    var ret =
+    {
+        __iter__: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        $keys: allkeys,
+        next: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$keys.length) return undefined;
+            return ret.$obj[ret.$keys[ret.$index++]].lhs;
+        }
+    };
+    return ret;
 };
-Dict$.prototype.__class__ = new Type$('dict', [sk$TypeObject], {});

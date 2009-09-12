@@ -387,22 +387,42 @@ If_: function(ast, o)
 
 While_: function(ast, o)
         {
-            o.push("while(");
+            o.push("while(true){if(!(");
             this.visit(ast.test, o);
-            o.push("){");
+            o.push("))break;");
             this.visit(ast.body, o);
             o.push("}");
         },
 
 For_: function(ast, o)
       {
-          o.push("sk$iter(");
+          var tmp = gensym();
+          var tmp2 = gensym();
+
+          o.push(tmp);
+          o.push("=(");
           this.visit(ast.list, o);
-          o.push(", function(");
+          o.push(").__iter__();");
+
+          o.push("while(true){");
+
+          o.push(tmp2);
+          o.push("=");
+          o.push(tmp);
+          o.push(".next();");
+
+          o.push("if(");
+          o.push(tmp2);
+          o.push("===undefined)break;");
+
           this.visit(ast.assign, o);
-          o.push("){");
+          o.push("=");
+          o.push(tmp2);
+          o.push(";");
+
           this.visit(ast.body, o);
-          o.push("})");
+
+          o.push("}");
       },
 
 Or: function(ast, o) { this.binopop(ast, o, "||"); },

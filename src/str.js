@@ -386,3 +386,20 @@ Str$.prototype.title = function() { throw "todo; title"; };
 Str$.prototype.translate = function() { throw "todo; translate"; };
 Str$.prototype.upper = function() { throw "todo; upper"; };
 Str$.prototype.zfill = function() { throw "todo; zfill"; };
+
+Str$.prototype.__iter__ = function()
+{
+    var ret =
+    {
+        __iter__: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        next: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$obj.v.length) return undefined;
+           return new Str$(ret.$obj.v.substr(ret.$index++, 1));
+        }
+    };
+    return ret;
+};

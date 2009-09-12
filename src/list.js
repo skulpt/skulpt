@@ -164,3 +164,20 @@ List$.prototype.__repr__ = function()
 };
 
 List$.prototype.__class__ = new Type$('list', [sk$TypeObject], {});
+
+List$.prototype.__iter__ = function()
+{
+    var ret =
+    {
+        __iter__: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        next: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$obj.v.length) return undefined;
+            return ret.$obj.v[ret.$index++];
+        }
+    };
+    return ret;
+};

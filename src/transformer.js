@@ -875,6 +875,23 @@ Transformer.prototype.return_stmt = function(nodelist)
     return new Return_(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 
+Transformer.prototype.yield_stmt = function(nodelist)
+{
+    var expr = this.dispatch(nodelist[0]);
+    return new Discard(expr, expr.context);
+};
+
+Transformer.prototype.yield_expr = function(nodelist)
+{
+    var value;
+    //print("yield_expr:"+JSON.stringify(nodelist));
+    if (nodelist.length > 1)
+        value = this.dispatch(nodelist[1]);
+    else
+        value = new Const_(null);
+    return new Yield_(value, nodelist.context);
+};
+
 /*
     def try_stmt(self, nodelist):
         return self.com_try_except_finally(nodelist)

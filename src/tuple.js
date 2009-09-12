@@ -80,3 +80,20 @@ Tuple$.prototype.__hash__ = function()
 };
 
 function tuple(L) { return new Tuple$(L.v); }
+
+Tuple$.prototype.__iter__ = function()
+{
+    var ret =
+    {
+        __iter__: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        next: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$obj.v.length) return undefined;
+            return ret.$obj.v[ret.$index++];
+        }
+    };
+    return ret;
+};
