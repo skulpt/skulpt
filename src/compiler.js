@@ -1,19 +1,20 @@
 //
 // Helpers for walkers
 //
-function genericVisit(ast, o, argrest)
+function genericVisit(ast, args)
 {
-    //dotrace("in generic visit:"+this+","+ast+","+(o ? o.toString() : "null")+","+argrest);
+    //dotrace("in generic visit:"+this+","+ast+","+(args.o ? args.o.toString() : "null")+","+argrest);
     if (!ast) return undefined;
-    if (o === undefined) throw "no output buffer";
+    if (args === undefined) throw "no args";
+    //if (args.o === undefined) throw "no output buffer";
     //dotrace("name:"+ ast.nodeName);
     if (ast.nodeName in this)
     {
-        this[ast.nodeName].call(this, ast, o, argrest);
+        this[ast.nodeName].call(this, ast, args);
     }
     else if (ast.walkChildren)
     {
-        ast.walkChildren(this, o);
+        ast.walkChildren(this, args);
     }
 
 }
@@ -41,7 +42,7 @@ function gensym()
 //
 var hMakeNoReturnANull = {
 visit: genericVisit,
-Function_: function(ast, o)
+Function_: function(ast, a)
            {
                if (ast.code.nodes.length === 0 ||
                        !(ast.code.nodes[ast.code.nodes.length - 1] instanceof Return_))
@@ -49,7 +50,7 @@ Function_: function(ast, o)
                    ast.code.nodes.push(new Return_(null));
                }
                // handle nested functions
-               this.visit(ast.code, o);
+               this.visit(ast.code, a);
            }
 };
 
@@ -60,9 +61,9 @@ Function_: function(ast, o)
 //
 var hGetTupleNames = {
 visit: genericVisit,
-AssName: function(ast, names)
+AssName: function(ast, a)
          {
-             names.push(ast.name);
+             a.names.push(ast.name);
          }
 };
 
@@ -71,10 +72,10 @@ AssName: function(ast, names)
 //
 var hFindGlobals = {
 visit: genericVisit,
-Global: function(ast, o)
+Global: function(ast, names)
         {
             for (var i = 0; i < ast.names.length; ++i)
-                o.push(ast.names[i]);
+                names.push(ast.names[i]);
         }
 };
 
@@ -83,10 +84,10 @@ Global: function(ast, o)
 //
 var hDeclareLocals = {
 visit: genericVisit,
-Assign: function(ast, args)
+Assign: function(ast, a)
         {
-            var o = args.o;
-            var func = args.func;
+            var o = a.o;
+            var func = a.func;
             var globals = [];
             var i, j;
 
@@ -104,6 +105,7 @@ Assign: function(ast, args)
                 }
                 else if (node instanceof AssAttr)
                 {
+                    if (node.expr.name === undefined) throw "assert";
                     names.push(node.expr.name);
                 }
                 else
@@ -138,14 +140,34 @@ Assign: function(ast, args)
 };
 
 //
+// rename locals in a generator to be attribute accesses on $genstate rather
+// than direct accesses so they're saved across invocations.
+//
+var hRenameGeneratorLocals = {
+visit: genericVisit,
+       // todo; sort of like hDeclareLocals, but make AssAttrs
+};
+
+//
+// determines if the body of a function contains any 'yield's and so it should
+// be compiled as a generator rather than a function.
+var hIsGenerator = {
+visit: genericVisit,
+Yield_: function(ast, a)
+{
+    a.result[0] = true;
+}
+};
+
+//
 // for the body of methods, renames all accesses to the 0th parameter
 // (typically 'self') to be 'this' instead.
 //
 var hRenameAccessesToSelf = {
 visit: genericVisit,
-AssAttr: function(ast, args)
+AssAttr: function(ast, a)
          {
-             var origname = args.origname;
+             var origname = a.origname;
              if (ast.expr.nodeName === "Name")
              {
                  if (ast.expr.name === origname)
@@ -157,9 +179,9 @@ AssAttr: function(ast, args)
                  throw "todo;";
              }
          },
-Getattr: function(ast, args)
+Getattr: function(ast, a)
          {
-             var origname = args.origname;
+             var origname = a.origname;
              if (ast.expr.nodeName === "Name")
              {
                  if (ast.expr.name === origname)
@@ -171,12 +193,20 @@ Getattr: function(ast, args)
                  throw "todo;";
              }
          },
-Name: function(ast, args)
+Name: function(ast, a)
       {
           // todo; might be too aggressive?
-          if (ast.name === args.origname) ast.name = "this";
+          if (ast.name === a.origname) ast.name = "this";
       }
 };
+
+function shallowcopy(obj)
+{
+    var ret = new obj.constructor(); 
+    for(var key in obj)
+        ret[key] = obj[key];
+    return ret;
+}
 
 //
 // main code generation handler
@@ -185,21 +215,22 @@ var hMainCompile =
 {
 visit: genericVisit,
 
-Stmt: function(ast, o)
+Stmt: function(ast, a)
       {
           for (var i = 0; i < ast.nodes.length; ++i)
           {
-              this.visit(ast.nodes[i], o);
-              o.push(";");
+              this.visit(ast.nodes[i], a);
+              a.o.push(";");
           }
       },
-Print: function(ast, o)
+Print: function(ast, a)
        {
+           var o = a.o;
            //dotrace("in print:"+ast.toString());
            for (var i = 0; i < ast.nodes.length; ++i)
            {
                o.push("sk$print(");
-               this.visit(ast.nodes[i], o);
+               this.visit(ast.nodes[i], a);
                o.push(");");
                if (i !== ast.nodes.length - 1) o.push("sk$print(' ');");
            }
@@ -207,13 +238,14 @@ Print: function(ast, o)
                o.push("sk$print('\\n')");
        },
 
-Assign: function(ast, o)
+Assign: function(ast, a)
         {
+            var o = a.o;
             var tmp = gensym();
             o.push("var ");
             o.push(tmp);
             o.push("=");
-            this.visit(ast.expr, o);
+            this.visit(ast.expr, a);
             o.push(";");
             for (var i = 0; i < ast.nodes.length; ++i)
             {
@@ -233,13 +265,17 @@ Assign: function(ast, o)
                 }
                 else if (type === "Subscript" || type === "AssAttr")
                 {
-                    this.visit(ast.nodes[i], o, tmp);
+                    var acopy = shallowcopy(a);
+                    acopy.tmp = tmp;
+                    this.visit(ast.nodes[i], acopy);
                 }
                 else if (type === "AssTuple")
                 {
                     o.push("sk$unpack([");
                     var names = [];
-                    ast.nodes[i].walkChildren(hGetTupleNames, names);
+                    var acopy = shallowcopy(a);
+                    acopy.names = names;
+                    ast.nodes[i].walkChildren(hGetTupleNames, acopy);
                     o.push("'" + names.join("','") + "'");
                     o.push("],");
                     o.push(tmp);
@@ -253,8 +289,9 @@ Assign: function(ast, o)
             }
         },
 
-AssName: function(ast, o)
+AssName: function(ast, a)
          {
+             var o = a.o;
              if (ast.flags === "OP_DELETE")
              {
                  o.push("delete ");
@@ -262,18 +299,20 @@ AssName: function(ast, o)
              }
          },
 
-Subscript: function(ast, o, tmp)
+Subscript: function(ast, a)
            {
                var j, k, nodes;
+               var o = a.o;
+               var tmp = a.tmp;
 
                if (ast.flags === OP_ASSIGN)
                {
                    if (!tmp) throw "expecting tmp node to assign from";
-                   this.visit(ast.expr, o);
+                   this.visit(ast.expr, a);
                    for (j = 0; j < ast.subs.length; ++j)
                    {
                        o.push(".__setitem__(");
-                       this.visit(ast.subs[j], o);
+                       this.visit(ast.subs[j], a);
                        o.push(",");
                        o.push(tmp);
                        o.push(")");
@@ -283,9 +322,9 @@ Subscript: function(ast, o, tmp)
                {
                    for (j = 0; j < ast.subs.length; ++j)
                    {
-                       this.visit(ast.expr, o);
+                       this.visit(ast.expr, a);
                        o.push(".__getitem__(");
-                       this.visit(ast.subs[j], o);
+                       this.visit(ast.subs[j], a);
                        o.push(")");
                    }
                }
@@ -293,9 +332,9 @@ Subscript: function(ast, o, tmp)
                {
                    for (j = 0; j < ast.subs.length; ++j)
                    {
-                       this.visit(ast.expr, o);
+                       this.visit(ast.expr, a);
                        o.push(".__delitem__(");
-                       this.visit(ast.subs[j], o);
+                       this.visit(ast.subs[j], a);
                        o.push(")");
                    }
                }
@@ -305,13 +344,15 @@ Subscript: function(ast, o, tmp)
                }
            },
 
-AssAttr: function(ast, o, tmp)
+AssAttr: function(ast, a)
          {
+             var o = a.o;
+             var tmp = a.tmp;
              //print(JSON.stringify(ast.nodes, null, 2));
              if (ast.flags === OP_ASSIGN)
              {
                  if (!tmp) throw "expecting tmp node to assign from";
-                 this.visit(ast.expr, o);
+                 this.visit(ast.expr, a);
                  o.push(".__setattr__('" + ast.attrname + "',");
                  o.push(tmp);
                  o.push(")");
@@ -322,15 +363,16 @@ AssAttr: function(ast, o, tmp)
              }
          },
 
-Sliceobj: function(ast, o)
+Sliceobj: function(ast, a)
           {
+              var o = a.o;
               //print(JSON.stringify(ast, null, 2));
               o.push("new Slice$(");
               var si = function(i) {
                   if (ast.nodes.length > i)
                   {
                       if (ast.nodes[i] === null) o.push('null');
-                      else this.visit(ast.nodes[i], o);
+                      else this.visit(ast.nodes[i], a);
                       if (ast.nodes.length > i + 1)
                           o.push(",");
                   }
@@ -339,69 +381,74 @@ Sliceobj: function(ast, o)
               o.push(")");
           },
 
-Getattr: function(ast, o)
+Getattr: function(ast, a)
          {
+             var o = a.o;
              o.push("sk$ga(");
-             this.visit(ast.expr, o);
+             this.visit(ast.expr, a);
              o.push(",'");
              o.push(ast.attrname);
              o.push("')");
          },
 
-AugAssign: function(ast, o)
+AugAssign: function(ast, a)
            {
-               this.visit(ast.node, o);
-               o.push(ast.op); // todo; rename to js version
-               this.visit(ast.expr, o);
+               this.visit(ast.node, a);
+               a.o.push(ast.op); // todo; rename to js version
+               this.visit(ast.expr, a);
            },
 
-Tuple: function(ast, o)
+Tuple: function(ast, a)
        {
+           var o = a.o;
            o.push("new Tuple$([");
            for (var i = 0; i < ast.nodes.length; ++i)
            {
-               this.visit(ast.nodes[i], o);
+               this.visit(ast.nodes[i], a);
                if (i !== ast.nodes.length - 1) o.push(",");
            }
            o.push("])");
        },
 
-If_: function(ast, o)
+If_: function(ast, a)
      {
+         var o = a.o;
          for (var i = 0; i < ast.tests.length; ++i)
          {
              if (i !== 0) o.push("else ");
              o.push("if(");
-             this.visit(ast.tests[i][0], o);
+             this.visit(ast.tests[i][0], a);
              o.push("){");
-             this.visit(ast.tests[i][1], o);
+             this.visit(ast.tests[i][1], a);
              o.push("}");
          }
          if (ast.else_)
          {
              o.push("else{");
-             this.visit(ast.else_, o);
+             this.visit(ast.else_, a);
              o.push("}");
          }
      },
 
-While_: function(ast, o)
+While_: function(ast, a)
         {
+            var o = a.o;
             o.push("while(true){if(!(");
-            this.visit(ast.test, o);
+            this.visit(ast.test, a);
             o.push("))break;");
-            this.visit(ast.body, o);
+            this.visit(ast.body, a);
             o.push("}");
         },
 
-For_: function(ast, o)
+For_: function(ast, a)
       {
+          var o = a.o;
           var tmp = gensym();
           var tmp2 = gensym();
 
           o.push(tmp);
           o.push("=(");
-          this.visit(ast.list, o);
+          this.visit(ast.list, a);
           o.push(").__iter__();");
 
           o.push("while(true){");
@@ -415,21 +462,21 @@ For_: function(ast, o)
           o.push(tmp2);
           o.push("===undefined)break;");
 
-          this.visit(ast.assign, o);
+          this.visit(ast.assign, a);
           o.push("=");
           o.push(tmp2);
           o.push(";");
 
-          this.visit(ast.body, o);
+          this.visit(ast.body, a);
 
           o.push("}");
       },
 
-Or: function(ast, o) { this.binopop(ast, o, "||"); },
-And: function(ast, o) { this.binopop(ast, o, "&&"); },
-Bitor: function(ast, o) { this.binopop(ast, o, "|"); },
-Bitxor: function(ast, o) { this.binopop(ast, o, "^"); },
-Bitand: function(ast, o) { this.binopop(ast, o, "&"); },
+Or: function(ast, a) { this.binopop(ast, a, "||"); },
+And: function(ast, a) { this.binopop(ast, a, "&&"); },
+Bitor: function(ast, a) { this.binopop(ast, a, "|"); },
+Bitxor: function(ast, a) { this.binopop(ast, a, "^"); },
+Bitand: function(ast, a) { this.binopop(ast, a, "&"); },
 
 simpleRemapOp: {
                     "==": "==",
@@ -442,40 +489,44 @@ simpleRemapOp: {
                     "is not": "!=="
                 },
 
-Compare: function(ast, o)
+Compare: function(ast, a)
          {
+             var o = a.o;
              if (ast.ops[0][0] in this.simpleRemapOp)
              {
-                 this.visit(ast.expr, o);
+                 this.visit(ast.expr, a);
                  o.push(this.simpleRemapOp[ast.ops[0][0]]);
-                 this.visit(ast.ops[0][1], o);
+                 this.visit(ast.ops[0][1], a);
              }
              else if (ast.ops[0][0] === "in")
              {
                  o.push("sk$in(");
-                 this.visit(ast.expr, o);
+                 this.visit(ast.expr, a);
                  o.push(",");
-                 this.visit(ast.ops[0][1], o);
+                 this.visit(ast.ops[0][1], a);
                  o.push(")");
              }
          },
 
-UnarySub: function(ast, o)
+UnarySub: function(ast, a)
           {
+              var o = a.o;
               o.push("sk$neg(");
-              this.visit(ast.expr, o);
+              this.visit(ast.expr, a);
               o.push(")");
           },
 
-Not: function(ast, o)
+Not: function(ast, a)
      {
+         var o = a.o;
          o.push("!(");
-         this.visit(ast.expr, o);
+         this.visit(ast.expr, a);
          o.push(")");
      },
 
-Const_: function(ast, o)
+Const_: function(ast, a)
         {
+            var o = a.o;
             o.push("(");
             if (typeof ast.value === "string")
             {
@@ -505,158 +556,212 @@ Const_: function(ast, o)
             o.push(")");
         },
 
-makeFuncBody: function(ast, o, args, islamb)
+functionSetup: function(ast, a, inclass, islamb)
+               {
+                   var o = a.o;
+                   var i;
+                   var argstart = inclass ? 1 : 0; // todo; staticmethod
+
+                   if (inclass) o.push(a.klass + ".prototype.");
+
+                   o.push(ast.name); // todo; safeize?
+                   if (!islamb) o.push("="); // lambdas are compiled as "values"
+                   o.push("function(");
+                   for (i = argstart; i < ast.argnames.length; ++i)
+                   {
+                       o.push(ast.argnames[i]);
+                       if (i !== ast.argnames.length - 1) o.push(",");
+                   }
+                   o.push("){");
+                   for (var i = argstart; i < ast.argnames.length; ++i)
+                   {
+                       if (!ast.defaults[i]) continue;
+                       o.push("if(");
+                       o.push(ast.argnames[i]); // todo; safeize
+                       o.push("===undefined){");
+                       o.push(ast.argnames[i]);
+                       o.push("=");
+                       this.visit(ast.defaults[i], a);
+                       o.push(";}");
+                   }
+
+                   // todo; varargs, kwargs
+               },
+
+makeFuncBody: function(ast, a)
               {
-                  var i;
-                  var inclass = args !== undefined;
-                  var argstart = inclass ? 1 : 0; // todo; staticmethod
+                  var o = a.o;
+                  var inclass = a.klass !== undefined;
+                  var islamb = a.islamb !== undefined;
 
-                  if (inclass) o.push(args.klass + ".prototype.");
+                  this.functionSetup(ast, a, inclass, islamb);
 
-                  o.push(ast.name); // todo; safeize?
-                  if (!islamb) o.push("="); // lambdas are compiled as "values"
-                  o.push("function(");
-                  for (i = argstart; i < ast.argnames.length; ++i)
-                  {
-                      o.push(ast.argnames[i]);
-                      if (i !== ast.argnames.length - 1) o.push(",");
-                  }
-                  o.push("){");
-                  for (i = argstart; i < ast.argnames.length; ++i)
-                  {
-                      if (!ast.defaults[i]) continue;
-                      o.push("if(");
-                      o.push(ast.argnames[i]); // todo; safeize
-                      o.push("===undefined){");
-                      o.push(ast.argnames[i]);
-                      o.push("=");
-                      this.visit(ast.defaults[i], o);
-                      o.push(";}");
-                  }
-                  // todo; varargs, kwargs
                   ast.code.walkChildren(hDeclareLocals, { func: ast, o: o });
                   if (islamb) o.push("return(");
                   if (inclass)
                   {
                       ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
                   }
-                  this.visit(ast.code, o);
+                  this.visit(ast.code, a);
                   if (islamb) o.push(");");
                   o.push("};");
                   if (inclass)
                   {
                       // for direct calls to base, like Base.__init__(self, ...)
-                      o.push(args.klass);
+                      o.push(a.klass);
                       o.push(".");
                       o.push(ast.name);
                       o.push("=function(){");
-                      o.push(args.klass);
+                      o.push(a.klass);
                       o.push(".prototype.");
                       o.push(ast.name);
                       o.push(".apply(arguments[0],Array.prototype.slice.call(arguments,1));};");
                   }
               },
 
-Function_: function(ast, o, args)
+compileGenerator: function(ast, a)
+                  {
+                      var o = a.o;
+                      var i;
+                      var inclass = a.klass !== undefined;
+                      this.functionSetup(ast, a, inclass, false);
+
+                      var tmp = gensym();
+                      o.push("var ");
+                      o.push(tmp);
+                      o.push("={\n__iter__:function(){return ");
+                      o.push(tmp);
+                      o.push(";},\nnext:function(){\n");
+
+                      var acopy = shallowcopy(a);
+                      acopy.asgenerator = true;
+                      this.visit(ast.code, acopy);
+
+                      o.push("}};\nreturn ");
+                      o.push(tmp);
+                      o.push(";}");
+                  },
+
+Function_: function(ast, a)
            {
-               this.makeFuncBody(ast, o, args, false);
+               var args = a.args;
+               // if ast contains 'yield', compile as generator
+               var result = [ false ];
+               ast.code.walkChildren(hIsGenerator, { func: ast, result: result });
+               if (result[0])
+               {
+                   this.compileGenerator(ast, a);
+               }
+               else
+               {
+                   // otherwise, compile normally
+                   this.makeFuncBody(ast, a);
+               }
            },
 
-Lambda: function(ast, o)
+Lambda: function(ast, a)
         {
-            this.makeFuncBody(ast, o, undefined, true);
+            var acopy = shallowcopy(a);
+            acopy.islamb = true;
+            this.makeFuncBody(ast, acopy);
         },
 
-Return_: function(ast, o)
+Return_: function(ast, a)
          {
+             var o = a.o;
              o.push("return ");
-             if (ast.value) this.visit(ast.value, o);
+             if (ast.value) this.visit(ast.value, a);
              else o.push("null");
          },
 
-Break_: function(ast, o)
+Break_: function(ast, a)
          {
-             o.push("break");
+             a.o.push("break");
          },
 
-Continue_: function(ast, o)
+Continue_: function(ast, a)
          {
-             o.push("continue");
+             a.o.push("continue");
          },
 
-Discard: function(ast, o)
+Discard: function(ast, a)
          {
-             this.visit(ast.expr, o);
+             this.visit(ast.expr, a);
          },
 
-CallFunc: function(ast, o)
+CallFunc: function(ast, a)
           {
               // see comment in env.js about sk$call
+              var o = a.o;
               o.push("sk$call(");
-              this.visit(ast.node, o);
+              this.visit(ast.node, a);
               if (ast.args.length !== 0) o.push(", ");
               for (var i = 0; i < ast.args.length; ++i)
               {
-                  this.visit(ast.args[i], o);
+                  this.visit(ast.args[i], a);
                   if (i !== ast.args.length - 1) o.push(",");
               }
               o.push(")");
           },
 
-Name: function(ast, o)
+Name: function(ast, a)
       {
+          var o = a.o;
           if (ast.name === "None") o.push("null");
           else if (ast.name === "True") o.push("true");
           else if (ast.name === "False") o.push("false");
           else o.push(ast.name);
       },
 
-Dict: function(ast, o)
+Dict: function(ast, a)
       {
+          var o = a.o;
           o.push("new Dict$([");
           for (var i = 0; i < ast.items.length; ++i)
           {
-              this.visit(ast.items[i][0], o);
+              this.visit(ast.items[i][0], a);
               o.push(",");
-              this.visit(ast.items[i][1], o);
+              this.visit(ast.items[i][1], a);
               if (i < ast.items.length - 1) o.push(",");
           }
           o.push("])");
       },
 
-List: function(ast, o)
+List: function(ast, a)
       {
+          var o = a.o;
           o.push("new List$([");
           for (var i = 0; i < ast.nodes.length; ++i)
           {
-              this.visit(ast.nodes[i], o);
+              this.visit(ast.nodes[i], a);
               if (i < ast.nodes.length - 1) o.push(",");
           }
           o.push("])");
       },
 
-compileQuals: function(quals, i, expr, tmp, o)
+compileQuals: function(quals, i, expr, tmp, a)
               {
+                  var o = a.o;
                   var j;
                   o.push("sk$iter(");
-                  this.visit(quals[i].list, o);
+                  this.visit(quals[i].list, a);
                   o.push(",function(");
                   if (!(quals[i].assign instanceof AssName)) throw "todo; non-AssName";
                   o.push(quals[i].assign.name);
                   o.push("){");
                   for (j = 0; j < quals[i].ifs.length; ++j)
                   {
-                      this.visit(quals[i].ifs[j], o);
+                      this.visit(quals[i].ifs[j], a);
                   }
                   if (i < quals.length - 1)
                   {
-                      this.compileQuals(quals, i + 1, expr, tmp, o);
+                      this.compileQuals(quals, i + 1, expr, tmp, a);
                   }
                   else
                   {
                       o.push(tmp);
                       o.push(".push(");
-                      this.visit(expr, o);
+                      this.visit(expr, a);
                       o.push(");");
                   }
                   for (j = 0; j < quals[i].ifs.length; ++j)
@@ -664,17 +769,19 @@ compileQuals: function(quals, i, expr, tmp, o)
                   o.push("});");
               },
 
-ListCompIf: function(ast, o)
+ListCompIf: function(ast, a)
             {
+                var o = a.o;
                 //print(astDump(ast));
                 o.push("if(");
-                this.visit(ast.test, o);
+                this.visit(ast.test, a);
                 o.push("){");
                 // the close happens in compileQuals after the other quals (fors)
             },
 
-ListComp: function(ast, o)
+ListComp: function(ast, a)
           {
+              var o = a.o;
               //print(JSON.stringify(ast.quals, null, 2));
               var tmp = gensym();
 
@@ -690,7 +797,7 @@ ListComp: function(ast, o)
               // this is kind of complicated because our iteration needs to be
               // turned inside out too for iter: walk down the list of quals
               // so that they're nested.
-              this.compileQuals(ast.quals, 0, ast.expr, tmp, o);
+              this.compileQuals(ast.quals, 0, ast.expr, tmp, a);
 
               // return accumulator as a pyobj
               o.push("return new List$(");
@@ -701,8 +808,9 @@ ListComp: function(ast, o)
               o.push("})()");
           },
 
-Class_: function(ast, o)
+Class_: function(ast, a)
         {
+            var o = a.o;
             //print(JSON.stringify(ast, null, 2));
             o.push("var " + ast.name + "=function(args,doinit){if(!(this instanceof ");
             o.push(ast.name);
@@ -717,7 +825,7 @@ Class_: function(ast, o)
             {
                 if (ast.bases.length > 1) throw "todo; multiple bases";
                 o.push(ast.name + ".prototype=new ");
-                this.visit(ast.bases[0], o);
+                this.visit(ast.bases[0], a);
                 o.push("();");
             }
             o.push(ast.name + ".__class__=sk$TypeType;");
@@ -726,35 +834,38 @@ Class_: function(ast, o)
             o.push(ast.name + ".prototype.__class__=" + ast.name +";");
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
-                this.visit(ast.code.nodes[i], o, {klass:ast.name});
+                var acopy = shallowcopy(a);
+                acopy.klass = ast.name;
+                this.visit(ast.code.nodes[i], acopy);
                 o.push("\n");
             }
             o.push("undefined"); // no return in repl
         },
 
-Add: function(ast, o) { this.binopfunc(ast, o, "sk$add"); },
-Sub: function(ast, o) { this.binopfunc(ast, o, "sk$sub"); },
-Mul: function(ast, o) { this.binopfunc(ast, o, "sk$mul"); },
-Div: function(ast, o) { this.binopfunc(ast, o, "sk$truediv"); },
-Mod: function(ast, o) { this.binopfunc(ast, o, "sk$mod"); },
-Power: function(ast, o) { this.binopfunc(ast, o, "sk$pow"); },
-In_: function(ast, o) { this.binopfunc(ast, o, "sk$in"); },
+Add: function(ast, a) { this.binopfunc(ast, a, "sk$add"); },
+Sub: function(ast, a) { this.binopfunc(ast, a, "sk$sub"); },
+Mul: function(ast, a) { this.binopfunc(ast, a, "sk$mul"); },
+Div: function(ast, a) { this.binopfunc(ast, a, "sk$truediv"); },
+Mod: function(ast, a) { this.binopfunc(ast, a, "sk$mod"); },
+Power: function(ast, a) { this.binopfunc(ast, a, "sk$pow"); },
+In_: function(ast, a) { this.binopfunc(ast, a, "sk$in"); },
 
-binopfunc: function(ast, o, opstr)
+binopfunc: function(ast, a, opstr)
        {
+           var o = a.o;
            o.push(opstr);
            o.push("(");
-           this.visit(ast.left, o);
+           this.visit(ast.left, a);
            o.push(",");
-           this.visit(ast.right, o);
+           this.visit(ast.right, a);
            o.push(")");
        },
-binopop: function(ast, o, opstr)
+binopop: function(ast, a, opstr)
          {
              for (var i = 0; i < ast.nodes.length; ++i)
              {
-                 this.visit(ast.nodes[i], o);
-                 if (i !== ast.nodes.length - 1) o.push(opstr);
+                 this.visit(ast.nodes[i], a);
+                 if (i !== ast.nodes.length - 1) a.o.push(opstr);
              }
          }
 };
@@ -763,8 +874,8 @@ binopop: function(ast, o, opstr)
 function compile(ast)
 {
     var result = [];
-    ast.walkChildren(hMakeNoReturnANull, null);
-    ast.walkChildren(hMainCompile, result);
+    ast.walkChildren(hMakeNoReturnANull, {o:null});
+    ast.walkChildren(hMainCompile, {o:result});
     return result.join(""); 
 }
 

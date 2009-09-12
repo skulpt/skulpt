@@ -275,7 +275,7 @@ function main()
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 176; ++i)
+    for (i = 0; i <= 177; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
