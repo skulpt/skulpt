@@ -35,6 +35,22 @@ function gensym()
 //
 //
 
+//
+// determines if the body of a function contains any 'yield's and so it should
+// be compiled as a generator rather than a function. tags all generator
+// functions for later passes.
+//
+var hMarkGeneratorFunctions = {
+visit: genericVisit,
+Function_: function(ast, a)
+           {
+               ast.code.walkChildren(this, { func: ast });
+           },
+Yield_: function(ast, a)
+{
+    a.func.isGenerator = true;
+}
+};
 
 //
 // modify all functions that fall off the end to explicitly return None (to
@@ -44,6 +60,12 @@ var hMakeNoReturnANull = {
 visit: genericVisit,
 Function_: function(ast, a)
            {
+               if (ast.isGenerator)
+               {
+                   // we don't want
+                   return;
+               }
+
                if (ast.code.nodes.length === 0 ||
                        !(ast.code.nodes[ast.code.nodes.length - 1] instanceof Return_))
                {
@@ -144,19 +166,8 @@ Assign: function(ast, a)
 // than direct accesses so they're saved across invocations.
 //
 var hRenameGeneratorLocals = {
-visit: genericVisit,
+visit: genericVisit
        // todo; sort of like hDeclareLocals, but make AssAttrs
-};
-
-//
-// determines if the body of a function contains any 'yield's and so it should
-// be compiled as a generator rather than a function.
-var hIsGenerator = {
-visit: genericVisit,
-Yield_: function(ast, a)
-{
-    a.result[0] = true;
-}
 };
 
 //
@@ -203,8 +214,13 @@ Name: function(ast, a)
 function shallowcopy(obj)
 {
     var ret = new obj.constructor(); 
-    for(var key in obj)
-        ret[key] = obj[key];
+    for (var key in obj)
+    {
+        if (obj.hasOwnProperty(key))
+        {
+            ret[key] = obj[key];
+        }
+    }
     return ret;
 }
 
@@ -241,6 +257,7 @@ Print: function(ast, a)
 Assign: function(ast, a)
         {
             var o = a.o;
+            var acopy;
             var tmp = gensym();
             o.push("var ");
             o.push(tmp);
@@ -265,7 +282,7 @@ Assign: function(ast, a)
                 }
                 else if (type === "Subscript" || type === "AssAttr")
                 {
-                    var acopy = shallowcopy(a);
+                    acopy = shallowcopy(a);
                     acopy.tmp = tmp;
                     this.visit(ast.nodes[i], acopy);
                 }
@@ -273,7 +290,7 @@ Assign: function(ast, a)
                 {
                     o.push("sk$unpack([");
                     var names = [];
-                    var acopy = shallowcopy(a);
+                    acopy = shallowcopy(a);
                     acopy.names = names;
                     ast.nodes[i].walkChildren(hGetTupleNames, acopy);
                     o.push("'" + names.join("','") + "'");
@@ -573,7 +590,7 @@ functionSetup: function(ast, a, inclass, islamb)
                        if (i !== ast.argnames.length - 1) o.push(",");
                    }
                    o.push("){");
-                   for (var i = argstart; i < ast.argnames.length; ++i)
+                   for (i = argstart; i < ast.argnames.length; ++i)
                    {
                        if (!ast.defaults[i]) continue;
                        o.push("if(");
@@ -633,30 +650,45 @@ compileGenerator: function(ast, a)
                       o.push(tmp);
                       o.push(";},\nnext:function(){\n");
 
-                      var acopy = shallowcopy(a);
-                      acopy.asgenerator = true;
-                      this.visit(ast.code, acopy);
+                      // todo; point locals at state
+                    
+                      // todo; slice up method at yield statements
 
-                      o.push("}};\nreturn ");
+                      var acopy = shallowcopy(a);
+                      acopy.asGenerator = true;
+                      acopy.generatorStateName = tmp;
+                      var outerLocationMarker = gensym();
+                      acopy.locationMarkers = [ outerLocationMarker ];
+                      acopy.curLocationMarker = outerLocationMarker;
+                      acopy.curLocationMarkerValue = 0;
+                      o.push("switch(");
+                      o.push(tmp);
+                      o.push(".");
+                      o.push(outerLocationMarker);
+                      o.push("){");
+                      this.visit(ast.code, acopy);
+                      o.push("}");
+
+                      o.push("},\n");
+                      for (i = 0; i < acopy.locationMarkers.length; ++i)
+                      {
+                          o.push(acopy.locationMarkers[i]);
+                          o.push(":0");
+                          if (i !== acopy.locationMarkers.length - 1) o.push(",\n");
+                      }
+                      o.push("};\nreturn ");
                       o.push(tmp);
                       o.push(";}");
+
+                      // todo; suffix for class methods
                   },
 
 Function_: function(ast, a)
            {
-               var args = a.args;
-               // if ast contains 'yield', compile as generator
-               var result = [ false ];
-               ast.code.walkChildren(hIsGenerator, { func: ast, result: result });
-               if (result[0])
-               {
+               if (ast.isGenerator)
                    this.compileGenerator(ast, a);
-               }
                else
-               {
-                   // otherwise, compile normally
                    this.makeFuncBody(ast, a);
-               }
            },
 
 Lambda: function(ast, a)
@@ -673,6 +705,26 @@ Return_: function(ast, a)
              if (ast.value) this.visit(ast.value, a);
              else o.push("null");
          },
+
+Yield_: function(ast, a)
+        {
+            var o = a.o;
+            if (!a.asGenerator) throw "assert";
+
+            o.push("case ");
+            o.push(a.curLocationMarkerValue++);
+            o.push(":{");
+            a.locationMarkers.push(gensym());
+
+            o.push(a.generatorStateName);
+            o.push(".");
+            o.push(a.curLocationMarker);
+            o.push("++;");
+            o.push("return ");
+            if (ast.value) this.visit(ast.value, a);
+            else o.push("null");
+            o.push("}");
+        },
 
 Break_: function(ast, a)
          {
@@ -874,7 +926,8 @@ binopop: function(ast, a, opstr)
 function compile(ast)
 {
     var result = [];
-    ast.walkChildren(hMakeNoReturnANull, {o:null});
+    ast.walkChildren(hMarkGeneratorFunctions, {});
+    ast.walkChildren(hMakeNoReturnANull, {});
     ast.walkChildren(hMainCompile, {o:result});
     return result.join(""); 
 }
