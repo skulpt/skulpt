@@ -10,7 +10,7 @@ function genericVisit(ast, args)
     //dotrace("name:"+ ast.nodeName);
     if (ast.nodeName in this)
     {
-        this[ast.nodeName].call(this, ast, args);
+        return this[ast.nodeName].call(this, ast, args);
     }
     else if (ast.walkChildren)
     {
@@ -101,6 +101,16 @@ Global: function(ast, names)
         }
 };
 
+function appearsIn(name, namelist)
+{
+    for (var j = 0; j < namelist.length; ++j)
+    {
+        if (namelist[j] === name)
+            return true;
+    }
+    return false;
+}
+
 //
 // declares all locals in a function, excluding func args or globals
 //
@@ -118,6 +128,7 @@ Assign: function(ast, a)
             //print(JSON.stringify(ast.nodes, null, 2));
 
             var names = [];
+            // todo; there's duplicates here
             for (i = 0; i < ast.nodes.length; ++i)
             {
                 var node = ast.nodes[i];
@@ -135,22 +146,12 @@ Assign: function(ast, a)
                     throw "unhandled case in hDeclareLocals";
                 }
             }
+            // todo; should probably walk expr?
 
             for (i = 0; i < names.length; ++i)
             {
-                var ok = true;
-                for (j = 0; j < func.argnames.length && ok; ++j)
-                {
-                    if (func.argnames[j] === names[i])
-                        ok = false;
-                }
-                for (j = 0; j < globals.length && ok; ++j)
-                {
-                    if (globals[j] === names[i])
-                        ok = false;
-                }
-
-                if (ok)
+                if (!appearsIn(names[i], func.argnames)
+                        && !appearsIn(names[i], globals))
                 {
                     o.push("var ");
                     o.push(names[i]);
@@ -166,8 +167,53 @@ Assign: function(ast, a)
 // than direct accesses so they're saved across invocations.
 //
 var hRenameGeneratorLocals = {
-visit: genericVisit
-       // todo; sort of like hDeclareLocals, but make AssAttrs
+visit: genericVisit,
+Assign: function(ast, a)
+        {
+            var func = a.func;
+            var globals = [];
+            var i, j;
+
+            func.walkChildren(hFindGlobals, globals);
+
+            //print("nodes",JSON.stringify(ast.nodes, null, 2));
+            //print("expr",JSON.stringify(ast.expr, null, 2));
+
+            var newexpr = this.visit(ast.expr, a);
+            if (newexpr !== undefined) ast.expr = newexpr;
+
+            //print("exprafter",JSON.stringify(ast.expr, null, 2));
+
+            var names = [];
+            for (i = 0; i < ast.nodes.length; ++i)
+            {
+                var node = ast.nodes[i];
+                if (node instanceof AssName)
+                {
+                    if (!appearsIn(node.name, func.argnames)
+                            && !appearsIn(node.name, globals))
+                    {
+                        ast.nodes[i] = new GenAss(a.generatorStateName, node.name);
+                    }
+                }
+                else
+                {
+                    throw "unhandled case in hRenameGeneratorLocals";
+                }
+            }
+        },
+Name: function(ast, a)
+      {
+          var func = a.func;
+          var globals = [];
+
+          func.walkChildren(hFindGlobals, globals);
+          if (!appearsIn(ast.name, func.argnames)
+                  && !appearsIn(ast.name, globals))
+          {
+              return new GenGet(a.generatorStateName, ast.name + "/*Name*/");
+          }
+      },
 };
 
 //
@@ -280,7 +326,7 @@ Assign: function(ast, a)
                         throw "unexpected flags";
                     }
                 }
-                else if (type === "Subscript" || type === "AssAttr")
+                else if (type === "Subscript" || type === "AssAttr" || type === "GenAss")
                 {
                     acopy = shallowcopy(a);
                     acopy.tmp = tmp;
@@ -288,6 +334,7 @@ Assign: function(ast, a)
                 }
                 else if (type === "AssTuple")
                 {
+                    if (a.asGenerator) throw "probably doesn't work in generator";
                     o.push("sk$unpack([");
                     var names = [];
                     acopy = shallowcopy(a);
@@ -379,6 +426,28 @@ AssAttr: function(ast, a)
                  throw "unexpected AssAttr flags:" + ast.flags;
              }
          },
+
+GenAss: function(ast, a)
+        {
+            var o = a.o;
+            var tmp = a.tmp;
+
+            if (!tmp) throw "expecting tmp node to assign from";
+            o.push(ast.genstate);
+            o.push(".");
+            o.push(ast.name);
+            o.push("=");
+            o.push(tmp);
+            o.push(";");
+        },
+
+GenGet: function(ast, a)
+        {
+            var o = a.o;
+            o.push(ast.genstate);
+            o.push(".");
+            o.push(ast.name);
+        },
 
 Sliceobj: function(ast, a)
           {
@@ -648,26 +717,31 @@ compileGenerator: function(ast, a)
                       o.push(tmp);
                       o.push("={\n__iter__:function(){return ");
                       o.push(tmp);
-                      o.push(";},\nnext:function(){\n");
-
-                      // todo; point locals at state
-                    
-                      // todo; slice up method at yield statements
+                      o.push(";},\n__repr__:function(){return new Str$('<generator object ");
+                      o.push(ast.name);
+                      o.push(">');},");
+                      o.push("\nnext:function(){\n");
 
                       var acopy = shallowcopy(a);
                       acopy.asGenerator = true;
                       acopy.generatorStateName = tmp;
-                      var outerLocationMarker = gensym();
+                      var outerLocationMarker = "loc__";//todo; + gensym();
                       acopy.locationMarkers = [ outerLocationMarker ];
                       acopy.curLocationMarker = outerLocationMarker;
-                      acopy.curLocationMarkerValue = 0;
+                      acopy.func = ast;
+
+                      ast.code.walkChildren(hRenameGeneratorLocals, acopy);
+
+                      // todo; self accesses
+
                       o.push("switch(");
                       o.push(tmp);
                       o.push(".");
                       o.push(outerLocationMarker);
-                      o.push("){");
+                      o.push("){\ncase 0:{\n");
+                      acopy.curLocationMarkerValue = 1;
                       this.visit(ast.code, acopy);
-                      o.push("}");
+                      o.push("}}");
 
                       o.push("},\n");
                       for (i = 0; i < acopy.locationMarkers.length; ++i)
@@ -711,10 +785,8 @@ Yield_: function(ast, a)
             var o = a.o;
             if (!a.asGenerator) throw "assert";
 
-            o.push("case ");
-            o.push(a.curLocationMarkerValue++);
-            o.push(":{");
-            a.locationMarkers.push(gensym());
+            // previous case is started before we get here so that the body of
+            // other non-yield statements can be compiled
 
             o.push(a.generatorStateName);
             o.push(".");
@@ -723,7 +795,10 @@ Yield_: function(ast, a)
             o.push("return ");
             if (ast.value) this.visit(ast.value, a);
             else o.push("null");
-            o.push("}");
+            o.push(";}"); // end of previous case
+            o.push("\ncase ");
+            o.push(a.curLocationMarkerValue++);
+            o.push(":{\n");
         },
 
 Break_: function(ast, a)

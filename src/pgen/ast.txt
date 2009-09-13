@@ -81,6 +81,10 @@ UnaryAdd: expr
 UnarySub: expr
 Invert: expr
 
+# special nodes that are generated internally
+GenAss: genstate, name
+GenGet: genstate, name
+
 init(GenExpr):
     this.argnames = ['.0'];
     this.varargs = this.kwargs = null;

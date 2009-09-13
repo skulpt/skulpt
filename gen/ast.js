@@ -638,6 +638,25 @@ Function_.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function GenAss(genstate, name, lineno)
+{
+    this.nodeName = "GenAss";
+    this.genstate = genstate;
+    this.name = name;
+    this.lineno = lineno;
+}
+
+GenAss.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.genstate, args);
+    if (ret !== undefined) this.genstate = ret;
+    ret = handler.visit(this.name, args);
+    if (ret !== undefined) this.name = ret;
+};
+
+
+// --------------------------------------------------------
 function GenExpr(code, lineno)
 {
     this.nodeName = "GenExpr";
@@ -717,6 +736,25 @@ GenExprInner.prototype.walkChildren = function(handler, args)
         ret = handler.visit(this.quals[i_quals], args);
         if (ret !== undefined) this.quals[i_quals] = ret;
     }
+};
+
+
+// --------------------------------------------------------
+function GenGet(genstate, name, lineno)
+{
+    this.nodeName = "GenGet";
+    this.genstate = genstate;
+    this.name = name;
+    this.lineno = lineno;
+}
+
+GenGet.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.genstate, args);
+    if (ret !== undefined) this.genstate = ret;
+    ret = handler.visit(this.name, args);
+    if (ret !== undefined) this.name = ret;
 };
 
 
