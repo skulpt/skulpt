@@ -113,13 +113,13 @@ function initTerminal(w, h)
             else
             {
                 evaled = true;
-                //console.log(js);
+                console.log(js);
                 var evret = eval.call(window, js);
                 if (evret)
                 {
                     if (evret.__repr__ !== undefined)
                         got += evret.__repr__().v + "\n";
-                    else
+                    else if (typeof evret === "number")
                         got += evret.toString() + "\n";
                 }
             }

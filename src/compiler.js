@@ -231,7 +231,7 @@ Name: function(ast, a)
           {
               return new GenGet(a.generatorStateName, ast.name);
           }
-      },
+      }
 };
 
 //
