@@ -1,10 +1,20 @@
-// todo; should accept any iterable too (str, etc)
 List$ = function(L)
 {
     if (Object.prototype.toString.apply(L) !== '[object Array]')
         throw "TypeError: list expecting native Array as argument";
     this.v = L;
 };
+
+function list(iterable)
+{
+    var g = iterable.__iter__();
+    var ret = new List$([]);
+    for (var i = g.next(); i !== undefined; i = g.next())
+    {
+        ret.v.push(i);
+    }
+    return ret;
+}
 
 List$.prototype.append = function(item)
 {
