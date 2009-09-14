@@ -113,7 +113,7 @@ function initTerminal(w, h)
             else
             {
                 evaled = true;
-                console.log(js);
+                //console.log(js);
                 var evret = eval.call(window, js);
                 if (evret)
                 {
