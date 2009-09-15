@@ -91,7 +91,7 @@ Transformer.prototype.single_input = function(node)
     var n = node[0].type;
     if (n !== T_NEWLINE)
     {
-        return this.dispatch(node[0]);
+        return new Interactive(this.dispatch(node[0]));
     }
     return new Pass();
 };

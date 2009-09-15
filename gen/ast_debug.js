@@ -134,10 +134,6 @@ if (node.nodeName === 'Function_') {
     return sprintf("Function_(decorators=%s, name=%s, argnames=%s, defaults=%s, varargs=%s, kwargs=%s, doc=%s, code=%s)", astDump(node.decorators), astDump(node.name), astDump(node.argnames), astDump(node.defaults), astDump(node.varargs), astDump(node.kwargs), astDump(node.doc), astDump(node.code));
 }
 
-if (node.nodeName === 'GenAss') {
-    return sprintf("GenAss(genstate=%s, name=%s)", astDump(node.genstate), astDump(node.name));
-}
-
 if (node.nodeName === 'GenExpr') {
     return sprintf("GenExpr(code=%s)", astDump(node.code));
 }
@@ -152,10 +148,6 @@ if (node.nodeName === 'GenExprIf') {
 
 if (node.nodeName === 'GenExprInner') {
     return sprintf("GenExprInner(expr=%s, quals=%s)", astDump(node.expr), astDump(node.quals));
-}
-
-if (node.nodeName === 'GenGet') {
-    return sprintf("GenGet(genstate=%s, name=%s)", astDump(node.genstate), astDump(node.name));
 }
 
 if (node.nodeName === 'Getattr') {
@@ -176,6 +168,10 @@ if (node.nodeName === 'If_') {
 
 if (node.nodeName === 'Import_') {
     return sprintf("Import_(names=%s)", astDump(node.names));
+}
+
+if (node.nodeName === 'Interactive') {
+    return sprintf("Interactive(node=%s)", astDump(node.node));
 }
 
 if (node.nodeName === 'Invert') {

@@ -3,11 +3,10 @@
 //
 function genericVisit(ast, args)
 {
-    //dotrace("in generic visit:"+this+","+ast+","+(args.o ? args.o.toString() : "null")+","+argrest);
     if (!ast) return undefined;
     if (args === undefined) throw "no args";
     //if (args.o === undefined) throw "no output buffer";
-    //dotrace("name:"+ ast.nodeName);
+    //print("name:"+ ast.nodeName);
     if (ast.nodeName in this)
     {
         return this[ast.nodeName].call(this, ast, args);
@@ -112,126 +111,104 @@ function appearsIn(name, namelist)
 }
 
 //
-// declares all locals in a function, excluding func args or globals
+// annotates blocks with the names that are bound within the block
+// propagation of scope into functions is not done here (so functions need to
+// look at functions they were declared in to find name bindings
 //
-var hDeclareLocals = {
+//
+// from http://docs.python.org/dev/reference/executionmodel.html
+// a block is: a module, a class body, or a function body
+// the following bind names:
+// - function arguments
+// - import
+// - class and def
+// - targets of assignment if identifiers
+// - for loop header
+// - the variable of except
+// - variable in as and with
+// when a name is bound, it becomes a local in that block. it doesn't matter
+// when the name is bound, it's a local for the whole block. this means that a
+// scan of the body of the block can determine at compile time whether it's a
+// local or a global.
+//
+// the global statement causes references to that name to be global.
+//
+// i interpret http://docs.python.org/dev/reference/executionmodel.html#interaction-with-dynamic-features
+// to mean that you can't muck with the static-icity; it's either clearly a
+// local because its assigned to in the body, or it's always global.
+//
+var BIND_LOCAL = 'BIND_LOCAL';
+var BIND_ARG = 'BIND_ARG'; // ARG is the same as LOCAL, just tagged for later info
+var BIND_GLOBAL = 'BIND_GLOBAL';
+var hAnnotateBlocksWithBindings = {
 visit: genericVisit,
-Assign: function(ast, a)
+AssName: function(ast, a)
+         {
+             this.bindName(a, ast.name, BIND_LOCAL);
+         },
+// Subscript and AssAttr aren't necessary, AssTuple is handled by AssName
+Global: function(ast, a)
         {
-            var o = a.o;
-            var func = a.func;
-            var globals = [];
-            var i, j;
-
-            func.walkChildren(hFindGlobals, globals);
-
-            //print(JSON.stringify(ast.nodes, null, 2));
-
-            var names = [];
-            // todo; there's duplicates here
-            for (i = 0; i < ast.nodes.length; ++i)
-            {
-                var node = ast.nodes[i];
-                if (node instanceof AssName)
-                {
-                    names.push(node.name);
-                }
-                else if (node instanceof AssAttr)
-                {
-                    if (node.expr.name === undefined) throw "assert";
-                    names.push(node.expr.name);
-                }
-                else
-                {
-                    throw "unhandled case in hDeclareLocals";
-                }
-            }
-            // todo; should probably walk expr?
-
-            for (i = 0; i < names.length; ++i)
-            {
-                if (!appearsIn(names[i], func.argnames)
-                        && !appearsIn(names[i], globals))
-                {
-                    o.push("var ");
-                    o.push(names[i]);
-                    o.push(";");
-                }
-            }
-
-        }
-};
-
-//
-// rename locals in a generator to be attribute accesses on $genstate rather
-// than direct accesses so they're saved across invocations.
-//
-var hRenameGeneratorLocals = {
-visit: genericVisit,
-Assign: function(ast, a)
-        {
-            var func = a.func;
-            var globals = [];
-            var i, j;
-
-            func.walkChildren(hFindGlobals, globals);
-
-            //print("nodes",JSON.stringify(ast.nodes, null, 2));
-            //print("expr",JSON.stringify(ast.expr, null, 2));
-
-            var newexpr = this.visit(ast.expr, a);
-            if (newexpr !== undefined) ast.expr = newexpr;
-
-            //print("exprafter",JSON.stringify(ast.expr, null, 2));
-
-            var names = [];
-            for (i = 0; i < ast.nodes.length; ++i)
-            {
-                var node = ast.nodes[i];
-                if (node instanceof AssName)
-                {
-                    if (!appearsIn(node.name, func.argnames)
-                            && !appearsIn(node.name, globals))
-                    {
-                        ast.nodes[i] = new GenAss(a.generatorStateName, node.name);
-                    }
-                }
-                else
-                {
-                    throw "unhandled case in hRenameGeneratorLocals";
-                }
-            }
+            for (var i = 0; i < ast.names.length; ++i)
+                this.bindName(a, ast.names[i], BIND_GLOBAL);
         },
-Name: function(ast, a)
+Module: function(ast, a)
+        {
+            this.newBlockAndWalkChildren(ast, a);
+        },
+Interactive: function(ast, a)
+             {
+                 this.newBlockAndWalkChildren(ast, a);
+             },
+For_: function(ast, a)
       {
-          var func = a.func;
-          var globals = [];
-
-          // todo; this is both ugly and wrong
-          var predefs = [
-              "abs",
-              "chr",
-              "dir",
-              "hash",
-              "len",
-              "max",
-              "min",
-              "ord",
-              "range",
-              "repr",
-              "slice",
-              "str",
-              "type"
-              ];
-
-          func.walkChildren(hFindGlobals, globals);
-          if (!appearsIn(ast.name, func.argnames)
-                  && !appearsIn(ast.name, globals)
-                  && !appearsIn(ast.name, predefs))
+          if (ast.assign.nodeName === "Name")
           {
-              return new GenGet(a.generatorStateName, ast.name);
+              this.bindName(a, ast.assign.name, BIND_LOCAL);
           }
-      }
+          else
+          {
+              throw "unhandled case in For_";
+          }
+      },
+Class_: function(ast, a)
+        {
+            this.bindName(a, ast.name, BIND_LOCAL);
+
+            this.newBlockAndWalkChildren(ast, a);
+        },
+Function_: function(ast, a)
+           {
+               this.bindName(a, ast.name, BIND_LOCAL);
+               this.newBlockAndWalkChildren(ast, a);
+
+               a.currentBlocks.push(ast);
+               for (var i = 0; i < ast.argnames.length; ++i)
+                   this.bindName(a, ast.argnames[i], BIND_ARG);
+               a.currentBlocks.pop();
+           },
+
+// todo; except, as, with, import
+
+newBlockAndWalkChildren: function(ast, a)
+                         {
+                             ast.nameBindings = {};
+                             a.currentBlocks.push(ast);
+                             //print(a.currentBlocks, a.currentBlocks.length);
+                             ast.walkChildren(this, a);
+                             a.currentBlocks.pop();
+                         },
+bindName: function(a, name, level)
+          {
+              var end = a.currentBlocks.length - 1;
+              var prev = a.currentBlocks[end].nameBindings[name];
+              // allow global to override local, but not the other way around
+              if (level === BIND_GLOBAL
+                      || (prev === undefined && (level === BIND_LOCAL || level === BIND_ARG)))
+              {
+                  a.currentBlocks[end].nameBindings[name] = level;
+              }
+          }
 };
 
 //
@@ -330,27 +307,17 @@ Assign: function(ast, a)
             o.push(";");
             for (var i = 0; i < ast.nodes.length; ++i)
             {
-                var type = ast.nodes[i].nodeName;
-                if (type === "AssName")
-                {
-                    if (ast.nodes[i].flags === "OP_ASSIGN")
-                    {
-                        o.push(ast.nodes[i].name);
-                        o.push("=");
-                        o.push(tmp);
-                    }
-                    else
-                    {
-                        throw "unexpected flags";
-                    }
-                }
-                else if (type === "Subscript" || type === "AssAttr" || type === "GenAss")
+                var node = ast.nodes[i];
+                if (node instanceof AssName ||
+                        node instanceof Subscript ||
+                        node instanceof AssAttr)
                 {
                     acopy = shallowcopy(a);
                     acopy.tmp = tmp;
                     this.visit(ast.nodes[i], acopy);
                 }
-                else if (type === "AssTuple")
+                // todo; this should probably be in the AssTuple handler
+                else if (node instanceof AssTuple)
                 {
                     if (a.asGenerator) throw "probably doesn't work in generator";
                     o.push("sk$unpack([");
@@ -365,7 +332,7 @@ Assign: function(ast, a)
                 }
                 else
                 {
-                    throw "todo;" + type;
+                    throw "todo;" + node.nodeName;
                 }
                 if (i !== ast.nodes.length - 1) o.push(";");
             }
@@ -374,10 +341,27 @@ Assign: function(ast, a)
 AssName: function(ast, a)
          {
              var o = a.o;
-             if (ast.flags === "OP_DELETE")
+             var tmp = a.tmp;
+             if (ast.flags === OP_ASSIGN)
+             {
+                 if (!tmp) throw "expecting tmp node to assign from";
+                 if (a.asGenerator && a.func.nameBindings[ast.name] === BIND_LOCAL)
+                 {
+                     o.push(a.generatorStateName);
+                     o.push(".");
+                 }
+                 o.push(ast.name);
+                 o.push("=");
+                 o.push(tmp);
+             }
+             else if (ast.flags === OP_DELETE)
              {
                  o.push("delete ");
                  o.push(ast.name);
+             }
+             else
+             {
+                 throw "unexpected flags";
              }
          },
 
@@ -387,9 +371,19 @@ Subscript: function(ast, a)
                var o = a.o;
                var tmp = a.tmp;
 
+               var pushStateName = function()
+               {
+                   if (a.asGenerator)
+                   {
+                       o.push(a.generatorStateName);
+                       o.push(".");
+                   }
+               };
+
                if (ast.flags === OP_ASSIGN)
                {
                    if (!tmp) throw "expecting tmp node to assign from";
+                   pushStateName();
                    this.visit(ast.expr, a);
                    for (j = 0; j < ast.subs.length; ++j)
                    {
@@ -404,6 +398,7 @@ Subscript: function(ast, a)
                {
                    for (j = 0; j < ast.subs.length; ++j)
                    {
+                       pushStateName();
                        this.visit(ast.expr, a);
                        o.push(".__getitem__(");
                        this.visit(ast.subs[j], a);
@@ -414,6 +409,7 @@ Subscript: function(ast, a)
                {
                    for (j = 0; j < ast.subs.length; ++j)
                    {
+                       pushStateName();
                        this.visit(ast.expr, a);
                        o.push(".__delitem__(");
                        this.visit(ast.subs[j], a);
@@ -434,6 +430,11 @@ AssAttr: function(ast, a)
              if (ast.flags === OP_ASSIGN)
              {
                  if (!tmp) throw "expecting tmp node to assign from";
+                 if (a.asGenerator)
+                 {
+                     o.push(a.generatorStateName);
+                     o.push(".");
+                 }
                  this.visit(ast.expr, a);
                  o.push(".__setattr__('" + ast.attrname + "',");
                  o.push(tmp);
@@ -444,28 +445,6 @@ AssAttr: function(ast, a)
                  throw "unexpected AssAttr flags:" + ast.flags;
              }
          },
-
-GenAss: function(ast, a)
-        {
-            var o = a.o;
-            var tmp = a.tmp;
-
-            if (!tmp) throw "expecting tmp node to assign from";
-            o.push(ast.genstate);
-            o.push(".");
-            o.push(ast.name);
-            o.push("=");
-            o.push(tmp);
-            o.push(";");
-        },
-
-GenGet: function(ast, a)
-        {
-            var o = a.o;
-            o.push(ast.genstate);
-            o.push(".");
-            o.push(ast.name);
-        },
 
 Sliceobj: function(ast, a)
           {
@@ -794,7 +773,22 @@ makeFuncBody: function(ast, a)
 
                   this.functionSetup(ast, a, inclass, islamb);
 
-                  ast.code.walkChildren(hDeclareLocals, { func: ast, o: o });
+                  //print("bindings", JSON.stringify(ast.nameBindings, null, 2));
+                  for (var k in ast.nameBindings)
+                  {
+                      //print("k",k);
+                      if (ast.nameBindings.hasOwnProperty(k))
+                      {
+                          var v = ast.nameBindings[k];
+                          if (v === BIND_LOCAL)
+                          {
+                              o.push("var ");
+                              o.push(k);
+                              o.push(";");
+                          }
+                      }
+                  }
+
                   if (islamb) o.push("return(");
                   if (inclass)
                   {
@@ -841,8 +835,6 @@ compileGenerator: function(ast, a)
                       acopy.locationMarkers = [ outerLocationMarker ];
                       acopy.curLocationMarker = outerLocationMarker;
                       acopy.func = ast;
-
-                      ast.code.walkChildren(hRenameGeneratorLocals, acopy);
 
                       // todo; self accesses
 
@@ -949,7 +941,15 @@ Name: function(ast, a)
           if (ast.name === "None") o.push("null");
           else if (ast.name === "True") o.push("true");
           else if (ast.name === "False") o.push("false");
-          else o.push(ast.name);
+          else
+          {
+              if (a.asGenerator && a.func.nameBindings[ast.name] === BIND_LOCAL)
+              {
+                  o.push(a.generatorStateName);
+                  o.push(".");
+              }
+              o.push(ast.name);
+          }
       },
 
 Dict: function(ast, a)
@@ -1112,10 +1112,12 @@ binopop: function(ast, a, opstr)
 
 function compile(ast)
 {
+    //print(astDump(ast));
+    hMarkGeneratorFunctions.visit(ast, {});
+    hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
+    hMakeNoReturnANull.visit(ast, {});
     var result = [];
-    ast.walkChildren(hMarkGeneratorFunctions, {});
-    ast.walkChildren(hMakeNoReturnANull, {});
-    ast.walkChildren(hMainCompile, {o:result});
+    hMainCompile.visit(ast, { o: result });
     return result.join(""); 
 }
 
