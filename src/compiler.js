@@ -522,6 +522,9 @@ genSliceBeforeLoop: function(a)
                         if (a.asGenerator)
                         {
                             var o = a.o;
+
+                            var inLoopMarker = a.generatorStateName + "." + gensym();
+
                             o.push(a.generatorStateName);
                             o.push(".");
                             o.push(a.curLocationMarker);
@@ -529,6 +532,18 @@ genSliceBeforeLoop: function(a)
                             o.push("\ncase ");
                             o.push(a.curLocationMarkerValue++);
                             o.push(":{\n");
+
+                            // tag the loop with a label for break/continue
+                            // save the inLoopMarker so it can be cleared too
+                            var label = gensym();
+                            a.loopLabels.push({
+                                    label: label,
+                                    inLoopMarker: inLoopMarker
+                                    });
+                            o.push(label);
+                            o.push(":");
+
+                            return inLoopMarker;
                         }
                     },
 
@@ -567,6 +582,8 @@ genTailOfLoop: function(a, locMarker, inLoopMarker)
                        o.push("=0;");
                        o.push(inLoopMarker);
                        o.push("=false;}}");
+
+                       a.loopLabels.pop();
                    }
                },
 
@@ -574,7 +591,7 @@ While_: function(ast, a)
         {
             var o = a.o;
 
-            this.genSliceBeforeLoop(a);
+            var inLoopMarker = this.genSliceBeforeLoop(a);
             
             o.push("while(true){");
             //o.push("print('n',n);");
@@ -582,7 +599,6 @@ While_: function(ast, a)
 
             if (a.asGenerator)
             {
-                var inLoopMarker = a.generatorStateName + "." + gensym();
                 o.push(inLoopMarker);
                 o.push("||");
             }
@@ -611,13 +627,12 @@ For_: function(ast, a)
           this.visit(ast.list, a);
           o.push(").__iter__();");
 
-          this.genSliceBeforeLoop(a);
+          var inLoopMarker = this.genSliceBeforeLoop(a);
 
           o.push("while(true){");
 
           if (a.asGenerator)
           {
-              var inLoopMarker = a.generatorStateName + "." + gensym();
               o.push("if(!");
               o.push(inLoopMarker);
               o.push("){");
@@ -839,6 +854,7 @@ compileGenerator: function(ast, a)
                       acopy.locationMarkers = [ outerLocationMarker ];
                       acopy.curLocationMarker = outerLocationMarker;
                       acopy.func = ast;
+                      acopy.loopLabels = [];
 
                       // todo; self accesses
 
@@ -909,14 +925,28 @@ Yield_: function(ast, a)
             o.push(":{\n");
         },
 
+breakOrCont: function(ast, a, boc)
+             {
+                 var o = a.o;
+                 if (a.asGenerator)
+                 {
+                     o.push(a.loopLabels[a.loopLabels.length - 1].inLoopMarker);
+                     o.push("=false;");
+                 }
+                 o.push(boc);
+                 if (a.asGenerator)
+                 {
+                     o.push(" " + a.loopLabels[a.loopLabels.length - 1].label);
+                 }
+             },
 Break_: function(ast, a)
          {
-             a.o.push("break");
+             this.breakOrCont(ast, a, "break");
          },
 
 Continue_: function(ast, a)
          {
-             a.o.push("continue");
+             this.breakOrCont(ast, a, "continue");
          },
 
 Discard: function(ast, a)
