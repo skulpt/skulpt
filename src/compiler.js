@@ -616,7 +616,12 @@ For_: function(ast, a)
           var tmp = gensym();
           var tmp2 = gensym();
 
-          o.push(tmp);              // todo; this is a local that needs to go into state
+          if (a.asGenerator)
+          {
+              o.push(a.generatorStateName);
+              o.push(".");
+          }
+          o.push(tmp);
           o.push("=(");
           this.visit(ast.list, a);
           o.push(").__iter__();");
@@ -635,6 +640,11 @@ For_: function(ast, a)
           o.push("var ");
           o.push(tmp2);
           o.push("=");
+          if (a.asGenerator)
+          {
+              o.push(a.generatorStateName);
+              o.push(".");
+          }
           o.push(tmp);
           o.push(".next();");
 
