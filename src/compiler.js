@@ -319,7 +319,6 @@ Assign: function(ast, a)
                 // todo; this should probably be in the AssTuple handler
                 else if (node instanceof AssTuple)
                 {
-                    if (a.asGenerator) throw "probably doesn't work in generator";
                     o.push("sk$unpack([");
                     var names = [];
                     acopy = shallowcopy(a);
@@ -328,6 +327,11 @@ Assign: function(ast, a)
                     o.push("'" + names.join("','") + "'");
                     o.push("],");
                     o.push(tmp);
+                    if (a.asGenerator)
+                    {
+                        o.push(",");
+                        o.push(a.generatorStateName);
+                    }
                     o.push(")");
                 }
                 else

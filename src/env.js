@@ -161,7 +161,7 @@ function sk$neg(self)
     }
 }
 
-function sk$unpack(lhsnames, rhs)
+function sk$unpack(lhsnames, rhs, context)
 {
     var newRHS = [];
     for (var iter = rhs.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
@@ -173,9 +173,10 @@ function sk$unpack(lhsnames, rhs)
         throw "ValueError: unpack had " + lhsnames.length  + " on the left, but " + rhs.length + " on the right.";
     }
     // todo; what the heck is 'this' here?
+    if (context === undefined) context = this;
     for (var j = 0; j < lhsnames.length; ++j)
     {
-        this[lhsnames[j]] = rhs[j];
+        context[lhsnames[j]] = rhs[j];
     }
 }
 
