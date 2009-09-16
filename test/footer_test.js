@@ -2,9 +2,7 @@
 
 Skulpt = {
 compileStr: compileStr,
-compileUrl: compileUrl,
-execStr: execStr,
-execUrl: execUrl,
+compileUrlAsync: compileUrlAsync,
 InteractiveContext: InteractiveContext,
 
 // internal methods, mostly exposed here for unit tests
