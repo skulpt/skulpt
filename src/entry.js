@@ -11,21 +11,9 @@ function compileStr(filename, input)
     return compile(ast);
 }
 
-function compileUrl(url)
+function compileUrlAsync(url, oncomplete)
 {
     // xmlhttp the url and compileStr it
-    throw "todo;";
-}
-
-function execStr(filename, input)
-{
-    // compileStr and eval in some context
-    throw "todo;";
-}
-
-function execUrl(url)
-{
-    // compileUrl and eval in some context
     throw "todo;";
 }
  
