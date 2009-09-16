@@ -871,7 +871,7 @@ Transformer.prototype.return_stmt = function(nodelist)
 {
     // return: [testlist]
     if (nodelist.length < 2)
-        return new Return_(new Const_(null), nodelist[0].context);
+        return new Return_(null, nodelist[0].context);
     return new Return_(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 

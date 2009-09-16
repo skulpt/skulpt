@@ -59,12 +59,6 @@ var hMakeNoReturnANull = {
 visit: genericVisit,
 Function_: function(ast, a)
            {
-               if (ast.isGenerator)
-               {
-                   // we don't want
-                   return;
-               }
-
                if (ast.code.nodes.length === 0 ||
                        !(ast.code.nodes[ast.code.nodes.length - 1] instanceof Return_))
                {
@@ -899,9 +893,18 @@ Lambda: function(ast, a)
 Return_: function(ast, a)
          {
              var o = a.o;
-             o.push("return ");
-             if (ast.value) this.visit(ast.value, a);
-             else o.push("null");
+             if (a.asGenerator)
+             {
+                 if (ast.value) throw new SyntaxError("'return' with argument inside generator");
+                 // todo; StopIteration
+                 o.push("return undefined");
+             }
+             else
+             {
+                 o.push("return ");
+                 if (ast.value) this.visit(ast.value, a);
+                 else o.push("null");
+             }
          },
 
 Yield_: function(ast, a)
