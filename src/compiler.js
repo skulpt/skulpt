@@ -491,8 +491,53 @@ Tuple: function(ast, a)
            o.push("])");
        },
 
+genSliceAtBlockBoundary: function(a)
+                         {
+                             if (a.asGenerator)
+                             {
+                                 var o = a.o;
+
+                                 var inLoopMarker = a.generatorStateName + "." + gensym();
+
+                                 o.push(a.locationMarkers[a.locationMarkers.length - 1]);
+                                 o.push("++;}");
+                                 o.push("case ");
+                                 o.push(a.locationMarkerValues[a.locationMarkerValues.length - 1]++);
+                                 o.push(":{");
+
+                                 // tag the loop with a label for break/continue
+                                 // save the inLoopMarker so it can be cleared too
+                                 var label = gensym();
+                                 a.loopLabels.push({ label: label, inLoopMarker: inLoopMarker });
+                                 o.push(label);
+                                 o.push(":");
+
+                                 return inLoopMarker;
+                             }
+                         },
+
+genTailOfLoop: function(a, inLoopMarker)
+               {
+                   if (a.asGenerator)
+                   {
+                       var o = a.o;
+                       o.push(a.locationMarkers[a.locationMarkers.length - 1]);
+                       o.push("=0;");
+                       o.push(inLoopMarker);
+                       o.push("=false;");
+
+                       a.loopLabels.pop();
+                   }
+               },
+
+       // todo; this doesn't work for generators
+       // need to have a genSliceBeforeLoop-ish before
+       // and then the body of all blocks should share the stuff that's
+       // currently in the function setup
 If_: function(ast, a)
      {
+         //this.genSliceAtBlockBoundary(a);
+
          var o = a.o;
          for (var i = 0; i < ast.tests.length; ++i)
          {
@@ -500,92 +545,26 @@ If_: function(ast, a)
              o.push("if(");
              this.visit(ast.tests[i][0], a);
              o.push("){");
+             this.startGeneratorCodeBlock(a);
              this.visit(ast.tests[i][1], a);
+             this.endGeneratorCodeBlock(a);
              o.push("}");
          }
          if (ast.else_)
          {
              o.push("else{");
+             this.startGeneratorCodeBlock(a);
              this.visit(ast.else_, a);
+             this.endGeneratorCodeBlock(a);
              o.push("}");
          }
      },
-
-genSliceBeforeLoop: function(a)
-                    {
-                        if (a.asGenerator)
-                        {
-                            var o = a.o;
-
-                            var inLoopMarker = a.generatorStateName + "." + gensym();
-
-                            o.push(a.generatorStateName);
-                            o.push(".");
-                            o.push(a.curLocationMarker);
-                            o.push("++;}");
-                            o.push("\ncase ");
-                            o.push(a.curLocationMarkerValue++);
-                            o.push(":{\n");
-
-                            // tag the loop with a label for break/continue
-                            // save the inLoopMarker so it can be cleared too
-                            var label = gensym();
-                            a.loopLabels.push({
-                                    label: label,
-                                    inLoopMarker: inLoopMarker
-                                    });
-                            o.push(label);
-                            o.push(":");
-
-                            return inLoopMarker;
-                        }
-                    },
-
-genHeadOfLoop: function(a, inLoopMarker)
-               {
-                   if (a.asGenerator)
-                   {
-                       var o = a.o;
-                       var locMarker = gensym();
-                       var acopy = shallowcopy(a);
-                       acopy.locationMarkers.push(locMarker);
-                       acopy.curLocationMarker = locMarker;
-
-                       o.push("switch(");
-                       o.push(a.generatorStateName);
-                       o.push(".");
-                       o.push(locMarker);
-                       o.push("){\ncase 0:{\n");
-                       acopy.curLocationMarkerValue = 1;
-
-                       o.push(inLoopMarker);
-                       o.push("=true;");
-                       return [ locMarker, acopy ];
-                   }
-                   return [ undefined, a ];
-               },
-
-genTailOfLoop: function(a, locMarker, inLoopMarker)
-               {
-                   if (a.asGenerator)
-                   {
-                       var o = a.o;
-                       o.push(a.generatorStateName);
-                       o.push(".");
-                       o.push(locMarker);
-                       o.push("=0;");
-                       o.push(inLoopMarker);
-                       o.push("=false;}}");
-
-                       a.loopLabels.pop();
-                   }
-               },
 
 While_: function(ast, a)
         {
             var o = a.o;
 
-            var inLoopMarker = this.genSliceBeforeLoop(a);
+            var inLoopMarker = this.genSliceAtBlockBoundary(a);
             
             o.push("while(true){");
             //o.push("print('n',n);");
@@ -600,12 +579,18 @@ While_: function(ast, a)
             this.visit(ast.test, a);
             o.push("))break;");
 
-            var ret = this.genHeadOfLoop(a, inLoopMarker);
-            var locMarker = ret[0]; a = ret[1];
+            this.startGeneratorCodeBlock(a);
+            if (a.asGenerator)
+            {
+                o.push(inLoopMarker);
+                o.push("=true;");
+            }
 
             this.visit(ast.body, a);
 
-            this.genTailOfLoop(a, locMarker, inLoopMarker);
+            this.genTailOfLoop(a, inLoopMarker);
+
+            this.endGeneratorCodeBlock(a);
 
             o.push("}");
         },
@@ -626,7 +611,7 @@ For_: function(ast, a)
           this.visit(ast.list, a);
           o.push(").__iter__();");
 
-          var inLoopMarker = this.genSliceBeforeLoop(a);
+          var inLoopMarker = this.genSliceAtBlockBoundary(a);
 
           o.push("while(true){");
 
@@ -662,12 +647,18 @@ For_: function(ast, a)
               o.push("}");
           }
 
-          var ret = this.genHeadOfLoop(a, inLoopMarker);
-          var locMarker = ret[0]; a = ret[1];
+          this.startGeneratorCodeBlock(a);
+          if (a.asGenerator)
+          {
+              o.push(inLoopMarker);
+              o.push("=true;");
+          }
 
           this.visit(ast.body, a);
 
-          this.genTailOfLoop(a, locMarker, inLoopMarker);
+          this.genTailOfLoop(a, inLoopMarker);
+
+          this.endGeneratorCodeBlock(a);
 
           o.push("}");
       },
@@ -834,6 +825,41 @@ makeFuncBody: function(ast, a)
                   }
               },
 
+startGeneratorCodeBlock: function(a)
+                     {
+                         if (a.asGenerator)
+                         {
+                             var locMarker = gensym();
+                             var o = a.o;
+
+                             a.locationMarkers.push(a.generatorStateName + "." + locMarker);
+                             a.locationMarkersToBeInitialized.push(locMarker);
+
+                             o.push("switch(");
+                             o.push(a.generatorStateName);
+                             o.push(".");
+                             o.push(locMarker);
+                             o.push("){case 0:{");
+                             a.locationMarkerValues.push(1);
+                         }
+                     },
+
+endGeneratorCodeBlock: function(a)
+                       {
+                           if (a.asGenerator)
+                           {
+                               var o = a.o;
+                               var locMarker = a.locationMarkers.pop();
+
+                               o.push(locMarker);
+                               o.push("=0;");
+
+                               o.push("}}");
+                               a.locationMarkerValues.pop();
+                               return locMarker;
+                           }
+                       },
+
 compileGenerator: function(ast, a)
                   {
                       var o = a.o;
@@ -844,41 +870,39 @@ compileGenerator: function(ast, a)
                       var tmp = gensym();
                       o.push("var ");
                       o.push(tmp);
-                      o.push("={\n__iter__:function(){return ");
+                      o.push("={__iter__:function(){return ");
                       o.push(tmp);
-                      o.push(";},\n__repr__:function(){return new Str$('<generator object ");
+                      o.push(";},__repr__:function(){return new Str$('<generator object ");
                       o.push(ast.name);
                       o.push(">');},");
-                      o.push("\nnext:function(){\n");
+                      o.push("next:function(){");
 
                       var acopy = shallowcopy(a);
                       acopy.asGenerator = true;
                       acopy.generatorStateName = tmp;
-                      var outerLocationMarker = "loc__";//todo; + gensym();
-                      acopy.locationMarkers = [ outerLocationMarker ];
-                      acopy.curLocationMarker = outerLocationMarker;
-                      acopy.func = ast;
+                      acopy.locationMarkers = [];
+                      acopy.locationMarkersToBeInitialized = [];
+                      acopy.locationMarkerValues = [];
                       acopy.loopLabels = [];
+                      acopy.func = ast;
 
                       // todo; self accesses
 
-                      o.push("switch(");
-                      o.push(tmp);
-                      o.push(".");
-                      o.push(outerLocationMarker);
-                      o.push("){\ncase 0:{\n");
-                      acopy.curLocationMarkerValue = 1;
-                      this.visit(ast.code, acopy);
-                      o.push("}}");
+                      this.startGeneratorCodeBlock(acopy);
 
-                      o.push("},\n");
-                      for (i = 0; i < acopy.locationMarkers.length; ++i)
+                      this.visit(ast.code, acopy);
+
+                      this.endGeneratorCodeBlock(acopy);
+
+                      o.push("},");
+                      for (i = 0; i < acopy.locationMarkersToBeInitialized.length; ++i)
                       {
-                          o.push(acopy.locationMarkers[i]);
+                          o.push(acopy.locationMarkersToBeInitialized[i]);
                           o.push(":0");
-                          if (i !== acopy.locationMarkers.length - 1) o.push(",\n");
+                          if (i !== acopy.locationMarkersToBeInitialized.length - 1) o.push(",");
                       }
-                      o.push("};\nreturn ");
+
+                      o.push("};return ");
                       o.push(tmp);
                       o.push(";}");
 
@@ -925,17 +949,15 @@ Yield_: function(ast, a)
             // previous case is started before we get here so that the body of
             // other non-yield statements can be compiled
 
-            o.push(a.generatorStateName);
-            o.push(".");
-            o.push(a.curLocationMarker);
+            o.push(a.locationMarkers[a.locationMarkers.length - 1]);
             o.push("++;");
             o.push("return ");
             if (ast.value) this.visit(ast.value, a);
             else o.push("null");
             o.push(";}"); // end of previous case
-            o.push("\ncase ");
-            o.push(a.curLocationMarkerValue++);
-            o.push(":{\n");
+            o.push("case ");
+            o.push(a.locationMarkerValues[a.locationMarkerValues.length - 1]++);
+            o.push(":{");
         },
 
 breakOrCont: function(ast, a, boc)
@@ -1094,6 +1116,14 @@ ListComp: function(ast, a)
               o.push("})()");
           },
 
+GenExpr: function(ast, a)
+         {
+         },
+
+GenExprIf: function(ast, a)
+           {
+           },
+
 Class_: function(ast, a)
         {
             var o = a.o;
@@ -1106,7 +1136,7 @@ Class_: function(ast, a)
             // up prototype chains.
             o.push("(arguments,true);if(doinit&&this.__init__!==undefined)this.__init__.apply(this, args);return this;};");
             if (ast.bases === null || ast.bases.length === 0)
-                o.push(ast.name + ".prototype=new object();\n");
+                o.push(ast.name + ".prototype=new object();");
             else
             {
                 if (ast.bases.length > 1) throw "todo; multiple bases";
@@ -1123,7 +1153,6 @@ Class_: function(ast, a)
                 var acopy = shallowcopy(a);
                 acopy.klass = ast.name;
                 this.visit(ast.code.nodes[i], acopy);
-                o.push("\n");
             }
             o.push("undefined"); // no return in repl
         },
