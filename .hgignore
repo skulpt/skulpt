@@ -7,4 +7,3 @@ tmp/*
 .d8_history
 *.swp
 dist/*
-./push
