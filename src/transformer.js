@@ -372,7 +372,7 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
         var result = ret[1];
 
         if (len_nodelist !== 2 && result instanceof GenExpr
-                && node.children.length === 2 && node.children[1].type === this.sym.gen_for)
+                && node.children.length === 2 && node.children[1].type === this.sym.comp_for)
             // allow f(x for x in y), but reject f(x for x in y, 1)
             // should use f((x for x in y), 1) instead of f(x for x in y, 1)
             throw new SyntaxError("generator expression needs parenthesis");
@@ -387,7 +387,7 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
 Transformer.prototype.com_argument = function(nodelist, kw, star_node)
 {
     //print(nodelist.children.length, "-- \n -- ", JSON.stringify(nodelist));
-    if (nodelist.children.length === 2 && nodelist.children[1].type === this.sym.gen_for)
+    if (nodelist.children.length === 2 && nodelist.children[1].type === this.sym.comp_for)
     {
         var test = this.dispatch(nodelist.children[0]);
         return [false, this.com_generator_expression(test, nodelist.children[1])];
@@ -922,9 +922,11 @@ Transformer.prototype.suite = function(nodelist)
 Transformer.prototype.testlist_gexp = function(nodelist)
 {
     //print("testlist_gexp:"+JSON.stringify(nodelist));
-    if (nodelist.length === 2 && nodelist[1].type === this.sym.gen_for)
+    //print("nodelist.length", nodelist.length);
+    //print("nodelist[1].type", nodelist[1].type);
+    if (nodelist.length === 2 && nodelist[1].type === this.sym.comp_for)
     {
-        var test = this.com_node(nodelist[0]);
+        var test = this.dispatch(nodelist[0]);
         return this.com_generator_expression(test, nodelist[1]);
     }
     return this.testlist(nodelist);
@@ -946,6 +948,53 @@ Transformer.prototype.test = function(nodelist)
         return new IfExp(test, then, else_, nodelist[1].context);
     }
     return then;
+};
+
+Transformer.prototype.com_generator_expression = function(expr, node)
+{
+    // comp_iter: comp_for | comp_if
+    // comp_for: 'for' exprlist 'in' testlist_safe [comp_iter]
+    // comp_if: 'if' old_test [comp_iter]
+    var fors = [];
+    //print("com_generator_expression:"+JSON.stringify(node));
+    var lineno = node.context;
+    while (node)
+    {
+        var t = node.children[0].value;
+        if (t === "for")
+        {
+            var assignNode = this.com_assign(node.children[1], OP_ASSIGN);
+            var genNode = this.dispatch(node.children[3]);
+            var newfor = new GenExprFor(assignNode, genNode, [], lineno);
+            fors.push(newfor);
+            if (node.children.length === 4)
+                node = null;
+            else
+                node = this.com_gen_iter(node.children[4]);
+        }
+        else if (t === "if")
+        {
+            var test = this.dispatch(node.children[1]);
+            var newif = new GenExprIf(test, lineno);
+            newfor.ifs.push(newif);
+            if (node.children.length === 2)
+                node = null;
+            else
+                node = this.com_gen_iter(node.chidlren[2]);
+        }
+        else
+        {
+            throw new SyntaxError("unexpected generator expression element");
+        }
+        fors[0].is_outmost = true;
+        return new GenExpr(new GenExprInner(expr, fors), lineno);
+    }
+};
+
+Transformer.prototype.com_gen_iter = function(node)
+{
+    if (node.type !== this.sym.comp_iter) throw "assert";
+    return node.value;
 };
 
 Transformer.prototype.or_test =
