@@ -307,7 +307,7 @@ function repr(x)
 function str(x)
 {
     var ret;
-    if (x === undefined) throw "error: trying to str undefined (should be at least null)";
+    if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
     else if (x === true) ret = "True";
     else if (x === false) ret = "False";
     else if (x === null) ret = "None";
@@ -316,6 +316,18 @@ function str(x)
         ret = x.toString();
     else if (typeof x === "string")
         ret = x;
+    else if (typeof x === "function")
+    {
+        if (x.name === "" && x.method$ !== undefined)
+        {
+            x = x.method$;
+            ret = "<method" + (x.name !== "" ? (" " + x.name) : "") + ">";
+        }
+        else
+        {
+            ret = "<function" + (x.name !== "" ? (" " + x.name) : "") + ">";
+        }
+    }
     else if (x.__str__ !== undefined)
         ret = x.__str__();
     else
@@ -378,10 +390,12 @@ if (!Function.prototype.bind)
     Function.prototype.bind = function(object)
     {
         var __method = this;
-        return function()
+        var ret = function()
         {
             return __method.apply(object, arguments);
         };
+        ret.method$ = __method;
+        return ret;
     };
 }
 function sk$ga(o, attrname)
