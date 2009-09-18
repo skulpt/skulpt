@@ -156,7 +156,7 @@ def dist():
     print ". Wrote %s and %s (and copied %s to doc/static)." % (uncompfn, compfn, compfn)
     print ". gzip of compressed: %d bytes" % size
 
-def parser():
+def regenparser():
     """regenerate the parser/ast source code"""
     if not os.path.exists("gen"): os.mkdir("gen")
     os.chdir("src/pgen")
@@ -207,6 +207,33 @@ print(Skulpt.compileStr('%s', input));
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
 
+def run(fn):
+    if not os.path.exists(fn):
+        print "%s doesn't exist" % fn
+        raise SystemExit()
+    f = open("support/tmp/run.js", "w")
+    f.write("""
+var input = read('%s');
+eval(Skulpt.compileStr('%s', input));
+    """ % (fn, fn))
+    f.close()
+    os.system("support/d8/d8 --nodebugger dist/skulpt-uncomp.js support/tmp/run.js")
+
+def parse(fn):
+    if not os.path.exists(fn):
+        print "%s doesn't exist" % fn
+        raise SystemExit()
+    f = open("support/tmp/parse.js", "w")
+    f.write("""
+var input = read('%s');
+var cst = Skulpt._parse('%s', input);
+print(astDump(Skulpt._transform(cst)));
+    """ % (fn, fn))
+    f.close()
+    os.system("support/d8/d8 --trace_exception %s test/footer_test.js %s support/tmp/parse.js" % (
+        ' '.join(getFileList('test')),
+        ' '.join(TestFiles[:-1])))
+
 def nrt():
     """open a new run test"""
     for i in range(100000):
@@ -220,7 +247,7 @@ def nrt():
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: build {test|dist|parser|regenruntests|upload|debug|nrt}"
+        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|parse}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -232,8 +259,12 @@ if __name__ == "__main__":
         dist()
     elif cmd == "debug":
         debug(sys.argv[2])
-    elif cmd == "parser":
-        parser()
+    elif cmd == "run":
+        run(sys.argv[2])
+    elif cmd == "parse":
+        parse(sys.argv[2])
+    elif cmd == "regenparser":
+        regenparser()
     elif cmd == "regenruntests":
         regenruntests()
     elif cmd == "upload":
