@@ -43,9 +43,20 @@ List$.prototype.index = function(item)
     throw "ValueError: list.index(x): x not in list";
 };
 
-List$.prototype.insert = function() { throw "todo; list.insert"; };
+List$.prototype.insert = function(i, x)
+{
+    if (i < 0) i = 0;
+    else if (i >= this.v.length) i = this.v.length - 1;
+    this.v.splice(i, 0, x);
+};
 
-List$.prototype.pop = function() { throw "todo; list.pop"; };
+List$.prototype.pop = function(i)
+{
+    if (i === undefined) i = this.v.length - 1;
+    var ret = this.v[i];
+    this.v.splice(i, 1);
+    return ret;
+};
 
 List$.prototype.remove = function() { throw "todo; list.remove"; };
 
