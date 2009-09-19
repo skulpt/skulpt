@@ -1118,6 +1118,8 @@ ListComp: function(ast, a)
 
 GenExpr: function(ast, a)
          {
+             var o = a.o;
+             o.push("/*genexpr*/");
          },
 
 GenExprIf: function(ast, a)

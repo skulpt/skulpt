@@ -18,7 +18,7 @@ function dump_tokens(fn, input)
             ret += "\n";
         };
 
-    var tokenizer = new Skulpt.Tokenizer(fn, printer);
+    var tokenizer = new Skulpt.Tokenizer(fn, false, printer);
     var done = false;
     for (var i = 0; i < lines.length && !done; ++i)
     {
@@ -231,6 +231,7 @@ function testInteractive(name)
                     got += ret.__repr__().v + "\n";
             }
             catch (e) { got += "EXCEPTION: " + e.message + "\n" + e.stack + "\n"; }
+            //print("made new context");
             ic = new Skulpt.InteractiveContext();
         }
     }

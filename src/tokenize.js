@@ -202,7 +202,7 @@ function rstrip(input, what)
     return input.substring(0, i);
 }
 
-function Tokenizer(filename, callback)
+function Tokenizer(filename, interactive, callback)
 {
     this.filename = filename;
     this.callback = callback;
@@ -217,6 +217,7 @@ function Tokenizer(filename, callback)
     this.indents = [0];
     this.endprog = undefined;
     this.strstart = undefined;
+    this.interactive = interactive;
     this.doneFunc = function()
     {
         for (var i = 1; i < this.indents.length; ++i) // pop remaining indent levels
@@ -301,15 +302,14 @@ Tokenizer.prototype.generateTokens = function(line)
                     return 'done';
                 return false;
             }
-            /*
             else
             {
                 //print("HERE:2");
-                if (this.callback(line[pos] === '#' ? T_COMMENT : T_NL, line.substring(pos),
+                if (this.callback(T_NL, line.substring(pos),
                             [this.lnum, pos], [this.lnum, line.length], line))
                     return 'done';
+                if (!this.interactive) return false;
             }
-            */
         }
 
         if (column > this.indents[this.indents.length - 1]) // count indents or dedents
@@ -326,6 +326,7 @@ Tokenizer.prototype.generateTokens = function(line)
                         this.filename, this.lnum, pos, line);
             }
             this.indents.splice(this.indents.length - 1, 1);
+            //print("dedent here");
             if (this.callback(T_DEDENT, '', [this.lnum, pos], [this.lnum, pos], line))
                 return 'done';
         }

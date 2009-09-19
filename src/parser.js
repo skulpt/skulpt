@@ -68,6 +68,7 @@ Parser.prototype.addtoken = function(type, value, context)
     var ilabel = this.classify(type, value, context);
     //print("ilabel:"+ilabel);
 
+OUTERWHILE:
     while (true)
     {
         var tp = this.stack[this.stack.length - 1];
@@ -75,8 +76,6 @@ Parser.prototype.addtoken = function(type, value, context)
         var first = tp.dfa[1];
         var arcs = states[tp.state];
 
-        var doelse = true;
-        
         // look for a state with this label
         for (var a = 0; a < arcs.length; ++a)
         {
@@ -124,30 +123,26 @@ Parser.prototype.addtoken = function(type, value, context)
                 {
                     // push a symbol
                     this.push(t, this.grammar.dfas[t], newstate, context);
-                    doelse = false;
-                    break; // to the while loop
+                    continue OUTERWHILE;
                 }
             }
         }
 
-        if (doelse)
+        //print("findInDfa: " + JSON.stringify(arcs)+" vs. " + tp.state);
+        if (findInDfa(arcs, [0, tp.state]))
         {
-            //print("findInDfa: " + JSON.stringify(arcs)+" vs. " + tp.state);
-            if (findInDfa(arcs, [0, tp.state]))
+            // an accepting state, pop it and try somethign else
+            //print("WAA");
+            this.pop();
+            if (this.stack.length === 0)
             {
-                // an accepting state, pop it and try somethign else
-                //print("WAA");
-                this.pop();
-                if (this.stack.length === 0)
-                {
-                    throw "ParseError: too much input"; //, type, value, context);
-                }
+                throw "ParseError: too much input"; //, type, value, context);
             }
-            else
-            {
-                // no transition
-                throw "ParseError: bad input"; //, type, value, context);
-            }
+        }
+        else
+        {
+            // no transition
+            throw "ParseError: bad input"; //, type, value, context);
         }
     }
 };
@@ -259,7 +254,7 @@ function makeParser(filename, style)
     var lineno = 1;
     var column = 0;
     var prefix = "";
-    var tokenizer = new Tokenizer(filename, function(type, value, start, end, line)
+    var tokenizer = new Tokenizer(filename, style === "single_input", function(type, value, start, end, line)
             {
                 //print(JSON.stringify([type, value, start, end, line]));
                 var s_lineno = start[0];
@@ -280,6 +275,7 @@ function makeParser(filename, style)
                         lineno += 1;
                         column = 0;
                     }
+                    //print("  not calling addtoken");
                     return undefined;
                 }
                 if (type === T_OP)

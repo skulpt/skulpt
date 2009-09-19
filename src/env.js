@@ -316,18 +316,6 @@ function str(x)
         ret = x.toString();
     else if (typeof x === "string")
         ret = x;
-    else if (typeof x === "function")
-    {
-        if (x.name === "" && x.method$ !== undefined)
-        {
-            x = x.method$;
-            ret = "<method" + (x.name !== "" ? (" " + x.name) : "") + ">";
-        }
-        else
-        {
-            ret = "<function" + (x.name !== "" ? (" " + x.name) : "") + ">";
-        }
-    }
     else if (x.__str__ !== undefined)
         ret = x.__str__();
     else
