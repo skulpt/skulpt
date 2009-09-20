@@ -179,7 +179,7 @@ function testRun(name)
     try {
         eval(js);
     }
-    catch (e) { got = "EXCEPTION: " + e.toString() + "\n"; }
+    catch (e) { got = "EXCEPTION: " + e.name + "\n"; }
     if (expect !== got)
     {
         print("FAILED: (" + name + ".py)\n-----");
@@ -230,7 +230,7 @@ function testInteractive(name)
                 if (ret && ret.__repr__ !== undefined)
                     got += ret.__repr__().v + "\n";
             }
-            catch (e) { got += "EXCEPTION: " + e.message + "\n" + e.stack + "\n"; }
+            catch (e) { got += "EXCEPTION: " + e.name + "\n" }
             //print("made new context");
             ic = new Skulpt.InteractiveContext();
         }

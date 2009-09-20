@@ -134,7 +134,7 @@ Str$.prototype.__mod__ = function(rhs)
     var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
         var i;
-        if (mappingKey === undefined) i = index++;
+        if (mappingKey === undefined || mappingKey === "" /* ff passes '' not undef for some reason */) i = index++;
 
         var zeroPad = false;
         var leftAdjust = false;
@@ -231,7 +231,10 @@ Str$.prototype.__mod__ = function(rhs)
 
         var value;
         //print("Rhs:",rhs, "ctor", rhs.constructor);
-        if (rhs.constructor === Tuple$) value = rhs.v[i];
+        if (rhs.constructor === Tuple$)
+        {
+            value = rhs.v[i];
+        }
         else if (rhs.__getitem__ !== undefined)
         {
             var mk = mappingKey.substring(1, mappingKey.length - 1);

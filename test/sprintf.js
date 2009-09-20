@@ -1,9 +1,8 @@
 // MIT-licensed
-// http://phpjs.org/functions/sprintf:522
-function sprintf( ) {
+function sprintf ( ) {
     // Return a formatted string  
     // 
-    // version: 905.3122
+    // version: 909.322
     // discuss at: http://phpjs.org/functions/sprintf
     // +   original by: Ash Searle (http://hexmen.com/blog/)
     // + namespaced by: Michael White (http://getsprink.com)
@@ -19,18 +18,18 @@ function sprintf( ) {
     // *     returns 2: '[    monkey]'
     // *     example 3: sprintf("[%'#10s]", 'monkey');
     // *     returns 3: '[####monkey]'
-    var regex = /%%|%(\d+\$)?([\-+\'#0 ]*)(\*\d+\$|\*|\d+)?(\.(\*\d+\$|\*|\d+))?([scboxXuidfegEG])/g;
+    var regex = /%%|%(\d+\$)?([-+\'#0 ]*)(\*\d+\$|\*|\d+)?(\.(\*\d+\$|\*|\d+))?([scboxXuidfegEG])/g;
     var a = arguments, i = 0, format = a[i++];
 
     // pad()
-    var pad = function(str, len, chr, leftJustify) {
+    var pad = function (str, len, chr, leftJustify) {
         if (!chr) {chr = ' ';}
-        var padding = (str.length >= len) ? '' : new Array(1 + len - str.length).join(chr);
+        var padding = (str.length >= len) ? '' : Array(1 + len - str.length >>> 0).join(chr);
         return leftJustify ? str + padding : padding + str;
     };
 
     // justify()
-    var justify = function(value, prefix, leftJustify, minWidth, zeroPad, customPadChar) {
+    var justify = function (value, prefix, leftJustify, minWidth, zeroPad, customPadChar) {
         var diff = minWidth - value.length;
         if (diff > 0) {
             if (leftJustify || !zeroPad) {
@@ -43,31 +42,31 @@ function sprintf( ) {
     };
 
     // formatBaseX()
-    var formatBaseX = function(value, base, prefix, leftJustify, minWidth, precision, zeroPad) {
+    var formatBaseX = function (value, base, prefix, leftJustify, minWidth, precision, zeroPad) {
         // Note: casts negative numbers to positive ones
-        var number = value;
+        var number = value >>> 0;
         prefix = prefix && number && {'2': '0b', '8': '0', '16': '0x'}[base] || '';
         value = prefix + pad(number.toString(base), precision || 0, '0', false);
         return justify(value, prefix, leftJustify, minWidth, zeroPad);
     };
 
     // formatString()
-    var formatString = function(value, leftJustify, minWidth, precision, zeroPad, customPadChar) {
-        if (precision !== null) {
+    var formatString = function (value, leftJustify, minWidth, precision, zeroPad, customPadChar) {
+        if (precision != null) {
             value = value.slice(0, precision);
         }
         return justify(value, '', leftJustify, minWidth, zeroPad, customPadChar);
     };
 
     // doFormat()
-    var doFormat = function(substring, valueIndex, flags, minWidth, unused_, precision, type) {
+    var doFormat = function (substring, valueIndex, flags, minWidth, _, precision, type) {
         var number;
         var prefix;
         var method;
         var textTransform;
         var value;
 
-        if (substring === '%%') {return '%';}
+        if (substring == '%%') {return '%';}
 
         // parse flags
         var leftJustify = false, positivePrefix = '', zeroPad = false, prefixBaseX = false, customPadChar = ' ';
@@ -87,9 +86,9 @@ function sprintf( ) {
         // we want to ignore null, undefined and empty-string values
         if (!minWidth) {
             minWidth = 0;
-        } else if (minWidth === '*') {
+        } else if (minWidth == '*') {
             minWidth = +a[i++];
-        } else if (minWidth.charAt(0) === '*') {
+        } else if (minWidth.charAt(0) == '*') {
             minWidth = +a[minWidth.slice(1, -1)];
         } else {
             minWidth = +minWidth;
@@ -106,10 +105,10 @@ function sprintf( ) {
         }
 
         if (!precision) {
-            precision = 'fFeE'.indexOf(type) > -1 ? 6 : (type === 'd') ? 0 : undefined;
-        } else if (precision === '*') {
+            precision = 'fFeE'.indexOf(type) > -1 ? 6 : (type == 'd') ? 0 : undefined;
+        } else if (precision == '*') {
             precision = +a[i++];
-        } else if (precision.charAt(0) === '*') {
+        } else if (precision.charAt(0) == '*') {
             precision = +a[precision.slice(1, -1)];
         } else {
             precision = +precision;

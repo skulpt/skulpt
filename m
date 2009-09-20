@@ -36,14 +36,7 @@ TestFiles = [
         "test/uneval.js",
         "test/test.js"
         ]
-
-DebugFiles = [
-        'test/sprintf.js',
-        'test/tokname.js',
-        'gen/ast_debug.js',
-        "test/json2.js",
-        "test/uneval.js",
-        ]
+DebugFiles = TestFiles[:-1]
 
 def isClean():
     out, err = Popen("hg status", shell=True, stdout=PIPE).communicate()
@@ -71,12 +64,101 @@ def test():
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
 
+
+def buildBrowserTests():
+    """combine all the tests data into something we can run from a browser
+    page (so that it can be tested in the various crappy engines)
+
+    we want to use the same code that the command line version of the tests
+    uses so we stub the d8 functions to push to the browser."""
+
+    outfn = "doc/static/browser-test.js"
+    out = open(outfn, "w")
+
+    print >>out, """
+window.addEvent('domready', function() {
+"""
+
+    # build a silly virtual file system to support 'read'
+    print ". Slurping test data"
+    print >>out, "VFSData = {"
+    for pat in ("test/tokenize/*", "test/parse/*", "test/run/*", "test/interactive/*"):
+        for file in glob.glob(pat):
+            data = open(file, "rb").read()
+            print >>out, "'%s': '%s'," % (file, data.encode("hex"))
+    print >>out, "};"
+
+    # stub the d8 functions we use
+    print >>out, """
+function read(fn)
+{
+    var hexToStr = function(str)
+    {
+        var ret = "";
+        for (var i = 0; i < str.length; i += 2)
+            ret += unescape("%%" + str.substr(i, 2));
+        return ret;
+    }
+    if (VFSData[fn] === undefined) throw "file not found: " + fn;
+    return hexToStr(VFSData[fn]);
+}
+var SkulptTestRunOutput = '';
+function print()
+{
+    var out = document.getElementById("output");
+    for (var i = 0; i < arguments.length; ++i)
+    {
+        out.innerHTML += arguments[i];
+        SkulptTestRunOutput += arguments[i];
+        out.innerHTML += " ";
+        SkulptTestRunOutput += " ";
+    }
+    out.innerHTML += "<br/>"
+    SkulptTestRunOutput += "\\n";
+}
+
+function quit(rc)
+{
+    var out = document.getElementById("output");
+    if (rc === 0)
+    {
+        out.innerHTML += "<font color='green'>OK</font>";
+    }
+    else
+    {
+        out.innerHTML += "<font color='red'>FAILED</font>";
+    }
+    var results = new Request.JSON({
+        url: 'http://www.skulpt.org/testresults',
+        method: 'post',
+        onSuccess: function() { out += "<br/>Results saved."; },
+        onFailure: function() { out += "<br/>Couldn't save results."; },
+        onException: onFailure
+    });
+    results.send({
+        browser: Browser.Engine,
+        platform: Browser.Platform,
+        version: '%s',
+        data: SkulptTestRunOutput
+    });
+}
+""" % getTip()
+
+    for f in getFileList('test') + TestFiles:
+        print >>out, open(f).read()
+
+    print >>out, """
+});
+"""
+    out.close()
+    print ". Built %s" % outfn
+
+
 def dist():
     """builds a 'shippable' version of Skulpt.
     
     this is all combined into one file, tests run, jslint'd, yui compressed.
-    output to build/Skulpt-<tip>.js where <tip> is the changeset that 'hg tip'
-    reports. """
+    """
 
     if not isClean():
         print "WARNING: working directory not clean (according to 'hg status')"
@@ -103,6 +185,8 @@ def dist():
     uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
     open(uncompfn, "w").write(combined)
+
+    buildBrowserTests()
 
     # run jslint on uncompressed
     print ". Running JSLint on uncompressed..."
@@ -148,12 +232,13 @@ def dist():
 
     # update doc copy
     ret = os.system("cp %s doc/static/skulpt.js" % compfn)
+    ret |= os.system("cp %s doc/static/skulpt-uncomp.js" % uncompfn)
     if ret != 0:
         print "Couldn't copy to docs dir."
         raise SystemExit()
 
     # all good!
-    print ". Wrote %s and %s (and copied %s to doc/static)." % (uncompfn, compfn, compfn)
+    print ". Wrote %s and %s (and copied to doc/static)." % (uncompfn, compfn)
     print ". gzip of compressed: %d bytes" % size
 
 def regenparser():
@@ -232,7 +317,7 @@ print(astDump(Skulpt._transform(cst)));
     f.close()
     os.system("support/d8/d8 --trace_exception %s test/footer_test.js %s support/tmp/parse.js" % (
         ' '.join(getFileList('test')),
-        ' '.join(TestFiles[:-1])))
+        ' '.join(DebugFiles)))
 
 def nrt():
     """open a new run test"""
