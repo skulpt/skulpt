@@ -1,7 +1,6 @@
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 import os
-import logging
 from django.utils import simplejson
 from google.appengine.ext import db
 
@@ -27,7 +26,6 @@ class TestResult(db.Model):
 
 class TestResults(webapp.RequestHandler):
     def post(self):
-        logging.error("body:" + self.request.body)
         data = simplejson.loads(self.request.body)
         tr = TestResult()
         tr.browsername = str(data['browsername'])
