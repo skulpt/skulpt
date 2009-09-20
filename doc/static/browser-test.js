@@ -336,6 +336,7 @@ VFSData = {
 'test/run/t108.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d29290a',
 'test/run/t95.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d436f6e73745f2876616c75653d323535292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t78.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d43616c6c46756e63286e6f64653d4e616d65286e616d653d6f7264292c20617267733d436f6e73745f2876616c75653d275827292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292c20646573743d6e756c6c2c206e6c3d747275652929290a',
+'test/run/t198.py': '666f72206920696e20283120666f72207820696e2072616e6765283329293a0a202020207072696e7420690a',
 'test/run/t103.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d4c697374436f6d7028657870723d4d756c286c6566743d4e616d65286e616d653d78292c2072696768743d4e616d65286e616d653d7829292c207175616c733d4c697374436f6d70466f722861737369676e3d4173734e616d65286e616d653d782c20666c6167733d4f505f41535349474e292c206c6973743d43616c6c46756e63286e6f64653d4e616d65286e616d653d72616e6765292c20617267733d436f6e73745f2876616c75653d3130292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292c206966733d4c697374436f6d70496628746573743d436f6d7061726528657870723d4d6f64286c6566743d4e616d65286e616d653d78292c2072696768743d436f6e73745f2876616c75653d3229292c206f70733d3d3d2c436f6e73745f2876616c75653d3029292929292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t183.py': '646566207972616e6765286e293a0a20202020666f72206920696e2072616e6765286e293a0a20202020202020207969656c6420690a0a6465662063726561746f7228293a0a2020202072203d207972616e67652835290a202020207072696e74202263726561746f72222c20722e6e65787428290a2020202072657475726e20720a0a6465662063616c6c657228293a0a2020202072203d2063726561746f7228290a20202020666f72206920696e20723a0a20202020202020207072696e74202263616c6c6572222c20690a0a63616c6c657228290a',
 'test/run/t66.py': '7072696e74203720696e205b312c322c335d0a',
@@ -454,6 +455,7 @@ VFSData = {
 'test/run/t32.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d53756273637269707428657870723d436f6e73745f2876616c75653d223132333422292c20666c6167733d4f505f4150504c592c20737562733d536c6963656f626a286e6f6465733d556e61727953756228657870723d436f6e73745f2876616c75653d3329292c436f6e73745f2876616c75653d332929292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t53.py.real': '4f4b0a',
 'test/run/t13.py': '69662030203d3d20313a0d0a202020207072696e74202258220d0a656c69662031203d3d20313a0d0a202020207072696e7420224f4b220d0a656c73653a0d0a202020207072696e74202259220d0a',
+'test/run/t198.py.real': '310a310a310a',
 'test/run/t91.py': '78203d2028274f4b272c290a7072696e7428785b305d290a',
 'test/run/t90.py.real': '4f4b0a',
 'test/run/t100.py': '61203d20622c63203d20312c320a7072696e7420615b305d0a7072696e7420615b315d0a7072696e7420620a7072696e7420630a',
@@ -670,7 +672,7 @@ function quit(rc)
         browsername: BrowserDetect.browser,
         browserversion: BrowserDetect.version,
         browseros: BrowserDetect.OS,
-        version: '24e78ba1d50a',
+        version: '5b76e7f22f42',
         results: SkulptTestRunOutput
     });
     var results = new Request.JSON({
@@ -7814,7 +7816,6 @@ Yield_: function(ast, a)
 // convert generator expressions to functions.
 // http://docs.python.org/reference/executionmodel.html mentions that this is
 // how generator expressions are implemented.
-// we make the GenExpr into a Function_ by transforming
 //
 var hConvertGeneratorExpressionsToFunctions = {
 visit: genericVisit,
@@ -7827,8 +7828,8 @@ GenExpr: function(ast, a)
     for (var i = 0; i < ast.code.quals.length; ++i)
     {
         var qual = ast.code.quals[i];
-        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Pass(), null, lineno);
-        if (cur !== undefined) cur.body = next;
+        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Stmt(new Pass(), lineno), null, lineno);
+        if (cur !== undefined) cur.body.nodes = [next];
         cur = next;
         if (root === undefined) root = cur;
     }
@@ -7937,6 +7938,7 @@ Global: function(ast, a)
         },
 Module: function(ast, a)
         {
+            //print("WEEE", astDump(ast));
             this.newBlockAndWalkChildren(ast, a);
         },
 Interactive: function(ast, a)
@@ -7945,7 +7947,7 @@ Interactive: function(ast, a)
              },
 For_: function(ast, a)
       {
-          if (ast.assign.nodeName === "Name" || ast.assign.nodeName === "AssName")
+          if (ast.assign.nodeName === "Name")
           {
               this.bindName(a, ast.assign.name, BIND_LOCAL);
           }
@@ -7953,6 +7955,7 @@ For_: function(ast, a)
           {
               throw "unhandled case in For_";
           }
+          ast.walkChildren(this, a);
       },
 Class_: function(ast, a)
         {
@@ -7986,8 +7989,7 @@ bindName: function(a, name, level)
               var end = a.currentBlocks.length - 1;
               var prev = a.currentBlocks[end].nameBindings[name];
               // allow global to override local, but not the other way around
-              if (level === BIND_GLOBAL
-                      || (prev === undefined && (level === BIND_LOCAL || level === BIND_ARG)))
+              if (level === BIND_GLOBAL || prev === undefined)
               {
                   a.currentBlocks[end].nameBindings[name] = level;
               }
@@ -8010,7 +8012,7 @@ AssAttr: function(ast, a)
              }
              else
              {
-                 print(JSON.stringify(ast.expr));
+                 //print(JSON.stringify(ast.expr));
                  throw "todo;";
              }
          },
@@ -8542,7 +8544,7 @@ functionSetup: function(ast, a, inclass, islamb)
                    var i;
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
                    // lambdas are compiled as "values"
-                   var asvalue = islamb || ast.name === "<genexpr>";
+                   var asvalue = islamb || ast.name === "<genexpr>"; // todo; by name is ugly
 
                    if (inclass) o.push(a.klass + ".prototype.");
 

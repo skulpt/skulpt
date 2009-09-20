@@ -7000,7 +7000,6 @@ Yield_: function(ast, a)
 // convert generator expressions to functions.
 // http://docs.python.org/reference/executionmodel.html mentions that this is
 // how generator expressions are implemented.
-// we make the GenExpr into a Function_ by transforming
 //
 var hConvertGeneratorExpressionsToFunctions = {
 visit: genericVisit,
@@ -7013,8 +7012,8 @@ GenExpr: function(ast, a)
     for (var i = 0; i < ast.code.quals.length; ++i)
     {
         var qual = ast.code.quals[i];
-        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Pass(), null, lineno);
-        if (cur !== undefined) cur.body = next;
+        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Stmt(new Pass(), lineno), null, lineno);
+        if (cur !== undefined) cur.body.nodes = [next];
         cur = next;
         if (root === undefined) root = cur;
     }
@@ -7123,6 +7122,7 @@ Global: function(ast, a)
         },
 Module: function(ast, a)
         {
+            //print("WEEE", astDump(ast));
             this.newBlockAndWalkChildren(ast, a);
         },
 Interactive: function(ast, a)
@@ -7131,7 +7131,7 @@ Interactive: function(ast, a)
              },
 For_: function(ast, a)
       {
-          if (ast.assign.nodeName === "Name" || ast.assign.nodeName === "AssName")
+          if (ast.assign.nodeName === "Name")
           {
               this.bindName(a, ast.assign.name, BIND_LOCAL);
           }
@@ -7139,6 +7139,7 @@ For_: function(ast, a)
           {
               throw "unhandled case in For_";
           }
+          ast.walkChildren(this, a);
       },
 Class_: function(ast, a)
         {
@@ -7172,8 +7173,7 @@ bindName: function(a, name, level)
               var end = a.currentBlocks.length - 1;
               var prev = a.currentBlocks[end].nameBindings[name];
               // allow global to override local, but not the other way around
-              if (level === BIND_GLOBAL
-                      || (prev === undefined && (level === BIND_LOCAL || level === BIND_ARG)))
+              if (level === BIND_GLOBAL || prev === undefined)
               {
                   a.currentBlocks[end].nameBindings[name] = level;
               }
@@ -7196,7 +7196,7 @@ AssAttr: function(ast, a)
              }
              else
              {
-                 print(JSON.stringify(ast.expr));
+                 //print(JSON.stringify(ast.expr));
                  throw "todo;";
              }
          },
@@ -7728,7 +7728,7 @@ functionSetup: function(ast, a, inclass, islamb)
                    var i;
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
                    // lambdas are compiled as "values"
-                   var asvalue = islamb || ast.name === "<genexpr>";
+                   var asvalue = islamb || ast.name === "<genexpr>"; // todo; by name is ugly
 
                    if (inclass) o.push(a.klass + ".prototype.");
 
