@@ -340,7 +340,7 @@ condition:
             return
     
         result = x**0.5
-        print "The square root of x is", result
+        print "The square root of", x, "is", result
 
 The function ``print_square_root`` has a parameter named ``x``. The first thing
 it does is check whether ``x`` is less than or equal to 0, in which case it
