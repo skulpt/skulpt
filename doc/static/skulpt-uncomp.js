@@ -55,35 +55,9 @@ var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
 function sk$iter(pyobj, callback)
 {
-    var i, obj, s, len, ret;
-
-    if (pyobj instanceof Dict$ || pyobj instanceof Tuple$)
+    for (var iter = pyobj.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
     {
-        pyobj.iter$(callback);
-    }
-    else if (pyobj instanceof List$)
-    {
-        obj = pyobj.v;
-        len = obj.length;
-        for (i = 0; i < len; ++i)
-        {
-            ret = callback.call(null, obj[i]);
-            if (ret === false) break;
-        }
-    }
-    else if (pyobj instanceof Str$)
-    {
-        s = pyobj.v;
-        len = s.length;
-        for (i = 0; i < len; ++i)
-        {
-            ret = callback.call(null, new Str$(s.substr(i, 1)));
-            if (ret === false) break;
-        }
-    }
-    else
-    {
-        throw "unhandled type in iter";
+        if (callback.call(null, i) === false) break;
     }
 }
 
@@ -2718,8 +2692,8 @@ dfas:
  270: [[[[80, 1],
          [81, 1],
          [20, 2],
-         [80, 1],
          [82, 1],
+         [80, 1],
          [75, 1],
          [83, 1],
          [84, 3],
@@ -3442,8 +3416,8 @@ states:
  [[[80, 1],
    [81, 1],
    [20, 2],
-   [80, 1],
    [82, 1],
+   [80, 1],
    [75, 1],
    [83, 1],
    [84, 3],
@@ -4943,6 +4917,22 @@ GenExprInner.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function GenExprTransformed(node, lineno)
+{
+    this.nodeName = "GenExprTransformed";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+GenExprTransformed.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
 function Getattr(expr, attrname, lineno)
 {
     this.nodeName = "Getattr";
@@ -6078,11 +6068,13 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
         kw = ret[0];
         var result = ret[1];
 
+        /*
         if (len_nodelist !== 2 && result instanceof GenExpr
                 && node.children.length === 2 && node.children[1].type === this.sym.comp_for)
             // allow f(x for x in y), but reject f(x for x in y, 1)
             // should use f((x for x in y), 1) instead of f(x for x in y, 1)
             throw new SyntaxError("generator expression needs parenthesis");
+            */
 
         args.push(result);
         i += 2;
@@ -6678,6 +6670,7 @@ Transformer.prototype.com_generator_expression = function(expr, node)
                 node = null;
             else
                 node = this.com_gen_iter(node.children[4]);
+            //print(JSON2.stringify(node))
         }
         else if (t === "if")
         {
@@ -6693,15 +6686,15 @@ Transformer.prototype.com_generator_expression = function(expr, node)
         {
             throw new SyntaxError("unexpected generator expression element");
         }
-        fors[0].is_outmost = true;
-        return new GenExpr(new GenExprInner(expr, fors), lineno);
     }
+    fors[0].is_outmost = true;
+    return new GenExpr(new GenExprInner(expr, fors), lineno);
 };
 
 Transformer.prototype.com_gen_iter = function(node)
 {
     if (node.type !== this.sym.comp_iter) throw "assert";
-    return node.value;
+    return node.children[0];
 };
 
 Transformer.prototype.or_test =
@@ -7004,6 +6997,36 @@ Yield_: function(ast, a)
 };
 
 //
+// convert generator expressions to functions.
+// http://docs.python.org/reference/executionmodel.html mentions that this is
+// how generator expressions are implemented.
+// we make the GenExpr into a Function_ by transforming
+//
+var hConvertGeneratorExpressionsToFunctions = {
+visit: genericVisit,
+GenExpr: function(ast, a)
+{
+    //print(JSON2.stringify(ast, null, 2));
+    var lineno = ast.lineno;
+    var cur;
+    var root;
+    for (var i = 0; i < ast.code.quals.length; ++i)
+    {
+        var qual = ast.code.quals[i];
+        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Pass(), null, lineno);
+        if (cur !== undefined) cur.body = next;
+        cur = next;
+        if (root === undefined) root = cur;
+    }
+    cur.body = new Stmt([ new Yield_(ast.code.expr, lineno) ], lineno);
+    // todo; argnames of .0?
+    var ret = new GenExprTransformed(new Function_(null, "<genexpr>", [], [], ast.varargs, ast.kwargs, null, new Stmt([root], lineno), lineno));
+    //print(JSON2.stringify(ret, null, 2));
+    return ret;
+}
+};
+
+//
 // modify all functions that fall off the end to explicitly return None (to
 // handle null vs undefined in js).
 //
@@ -7108,7 +7131,7 @@ Interactive: function(ast, a)
              },
 For_: function(ast, a)
       {
-          if (ast.assign.nodeName === "Name")
+          if (ast.assign.nodeName === "Name" || ast.assign.nodeName === "AssName")
           {
               this.bindName(a, ast.assign.name, BIND_LOCAL);
           }
@@ -7704,11 +7727,16 @@ functionSetup: function(ast, a, inclass, islamb)
                    var o = a.o;
                    var i;
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
+                   // lambdas are compiled as "values"
+                   var asvalue = islamb || ast.name === "<genexpr>";
 
                    if (inclass) o.push(a.klass + ".prototype.");
 
-                   o.push(ast.name); // todo; safeize?
-                   if (!islamb) o.push("="); // lambdas are compiled as "values"
+                   if (!asvalue)
+                   {
+                       o.push(ast.name);
+                       if (!islamb) o.push("="); 
+                   }
                    o.push("function(");
                    for (i = argstart; i < ast.argnames.length; ++i)
                    {
@@ -8068,15 +8096,13 @@ ListComp: function(ast, a)
               o.push("})()");
           },
 
-GenExpr: function(ast, a)
-         {
-             var o = a.o;
-             o.push("/*genexpr*/");
-         },
-
-GenExprIf: function(ast, a)
-           {
-           },
+GenExprTransformed: function (ast, a)
+                    {
+                        var o = a.o;
+                        o.push("(");
+                        this.visit(ast.node, a);
+                        o.push(")()");
+                    },
 
 Class_: function(ast, a)
         {
@@ -8143,6 +8169,7 @@ binopop: function(ast, a, opstr)
 function compile(ast)
 {
     //print(astDump(ast));
+    hConvertGeneratorExpressionsToFunctions.visit(ast, {});
     hMarkGeneratorFunctions.visit(ast, {});
     hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
     hMakeNoReturnANull.visit(ast, {});

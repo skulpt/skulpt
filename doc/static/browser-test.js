@@ -136,6 +136,7 @@ VFSData = {
 'test/run/t52.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d53756273637269707428657870723d436f6e73745f2876616c75653d224f4b7822292c20666c6167733d4f505f4150504c592c20737562733d536c6963656f626a286e6f6465733d6e756c6c2c556e61727953756228657870723d436f6e73745f2876616c75653d31292929292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t179.py': '6465662066286e293a0a2020202069203d20300a202020207768696c652069203c206e3a0a20202020202020207969656c6420690a20202020202020207969656c642069202a2031300a202020202020202069202b3d20310a0a666f72206920696e2066283130293a0a202020207072696e7420690a',
 'test/run/t81.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d46756e6374696f6e5f286465636f7261746f72733d6e756c6c2c206e616d653d746573742c206172676e616d65733d2c2064656661756c74733d2c20766172617267733d66616c73652c206b77617267733d66616c73652c20646f633d6e756c6c2c20636f64653d53746d74286e6f6465733d46756e6374696f6e5f286465636f7261746f72733d6e756c6c2c206e616d653d666e632c206172676e616d65733d2c2064656661756c74733d2c20766172617267733d66616c73652c206b77617267733d66616c73652c20646f633d6e756c6c2c20636f64653d53746d74286e6f6465733d5072696e74286e6f6465733d436f6e73745f2876616c75653d224f4b22292c20646573743d6e756c6c2c206e6c3d747275652929292c4469736361726428657870723d43616c6c46756e63286e6f64653d4e616d65286e616d653d666e63292c20617267733d2c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292929292c4469736361726428657870723d43616c6c46756e63286e6f64653d4e616d65286e616d653d74657374292c20617267733d2c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292929290a',
+'test/run/t197.py': '64656620662869746572293a0a20202020666f72207620696e20697465723a0a20202020202020207072696e7420760a6628782a7920666f72207820696e2072616e67652831302920666f72207920696e2072616e6765287829290a',
 'test/run/t117.py': '73203d202761626364270a7072696e7420735b3a3a2d315d0a',
 'test/run/t174.py': '6c6f6e6776616c7565203d20393939393939393939393939394c0a7072696e74202225336c642220252034320a7072696e74202225642220252034320a7072696e74202225642220252034322e300a7072696e7420222564222025206c6f6e6776616c75650a7072696e7420222530372e32662220252034320a7072696e7420222530372e32462220252034320a7072696e7420222528666f6f2973222025207b2027666f6f273a202762617227207d0a237072696e742022252828666f6f292973222025207b202728666f6f29273a202762617227207d0a7072696e74202225737822202520283130332a276127290a',
 'test/run/t43.py.real': '320a',
@@ -302,7 +303,6 @@ VFSData = {
 'test/run/t24.py.real': '340a',
 'test/run/t86.py.real': '6163620a',
 'test/run/t112.py.real': '28290a',
-'test/run/t194.py.disabled': '61203d20283120666f72207820696e2072616e6765283329290a7072696e7420610a666f72206920696e20613a0a202020207072696e7420690a',
 'test/run/t03.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d416464286c6566743d436f6e73745f2876616c75653d32292c2072696768743d436f6e73745f2876616c75653d3329292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t75.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d43616c6c46756e63286e6f64653d4765746174747228657870723d43616c6c46756e63286e6f64653d4765746174747228657870723d436f6e73745f2876616c75653d22312c322c3322292c20617474726e616d653d73706c6974292c20617267733d436f6e73745f2876616c75653d222c22292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292c20617474726e616d653d696e646578292c20617267733d436f6e73745f2876616c75653d223322292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t62.py.real': '320a',
@@ -488,6 +488,7 @@ VFSData = {
 'test/run/t116.py': '61203d205b312c322c332c342c352c365d0a62203d205b392c31302c31315d0a615b3a3a325d203d20620a7072696e7420610a',
 'test/run/t96.py': '78203d205b5d0a782e617070656e642878290a7072696e7420783c780a',
 'test/run/t12.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d49665f2874657374733d436f6d7061726528657870723d436f6e73745f2876616c75653d30292c206f70733d3d3d2c436f6e73745f2876616c75653d3129292c53746d74286e6f6465733d5072696e74286e6f6465733d436f6e73745f2876616c75653d225822292c20646573743d6e756c6c2c206e6c3d7472756529292c20656c73655f3d53746d74286e6f6465733d5072696e74286e6f6465733d436f6e73745f2876616c75653d224f4b22292c20646573743d6e756c6c2c206e6c3d7472756529292929290a',
+'test/run/t194.py': '61203d20283120666f72207820696e2072616e6765283329290a7072696e7420610a666f72206920696e20613a0a202020207072696e7420690a',
 'test/run/t120.py.real': '5b302c20322c20345d0a',
 'test/run/t44.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d416464286c6566743d436f6e73745f2876616c75653d224f22292c2072696768743d436f6e73745f2876616c75653d224b2229292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t177.py.real': '310a320a310a320a',
@@ -536,6 +537,7 @@ VFSData = {
 'test/run/t90.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d782c20666c6167733d4f505f41535349474e292c20657870723d5475706c65286e6f6465733d436f6e73745f2876616c75653d274f4b27292c436f6e73745f2876616c75653d312929292c5072696e74286e6f6465733d53756273637269707428657870723d4e616d65286e616d653d78292c20666c6167733d4f505f4150504c592c20737562733d436f6e73745f2876616c75653d3029292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t158.py': '7072696e7420747970652831290a7072696e74207479706528322a2a3130290a7072696e74207479706528322a2a31303234290a7072696e742074797065282277656522290a',
 'test/run/t61.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d53756273637269707428657870723d44696374286974656d733d436f6e73745f2876616c75653d31292c436f6e73745f2876616c75653d224f4b2229292c20666c6167733d4f505f4150504c592c20737562733d436f6e73745f2876616c75653d3129292c20646573743d6e756c6c2c206e6c3d747275652929290a',
+'test/run/t197.py.real': '300a300a320a300a330a360a300a340a380a31320a300a350a31300a31350a32300a300a360a31320a31380a32340a33300a300a370a31340a32310a32380a33350a34320a300a380a31360a32340a33320a34300a34380a35360a300a390a31380a32370a33360a34350a35340a36330a37320a',
 'test/run/t79.py': '7072696e74206f7264286368722831323829290a',
 'test/run/t82.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d46756e6374696f6e5f286465636f7261746f72733d6e756c6c2c206e616d653d746573742c206172676e616d65733d2c2064656661756c74733d2c20766172617267733d66616c73652c206b77617267733d66616c73652c20646f633d6e756c6c2c20636f64653d53746d74286e6f6465733d46756e6374696f6e5f286465636f7261746f72733d6e756c6c2c206e616d653d666e632c206172676e616d65733d2c2064656661756c74733d2c20766172617267733d66616c73652c206b77617267733d66616c73652c20646f633d6e756c6c2c20636f64653d53746d74286e6f6465733d5072696e74286e6f6465733d436f6e73745f2876616c75653d224f4b22292c20646573743d6e756c6c2c206e6c3d747275652929292c5072696e74286e6f6465733d43616c6c46756e63286e6f64653d4e616d65286e616d653d666e63292c20617267733d2c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292c20646573743d6e756c6c2c206e6c3d747275652929292c4469736361726428657870723d43616c6c46756e63286e6f64653d4e616d65286e616d653d74657374292c20617267733d2c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292929290a',
 'test/run/t134.py': '7072696e74203526370a',
@@ -668,7 +670,7 @@ function quit(rc)
         browsername: BrowserDetect.browser,
         browserversion: BrowserDetect.version,
         browseros: BrowserDetect.OS,
-        version: 'c22e9befe805',
+        version: '24e78ba1d50a',
         results: SkulptTestRunOutput
     });
     var results = new Request.JSON({
@@ -855,35 +857,9 @@ var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
 function sk$iter(pyobj, callback)
 {
-    var i, obj, s, len, ret;
-
-    if (pyobj instanceof Dict$ || pyobj instanceof Tuple$)
+    for (var iter = pyobj.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
     {
-        pyobj.iter$(callback);
-    }
-    else if (pyobj instanceof List$)
-    {
-        obj = pyobj.v;
-        len = obj.length;
-        for (i = 0; i < len; ++i)
-        {
-            ret = callback.call(null, obj[i]);
-            if (ret === false) break;
-        }
-    }
-    else if (pyobj instanceof Str$)
-    {
-        s = pyobj.v;
-        len = s.length;
-        for (i = 0; i < len; ++i)
-        {
-            ret = callback.call(null, new Str$(s.substr(i, 1)));
-            if (ret === false) break;
-        }
-    }
-    else
-    {
-        throw "unhandled type in iter";
+        if (callback.call(null, i) === false) break;
     }
 }
 
@@ -3526,8 +3502,8 @@ dfas:
  270: [[[[80, 1],
          [81, 1],
          [20, 2],
-         [80, 1],
          [82, 1],
+         [80, 1],
          [75, 1],
          [83, 1],
          [84, 3],
@@ -4250,8 +4226,8 @@ states:
  [[[80, 1],
    [81, 1],
    [20, 2],
-   [80, 1],
    [82, 1],
+   [80, 1],
    [75, 1],
    [83, 1],
    [84, 3],
@@ -5753,6 +5729,22 @@ GenExprInner.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function GenExprTransformed(node, lineno)
+{
+    this.nodeName = "GenExprTransformed";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+GenExprTransformed.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
 function Getattr(expr, attrname, lineno)
 {
     this.nodeName = "Getattr";
@@ -6889,11 +6881,13 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
         kw = ret[0];
         var result = ret[1];
 
+        /*
         if (len_nodelist !== 2 && result instanceof GenExpr
                 && node.children.length === 2 && node.children[1].type === this.sym.comp_for)
             // allow f(x for x in y), but reject f(x for x in y, 1)
             // should use f((x for x in y), 1) instead of f(x for x in y, 1)
             throw new SyntaxError("generator expression needs parenthesis");
+            */
 
         args.push(result);
         i += 2;
@@ -7489,6 +7483,7 @@ Transformer.prototype.com_generator_expression = function(expr, node)
                 node = null;
             else
                 node = this.com_gen_iter(node.children[4]);
+            //print(JSON2.stringify(node))
         }
         else if (t === "if")
         {
@@ -7504,15 +7499,15 @@ Transformer.prototype.com_generator_expression = function(expr, node)
         {
             throw new SyntaxError("unexpected generator expression element");
         }
-        fors[0].is_outmost = true;
-        return new GenExpr(new GenExprInner(expr, fors), lineno);
     }
+    fors[0].is_outmost = true;
+    return new GenExpr(new GenExprInner(expr, fors), lineno);
 };
 
 Transformer.prototype.com_gen_iter = function(node)
 {
     if (node.type !== this.sym.comp_iter) throw "assert";
-    return node.value;
+    return node.children[0];
 };
 
 Transformer.prototype.or_test =
@@ -7816,6 +7811,36 @@ Yield_: function(ast, a)
 };
 
 //
+// convert generator expressions to functions.
+// http://docs.python.org/reference/executionmodel.html mentions that this is
+// how generator expressions are implemented.
+// we make the GenExpr into a Function_ by transforming
+//
+var hConvertGeneratorExpressionsToFunctions = {
+visit: genericVisit,
+GenExpr: function(ast, a)
+{
+    //print(JSON2.stringify(ast, null, 2));
+    var lineno = ast.lineno;
+    var cur;
+    var root;
+    for (var i = 0; i < ast.code.quals.length; ++i)
+    {
+        var qual = ast.code.quals[i];
+        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Pass(), null, lineno);
+        if (cur !== undefined) cur.body = next;
+        cur = next;
+        if (root === undefined) root = cur;
+    }
+    cur.body = new Stmt([ new Yield_(ast.code.expr, lineno) ], lineno);
+    // todo; argnames of .0?
+    var ret = new GenExprTransformed(new Function_(null, "<genexpr>", [], [], ast.varargs, ast.kwargs, null, new Stmt([root], lineno), lineno));
+    //print(JSON2.stringify(ret, null, 2));
+    return ret;
+}
+};
+
+//
 // modify all functions that fall off the end to explicitly return None (to
 // handle null vs undefined in js).
 //
@@ -7920,7 +7945,7 @@ Interactive: function(ast, a)
              },
 For_: function(ast, a)
       {
-          if (ast.assign.nodeName === "Name")
+          if (ast.assign.nodeName === "Name" || ast.assign.nodeName === "AssName")
           {
               this.bindName(a, ast.assign.name, BIND_LOCAL);
           }
@@ -8516,11 +8541,16 @@ functionSetup: function(ast, a, inclass, islamb)
                    var o = a.o;
                    var i;
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
+                   // lambdas are compiled as "values"
+                   var asvalue = islamb || ast.name === "<genexpr>";
 
                    if (inclass) o.push(a.klass + ".prototype.");
 
-                   o.push(ast.name); // todo; safeize?
-                   if (!islamb) o.push("="); // lambdas are compiled as "values"
+                   if (!asvalue)
+                   {
+                       o.push(ast.name);
+                       if (!islamb) o.push("="); 
+                   }
                    o.push("function(");
                    for (i = argstart; i < ast.argnames.length; ++i)
                    {
@@ -8880,15 +8910,13 @@ ListComp: function(ast, a)
               o.push("})()");
           },
 
-GenExpr: function(ast, a)
-         {
-             var o = a.o;
-             o.push("/*genexpr*/");
-         },
-
-GenExprIf: function(ast, a)
-           {
-           },
+GenExprTransformed: function (ast, a)
+                    {
+                        var o = a.o;
+                        o.push("(");
+                        this.visit(ast.node, a);
+                        o.push(")()");
+                    },
 
 Class_: function(ast, a)
         {
@@ -8955,6 +8983,7 @@ binopop: function(ast, a, opstr)
 function compile(ast)
 {
     //print(astDump(ast));
+    hConvertGeneratorExpressionsToFunctions.visit(ast, {});
     hMarkGeneratorFunctions.visit(ast, {});
     hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
     hMakeNoReturnANull.visit(ast, {});
@@ -9332,6 +9361,10 @@ if (node.nodeName === 'GenExprIf') {
 
 if (node.nodeName === 'GenExprInner') {
     return sprintf("GenExprInner(expr=%s, quals=%s)", astDump(node.expr), astDump(node.quals));
+}
+
+if (node.nodeName === 'GenExprTransformed') {
+    return sprintf("GenExprTransformed(node=%s)", astDump(node.node));
 }
 
 if (node.nodeName === 'Getattr') {
