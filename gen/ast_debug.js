@@ -150,6 +150,10 @@ if (node.nodeName === 'GenExprInner') {
     return sprintf("GenExprInner(expr=%s, quals=%s)", astDump(node.expr), astDump(node.quals));
 }
 
+if (node.nodeName === 'GenExprTransformed') {
+    return sprintf("GenExprTransformed(node=%s)", astDump(node.node));
+}
+
 if (node.nodeName === 'Getattr') {
     return sprintf("Getattr(expr=%s, attrname=%s)", astDump(node.expr), astDump(node.attrname));
 }

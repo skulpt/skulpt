@@ -721,6 +721,22 @@ GenExprInner.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function GenExprTransformed(node, lineno)
+{
+    this.nodeName = "GenExprTransformed";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+GenExprTransformed.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
 function Getattr(expr, attrname, lineno)
 {
     this.nodeName = "Getattr";

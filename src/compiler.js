@@ -52,6 +52,36 @@ Yield_: function(ast, a)
 };
 
 //
+// convert generator expressions to functions.
+// http://docs.python.org/reference/executionmodel.html mentions that this is
+// how generator expressions are implemented.
+// we make the GenExpr into a Function_ by transforming
+//
+var hConvertGeneratorExpressionsToFunctions = {
+visit: genericVisit,
+GenExpr: function(ast, a)
+{
+    //print(JSON2.stringify(ast, null, 2));
+    var lineno = ast.lineno;
+    var cur;
+    var root;
+    for (var i = 0; i < ast.code.quals.length; ++i)
+    {
+        var qual = ast.code.quals[i];
+        var next = new For_(new Name(qual.assign.name, lineno), qual.iter, new Pass(), null, lineno);
+        if (cur !== undefined) cur.body = next;
+        cur = next;
+        if (root === undefined) root = cur;
+    }
+    cur.body = new Stmt([ new Yield_(ast.code.expr, lineno) ], lineno);
+    // todo; argnames of .0?
+    var ret = new GenExprTransformed(new Function_(null, "<genexpr>", [], [], ast.varargs, ast.kwargs, null, new Stmt([root], lineno), lineno));
+    //print(JSON2.stringify(ret, null, 2));
+    return ret;
+}
+};
+
+//
 // modify all functions that fall off the end to explicitly return None (to
 // handle null vs undefined in js).
 //
@@ -156,7 +186,7 @@ Interactive: function(ast, a)
              },
 For_: function(ast, a)
       {
-          if (ast.assign.nodeName === "Name")
+          if (ast.assign.nodeName === "Name" || ast.assign.nodeName === "AssName")
           {
               this.bindName(a, ast.assign.name, BIND_LOCAL);
           }
@@ -752,11 +782,16 @@ functionSetup: function(ast, a, inclass, islamb)
                    var o = a.o;
                    var i;
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
+                   // lambdas are compiled as "values"
+                   var asvalue = islamb || ast.name === "<genexpr>";
 
                    if (inclass) o.push(a.klass + ".prototype.");
 
-                   o.push(ast.name); // todo; safeize?
-                   if (!islamb) o.push("="); // lambdas are compiled as "values"
+                   if (!asvalue)
+                   {
+                       o.push(ast.name);
+                       if (!islamb) o.push("="); 
+                   }
                    o.push("function(");
                    for (i = argstart; i < ast.argnames.length; ++i)
                    {
@@ -1116,15 +1151,13 @@ ListComp: function(ast, a)
               o.push("})()");
           },
 
-GenExpr: function(ast, a)
-         {
-             var o = a.o;
-             o.push("/*genexpr*/");
-         },
-
-GenExprIf: function(ast, a)
-           {
-           },
+GenExprTransformed: function (ast, a)
+                    {
+                        var o = a.o;
+                        o.push("(");
+                        this.visit(ast.node, a);
+                        o.push(")()");
+                    },
 
 Class_: function(ast, a)
         {
@@ -1191,6 +1224,7 @@ binopop: function(ast, a, opstr)
 function compile(ast)
 {
     //print(astDump(ast));
+    hConvertGeneratorExpressionsToFunctions.visit(ast, {});
     hMarkGeneratorFunctions.visit(ast, {});
     hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
     hMakeNoReturnANull.visit(ast, {});

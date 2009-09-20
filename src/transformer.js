@@ -371,11 +371,13 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
         kw = ret[0];
         var result = ret[1];
 
+        /*
         if (len_nodelist !== 2 && result instanceof GenExpr
                 && node.children.length === 2 && node.children[1].type === this.sym.comp_for)
             // allow f(x for x in y), but reject f(x for x in y, 1)
             // should use f((x for x in y), 1) instead of f(x for x in y, 1)
             throw new SyntaxError("generator expression needs parenthesis");
+            */
 
         args.push(result);
         i += 2;
@@ -971,6 +973,7 @@ Transformer.prototype.com_generator_expression = function(expr, node)
                 node = null;
             else
                 node = this.com_gen_iter(node.children[4]);
+            //print(JSON2.stringify(node))
         }
         else if (t === "if")
         {
@@ -986,15 +989,15 @@ Transformer.prototype.com_generator_expression = function(expr, node)
         {
             throw new SyntaxError("unexpected generator expression element");
         }
-        fors[0].is_outmost = true;
-        return new GenExpr(new GenExprInner(expr, fors), lineno);
     }
+    fors[0].is_outmost = true;
+    return new GenExpr(new GenExprInner(expr, fors), lineno);
 };
 
 Transformer.prototype.com_gen_iter = function(node)
 {
     if (node.type !== this.sym.comp_iter) throw "assert";
-    return node.value;
+    return node.children[0];
 };
 
 Transformer.prototype.or_test =

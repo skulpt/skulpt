@@ -20,35 +20,9 @@ var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
 function sk$iter(pyobj, callback)
 {
-    var i, obj, s, len, ret;
-
-    if (pyobj instanceof Dict$ || pyobj instanceof Tuple$)
+    for (var iter = pyobj.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
     {
-        pyobj.iter$(callback);
-    }
-    else if (pyobj instanceof List$)
-    {
-        obj = pyobj.v;
-        len = obj.length;
-        for (i = 0; i < len; ++i)
-        {
-            ret = callback.call(null, obj[i]);
-            if (ret === false) break;
-        }
-    }
-    else if (pyobj instanceof Str$)
-    {
-        s = pyobj.v;
-        len = s.length;
-        for (i = 0; i < len; ++i)
-        {
-            ret = callback.call(null, new Str$(s.substr(i, 1)));
-            if (ret === false) break;
-        }
-    }
-    else
-    {
-        throw "unhandled type in iter";
+        if (callback.call(null, i) === false) break;
     }
 }
 

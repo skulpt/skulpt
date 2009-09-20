@@ -83,6 +83,7 @@ Invert: expr
 
 # special nodes that are generated internally
 Interactive: node
+GenExprTransformed: node
 
 init(GenExpr):
     this.argnames = ['.0'];
