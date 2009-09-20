@@ -128,23 +128,25 @@ function quit(rc)
     {
         out.innerHTML += "<font color='red'>FAILED</font>";
     }
-    var results = new Request.JSON({
-        url: 'http://www.skulpt.org/testresults',
-        method: 'post',
-        onSuccess: function() { out += "<br/>Results saved."; },
-        onFailure: function() { out += "<br/>Couldn't save results."; },
-        onException: onFailure
-    });
-    results.send({
-        browser: Browser.Engine,
-        platform: Browser.Platform,
+    out.innerHTML += "<br/>Saving results...";
+    var sendData = JSON.encode({
+        browsername: BrowserDetect.browser,
+        browserversion: BrowserDetect.version,
+        browseros: BrowserDetect.OS,
         version: '%s',
-        data: SkulptTestRunOutput
+        results: SkulptTestRunOutput
     });
+    var results = new Request.JSON({
+        url: '/testresults',
+        method: 'post',
+        onSuccess: function() { out.innerHTML += "<br/>Results saved."; },
+        onFailure: function() { out.innerHTML += "<br/>Couldn't save results."; }
+    });
+    results.send(sendData);
 }
 """ % getTip()
 
-    for f in getFileList('test') + TestFiles:
+    for f in ["test/browser-detect.js"] + getFileList('test') + TestFiles:
         print >>out, open(f).read()
 
     print >>out, """
