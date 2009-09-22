@@ -134,6 +134,7 @@ function quit(rc)
         browserversion: BrowserDetect.version,
         browseros: BrowserDetect.OS,
         version: '%s',
+        rc: rc,
         results: SkulptTestRunOutput
     });
     var results = new Request.JSON({
