@@ -21,6 +21,7 @@ class TestResult(db.Model):
     browserversion = db.StringProperty()
     browseros = db.StringProperty()
     version = db.StringProperty()
+    rc = db.StringProperty()
     results = db.TextProperty()
     date = db.DateTimeProperty(auto_now_add=True)
 
@@ -32,6 +33,7 @@ class TestResults(webapp.RequestHandler):
         tr.browserversion = str(data['browserversion'])
         tr.browseros = str(data['browseros'])
         tr.version = str(data['version'])
+        tr.rc = str(data['rc'])
         tr.results = str(data['results'])
         tr.put()
 
