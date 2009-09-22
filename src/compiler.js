@@ -985,6 +985,14 @@ Return_: function(ast, a)
              }
          },
 
+Assert: function(ast, a)
+        {
+            var o = a.o;
+            o.push("if(!(");
+            this.visit(ast.test, a);
+            o.push("))throw 'AssertionFailure'");
+        },
+
 Yield_: function(ast, a)
         {
             var o = a.o;

@@ -869,6 +869,11 @@ Transformer.prototype.continue_stmt = function(nodelist)
     return new Continue_(nodelist[0].context);
 };
 
+Transformer.prototype.assert_stmt = function(nodelist)
+{
+    return new Assert(this.dispatch(nodelist[1]), nodelist[0].context);
+};
+
 Transformer.prototype.return_stmt = function(nodelist)
 {
     // return: [testlist]
