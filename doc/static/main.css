@@ -120,7 +120,7 @@ a:visited {
 #terminal {
     line-height: 16px;
     color: rgb(180,180,180);
-	font-family: "Consolas","Lucida Console","Monaco",monospace;
+    font-family: "Consolas","Lucida Console","Monaco",monospace;
     font-size: 13px;
     border: 3px solid rgb(31,72,100);
     width: 640px;
@@ -137,7 +137,7 @@ textarea {
 }
 
 pre {
-	margin-left: 14px;
+    margin-left: 14px;
     font-size: 16px;
     line-height: 1.2em;
 }
@@ -164,4 +164,28 @@ sup {
 #field {
     margin-top: 20px;
     margin-left: 20px;
+}
+
+#ed {
+    font-family: "Consolas","Lucida Console","Monaco",monospace;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.edline {
+    background: black;
+    font-size: 14px;
+    height: 16px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: white;
+}
+
+#cursor {
+    position: absolute;
+    background: red;
+    height: 16px;
+    width: 8px;
 }

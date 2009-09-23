@@ -7697,7 +7697,16 @@ Const_: function(ast, a)
             if (typeof ast.value === "string")
             {
                 o.push("new Str$(");
-                o.push(ast.value);
+                var v = ast.value;
+                var ss = v.substring(0, 3);
+                if (ss === "'''" || ss === '"""')
+                {
+                    v = v.replace(/\n/g, "\\n");
+                    v = v.substring(3, v.length - 3);
+                    if (ss === "'''") v = "'" + v.replace(/'/g, "\\'") + "'";
+                    else if (ss === '"""') v = '"' + v.replace(/"/g, '\\"') + '"';
+                }
+                o.push(v);
                 o.push(")");
             }
             else if (typeof ast.value === "number")
