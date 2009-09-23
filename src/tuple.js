@@ -59,6 +59,42 @@ Tuple$.prototype.__mul__ = function(other)
     return new Tuple$(ret);
 };
 
+Tuple$.prototype.richcmp$ = function(rhs, op)
+{
+    if (rhs.constructor !== Tuple$) return false;
+
+    // find the first item where they're different
+    for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
+    {
+        if (!sk$cmp(this.v[i], rhs.v[i], '=='))
+            break;
+    }
+
+    // no items to compare (compare func could have modified for ==/!=)
+    var ts = this.v.length;
+    var rs = rhs.v.length;
+    if (i >= ts || i >= rs)
+    {
+        switch (op)
+        {
+            case '<': return ts < rs;
+            case '<=': return ts <= rs;
+            case '>': return ts > rs;
+            case '>=': return ts >= rs;
+            case '!=': return ts !== rs;
+            case '==': return ts === rs;
+            default: throw "assert";
+        };
+    }
+
+    // we have a different item
+    if (op === '==') return false;
+    if (op === '!=') return true;
+
+    // or compare the final item
+    return sk$cmp(this.v[i], rhs.v[i], op);
+};
+
 // todo; the numbers and order are taken from python, but the answer's
 // obviously not the same because there's no int wrapping. shouldn't matter,
 // but would be nice to make the hash() values the same if it's not too

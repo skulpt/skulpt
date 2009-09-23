@@ -317,6 +317,24 @@ Str$.prototype.__str__ = function()
     return this.v;
 };
 
+Str$.prototype.richcmp$ = function(rhs, op)
+{
+    if (rhs.constructor !== Str$) return false;
+    if (this === rhs)
+    {
+        switch (op)
+        {
+            case '<': case '>': case '!=': return false;
+            case '<=': case '>=': case '==': return true;
+        }
+    }
+    else
+    {
+        // currently, all strings are intern'd
+        return false;
+    }
+};
+
 Str$.prototype.__class__ = new Type$('str', [sk$TypeObject], {});
 
 Str$.prototype.capitalize = function() { throw "todo; capitalize"; };

@@ -176,6 +176,48 @@ function sk$in(lhs, rhs)
     }
 }
 
+function sk$cmp(lhs, rhs, op)
+{
+    if (typeof lhs === "number" && typeof rhs === "number")
+    {
+        switch (op)
+        {
+            case '<': return lhs < rhs;
+            case '<=': return lhs <= rhs;
+            case '>': return lhs > rhs;
+            case '>=': return lhs >= rhs;
+            case '!=': return lhs !== rhs;
+            case '==': return lhs === rhs;
+            default: throw "assert";
+        }
+    }
+    else
+    {
+        var ret;
+        if (lhs.richcmp$ !== undefined)
+            return lhs.richcmp$(rhs, op);
+        else if (lhs.__cmp__ !== undefined)
+            ret = lhs.__cmp__(rhs);
+        else if (rhs.__cmp__ !== undefined)
+            ret = -rhs.__cmp__(lhs);
+        else
+        {
+            // todo; dispatch to the specific __eq__, etc.
+            throw new AttributeError("no attribute __cmp__");
+        }
+
+        switch (op)
+        {
+            case '<': return ret < 0;
+            case '<=': return ret <= 0;
+            case '>': return ret > 0;
+            case '>=': return ret >= 0;
+            case '==': return ret === 0;
+            case '!=': return ret !== 0;
+            default: throw "assert";
+        }
+    }
+}
 
 function range(start, stop, step)
 {

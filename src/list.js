@@ -184,6 +184,60 @@ List$.prototype.__repr__ = function()
     return new Str$("[" + asStrs.join(", ") + "]");
 };
 
+List$.prototype.richcmp$ = function(rhs, op)
+{
+    if (rhs.constructor !== List$) return false;
+
+    // different lengths; early out
+    if (this.v.length !== rhs.v.length && (op === '!=' || op === '=='))
+    {
+        if (op === '!=') return true;
+        return false;
+    }
+
+    // silly early out for recursive lists
+    if (this === rhs)
+    {
+        switch (op)
+        {
+            case '<': case '>': case '!=': return false;
+            case '<=': case '>=': case '==': return true;
+            default: throw "assert";
+        }
+    }
+
+    // find the first item where they're different
+    for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
+    {
+        if (!sk$cmp(this.v[i], rhs.v[i], '=='))
+            break;
+    }
+
+    // no items to compare (compare func could have modified for ==/!=)
+    var ts = this.v.length;
+    var rs = rhs.v.length;
+    if (i >= ts || i >= rs)
+    {
+        switch (op)
+        {
+            case '<': return ts < rs;
+            case '<=': return ts <= rs;
+            case '>': return ts > rs;
+            case '>=': return ts >= rs;
+            case '!=': return ts !== rs;
+            case '==': return ts === rs;
+            default: throw "assert";
+        };
+    }
+
+    // we have a different item
+    if (op === '==') return false;
+    if (op === '!=') return true;
+
+    // or compare the final item
+    return sk$cmp(this.v[i], rhs.v[i], op);
+};
+
 List$.prototype.__class__ = new Type$('list', [sk$TypeObject], {});
 
 List$.prototype.__iter__ = function()

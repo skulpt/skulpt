@@ -305,7 +305,20 @@ var input = read('%s');
 eval(Skulpt.compileStr('%s', input));
     """ % (fn, fn))
     f.close()
-    os.system("support/d8/d8 --nodebugger dist/skulpt-uncomp.js support/tmp/run.js")
+    os.system("support/d8/d8 --trace_exception %s test/footer_test.js support/tmp/run.js" %
+            ' '.join(getFileList('test')))
+
+def runopt(fn):
+    if not os.path.exists(fn):
+        print "%s doesn't exist" % fn
+        raise SystemExit()
+    f = open("support/tmp/run.js", "w")
+    f.write("""
+var input = read('%s');
+eval(Skulpt.compileStr('%s', input));
+    """ % (fn, fn))
+    f.close()
+    os.system("support/d8/d8 --nodebugger dist/skulpt.js support/tmp/run.js")
 
 def parse(fn):
     if not os.path.exists(fn):
@@ -335,7 +348,7 @@ def nrt():
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|parse}"
+        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|runopt|parse}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -349,6 +362,8 @@ if __name__ == "__main__":
         debug(sys.argv[2])
     elif cmd == "run":
         run(sys.argv[2])
+    elif cmd == "runopt":
+        runopt(sys.argv[2])
     elif cmd == "parse":
         parse(sys.argv[2])
     elif cmd == "regenparser":

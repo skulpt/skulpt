@@ -700,14 +700,19 @@ Bitxor: function(ast, a) { this.binopop(ast, a, "^"); },
 Bitand: function(ast, a) { this.binopop(ast, a, "&"); },
 
 simpleRemapOp: {
-                    "==": "==",
-                    "!=": "!=",
-                    "<=": "<=",
-                    "<": "<",
-                    ">=": ">=",
-                    ">": ">",
                     "is": "===",
                     "is not": "!=="
+                },
+funcCallRemapOp: {
+                    "in": "sk$in"
+                 },
+cmpCallRemapOp: {
+                    "==": true,
+                    "!=": true,
+                    "<=": true,
+                    "<": true,
+                    ">=": true,
+                    ">": true
                 },
 
 Compare: function(ast, a)
@@ -719,13 +724,24 @@ Compare: function(ast, a)
                  o.push(this.simpleRemapOp[ast.ops[0][0]]);
                  this.visit(ast.ops[0][1], a);
              }
-             else if (ast.ops[0][0] === "in")
+             else if (ast.ops[0][0] in this.funcCallRemapOp)
              {
-                 o.push("sk$in(");
+                 o.push(this.funcCallRemapOp[ast.ops[0][0]]);
+                 o.push("(");
                  this.visit(ast.expr, a);
                  o.push(",");
                  this.visit(ast.ops[0][1], a);
                  o.push(")");
+             }
+             else if (ast.ops[0][0] in this.cmpCallRemapOp)
+             {
+                 o.push("sk$cmp(");
+                 this.visit(ast.expr, a);
+                 o.push(",");
+                 this.visit(ast.ops[0][1], a);
+                 o.push(",'");
+                 o.push(ast.ops[0][0]);
+                 o.push("')");
              }
          },
 
@@ -990,7 +1006,17 @@ Assert: function(ast, a)
             var o = a.o;
             o.push("if(!(");
             this.visit(ast.test, a);
-            o.push("))throw 'AssertionFailure'");
+            // todo; exceptions, etc.
+            o.push("))sk$output('AssertionFailure:'+");
+
+            // lame way of getting a string repr of the code; it's the
+            // compiled version, but for basic stuff it's something at least
+            var res = { o: [] };
+            hMainCompile.visit(ast.test, res);
+            var asStr = res.o.join("");
+            asStr = '"' + asStr.replace(/"/g, '\\"') + '"';
+            o.push(asStr);
+            o.push(")");
         },
 
 Yield_: function(ast, a)
