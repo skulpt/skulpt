@@ -25,19 +25,19 @@ Slice$.prototype.indices = function(length)
 {
     // this seems ugly, better way?
     var start = this.start, stop = this.stop, step = this.step, i;
-    if (!step) step = 1;
+    if (step === null) step = 1;
     if (step > 0)
     {
-        if (!start) start = 0;
-        if (!stop) stop = length;
+        if (start === null) start = 0;
+        if (stop === null) stop = length;
         if (start < 0) start = length + start;
         if (stop < 0) stop = length + stop;
     }
     else
     {
-        if (!start) start = length - 1;
+        if (start === null) start = length - 1;
         else if (start < 0) start = length + start;
-        if (!stop) stop = -1;
+        if (stop === null) stop = -1;
         else if (stop < 0) stop = length + stop;
     }
     return [start, stop, step];
