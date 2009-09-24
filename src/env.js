@@ -33,90 +33,6 @@ function sk$typename(o)
     return o.__class__.__name__;
 }
 
-// todo; these all need to dispatch to methods if defined
-function sk$add(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a + b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__add__ !== undefined)
-        return self.__add__(other);
-    else
-    {
-        throw new TypeError("cannot concatenate '" + sk$typename(self) + "' and '" + sk$typename(other) + "' objects");
-    }
-}
-
-function sk$sub(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a - b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__sub__ !== undefined)
-        return self.__sub__(other);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for -: '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-function sk$mul(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a * b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__mul__ !== undefined)
-        return self.__mul__(other);
-    else if (other.__mul__ !== undefined) // todo; i think this is wrong; makes 40*"str" work for now
-        return other.__mul__(self);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for *: '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-function sk$truediv(self, other)
-{
-    if (typeof self !== "number" || typeof other !== "number") throw "TypeError";
-    return self / other;
-}
-function sk$mod(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a % b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__mod__ !== undefined)
-        return self.__mod__(other);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for *: '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-function sk$pow(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, Math.pow);
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__pow__ !== undefined)
-        return self.__pow__(other);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for ** or pow(): '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-
 function sk$neg(self)
 {
     if (typeof self === "number")
@@ -218,6 +134,130 @@ function sk$cmp(lhs, rhs, op)
         }
     }
 }
+
+function sk$binop(lhs, rhs, op)
+{
+    var numPromote = sk$binop.numPromote$;
+    var numPromoteFunc = numPromote[op];
+    if (numPromoteFunc !== undefined)
+    {
+        var tmp = Long$.numOpAndPromotion$(lhs, rhs, numPromoteFunc);
+        if (typeof tmp === "number")
+        {
+            return tmp;
+        }
+        lhs = tmp[0];
+        rhs = tmp[1];
+    }
+
+    var func = sk$binop.funcs$[op];
+    var rfunc = sk$binop.rfuncs$[op];
+    if (!func || !rfunc) throw "assert";
+
+    if (lhs[func] !== undefined)
+        return lhs[func](rhs);
+    if (rhs[rfunc] !== undefined)
+        return rhs[rfunc](lhs);
+
+    throw new TypeError("unsupported operand type(s) for " + op + ": '" +
+            sk$typename(lhs) + "' and '" + sk$typename(rhs) + "'");
+
+}
+sk$binop.numPromote$ = {
+    "+": function(a, b) { return a + b; },
+    "-": function(a, b) { return a - b; },
+    "*": function(a, b) { return a * b; },
+    "%": function(a, b) { return a % b; },
+    "**": Math.pow
+};
+sk$binop.funcs$ = {
+    "+": "__add__",
+    "-": "__sub__",
+    "*": "__mul__",
+    "/": "__truediv__",
+    "//": "__floordiv__",
+    "%": "__mod__",
+    "**": "__pow__",
+    "<<": "__lshift__",
+    ">>": "__rshift__",
+    "&": "__and__",
+    "|": "__or__",
+    "^": "__xor__"
+};
+sk$binop.rfuncs$ = {
+    "+": "__radd__",
+    "-": "__rsub__",
+    "*": "__rmul__",
+    "/": "__rtruediv__",
+    "//": "__rfloordiv__",
+    "%": "__rmod__",
+    "**": "__rpow__",
+    "<<": "__rlshift__",
+    ">>": "__rrshift__",
+    "&": "__rand__",
+    "|": "__ror__",
+    "^": "__rxor__"
+};
+
+function sk$inplace(lhs, rhs, op)
+{
+    var numPromote = sk$inplace.numPromote$;
+    var numPromoteFunc = numPromote[op];
+    if (numPromoteFunc !== undefined)
+    {
+        var tmp = Long$.numOpAndPromotion$(lhs, rhs, numPromoteFunc);
+        if (typeof tmp === "number")
+            return tmp;
+        lhs = tmp[0];
+        rhs = tmp[1];
+    }
+
+    var opname = sk$inplace.augfuncs$[op];
+    if (lhs[opname] !== undefined)
+    {
+        return lhs[opname](rhs)
+    }
+    else
+    {
+        var opname2 = sk$binop.funcs$[op.substring(0, op.length - 1)];
+        if (lhs[opname2] !== undefined)
+        {
+            return lhs[opname2](rhs);
+        }
+        else
+        {
+            throw "AttributeError: " + opname + " or " + opname2 + " not found on " + sk$typename(lhs);
+        }
+    }
+}
+sk$inplace.numPromote$ = {
+    "+=": function(a, b) { return a + b; },
+    "-=": function(a, b) { return a - b; },
+    "*=": function(a, b) { return a * b; },
+    "/=": function(a, b) { return a / b; },
+    "//=": Math.floor,
+    "%=": function(a, b) { return a + b; },
+    "**=": Math.pow,
+    "<<=": function(a, b) { return a << b; },
+    ">>=": function(a, b) { return a >> b; },
+    "&=": function(a, b) { return a & b; },
+    "|=": function(a, b) { return a | b; },
+    "^=": function(a, b) { return a ^ b; }
+};
+sk$inplace.augfuncs$ = {
+    "+=": "__iadd__",
+    "-=": "__isub__",
+    "*=": "__imul__",
+    "/=": "__itruediv__",
+    "//=": "__ifloordiv__",
+    "%=": "__imod__",
+    "**=": "__ipow__", // todo; modulo
+    "<<=": "__ilshift__",
+    ">>=": "__irshift__",
+    "&=": "__iand__",
+    "|=": "__ior__",
+    "^=": "__ixor__"
+};
 
 function range(start, stop, step)
 {
@@ -410,6 +450,13 @@ function sk$ga(o, attrname)
     if (v instanceof Function) return v.bind(o);
     return v;
 }
+function sk$sa(o, attrname, value)
+{
+    if (o.__setattr__ !== undefined)
+        o.__setattr__(attrname, value);
+    else
+        o[attrname] = value;
+}
 
 // unfortunately (at least pre-ecmascript 5) there's no way to make objects be
 // both callable and have arbitrary prototype chains.
@@ -428,7 +475,7 @@ function sk$call(obj)
     }
     catch (e)
     {
-        //print(e.toString());
+        //print(obj, e.toString());
         if (obj.__call__ !== undefined)
         {
             return obj.__call__.apply(obj, args);

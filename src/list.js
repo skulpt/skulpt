@@ -163,7 +163,7 @@ List$.prototype.__add__ = function(other)
     return new List$(ret);
 };
 
-List$.prototype.__mul__ = function(other)
+List$.prototype.__mul__ = List$.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = [];

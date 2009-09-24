@@ -19,7 +19,6 @@ function genericVisit(ast, args)
 }
 
 var gensymCounter = 0;
-var globalObject = this;
 function gensym()
 {
     gensymCounter += 1;
@@ -251,7 +250,7 @@ AssAttr: function(ast, a)
              }
              else
              {
-                 //print(JSON.stringify(ast.expr));
+                 print(JSON.stringify(ast.expr));
                  throw "todo;";
              }
          },
@@ -502,11 +501,98 @@ Getattr: function(ast, a)
              o.push("')");
          },
 
+wrapAug: function(node)
+         {
+             if (node instanceof Getattr) return new AugGetattr(node);
+             if (node instanceof Name) return new AugName(node);
+             if (node instanceof Slice) return new AugSlice(node);
+             if (node instanceof Subscript) return new AugSubscript(node);
+             throw "assert";
+         },
+
+AugName: function(ast, a)
+         {
+             var tmp = a.tmp;
+             var o = a.o;
+             if (!tmp) throw "expecting tmp";
+             if (a.augmode === 'load')
+             {
+                 o.push("var ");
+                 o.push(tmp);
+                 o.push("=");
+                 this.visit(ast.node, a);
+             }
+             else if (a.augmode === 'store')
+             {
+                 this.visit(ast.node, a);
+                 o.push("=");
+                 o.push(tmp);
+             }
+             o.push(";");
+         },
+
+AugGetattr: function(ast, a)
+            {
+                var tmp = a.tmp;
+                var o = a.o;
+                if (!tmp) throw "expecting tmp";
+                if (a.augmode === 'load')
+                {
+                    o.push("var ");
+                    o.push(tmp);
+                    o.push("=");
+                    this.visit(ast.node, a);
+                }
+                else if (a.augmode === 'store')
+                {
+                    o.push("sk$sa(");
+                    this.visit(ast.node.expr, a);
+                    o.push(",'");
+                    o.push(ast.node.attrname);
+                    o.push("',");
+                    o.push(tmp);
+                    o.push(")");
+                }
+                o.push(";");
+            },
+
+AugSlice: function(ast, a)
+          {
+              throw "can't augslice yet";
+          },
+
+AugSubscript: function(ast, a)
+              {
+                  throw "can't augsubscript yet";
+              },
+
+
 AugAssign: function(ast, a)
            {
-               this.visit(ast.node, a);
-               a.o.push(ast.op); // todo; rename to js version
+               var o = a.o;
+
+               // 4 separate sub-cases depending on LHS:
+               // Attr, Name, Slice, Subscript
+               // first, use the normal compile to get the value into a tmp
+               // then modify it inplace if possible
+               // then use a modified compile on node to store it again.
+               var augnode = this.wrapAug(ast.node);
+               var acopy = shallowcopy(a);
+               acopy.augmode = 'load';
+               acopy.tmp = gensym();
+               this.visit(augnode, acopy);
+
+               o.push(acopy.tmp);
+               o.push("=sk$inplace(");
+               o.push(acopy.tmp);
+               o.push(",");
                this.visit(ast.expr, a);
+               o.push(",'");
+               o.push(ast.op);
+               o.push("');");
+
+               acopy.augmode = 'store';
+               this.visit(augnode, acopy);
            },
 
 Tuple: function(ast, a)
@@ -693,12 +779,6 @@ For_: function(ast, a)
           o.push("}");
       },
 
-Or: function(ast, a) { this.binopop(ast, a, "||"); },
-And: function(ast, a) { this.binopop(ast, a, "&&"); },
-Bitor: function(ast, a) { this.binopop(ast, a, "|"); },
-Bitxor: function(ast, a) { this.binopop(ast, a, "^"); },
-Bitand: function(ast, a) { this.binopop(ast, a, "&"); },
-
 simpleRemapOp: {
                     "is": "===",
                     "is not": "!=="
@@ -790,10 +870,10 @@ Const_: function(ast, a)
             }
             else if (ast.value.constructor === Long$)
             {
-                // todo; lame way of "saving" the object between compiler/runtime envs
                 var tmp = gensym();
-                globalObject[tmp] = ast.value;
-                o.push(tmp);
+                Skulpt.consts$[tmp] = ast.value;
+                if (!Skulpt.consts$[tmp]) throw "wha?";
+                o.push("Skulpt.consts$." + tmp);
             }
             else
             {
@@ -1235,24 +1315,36 @@ Class_: function(ast, a)
             o.push("undefined"); // no return in repl
         },
 
-Add: function(ast, a) { this.binopfunc(ast, a, "sk$add"); },
-Sub: function(ast, a) { this.binopfunc(ast, a, "sk$sub"); },
-Mul: function(ast, a) { this.binopfunc(ast, a, "sk$mul"); },
-Div: function(ast, a) { this.binopfunc(ast, a, "sk$truediv"); },
-Mod: function(ast, a) { this.binopfunc(ast, a, "sk$mod"); },
-Power: function(ast, a) { this.binopfunc(ast, a, "sk$pow"); },
-In_: function(ast, a) { this.binopfunc(ast, a, "sk$in"); },
+Add: function(ast, a) { this.binopfunc(ast, a, "+"); },
+Sub: function(ast, a) { this.binopfunc(ast, a, "-"); },
+Mul: function(ast, a) { this.binopfunc(ast, a, "*"); },
+Div: function(ast, a) { this.binopfunc(ast, a, "/"); },
+FloorDiv: function(ast, a) { this.binopfunc(ast, a, "//"); },
+Mod: function(ast, a) { this.binopfunc(ast, a, "%"); },
+Power: function(ast, a) { this.binopfunc(ast, a, "**"); },
+LeftShift: function(ast, a) { this.binopfunc(ast, a, "<<"); },
+RightShift: function(ast, a) { this.binopfunc(ast, a, ">>"); },
 
 binopfunc: function(ast, a, opstr)
        {
            var o = a.o;
-           o.push(opstr);
-           o.push("(");
+           o.push("sk$binop(");
            this.visit(ast.left, a);
            o.push(",");
            this.visit(ast.right, a);
+           o.push(",'");
+           o.push(opstr);
+           o.push("'");
            o.push(")");
        },
+
+// have to be ops to short circuit, todo; need a __nonzero__ or something here
+Or: function(ast, a) { this.binopop(ast, a, "||"); },
+And: function(ast, a) { this.binopop(ast, a, "&&"); },
+Bitor: function(ast, a) { this.binopop(ast, a, "|"); },
+Bitxor: function(ast, a) { this.binopop(ast, a, "^"); },
+Bitand: function(ast, a) { this.binopop(ast, a, "&"); },
+
 binopop: function(ast, a, opstr)
          {
              for (var i = 0; i < ast.nodes.length; ++i)

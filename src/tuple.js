@@ -45,7 +45,7 @@ Tuple$.prototype.__repr__ = function()
         return new Str$("(" + asStrs.join(", ") + ")");
 };
 
-Tuple$.prototype.__mul__ = function(other)
+Tuple$.prototype.__mul__ = Tuple$.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = [];

@@ -96,7 +96,7 @@ Str$.prototype.__add__ = function(other)
     return new Str$(this.v + other.v);
 };
 
-Str$.prototype.__mul__ = function(other)
+Str$.prototype.__mul__ = Str$.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = "";

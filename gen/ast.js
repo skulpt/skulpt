@@ -228,6 +228,70 @@ AugAssign.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function AugGetattr(node, lineno)
+{
+    this.nodeName = "AugGetattr";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugGetattr.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
+function AugName(node, lineno)
+{
+    this.nodeName = "AugName";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugName.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
+function AugSlice(node, lineno)
+{
+    this.nodeName = "AugSlice";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugSlice.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
+function AugSubscript(node, lineno)
+{
+    this.nodeName = "AugSubscript";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugSubscript.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
 function Backquote(expr, lineno)
 {
     this.nodeName = "Backquote";

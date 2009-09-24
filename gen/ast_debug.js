@@ -54,6 +54,22 @@ if (node.nodeName === 'AugAssign') {
     return sprintf("AugAssign(node=%s, op=%s, expr=%s)", astDump(node.node), astDump(node.op), astDump(node.expr));
 }
 
+if (node.nodeName === 'AugGetattr') {
+    return sprintf("AugGetattr(node=%s)", astDump(node.node));
+}
+
+if (node.nodeName === 'AugName') {
+    return sprintf("AugName(node=%s)", astDump(node.node));
+}
+
+if (node.nodeName === 'AugSlice') {
+    return sprintf("AugSlice(node=%s)", astDump(node.node));
+}
+
+if (node.nodeName === 'AugSubscript') {
+    return sprintf("AugSubscript(node=%s)", astDump(node.node));
+}
+
 if (node.nodeName === 'Backquote') {
     return sprintf("Backquote(expr=%s)", astDump(node.expr));
 }

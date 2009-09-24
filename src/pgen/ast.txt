@@ -84,6 +84,10 @@ Invert: expr
 # special nodes that are generated internally
 Interactive: node
 GenExprTransformed: node
+AugGetattr: node
+AugName: node
+AugSlice: node
+AugSubscript: node
 
 init(GenExpr):
     this.argnames = ['.0'];
