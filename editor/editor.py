@@ -27,6 +27,22 @@ def tests():
     assert b.GetChar() == "d"
     b.SetPoint(14, 1)
     assert b.GetChar() == "2"
+
+    # insert at beginning of line
+    b.SetPoint(0, 0)
+    assert b.GetChar() == 't'
+    b.InsertChar('X')
+    assert b.GetChar() == 't'
+    b.SetPoint(0, 0)
+    assert b.GetChar() == 'X'
+
+    # end of line
+    b.SetPoint(len(b.lines[1]), 1) # todo; api func
+    b.InsertChar('Y')
+    assert b.GetChar() == '\n'
+    b.SetPoint(len(b.lines[1]) - 1, 1) # todo; api func
+    assert b.GetChar() == 'Y'
+    print b.lines
     
 
 class Buffer:
@@ -46,7 +62,10 @@ class Buffer:
 
     def GetChar(self):
         """get char at point. None if at end of buffer"""
-        return self.lines[self.py][self.px]
+        l = self.lines[self.py]
+        if len(l) == self.px:
+            return "\n"
+        return l[self.px]
 
     def InsertChar(self, char):
         assert len(char) == 1 # todo; just make this Insert
