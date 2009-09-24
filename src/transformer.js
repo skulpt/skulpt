@@ -800,7 +800,8 @@ Transformer.prototype.if_stmt = function(nodelist)
     {
         var testNode = this.dispatch(nodelist[i + 1]);
         var suiteNode = this.dispatch(nodelist[i + 3]);
-        tests.push([testNode, suiteNode]);
+        tests.push(testNode);
+        tests.push(suiteNode);
     }
 
     var elseNode = null;
@@ -1063,7 +1064,8 @@ Transformer.prototype.comparison = function(nodelist)
         }
 
         var lineno = nl.children[0].context;
-        results.push([type, this.dispatch(nodelist[i])]);
+        results.push(type);
+        results.push(this.dispatch(nodelist[i]));
     }
 
     // we need a special "compare" node so that we can distinguish

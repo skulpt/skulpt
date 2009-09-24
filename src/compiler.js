@@ -655,14 +655,14 @@ If_: function(ast, a)
          //this.genSliceAtBlockBoundary(a);
 
          var o = a.o;
-         for (var i = 0; i < ast.tests.length; ++i)
+         for (var i = 0; i < ast.tests.length; i += 2)
          {
              if (i !== 0) o.push("else ");
              o.push("if(");
-             this.visit(ast.tests[i][0], a);
+             this.visit(ast.tests[i], a);
              o.push("){");
              this.startGeneratorCodeBlock(a);
-             this.visit(ast.tests[i][1], a);
+             this.visit(ast.tests[i + 1], a);
              this.endGeneratorCodeBlock(a);
              o.push("}");
          }
@@ -798,31 +798,32 @@ cmpCallRemapOp: {
 Compare: function(ast, a)
          {
              var o = a.o;
-             if (ast.ops[0][0] in this.simpleRemapOp)
+             if (ast.ops[0] in this.simpleRemapOp)
              {
                  this.visit(ast.expr, a);
-                 o.push(this.simpleRemapOp[ast.ops[0][0]]);
-                 this.visit(ast.ops[0][1], a);
+                 o.push(this.simpleRemapOp[ast.ops[0]]);
+                 this.visit(ast.ops[1], a);
              }
-             else if (ast.ops[0][0] in this.funcCallRemapOp)
+             else if (ast.ops[0] in this.funcCallRemapOp)
              {
-                 o.push(this.funcCallRemapOp[ast.ops[0][0]]);
+                 o.push(this.funcCallRemapOp[ast.ops[0]]);
                  o.push("(");
                  this.visit(ast.expr, a);
                  o.push(",");
-                 this.visit(ast.ops[0][1], a);
+                 this.visit(ast.ops[1], a);
                  o.push(")");
              }
-             else if (ast.ops[0][0] in this.cmpCallRemapOp)
+             else if (ast.ops[0] in this.cmpCallRemapOp)
              {
                  o.push("sk$cmp(");
                  this.visit(ast.expr, a);
                  o.push(",");
-                 this.visit(ast.ops[0][1], a);
+                 this.visit(ast.ops[1], a);
                  o.push(",'");
-                 o.push(ast.ops[0][0]);
+                 o.push(ast.ops[0]);
                  o.push("')");
              }
+             // todo; multiple ops in same compare
          },
 
 UnarySub: function(ast, a)
@@ -946,6 +947,7 @@ makeFuncBody: function(ast, a)
                   if (islamb) o.push("return(");
                   if (inclass)
                   {
+                      //print("origname:",ast.argnames[0]);
                       ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
                   }
                   this.visit(ast.code, a);
