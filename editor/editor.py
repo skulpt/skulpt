@@ -55,7 +55,7 @@ class Buffer:
         else:
             line = self.lines[self.py]
             self.lines[self.py] = line[:self.px] + char + line[self.px:]
-            self.px = self.px + 1
+            self.px += 1
 
     def Delete(self, count):
         pass
