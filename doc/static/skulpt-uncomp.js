@@ -68,90 +68,6 @@ function sk$typename(o)
     return o.__class__.__name__;
 }
 
-// todo; these all need to dispatch to methods if defined
-function sk$add(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a + b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__add__ !== undefined)
-        return self.__add__(other);
-    else
-    {
-        throw new TypeError("cannot concatenate '" + sk$typename(self) + "' and '" + sk$typename(other) + "' objects");
-    }
-}
-
-function sk$sub(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a - b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__sub__ !== undefined)
-        return self.__sub__(other);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for -: '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-function sk$mul(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a * b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__mul__ !== undefined)
-        return self.__mul__(other);
-    else if (other.__mul__ !== undefined) // todo; i think this is wrong; makes 40*"str" work for now
-        return other.__mul__(self);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for *: '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-function sk$truediv(self, other)
-{
-    if (typeof self !== "number" || typeof other !== "number") throw "TypeError";
-    return self / other;
-}
-function sk$mod(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, function(a,b) { return a % b; });
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__mod__ !== undefined)
-        return self.__mod__(other);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for *: '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-function sk$pow(self, other)
-{
-    var tmp = Long$.numOpAndPromotion$(self, other, Math.pow);
-    if (typeof tmp === "number") return tmp;
-    self = tmp[0];
-    other = tmp[1];
-
-    if (self.__pow__ !== undefined)
-        return self.__pow__(other);
-    else
-    {
-        throw new TypeError("unsupported operand type(s) for ** or pow(): '" +
-                sk$typename(self) + "' and '" + sk$typename(other) + "'");
-    }
-}
-
 function sk$neg(self)
 {
     if (typeof self === "number")
@@ -211,6 +127,172 @@ function sk$in(lhs, rhs)
     }
 }
 
+function sk$cmp(lhs, rhs, op)
+{
+    if (typeof lhs === "number" && typeof rhs === "number")
+    {
+        switch (op)
+        {
+            case '<': return lhs < rhs;
+            case '<=': return lhs <= rhs;
+            case '>': return lhs > rhs;
+            case '>=': return lhs >= rhs;
+            case '!=': return lhs !== rhs;
+            case '==': return lhs === rhs;
+            default: throw "assert";
+        }
+    }
+    else
+    {
+        var ret;
+        if (lhs.richcmp$ !== undefined)
+            return lhs.richcmp$(rhs, op);
+        else if (lhs.__cmp__ !== undefined)
+            ret = lhs.__cmp__(rhs);
+        else if (rhs.__cmp__ !== undefined)
+            ret = -rhs.__cmp__(lhs);
+        else
+        {
+            // todo; dispatch to the specific __eq__, etc.
+            throw new AttributeError("no attribute __cmp__");
+        }
+
+        switch (op)
+        {
+            case '<': return ret < 0;
+            case '<=': return ret <= 0;
+            case '>': return ret > 0;
+            case '>=': return ret >= 0;
+            case '==': return ret === 0;
+            case '!=': return ret !== 0;
+            default: throw "assert";
+        }
+    }
+}
+
+function sk$binop(lhs, rhs, op)
+{
+    var numPromote = sk$binop.numPromote$;
+    var numPromoteFunc = numPromote[op];
+    if (numPromoteFunc !== undefined)
+    {
+        var tmp = Long$.numOpAndPromotion$(lhs, rhs, numPromoteFunc);
+        if (typeof tmp === "number")
+        {
+            return tmp;
+        }
+        lhs = tmp[0];
+        rhs = tmp[1];
+    }
+
+    var func = sk$binop.funcs$[op];
+    var rfunc = sk$binop.rfuncs$[op];
+    if (!func || !rfunc) throw "assert";
+
+    if (lhs[func] !== undefined)
+        return lhs[func](rhs);
+    if (rhs[rfunc] !== undefined)
+        return rhs[rfunc](lhs);
+
+    throw new TypeError("unsupported operand type(s) for " + op + ": '" +
+            sk$typename(lhs) + "' and '" + sk$typename(rhs) + "'");
+
+}
+sk$binop.numPromote$ = {
+    "+": function(a, b) { return a + b; },
+    "-": function(a, b) { return a - b; },
+    "*": function(a, b) { return a * b; },
+    "%": function(a, b) { return a % b; },
+    "**": Math.pow
+};
+sk$binop.funcs$ = {
+    "+": "__add__",
+    "-": "__sub__",
+    "*": "__mul__",
+    "/": "__truediv__",
+    "//": "__floordiv__",
+    "%": "__mod__",
+    "**": "__pow__",
+    "<<": "__lshift__",
+    ">>": "__rshift__",
+    "&": "__and__",
+    "|": "__or__",
+    "^": "__xor__"
+};
+sk$binop.rfuncs$ = {
+    "+": "__radd__",
+    "-": "__rsub__",
+    "*": "__rmul__",
+    "/": "__rtruediv__",
+    "//": "__rfloordiv__",
+    "%": "__rmod__",
+    "**": "__rpow__",
+    "<<": "__rlshift__",
+    ">>": "__rrshift__",
+    "&": "__rand__",
+    "|": "__ror__",
+    "^": "__rxor__"
+};
+
+function sk$inplace(lhs, rhs, op)
+{
+    var numPromote = sk$inplace.numPromote$;
+    var numPromoteFunc = numPromote[op];
+    if (numPromoteFunc !== undefined)
+    {
+        var tmp = Long$.numOpAndPromotion$(lhs, rhs, numPromoteFunc);
+        if (typeof tmp === "number")
+            return tmp;
+        lhs = tmp[0];
+        rhs = tmp[1];
+    }
+
+    var opname = sk$inplace.augfuncs$[op];
+    if (lhs[opname] !== undefined)
+    {
+        return lhs[opname](rhs);
+    }
+    else
+    {
+        var opname2 = sk$binop.funcs$[op.substring(0, op.length - 1)];
+        if (lhs[opname2] !== undefined)
+        {
+            return lhs[opname2](rhs);
+        }
+        else
+        {
+            throw "AttributeError: " + opname + " or " + opname2 + " not found on " + sk$typename(lhs);
+        }
+    }
+}
+sk$inplace.numPromote$ = {
+    "+=": function(a, b) { return a + b; },
+    "-=": function(a, b) { return a - b; },
+    "*=": function(a, b) { return a * b; },
+    "/=": function(a, b) { return a / b; },
+    "//=": Math.floor,
+    "%=": function(a, b) { return a + b; },
+    "**=": Math.pow,
+    "<<=": function(a, b) { return a << b; },
+    ">>=": function(a, b) { return a >> b; },
+    "&=": function(a, b) { return a & b; },
+    "|=": function(a, b) { return a | b; },
+    "^=": function(a, b) { return a ^ b; }
+};
+sk$inplace.augfuncs$ = {
+    "+=": "__iadd__",
+    "-=": "__isub__",
+    "*=": "__imul__",
+    "/=": "__itruediv__",
+    "//=": "__ifloordiv__",
+    "%=": "__imod__",
+    "**=": "__ipow__", // todo; modulo
+    "<<=": "__ilshift__",
+    ">>=": "__irshift__",
+    "&=": "__iand__",
+    "|=": "__ior__",
+    "^=": "__ixor__"
+};
 
 function range(start, stop, step)
 {
@@ -403,6 +485,13 @@ function sk$ga(o, attrname)
     if (v instanceof Function) return v.bind(o);
     return v;
 }
+function sk$sa(o, attrname, value)
+{
+    if (o.__setattr__ !== undefined)
+        o.__setattr__(attrname, value);
+    else
+        o[attrname] = value;
+}
 
 // unfortunately (at least pre-ecmascript 5) there's no way to make objects be
 // both callable and have arbitrary prototype chains.
@@ -421,7 +510,7 @@ function sk$call(obj)
     }
     catch (e)
     {
-        //print(e.toString());
+        //print(obj, e.toString());
         if (obj.__call__ !== undefined)
         {
             return obj.__call__.apply(obj, args);
@@ -573,7 +662,7 @@ Str$.prototype.__add__ = function(other)
     return new Str$(this.v + other.v);
 };
 
-Str$.prototype.__mul__ = function(other)
+Str$.prototype.__mul__ = Str$.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = "";
@@ -792,6 +881,24 @@ Str$.prototype.__repr__ = function()
 Str$.prototype.__str__ = function()
 {
     return this.v;
+};
+
+Str$.prototype.richcmp$ = function(rhs, op)
+{
+    if (rhs.constructor !== Str$) return false;
+    if (this === rhs)
+    {
+        switch (op)
+        {
+            case '<': case '>': case '!=': return false;
+            case '<=': case '>=': case '==': return true;
+        }
+    }
+    else
+    {
+        // currently, all strings are intern'd
+        return false;
+    }
 };
 
 Str$.prototype.__class__ = new Type$('str', [sk$TypeObject], {});
@@ -1048,7 +1155,7 @@ List$.prototype.__add__ = function(other)
     return new List$(ret);
 };
 
-List$.prototype.__mul__ = function(other)
+List$.prototype.__mul__ = List$.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = [];
@@ -1067,6 +1174,60 @@ List$.prototype.__repr__ = function()
     var asStrs = [];
     sk$iter(this, function(v) { asStrs.push(repr(v).v); });
     return new Str$("[" + asStrs.join(", ") + "]");
+};
+
+List$.prototype.richcmp$ = function(rhs, op)
+{
+    if (rhs.constructor !== List$) return false;
+
+    // different lengths; early out
+    if (this.v.length !== rhs.v.length && (op === '!=' || op === '=='))
+    {
+        if (op === '!=') return true;
+        return false;
+    }
+
+    // silly early out for recursive lists
+    if (this === rhs)
+    {
+        switch (op)
+        {
+            case '<': case '>': case '!=': return false;
+            case '<=': case '>=': case '==': return true;
+            default: throw "assert";
+        }
+    }
+
+    // find the first item where they're different
+    for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
+    {
+        if (!sk$cmp(this.v[i], rhs.v[i], '=='))
+            break;
+    }
+
+    // no items to compare (compare func could have modified for ==/!=)
+    var ts = this.v.length;
+    var rs = rhs.v.length;
+    if (i >= ts || i >= rs)
+    {
+        switch (op)
+        {
+            case '<': return ts < rs;
+            case '<=': return ts <= rs;
+            case '>': return ts > rs;
+            case '>=': return ts >= rs;
+            case '!=': return ts !== rs;
+            case '==': return ts === rs;
+            default: throw "assert";
+        }
+    }
+
+    // we have a different item
+    if (op === '==') return false;
+    if (op === '!=') return true;
+
+    // or compare the final item
+    return sk$cmp(this.v[i], rhs.v[i], op);
 };
 
 List$.prototype.__class__ = new Type$('list', [sk$TypeObject], {});
@@ -1134,7 +1295,7 @@ Tuple$.prototype.__repr__ = function()
         return new Str$("(" + asStrs.join(", ") + ")");
 };
 
-Tuple$.prototype.__mul__ = function(other)
+Tuple$.prototype.__mul__ = Tuple$.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = [];
@@ -1146,6 +1307,42 @@ Tuple$.prototype.__mul__ = function(other)
         }
     }
     return new Tuple$(ret);
+};
+
+Tuple$.prototype.richcmp$ = function(rhs, op)
+{
+    if (rhs.constructor !== Tuple$) return false;
+
+    // find the first item where they're different
+    for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
+    {
+        if (!sk$cmp(this.v[i], rhs.v[i], '=='))
+            break;
+    }
+
+    // no items to compare (compare func could have modified for ==/!=)
+    var ts = this.v.length;
+    var rs = rhs.v.length;
+    if (i >= ts || i >= rs)
+    {
+        switch (op)
+        {
+            case '<': return ts < rs;
+            case '<=': return ts <= rs;
+            case '>': return ts > rs;
+            case '>=': return ts >= rs;
+            case '!=': return ts !== rs;
+            case '==': return ts === rs;
+            default: throw "assert";
+        }
+    }
+
+    // we have a different item
+    if (op === '==') return false;
+    if (op === '!=') return true;
+
+    // or compare the final item
+    return sk$cmp(this.v[i], rhs.v[i], op);
 };
 
 // todo; the numbers and order are taken from python, but the answer's
@@ -1816,19 +2013,19 @@ Slice$.prototype.indices = function(length)
 {
     // this seems ugly, better way?
     var start = this.start, stop = this.stop, step = this.step, i;
-    if (!step) step = 1;
+    if (step === null) step = 1;
     if (step > 0)
     {
-        if (!start) start = 0;
-        if (!stop) stop = length;
+        if (start === null) start = 0;
+        if (stop === null) stop = length;
         if (start < 0) start = length + start;
         if (stop < 0) stop = length + stop;
     }
     else
     {
-        if (!start) start = length - 1;
+        if (start === null) start = length - 1;
         else if (start < 0) start = length + start;
-        if (!stop) stop = -1;
+        if (stop === null) stop = -1;
         else if (stop < 0) stop = length + stop;
     }
     return [start, stop, step];
@@ -4424,6 +4621,70 @@ AugAssign.prototype.walkChildren = function(handler, args)
 
 
 // --------------------------------------------------------
+function AugGetattr(node, lineno)
+{
+    this.nodeName = "AugGetattr";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugGetattr.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
+function AugName(node, lineno)
+{
+    this.nodeName = "AugName";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugName.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
+function AugSlice(node, lineno)
+{
+    this.nodeName = "AugSlice";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugSlice.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
+function AugSubscript(node, lineno)
+{
+    this.nodeName = "AugSubscript";
+    this.node = node;
+    this.lineno = lineno;
+}
+
+AugSubscript.prototype.walkChildren = function(handler, args)
+{
+    var ret;
+    ret = handler.visit(this.node, args);
+    if (ret !== undefined) this.node = ret;
+};
+
+
+// --------------------------------------------------------
 function Backquote(expr, lineno)
 {
     this.nodeName = "Backquote";
@@ -6497,7 +6758,8 @@ Transformer.prototype.if_stmt = function(nodelist)
     {
         var testNode = this.dispatch(nodelist[i + 1]);
         var suiteNode = this.dispatch(nodelist[i + 3]);
-        tests.push([testNode, suiteNode]);
+        tests.push(testNode);
+        tests.push(suiteNode);
     }
 
     var elseNode = null;
@@ -6564,6 +6826,11 @@ Transformer.prototype.break_stmt = function(nodelist)
 Transformer.prototype.continue_stmt = function(nodelist)
 {
     return new Continue_(nodelist[0].context);
+};
+
+Transformer.prototype.assert_stmt = function(nodelist)
+{
+    return new Assert(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 
 Transformer.prototype.return_stmt = function(nodelist)
@@ -6755,7 +7022,8 @@ Transformer.prototype.comparison = function(nodelist)
         }
 
         var lineno = nl.children[0].context;
-        results.push([type, this.dispatch(nodelist[i])]);
+        results.push(type);
+        results.push(this.dispatch(nodelist[i]));
     }
 
     // we need a special "compare" node so that we can distinguish
@@ -6964,7 +7232,6 @@ function genericVisit(ast, args)
 }
 
 var gensymCounter = 0;
-var globalObject = this;
 function gensym()
 {
     gensymCounter += 1;
@@ -7196,7 +7463,7 @@ AssAttr: function(ast, a)
              }
              else
              {
-                 //print(JSON.stringify(ast.expr));
+                 print(JSON.stringify(ast.expr));
                  throw "todo;";
              }
          },
@@ -7447,11 +7714,98 @@ Getattr: function(ast, a)
              o.push("')");
          },
 
+wrapAug: function(node)
+         {
+             if (node instanceof Getattr) return new AugGetattr(node);
+             if (node instanceof Name) return new AugName(node);
+             if (node instanceof Slice) return new AugSlice(node);
+             if (node instanceof Subscript) return new AugSubscript(node);
+             throw "assert";
+         },
+
+AugName: function(ast, a)
+         {
+             var tmp = a.tmp;
+             var o = a.o;
+             if (!tmp) throw "expecting tmp";
+             if (a.augmode === 'load')
+             {
+                 o.push("var ");
+                 o.push(tmp);
+                 o.push("=");
+                 this.visit(ast.node, a);
+             }
+             else if (a.augmode === 'store')
+             {
+                 this.visit(ast.node, a);
+                 o.push("=");
+                 o.push(tmp);
+             }
+             o.push(";");
+         },
+
+AugGetattr: function(ast, a)
+            {
+                var tmp = a.tmp;
+                var o = a.o;
+                if (!tmp) throw "expecting tmp";
+                if (a.augmode === 'load')
+                {
+                    o.push("var ");
+                    o.push(tmp);
+                    o.push("=");
+                    this.visit(ast.node, a);
+                }
+                else if (a.augmode === 'store')
+                {
+                    o.push("sk$sa(");
+                    this.visit(ast.node.expr, a);
+                    o.push(",'");
+                    o.push(ast.node.attrname);
+                    o.push("',");
+                    o.push(tmp);
+                    o.push(")");
+                }
+                o.push(";");
+            },
+
+AugSlice: function(ast, a)
+          {
+              throw "can't augslice yet";
+          },
+
+AugSubscript: function(ast, a)
+              {
+                  throw "can't augsubscript yet";
+              },
+
+
 AugAssign: function(ast, a)
            {
-               this.visit(ast.node, a);
-               a.o.push(ast.op); // todo; rename to js version
+               var o = a.o;
+
+               // 4 separate sub-cases depending on LHS:
+               // Attr, Name, Slice, Subscript
+               // first, use the normal compile to get the value into a tmp
+               // then modify it inplace if possible
+               // then use a modified compile on node to store it again.
+               var augnode = this.wrapAug(ast.node);
+               var acopy = shallowcopy(a);
+               acopy.augmode = 'load';
+               acopy.tmp = gensym();
+               this.visit(augnode, acopy);
+
+               o.push(acopy.tmp);
+               o.push("=sk$inplace(");
+               o.push(acopy.tmp);
+               o.push(",");
                this.visit(ast.expr, a);
+               o.push(",'");
+               o.push(ast.op);
+               o.push("');");
+
+               acopy.augmode = 'store';
+               this.visit(augnode, acopy);
            },
 
 Tuple: function(ast, a)
@@ -7514,14 +7868,14 @@ If_: function(ast, a)
          //this.genSliceAtBlockBoundary(a);
 
          var o = a.o;
-         for (var i = 0; i < ast.tests.length; ++i)
+         for (var i = 0; i < ast.tests.length; i += 2)
          {
              if (i !== 0) o.push("else ");
              o.push("if(");
-             this.visit(ast.tests[i][0], a);
+             this.visit(ast.tests[i], a);
              o.push("){");
              this.startGeneratorCodeBlock(a);
-             this.visit(ast.tests[i][1], a);
+             this.visit(ast.tests[i + 1], a);
              this.endGeneratorCodeBlock(a);
              o.push("}");
          }
@@ -7638,40 +7992,51 @@ For_: function(ast, a)
           o.push("}");
       },
 
-Or: function(ast, a) { this.binopop(ast, a, "||"); },
-And: function(ast, a) { this.binopop(ast, a, "&&"); },
-Bitor: function(ast, a) { this.binopop(ast, a, "|"); },
-Bitxor: function(ast, a) { this.binopop(ast, a, "^"); },
-Bitand: function(ast, a) { this.binopop(ast, a, "&"); },
-
 simpleRemapOp: {
-                    "==": "==",
-                    "!=": "!=",
-                    "<=": "<=",
-                    "<": "<",
-                    ">=": ">=",
-                    ">": ">",
                     "is": "===",
                     "is not": "!=="
+                },
+funcCallRemapOp: {
+                    "in": "sk$in"
+                 },
+cmpCallRemapOp: {
+                    "==": true,
+                    "!=": true,
+                    "<=": true,
+                    "<": true,
+                    ">=": true,
+                    ">": true
                 },
 
 Compare: function(ast, a)
          {
              var o = a.o;
-             if (ast.ops[0][0] in this.simpleRemapOp)
+             if (ast.ops[0] in this.simpleRemapOp)
              {
                  this.visit(ast.expr, a);
-                 o.push(this.simpleRemapOp[ast.ops[0][0]]);
-                 this.visit(ast.ops[0][1], a);
+                 o.push(this.simpleRemapOp[ast.ops[0]]);
+                 this.visit(ast.ops[1], a);
              }
-             else if (ast.ops[0][0] === "in")
+             else if (ast.ops[0] in this.funcCallRemapOp)
              {
-                 o.push("sk$in(");
+                 o.push(this.funcCallRemapOp[ast.ops[0]]);
+                 o.push("(");
                  this.visit(ast.expr, a);
                  o.push(",");
-                 this.visit(ast.ops[0][1], a);
+                 this.visit(ast.ops[1], a);
                  o.push(")");
              }
+             else if (ast.ops[0] in this.cmpCallRemapOp)
+             {
+                 o.push("sk$cmp(");
+                 this.visit(ast.expr, a);
+                 o.push(",");
+                 this.visit(ast.ops[1], a);
+                 o.push(",'");
+                 o.push(ast.ops[0]);
+                 o.push("')");
+             }
+             // todo; multiple ops in same compare
          },
 
 UnarySub: function(ast, a)
@@ -7719,10 +8084,10 @@ Const_: function(ast, a)
             }
             else if (ast.value.constructor === Long$)
             {
-                // todo; lame way of "saving" the object between compiler/runtime envs
                 var tmp = gensym();
-                globalObject[tmp] = ast.value;
-                o.push(tmp);
+                Skulpt.consts$[tmp] = ast.value;
+                if (!Skulpt.consts$[tmp]) throw "wha?";
+                o.push("Skulpt.consts$." + tmp);
             }
             else
             {
@@ -7795,6 +8160,7 @@ makeFuncBody: function(ast, a)
                   if (islamb) o.push("return(");
                   if (inclass)
                   {
+                      //print("origname:",ast.argnames[0]);
                       ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
                   }
                   this.visit(ast.code, a);
@@ -7929,6 +8295,24 @@ Return_: function(ast, a)
                  else o.push("null");
              }
          },
+
+Assert: function(ast, a)
+        {
+            var o = a.o;
+            o.push("if(!(");
+            this.visit(ast.test, a);
+            // todo; exceptions, etc.
+            o.push("))sk$output('AssertionFailure:'+");
+
+            // lame way of getting a string repr of the code; it's the
+            // compiled version, but for basic stuff it's something at least
+            var res = { o: [] };
+            hMainCompile.visit(ast.test, res);
+            var asStr = res.o.join("");
+            asStr = '"' + asStr.replace(/"/g, '\\"') + '"';
+            o.push(asStr);
+            o.push(")");
+        },
 
 Yield_: function(ast, a)
         {
@@ -8146,24 +8530,36 @@ Class_: function(ast, a)
             o.push("undefined"); // no return in repl
         },
 
-Add: function(ast, a) { this.binopfunc(ast, a, "sk$add"); },
-Sub: function(ast, a) { this.binopfunc(ast, a, "sk$sub"); },
-Mul: function(ast, a) { this.binopfunc(ast, a, "sk$mul"); },
-Div: function(ast, a) { this.binopfunc(ast, a, "sk$truediv"); },
-Mod: function(ast, a) { this.binopfunc(ast, a, "sk$mod"); },
-Power: function(ast, a) { this.binopfunc(ast, a, "sk$pow"); },
-In_: function(ast, a) { this.binopfunc(ast, a, "sk$in"); },
+Add: function(ast, a) { this.binopfunc(ast, a, "+"); },
+Sub: function(ast, a) { this.binopfunc(ast, a, "-"); },
+Mul: function(ast, a) { this.binopfunc(ast, a, "*"); },
+Div: function(ast, a) { this.binopfunc(ast, a, "/"); },
+FloorDiv: function(ast, a) { this.binopfunc(ast, a, "//"); },
+Mod: function(ast, a) { this.binopfunc(ast, a, "%"); },
+Power: function(ast, a) { this.binopfunc(ast, a, "**"); },
+LeftShift: function(ast, a) { this.binopfunc(ast, a, "<<"); },
+RightShift: function(ast, a) { this.binopfunc(ast, a, ">>"); },
 
 binopfunc: function(ast, a, opstr)
        {
            var o = a.o;
-           o.push(opstr);
-           o.push("(");
+           o.push("sk$binop(");
            this.visit(ast.left, a);
            o.push(",");
            this.visit(ast.right, a);
+           o.push(",'");
+           o.push(opstr);
+           o.push("'");
            o.push(")");
        },
+
+// have to be ops to short circuit, todo; need a __nonzero__ or something here
+Or: function(ast, a) { this.binopop(ast, a, "||"); },
+And: function(ast, a) { this.binopop(ast, a, "&&"); },
+Bitor: function(ast, a) { this.binopop(ast, a, "|"); },
+Bitxor: function(ast, a) { this.binopop(ast, a, "^"); },
+Bitand: function(ast, a) { this.binopop(ast, a, "&"); },
+
 binopop: function(ast, a, opstr)
          {
              for (var i = 0; i < ast.nodes.length; ++i)
@@ -8233,6 +8629,7 @@ Tokenizer: Tokenizer,
 _parse: parse,
 _transform: transform,
 _compile: compile,
-_parseTables: SkulptParseTables
+_parseTables: SkulptParseTables,
+consts$: {}
     };
 }());

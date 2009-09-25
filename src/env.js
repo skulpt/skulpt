@@ -215,7 +215,7 @@ function sk$inplace(lhs, rhs, op)
     var opname = sk$inplace.augfuncs$[op];
     if (lhs[opname] !== undefined)
     {
-        return lhs[opname](rhs)
+        return lhs[opname](rhs);
     }
     else
     {

@@ -84,7 +84,7 @@ Tuple$.prototype.richcmp$ = function(rhs, op)
             case '!=': return ts !== rs;
             case '==': return ts === rs;
             default: throw "assert";
-        };
+        }
     }
 
     // we have a different item
