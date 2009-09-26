@@ -345,10 +345,45 @@ def nrt():
             print "don't forget to ./m regenruntests"
             break
 
+def vmwareregr(names):
+    """todo; not working yet.
+    
+    run unit tests via vmware on a bunch of browsers"""
+
+    xp = "/data/VMs/xpsp3/xpsp3.vmx"
+    ubu = "/data/VMs/ubu910/ubu910.vmx"
+    # apparently osx isn't very vmware-able. stupid.
+
+    class Browser:
+        def __init__(self, name, vmx, guestloc):
+            self.name = name
+            self.vmx = vmx
+            self.guestloc = guestloc
+
+    browsers = [
+            Browser("ie7-win", xp, "C:\\Program Files\\Internet Explorer\\iexplore.exe"),
+            Browser("ie8-win", xp, "C:\\Program Files\\Internet Explorer\\iexplore.exe"),
+            Browser("chrome3-win", xp, "C:\\Documents and Settings\\Administrator\\Local Settings\\Application Data\\Google\\Chrome\\Application\\chrome.exe"),
+            Browser("chrome4-win", xp, "C:\\Documents and Settings\\Administrator\\Local Settings\\Application Data\\Google\\Chrome\\Application\\chrome.exe"),
+            Browser("ff3-win", xp, "C:\\Program Files\\Mozilla Firefox\\firefox.exe"),
+            Browser("ff35-win", xp, "C:\\Program Files\\Mozilla Firefox\\firefox.exe"),
+            #Browser("safari3-win", xp,
+            #Browser("safari4-win", xp,
+            #"ff3-osx": osx,
+            #"ff35-osx": osx,
+            #"safari3-osx": osx,
+            #"safari4-osx": osx,
+            #"ff3-ubu": ubu,
+            #"chromed-ubu": ubu,
+            ]
+
+
+
+
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|runopt|parse}"
+        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|runopt|parse|vmwareregr}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -365,6 +400,8 @@ if __name__ == "__main__":
     elif cmd == "runopt":
         runopt(sys.argv[2])
     elif cmd == "parse":
+        parse(sys.argv[2])
+    elif cmd == "vmwareregr":
         parse(sys.argv[2])
     elif cmd == "regenparser":
         regenparser()
