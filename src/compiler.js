@@ -1186,12 +1186,12 @@ Dict: function(ast, a)
       {
           var o = a.o;
           o.push("new Dict$([");
-          for (var i = 0; i < ast.items.length; ++i)
+          for (var i = 0; i < ast.items.length; i += 2)
           {
-              this.visit(ast.items[i][0], a);
+              this.visit(ast.items[i], a);
               o.push(",");
-              this.visit(ast.items[i][1], a);
-              if (i < ast.items.length - 1) o.push(",");
+              this.visit(ast.items[i + 1], a);
+              if (i < ast.items.length - 2) o.push(",");
           }
           o.push("])");
       },

@@ -191,9 +191,10 @@ Transformer.prototype.com_dictmaker = function(nodelist)
     var items = [];
     for (var i = 0; i < nodelist.children.length; i += 4)
     {
-        items.push([this.dispatch(nodelist.children[i]), this.dispatch(nodelist.children[i+2])]);
+        items.push(this.dispatch(nodelist.children[i]));
+        items.push(this.dispatch(nodelist.children[i+2]));
     }
-    return new Dict(items, items[0][0].lineno);
+    return new Dict(items, items[0].lineno);
 };
 
 // Compile 'NODE (OP NODE)*' into (type, [ node1, ..., nodeN ]).
