@@ -244,6 +244,7 @@ Transformer.prototype.com_arglist = function(nodelist)
     // fplist: fpdef (',' fpdef)* [',']
     var names = [];
     var defaults = [];
+    var haveSomeDefaults = false;
     var varargs = false;
     var varkeywords = false;
 
@@ -256,7 +257,7 @@ Transformer.prototype.com_arglist = function(nodelist)
         {
             if (node.type === T_STAR)
             {
-                node = nodelist[i+1];
+                node = nodelist[i + 1];
                 if (node.type === T_NAME)
                 {
                     names.push(node[1]);
@@ -293,12 +294,17 @@ Transformer.prototype.com_arglist = function(nodelist)
         {
             defaults.push(this.dispatch(nodelist[i + 1]));
             i = i + 2;
+            haveSomeDefaults = true;
         }
-        else if (defaults.length > 0)
+        else
         {
             // we have already seen an argument with default, but here
             // came one without
-            throw new SyntaxError("non-default argument follows default argument");
+            if (haveSomeDefaults)
+            {
+                throw new SyntaxError("non-default argument follows default argument");
+            }
+            defaults.push(undefined);
         }
 
         // skip the comma

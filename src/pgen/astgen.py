@@ -193,6 +193,7 @@ def main():
 
 function astDump(node)
 {
+    if (node === undefined) return "";
     if (node === null) return "null";
     if (typeof node === "string") return node;
     if (typeof node === "boolean") return node;
