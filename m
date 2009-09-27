@@ -288,8 +288,9 @@ var input = read('%s');
 print(Skulpt.compileStr('%s', input));
     """ % (fn, fn))
     f.close()
-    os.system("support/d8/d8 --trace_exception %s test/footer_test.js support/tmp/compiledump.js > support/tmp/dump.js" % (
-        ' '.join(getFileList('test'))))
+    os.system("support/d8/d8 --trace_exception %s test/footer_test.js %s support/tmp/compiledump.js > support/tmp/dump.js" % (
+        ' '.join(getFileList('test')),
+        ' '.join(DebugFiles)))
     os.system("support/js-beautify/bin/beautify_js support/tmp/dump.js")
     os.system("support/d8/d8 --shell --trace_exception %s test/footer_test.js %s support/tmp/dump.js" % (
         ' '.join(getFileList('test')),
