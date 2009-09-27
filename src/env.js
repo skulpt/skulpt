@@ -475,16 +475,23 @@ function sk$call(obj)
     }
     catch (e)
     {
-        //print(obj, e.toString());
-        if (obj.__call__ !== undefined)
+        var eAsStr = e.toString();
+        if (eAsStr.indexOf("has no method 'apply'") !== -1)
         {
-            return obj.__call__.apply(obj, args);
+            if (obj.__call__ !== undefined)
+            {
+                return obj.__call__.apply(obj, args);
+            }
+            else
+            {
+                if (obj.__class__ === undefined)
+                    throw new AttributeError("trying to call uncallable and non-class?");
+                throw new AttributeError(obj.__class__.__name__ + " instance has no __call__ method");
+            }
         }
         else
         {
-            if (obj.__class__ === undefined)
-                throw new AttributeError("trying to call uncallable and non-class?");
-            throw new AttributeError(obj.__class__.__name__ + " instance has no __call__ method");
+            throw e;
         }
     }
 }
