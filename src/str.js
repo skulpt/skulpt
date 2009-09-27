@@ -367,7 +367,7 @@ Str$.prototype.join = function(seq)
 };
 
 Str$.prototype.ljust = function() { throw "todo; ljust"; };
-Str$.prototype.lower = function() { throw "todo; lower"; };
+Str$.prototype.lower = function() { return new Str$(this.v.toLowerCase()); };
 Str$.prototype.lstrip = function() { throw "todo; lstrip"; };
 Str$.prototype.partition = function() { throw "todo; partition"; };
 
@@ -405,7 +405,7 @@ Str$.prototype.strip = function() { throw "todo; strip"; };
 Str$.prototype.swapcase = function() { throw "todo; swapcase"; };
 Str$.prototype.title = function() { throw "todo; title"; };
 Str$.prototype.translate = function() { throw "todo; translate"; };
-Str$.prototype.upper = function() { throw "todo; upper"; };
+Str$.prototype.upper = function() { return new Str$(this.v.toUpperCase()); };
 Str$.prototype.zfill = function() { throw "todo; zfill"; };
 
 Str$.prototype.__iter__ = function()
