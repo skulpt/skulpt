@@ -891,10 +891,10 @@ functionSetup: function(ast, a, inclass, islamb)
                    // lambdas are compiled as "values"
                    var asvalue = islamb || ast.name === "<genexpr>"; // todo; by name is ugly
 
-                   if (inclass) o.push(a.klass + ".prototype.");
 
                    if (!asvalue)
                    {
+                       if (inclass) o.push(a.klass + ".prototype.");
                        o.push(ast.name);
                        if (!islamb) o.push("="); 
                    }
@@ -953,7 +953,7 @@ makeFuncBody: function(ast, a)
                   this.visit(ast.code, a);
                   if (islamb) o.push(");");
                   o.push("};");
-                  if (inclass)
+                  if (inclass && !islamb)
                   {
                       // for direct calls to base, like Base.__init__(self, ...)
                       o.push(a.klass);
@@ -1147,6 +1147,7 @@ Continue_: function(ast, a)
 Discard: function(ast, a)
          {
              this.visit(ast.expr, a);
+             a.o.push(";"); // needed here in case it's just a value
          },
 
 CallFunc: function(ast, a)
