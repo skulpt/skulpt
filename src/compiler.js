@@ -1154,13 +1154,65 @@ CallFunc: function(ast, a)
           {
               // see comment in env.js about sk$call
               var o = a.o;
-              o.push("sk$call(");
-              this.visit(ast.node, a);
-              if (ast.args.length !== 0) o.push(", ");
+              var i;
+              var kwargs = [];
+              var posargs = [];
               for (var i = 0; i < ast.args.length; ++i)
               {
-                  this.visit(ast.args[i], a);
-                  if (i !== ast.args.length - 1) o.push(",");
+                  if (ast.args[i] instanceof Keyword) kwargs.push(ast.args[i]);
+                  else posargs.push(ast.args[i]);
+              }
+              
+              o.push("sk$call(");
+              this.visit(ast.node, a);
+
+              // how do we pass kwargs?
+              //
+              // - we can't tell at call site how many args the function
+              // wants, so we can't pad the positional args and have a list in
+              // arguments.
+              //
+              // - we could try stuffing an extra argument into the the
+              // sk$call, and have it store that into the function object
+              // being called (ick). but that'd break for nested calls to the
+              // same function.
+              //
+              // - so, we have to pass an additional first argument to all
+              // functions. it seems unfortunate, but actually, the arg names
+              // are part of the function signature for all methods (unrelated
+              // to defaults, so it's required anyway). ie:
+              //     def f(x, y):
+              //         print x,y
+              //     f(y=5, x="dog")
+              // is fine.
+              //
+              // this also means all builtin and library functions must match
+              // in argument names. seems an unfortunate design decision.
+              //
+              // todo; can we do the unpack/rename in sk$call rather than
+              // per-method? would need to add enough metadata to the function
+              // definition to be able to unpack correctly, but it's probably
+              // less crappy than putting it in as code, esp. for builtins.
+              
+              if (kwargs.length !== 0) o.push(", [");
+              //else o.push("undefined");
+
+              for (i = 0; i < kwargs.length; ++i)
+              {
+                  o.push("'");
+                  o.push(kwargs[i].name);
+                  o.push("',");
+                  this.visit(kwargs[i].expr, a);
+                  if (i !== kwargs.length - 1) o.push(",");
+              }
+              if (kwargs.length !== 0) o.push("]");
+
+
+              if (posargs.length !== 0) o.push(", ");
+              for (i = 0; i < posargs.length; ++i)
+              {
+                  this.visit(posargs[i], a);
+                  if (i !== posargs.length - 1) o.push(",");
               }
               o.push(")");
           },

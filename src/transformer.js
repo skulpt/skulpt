@@ -410,11 +410,10 @@ Transformer.prototype.com_argument = function(nodelist, kw, star_node)
         return [false, this.dispatch(nodelist.children[0])];
     }
     var result = this.dispatch(nodelist.children[2]);
-    var n = nodelist[1];
-    while (n.length === 2 && n.type === T_NAME)
-    {
-        n = n.value;
-    }
+    var n = nodelist.children[0];
+    //print(JSON2.stringify(n));
+    while (n.type !== T_NAME && n.children !== null)
+        n = n.children[0];
     if (n.type !== T_NAME)
         throw new SyntaxError("keyword can't be an expression (" + n.type + ")");
     var node = new Keyword(n.value, result, n.context);

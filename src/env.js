@@ -465,10 +465,9 @@ function sk$sa(o, attrname, value)
 // so, in order to support __call__ on objects we have to wrap all
 // python-level calls in a call that checks if the target is an object that
 // has a __call__ attribute so we can dispatch to it. sucky.
-function sk$call(obj)
+function sk$call(obj, kwargs)
 {
-    var args = Array.prototype.slice.call(arguments);
-    args.shift();
+    var args = Array.prototype.slice.call(arguments, 1);
     try
     {
         return obj.apply(this, args);
