@@ -30,7 +30,7 @@ provided you agree to answer user feedback concerning it.
 Thanks!
 
 | `Jeffrey Elkner <mailto:jeff@elkner.net>`__
-| Arlington Public Schools
+| Governor's Career and Technical Academy in Arlington 
 | Arlington, Virginia
 
 
