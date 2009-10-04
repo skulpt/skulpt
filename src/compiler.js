@@ -890,13 +890,19 @@ functionSetup: function(ast, a, inclass, islamb)
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
                    // lambdas are compiled as "values"
                    var asvalue = islamb || ast.name === "<genexpr>"; // todo; by name is ugly
-
+                   var ret = undefined;
 
                    if (!asvalue)
                    {
                        if (inclass) o.push(a.klass + ".prototype.");
                        o.push(ast.name);
                        if (!islamb) o.push("="); 
+                   }
+                   else
+                   {
+                       ret = gensym(); // make a name that can have the argname stuff added to
+                       o.push(ret);
+                       o.push("=");
                    }
                    o.push("function(");
                    for (i = argstart; i < ast.argnames.length; ++i)
@@ -918,6 +924,7 @@ functionSetup: function(ast, a, inclass, islamb)
                    }
 
                    // todo; varargs, kwargs
+                   return ret;
                },
 
 makeFuncBody: function(ast, a)
@@ -926,7 +933,8 @@ makeFuncBody: function(ast, a)
                   var inclass = a.klass !== undefined;
                   var islamb = a.islamb !== undefined;
 
-                  this.functionSetup(ast, a, inclass, islamb);
+                  var name = this.functionSetup(ast, a, inclass, islamb);
+                  if (!name) name = ast.name;
 
                   //print("bindings", JSON.stringify(ast.nameBindings, null, 2));
                   for (var k in ast.nameBindings)
@@ -950,7 +958,11 @@ makeFuncBody: function(ast, a)
                       //print("origname:",ast.argnames[0]);
                       ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
                   }
-                  this.visit(ast.code, a);
+
+                  var acopy = shallowcopy(a);
+                  acopy.klass = undefined;
+                  this.visit(ast.code, acopy);
+
                   if (islamb) o.push(");");
                   o.push("};");
                   if (inclass && !islamb)
@@ -958,11 +970,11 @@ makeFuncBody: function(ast, a)
                       // for direct calls to base, like Base.__init__(self, ...)
                       o.push(a.klass);
                       o.push(".");
-                      o.push(ast.name);
+                      o.push(name);
                       o.push("=function(){");
                       o.push(a.klass);
                       o.push(".prototype.");
-                      o.push(ast.name);
+                      o.push(name);
                       o.push(".apply(arguments[0],Array.prototype.slice.call(arguments,1));};");
                   }
 
@@ -970,24 +982,21 @@ makeFuncBody: function(ast, a)
                   // currently includes the names of the arguments so that
                   // kwargs can be unpacked to the right location
 
-                  if (!islamb) // todo; need a way to attach to lambdas
+                  if (inclass)
                   {
-                      if (inclass)
-                      {
-                          o.push(a.klass);
-                          o.push(".");
-                      }
-                      o.push(ast.name);
-                      o.push(".argnames$=[");
-                      for (i = 0; i < ast.argnames.length; ++i)
-                      {
-                          o.push("'");
-                          o.push(ast.argnames[i]);
-                          o.push("'");
-                          if (i !== ast.argnames.length - 1) o.push(",");
-                      }
-                      o.push("];");
+                      o.push(a.klass);
+                      o.push(".");
                   }
+                  o.push(name);
+                  o.push(".argnames$=[");
+                  for (i = 0; i < ast.argnames.length; ++i)
+                  {
+                      o.push("'");
+                      o.push(ast.argnames[i]);
+                      o.push("'");
+                      if (i !== ast.argnames.length - 1) o.push(",");
+                  }
+                  o.push("];");
 
               },
 

@@ -476,6 +476,7 @@ function sk$call(obj, kwargs)
         {
             var kwargname = kwargs[i];
             var kwargvalue = kwargs[i + 1];
+            if (obj.argnames$ === undefined) throw obj + " has no argnames";
             var index = obj.argnames$.indexOf(kwargname);
             //print(kwargname,"is",kwargvalue.v,"at",index);
             args[index] = kwargvalue;
