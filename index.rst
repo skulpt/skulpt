@@ -27,7 +27,8 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 12 <ch12.html>`__ *Dictionaries*
 * `Chapter 13 <ch13.html>`__ *Classes and objects*
 * `Appendix A <app_a.html>`__ *Configuring Ubuntu for Python Development*
-* `Appendix B <app_b.html>`__ *Customizing and Contributing to the Book*
+* `Appendix B <app_b.html>`__ *GASP*
+* `Appendix C <app_b.html>`__ *Customizing and Contributing to the Book*
 * `GNU Free Document License <fdl-1.3.html>`__ 
 
 .. toctree::
@@ -64,6 +65,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 
     app_a.rst
     app_b.rst
+    app_c.rst
     fdl-1.3.rst
 
 * :ref:`search`
