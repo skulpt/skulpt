@@ -70,6 +70,8 @@ def test_Movement():
     assert ci.buffer.GetChar() == '2'
     ci.HandleInput('h', shift=True)
     assert ci.buffer.GetChar() == 't'
+    ci.HandleInput('l', shift=True)
+    assert ci.buffer.GetChar() == '2'
 
 def tests():
     b = simplebuffer()
