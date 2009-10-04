@@ -909,7 +909,7 @@ functionSetup: function(ast, a, inclass, islamb)
                    {
                        if (!ast.defaults[i]) continue;
                        o.push("if(");
-                       o.push(ast.argnames[i]); // todo; safeize
+                       o.push(ast.argnames[i]);
                        o.push("===undefined){");
                        o.push(ast.argnames[i]);
                        o.push("=");
@@ -965,6 +965,30 @@ makeFuncBody: function(ast, a)
                       o.push(ast.name);
                       o.push(".apply(arguments[0],Array.prototype.slice.call(arguments,1));};");
                   }
+
+                  // attach metadata to the function definition
+                  // currently includes the names of the arguments so that
+                  // kwargs can be unpacked to the right location
+
+                  if (!islamb) // todo; need a way to attach to lambdas
+                  {
+                      if (inclass)
+                      {
+                          o.push(a.klass);
+                          o.push(".");
+                      }
+                      o.push(ast.name);
+                      o.push(".argnames$=[");
+                      for (i = 0; i < ast.argnames.length; ++i)
+                      {
+                          o.push("'");
+                          o.push(ast.argnames[i]);
+                          o.push("'");
+                          if (i !== ast.argnames.length - 1) o.push(",");
+                      }
+                      o.push("];");
+                  }
+
               },
 
 startGeneratorCodeBlock: function(a)
@@ -1181,21 +1205,23 @@ CallFunc: function(ast, a)
               // functions. it seems unfortunate, but actually, the arg names
               // are part of the function signature for all methods (unrelated
               // to defaults, so it's required anyway). ie:
+              //
               //     def f(x, y):
               //         print x,y
               //     f(y=5, x="dog")
+              //
               // is fine.
               //
               // this also means all builtin and library functions must match
-              // in argument names. seems an unfortunate design decision.
+              // in argument names. seems an unfortunate part of python's
+              // design.
               //
-              // todo; can we do the unpack/rename in sk$call rather than
-              // per-method? would need to add enough metadata to the function
-              // definition to be able to unpack correctly, but it's probably
-              // less crappy than putting it in as code, esp. for builtins.
+              // we do the unpack/rename in sk$call rather than
+              // per-method. metadata is added to the function definition to
+              // allow order modification based on kwargs being passed. 
               
               if (kwargs.length !== 0) o.push(", [");
-              //else o.push("undefined");
+              else o.push(", undefined");
 
               for (i = 0; i < kwargs.length; ++i)
               {
@@ -1206,7 +1232,6 @@ CallFunc: function(ast, a)
                   if (i !== kwargs.length - 1) o.push(",");
               }
               if (kwargs.length !== 0) o.push("]");
-
 
               if (posargs.length !== 0) o.push(", ");
               for (i = 0; i < posargs.length; ++i)

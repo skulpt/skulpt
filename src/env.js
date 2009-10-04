@@ -465,9 +465,23 @@ function sk$sa(o, attrname, value)
 // so, in order to support __call__ on objects we have to wrap all
 // python-level calls in a call that checks if the target is an object that
 // has a __call__ attribute so we can dispatch to it. sucky.
+// additionally, this handles remapping kwargs to the correct locations.
 function sk$call(obj, kwargs)
 {
-    var args = Array.prototype.slice.call(arguments, 1);
+    var kwargs = arguments[1];
+    var args = Array.prototype.slice.call(arguments, 2);
+    if (kwargs !== undefined)
+    {
+        for (var i = 0; i < kwargs.length; i += 2)
+        {
+            var kwargname = kwargs[i];
+            var kwargvalue = kwargs[i + 1];
+            var index = obj.argnames$.indexOf(kwargname);
+            //print(kwargname,"is",kwargvalue.v,"at",index);
+            args[index] = kwargvalue;
+        }
+        //print(JSON2.stringify(args));
+    }
     try
     {
         return obj.apply(this, args);
