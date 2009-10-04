@@ -985,11 +985,11 @@ makeFuncBody: function(ast, a)
                   if (inclass)
                   {
                       o.push(a.klass);
-                      o.push(".");
+                      o.push(".prototype.");
                   }
                   o.push(name);
                   o.push(".argnames$=[");
-                  for (var i = 0; i < ast.argnames.length; ++i)
+                  for (var i = inclass ? 1 : 0; i < ast.argnames.length; ++i)
                   {
                       o.push("'");
                       o.push(ast.argnames[i]);

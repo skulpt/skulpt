@@ -438,7 +438,7 @@ if (!Function.prototype.bind)
         {
             return __method.apply(object, arguments);
         };
-        ret.method$ = __method;
+        ret.argnames$ = this.argnames$; // todo; icky
         return ret;
     };
 }
