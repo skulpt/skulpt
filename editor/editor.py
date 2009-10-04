@@ -1,6 +1,13 @@
 def simplebuffer():
     b = Buffer("*scratch*")
-    b.lines = ["this is line 1", "this is line 2"]
+    b.lines = ["this is line 1",
+               "this is line 2",
+               "this is stuff and thi_ngs_-wee_waa",
+               "@#$ $#@% !^*^ !@#$%^&*()45678",
+               "",
+               "",
+               "this is line 6",
+               ]
     return b
 
 def test_SetPoint(b):
@@ -58,7 +65,7 @@ def test_Delete(b):
     b.Delete(-4)
     assert b.lines[1] == " is line 2"
 
-def test_Movement():
+def test_MovementBasic():
     ci = CommandInterpreter(simplebuffer())
     ci.SetMode("normal")
     assert ci.buffer.GetChar() == 't'
@@ -73,6 +80,30 @@ def test_Movement():
     ci.HandleInput('l', shift=True)
     assert ci.buffer.GetChar() == '2'
 
+    ci.buffer.SetPoint(0,0)
+
+def test_MovementWords():
+    ci = CommandInterpreter(simplebuffer())
+    ci.SetMode("normal")
+    assert ci.buffer.GetChar() == 't'
+    ci.HandleInput('w')
+    assert ci.buffer.GetChar() == 'i'
+    ci.HandleInput('w')
+    assert ci.buffer.GetChar() == 'l'
+    ci.HandleInput('w')
+    assert ci.buffer.GetChar() == '1'
+    ci.HandleInput('w')
+    assert ci.buffer.GetChar() == 't'
+    ci.HandleInput('b')
+    assert ci.buffer.GetChar() == '1'
+    ci.HandleInput('b')
+    assert ci.buffer.GetChar() == 'l'
+    ci.HandleInput('b')
+    assert ci.buffer.GetChar() == 'i'
+    ci.HandleInput('b')
+    assert ci.buffer.GetChar() == 't'
+    assert ci.buffer.GetPoint() == (0, 0)
+
 def tests():
     b = simplebuffer()
     test_SetPoint(b)
@@ -86,7 +117,8 @@ def tests():
     test_Delete(b)
     #print b.lines
 
-    test_Movement()
+    test_MovementBasic()
+    test_MovementWords()
 
 class Buffer:
     def __init__(self, name):
@@ -103,16 +135,45 @@ class Buffer:
     def GetPoint(self):
         return self.px, self.py
 
-    def PointMove(self, dx, dy):
+    def PointMove(self, dx, dy, crossline=False):
+        # todo; col saving wrong
         # todo; lines totally wrong
-        self.px += dx
-        self.py += dy
+        if crossline:
+            assert dy == 0
+            assert dx == 1 or dx == -1
+            if dx < 0:
+                assert "todo;"
+            else:
+                self.px += 1
+                if self.GetChar() == '\n':
+                    self.px = 0
+                    self.py += 1
+        else: 
+            self.px += dx
+            self.py += dy
 
     def PointMoveBeginningOfLine(self):
         self.px = 0
 
     def PointMoveEndOfLine(self):
         self.px = self.LineLength(self.py) - 1
+
+    def PointMoveWord(self, inword, dir=1):
+        while True:
+            c = self.GetChar()
+            if c in inword:
+                self.PointMove(dir, 0, crossline=True)
+            else:
+                break
+        while True:
+            c = self.GetChar()
+            if c in (' ', '\t', '\n'):
+                self.PointMove(dir, 0, crossline=True)
+            else:
+                break
+
+    def PointMoveWordBackward(self, inword):
+        pass
 
     def GetChar(self):
         """get char at point. None if at end of buffer"""
@@ -153,6 +214,8 @@ class CommandInterpreter:
 
     def SetNormalMode(self):
         b = self.buffer
+        charsWord = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        charsWORD = charsWord + '!@#$%^&*()-=+<>,./?\\|[]{};:\'"'
         self.map = {}
         self.map['i'] = lambda: self.SetMode('insert')
         self.map['h'] = lambda: b.PointMove(-1, 0)
@@ -161,12 +224,12 @@ class CommandInterpreter:
         self.map['l'] = lambda: b.PointMove(1, 0)
         self.map['H'] = lambda: b.PointMoveBeginningOfLine()
         self.map['L'] = lambda: b.PointMoveEndOfLine()
-        self.map['w'] = lambda: b.PointMoveWordForward(charsWord)
-        self.map['W'] = lambda: b.PointMoveWordForward(charsWORD)
-        self.map['b'] = lambda: b.PointMoveWordBackward(charsWord)
-        self.map['B'] = lambda: b.PointMoveWordBackward(charsWORD)
-        self.map['e'] = lambda: b.PointMoveEndOfWordForward(charsWord)
-        self.map['E'] = lambda: b.PointMoveEndOfWordForward(charsWORD)
+        self.map['w'] = lambda: b.PointMoveWord(charsWord, 1)
+        self.map['W'] = lambda: b.PointMoveWord(charsWORD, 1)
+        self.map['b'] = lambda: b.PointMoveWord(charsWord, -1)
+        self.map['B'] = lambda: b.PointMoveWord(charsWORD, -1)
+        #self.map['e'] = lambda: b.PointMoveWordForward(charsWord, 
+        #self.map['E'] = lambda: b.PointMoveWordForward(charsWORD)
         self.map['d'] = lambda: self.SetMode('normal-d')
         self.map['y'] = lambda: self.SetMode('normal-y')
 
