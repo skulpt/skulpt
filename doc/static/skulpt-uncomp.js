@@ -500,26 +500,46 @@ function sk$sa(o, attrname, value)
 // so, in order to support __call__ on objects we have to wrap all
 // python-level calls in a call that checks if the target is an object that
 // has a __call__ attribute so we can dispatch to it. sucky.
-function sk$call(obj)
+// additionally, this handles remapping kwargs to the correct locations.
+function sk$call(obj, kwargs)
 {
-    var args = Array.prototype.slice.call(arguments);
-    args.shift();
+    var args = Array.prototype.slice.call(arguments, 2);
+    if (kwargs !== undefined)
+    {
+        for (var i = 0; i < kwargs.length; i += 2)
+        {
+            var kwargname = kwargs[i];
+            var kwargvalue = kwargs[i + 1];
+            if (obj.argnames$ === undefined) throw obj + " has no argnames";
+            var index = obj.argnames$.indexOf(kwargname);
+            //print(kwargname,"is",kwargvalue.v,"at",index);
+            args[index] = kwargvalue;
+        }
+        //print(JSON2.stringify(args));
+    }
     try
     {
         return obj.apply(this, args);
     }
     catch (e)
     {
-        //print(obj, e.toString());
-        if (obj.__call__ !== undefined)
+        var eAsStr = e.toString();
+        if (eAsStr.indexOf("has no method 'apply'") !== -1)
         {
-            return obj.__call__.apply(obj, args);
+            if (obj.__call__ !== undefined)
+            {
+                return obj.__call__.apply(obj, args);
+            }
+            else
+            {
+                if (obj.__class__ === undefined)
+                    throw new AttributeError("trying to call uncallable and non-class?");
+                throw new AttributeError(obj.__class__.__name__ + " instance has no __call__ method");
+            }
         }
         else
         {
-            if (obj.__class__ === undefined)
-                throw new AttributeError("trying to call uncallable and non-class?");
-            throw new AttributeError(obj.__class__.__name__ + " instance has no __call__ method");
+            throw e;
         }
     }
 }
@@ -933,7 +953,7 @@ Str$.prototype.join = function(seq)
 };
 
 Str$.prototype.ljust = function() { throw "todo; ljust"; };
-Str$.prototype.lower = function() { throw "todo; lower"; };
+Str$.prototype.lower = function() { return new Str$(this.v.toLowerCase()); };
 Str$.prototype.lstrip = function() { throw "todo; lstrip"; };
 Str$.prototype.partition = function() { throw "todo; partition"; };
 
@@ -971,7 +991,7 @@ Str$.prototype.strip = function() { throw "todo; strip"; };
 Str$.prototype.swapcase = function() { throw "todo; swapcase"; };
 Str$.prototype.title = function() { throw "todo; title"; };
 Str$.prototype.translate = function() { throw "todo; translate"; };
-Str$.prototype.upper = function() { throw "todo; upper"; };
+Str$.prototype.upper = function() { return new Str$(this.v.toUpperCase()); };
 Str$.prototype.zfill = function() { throw "todo; zfill"; };
 
 Str$.prototype.__iter__ = function()
@@ -6149,9 +6169,10 @@ Transformer.prototype.com_dictmaker = function(nodelist)
     var items = [];
     for (var i = 0; i < nodelist.children.length; i += 4)
     {
-        items.push([this.dispatch(nodelist.children[i]), this.dispatch(nodelist.children[i+2])]);
+        items.push(this.dispatch(nodelist.children[i]));
+        items.push(this.dispatch(nodelist.children[i+2]));
     }
-    return new Dict(items, items[0][0].lineno);
+    return new Dict(items, items[0].lineno);
 };
 
 // Compile 'NODE (OP NODE)*' into (type, [ node1, ..., nodeN ]).
@@ -6201,6 +6222,7 @@ Transformer.prototype.com_arglist = function(nodelist)
     // fplist: fpdef (',' fpdef)* [',']
     var names = [];
     var defaults = [];
+    var haveSomeDefaults = false;
     var varargs = false;
     var varkeywords = false;
 
@@ -6213,7 +6235,7 @@ Transformer.prototype.com_arglist = function(nodelist)
         {
             if (node.type === T_STAR)
             {
-                node = nodelist[i+1];
+                node = nodelist[i + 1];
                 if (node.type === T_NAME)
                 {
                     names.push(node[1]);
@@ -6250,12 +6272,17 @@ Transformer.prototype.com_arglist = function(nodelist)
         {
             defaults.push(this.dispatch(nodelist[i + 1]));
             i = i + 2;
+            haveSomeDefaults = true;
         }
-        else if (defaults.length > 0)
+        else
         {
             // we have already seen an argument with default, but here
             // came one without
-            throw new SyntaxError("non-default argument follows default argument");
+            if (haveSomeDefaults)
+            {
+                throw new SyntaxError("non-default argument follows default argument");
+            }
+            defaults.push(undefined);
         }
 
         // skip the comma
@@ -6361,11 +6388,10 @@ Transformer.prototype.com_argument = function(nodelist, kw, star_node)
         return [false, this.dispatch(nodelist.children[0])];
     }
     var result = this.dispatch(nodelist.children[2]);
-    var n = nodelist[1];
-    while (n.length === 2 && n.type === T_NAME)
-    {
-        n = n.value;
-    }
+    var n = nodelist.children[0];
+    //print(JSON2.stringify(n));
+    while (n.type !== T_NAME && n.children !== null)
+        n = n.children[0];
     if (n.type !== T_NAME)
         throw new SyntaxError("keyword can't be an expression (" + n.type + ")");
     var node = new Keyword(n.value, result, n.context);
@@ -8103,13 +8129,19 @@ functionSetup: function(ast, a, inclass, islamb)
                    var argstart = inclass ? 1 : 0; // todo; staticmethod
                    // lambdas are compiled as "values"
                    var asvalue = islamb || ast.name === "<genexpr>"; // todo; by name is ugly
-
-                   if (inclass) o.push(a.klass + ".prototype.");
+                   var ret = undefined;
 
                    if (!asvalue)
                    {
+                       if (inclass) o.push(a.klass + ".prototype.");
                        o.push(ast.name);
                        if (!islamb) o.push("="); 
+                   }
+                   else
+                   {
+                       ret = gensym(); // make a name that can have the argname stuff added to
+                       o.push(ret);
+                       o.push("=");
                    }
                    o.push("function(");
                    for (i = argstart; i < ast.argnames.length; ++i)
@@ -8122,7 +8154,7 @@ functionSetup: function(ast, a, inclass, islamb)
                    {
                        if (!ast.defaults[i]) continue;
                        o.push("if(");
-                       o.push(ast.argnames[i]); // todo; safeize
+                       o.push(ast.argnames[i]);
                        o.push("===undefined){");
                        o.push(ast.argnames[i]);
                        o.push("=");
@@ -8131,6 +8163,7 @@ functionSetup: function(ast, a, inclass, islamb)
                    }
 
                    // todo; varargs, kwargs
+                   return ret;
                },
 
 makeFuncBody: function(ast, a)
@@ -8139,7 +8172,8 @@ makeFuncBody: function(ast, a)
                   var inclass = a.klass !== undefined;
                   var islamb = a.islamb !== undefined;
 
-                  this.functionSetup(ast, a, inclass, islamb);
+                  var name = this.functionSetup(ast, a, inclass, islamb);
+                  if (!name) name = ast.name;
 
                   //print("bindings", JSON.stringify(ast.nameBindings, null, 2));
                   for (var k in ast.nameBindings)
@@ -8163,21 +8197,46 @@ makeFuncBody: function(ast, a)
                       //print("origname:",ast.argnames[0]);
                       ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
                   }
-                  this.visit(ast.code, a);
+
+                  var acopy = shallowcopy(a);
+                  acopy.klass = undefined;
+                  this.visit(ast.code, acopy);
+
                   if (islamb) o.push(");");
                   o.push("};");
-                  if (inclass)
+                  if (inclass && !islamb)
                   {
                       // for direct calls to base, like Base.__init__(self, ...)
                       o.push(a.klass);
                       o.push(".");
-                      o.push(ast.name);
+                      o.push(name);
                       o.push("=function(){");
                       o.push(a.klass);
                       o.push(".prototype.");
-                      o.push(ast.name);
+                      o.push(name);
                       o.push(".apply(arguments[0],Array.prototype.slice.call(arguments,1));};");
                   }
+
+                  // attach metadata to the function definition
+                  // currently includes the names of the arguments so that
+                  // kwargs can be unpacked to the right location
+
+                  if (inclass)
+                  {
+                      o.push(a.klass);
+                      o.push(".");
+                  }
+                  o.push(name);
+                  o.push(".argnames$=[");
+                  for (var i = 0; i < ast.argnames.length; ++i)
+                  {
+                      o.push("'");
+                      o.push(ast.argnames[i]);
+                      o.push("'");
+                      if (i !== ast.argnames.length - 1) o.push(",");
+                  }
+                  o.push("];");
+
               },
 
 startGeneratorCodeBlock: function(a)
@@ -8360,19 +8419,73 @@ Continue_: function(ast, a)
 Discard: function(ast, a)
          {
              this.visit(ast.expr, a);
+             a.o.push(";"); // needed here in case it's just a value
          },
 
 CallFunc: function(ast, a)
           {
               // see comment in env.js about sk$call
               var o = a.o;
+              var i;
+              var kwargs = [];
+              var posargs = [];
+              for (i = 0; i < ast.args.length; ++i)
+              {
+                  if (ast.args[i] instanceof Keyword) kwargs.push(ast.args[i]);
+                  else posargs.push(ast.args[i]);
+              }
+              
               o.push("sk$call(");
               this.visit(ast.node, a);
-              if (ast.args.length !== 0) o.push(", ");
-              for (var i = 0; i < ast.args.length; ++i)
+
+              // how do we pass kwargs?
+              //
+              // - we can't tell at call site how many args the function
+              // wants, so we can't pad the positional args and have a list in
+              // arguments.
+              //
+              // - we could try stuffing an extra argument into the the
+              // sk$call, and have it store that into the function object
+              // being called (ick). but that'd break for nested calls to the
+              // same function.
+              //
+              // - so, we have to pass an additional first argument to all
+              // functions. it seems unfortunate, but actually, the arg names
+              // are part of the function signature for all methods (unrelated
+              // to defaults, so it's required anyway). ie:
+              //
+              //     def f(x, y):
+              //         print x,y
+              //     f(y=5, x="dog")
+              //
+              // is fine.
+              //
+              // this also means all builtin and library functions must match
+              // in argument names. seems an unfortunate part of python's
+              // design.
+              //
+              // we do the unpack/rename in sk$call rather than
+              // per-method. metadata is added to the function definition to
+              // allow order modification based on kwargs being passed. 
+              
+              if (kwargs.length !== 0) o.push(", [");
+              else o.push(", undefined");
+
+              for (i = 0; i < kwargs.length; ++i)
               {
-                  this.visit(ast.args[i], a);
-                  if (i !== ast.args.length - 1) o.push(",");
+                  o.push("'");
+                  o.push(kwargs[i].name);
+                  o.push("',");
+                  this.visit(kwargs[i].expr, a);
+                  if (i !== kwargs.length - 1) o.push(",");
+              }
+              if (kwargs.length !== 0) o.push("]");
+
+              if (posargs.length !== 0) o.push(", ");
+              for (i = 0; i < posargs.length; ++i)
+              {
+                  this.visit(posargs[i], a);
+                  if (i !== posargs.length - 1) o.push(",");
               }
               o.push(")");
           },
@@ -8398,12 +8511,12 @@ Dict: function(ast, a)
       {
           var o = a.o;
           o.push("new Dict$([");
-          for (var i = 0; i < ast.items.length; ++i)
+          for (var i = 0; i < ast.items.length; i += 2)
           {
-              this.visit(ast.items[i][0], a);
+              this.visit(ast.items[i], a);
               o.push(",");
-              this.visit(ast.items[i][1], a);
-              if (i < ast.items.length - 1) o.push(",");
+              this.visit(ast.items[i + 1], a);
+              if (i < ast.items.length - 2) o.push(",");
           }
           o.push("])");
       },

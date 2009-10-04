@@ -468,7 +468,6 @@ function sk$sa(o, attrname, value)
 // additionally, this handles remapping kwargs to the correct locations.
 function sk$call(obj, kwargs)
 {
-    var kwargs = arguments[1];
     var args = Array.prototype.slice.call(arguments, 2);
     if (kwargs !== undefined)
     {

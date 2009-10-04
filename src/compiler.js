@@ -989,7 +989,7 @@ makeFuncBody: function(ast, a)
                   }
                   o.push(name);
                   o.push(".argnames$=[");
-                  for (i = 0; i < ast.argnames.length; ++i)
+                  for (var i = 0; i < ast.argnames.length; ++i)
                   {
                       o.push("'");
                       o.push(ast.argnames[i]);
@@ -1190,7 +1190,7 @@ CallFunc: function(ast, a)
               var i;
               var kwargs = [];
               var posargs = [];
-              for (var i = 0; i < ast.args.length; ++i)
+              for (i = 0; i < ast.args.length; ++i)
               {
                   if (ast.args[i] instanceof Keyword) kwargs.push(ast.args[i]);
                   else posargs.push(ast.args[i]);
