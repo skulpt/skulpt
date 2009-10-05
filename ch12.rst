@@ -920,7 +920,7 @@ Now we have three possible states:
    player wins
 
 In order to handle this with as few changes as possible to our present program,
-we will take advantage of the way that Python permits sequence types to live a
+we will take advantage of the way that Python permits sequence types to live
 double lives as boolean values. We will return an empty string -- which is
 false -- when game play should continue, and either ``"robots_win"`` or
 ``"player_wins"`` to handle the other two cases. ``check_collisions`` should

@@ -248,14 +248,15 @@ Here is an example of a user-defined function that has a parameter:
 
 .. sourcecode:: python
     
-    def print_twice(bruce):
-        print bruce, bruce
+    def print_twice(param):
+        print param, param 
 
 This function takes a single **argument** and assigns it to the parameter named
-``bruce``. The value of the parameter (at this point we have no idea what it
-will be) is printed twice, followed by a newline.  The name ``bruce`` was
-chosen to suggest that the name you give a parameter is up to you, but in
-general, you want to choose something more illustrative than ``bruce``.
+``param``. The value of the parameter (at this point we have no idea what it
+will be) is printed twice, followed by a newline.  The name ``param`` was
+chosen to reinforce the idea that it is a *parameter*, but in general, you will
+want to choose a name for your parameters that describes their use in the
+function.
 
 The interactive Python shell provides us with a convenient way to test our
 functions. We can use the **import statement** to bring the functions we have
@@ -274,9 +275,9 @@ now test it interactively by *importing* it into our Python shell session:
     3.14159 3.14159
 
 In a function call, the value of the argument is assigned to the corresponding
-parameter in the function definition. In effect, it is if ``bruce = 'Spam'`` is
-executed when ``print_twice('Spam')`` is called, ``bruce = 5`` in
-``print_twice(5)``, and ``bruce = 3.14159`` in ``print_twice(3.14159)``.
+parameter in the function definition. In effect, it is if ``param = 'Spam'`` is
+executed when ``print_twice('Spam')`` is called, ``param = 5`` in
+``print_twice(5)``, and ``param = 3.14159`` in ``print_twice(3.14159)``.
 
 Any type of argument that can be printed can be sent to ``print_twice`` In the
 first function call, the argument is a string. In the second, it's an integer.
@@ -321,15 +322,15 @@ We can also use a variable as an argument:
 
 .. sourcecode:: python
     
-    >>> michael = 'Eric, the half a bee.'
-    >>> print_twice(michael)
+    >>> sval = 'Eric, the half a bee.'
+    >>> print_twice(sval)
     Eric, the half a bee. Eric, the half a bee.
 
 Notice something very important here. The name of the variable we pass as an
-argument (``michael``) has nothing to do with the name of the
-parameter ( ``bruce``). It doesn't matter what the value was called back
-home (in the caller); here in ``print_twice``, we call everybody ``bruce``.
-
+argument (``sval``) has nothing to do with the name of the parameter
+(``param``).  Again, it is as if  ``param = sval`` is executed when
+``print_twice(sval)`` is called. It doesn't matter what the value was named in
+the caller, in ``print_twice`` it's name is ``param``.
 
 .. index::
     single: local variable
@@ -366,7 +367,7 @@ try to print it, we get an error:
     NameError: name 'cat' is not defined
 
 Parameters are also local. For example, outside the function ``print_twice``,
-there is no such thing as ``bruce``. If you try to use it, Python will
+there is no such thing as ``param``. If you try to use it, Python will
 complain.
 
 
@@ -398,7 +399,7 @@ any function, it belongs to ``__main__``.
 
 Each parameter refers to the same value as its corresponding argument.  So,
 ``part1`` has the same value as ``chant1``, ``part2`` has the same value as
-``chant2``, and ``bruce`` has the same value as ``cat``.
+``chant2``, and ``param`` has the same value as ``cat``.
 
 If an error occurs during a function call, Python prints the name of the
 function, and the name of the function that called it, and the name of the
@@ -409,8 +410,8 @@ like this:
 
 .. sourcecode:: python
     
-    def print_twice(bruce):
-        print bruce, bruce
+    def print_twice(param):
+        print param, param 
         print cat
     
     def cat_twice(part1, part2):

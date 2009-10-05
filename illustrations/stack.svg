@@ -8,8 +8,8 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="361.48035"
-   height="114.85219"
+   width="370"
+   height="120"
    id="svg2548"
    sodipodi:version="0.32"
    inkscape:version="0.46"
@@ -209,7 +209,7 @@
          sodipodi:role="line"
          id="tspan2604"
          x="-689.48438"
-         y="126.58602">bruce</tspan></text>
+         y="126.58602">param</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
