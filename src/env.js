@@ -12,7 +12,7 @@
 // replaceable output redirection (called from print, etc)
 var sk$output = function(x){};
 if (this.print !== undefined) sk$output = this.print;
-if (this.console !== undefined && this.console.log !== undefined) sk$output = this.console.log;
+if (this.console !== undefined && this.console.log !== undefined) sk$output = function (x) {this.console.log(x);};
 
 
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
@@ -429,8 +429,10 @@ function sk$print(x)
 
 
 // stupid language.
-if (!Function.prototype.bind)
-{
+// When running the unit tests under Safari, this fails to replace .bind.
+// Making it unconditional allows the tests to pass.
+//if (!Function.prototype.bind)
+//{
     Function.prototype.bind = function(object)
     {
         var __method = this;
@@ -441,7 +443,7 @@ if (!Function.prototype.bind)
         ret.argnames$ = this.argnames$; // todo; icky
         return ret;
     };
-}
+//}
 function sk$ga(o, attrname)
 {
     var v = o[attrname];
@@ -489,7 +491,7 @@ function sk$call(obj, kwargs)
     catch (e)
     {
         var eAsStr = e.toString();
-        if (eAsStr.indexOf("has no method 'apply'") !== -1)
+        if (obj.apply === undefined || eAsStr.indexOf("has no method 'apply'") !== -1)
         {
             if (obj.__call__ !== undefined)
             {
