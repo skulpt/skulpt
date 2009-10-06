@@ -159,6 +159,7 @@ class Buffer:
         self.px = self.LineLength(self.py) - 1
 
     def PointMoveWord(self, inword, dir=1):
+        print "moveword", inword, dir, self.px, self.py
         while True:
             c = self.GetChar()
             if c in inword:

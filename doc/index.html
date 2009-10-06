@@ -6,9 +6,10 @@
 <title>Skulpt</title>
 <link rel="stylesheet" type="text/css" media="all" href="static/main.css">
 <script src="http://ajax.googleapis.com/ajax/libs/mootools/1.2.3/mootools.js" type="text/javascript"></script>
-<script src="static/term.js" type="text/javascript"></script>
-<script src="static/demo.js" type="text/javascript"></script>
-<script src="static/skulpt.js" type="text/javascript"></script>
+<script src="static/mootools-1.2.3.1-more.js" type="text/javascript"></script>
+<script src="static/env/codemirror/js/codemirror.js" type="text/javascript"></script>
+<script src="static/env/editor.js" type="text/javascript"></script>
+<script src="static/skulpt-uncomp.js" type="text/javascript"></script>
 </head><body>
 
 <div class="page">
@@ -21,29 +22,62 @@
 <p>Skulpt is an <em>entirely in-browser</em> implementation of Python.</p>
 
 <p>No preprocessing, plugins, or server-side support required, just write
-Python and push <code>F5</code>.</p>
+Python and reload.</p>
 
 <h2>Demo</h2>
 
-<div id="terminal"><span id="isk"></span></div>
+    <p>The code is run entirely in your browser, so don't feel
+    obligated to &quot;crash the server&quot;, you'll only stub your
+    toe. <a id="toggledocs" href="#">Help</a>, or examples:
+        <a href="#" id="codeexample1">1</a> 
+        <a href="#" id="codeexample2">2</a> 
+        <a href="#" id="codeexample3">3</a> 
+        <a href="#" id="codeexample4">4</a> 
+        <a href="#" id="codeexample5">5</a> 
+        <a href="#" id="codeexample6">6</a>.
+    </p>
 
-<p>You can
+    <div id="quickdocs">
+        <ul>
+            <li>cut/copy/paste/undo/redo with the usual shortcut keys</li>
+            <li>Tab does decent indenting.
+            Thanks to <a href="http://marijn.haverbeke.nl/codemirror/"
+                target="_blank">CodeMirror</a> for the text editor.
+            </li>
+            <li>Alt-Enter to run, Shift-Enter to run selected</li>
+            <!--
+            <li>F9 to toggle breakpoints</li>
+            <li>F10 to step over</li>
+            <li>F11 to step in</li>
+            <li>Shift-F11 to step out.</li>
+            <li>You can inspect values with e.g. 'print foo' in the
+            &quot;Interactive&quot; box. When debugging, this will
+            execute in the debug context.</li>
+            -->
+        </ul>
+    </div>
 
-<a href="#" id="codeexample1">slap</a>
-<a href="#" id="codeexample2">some</a>
-<a href="#" id="codeexample3">code</a>
-<a href="#" id="codeexample4">in</a>
-<a href="#" id="codeexample5">there</a>
-<a href="#" id="codeexample6">to</a>
 
-play around.</p>
+    <p></p>
 
-<p>It's running entirely in your browser, so don't feel obligated to try to
-&quot;crash the server&quot;; you'll only stub your toe.</p>
+    <textarea id="code" cols="85" rows="25">
+def test(name):
+    print "Hello", name
 
-<p>That's just for demoing up there. Normally of course, you'd stick your code
-in regular ol' <code>.py</code> files and use <code>import</code> to
-XmlHttpRequest them from a server.</p>
+test("world")
+</textarea>
+
+<!--
+<p>Interactive:<textarea id="interactive" cols="85" rows="1"></textarea></p>
+-->
+
+<p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
+<pre id="edoutput">
+</pre>
+
+<p>This is mostly just for demo purposes. Normally you'd slap your code
+in some <tt>.py</tt> files and use <tt>import</tt> to
+XmlHttpRequest 'em.</p>
 
 <h2>Your Very Own Copy</h2>
 
