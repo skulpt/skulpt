@@ -65,7 +65,7 @@ var PythonParser = Editor.Parser = (function() {
             doubleDelimiters.push('\\-\\>');
         } else {
             py = py2;
-            stringStarters = /['"RUru]/;
+            stringStarters = /[\'\"RUru]/;
             stringTypes = /[ru]/;
         }
         config = conf;
@@ -181,7 +181,7 @@ var PythonParser = Editor.Parser = (function() {
                     source.nextWhileMatches(/\d/);
                 }
                 // Grab an exponent
-                if (source.peek().toLowerCase() == 'e') {
+                if (source.matches(/e/i)) {
                     source.next();
                     if (source.peek() == '+' || source.peek() == '-') {
                         source.next();
@@ -193,7 +193,7 @@ var PythonParser = Editor.Parser = (function() {
                     }
                 }
                 // Grab a complex number
-                if (source.peek().toLowerCase() == 'j') {
+                if (source.matches(/j/i)) {
                     source.next();
                 }
 
