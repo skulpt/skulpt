@@ -1232,7 +1232,7 @@ Transformer.prototype[T_NUMBER] = function(nodelist)
 {
     var v = nodelist[0].value;
     var k;
-    if (v[v.length - 1] === "l" || v[v.length - 1] === "L")
+    if (v.charAt(v.length - 1) === "l" || v.charAt(v.length - 1) === "L")
     {
         k = Long$.fromJsStr$(v.substring(0, v.length - 1));
     }
