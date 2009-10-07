@@ -175,12 +175,18 @@ function testRun(name)
     sk$output = function(str) { got += str; }
 
     var expect = read(name + ".py.real");
+    var expectalt;
+    try { expectalt = read(name + ".py.real.alt"); }
+    catch (e) {}
     var js = Skulpt.compileStr(name + ".py", input);
     try {
         eval(js);
     }
-    catch (e) { got = "EXCEPTION: " + e.name + "\n"; }
-    if (expect !== got)
+    catch (e)
+    {
+        got = "EXCEPTION: " + e.name + "\n";
+    }
+    if (expect !== got && (expectalt !== undefined && expectalt !== got))
     {
         print("FAILED: (" + name + ".py)\n-----");
         print(input);
