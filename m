@@ -82,10 +82,12 @@ window.addEvent('domready', function() {
     # build a silly virtual file system to support 'read'
     print ". Slurping test data"
     print >>out, "VFSData = {"
+    all = []
     for pat in ("test/tokenize/*", "test/parse/*", "test/run/*", "test/interactive/*"):
         for file in glob.glob(pat):
             data = open(file, "rb").read()
-            print >>out, "'%s': '%s'," % (file, data.encode("hex"))
+            all.append("'%s': '%s'" % (file, data.encode("hex")))
+    print >>out, ",\n".join(all)
     print >>out, "};"
 
     # stub the d8 functions we use
