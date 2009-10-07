@@ -616,7 +616,7 @@ Str$.prototype.re_escape$ = function(s)
     var ret = [];
     for (var i = 0; i < s.length; ++i)
     {
-        var c = s[i];
+        var c = s.charAt(i);
         if (Str$.prototype.$_alphanum[c])
         {
             ret.push(c);
@@ -638,14 +638,14 @@ Str$.prototype.__getitem__ = function(index)
     {
         if (index < 0) index = this.v.length + index;
         if (index < 0 || index >= this.v.length) throw new IndexError("string index out of range");
-        return new Str$(this.v[index]);
+        return new Str$(this.v.charAt(index));
     }
     else if (index instanceof Slice$)
     {
         var ret = '';
         index.sssiter$(this, function(i, wrt) {
                 if (i >= 0 && i < wrt.v.length)
-                    ret += wrt.v[i];
+                    ret += wrt.v.charAt(i);
                 });
         return new Str$(ret);
     }
@@ -2351,17 +2351,17 @@ Tokenizer.prototype.generateTokens = function(line)
         column = 0;
         while (pos < max)
         {
-            if (line[pos] === ' ') column += 1;
-            else if (line[pos] === '\t') column = (column/tabsize + 1)*tabsize;
-            else if (line[pos] === '\f') column = 0;
+            if (line.charAt(pos) === ' ') column += 1;
+            else if (line.charAt(pos) === '\t') column = (column/tabsize + 1)*tabsize;
+            else if (line.charAt(pos) === '\f') column = 0;
             else break;
             pos = pos + 1;
         }
         if (pos === max) return this.doneFunc();
 
-        if ("#\r\n".indexOf(line[pos]) !== -1) // skip comments or blank lines
+        if ("#\r\n".indexOf(line.charAt(pos)) !== -1) // skip comments or blank lines
         {
-            if (line[pos] === '#')
+            if (line.charAt(pos) === '#')
             {
                 var comment_token = rstrip(line.substring(pos), '\r\n');
                 var nl_pos = pos + comment_token.length;
@@ -2418,7 +2418,7 @@ Tokenizer.prototype.generateTokens = function(line)
         // js regexes don't return any info about matches, other than the
         // content. we'd like to put a \w+ before pseudomatch, but then we
         // can't get any data
-        while (line[pos] === ' ' || line[pos] === '\f' || line[pos] === '\t')
+        while (line.charAt(pos) === ' ' || line.charAt(pos) === '\f' || line.charAt(pos) === '\t')
         {
             pos += 1;
         }
@@ -2431,7 +2431,7 @@ Tokenizer.prototype.generateTokens = function(line)
             var epos = [this.lnum, end];
             pos = end;
             var token = line.substring(start, end);
-            var initial = line[start];
+            var initial = line.charAt(start);
             //print("initial:'" +initial +"'");
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.'))
             {
@@ -2503,7 +2503,7 @@ Tokenizer.prototype.generateTokens = function(line)
         }
         else
         {
-            if (this.callback(T_ERRORTOKEN, line[pos],
+            if (this.callback(T_ERRORTOKEN, line.charAt(pos),
                         [this.lnum, pos], [this.lnum, pos+1], line))
                 return 'done';
             pos += 1;
@@ -7212,7 +7212,7 @@ Transformer.prototype[T_NUMBER] = function(nodelist)
 {
     var v = nodelist[0].value;
     var k;
-    if (v[v.length - 1] === "l" || v[v.length - 1] === "L")
+    if (v.charAt(v.length - 1) === "l" || v.charAt(v.length - 1) === "L")
     {
         k = Long$.fromJsStr$(v.substring(0, v.length - 1));
     }

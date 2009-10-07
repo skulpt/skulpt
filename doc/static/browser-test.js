@@ -441,13 +441,13 @@ VFSData = {
 'test/run/t112.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d612c20666c6167733d4f505f41535349474e292c20657870723d5475706c65286e6f6465733d29292c5072696e74286e6f6465733d4e616d65286e616d653d61292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t94.py': '78203d20274f4b270a7072696e7420785b305d0a',
 'test/run/t97.py.disabled': '78203d205b5d0a782e617070656e642878290a7072696e74287b783a274f4b277d5b785d290a',
-'test/run/t73.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d612c20666c6167733d4f505f41535349474e292c20657870723d4c697374286e6f6465733d436f6e73745f2876616c75653d313030292c436f6e73745f2876616c75653d313031292c436f6e73745f2876616c75653d313032292c436f6e73745f2876616c75653d313033292c436f6e73745f2876616c75653d313034292c436f6e73745f2876616c75653d313035292c436f6e73745f2876616c75653d313036292c436f6e73745f2876616c75653d3130372929292c4173734e616d65286e616d653d612c20666c6167733d4f505f44454c455445292c5072696e74286e6f6465733d4e616d65286e616d653d61292c20646573743d6e756c6c2c206e6c3d747275652929290a',
+'test/run/t73.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d622c20666c6167733d4f505f41535349474e292c20657870723d4c697374286e6f6465733d436f6e73745f2876616c75653d313030292c436f6e73745f2876616c75653d313031292c436f6e73745f2876616c75653d313032292c436f6e73745f2876616c75653d313033292c436f6e73745f2876616c75653d313034292c436f6e73745f2876616c75653d313035292c436f6e73745f2876616c75653d313036292c436f6e73745f2876616c75653d3130372929292c4173734e616d65286e616d653d622c20666c6167733d4f505f44454c455445292c5072696e74286e6f6465733d4e616d65286e616d653d62292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t19.py': '6966204e6f6e65206973204e6f6e653a0d0a202020207072696e7420224f4b220d0a',
 'test/run/t112.py': '61203d2028290a7072696e7420610a',
 'test/run/t71.py.real': '5b3130302c203130312c203130362c203130375d0a',
 'test/run/t150.py.real': '5b5d0a300a',
 'test/run/t135.py.real': '350a',
-'test/run/t73.py': '61203d205b3130302c3130312c3130322c3130332c3130342c3130352c3130362c3130375d0a64656c20610a7072696e7420610a',
+'test/run/t73.py': '62203d205b3130302c3130312c3130322c3130332c3130342c3130352c3130362c3130375d0a64656c20620a7072696e7420620a',
 'test/run/t64.py.real': '46616c73650a',
 'test/run/t149.py.real': '5b302c20310a340a300a310a330a',
 'test/run/t209.py.real': '4f4b0a',
@@ -664,7 +664,7 @@ VFSData = {
 'test/interactive/t04.py.real.force': '7765650a3c5f5f6d61696e5f5f2e5820696e7374616e63653e0a',
 'test/interactive/t03.py.real': '',
 'test/interactive/t04.py.disabled': '636c61737320583a0a20202020646566205f5f696e69745f5f2873656c66293a0a20202020202020207072696e742022776565220a0a78203d205828290a780a',
-'test/interactive/t00.py.real': '340a',
+'test/interactive/t00.py.real': '340a'
 };
 
 function read(fn)
@@ -710,7 +710,7 @@ function quit(rc)
         browsername: BrowserDetect.browser,
         browserversion: BrowserDetect.version,
         browseros: BrowserDetect.OS,
-        version: 'cfc09b38628f',
+        version: '27e364227694',
         rc: rc,
         results: SkulptTestRunOutput
     });
@@ -1461,7 +1461,7 @@ Str$.prototype.re_escape$ = function(s)
     var ret = [];
     for (var i = 0; i < s.length; ++i)
     {
-        var c = s[i];
+        var c = s.charAt(i);
         if (Str$.prototype.$_alphanum[c])
         {
             ret.push(c);
@@ -1483,14 +1483,14 @@ Str$.prototype.__getitem__ = function(index)
     {
         if (index < 0) index = this.v.length + index;
         if (index < 0 || index >= this.v.length) throw new IndexError("string index out of range");
-        return new Str$(this.v[index]);
+        return new Str$(this.v.charAt(index));
     }
     else if (index instanceof Slice$)
     {
         var ret = '';
         index.sssiter$(this, function(i, wrt) {
                 if (i >= 0 && i < wrt.v.length)
-                    ret += wrt.v[i];
+                    ret += wrt.v.charAt(i);
                 });
         return new Str$(ret);
     }
@@ -3201,17 +3201,17 @@ Tokenizer.prototype.generateTokens = function(line)
         column = 0;
         while (pos < max)
         {
-            if (line[pos] === ' ') column += 1;
-            else if (line[pos] === '\t') column = (column/tabsize + 1)*tabsize;
-            else if (line[pos] === '\f') column = 0;
+            if (line.charAt(pos) === ' ') column += 1;
+            else if (line.charAt(pos) === '\t') column = (column/tabsize + 1)*tabsize;
+            else if (line.charAt(pos) === '\f') column = 0;
             else break;
             pos = pos + 1;
         }
         if (pos === max) return this.doneFunc();
 
-        if ("#\r\n".indexOf(line[pos]) !== -1) // skip comments or blank lines
+        if ("#\r\n".indexOf(line.charAt(pos)) !== -1) // skip comments or blank lines
         {
-            if (line[pos] === '#')
+            if (line.charAt(pos) === '#')
             {
                 var comment_token = rstrip(line.substring(pos), '\r\n');
                 var nl_pos = pos + comment_token.length;
@@ -3268,7 +3268,7 @@ Tokenizer.prototype.generateTokens = function(line)
         // js regexes don't return any info about matches, other than the
         // content. we'd like to put a \w+ before pseudomatch, but then we
         // can't get any data
-        while (line[pos] === ' ' || line[pos] === '\f' || line[pos] === '\t')
+        while (line.charAt(pos) === ' ' || line.charAt(pos) === '\f' || line.charAt(pos) === '\t')
         {
             pos += 1;
         }
@@ -3281,7 +3281,7 @@ Tokenizer.prototype.generateTokens = function(line)
             var epos = [this.lnum, end];
             pos = end;
             var token = line.substring(start, end);
-            var initial = line[start];
+            var initial = line.charAt(start);
             //print("initial:'" +initial +"'");
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.'))
             {
@@ -3353,7 +3353,7 @@ Tokenizer.prototype.generateTokens = function(line)
         }
         else
         {
-            if (this.callback(T_ERRORTOKEN, line[pos],
+            if (this.callback(T_ERRORTOKEN, line.charAt(pos),
                         [this.lnum, pos], [this.lnum, pos+1], line))
                 return 'done';
             pos += 1;
@@ -8066,7 +8066,7 @@ Transformer.prototype[T_NUMBER] = function(nodelist)
 {
     var v = nodelist[0].value;
     var k;
-    if (v[v.length - 1] === "l" || v[v.length - 1] === "L")
+    if (v.charAt(v.length - 1) === "l" || v.charAt(v.length - 1) === "L")
     {
         k = Long$.fromJsStr$(v.substring(0, v.length - 1));
     }
@@ -10706,12 +10706,12 @@ function testTokenize(name)
     try { var input = read(name + ".py"); }
     catch (e) { return; }
 
-    if (input[input.length - 1] !== "\n")
+    if (input.charAt(input.length - 1) !== "\n")
     {
         throw "input wasn't nl term";
     }
     input = input.substring(0, input.length - 1);
-    if (input[input.length - 1] === "\r")
+    if (input.charAt(input.length - 1) === "\r")
     {
         input = input.substring(0, input.length - 1);
     }
