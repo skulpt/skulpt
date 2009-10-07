@@ -33,12 +33,12 @@ function testTokenize(name)
     try { var input = read(name + ".py"); }
     catch (e) { return; }
 
-    if (input[input.length - 1] !== "\n")
+    if (input.charAt(input.length - 1) !== "\n")
     {
         throw "input wasn't nl term";
     }
     input = input.substring(0, input.length - 1);
-    if (input[input.length - 1] === "\r")
+    if (input.charAt(input.length - 1) === "\r")
     {
         input = input.substring(0, input.length - 1);
     }
