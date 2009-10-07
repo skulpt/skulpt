@@ -54,9 +54,9 @@ window.addEvent('domready', function() {
                         var output = $('edoutput');
                         sk$output = function(text)
                         {
-                            output.set('text', output.get('text') + text);
+                            output.set('html', output.get('html') + text.replace("\n", "<br/>"));
                         };
-                        if (e.altKey)
+                        if (e.ctrlKey)
                         {
                             e.stop();
                             eval(Skulpt.compileStr("<stdin>", editor.getCode()));
@@ -70,7 +70,7 @@ window.addEvent('domready', function() {
                         }
                     }
                 }, function(e) {
-                    return (e.altKey || e.shiftKey) && e.keyCode === 13;
+                    return (e.ctrlKey || e.shiftKey) && e.keyCode === 13;
                 });
     }
 });
