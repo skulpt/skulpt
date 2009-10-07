@@ -28,7 +28,7 @@ Str$.prototype.re_escape$ = function(s)
     var ret = [];
     for (var i = 0; i < s.length; ++i)
     {
-        var c = s[i];
+        var c = s.charAt(i);
         if (Str$.prototype.$_alphanum[c])
         {
             ret.push(c);
@@ -50,14 +50,14 @@ Str$.prototype.__getitem__ = function(index)
     {
         if (index < 0) index = this.v.length + index;
         if (index < 0 || index >= this.v.length) throw new IndexError("string index out of range");
-        return new Str$(this.v[index]);
+        return new Str$(this.v.charAt(index));
     }
     else if (index instanceof Slice$)
     {
         var ret = '';
         index.sssiter$(this, function(i, wrt) {
                 if (i >= 0 && i < wrt.v.length)
-                    ret += wrt.v[i];
+                    ret += wrt.v.charAt(i);
                 });
         return new Str$(ret);
     }
