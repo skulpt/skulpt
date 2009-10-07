@@ -197,7 +197,7 @@ function rstrip(input, what)
 {
     for (var i = input.length; i > 0; --i)
     {
-        if (what.indexOf(input[i - 1]) === -1) break;
+        if (what.indexOf(input.charAt(i - 1)) === -1) break;
     }
     return input.substring(0, i);
 }
