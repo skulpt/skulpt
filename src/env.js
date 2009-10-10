@@ -344,11 +344,21 @@ function chr(x)
 
 function dir(x)
 {
-    var names = [];
-    for (var k in x)
+    var names;
+    if (x.__dir__ !== undefined)
     {
-        if (!x.hasOwnProperty(k) && k.indexOf("$") === -1)
-            names.push(new Str$(k));
+        names = x.__dir__().v;
+    }
+    else
+    {
+        names = [];
+        for (var k in x)
+        {
+            if (!x.hasOwnProperty(k) && k.indexOf("$") === -1)
+            {
+                names.push(new Str$(k));
+            }
+        }
     }
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new List$(names);
@@ -527,13 +537,10 @@ function sk$import(name)
     //
     var contents;
     var filename;
-    var isNative;
     try
     {
         // try system modules first
-        filename = "src/modules/" + name + ".js";
-        contents = sk$load(filename);
-        isNative = true;
+        contents = sk$load("src/modules/" + name + ".js");
     }
     catch (e)
     {
@@ -542,7 +549,6 @@ function sk$import(name)
         {
             filename = name + ".py";
             contents = sk$load(filename);
-            isNative = false;
         }
         catch (f)
         {
@@ -556,7 +562,9 @@ function sk$import(name)
     // initialize the module
     //
     var module = new Module$(name, filename);
-    if (isNative)
+    Module$.modules$.__setitem__(new Str$(name), module);
+
+    if (filename === undefined) // native
     {
         // if it's native, we eval what we get back (it's js), which returns a
         // function that we call, passing it the module it's setting up into.
@@ -567,7 +575,6 @@ function sk$import(name)
     {
         throw "todo; non-native module import";
     }
-    Module$.modules$[name] = module;
 
 
     //
@@ -579,17 +586,18 @@ function sk$import(name)
 
 var object = function()
 {
-    this.__dict__ = {}; // todo; should be a real dict
+    this.__dict__ = new Dict$([]);
     return this;
 };
+// todo; maybe a string-only dict here that's just an object+methods for efficiency
 object.prototype.__setattr__ = function(k,v)
 {
     //print("in __setattr__",k,v);
-    this.__dict__[k] = v;
+    this.__dict__.__setitem__(new Str$(k), v);
 };
 object.prototype.__getattr__ = function(k)
 {
-    return this.__dict__[k];
+    return this.__dict__.__getitem__(new Str$(k));
 };
 object.prototype.__repr__ = function(k)
 {

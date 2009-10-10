@@ -38,40 +38,40 @@ Dict$.prototype.values = function() { throw "todo; dict.values"; };
 
 Dict$.prototype.__getitem__ = function(key)
 {
-	var entry = this[this.key$(key)];
-	return typeof entry === 'undefined' ? undefined : entry.rhs;
+    var entry = this[this.key$(key)];
+    return typeof entry === 'undefined' ? undefined : entry.rhs;
 };
 
 Dict$.prototype.__setitem__ = function(key, value)
 {
-	var k = this.key$(key);
+    var k = this.key$(key);
 
-	if (this.hasOwnProperty(k))
+    if (this.hasOwnProperty(k))
     {
-		this[k].rhs = value;
+        this[k].rhs = value;
     }
-	else
+    else
     {
-		var entry = { lhs : key, rhs : value };
-		this[k] = entry;
+        var entry = { lhs : key, rhs : value };
+        this[k] = entry;
 
-		this.size += 1;
-	}
+        this.size += 1;
+    }
 
-	return this;
+    return this;
 };
 
 Dict$.prototype.__delitem__ = function(key)
 {
-	var k = this.key$(key);
+    var k = this.key$(key);
 
-	if (this.hasOwnProperty(k))
+    if (this.hasOwnProperty(k))
     {
         this.size -= 1;
-		delete this[k];
-	}
+        delete this[k];
+    }
 
-	return this;
+    return this;
 };
 
 Dict$.prototype.__repr__ = function()
