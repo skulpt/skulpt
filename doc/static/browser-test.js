@@ -260,6 +260,7 @@ VFSData = {
 'test/run/t01.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d5072696e74286e6f6465733d436f6e73745f2876616c75653d323334292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t102.py': '666f72206920696e2022736b756c7074223a207072696e7420690a',
 'test/run/t108.py': '',
+'test/run/t218.py.real.force': '7765650a3c5f5f6d61696e5f5f2e5820696e7374616e63653e0a',
 'test/run/t144.py': '636c61737320433a0a20202020646566205f5f696e69745f5f2873656c662c2064617461293a0a202020202020202073656c662e64617461203d20646174610a202020206465662070722873656c66293a0a20202020202020207072696e742073656c662e646174610a4328224f4b22292e707228290a',
 'test/run/t111.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d612c20666c6167733d4f505f41535349474e292c20657870723d5475706c65286e6f6465733d436f6e73745f2876616c75653d312929292c5072696e74286e6f6465733d4e616d65286e616d653d61292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t24.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d46756e6374696f6e5f286465636f7261746f72733d6e756c6c2c206e616d653d746573742c206172676e616d65733d612c622c2064656661756c74733d2c2c20766172617267733d66616c73652c206b77617267733d66616c73652c20646f633d6e756c6c2c20636f64653d53746d74286e6f6465733d52657475726e5f2876616c75653d416464286c6566743d4e616d65286e616d653d61292c2072696768743d4e616d65286e616d653d6229292929292c5072696e74286e6f6465733d416464286c6566743d43616c6c46756e63286e6f64653d4e616d65286e616d653d74657374292c20617267733d436f6e73745f2876616c75653d31292c436f6e73745f2876616c75653d31292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292c2072696768743d43616c6c46756e63286e6f64653d4e616d65286e616d653d74657374292c20617267733d436f6e73745f2876616c75653d31292c436f6e73745f2876616c75653d31292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c29292c20646573743d6e756c6c2c206e6c3d747275652929290a',
@@ -426,6 +427,7 @@ VFSData = {
 'test/run/t132.py.real': '7b313a20277374756666272c20276f6b273a20347d0a',
 'test/run/t121.py': '7072696e7420736c6963652831290a',
 'test/run/t85.py.real': '3233340a',
+'test/run/t218.py': '636c61737320583a0a20202020646566205f5f696e69745f5f2873656c66293a0a20202020202020207072696e742022776565220a78203d205828290a7072696e7420726570722878290a',
 'test/run/t138.py': '783d340a787c3d310a7072696e7420780a',
 'test/run/t215.py.real': '28274f4b272c20277374756666272c2046616c73652c2054727565290a28274f4b272c20277374756666272c2027646f67272c2054727565290a28274f4b272c20277374756666272c2027646f67272c202763617427290a28274f4b272c20277374756666272c2046616c73652c20276c616d6d6127290a28274f4b272c2027706f636b79272c2046616c73652c20276c616d6d6127290a28274f4b272c2027706f636b79272c2027626c6f7270272c20276c616d6d6127290a',
 'test/run/t15.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d782c20666c6167733d4f505f41535349474e292c20657870723d436f6e73745f2876616c75653d3129292c41737369676e286e6f6465733d4173734e616d65286e616d653d742c20666c6167733d4f505f41535349474e292c20657870723d436f6e73745f2876616c75653d3029292c5768696c655f28746573743d436f6d7061726528657870723d4e616d65286e616d653d78292c206f70733d3c3d2c436f6e73745f2876616c75653d3529292c20626f64793d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d742c20666c6167733d4f505f41535349474e292c20657870723d416464286c6566743d4e616d65286e616d653d74292c2072696768743d4e616d65286e616d653d782929292c41737369676e286e6f6465733d4173734e616d65286e616d653d782c20666c6167733d4f505f41535349474e292c20657870723d416464286c6566743d4e616d65286e616d653d78292c2072696768743d436f6e73745f2876616c75653d31292929292c20656c73655f3d6e756c6c292c5072696e74286e6f6465733d4e616d65286e616d653d74292c20646573743d6e756c6c2c206e6c3d747275652929290a',
@@ -442,6 +444,7 @@ VFSData = {
 'test/run/t112.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d612c20666c6167733d4f505f41535349474e292c20657870723d5475706c65286e6f6465733d29292c5072696e74286e6f6465733d4e616d65286e616d653d61292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t94.py': '78203d20274f4b270a7072696e7420785b305d0a',
 'test/run/t97.py.disabled': '78203d205b5d0a782e617070656e642878290a7072696e74287b783a274f4b277d5b785d290a',
+'test/run/t219.py.real': '5b27746573742f72756e2f743231392e7079275d0a',
 'test/run/t73.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d78797a792c20666c6167733d4f505f41535349474e292c20657870723d4c697374286e6f6465733d436f6e73745f2876616c75653d313030292c436f6e73745f2876616c75653d313031292c436f6e73745f2876616c75653d313032292c436f6e73745f2876616c75653d313033292c436f6e73745f2876616c75653d313034292c436f6e73745f2876616c75653d313035292c436f6e73745f2876616c75653d313036292c436f6e73745f2876616c75653d3130372929292c4173734e616d65286e616d653d78797a792c20666c6167733d4f505f44454c455445292c5072696e74286e6f6465733d4e616d65286e616d653d78797a79292c20646573743d6e756c6c2c206e6c3d747275652929290a',
 'test/run/t19.py': '6966204e6f6e65206973204e6f6e653a0d0a202020207072696e7420224f4b220d0a',
 'test/run/t112.py': '61203d2028290a7072696e7420610a',
@@ -588,6 +591,7 @@ VFSData = {
 'test/run/t130.py.real': '5b32302c2032355d0a5b32302c2031342c20382c20325d0a2832302c203235290a2832302c2031342c20382c2032290a',
 'test/run/t161.py.real': '31323334353637383938373635343434340a31323334353637383938373635343139380a2d31323334353637383938373635343434340a2d31323334353637383938373635343139380a2d31323334353637383938373635343139380a31323334353637383938373635343139380a2d31323334353637383938373635343434340a2d31323334353637383938373635343139380a',
 'test/run/t189.py.real': '310a320a32300a32310a',
+'test/run/t218.py.real': '7765650a3c5f5f6d61696e5f5f2e5820696e7374616e63653e0a',
 'test/run/t183.py.real': '63726561746f7220300a63616c6c657220310a63616c6c657220320a63616c6c657220330a63616c6c657220340a',
 'test/run/t68.trans': '4d6f64756c6528646f633d6e756c6c2c206e6f64653d53746d74286e6f6465733d46756e6374696f6e5f286465636f7261746f72733d6e756c6c2c206e616d653d746573742c206172676e616d65733d742c2064656661756c74733d2c20766172617267733d66616c73652c206b77617267733d66616c73652c20646f633d6e756c6c2c20636f64653d53746d74286e6f6465733d41737369676e286e6f6465733d4173734e616d65286e616d653d742c20666c6167733d4f505f41535349474e292c20657870723d416464286c6566743d436f6e73745f2876616c75653d224f22292c2072696768743d4e616d65286e616d653d742929292c5072696e74286e6f6465733d4e616d65286e616d653d74292c20646573743d6e756c6c2c206e6c3d747275652929292c4469736361726428657870723d43616c6c46756e63286e6f64653d4e616d65286e616d653d74657374292c20617267733d436f6e73745f2876616c75653d224b22292c20737461725f617267733d6e756c6c2c2064737461725f617267733d6e756c6c292929290a',
 'test/run/t137.py.real': '350a',
@@ -605,6 +609,7 @@ VFSData = {
 'test/run/t117.py.real': '646362610a',
 'test/run/t173.py.real': '2b68656c6c6f2b0a2b31302b0a610a220a240a31300a7f0a',
 'test/run/t113.py': '61203d205b312c322c332c342c352c365d0a62203d205b392c392c395d0a615b325d203d20620a7072696e7420610a',
+'test/run/t219.py': '696d706f7274207379730a7072696e74207379732e617267760a',
 'test/run/t20.py': '69662022782220697320227822206f7220227922206973202279223a207072696e7420224f4b220d0a',
 'test/run/t181.py.real': '310a',
 'test/run/t88.py.real': '4f4b0a',
@@ -661,10 +666,12 @@ VFSData = {
 'test/interactive/t04.py.real': '7765650a3c5f5f6d61696e5f5f2e5820696e7374616e63653e0a',
 'test/interactive/t05.py.real': '7965730a',
 'test/interactive/t00.py': '7072696e7420340a',
+'test/interactive/t06.py.real': '3e3e3e200a2e2e2e200a',
 'test/interactive/t02.py': '0a',
 'test/interactive/t04.py.real.force': '7765650a3c5f5f6d61696e5f5f2e5820696e7374616e63653e0a',
 'test/interactive/t03.py.real': '',
 'test/interactive/t04.py.disabled': '636c61737320583a0a20202020646566205f5f696e69745f5f2873656c66293a0a20202020202020207072696e742022776565220a0a78203d205828290a780a',
+'test/interactive/t06.py.disabled': '696d706f7274207379730a7072696e74207379732e7073310a7072696e74207379732e7073320a',
 'test/interactive/t00.py.real': '340a'
 };
 
@@ -711,7 +718,7 @@ function quit(rc)
         browsername: BrowserDetect.browser,
         browserversion: BrowserDetect.version,
         browseros: BrowserDetect.OS,
-        version: 'a04ca4e0072c',
+        version: '67d4b6949128',
         rc: rc,
         results: SkulptTestRunOutput
     });
@@ -876,6 +883,7 @@ function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "Type
 function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }
 function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); }
 function AttributeError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
+function ImportError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
 
 //
 // These are functions that are added to the environment. They're not wrapped
@@ -893,9 +901,15 @@ var sk$output = function(x){};
 if (this.print !== undefined) sk$output = this.print;
 if (this.console !== undefined && this.console.log !== undefined) sk$output = function (x) {this.console.log(x);};
 
+// replaceable function to load modules with (called via import, etc)
+var sk$load = function(x) { throw "sk$load has not implemented"; };
+if (this.read !== undefined) sk$load = this.read;
+// todo; XHR
 
-var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
+
+var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
+var sk$sysargv;
 
 function sk$iter(pyobj, callback)
 {
@@ -1390,9 +1404,77 @@ function sk$call(obj, kwargs)
     }
 }
 
+// this tries to implement something like:
+// http://docs.python.org/reference/simple_stmts.html#the-import-statement
+function sk$import(name)
+{
+    //
+    // find the module. we don't do any of the PEP 302 stuff yet (or hardcode
+    // it at least).
+    //
+    var contents;
+    var filename;
+    var isNative;
+    try
+    {
+        // try system modules first
+        filename = "src/modules/" + name + ".js";
+        contents = sk$load(filename);
+        isNative = true;
+    }
+    catch (e)
+    {
+        // then user modules
+        try
+        {
+            filename = name + ".py";
+            contents = sk$load(filename);
+            isNative = false;
+        }
+        catch (f)
+        {
+            throw new ImportError("no module named " + name);
+        }
+    }
+    
+    // todo; check in sys.modules for previous load/init
+
+    //
+    // initialize the module
+    //
+    var module = new Module$(name, filename);
+    if (isNative)
+    {
+        // if it's native, we eval what we get back (it's js), which returns a
+        // function that we call, passing it the module it's setting up into.
+        try
+        {
+            var moduleTopLevel = eval(contents);
+        }
+        catch (g)
+        {
+            print("eval on native module failed:" + e.toString());
+            throw new ImportError("couldn't import " + name);
+        }
+        moduleTopLevel(module);
+    }
+    else
+    {
+        throw "todo; non-native module import";
+    }
+    Module$.modules$[name] = module;
+
+
+    //
+    // bind names into the local environment
+    // todo; everything other than basic 'import blah'
+    //
+    this[name] = module;
+}
+
 var object = function()
 {
-    this.__dict__ = {};
+    this.__dict__ = {}; // todo; should be a real dict
     return this;
 };
 object.prototype.__setattr__ = function(k,v)
@@ -1406,8 +1488,8 @@ object.prototype.__getattr__ = function(k)
 };
 object.prototype.__repr__ = function(k)
 {
-    // todo; modules, obviously
-    return new Str$("<__main__." + this.__class__.__name__ + " instance>");
+    // todo; should be getattr('module')
+    return new Str$("<" + this.__module__ + "." + this.__class__.__name__ + " instance>");
 };
 
 Type$ = function(name, bases, dict)
@@ -2920,6 +3002,20 @@ Slice$.prototype.sssiter$ = function(wrt, f)
 
     }
 };
+
+Module$ = function(name, file)
+{
+    this.__name__ = name;
+    if (file) this.__file__ = file;
+};
+
+/*jslint newcap: false */
+Module$.prototype = new object();
+/*jslint newcap: true */
+
+Module$.modules$ = new Dict$([]);
+
+Module$.prototype.__class__ = new Type$('module', [sk$TypeObject], {});
 
 /*
  * This is a port of tokenize.py by Ka-Ping Yee.
@@ -7690,6 +7786,103 @@ Transformer.prototype.pass_stmt = function(nodelist)
     return new Pass(nodelist[0].context);
 };
 
+Transformer.prototype.com_dotted_name = function(node)
+{
+    var name = "";
+    for (var i = 0; i < node.length; ++i)
+    {
+        if (node[i].type === T_NAME) name += node[i].value + ".";
+    }
+    return name.substr(0, name.length - 1);
+};
+
+Transformer.prototype.com_dotted_as_name = function(node)
+{
+    //print(JSON2.stringify(node, null, 2));
+    if (node.type !== this.sym.dotted_as_name) throw "assert";
+    var dot = this.com_dotted_name(node.children[0].children);
+    if (node.children.length === 1)
+    {
+        return [dot, null];
+    }
+    if (node.children[2].value !== 'as') throw "assert";
+    if (node.children[3].type !== T_NAME) throw "assert";
+    return [dot, node.children[3].value];
+};
+
+Transformer.prototype.com_dotted_as_names = function(node)
+{
+    if (node.type !== this.sym.dotted_as_names) throw "assert";
+    var names = [];
+    //print("node.children.length", node.children.length);
+    for (var i = 0; i < node.children.length; i += 2)
+    {
+        names.push(this.com_dotted_as_name(node.children[i]));
+    }
+    return names;
+};
+
+/*
+    def com_import_as_name(self, node):
+        assert node[0] == symbol.import_as_name
+        node = node[1:]
+        assert node[0][0] == token.NAME
+        if len(node) == 1:
+            return node[0][1], None
+        assert node[1][1] == 'as', node
+        assert node[2][0] == token.NAME
+        return node[0][1], node[2][1]
+
+    def com_import_as_names(self, node):
+        assert node[0] == symbol.import_as_names
+        node = node[1:]
+        //names = [self.com_import_as_name(node[0])]
+        for i in range(2, len(node), 2):
+            names.append(self.com_import_as_name(node[i]))
+        return names
+*/
+Transformer.prototype.import_stmt = function(nodelist)
+{
+    // import_stmt: import_name | import_from
+    if (nodelist.length !== 1) throw "assert";
+    return this.dispatch(nodelist[0]);
+};
+
+Transformer.prototype.import_name = function(nodelist)
+{
+    // import_name: 'import' dotted_as_names
+    return new Import_(this.com_dotted_as_names(nodelist[1]), nodelist.context);
+};
+
+Transformer.prototype.import_from = function(nodelist)
+{
+    throw "todo;";
+/*
+    def import_from(self, nodelist):
+        # import_from: 'from' ('.'* dotted_name | '.') 'import' ('*' |
+        #    '(' import_as_names ')' | import_as_names)
+        assert nodelist[0][1] == 'from'
+        idx = 1
+        while nodelist[idx][1] == '.':
+            idx += 1
+        level = idx - 1
+        if nodelist[idx][0] == symbol.dotted_name:
+            fromname = self.com_dotted_name(nodelist[idx])
+            idx += 1
+        else:
+            fromname = ""
+        assert nodelist[idx][1] == 'import'
+        if nodelist[idx + 1][0] == token.STAR:
+            return From(fromname, [('*', None)], level,
+                        lineno=nodelist[0][2])
+        else:
+            node = nodelist[idx + 1 + (nodelist[idx + 1][0] == token.LPAR)]
+            return From(fromname, self.com_import_as_names(node), level,
+                        lineno=nodelist[0][2])
+*/
+};
+
+
 Transformer.prototype.global_stmt = function(nodelist)
 {
     // global: NAME (',' NAME)*
@@ -9488,9 +9681,13 @@ Class_: function(ast, a)
                 this.visit(ast.bases[0], a);
                 o.push("();");
             }
+            // todo; __module__ should only be in class I think, and then the
+            // instance chains back up to to the class
             o.push(ast.name + ".__class__=sk$TypeType;");
             o.push(ast.name + ".__name__='" + ast.name + "';");
+            o.push(ast.name + ".__module__='" + a.module.__name__ + "';");
             o.push(ast.name + ".__repr__=function(){return new Str$(\"<class '__main__." + ast.name + "'>\");};");
+            o.push(ast.name + ".prototype.__module__='" + a.module.__name__ + "';");
             o.push(ast.name + ".prototype.__class__=" + ast.name +";");
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
@@ -9500,6 +9697,17 @@ Class_: function(ast, a)
             }
             o.push("undefined"); // no return in repl
         },
+
+Import_: function(ast, a)
+         {
+             var o = a.o;
+             var tmp = gensym();
+             o.push("var ");
+             o.push(tmp);
+             o.push("=sk$import('");
+             o.push(ast.names[0][0]); // todo; dotted, etc
+             o.push("')");
+         },
 
 Add: function(ast, a) { this.binopfunc(ast, a, "+"); },
 Sub: function(ast, a) { this.binopfunc(ast, a, "-"); },
@@ -9542,7 +9750,7 @@ binopop: function(ast, a, opstr)
 };
 
 
-function compile(ast)
+function compile(ast, module)
 {
     //print(astDump(ast));
     hConvertGeneratorExpressionsToFunctions.visit(ast, {});
@@ -9550,7 +9758,7 @@ function compile(ast)
     hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
     hMakeNoReturnANull.visit(ast, {});
     var result = [];
-    hMainCompile.visit(ast, { o: result });
+    hMainCompile.visit(ast, { o: result, module: module });
     return result.join(""); 
 }
 
@@ -9565,7 +9773,7 @@ function compile(ast)
 function compileStr(filename, input)
 {
     var ast = transform(parse(filename, input));
-    return compile(ast);
+    return compile(ast, new Module$("__main__", filename));
 }
 
 function compileUrlAsync(url, oncomplete)
@@ -9585,7 +9793,7 @@ InteractiveContext.prototype.evalLine = function(line)
     //print("ret:"+ret);
     if (ret)
     {
-        return compile(transform(ret));
+        return compile(transform(ret), new Module$("__main__"));
     }
     return false;
 };
@@ -10847,6 +11055,7 @@ function testRun(name)
 
     var got = '';
     sk$output = function(str) { got += str; }
+    sk$sysargv = [ name + '.py' ];
 
     var expect = read(name + ".py.real");
     var expectalt;
@@ -10860,7 +11069,7 @@ function testRun(name)
     {
         got = "EXCEPTION: " + e.name + "\n";
     }
-    if (expect !== got && (expectalt !== undefined && expectalt !== got))
+    if (expect !== got && (expectalt !== undefined || expectalt !== got))
     {
         print("FAILED: (" + name + ".py)\n-----");
         print(input);

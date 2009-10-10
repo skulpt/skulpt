@@ -33,6 +33,7 @@ function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "Type
 function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }
 function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); }
 function AttributeError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
+function ImportError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
 //
 // These are functions that are added to the environment. They're not wrapped
 // in the global 'Skulpt' object. AFAICT, it's not possible to eval in a
@@ -49,9 +50,15 @@ var sk$output = function(x){};
 if (this.print !== undefined) sk$output = this.print;
 if (this.console !== undefined && this.console.log !== undefined) sk$output = function (x) {this.console.log(x);};
 
+// replaceable function to load modules with (called via import, etc)
+var sk$load = function(x) { throw "sk$load has not implemented"; };
+if (this.read !== undefined) sk$load = this.read;
+// todo; XHR
 
-var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
+
+var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
+var sk$sysargv;
 
 function sk$iter(pyobj, callback)
 {
@@ -546,9 +553,77 @@ function sk$call(obj, kwargs)
     }
 }
 
+// this tries to implement something like:
+// http://docs.python.org/reference/simple_stmts.html#the-import-statement
+function sk$import(name)
+{
+    //
+    // find the module. we don't do any of the PEP 302 stuff yet (or hardcode
+    // it at least).
+    //
+    var contents;
+    var filename;
+    var isNative;
+    try
+    {
+        // try system modules first
+        filename = "src/modules/" + name + ".js";
+        contents = sk$load(filename);
+        isNative = true;
+    }
+    catch (e)
+    {
+        // then user modules
+        try
+        {
+            filename = name + ".py";
+            contents = sk$load(filename);
+            isNative = false;
+        }
+        catch (f)
+        {
+            throw new ImportError("no module named " + name);
+        }
+    }
+    
+    // todo; check in sys.modules for previous load/init
+
+    //
+    // initialize the module
+    //
+    var module = new Module$(name, filename);
+    if (isNative)
+    {
+        // if it's native, we eval what we get back (it's js), which returns a
+        // function that we call, passing it the module it's setting up into.
+        try
+        {
+            var moduleTopLevel = eval(contents);
+        }
+        catch (g)
+        {
+            print("eval on native module failed:" + e.toString());
+            throw new ImportError("couldn't import " + name);
+        }
+        moduleTopLevel(module);
+    }
+    else
+    {
+        throw "todo; non-native module import";
+    }
+    Module$.modules$[name] = module;
+
+
+    //
+    // bind names into the local environment
+    // todo; everything other than basic 'import blah'
+    //
+    this[name] = module;
+}
+
 var object = function()
 {
-    this.__dict__ = {};
+    this.__dict__ = {}; // todo; should be a real dict
     return this;
 };
 object.prototype.__setattr__ = function(k,v)
@@ -562,8 +637,8 @@ object.prototype.__getattr__ = function(k)
 };
 object.prototype.__repr__ = function(k)
 {
-    // todo; modules, obviously
-    return new Str$("<__main__." + this.__class__.__name__ + " instance>");
+    // todo; should be getattr('module')
+    return new Str$("<" + this.__module__ + "." + this.__class__.__name__ + " instance>");
 };
 Type$ = function(name, bases, dict)
 {
@@ -2069,6 +2144,19 @@ Slice$.prototype.sssiter$ = function(wrt, f)
 
     }
 };
+Module$ = function(name, file)
+{
+    this.__name__ = name;
+    if (file) this.__file__ = file;
+};
+
+/*jslint newcap: false */
+Module$.prototype = new object();
+/*jslint newcap: true */
+
+Module$.modules$ = new Dict$([]);
+
+Module$.prototype.__class__ = new Type$('module', [sk$TypeObject], {});
 var Skulpt = (function(){
 /*
  * This is a port of tokenize.py by Ka-Ping Yee.
@@ -6835,6 +6923,103 @@ Transformer.prototype.pass_stmt = function(nodelist)
     return new Pass(nodelist[0].context);
 };
 
+Transformer.prototype.com_dotted_name = function(node)
+{
+    var name = "";
+    for (var i = 0; i < node.length; ++i)
+    {
+        if (node[i].type === T_NAME) name += node[i].value + ".";
+    }
+    return name.substr(0, name.length - 1);
+};
+
+Transformer.prototype.com_dotted_as_name = function(node)
+{
+    //print(JSON2.stringify(node, null, 2));
+    if (node.type !== this.sym.dotted_as_name) throw "assert";
+    var dot = this.com_dotted_name(node.children[0].children);
+    if (node.children.length === 1)
+    {
+        return [dot, null];
+    }
+    if (node.children[2].value !== 'as') throw "assert";
+    if (node.children[3].type !== T_NAME) throw "assert";
+    return [dot, node.children[3].value];
+};
+
+Transformer.prototype.com_dotted_as_names = function(node)
+{
+    if (node.type !== this.sym.dotted_as_names) throw "assert";
+    var names = [];
+    //print("node.children.length", node.children.length);
+    for (var i = 0; i < node.children.length; i += 2)
+    {
+        names.push(this.com_dotted_as_name(node.children[i]));
+    }
+    return names;
+};
+
+/*
+    def com_import_as_name(self, node):
+        assert node[0] == symbol.import_as_name
+        node = node[1:]
+        assert node[0][0] == token.NAME
+        if len(node) == 1:
+            return node[0][1], None
+        assert node[1][1] == 'as', node
+        assert node[2][0] == token.NAME
+        return node[0][1], node[2][1]
+
+    def com_import_as_names(self, node):
+        assert node[0] == symbol.import_as_names
+        node = node[1:]
+        //names = [self.com_import_as_name(node[0])]
+        for i in range(2, len(node), 2):
+            names.append(self.com_import_as_name(node[i]))
+        return names
+*/
+Transformer.prototype.import_stmt = function(nodelist)
+{
+    // import_stmt: import_name | import_from
+    if (nodelist.length !== 1) throw "assert";
+    return this.dispatch(nodelist[0]);
+};
+
+Transformer.prototype.import_name = function(nodelist)
+{
+    // import_name: 'import' dotted_as_names
+    return new Import_(this.com_dotted_as_names(nodelist[1]), nodelist.context);
+};
+
+Transformer.prototype.import_from = function(nodelist)
+{
+    throw "todo;";
+/*
+    def import_from(self, nodelist):
+        # import_from: 'from' ('.'* dotted_name | '.') 'import' ('*' |
+        #    '(' import_as_names ')' | import_as_names)
+        assert nodelist[0][1] == 'from'
+        idx = 1
+        while nodelist[idx][1] == '.':
+            idx += 1
+        level = idx - 1
+        if nodelist[idx][0] == symbol.dotted_name:
+            fromname = self.com_dotted_name(nodelist[idx])
+            idx += 1
+        else:
+            fromname = ""
+        assert nodelist[idx][1] == 'import'
+        if nodelist[idx + 1][0] == token.STAR:
+            return From(fromname, [('*', None)], level,
+                        lineno=nodelist[0][2])
+        else:
+            node = nodelist[idx + 1 + (nodelist[idx + 1][0] == token.LPAR)]
+            return From(fromname, self.com_import_as_names(node), level,
+                        lineno=nodelist[0][2])
+*/
+};
+
+
 Transformer.prototype.global_stmt = function(nodelist)
 {
     // global: NAME (',' NAME)*
@@ -8632,9 +8817,13 @@ Class_: function(ast, a)
                 this.visit(ast.bases[0], a);
                 o.push("();");
             }
+            // todo; __module__ should only be in class I think, and then the
+            // instance chains back up to to the class
             o.push(ast.name + ".__class__=sk$TypeType;");
             o.push(ast.name + ".__name__='" + ast.name + "';");
+            o.push(ast.name + ".__module__='" + a.module.__name__ + "';");
             o.push(ast.name + ".__repr__=function(){return new Str$(\"<class '__main__." + ast.name + "'>\");};");
+            o.push(ast.name + ".prototype.__module__='" + a.module.__name__ + "';");
             o.push(ast.name + ".prototype.__class__=" + ast.name +";");
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
@@ -8644,6 +8833,17 @@ Class_: function(ast, a)
             }
             o.push("undefined"); // no return in repl
         },
+
+Import_: function(ast, a)
+         {
+             var o = a.o;
+             var tmp = gensym();
+             o.push("var ");
+             o.push(tmp);
+             o.push("=sk$import('");
+             o.push(ast.names[0][0]); // todo; dotted, etc
+             o.push("')");
+         },
 
 Add: function(ast, a) { this.binopfunc(ast, a, "+"); },
 Sub: function(ast, a) { this.binopfunc(ast, a, "-"); },
@@ -8686,7 +8886,7 @@ binopop: function(ast, a, opstr)
 };
 
 
-function compile(ast)
+function compile(ast, module)
 {
     //print(astDump(ast));
     hConvertGeneratorExpressionsToFunctions.visit(ast, {});
@@ -8694,7 +8894,7 @@ function compile(ast)
     hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
     hMakeNoReturnANull.visit(ast, {});
     var result = [];
-    hMainCompile.visit(ast, { o: result });
+    hMainCompile.visit(ast, { o: result, module: module });
     return result.join(""); 
 }
 
@@ -8708,7 +8908,7 @@ function compile(ast)
 function compileStr(filename, input)
 {
     var ast = transform(parse(filename, input));
-    return compile(ast);
+    return compile(ast, new Module$("__main__", filename));
 }
 
 function compileUrlAsync(url, oncomplete)
@@ -8728,7 +8928,7 @@ InteractiveContext.prototype.evalLine = function(line)
     //print("ret:"+ret);
     if (ret)
     {
-        return compile(transform(ret));
+        return compile(transform(ret), new Module$("__main__"));
     }
     return false;
 };
