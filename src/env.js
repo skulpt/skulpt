@@ -560,15 +560,7 @@ function sk$import(name)
     {
         // if it's native, we eval what we get back (it's js), which returns a
         // function that we call, passing it the module it's setting up into.
-        try
-        {
-            var moduleTopLevel = eval(contents);
-        }
-        catch (g)
-        {
-            print("eval on native module failed:" + e.toString());
-            throw new ImportError("couldn't import " + name);
-        }
+        var moduleTopLevel = eval(contents);
         moduleTopLevel(module);
     }
     else
