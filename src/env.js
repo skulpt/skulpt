@@ -15,7 +15,7 @@ if (this.print !== undefined) sk$output = this.print;
 if (this.console !== undefined && this.console.log !== undefined) sk$output = function (x) {this.console.log(x);};
 
 
-var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$;
+var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
 
 function sk$iter(pyobj, callback)
@@ -513,7 +513,7 @@ function sk$call(obj, kwargs)
 
 var object = function()
 {
-    this.__dict__ = {};
+    this.__dict__ = {}; // todo; should be a real dict
     return this;
 };
 object.prototype.__setattr__ = function(k,v)
@@ -527,6 +527,6 @@ object.prototype.__getattr__ = function(k)
 };
 object.prototype.__repr__ = function(k)
 {
-    // todo; modules, obviously
-    return new Str$("<__main__." + this.__class__.__name__ + " instance>");
+    // todo; should be getattr('module')
+    return new Str$("<" + this.__module__ + "." + this.__class__.__name__ + " instance>");
 };

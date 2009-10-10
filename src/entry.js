@@ -8,7 +8,7 @@
 function compileStr(filename, input)
 {
     var ast = transform(parse(filename, input));
-    return compile(ast);
+    return compile(ast, new Module$("__main__", filename));
 }
 
 function compileUrlAsync(url, oncomplete)
@@ -28,7 +28,7 @@ InteractiveContext.prototype.evalLine = function(line)
     //print("ret:"+ret);
     if (ret)
     {
-        return compile(transform(ret));
+        return compile(transform(ret), new Module$("__main__"));
     }
     return false;
 };

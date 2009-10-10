@@ -186,7 +186,7 @@ function testRun(name)
     {
         got = "EXCEPTION: " + e.name + "\n";
     }
-    if (expect !== got && (expectalt !== undefined && expectalt !== got))
+    if (expect !== got && (expectalt !== undefined || expectalt !== got))
     {
         print("FAILED: (" + name + ".py)\n-----");
         print(input);

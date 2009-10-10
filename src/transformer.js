@@ -855,6 +855,103 @@ Transformer.prototype.pass_stmt = function(nodelist)
     return new Pass(nodelist[0].context);
 };
 
+Transformer.prototype.com_dotted_name = function(node)
+{
+    var name = "";
+    for (var i = 0; i < node.length; ++i)
+    {
+        if (node[i].type === T_NAME) name += node[i].value + ".";
+    }
+    return name.substr(0, name.length - 1);
+};
+
+Transformer.prototype.com_dotted_as_name = function(node)
+{
+    //print(JSON2.stringify(node, null, 2));
+    if (node.type !== this.sym.dotted_as_name) throw "assert";
+    var dot = this.com_dotted_name(node.children[0].children);
+    if (node.children.length === 1)
+    {
+        return [dot, null];
+    }
+    if (node.children[2].value !== 'as') throw "assert";
+    if (node.children[3].type !== T_NAME) throw "assert";
+    return [dot, node.children[3].value];
+};
+
+Transformer.prototype.com_dotted_as_names = function(node)
+{
+    if (node.type !== this.sym.dotted_as_names) throw "assert";
+    var names = [];
+    //print("node.children.length", node.children.length);
+    for (var i = 0; i < node.children.length; i += 2)
+    {
+        names.push(this.com_dotted_as_name(node.children[i]));
+    }
+    return names;
+};
+
+/*
+    def com_import_as_name(self, node):
+        assert node[0] == symbol.import_as_name
+        node = node[1:]
+        assert node[0][0] == token.NAME
+        if len(node) == 1:
+            return node[0][1], None
+        assert node[1][1] == 'as', node
+        assert node[2][0] == token.NAME
+        return node[0][1], node[2][1]
+
+    def com_import_as_names(self, node):
+        assert node[0] == symbol.import_as_names
+        node = node[1:]
+        //names = [self.com_import_as_name(node[0])]
+        for i in range(2, len(node), 2):
+            names.append(self.com_import_as_name(node[i]))
+        return names
+*/
+Transformer.prototype.import_stmt = function(nodelist)
+{
+    // import_stmt: import_name | import_from
+    if (nodelist.length !== 1) throw "assert";
+    return this.dispatch(nodelist[0]);
+};
+
+Transformer.prototype.import_name = function(nodelist)
+{
+    // import_name: 'import' dotted_as_names
+    return new Import_(this.com_dotted_as_names(nodelist[1]), nodelist.context);
+};
+
+Transformer.prototype.import_from = function(nodelist)
+{
+    throw "todo;";
+/*
+    def import_from(self, nodelist):
+        # import_from: 'from' ('.'* dotted_name | '.') 'import' ('*' |
+        #    '(' import_as_names ')' | import_as_names)
+        assert nodelist[0][1] == 'from'
+        idx = 1
+        while nodelist[idx][1] == '.':
+            idx += 1
+        level = idx - 1
+        if nodelist[idx][0] == symbol.dotted_name:
+            fromname = self.com_dotted_name(nodelist[idx])
+            idx += 1
+        else:
+            fromname = ""
+        assert nodelist[idx][1] == 'import'
+        if nodelist[idx + 1][0] == token.STAR:
+            return From(fromname, [('*', None)], level,
+                        lineno=nodelist[0][2])
+        else:
+            node = nodelist[idx + 1 + (nodelist[idx + 1][0] == token.LPAR)]
+            return From(fromname, self.com_import_as_names(node), level,
+                        lineno=nodelist[0][2])
+*/
+};
+
+
 Transformer.prototype.global_stmt = function(nodelist)
 {
     // global: NAME (',' NAME)*

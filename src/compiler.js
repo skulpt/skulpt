@@ -1388,12 +1388,17 @@ Class_: function(ast, a)
             {
                 if (ast.bases.length > 1) throw "todo; multiple bases";
                 o.push(ast.name + ".prototype=new ");
-                this.visit(ast.bases[0], a);
+                var acopy = shallowcopy(a);
+                this.visit(ast.bases[0], acopy);
                 o.push("();");
             }
+            // todo; __module__ should only be in class I think, and then the
+            // instance chains back up to to the class
             o.push(ast.name + ".__class__=sk$TypeType;");
             o.push(ast.name + ".__name__='" + ast.name + "';");
+            o.push(ast.name + ".__module__='" + a.module.__name__ + "';");
             o.push(ast.name + ".__repr__=function(){return new Str$(\"<class '__main__." + ast.name + "'>\");};");
+            o.push(ast.name + ".prototype.__module__='" + a.module.__name__ + "';");
             o.push(ast.name + ".prototype.__class__=" + ast.name +";");
             for (var i = 0; i < ast.code.nodes.length; ++i)
             {
@@ -1403,6 +1408,18 @@ Class_: function(ast, a)
             }
             o.push("undefined"); // no return in repl
         },
+
+Import_: function(ast, a)
+         {
+             var o = a.o;
+             var tmp = gensym();
+             o.push("var ");
+             o.push(tmp);
+             o.push("=sk$loadmodule('");
+             print(JSON2.stringify(ast));
+             o.push(ast.names[0][0]); // todo; dotted, etc
+             o.push("')");
+         },
 
 Add: function(ast, a) { this.binopfunc(ast, a, "+"); },
 Sub: function(ast, a) { this.binopfunc(ast, a, "-"); },
@@ -1445,7 +1462,7 @@ binopop: function(ast, a, opstr)
 };
 
 
-function compile(ast)
+function compile(ast, module)
 {
     //print(astDump(ast));
     hConvertGeneratorExpressionsToFunctions.visit(ast, {});
@@ -1453,7 +1470,7 @@ function compile(ast)
     hAnnotateBlocksWithBindings.visit(ast, { currentBlocks: [] });
     hMakeNoReturnANull.visit(ast, {});
     var result = [];
-    hMainCompile.visit(ast, { o: result });
+    hMainCompile.visit(ast, { o: result, module: module });
     return result.join(""); 
 }
 

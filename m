@@ -16,6 +16,7 @@ Files = [
         'src/dict.js',
         'src/long.js',
         'src/slice.js',
+        'src/module.js',
         ('src/header.js', 'dist'),
         'src/tokenize.js',
         'gen/parse_tables.js',
