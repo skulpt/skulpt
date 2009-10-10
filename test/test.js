@@ -173,6 +173,7 @@ function testRun(name)
 
     var got = '';
     sk$output = function(str) { got += str; }
+    sk$sysargv = [ name + '.py' ];
 
     var expect = read(name + ".py.real");
     var expectalt;

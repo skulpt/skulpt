@@ -1388,8 +1388,7 @@ Class_: function(ast, a)
             {
                 if (ast.bases.length > 1) throw "todo; multiple bases";
                 o.push(ast.name + ".prototype=new ");
-                var acopy = shallowcopy(a);
-                this.visit(ast.bases[0], acopy);
+                this.visit(ast.bases[0], a);
                 o.push("();");
             }
             // todo; __module__ should only be in class I think, and then the
@@ -1415,8 +1414,7 @@ Import_: function(ast, a)
              var tmp = gensym();
              o.push("var ");
              o.push(tmp);
-             o.push("=sk$loadmodule('");
-             print(JSON2.stringify(ast));
+             o.push("=sk$import('");
              o.push(ast.names[0][0]); // todo; dotted, etc
              o.push("')");
          },

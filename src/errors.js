@@ -33,3 +33,4 @@ function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "Type
 function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }
 function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); }
 function AttributeError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
+function ImportError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }

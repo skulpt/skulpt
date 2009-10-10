@@ -1,12 +1,8 @@
-(function()
+(function(self)
 {
-    var self = new Module$("sys");
-
-    self.init$(function()
-
-    return self;
+    self.__setattr__('modules', Module$.modules$);
+    var argv = sk$sysargv || [];
+    for (var i = 0; i < argv.length; ++i)
+        argv[i] = new Str$(argv[i]);
+    self.__setattr__('argv', new List$(argv));
 })
-new Module$("sys", function() {
-})
-
-sys.modules = new Dict$(['sys', sys]);

@@ -14,9 +14,15 @@ var sk$output = function(x){};
 if (this.print !== undefined) sk$output = this.print;
 if (this.console !== undefined && this.console.log !== undefined) sk$output = function (x) {this.console.log(x);};
 
+// replaceable function to load modules with (called via import, etc)
+var sk$load = function(x) { throw "sk$load has not implemented"; };
+if (this.read !== undefined) sk$load = this.read;
+// todo; XHR
+
 
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
+var sk$sysargv;
 
 function sk$iter(pyobj, callback)
 {
@@ -509,6 +515,74 @@ function sk$call(obj, kwargs)
             throw e;
         }
     }
+}
+
+// this tries to implement something like:
+// http://docs.python.org/reference/simple_stmts.html#the-import-statement
+function sk$import(name)
+{
+    //
+    // find the module. we don't do any of the PEP 302 stuff yet (or hardcode
+    // it at least).
+    //
+    var contents;
+    var filename;
+    var isNative;
+    try
+    {
+        // try system modules first
+        filename = "src/modules/" + name + ".js";
+        contents = sk$load(filename);
+        isNative = true;
+    }
+    catch (e)
+    {
+        // then user modules
+        try
+        {
+            filename = name + ".py";
+            contents = sk$load(filename);
+            isNative = false;
+        }
+        catch (f)
+        {
+            throw new ImportError("no module named " + name);
+        }
+    }
+    
+    // todo; check in sys.modules for previous load/init
+
+    //
+    // initialize the module
+    //
+    var module = new Module$(name, filename);
+    if (isNative)
+    {
+        // if it's native, we eval what we get back (it's js), which returns a
+        // function that we call, passing it the module it's setting up into.
+        try
+        {
+            var moduleTopLevel = eval(contents);
+        }
+        catch (g)
+        {
+            print("eval on native module failed:" + e.toString());
+            throw new ImportError("couldn't import " + name);
+        }
+        moduleTopLevel(module);
+    }
+    else
+    {
+        throw "todo; non-native module import";
+    }
+    Module$.modules$[name] = module;
+
+
+    //
+    // bind names into the local environment
+    // todo; everything other than basic 'import blah'
+    //
+    this[name] = module;
 }
 
 var object = function()
