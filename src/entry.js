@@ -5,10 +5,11 @@
 //
 //
 //
-function compileStr(filename, input)
+function compileStr(filename, input, module)
 {
+    if (!module) module = new Module$("__main__", filename);
     var ast = transform(parse(filename, input));
-    return compile(ast, new Module$("__main__", filename));
+    return compile(ast, module);
 }
 
 function compileUrlAsync(url, oncomplete)

@@ -59,6 +59,7 @@ if (this.read !== undefined) sk$load = this.read;
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
 var sk$sysargv;
+var Skulpt;
 
 function sk$iter(pyobj, callback)
 {
@@ -380,11 +381,21 @@ function chr(x)
 
 function dir(x)
 {
-    var names = [];
-    for (var k in x)
+    var names;
+    if (x.__dir__ !== undefined)
     {
-        if (!x.hasOwnProperty(k) && k.indexOf("$") === -1)
-            names.push(new Str$(k));
+        names = x.__dir__().v;
+    }
+    else
+    {
+        names = [];
+        for (var k in x)
+        {
+            if (!x.hasOwnProperty(k) && k.indexOf("$") === -1)
+            {
+                names.push(new Str$(k));
+            }
+        }
     }
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new List$(names);
@@ -563,27 +574,30 @@ function sk$import(name)
     //
     var contents;
     var filename;
-    var isNative;
-    try
+
+    // try system modules first
+    if (Module$.builtins$[name] !== undefined)
     {
-        // try system modules first
-        filename = "src/modules/" + name + ".js";
-        contents = sk$load(filename);
-        isNative = true;
+        contents = Module$.builtins$[name];
     }
-    catch (e)
+
+    Module$.syspath$ = new List$([new Str$('test/run')]); // todo; this shouldn't be necessary
+
+    if (!contents)
     {
-        // then user modules
-        try
-        {
-            filename = name + ".py";
-            contents = sk$load(filename);
-            isNative = false;
-        }
-        catch (f)
-        {
-            throw new ImportError("no module named " + name);
-        }
+        (function() {
+         // then user modules
+         for (var iter = Module$.syspath$.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
+         {
+             try
+             {
+                 filename = i.v + "/" + name + ".py";
+                 contents = sk$load(filename);
+                 return;
+             } catch (e) {}
+         }
+         throw new ImportError("no module named " + name);
+        }());
     }
     
     // todo; check in sys.modules for previous load/init
@@ -592,26 +606,21 @@ function sk$import(name)
     // initialize the module
     //
     var module = new Module$(name, filename);
-    if (isNative)
+    Module$.modules$.__setitem__(new Str$(name), module);
+
+    if (filename === undefined) // native
     {
-        // if it's native, we eval what we get back (it's js), which returns a
-        // function that we call, passing it the module it's setting up into.
-        try
-        {
-            var moduleTopLevel = eval(contents);
-        }
-        catch (g)
-        {
-            print("eval on native module failed:" + e.toString());
-            throw new ImportError("couldn't import " + name);
-        }
-        moduleTopLevel(module);
+        // if it's native the contents is actually a function that does setup
+        contents(module);
     }
     else
     {
-        throw "todo; non-native module import";
+        var js = Skulpt.compileStr(filename, contents, module);
+        //print("/**** start", filename, "****/");
+        //print(js);
+        //print("/**** end", filename, "****/");
+        eval(js);
     }
-    Module$.modules$[name] = module;
 
 
     //
@@ -623,17 +632,18 @@ function sk$import(name)
 
 var object = function()
 {
-    this.__dict__ = {}; // todo; should be a real dict
+    this.__dict__ = new Dict$([]);
     return this;
 };
+// todo; maybe a string-only dict here that's just an object+methods for efficiency
 object.prototype.__setattr__ = function(k,v)
 {
     //print("in __setattr__",k,v);
-    this.__dict__[k] = v;
+    this.__dict__.__setitem__(new Str$(k), v);
 };
 object.prototype.__getattr__ = function(k)
 {
-    return this.__dict__[k];
+    return this.__dict__.__getitem__(new Str$(k));
 };
 object.prototype.__repr__ = function(k)
 {
@@ -1520,40 +1530,40 @@ Dict$.prototype.values = function() { throw "todo; dict.values"; };
 
 Dict$.prototype.__getitem__ = function(key)
 {
-	var entry = this[this.key$(key)];
-	return typeof entry === 'undefined' ? undefined : entry.rhs;
+    var entry = this[this.key$(key)];
+    return typeof entry === 'undefined' ? undefined : entry.rhs;
 };
 
 Dict$.prototype.__setitem__ = function(key, value)
 {
-	var k = this.key$(key);
+    var k = this.key$(key);
 
-	if (this.hasOwnProperty(k))
+    if (this.hasOwnProperty(k))
     {
-		this[k].rhs = value;
+        this[k].rhs = value;
     }
-	else
+    else
     {
-		var entry = { lhs : key, rhs : value };
-		this[k] = entry;
+        var entry = { lhs : key, rhs : value };
+        this[k] = entry;
 
-		this.size += 1;
-	}
+        this.size += 1;
+    }
 
-	return this;
+    return this;
 };
 
 Dict$.prototype.__delitem__ = function(key)
 {
-	var k = this.key$(key);
+    var k = this.key$(key);
 
-	if (this.hasOwnProperty(k))
+    if (this.hasOwnProperty(k))
     {
         this.size -= 1;
-		delete this[k];
-	}
+        delete this[k];
+    }
 
-	return this;
+    return this;
 };
 
 Dict$.prototype.__repr__ = function()
@@ -2155,9 +2165,38 @@ Module$.prototype = new object();
 /*jslint newcap: true */
 
 Module$.modules$ = new Dict$([]);
+Module$.builtins$ = new Dict$([]);
+Module$.syspath$ = new List$([]);
 
 Module$.prototype.__class__ = new Type$('module', [sk$TypeObject], {});
+Module$.prototype.__dir__ = function()
+{
+    var names = [];
+    print(repr(this.__dict__).v);
+    for (var iter = this.__dict__.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
+        names.push(i);
+    return new List$(names);
+};
+Module$.prototype.__repr__ = function()
+{
+    return new Str$("<module '" + this.__name__ + "' "
+            + (this.__file__
+                ? ("from '" + this.__file__ + "'")
+                : "(built-in)")
+            + ">");
+};
 var Skulpt = (function(){
+Module$.builtins$.sys = function(self)
+{
+    self.__setattr__('modules', Module$.modules$);
+
+    var argv = sk$sysargv || [];
+    for (var i = 0; i < argv.length; ++i)
+        argv[i] = new Str$(argv[i]);
+    self.__setattr__('argv', new List$(argv));
+
+    self.__setattr__('path', Module$.syspath$);
+};
 /*
  * This is a port of tokenize.py by Ka-Ping Yee.
  *
@@ -8375,6 +8414,10 @@ makeFuncBody: function(ast, a)
                               o.push(k);
                               o.push(";");
                           }
+                          else if (v === BIND_GLOBAL)
+                          {
+                              o.push("/* " + k + " is in func_globals */");
+                          }
                       }
                   }
 
@@ -8405,15 +8448,26 @@ makeFuncBody: function(ast, a)
                   }
 
                   // attach metadata to the function definition
-                  // currently includes the names of the arguments so that
-                  // kwargs can be unpacked to the right location
 
-                  if (inclass)
-                  {
-                      o.push(a.klass);
-                      o.push(".prototype.");
-                  }
-                  o.push(name);
+                  var outputprefix = function() {
+                      if (inclass)
+                      {
+                          o.push(a.klass);
+                          o.push(".prototype.");
+                      }
+                      o.push(name);
+                  };
+
+                  // store global environment
+                  outputprefix();
+                  var tmp = gensym();
+                  Skulpt.consts$[tmp] = a.module.__dict__;
+                  o.push(".func_globals=Skulpt.consts$.");
+                  o.push(tmp);
+                  o.push(";");
+
+                  // names of arguments to kwargs can be unpacked to the right location
+                  outputprefix();
                   o.push(".argnames$=[");
                   for (var i = inclass ? 1 : 0; i < ast.argnames.length; ++i)
                   {
@@ -8423,7 +8477,6 @@ makeFuncBody: function(ast, a)
                       if (i !== ast.argnames.length - 1) o.push(",");
                   }
                   o.push("];");
-
               },
 
 startGeneratorCodeBlock: function(a)
@@ -8905,10 +8958,11 @@ function compile(ast, module)
 //
 //
 //
-function compileStr(filename, input)
+function compileStr(filename, input, module)
 {
+    if (!module) module = new Module$("__main__", filename);
     var ast = transform(parse(filename, input));
-    return compile(ast, new Module$("__main__", filename));
+    return compile(ast, module);
 }
 
 function compileUrlAsync(url, oncomplete)

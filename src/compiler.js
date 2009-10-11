@@ -949,6 +949,10 @@ makeFuncBody: function(ast, a)
                               o.push(k);
                               o.push(";");
                           }
+                          else if (v === BIND_GLOBAL)
+                          {
+                              o.push("/* " + k + " is in func_globals */");
+                          }
                       }
                   }
 
@@ -979,15 +983,26 @@ makeFuncBody: function(ast, a)
                   }
 
                   // attach metadata to the function definition
-                  // currently includes the names of the arguments so that
-                  // kwargs can be unpacked to the right location
 
-                  if (inclass)
-                  {
-                      o.push(a.klass);
-                      o.push(".prototype.");
-                  }
-                  o.push(name);
+                  var outputprefix = function() {
+                      if (inclass)
+                      {
+                          o.push(a.klass);
+                          o.push(".prototype.");
+                      }
+                      o.push(name);
+                  };
+
+                  // store global environment
+                  outputprefix();
+                  var tmp = gensym();
+                  Skulpt.consts$[tmp] = a.module.__dict__;
+                  o.push(".func_globals=Skulpt.consts$.");
+                  o.push(tmp);
+                  o.push(";");
+
+                  // names of arguments to kwargs can be unpacked to the right location
+                  outputprefix();
                   o.push(".argnames$=[");
                   for (var i = inclass ? 1 : 0; i < ast.argnames.length; ++i)
                   {
@@ -997,7 +1012,6 @@ makeFuncBody: function(ast, a)
                       if (i !== ast.argnames.length - 1) o.push(",");
                   }
                   o.push("];");
-
               },
 
 startGeneratorCodeBlock: function(a)

@@ -23,6 +23,7 @@ if (this.read !== undefined) sk$load = this.read;
 var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
 var sk$TypeObject, sk$TypeInt, sk$TypeType;
 var sk$sysargv;
+var Skulpt;
 
 function sk$iter(pyobj, callback)
 {
@@ -537,23 +538,30 @@ function sk$import(name)
     //
     var contents;
     var filename;
-    try
+
+    // try system modules first
+    if (Module$.builtins$[name] !== undefined)
     {
-        // try system modules first
-        contents = sk$load("src/modules/" + name + ".js");
+        contents = Module$.builtins$[name];
     }
-    catch (e)
+
+    Module$.syspath$ = new List$([new Str$('test/run')]); // todo; this shouldn't be necessary
+
+    if (!contents)
     {
-        // then user modules
-        try
-        {
-            filename = name + ".py";
-            contents = sk$load(filename);
-        }
-        catch (f)
-        {
-            throw new ImportError("no module named " + name);
-        }
+        (function() {
+         // then user modules
+         for (var iter = Module$.syspath$.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
+         {
+             try
+             {
+                 filename = i.v + "/" + name + ".py";
+                 contents = sk$load(filename);
+                 return;
+             } catch (e) {}
+         }
+         throw new ImportError("no module named " + name);
+        }());
     }
     
     // todo; check in sys.modules for previous load/init
@@ -566,14 +574,16 @@ function sk$import(name)
 
     if (filename === undefined) // native
     {
-        // if it's native, we eval what we get back (it's js), which returns a
-        // function that we call, passing it the module it's setting up into.
-        var moduleTopLevel = eval(contents);
-        moduleTopLevel(module);
+        // if it's native the contents is actually a function that does setup
+        contents(module);
     }
     else
     {
-        throw "todo; non-native module import";
+        var js = Skulpt.compileStr(filename, contents, module);
+        //print("/**** start", filename, "****/");
+        //print(js);
+        //print("/**** end", filename, "****/");
+        eval(js);
     }
 
 

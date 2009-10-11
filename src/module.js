@@ -9,6 +9,8 @@ Module$.prototype = new object();
 /*jslint newcap: true */
 
 Module$.modules$ = new Dict$([]);
+Module$.builtins$ = new Dict$([]);
+Module$.syspath$ = new List$([]);
 
 Module$.prototype.__class__ = new Type$('module', [sk$TypeObject], {});
 Module$.prototype.__dir__ = function()
