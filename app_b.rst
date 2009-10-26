@@ -310,25 +310,25 @@ Image
 
 .. sourcecode:: python
     
-    Image(self, file_path, center, width=None, height=None):
+    Image(file_path, center, width=None, height=None):
 
-It uploads an image onto the screen. If you only pass width and not a height it
-automatically scales the height to fit the width you passed it. It is the same
-for the height.
+Loads an image onto the screen. If you only pass a width and not a height it
+automatically scales the height to fit the width you passed it. It behaves
+likewise when you pass just a height.
 
 file_path
-    The path name where the image is.
+    The path to the image
 
 center
-    The center coordinate of the image
+    The center coordinates of the image
 
 width
     The width of the image in pixels. If width equals None then it defaults to
-    the image files width
+    the image file's width
 
 height
     The height of the image in pixels. If no height is passed it defaults to
-    the image files height
+    the image file's height
 
 
 Screen Object Methods
@@ -480,7 +480,7 @@ screen_shot
     
     screen_shot(filename)
 
-It saves a screenshot of the current graphics screen to a png file.
+Saves a screenshot of the current graphics screen to a png file.
 
 filename
     The file path relative to the current directory that the image will be

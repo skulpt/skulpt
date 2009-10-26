@@ -543,7 +543,8 @@ graphics window that looks like this:
    :alt: GASP illustration 1 
 
 We will be using gasp from here on to illustrate (pun intended) computer
-programming concepts and to add to our fun while learning.
+programming concepts and to add to our fun while learning.  You can find out
+more about the GASP module by reading `Appendix B <app_b.html>`__.
 
 
 Glossary
@@ -752,7 +753,7 @@ Exercises
            print "function_a was called..."
 
    Put the four functions ( ``dispatch``, ``function_a``, ``function_b``, and
-   ``function_c`` into a script named ``ch4prob4.py``. At the bottom of this
+   ``function_c`` into a script named ``ch04e05.py``. At the bottom of this
    script add a call to ``dispatch('b')``. Your output should be::
 
       function_b was called...
@@ -768,12 +769,12 @@ Exercises
 #. Generalize the functions you wrote in the previous exercise into a function
    named ``is_divisible_by_n(x, n)`` that takes two integer arguments and
    prints out whether the first is divisible by the second.  Save this in a
-   file named ``ch04e06.py``. Import it into a shell and try it out. A sample
+   file named ``ch04e07.py``. Import it into a shell and try it out. A sample
    session might look like this:
 
    .. sourcecode:: python
     
-       >>> from ch04e06 import *
+       >>> from ch04e07 import *
        >>> is_divisible_by_n(20, 4)
        Yes, 20 is divisible by 4
        >>> is_divisible_by_n(21, 8)
@@ -830,3 +831,12 @@ Exercises
       the location of the house on the canvas.
    #. Use ``draw_house`` to place five houses on the canvas in different
       locations.
+#. *Extra challenge for the highly motivated:*  Read over
+   `Appendix B <app_b.html>`__ and write a script named ``houses.py`` that
+   produces the following when run:
+
+   .. image:: illustrations/gasp03.png
+      :alt: GASP illustration 3
+
+   *hint*: You will need to use a ``Polygon`` for the roof instead of two
+   ``Line``\s to get ``filled=True`` to work with it.

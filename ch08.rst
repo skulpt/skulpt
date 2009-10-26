@@ -49,7 +49,7 @@ Add this to a file named ``pitch.py``:
 As the ball moves across the screen, you will see a graphics window that looks
 like this:
 
-.. image:: illustrations/gasp03.png
+.. image:: illustrations/gasp04.png
    :alt: GASP ball on yellow background 
 
 Trace the first few iterations of this program to be sure you see what is
