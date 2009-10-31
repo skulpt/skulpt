@@ -831,9 +831,8 @@ Exercises
       the location of the house on the canvas.
    #. Use ``draw_house`` to place five houses on the canvas in different
       locations.
-#. *Extra challenge for the highly motivated:*  Read over
-   `Appendix B <app_b.html>`__ and write a script named ``houses.py`` that
-   produces the following when run:
+#. *Exploration:*  Read over `Appendix B <app_b.html>`__ and write a script
+   named ``houses.py`` that produces the following when run:
 
    .. image:: illustrations/gasp03.png
       :alt: GASP illustration 3

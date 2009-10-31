@@ -5,10 +5,9 @@ By Jeffrey Elkner
 
 This book owes its existence to the collaboration made possible by the Internet
 and the free software movement. Its three authors---a college professor, a high
-school teacher, and a professional programmer---have yet to meet face to face,
-but we have been able to work closely together and have been aided by many
-wonderful folks who have donated their time and energy to helping make this
-book better.
+school teacher, and a professional programmer---never met face to face to work
+on it, but we have been able to collaborate closely, aided by many other folks
+who have taken the time and energy to send us their feedback.
 
 We think this book is a testament to the benefits and future possibilities of
 this kind of collaboration, the framework for which has been put in place by
@@ -71,7 +70,7 @@ features of a particular language. Reading it immediately made me a better
 teacher.
 
 *How to Think Like a Computer Scientist* was not just an excellent book, but it
-had been released under a GNU public license, which meant it could be used
+had been released under the GNU public license, which meant it could be used
 freely and modified to meet the needs of its user.  Once I decided to use
 Python, it occurred to me that I could translate Allen's original Java version
 of the book into the new language. While I would not have been able to write a
@@ -113,17 +112,16 @@ beginning students. Python greatly simplifies programming examples and makes
 important programming ideas easier to teach.
 
 The first example from the text illustrates this point. It is the traditional
-hello, world program, which in the C++ version of the book looks like this:
+hello, world program, which in the Java version of the book looks like this:
 
-.. sourcecode:: c++ 
-    
-    #include 
-    
-    void main()
-    {
-       cout << "Hello, world." << endl;
+.. sourcecode:: java 
+
+    class Hello {
+
+      public static void main (String[] args) {
+          System.out.println ("Hello, world.");
+      }
     }
-
 
 in the Python version it becomes:
 
@@ -135,40 +133,42 @@ Even though this is a trivial example, the advantages of Python stand out.
 Yorktown's Computer Science I course has no prerequisites, so many of the
 students seeing this example are looking at their first program. Some of them
 are undoubtedly a little nervous, having heard that computer programming is
-difficult to learn. The C++ version has always forced me to choose between two
-unsatisfying options: either to explain the `#include`, `void main()`, `{`, and
-`}` statements and risk confusing or intimidating some of the students right at
-the start, or to tell them, Just don't worry about all of that stuff now; we
-will talk about it later, and risk the same thing. The educational objectives
-at this point in the course are to introduce students to the idea of a
-programming statement and to get them to write their first program, thereby
-introducing them to the programming environment. The Python program has exactly
-what is needed to do these things, and nothing more.
+difficult to learn. The Java version has always forced me to choose between two
+unsatisfying options: either to explain the `class Hello`,
+`public static void main`, `String[] args`, `{`, and `}`, statements and risk
+confusing or intimidating some of the students right at the start, or to tell
+them, Just don't worry about all of that stuff now; we will talk about it
+later, and risk the same thing. The educational objectives at this point in the
+course are to introduce students to the idea of a programming statement and to
+get them to write their first program, thereby introducing them to the
+programming environment. The Python program has exactly what is needed to do
+these things, and nothing more.
 
 Comparing the explanatory text of the program in each version of the book
 further illustrates what this means to the beginning student.  There are
-thirteen paragraphs of explanation of Hello, world! in the C++ version; in the
-Python version, there are only two. More importantly, the missing eleven
-paragraphs do not deal with the big ideas in computer programming but with the
-minutia of C++ syntax. I found this same thing happening throughout the book.
-Whole paragraphs simply disappear from the Python version of the text because
-Python's much clearer syntax renders them unnecessary.
+seven paragraphs of explanation of Hello, world! in the Java version; in the
+Python version, there are only a few sentences. More importantly, the missing
+six paragraphs do not deal with the big ideas in computer programming but with
+the minutia of Java syntax. I found this same thing happening throughout the
+book.  Whole paragraphs simply disappear from the Python version of the text
+because Python's much clearer syntax renders them unnecessary.
 
 Using a very high-level language like Python allows a teacher to postpone
 talking about low-level details of the machine until students have the
 background that they need to better make sense of the details. It thus creates
 the ability to put first things first pedagogically. One of the best examples
-of this is the way in which Python handles variables. In C++ a variable is a
-name for a place that holds a thing. Variables have to be declared with types
-at least in part because the size of the place to which they refer needs to be
-predetermined. Thus, the idea of a variable is bound up with the hardware of
-the machine. The powerful and fundamental concept of a variable is already
-difficult enough for beginning students (in both computer science and algebra).
-Bytes and addresses do not help the matter. In Python a variable is a name that
-refers to a thing. This is a far more intuitive concept for beginning students
-and is much closer to the meaning of variable that they learned in their math
-courses. I had much less difficulty teaching variables this year than I did in
-the past, and I spent less time helping students with problems using them.
+of this is the way in which Python handles variables. In Java a variable is a
+name for a place that holds a value if it is a built-in type, and a reference
+to an object if it is not. Explaining this distinction requires a discussion
+of how the computer stores data. Thus, the idea of a variable is bound up with
+the hardware of the machine. The powerful and fundamental concept of a variable
+is already difficult enough for beginning students (in both computer science
+and algebra).  Bytes and addresses do not help the matter. In Python a variable
+is a name that refers to a thing. This is a far more intuitive concept for
+beginning students and is much closer to the meaning of variable that they
+learned in their math courses. I had much less difficulty teaching variables
+this year than I did in the past, and I spent less time helping students with
+problems using them.
 
 Another example of how Python aids in the teaching and learning of programming
 is in its syntax for functions. My students have always had a great deal of
@@ -184,10 +184,10 @@ types, or reference and value parameters to get in the way, so I am now able to
 teach functions in less than half the time that it previously took me, with
 better comprehension.
 
-Using Python has improved the effectiveness of our computer science program for
-all students. I see a higher general level of success and a lower level of
-frustration than I experienced during the two years I taught C++. I move faster
-with better results. More students leave the course with the ability to create
+Using Python improved the effectiveness of our computer science program for all
+students. I saw a higher general level of success and a lower level of
+frustration than I experienced teaching with either C++ or Java. I moved faster
+with better results. More students left the course with the ability to create
 meaningful programs and with the positive attitude toward the experience of
 programming that this engenders.
 
@@ -209,5 +209,5 @@ time. I invite you to join our community and look forward to hearing from you.
 Please write to me at `jeff@elkner.net <mailto:jeff@elkner.net>`__.
 
 | Jeffrey Elkner
-| Arlington Public Schools
+| Governor's Career and Technical Academy in Arlington 
 | Arlington, Virginia
