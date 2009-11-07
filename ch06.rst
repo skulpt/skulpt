@@ -154,7 +154,8 @@ directions on shampoo, Lather, rinse, repeat, are an infinite loop.
 In the case of ``countdown``, we can prove that the loop terminates because we
 know that the value of ``n`` is finite, and we can see that the value of ``n``
 gets smaller each time through the loop, so eventually we have to get to 0. In
-other cases, it is not so easy to tell:
+other cases, it is not so easy to tell.  Look at the following function,
+definied for all postitive integers ``n``:
 
 .. sourcecode:: python
     
