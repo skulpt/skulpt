@@ -521,23 +521,25 @@ to be installed on your machine.  If you are running Ubuntu GNU/Linux, see
 for installing GASP on other platforms can be found at
 http://dev.laptop.org/pub/gasp/downloads.
 
-To start gasp after it is installed, try the following:
+After installing gasp, try the following python script:
 
 .. sourcecode:: python
     
-    >>> from gasp import *
-    >>> begin_graphics()
-    >>> Circle((200, 200), 60)
-    Circle instance at (200, 200) with radius 60
-    >>> Line((100, 400), (580, 200))
-    Line instance from (100, 400) to (590, 250)
-    >>> Box((400, 350), 120, 100)
-    Box instance at (400, 350) with width 120 and height 100
-    >>> end_graphics()
-    >>>
+    from gasp import *
 
-Before the last command, which closes the graphics canvas, you should see a
-graphics window that looks like this:
+    begin_graphics()
+
+    Circle((200, 200), 60)
+    Line((100, 400), (580, 200))
+    Box((400, 350), 120, 100)
+ 
+    update_when('key_pressed')
+    end_graphics()
+
+The second to the last command pauses and waits until a key is pressed.
+Without it, the screen would flash by so quickly you wouldn't see it.
+
+Running this script, you should see a graphics window that looks like this:
 
 .. image:: illustrations/gasp01.png
    :alt: GASP illustration 1 

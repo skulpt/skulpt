@@ -222,7 +222,8 @@ The comparison operators work on strings. To see if two strings are equal:
     if word == "banana":
         print  "Yes, we have no bananas!"
 
-Other comparison operations are useful for putting words in alphabetical order:
+Other comparison operations are useful for putting words in
+`lexigraphical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__:
 
 .. sourcecode:: python
     
@@ -233,9 +234,9 @@ Other comparison operations are useful for putting words in alphabetical order:
     else:
         print "Yes, we have no bananas!"
 
-You should be aware, though, that Python does not handle upper and lowercase
-letters the same way that people do. All the uppercase letters come before all
-the lowercase letters. As a result:
+This is similar to the alphabetical order you would use with a dictionary,
+except that all the uppercase letters come before all the lowercase letters. As
+a result:
 
 .. sourcecode:: python
     
@@ -724,6 +725,69 @@ Running this version produces the following output::
 The ``-`` after each ``%`` in the converstion specifications indicates left
 justification. The numerical values specify the minimum length, so ``%-13d`` is
 a left justified number at least 13 characters wide.
+
+
+Summary and First Exercises
+---------------------------
+
+This chapter introduced a lot of new ideas.  The following summary and set of
+exercises may prove helpful in remembering what you learned:
+
+.. glossary::
+
+    indexing (``[]``)
+        Access a single character in a string using its position (starting from
+        0).  Example: ``'This'[2]`` evaluates to ``'i'``.
+
+    length function (``len``)
+        Returns the number of characters in a string.  Example:
+        ``len('happy')`` evaluates to ``5``.
+
+    for loop traversal (``for``)
+        *Traversing* a string means accessing each character in the string, one
+        at a time.  For example, the following for loop:
+
+        .. sourcecode:: python
+
+            for letter in 'Example':
+                print 2 * letter,
+
+        evaluates to ``EE xx aa mm pp ll ee``
+
+    slicing (``[:]``)
+        A *slice* is a substring of a string. Example: ``'bananas and
+        cream'[3:6]`` evaluates to ``ana`` (so does ``'bananas and
+        cream'[1:4]``).
+
+    string comparison (``>, <, >=, <=, ==``)
+        The comparision operators work with strings, evaluating according to
+        `lexigraphical order
+        <http://en.wikipedia.org/wiki/Lexicographic_order>`__.  Examples:
+        ``'apple' < 'banana'`` evaluates to ``True``.  ``'Zeta' < 'Appricot'
+        evaluates to ``False``.  ``'Zebra' <= 'aardvark'`` evaluates to
+        ``True`` because all upper case letters proceed lower case letters.
+
+    in operator (``in``)
+        The ``in`` operator tests whether one character or string is contained
+        inside another string.  Examples: ``'heck' in "I'll be checking for
+        you."`` evaluates to ``True``.  ``'cheese' in "I'll be checking for
+        you."`` evaluates to ``False``.
+
+
+**Exercises:**
+
+#. Write the Python interpreter's evaluation to each of the following
+   expressions:
+
+    * >>> 'Python'[1]
+    * >>> "Strings are sequences of characters."[5]
+    * >>> len("wonderful")
+    * >>> 'Mystery'[:4]
+    * >>> 'p' in 'Pinapple'
+    * >>> 'apple' in 'Pinapple'
+    * 'pear' in 'Pinapple'
+#. Write Python code to make each of the following doctests pass:
+
 
 
 Glossary

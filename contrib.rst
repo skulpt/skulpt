@@ -32,13 +32,16 @@ version of the contributor list (unless you ask to be omitted). Thank you!
 
 Second Edition
 ~~~~~~~~~~~~~~
-
-* A special thanks to the students in Jeff's Computer Science class at the
-  HB-Woodlawn program during the 2007-2008 school year: James Crowley, Joshua
-  Eddy, Eric Larson, Brian McGrail, and Iliana Vazuka.  Your willingness to
-  serve as beta-testers of the new chapters as they were completed, and to
-  endure frequent changes in response to your feedback have proved invaluable.
-  Thanks to you this is truly a *student tested* text.
+* A *special* thanks to pioneering students in Jeff's Python Programming class
+  at `GCTAA <http://www.arlington.k12.va.us/1540108115320583/blank/browse.asp?A=383&BMDRN=2000&BCOB=0&C=59085>`__ during the 2009-2010 school year: Howard
+  Batiste, Louis Elkner-Alfaro, and Rachel Hancock.  Your continual and
+  thoughtfull feedback led to changes in most of the chapters of the book. 
+  You set the standard for the active and engaged learners that will help
+  make the new Governor's Academy what it is to become.  Thanks to you this is
+  truly a *student tested* text.
+* Thanks in a similar vain to the students in Jeff's Computer Science
+  class at the HB-Woodlawn program during the 2007-2008 school year: James
+  Crowley, Joshua Eddy, Eric Larson, Brian McGrail, and Iliana Vazuka.
 * Ammar Nabulsi sent in numerous corrections from Chapters 1 and 2.
 * Aldric Giacomoni pointed out an error in our definition of the Fibonacci
   sequence in Chapter 5.
