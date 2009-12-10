@@ -785,9 +785,44 @@ exercises may prove helpful in remembering what you learned:
     * >>> 'Mystery'[:4]
     * >>> 'p' in 'Pinapple'
     * >>> 'apple' in 'Pinapple'
-    * 'pear' in 'Pinapple'
+    * >>> 'pear' in 'Pinapple'
+    * >>> 'apple' > 'pinapple'
+    * >>> 'pinapple' < 'Peach'
 #. Write Python code to make each of the following doctests pass:
+    *
+      .. sourcecode:: python
 
+        """
+          >>> type(fruit)
+          <type 'str'>
+          >>> len(fruit])
+          8
+          >>> fruit[:3]
+          'ram'
+        """
+    *
+      .. sourcecode:: python
+
+        """
+          >>> group = "John, Paul, George, and Ringo"
+          >>> group[12:x]
+          'George'
+          >>> group[n:m]
+          'Paul'
+          >>> group[:r]
+          'John'
+          >>> group[s:]
+          'Ringo'
+        """
+    *
+      .. sourcecode:: python
+
+        """
+          >>> len(s)
+          8
+          >>> s[4:6] == 'on'
+          True
+        """
 
 
 Glossary
