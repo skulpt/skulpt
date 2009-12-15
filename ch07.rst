@@ -795,7 +795,7 @@ exercises may prove helpful in remembering what you learned:
         """
           >>> type(fruit)
           <type 'str'>
-          >>> len(fruit])
+          >>> len(fruit)
           8
           >>> fruit[:3]
           'ram'
