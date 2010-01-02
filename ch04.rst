@@ -484,7 +484,7 @@ The ``str(ARGUMENT)`` command converts any argument given to it to type
       File "<stdin>", line 1, in <module>
     NameError: name 'true' is not defined
 
-``str(ARGUMENT)`` with work with any value and convert it into a string.  As
+``str(ARGUMENT)`` will work with any value and convert it into a string.  As
 mentioned earlier, ``True`` is boolean value; ``true`` is not.
 
 For boolean values, the situation is especially interesting:

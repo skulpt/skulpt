@@ -55,7 +55,7 @@ To use Vim, do the following:
        set et
        set sw=4
        set smarttab
-       map  :w\|!python %
+       map <f2> :w\|!python %
 
 When you edit a file with a `.py` extension, you should now have color systax
 highlighting and auto indenting. Pressing the key should run your program, and
