@@ -623,7 +623,7 @@ character occurs in the book `Alice in Wonderland <./resources/ch10/alice_in_won
     outfile.close()
 
 Run this program and look at the output file it generates using a text editor.
-You will be asked to analyze the program in the exercies below.
+You will be asked to analyze the program in the exercises below.
 
 
 The ``sys`` module and ``argv``

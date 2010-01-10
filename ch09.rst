@@ -429,7 +429,7 @@ they refer to the same object.
 
 In fact, we get the same identifier twice, which means that Python
 only created one string, and both ``a`` and ``b`` refer to it. Your actual
-id value will be probably be different.
+id value will probably be different.
 
 Interestingly, lists behave differently. When we create two lists, we
 get two objects:
