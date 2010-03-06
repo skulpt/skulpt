@@ -9,6 +9,8 @@
 Dictionaries
 ============
 
+.. index:: dictionary, mapping type, key, value, key-value pair
+
 All of the compound data types we have studied in detail so far --- strings,
 lists, and tuples---are sequence types, which use integers as indices to access
 the values they contain within them.

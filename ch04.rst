@@ -16,10 +16,10 @@ Conditionals
 The modulus operator
 --------------------
 
-The **modulus operator** works on integers (and integer expressions)
-and yields the remainder when the first operand is divided by the
-second. In Python, the modulus operator is a percent sign (``%``). The
-syntax is the same as for other operators:
+The **modulus operator** works on integers (and integer expressions) and yields
+the remainder when the first operand is divided by the second. In Python, the
+modulus operator is a percent sign (``%``). The syntax is the same as for other
+operators:
 
 .. sourcecode:: python
     
@@ -173,7 +173,7 @@ does nothing.
         pass          # so this is always executed, but it does nothing
 
 
-.. index:: alternative execution, branch
+.. index:: alternative execution, branch, wrapping code in a function
 
 Alternative execution
 ---------------------
@@ -197,7 +197,7 @@ alternatives are called **branches**, because they are branches in the flow of
 execution.
 
 As an aside, if you need to check the parity (evenness or oddness) of numbers
-often, you might wrap this code in a function:
+often, you might *wrap this code in a function*:
 
 .. sourcecode:: python
     
@@ -594,6 +594,12 @@ Glossary
     branch
         One of the possible paths of the flow of execution determined by
         conditional execution.
+
+    wrapping code in a function
+        The process of adding a function header and parameters to a sequence
+        of program statements is often refered to as "wrapping the code in
+        a function".  This process is very useful whenever the program
+        statements in question are going to be used multiple times.
 
     chained conditional
         A conditional branch with more than two possible flows of execution. In
