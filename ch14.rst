@@ -38,7 +38,7 @@ Pure functions
 --------------
 
 In the next few sections, we'll write two versions of a function called
-``add_time``, which calculates the sum of two ``Time``'s. They will demonstrate
+``add_time``, which calculates the sum of two ``Time``\s. They will demonstrate
 two kinds of functions: pure functions and modifiers.
 
 The following is a rough version of ``add_time``:
@@ -234,7 +234,7 @@ investment of writing the conversion functions (``convert_to_seconds`` and
 more reliable.
 
 It is also easier to add features later. For example, imagine subtracting two
-``Time``'s to find the duration between them. The naive approach would be to
+``Time``\s to find the duration between them. The naive approach would be to
 implement subtraction with borrowing. Using the conversion functions would be
 easier and more likely to be correct.
 
