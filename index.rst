@@ -26,6 +26,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 11 <ch11.html>`__ *Recursion and exceptions*
 * `Chapter 12 <ch12.html>`__ *Dictionaries*
 * `Chapter 13 <ch13.html>`__ *Classes and objects*
+* `Chapter 14 <ch14.html>`__ *Classes and functions*
 * `Appendix A <app_a.html>`__ *Configuring Ubuntu for Python Development*
 * `Appendix B <app_b.html>`__ *GASP*
 * `Appendix C <app_c.html>`__ *Customizing and Contributing to the Book*
@@ -58,6 +59,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     ch11.rst
     ch12.rst
     ch13.rst
+    ch14.rst
 
 .. toctree::
     :maxdepth: 1
