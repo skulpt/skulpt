@@ -30,6 +30,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 15 <ch15.html>`__ *Classes and methods*
 * `Chapter 16 <ch16.html>`__ *Sets of Objects*
 * `Chapter 17 <ch17.html>`__ *Inheritance*
+* `Chapter 18 <ch18.html>`__ *Linkded Lists*
 * `Appendix A <app_a.html>`__ *Configuring Ubuntu for Python Development*
 * `Appendix B <app_b.html>`__ *GASP*
 * `Appendix C <app_c.html>`__ *Customizing and Contributing to the Book*
@@ -66,6 +67,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     ch15.rst
     ch16.rst
     ch17.rst
+    ch18.rst
 
 .. toctree::
     :maxdepth: 1
