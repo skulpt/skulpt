@@ -31,9 +31,13 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 16 <ch16.html>`__ *Sets of Objects*
 * `Chapter 17 <ch17.html>`__ *Inheritance*
 * `Chapter 18 <ch18.html>`__ *Linkded Lists*
-* `Appendix A <app_a.html>`__ *Configuring Ubuntu for Python Development*
+* `Chapter 19 <ch19.html>`__ *Stacks*
+* `Chapter 20 <ch20.html>`__ *Queues*
+* `Chapter 21 <ch21.html>`__ *Trees*
+* `Appendix A <app_a.html>`__ *Debugging*
 * `Appendix B <app_b.html>`__ *GASP*
-* `Appendix C <app_c.html>`__ *Customizing and Contributing to the Book*
+* `Appendix c <app_c.html>`__ *Configuring Ubuntu for Python Development*
+* `Appendix D <app_d.html>`__ *Customizing and Contributing to the Book*
 * `GNU Free Document License <fdl-1.3.html>`__ 
 
 .. toctree::
@@ -68,6 +72,9 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     ch16.rst
     ch17.rst
     ch18.rst
+    ch19.rst
+    ch20.rst
+    ch21.rst
 
 .. toctree::
     :maxdepth: 1
@@ -76,6 +83,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     app_a.rst
     app_b.rst
     app_c.rst
+    app_d.rst
     fdl-1.3.rst
 
 * :ref:`search`

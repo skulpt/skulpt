@@ -6,8 +6,8 @@
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
-Customizing and Contributing to the Book
-========================================
+Configuring Ubuntu for Python Development
+=========================================
 
     *Note:* the following instructions assume that you are connected to
     the Internet and that you have both the ``main`` and ``universe``
@@ -17,13 +17,15 @@ Customizing and Contributing to the Book
     machine.  If you do not --- please ask your system administrator about
     installing the software you need.
 
-This book is free as in freedom, which means you have the right to modify it
-to suite your needs, and to redistribute your modifications so that our whole
-community can benefit.
+What follows are instructions for setting up an Ubuntu 9.10 (Karmic) home
+environment for use with this book. I use Ubuntu GNU/Linux for both development
+and testing of the book, so it is the only system about which I can personally
+answer setup and configuration questions.
 
-That freedom lacks meaning, however, if you the tools needed to make a
-custom version or to contribute corrections and additions are not within your
-reach.  This appendix attempts to put those tools in your hands.
+In the spirit of software freedom and open collaboration, please contact me if
+you would like to maintain a similar appendix for your own favorite system. I'd
+be more than happy to link to it or put it on the Open Book Project site,
+provided you agree to answer user feedback concerning it.
 
 Thanks!
 
@@ -32,43 +34,108 @@ Thanks!
 | Arlington, Virginia
 
 
-Getting the Source
-------------------
+Vim
+---
 
-This book is `marked up <http://en.wikipedia.org/wiki/Markup_language>`__ in
-`ReStructuredText <http://en.wikipedia.org/wiki/ReStructuredText>`__ using
-a document generation system called
-`Sphinx <http://en.wikipedia.org/wiki/Sphinx_%28documentation_generator%29>`__.
+`Vim <http://www.vim.org>`__ can be used very effectively for Python
+development, but Ubuntu only comes with the `vim-tiny` package installed by
+default, so it doesn't support color syntax highlighting or auto-indenting.
 
-The source code is located on the `Launchpad website <http://en.wikipedia.org/wiki/Launchpad_%28website%29>`__ at http://bazaar.launchpad.net/~thinkcspy/thinkcspy/english2e/files.
+To use Vim, do the following:
 
-The easiest way to get the source code on an Ubuntu 9.10 computer is: 
+#. From the unix command prompt, run::
 
-#. run ``sudo apt-get install bzr`` on your system to install
-   `bzr <http://en.wikipedia.org/wiki/Bazaar_%28software%29>`__.
-#. run ``bzr branch lp:thinkcspy``.
+       $ sudo apt-get install vim-gnome
 
-The last command above will download the book source from Launchpad into a
-directory named ``thinkcspy`` which contains the Sphinx source and
-configuration information needed to build the book.
+#. Create a file in your home directory named `.vimrc` that contains the
+   following::
+
+       syntax enable
+       filetype indent on
+       set et
+       set sw=4
+       set smarttab
+       map <f2> :w\|!python %
+
+When you edit a file with a `.py` extension, you should now have color systax
+highlighting and auto indenting. Pressing the key should run your program, and
+bring you back to the editor when the program completes.
+
+To learn to use vim, run the following command at a unix command
+prompt::
+
+    $ vimtutor
 
 
-Making the HTML Version
------------------------
+.. _installing-gasp:
 
-To generate the html version of the book:
+GASP
+----
 
-#. run ``sudo apt-get install python-sphinx`` to install the Sphinx
-   documentation system.
-#. ``cd thinkcspy`` - change into the ``thinkcspy`` directory containing the
-   book source.
-#. ``make html``.
+Several of the case studies use GASP (Graphics API for Students for Python),
+which is the only additional library needed to use this book.
 
-The last command will run sphinx and create a directory named ``build``
-containing the html verion of the text.
+To install GASP on Ubuntu 9.04 (Jaunty) or later, run the following command
+at a unix command prompt::
 
-    *Note*: Sphinx supports building other output types as well, such as
-    `PDF <http://en.wikipedia.org/wiki/PDF>`__.  This requires that
-    `LaTeX <http://en.wikipedia.org/wiki/LaTeX>`__ be present on your
-    system.  Since I only personally use the html version, I will not
-    attempt to document that process here.
+    $ sudo apt-get install python-gasp
+
+or use the synaptic package manager.
+
+
+Getting GASP from Launchpad
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install the latest version of GASP into your home directory, run the
+following commands at a unix command prompt::
+
+    $ sudo apt-get install bzr
+    $ bzr branch lp:gasp-code    
+    
+
+`$HOME` environment
+-------------------
+
+The following creates a useful environment in your home directory for
+adding your own Python libraries and executable scripts:
+
+#. From the command prompt in your home directory, create `bin` and
+   `lib/python` subdirectories by running the following commands::
+
+        $ mkdir bin lib
+        $ mkdir lib/python
+
+#. Add the following lines to the bottom of your `.bashrc` in your home
+   directory::
+
+        PYTHONPATH=$HOME/lib/python
+        EDITOR=vim
+    
+        export PYTHONPATH EDITOR
+
+   This will set your prefered editor to Vim, add your own `lib/python`
+   subdirectory for your Python libraries to your Python path, and add your own 
+   `bin` directory as a place to put executable scripts. You need to logout and 
+   log back in before your local `bin` directory will be in your `search path
+   <http://en.wikipedia.org/wiki/Path_(variable)>`__.
+
+
+Making a python script executable and runnable from anywhere
+------------------------------------------------------------
+
+On unix systems, Python scripts can be made *executable* using the following
+process:
+
+#. Add this line as the first line in the script:
+
+   .. sourcecode:: python
+    
+       #!/usr/bin/env python
+
+#. At the unix command prompt, type the following to make `myscript.py`
+   executable::
+
+       $ chmod +x myscript.py
+
+#. Move `myscript.py` into your `bin` directory, and it will be runnable from
+   anywhere.
