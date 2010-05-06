@@ -30,7 +30,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 15 <ch15.html>`__ *Classes and methods*
 * `Chapter 16 <ch16.html>`__ *Sets of Objects*
 * `Chapter 17 <ch17.html>`__ *Inheritance*
-* `Chapter 18 <ch18.html>`__ *Linkded Lists*
+* `Chapter 18 <ch18.html>`__ *Linked Lists*
 * `Chapter 19 <ch19.html>`__ *Stacks*
 * `Chapter 20 <ch20.html>`__ *Queues*
 * `Chapter 21 <ch21.html>`__ *Trees*
