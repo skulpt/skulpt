@@ -9,6 +9,7 @@
 Recursion and exceptions
 ========================
 
+.. index:: mutable, immutable, tuple 
 
 Tuples and mutability
 ---------------------
@@ -97,6 +98,10 @@ back into a tuple:
     >>> tup
     ('a', 'b', 'c', 'd', 'e')
 
+.. index::
+    single: tuple assignment 
+    single: assignment; tuple 
+    single: tuple; assignment
 
 Tuple assignment
 ----------------
@@ -130,6 +135,10 @@ right have to be the same:
     
     >>> a, b, c, d = 1, 2, 3
     ValueError: need more than 3 values to unpack 
+
+
+.. index::
+    single: tuple; return value 
 
 
 Tuples as return values
@@ -171,6 +180,8 @@ in ``__main__``. Similarly, changing ``y`` has no effect on ``b``.
 This function runs without producing an error message, but it doesn't do what
 we intended. This is an example of a semantic error.
 
+
+.. index:: pure functions, modifiers
 
 Pure functions and modifiers revisited
 --------------------------------------
@@ -276,6 +287,13 @@ value returned by the function call back to the variable:
     'abcde' 
 
 
+.. index::
+    single: data structures
+    single: data structures; recursive
+    single: recursive definition
+    single: recursive data structure
+
+
 Recursive data structures
 -------------------------
 
@@ -327,6 +345,8 @@ For our *nested number list*, however, ``sum`` will not work:
 The problem is that the third element of this list, ``[11, 13]``, is itself a
 list, which can not be added to ``1``, ``2``, and ``8``.
 
+
+.. index:: recursion, recursive call, base case, infinite recursion
 
 Recursion
 ---------
@@ -438,6 +458,8 @@ We would certainly never want something like this to happen to a user of one of
 our programs, so before finishing the recursion discussion, let's see how
 errors like this are handled in Python.
 
+
+.. index:: exception, handling an exception
 
 Exceptions
 ----------
@@ -583,6 +605,8 @@ it stops when it reaches the maximum recursion depth allowed:
 Run this version and observe the results.
 
 
+.. index:: tail recursion
+
 Tail recursion
 --------------
 
@@ -601,8 +625,29 @@ tail recursion:
             print n
             countdown(n-1)
 
+
 Any computation that can be made using iteration can also be made using
-recursion.
+recursion. Here is a version of ``find_max`` written using tail recursion:
+
+.. sourcecode:: python
+
+    def find_max(seq, max_so_far):
+        if not seq:
+            return max_so_far
+        if max_so_far < seq[0]:
+            return find_max(seq[1:], seq[0])
+        else:
+            return find_max(seq[1:], max_so_far)
+
+Tail recursion is considered a bad practice in Python, since the Python
+compiler does not handle optimization for tail recursive calls. The recursive
+solution in cases like this use more system resources than the equivalent
+iterative solution.
+
+.. index:: factorial, fibonacci
+
+Recursive mathematical functions
+--------------------------------
 
 Several well known mathamatical functions are defined recursively. `Factorial
 <http://en.wikipedia.org/wiki/Factorial>`__, for example, is given the special
@@ -639,10 +684,6 @@ This can also be written easily in Python:
         else:
             return fibonacci(n-1) + fibonacci(n-2)
 
-Both ``factorial`` and ``fibonacci`` are examples of tail recursion.
-
-Tail recursion is considered a bad practice in languages like Python, however,
-since it uses more system resources than the equivalent iterative solution.
 
 Calling ``factorial(1000)`` will exceed the maximum recursion depth. And try
 running ``fibonacci(35)`` and see how long it takes to complete (be patient, it
@@ -652,6 +693,8 @@ You will be asked to write an iterative version of ``factorial`` as an
 exercise, and we will see a better way to handle ``fibonacci`` in the next
 chapter.
 
+
+.. index:: list comprehension
 
 List comprehensions
 -------------------

@@ -32,6 +32,8 @@ version of the contributor list (unless you ask to be omitted). Thank you!
 
 Second Edition
 ~~~~~~~~~~~~~~
+* An email from Mike MacHenry set me straight on tail recursion. He not only
+  pointed out an error in the presentation, but suggested how to correct it.
 * It wasn't until 5th Grade student Owen Davies came to me in a Saturday
   morning Python enrichment class and said he wanted to write the card game,
   Gin Rummy, in Python that I finally knew what I wanted to use as the case
