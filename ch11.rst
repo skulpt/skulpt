@@ -610,8 +610,8 @@ Run this version and observe the results.
 Tail recursion
 --------------
 
-When a recursive call occurs as the last line of a function definition, it is
-refered to as **tail recursion**.
+When the only thing returned from a function is a recursive call, it is refered
+to as **tail recursion**.
 
 Here is a version of the ``countdown`` function from chapter 6 written using
 tail recursion:
@@ -643,6 +643,7 @@ Tail recursion is considered a bad practice in Python, since the Python
 compiler does not handle optimization for tail recursive calls. The recursive
 solution in cases like this use more system resources than the equivalent
 iterative solution.
+
 
 .. index:: factorial, fibonacci
 
