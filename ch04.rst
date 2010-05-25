@@ -554,36 +554,6 @@ Glossary
 
 .. glossary::
 
-    modulus operator
-        An operator, denoted with a percent sign ( ``%``), that works on
-        integers and yields the remainder when one number is divided by
-        another.
-
-    boolean value
-        There are exactly two boolean values: ``True`` and ``False``. Boolean
-        values result when a boolean expression is evaluated by the Python
-        interepreter.  They have type ``bool``.
-
-    boolean expression
-        An expression that is either true or false.
-
-    comparison operator
-        One of the operators that compares two values: ``==``, ``!=``, ``>``,
-        ``<``, ``>=``, and ``<=``.
-
-    logical operator
-        One of the operators that combines boolean expressions: ``and``,
-        ``or``, and ``not``.
-
-    conditional statement
-        A statement that controls the flow of execution depending on some
-        condition. In Python the keywords ``if``, ``elif``, and ``else`` are
-        used for conditional statements.
-
-    condition
-        The boolean expression in a conditional statement that determines which
-        branch is executed.
-
     block
         A group of consecutive statements with the same indentation.
 
@@ -591,20 +561,44 @@ Glossary
         The block of statements in a compound statement that follows the
         header.
 
+    boolean expression
+        An expression that is either true or false.
+
+    boolean value
+        There are exactly two boolean values: ``True`` and ``False``. Boolean
+        values result when a boolean expression is evaluated by the Python
+        interepreter.  They have type ``bool``.
+
     branch
         One of the possible paths of the flow of execution determined by
         conditional execution.
-
-    wrapping code in a function
-        The process of adding a function header and parameters to a sequence
-        of program statements is often refered to as "wrapping the code in
-        a function".  This process is very useful whenever the program
-        statements in question are going to be used multiple times.
 
     chained conditional
         A conditional branch with more than two possible flows of execution. In
         Python chained conditionals are written with ``if ... elif ... else``
         statements.
+
+    comparison operator
+        One of the operators that compares two values: ``==``, ``!=``, ``>``,
+        ``<``, ``>=``, and ``<=``.
+
+    condition
+        The boolean expression in a conditional statement that determines which
+        branch is executed.
+
+    conditional statement
+        A statement that controls the flow of execution depending on some
+        condition. In Python the keywords ``if``, ``elif``, and ``else`` are
+        used for conditional statements.
+
+    logical operator
+        One of the operators that combines boolean expressions: ``and``,
+        ``or``, and ``not``.
+
+    modulus operator
+        An operator, denoted with a percent sign ( ``%``), that works on
+        integers and yields the remainder when one number is divided by
+        another.
 
     nesting
         One program structure within another, such as a conditional statement
@@ -616,6 +610,12 @@ Glossary
     type conversion
         An explicit statement that takes a value of one type and computes a
         corresponding value of another type.
+
+    wrapping code in a function
+        The process of adding a function header and parameters to a sequence
+        of program statements is often refered to as "wrapping the code in
+        a function".  This process is very useful whenever the program
+        statements in question are going to be used multiple times.
 
 
 Exercises

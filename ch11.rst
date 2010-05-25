@@ -650,7 +650,7 @@ iterative solution.
 Recursive mathematical functions
 --------------------------------
 
-Several well known mathamatical functions are defined recursively. `Factorial
+Several well known mathematical functions are defined recursively. `Factorial
 <http://en.wikipedia.org/wiki/Factorial>`__, for example, is given the special
 operator, ``!``, and is defined by:: 
 

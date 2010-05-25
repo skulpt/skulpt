@@ -743,9 +743,48 @@ Glossary
 
 .. glossary::
 
-    multiple assignment
-        Making more than one assignment to the same variable during the
-        execution of a program.
+    algorithm
+        A step-by-step process for solving a category of problems.
+
+    body
+        The statements inside a loop.
+
+    counter
+        A variable used to count something, usually initialized to zero and
+        incremented in the body of a loop.
+
+    cursor
+        An invisible marker that keeps track of where the next character will
+        be printed.
+
+    decrement
+        Decrease by 1.
+
+    development plan
+        A process for developing a program. In this chapter, we demonstrated a
+        style of development based on developing code to do simple, specific
+        things and then encapsulating and generalizing.
+
+    encapsulate
+        To divide a large complex program into components (like functions) and
+        isolate the components from each other (by using local variables, for
+        example).
+
+    escape sequence
+        An escape character, \, followed by one or more printable characters
+        used to designate a nonprintable character.
+
+    generalize
+        To replace something unnecessarily specific (like a constant value)
+        with something appropriately general (like a variable or parameter).
+        Generalization makes code more versatile, more likely to be reused, and
+        sometimes even easier to write.
+
+    increment
+        Both as a noun and as a verb, increment means to increase by 1.
+
+    infinite loop
+        A loop in which the terminating condition is never satisfied.
 
     initialization (of a variable)
         To initialize a variable is to give it an initial value, usually in the
@@ -755,12 +794,6 @@ Glossary
         variables can be created without being initialized, in which case they
         have either default or *garbage* values.
 
-    increment
-        Both as a noun and as a verb, increment means to increase by 1.
-
-    decrement
-        Decrease by 1.
-
     iteration
         Repeated execution of a set of programming statements.
 
@@ -768,57 +801,24 @@ Glossary
         A statement or group of statements that execute repeatedly until a
         terminating condition is satisfied.
 
-    infinite loop
-        A loop in which the terminating condition is never satisfied.
-
-    trace
-        To follow the flow of execution of a program by hand, recording the
-        change of state of the variables and any output produced.
-
-    counter
-        A variable used to count something, usually initialized to zero and
-        incremented in the body of a loop.
-
-    body
-        The statements inside a loop.
-
     loop variable
         A variable used as part of the terminating condition of a loop.
 
-    tab
-        A special character that causes the cursor to move to the next tab stop
-        on the current line.
+    multiple assignment
+        Making more than one assignment to the same variable during the
+        execution of a program.
 
     newline
         A special character that causes the cursor to move to the beginning of
         the next line.
 
-    cursor
-        An invisible marker that keeps track of where the next character will
-        be printed.
+    tab
+        A special character that causes the cursor to move to the next tab stop
+        on the current line.
 
-    escape sequence
-        An escape character, \, followed by one or more printable characters
-        used to designate a nonprintable character.
-
-    encapsulate
-        To divide a large complex program into components (like functions) and
-        isolate the components from each other (by using local variables, for
-        example).
-
-    generalize
-        To replace something unnecessarily specific (like a constant value)
-        with something appropriately general (like a variable or parameter).
-        Generalization makes code more versatile, more likely to be reused, and
-        sometimes even easier to write.
-
-    development plan
-        A process for developing a program. In this chapter, we demonstrated a
-        style of development based on developing code to do simple, specific
-        things and then encapsulating and generalizing.
-
-    algorithm
-        A step-by-step process for solving a category of problems.
+    trace
+        To follow the flow of execution of a program by hand, recording the
+        change of state of the variables and any output produced.
 
 
 Exercises

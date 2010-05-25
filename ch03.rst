@@ -450,14 +450,15 @@ Glossary
 
 .. glossary::
 
-    function
-        A named sequence of statements that performs some useful operation.
-        Functions may or may not take parameters and may or may not produce a
-        result.
+    argument
+        A value provided to a function when the function is called. This value
+        is assigned to the corresponding parameter in the function.
 
-    function definition
-        A statement that creates a new function, specifying its name,
-        parameters, and the statements it executes.
+    body
+        The second part of a compound statement. The body consists of a
+        sequence of statements all indented the same amount from the beginning
+        of the header.  The standard amount of indentation used within the
+        Python community is 4 spaces.
 
     compound statement
         A statement that consists of two parts:
@@ -475,26 +476,32 @@ Glossary
                 statement
                 statement ...
 
-    header
-        The first part of a compound statement. Headers begin with a keyword and
-        end with a colon (:)
+    flow of execution
+        The order in which statements are executed during a program run.
 
-    body
-        The second part of a compound statement. The body consists of a
-        sequence of statements all indented the same amount from the beginning
-        of the header.  The standard amount of indentation used within the
-        Python community is 4 spaces.
+    frame
+        A box in a stack diagram that represents a function call. It contains
+        the local variables and parameters of the function.
+
+    function
+        A named sequence of statements that performs some useful operation.
+        Functions may or may not take parameters and may or may not produce a
+        result.
 
     function call
         A statement that executes a function. It consists of the name of the
         function followed by a list of arguments enclosed in parentheses.
 
-    flow of execution
-        The order in which statements are executed during a program run.
+    function composition
+        Using the output from one function call as the input to another.
 
-    parameter
-        A name used inside a function to refer to the value passed as an
-        argument.
+    function definition
+        A statement that creates a new function, specifying its name,
+        parameters, and the statements it executes.
+
+    header
+        The first part of a compound statement. Headers begin with a keyword and
+        end with a colon (:)
 
     import
         A statement which permits functions and variables defined in a Python
@@ -550,24 +557,17 @@ Glossary
         Note that you do not include the ``.py`` from the script name in the
         import statement.
 
-    argument
-        A value provided to a function when the function is called. This value
-        is assigned to the corresponding parameter in the function.
-
-    function composition
-        Using the output from one function call as the input to another.
-
     local variable
         A variable defined inside a function. A local variable can only be used
         inside its function.
 
+    parameter
+        A name used inside a function to refer to the value passed as an
+        argument.
+
     stack diagram
         A graphical representation of a stack of functions, their variables,
         and the values to which they refer.
-
-    frame
-        A box in a stack diagram that represents a function call. It contains
-        the local variables and parameters of the function.
 
     traceback
         A list of the functions that are executing, printed when a runtime
