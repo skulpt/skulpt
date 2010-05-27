@@ -823,14 +823,60 @@ Glossary
 
 .. glossary::
 
+    base case
+        A branch of the conditional statement in a recursive function that does
+        not result in a recursive call.
+
+    data structure
+        An organization of data for the purpose of making it easier to use.
+
+    exception
+        An error that occurs at runtime.
+
+    handle an exception
+        To prevent an exception from terminating a program using the ``try``
+        and ``except`` statements.
+
     immutable data type
         A data type which cannot be modified.  Assignments to elements or
         slices of immutable types cause a runtime error.
+
+    infinite recursion
+        A function that calls itself recursively without ever reaching the base
+        case. Eventually, an infinite recursion causes a runtime error.
+
+    list comprehension
+        A syntactic construct which enables lists to be generated from other
+        lists using a syntax analogous to the mathematical `set-builder
+        notation <http://en.wikipedia.org/wiki/Set-builder_notation>`__.
 
     mutable data type
         A data type which can be modified. All mutable types are compound
         types.  Lists and dictionaries (see next chapter) are mutable data
         types; strings and tuples are not.
+
+    raise
+        To signal an exception using the ``raise`` statement.
+
+    recursion
+        The process of calling the function that is currently executing.
+
+    recursive call
+        The statement in a recursive function with is a call to itself.
+
+    recursive definition
+        A definition which defines something in terms of itself. To be useful
+        it must include *base cases* which are not recursive. In this way it
+        differs from a *circular definition*.  Recursive definitions often
+        provide an elegant way to express complex data structures.
+        
+    tail recursion
+        A recursive call that occurs as the last statement (at the tail) of a
+        function definition. Tail recursion is considered bad practice in
+        Python programs since a logically equivalent function can be written
+        using *iteration* which is more efficient (see the Wikipedia article on
+        `tail recursion <http://en.wikipedia.org/wiki/Tail_recursion>`__ for
+        more information).
 
     tuple
         A data type that contains a sequence of elements of any type, like a
@@ -841,52 +887,6 @@ Glossary
         An assignment to all of the elements in a tuple using a single
         assignment statement. Tuple assignment occurs in parallel rather than
         in sequence, making it useful for swapping values.
-
-    data structure
-        An organization of data for the purpose of making it easier to use.
-
-    recursive definition
-        A definition which defines something in terms of itself. To be useful
-        it must include *base cases* which are not recursive. In this way it
-        differs from a *circular definition*.  Recursive definitions often
-        provide an elegant way to express complex data structures.
-
-    recursion
-        The process of calling the function that is currently executing.
-
-    recursive call
-        The statement in a recursive function with is a call to itself.
-
-    base case
-        A branch of the conditional statement in a recursive function that does
-        not result in a recursive call.
-
-    infinite recursion
-        A function that calls itself recursively without ever reaching the base
-        case. Eventually, an infinite recursion causes a runtime error.
-
-    exception
-        An error that occurs at runtime.
-
-    handle an exception
-        To prevent an exception from terminating a program using the ``try``
-        and ``except`` statements.
-
-    raise
-        To signal an exception using the ``raise`` statement.
-        
-    tail recursion
-        A recursive call that occurs as the last statement (at the tail) of a
-        function definition. Tail recursion is considered bad practice in
-        Python programs since a logically equivalent function can be written
-        using *iteration* which is more efficient (see the Wikipedia article on
-        `tail recursion <http://en.wikipedia.org/wiki/Tail_recursion>`__ for
-        more information).
-
-    list comprehension
-        A syntactic construct which enables lists to be generated from other
-        lists using a syntax analogous to the mathematical `set-builder
-        notation <http://en.wikipedia.org/wiki/Set-builder_notation>`__.
 
 
 Exercises

@@ -553,13 +553,13 @@ Glossary
         concisely.
 
     concatenate
-        To join two operands end-to-end.
+        To join two strings end-to-end.
 
     data type
         A set of values. The type of a value determines how it can be used in
         expressions. So far, the types you have seen are integers (type
         ``int``), floating-point numbers (type ``float``), and strings (type
-        ``string``).
+        ``str``).
 
     evaluate
         To simplify an expression by performing the operations in order to
@@ -612,7 +612,7 @@ Glossary
         A Python data type that holds a string of characters.
 
     value
-        A number or string (or other thing to be named later) that can be
+        A number or string (or other things to be named later) that can be
         stored in a variable or computed in an expression.  
 
     variable
@@ -622,7 +622,7 @@ Glossary
         A name given to a variable. Variable names in Python consist of a
         sequence of letters (a..z, A..Z, and _) and digits (0..9) that begins
         with a letter.  In best programming practice, variable names should be
-        choosen so that they describe their use in the program, making the
+        chosen so that they describe their use in the program, making the
         program *self documenting*.
 
 

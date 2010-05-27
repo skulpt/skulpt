@@ -1004,39 +1004,6 @@ Glossary
 
 .. glossary::
 
-    list
-        A named collection of objects, where each object is identified by an
-        index.
-
-    index
-        An integer variable or value that indicates an element of a list.
-
-    element
-        One of the values in a list (or other sequence). The bracket operator
-        selects elements of a list.
-
-    sequence
-        Any of the data types that consist of an ordered set of elements, with
-        each element identified by an index.
-
-    nested list
-        A list that is an element of another list.
-
-    step size
-        The interval between successive elements of a linear sequence. The
-        third (and optional argument) to the ``range`` function is called the
-        step size.  If not specified, it defaults to 1.
-
-    list traversal
-        The sequential accessing of each element in a list.
-        
-    mutable type
-        A data type in which the elements can be modified. All mutable types
-        are compound types. Lists are mutable data types; strings are not.
-
-    object
-        A thing to which a variable can refer.
-
     aliases
         Multiple variables that contain references to the same object.
 
@@ -1045,18 +1012,54 @@ Glossary
         Copying a reference to an object creates an alias but doesn't clone the
         object.
 
+    delimiter
+        A character or string used to indicate where a string should be split.
+
+    element
+        One of the values in a list (or other sequence). The bracket operator
+        selects elements of a list.
+
+    index
+        An integer variable or value that indicates an element of a list.
+
+    list
+        A named collection of objects, where each object is identified by an
+        index.
+
+    list traversal
+        The sequential accessing of each element in a list.
+
     modifier
         A function which changes its arguments inside the function body. Only
         mutable types can be changed by modifiers.
+        
+    mutable type
+        A data type in which the elements can be modified. All mutable types
+        are compound types. Lists are mutable data types; strings are not.
+
+    nested list
+        A list that is an element of another list.
+
+    object
+        A thing to which a variable can refer.
+
+    pure function
+        A function which has no side effects. Pure functions only make changes
+        to the calling program through their return values.
+
+    sequence
+        Any of the data types that consist of an ordered set of elements, with
+        each element identified by an index.
         
     side effect
         A change in the state of a program made by calling a function that is
         not a result of reading the return value from the function. Side
         effects can only be produced by modifiers.
 
-    pure function
-        A function which has no side effects. Pure functions only make changes
-        to the calling program through their return values.
+    step size
+        The interval between successive elements of a linear sequence. The
+        third (and optional argument) to the ``range`` function is called the
+        step size.  If not specified, it defaults to 1.
 
     test-driven development (TDD)
         A software development practice which arrives at a desired feature
@@ -1065,9 +1068,6 @@ Glossary
         desired feature.  (see the Wikipedia article on `Test-driven
         development <http://en.wikipedia.org/wiki/Test_driven_development>`__
         for more information.)
-
-    delimiter
-        A character or string used to indicate where a string should be split.
 
 
 Exercises

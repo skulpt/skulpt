@@ -543,22 +543,6 @@ Glossary
 
 .. glossary::
 
-    random
-        Having no specific pattern. Unpredictable. Computers are designed to be
-        predicatable, and it is not possible to get a truly random value from a
-        computer. Certain functions produce sequences of values that appear as
-        if they were random, and it is these *psuedorandom* values that we get
-        from Python.
-
-    trichotomy
-        Given any real numbers *a* and *b*, exactly one of the following
-        relations holds: *a < b*, *a > b*, or *a = b*. Thus when you can
-        establish that two of the relations are false, you can assume the
-        remaining one is true.
-
-    nested loop
-        A loop inside the body of another loop.
-
     abstraction
         *Generalization* by reducing the information content of a concept.
         Functions in Python can be used to group a number of program statements
@@ -571,6 +555,22 @@ Glossary
         repesent constants, though Python programs rely on the discipline of
         the programmers to enforce this, since there is no language mechanism
         to to support true constants in Python.
+
+    nested loop
+        A loop inside the body of another loop.
+
+    random
+        Having no specific pattern. Unpredictable. Computers are designed to be
+        predicatable, and it is not possible to get a truly random value from a
+        computer. Certain functions produce sequences of values that appear as
+        if they were random, and it is these *psuedorandom* values that we get
+        from Python.
+
+    trichotomy
+        Given any real numbers *a* and *b*, exactly one of the following
+        relations holds: *a < b*, *a > b*, or *a = b*. Thus when you can
+        establish that two of the relations are false, you can assume the
+        remaining one is true.
 
 
 Exercises
