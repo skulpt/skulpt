@@ -653,7 +653,7 @@ Exercises
    tables. Two boolean expressions are *logically equivalent* if and only if
    they have the same truth table.
    
-   The following Python script prints out the truth table for the any boolean
+   The following Python script prints out the truth table for any boolean
    expression in two variables: p and q:
 
    .. sourcecode:: python

@@ -174,7 +174,7 @@ function again. If an error occurs at any point, we know where it must be --- in
 the last line we added.
 
 A logical first step in the computation is to find the differences
-x\ :sub:`2`\ - x\ :sub:`1`\ and y\ :sub:`2`\ - y\ :sub:`1`\ .  We will store
+x\ :sub:`2`\ - x\ :sub:`1`\  and y\ :sub:`2`\ - y\ :sub:`1`\ .  We will store
 those values in temporary variables named ``dx`` and ``dy`` and print them.
 
 .. sourcecode:: python

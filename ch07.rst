@@ -765,7 +765,7 @@ exercises may prove helpful in remembering what you learned:
         <http://en.wikipedia.org/wiki/Lexicographic_order>`__.  Examples:
         ``'apple' < 'banana'`` evaluates to ``True``.  ``'Zeta' < 'Appricot'
         evaluates to ``False``.  ``'Zebra' <= 'aardvark'`` evaluates to
-        ``True`` because all upper case letters proceed lower case letters.
+        ``True`` because all upper case letters precede lower case letters.
 
     in operator (``in``)
         The ``in`` operator tests whether one character or string is contained
