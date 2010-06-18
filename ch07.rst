@@ -763,9 +763,10 @@ exercises may prove helpful in remembering what you learned:
         The comparision operators work with strings, evaluating according to
         `lexigraphical order
         <http://en.wikipedia.org/wiki/Lexicographic_order>`__.  Examples:
-        ``'apple' < 'banana'`` evaluates to ``True``.  ``'Zeta' < 'Appricot'
-        evaluates to ``False``.  ``'Zebra' <= 'aardvark'`` evaluates to
-        ``True`` because all upper case letters precede lower case letters.
+        ``'apple' < 'banana'`` evaluates to ``True``.
+        ``'Zeta' < 'Appricot'`` evaluates to ``False`` .
+        ``'Zebra' <= 'aardvark'`` evaluates to ``True`` because all upper case
+        letters precede lower case letters.
 
     in operator (``in``)
         The ``in`` operator tests whether one character or string is contained
@@ -841,7 +842,7 @@ Glossary
     docstring
         A string constant on the first line of a function or module definition
         (and as we will see later, in class and method definitions as well).
-        Docstrings provide a convinient way to associate documentation with
+        Docstrings provide a convenient way to associate documentation with
         code. Docstrings are also used by the ``doctest`` module for automated
         testing.
 
@@ -850,7 +851,7 @@ Glossary
         module.
 
     immutable
-        A compound data types whose elements can not be assigned new values.
+        A compound data type whose elements cannot be assigned new values.
 
     index
         A variable or value used to select a member of an ordered set, such as

@@ -143,7 +143,7 @@ The ``break`` statement
 -----------------------
 
 The **break** statement is used to immediately leave the body of a loop. The
-following program impliments simple simple guessing game:
+following program implements a simple guessing game:
 
 .. sourcecode:: python
     
@@ -396,7 +396,7 @@ player or the computer reaches a winning score. The inner loop will be the one
 we already have, which plays a single round, moving the ball and mitt, and
 determining if a catch or a miss has occured.
 
-Research suggests there is are clear limits to our ability to process cognitive
+Research suggests there are clear limits to our ability to process cognitive
 tasks (see George A. Miller's `The Magical Number Seven, Plus or Minus Two:
 Some Limits on our Capacity for Processing Information
 <http://psychclassics.yorku.ca/Miller>`__). The more complex a program becomes, 
@@ -554,7 +554,7 @@ Glossary
         program.  It is conventional to use names with all uppercase letters to
         repesent constants, though Python programs rely on the discipline of
         the programmers to enforce this, since there is no language mechanism
-        to to support true constants in Python.
+        to support true constants in Python.
 
     nested loop
         A loop inside the body of another loop.
@@ -593,7 +593,7 @@ Exercises
    Now also comment out the ``remove_from_screen(ball1)`` statement. What
    happens now? Experiment with commenting and uncommenting the two
    ``remove_from_screen`` statements and the ``break`` statement until you can
-   describe *specifically* how these statement work together to produce the
+   describe *specifically* how these statements work together to produce the
    desired behavior in the program.
 #. Where can you add the lines
 

@@ -575,7 +575,7 @@ Take a moment to think about ``range(len(numbers))`` until you understand how
 it works. We are interested here in both the *value* and its *index* within the
 list, so that we can assign a new value to it.
 
-This pattern is common enough that Python provides a nicer way to impliment it:
+This pattern is common enough that Python provides a nicer way to implement it:
 
 .. sourcecode:: python
     
@@ -730,6 +730,9 @@ Matrices
 
 Nested lists are often used to represent matrices. For example, the matrix:
 
+.. image:: illustrations/matrix.png
+   :alt: Matrix illustration
+
 might be represented as:
 
 .. sourcecode:: python
@@ -816,7 +819,7 @@ result:
         """
         return [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
 
-Running this now the test passes, but our current implimentation of
+Running this now the test passes, but our current implementation of
 ``make_matrix`` always returns the same result, which is clearly not what we
 intended. To fix this, we first motivate our improvement by adding a test:
 
@@ -919,8 +922,8 @@ With a failing test to fix, we are now driven to a better solution:
 
 Using TDD has several benefits to our software development process.  It:
 
-* helps us think concretely about the problem we are trying solve *before* we
-  attempt to solve it.
+* helps us think concretely about the problem we are trying to solve *before*
+  we attempt to solve it.
 * encourages breaking down complex problems into smaller, simpler problems and
   working our way toward a solution of the larger problem step-by-step.
 * assures that we have a well developed automated test suite for our software,
