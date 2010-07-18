@@ -463,7 +463,7 @@ Unit testing with ``doctest``
 It is a common best practice in software development these days to include
 automatic **unit testing** of source code. Unit testing provides a way to
 automatically verify that individual pieces of code, such as functions, are
-working properly. This makes it possible to change the implimentation of a
+working properly. This makes it possible to change the implementation of a
 function at a later time and quickly test that it still does what it was
 intended to do.
 
@@ -680,7 +680,7 @@ doctests for your new function pass.
    ``ch05.py`` and confirm that the doctests pass.
 #. Write a function ``slope(x1, y1, x2, y2)`` that returns the slope of
    the line through the points (x1, y1) and (x2, y2). Be sure your
-   implimentation of ``slope`` can pass the following doctests:
+   implementation of ``slope`` can pass the following doctests:
 
    .. sourcecode:: python
     

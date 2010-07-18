@@ -560,10 +560,10 @@ number is non-negative.
 The ``raise`` statement takes two arguments: the exception type, and specific
 information about the error. ``ValueError`` is the built-in exception which
 most closely matches the kind of error we want to raise. The complete listing
-of built-in exceptions is found in `section 2.3
-<http://docs.python.org/lib/module-exceptions.html>`__ of the `Python Library
-Reference <http://docs.python.org/lib/>`__, again by Python's creator, Guido
-van Rossum.
+of built-in exceptions is found in the `Built-in Exceptions
+<http://docs.python.org/lib/module-exceptions.html>`__ section of the `Python
+Library Reference <http://docs.python.org/lib/>`__, again by Python's creator,
+Guido van Rossum.
 
 If the function that called ``get_age`` handles the error, then the program can
 continue; otherwise, Python prints the traceback and exits:
