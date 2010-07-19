@@ -67,6 +67,8 @@ can:
     ['ameliorate', 'castigate', 'defenestrate'] [17, 123] []
 
 
+.. _accessing-elements:
+
 Accessing elements
 ------------------
 
@@ -535,7 +537,8 @@ This statement is equivalent to:
         i += 1
 
 The ``for`` loop is more concise because we can eliminate the loop variable,
-``i``. Here is the previous loop written with a ``for`` loop.
+``i``. Here is an equivalent to the ``while`` loop from the
+:ref:`accessing-elements` section written with a ``for`` loop.
 
 .. sourcecode:: python
     

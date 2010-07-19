@@ -723,7 +723,8 @@ doctests for your new function pass.
 
    Finally, modify it so that it uses a call to ``is_even`` to determine if its 
    argument is an odd integer.
-#.
+#. Add the following function definition header and doctests to ``ch05.py``:
+
    .. sourcecode:: python
     
        def is_factor(f, n):
@@ -741,7 +742,8 @@ doctests for your new function pass.
            """
 
    Add a body to ``is_factor`` to make the doctests pass.
-#.
+#. Add the following function definition header and doctests to ``ch05.py``:
+
    .. sourcecode:: python
     
        def is_multiple(m, n):
@@ -760,7 +762,8 @@ doctests for your new function pass.
 
    Add a body to ``is_multiple`` to make the doctests pass. Can you find a way
    to use ``is_factor`` in your definition of ``is_multiple``?
-#.
+#. Add the following function definition header and doctests to ``ch05.py``:
+
    .. sourcecode:: python
     
        def f2c(t):
@@ -786,7 +789,8 @@ doctests for your new function pass.
    Fahrenheit. (*hint:* you may want to make use of the built-in function,
    ``round``. Try printing ``round.__doc__`` in a Python shell and
    experimenting with round until you are comfortable with how it works.)
-#.
+#. Add the following function definition header and doctests to ``ch05.py``:
+
    .. sourcecode:: python
     
        def c2f(t):
