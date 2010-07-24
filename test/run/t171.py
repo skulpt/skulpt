@@ -1,18 +1,20 @@
-print "%d" % 42
-print "%x" % 42
-print "%o" % 42
-print "%d" % 42L
-print "%x" % 42L
-print "%o" % 42L
-print "%d" % 4200000000000L
-print "%x" % 4200000000000L
-print "%o" % 4200000000000L
-print "%d" % 0x4200000000000L
-print "%x" % 0x4200000000000L
-print "%o" % 0x4200000000000L
-print "%d" % 0o4200000000000L
-print "%x" % 0o4200000000000L
-print "%o" % 0o4200000000000L
+def do(fmt, val):
+    print fmt % val
+do("%d", 42)
+do("%x", 42)
+do("%o", 42)
+do("%d", 42L)
+do("%x", 42L)
+do("%o", 42L)
+do("%d", 4200000000000L)
+do("%x", 4200000000000L)
+do("%o", 4200000000000L)
+do("%d", 0x4200000000000L)
+do("%x", 0x4200000000000L)
+do("%o", 0x4200000000000L)
+do("%d", 0o4200000000000L)
+do("%x", 0o4200000000000L)
+do("%o", 0o4200000000000L)
 big = 012345670123456701234567012345670L  # 32 octal digits
 print big
 print repr(big)

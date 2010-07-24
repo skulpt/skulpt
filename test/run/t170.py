@@ -1,33 +1,35 @@
+def do(fmt, val):
+    print fmt % val
 # Some small ints
-print "%d" % 42
-print "%d" % -42
-print "%d" % 42L
-print "%d" % -42L
-print "%d" % 42.0
-print "%#x" % 1
-print "%#x" % 1L
-print "%#X" % 1
-print "%#X" % 1L
-print "%#x" % 1.0
-print "%#o" % 1
-print "%#o" % 1L
-print "%#o" % 0
-print "%#o" % 0L
-print "%o" % 0
-print "%o" % 0L
-print "%d" % 0
-print "%d" % 0L
-print "%#x" % 0
-print "%#x" % 0L
-print "%#X" % 0
-print "%#X" % 0L
+do("%d", 42)
+do("%d", -42)
+do("%d", 42L)
+do("%d", -42L)
+do("%d", 42.0)
+do("%#x", 1)
+do("%#x", 1L)
+do("%#X", 1)
+do("%#X", 1L)
+do("%#x", 1.0)
+do("%#o", 1)
+do("%#o", 1L)
+do("%#o", 0)
+do("%#o", 0L)
+do("%o", 0)
+do("%o", 0L)
+do("%d", 0)
+do("%d", 0L)
+do("%#x", 0)
+do("%#x", 0L)
+do("%#X", 0)
+do("%#X", 0L)
 
-print "%x" % 0x42
-print "%x" % -0x42
-print "%x" % 0x42L
-print "%x" % -0x42L
+do("%x", 0x42)
+do("%x", -0x42)
+do("%x", 0x42L)
+do("%x", -0x42L)
 
-print "%o" % 042
-print "%o" % -042
-print "%o" % 042L
-print "%o" % -042L
+do("%o", 042)
+do("%o", -042)
+do("%o", 042L)
+do("%o", -042L)

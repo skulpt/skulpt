@@ -580,9 +580,9 @@ function sk$import(name)
     else
     {
         var js = Skulpt.compileStr(filename, contents, module);
-        //print("/**** start", filename, "****/");
-        //print(js);
-        //print("/**** end", filename, "****/");
+        print("/**** start", filename, "****/");
+        print(js);
+        print("/**** end", filename, "****/");
         eval(js);
     }
 

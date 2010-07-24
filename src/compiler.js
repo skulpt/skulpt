@@ -42,11 +42,11 @@ var hMarkGeneratorFunctions = {
 visit: genericVisit,
 Function_: function(ast, a)
            {
-               ast.code.walkChildren(this, { func: ast });
+               ast.code.walkChildren(this, { block: ast });
            },
 Yield_: function(ast, a)
 {
-    a.func.isGenerator = true;
+    a.block.isGenerator = true;
 }
 };
 
@@ -177,10 +177,12 @@ Global: function(ast, a)
 Module: function(ast, a)
         {
             //print("WEEE", astDump(ast));
+            a.localIsGlobal = true;
             this.newBlockAndWalkChildren(ast, a);
         },
 Interactive: function(ast, a)
              {
+                 a.localIsGlobal = true;
                  this.newBlockAndWalkChildren(ast, a);
              },
 For_: function(ast, a)
@@ -199,13 +201,18 @@ Class_: function(ast, a)
         {
             this.bindName(a, ast.name, BIND_LOCAL);
 
-            this.newBlockAndWalkChildren(ast, a);
+            var acopy = shallowcopy(a);
+            acopy.localIsGlobal = false;
+            this.newBlockAndWalkChildren(ast, acopy);
         },
 Function_: function(ast, a)
            {
                this.bindName(a, ast.name, BIND_LOCAL);
-               this.newBlockAndWalkChildren(ast, a);
+               var acopy = shallowcopy(a);
+               acopy.localIsGlobal = false;
+               this.newBlockAndWalkChildren(ast, acopy);
 
+               print("HERE", ast.argnames.length, ast.argnames[0]);
                a.currentBlocks.push(ast);
                for (var i = 0; i < ast.argnames.length; ++i)
                    this.bindName(a, ast.argnames[i], BIND_ARG);
@@ -224,6 +231,7 @@ newBlockAndWalkChildren: function(ast, a)
                          },
 bindName: function(a, name, level)
           {
+              if (a.localIsGlobal && level === BIND_LOCAL) level = BIND_GLOBAL;
               var end = a.currentBlocks.length - 1;
               var prev = a.currentBlocks[end].nameBindings[name];
               // allow global to override local, but not the other way around
@@ -372,7 +380,7 @@ AssName: function(ast, a)
              if (ast.flags === OP_ASSIGN)
              {
                  if (!tmp) throw "expecting tmp node to assign from";
-                 if (a.asGenerator && a.func.nameBindings[ast.name] === BIND_LOCAL)
+                 if (a.asGenerator && a.block.nameBindings[ast.name] === BIND_LOCAL)
                  {
                      o.push(a.generatorStateName);
                      o.push(".");
@@ -960,7 +968,7 @@ makeFuncBody: function(ast, a)
                   if (inclass)
                   {
                       //print("origname:",ast.argnames[0]);
-                      ast.code.walkChildren(hRenameAccessesToSelf, { func: ast, o: o, origname: ast.argnames[0] });
+                      ast.code.walkChildren(hRenameAccessesToSelf, { block: ast, o: o, origname: ast.argnames[0] });
                   }
 
                   var acopy = shallowcopy(a);
@@ -1073,7 +1081,7 @@ compileGenerator: function(ast, a)
                       acopy.locationMarkersToBeInitialized = [];
                       acopy.locationMarkerValues = [];
                       acopy.loopLabels = [];
-                      acopy.func = ast;
+                      acopy.block = ast;
 
                       // todo; self accesses
 
@@ -1273,11 +1281,16 @@ Name: function(ast, a)
           else if (ast.name === "False") o.push("false");
           else
           {
-              if (a.asGenerator && a.func.nameBindings[ast.name] === BIND_LOCAL)
+
+              if (a.asGenerator && nb === BIND_LOCAL)
               {
                   o.push(a.generatorStateName);
                   o.push(".");
               }
+              o.push("/*nb for" + ast.name + "is" + nb + "*/");
+              o.push("/* " + JSON2.stringify(a.block.nameBindings) + " */");
+              if (nb !== BIND_LOCAL && nb !== BIND_ARG)
+                  o.push("/*stuff*/");
               o.push(ast.name);
           }
       },
@@ -1420,6 +1433,13 @@ Class_: function(ast, a)
                 this.visit(ast.code.nodes[i], acopy);
             }
             o.push("undefined"); // no return in repl
+        },
+
+Module: function(ast, a)
+        {
+            var acopy = shallowcopy(a);
+            acopy.block = ast;
+            this.visit(ast.node, acopy);
         },
 
 Import_: function(ast, a)
