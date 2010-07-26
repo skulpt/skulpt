@@ -14,64 +14,94 @@
  * callback can return true to abort.
  *
  */
-var T_ENDMARKER = 0;
-var T_NAME = 1;
-var T_NUMBER = 2;
-var T_STRING = 3;
-var T_NEWLINE = 4;
-var T_INDENT = 5;
-var T_DEDENT = 6;
-var T_LPAR = 7;
-var T_RPAR = 8;
-var T_LSQB = 9;
-var T_RSQB = 10;
-var T_COLON = 11;
-var T_COMMA = 12;
-var T_SEMI = 13;
-var T_PLUS = 14;
-var T_MINUS = 15;
-var T_STAR = 16;
-var T_SLASH = 17;
-var T_VBAR = 18;
-var T_AMPER = 19;
-var T_LESS = 20;
-var T_GREATER = 21;
-var T_EQUAL = 22;
-var T_DOT = 23;
-var T_PERCENT = 24;
-var T_BACKQUOTE = 25;
-var T_LBRACE = 26;
-var T_RBRACE = 27;
-var T_EQEQUAL = 28;
-var T_NOTEQUAL = 29;
-var T_LESSEQUAL = 30;
-var T_GREATEREQUAL = 31;
-var T_TILDE = 32;
-var T_CIRCUMFLEX = 33;
-var T_LEFTSHIFT = 34;
-var T_RIGHTSHIFT = 35;
-var T_DOUBLESTAR = 36;
-var T_PLUSEQUAL = 37;
-var T_MINEQUAL = 38;
-var T_STAREQUAL = 39;
-var T_SLASHEQUAL = 40;
-var T_PERCENTEQUAL = 41;
-var T_AMPEREQUAL = 42;
-var T_VBAREQUAL = 43;
-var T_CIRCUMFLEXEQUAL = 44;
-var T_LEFTSHIFTEQUAL = 45;
-var T_RIGHTSHIFTEQUAL = 46;
-var T_DOUBLESTAREQUAL = 47;
-var T_DOUBLESLASH = 48;
-var T_DOUBLESLASHEQUAL = 49;
-var T_AT = 50;
-var T_OP = 51;
-var T_COMMENT = 52;
-var T_NL = 53;
-var T_RARROW = 54;
-var T_ERRORTOKEN = 55;
-var T_N_TOKENS = 56;
-var T_NT_OFFSET = 256;
+(function() {
+
+var $ = Sk.Tokenizer = function (filename, interactive, callback)
+{
+    this.filename = filename;
+    this.callback = callback;
+    this.lnum = 0;
+    this.parenlev = 0;
+    this.continued = false;
+    this.namechars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
+    this.numchars = '0123456789';
+    this.contstr = '';
+    this.needcont = false;
+    this.contline = undefined;
+    this.indents = [0];
+    this.endprog = undefined;
+    this.strstart = undefined;
+    this.interactive = interactive;
+    this.doneFunc = function()
+    {
+        for (var i = 1; i < this.indents.length; ++i) // pop remaining indent levels
+        {
+            if (this.callback($.T_DEDENT, '', [this.lnum, 0], [this.lnum, 0], '')) return 'done';
+        }
+        if (this.callback($.T_ENDMARKER, '', [this.lnum, 0], [this.lnum, 0], '')) return 'done';
+
+        return 'failed';
+    };
+};
+
+$.T_ENDMARKER = 0;
+$.T_NAME = 1;
+$.T_NUMBER = 2;
+$.T_STRING = 3;
+$.T_NEWLINE = 4;
+$.T_INDENT = 5;
+$.T_DEDENT = 6;
+$.T_LPAR = 7;
+$.T_RPAR = 8;
+$.T_LSQB = 9;
+$.T_RSQB = 10;
+$.T_COLON = 11;
+$.T_COMMA = 12;
+$.T_SEMI = 13;
+$.T_PLUS = 14;
+$.T_MINUS = 15;
+$.T_STAR = 16;
+$.T_SLASH = 17;
+$.T_VBAR = 18;
+$.T_AMPER = 19;
+$.T_LESS = 20;
+$.T_GREATER = 21;
+$.T_EQUAL = 22;
+$.T_DOT = 23;
+$.T_PERCENT = 24;
+$.T_BACKQUOTE = 25;
+$.T_LBRACE = 26;
+$.T_RBRACE = 27;
+$.T_EQEQUAL = 28;
+$.T_NOTEQUAL = 29;
+$.T_LESSEQUAL = 30;
+$.T_GREATEREQUAL = 31;
+$.T_TILDE = 32;
+$.T_CIRCUMFLEX = 33;
+$.T_LEFTSHIFT = 34;
+$.T_RIGHTSHIFT = 35;
+$.T_DOUBLESTAR = 36;
+$.T_PLUSEQUAL = 37;
+$.T_MINEQUAL = 38;
+$.T_STAREQUAL = 39;
+$.T_SLASHEQUAL = 40;
+$.T_PERCENTEQUAL = 41;
+$.T_AMPEREQUAL = 42;
+$.T_VBAREQUAL = 43;
+$.T_CIRCUMFLEXEQUAL = 44;
+$.T_LEFTSHIFTEQUAL = 45;
+$.T_RIGHTSHIFTEQUAL = 46;
+$.T_DOUBLESTAREQUAL = 47;
+$.T_DOUBLESLASH = 48;
+$.T_DOUBLESLASHEQUAL = 49;
+$.T_AT = 50;
+$.T_OP = 51;
+$.T_COMMENT = 52;
+$.T_NL = 53;
+$.T_RARROW = 54;
+$.T_ERRORTOKEN = 55;
+$.T_N_TOKENS = 56;
+$.T_NT_OFFSET = 256;
 
 function group()
 {
@@ -202,34 +232,7 @@ function rstrip(input, what)
     return input.substring(0, i);
 }
 
-function Tokenizer(filename, interactive, callback)
-{
-    this.filename = filename;
-    this.callback = callback;
-    this.lnum = 0;
-    this.parenlev = 0;
-    this.continued = false;
-    this.namechars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
-    this.numchars = '0123456789';
-    this.contstr = '';
-    this.needcont = false;
-    this.contline = undefined;
-    this.indents = [0];
-    this.endprog = undefined;
-    this.strstart = undefined;
-    this.interactive = interactive;
-    this.doneFunc = function()
-    {
-        for (var i = 1; i < this.indents.length; ++i) // pop remaining indent levels
-        {
-            if (this.callback(T_DEDENT, '', [this.lnum, 0], [this.lnum, 0], '')) return 'done';
-        }
-        if (this.callback(T_ENDMARKER, '', [this.lnum, 0], [this.lnum, 0], '')) return 'done';
-
-        return 'failed';
-    };
-}
-Tokenizer.prototype.generateTokens = function(line)
+$.prototype.generateTokens = function(line)
 {
     var endmatch, pos, column, end, max;
 
@@ -244,13 +247,13 @@ Tokenizer.prototype.generateTokens = function(line)
     {
         if (!line)
         {
-            throw new TokenError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
+            throw new Sk.builtin.TokenError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
         }
         endmatch = this.endprog.test(line);
         if (endmatch)
         {
             pos = end = this.endprog.lastIndex;
-            if (this.callback(T_STRING, this.contstr + line.substring(0,end),
+            if (this.callback($.T_STRING, this.contstr + line.substring(0,end),
                         this.strstart, [this.lnum, end], this.contline + line))
                 return 'done';
             this.contstr = '';
@@ -259,7 +262,7 @@ Tokenizer.prototype.generateTokens = function(line)
         }
         else if (this.needcont && line.substring(line.length - 2) !== "\\\n" && line.substring(line.length - 3) !== "\\\r\n")
         {
-            if (this.callback(T_ERRORTOKEN, this.contstr + line,
+            if (this.callback($.T_ERRORTOKEN, this.contstr + line,
                         this.strstart, [this.lnum, line.length], this.contline))
                 return 'done';
             this.contstr = '';
@@ -293,11 +296,11 @@ Tokenizer.prototype.generateTokens = function(line)
             {
                 var comment_token = rstrip(line.substring(pos), '\r\n');
                 var nl_pos = pos + comment_token.length;
-                if (this.callback(T_COMMENT, comment_token,
+                if (this.callback($.T_COMMENT, comment_token,
                             [this.lnum, pos], [this.lnum, pos + comment_token.length], line))
                     return 'done';
                 //print("HERE:1");
-                if (this.callback(T_NL, line.substring(nl_pos),
+                if (this.callback($.T_NL, line.substring(nl_pos),
                             [this.lnum, nl_pos], [this.lnum, line.length], line))
                     return 'done';
                 return false;
@@ -305,7 +308,7 @@ Tokenizer.prototype.generateTokens = function(line)
             else
             {
                 //print("HERE:2");
-                if (this.callback(T_NL, line.substring(pos),
+                if (this.callback($.T_NL, line.substring(pos),
                             [this.lnum, pos], [this.lnum, line.length], line))
                     return 'done';
                 if (!this.interactive) return false;
@@ -315,19 +318,19 @@ Tokenizer.prototype.generateTokens = function(line)
         if (column > this.indents[this.indents.length - 1]) // count indents or dedents
         {
             this.indents.push(column);
-            if (this.callback(T_INDENT, line.substring(0, pos), [this.lnum, 0], [this.lnum, pos], line))
+            if (this.callback($.T_INDENT, line.substring(0, pos), [this.lnum, 0], [this.lnum, pos], line))
                 return 'done';
         }
         while (column < this.indents[this.indents.length - 1])
         {
             if (!contains(this.indents, column))
             {
-                throw new IndentationError("unindent does not match any outer indentation level",
+                throw new Sk.builtin.IndentationError("unindent does not match any outer indentation level",
                         this.filename, this.lnum, pos, line);
             }
             this.indents.splice(this.indents.length - 1, 1);
             //print("dedent here");
-            if (this.callback(T_DEDENT, '', [this.lnum, pos], [this.lnum, pos], line))
+            if (this.callback($.T_DEDENT, '', [this.lnum, pos], [this.lnum, pos], line))
                 return 'done';
         }
     }
@@ -335,7 +338,7 @@ Tokenizer.prototype.generateTokens = function(line)
     {
         if (!line)
         {
-            throw new TokenError("EOF in multi-line statement", this.filename, this.lnum, 0, line);
+            throw new Sk.builtin.TokenError("EOF in multi-line statement", this.filename, this.lnum, 0, line);
         }
         this.continued = false;
     }
@@ -363,18 +366,18 @@ Tokenizer.prototype.generateTokens = function(line)
             //print("initial:'" +initial +"'");
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.'))
             {
-                if (this.callback(T_NUMBER, token, spos, epos, line)) return 'done';
+                if (this.callback($.T_NUMBER, token, spos, epos, line)) return 'done';
             }
             else if (initial === '\r' || initial === '\n')
             {
-                var newl = T_NEWLINE;
+                var newl = $.T_NEWLINE;
                 //print("HERE:3");
-                if (this.parenlev > 0) newl = T_NL;
+                if (this.parenlev > 0) newl = $.T_NL;
                 if (this.callback(newl, token, spos, epos, line)) return 'done';
             }
             else if (initial === '#')
             {
-                if (this.callback(T_COMMENT, token, spos, epos, line)) return 'done';
+                if (this.callback($.T_COMMENT, token, spos, epos, line)) return 'done';
             }
             else if (token in triple_quoted)
             {
@@ -384,7 +387,7 @@ Tokenizer.prototype.generateTokens = function(line)
                 {
                     pos = this.endprog.lastIndex + pos;
                     token = line.substring(start, pos);
-                    if (this.callback(T_STRING, token, spos, [this.lnum, pos], line)) return 'done';
+                    if (this.callback($.T_STRING, token, spos, [this.lnum, pos], line)) return 'done';
                 }
                 else
                 {
@@ -409,29 +412,29 @@ Tokenizer.prototype.generateTokens = function(line)
                 }
                 else
                 {
-                    if (this.callback(T_STRING, token, spos, epos, line)) return 'done';
+                    if (this.callback($.T_STRING, token, spos, epos, line)) return 'done';
                 }
             }
             else if (this.namechars.indexOf(initial) !== -1)
             {
-                if (this.callback(T_NAME, token, spos, epos, line)) return 'done';
+                if (this.callback($.T_NAME, token, spos, epos, line)) return 'done';
             }
             else if (initial === '\\')
             {
                 //print("HERE:4");
-                if (this.callback(T_NL, token, spos, [this.lnum, pos], line)) return 'done';
+                if (this.callback($.T_NL, token, spos, [this.lnum, pos], line)) return 'done';
                 this.continued = true;
             }
             else
             {
                 if ('([{'.indexOf(initial) !== -1) this.parenlev += 1;
                 else if (')]}'.indexOf(initial) !== -1) this.parenlev -= 1;
-                if (this.callback(T_OP, token, spos, epos, line)) return 'done';
+                if (this.callback($.T_OP, token, spos, epos, line)) return 'done';
             }
         }
         else
         {
-            if (this.callback(T_ERRORTOKEN, line.charAt(pos),
+            if (this.callback($.T_ERRORTOKEN, line.charAt(pos),
                         [this.lnum, pos], [this.lnum, pos+1], line))
                 return 'done';
             pos += 1;
@@ -440,3 +443,5 @@ Tokenizer.prototype.generateTokens = function(line)
 
     return false;
 };
+
+}());

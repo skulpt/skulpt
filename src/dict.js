@@ -1,5 +1,9 @@
-Dict$ = function(L)
+(function() {
+
+var $ = Sk.builtin.dict = function dict(L)
 {
+    if (!(this instanceof $)) return new $(L);
+
     this.size = 0;
 
     for (var i = 0; i < L.length; i += 2)
@@ -7,44 +11,44 @@ Dict$ = function(L)
         this.__setitem__(L[i], L[i+1]);
     }
 
+    this.__class__ = this.nativeclass$ = $;
+
     return this;
 };
 
-Dict$.prototype.key$ = function(value)
+var kf = Sk.builtin.hash;
+
+$.prototype.clear = function() { throw "todo; dict.clear"; };
+$.prototype.copy = function() { throw "todo; dict.copy"; };
+$.prototype.fromkeys = function() { throw "todo; dict.fromkeys"; };
+$.prototype.get = function() { throw "todo; dict.get"; };
+
+$.prototype.has_key = function(key)
 {
-    return hash(value);
+	return this.hasOwnProperty(kf(key));
 };
 
-Dict$.prototype.clear = function() { throw "todo; dict.clear"; };
-Dict$.prototype.copy = function() { throw "todo; dict.copy"; };
-Dict$.prototype.fromkeys = function() { throw "todo; dict.fromkeys"; };
-Dict$.prototype.get = function() { throw "todo; dict.get"; };
+$.prototype.items = function() { throw "todo; dict.items"; };
+$.prototype.iteritems = function() { throw "todo; dict.iteritems"; };
+$.prototype.iterkeys = function() { throw "todo; dict.iterkeys"; };
+$.prototype.itervalues = function() { throw "todo; dict.itervalues"; };
+$.prototype.keys = function() { throw "todo; dict.keys"; };
+$.prototype.pop = function() { throw "todo; dict.pop"; };
+$.prototype.popitem = function() { throw "todo; dict.popitem"; };
+$.prototype.setdefault = function() { throw "todo; dict.setdefault"; };
+$.prototype.update = function() { throw "todo; dict.update"; };
+$.prototype.values = function() { throw "todo; dict.values"; };
 
-Dict$.prototype.has_key = function(key)
+$.prototype.__getitem__ = function(key)
 {
-	return this.hasOwnProperty(this.key$(key));
-};
-
-Dict$.prototype.items = function() { throw "todo; dict.items"; };
-Dict$.prototype.iteritems = function() { throw "todo; dict.iteritems"; };
-Dict$.prototype.iterkeys = function() { throw "todo; dict.iterkeys"; };
-Dict$.prototype.itervalues = function() { throw "todo; dict.itervalues"; };
-Dict$.prototype.keys = function() { throw "todo; dict.keys"; };
-Dict$.prototype.pop = function() { throw "todo; dict.pop"; };
-Dict$.prototype.popitem = function() { throw "todo; dict.popitem"; };
-Dict$.prototype.setdefault = function() { throw "todo; dict.setdefault"; };
-Dict$.prototype.update = function() { throw "todo; dict.update"; };
-Dict$.prototype.values = function() { throw "todo; dict.values"; };
-
-Dict$.prototype.__getitem__ = function(key)
-{
-    var entry = this[this.key$(key)];
+    var entry = this[kf(key)];
     return typeof entry === 'undefined' ? undefined : entry.rhs;
 };
 
-Dict$.prototype.__setitem__ = function(key, value)
+$.prototype.__setitem__ = function(key, value)
 {
-    var k = this.key$(key);
+    //print("__setitem__", key.v, value);
+    var k = kf(key);
 
     if (this.hasOwnProperty(k))
     {
@@ -61,9 +65,9 @@ Dict$.prototype.__setitem__ = function(key, value)
     return this;
 };
 
-Dict$.prototype.__delitem__ = function(key)
+$.prototype.__delitem__ = function(key)
 {
-    var k = this.key$(key);
+    var k = kf(key);
 
     if (this.hasOwnProperty(k))
     {
@@ -74,7 +78,7 @@ Dict$.prototype.__delitem__ = function(key)
     return this;
 };
 
-Dict$.prototype.__repr__ = function()
+$.prototype.__repr__ = function()
 {
     var ret = [];
     for (var iter = this.__iter__(), k = iter.next();
@@ -82,13 +86,18 @@ Dict$.prototype.__repr__ = function()
             k = iter.next())
     {
         var v = this.__getitem__(k);
-        ret.push(repr(k).v + ": " + repr(v).v);
+        if (v === undefined)
+        {
+            print(k, "had undefined v");
+            v = null;
+        }
+        ret.push(Sk.builtin.repr(k).v + ": " + Sk.builtin.repr(v).v);
     }
-    return new Str$("{" + ret.join(", ") + "}");
+    return new Sk.builtin.str("{" + ret.join(", ") + "}");
 };
-Dict$.prototype.__class__ = new Type$('dict', [sk$TypeObject], {});
+$.prototype.__class__ = new Sk.builtin.type('dict', [Sk.types.object], {});
 
-Dict$.prototype.__iter__ = function()
+$.prototype.__iter__ = function()
 {
     var allkeys = [];
     for (var k in this)
@@ -119,3 +128,5 @@ Dict$.prototype.__iter__ = function()
     };
     return ret;
 };
+
+}());

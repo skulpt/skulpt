@@ -1,20 +1,22 @@
-Tuple$ = function(L)
+(function() {
+
+var $ = Sk.builtin.tuple = function(L)
 {
-    this.v = L;
+    if (L instanceof $) return;
+    if (!(this instanceof $)) return new $(L);
+    if (Object.prototype.toString.apply(L) === '[object Array]')
+        this.v = L;
+    else
+        this.v = L.v;
+    this.__class__ = this.nativeclass$ = $;
+    return this;
 };
 
-Tuple$.prototype.iter$ = function(f)
-{
-    for (var i = 0; i < this.v.length; ++i)
-    {
-        if (f.call(null, this.v[i]) === false) break;
-    }
-};
+$.prototype.count = function() { throw "todo; tuple.count"; };
+$.prototype.index = function() { throw "todo; tuple.index"; };
+$.prototype.__class__ = new Sk.builtin.type('tuple', [Sk.types.object], {});
 
-Tuple$.prototype.count = function() { throw "todo; tuple.count"; };
-Tuple$.prototype.index = function() { throw "todo; tuple.index"; };
-
-Tuple$.prototype.__getitem__ = function(index)
+$.prototype.__getitem__ = function(index)
 {
     if (typeof index === "number")
     {
@@ -22,30 +24,36 @@ Tuple$.prototype.__getitem__ = function(index)
         if (index < 0 || index >= this.v.length) throw new IndexError("tuple index out of range");
         return this.v[index];
     }
-    else if (index instanceof Slice$)
+    else if (index instanceof Sk.builtin.slice)
     {
         var ret = [];
         index.sssiter$(this, function(i, wrt)
                 {
                     ret.push(wrt.v[i]);
                 });
-        return new Tuple$(ret);
+        return new $(ret);
     }
     else
         throw new TypeError("tuple indices must be integers, not " + typeof index);
 };
 
-Tuple$.prototype.__repr__ = function()
+$.prototype.__repr__ = function()
 {
     var asStrs = [];
-    sk$iter(this, function(v) { asStrs.push(repr(v).v); });
+    for (var it = this.__iter__(), i = it.next(); i !== undefined; i = it.next())
+        asStrs.push(Sk.builtin.repr(i).v);
     if (asStrs.length === 1)
-        return new Str$("(" + asStrs[0] + ",)");
+        return new Sk.builtin.str("(" + asStrs[0] + ",)");
     else
-        return new Str$("(" + asStrs.join(", ") + ")");
+        return new Sk.builtin.str("(" + asStrs.join(", ") + ")");
 };
 
-Tuple$.prototype.__mul__ = Tuple$.prototype.__rmul__ = function(other)
+$.prototype.__add__ = $.prototype.__radd__ = function(other)
+{
+    return new $(this.v.concat(other.v));
+};
+
+$.prototype.__mul__ = $.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = [];
@@ -56,17 +64,17 @@ Tuple$.prototype.__mul__ = Tuple$.prototype.__rmul__ = function(other)
             ret.push(this.v[j]);
         }
     }
-    return new Tuple$(ret);
+    return new $(ret);
 };
 
-Tuple$.prototype.richcmp$ = function(rhs, op)
+$.prototype.richcmp$ = function(rhs, op)
 {
-    if (rhs.constructor !== Tuple$) return false;
+    if (rhs.constructor !== $) return false;
 
     // find the first item where they're different
     for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
     {
-        if (!sk$cmp(this.v[i], rhs.v[i], '=='))
+        if (!Sk.cmp(this.v[i], rhs.v[i], '=='))
             break;
     }
 
@@ -92,20 +100,21 @@ Tuple$.prototype.richcmp$ = function(rhs, op)
     if (op === '!=') return true;
 
     // or compare the final item
-    return sk$cmp(this.v[i], rhs.v[i], op);
+    return Sk.cmp(this.v[i], rhs.v[i], op);
 };
 
 // todo; the numbers and order are taken from python, but the answer's
 // obviously not the same because there's no int wrapping. shouldn't matter,
 // but would be nice to make the hash() values the same if it's not too
 // expensive to simplify tests.
-Tuple$.prototype.__hash__ = function()
+$.prototype.__hash__ = function()
 {
     var mult = 1000003;
     var x = 0x345678;
-    for (var i = 0; i < this.v.length; ++i)
+    var len = this.v.length;
+    for (var i = 0; i < len; ++i)
     {
-        var y = hash(this.v[i]) === -1;
+        var y = Sk.builtin.hash(this.v[i]) === -1;
         if (y === -1) return -1;
         x = (x ^ y) * mult;
         mult += 82520 + len + len;
@@ -115,9 +124,7 @@ Tuple$.prototype.__hash__ = function()
     return x;
 };
 
-function tuple(L) { return new Tuple$(L.v); }
-
-Tuple$.prototype.__iter__ = function()
+$.prototype.__iter__ = function()
 {
     var ret =
     {
@@ -133,3 +140,5 @@ Tuple$.prototype.__iter__ = function()
     };
     return ret;
 };
+
+}());

@@ -1,5 +1,9 @@
-Slice$ = function(start, stop, step)
+(function() {
+
+var $ = Sk.builtin.slice = function slice(start, stop, step)
 {
+    if (!(this instanceof $)) return new $(start, stop, step);
+
     if (stop === undefined && step === undefined)
     {
         stop = start;
@@ -11,17 +15,18 @@ Slice$ = function(start, stop, step)
     this.start = start;
     this.stop = stop;
     this.step = step;
+    return this;
 };
 
-Slice$.prototype.__str__ = function()
+$.prototype.__str__ = function()
 {
-    var a = repr(this.start).v;
-    var b = repr(this.stop).v;
-    var c = repr(this.step).v;
-    return new Str$("slice(" + a + ", " + b + ", " + c + ")");
+    var a = Sk.builtin.repr(this.start).v;
+    var b = Sk.builtin.repr(this.stop).v;
+    var c = Sk.builtin.repr(this.step).v;
+    return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
 
-Slice$.prototype.indices = function(length)
+$.prototype.indices = function(length)
 {
     // this seems ugly, better way?
     var start = this.start, stop = this.stop, step = this.step, i;
@@ -43,7 +48,7 @@ Slice$.prototype.indices = function(length)
     return [start, stop, step];
 };
 
-Slice$.prototype.sssiter$ = function(wrt, f)
+$.prototype.sssiter$ = function(wrt, f)
 {
     var sss = this.indices(typeof wrt === "number" ? wrt : wrt.v.length);
     if (sss[2] > 0)
@@ -59,3 +64,5 @@ Slice$.prototype.sssiter$ = function(wrt, f)
 
     }
 };
+
+}());

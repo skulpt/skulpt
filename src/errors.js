@@ -1,3 +1,5 @@
+(function() {
+
 function ErrorToString()
 {
     if (typeof this === "object" && this.hasOwnProperty("isSkError"))
@@ -25,6 +27,7 @@ function makeStdError(obj, type, rest)
     return obj;
 }
 
+/*
 function TokenError(msg, file, lnum, col, line) { return makeStdError(this, "TokenError", arguments); }
 function IndentationError(msg, file, lnum, col, line) { return makeStdError(this, "IndentationError", arguments); }
 function SyntaxError(msg, file, lnum, col, line) { return makeStdError(this, "SyntaxError", arguments); }
@@ -32,5 +35,11 @@ function ValueError(msg, file, lnum, col, line) { return makeStdError(this, "Val
 function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "TypeError", arguments); }
 function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); }
 function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); }
-function AttributeError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
 function ImportError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); }
+*/
+
+Sk.builtin.AttributeError = function AttributeError(msg, file, lnum, col, line) { return makeStdError(this, "AttributeError", arguments); };
+Sk.builtin.TokenError = function TokenError(msg, file, lnum, col, line) { return makeStdError(this, "TokenError", arguments); };
+Sk.builtin.IndentationError = function IndentationError(msg, file, lnum, col, line) { return makeStdError(this, "IndentationError", arguments); };
+
+}());

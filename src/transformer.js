@@ -7,6 +7,12 @@
 // parse tree that's quite low-level and munges it into something that's a bit
 // easier to compile. For the most part it's simply flattening, and wrapping
 // in named types (from ast.js).
+
+(function() {
+
+var TOK = Sk.Tokenizer;
+var AST = Sk.Ast;
+
 function Transformer(grammar)
 {
     this.grammar = grammar;
@@ -26,20 +32,20 @@ function Transformer(grammar)
         this.sym.factor
     ];
     this.cmp_types = {};
-    this.cmp_types[T_LESS] = '<';
-    this.cmp_types[T_GREATER] = '>';
-    this.cmp_types[T_EQEQUAL] = '==';
-    this.cmp_types[T_EQUAL] = '=';
-    this.cmp_types[T_LESSEQUAL] = '<=';
-    this.cmp_types[T_GREATEREQUAL] = '>=';
-    this.cmp_types[T_NOTEQUAL] = '!=';
+    this.cmp_types[TOK.T_LESS] = '<';
+    this.cmp_types[TOK.T_GREATER] = '>';
+    this.cmp_types[TOK.T_EQEQUAL] = '==';
+    this.cmp_types[TOK.T_EQUAL] = '=';
+    this.cmp_types[TOK.T_LESSEQUAL] = '<=';
+    this.cmp_types[TOK.T_GREATEREQUAL] = '>=';
+    this.cmp_types[TOK.T_NOTEQUAL] = '!=';
 
     return this;
 }
 
-function transform(cst)
+Sk.transform = function transform(cst)
 {
-    var t = new Transformer(SkulptParseTables);
+    var t = new Transformer(Sk.ParseTables);
     return t.compile_node(cst);
 }
 
@@ -79,17 +85,17 @@ Transformer.prototype.file_input = function(nodelist)
     for (var i = (doc) ? 1 : 0; i < nodelist.length; ++i)
     {
         var node = nodelist[i];
-        if (node.type !== T_ENDMARKER && node.type !== T_NEWLINE)
+        if (node.type !== TOK.T_ENDMARKER && node.type !== TOK.T_NEWLINE)
             this.com_append_stmt(stmts, node);
     }
-    return new Module(doc, new Stmt(stmts));
+    return new AST.Module(doc, new AST.Stmt(stmts));
 };
 
 Transformer.prototype.single_input = function(node)
 {
     // NEWLINE | simple_stmt | compound_stmt NEWLINE
     var n = node[0].type;
-    if (n !== T_NEWLINE)
+    if (n !== TOK.T_NEWLINE)
     {
         return new Interactive(this.dispatch(node[0]));
     }
@@ -99,7 +105,7 @@ Transformer.prototype.single_input = function(node)
 Transformer.prototype.com_append_stmt = function(stmts, node)
 {
     var result = this.dispatch(node);
-    if (result instanceof Stmt)
+    if (result instanceof AST.Stmt)
     {
         for (var i = 0; i < result.nodes.length; ++i)
             stmts.push(result.nodes[i]);
@@ -122,14 +128,14 @@ Transformer.prototype.com_list_constructor = function(nodelist)
             if (nodelist.children.length - i !== 1) throw "assert";
             return this.com_list_comprehension(values[0], nodelist.children[i]);
         }
-        else if (nodelist.children[i].type === T_COMMA)
+        else if (nodelist.children[i].type === TOK.T_COMMA)
         {
             continue;
         }
         //print(JSON.stringify(nodelist.children[i]));
         values.push(this.dispatch(nodelist.children[i]));
     }
-    return new List(values, values[0].lineno);
+    return new AST.List(values, values[0].lineno);
 };
 
 Transformer.prototype.com_list_comprehension = function(expr, node)
@@ -150,9 +156,9 @@ Transformer.prototype.com_list_comprehension = function(expr, node)
         var t = node.children[0].value;
         if (t === "for")
         {
-            var assignNode = this.com_assign(node.children[1], OP_ASSIGN);
+            var assignNode = this.com_assign(node.children[1], AST.OP_ASSIGN);
             var listNode = this.dispatch(node.children[3]);
-            var newfor = new ListCompFor(assignNode, listNode, []);
+            var newfor = new AST.ListCompFor(assignNode, listNode, []);
             newfor.lineno = node.children[0].context;
             fors.push(newfor);
             if (node.children.length === 4)
@@ -163,7 +169,7 @@ Transformer.prototype.com_list_comprehension = function(expr, node)
         else if (t === "if")
         {
             var test = this.dispatch(node.children[1]);
-            var newif = new ListCompIf(test, node.children[0].context);
+            var newif = new AST.ListCompIf(test, node.children[0].context);
             newfor.ifs.push(newif);
             if (node.children.length === 2)
                 node = null;
@@ -175,7 +181,7 @@ Transformer.prototype.com_list_comprehension = function(expr, node)
             throw new SyntaxError("unexpected list comprehension element: " + node, lineno + ", " + lineno);
         }
     }
-    return new ListComp(expr, fors, lineno);
+    return new AST.ListComp(expr, fors, lineno);
 };
 
 Transformer.prototype.com_comp_iter = function(node)
@@ -194,7 +200,7 @@ Transformer.prototype.com_dictmaker = function(nodelist)
         items.push(this.dispatch(nodelist.children[i]));
         items.push(this.dispatch(nodelist.children[i+2]));
     }
-    return new Dict(items, items[0].lineno);
+    return new AST.Dict(items, items[0].lineno);
 };
 
 // Compile 'NODE (OP NODE)*' into (type, [ node1, ..., nodeN ]).
@@ -216,21 +222,21 @@ Transformer.prototype.com_apply_trailer = function(primaryNode, nodelist)
     //print(JSON.stringify(primaryNode));
     //print(JSON.stringify(nodelist));
     var t = nodelist.children[0].type;
-    if (t === T_LPAR)
+    if (t === TOK.T_LPAR)
         return this.com_call_function(primaryNode, nodelist.children[1]);
-    if (t === T_DOT)
+    if (t === TOK.T_DOT)
         return this.com_select_member(primaryNode, nodelist.children[1]);
-    if (t === T_LSQB)
-        return this.com_subscriptlist(primaryNode, nodelist.children[1], OP_APPLY);
+    if (t === TOK.T_LSQB)
+        return this.com_subscriptlist(primaryNode, nodelist.children[1], AST.OP_APPLY);
 
     throw 'unknown node type: ' + t;
 };
 
 Transformer.prototype.com_select_member = function(primaryNode, nodelist)
 {
-    if (nodelist.type !== T_NAME)
+    if (nodelist.type !== TOK.T_NAME)
         throw new SyntaxError("member must be a name");
-    return new Getattr(primaryNode, nodelist.value, nodelist.context);
+    return new AST.Getattr(primaryNode, nodelist.value, nodelist.context);
 };
 
 
@@ -253,12 +259,12 @@ Transformer.prototype.com_arglist = function(nodelist)
     while (i < nodelist.length)
     {
         var node = nodelist[i];
-        if (node.type === T_STAR || node.type === T_DOUBLESTAR)
+        if (node.type === TOK.T_STAR || node.type === TOK.T_DOUBLESTAR)
         {
-            if (node.type === T_STAR)
+            if (node.type === TOK.T_STAR)
             {
                 node = nodelist[i + 1];
-                if (node.type === T_NAME)
+                if (node.type === TOK.T_NAME)
                 {
                     names.push(node[1]);
                     varargs = true;
@@ -270,7 +276,7 @@ Transformer.prototype.com_arglist = function(nodelist)
             {
                 // should be DOUBLESTAR
                 var t = nodelist[i].type;
-                if (t === T_DOUBLESTAR)
+                if (t === TOK.T_DOUBLESTAR)
                 {
                     node = nodelist[i+1];
                 }
@@ -290,7 +296,7 @@ Transformer.prototype.com_arglist = function(nodelist)
         //print("names:"+JSON.stringify(names));
 
         i = i + 1;
-        if (i < nodelist.length && nodelist[i].type === T_EQUAL)
+        if (i < nodelist.length && nodelist[i].type === TOK.T_EQUAL)
         {
             defaults.push(this.dispatch(nodelist[i + 1]));
             i = i + 2;
@@ -318,7 +324,7 @@ Transformer.prototype.com_fpdef = function(node)
 {
     // fpdef: NAME | '(' fplist ')'
     //print("com_fpdef:"+JSON.stringify(node));
-    if (node.children[0].type === T_LPAR)
+    if (node.children[0].type === TOK.T_LPAR)
         return this.com_fplist(node.children[1]);
     return node.children[0].value;
 };
@@ -341,9 +347,9 @@ Transformer.prototype.com_fplist = function(node)
 Transformer.prototype.com_call_function = function(primaryNode, nodelist)
 {
     //print(JSON.stringify(nodelist, null, 2));
-    if (nodelist.type === T_RPAR)
+    if (nodelist.type === TOK.T_RPAR)
     {
-        return new CallFunc(primaryNode, [], null, null);//, lineno=extractLineNo(nodelist))
+        return new AST.CallFunc(primaryNode, [], null, null);//, lineno=extractLineNo(nodelist))
     }
     var args = [];
     var kw = false;
@@ -355,7 +361,7 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
     {
         var node = nodelist.children[i];
         //print("node.type:"+node.type);
-        if (node.type === T_STAR)
+        if (node.type === TOK.T_STAR)
         {
             if (star_node)
                 throw new SyntaxError("already have the varargs identifier");
@@ -363,7 +369,7 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
             i += 3;
             continue;
         }
-        else if (node.type === T_DOUBLESTAR)
+        else if (node.type === TOK.T_DOUBLESTAR)
         {
             if (dstar_node)
                 throw new SyntaxError("already have the kwargs identifier");
@@ -390,7 +396,7 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
         i += 2;
     }
 
-    return new CallFunc(primaryNode, args, star_node, dstar_node);//, lineno=extractLineNo(nodelist))
+    return new AST.CallFunc(primaryNode, args, star_node, dstar_node);//, lineno=extractLineNo(nodelist))
 };
 
 Transformer.prototype.com_argument = function(nodelist, kw, star_node)
@@ -412,13 +418,26 @@ Transformer.prototype.com_argument = function(nodelist, kw, star_node)
     var result = this.dispatch(nodelist.children[2]);
     var n = nodelist.children[0];
     //print(JSON2.stringify(n));
-    while (n.type !== T_NAME && n.children !== null)
+    while (n.type !== TOK.T_NAME && n.children !== null)
         n = n.children[0];
-    if (n.type !== T_NAME)
+    if (n.type !== TOK.T_NAME)
         throw new SyntaxError("keyword can't be an expression (" + n.type + ")");
     var node = new Keyword(n.value, result, n.context);
     return [true, node];
 };
+
+function contains(a, obj)
+{
+    var i = a.length;
+    while (i--)
+    {
+        if (a[i] === obj)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 Transformer.prototype.com_assign = function(node, assigning)
 {
@@ -455,7 +474,7 @@ Transformer.prototype.com_assign = function(node, assigning)
                 for (var i = 1; i < node.children.length - 1; ++i)
                 {
                     var ch = node.children[i];
-                    if (ch.type === T_DOUBLESTAR)
+                    if (ch.type === TOK.T_DOUBLESTAR)
                         throw new SyntaxError("can't assign to operator");
                     primary = this.com_apply_trailer(primary, ch);
                 }
@@ -467,23 +486,23 @@ Transformer.prototype.com_assign = function(node, assigning)
         else if (t === this.sym.atom)
         {
             t = node.children[0].type;
-            if (t === T_LPAR)
+            if (t === TOK.T_LPAR)
             {
                 node = node.children[1];
-                if (node.type === T_RPAR)
+                if (node.type === TOK.T_RPAR)
                     throw new SyntaxError("can't assign to ()");
             }
-            else if (t === T_LSQB)
+            else if (t === TOK.T_LSQB)
             {
                 node = node.children[1];
-                if (node.type === T_RSQB)
+                if (node.type === TOK.T_RSQB)
                     throw new SyntaxError("can't assign to []");
                 return this.com_assign_list(node, assigning);
             }
-            else if (t === T_NAME)
+            else if (t === TOK.T_NAME)
             {
                 //print(JSON.stringify(node));
-                return new AssName(node.children[0].value, assigning, node.context);
+                return new AST.AssName(node.children[0].value, assigning, node.context);
             }
             else
             {
@@ -501,18 +520,18 @@ Transformer.prototype.com_assign_trailer = function(primary, node, assigning)
 {
     //print("com_assign_trailer:"+JSON.stringify(node));
     var t = node.children[0].type;
-    if (t === T_DOT)
+    if (t === TOK.T_DOT)
         return this.com_assign_attr(primary, node.children[1], assigning);
-    if (t === T_LSQB)
+    if (t === TOK.T_LSQB)
         return this.com_subscriptlist(primary, node.children[1], assigning);
-    if (t === T_LPAR)
+    if (t === TOK.T_LPAR)
         throw new SyntaxError("can't assign to function call");
     throw new SyntaxError("unknown trailer type: " + this.grammar.number2symbol[t]);
 };
 
 Transformer.prototype.com_assign_attr = function(primary, nodelist, assigning)
 {
-    return new AssAttr(primary, nodelist.value, assigning, nodelist.context);
+    return new AST.AssAttr(primary, nodelist.value, assigning, nodelist.context);
 };
 
 Transformer.prototype.com_subscriptlist = function(primary, nodelist, assigning)
@@ -525,7 +544,7 @@ Transformer.prototype.com_subscriptlist = function(primary, nodelist, assigning)
     {
         subscripts.push(this.com_subscript(nodelist.children[i]));
     }
-    return new Subscript(primary, assigning, subscripts); //, lineno=extractLineNo(nodelist))
+    return new AST.Subscript(primary, assigning, subscripts); //, lineno=extractLineNo(nodelist))
 };
 
 Transformer.prototype.com_subscript = function(node)
@@ -533,7 +552,7 @@ Transformer.prototype.com_subscript = function(node)
     // subscript: test | [test] ':' [test] [sliceop]
     // sliceop: ':' [test]
     //print("com_subscript:"+JSON.stringify(node));
-    if (node.children.length > 1 || node.children[0].type === T_COLON)
+    if (node.children.length > 1 || node.children[0].type === TOK.T_COLON)
         return this.com_sliceobj(node);
     return this.dispatch(node.children[0]);
 };
@@ -547,7 +566,7 @@ Transformer.prototype.com_sliceobj = function(node)
     //print("----------- com_sliceobj_length:"+node.children.length);
 
     // lower
-    if (node.children[0].type === T_COLON)
+    if (node.children[0].type === TOK.T_COLON)
     {
         items.push(null);
         i = 1;
@@ -555,7 +574,7 @@ Transformer.prototype.com_sliceobj = function(node)
     else
     {
         items.push(this.dispatch(node.children[0]));
-        if (node.children[1].type !== T_COLON) throw new SyntaxError("expecting colon");
+        if (node.children[1].type !== TOK.T_COLON) throw new SyntaxError("expecting colon");
         i = 2;
     }
 
@@ -576,21 +595,21 @@ Transformer.prototype.com_sliceobj = function(node)
             && node.children[i].type === this.sym.sliceop)
     {
         var so = node.children[i];
-        if (so.children[0].type !== T_COLON) throw "assert";
+        if (so.children[0].type !== TOK.T_COLON) throw "assert";
         items.push(this.dispatch(so.children[1]));
     }
 
-    return new Sliceobj(items); // todo; , lineno=extractLineNo(node))
+    return new AST.Sliceobj(items); // todo; , lineno=extractLineNo(node))
 };
 
 Transformer.prototype.com_augassign = function(node)
 {
     // Names, slices, and attributes are the only allowable nodes.
     var l = this.dispatch(node);
-    if (l instanceof Name
-            || l instanceof Slice
-            || l instanceof Subscript
-            || l instanceof Getattr)
+    if (l instanceof AST.Name
+            || l instanceof AST.Slice
+            || l instanceof AST.Subscript
+            || l instanceof AST.Getattr)
     {
         return l;
     }
@@ -609,7 +628,7 @@ Transformer.prototype.com_assign_tuple = function(node, assigning)
     var assigns = [];
     for (var i = 0; i < node.children.length; i += 2)
         assigns.push(this.com_assign(node.children[i], assigning));
-    return new AssTuple(assigns); // todo; , lineno=extractLineNo(node))
+    return new AST.AssTuple(assigns); // todo; , lineno=extractLineNo(node))
 };
 
 Transformer.prototype.get_docstring = function(node, n)
@@ -631,8 +650,8 @@ Transformer.prototype.flow_stmt =
 Transformer.prototype.compound_stmt = function(nodelist)
 {
     var result = this.dispatch(nodelist[0]);
-    if (result instanceof Stmt) return result;
-    return new Stmt([result]);
+    if (result instanceof AST.Stmt) return result;
+    return new AST.Stmt([result]);
 };
 
 Transformer.prototype.simple_stmt = function(nodelist)
@@ -643,7 +662,7 @@ Transformer.prototype.simple_stmt = function(nodelist)
     {
         this.com_append_stmt(stmts, nodelist[i]);
     }
-    return new Stmt(stmts);
+    return new AST.Stmt(stmts);
 };
 
 Transformer.prototype.expr_stmt = function(nodelist)
@@ -652,15 +671,15 @@ Transformer.prototype.expr_stmt = function(nodelist)
     var en = nodelist[nodelist.length - 1];
     var exprNode = this.dispatch(en);
     if (nodelist.length === 1)
-        return new Discard(exprNode, exprNode.lineno);
-    if (nodelist[1].type === T_EQUAL)
+        return new AST.Discard(exprNode, exprNode.lineno);
+    if (nodelist[1].type === TOK.T_EQUAL)
     {
         var nodesl = [];
         for (var i = 0; i < nodelist.length - 2; i += 2)
         {
-            nodesl.push(this.com_assign(nodelist[i], OP_ASSIGN));
+            nodesl.push(this.com_assign(nodelist[i], AST.OP_ASSIGN));
         }
-        return new Assign(nodesl, exprNode, nodelist[1].context);
+        return new AST.Assign(nodesl, exprNode, nodelist[1].context);
     }
     else
     {
@@ -668,7 +687,7 @@ Transformer.prototype.expr_stmt = function(nodelist)
         var op = this.com_augassign_op(nodelist[1]);
         //print("lval:"+JSON.stringify(lval));
         //print("op:"+JSON.stringify(op));
-        return new AugAssign(lval, op.value, exprNode, op.context);
+        return new AST.AugAssign(lval, op.value, exprNode, op.context);
     }
 };
 
@@ -714,11 +733,11 @@ Transformer.prototype.funcdef = function(nodelist)
 
     if (doc)
     {
-        if (!code instanceof Stmt) throw "assert";
-        if (!code.nodes[0] instanceof Discard) throw "assert";
+        if (!code instanceof AST.Stmt) throw "assert";
+        if (!code.nodes[0] instanceof AST.Discard) throw "assert";
         code.nodes.shift();
     }
-    return new Function_(decorators, name, names, defaults, varargs, varkeywords, doc, code, lineno);
+    return new AST.Function_(decorators, name, names, defaults, varargs, varkeywords, doc, code, lineno);
 };
 
 Transformer.prototype.lambdef = function(nodelist)
@@ -756,8 +775,8 @@ Transformer.prototype.classdef = function(nodelist)
     //print(JSON.stringify(nodelist, null, 2));
     var name = nodelist[1].value;
     var bases;
-    if (nodelist[2].type === T_COLON ||
-            nodelist[3].type === T_RPAR)
+    if (nodelist[2].type === TOK.T_COLON ||
+            nodelist[3].type === TOK.T_RPAR)
     {
         bases = [];
     }
@@ -769,7 +788,7 @@ Transformer.prototype.classdef = function(nodelist)
     // code for class
     var code = this.dispatch(nodelist[nodelist.length - 1]);
 
-    return new Class_(name, bases, null, code, /*decorators*/ null);
+    return new AST.Class_(name, bases, null, code, /*decorators*/ null);
 };
 
 
@@ -778,9 +797,9 @@ Transformer.prototype.print_stmt = function(nodelist)
     // print ([ test (',' test)* [','] ] | '>>' test [ (',' test)+ [','] ])
     var items = [];
     var start, dest;
-    if (nodelist.length !== 1 && nodelist[1].type === T_RIGHTSHIFT)
+    if (nodelist.length !== 1 && nodelist[1].type === TOK.T_RIGHTSHIFT)
     {
-        if (!(nodelist.length === 3 || nodelist[3].type === T_COMMA)) throw "assert";
+        if (!(nodelist.length === 3 || nodelist[3].type === TOK.T_COMMA)) throw "assert";
         dest = this.dispatch(nodelist[2]);
         start = 4;
     }
@@ -793,9 +812,9 @@ Transformer.prototype.print_stmt = function(nodelist)
     {
         items.push(this.dispatch(nodelist[i]));
     }
-    if (nodelist[nodelist.length - 1].type === T_COMMA)
-        return new Print(items, dest, false, nodelist[0].context);
-    return new Print(items, dest, true, nodelist[0].context);
+    if (nodelist[nodelist.length - 1].type === TOK.T_COMMA)
+        return new AST.Print(items, dest, false, nodelist[0].context);
+    return new AST.Print(items, dest, true, nodelist[0].context);
 };
 
 Transformer.prototype.if_stmt = function(nodelist)
@@ -813,7 +832,7 @@ Transformer.prototype.if_stmt = function(nodelist)
     var elseNode = null;
     if (nodelist.length % 4 === 3)
         elseNode = this.dispatch(nodelist[nodelist.length - 1]);
-    return new If_(tests, elseNode, nodelist[0].context);
+    return new AST.If_(tests, elseNode, nodelist[0].context);
 };
 
 Transformer.prototype.while_stmt = function(nodelist)
@@ -827,14 +846,14 @@ Transformer.prototype.while_stmt = function(nodelist)
     if (nodelist.length > 4)
         elseNode = this.dispatch(nodelist[6]);
 
-    return new While_(testNode, bodyNode, elseNode, nodelist[0].context);
+    return new AST.While_(testNode, bodyNode, elseNode, nodelist[0].context);
 };
 
 Transformer.prototype.for_stmt = function(nodelist)
 {
     // 'for' exprlist 'in' exprlist ':' suite ['else' ':' suite]
 
-    var assignNode = this.dispatch(nodelist[1], OP_ASSIGN);
+    var assignNode = this.dispatch(nodelist[1], AST.OP_ASSIGN);
     var listNode = this.dispatch(nodelist[3]);
     var bodyNode = this.dispatch(nodelist[5]);
 
@@ -842,17 +861,17 @@ Transformer.prototype.for_stmt = function(nodelist)
     if (nodelist.length > 8)
         elseNode = this.dispatch(nodelist[8]);
 
-    return new For_(assignNode, listNode, bodyNode, elseNode, nodelist[0].context);
+    return new AST.For_(assignNode, listNode, bodyNode, elseNode, nodelist[0].context);
 };
 
 Transformer.prototype.del_stmt = function(nodelist)
 {
-    return this.com_assign(nodelist[1], OP_DELETE);
+    return this.com_assign(nodelist[1], AST.OP_DELETE);
 };
 
 Transformer.prototype.pass_stmt = function(nodelist)
 {
-    return new Pass(nodelist[0].context);
+    return new AST.Pass(nodelist[0].context);
 };
 
 Transformer.prototype.com_dotted_name = function(node)
@@ -860,7 +879,7 @@ Transformer.prototype.com_dotted_name = function(node)
     var name = "";
     for (var i = 0; i < node.length; ++i)
     {
-        if (node[i].type === T_NAME) name += node[i].value + ".";
+        if (node[i].type === TOK.T_NAME) name += node[i].value + ".";
     }
     return name.substr(0, name.length - 1);
 };
@@ -875,7 +894,7 @@ Transformer.prototype.com_dotted_as_name = function(node)
         return [dot, null];
     }
     if (node.children[2].value !== 'as') throw "assert";
-    if (node.children[3].type !== T_NAME) throw "assert";
+    if (node.children[3].type !== TOK.T_NAME) throw "assert";
     return [dot, node.children[3].value];
 };
 
@@ -960,36 +979,36 @@ Transformer.prototype.global_stmt = function(nodelist)
     {
         names.push(nodelist[i].value);
     }
-    return new Global(names, nodelist[0].context);
+    return new AST.Global(names, nodelist[0].context);
 };
 
 Transformer.prototype.break_stmt = function(nodelist)
 {
-    return new Break_(nodelist[0].context);
+    return new AST.Break_(nodelist[0].context);
 };
 
 Transformer.prototype.continue_stmt = function(nodelist)
 {
-    return new Continue_(nodelist[0].context);
+    return new AST.Continue_(nodelist[0].context);
 };
 
 Transformer.prototype.assert_stmt = function(nodelist)
 {
-    return new Assert(this.dispatch(nodelist[1]), nodelist[0].context);
+    return new AST.Assert(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 
 Transformer.prototype.return_stmt = function(nodelist)
 {
     // return: [testlist]
     if (nodelist.length < 2)
-        return new Return_(null, nodelist[0].context);
-    return new Return_(this.dispatch(nodelist[1]), nodelist[0].context);
+        return new AST.Return_(null, nodelist[0].context);
+    return new AST.Return_(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 
 Transformer.prototype.yield_stmt = function(nodelist)
 {
     var expr = this.dispatch(nodelist[0]);
-    return new Discard(expr, expr.context);
+    return new AST.Discard(expr, expr.context);
 };
 
 Transformer.prototype.yield_expr = function(nodelist)
@@ -1000,7 +1019,7 @@ Transformer.prototype.yield_expr = function(nodelist)
         value = this.dispatch(nodelist[1]);
     else
         value = new Const_(null);
-    return new Yield_(value, nodelist.context);
+    return new AST.Yield_(value, nodelist.context);
 };
 
 /*
@@ -1027,7 +1046,7 @@ Transformer.prototype.suite = function(nodelist)
         if (node.type === this.sym.stmt)
             this.com_append_stmt(stmts, node);
     }
-    return new Stmt(stmts);
+    return new AST.Stmt(stmts);
 };
 
 Transformer.prototype.testlist_gexp = function(nodelist)
@@ -1074,9 +1093,9 @@ Transformer.prototype.com_generator_expression = function(expr, node)
         var t = node.children[0].value;
         if (t === "for")
         {
-            var assignNode = this.com_assign(node.children[1], OP_ASSIGN);
+            var assignNode = this.com_assign(node.children[1], AST.OP_ASSIGN);
             var genNode = this.dispatch(node.children[3]);
-            var newfor = new GenExprFor(assignNode, genNode, [], lineno);
+            var newfor = new AST.GenExprFor(assignNode, genNode, [], lineno);
             fors.push(newfor);
             if (node.children.length === 4)
                 node = null;
@@ -1087,7 +1106,7 @@ Transformer.prototype.com_generator_expression = function(expr, node)
         else if (t === "if")
         {
             var test = this.dispatch(node.children[1]);
-            var newif = new GenExprIf(test, lineno);
+            var newif = new AST.GenExprIf(test, lineno);
             newfor.ifs.push(newif);
             if (node.children.length === 2)
                 node = null;
@@ -1100,7 +1119,7 @@ Transformer.prototype.com_generator_expression = function(expr, node)
         }
     }
     fors[0].is_outmost = true;
-    return new GenExpr(new GenExprInner(expr, fors), lineno);
+    return new AST.GenExpr(new AST.GenExprInner(expr, fors), lineno);
 };
 
 Transformer.prototype.com_gen_iter = function(node)
@@ -1115,14 +1134,14 @@ Transformer.prototype.old_test = function(nodelist)
     // and_test ('or' and_test)* | lambdef
     if (nodelist.length === 1 && nodelist[0].type === this.sym.lambdef)
         return this.lambdef(nodelist[0]);
-    return this.com_binary(Or, nodelist);
+    return this.com_binary(AST.Or, nodelist);
 };
 
 
 Transformer.prototype.and_test = function(nodelist)
 {
     // not_test ('and' not_test)*
-    return this.com_binary(And, nodelist);
+    return this.com_binary(AST.And, nodelist);
 };
 
 Transformer.prototype.not_test = function(nodelist)
@@ -1131,7 +1150,7 @@ Transformer.prototype.not_test = function(nodelist)
     var result = this.dispatch(nodelist[nodelist.length - 1]);
     if (nodelist.length === 2)
     {
-        return new Not(result, nodelist.context);
+        return new AST.Not(result, nodelist.context);
     }
     return result;
 };
@@ -1152,7 +1171,7 @@ Transformer.prototype.comparison = function(nodelist)
         var n = nl.children[0];
         var type;
         //print(JSON.stringify(nl));
-        if (n.type === T_NAME)
+        if (n.type === TOK.T_NAME)
         {
             type = n.value;
             if (nl.children.length === 2)
@@ -1177,25 +1196,25 @@ Transformer.prototype.comparison = function(nodelist)
     // latter form is always true)
 
     //print(JSON.stringify(results));
-    return new Compare(node, results, lineno);
+    return new AST.Compare(node, results, lineno);
 };
 
 Transformer.prototype.expr = function(nodelist)
 {
     // xor_expr ('|' xor_expr)*
-    return this.com_binary(Bitor, nodelist);
+    return this.com_binary(AST.Bitor, nodelist);
 };
 
 Transformer.prototype.xor_expr = function(nodelist)
 {
     // xor_expr ('^' xor_expr)*
-    return this.com_binary(Bitxor, nodelist);
+    return this.com_binary(AST.Bitxor, nodelist);
 };
 
 Transformer.prototype.and_expr = function(nodelist)
 {
     // xor_expr ('&' xor_expr)*
-    return this.com_binary(Bitand, nodelist);
+    return this.com_binary(AST.Bitand, nodelist);
 };
 
 Transformer.prototype.shift_expr = function(nodelist)
@@ -1205,10 +1224,10 @@ Transformer.prototype.shift_expr = function(nodelist)
     for (var i = 2; i < nodelist.length; i += 2)
     {
         var right = this.dispatch(nodelist[i]);
-        if (nodelist[i - 1].type === T_LEFTSHIFT)
-            node = new LeftShift(node, right, nodelist[1].context);
-        else if (nodelist[i - 1].type === T_RIGHTSHIFT)
-            node = new RightShift(node, right, nodelist[1].context);
+        if (nodelist[i - 1].type === TOK.T_LEFTSHIFT)
+            node = new AST.LeftShift(node, right, nodelist[1].context);
+        else if (nodelist[i - 1].type === TOK.T_RIGHTSHIFT)
+            node = new AST.RightShift(node, right, nodelist[1].context);
         else
             throw new SyntaxError("unexpected token: " + this.grammar.number2symbol[nodelist[i-1].type]);
     }
@@ -1221,10 +1240,10 @@ Transformer.prototype.arith_expr = function(nodelist)
     for (var i = 2; i < nodelist.length; i += 2)
     {
         var right = this.dispatch(nodelist[i]);
-        if (nodelist[i-1].type === T_PLUS)
-            node = new Add(node, right, nodelist[1].context);
-        else if (nodelist[i-1].type === T_MINUS)
-            node = new Sub(node, right, nodelist[1].context);
+        if (nodelist[i-1].type === TOK.T_PLUS)
+            node = new AST.Add(node, right, nodelist[1].context);
+        else if (nodelist[i-1].type === TOK.T_MINUS)
+            node = new AST.Sub(node, right, nodelist[1].context);
         else
             throw new SyntaxError("unexpected token: " + this.grammar.number2symbol[nodelist[i-1].type]);
     }
@@ -1238,10 +1257,10 @@ Transformer.prototype.term = function(nodelist)
     {
         var right = this.dispatch(nodelist[i]);
         var t = nodelist[i - 1].type;
-        if (t === T_STAR) node = new Mul(node, right);
-        else if (t === T_SLASH) node = new Div(node, right);
-        else if (t === T_PERCENT) node = new Mod(node, right);
-        else if (t === T_DOUBLESLASH) node = new FloorDiv(node, right);
+        if (t === TOK.T_STAR) node = new AST.Mul(node, right);
+        else if (t === TOK.T_SLASH) node = new AST.Div(node, right);
+        else if (t === TOK.T_PERCENT) node = new AST.Mod(node, right);
+        else if (t === TOK.T_DOUBLESLASH) node = new AST.FloorDiv(node, right);
         else throw new SyntaxError("unexpected token: " + this.grammar.number2symbol[t]);
         node.lineno = nodelist[1].context;
     }
@@ -1255,12 +1274,12 @@ Transformer.prototype.factor = function(nodelist)
     var t = elt.type;
     var node = this.dispatch(nodelist[nodelist.length - 1]);
     // need to handle (unary op)constant here...
-    if (t === T_PLUS)
-        node = new UnaryAdd(node, elt.context);
-    else if (t === T_MINUS)
-        node = new UnarySub(node, elt.context);
-    else if (t === T_TILDE)
-        node = new Invert(node, elt.context);
+    if (t === TOK.T_PLUS)
+        node = new AST.UnaryAdd(node, elt.context);
+    else if (t === TOK.T_MINUS)
+        node = new AST.UnarySub(node, elt.context);
+    else if (t === TOK.T_TILDE)
+        node = new AST.Invert(node, elt.context);
     return node;
 };
 
@@ -1271,9 +1290,9 @@ Transformer.prototype.power = function(nodelist)
     for (var i = 1; i < nodelist.length; ++i)
     {
         var elt = nodelist[i];
-        if (elt.type === T_DOUBLESTAR)
+        if (elt.type === TOK.T_DOUBLESTAR)
         {
-            return new Power(node, this.dispatch(nodelist[i+1]), elt.context);
+            return new AST.Power(node, this.dispatch(nodelist[i+1]), elt.context);
         }
         node = this.com_apply_trailer(node, elt);
     }
@@ -1290,7 +1309,7 @@ function(nodelist)
     // testlist: expr (',' expr)* [',']
     // testlist_safe: test [(',' test)+ [',']]
     // exprlist: expr (',' expr)* [',']
-    return this.com_binary(Tuple, nodelist);
+    return this.com_binary(AST.Tuple, nodelist);
 };
 
 Transformer.prototype.atom = function(nodelist)
@@ -1299,60 +1318,60 @@ Transformer.prototype.atom = function(nodelist)
     return this[t].call(this, nodelist);
 };
 
-Transformer.prototype[T_LPAR] = function(nodelist)
+Transformer.prototype[TOK.T_LPAR] = function(nodelist)
 {
-    if (nodelist[1].type === T_RPAR)
-        return new Tuple([], nodelist[0].context);
+    if (nodelist[1].type === TOK.T_RPAR)
+        return new AST.Tuple([], nodelist[0].context);
     return this.dispatch(nodelist[1]);
 };
 
-Transformer.prototype[T_LSQB] = function(nodelist)
+Transformer.prototype[TOK.T_LSQB] = function(nodelist)
 {
-    if (nodelist[1].type === T_RSQB)
-        return new List([], nodelist[0].context);
+    if (nodelist[1].type === TOK.T_RSQB)
+        return new AST.List([], nodelist[0].context);
     return this.com_list_constructor(nodelist[1]);
 };
 
-Transformer.prototype[T_LBRACE] = function(nodelist)
+Transformer.prototype[TOK.T_LBRACE] = function(nodelist)
 {
-    if (nodelist[1].type === T_RBRACE)
-        return new Dict([], nodelist[0].context);
+    if (nodelist[1].type === TOK.T_RBRACE)
+        return new AST.Dict([], nodelist[0].context);
     return this.com_dictmaker(nodelist[1]);
 };
 
-Transformer.prototype[T_BACKQUOTE] = function(nodelist)
+Transformer.prototype[TOK.T_BACKQUOTE] = function(nodelist)
 {
-    return new Backquote(this.com_node(nodelist[1]));
+    return new AST.Backquote(this.com_node(nodelist[1]));
 };
 
-Transformer.prototype[T_NUMBER] = function(nodelist)
+Transformer.prototype[TOK.T_NUMBER] = function(nodelist)
 {
     var v = nodelist[0].value;
     var k;
     if (v.charAt(v.length - 1) === "l" || v.charAt(v.length - 1) === "L")
     {
-        k = Long$.fromJsStr$(v.substring(0, v.length - 1));
+        k = Sk.builtin.long.threshold$.fromJsStr$(v.substring(0, v.length - 1));
     }
     else
     {
         k = eval(nodelist[0].value);
-        if ((k > Long$.threshold$ || k < -Long$.threshold$)
+        if ((k > Sk.builtin.long.threshold$ || k < -Sk.builtin.long.threshold$)
                 && Math.floor(k) === k) // todo; what to do with floats?
         {
             k = Long$.fromJsStr$(nodelist[0].value);
         }
     }
-    return new Const_(k, nodelist[0].context);
+    return new AST.Const_(k, nodelist[0].context);
 };
 
-Transformer.prototype[T_STRING] = function(nodelist)
+Transformer.prototype[TOK.T_STRING] = function(nodelist)
 {
-    return new Const_(nodelist[0].value, nodelist[0].context);
+    return new AST.Const_(nodelist[0].value, nodelist[0].context);
 };
 
-Transformer.prototype[T_NAME] = function(nodelist)
+Transformer.prototype[TOK.T_NAME] = function(nodelist)
 {
-    return new Name(nodelist[0].value, nodelist[0].context);
+    return new AST.Name(nodelist[0].value, nodelist[0].context);
 };
 
-
+}());

@@ -1,13 +1,6 @@
 // low level parser to a concrete syntax tree, derived from cpython's lib2to3
 
-function ParseError(msg, type, value, context)
-{
-    this.msg = msg;
-    this.type = type;
-    this.value = value;
-    this.context = context;
-    return this;
-}
+(function() {
 
 /*
  * p = new Parser(grammar);
@@ -24,7 +17,17 @@ function Parser(grammar, convert)
     this.grammar = grammar;
     this.convert = convert || function(grammar, node) { return node; };
     return this;
-}
+};
+
+
+function ParseError(msg, type, value, context)
+{
+    this.msg = msg;
+    this.type = type;
+    this.value = value;
+    this.context = context;
+    return this;
+};
 
 Parser.prototype.setup = function(start)
 {
@@ -151,7 +154,7 @@ OUTERWHILE:
 Parser.prototype.classify = function(type, value, context)
 {
     var ilabel;
-    if (type === T_NAME)
+    if (type === Sk.Tokenizer.T_NAME)
     {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords[value];
@@ -248,13 +251,16 @@ Parser.prototype.pop = function()
 function makeParser(filename, style)
 {
     if (style === undefined) style = "file_input";
-    var p = new Parser(SkulptParseTables);
-    p.setup(SkulptParseTables.symbol2number[style]);
+    var p = new Parser(Sk.ParseTables);
+    p.setup(Sk.ParseTables.symbol2number[style]);
     var curIndex = 0;
     var lineno = 1;
     var column = 0;
     var prefix = "";
-    var tokenizer = new Tokenizer(filename, style === "single_input", function(type, value, start, end, line)
+    var T_COMMENT = Sk.Tokenizer.T_COMMENT;
+    var T_NL = Sk.Tokenizer.T_NL;
+    var T_OP = Sk.Tokenizer.T_OP;
+    var tokenizer = new Sk.Tokenizer(filename, style === "single_input", function(type, value, start, end, line)
             {
                 //print(JSON.stringify([type, value, start, end, line]));
                 var s_lineno = start[0];
@@ -280,7 +286,7 @@ function makeParser(filename, style)
                 }
                 if (type === T_OP)
                 {
-                    type = SkulptOpMap[value];
+                    type = Sk.OpMap[value];
                 }
                 if (p.addtoken(type, value, [start, end, line]))
                 {
@@ -301,7 +307,7 @@ function makeParser(filename, style)
     };
 }
 
-function parse(filename, input)
+Sk.parse = function parse(filename, input)
 {
     var parseFunc = makeParser(filename);
     if (input.substr(input.length - 1, 1) !== "\n") input += "\n";
@@ -314,3 +320,5 @@ function parse(filename, input)
     }
     return ret;
 }
+
+}());

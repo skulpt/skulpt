@@ -4,38 +4,42 @@ from subprocess import Popen, PIPE
 import os
 import sys
 import glob
+import py_compile
+import compileall
 
 # order is important!
 Files = [
-        'src/errors.js',
         'src/env.js',
-        'src/type.js',
-        'src/str.js',
+        'src/errors.js',
         'src/list.js',
+        'src/type.js',
+        'src/object.js',
+        'src/function.js',
+        'src/str.js',
         'src/tuple.js',
         'src/dict.js',
         'src/long.js',
         'src/slice.js',
         'src/module.js',
-        ('src/header.js', 'dist'),
+        'src/generator.js',
+        'src/file.js',
         'src/modules/sys.js',
+
         'src/tokenize.js',
         'gen/parse_tables.js',
         'src/parser.js',
         'gen/ast.js',
         'src/transformer.js',
-        'src/compiler.js',
-        'src/entry.js',
-        ('src/footer.js', 'dist'),
-        ('test/footer_test.js', 'test'),
+        #'src/compiler.js',
+        #'src/entry.js',
+        #('src/footer.js', 'dist'),
+        #('test/footer_test.js', 'test'),
         ]
 
 TestFiles = [
         'test/sprintf.js',
-        'test/tokname.js',
         'gen/ast_debug.js',
         "test/json2.js",
-        "test/uneval.js",
         "test/test.js"
         ]
 DebugFiles = TestFiles[:-1]
@@ -58,14 +62,123 @@ def getFileList(type):
             ret.append(f)
     return ret
 
+jsengine = "support/d8/d8 --trace_exception"
+#jsengine = "rhino"
 
 def test():
     """runs the unit tests."""
-
-    os.system("support/d8/d8 --trace_exception %s test/footer_test.js %s" % (
+    os.system("%s test/no_new_globals.js %s %s test/no_new_globals_at_end.js" % (
+        jsengine,
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
 
+def compileUsingSkc1(fn):
+    f = open(fn, 'rb')
+    js = skc1.compilePyc(f.read())
+    ret = """
+var mainmodDict = {'__name__': '__main__'};
+var moduleBody = %s;
+moduleBody(mainmodDict);
+""" % js
+    return ret
+
+def testpy():
+    open("support/tmp/no_new_globals.js", "w").write("""
+var ___initialglobalslist = [];
+(function() {
+     for (var i in this) ___initialglobalslist.push(i);
+     ___initialglobalslist.sort();
+}());
+""")
+
+    compileall.compile_dir("test/run")
+    alltests = """
+
+(function() {
+var failcount = 0;
+var passcount = 0;
+function DOTEST(name, good, func)
+{
+    var gooddata = read(good);
+    var got = '';
+    Sk.output = function(o) { got += o; };
+    Sk.sysargv = [ "test/run/t" + name + '.py' ];
+    //try {
+        func();
+    //} catch (e) { got = 'EXCEPTION: ' + e.name + '\\n'; }
+    if (got !== gooddata)
+    {
+        print("FAILED: test/run/t" + name + ".py");
+        print("WANTED:'" + gooddata + "'");
+        print("GOT:'" + got + "'");
+        failcount += 1;
+    }
+    else
+    {
+        passcount += 1;
+    }
+}
+"""
+    compileCount = 0
+    for i in range(144, 145):
+        fn = "test/run/t%02d.pyc" % i
+        if os.path.exists(fn):
+            print "\r",fn,"...", ; sys.stdout.flush()
+            compiled = compileUsingSkc1(fn)
+            compileCount += 1
+            tester = """
+DOTEST("%(i)02d", "test/run/t%(i)02d.py.real", function() {
+%(compiled)s
+});
+""" % { 'i': i,
+        'compiled': compiled }
+            alltests += tester
+    alltests += """
+print(passcount, "of", passcount + failcount, "tests passed");
+}());
+
+(function() {
+var globalsAtEnd = [];
+for (var i in this)
+    if (i !== "Sk")
+        globalsAtEnd.push(i);
+globalsAtEnd.sort();
+if (___initialglobalslist.toString() !== globalsAtEnd.toString())
+{
+    print("FAILED: new globals other than 'Sk'");
+    print("initial:", ___initialglobalslist);
+    print("at end:", globalsAtEnd);
+}
+}());
+"""
+    print "\rCompiled", compileCount, "tests.", " "*20
+    open("support/tmp/alltests.js", "w").write(alltests)
+    os.system("%s %s %s %s" % (
+            jsengine,
+            'support/tmp/no_new_globals.js',
+            ' '.join(getFileList('test')),
+            'support/tmp/alltests.js'))
+
+def selfcomp():
+    print "compile py to pyc (using real python)..."
+    py_compile.compile("src/skc1.py")
+    py_compile.compile("test/selfcomp.py")
+    print "compile pyc to js (using skulpt on real python)..."
+    c1js = skc1.compilePyc(open("src/skc1.pyc").read())
+    entrypoint = compileUsingSkc1("test/selfcomp.pyc")
+    comp = """
+    Sk.stdmodules.skc1 = %s;
+    %s
+    """ % (c1js, entrypoint)
+    open("support/tmp/selfcomp.js", "w").write(comp)
+    print "compile pyc to js (using skulpt on skulpt)..."
+    # todo; in js, load the pyc and call compilePyc somehow
+    # kind of need import first. for now, we have skc1 insert itself into
+    # stdmodules so that 'import skc1' works
+    os.system("%s %s %s" % (
+            jsengine,
+            ' '.join(getFileList('test')),
+            'support/tmp/selfcomp.js'))
 
 def buildBrowserTests():
     """combine all the tests data into something we can run from a browser
@@ -205,7 +318,7 @@ def dist():
 
     # run tests on uncompressed
     print ". Running tests on uncompressed..."
-    ret = os.system("support/d8/d8 --trace_exception %s %s" % (uncompfn, ' '.join(TestFiles)))
+    ret = os.system("%s %s %s" % (jsengine, uncompfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on uncompressed version."
         raise SystemExit()
@@ -219,7 +332,7 @@ def dist():
 
     # run tests on compressed
     print ". Running tests on compressed..."
-    ret = os.system("support/d8/d8 --trace_exception %s %s" % (compfn, ' '.join(TestFiles)))
+    ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
         raise SystemExit()
@@ -256,7 +369,7 @@ def regenparser():
     os.system("python astgen.py ../../gen/ast.js ../../gen/ast_debug.js")
     os.chdir("../..")
     # sanity check that they at least parse
-    os.system("support/d8/d8 src/tokenize.js gen/parse_tables.js gen/ast.js gen/ast_debug.js")
+    os.system(jsengine + " src/env.js src/tokenize.js gen/parse_tables.js gen/ast.js gen/ast_debug.js")
 
 def regenruntests():
     """regenerate the test data by running the tests on real python"""
@@ -275,6 +388,8 @@ def regenruntests():
 
 def upload():
     """uploads doc to GAE (stub app for static hosting, mostly)"""
+    print "you probably don't want to do that right now"
+    return
     ret = os.system("python2.5 support/tmp/google_appengine/appcfg.py update doc")
     if ret != 0:
         print "Couldn't upload."
@@ -286,17 +401,11 @@ def debug(fn):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
-    f = open("support/tmp/compiledump.js", "w")
-    f.write("""
-var input = read('%s');
-print(Skulpt.compileStr('%s', input));
-    """ % (fn, fn))
-    f.close()
-    os.system("support/d8/d8 --trace_exception %s test/footer_test.js %s support/tmp/compiledump.js > support/tmp/dump.js" % (
-        ' '.join(getFileList('test')),
-        ' '.join(DebugFiles)))
-    os.system("support/js-beautify/bin/beautify_js support/tmp/dump.js")
-    os.system("support/d8/d8 --shell --trace_exception %s test/footer_test.js %s support/tmp/dump.js" % (
+    py_compile.compile(fn)
+    open("support/tmp/dump.js", "w").write(compileUsingSkc1(fn+"c"))
+    os.system("cat support/tmp/dump.js")
+    os.system("%s --shell %s %s support/tmp/dump.js" % (
+        jsengine,
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
 
@@ -310,7 +419,8 @@ var input = read('%s');
 eval(Skulpt.compileStr('%s', input));
     """ % (fn, fn))
     f.close()
-    os.system("support/d8/d8 --trace_exception %s test/footer_test.js support/tmp/run.js" %
+    os.system("%s %s test/footer_test.js support/tmp/run.js" %
+            jsengine,
             ' '.join(getFileList('test')))
 
 def runopt(fn):
@@ -323,7 +433,7 @@ var input = read('%s');
 eval(Skulpt.compileStr('%s', input));
     """ % (fn, fn))
     f.close()
-    os.system("support/d8/d8 --nodebugger dist/skulpt.js support/tmp/run.js")
+    os.system(jsengine + " --nodebugger dist/skulpt.js support/tmp/run.js")
 
 def parse(fn):
     if not os.path.exists(fn):
@@ -336,7 +446,8 @@ var cst = Skulpt._parse('%s', input);
 print(astDump(Skulpt._transform(cst)));
     """ % (fn, fn))
     f.close()
-    os.system("support/d8/d8 --trace_exception %s test/footer_test.js %s support/tmp/parse.js" % (
+    os.system("%s %s test/footer_test.js %s support/tmp/parse.js" % (
+        jsengine,
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
 
@@ -388,7 +499,7 @@ def vmwareregr(names):
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|runopt|parse|vmwareregr}"
+        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|selfcomp|nrt|run|runopt|parse|vmwareregr}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -396,8 +507,12 @@ if __name__ == "__main__":
         cmd = sys.argv[1]
     if cmd == "test":
         test()
+    elif cmd == "testpy":
+        testpy()
     elif cmd == "dist":
         dist()
+    elif cmd == "selfcomp":
+        selfcomp()
     elif cmd == "debug":
         debug(sys.argv[2])
     elif cmd == "run":

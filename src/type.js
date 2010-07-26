@@ -1,21 +1,66 @@
-Type$ = function(name, bases, dict)
+(function() {
+
+var $ = Sk.builtin.type = function type(name, bases, dict, body$)
 {
-    this.__name__ = name;
-    this.__bases__ = bases;
-    this.dict = dict;
+    if (bases === undefined && dict === undefined)
+    {
+        // type function, rather than type constructor
+        var obj = name;
+        // todo; less assey
+        if (typeof obj === "number")
+            return Sk.types.int;
+        else
+            return obj.__class__;
+    }
+    else if (!(this instanceof $))
+    {
+        return new $(name, bases, dict);
+    }
+    else
+    {
+        var __body = body$;
+        var ret = function() {
+            if (__body)
+                return __body.apply(null, arguments);
+        }
+        ret.__name__ = name;
+        if (!(bases instanceof Sk.builtin.list))
+            bases = new Sk.builtin.list(bases);
+        ret.__bases__ = bases;
+        ret.dict = dict;
+        return ret;
+    }
 };
 
-Type$.prototype.mro = function()
+$.prototype.mro = function()
 {
-    return new List$(this.__bases__.v);
+    return new Sk.builtin.list(this.__bases__.v);
 };
 
-Type$.prototype.__repr__ = function()
+$.prototype.__repr__ = function()
 {
-    return new Str$("<type '" + this.__name__ + "'>");
+    return new Sk.builtin.str("<type '" + this.__name__ + "'>");
 };
 
-sk$TypeObject = new Type$('object', [], {});
-sk$TypeObject.__bases__.push(sk$TypeObject);
-sk$TypeType = new Type$('type', [sk$TypeObject], {});
-sk$TypeInt = new Type$('int', [sk$TypeObject], {});
+Sk.types.object = new $('object', [], {});
+
+// TODO
+//
+// type(n,b,d) should be called when constructing a class
+// user and builtin both need to go through here so that .inherits and
+// base class lookup work properly
+//
+// this is why t144 doesn't work right now; trying to find a __setattr__ on a
+// class X(object): pass, but it's not found because <type 'object'> isn't
+// really Sk.builtin.object
+//
+// so, i think the 3 parameter version of type needs to return a new
+// constructor that all the builtin types use to make themselves.
+
+Sk.types.type = new $('type', [Sk.types.object], {});
+Sk.types['int'] = new $('int', [Sk.types.object], {});
+
+Sk.builtin.list.prototype.__class__ = new Sk.builtin.type('list', [Sk.types.object], {});
+
+
+}());

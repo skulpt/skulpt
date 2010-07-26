@@ -15,20 +15,23 @@
 // it's better not to think about how many processor-level instructions this
 // is causing!
 
+(function() {
 
-Long$ = function(size)
+var $ = Sk.builtin.long = function(size)
 {
+    if (!(this instanceof $)) return new $(size);
+
     this.digit$ = new Array(Math.abs(size));
     this.size$ = size;
     return this;
 };
 
-Long$.SHIFT$ = 15;
-Long$.BASE$ = 1 << Long$.SHIFT$;
-Long$.MASK$ = Long$.BASE$ - 1;
-Long$.threshold$ = Math.pow(2, 30);
+$.SHIFT$ = 15;
+$.BASE$ = 1 << $.SHIFT$;
+$.MASK$ = $.BASE$ - 1;
+$.threshold$ = Math.pow(2, 30);
 
-Long$.fromInt$ = function(ival)
+$.fromInt$ = function(ival)
 {
     var negative = false;
     if (ival < 0)
@@ -42,17 +45,17 @@ Long$.fromInt$ = function(ival)
     while (t)
     {
         ndigits += 1;
-        t >>= Long$.SHIFT$;
+        t >>= $.SHIFT$;
     }
 
-    var ret = new Long$(ndigits);
+    var ret = new $(ndigits);
     if (negative) ret.size$ = -ret.size$;
     t = ival;
     var i = 0;
     while (t)
     {
-        ret.digit$[i] = t & Long$.MASK$;
-        t >>= Long$.SHIFT$;
+        ret.digit$[i] = t & $.MASK$;
+        t >>= $.SHIFT$;
         i += 1;
     }
 
@@ -61,28 +64,34 @@ Long$.fromInt$ = function(ival)
 
 
 // mul by single digit, ignoring sign
-Long$.mulInt$ = function(a, n)
+$.mulInt$ = function(a, n)
 {
     var size_a = Math.abs(a.size$);
-    var z = new Long$(size_a + 1);
+    var z = new $(size_a + 1);
     var carry = 0;
     var i;
 
     for (i = 0; i < size_a; ++i)
     {
         carry += a.digit$[i] * n;
-        z.digit$[i] = carry & Long$.MASK$;
-        carry >>= Long$.SHIFT$;
+        z.digit$[i] = carry & $.MASK$;
+        carry >>= $.SHIFT$;
     }
     z.digit$[i] = carry;
-    return Long$.normalize$(z);
+    return $.normalize$(z);
 };
 
-// js string (not Str$) -> long. used to create longs in transformer, respects
+// js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
 // 0x, 0o, 0b, etc.
-Long$.fromJsStr$ = function(s)
+Sk.longFromStr = function(s)
 {
     //print("initial fromJsStr:",s);
+    var neg = false;
+    if (s.substr(0, 1) == "-")
+    {
+        s = s.substr(1);
+        neg = true;
+    }
     var base = 10;
     if (s.substr(0, 2) === "0x" || s.substr(0, 2) === "0X")
     {
@@ -105,27 +114,28 @@ Long$.fromJsStr$ = function(s)
         base = 2;
     }
     //print("base:",base, "rest:",s);
-    var ret = Long$.fromInt$(0);
-    var col = Long$.fromInt$(1);
+    var ret = $.fromInt$(0);
+    var col = $.fromInt$(1);
     var add;
     for (var i = s.length - 1; i >= 0; --i)
     {
-        add = Long$.mulInt$(col, parseInt(s.substr(i, 1), 16));
+        add = $.mulInt$(col, parseInt(s.substr(i, 1), 16));
         ret = ret.__add__(add);
-        col = Long$.mulInt$(col, base);
+        col = $.mulInt$(col, base);
         //print("i", i, "ret", ret.digit$, ret.size$, "col", col.digit$, col.size$, ":",s.substr(i, 1), ":",parseInt(s.substr(i, 1), 10));
     }
+    if (neg) ret.size$ = -ret.size$;
     return ret;
 };
 
-Long$.prototype.clone = function()
+$.prototype.clone = function()
 {
-    var ret = new Long$(this.size$);
+    var ret = new $(this.size$);
     ret.digit$ = this.digit$.slice(0);
     return ret;
 };
 
-Long$.prototype.__add__ = function(other)
+$.prototype.__add__ = function(other)
 {
     // todo; upconvert other to long
 
@@ -134,25 +144,25 @@ Long$.prototype.__add__ = function(other)
     {
         if (other.size$ < 0)
         {
-            z = Long$.add$(this, other);
+            z = $.add$(this, other);
             z.size$ = -z.size$;
         }
         else
         {
-            z = Long$.sub$(other, this);
+            z = $.sub$(other, this);
         }
     }
     else
     {
         if (other.size$ < 0)
-            z = Long$.sub$(this, other);
+            z = $.sub$(this, other);
         else
-            z = Long$.add$(this, other);
+            z = $.add$(this, other);
     }
     return z;
 };
 
-Long$.prototype.__sub__ = function(other)
+$.prototype.__sub__ = function(other)
 {
     // todo; upconvert other
 
@@ -160,58 +170,58 @@ Long$.prototype.__sub__ = function(other)
     if (this.size$ < 0)
     {
         if (other.size$ < 0)
-            z = Long$.sub$(this, other);
+            z = $.sub$(this, other);
         else
-            z = Long$.add$(this, other);
+            z = $.add$(this, other);
         z.size$ = -z.size$;
     }
     else
     {
         if (other.size < 0)
-            z = Long$.add$(this, other);
+            z = $.add$(this, other);
         else
-            z = Long$.sub$(this, other);
+            z = $.sub$(this, other);
     }
     return z;
 };
 
-Long$.prototype.__mul__ = function(other)
+$.prototype.__mul__ = function(other)
 {
     // todo; upconvert
-    var z = Long$.mul$(this, other);
+    var z = $.mul$(this, other);
 	if (this.size$ * other.size$ < 0)
 		z.size$ = -z.size$;
     return z;
 };
 
-Long$.prototype.__pow__ = function(n)
+$.prototype.__pow__ = function(n)
 {
     // todo; upconvert n
 
-    var ret = Long$.fromInt$(1);
+    var ret = $.fromInt$(1);
     var x = this.clone();
     while (n.size$ > 0)
     {
         if (n.digit$[0] % 2 !== 0) // odd
         {
-            ret = Long$.mul$(ret, x);
+            ret = $.mul$(ret, x);
             n.digit$[0] &= ~1;
         }
-        x = Long$.mul$(x, x);
+        x = $.mul$(x, x);
         n.divremInt$(2);
     }
     if (this.size$ < 0) ret.size$ = -ret.size$;
     return ret;
 };
 
-Long$.prototype.__neg__ = function()
+$.prototype.__neg__ = function()
 {
     var ret = this.clone();
     ret.size$ = -ret.size$;
     return ret;
 };
 
-Long$.divrem$ = function(other)
+$.divrem$ = function(other)
 {
     var size_a = Math.abs(this.size$);
     var size_b = Math.abs(other.size$);
@@ -231,12 +241,12 @@ Long$.divrem$ = function(other)
     {
         z = this.clone();
         var remi = z.divremInt$(other.digit$[0]);
-        rem = new Long$(1);
+        rem = new $(1);
         rem.digit$[0] = remi;
     }
 	else
     {
-        var tmp = Long$.divremFull$(this, other);
+        var tmp = $.divremFull$(this, other);
         z = tmp[0];
         rem = tmp[1];
 	}
@@ -248,19 +258,19 @@ Long$.divrem$ = function(other)
     return [z, rem];
 };
 
-Long$.divremFull$ = function(v1, w1)
+$.divremFull$ = function(v1, w1)
 {
     throw "todo;";
     /*
     var size_v = Math.abs(v1.size$);
     var size_w = Math.abs(w1.size$);
-    var d = Long$.BASE$ / (w1.digit[size_w - 1] + 1);
-    var v = Long$.mulInt$(v1, d);
-    var w = Long$.mulInt$(w1, d);
+    var d = $.BASE$ / (w1.digit[size_w - 1] + 1);
+    var v = $.mulInt$(v1, d);
+    var w = $.mulInt$(w1, d);
     */
 };
 
-Long$.normalize$ = function(v)
+$.normalize$ = function(v)
 {
     var j = Math.abs(v.size$);
     var i = j;
@@ -273,7 +283,7 @@ Long$.normalize$ = function(v)
 };
 
 // Add the absolute values of two longs
-Long$.add$ = function(a, b)
+$.add$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
@@ -288,26 +298,26 @@ Long$.add$ = function(a, b)
         tmp = size_a; size_a = size_b; size_b = tmp;
     }
 
-    z = new Long$(size_a + 1);
+    z = new $(size_a + 1);
 	for (i = 0; i < size_b; ++i)
     {
 		carry += a.digit$[i] + b.digit$[i];
-		z.digit$[i] = carry & Long$.MASK$;
-		carry >>= Long$.SHIFT$;
+		z.digit$[i] = carry & $.MASK$;
+		carry >>= $.SHIFT$;
 	}
 	for (; i < size_a; ++i)
     {
 		carry += a.digit$[i];
-		z.digit$[i] = carry & Long$.MASK$;
-		carry >>= Long$.SHIFT$;
+		z.digit$[i] = carry & $.MASK$;
+		carry >>= $.SHIFT$;
 	}
 	z.digit$[i] = carry;
-	return Long$.normalize$(z);
+	return $.normalize$(z);
 };
 
 // Subtract the absolute values of two longs
 
-Long$.sub$ = function(a, b)
+$.sub$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
@@ -332,7 +342,7 @@ Long$.sub$ = function(a, b)
         {
             // nothing
         }
-		if (i < 0) return new Long$(0);
+		if (i < 0) return new $(0);
 		if (a.digit$[i] < b.digit$[i])
         {
 			sign = -1;
@@ -340,39 +350,39 @@ Long$.sub$ = function(a, b)
 		}
 		size_a = size_b = i + 1;
 	}
-    z = new Long$(size_a);
+    z = new $(size_a);
 	for (i = 0; i < size_b; ++i)
     {
         // todo; this isn't true in js i don't think
 		// The following assumes unsigned arithmetic
 	    // works modulo 2**N for some N>SHIFT
 		borrow = a.digit$[i] - b.digit$[i] - borrow;
-		z.digit$[i] = borrow & Long$.MASK$;
-		borrow >>= Long$.SHIFT$;
+		z.digit$[i] = borrow & $.MASK$;
+		borrow >>= $.SHIFT$;
 		borrow &= 1; // Keep only one sign bit
 	}
 	for (; i < size_a; ++i)
     {
 		borrow = a.digit$[i] - borrow;
-		z.digit$[i] = borrow & Long$.MASK$;
-		borrow >>= Long$.SHIFT$;
+		z.digit$[i] = borrow & $.MASK$;
+		borrow >>= $.SHIFT$;
 		borrow &= 1; // Keep only one sign bit
 	}
     if (borrow !== 0) throw "assert";
 	if (sign < 0)
 		z.size$ = -z.size$;
-	return Long$.normalize$(z);
+	return $.normalize$(z);
 };
 
 // "grade school" multiplication, ignoring the signs.
 // returns abs of product.
 // todo; karatsuba is O better after a few 100 digits long, but more
 // complicated for now.
-Long$.mul$ = function(a, b)
+$.mul$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
-    var z = new Long$(size_a + size_b);
+    var z = new $(size_a + size_b);
     var i;
     for (i = 0; i < size_a + size_b; ++i) z.digit$[i] = 0;
 
@@ -386,52 +396,52 @@ Long$.mul$ = function(a, b)
         {
             carry += z.digit$[k] + b.digit$[j] * f;
             //print("@",k,j,carry);
-            z.digit$[k++] = carry & Long$.MASK$;
+            z.digit$[k++] = carry & $.MASK$;
             //print("stored:",z.digit$[i]);
-            carry >>= Long$.SHIFT$;
+            carry >>= $.SHIFT$;
             //print("carry shifted to:",carry);
-            if (carry > Long$.MASK$) throw "assert";
+            if (carry > $.MASK$) throw "assert";
         }
         if (carry)
-            z.digit$[k++] += carry & Long$.MASK$;
+            z.digit$[k++] += carry & $.MASK$;
     }
 
-    Long$.normalize$(z);
+    $.normalize$(z);
     return z;
 };
 
-Long$.prototype.__nonzero__ = function()
+$.prototype.__nonzero__ = function()
 {
     return this.size$ !== 0;
 };
 
 // divide this by non-zero digit n (inplace). return remainder.
-Long$.prototype.divremInt$ = function(n)
+$.prototype.divremInt$ = function(n)
 {
     var rem;
     var cur = Math.abs(this.size$);
     while (--cur >= 0)
     {
         var hi;
-        rem = (rem << Long$.SHIFT$) + this.digit$[cur];
+        rem = (rem << $.SHIFT$) + this.digit$[cur];
         this.digit$[cur] = hi = Math.floor(rem / n);
         rem -= hi * n;
     }
-    Long$.normalize$(this);
+    $.normalize$(this);
     return rem;
 };
 
-Long$.prototype.__repr__ = function()
+$.prototype.__repr__ = function()
 {
-    return new Str$(this.str$() + "L");
+    return new Sk.builtin.str(this.str$() + "L");
 };
 
-Long$.prototype.__str__ = function()
+$.prototype.__str__ = function()
 {
-    return new Str$(this.str$());
+    return new Sk.builtin.str(this.str$());
 };
 
-Long$.prototype.str$ = function(base, sign)
+$.prototype.str$ = function(base, sign)
 {
     if (this.size$ === 0) return "0";
 
@@ -452,31 +462,34 @@ Long$.prototype.str$ = function(base, sign)
     return (sign && this.size$ < 0 ? "-" : "") + ret;
 };
 
-Long$.prototype.__class__ = new Type$('long', [sk$TypeObject], {});
+$.prototype.__class__ = new Sk.builtin.type('long', [Sk.types.object], {});
 
 // handle upconverting a/b from number to long if op causes too big/small a
 // result, or if either of the ops are already longs
-Long$.numOpAndPromotion$ = function(a, b, op)
+Sk.numOpAndPromotion = function(a, b, op)
 {
     if (typeof a === "number" && typeof b === "number")
     {
         var ans = op(a, b);
-        if (ans > Long$.threshold$ || ans < -Long$.threshold$)
+        if (ans > $.threshold$ || ans < -$.threshold$)
         {
             // todo; handle float
-            a = Long$.fromInt$(a);
-            b = Long$.fromInt$(b);
+            a = $.fromInt$(a);
+            b = $.fromInt$(b);
         }
         else
         {
             return ans;
         }
     }
-    else if (a.__class__ === Long$.prototype.__class__
-            || b.__class__ === Long$.prototype.__class__)
+    else if (a.__class__ === $.prototype.__class__
+            || b.__class__ === $.prototype.__class__)
     {
-        if (typeof a === "number") a = Long$.fromInt$(a);
-        if (typeof b === "number") b = Long$.fromInt$(b);
+        if (typeof a === "number") a = $.fromInt$(a);
+        if (typeof b === "number") b = $.fromInt$(b);
     }
     return [a, b];
 };
+
+
+}());

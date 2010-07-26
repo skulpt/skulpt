@@ -115,7 +115,7 @@ class Grammar(object):
     def genjs(self):
         from pprint import pformat
         return (
-                "var SkulptParseTables = {\n" +
+                "Sk.ParseTables = {\n" +
                 "symbol2number:\n" +
                 pformat(self.symbol2number) +
                 ",\n" +

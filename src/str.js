@@ -1,35 +1,53 @@
-Str$ = function(val)
+(function() {
+
+var interned = {};
+var $ = Sk.builtin.str = function str(x)
 {
-    if (val && val.constructor === Str$) return val; // todo; shouldn't be necessary?
-    if (val === undefined) val = "";
-    if (typeof val !== "string") throw "Str$ constructor expecting js string, got " + typeof val;
+    if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
+    if (x instanceof $) return x;
+    if (!(this instanceof $)) return new $(x);
+
+    // convert to js string
+    var ret;
+    if (x === true) ret = "True";
+    else if (x === false) ret = "False";
+    else if (x === null) ret = "None";
+    else if (typeof x === "number")
+        ret = x.toString();
+    else if (typeof x === "string")
+        ret = x;
+    else if (x.__str__ !== undefined)
+    {
+        ret = x.__str__();
+        if (!(ret instanceof $)) throw new ValueError("__str__ didn't return a str");
+        return ret;
+    }
+    else
+        return Sk.builtin.repr(x);
 
     // interning required for strings in py
-    if (Str$.prototype.internStrings$.hasOwnProperty(val))
-    {
-        return Str$.prototype.internStrings$[val];
-    }
+    var it = interned[ret];
+    if (it !== undefined) return it;
 
-    this.v = val;
-    Str$.prototype.internStrings$[val] = this;
+    this.__class__ = this.nativeclass$ = $;
+    this.v = ret;
+    interned[ret] = this;
+    return this;
 };
-Str$.prototype.internStrings$ = {};
 
-Str$.prototype.$_alphanum = {};
-(function initAlnum(){
- var i;
- for (i = 'a'; i <= 'z'; ++i) Str$.prototype.$_alphanum[i] = 1;
- for (i = 'A'; i <= 'Z'; ++i) Str$.prototype.$_alphanum[i] = 1;
- for (i = '0'; i <= '9'; ++i) Str$.prototype.$_alphanum[i] = 1;
-}());
+var alphanum = {};
+var i;
+for (i = 'a'; i <= 'z'; ++i) alphanum[i] = 1;
+for (i = 'A'; i <= 'Z'; ++i) alphanum[i] = 1;
+for (i = '0'; i <= '9'; ++i) alphanum[i] = 1;
 
-Str$.prototype.re_escape$ = function(s)
+var re_escape = function(s)
 {
     var ret = [];
     for (var i = 0; i < s.length; ++i)
     {
         var c = s.charAt(i);
-        if (Str$.prototype.$_alphanum[c])
+        if (alphanum[c])
         {
             ret.push(c);
         }
@@ -44,29 +62,29 @@ Str$.prototype.re_escape$ = function(s)
     return ret.join('');
 };
 
-Str$.prototype.__getitem__ = function(index)
+$.prototype.__getitem__ = function(index)
 {
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;
         if (index < 0 || index >= this.v.length) throw new IndexError("string index out of range");
-        return new Str$(this.v.charAt(index));
+        return new $(this.v.charAt(index));
     }
-    else if (index instanceof Slice$)
+    else if (index instanceof Sk.builtin.slice)
     {
         var ret = '';
         index.sssiter$(this, function(i, wrt) {
                 if (i >= 0 && i < wrt.v.length)
                     ret += wrt.v.charAt(i);
                 });
-        return new Str$(ret);
+        return new $(ret);
     }
     else
         throw new TypeError("string indices must be numbers, not " + typeof index);
 };
 
-Str$.prototype.escapable$ = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
-Str$.prototype.meta$ = {
+var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+var meta = {
     '\b': '\\b',
     '\t': '\\t',
     '\n': '\\n',
@@ -75,28 +93,29 @@ Str$.prototype.meta$ = {
     "'" : "\\'",
     '\\': '\\\\'
 };
-Str$.prototype.quote$ = function(string)
+
+var quote = function(string)
 {
     // If the string contains no control characters, no quote characters, and no
     // backslash characters, then we can safely slap some quotes around it.
     // Otherwise we must also replace the offending characters with safe escape
     // sequences.
-    this.escapable$.lastIndex = 0;
-    return this.escapable$.test(string) ?
-        "'" + string.replace(this.escapable$, function (a) {
-            var c = this.meta$[a];
+    escapable.lastIndex = 0;
+    return escapable.test(string) ?
+        "'" + string.replace(escapable, function (a) {
+            var c = meta[a];
             return typeof c === 'string' ? c :
                 '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
         }) + "'" :
         "'" + string + "'";
 };
 
-Str$.prototype.__add__ = function(other)
+$.prototype.__add__ = function(other)
 {
-    return new Str$(this.v + other.v);
+    return new $(this.v + other.v);
 };
 
-Str$.prototype.__mul__ = Str$.prototype.__rmul__ = function(other)
+$.prototype.__mul__ = $.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = "";
@@ -104,10 +123,10 @@ Str$.prototype.__mul__ = Str$.prototype.__rmul__ = function(other)
     {
         ret += this.v;
     }
-    return new Str$(ret);
+    return new $(ret);
 };
 
-Str$.prototype.__mod__ = function(rhs)
+$.prototype.__mod__ = function(rhs)
 {
     // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)
 
@@ -123,7 +142,7 @@ Str$.prototype.__mod__ = function(rhs)
     //
     // length modifier is ignored
 
-    if (rhs.constructor !== Tuple$ && (rhs.__getitem__ === undefined || rhs.constructor === Str$)) rhs = new Tuple$([rhs]);
+    if (rhs.constructor !== Sk.builtin.tuple && (rhs.__getitem__ === undefined || rhs.constructor === $)) rhs = new Sk.builtin.tuple([rhs]);
     
     // general approach is to use a regex that matches the format above, and
     // do an re.sub with a function as replacement to make the subs.
@@ -172,7 +191,7 @@ Str$.prototype.__mod__ = function(rhs)
                 }
                 r = n.toString(base);
             }
-            else if (n.constructor === Long$)
+            else if (n instanceof Sk.builtin.long)
             {
                 r = n.str$(base, false);
                 neg = n.size$ < 0;
@@ -231,7 +250,7 @@ Str$.prototype.__mod__ = function(rhs)
 
         var value;
         //print("Rhs:",rhs, "ctor", rhs.constructor);
-        if (rhs.constructor === Tuple$)
+        if (rhs.constructor === Sk.builtin.tuple)
         {
             value = rhs.v[i];
         }
@@ -239,7 +258,7 @@ Str$.prototype.__mod__ = function(rhs)
         {
             var mk = mappingKey.substring(1, mappingKey.length - 1);
             //print("mk",mk);
-            value = rhs.__getitem__(new Str$(mk));
+            value = rhs.__getitem__(new $(mk));
         }
         else throw new AttributeError(rhs.__class__.name + " instance has no attribute '__getitem__'");
         var r;
@@ -271,16 +290,16 @@ Str$.prototype.__mod__ = function(rhs)
             case 'c':
                 if (typeof value === "number")
                     return String.fromCharCode(value);
-                else if (value.constructor === Long$)
+                else if (value instanceof Sk.builtin.long)
                     return String.fromCharCode(value.digit$[0] & 255);
-                else if (value.constructor === Str$)
+                else if (value.constructor === $)
                     return value.v.substr(0, 1);
                 else
                     throw new TypeError("an integer is required");
                 break; // stupid lint
 
             case 'r':
-                r = repr(value);
+                r = Sk.builtin.repr(value);
                 if (precision) return r.v.substr(0, precision);
                 return r.v;
             case 's':
@@ -295,7 +314,7 @@ Str$.prototype.__mod__ = function(rhs)
                 print("  precision", precision);
                 print("  conversionType", conversionType);
                 */
-                r = str(value);
+                r = Sk.builtin.str(value);
                 if (precision) return r.v.substr(0, precision);
                 return r.v;
             case '%':
@@ -304,22 +323,26 @@ Str$.prototype.__mod__ = function(rhs)
     };
     
     var ret = this.v.replace(regex, replFunc);
-    return new Str$(ret);
+    return new $(ret);
 };
 
-Str$.prototype.__repr__ = function()
+$.prototype.__repr__ = function()
 {
-    return new Str$(this.quote$(this.v));
+    return new $(quote(this.v));
+};
+$.__repr__ = function()
+{
+    return new $("<type 'str'>");
 };
 
-Str$.prototype.__str__ = function()
+$.prototype.__str__ = function()
 {
     return this.v;
 };
 
-Str$.prototype.richcmp$ = function(rhs, op)
+$.prototype.richcmp$ = function(rhs, op)
 {
-    if (rhs.constructor !== Str$) return false;
+    if (rhs.constructor !== $) return false;
     if (this === rhs)
     {
         switch (op)
@@ -335,80 +358,80 @@ Str$.prototype.richcmp$ = function(rhs, op)
     }
 };
 
-Str$.prototype.__class__ = new Type$('str', [sk$TypeObject], {});
+//$.prototype.__class__ = new Type$('str', [Sk.types.object], {});
 
-Str$.prototype.capitalize = function() { throw "todo; capitalize"; };
-Str$.prototype.center = function() { throw "todo; center"; };
-Str$.prototype.count = function() { throw "todo; count"; };
-Str$.prototype.decode = function() { throw "todo; decode"; };
-Str$.prototype.encode = function() { throw "todo; encode"; };
-Str$.prototype.endswith = function() { throw "todo; endswith"; };
-Str$.prototype.expandtabs = function() { throw "todo; expandtabs"; };
-Str$.prototype.find = function() { throw "todo; find"; };
-Str$.prototype.format = function() { throw "todo; format"; };
-Str$.prototype.index = function() { throw "todo; index"; };
-Str$.prototype.isalnum = function() { throw "todo; isalnum"; };
-Str$.prototype.isalpha = function() { throw "todo; isalpha"; };
-Str$.prototype.isdigit = function() { throw "todo; isdigit"; };
-Str$.prototype.islower = function() { throw "todo; islower"; };
-Str$.prototype.isspace = function() { throw "todo; isspace"; };
-Str$.prototype.istitle = function() { throw "todo; istitle"; };
-Str$.prototype.isupper = function() { throw "todo; isupper"; };
+$.capitalize = function() { throw "todo; capitalize"; };
+$.center = function() { throw "todo; center"; };
+$.count = function() { throw "todo; count"; };
+$.decode = function() { throw "todo; decode"; };
+$.encode = function() { throw "todo; encode"; };
+$.endswith = function() { throw "todo; endswith"; };
+$.expandtabs = function() { throw "todo; expandtabs"; };
+$.find = function() { throw "todo; find"; };
+$.format = function() { throw "todo; format"; };
+$.index = function() { throw "todo; index"; };
+$.isalnum = function() { throw "todo; isalnum"; };
+$.isalpha = function() { throw "todo; isalpha"; };
+$.isdigit = function() { throw "todo; isdigit"; };
+$.islower = function() { throw "todo; islower"; };
+$.isspace = function() { throw "todo; isspace"; };
+$.istitle = function() { throw "todo; istitle"; };
+$.isupper = function() { throw "todo; isupper"; };
 
-Str$.prototype.join = function(seq)
+$.join = function(self, seq)
 {
     var arrOfStrs = [];
-    sk$iter(seq, function(v)
-            {
-                if (v.constructor !== Str$) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof v + " found";
-                arrOfStrs.push(v.v);
-            });
-    return arrOfStrs.join(this.v);
+    for (var it = seq.__iter__(), i = it.next(); i !== undefined; i = it.next())
+    {
+        if (i.constructor !== $) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
+        arrOfStrs.push(i.v);
+    }
+    return arrOfStrs.join(self.v);
 };
 
-Str$.prototype.ljust = function() { throw "todo; ljust"; };
-Str$.prototype.lower = function() { return new Str$(this.v.toLowerCase()); };
-Str$.prototype.lstrip = function() { throw "todo; lstrip"; };
-Str$.prototype.partition = function() { throw "todo; partition"; };
+$.ljust = function() { throw "todo; ljust"; };
+$.lower = function() { return new $(this.v.toLowerCase()); };
+$.lstrip = function() { throw "todo; lstrip"; };
+$.partition = function() { throw "todo; partition"; };
 
-Str$.prototype.replace = function(oldS, newS, count)
+$.replace = function(self, oldS, newS, count)
 {
-    if (oldS.constructor !== Str$ || newS.constructor !== Str$)
+    if (oldS.constructor !== $ || newS.constructor !== $)
         throw "TypeError: expecting a string";
     if (count !== undefined)
         throw "todo; replace() with count not implemented";
-    var patt = new RegExp(this.re_escape$(oldS.v), "g");
-    return new Str$(this.v.replace(patt, newS.v));
+    var patt = new RegExp(re_escape(oldS.v), "g");
+    return new $(self.v.replace(patt, newS.v));
 };
 
-Str$.prototype.rfind = function() { throw "todo; rfind"; };
-Str$.prototype.rindex = function() { throw "todo; rindex"; };
-Str$.prototype.rjust = function() { throw "todo; rjust"; };
-Str$.prototype.rpartition = function() { throw "todo; rpartition"; };
-Str$.prototype.rsplit = function() { throw "todo; rsplit"; };
-Str$.prototype.rstrip = function() { throw "todo; rstrip"; };
+$.rfind = function() { throw "todo; rfind"; };
+$.rindex = function() { throw "todo; rindex"; };
+$.rjust = function() { throw "todo; rjust"; };
+$.rpartition = function() { throw "todo; rpartition"; };
+$.rsplit = function() { throw "todo; rsplit"; };
+$.rstrip = function() { throw "todo; rstrip"; };
 
-Str$.prototype.split = function(on, howmany)
+$.split = function(self, on, howmany)
 {
-    var res = this.v.split(new Str$(on).v, howmany);
+    var res = self.v.split(new $(on).v, howmany);
     var tmp = [];
     for (var i = 0; i < res.length; ++i)
     {
-        tmp.push(new Str$(res[i]));
+        tmp.push(new $(res[i]));
     }
-    return new List$(tmp);
+    return new Sk.builtin.list(tmp);
 };
 
-Str$.prototype.splitlines = function() { throw "todo; splitlines"; };
-Str$.prototype.startswith = function() { throw "todo; startswith"; };
-Str$.prototype.strip = function() { throw "todo; strip"; };
-Str$.prototype.swapcase = function() { throw "todo; swapcase"; };
-Str$.prototype.title = function() { throw "todo; title"; };
-Str$.prototype.translate = function() { throw "todo; translate"; };
-Str$.prototype.upper = function() { return new Str$(this.v.toUpperCase()); };
-Str$.prototype.zfill = function() { throw "todo; zfill"; };
+$.splitlines = function() { throw "todo; splitlines"; };
+$.startswith = function() { throw "todo; startswith"; };
+$.strip = function() { throw "todo; strip"; };
+$.swapcase = function() { throw "todo; swapcase"; };
+$.title = function() { throw "todo; title"; };
+$.translate = function() { throw "todo; translate"; };
+$.upper = function(self) { return new $(self.v.toUpperCase()); };
+$.zfill = function() { throw "todo; zfill"; };
 
-Str$.prototype.__iter__ = function()
+$.prototype.__iter__ = function()
 {
     var ret =
     {
@@ -419,8 +442,10 @@ Str$.prototype.__iter__ = function()
         {
             // todo; StopIteration
             if (ret.$index >= ret.$obj.v.length) return undefined;
-           return new Str$(ret.$obj.v.substr(ret.$index++, 1));
+           return new $(ret.$obj.v.substr(ret.$index++, 1));
         }
     };
     return ret;
 };
+
+}());

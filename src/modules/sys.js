@@ -1,11 +1,15 @@
-Module$.builtins$.sys = function(self)
+(function() {
+
+Sk.stdmodules.sys = function(self)
 {
-    self.__setattr__('modules', Module$.modules$);
+    self.__setattr__('modules', Sk.modules);
 
-    var argv = sk$sysargv || [];
+    var argv = Sk.sysargv || [];
     for (var i = 0; i < argv.length; ++i)
-        argv[i] = new Str$(argv[i]);
-    self.__setattr__('argv', new List$(argv));
+        argv[i] = new Sk.builtin.str(argv[i]);
+    self.__setattr__('argv', new Sk.builtin.list(argv));
 
-    self.__setattr__('path', Module$.syspath$);
+    self.__setattr__('path', Sk.syspath);
 };
+
+}());

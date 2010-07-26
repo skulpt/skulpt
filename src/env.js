@@ -1,46 +1,46 @@
 //
-// These are functions that are added to the environment. They're not wrapped
-// in the global 'Skulpt' object. AFAICT, it's not possible to eval in a
-// specific context (?), so we hide all the compiler stuff in the Skulpt
-// object, but we have to leave the runtime stuff outside in the global scope,
-// where code will be run.
+// Sk is the only symbol that Skulpt adds to the global namespace. The main
+// entry points and customization points are noted and described here.
 //
-// todo; sort out doing enough analysis so we can rename invocations of
-// standard python functions (like len, range) to sk$len, sk$range.
 
+var Sk = (function(){ var $ = {
 
 // replaceable output redirection (called from print, etc)
-var sk$output = function(x){};
-if (this.print !== undefined) sk$output = this.print;
-if (this.console !== undefined && this.console.log !== undefined) sk$output = function (x) {this.console.log(x);};
+output: function(x) {},
 
 // replaceable function to load modules with (called via import, etc)
-var sk$load = function(x) { throw "sk$load has not implemented"; };
-if (this.read !== undefined) sk$load = this.read;
-// todo; XHR
+// todo; should be async
+load: function(x) { throw "Sk.load has not been implemented"; },
 
+// settable to emulate arguments to the script. should be array of js strings.
+sysargv: [],
 
-var Str$, List$, Tuple$, Dict$, Slice$, Type$, Long$, Module$;
-var sk$TypeObject, sk$TypeInt, sk$TypeType;
-var sk$sysargv;
-var Skulpt;
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+//
+//
+// Everything below here is considered 'internal'.
+//
+//
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
-function sk$iter(pyobj, callback)
-{
-    for (var iter = pyobj.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
-    {
-        if (callback.call(null, i) === false) break;
-    }
-}
+// where code objects, etc. get stored
+consts: {},
 
-function sk$typename(o)
-{
-    if (typeof o === "number") return sk$TypeInt.name;
-    if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
-    return o.__class__.__name__;
-}
+// dictionary of special/builtin type objects
+types: {},
 
-function sk$neg(self)
+stdmodules: {},
+
+//
+// a wide variety of implementation details. these are generally
+// functions called by the compiler to implement details of the language.
+//
+
+neg: function neg(self)
 {
     if (typeof self === "number")
     {
@@ -56,30 +56,17 @@ function sk$neg(self)
         throw new TypeError("bad operand type for unary -: '" +
                 typeof self + "'");
     }
-}
+},
 
-function sk$unpack(lhsnames, rhs, context)
+not: function not(self)
 {
-    var newRHS = [];
-    for (var iter = rhs.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
-        newRHS.push(i);
-    rhs = newRHS;
+    // todo; this should use __nonzero__/length, etc.
+    return !self;
+},
 
-    if (lhsnames.length !== rhs.length)
-    {
-        throw "ValueError: unpack had " + lhsnames.length  + " on the left, but " + rhs.length + " on the right.";
-    }
-    // todo; what the heck is 'this' here?
-    if (context === undefined) context = this;
-    for (var j = 0; j < lhsnames.length; ++j)
-    {
-        context[lhsnames[j]] = rhs[j];
-    }
-}
-
-function sk$in(lhs, rhs)
+in_: function in_(lhs, rhs)
 {
-    if (lhs.constructor === Str$ && rhs.constructor === Str$)
+    if (lhs.constructor === $.builtin.str && rhs.constructor === $.builtin.str)
     {
         return rhs.v.indexOf(lhs.v) >= 0;
     }
@@ -97,10 +84,12 @@ function sk$in(lhs, rhs)
         }
         return ret;
     }
-}
+},
 
-function sk$cmp(lhs, rhs, op)
+cmp: function cmp(lhs, rhs, op)
 {
+    if (op === 'is') return lhs === rhs;
+    if (op === 'is not') return lhs !== rhs;
     if (typeof lhs === "number" && typeof rhs === "number")
     {
         switch (op)
@@ -119,10 +108,15 @@ function sk$cmp(lhs, rhs, op)
         var ret;
         if (lhs.richcmp$ !== undefined)
             return lhs.richcmp$(rhs, op);
+        // todo; lookup
         else if (lhs.__cmp__ !== undefined)
             ret = lhs.__cmp__(rhs);
         else if (rhs.__cmp__ !== undefined)
             ret = -rhs.__cmp__(lhs);
+        else if (lhs.__class__.__cmp__ !== undefined)
+            ret = lhs.__class__.__cmp__(lhs, rhs);
+        else if (rhs.__class__.__cmp__ !== undefined)
+            ret = -rhs.__class__.__cmp__(rhs, lhs);
         else
         {
             // todo; dispatch to the specific __eq__, etc.
@@ -140,44 +134,27 @@ function sk$cmp(lhs, rhs, op)
             default: throw "assert";
         }
     }
-}
+},
 
-function sk$binop(lhs, rhs, op)
+softspace: false,
+print: function print(x)
 {
-    var numPromote = sk$binop.numPromote$;
-    var numPromoteFunc = numPromote[op];
-    if (numPromoteFunc !== undefined)
+    if ($.softspace)
     {
-        var tmp = Long$.numOpAndPromotion$(lhs, rhs, numPromoteFunc);
-        if (typeof tmp === "number")
-        {
-            return tmp;
-        }
-        lhs = tmp[0];
-        rhs = tmp[1];
+        $.output(' ');
+        $.softspace = false;
     }
+    var s = $.builtin.str(x);
+    $.output(s.v);
+    var isspace = function(c)
+    {
+        return c == '\n' || c == '\t' || c == '\r';
+    };
+    if (s.v.length == 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] == ' ')
+        $.softspace = true;
+},
 
-    var func = sk$binop.funcs$[op];
-    var rfunc = sk$binop.rfuncs$[op];
-    if (!func || !rfunc) throw "assert";
-
-    if (lhs[func] !== undefined)
-        return lhs[func](rhs);
-    if (rhs[rfunc] !== undefined)
-        return rhs[rfunc](lhs);
-
-    throw new TypeError("unsupported operand type(s) for " + op + ": '" +
-            sk$typename(lhs) + "' and '" + sk$typename(rhs) + "'");
-
-}
-sk$binop.numPromote$ = {
-    "+": function(a, b) { return a + b; },
-    "-": function(a, b) { return a - b; },
-    "*": function(a, b) { return a * b; },
-    "%": function(a, b) { return a % b; },
-    "**": Math.pow
-};
-sk$binop.funcs$ = {
+opFuncs: {
     "+": "__add__",
     "-": "__sub__",
     "*": "__mul__",
@@ -190,8 +167,9 @@ sk$binop.funcs$ = {
     "&": "__and__",
     "|": "__or__",
     "^": "__xor__"
-};
-sk$binop.rfuncs$ = {
+},
+
+opRFuncs: {
     "+": "__radd__",
     "-": "__rsub__",
     "*": "__rmul__",
@@ -204,54 +182,9 @@ sk$binop.rfuncs$ = {
     "&": "__rand__",
     "|": "__ror__",
     "^": "__rxor__"
-};
+},
 
-function sk$inplace(lhs, rhs, op)
-{
-    var numPromote = sk$inplace.numPromote$;
-    var numPromoteFunc = numPromote[op];
-    if (numPromoteFunc !== undefined)
-    {
-        var tmp = Long$.numOpAndPromotion$(lhs, rhs, numPromoteFunc);
-        if (typeof tmp === "number")
-            return tmp;
-        lhs = tmp[0];
-        rhs = tmp[1];
-    }
-
-    var opname = sk$inplace.augfuncs$[op];
-    if (lhs[opname] !== undefined)
-    {
-        return lhs[opname](rhs);
-    }
-    else
-    {
-        var opname2 = sk$binop.funcs$[op.substring(0, op.length - 1)];
-        if (lhs[opname2] !== undefined)
-        {
-            return lhs[opname2](rhs);
-        }
-        else
-        {
-            throw "AttributeError: " + opname + " or " + opname2 + " not found on " + sk$typename(lhs);
-        }
-    }
-}
-sk$inplace.numPromote$ = {
-    "+=": function(a, b) { return a + b; },
-    "-=": function(a, b) { return a - b; },
-    "*=": function(a, b) { return a * b; },
-    "/=": function(a, b) { return a / b; },
-    "//=": Math.floor,
-    "%=": function(a, b) { return a + b; },
-    "**=": Math.pow,
-    "<<=": function(a, b) { return a << b; },
-    ">>=": function(a, b) { return a >> b; },
-    "&=": function(a, b) { return a & b; },
-    "|=": function(a, b) { return a | b; },
-    "^=": function(a, b) { return a ^ b; }
-};
-sk$inplace.augfuncs$ = {
+opIFuncs: {
     "+=": "__iadd__",
     "-=": "__isub__",
     "*=": "__imul__",
@@ -264,218 +197,247 @@ sk$inplace.augfuncs$ = {
     "&=": "__iand__",
     "|=": "__ior__",
     "^=": "__ixor__"
-};
+},
 
-function range(start, stop, step)
-{
-    var ret = [];
-    var s = new Slice$(start, stop, step);
-    s.sssiter$(0, function(i) { ret.push(i); });
-    return new List$(ret);
-}
 
-function len(item)
+boNumPromote: {
+    "+": function(a, b) { return a + b; },
+    "-": function(a, b) { return a - b; },
+    "*": function(a, b) { return a * b; },
+    "%": function(a, b) { return a % b; },
+    "**": Math.pow,
+    "&": function(a, b) { return a & b; },
+    "|": function(a, b) { return a | b; },
+    "^": function(a, b) { return a ^ b; },
+},
+binop: function binop(lhs, rhs, op)
 {
-    // todo; dispatch to __len__
-    if (item.constructor === Str$ || item.constructor === List$ || item.constructor === Tuple$)
+    var numPromote = $.boNumPromote;
+    var numPromoteFunc = numPromote[op];
+    if (numPromoteFunc !== undefined)
     {
-        return item.v.length;
-    }
-    else if (item.constructor === Dict$)
-    {
-        return item.size;
-    }
-    else
-    {
-        throw "AttributeError: no attribute __len__";
-    }
-}
-
-function slice(start, stop, step)
-{
-    return new Slice$(start, stop, step);
-}
-
-function min()
-{
-    // todo; throw if no args
-    var lowest = arguments[0];
-    for (var i = 1; i < arguments.length; ++i)
-    {
-        if (arguments[i] < lowest)
-            lowest = arguments[i];
-    }
-    return lowest;
-}
-
-function max()
-{
-    // todo; throw if no args
-    var highest = arguments[0];
-    for (var i = 1; i < arguments.length; ++i)
-    {
-        if (arguments[i] > highest)
-            highest = arguments[i];
-    }
-    return highest;
-}
-
-function abs(x)
-{
-    return Math.abs(x);
-}
-
-function ord(x)
-{
-    if (x.constructor !== Str$ || x.v.length !== 1)
-    {
-        throw "ord() expected string of length 1";
-    }
-    return (x.v).charCodeAt(0);
-}
-
-function chr(x)
-{
-    if (typeof x !== "number")
-    {
-        throw "TypeError: an integer is required";
-    }
-    return new Str$(String.fromCharCode(x));
-}
-
-function dir(x)
-{
-    var names;
-    if (x.__dir__ !== undefined)
-    {
-        names = x.__dir__().v;
-    }
-    else
-    {
-        names = [];
-        for (var k in x)
+        var tmp = $.numOpAndPromotion(lhs, rhs, numPromoteFunc);
+        if (typeof tmp === "number")
         {
-            if (!x.hasOwnProperty(k) && k.indexOf("$") === -1)
+            return tmp;
+        }
+        lhs = tmp[0];
+        rhs = tmp[1];
+    }
+
+    var func = $.opFuncs[op];
+    var rfunc = $.opRFuncs[op];
+    if (!func || !rfunc) throw "assert";
+
+    if (lhs[func] !== undefined)
+        return lhs[func](rhs);
+    if (rhs[rfunc] !== undefined)
+        return rhs[rfunc](lhs);
+
+    throw new TypeError("unsupported operand type(s) for " + op + ": '" +
+            $.typename(lhs) + "' and '" + $.typename(rhs) + "'");
+
+},
+
+ipNumPromote: {
+    "+=": function(a, b) { return a + b; },
+    "-=": function(a, b) { return a - b; },
+    "*=": function(a, b) { return a * b; },
+    "/=": function(a, b) { return a / b; },
+    "//=": Math.floor,
+    "%=": function(a, b) { return a + b; },
+    "**=": Math.pow,
+    "<<=": function(a, b) { return a << b; },
+    ">>=": function(a, b) { return a >> b; },
+    "&=": function(a, b) { return a & b; },
+    "|=": function(a, b) { return a | b; },
+    "^=": function(a, b) { return a ^ b; }
+},
+inplace: function inplace(lhs, rhs, op)
+{
+    var numPromote = $.ipNumPromote;
+    var numPromoteFunc = numPromote[op];
+    if (numPromoteFunc !== undefined)
+    {
+        var tmp = $.numOpAndPromotion(lhs, rhs, numPromoteFunc);
+        if (typeof tmp === "number")
+            return tmp;
+        lhs = tmp[0];
+        rhs = tmp[1];
+    }
+
+    var opname = $.opIFuncs[op];
+    if (lhs[opname] !== undefined)
+    {
+        return lhs[opname](rhs);
+    }
+    else
+    {
+        var opname2 = $.opFuncs[op.substring(0, op.length - 1)];
+        if (lhs[opname2] !== undefined)
+        {
+            return lhs[opname2](rhs);
+        }
+        else
+        {
+            throw "AttributeError: " + opname + " or " + opname2 + " not found on " + $.typename(lhs);
+        }
+    }
+},
+
+lookupAttrOnClass: function lookupAttrOnClass(o, attrname)
+{
+    if (o.__class__ === undefined) return undefined;
+
+    // todo; mro, etc.
+    var klass = o.__class__;
+    var findIn = function(k)
+    {
+        //print("k-------------:", $.builtin.repr(k).v);
+        for (var i in k)
+        {
+            //print("i", i)
+            if (k.hasOwnProperty(i)
+                    && i === attrname)
             {
-                names.push(new Str$(k));
+                return k[attrname];
             }
         }
-    }
-    names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
-    return new List$(names);
-}
-
-function repr(x)
-{
-    var ret;
-    if (typeof x === "number") ret = x.toString();
-    else if (x === true) ret = "True";
-    else if (x === false) ret = "False";
-    else if (x === null) ret = "None";
-    else if (x.__repr__ !== undefined)
-        return x.__repr__();
-    return new Str$(ret);
-}
-
-function str(x)
-{
-    var ret;
-    if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
-    else if (x === true) ret = "True";
-    else if (x === false) ret = "False";
-    else if (x === null) ret = "None";
-    else if (x && x.constructor === Str$) return x;
-    else if (typeof x === "number")
-        ret = x.toString();
-    else if (typeof x === "string")
-        ret = x;
-    else if (x.__str__ !== undefined)
-        ret = x.__str__();
-    else
-        return repr(x);
-    return new Str$(ret);
-}
-
-function type(name, bases, dict)
-{
-    if (bases === undefined && dict === undefined)
-    {
-        // type function, rather than type constructor
-        var obj = name;
-        // todo; less assey
-        if (typeof obj === "number")
-            return sk$TypeInt;
-        else
-            return obj.__class__;
-    }
-    else
-    {
-        return new Type$(name, bases, dict);
-    }
-}
-
-function hash(value)
-{
-    if (value instanceof Object && value.__hash__ !== undefined)
-    {
-        if (value.__hash) return value.__hash;
-        value.__hash = 'custom ' + value.__hash__();
-        return value.__hash;
-    }
-
-    if (value instanceof Object)
-    {
-        if (value.__id === undefined)
-        {
-            hash.current += 1;
-            value.__id = 'object ' + hash.current;
-        }
-        return value.__id;
-    }
-    return (typeof value) + ' ' + String(value);
-
-    // todo; throw properly for unhashable types
-}
-hash.current = 0;
-
-function sk$print(x)
-{
-    var s = str(x);
-    sk$output(s.v);
-}
-
-
-// stupid language.
-// When running the unit tests under Safari, this fails to replace .bind.
-// Making it unconditional allows the tests to pass.
-//if (!Function.prototype.bind)
-//{
-    Function.prototype.bind = function(object)
-    {
-        var __method = this;
-        var ret = function()
-        {
-            return __method.apply(object, arguments);
-        };
-        ret.argnames$ = this.argnames$; // todo; icky
-        return ret;
+        //print("k.bases:",k.__bases__);
+        if (k.__bases__.v.length == 0) return undefined;
+        //print($.builtin.repr(k.__bases__).v);
+        return findIn(k.__bases__.v[0]); // todo; multiple bases
     };
-//}
-function sk$ga(o, attrname)
+    return findIn(klass);
+},
+
+// descriptors are some crazy crap. see:
+//   http://www.python.org/download/releases/2.2/descrintro/
+//   http://stackoverflow.com/questions/852308/how-the-method-resolution-and-invocation-works-internally-in-python/870650#870650
+// we only implement "non-data descriptors", currently since that's
+// what's needed for methods.
+getattr: function getattr(o, attrname, default_)
 {
-    var v = o[attrname];
-    if (v === undefined && o.__getattr__ !== undefined)
-        v = o.__getattr__(attrname);
-    if (v instanceof Function) return v.bind(o);
-    return v;
-}
-function sk$sa(o, attrname, value)
+    //print("getattr", o, attrname);
+    if (o === undefined)
+    {
+        throw "trying to lookup " + attrname + " on undefined";
+    }
+    var classAttrValue = $.lookupAttrOnClass(o, attrname);
+    //print("classAttrValue", classAttrValue);
+    var instanceAttrValue = o[attrname];
+    if (instanceAttrValue !== undefined)
+    {
+        //print("have instance value", instanceAttrValue, o.__class__);
+        if (o.__class__) // probably should be instanceof Type$?
+        {
+            if (instanceAttrValue instanceof Function) // special case, function should have a __get__
+            {
+                return Sk.fget(instanceAttrValue, null, o); // == (the_obj (function, etc), unbound, to_what (owner))
+            }
+            var getdesc1 = $.lookupAttrOnClass(o, '__get__');
+            //print("getdesc1 in here", getdesc1);
+            if (getdesc1 !== undefined)
+                return getdesc1(instanceAttrValue, null, o); // == (the_obj (function, etc), unbound, to_what (owner))
+            return instanceAttrValue;
+        }
+    }
+
+    if (classAttrValue === undefined)
+    {
+        //print("no class value either", o.__getattr__);
+        if (o.__getattr__ !== undefined)
+        {
+            //print("attrname", attrname);
+            var v = o.__getattr__(attrname);
+            //print("getattr got", v);
+            return v;
+        }
+        //print("default_", default_);
+        if (default_ !== undefined)
+        {
+            //print("returning default", default_);
+            return default_;
+        }
+        throw new Sk.builtin.AttributeError(attrname + " not found");
+    }
+
+    var getdesc2 = classAttrValue.__get__;
+    if (getdesc2 === undefined && classAttrValue instanceof Function && o.nativeclass$)
+        getdesc2 = $.fget;
+    //print("getdesc2:",getdesc2);
+    if (getdesc2 !== undefined)
+    {
+        //print("had get on o", $.builtin.repr(o).v);
+        return getdesc2(classAttrValue, o, o.__class__); // == (the_obj, bound_to, to_what (owner))
+    }
+
+    return classAttrValue;
+},
+
+setattr: function setattr(object, name, value)
 {
-    if (o.__setattr__ !== undefined)
-        o.__setattr__(attrname, value);
+    // todo; __set__ i guess
+    var setter = $.lookupAttrOnClass(object, '__setattr__');
+    if (setter)
+    {
+        setter.apply(object, name, value);
+    }
+    throw new Sk.builtin.AttributeError("no __setattr__"); // todo; this might be wrong
+},
+
+// load a name, searching in various locations, and always ending in globals and builtins
+loadname: function loadname(name /*, locations*/)
+{
+    for (var i = 1; i < arguments.length; ++i)
+    {
+        var v = arguments[i][name];
+        if (v !== undefined) return v;
+    }
+
+    var bi = $.builtin[name];
+    if (bi !== undefined) return bi;
+
+    // todo; should be NameError
+    throw new ReferenceError("name '" + name + "' is not defined");
+},
+
+storename: function storename(name, value, globals /*, locations*/)
+{
+    for (var i = 3; i < arguments.length; ++i)
+    {
+        var v = arguments[i][name];
+        if (v !== undefined)
+        {
+            arguments[i][name] = value;
+            return;
+        }
+    }
+    globals[name] = value;
+},
+
+delname: function delname(name, loc)
+{
+    // todo; throw if not there
+    delete loc[name];
+},
+
+inherits: function inherits(ctor, bases)
+{
+    if (bases.v.length === 0)
+    {
+        ctor.prototype = new $.builtin.object();
+        ctor.__bases__ = new Sk.builtin.list([Sk.types.object]);
+    }
+    else if (bases.v.length === 1)
+    {
+        ctor.prototype = new bases.v[0]();
+        ctor.__bases__ = new Sk.builtin.list(bases.v);
+    }
     else
-        o[attrname] = value;
-}
+        throw SyntaxError("multiple bases not implemented yet");
+
+},
 
 // unfortunately (at least pre-ecmascript 5) there's no way to make objects be
 // both callable and have arbitrary prototype chains.
@@ -485,7 +447,7 @@ function sk$sa(o, attrname, value)
 // python-level calls in a call that checks if the target is an object that
 // has a __call__ attribute so we can dispatch to it. sucky.
 // additionally, this handles remapping kwargs to the correct locations.
-function sk$call(obj, kwargs)
+call: function call(obj, kwargs)
 {
     var args = Array.prototype.slice.call(arguments, 2);
     if (kwargs !== undefined)
@@ -495,16 +457,17 @@ function sk$call(obj, kwargs)
             var kwargname = kwargs[i];
             var kwargvalue = kwargs[i + 1];
             if (obj.argnames$ === undefined) throw obj + " has no argnames";
+            //print(obj.argnames$);
             var index = obj.argnames$.indexOf(kwargname);
             //print(kwargname,"is",kwargvalue.v,"at",index);
             args[index] = kwargvalue;
         }
         //print(JSON2.stringify(args));
     }
-    try
-    {
-        return obj.apply(this, args);
-    }
+    //try
+    //{
+        return obj.apply("UNK", args);
+    /*}
     catch (e)
     {
         var eAsStr = e.toString();
@@ -526,11 +489,12 @@ function sk$call(obj, kwargs)
             throw e;
         }
     }
-}
+    */
+},
 
 // this tries to implement something like:
 // http://docs.python.org/reference/simple_stmts.html#the-import-statement
-function sk$import(name)
+import_: function import_(name)
 {
     //
     // find the module. we don't do any of the PEP 302 stuff yet (or hardcode
@@ -540,23 +504,23 @@ function sk$import(name)
     var filename;
 
     // try system modules first
-    if (Module$.builtins$[name] !== undefined)
+    if ($.stdmodules[name] !== undefined)
     {
-        contents = Module$.builtins$[name];
+        contents = $.stdmodules[name];
     }
 
-    Module$.syspath$ = new List$([new Str$('test/run')]); // todo; this shouldn't be necessary
+    $.syspath = new $.builtin.list([new $.builtin.str('test/run')]); // todo; this shouldn't be necessary
 
     if (!contents)
     {
         (function() {
          // then user modules
-         for (var iter = Module$.syspath$.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
+         for (var iter = $.syspath.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
          {
              try
              {
-                 filename = i.v + "/" + name + ".py";
-                 contents = sk$load(filename);
+                 filename = i.v + "/" + name + ".pyc";
+                 contents = $.load(filename);
                  return;
              } catch (e) {}
          }
@@ -569,8 +533,8 @@ function sk$import(name)
     //
     // initialize the module
     //
-    var module = new Module$(name, filename);
-    Module$.modules$.__setitem__(new Str$(name), module);
+    var module = new $.module(name, filename);
+    $.modules.__setitem__(new $.builtin.str(name), module);
 
     if (filename === undefined) // native
     {
@@ -580,37 +544,182 @@ function sk$import(name)
     else
     {
         var js = Skulpt.compileStr(filename, contents, module);
-        print("/**** start", filename, "****/");
-        print(js);
-        print("/**** end", filename, "****/");
+        //print("/**** start", filename, "****/");
+        //print(js);
+        //print("/**** end", filename, "****/");
         eval(js);
     }
 
+    return module;
+},
 
-    //
-    // bind names into the local environment
-    // todo; everything other than basic 'import blah'
-    //
-    this[name] = module;
-}
+// todo; this function smells wrong
+typename: function(o)
+{
+    if (typeof o === "number") return $.types['int'].name;
+    if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
+    return o.__class__.__name__;
+},
 
-var object = function()
+
+// builtins are supposed to come from the __builtin__ module, but we don't do
+// that yet.
+builtin: {
+
+range: function range(start, stop, step)
 {
-    this.__dict__ = new Dict$([]);
-    return this;
-};
-// todo; maybe a string-only dict here that's just an object+methods for efficiency
-object.prototype.__setattr__ = function(k,v)
+    var ret = [];
+    var s = new $.builtin.slice(start, stop, step);
+    s.sssiter$(0, function(i) { ret.push(i); });
+    return new $.builtin.list(ret);
+},
+
+len: function len(item)
 {
-    //print("in __setattr__",k,v);
-    this.__dict__.__setitem__(new Str$(k), v);
-};
-object.prototype.__getattr__ = function(k)
+    // todo; dispatch to __len__
+    if (item instanceof $.builtin.str || item instanceof $.builtin.list || item instanceof $.builtin.tuple)
+    {
+        return item.v.length;
+    }
+    else if (item instanceof $.builtin.dict)
+    {
+        return item.size;
+    }
+    else
+    {
+        throw "AttributeError: no attribute __len__";
+    }
+},
+
+min: function min()
 {
-    return this.__dict__.__getitem__(new Str$(k));
-};
-object.prototype.__repr__ = function(k)
+    // todo; throw if no args
+    var lowest = arguments[0];
+    for (var i = 1; i < arguments.length; ++i)
+    {
+        if (arguments[i] < lowest)
+            lowest = arguments[i];
+    }
+    return lowest;
+},
+
+max: function max()
 {
-    // todo; should be getattr('module')
-    return new Str$("<" + this.__module__ + "." + this.__class__.__name__ + " instance>");
+    // todo; throw if no args
+    var highest = arguments[0];
+    for (var i = 1; i < arguments.length; ++i)
+    {
+        if (arguments[i] > highest)
+            highest = arguments[i];
+    }
+    return highest;
+},
+
+abs: function abs(x)
+{
+    return Math.abs(x);
+},
+
+ord: function ord(x)
+{
+    if (x.constructor !== $.builtin.str || x.v.length !== 1)
+    {
+        throw "ord() expected string of length 1";
+    }
+    return (x.v).charCodeAt(0);
+},
+
+chr: function chr(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new $.builtin.str(String.fromCharCode(x));
+},
+
+dir: function dir(x)
+{
+    var names;
+    if (x.__dir__ !== undefined)
+    {
+        names = x.__dir__().v;
+    }
+    else
+    {
+        names = [];
+        for (var k in x)
+        {
+            if (x.hasOwnProperty(k) && k.indexOf("$") === -1)
+            {
+                names.push(new $.builtin.str(k));
+            }
+        }
+    }
+    names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
+    return new $.builtin.list(names);
+},
+
+repr: function repr(x)
+{
+    var ret;
+    if (typeof x === "number") ret = x.toString();
+    else if (x === true) ret = "True";
+    else if (x === false) ret = "False";
+    else if (x === null) ret = "None";
+    else if (x.__repr__ !== undefined)
+        return x.__repr__();
+    return new $.builtin.str(ret);
+},
+
+open: function open(filename, mode, bufsize)
+{
+    if (mode === undefined) mode = "r";
+    if (mode !== "r" && mode !== "rb") throw "todo; haven't implemented non-read opens";
+    return new Sk.builtin.file(filename, mode, bufsize);
+},
+
+hashCount: 0,
+hash: function hash(value)
+{
+    if (value instanceof Object && value.__hash__ !== undefined)
+    {
+        if (value.__hash) return value.__hash;
+        value.__hash = 'custom ' + value.__hash__();
+        return value.__hash;
+    }
+
+    if (value instanceof Object)
+    {
+        if (value.__id === undefined)
+        {
+            $.builtin.hashCount += 1;
+            value.__id = 'object ' + $.builtin.hashCount;
+        }
+        return value.__id;
+    }
+    return (typeof value) + ' ' + String(value);
+
+    // todo; throw properly for unhashable types
+},
+
+getattr: function getattr(object, name, default_)
+{
+    return $.getattr(object, name.v, default_);
+},
+
+         },
 };
+
+// set up some sane defaults based on availability
+if (this.write !== undefined) $.output = this.write;
+else if (this.console !== undefined && this.console.log !== undefined) $.output = function (x) {this.console.log(x);};
+else if (this.print !== undefined) $.output = this.print;
+
+// todo; this should be an async api
+if (this.read !== undefined) $.load = this.read;
+// todo; XHR
+
+return $;
+
+}());

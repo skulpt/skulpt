@@ -1,40 +1,47 @@
-List$ = function(L)
-{
-    if (Object.prototype.toString.apply(L) !== '[object Array]')
-        throw "TypeError: list expecting native Array as argument";
-    this.v = L;
-};
+(function() {
 
-function list(iterable)
+var $ = Sk.builtin.list = function list(L)
 {
-    var g = iterable.__iter__();
-    var ret = new List$([]);
-    for (var i = g.next(); i !== undefined; i = g.next())
+    if (L instanceof $) return L;
+    if (!(this instanceof $)) return new $(L);
+
+    if (Object.prototype.toString.apply(L) === '[object Array]')
     {
-        ret.v.push(i);
+        this.v = L;
     }
-    return ret;
-}
+    else
+    {
+        var g = L.__iter__();
+        this.v = [];
+        for (var i = g.next(); i !== undefined; i = g.next())
+        {
+            this.v.push(i);
+        }
+    }
 
-List$.prototype.append = function(item)
+    this.__class__ = this.nativeclass$ = $;
+    return this;
+};
+
+$.append = function(self, item)
 {
-    this.v.push(item);
+    self.v.push(item);
     return null;
 };
 
-List$.prototype.count = function() { throw "todo; list.count"; };
+$.count = function() { throw "todo; list.count"; };
 
-List$.prototype.extend = function(L)
+$.extend = function(self, L)
 {
-    var self = this;
-    sk$iter(L, function(v) { self.v.push(v); });
+    for (var it = L.__iter__(), i = it.next(); i !== undefined; i = it.next())
+        self.v.push(i);
     return null;
 };
 
-List$.prototype.index = function(item)
+$.index = function(self, item)
 {
-    var len = this.v.length;
-    var obj = this.v;
+    var len = self.v.length;
+    var obj = self.v;
     for (var i = 0; i < len; ++i)
     {
         // todo; eq
@@ -43,34 +50,34 @@ List$.prototype.index = function(item)
     throw "ValueError: list.index(x): x not in list";
 };
 
-List$.prototype.insert = function(i, x)
+$.insert = function(self, i, x)
 {
     if (i < 0) i = 0;
-    else if (i >= this.v.length) i = this.v.length - 1;
-    this.v.splice(i, 0, x);
+    else if (i > self.v.length) i = self.v.length;
+    self.v.splice(i, 0, x);
 };
 
-List$.prototype.pop = function(i)
+$.pop = function(self, i)
 {
-    if (i === undefined) i = this.v.length - 1;
-    var ret = this.v[i];
-    this.v.splice(i, 1);
+    if (i === undefined) i = self.v.length - 1;
+    var ret = self.v[i];
+    self.v.splice(i, 1);
     return ret;
 };
 
-List$.prototype.remove = function() { throw "todo; list.remove"; };
+$.remove = function() { throw "todo; list.remove"; };
 
-List$.prototype.reverse = function() { throw "todo; list.reverse"; };
+$.reverse = function() { throw "todo; list.reverse"; };
 
-List$.prototype.sort = function()
+$.sort = function(self)
 {
     // todo; cmp, key, rev
     // todo; totally wrong except for numbers
-    this.v.sort();
+    self.v.sort();
     return null;
 };
 
-List$.prototype.__setitem__ = function(index, value)
+$.prototype.__setitem__ = function(index, value)
 {
     if (typeof index === "number")
     {
@@ -78,7 +85,7 @@ List$.prototype.__setitem__ = function(index, value)
         if (index < 0 || index >= this.v.length) throw new IndexError("list assignment index out of range");
         this.v[index] = value;
     }
-    else if (index instanceof Slice$)
+    else if (index instanceof Sk.builtin.slice)
     {
         var sss = index.indices(this);
         if (sss[2] === 1)
@@ -106,7 +113,7 @@ List$.prototype.__setitem__ = function(index, value)
         throw new TypeError("list indices must be integers, not " + typeof index);
     return null;
 };
-List$.prototype.__getitem__ = function(index)
+$.prototype.__getitem__ = function(index)
 {
     if (typeof index === "number")
     {
@@ -114,25 +121,25 @@ List$.prototype.__getitem__ = function(index)
         if (index < 0 || index >= this.v.length) throw new IndexError("list index out of range");
         return this.v[index];
     }
-    else if (index instanceof Slice$)
+    else if (index instanceof Sk.builtin.slice)
     {
         var ret = [];
         index.sssiter$(this, function(i, wrt)
                 {
                     ret.push(wrt.v[i]);
                 });
-        return new List$(ret);
+        return new $(ret);
     }
     else
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
-List$.prototype.__delitem__ = function(index)
+$.prototype.__delitem__ = function(index)
 {
     if (typeof index === "number")
     {
         this.v.splice(index, 1);
     }
-    else if (index instanceof Slice$)
+    else if (index instanceof Sk.builtin.slice)
     {
         // todo; inefficient
         var todel = [];
@@ -153,17 +160,17 @@ List$.prototype.__delitem__ = function(index)
     return this;
 };
 
-List$.prototype.__add__ = function(other)
+$.prototype.__add__ = function(other)
 {
     var ret = this.v.slice();
     for (var i = 0; i < other.v.length; ++i)
     {
         ret.push(other.v[i]);
     }
-    return new List$(ret);
+    return new $(ret);
 };
 
-List$.prototype.__mul__ = List$.prototype.__rmul__ = function(other)
+$.prototype.__mul__ = $.prototype.__rmul__ = function(other)
 {
     if (typeof other !== "number") throw "TypeError"; // todo; long, better error
     var ret = [];
@@ -174,19 +181,20 @@ List$.prototype.__mul__ = List$.prototype.__rmul__ = function(other)
             ret.push(this.v[j]);
         }
     }
-    return new List$(ret);
+    return new $(ret);
 };
 
-List$.prototype.__repr__ = function()
+$.prototype.__repr__ = function()
 {
     var asStrs = [];
-    sk$iter(this, function(v) { asStrs.push(repr(v).v); });
-    return new Str$("[" + asStrs.join(", ") + "]");
+    for (var it = this.__iter__(), i = it.next(); i !== undefined; i = it.next())
+        asStrs.push(Sk.builtin.repr(i).v);
+    return new Sk.builtin.str("[" + asStrs.join(", ") + "]");
 };
 
-List$.prototype.richcmp$ = function(rhs, op)
+$.prototype.richcmp$ = function(rhs, op)
 {
-    if (rhs.constructor !== List$) return false;
+    if (rhs.constructor !== $) return false;
 
     // different lengths; early out
     if (this.v.length !== rhs.v.length && (op === '!=' || op === '=='))
@@ -209,7 +217,7 @@ List$.prototype.richcmp$ = function(rhs, op)
     // find the first item where they're different
     for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
     {
-        if (!sk$cmp(this.v[i], rhs.v[i], '=='))
+        if (!Sk.cmp(this.v[i], rhs.v[i], '=='))
             break;
     }
 
@@ -235,12 +243,10 @@ List$.prototype.richcmp$ = function(rhs, op)
     if (op === '!=') return true;
 
     // or compare the final item
-    return sk$cmp(this.v[i], rhs.v[i], op);
+    return Sk.cmp(this.v[i], rhs.v[i], op);
 };
 
-List$.prototype.__class__ = new Type$('list', [sk$TypeObject], {});
-
-List$.prototype.__iter__ = function()
+$.prototype.__iter__ = function()
 {
     var ret =
     {
@@ -256,3 +262,5 @@ List$.prototype.__iter__ = function()
     };
     return ret;
 };
+
+}());
