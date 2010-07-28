@@ -82,7 +82,7 @@ $.prototype.__setitem__ = function(index, value)
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new IndexError("list assignment index out of range");
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("list assignment index out of range");
         this.v[index] = value;
     }
     else if (index instanceof Sk.builtin.slice)
@@ -101,7 +101,7 @@ $.prototype.__setitem__ = function(index, value)
             var tosub = [];
             index.sssiter$(this, function(i, wrt) { tosub.push(i); });
             var j = 0;
-            if (tosub.length !== value.v.length) throw new ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
+            if (tosub.length !== value.v.length) throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
             for (var i = 0; i < tosub.length; ++i)
             {
                 this.v.splice(tosub[i], 1, value.v[j]);
@@ -118,7 +118,7 @@ $.prototype.__getitem__ = function(index)
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new IndexError("list index out of range");
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
         return this.v[index];
     }
     else if (index instanceof Sk.builtin.slice)

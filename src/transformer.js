@@ -12,24 +12,25 @@
 
 var TOK = Sk.Tokenizer;
 var AST = Sk.Ast;
+var GRAM = Sk.ParseTables;
+var SYM = Sk.ParseTables.sym;
 
-function Transformer(grammar)
+function Transformer()
 {
-    this.grammar = grammar;
-    this.sym = grammar.symbol2number;
+    // todo; make this a hash and get rid of 'contains'
     this.assign_types = [
-        this.sym.test,
-        this.sym.or_test,
-        this.sym.and_test,
-        this.sym.not_test,
-        this.sym.comparison,
-        this.sym.expr,
-        this.sym.xor_expr,
-        this.sym.and_expr,
-        this.sym.shift_expr,
-        this.sym.arith_expr,
-        this.sym.term,
-        this.sym.factor
+        SYM.test,
+        SYM.or_test,
+        SYM.and_test,
+        SYM.not_test,
+        SYM.comparison,
+        SYM.expr,
+        SYM.xor_expr,
+        SYM.and_expr,
+        SYM.shift_expr,
+        SYM.arith_expr,
+        SYM.term,
+        SYM.factor
     ];
     this.cmp_types = {};
     this.cmp_types[TOK.T_LESS] = '<';
@@ -47,26 +48,28 @@ Sk.transform = function transform(cst)
 {
     var t = new Transformer(Sk.ParseTables);
     return t.compile_node(cst);
-}
+};
+
+Transformer.prototype.funcTable = {};
 
 Transformer.prototype.compile_node = function(node)
 {
     var n = node.type;
 
-    if (n === this.sym.single_input)
+    if (n === SYM.single_input)
         return this.single_input(node.children);
-    if (n === this.sym.file_input)
+    if (n === SYM.file_input)
         return this.file_input(node.children);
 
-    print("unexpected node type: " + n + ", " + this.grammar.number2symbol[n]);
+    //print("unexpected node type: " + n + ", " + SYM.number2symbol[n] + "," + SYM.file_input);
     throw new SyntaxError("unexpected node type: " + n);
 };
 
 Transformer.prototype.dispatch = function(node)
 {
-    var fn = this[this.grammar.number2symbol[node.type]];
-    //print("dispatch: "+this.grammar.number2symbol[node.type]);
-    if (!fn) throw ("don't have handler for: " + this.grammar.number2symbol[node.type]);
+    var fn = this.funcTable[node.type];
+    //print("dispatch: "+GRAM.number2symbol[node.type]);
+    if (!fn) throw ("don't have handler for: " + GRAM.number2symbol[node.type]);
     var ret;
     if (node.type < 256)
         ret = fn.call(this, node.value);
@@ -74,13 +77,13 @@ Transformer.prototype.dispatch = function(node)
         ret = fn.call(this, node.children);
     //print(JSON.stringify(node, null, 2));
     //print(JSON.stringify(ret, null, 2));
-    if (!ret) throw "assert: handler for '" + this.grammar.number2symbol[node.type] + "' returned undefined";
+    if (!ret) throw "assert: handler for '" + GRAM.number2symbol[node.type] + "' returned undefined";
     return ret;
 };
 
-Transformer.prototype.file_input = function(nodelist)
+Transformer.prototype.funcTable[SYM.file_input] = Transformer.prototype.file_input = function(nodelist)
 {
-    var doc = this.get_docstring(nodelist, this.sym.file_input);
+    var doc = this.get_docstring(nodelist, SYM.file_input);
     var stmts = [];
     for (var i = (doc) ? 1 : 0; i < nodelist.length; ++i)
     {
@@ -91,18 +94,18 @@ Transformer.prototype.file_input = function(nodelist)
     return new AST.Module(doc, new AST.Stmt(stmts));
 };
 
-Transformer.prototype.single_input = function(node)
+Transformer.prototype.funcTable[SYM.single_input] = Transformer.prototype.single_input = function(node)
 {
     // NEWLINE | simple_stmt | compound_stmt NEWLINE
     var n = node[0].type;
     if (n !== TOK.T_NEWLINE)
     {
-        return new Interactive(this.dispatch(node[0]));
+        return new AST.Interactive(this.dispatch(node[0]));
     }
-    return new Pass();
+    return new AST.Pass();
 };
 
-Transformer.prototype.com_append_stmt = function(stmts, node)
+Transformer.prototype.funcTable[SYM.com_append_stmt] = Transformer.prototype.com_append_stmt = function(stmts, node)
 {
     var result = this.dispatch(node);
     if (result instanceof AST.Stmt)
@@ -116,14 +119,14 @@ Transformer.prototype.com_append_stmt = function(stmts, node)
     }
 };
 
-Transformer.prototype.com_list_constructor = function(nodelist)
+Transformer.prototype.funcTable[SYM.com_list_constructor] = Transformer.prototype.com_list_constructor = function(nodelist)
 {
     // listmaker: test ( list_for | (',' test)* [','] )
     //print("com_list_constructor:"+JSON.stringify(nodelist));
     var values = [];
     for (var i = 0; i < nodelist.children.length; ++i)
     {
-        if (nodelist.children[i].type === this.sym.comp_for)
+        if (nodelist.children[i].type === SYM.comp_for)
         {
             if (nodelist.children.length - i !== 1) throw "assert";
             return this.com_list_comprehension(values[0], nodelist.children[i]);
@@ -138,7 +141,7 @@ Transformer.prototype.com_list_constructor = function(nodelist)
     return new AST.List(values, values[0].lineno);
 };
 
-Transformer.prototype.com_list_comprehension = function(expr, node)
+Transformer.prototype.funcTable[SYM.com_list_comprehension] = Transformer.prototype.com_list_comprehension = function(expr, node)
 {
     // comp_iter: comp_for | comp_if
     // comp_for: 'for' exprlist 'in' testlist [comp_iter]
@@ -184,14 +187,14 @@ Transformer.prototype.com_list_comprehension = function(expr, node)
     return new AST.ListComp(expr, fors, lineno);
 };
 
-Transformer.prototype.com_comp_iter = function(node)
+Transformer.prototype.funcTable[SYM.com_comp_iter] = Transformer.prototype.com_comp_iter = function(node)
 {
-    if (node.type !== this.sym.comp_iter) throw "assert";
+    if (node.type !== SYM.comp_iter) throw "assert";
     return node.children[0];
 };
 
 
-Transformer.prototype.com_dictmaker = function(nodelist)
+Transformer.prototype.funcTable[SYM.com_dictmaker] = Transformer.prototype.com_dictmaker = function(nodelist)
 {
     // dictmaker: test ':' test (',' test ':' value)* [',']
     var items = [];
@@ -204,7 +207,7 @@ Transformer.prototype.com_dictmaker = function(nodelist)
 };
 
 // Compile 'NODE (OP NODE)*' into (type, [ node1, ..., nodeN ]).
-Transformer.prototype.com_binary = function(Constructor, nodelist)
+Transformer.prototype.funcTable[SYM.com_binary] = Transformer.prototype.com_binary = function(Constructor, nodelist)
 {
     var l = nodelist.length;
     if (l === 1)
@@ -217,7 +220,7 @@ Transformer.prototype.com_binary = function(Constructor, nodelist)
     return new Constructor(items); // todo; lineno=extractLineNo(nodelist))
 };
 
-Transformer.prototype.com_apply_trailer = function(primaryNode, nodelist)
+Transformer.prototype.funcTable[SYM.com_apply_trailer] = Transformer.prototype.com_apply_trailer = function(primaryNode, nodelist)
 {
     //print(JSON.stringify(primaryNode));
     //print(JSON.stringify(nodelist));
@@ -232,7 +235,7 @@ Transformer.prototype.com_apply_trailer = function(primaryNode, nodelist)
     throw 'unknown node type: ' + t;
 };
 
-Transformer.prototype.com_select_member = function(primaryNode, nodelist)
+Transformer.prototype.funcTable[SYM.com_select_member] = Transformer.prototype.com_select_member = function(primaryNode, nodelist)
 {
     if (nodelist.type !== TOK.T_NAME)
         throw new SyntaxError("member must be a name");
@@ -240,7 +243,7 @@ Transformer.prototype.com_select_member = function(primaryNode, nodelist)
 };
 
 
-Transformer.prototype.com_arglist = function(nodelist)
+Transformer.prototype.funcTable[SYM.com_arglist] = Transformer.prototype.com_arglist = function(nodelist)
 {
     //print("com_arglist:"+JSON.stringify(nodelist));
     // varargslist:
@@ -282,7 +285,7 @@ Transformer.prototype.com_arglist = function(nodelist)
                 }
                 else
                 {
-                    throw new ValueError("unxpected token: " + this.grammar.number2symbol[t]);
+                    throw new Sk.builtin.ValueError("unxpected token: " + GRAM.number2symbol[t]);
                 }
                 names.push(node[1]);
                 varkeywords = true;
@@ -320,7 +323,7 @@ Transformer.prototype.com_arglist = function(nodelist)
     return [names, defaults, varargs, varkeywords];
 };
 
-Transformer.prototype.com_fpdef = function(node)
+Transformer.prototype.funcTable[SYM.com_fpdef] = Transformer.prototype.com_fpdef = function(node)
 {
     // fpdef: NAME | '(' fplist ')'
     //print("com_fpdef:"+JSON.stringify(node));
@@ -330,7 +333,7 @@ Transformer.prototype.com_fpdef = function(node)
 };
 
 
-Transformer.prototype.com_fplist = function(node)
+Transformer.prototype.funcTable[SYM.com_fplist] = Transformer.prototype.com_fplist = function(node)
 {
     // fplist: fpdef (',' fpdef)* [',']
     //print("com_fplist:"+JSON.stringify(node));
@@ -344,7 +347,7 @@ Transformer.prototype.com_fplist = function(node)
     return list;
 };
 
-Transformer.prototype.com_call_function = function(primaryNode, nodelist)
+Transformer.prototype.funcTable[SYM.com_call_function] = Transformer.prototype.com_call_function = function(primaryNode, nodelist)
 {
     //print(JSON.stringify(nodelist, null, 2));
     if (nodelist.type === TOK.T_RPAR)
@@ -386,7 +389,7 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
 
         /*
         if (len_nodelist !== 2 && result instanceof GenExpr
-                && node.children.length === 2 && node.children[1].type === this.sym.comp_for)
+                && node.children.length === 2 && node.children[1].type === SYM.comp_for)
             // allow f(x for x in y), but reject f(x for x in y, 1)
             // should use f((x for x in y), 1) instead of f(x for x in y, 1)
             throw new SyntaxError("generator expression needs parenthesis");
@@ -399,10 +402,10 @@ Transformer.prototype.com_call_function = function(primaryNode, nodelist)
     return new AST.CallFunc(primaryNode, args, star_node, dstar_node);//, lineno=extractLineNo(nodelist))
 };
 
-Transformer.prototype.com_argument = function(nodelist, kw, star_node)
+Transformer.prototype.funcTable[SYM.com_argument] = Transformer.prototype.com_argument = function(nodelist, kw, star_node)
 {
     //print(nodelist.children.length, "-- \n -- ", JSON.stringify(nodelist));
-    if (nodelist.children.length === 2 && nodelist.children[1].type === this.sym.comp_for)
+    if (nodelist.children.length === 2 && nodelist.children[1].type === SYM.comp_for)
     {
         var test = this.dispatch(nodelist.children[0]);
         return [false, this.com_generator_expression(test, nodelist.children[1])];
@@ -422,7 +425,7 @@ Transformer.prototype.com_argument = function(nodelist, kw, star_node)
         n = n.children[0];
     if (n.type !== TOK.T_NAME)
         throw new SyntaxError("keyword can't be an expression (" + n.type + ")");
-    var node = new Keyword(n.value, result, n.context);
+    var node = new AST.Keyword(n.value, result, n.context);
     return [true, node];
 };
 
@@ -439,7 +442,7 @@ function contains(a, obj)
     return false;
 }
 
-Transformer.prototype.com_assign = function(node, assigning)
+Transformer.prototype.funcTable[SYM.com_assign] = Transformer.prototype.com_assign = function(node, assigning)
 {
     // return a node suitable for use as an "lvalue"
     // loop to avoid trivial recursion
@@ -447,11 +450,11 @@ Transformer.prototype.com_assign = function(node, assigning)
     {
         //print(JSON.stringify(node));
         var t = node.type;
-        //print("0-----:" + this.grammar.number2symbol[t]);
-        if (t === this.sym.exprlist
-                || t === this.sym.testlist
-                || t === this.sym.testlist_safe
-                || t === this.sym.testlist_gexp)
+        //print("0-----:" + GRAM.number2symbol[t]);
+        if (t === SYM.exprlist
+                || t === SYM.testlist
+                || t === SYM.testlist_safe
+                || t === SYM.testlist_gexp)
         {
             if (node.children.length > 1)
                 return this.com_assign_tuple(node, assigning);
@@ -464,9 +467,9 @@ Transformer.prototype.com_assign = function(node, assigning)
                 throw new SyntaxError("can't assign to operator");
             node = node.children[0];
         }
-        else if (t === this.sym.power)
+        else if (t === SYM.power)
         {
-            if (node.children[0].type !== this.sym.atom)
+            if (node.children[0].type !== SYM.atom)
                 throw new SyntaxError("can't assign to operator");
             if (node.children.length > 1)
             {
@@ -483,7 +486,7 @@ Transformer.prototype.com_assign = function(node, assigning)
             }
             node = node.children[0];
         }
-        else if (t === this.sym.atom)
+        else if (t === SYM.atom)
         {
             t = node.children[0].type;
             if (t === TOK.T_LPAR)
@@ -511,12 +514,12 @@ Transformer.prototype.com_assign = function(node, assigning)
         }
         else
         {
-            throw new SyntaxError("bad assignment (" + this.grammar.number2symbol[t] + ")");
+            throw new SyntaxError("bad assignment (" + GRAM.number2symbol[t] + ")");
         }
     }
 };
 
-Transformer.prototype.com_assign_trailer = function(primary, node, assigning)
+Transformer.prototype.funcTable[SYM.com_assign_trailer] = Transformer.prototype.com_assign_trailer = function(primary, node, assigning)
 {
     //print("com_assign_trailer:"+JSON.stringify(node));
     var t = node.children[0].type;
@@ -526,15 +529,15 @@ Transformer.prototype.com_assign_trailer = function(primary, node, assigning)
         return this.com_subscriptlist(primary, node.children[1], assigning);
     if (t === TOK.T_LPAR)
         throw new SyntaxError("can't assign to function call");
-    throw new SyntaxError("unknown trailer type: " + this.grammar.number2symbol[t]);
+    throw new SyntaxError("unknown trailer type: " + GRAM.number2symbol[t]);
 };
 
-Transformer.prototype.com_assign_attr = function(primary, nodelist, assigning)
+Transformer.prototype.funcTable[SYM.com_assign_attr] = Transformer.prototype.com_assign_attr = function(primary, nodelist, assigning)
 {
     return new AST.AssAttr(primary, nodelist.value, assigning, nodelist.context);
 };
 
-Transformer.prototype.com_subscriptlist = function(primary, nodelist, assigning)
+Transformer.prototype.funcTable[SYM.com_subscriptlist] = Transformer.prototype.com_subscriptlist = function(primary, nodelist, assigning)
 {
     // subscriptlist: subscript (',' subscript)* [',']
     // subscript: test | [test] ':' [test] [sliceop]
@@ -547,7 +550,7 @@ Transformer.prototype.com_subscriptlist = function(primary, nodelist, assigning)
     return new AST.Subscript(primary, assigning, subscripts); //, lineno=extractLineNo(nodelist))
 };
 
-Transformer.prototype.com_subscript = function(node)
+Transformer.prototype.funcTable[SYM.com_subscript] = Transformer.prototype.com_subscript = function(node)
 {
     // subscript: test | [test] ':' [test] [sliceop]
     // sliceop: ':' [test]
@@ -557,7 +560,7 @@ Transformer.prototype.com_subscript = function(node)
     return this.dispatch(node.children[0]);
 };
 
-Transformer.prototype.com_sliceobj = function(node)
+Transformer.prototype.funcTable[SYM.com_sliceobj] = Transformer.prototype.com_sliceobj = function(node)
 {
     var items = [];
     var i;
@@ -579,7 +582,7 @@ Transformer.prototype.com_sliceobj = function(node)
     }
 
     // upper
-    if (i < node.children.length && node.children[i].type === this.sym.test)
+    if (i < node.children.length && node.children[i].type === SYM.test)
     {
         items.push(this.dispatch(node.children[i]));
         i += 1;
@@ -592,7 +595,7 @@ Transformer.prototype.com_sliceobj = function(node)
     //print("slice:",i,node.children.length, node.children[i].type);
     // stride
     if (i < node.children.length
-            && node.children[i].type === this.sym.sliceop)
+            && node.children[i].type === SYM.sliceop)
     {
         var so = node.children[i];
         if (so.children[0].type !== TOK.T_COLON) throw "assert";
@@ -602,7 +605,7 @@ Transformer.prototype.com_sliceobj = function(node)
     return new AST.Sliceobj(items); // todo; , lineno=extractLineNo(node))
 };
 
-Transformer.prototype.com_augassign = function(node)
+Transformer.prototype.funcTable[SYM.com_augassign] = Transformer.prototype.com_augassign = function(node)
 {
     // Names, slices, and attributes are the only allowable nodes.
     var l = this.dispatch(node);
@@ -616,14 +619,14 @@ Transformer.prototype.com_augassign = function(node)
     throw new SyntaxError("can't assign to " + l.nodeName);
 };
 
-Transformer.prototype.com_augassign_op = function(node)
+Transformer.prototype.funcTable[SYM.com_augassign_op] = Transformer.prototype.com_augassign_op = function(node)
 {
-    if (node.type !== this.sym.augassign) throw "assert";
+    if (node.type !== SYM.augassign) throw "assert";
     return node.children[0];
 };
 
 
-Transformer.prototype.com_assign_tuple = function(node, assigning)
+Transformer.prototype.funcTable[SYM.com_assign_tuple] = Transformer.prototype.com_assign_tuple = function(node, assigning)
 {
     var assigns = [];
     for (var i = 0; i < node.children.length; i += 2)
@@ -644,17 +647,17 @@ Transformer.prototype.get_docstring = function(node, n)
 // nonterms get a list of children, terms get the value
 //
 //
-Transformer.prototype.stmt =
-Transformer.prototype.small_stmt =
-Transformer.prototype.flow_stmt = 
-Transformer.prototype.compound_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.stmt] = Transformer.prototype.stmt =
+Transformer.prototype.funcTable[SYM.small_stmt] = Transformer.prototype.small_stmt =
+Transformer.prototype.funcTable[SYM.flow_stmt] = Transformer.prototype.flow_stmt = 
+Transformer.prototype.funcTable[SYM.compound_stmt] = Transformer.prototype.compound_stmt = function(nodelist)
 {
     var result = this.dispatch(nodelist[0]);
     if (result instanceof AST.Stmt) return result;
     return new AST.Stmt([result]);
 };
 
-Transformer.prototype.simple_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.simple_stmt] = Transformer.prototype.simple_stmt = function(nodelist)
 {
     // small_stmt (';' small_stmt)* [';'] NEWLINE
     var stmts = [];
@@ -665,7 +668,7 @@ Transformer.prototype.simple_stmt = function(nodelist)
     return new AST.Stmt(stmts);
 };
 
-Transformer.prototype.expr_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.expr_stmt] = Transformer.prototype.expr_stmt = function(nodelist)
 {
     // augassign testlist | testlist ('=' testlist)*
     var en = nodelist[nodelist.length - 1];
@@ -691,7 +694,7 @@ Transformer.prototype.expr_stmt = function(nodelist)
     }
 };
 
-Transformer.prototype.funcdef = function(nodelist)
+Transformer.prototype.funcTable[SYM.funcdef] = Transformer.prototype.funcdef = function(nodelist)
 {
     //                    -6   -5    -4         -3  -2    -1
     // funcdef: [decorators] 'def' NAME parameters ':' suite
@@ -700,7 +703,7 @@ Transformer.prototype.funcdef = function(nodelist)
     var decorators = null;
     if (nodelist.length === 6)
     {
-        if (nodelist[0].type !== this.sym.decorators) throw "assert";
+        if (nodelist[0].type !== SYM.decorators) throw "assert";
         decorators = this.decorators(nodelist[0].children); // ?
     }
     else
@@ -718,7 +721,7 @@ Transformer.prototype.funcdef = function(nodelist)
     var defaults = [];
     var varargs = false;
     var varkeywords = false;
-    if (args.type === this.sym.varargslist)
+    if (args.type === SYM.varargslist)
     {
         var ret = this.com_arglist(args.children);
         names = ret[0];
@@ -740,14 +743,14 @@ Transformer.prototype.funcdef = function(nodelist)
     return new AST.Function_(decorators, name, names, defaults, varargs, varkeywords, doc, code, lineno);
 };
 
-Transformer.prototype.lambdef = function(nodelist)
+Transformer.prototype.funcTable[SYM.lambdef] = Transformer.prototype.lambdef = function(nodelist)
 {
     // lambdef: 'lambda' [varargslist] ':' test
 
     var names = [];
     var defaults = [];
     var flags = 0;
-    if (nodelist.children[1].type === this.sym.varargslist)
+    if (nodelist.children[1].type === SYM.varargslist)
     {
         var ret = this.com_arglist(nodelist.children[1].children);
         names = ret[0];
@@ -756,10 +759,10 @@ Transformer.prototype.lambdef = function(nodelist)
     }
 
     var code = this.dispatch(nodelist.children[nodelist.children.length - 1]);
-    return new Lambda(names, defaults, flags, null, code, nodelist.context);
+    return new AST.Lambda(names, defaults, flags, null, code, nodelist.context);
 };
 
-Transformer.prototype.com_bases = function(node)
+Transformer.prototype.funcTable[SYM.com_bases] = Transformer.prototype.com_bases = function(node)
 {
     var bases = [];
     for (var i = 0; i < node.children.length; i += 2)
@@ -769,7 +772,7 @@ Transformer.prototype.com_bases = function(node)
     return bases;
 };
 
-Transformer.prototype.classdef = function(nodelist)
+Transformer.prototype.funcTable[SYM.classdef] = Transformer.prototype.classdef = function(nodelist)
 {
     // classdef: 'class' NAME ['(' [testlist] ')'] ':' suite
     //print(JSON.stringify(nodelist, null, 2));
@@ -792,7 +795,7 @@ Transformer.prototype.classdef = function(nodelist)
 };
 
 
-Transformer.prototype.print_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.print_stmt] = Transformer.prototype.print_stmt = function(nodelist)
 {
     // print ([ test (',' test)* [','] ] | '>>' test [ (',' test)+ [','] ])
     var items = [];
@@ -817,7 +820,7 @@ Transformer.prototype.print_stmt = function(nodelist)
     return new AST.Print(items, dest, true, nodelist[0].context);
 };
 
-Transformer.prototype.if_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.if_stmt] = Transformer.prototype.if_stmt = function(nodelist)
 {
     // if: test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
     var tests = [];
@@ -835,7 +838,7 @@ Transformer.prototype.if_stmt = function(nodelist)
     return new AST.If_(tests, elseNode, nodelist[0].context);
 };
 
-Transformer.prototype.while_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.while_stmt] = Transformer.prototype.while_stmt = function(nodelist)
 {
     // 'while' test ':' suite ['else' ':' suite]
 
@@ -849,7 +852,7 @@ Transformer.prototype.while_stmt = function(nodelist)
     return new AST.While_(testNode, bodyNode, elseNode, nodelist[0].context);
 };
 
-Transformer.prototype.for_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.for_stmt] = Transformer.prototype.for_stmt = function(nodelist)
 {
     // 'for' exprlist 'in' exprlist ':' suite ['else' ':' suite]
 
@@ -864,17 +867,17 @@ Transformer.prototype.for_stmt = function(nodelist)
     return new AST.For_(assignNode, listNode, bodyNode, elseNode, nodelist[0].context);
 };
 
-Transformer.prototype.del_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.del_stmt] = Transformer.prototype.del_stmt = function(nodelist)
 {
     return this.com_assign(nodelist[1], AST.OP_DELETE);
 };
 
-Transformer.prototype.pass_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.pass_stmt] = Transformer.prototype.pass_stmt = function(nodelist)
 {
     return new AST.Pass(nodelist[0].context);
 };
 
-Transformer.prototype.com_dotted_name = function(node)
+Transformer.prototype.funcTable[SYM.com_dotted_name] = Transformer.prototype.com_dotted_name = function(node)
 {
     var name = "";
     for (var i = 0; i < node.length; ++i)
@@ -884,10 +887,10 @@ Transformer.prototype.com_dotted_name = function(node)
     return name.substr(0, name.length - 1);
 };
 
-Transformer.prototype.com_dotted_as_name = function(node)
+Transformer.prototype.funcTable[SYM.com_dotted_as_name] = Transformer.prototype.com_dotted_as_name = function(node)
 {
     //print(JSON2.stringify(node, null, 2));
-    if (node.type !== this.sym.dotted_as_name) throw "assert";
+    if (node.type !== SYM.dotted_as_name) throw "assert";
     var dot = this.com_dotted_name(node.children[0].children);
     if (node.children.length === 1)
     {
@@ -898,9 +901,9 @@ Transformer.prototype.com_dotted_as_name = function(node)
     return [dot, node.children[3].value];
 };
 
-Transformer.prototype.com_dotted_as_names = function(node)
+Transformer.prototype.funcTable[SYM.com_dotted_as_names] = Transformer.prototype.com_dotted_as_names = function(node)
 {
-    if (node.type !== this.sym.dotted_as_names) throw "assert";
+    if (node.type !== SYM.dotted_as_names) throw "assert";
     var names = [];
     //print("node.children.length", node.children.length);
     for (var i = 0; i < node.children.length; i += 2)
@@ -929,20 +932,20 @@ Transformer.prototype.com_dotted_as_names = function(node)
             names.append(self.com_import_as_name(node[i]))
         return names
 */
-Transformer.prototype.import_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.import_stmt] = Transformer.prototype.import_stmt = function(nodelist)
 {
     // import_stmt: import_name | import_from
     if (nodelist.length !== 1) throw "assert";
     return this.dispatch(nodelist[0]);
 };
 
-Transformer.prototype.import_name = function(nodelist)
+Transformer.prototype.funcTable[SYM.import_name] = Transformer.prototype.import_name = function(nodelist)
 {
     // import_name: 'import' dotted_as_names
-    return new Import_(this.com_dotted_as_names(nodelist[1]), nodelist.context);
+    return new AST.Import_(this.com_dotted_as_names(nodelist[1]), nodelist.context);
 };
 
-Transformer.prototype.import_from = function(nodelist)
+Transformer.prototype.funcTable[SYM.import_from] = Transformer.prototype.import_from = function(nodelist)
 {
     throw "todo;";
 /*
@@ -971,7 +974,7 @@ Transformer.prototype.import_from = function(nodelist)
 };
 
 
-Transformer.prototype.global_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.global_stmt] = Transformer.prototype.global_stmt = function(nodelist)
 {
     // global: NAME (',' NAME)*
     var names = [];
@@ -982,22 +985,22 @@ Transformer.prototype.global_stmt = function(nodelist)
     return new AST.Global(names, nodelist[0].context);
 };
 
-Transformer.prototype.break_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.break_stmt] = Transformer.prototype.break_stmt = function(nodelist)
 {
     return new AST.Break_(nodelist[0].context);
 };
 
-Transformer.prototype.continue_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.continue_stmt] = Transformer.prototype.continue_stmt = function(nodelist)
 {
     return new AST.Continue_(nodelist[0].context);
 };
 
-Transformer.prototype.assert_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.assert_stmt] = Transformer.prototype.assert_stmt = function(nodelist)
 {
     return new AST.Assert(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 
-Transformer.prototype.return_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.return_stmt] = Transformer.prototype.return_stmt = function(nodelist)
 {
     // return: [testlist]
     if (nodelist.length < 2)
@@ -1005,20 +1008,20 @@ Transformer.prototype.return_stmt = function(nodelist)
     return new AST.Return_(this.dispatch(nodelist[1]), nodelist[0].context);
 };
 
-Transformer.prototype.yield_stmt = function(nodelist)
+Transformer.prototype.funcTable[SYM.yield_stmt] = Transformer.prototype.yield_stmt = function(nodelist)
 {
     var expr = this.dispatch(nodelist[0]);
     return new AST.Discard(expr, expr.context);
 };
 
-Transformer.prototype.yield_expr = function(nodelist)
+Transformer.prototype.funcTable[SYM.yield_expr] = Transformer.prototype.yield_expr = function(nodelist)
 {
     var value;
     //print("yield_expr:"+JSON.stringify(nodelist));
     if (nodelist.length > 1)
         value = this.dispatch(nodelist[1]);
     else
-        value = new Const_(null);
+        value = new AST.Const_(null);
     return new AST.Yield_(value, nodelist.context);
 };
 
@@ -1033,7 +1036,7 @@ Transformer.prototype.yield_expr = function(nodelist)
         return self.com_with_var(nodelist)
 */
 
-Transformer.prototype.suite = function(nodelist)
+Transformer.prototype.funcTable[SYM.suite] = Transformer.prototype.suite = function(nodelist)
 {
     // simple_stmt | NEWLINE INDENT NEWLINE* (stmt NEWLINE*)+ DEDENT
     if (nodelist.length === 1)
@@ -1043,18 +1046,18 @@ Transformer.prototype.suite = function(nodelist)
     for (var i = 0; i < nodelist.length; ++i)
     {
         var node = nodelist[i];
-        if (node.type === this.sym.stmt)
+        if (node.type === SYM.stmt)
             this.com_append_stmt(stmts, node);
     }
     return new AST.Stmt(stmts);
 };
 
-Transformer.prototype.testlist_gexp = function(nodelist)
+Transformer.prototype.funcTable[SYM.testlist_gexp] = Transformer.prototype.testlist_gexp = function(nodelist)
 {
     //print("testlist_gexp:"+JSON.stringify(nodelist));
     //print("nodelist.length", nodelist.length);
     //print("nodelist[1].type", nodelist[1].type);
-    if (nodelist.length === 2 && nodelist[1].type === this.sym.comp_for)
+    if (nodelist.length === 2 && nodelist[1].type === SYM.comp_for)
     {
         var test = this.dispatch(nodelist[0]);
         return this.com_generator_expression(test, nodelist[1]);
@@ -1062,10 +1065,10 @@ Transformer.prototype.testlist_gexp = function(nodelist)
     return this.testlist(nodelist);
 };
 
-Transformer.prototype.test = function(nodelist)
+Transformer.prototype.funcTable[SYM.test] = Transformer.prototype.test = function(nodelist)
 {
     // or_test ['if' or_test 'else' test] | lambdef
-    if (nodelist.length === 1 && nodelist[0].type === this.sym.lambdef)
+    if (nodelist.length === 1 && nodelist[0].type === SYM.lambdef)
         return this.lambdef(nodelist[0]);
     var then = this.dispatch(nodelist[0]);
     if (nodelist.length > 1)
@@ -1075,12 +1078,12 @@ Transformer.prototype.test = function(nodelist)
         if (nodelist[3].value !== "if") throw "else";
         var test = this.dispatch(nodelist[2]);
         var else_ = this.dispatch(nodelist[4]);
-        return new IfExp(test, then, else_, nodelist[1].context);
+        return new AST.IfExp(test, then, else_, nodelist[1].context);
     }
     return then;
 };
 
-Transformer.prototype.com_generator_expression = function(expr, node)
+Transformer.prototype.funcTable[SYM.com_generator_expression] = Transformer.prototype.com_generator_expression = function(expr, node)
 {
     // comp_iter: comp_for | comp_if
     // comp_for: 'for' exprlist 'in' testlist_safe [comp_iter]
@@ -1122,29 +1125,29 @@ Transformer.prototype.com_generator_expression = function(expr, node)
     return new AST.GenExpr(new AST.GenExprInner(expr, fors), lineno);
 };
 
-Transformer.prototype.com_gen_iter = function(node)
+Transformer.prototype.funcTable[SYM.com_gen_iter] = Transformer.prototype.com_gen_iter = function(node)
 {
-    if (node.type !== this.sym.comp_iter) throw "assert";
+    if (node.type !== SYM.comp_iter) throw "assert";
     return node.children[0];
 };
 
-Transformer.prototype.or_test =
-Transformer.prototype.old_test = function(nodelist)
+Transformer.prototype.funcTable[SYM.or_test] = Transformer.prototype.or_test =
+Transformer.prototype.funcTable[SYM.old_test] = Transformer.prototype.old_test = function(nodelist)
 {
     // and_test ('or' and_test)* | lambdef
-    if (nodelist.length === 1 && nodelist[0].type === this.sym.lambdef)
+    if (nodelist.length === 1 && nodelist[0].type === SYM.lambdef)
         return this.lambdef(nodelist[0]);
     return this.com_binary(AST.Or, nodelist);
 };
 
 
-Transformer.prototype.and_test = function(nodelist)
+Transformer.prototype.funcTable[SYM.and_test] = Transformer.prototype.and_test = function(nodelist)
 {
     // not_test ('and' not_test)*
     return this.com_binary(AST.And, nodelist);
 };
 
-Transformer.prototype.not_test = function(nodelist)
+Transformer.prototype.funcTable[SYM.not_test] = Transformer.prototype.not_test = function(nodelist)
 {
     // 'not' not_test | comparison
     var result = this.dispatch(nodelist[nodelist.length - 1]);
@@ -1155,7 +1158,7 @@ Transformer.prototype.not_test = function(nodelist)
     return result;
 };
 
-Transformer.prototype.comparison = function(nodelist)
+Transformer.prototype.funcTable[SYM.comparison] = Transformer.prototype.comparison = function(nodelist)
 {
     // comparison: expr (comp_op expr)*
     var node = this.dispatch(nodelist[0]);
@@ -1199,25 +1202,25 @@ Transformer.prototype.comparison = function(nodelist)
     return new AST.Compare(node, results, lineno);
 };
 
-Transformer.prototype.expr = function(nodelist)
+Transformer.prototype.funcTable[SYM.expr] = Transformer.prototype.expr = function(nodelist)
 {
     // xor_expr ('|' xor_expr)*
     return this.com_binary(AST.Bitor, nodelist);
 };
 
-Transformer.prototype.xor_expr = function(nodelist)
+Transformer.prototype.funcTable[SYM.xor_expr] = Transformer.prototype.xor_expr = function(nodelist)
 {
     // xor_expr ('^' xor_expr)*
     return this.com_binary(AST.Bitxor, nodelist);
 };
 
-Transformer.prototype.and_expr = function(nodelist)
+Transformer.prototype.funcTable[SYM.and_expr] = Transformer.prototype.and_expr = function(nodelist)
 {
     // xor_expr ('&' xor_expr)*
     return this.com_binary(AST.Bitand, nodelist);
 };
 
-Transformer.prototype.shift_expr = function(nodelist)
+Transformer.prototype.funcTable[SYM.shift_expr] = Transformer.prototype.shift_expr = function(nodelist)
 {
     // shift_expr ('<<'|'>>' shift_expr)*
     var node = this.dispatch(nodelist[0]);
@@ -1229,12 +1232,12 @@ Transformer.prototype.shift_expr = function(nodelist)
         else if (nodelist[i - 1].type === TOK.T_RIGHTSHIFT)
             node = new AST.RightShift(node, right, nodelist[1].context);
         else
-            throw new SyntaxError("unexpected token: " + this.grammar.number2symbol[nodelist[i-1].type]);
+            throw new SyntaxError("unexpected token: " + GRAM.number2symbol[nodelist[i-1].type]);
     }
     return node;
 };
 
-Transformer.prototype.arith_expr = function(nodelist)
+Transformer.prototype.funcTable[SYM.arith_expr] = Transformer.prototype.arith_expr = function(nodelist)
 {
     var node = this.dispatch(nodelist[0]);
     for (var i = 2; i < nodelist.length; i += 2)
@@ -1245,12 +1248,12 @@ Transformer.prototype.arith_expr = function(nodelist)
         else if (nodelist[i-1].type === TOK.T_MINUS)
             node = new AST.Sub(node, right, nodelist[1].context);
         else
-            throw new SyntaxError("unexpected token: " + this.grammar.number2symbol[nodelist[i-1].type]);
+            throw new SyntaxError("unexpected token: " + GRAM.number2symbol[nodelist[i-1].type]);
     }
     return node;
 };
 
-Transformer.prototype.term = function(nodelist)
+Transformer.prototype.funcTable[SYM.term] = Transformer.prototype.term = function(nodelist)
 {
     var node = this.dispatch(nodelist[0]);
     for (var i = 2; i < nodelist.length; i += 2)
@@ -1261,13 +1264,13 @@ Transformer.prototype.term = function(nodelist)
         else if (t === TOK.T_SLASH) node = new AST.Div(node, right);
         else if (t === TOK.T_PERCENT) node = new AST.Mod(node, right);
         else if (t === TOK.T_DOUBLESLASH) node = new AST.FloorDiv(node, right);
-        else throw new SyntaxError("unexpected token: " + this.grammar.number2symbol[t]);
+        else throw new SyntaxError("unexpected token: " + GRAM.number2symbol[t]);
         node.lineno = nodelist[1].context;
     }
     return node;
 };
 
-Transformer.prototype.factor = function(nodelist)
+Transformer.prototype.funcTable[SYM.factor] = Transformer.prototype.factor = function(nodelist)
 {
     //print("factor");
     var elt = nodelist[0];
@@ -1283,7 +1286,7 @@ Transformer.prototype.factor = function(nodelist)
     return node;
 };
 
-Transformer.prototype.power = function(nodelist)
+Transformer.prototype.funcTable[SYM.power] = Transformer.prototype.power = function(nodelist)
 {
     // power: atom trailer* ('**' factor)*
     var node = this.dispatch(nodelist[0]);
@@ -1300,10 +1303,10 @@ Transformer.prototype.power = function(nodelist)
     return node;
 };
 
-Transformer.prototype.testlist =
-Transformer.prototype.testlist_safe =
-Transformer.prototype.testlist1 =
-Transformer.prototype.exprlist =
+Transformer.prototype.funcTable[SYM.testlist] = Transformer.prototype.testlist =
+Transformer.prototype.funcTable[SYM.testlist_safe] = Transformer.prototype.testlist_safe =
+Transformer.prototype.funcTable[SYM.testlist1] = Transformer.prototype.testlist1 =
+Transformer.prototype.funcTable[SYM.exprlist] = Transformer.prototype.exprlist =
 function(nodelist)
 {
     // testlist: expr (',' expr)* [',']
@@ -1312,12 +1315,13 @@ function(nodelist)
     return this.com_binary(AST.Tuple, nodelist);
 };
 
-Transformer.prototype.atom = function(nodelist)
+Transformer.prototype.funcTable[SYM.atom] = Transformer.prototype.atom = function(nodelist)
 {
     var t = nodelist[0].type;
     return this[t].call(this, nodelist);
 };
 
+Transformer.prototype.funcTable[TOK.T_LPAR] =
 Transformer.prototype[TOK.T_LPAR] = function(nodelist)
 {
     if (nodelist[1].type === TOK.T_RPAR)
@@ -1325,6 +1329,7 @@ Transformer.prototype[TOK.T_LPAR] = function(nodelist)
     return this.dispatch(nodelist[1]);
 };
 
+Transformer.prototype.funcTable[TOK.T_LSQB] =
 Transformer.prototype[TOK.T_LSQB] = function(nodelist)
 {
     if (nodelist[1].type === TOK.T_RSQB)
@@ -1332,6 +1337,7 @@ Transformer.prototype[TOK.T_LSQB] = function(nodelist)
     return this.com_list_constructor(nodelist[1]);
 };
 
+Transformer.prototype.funcTable[TOK.T_LBRACE] =
 Transformer.prototype[TOK.T_LBRACE] = function(nodelist)
 {
     if (nodelist[1].type === TOK.T_RBRACE)
@@ -1339,36 +1345,40 @@ Transformer.prototype[TOK.T_LBRACE] = function(nodelist)
     return this.com_dictmaker(nodelist[1]);
 };
 
+Transformer.prototype.funcTable[TOK.T_BACKQUOTE] =
 Transformer.prototype[TOK.T_BACKQUOTE] = function(nodelist)
 {
     return new AST.Backquote(this.com_node(nodelist[1]));
 };
 
+Transformer.prototype.funcTable[TOK.T_NUMBER] =
 Transformer.prototype[TOK.T_NUMBER] = function(nodelist)
 {
     var v = nodelist[0].value;
     var k;
     if (v.charAt(v.length - 1) === "l" || v.charAt(v.length - 1) === "L")
     {
-        k = Sk.builtin.long.threshold$.fromJsStr$(v.substring(0, v.length - 1));
+        k = Sk.builtin.long_.threshold$.fromJsStr$(v.substring(0, v.length - 1));
     }
     else
     {
         k = eval(nodelist[0].value);
-        if ((k > Sk.builtin.long.threshold$ || k < -Sk.builtin.long.threshold$)
+        if ((k > Sk.builtin.long_.threshold$ || k < -Sk.builtin.long_.threshold$)
                 && Math.floor(k) === k) // todo; what to do with floats?
         {
-            k = Long$.fromJsStr$(nodelist[0].value);
+            k = Sk.builtin.long_.fromJsStr$(nodelist[0].value);
         }
     }
     return new AST.Const_(k, nodelist[0].context);
 };
 
+Transformer.prototype.funcTable[TOK.T_STRING] =
 Transformer.prototype[TOK.T_STRING] = function(nodelist)
 {
     return new AST.Const_(nodelist[0].value, nodelist[0].context);
 };
 
+Transformer.prototype.funcTable[TOK.T_NAME] =
 Transformer.prototype[TOK.T_NAME] = function(nodelist)
 {
     return new AST.Name(nodelist[0].value, nodelist[0].context);

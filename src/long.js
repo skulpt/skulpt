@@ -17,7 +17,7 @@
 
 (function() {
 
-var $ = Sk.builtin.long = function(size)
+var $ = Sk.builtin.long_ = function(size)
 {
     if (!(this instanceof $)) return new $(size);
 
@@ -87,7 +87,7 @@ Sk.longFromStr = function(s)
 {
     //print("initial fromJsStr:",s);
     var neg = false;
-    if (s.substr(0, 1) == "-")
+    if (s.substr(0, 1) === "-")
     {
         s = s.substr(1);
         neg = true;
@@ -229,7 +229,7 @@ $.divrem$ = function(other)
     var rem;
 
     if (other.size$ === 0)
-        throw new ZeroDivisionError("long division or modulo by zero");
+        throw new Sk.builtin.ZeroDivisionError("long division or modulo by zero");
 
     if (size_a < size_b ||
             this.digit$[size_a - 1] < other.digit$[size_b - 1])

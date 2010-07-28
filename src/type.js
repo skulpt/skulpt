@@ -8,7 +8,7 @@ var $ = Sk.builtin.type = function type(name, bases, dict, body$)
         var obj = name;
         // todo; less assey
         if (typeof obj === "number")
-            return Sk.types.int;
+            return Sk.types.int_;
         else
             return obj.__class__;
     }
@@ -22,7 +22,7 @@ var $ = Sk.builtin.type = function type(name, bases, dict, body$)
         var ret = function() {
             if (__body)
                 return __body.apply(null, arguments);
-        }
+        };
         ret.__name__ = name;
         if (!(bases instanceof Sk.builtin.list))
             bases = new Sk.builtin.list(bases);
@@ -58,7 +58,7 @@ Sk.types.object = new $('object', [], {});
 // constructor that all the builtin types use to make themselves.
 
 Sk.types.type = new $('type', [Sk.types.object], {});
-Sk.types['int'] = new $('int', [Sk.types.object], {});
+Sk.types.int_ = new $('int', [Sk.types.object], {});
 
 Sk.builtin.list.prototype.__class__ = new Sk.builtin.type('list', [Sk.types.object], {});
 

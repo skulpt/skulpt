@@ -3,7 +3,8 @@
 // entry points and customization points are noted and described here.
 //
 
-var Sk = (function(){ var $ = {
+var Sk = {};
+Sk = (function(){ var $ = {
 
 // replaceable output redirection (called from print, etc)
 output: function(x) {},
@@ -14,6 +15,9 @@ load: function(x) { throw "Sk.load has not been implemented"; },
 
 // settable to emulate arguments to the script. should be array of js strings.
 sysargv: [],
+
+// compileStr
+// createInteractiveContext
 
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
@@ -120,7 +124,7 @@ cmp: function cmp(lhs, rhs, op)
         else
         {
             // todo; dispatch to the specific __eq__, etc.
-            throw new AttributeError("no attribute __cmp__");
+            throw new Sk.builtin.AttributeError("no attribute __cmp__");
         }
 
         switch (op)
@@ -148,9 +152,9 @@ print: function print(x)
     $.output(s.v);
     var isspace = function(c)
     {
-        return c == '\n' || c == '\t' || c == '\r';
+        return c === '\n' || c === '\t' || c === '\r';
     };
-    if (s.v.length == 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] == ' ')
+    if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
         $.softspace = true;
 },
 
@@ -208,7 +212,7 @@ boNumPromote: {
     "**": Math.pow,
     "&": function(a, b) { return a & b; },
     "|": function(a, b) { return a | b; },
-    "^": function(a, b) { return a ^ b; },
+    "^": function(a, b) { return a ^ b; }
 },
 binop: function binop(lhs, rhs, op)
 {
@@ -304,7 +308,7 @@ lookupAttrOnClass: function lookupAttrOnClass(o, attrname)
             }
         }
         //print("k.bases:",k.__bases__);
-        if (k.__bases__.v.length == 0) return undefined;
+        if (k.__bases__.v.length === 0) return undefined;
         //print($.builtin.repr(k.__bases__).v);
         return findIn(k.__bases__.v[0]); // todo; multiple bases
     };
@@ -435,7 +439,7 @@ inherits: function inherits(ctor, bases)
         ctor.__bases__ = new Sk.builtin.list(bases.v);
     }
     else
-        throw SyntaxError("multiple bases not implemented yet");
+        throw new Sk.builtin.SyntaxError("multiple bases not implemented yet");
 
 },
 
@@ -524,7 +528,7 @@ import_: function import_(name)
                  return;
              } catch (e) {}
          }
-         throw new ImportError("no module named " + name);
+         throw new Sk.builtin.ImportError("no module named " + name);
         }());
     }
     
@@ -543,7 +547,7 @@ import_: function import_(name)
     }
     else
     {
-        var js = Skulpt.compileStr(filename, contents, module);
+        var js = Sk.compileStr(filename, contents, module);
         //print("/**** start", filename, "****/");
         //print(js);
         //print("/**** end", filename, "****/");
@@ -556,7 +560,7 @@ import_: function import_(name)
 // todo; this function smells wrong
 typename: function(o)
 {
-    if (typeof o === "number") return $.types['int'].name;
+    if (typeof o === "number") return $.types.int_.name;
     if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
     return o.__class__.__name__;
 },
@@ -706,9 +710,9 @@ hash: function hash(value)
 getattr: function getattr(object, name, default_)
 {
     return $.getattr(object, name.v, default_);
-},
+}
 
-         },
+         }
 };
 
 // set up some sane defaults based on availability

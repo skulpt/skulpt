@@ -21,7 +21,7 @@ $.prototype.__getitem__ = function(index)
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new IndexError("tuple index out of range");
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("tuple index out of range");
         return this.v[index];
     }
     else if (index instanceof Sk.builtin.slice)

@@ -116,8 +116,8 @@ class Grammar(object):
         from pprint import pformat
         return (
                 "Sk.ParseTables = {\n" +
-                "symbol2number:\n" +
-                pformat(self.symbol2number) +
+                "sym:\n" +
+                pformat(self.symbol2number).replace("'","") + # NOTE don't quote LHS, closure compiler won't rename through strings as props
                 ",\n" +
                 "number2symbol:\n" +
                 pformat(self.number2symbol) +

@@ -11,15 +11,13 @@ var $ = Sk.module = function module(name, file)
     if (file) this.__file__ = file;
 };
 
-/*jslint newcap: false */
 $.prototype = new Sk.builtin.object();
-/*jslint newcap: true */
 
 $.prototype.__class__ = new Sk.builtin.type('module', [Sk.types.object], {});
 $.prototype.__dir__ = function()
 {
     var names = [];
-    print(repr(this.__dict__).v);
+    //print(Sk.repr(this.__dict__).v);
     for (var iter = this.__dict__.__iter__(), i = iter.next(); i !== undefined; i = iter.next())
         names.push(i);
     return new Sk.builtin.list(names);

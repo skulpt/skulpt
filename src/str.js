@@ -19,7 +19,7 @@ var $ = Sk.builtin.str = function str(x)
     else if (x.__str__ !== undefined)
     {
         ret = x.__str__();
-        if (!(ret instanceof $)) throw new ValueError("__str__ didn't return a str");
+        if (!(ret instanceof $)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
     }
     else
@@ -67,7 +67,7 @@ $.prototype.__getitem__ = function(index)
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new IndexError("string index out of range");
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("string index out of range");
         return new $(this.v.charAt(index));
     }
     else if (index instanceof Sk.builtin.slice)
@@ -191,7 +191,7 @@ $.prototype.__mod__ = function(rhs)
                 }
                 r = n.toString(base);
             }
-            else if (n instanceof Sk.builtin.long)
+            else if (n instanceof Sk.builtin.long_)
             {
                 r = n.str$(base, false);
                 neg = n.size$ < 0;
@@ -260,7 +260,7 @@ $.prototype.__mod__ = function(rhs)
             //print("mk",mk);
             value = rhs.__getitem__(new $(mk));
         }
-        else throw new AttributeError(rhs.__class__.name + " instance has no attribute '__getitem__'");
+        else throw new Sk.builtin.AttributeError(rhs.__class__.name + " instance has no attribute '__getitem__'");
         var r;
         var base = 10;
         switch (conversionType)
@@ -290,7 +290,7 @@ $.prototype.__mod__ = function(rhs)
             case 'c':
                 if (typeof value === "number")
                     return String.fromCharCode(value);
-                else if (value instanceof Sk.builtin.long)
+                else if (value instanceof Sk.builtin.long_)
                     return String.fromCharCode(value.digit$[0] & 255);
                 else if (value.constructor === $)
                     return value.v.substr(0, 1);

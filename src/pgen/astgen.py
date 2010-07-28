@@ -118,7 +118,7 @@ class NodeInfo:
         # empty, so that reindent.py is happy with the output.
         for line in self.init:
             print >> buf, line.rstrip()
-        print >> buf, "}"
+        print >> buf, "};"
 
     def _gen_walkChildren(self, buf):
         print >> buf, "Sk.Ast.%s.prototype.walkChildren = function(handler, args)\n{" % self.name

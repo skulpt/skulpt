@@ -58,7 +58,7 @@ Sk.Ast.Add = function Add(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Add.prototype.walkChildren = function(handler, args)
 {
@@ -76,7 +76,7 @@ Sk.Ast.And = function And(nodes, lineno)
     this.nodeName = "And";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.And.prototype.walkChildren = function(handler, args)
 {
@@ -97,7 +97,7 @@ Sk.Ast.AssAttr = function AssAttr(expr, attrname, flags, lineno)
     this.attrname = attrname;
     this.flags = flags;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AssAttr.prototype.walkChildren = function(handler, args)
 {
@@ -117,7 +117,7 @@ Sk.Ast.AssList = function AssList(nodes, lineno)
     this.nodeName = "AssList";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AssList.prototype.walkChildren = function(handler, args)
 {
@@ -137,7 +137,7 @@ Sk.Ast.AssName = function AssName(name, flags, lineno)
     this.name = name;
     this.flags = flags;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AssName.prototype.walkChildren = function(handler, args)
 {
@@ -155,7 +155,7 @@ Sk.Ast.AssTuple = function AssTuple(nodes, lineno)
     this.nodeName = "AssTuple";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AssTuple.prototype.walkChildren = function(handler, args)
 {
@@ -175,7 +175,7 @@ Sk.Ast.Assert = function Assert(test, fail, lineno)
     this.test = test;
     this.fail = fail;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Assert.prototype.walkChildren = function(handler, args)
 {
@@ -194,7 +194,7 @@ Sk.Ast.Assign = function Assign(nodes, expr, lineno)
     this.nodes = nodes;
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Assign.prototype.walkChildren = function(handler, args)
 {
@@ -217,7 +217,7 @@ Sk.Ast.AugAssign = function AugAssign(node, op, expr, lineno)
     this.op = op;
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AugAssign.prototype.walkChildren = function(handler, args)
 {
@@ -237,7 +237,7 @@ Sk.Ast.AugGetattr = function AugGetattr(node, lineno)
     this.nodeName = "AugGetattr";
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AugGetattr.prototype.walkChildren = function(handler, args)
 {
@@ -253,7 +253,7 @@ Sk.Ast.AugName = function AugName(node, lineno)
     this.nodeName = "AugName";
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AugName.prototype.walkChildren = function(handler, args)
 {
@@ -269,7 +269,7 @@ Sk.Ast.AugSlice = function AugSlice(node, lineno)
     this.nodeName = "AugSlice";
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AugSlice.prototype.walkChildren = function(handler, args)
 {
@@ -285,7 +285,7 @@ Sk.Ast.AugSubscript = function AugSubscript(node, lineno)
     this.nodeName = "AugSubscript";
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.AugSubscript.prototype.walkChildren = function(handler, args)
 {
@@ -301,7 +301,7 @@ Sk.Ast.Backquote = function Backquote(expr, lineno)
     this.nodeName = "Backquote";
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Backquote.prototype.walkChildren = function(handler, args)
 {
@@ -317,7 +317,7 @@ Sk.Ast.Bitand = function Bitand(nodes, lineno)
     this.nodeName = "Bitand";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Bitand.prototype.walkChildren = function(handler, args)
 {
@@ -336,7 +336,7 @@ Sk.Ast.Bitor = function Bitor(nodes, lineno)
     this.nodeName = "Bitor";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Bitor.prototype.walkChildren = function(handler, args)
 {
@@ -355,7 +355,7 @@ Sk.Ast.Bitxor = function Bitxor(nodes, lineno)
     this.nodeName = "Bitxor";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Bitxor.prototype.walkChildren = function(handler, args)
 {
@@ -373,7 +373,7 @@ Sk.Ast.Break_ = function Break_(lineno)
 {
     this.nodeName = "Break_";
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Break_.prototype.walkChildren = function(handler, args)
 {
@@ -390,7 +390,7 @@ Sk.Ast.CallFunc = function CallFunc(node, args, star_args, dstar_args, lineno)
     this.star_args = star_args;
     this.dstar_args = dstar_args;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.CallFunc.prototype.walkChildren = function(handler, args)
 {
@@ -419,7 +419,7 @@ Sk.Ast.Class_ = function Class_(name, bases, doc, code, decorators, lineno)
     this.code = code;
     this.decorators = decorators;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Class_.prototype.walkChildren = function(handler, args)
 {
@@ -447,7 +447,7 @@ Sk.Ast.Compare = function Compare(expr, ops, lineno)
     this.expr = expr;
     this.ops = ops;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Compare.prototype.walkChildren = function(handler, args)
 {
@@ -468,7 +468,7 @@ Sk.Ast.Const_ = function Const_(value, lineno)
     this.nodeName = "Const_";
     this.value = value;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Const_.prototype.walkChildren = function(handler, args)
 {
@@ -483,7 +483,7 @@ Sk.Ast.Continue_ = function Continue_(lineno)
 {
     this.nodeName = "Continue_";
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Continue_.prototype.walkChildren = function(handler, args)
 {
@@ -497,7 +497,7 @@ Sk.Ast.Decorators = function Decorators(nodes, lineno)
     this.nodeName = "Decorators";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Decorators.prototype.walkChildren = function(handler, args)
 {
@@ -516,7 +516,7 @@ Sk.Ast.Dict = function Dict(items, lineno)
     this.nodeName = "Dict";
     this.items = items;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Dict.prototype.walkChildren = function(handler, args)
 {
@@ -535,7 +535,7 @@ Sk.Ast.Discard = function Discard(expr, lineno)
     this.nodeName = "Discard";
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Discard.prototype.walkChildren = function(handler, args)
 {
@@ -552,7 +552,7 @@ Sk.Ast.Div = function Div(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Div.prototype.walkChildren = function(handler, args)
 {
@@ -569,7 +569,7 @@ Sk.Ast.Ellipsis = function Ellipsis(lineno)
 {
     this.nodeName = "Ellipsis";
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Ellipsis.prototype.walkChildren = function(handler, args)
 {
@@ -585,7 +585,7 @@ Sk.Ast.Exec = function Exec(expr, locals, globals, lineno)
     this.locals = locals;
     this.globals = globals;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Exec.prototype.walkChildren = function(handler, args)
 {
@@ -606,7 +606,7 @@ Sk.Ast.FloorDiv = function FloorDiv(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.FloorDiv.prototype.walkChildren = function(handler, args)
 {
@@ -627,7 +627,7 @@ Sk.Ast.For_ = function For_(assign, list, body, else_, lineno)
     this.body = body;
     this.else_ = else_;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.For_.prototype.walkChildren = function(handler, args)
 {
@@ -651,7 +651,7 @@ Sk.Ast.From = function From(modname, names, level, lineno)
     this.names = names;
     this.level = level;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.From.prototype.walkChildren = function(handler, args)
 {
@@ -678,7 +678,7 @@ Sk.Ast.Function_ = function Function_(decorators, name, argnames, defaults, vara
     this.doc = doc;
     this.code = code;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Function_.prototype.walkChildren = function(handler, args)
 {
@@ -714,7 +714,7 @@ Sk.Ast.GenExpr = function GenExpr(code, lineno)
     this.argnames = ['.0'];
     this.varargs = this.kwargs = null;
 
-}
+};
 
 Sk.Ast.GenExpr.prototype.walkChildren = function(handler, args)
 {
@@ -733,7 +733,7 @@ Sk.Ast.GenExprFor = function GenExprFor(assign, iter, ifs, lineno)
     this.ifs = ifs;
     this.lineno = lineno;
     this.is_outmost = false;
-}
+};
 
 Sk.Ast.GenExprFor.prototype.walkChildren = function(handler, args)
 {
@@ -756,7 +756,7 @@ Sk.Ast.GenExprIf = function GenExprIf(test, lineno)
     this.nodeName = "GenExprIf";
     this.test = test;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.GenExprIf.prototype.walkChildren = function(handler, args)
 {
@@ -773,7 +773,7 @@ Sk.Ast.GenExprInner = function GenExprInner(expr, quals, lineno)
     this.expr = expr;
     this.quals = quals;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.GenExprInner.prototype.walkChildren = function(handler, args)
 {
@@ -794,7 +794,7 @@ Sk.Ast.GenExprTransformed = function GenExprTransformed(node, lineno)
     this.nodeName = "GenExprTransformed";
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.GenExprTransformed.prototype.walkChildren = function(handler, args)
 {
@@ -811,7 +811,7 @@ Sk.Ast.Getattr = function Getattr(expr, attrname, lineno)
     this.expr = expr;
     this.attrname = attrname;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Getattr.prototype.walkChildren = function(handler, args)
 {
@@ -829,7 +829,7 @@ Sk.Ast.Global = function Global(names, lineno)
     this.nodeName = "Global";
     this.names = names;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Global.prototype.walkChildren = function(handler, args)
 {
@@ -847,7 +847,7 @@ Sk.Ast.IfExp = function IfExp(test, then, else_, lineno)
     this.then = then;
     this.else_ = else_;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.IfExp.prototype.walkChildren = function(handler, args)
 {
@@ -868,7 +868,7 @@ Sk.Ast.If_ = function If_(tests, else_, lineno)
     this.tests = tests;
     this.else_ = else_;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.If_.prototype.walkChildren = function(handler, args)
 {
@@ -889,7 +889,7 @@ Sk.Ast.Import_ = function Import_(names, lineno)
     this.nodeName = "Import_";
     this.names = names;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Import_.prototype.walkChildren = function(handler, args)
 {
@@ -905,7 +905,7 @@ Sk.Ast.Interactive = function Interactive(node, lineno)
     this.nodeName = "Interactive";
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Interactive.prototype.walkChildren = function(handler, args)
 {
@@ -921,7 +921,7 @@ Sk.Ast.Invert = function Invert(expr, lineno)
     this.nodeName = "Invert";
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Invert.prototype.walkChildren = function(handler, args)
 {
@@ -938,7 +938,7 @@ Sk.Ast.Keyword = function Keyword(name, expr, lineno)
     this.name = name;
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Keyword.prototype.walkChildren = function(handler, args)
 {
@@ -960,7 +960,7 @@ Sk.Ast.Lambda = function Lambda(argnames, defaults, varargs, kwargs, code, linen
     this.kwargs = kwargs;
     this.code = code;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Lambda.prototype.walkChildren = function(handler, args)
 {
@@ -988,7 +988,7 @@ Sk.Ast.LeftShift = function LeftShift(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.LeftShift.prototype.walkChildren = function(handler, args)
 {
@@ -1006,7 +1006,7 @@ Sk.Ast.List = function List(nodes, lineno)
     this.nodeName = "List";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.List.prototype.walkChildren = function(handler, args)
 {
@@ -1026,7 +1026,7 @@ Sk.Ast.ListComp = function ListComp(expr, quals, lineno)
     this.expr = expr;
     this.quals = quals;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.ListComp.prototype.walkChildren = function(handler, args)
 {
@@ -1049,7 +1049,7 @@ Sk.Ast.ListCompFor = function ListCompFor(assign, list, ifs, lineno)
     this.list = list;
     this.ifs = ifs;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.ListCompFor.prototype.walkChildren = function(handler, args)
 {
@@ -1072,7 +1072,7 @@ Sk.Ast.ListCompIf = function ListCompIf(test, lineno)
     this.nodeName = "ListCompIf";
     this.test = test;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.ListCompIf.prototype.walkChildren = function(handler, args)
 {
@@ -1089,7 +1089,7 @@ Sk.Ast.Mod = function Mod(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Mod.prototype.walkChildren = function(handler, args)
 {
@@ -1108,7 +1108,7 @@ Sk.Ast.Module = function Module(doc, node, lineno)
     this.doc = doc;
     this.node = node;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Module.prototype.walkChildren = function(handler, args)
 {
@@ -1127,7 +1127,7 @@ Sk.Ast.Mul = function Mul(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Mul.prototype.walkChildren = function(handler, args)
 {
@@ -1145,7 +1145,7 @@ Sk.Ast.Name = function Name(name, lineno)
     this.nodeName = "Name";
     this.name = name;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Name.prototype.walkChildren = function(handler, args)
 {
@@ -1161,7 +1161,7 @@ Sk.Ast.Not = function Not(expr, lineno)
     this.nodeName = "Not";
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Not.prototype.walkChildren = function(handler, args)
 {
@@ -1177,7 +1177,7 @@ Sk.Ast.Or = function Or(nodes, lineno)
     this.nodeName = "Or";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Or.prototype.walkChildren = function(handler, args)
 {
@@ -1195,7 +1195,7 @@ Sk.Ast.Pass = function Pass(lineno)
 {
     this.nodeName = "Pass";
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Pass.prototype.walkChildren = function(handler, args)
 {
@@ -1210,7 +1210,7 @@ Sk.Ast.Power = function Power(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Power.prototype.walkChildren = function(handler, args)
 {
@@ -1230,7 +1230,7 @@ Sk.Ast.Print = function Print(nodes, dest, nl, lineno)
     this.dest = dest;
     this.nl = nl;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Print.prototype.walkChildren = function(handler, args)
 {
@@ -1255,7 +1255,7 @@ Sk.Ast.Raise = function Raise(expr1, expr2, expr3, lineno)
     this.expr2 = expr2;
     this.expr3 = expr3;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Raise.prototype.walkChildren = function(handler, args)
 {
@@ -1275,7 +1275,7 @@ Sk.Ast.Return_ = function Return_(value, lineno)
     this.nodeName = "Return_";
     this.value = value;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Return_.prototype.walkChildren = function(handler, args)
 {
@@ -1292,7 +1292,7 @@ Sk.Ast.RightShift = function RightShift(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.RightShift.prototype.walkChildren = function(handler, args)
 {
@@ -1313,7 +1313,7 @@ Sk.Ast.Slice = function Slice(expr, flags, lower, upper, lineno)
     this.lower = lower;
     this.upper = upper;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Slice.prototype.walkChildren = function(handler, args)
 {
@@ -1335,7 +1335,7 @@ Sk.Ast.Sliceobj = function Sliceobj(nodes, lineno)
     this.nodeName = "Sliceobj";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Sliceobj.prototype.walkChildren = function(handler, args)
 {
@@ -1354,7 +1354,7 @@ Sk.Ast.Stmt = function Stmt(nodes, lineno)
     this.nodeName = "Stmt";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Stmt.prototype.walkChildren = function(handler, args)
 {
@@ -1374,7 +1374,7 @@ Sk.Ast.Sub = function Sub(left, right, lineno)
     this.left = left;
     this.right = right;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Sub.prototype.walkChildren = function(handler, args)
 {
@@ -1394,7 +1394,7 @@ Sk.Ast.Subscript = function Subscript(expr, flags, subs, lineno)
     this.flags = flags;
     this.subs = subs;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Subscript.prototype.walkChildren = function(handler, args)
 {
@@ -1419,7 +1419,7 @@ Sk.Ast.TryExcept = function TryExcept(body, handlers, else_, lineno)
     this.handlers = handlers;
     this.else_ = else_;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.TryExcept.prototype.walkChildren = function(handler, args)
 {
@@ -1443,7 +1443,7 @@ Sk.Ast.TryFinally = function TryFinally(body, final_, lineno)
     this.body = body;
     this.final_ = final_;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.TryFinally.prototype.walkChildren = function(handler, args)
 {
@@ -1461,7 +1461,7 @@ Sk.Ast.Tuple = function Tuple(nodes, lineno)
     this.nodeName = "Tuple";
     this.nodes = nodes;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Tuple.prototype.walkChildren = function(handler, args)
 {
@@ -1480,7 +1480,7 @@ Sk.Ast.UnaryAdd = function UnaryAdd(expr, lineno)
     this.nodeName = "UnaryAdd";
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.UnaryAdd.prototype.walkChildren = function(handler, args)
 {
@@ -1496,7 +1496,7 @@ Sk.Ast.UnarySub = function UnarySub(expr, lineno)
     this.nodeName = "UnarySub";
     this.expr = expr;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.UnarySub.prototype.walkChildren = function(handler, args)
 {
@@ -1514,7 +1514,7 @@ Sk.Ast.While_ = function While_(test, body, else_, lineno)
     this.body = body;
     this.else_ = else_;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.While_.prototype.walkChildren = function(handler, args)
 {
@@ -1536,7 +1536,7 @@ Sk.Ast.With_ = function With_(expr, vars, body, lineno)
     this.vars = vars;
     this.body = body;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.With_.prototype.walkChildren = function(handler, args)
 {
@@ -1556,7 +1556,7 @@ Sk.Ast.Yield_ = function Yield_(value, lineno)
     this.nodeName = "Yield_";
     this.value = value;
     this.lineno = lineno;
-}
+};
 
 Sk.Ast.Yield_.prototype.walkChildren = function(handler, args)
 {

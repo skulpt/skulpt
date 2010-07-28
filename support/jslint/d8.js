@@ -12,7 +12,7 @@
         quit(1);
     }
     if (!JSLINT(input, {bitwise: false, eqeqeq: true, immed: true,
-            newcap: true, nomen: true, onevar: false, plusplus: false,
+            newcap: false, nomen: true, onevar: false, plusplus: false,
             evil: true, sub: false, nomen: false, 
             regexp: true, rhino: true, undef: true, white: false, indent: false, laxbreak:true})) {
         for (var i = 0; i < JSLINT.errors.length; i += 1) {

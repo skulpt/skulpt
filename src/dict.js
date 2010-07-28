@@ -88,7 +88,7 @@ $.prototype.__repr__ = function()
         var v = this.__getitem__(k);
         if (v === undefined)
         {
-            print(k, "had undefined v");
+            //print(k, "had undefined v");
             v = null;
         }
         ret.push(Sk.builtin.repr(k).v + ": " + Sk.builtin.repr(v).v);

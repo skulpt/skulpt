@@ -17,7 +17,7 @@ function Parser(grammar, convert)
     this.grammar = grammar;
     this.convert = convert || function(grammar, node) { return node; };
     return this;
-};
+}
 
 
 function ParseError(msg, type, value, context)
@@ -27,7 +27,7 @@ function ParseError(msg, type, value, context)
     this.value = value;
     this.context = context;
     return this;
-};
+}
 
 Parser.prototype.setup = function(start)
 {
@@ -252,7 +252,7 @@ function makeParser(filename, style)
 {
     if (style === undefined) style = "file_input";
     var p = new Parser(Sk.ParseTables);
-    p.setup(Sk.ParseTables.symbol2number[style]);
+    p.setup(Sk.ParseTables.sym[style]);
     var curIndex = 0;
     var lineno = 1;
     var column = 0;
@@ -319,6 +319,6 @@ Sk.parse = function parse(filename, input)
         ret = parseFunc(lines[i] + ((i === lines.length - 1) ? "" : "\n"));
     }
     return ret;
-}
+};
 
 }());
