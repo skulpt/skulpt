@@ -219,7 +219,7 @@ Sk.astDump = function astDump(node)
         print >>mainf, a
         print >>auxf, b
     print >>mainf, epilogue
-    print >>auxf, "}\n}());\n"
+    print >>auxf, "}\ngoog.exportSymbol('Sk.astDump', Sk.astDump);\n}());\n"
     mainf.close()
     auxf.close()
 

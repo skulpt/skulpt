@@ -2,106 +2,6 @@
 var tokenizefail = 0;
 var tokenizepass = 0;
 
-//////////////
-// BEGINNING OF UNEVAL.JS
-//////////////
-// taken from bloxsom.v8
-// tweaked slightly for method of string expansion (to match rhino's)
-
-/*
- * $Id: uneval.js,v 0.2 2008/06/13 17:47:18 dankogai Exp dankogai $
- */
-
-var protos = [];
-var char2esc = {'\t':'t','\n':'n','\v':'v','\f':'f','\r':'\r',    
-                '\"':'\"','\\':'\\'};
-var escapeChar = function(c){
-    if (c in char2esc) return '\\' + char2esc[c];
-    var ord = c.charCodeAt(0);
-    return ord < 0x20   ? '\\x0' + ord.toString(16)
-        :  ord < 0x7F   ? '\\'   + c
-        :  ord < 0x100  ? '\\x'  + ord.toString(16)
-        :  ord < 0x1000 ? '\\u0' + ord.toString(16)
-                        : '\\u'  + ord.toString(16)
-};
-var uneval_asis = function(o){ return o.toString() };
-/* predefine objects where typeof(o) != 'object' */
-var name2uneval = {
-    'boolean':uneval_asis,
-    'number': uneval_asis,
-    'string': function(o){
-        return '\"'
-            + o.toString().replace(/[\x00-\x1F\"\\\u007F-\uFFFF]/g, escapeChar)
-            + '\"'
-    },
-    'undefined': function(o){ return 'undefined' },
-    'function':uneval_asis
-};
-
-var uneval_default = function(o, np){
-    var src = []; // a-ha!
-    for (var p in o){
-        if (!o.hasOwnProperty(p)) continue;
-        src[src.length] = uneval(p)  + ':' + uneval(o[p], 1);
-    }
-    // parens needed to make eval() happy
-    return np ? '{' + src.toString() + '}' : '({' + src.toString() + '})';
-};
-
-var uneval_set = function(proto, name, func){
-    protos[protos.length] = [ proto, name ];
-    name2uneval[name] = func || uneval_default;
-};
-
-uneval_set(Array, 'array', function(o){
-    var src = [];
-    for (var i = 0, l = o.length; i < l; i++)
-        src[i] = uneval(o[i]);
-    return '[' + String(src) + ']';
-});
-uneval_set(RegExp, 'regexp', uneval_asis);
-uneval_set(Date, 'date', function(o){
-    return '(new Date(' + o.valueOf() + '))';
-});
-
-var typeName = function(o){
-    // if (o === null) return 'null';
-    var t = typeof o;
-    if (t != 'object') return t;
-    // we have to lenear-search. sigh.
-    for (var i = 0, l = protos.length; i < l; i++){
-        if (o instanceof  protos[i][0]) return protos[i][1];
-    }
-    return 'object';
-};
-
-var uneval = function(o, np){
-    // if (o.toSource) return o.toSource();
-    if (o === undefined) return 'undefined';
-    if (o === null) return 'null';
-    var func = name2uneval[typeName(o)] || uneval_default;
-    return func(o, np);
-}
-
-//////////////
-// END OF UNEVAL.JS
-//////////////
-
-var tok_name = {
-    0: 'T_ENDMARKER', 1: 'T_NAME', 2: 'T_NUMBER', 3: 'T_STRING', 4: 'T_NEWLINE',
-    5: 'T_INDENT', 6: 'T_DEDENT', 7: 'T_LPAR', 8: 'T_RPAR', 9: 'T_LSQB',
-    10: 'T_RSQB', 11: 'T_COLON', 12: 'T_COMMA', 13: 'T_SEMI', 14: 'T_PLUS',
-    15: 'T_MINUS', 16: 'T_STAR', 17: 'T_SLASH', 18: 'T_VBAR', 19: 'T_AMPER',
-    20: 'T_LESS', 21: 'T_GREATER', 22: 'T_EQUAL', 23: 'T_DOT', 24: 'T_PERCENT',
-    25: 'T_BACKQUOTE', 26: 'T_LBRACE', 27: 'T_RBRACE', 28: 'T_EQEQUAL', 29: 'T_NOTEQUAL',
-    30: 'T_LESSEQUAL', 31: 'T_GREATEREQUAL', 32: 'T_TILDE', 33: 'T_CIRCUMFLEX', 34: 'T_LEFTSHIFT',
-    35: 'T_RIGHTSHIFT', 36: 'T_DOUBLESTAR', 37: 'T_PLUSEQUAL', 38: 'T_MINEQUAL', 39: 'T_STAREQUAL',
-    40: 'T_SLASHEQUAL', 41: 'T_PERCENTEQUAL', 42: 'T_AMPEREQUAL', 43: 'T_VBAREQUAL', 44: 'T_CIRCUMFLEXEQUAL',
-    45: 'T_LEFTSHIFTEQUAL', 46: 'T_RIGHTSHIFTEQUAL', 47: 'T_DOUBLESTAREQUAL', 48: 'T_DOUBLESLASH', 49: 'T_DOUBLESLASHEQUAL',
-    50: 'T_AT', 51: 'T_OP', 52: 'T_COMMENT', 53: 'T_NL', 54: 'T_RARROW',
-    55: 'T_ERRORTOKEN', 56: 'T_N_TOKENS',
-    256: 'T_NT_OFFSET'
-};
 
 function dump_tokens(fn, input)
 {
@@ -114,7 +14,7 @@ function dump_tokens(fn, input)
                 scol = st[1],
                 erow = en[0],
                 ecol = en[1];
-            var data = sprintf("%-12.12s %-13.13s (%d, %d) (%d, %d)", tok_name[type], uneval(token), srow, scol, erow, ecol);
+            var data = sprintf("%-12.12s %-13.13s (%d, %d) (%d, %d)", Sk.Tokenizer.tokenNames[type], Sk.uneval(token), srow, scol, erow, ecol);
             //print("DUMP:"+data);
             ret += data;
             ret += "\n";
@@ -170,28 +70,6 @@ function testTokenize(name)
         tokenizepass += 1;
     }
 }
-
-function parseTestDump(n, indent)
-{
-    //return JSON.stringify(n, null, 2);
-    indent = indent || "";
-    var ret = "";
-    ret += indent;
-    if (n.type >= 256) // non-term
-    {
-        ret += Sk.ParseTables.number2symbol[n.type] + "\n";
-        for (var i = 0; i < n.children.length; ++i)
-        {
-            ret += parseTestDump(n.children[i], indent + "  ");
-        }
-    }
-    else
-    {
-        ret += tok_name[n.type] + ": " + uneval(n.value) + "\n";
-    }
-    return ret;
-}
-
 var parsefail = 0;
 var parsepass = 0;
 
@@ -204,7 +82,7 @@ function testParse(name)
     var got;
     try
     {
-        got = parseTestDump(Sk.parse(name + ".py", input));
+        got = Sk.parseTreeDump(Sk.parse(name + ".py", input));
     }
     catch (e)
     {

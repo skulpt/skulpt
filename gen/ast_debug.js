@@ -329,5 +329,6 @@ if (node.nodeName === 'Yield_') {
 }
 
 }
+goog.exportSymbol('Sk.astDump', Sk.astDump);
 }());
 

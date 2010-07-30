@@ -321,4 +321,29 @@ Sk.parse = function parse(filename, input)
     return ret;
 };
 
+Sk.parseTreeDump = function parseTreeDump(n, indent)
+{
+    //return JSON.stringify(n, null, 2);
+    indent = indent || "";
+    var ret = "";
+    ret += indent;
+    if (n.type >= 256) // non-term
+    {
+        ret += Sk.ParseTables.number2symbol[n.type] + "\n";
+        for (var i = 0; i < n.children.length; ++i)
+        {
+            ret += Sk.parseTreeDump(n.children[i], indent + "  ");
+        }
+    }
+    else
+    {
+        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + Sk.uneval(n.value) + "\n";
+    }
+    return ret;
+};
+
+
+goog.exportSymbol("Sk.parse", Sk.parse);
+goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
+
 }());

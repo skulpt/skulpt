@@ -15,10 +15,45 @@
 
 (function() {
 
-Sk.symtableBuild = function(mod, filename)
+function Symtable()
 {
-    var st = new Symtable(filename);
-    if (
+}
+
+function genericVisit(ast, args)
+{
+    if (!ast) return undefined;
+    if (args === undefined) throw "no args";
+    //if (args.o === undefined) throw "no output buffer";
+    //print("name:"+ ast.nodeName);
+    if (ast.nodeName in this)
+    {
+        return this[ast.nodeName].call(this, ast, args);
+    }
+    else if (ast.walkChildren)
+    {
+        ast.walkChildren(this, args);
+    }
+}
+function ASTWalker()
+{
+    this.node = null;
 };
+ASTWalker.prototype.defaultVisit(this, node /*, rest*/)
+{
+    node.walkChildren(
+};
+
+function SymbolVisitor()
+{
+    this.scopes = {};
+    this.klass = null;
+};
+SymbolVisitor.prototype.visit = genericVisit;
+SymbolVisitor.prototype.Module = SymbolVisitor.prototype.Expression = function(ast, a)
+{
+    var scope = this.module = this.scopes[ast] = ModuleScope();
+    this.visit(
+};
+
 
 }());

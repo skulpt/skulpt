@@ -9,7 +9,9 @@ import symtable
 
 # order is important!
 Files = [
+        'support/closure-library/closure/goog/base.js',
         'src/env.js',
+        'src/uneval.js', # this is only here for unit tests
         'src/errors.js',
         'src/list.js',
         'src/type.js',
@@ -30,15 +32,17 @@ Files = [
         'src/parser.js',
         'gen/ast.js',
         'src/transformer.js',
+        #'src/symtable.js',
         #'src/compiler.js',
         #'src/entry.js',
         #('src/footer.js', 'dist'),
         #('test/footer_test.js', 'test'),
+
+        'gen/ast_debug.js', # this is only here for unit tests
         ]
 
 TestFiles = [
         'test/sprintf.js',
-        'gen/ast_debug.js',
         "test/json2.js",
         "test/test.js"
         ]
@@ -214,6 +218,7 @@ def dist():
 
     buildBrowserTests()
 
+    """
     # run jslint on uncompressed
     print ". Running JSLint on uncompressed..."
     ret = os.system("python support/jslint/wrapper.py %s dist/linemap.txt" % uncompfn)
@@ -221,6 +226,7 @@ def dist():
     if ret != 0:
         print "JSLint complained."
         raise SystemExit()
+    """
 
     # run tests on uncompressed
     print ". Running tests on uncompressed..."
@@ -231,7 +237,7 @@ def dist():
 
     # compress
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar  --compilation_level SIMPLE_OPTIMIZATIONS --js %s --js_output_file %s" % (uncompfn, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar  --compilation_level ADVANCED_OPTIMIZATIONS --js %s --js_output_file %s" % (uncompfn, compfn)) 
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     if ret != 0:
         print "Couldn't run closure-compiler."
@@ -278,7 +284,7 @@ def regenparser():
     os.system("python astgen.py ../../gen/ast.js ../../gen/ast_debug.js")
     os.chdir("../..")
     # sanity check that they at least parse
-    os.system(jsengine + " src/env.js src/tokenize.js gen/parse_tables.js gen/ast.js gen/ast_debug.js")
+    os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/ast.js gen/ast_debug.js")
 
 def regenruntests():
     """regenerate the test data by running the tests on real python"""
@@ -373,19 +379,15 @@ def symtab(fn):
         ret += """%sSym_type: %s
 %sSym_name: %s
 %sSym_lineno: %s
-%sSym_optimized: %s
 %sSym_nested: %s
 %sSym_haschildren: %s
-%sSym_has_exec: %s
 %sSym_has_import_star: %s
 """ % (
         indent, obj.get_type(),
         indent, obj.get_name(),
         indent, obj.get_lineno(),
-        indent, obj.is_optimized(),
         indent, obj.is_nested(),
         indent, obj.has_children(),
-        indent, obj.has_exec(),
         indent, obj.has_import_star())
         if obj.get_type() == "function":
             ret += "%sFunc_params: %s\n%sFunc_locals: %s\n%sFunc_globals: %s\n%sFunc_frees:%s\n" % (

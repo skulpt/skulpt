@@ -1,30 +1,40 @@
-//
-// Sk is the only symbol that Skulpt adds to the global namespace. The main
-// entry points and customization points are noted and described here.
-//
+/**
+ * Base namespace for Skulpt. This is the only symbol that Skulpt adds to the
+ * global namespace. Other user accessible symbols are noted and described
+ * below.
+ */
 
-var Sk = {};
-Sk = (function(){ var $ = {
+var Sk = Sk || {};
+goog.exportSymbol('Sk', Sk);
 
-// replaceable output redirection (called from print, etc)
-output: function(x) {},
+/**
+ * Replacable output redirection (called from print, etc).
+ */
+Sk.output = function(x) {};
+goog.exportProperty(Sk, "Sk.output", Sk.output);
 
-// replaceable function to load modules with (called via import, etc)
-// todo; should be async
-load: function(x) { throw "Sk.load has not been implemented"; },
+/**
+ * Replacable function to load modules with (called via import, etc.)
+ */
+Sk.load = function(x) { throw "Sk.load has not been implemented"; },
+goog.exportProperty(Sk, "Sk.load", Sk.load);
 
-// settable to emulate arguments to the script. should be array of js strings.
-sysargv: [],
+/**
+ * Setable to emulate arguments to the script. Should be array of JS strings.
+ */
+Sk.sysargv = [];
+goog.exportProperty(Sk, "Sk.sysargv", Sk.sysargv);
 
-// compileStr
-// createInteractiveContext
+
+(function() { var $ = Sk;
 
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 //
 //
-// Everything below here is considered 'internal'.
+// Everything below here is considered 'internal'. Runtime functions called
+// by the compiler.
 //
 //
 // --------------------------------------------------------------------------
@@ -32,19 +42,19 @@ sysargv: [],
 // --------------------------------------------------------------------------
 
 // where code objects, etc. get stored
-consts: {},
+Sk.consts = {};
 
 // dictionary of special/builtin type objects
-types: {},
+Sk.types = {};
 
-stdmodules: {},
+Sk.stdmodules = {};
 
 //
 // a wide variety of implementation details. these are generally
 // functions called by the compiler to implement details of the language.
 //
 
-neg: function neg(self)
+Sk.neg = function neg(self)
 {
     if (typeof self === "number")
     {
@@ -60,15 +70,15 @@ neg: function neg(self)
         throw new TypeError("bad operand type for unary -: '" +
                 typeof self + "'");
     }
-},
+};
 
-not: function not(self)
+Sk.not = function not(self)
 {
     // todo; this should use __nonzero__/length, etc.
     return !self;
-},
+};
 
-in_: function in_(lhs, rhs)
+Sk.in_ = function in_(lhs, rhs)
 {
     if (lhs.constructor === $.builtin.str && rhs.constructor === $.builtin.str)
     {
@@ -88,9 +98,9 @@ in_: function in_(lhs, rhs)
         }
         return ret;
     }
-},
+};
 
-cmp: function cmp(lhs, rhs, op)
+Sk.cmp = function cmp(lhs, rhs, op)
 {
     if (op === 'is') return lhs === rhs;
     if (op === 'is not') return lhs !== rhs;
@@ -138,10 +148,10 @@ cmp: function cmp(lhs, rhs, op)
             default: throw "assert";
         }
     }
-},
+};
 
-softspace: false,
-print: function print(x)
+Sk.softspace = false;
+Sk.print = function print(x)
 {
     if ($.softspace)
     {
@@ -156,9 +166,9 @@ print: function print(x)
     };
     if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
         $.softspace = true;
-},
+};
 
-opFuncs: {
+Sk.opFuncs = {
     "+": "__add__",
     "-": "__sub__",
     "*": "__mul__",
@@ -171,9 +181,9 @@ opFuncs: {
     "&": "__and__",
     "|": "__or__",
     "^": "__xor__"
-},
+};
 
-opRFuncs: {
+Sk.opRFuncs = {
     "+": "__radd__",
     "-": "__rsub__",
     "*": "__rmul__",
@@ -186,9 +196,9 @@ opRFuncs: {
     "&": "__rand__",
     "|": "__ror__",
     "^": "__rxor__"
-},
+};
 
-opIFuncs: {
+Sk.opIFuncs = {
     "+=": "__iadd__",
     "-=": "__isub__",
     "*=": "__imul__",
@@ -201,10 +211,10 @@ opIFuncs: {
     "&=": "__iand__",
     "|=": "__ior__",
     "^=": "__ixor__"
-},
+};
 
 
-boNumPromote: {
+Sk.boNumPromote = {
     "+": function(a, b) { return a + b; },
     "-": function(a, b) { return a - b; },
     "*": function(a, b) { return a * b; },
@@ -213,8 +223,8 @@ boNumPromote: {
     "&": function(a, b) { return a & b; },
     "|": function(a, b) { return a | b; },
     "^": function(a, b) { return a ^ b; }
-},
-binop: function binop(lhs, rhs, op)
+};
+Sk.binop = function binop(lhs, rhs, op)
 {
     var numPromote = $.boNumPromote;
     var numPromoteFunc = numPromote[op];
@@ -241,9 +251,9 @@ binop: function binop(lhs, rhs, op)
     throw new TypeError("unsupported operand type(s) for " + op + ": '" +
             $.typename(lhs) + "' and '" + $.typename(rhs) + "'");
 
-},
+};
 
-ipNumPromote: {
+Sk.ipNumPromote = {
     "+=": function(a, b) { return a + b; },
     "-=": function(a, b) { return a - b; },
     "*=": function(a, b) { return a * b; },
@@ -256,8 +266,8 @@ ipNumPromote: {
     "&=": function(a, b) { return a & b; },
     "|=": function(a, b) { return a | b; },
     "^=": function(a, b) { return a ^ b; }
-},
-inplace: function inplace(lhs, rhs, op)
+};
+Sk.inplace = function inplace(lhs, rhs, op)
 {
     var numPromote = $.ipNumPromote;
     var numPromoteFunc = numPromote[op];
@@ -287,9 +297,9 @@ inplace: function inplace(lhs, rhs, op)
             throw "AttributeError: " + opname + " or " + opname2 + " not found on " + $.typename(lhs);
         }
     }
-},
+};
 
-lookupAttrOnClass: function lookupAttrOnClass(o, attrname)
+Sk.lookupAttrOnClass = function lookupAttrOnClass(o, attrname)
 {
     if (o.__class__ === undefined) return undefined;
 
@@ -313,14 +323,14 @@ lookupAttrOnClass: function lookupAttrOnClass(o, attrname)
         return findIn(k.__bases__.v[0]); // todo; multiple bases
     };
     return findIn(klass);
-},
+};
 
 // descriptors are some crazy crap. see:
 //   http://www.python.org/download/releases/2.2/descrintro/
 //   http://stackoverflow.com/questions/852308/how-the-method-resolution-and-invocation-works-internally-in-python/870650#870650
 // we only implement "non-data descriptors", currently since that's
 // what's needed for methods.
-getattr: function getattr(o, attrname, default_)
+Sk.getattr = function getattr(o, attrname, default_)
 {
     //print("getattr", o, attrname);
     if (o === undefined)
@@ -377,9 +387,9 @@ getattr: function getattr(o, attrname, default_)
     }
 
     return classAttrValue;
-},
+};
 
-setattr: function setattr(object, name, value)
+Sk.setattr = function setattr(object, name, value)
 {
     // todo; __set__ i guess
     var setter = $.lookupAttrOnClass(object, '__setattr__');
@@ -388,10 +398,10 @@ setattr: function setattr(object, name, value)
         setter.apply(object, name, value);
     }
     throw new Sk.builtin.AttributeError("no __setattr__"); // todo; this might be wrong
-},
+};
 
 // load a name, searching in various locations, and always ending in globals and builtins
-loadname: function loadname(name /*, locations*/)
+Sk.loadname = function loadname(name /*, locations*/)
 {
     for (var i = 1; i < arguments.length; ++i)
     {
@@ -404,9 +414,9 @@ loadname: function loadname(name /*, locations*/)
 
     // todo; should be NameError
     throw new ReferenceError("name '" + name + "' is not defined");
-},
+};
 
-storename: function storename(name, value, globals /*, locations*/)
+Sk.storename = function storename(name, value, globals /*, locations*/)
 {
     for (var i = 3; i < arguments.length; ++i)
     {
@@ -418,15 +428,15 @@ storename: function storename(name, value, globals /*, locations*/)
         }
     }
     globals[name] = value;
-},
+};
 
-delname: function delname(name, loc)
+Sk.delname = function delname(name, loc)
 {
     // todo; throw if not there
     delete loc[name];
-},
+};
 
-inherits: function inherits(ctor, bases)
+Sk.inherits = function inherits(ctor, bases)
 {
     if (bases.v.length === 0)
     {
@@ -441,7 +451,7 @@ inherits: function inherits(ctor, bases)
     else
         throw new Sk.builtin.SyntaxError("multiple bases not implemented yet");
 
-},
+};
 
 // unfortunately (at least pre-ecmascript 5) there's no way to make objects be
 // both callable and have arbitrary prototype chains.
@@ -451,7 +461,7 @@ inherits: function inherits(ctor, bases)
 // python-level calls in a call that checks if the target is an object that
 // has a __call__ attribute so we can dispatch to it. sucky.
 // additionally, this handles remapping kwargs to the correct locations.
-call: function call(obj, kwargs)
+Sk.call = function call(obj, kwargs)
 {
     var args = Array.prototype.slice.call(arguments, 2);
     if (kwargs !== undefined)
@@ -494,11 +504,11 @@ call: function call(obj, kwargs)
         }
     }
     */
-},
+};
 
 // this tries to implement something like:
 // http://docs.python.org/reference/simple_stmts.html#the-import-statement
-import_: function import_(name)
+Sk.import_ = function import_(name)
 {
     //
     // find the module. we don't do any of the PEP 302 stuff yet (or hardcode
@@ -555,30 +565,30 @@ import_: function import_(name)
     }
 
     return module;
-},
+};
 
 // todo; this function smells wrong
-typename: function(o)
+Sk.typename = function(o)
 {
     if (typeof o === "number") return $.types.int_.name;
     if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
     return o.__class__.__name__;
-},
+};
 
 
 // builtins are supposed to come from the __builtin__ module, but we don't do
 // that yet.
-builtin: {
+Sk.builtin = {};
 
-range: function range(start, stop, step)
+Sk.builtin.range = function range(start, stop, step)
 {
     var ret = [];
     var s = new $.builtin.slice(start, stop, step);
     s.sssiter$(0, function(i) { ret.push(i); });
     return new $.builtin.list(ret);
-},
+};
 
-len: function len(item)
+Sk.len = function len(item)
 {
     // todo; dispatch to __len__
     if (item instanceof $.builtin.str || item instanceof $.builtin.list || item instanceof $.builtin.tuple)
@@ -593,9 +603,9 @@ len: function len(item)
     {
         throw "AttributeError: no attribute __len__";
     }
-},
+};
 
-min: function min()
+Sk.builtin.min = function min()
 {
     // todo; throw if no args
     var lowest = arguments[0];
@@ -605,9 +615,9 @@ min: function min()
             lowest = arguments[i];
     }
     return lowest;
-},
+};
 
-max: function max()
+Sk.builtin.max = function max()
 {
     // todo; throw if no args
     var highest = arguments[0];
@@ -617,32 +627,32 @@ max: function max()
             highest = arguments[i];
     }
     return highest;
-},
+};
 
-abs: function abs(x)
+Sk.builtin.abs = function abs(x)
 {
     return Math.abs(x);
-},
+};
 
-ord: function ord(x)
+Sk.builtin.ord = function ord(x)
 {
     if (x.constructor !== $.builtin.str || x.v.length !== 1)
     {
         throw "ord() expected string of length 1";
     }
     return (x.v).charCodeAt(0);
-},
+};
 
-chr: function chr(x)
+Sk.builtin.chr = function chr(x)
 {
     if (typeof x !== "number")
     {
         throw "TypeError: an integer is required";
     }
     return new $.builtin.str(String.fromCharCode(x));
-},
+};
 
-dir: function dir(x)
+Sk.builtin.dir = function dir(x)
 {
     var names;
     if (x.__dir__ !== undefined)
@@ -662,9 +672,9 @@ dir: function dir(x)
     }
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new $.builtin.list(names);
-},
+};
 
-repr: function repr(x)
+Sk.builtin.repr = function repr(x)
 {
     var ret;
     if (typeof x === "number") ret = x.toString();
@@ -674,17 +684,17 @@ repr: function repr(x)
     else if (x.__repr__ !== undefined)
         return x.__repr__();
     return new $.builtin.str(ret);
-},
+};
 
-open: function open(filename, mode, bufsize)
+Sk.builtin.open = function open(filename, mode, bufsize)
 {
     if (mode === undefined) mode = "r";
     if (mode !== "r" && mode !== "rb") throw "todo; haven't implemented non-read opens";
     return new Sk.builtin.file(filename, mode, bufsize);
-},
+};
 
-hashCount: 0,
-hash: function hash(value)
+Sk.builtin.hashCount = 0;
+Sk.builtin.hash = function hash(value)
 {
     if (value instanceof Object && value.__hash__ !== undefined)
     {
@@ -705,24 +715,20 @@ hash: function hash(value)
     return (typeof value) + ' ' + String(value);
 
     // todo; throw properly for unhashable types
-},
+};
 
-getattr: function getattr(object, name, default_)
+Sk.builtin.getattr = function getattr(object, name, default_)
 {
     return $.getattr(object, name.v, default_);
-}
-
-         }
 };
 
 // set up some sane defaults based on availability
-if (this.write !== undefined) $.output = this.write;
-else if (this.console !== undefined && this.console.log !== undefined) $.output = function (x) {this.console.log(x);};
-else if (this.print !== undefined) $.output = this.print;
+if (goog.global.write !== undefined) $.output = goog.global.write;
+else if (goog.global.console !== undefined && goog.global.console.log !== undefined) $.output = function (x) {goog.global.console.log(x);};
+else if (goog.global.print !== undefined) $.output = goog.global.print;
 
 // todo; this should be an async api
-if (this.read !== undefined) $.load = this.read;
-// todo; XHR
+if (goog.global.read !== undefined) $.load = goog.global.read;
 
 return $;
 
