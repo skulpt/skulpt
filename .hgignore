@@ -8,3 +8,4 @@ tmp/*
 *.swp
 dist/*
 support/selenium
+.svn
