@@ -332,7 +332,7 @@ def symtabdump(fn):
         ret += "%s-- Identifiers --\n" % indent
         for ident in obj.get_identifiers():
             info = obj.lookup(ident)
-            ret += "%sname: %s\n  %sreferenced: %s\n  %simported: %s\n  %sparam: %s\n  %sglobal: %s\n  %sdecl_global: %s\n  %slocal: %s\n  %sfree: %s\n  %sassigned: %s\n  %sis_ns: %s\n  %snss: [\n%s\n%s  ]\n" % (
+            ret += "%sname: %s\n  %sis_referenced: %s\n  %sis_imported: %s\n  %sis_parameter: %s\n  %sis_global: %s\n  %sis_declared_global: %s\n  %sis_local: %s\n  %sis_free: %s\n  %sis_assigned: %s\n  %sis_namespace: %s\n  %snamespaces: [\n%s  %s]\n" % (
                     indent, info.get_name(),
                     indent, info.is_referenced(),
                     indent, info.is_imported(),
@@ -343,7 +343,7 @@ def symtabdump(fn):
                     indent, info.is_free(),
                     indent, info.is_assigned(),
                     indent, info.is_namespace(),
-                    indent, ','.join([getidents(x, indent + "    ") for x in info.get_namespaces()]),
+                    indent, '\n'.join([getidents(x, indent + "    ") for x in info.get_namespaces()]),
                     indent
                     )
         return ret

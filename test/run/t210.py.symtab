@@ -5,16 +5,16 @@ Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
 name: Stuff
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: True
-  nss: [
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
     Sym_type: class
     Sym_name: Stuff
     Sym_lineno: 1
@@ -23,16 +23,16 @@ name: Stuff
     Class_methods: ('__init__',)
     -- Identifiers --
     name: __init__
-      referenced: False
-      imported: False
-      param: False
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: True
-      is_ns: True
-      nss: [
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
         Sym_type: function
         Sym_name: __init__
         Sym_lineno: 2
@@ -44,19 +44,16 @@ name: Stuff
         Func_frees:()
         -- Identifiers --
         name: self
-          referenced: False
-          imported: False
-          param: True
-          global: False
-          decl_global: False
-          local: True
-          free: False
-          assigned: False
-          is_ns: False
-          nss: [
-
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
           ]
-
       ]
-
   ]

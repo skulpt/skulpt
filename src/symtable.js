@@ -234,6 +234,63 @@ Scope.prototype.get_cell_vars = function()
     return ret;
 };
 
+/* Flags for def-use information */
+
+var DEF_GLOBAL = 1;           /* global stmt */
+var DEF_LOCAL = 2;            /* assignment in code block */
+var DEF_PARAM = 2<<1;         /* formal parameter */
+var USE = 2<<2;               /* name is used */
+var DEF_STAR = 2<<3;          /* parameter is star arg */
+var DEF_DOUBLESTAR = 2<<4;    /* parameter is star-star arg */
+var DEF_INTUPLE = 2<<5;       /* name defined in tuple in parameters */
+var DEF_FREE = 2<<6;          /* name used but not defined in nested block */
+var DEF_FREE_GLOBAL = 2<<7;   /* free variable is actually implicit global */
+var DEF_FREE_CLASS = 2<<8;    /* free variable from class's method */
+var DEF_IMPORT = 2<<9;        /* assignment occurred via import */
+
+var DEF_BOUND = (DEF_LOCAL | DEF_PARAM | DEF_IMPORT);
+
+/* GLOBAL_EXPLICIT and GLOBAL_IMPLICIT are used internally by the symbol
+   table.  GLOBAL is returned from PyST_GetScope() for either of them. 
+   It is stored in ste_symbols at bits 12-14.
+*/
+var SCOPE_OFF = 11;
+var SCOPE_MASK = 7;
+
+var LOCAL = 1;
+var GLOBAL_EXPLICIT = 2;
+var GLOBAL_IMPLICIT = 3;
+var FREE = 4;
+var CELL = 5;
+
+/* The following three names are used for the ste_unoptimized bit field */
+var OPT_IMPORT_STAR = 1;
+var OPT_EXEC = 2;
+var OPT_BARE_EXEC = 4;
+var OPT_TOPLEVEL = 8;  /* top-level names, including eval and exec */
+
+var GENERATOR = 2;
+var GENERATOR_EXPRESSION = 2;
+
+function Symbol(name, flags, namespaces)
+{
+    this.__name = name;
+    this.__flags = flags;
+    this.__scope = (flags >> SCOPE_OFF) & SCOPE_MASK;
+    this.__namespaces = namespaces || [];
+};
+Symbol.prototype.get_name = function() { return this.__name; }
+Symbol.prototype.is_referenced = function() { return !!(this.__flags & USE); }
+Symbol.prototype.is_parameter = function() { return !!(this.__flags & DEF_PARAM); }
+Symbol.prototype.is_global = function() { return this.__scope === GLOBAL_IMPLICIT || this.__scope == GLOBAL_EXPLICIT; }
+Symbol.prototype.is_declared_global = function() { return this.__scope == GLOBAL_EXPLICIT; }
+Symbol.prototype.is_local = function() { return !!(this.__flags & DEF_BOUND); }
+Symbol.prototype.is_free = function() { return this.__scope == FREE; }
+Symbol.prototype.is_imported = function() { return !!(this.__flags & DEF_IMPORT); }
+Symbol.prototype.is_assigned = function() { return !!(this.__flags & DEF_LOCAL); }
+Symbol.prototype.is_namespace = function() { return this.__namespaces && this.__namespaces.length > 0; }
+Symbol.prototype.get_namespaces = function() { return this.__namespaces; }
+
 function SymbolTable()
 {
     this.type = 'module'; // or class or function
@@ -241,6 +298,7 @@ function SymbolTable()
     this.lineno = 0;
     this.isNested = false;
     this.hasChildren = false;
+    this.symbols = {};
 }
 SymbolTable.prototype.get_type = function() { return this.type; };
 SymbolTable.prototype.get_name = function() { return this.name; };
@@ -250,12 +308,33 @@ SymbolTable.prototype.has_children = function() { return this.hasChildren; };
 
 SymbolTable.prototype.get_identifiers = function()
 {
-    return [];
+    var ret = [];
+    for (var k in this.symbols)
+    {
+        if (this.symbols.hasOwnProperty(k))
+        {
+            ret.push(k);
+        }
+    }
+    return ret;
+};
+SymbolTable.prototype.lookup = function(name)
+{
+    var sym = this.symbols[name];
+    if (sym === undefined)
+    {
+        var flags = this.symbols[name];
+        var namespaces = this.__check_children(name);
+        throw "todo;";
+    }
+    return sym;
 };
 
 Sk.symboltable = function(ast)
 {
-    return new SymbolTable();
+    var ret = new SymbolTable();
+    //ret.symbols['a'] = new Symbol('a', DEF_LOCAL | USE); // XXX
+    return ret;
 };
 
 Sk.dumpSymtab = function(st)
@@ -282,6 +361,23 @@ Sk.dumpSymtab = function(st)
         for (var i = 0; i < objidentslen; ++i)
         {
             var info = obj.lookup(objidents[i]);
+            ret += indent + "name: " + info.get_name() + "\n";
+            ret += indent + "  is_referenced: " + pyBoolStr(info.is_referenced()) + "\n";
+            ret += indent + "  is_imported: " + pyBoolStr(info.is_imported()) + "\n";
+            ret += indent + "  is_parameter: " + pyBoolStr(info.is_parameter()) + "\n";
+            ret += indent + "  is_global: " + pyBoolStr(info.is_global()) + "\n";
+            ret += indent + "  is_declared_global: " + pyBoolStr(info.is_declared_global()) + "\n";
+            ret += indent + "  is_local: " + pyBoolStr(info.is_local()) + "\n";
+            ret += indent + "  is_free: " + pyBoolStr(info.is_free()) + "\n";
+            ret += indent + "  is_assigned: " + pyBoolStr(info.is_assigned()) + "\n";
+            ret += indent + "  is_namespace: " + pyBoolStr(info.is_namespace()) + "\n";
+            var nss = info.get_namespaces();
+            var nsslen = nss.length;
+            ret += indent + "  namespaces: [\n";
+            for (var j = 0; j < nsslen; ++j)
+            {
+            }
+            ret += indent + "  ]\n";
         }
         return ret;
     }

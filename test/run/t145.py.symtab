@@ -5,29 +5,28 @@ Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
 name: y
-  referenced: False
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: False
-  nss: [
-
+  is_referenced: False
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]
 name: X
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: True
-  nss: [
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
     Sym_type: class
     Sym_name: X
     Sym_lineno: 1
@@ -35,5 +34,4 @@ name: X
     Sym_haschildren: False
     Class_methods: ()
     -- Identifiers --
-
   ]

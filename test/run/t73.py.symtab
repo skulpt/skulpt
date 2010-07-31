@@ -5,15 +5,14 @@ Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
 name: xyzy
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: False
-  nss: [
-
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]

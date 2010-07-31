@@ -5,16 +5,16 @@ Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
 name: doadd
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: True
-  nss: [
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
     Sym_type: function
     Sym_name: doadd
     Sym_lineno: 2
@@ -26,44 +26,41 @@ name: doadd
     Func_frees:()
     -- Identifiers --
     name: a
-      referenced: True
-      imported: False
-      param: True
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: False
-      is_ns: False
-      nss: [
-
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
       ]
     name: b
-      referenced: True
-      imported: False
-      param: True
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: False
-      is_ns: False
-      nss: [
-
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
       ]
-
   ]
 name: dosub
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: True
-  nss: [
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
     Sym_type: function
     Sym_name: dosub
     Sym_lineno: 4
@@ -75,30 +72,27 @@ name: dosub
     Func_frees:()
     -- Identifiers --
     name: a
-      referenced: True
-      imported: False
-      param: True
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: False
-      is_ns: False
-      nss: [
-
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
       ]
     name: b
-      referenced: True
-      imported: False
-      param: True
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: False
-      is_ns: False
-      nss: [
-
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
       ]
-
   ]

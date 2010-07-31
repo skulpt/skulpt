@@ -5,15 +5,14 @@ Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
 name: t221_sub
-  referenced: True
-  imported: True
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: False
-  is_ns: False
-  nss: [
-
+  is_referenced: True
+  is_imported: True
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
   ]

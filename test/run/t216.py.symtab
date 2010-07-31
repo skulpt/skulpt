@@ -5,29 +5,28 @@ Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
 name: y
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: False
-  nss: [
-
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]
 name: Stuff
-  referenced: True
-  imported: False
-  param: False
-  global: False
-  decl_global: False
-  local: True
-  free: False
-  assigned: True
-  is_ns: True
-  nss: [
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
     Sym_type: class
     Sym_name: Stuff
     Sym_lineno: 1
@@ -36,16 +35,16 @@ name: Stuff
     Class_methods: ('things', '__init__')
     -- Identifiers --
     name: things
-      referenced: False
-      imported: False
-      param: False
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: True
-      is_ns: True
-      nss: [
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
         Sym_type: function
         Sym_name: things
         Sym_lineno: 6
@@ -57,31 +56,29 @@ name: Stuff
         Func_frees:()
         -- Identifiers --
         name: self
-          referenced: False
-          imported: False
-          param: True
-          global: False
-          decl_global: False
-          local: True
-          free: False
-          assigned: False
-          is_ns: False
-          nss: [
-
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
           ]
-
       ]
     name: __init__
-      referenced: False
-      imported: False
-      param: False
-      global: False
-      decl_global: False
-      local: True
-      free: False
-      assigned: True
-      is_ns: True
-      nss: [
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
         Sym_type: function
         Sym_name: __init__
         Sym_lineno: 2
@@ -93,16 +90,16 @@ name: Stuff
         Func_frees:()
         -- Identifiers --
         name: tmp
-          referenced: True
-          imported: False
-          param: False
-          global: False
-          decl_global: False
-          local: True
-          free: False
-          assigned: True
-          is_ns: True
-          nss: [
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: True
+          namespaces: [
             Sym_type: function
             Sym_name: tmp
             Sym_lineno: 3
@@ -114,34 +111,29 @@ name: Stuff
             Func_frees:('self',)
             -- Identifiers --
             name: self
-              referenced: True
-              imported: False
-              param: False
-              global: False
-              decl_global: False
-              local: False
-              free: True
-              assigned: False
-              is_ns: False
-              nss: [
-
+              is_referenced: True
+              is_imported: False
+              is_parameter: False
+              is_global: False
+              is_declared_global: False
+              is_local: False
+              is_free: True
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
               ]
-
           ]
         name: self
-          referenced: True
-          imported: False
-          param: True
-          global: False
-          decl_global: False
-          local: True
-          free: False
-          assigned: False
-          is_ns: False
-          nss: [
-
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
           ]
-
       ]
-
   ]

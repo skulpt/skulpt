@@ -5,41 +5,38 @@ Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
 name: range
-  referenced: True
-  imported: False
-  param: False
-  global: True
-  decl_global: False
-  local: False
-  free: False
-  assigned: False
-  is_ns: False
-  nss: [
-
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
   ]
 name: len
-  referenced: True
-  imported: False
-  param: False
-  global: True
-  decl_global: False
-  local: False
-  free: False
-  assigned: False
-  is_ns: False
-  nss: [
-
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
   ]
 name: str
-  referenced: True
-  imported: False
-  param: False
-  global: True
-  decl_global: False
-  local: False
-  free: False
-  assigned: False
-  is_ns: False
-  nss: [
-
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
   ]
