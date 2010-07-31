@@ -1,0 +1,20 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: False
+Sym_has_import_star: False
+-- Identifiers --
+name: big
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: False
+  nss: [
+
+  ]

@@ -1,0 +1,183 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: caller
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: caller
+    Sym_lineno: 10
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ()
+    Func_locals: ('i', 'r')
+    Func_globals: ('creator',)
+    Func_frees:()
+    -- Identifiers --
+    name: i
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: r
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: creator
+      referenced: True
+      imported: False
+      param: False
+      global: True
+      decl_global: False
+      local: False
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]
+name: yrange
+  referenced: False
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: yrange
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ('n',)
+    Func_locals: ('i', 'n')
+    Func_globals: ('range',)
+    Func_frees:()
+    -- Identifiers --
+    name: i
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: range
+      referenced: True
+      imported: False
+      param: False
+      global: True
+      decl_global: False
+      local: False
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+    name: n
+      referenced: True
+      imported: False
+      param: True
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]
+name: creator
+  referenced: False
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: creator
+    Sym_lineno: 5
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ()
+    Func_locals: ('r',)
+    Func_globals: ('yrange',)
+    Func_frees:()
+    -- Identifiers --
+    name: r
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: yrange
+      referenced: True
+      imported: False
+      param: False
+      global: True
+      decl_global: False
+      local: False
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]

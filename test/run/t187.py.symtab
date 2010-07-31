@@ -1,0 +1,94 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: funky
+  referenced: False
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: funky
+    Sym_lineno: 7
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ()
+    Func_locals: ()
+    Func_globals: ()
+    Func_frees:()
+    -- Identifiers --
+
+  ]
+name: gen
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: gen
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ()
+    Func_locals: ('i',)
+    Func_globals: ('funky',)
+    Func_frees:()
+    -- Identifiers --
+    name: i
+      referenced: False
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: funky
+      referenced: True
+      imported: False
+      param: False
+      global: True
+      decl_global: False
+      local: False
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]
+name: g
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: False
+  nss: [
+
+  ]

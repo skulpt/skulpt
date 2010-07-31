@@ -94,7 +94,9 @@ class NodeInfo:
         buf = StringIO()
         self._gen_init(buf)
         print >> buf
-        self._gen_walkChildren(buf)
+        self._gen_getChildren(buf)
+        print >> buf
+        self._gen_getChildNodes(buf)
         print >> buf
         bufAux = StringIO()
         self._gen_repr(bufAux)
@@ -140,6 +142,60 @@ class NodeInfo:
                         print >> buf, "    ret = handler.visit(this.%s, args);" % name
                         print >> buf, "    if (ret !== undefined) this.%s = ret;" % name
         print >> buf, "};"
+
+    def _gen_getChildren(self, buf):
+        print >> buf, "Sk.Ast.%s.prototype.getChildren = function(self) {" % self.name
+        if len(self.argnames) == 0:
+            print >> buf, "    return [];"
+        else:
+            if self.hardest_arg < P_NESTED:
+                clist = COMMA.join(["self.%s" % c
+                                    for c in self.argnames])
+                print >> buf, "    return [%s];" % clist
+            else:
+                if len(self.argnames) == 1:
+                    print >> buf, "    return [flatten(self.%s)];" % self.argnames[0]
+                else:
+                    print >> buf, "    var children = [];"
+                    template = "    children.%s(%sself.%s%s)"
+                    for name in self.argnames:
+                        if self.argprops[name] == P_NESTED:
+                            print >> buf, template % ("extend", "flatten(",
+                                                      name, ")")
+                        else:
+                            print >> buf, template % ("append", "", name, "")
+                    print >> buf, "        return children;"
+        print >> buf, "};"
+
+    def _gen_getChildNodes(self, buf):
+        print >> buf, "Sk.Ast.%s.prototype.getChildNodes = function(self) {" % self.name
+        if len(self.argnames) == 0:
+            print >> buf, "    return [];"
+        else:
+            if self.hardest_arg < P_NESTED:
+                clist = ["self.%s" % c
+                         for c in self.argnames
+                         if self.argprops[c] == P_NODE]
+                if len(clist) == 0:
+                    print >> buf, "    return [];"
+                else:
+                    print >> buf, "    return [%s];" % COMMA.join(clist)
+            else:
+                print >> buf, "    var nodelist = [];"
+                template = "    nodelist.%s(%sself.%s%s);"
+                for name in self.argnames:
+                    if self.argprops[name] == P_NONE:
+                        tmp = ("    if (self.%s !== undefined)\n"
+                               "        nodelist.append(self.%s);")
+                        print >> buf, tmp % (name, name)
+                    elif self.argprops[name] == P_NESTED:
+                        print >> buf, template % ("extend", "flatten_nodes(",
+                                                  name, ")")
+                    elif self.argprops[name] == P_NODE:
+                        print >> buf, template % ("append", "", name, "")
+                print >> buf, "    return nodelist;"
+        print >> buf, "};"
+
 
     def _gen_repr(self, buf):
         # can't use actual type, or extend prototype because it's inside the
@@ -279,6 +335,20 @@ function flatten(seq)
         }
     }
     return l;
+}
+
+function flatten_nodes(seq)
+{
+    var flat = flatten(seq);
+    var ret = [];
+    for (var i = 0; i < flat.length; ++i)
+    {
+        if (flat[i].hasOwnProperty('nodeName')) /* todo; */
+        {
+            ret.push(flat[i]);
+        }
+    }
+    return ret;
 }
 
 //"""

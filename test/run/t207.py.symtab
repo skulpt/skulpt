@@ -1,0 +1,115 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: s
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: False
+  nss: [
+
+  ]
+name: Stuff
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: class
+    Sym_name: Stuff
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: True
+    Sym_has_import_star: False
+    Class_methods: ('doit', '__init__')
+    -- Identifiers --
+    name: doit
+      referenced: False
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: True
+      nss: [
+        Sym_type: function
+        Sym_name: doit
+        Sym_lineno: 7
+        Sym_nested: False
+        Sym_haschildren: False
+        Sym_has_import_star: False
+        Func_params: ('self',)
+        Func_locals: ('self',)
+        Func_globals: ()
+        Func_frees:()
+        -- Identifiers --
+        name: self
+          referenced: True
+          imported: False
+          param: True
+          global: False
+          decl_global: False
+          local: True
+          free: False
+          assigned: False
+          is_ns: False
+          nss: [
+
+          ]
+
+      ]
+    name: __init__
+      referenced: False
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: True
+      nss: [
+        Sym_type: function
+        Sym_name: __init__
+        Sym_lineno: 2
+        Sym_nested: False
+        Sym_haschildren: False
+        Sym_has_import_star: False
+        Func_params: ('self',)
+        Func_locals: ('self',)
+        Func_globals: ()
+        Func_frees:()
+        -- Identifiers --
+        name: self
+          referenced: True
+          imported: False
+          param: True
+          global: False
+          decl_global: False
+          local: True
+          free: False
+          assigned: False
+          is_ns: False
+          nss: [
+
+          ]
+
+      ]
+
+  ]

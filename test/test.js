@@ -139,6 +139,37 @@ function testTransform(name)
     }
 }
 
+var symtabpass = 0;
+var symtabfail = 0;
+function testSymtab(name)
+{
+    try { var input = read(name + ".py"); }
+    catch (e) { return; }
+
+    var expect = 'NO_.SYMTAB_FILE';
+    try { expect = read(name + ".py.symtab"); }
+    catch (e) {}
+    var cst = Sk.parse(name + ".py", input);
+    var ast = Sk.transform(cst);
+    var st = Sk.buildSymtab(ast);
+    var got = Sk.dumpSymtab(st);
+
+    if (expect !== got)
+    {
+        print("FAILED: (" + name + ".py)\n-----");
+        print(input);
+        print("-----\nGOT:\n-----");
+        print(got);
+        print("-----\nWANTED:\n-----");
+        print(expect);
+        symtabfail += 1;
+    }
+    else
+    {
+        symtabpass += 1;
+    }
+}
+
 var runpass = 0;
 var runfail = 0;
 var rundisabled = 0;
@@ -263,6 +294,12 @@ function main()
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
+    for (i = 0; i <= 0; ++i)
+    {
+        testSymtab(sprintf("test/run/t%02d", i));
+    }
+    print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
+
 return;
     for (i = 0; i <= 300; ++i)
     {
@@ -276,7 +313,7 @@ return;
     }
     print(sprintf("interactive: %d/%d (+%d disabled)", interactivepass, interactivepass + interactivefail, interactivedisabled));
 
-    quit(tokenizefail + parsefail + transformfail + runfail + interactivefail);
+    quit(tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail);
 }
 
 main();

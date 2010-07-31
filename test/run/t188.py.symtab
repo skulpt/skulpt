@@ -1,0 +1,118 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: f
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: f
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: True
+    Sym_has_import_star: False
+    Func_params: ()
+    Func_locals: ('a', 'h', 'g')
+    Func_globals: ()
+    Func_frees:()
+    -- Identifiers --
+    name: a
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: h
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: True
+      nss: [
+        Sym_type: function
+        Sym_name: h
+        Sym_lineno: 9
+        Sym_nested: True
+        Sym_haschildren: False
+        Sym_has_import_star: False
+        Func_params: ()
+        Func_locals: ()
+        Func_globals: ()
+        Func_frees:('a',)
+        -- Identifiers --
+        name: a
+          referenced: True
+          imported: False
+          param: False
+          global: False
+          decl_global: False
+          local: False
+          free: True
+          assigned: False
+          is_ns: False
+          nss: [
+
+          ]
+
+      ]
+    name: g
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: True
+      nss: [
+        Sym_type: function
+        Sym_name: g
+        Sym_lineno: 4
+        Sym_nested: True
+        Sym_haschildren: False
+        Sym_has_import_star: False
+        Func_params: ()
+        Func_locals: ('a',)
+        Func_globals: ()
+        Func_frees:()
+        -- Identifiers --
+        name: a
+          referenced: True
+          imported: False
+          param: False
+          global: False
+          decl_global: False
+          local: True
+          free: False
+          assigned: True
+          is_ns: False
+          nss: [
+
+          ]
+
+      ]
+
+  ]

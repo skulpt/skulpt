@@ -49,6 +49,20 @@ function flatten(seq)
     return l;
 }
 
+function flatten_nodes(seq)
+{
+    var flat = flatten(seq);
+    var ret = [];
+    for (var i = 0; i < flat.length; ++i)
+    {
+        if (flat[i].hasOwnProperty('nodeName')) /* todo; */
+        {
+            ret.push(flat[i]);
+        }
+    }
+    return ret;
+}
+
 //"""
 
 // --------------------------------------------------------
@@ -60,13 +74,12 @@ Sk.Ast.Add = function Add(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Add.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.Add.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.Add.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -78,14 +91,14 @@ Sk.Ast.And = function And(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.And.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.And.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.And.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -99,15 +112,12 @@ Sk.Ast.AssAttr = function AssAttr(expr, attrname, flags, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AssAttr.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    ret = handler.visit(this.attrname, args);
-    if (ret !== undefined) this.attrname = ret;
-    ret = handler.visit(this.flags, args);
-    if (ret !== undefined) this.flags = ret;
+Sk.Ast.AssAttr.prototype.getChildren = function(self) {
+    return [self.expr, self.attrname, self.flags];
+};
+
+Sk.Ast.AssAttr.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -119,14 +129,14 @@ Sk.Ast.AssList = function AssList(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AssList.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.AssList.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.AssList.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -139,13 +149,12 @@ Sk.Ast.AssName = function AssName(name, flags, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AssName.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.name, args);
-    if (ret !== undefined) this.name = ret;
-    ret = handler.visit(this.flags, args);
-    if (ret !== undefined) this.flags = ret;
+Sk.Ast.AssName.prototype.getChildren = function(self) {
+    return [self.name, self.flags];
+};
+
+Sk.Ast.AssName.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -157,14 +166,14 @@ Sk.Ast.AssTuple = function AssTuple(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AssTuple.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.AssTuple.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.AssTuple.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -177,13 +186,19 @@ Sk.Ast.Assert = function Assert(test, fail, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Assert.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.test, args);
-    if (ret !== undefined) this.test = ret;
-    ret = handler.visit(this.fail, args);
-    if (ret !== undefined) this.fail = ret;
+Sk.Ast.Assert.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.test)
+    children.append(self.fail)
+        return children;
+};
+
+Sk.Ast.Assert.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.test);
+    if (self.fail !== undefined)
+        nodelist.append(self.fail);
+    return nodelist;
 };
 
 
@@ -196,16 +211,18 @@ Sk.Ast.Assign = function Assign(nodes, expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Assign.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.Assign.prototype.getChildren = function(self) {
+    var children = [];
+    children.extend(flatten(self.nodes))
+    children.append(self.expr)
+        return children;
+};
+
+Sk.Ast.Assign.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    nodelist.append(self.expr);
+    return nodelist;
 };
 
 
@@ -219,15 +236,12 @@ Sk.Ast.AugAssign = function AugAssign(node, op, expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AugAssign.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
-    ret = handler.visit(this.op, args);
-    if (ret !== undefined) this.op = ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.AugAssign.prototype.getChildren = function(self) {
+    return [self.node, self.op, self.expr];
+};
+
+Sk.Ast.AugAssign.prototype.getChildNodes = function(self) {
+    return [self.node, self.expr];
 };
 
 
@@ -239,11 +253,12 @@ Sk.Ast.AugGetattr = function AugGetattr(node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AugGetattr.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.AugGetattr.prototype.getChildren = function(self) {
+    return [self.node];
+};
+
+Sk.Ast.AugGetattr.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -255,11 +270,12 @@ Sk.Ast.AugName = function AugName(node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AugName.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.AugName.prototype.getChildren = function(self) {
+    return [self.node];
+};
+
+Sk.Ast.AugName.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -271,11 +287,12 @@ Sk.Ast.AugSlice = function AugSlice(node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AugSlice.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.AugSlice.prototype.getChildren = function(self) {
+    return [self.node];
+};
+
+Sk.Ast.AugSlice.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -287,11 +304,12 @@ Sk.Ast.AugSubscript = function AugSubscript(node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.AugSubscript.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.AugSubscript.prototype.getChildren = function(self) {
+    return [self.node];
+};
+
+Sk.Ast.AugSubscript.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -303,11 +321,12 @@ Sk.Ast.Backquote = function Backquote(expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Backquote.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.Backquote.prototype.getChildren = function(self) {
+    return [self.expr];
+};
+
+Sk.Ast.Backquote.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -319,14 +338,14 @@ Sk.Ast.Bitand = function Bitand(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Bitand.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Bitand.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Bitand.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -338,14 +357,14 @@ Sk.Ast.Bitor = function Bitor(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Bitor.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Bitor.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Bitor.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -357,14 +376,14 @@ Sk.Ast.Bitxor = function Bitxor(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Bitxor.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Bitxor.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Bitxor.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -375,9 +394,12 @@ Sk.Ast.Break_ = function Break_(lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Break_.prototype.walkChildren = function(handler, args)
-{
-    return;
+Sk.Ast.Break_.prototype.getChildren = function(self) {
+    return [];
+};
+
+Sk.Ast.Break_.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -392,20 +414,24 @@ Sk.Ast.CallFunc = function CallFunc(node, args, star_args, dstar_args, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.CallFunc.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
-    for (var i_args = 0; i_args < this.args.length; i_args += 1)
-    {
-        ret = handler.visit(this.args[i_args], args);
-        if (ret !== undefined) this.args[i_args] = ret;
-    }
-    ret = handler.visit(this.star_args, args);
-    if (ret !== undefined) this.star_args = ret;
-    ret = handler.visit(this.dstar_args, args);
-    if (ret !== undefined) this.dstar_args = ret;
+Sk.Ast.CallFunc.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.node)
+    children.extend(flatten(self.args))
+    children.append(self.star_args)
+    children.append(self.dstar_args)
+        return children;
+};
+
+Sk.Ast.CallFunc.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.node);
+    nodelist.extend(flatten_nodes(self.args));
+    if (self.star_args !== undefined)
+        nodelist.append(self.star_args);
+    if (self.dstar_args !== undefined)
+        nodelist.append(self.dstar_args);
+    return nodelist;
 };
 
 
@@ -421,22 +447,23 @@ Sk.Ast.Class_ = function Class_(name, bases, doc, code, decorators, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Class_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.name, args);
-    if (ret !== undefined) this.name = ret;
-    for (var i_bases = 0; i_bases < this.bases.length; i_bases += 1)
-    {
-        ret = handler.visit(this.bases[i_bases], args);
-        if (ret !== undefined) this.bases[i_bases] = ret;
-    }
-    ret = handler.visit(this.doc, args);
-    if (ret !== undefined) this.doc = ret;
-    ret = handler.visit(this.code, args);
-    if (ret !== undefined) this.code = ret;
-    ret = handler.visit(this.decorators, args);
-    if (ret !== undefined) this.decorators = ret;
+Sk.Ast.Class_.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.name)
+    children.extend(flatten(self.bases))
+    children.append(self.doc)
+    children.append(self.code)
+    children.append(self.decorators)
+        return children;
+};
+
+Sk.Ast.Class_.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.bases));
+    nodelist.append(self.code);
+    if (self.decorators !== undefined)
+        nodelist.append(self.decorators);
+    return nodelist;
 };
 
 
@@ -449,16 +476,18 @@ Sk.Ast.Compare = function Compare(expr, ops, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Compare.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    for (var i_ops = 0; i_ops < this.ops.length; i_ops += 1)
-    {
-        ret = handler.visit(this.ops[i_ops], args);
-        if (ret !== undefined) this.ops[i_ops] = ret;
-    }
+Sk.Ast.Compare.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.extend(flatten(self.ops))
+        return children;
+};
+
+Sk.Ast.Compare.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    nodelist.extend(flatten_nodes(self.ops));
+    return nodelist;
 };
 
 
@@ -470,11 +499,12 @@ Sk.Ast.Const_ = function Const_(value, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Const_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.value, args);
-    if (ret !== undefined) this.value = ret;
+Sk.Ast.Const_.prototype.getChildren = function(self) {
+    return [self.value];
+};
+
+Sk.Ast.Const_.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -485,9 +515,12 @@ Sk.Ast.Continue_ = function Continue_(lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Continue_.prototype.walkChildren = function(handler, args)
-{
-    return;
+Sk.Ast.Continue_.prototype.getChildren = function(self) {
+    return [];
+};
+
+Sk.Ast.Continue_.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -499,14 +532,14 @@ Sk.Ast.Decorators = function Decorators(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Decorators.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Decorators.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Decorators.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -518,14 +551,14 @@ Sk.Ast.Dict = function Dict(items, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Dict.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_items = 0; i_items < this.items.length; i_items += 1)
-    {
-        ret = handler.visit(this.items[i_items], args);
-        if (ret !== undefined) this.items[i_items] = ret;
-    }
+Sk.Ast.Dict.prototype.getChildren = function(self) {
+    return [flatten(self.items)];
+};
+
+Sk.Ast.Dict.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.items));
+    return nodelist;
 };
 
 
@@ -537,11 +570,12 @@ Sk.Ast.Discard = function Discard(expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Discard.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.Discard.prototype.getChildren = function(self) {
+    return [self.expr];
+};
+
+Sk.Ast.Discard.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -554,13 +588,12 @@ Sk.Ast.Div = function Div(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Div.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.Div.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.Div.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -571,9 +604,12 @@ Sk.Ast.Ellipsis = function Ellipsis(lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Ellipsis.prototype.walkChildren = function(handler, args)
-{
-    return;
+Sk.Ast.Ellipsis.prototype.getChildren = function(self) {
+    return [];
+};
+
+Sk.Ast.Ellipsis.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -587,15 +623,22 @@ Sk.Ast.Exec = function Exec(expr, locals, globals, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Exec.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    ret = handler.visit(this.locals, args);
-    if (ret !== undefined) this.locals = ret;
-    ret = handler.visit(this.globals, args);
-    if (ret !== undefined) this.globals = ret;
+Sk.Ast.Exec.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.append(self.locals)
+    children.append(self.globals)
+        return children;
+};
+
+Sk.Ast.Exec.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    if (self.locals !== undefined)
+        nodelist.append(self.locals);
+    if (self.globals !== undefined)
+        nodelist.append(self.globals);
+    return nodelist;
 };
 
 
@@ -608,13 +651,12 @@ Sk.Ast.FloorDiv = function FloorDiv(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.FloorDiv.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.FloorDiv.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.FloorDiv.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -629,17 +671,23 @@ Sk.Ast.For_ = function For_(assign, list, body, else_, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.For_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.assign, args);
-    if (ret !== undefined) this.assign = ret;
-    ret = handler.visit(this.list, args);
-    if (ret !== undefined) this.list = ret;
-    ret = handler.visit(this.body, args);
-    if (ret !== undefined) this.body = ret;
-    ret = handler.visit(this.else_, args);
-    if (ret !== undefined) this.else_ = ret;
+Sk.Ast.For_.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.assign)
+    children.append(self.list)
+    children.append(self.body)
+    children.append(self.else_)
+        return children;
+};
+
+Sk.Ast.For_.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.assign);
+    nodelist.append(self.list);
+    nodelist.append(self.body);
+    if (self.else_ !== undefined)
+        nodelist.append(self.else_);
+    return nodelist;
 };
 
 
@@ -653,15 +701,12 @@ Sk.Ast.From = function From(modname, names, level, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.From.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.modname, args);
-    if (ret !== undefined) this.modname = ret;
-    ret = handler.visit(this.names, args);
-    if (ret !== undefined) this.names = ret;
-    ret = handler.visit(this.level, args);
-    if (ret !== undefined) this.level = ret;
+Sk.Ast.From.prototype.getChildren = function(self) {
+    return [self.modname, self.names, self.level];
+};
+
+Sk.Ast.From.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -680,28 +725,28 @@ Sk.Ast.Function_ = function Function_(decorators, name, argnames, defaults, vara
     this.lineno = lineno;
 };
 
-Sk.Ast.Function_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.decorators, args);
-    if (ret !== undefined) this.decorators = ret;
-    ret = handler.visit(this.name, args);
-    if (ret !== undefined) this.name = ret;
-    ret = handler.visit(this.argnames, args);
-    if (ret !== undefined) this.argnames = ret;
-    for (var i_defaults = 0; i_defaults < this.defaults.length; i_defaults += 1)
-    {
-        ret = handler.visit(this.defaults[i_defaults], args);
-        if (ret !== undefined) this.defaults[i_defaults] = ret;
-    }
-    ret = handler.visit(this.varargs, args);
-    if (ret !== undefined) this.varargs = ret;
-    ret = handler.visit(this.kwargs, args);
-    if (ret !== undefined) this.kwargs = ret;
-    ret = handler.visit(this.doc, args);
-    if (ret !== undefined) this.doc = ret;
-    ret = handler.visit(this.code, args);
-    if (ret !== undefined) this.code = ret;
+Sk.Ast.Function_.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.decorators)
+    children.append(self.name)
+    children.append(self.argnames)
+    children.extend(flatten(self.defaults))
+    children.append(self.varargs)
+    children.append(self.kwargs)
+    children.append(self.doc)
+    children.append(self.code)
+        return children;
+};
+
+Sk.Ast.Function_.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    if (self.decorators !== undefined)
+        nodelist.append(self.decorators);
+    nodelist.extend(flatten_nodes(self.defaults));
+    nodelist.append(self.varargs);
+    nodelist.append(self.kwargs);
+    nodelist.append(self.code);
+    return nodelist;
 };
 
 
@@ -716,11 +761,12 @@ Sk.Ast.GenExpr = function GenExpr(code, lineno)
 
 };
 
-Sk.Ast.GenExpr.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.code, args);
-    if (ret !== undefined) this.code = ret;
+Sk.Ast.GenExpr.prototype.getChildren = function(self) {
+    return [self.code];
+};
+
+Sk.Ast.GenExpr.prototype.getChildNodes = function(self) {
+    return [self.code];
 };
 
 
@@ -735,18 +781,20 @@ Sk.Ast.GenExprFor = function GenExprFor(assign, iter, ifs, lineno)
     this.is_outmost = false;
 };
 
-Sk.Ast.GenExprFor.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.assign, args);
-    if (ret !== undefined) this.assign = ret;
-    ret = handler.visit(this.iter, args);
-    if (ret !== undefined) this.iter = ret;
-    for (var i_ifs = 0; i_ifs < this.ifs.length; i_ifs += 1)
-    {
-        ret = handler.visit(this.ifs[i_ifs], args);
-        if (ret !== undefined) this.ifs[i_ifs] = ret;
-    }
+Sk.Ast.GenExprFor.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.assign)
+    children.append(self.iter)
+    children.extend(flatten(self.ifs))
+        return children;
+};
+
+Sk.Ast.GenExprFor.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.assign);
+    nodelist.append(self.iter);
+    nodelist.extend(flatten_nodes(self.ifs));
+    return nodelist;
 };
 
 
@@ -758,11 +806,12 @@ Sk.Ast.GenExprIf = function GenExprIf(test, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.GenExprIf.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.test, args);
-    if (ret !== undefined) this.test = ret;
+Sk.Ast.GenExprIf.prototype.getChildren = function(self) {
+    return [self.test];
+};
+
+Sk.Ast.GenExprIf.prototype.getChildNodes = function(self) {
+    return [self.test];
 };
 
 
@@ -775,16 +824,18 @@ Sk.Ast.GenExprInner = function GenExprInner(expr, quals, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.GenExprInner.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    for (var i_quals = 0; i_quals < this.quals.length; i_quals += 1)
-    {
-        ret = handler.visit(this.quals[i_quals], args);
-        if (ret !== undefined) this.quals[i_quals] = ret;
-    }
+Sk.Ast.GenExprInner.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.extend(flatten(self.quals))
+        return children;
+};
+
+Sk.Ast.GenExprInner.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    nodelist.extend(flatten_nodes(self.quals));
+    return nodelist;
 };
 
 
@@ -796,11 +847,12 @@ Sk.Ast.GenExprTransformed = function GenExprTransformed(node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.GenExprTransformed.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.GenExprTransformed.prototype.getChildren = function(self) {
+    return [self.node];
+};
+
+Sk.Ast.GenExprTransformed.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -813,13 +865,12 @@ Sk.Ast.Getattr = function Getattr(expr, attrname, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Getattr.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    ret = handler.visit(this.attrname, args);
-    if (ret !== undefined) this.attrname = ret;
+Sk.Ast.Getattr.prototype.getChildren = function(self) {
+    return [self.expr, self.attrname];
+};
+
+Sk.Ast.Getattr.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -831,11 +882,12 @@ Sk.Ast.Global = function Global(names, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Global.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.names, args);
-    if (ret !== undefined) this.names = ret;
+Sk.Ast.Global.prototype.getChildren = function(self) {
+    return [self.names];
+};
+
+Sk.Ast.Global.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -849,15 +901,12 @@ Sk.Ast.IfExp = function IfExp(test, then, else_, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.IfExp.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.test, args);
-    if (ret !== undefined) this.test = ret;
-    ret = handler.visit(this.then, args);
-    if (ret !== undefined) this.then = ret;
-    ret = handler.visit(this.else_, args);
-    if (ret !== undefined) this.else_ = ret;
+Sk.Ast.IfExp.prototype.getChildren = function(self) {
+    return [self.test, self.then, self.else_];
+};
+
+Sk.Ast.IfExp.prototype.getChildNodes = function(self) {
+    return [self.test, self.then, self.else_];
 };
 
 
@@ -870,16 +919,19 @@ Sk.Ast.If_ = function If_(tests, else_, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.If_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_tests = 0; i_tests < this.tests.length; i_tests += 1)
-    {
-        ret = handler.visit(this.tests[i_tests], args);
-        if (ret !== undefined) this.tests[i_tests] = ret;
-    }
-    ret = handler.visit(this.else_, args);
-    if (ret !== undefined) this.else_ = ret;
+Sk.Ast.If_.prototype.getChildren = function(self) {
+    var children = [];
+    children.extend(flatten(self.tests))
+    children.append(self.else_)
+        return children;
+};
+
+Sk.Ast.If_.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.tests));
+    if (self.else_ !== undefined)
+        nodelist.append(self.else_);
+    return nodelist;
 };
 
 
@@ -891,11 +943,12 @@ Sk.Ast.Import_ = function Import_(names, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Import_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.names, args);
-    if (ret !== undefined) this.names = ret;
+Sk.Ast.Import_.prototype.getChildren = function(self) {
+    return [self.names];
+};
+
+Sk.Ast.Import_.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -907,11 +960,12 @@ Sk.Ast.Interactive = function Interactive(node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Interactive.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.Interactive.prototype.getChildren = function(self) {
+    return [self.node];
+};
+
+Sk.Ast.Interactive.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -923,11 +977,12 @@ Sk.Ast.Invert = function Invert(expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Invert.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.Invert.prototype.getChildren = function(self) {
+    return [self.expr];
+};
+
+Sk.Ast.Invert.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -940,13 +995,12 @@ Sk.Ast.Keyword = function Keyword(name, expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Keyword.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.name, args);
-    if (ret !== undefined) this.name = ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.Keyword.prototype.getChildren = function(self) {
+    return [self.name, self.expr];
+};
+
+Sk.Ast.Keyword.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -962,22 +1016,23 @@ Sk.Ast.Lambda = function Lambda(argnames, defaults, varargs, kwargs, code, linen
     this.lineno = lineno;
 };
 
-Sk.Ast.Lambda.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.argnames, args);
-    if (ret !== undefined) this.argnames = ret;
-    for (var i_defaults = 0; i_defaults < this.defaults.length; i_defaults += 1)
-    {
-        ret = handler.visit(this.defaults[i_defaults], args);
-        if (ret !== undefined) this.defaults[i_defaults] = ret;
-    }
-    ret = handler.visit(this.varargs, args);
-    if (ret !== undefined) this.varargs = ret;
-    ret = handler.visit(this.kwargs, args);
-    if (ret !== undefined) this.kwargs = ret;
-    ret = handler.visit(this.code, args);
-    if (ret !== undefined) this.code = ret;
+Sk.Ast.Lambda.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.argnames)
+    children.extend(flatten(self.defaults))
+    children.append(self.varargs)
+    children.append(self.kwargs)
+    children.append(self.code)
+        return children;
+};
+
+Sk.Ast.Lambda.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.defaults));
+    nodelist.append(self.varargs);
+    nodelist.append(self.kwargs);
+    nodelist.append(self.code);
+    return nodelist;
 };
 
 
@@ -990,13 +1045,12 @@ Sk.Ast.LeftShift = function LeftShift(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.LeftShift.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.LeftShift.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.LeftShift.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -1008,14 +1062,14 @@ Sk.Ast.List = function List(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.List.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.List.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.List.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -1028,16 +1082,18 @@ Sk.Ast.ListComp = function ListComp(expr, quals, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.ListComp.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    for (var i_quals = 0; i_quals < this.quals.length; i_quals += 1)
-    {
-        ret = handler.visit(this.quals[i_quals], args);
-        if (ret !== undefined) this.quals[i_quals] = ret;
-    }
+Sk.Ast.ListComp.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.extend(flatten(self.quals))
+        return children;
+};
+
+Sk.Ast.ListComp.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    nodelist.extend(flatten_nodes(self.quals));
+    return nodelist;
 };
 
 
@@ -1051,18 +1107,20 @@ Sk.Ast.ListCompFor = function ListCompFor(assign, list, ifs, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.ListCompFor.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.assign, args);
-    if (ret !== undefined) this.assign = ret;
-    ret = handler.visit(this.list, args);
-    if (ret !== undefined) this.list = ret;
-    for (var i_ifs = 0; i_ifs < this.ifs.length; i_ifs += 1)
-    {
-        ret = handler.visit(this.ifs[i_ifs], args);
-        if (ret !== undefined) this.ifs[i_ifs] = ret;
-    }
+Sk.Ast.ListCompFor.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.assign)
+    children.append(self.list)
+    children.extend(flatten(self.ifs))
+        return children;
+};
+
+Sk.Ast.ListCompFor.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.assign);
+    nodelist.append(self.list);
+    nodelist.extend(flatten_nodes(self.ifs));
+    return nodelist;
 };
 
 
@@ -1074,11 +1132,12 @@ Sk.Ast.ListCompIf = function ListCompIf(test, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.ListCompIf.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.test, args);
-    if (ret !== undefined) this.test = ret;
+Sk.Ast.ListCompIf.prototype.getChildren = function(self) {
+    return [self.test];
+};
+
+Sk.Ast.ListCompIf.prototype.getChildNodes = function(self) {
+    return [self.test];
 };
 
 
@@ -1091,13 +1150,12 @@ Sk.Ast.Mod = function Mod(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Mod.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.Mod.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.Mod.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -1110,13 +1168,12 @@ Sk.Ast.Module = function Module(doc, node, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Module.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.doc, args);
-    if (ret !== undefined) this.doc = ret;
-    ret = handler.visit(this.node, args);
-    if (ret !== undefined) this.node = ret;
+Sk.Ast.Module.prototype.getChildren = function(self) {
+    return [self.doc, self.node];
+};
+
+Sk.Ast.Module.prototype.getChildNodes = function(self) {
+    return [self.node];
 };
 
 
@@ -1129,13 +1186,12 @@ Sk.Ast.Mul = function Mul(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Mul.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.Mul.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.Mul.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -1147,11 +1203,12 @@ Sk.Ast.Name = function Name(name, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Name.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.name, args);
-    if (ret !== undefined) this.name = ret;
+Sk.Ast.Name.prototype.getChildren = function(self) {
+    return [self.name];
+};
+
+Sk.Ast.Name.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -1163,11 +1220,12 @@ Sk.Ast.Not = function Not(expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Not.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.Not.prototype.getChildren = function(self) {
+    return [self.expr];
+};
+
+Sk.Ast.Not.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -1179,14 +1237,14 @@ Sk.Ast.Or = function Or(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Or.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Or.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Or.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -1197,9 +1255,12 @@ Sk.Ast.Pass = function Pass(lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Pass.prototype.walkChildren = function(handler, args)
-{
-    return;
+Sk.Ast.Pass.prototype.getChildren = function(self) {
+    return [];
+};
+
+Sk.Ast.Pass.prototype.getChildNodes = function(self) {
+    return [];
 };
 
 
@@ -1212,13 +1273,12 @@ Sk.Ast.Power = function Power(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Power.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.Power.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.Power.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -1232,18 +1292,21 @@ Sk.Ast.Print = function Print(nodes, dest, nl, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Print.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
-    ret = handler.visit(this.dest, args);
-    if (ret !== undefined) this.dest = ret;
-    ret = handler.visit(this.nl, args);
-    if (ret !== undefined) this.nl = ret;
+Sk.Ast.Print.prototype.getChildren = function(self) {
+    var children = [];
+    children.extend(flatten(self.nodes))
+    children.append(self.dest)
+    children.append(self.nl)
+        return children;
+};
+
+Sk.Ast.Print.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    if (self.dest !== undefined)
+        nodelist.append(self.dest);
+    nodelist.append(self.nl);
+    return nodelist;
 };
 
 
@@ -1257,15 +1320,23 @@ Sk.Ast.Raise = function Raise(expr1, expr2, expr3, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Raise.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr1, args);
-    if (ret !== undefined) this.expr1 = ret;
-    ret = handler.visit(this.expr2, args);
-    if (ret !== undefined) this.expr2 = ret;
-    ret = handler.visit(this.expr3, args);
-    if (ret !== undefined) this.expr3 = ret;
+Sk.Ast.Raise.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr1)
+    children.append(self.expr2)
+    children.append(self.expr3)
+        return children;
+};
+
+Sk.Ast.Raise.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    if (self.expr1 !== undefined)
+        nodelist.append(self.expr1);
+    if (self.expr2 !== undefined)
+        nodelist.append(self.expr2);
+    if (self.expr3 !== undefined)
+        nodelist.append(self.expr3);
+    return nodelist;
 };
 
 
@@ -1277,11 +1348,12 @@ Sk.Ast.Return_ = function Return_(value, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Return_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.value, args);
-    if (ret !== undefined) this.value = ret;
+Sk.Ast.Return_.prototype.getChildren = function(self) {
+    return [self.value];
+};
+
+Sk.Ast.Return_.prototype.getChildNodes = function(self) {
+    return [self.value];
 };
 
 
@@ -1294,13 +1366,12 @@ Sk.Ast.RightShift = function RightShift(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.RightShift.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.RightShift.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.RightShift.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -1315,17 +1386,23 @@ Sk.Ast.Slice = function Slice(expr, flags, lower, upper, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Slice.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    ret = handler.visit(this.flags, args);
-    if (ret !== undefined) this.flags = ret;
-    ret = handler.visit(this.lower, args);
-    if (ret !== undefined) this.lower = ret;
-    ret = handler.visit(this.upper, args);
-    if (ret !== undefined) this.upper = ret;
+Sk.Ast.Slice.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.append(self.flags)
+    children.append(self.lower)
+    children.append(self.upper)
+        return children;
+};
+
+Sk.Ast.Slice.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    if (self.lower !== undefined)
+        nodelist.append(self.lower);
+    if (self.upper !== undefined)
+        nodelist.append(self.upper);
+    return nodelist;
 };
 
 
@@ -1337,14 +1414,14 @@ Sk.Ast.Sliceobj = function Sliceobj(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Sliceobj.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Sliceobj.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Sliceobj.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -1356,14 +1433,14 @@ Sk.Ast.Stmt = function Stmt(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Stmt.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Stmt.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Stmt.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -1376,13 +1453,12 @@ Sk.Ast.Sub = function Sub(left, right, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Sub.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.left, args);
-    if (ret !== undefined) this.left = ret;
-    ret = handler.visit(this.right, args);
-    if (ret !== undefined) this.right = ret;
+Sk.Ast.Sub.prototype.getChildren = function(self) {
+    return [self.left, self.right];
+};
+
+Sk.Ast.Sub.prototype.getChildNodes = function(self) {
+    return [self.left, self.right];
 };
 
 
@@ -1396,18 +1472,19 @@ Sk.Ast.Subscript = function Subscript(expr, flags, subs, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Subscript.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    ret = handler.visit(this.flags, args);
-    if (ret !== undefined) this.flags = ret;
-    for (var i_subs = 0; i_subs < this.subs.length; i_subs += 1)
-    {
-        ret = handler.visit(this.subs[i_subs], args);
-        if (ret !== undefined) this.subs[i_subs] = ret;
-    }
+Sk.Ast.Subscript.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.append(self.flags)
+    children.extend(flatten(self.subs))
+        return children;
+};
+
+Sk.Ast.Subscript.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    nodelist.extend(flatten_nodes(self.subs));
+    return nodelist;
 };
 
 
@@ -1421,18 +1498,21 @@ Sk.Ast.TryExcept = function TryExcept(body, handlers, else_, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.TryExcept.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.body, args);
-    if (ret !== undefined) this.body = ret;
-    for (var i_handlers = 0; i_handlers < this.handlers.length; i_handlers += 1)
-    {
-        ret = handler.visit(this.handlers[i_handlers], args);
-        if (ret !== undefined) this.handlers[i_handlers] = ret;
-    }
-    ret = handler.visit(this.else_, args);
-    if (ret !== undefined) this.else_ = ret;
+Sk.Ast.TryExcept.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.body)
+    children.extend(flatten(self.handlers))
+    children.append(self.else_)
+        return children;
+};
+
+Sk.Ast.TryExcept.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.body);
+    nodelist.extend(flatten_nodes(self.handlers));
+    if (self.else_ !== undefined)
+        nodelist.append(self.else_);
+    return nodelist;
 };
 
 
@@ -1445,13 +1525,12 @@ Sk.Ast.TryFinally = function TryFinally(body, final_, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.TryFinally.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.body, args);
-    if (ret !== undefined) this.body = ret;
-    ret = handler.visit(this.final_, args);
-    if (ret !== undefined) this.final_ = ret;
+Sk.Ast.TryFinally.prototype.getChildren = function(self) {
+    return [self.body, self.final_];
+};
+
+Sk.Ast.TryFinally.prototype.getChildNodes = function(self) {
+    return [self.body, self.final_];
 };
 
 
@@ -1463,14 +1542,14 @@ Sk.Ast.Tuple = function Tuple(nodes, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Tuple.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    for (var i_nodes = 0; i_nodes < this.nodes.length; i_nodes += 1)
-    {
-        ret = handler.visit(this.nodes[i_nodes], args);
-        if (ret !== undefined) this.nodes[i_nodes] = ret;
-    }
+Sk.Ast.Tuple.prototype.getChildren = function(self) {
+    return [flatten(self.nodes)];
+};
+
+Sk.Ast.Tuple.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.extend(flatten_nodes(self.nodes));
+    return nodelist;
 };
 
 
@@ -1482,11 +1561,12 @@ Sk.Ast.UnaryAdd = function UnaryAdd(expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.UnaryAdd.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.UnaryAdd.prototype.getChildren = function(self) {
+    return [self.expr];
+};
+
+Sk.Ast.UnaryAdd.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -1498,11 +1578,12 @@ Sk.Ast.UnarySub = function UnarySub(expr, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.UnarySub.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
+Sk.Ast.UnarySub.prototype.getChildren = function(self) {
+    return [self.expr];
+};
+
+Sk.Ast.UnarySub.prototype.getChildNodes = function(self) {
+    return [self.expr];
 };
 
 
@@ -1516,15 +1597,21 @@ Sk.Ast.While_ = function While_(test, body, else_, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.While_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.test, args);
-    if (ret !== undefined) this.test = ret;
-    ret = handler.visit(this.body, args);
-    if (ret !== undefined) this.body = ret;
-    ret = handler.visit(this.else_, args);
-    if (ret !== undefined) this.else_ = ret;
+Sk.Ast.While_.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.test)
+    children.append(self.body)
+    children.append(self.else_)
+        return children;
+};
+
+Sk.Ast.While_.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.test);
+    nodelist.append(self.body);
+    if (self.else_ !== undefined)
+        nodelist.append(self.else_);
+    return nodelist;
 };
 
 
@@ -1538,15 +1625,21 @@ Sk.Ast.With_ = function With_(expr, vars, body, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.With_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.expr, args);
-    if (ret !== undefined) this.expr = ret;
-    ret = handler.visit(this.vars, args);
-    if (ret !== undefined) this.vars = ret;
-    ret = handler.visit(this.body, args);
-    if (ret !== undefined) this.body = ret;
+Sk.Ast.With_.prototype.getChildren = function(self) {
+    var children = [];
+    children.append(self.expr)
+    children.append(self.vars)
+    children.append(self.body)
+        return children;
+};
+
+Sk.Ast.With_.prototype.getChildNodes = function(self) {
+    var nodelist = [];
+    nodelist.append(self.expr);
+    if (self.vars !== undefined)
+        nodelist.append(self.vars);
+    nodelist.append(self.body);
+    return nodelist;
 };
 
 
@@ -1558,11 +1651,12 @@ Sk.Ast.Yield_ = function Yield_(value, lineno)
     this.lineno = lineno;
 };
 
-Sk.Ast.Yield_.prototype.walkChildren = function(handler, args)
-{
-    var ret;
-    ret = handler.visit(this.value, args);
-    if (ret !== undefined) this.value = ret;
+Sk.Ast.Yield_.prototype.getChildren = function(self) {
+    return [self.value];
+};
+
+Sk.Ast.Yield_.prototype.getChildNodes = function(self) {
+    return [self.value];
 };
 
 

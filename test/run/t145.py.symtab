@@ -1,0 +1,41 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: y
+  referenced: False
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: False
+  nss: [
+
+  ]
+name: X
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: class
+    Sym_name: X
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Class_methods: ()
+    -- Identifiers --
+
+  ]

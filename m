@@ -32,6 +32,7 @@ Files = [
         'src/parser.js',
         'gen/ast.js',
         'src/transformer.js',
+        'src/symtable.js',
         #'src/symtable.js',
         #'src/compiler.js',
         #'src/entry.js',
@@ -300,6 +301,13 @@ def regenruntests():
         if os.path.exists(forcename):
             os.system("cp %s %s.real" % (forcename, f))
 
+def regensymtabtests():
+    """regenerate the test data by running the symtab dump via real python"""
+    for fn in glob.glob("test/run/*.py"):
+        outfn = "%s.symtab" % fn
+        f = open(outfn, "w")
+        f.write(symtabdump(fn))
+        f.close()
 
 def upload():
     """uploads doc to GAE (stub app for static hosting, mostly)"""
@@ -366,13 +374,11 @@ print(astDump(Skulpt._transform(cst)));
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
 
-def symtab(fn):
+def symtabdump(fn):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
     text = open(fn).read()
-    print text
-    print "--------------------"
     mod = symtable.symtable(text, os.path.split(fn)[1], "exec")
     def getidents(obj, indent=""):
         ret = ""
@@ -398,7 +404,7 @@ def symtab(fn):
         elif obj.get_type() == "class":
             ret += "%sClass_methods: %s\n" % (
                     indent, obj.get_methods())
-        ret += "%s-- Identifiers --:\n" % indent
+        ret += "%s-- Identifiers --\n" % indent
         for ident in obj.get_identifiers():
             info = obj.lookup(ident)
             ret += "%sname: %s\n  %sreferenced: %s\n  %simported: %s\n  %sparam: %s\n  %sglobal: %s\n  %sdecl_global: %s\n  %slocal: %s\n  %sfree: %s\n  %sassigned: %s\n  %sis_ns: %s\n  %snss: [\n%s\n%s  ]\n" % (
@@ -416,7 +422,7 @@ def symtab(fn):
                     indent
                     )
         return ret
-    print getidents(mod)
+    return getidents(mod)
 
 def nrt():
     """open a new run test"""
@@ -425,7 +431,7 @@ def nrt():
         disfn = fn + ".disabled"
         if not os.path.exists(fn) and not os.path.exists(disfn):
             os.system("vim " + fn)
-            print "don't forget to ./m regenruntests"
+            print "don't forget to ./m regenruntests && ./m regensymtabtests"
             break
 
 def vmwareregr(names):
@@ -466,7 +472,7 @@ def vmwareregr(names):
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenruntests|upload|debug|nrt|run|runopt|parse|vmwareregr|symtab}"
+        print "usage: m {test|dist|regenparser|regenruntests|regensymtabtests|upload|debug|nrt|run|runopt|parse|vmwareregr|symtab}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -476,8 +482,8 @@ if __name__ == "__main__":
         test()
     elif cmd == "dist":
         dist()
-    elif cmd == "symtab":
-        symtab(sys.argv[2])
+    elif cmd == "regensymtabtests":
+        regensymtabtests()
     elif cmd == "debug":
         debug(sys.argv[2])
     elif cmd == "run":

@@ -1,0 +1,83 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: x
+  referenced: False
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: False
+  nss: [
+
+  ]
+name: f
+  referenced: False
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: f
+    Sym_lineno: 2
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ('arg',)
+    Func_locals: ('arg',)
+    Func_globals: ('x', 'str')
+    Func_frees:()
+    -- Identifiers --
+    name: x
+      referenced: True
+      imported: False
+      param: False
+      global: True
+      decl_global: False
+      local: False
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+    name: str
+      referenced: True
+      imported: False
+      param: False
+      global: True
+      decl_global: False
+      local: False
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+    name: arg
+      referenced: True
+      imported: False
+      param: True
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]

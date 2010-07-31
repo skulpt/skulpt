@@ -1,0 +1,161 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: const
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: False
+  nss: [
+
+  ]
+name: f
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: f
+    Sym_lineno: 4
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ()
+    Func_locals: ('instanceof', 'const', 'default', 'void', 'object', 'catch', 'switch', 'var', 'delete')
+    Func_globals: ()
+    Func_frees:()
+    -- Identifiers --
+    name: instanceof
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: const
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: default
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: void
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: object
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: catch
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: switch
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: var
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+    name: delete
+      referenced: True
+      imported: False
+      param: False
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: True
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]

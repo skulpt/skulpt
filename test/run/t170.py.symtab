@@ -1,0 +1,57 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+Sym_has_import_star: False
+-- Identifiers --
+name: do
+  referenced: True
+  imported: False
+  param: False
+  global: False
+  decl_global: False
+  local: True
+  free: False
+  assigned: True
+  is_ns: True
+  nss: [
+    Sym_type: function
+    Sym_name: do
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Sym_has_import_star: False
+    Func_params: ('fmt', 'val')
+    Func_locals: ('fmt', 'val')
+    Func_globals: ()
+    Func_frees:()
+    -- Identifiers --
+    name: fmt
+      referenced: True
+      imported: False
+      param: True
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+    name: val
+      referenced: True
+      imported: False
+      param: True
+      global: False
+      decl_global: False
+      local: True
+      free: False
+      assigned: False
+      is_ns: False
+      nss: [
+
+      ]
+
+  ]
