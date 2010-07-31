@@ -3,7 +3,6 @@ Sym_name: top
 Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
-Sym_has_import_star: False
 -- Identifiers --
 name: caller
   referenced: True
@@ -21,7 +20,6 @@ name: caller
     Sym_lineno: 10
     Sym_nested: False
     Sym_haschildren: False
-    Sym_has_import_star: False
     Func_params: ()
     Func_locals: ('i', 'r')
     Func_globals: ('creator',)
@@ -84,7 +82,6 @@ name: yrange
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Sym_has_import_star: False
     Func_params: ('n',)
     Func_locals: ('i', 'n')
     Func_globals: ('range',)
@@ -147,7 +144,6 @@ name: creator
     Sym_lineno: 5
     Sym_nested: False
     Sym_haschildren: False
-    Sym_has_import_star: False
     Func_params: ()
     Func_locals: ('r',)
     Func_globals: ('yrange',)

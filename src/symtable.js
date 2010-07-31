@@ -234,12 +234,58 @@ Scope.prototype.get_cell_vars = function()
     return ret;
 };
 
-Sk.buildSymtab = function(ast)
+function SymbolTable()
 {
+    this.type = 'module'; // or class or function
+    this.name = 'top';
+    this.lineno = 0;
+    this.isNested = false;
+    this.hasChildren = false;
+}
+SymbolTable.prototype.get_type = function() { return this.type; };
+SymbolTable.prototype.get_name = function() { return this.name; };
+SymbolTable.prototype.get_lineno = function() { return this.lineno; };
+SymbolTable.prototype.is_nested = function() { return this.isNested; };
+SymbolTable.prototype.has_children = function() { return this.hasChildren; };
+
+SymbolTable.prototype.get_identifiers = function()
+{
+    return [];
+};
+
+Sk.symboltable = function(ast)
+{
+    return new SymbolTable();
 };
 
 Sk.dumpSymtab = function(st)
 {
+    var pyBoolStr = function(b) { return b ? "True" : "False"; }
+    var getIdents = function(obj, indent)
+    {
+        if (indent === undefined) indent = "";
+        var ret = "";
+        ret += indent + "Sym_type: " + obj.get_type() + "\n";
+        ret += indent + "Sym_name: " + obj.get_name() + "\n";
+        ret += indent + "Sym_lineno: " + obj.get_lineno() + "\n";
+        ret += indent + "Sym_nested: " + pyBoolStr(obj.is_nested()) + "\n";
+        ret += indent + "Sym_haschildren: " + pyBoolStr(obj.has_children()) + "\n";
+        if (obj.get_type() === "class")
+        {
+        }
+        else if (obj.get_type() === "function")
+        {
+        }
+        ret += indent + "-- Identifiers --\n";
+        var objidents = obj.get_identifiers();
+        var objidentslen = objidents.length;
+        for (var i = 0; i < objidentslen; ++i)
+        {
+            var info = obj.lookup(objidents[i]);
+        }
+        return ret;
+    }
+    return getIdents(st);
 };
 
 goog.exportSymbol("Sk.buildSymtab", Sk.buildSymtab);

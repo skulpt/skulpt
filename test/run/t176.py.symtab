@@ -3,7 +3,6 @@ Sym_name: top
 Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
-Sym_has_import_star: False
 -- Identifiers --
 name: x
   referenced: True
@@ -21,7 +20,6 @@ name: x
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Sym_has_import_star: False
     Func_params: ()
     Func_locals: ('y', 'lambda')
     Func_globals: ()
@@ -56,7 +54,6 @@ name: x
         Sym_lineno: 2
         Sym_nested: True
         Sym_haschildren: False
-        Sym_has_import_star: False
         Func_params: ('y', 'x', 'z')
         Func_locals: ('y', 'x', 'z')
         Func_globals: ()

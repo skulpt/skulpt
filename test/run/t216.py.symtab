@@ -3,7 +3,6 @@ Sym_name: top
 Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
-Sym_has_import_star: False
 -- Identifiers --
 name: y
   referenced: True
@@ -34,7 +33,6 @@ name: Stuff
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Sym_has_import_star: False
     Class_methods: ('things', '__init__')
     -- Identifiers --
     name: things
@@ -53,7 +51,6 @@ name: Stuff
         Sym_lineno: 6
         Sym_nested: False
         Sym_haschildren: False
-        Sym_has_import_star: False
         Func_params: ('self',)
         Func_locals: ('self',)
         Func_globals: ()
@@ -90,7 +87,6 @@ name: Stuff
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: True
-        Sym_has_import_star: False
         Func_params: ('self',)
         Func_locals: ('tmp', 'self')
         Func_globals: ()
@@ -112,7 +108,6 @@ name: Stuff
             Sym_lineno: 3
             Sym_nested: True
             Sym_haschildren: False
-            Sym_has_import_star: False
             Func_params: ()
             Func_locals: ()
             Func_globals: ()

@@ -3,7 +3,6 @@ Sym_name: top
 Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
-Sym_has_import_star: False
 -- Identifiers --
 name: x
   referenced: False
@@ -34,7 +33,6 @@ name: f
     Sym_lineno: 2
     Sym_nested: False
     Sym_haschildren: False
-    Sym_has_import_star: False
     Func_params: ('arg',)
     Func_locals: ('arg',)
     Func_globals: ('x', 'str')

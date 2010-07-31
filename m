@@ -301,6 +301,54 @@ def regenruntests():
         if os.path.exists(forcename):
             os.system("cp %s %s.real" % (forcename, f))
 
+def symtabdump(fn):
+    if not os.path.exists(fn):
+        print "%s doesn't exist" % fn
+        raise SystemExit()
+    text = open(fn).read()
+    mod = symtable.symtable(text, os.path.split(fn)[1], "exec")
+    def getidents(obj, indent=""):
+        ret = ""
+        ret += """%sSym_type: %s
+%sSym_name: %s
+%sSym_lineno: %s
+%sSym_nested: %s
+%sSym_haschildren: %s
+""" % (
+        indent, obj.get_type(),
+        indent, obj.get_name(),
+        indent, obj.get_lineno(),
+        indent, obj.is_nested(),
+        indent, obj.has_children())
+        if obj.get_type() == "function":
+            ret += "%sFunc_params: %s\n%sFunc_locals: %s\n%sFunc_globals: %s\n%sFunc_frees:%s\n" % (
+                    indent, obj.get_parameters(),
+                    indent, obj.get_locals(),
+                    indent, obj.get_globals(),
+                    indent, obj.get_frees())
+        elif obj.get_type() == "class":
+            ret += "%sClass_methods: %s\n" % (
+                    indent, obj.get_methods())
+        ret += "%s-- Identifiers --\n" % indent
+        for ident in obj.get_identifiers():
+            info = obj.lookup(ident)
+            ret += "%sname: %s\n  %sreferenced: %s\n  %simported: %s\n  %sparam: %s\n  %sglobal: %s\n  %sdecl_global: %s\n  %slocal: %s\n  %sfree: %s\n  %sassigned: %s\n  %sis_ns: %s\n  %snss: [\n%s\n%s  ]\n" % (
+                    indent, info.get_name(),
+                    indent, info.is_referenced(),
+                    indent, info.is_imported(),
+                    indent, info.is_parameter(),
+                    indent, info.is_global(),
+                    indent, info.is_declared_global(),
+                    indent, info.is_local(),
+                    indent, info.is_free(),
+                    indent, info.is_assigned(),
+                    indent, info.is_namespace(),
+                    indent, ','.join([getidents(x, indent + "    ") for x in info.get_namespaces()]),
+                    indent
+                    )
+        return ret
+    return getidents(mod)
+
 def regensymtabtests():
     """regenerate the test data by running the symtab dump via real python"""
     for fn in glob.glob("test/run/*.py"):
@@ -373,56 +421,6 @@ print(astDump(Skulpt._transform(cst)));
         jsengine,
         ' '.join(getFileList('test')),
         ' '.join(DebugFiles)))
-
-def symtabdump(fn):
-    if not os.path.exists(fn):
-        print "%s doesn't exist" % fn
-        raise SystemExit()
-    text = open(fn).read()
-    mod = symtable.symtable(text, os.path.split(fn)[1], "exec")
-    def getidents(obj, indent=""):
-        ret = ""
-        ret += """%sSym_type: %s
-%sSym_name: %s
-%sSym_lineno: %s
-%sSym_nested: %s
-%sSym_haschildren: %s
-%sSym_has_import_star: %s
-""" % (
-        indent, obj.get_type(),
-        indent, obj.get_name(),
-        indent, obj.get_lineno(),
-        indent, obj.is_nested(),
-        indent, obj.has_children(),
-        indent, obj.has_import_star())
-        if obj.get_type() == "function":
-            ret += "%sFunc_params: %s\n%sFunc_locals: %s\n%sFunc_globals: %s\n%sFunc_frees:%s\n" % (
-                    indent, obj.get_parameters(),
-                    indent, obj.get_locals(),
-                    indent, obj.get_globals(),
-                    indent, obj.get_frees())
-        elif obj.get_type() == "class":
-            ret += "%sClass_methods: %s\n" % (
-                    indent, obj.get_methods())
-        ret += "%s-- Identifiers --\n" % indent
-        for ident in obj.get_identifiers():
-            info = obj.lookup(ident)
-            ret += "%sname: %s\n  %sreferenced: %s\n  %simported: %s\n  %sparam: %s\n  %sglobal: %s\n  %sdecl_global: %s\n  %slocal: %s\n  %sfree: %s\n  %sassigned: %s\n  %sis_ns: %s\n  %snss: [\n%s\n%s  ]\n" % (
-                    indent, info.get_name(),
-                    indent, info.is_referenced(),
-                    indent, info.is_imported(),
-                    indent, info.is_parameter(),
-                    indent, info.is_global(),
-                    indent, info.is_declared_global(),
-                    indent, info.is_local(),
-                    indent, info.is_free(),
-                    indent, info.is_assigned(),
-                    indent, info.is_namespace(),
-                    indent, ','.join([getidents(x, indent + "    ") for x in info.get_namespaces()]),
-                    indent
-                    )
-        return ret
-    return getidents(mod)
 
 def nrt():
     """open a new run test"""

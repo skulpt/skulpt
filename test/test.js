@@ -151,7 +151,7 @@ function testSymtab(name)
     catch (e) {}
     var cst = Sk.parse(name + ".py", input);
     var ast = Sk.transform(cst);
-    var st = Sk.buildSymtab(ast);
+    var st = Sk.symboltable(ast);
     var got = Sk.dumpSymtab(st);
 
     if (expect !== got)
@@ -294,7 +294,7 @@ function main()
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 0; ++i)
+    for (i = 0; i <= 1; ++i)
     {
         testSymtab(sprintf("test/run/t%02d", i));
     }

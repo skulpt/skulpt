@@ -3,7 +3,6 @@ Sym_name: top
 Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
-Sym_has_import_star: False
 -- Identifiers --
 name: False
   referenced: True
@@ -47,7 +46,6 @@ name: wee
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Sym_has_import_star: False
     Func_params: ('woo', 'wii', 'waa')
     Func_locals: ('woo', 'wii', 'waa')
     Func_globals: ()
