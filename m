@@ -10,6 +10,11 @@ import symtable
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
+        'support/closure-library/closure/goog/debug/error.js',
+        'support/closure-library/closure/goog/string/string.js',
+        'support/closure-library/closure/goog/asserts/asserts.js',
+        'support/closure-library/closure/goog/array/array.js',
+        'support/closure-library/closure/goog/iter/iter.js',
         'src/env.js',
         'src/uneval.js', # this is only here for unit tests
         'src/errors.js',
