@@ -145,6 +145,7 @@ function testSymtab(name)
 {
     try { var input = read(name + ".py"); }
     catch (e) { return; }
+    print(name);
 
     var expect = 'NO_.SYMTAB_FILE';
     try { expect = read(name + ".py.symtab"); }
@@ -294,7 +295,7 @@ function main()
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 2; ++i)
+    for (i = 0; i <= 13; ++i)
     {
         testSymtab(sprintf("test/run/t%02d", i));
     }

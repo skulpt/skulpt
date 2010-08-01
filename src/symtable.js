@@ -38,6 +38,13 @@ var OPT_TOPLEVEL = 8;  /* top-level names, including eval and exec */
 var GENERATOR = 2;
 var GENERATOR_EXPRESSION = 2;
 
+var ModuleBlock = 'module';
+var FunctionBlock = 'function';
+var ClassBlock = 'class';
+
+/**
+ * 
+ */
 function Symbol(name, flags, namespaces)
 {
     this.__name = name;
@@ -57,24 +64,39 @@ Symbol.prototype.is_assigned = function() { return !!(this.__flags & DEF_LOCAL);
 Symbol.prototype.is_namespace = function() { return this.__namespaces && this.__namespaces.length > 0; }
 Symbol.prototype.get_namespaces = function() { return this.__namespaces; }
 
-function SymbolTable()
+/**
+ *
+ */
+function SymbolTableScope(table, name, type, lineno)
 {
-    this.type = 'module'; // or class or function
-    this.name = 'top';
-    this.lineno = 0;
-    this.isNested = false;
-    this.hasChildren = false;
-    this.symbols = {};
     this.symFlags = {};
-    this.module = null; // points at top level Module
-}
-SymbolTable.prototype.get_type = function() { return this.type; };
-SymbolTable.prototype.get_name = function() { return this.name; };
-SymbolTable.prototype.get_lineno = function() { return this.lineno; };
-SymbolTable.prototype.is_nested = function() { return this.isNested; };
-SymbolTable.prototype.has_children = function() { return this.hasChildren; };
+    this.name = name;
+    this.varnames = [];
+    this.children = [];
+    this.blockType = type;
 
-SymbolTable.prototype.get_identifiers = function()
+    this.isNested = false;
+    this.hasFree = false;
+    this.childHasFree = false;  // true if child block has free vars including free refs to globals
+    this.generator = false;
+    this.varargs = false;
+    this.varkeywords = false;
+    this.returnsValue = false;
+
+    this.lineno = lineno;
+    this.tmpname = 0;
+
+    this.table = table;
+
+    // cache of Symbols for returning to other parts of code
+    this.symbols = {};
+}
+SymbolTableScope.prototype.get_type = function() { return this.blockType; };
+SymbolTableScope.prototype.get_name = function() { return this.name; };
+SymbolTableScope.prototype.get_lineno = function() { return this.lineno; };
+SymbolTableScope.prototype.is_nested = function() { return this.isNested; };
+SymbolTableScope.prototype.has_children = function() { return this.children.length > 0; };
+SymbolTableScope.prototype.get_identifiers = function()
 {
     var ret = [];
     for (var k in this.symFlags)
@@ -86,7 +108,7 @@ SymbolTable.prototype.get_identifiers = function()
     }
     return ret;
 };
-SymbolTable.prototype.lookup = function(name)
+SymbolTableScope.prototype.lookup = function(name)
 {
     var sym = this.symbols[name];
     if (sym === undefined)
@@ -97,13 +119,94 @@ SymbolTable.prototype.lookup = function(name)
     }
     return sym;
 };
-
-SymbolTable.prototype.__check_children = function(name)
+SymbolTableScope.prototype.__check_children = function(name)
 {
-    return null;
+    print("  check_children:", name);
+    var ret = [];
+    for (var i = 0; i < this.children.length; ++i)
+    {
+        var child = this.children[i];
+        if (child.name === name)
+            ret.push(child);
+    }
+    return ret;
 };
 
-function SEQ(nodes, f, th) { goog.iter.forEach(goog.iter.toIterator(nodes), f, th); }
+
+/**
+ *
+ */
+function SymbolTableScopeFunction()
+{
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+}
+
+
+/**
+ *
+ */
+function SymbolTable(filename, mod_ast)
+{
+    this.filename = filename;
+    this.cur = null;
+    this.top = null;
+    this.symbols = {};
+    this.stack = [];
+    this.global = null; // points at top level module symFlags
+    this.curClass = null; // current class or null
+    this.tmpname = 0;
+
+    /*
+    this.type = 'module'; // or class or function
+    this.name = 'top';
+    this.lineno = 0;
+    this.isNested = false;
+    this.hasChildren = false;
+    this.symbols = {};
+    this.symFlags = {};
+    this.module = null; // points at top level Module
+    this.cur = null;
+    */
+}
+SymbolTable.prototype.SEQStmt = function(nodes)
+{
+    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s (%s)", nodes, nodes.constructor);
+    goog.iter.forEach(goog.iter.toIterator(nodes), function(val) {
+            if (val) this.visitStmt(val);
+        }, this);
+};
+SymbolTable.prototype.SEQExpr = function(nodes)
+{
+    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s (%s)", nodes, nodes.constructor);
+    goog.iter.forEach(goog.iter.toIterator(nodes), function(val) {
+            if (val) this.visitExpr(val);
+        }, this);
+};
 
 SymbolTable.prototype.mangle = function(name)
 {
@@ -111,10 +214,54 @@ SymbolTable.prototype.mangle = function(name)
     return name;
 };
 
+SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
+{
+    print("enterBlock:", name);
+    var prev = null;
+    if (this.cur)
+    {
+        prev = this.cur;
+        this.stack.push(this.cur);
+    }
+    this.cur = new SymbolTableScope(this, name, blockType, lineno);
+    if (name === 'top')
+    {
+        print("    setting global because it's top");
+        this.global = this.cur.symFlags;
+    }
+    if (prev)
+    {
+        print("    adding", this.cur.name, "to", prev.name);
+        prev.children.push(this.cur);
+    }
+};
+
+SymbolTable.prototype.exitBlock = function()
+{
+    print("exitBlock");
+    this.cur = null;
+    if (this.stack.length > 0)
+        this.cur = this.stack.pop();
+};
+
+SymbolTable.prototype.visitArguments = function(func)
+{
+    goog.asserts.assert(func instanceof Sk.Ast.Function_);
+    // todo; this doesn't handle tuple destructuring args yet;
+    // the ast/transform is wrong i think we just have argnames, but it
+    // should really be nodes of either name or tuple
+    goog.iter.forEach(goog.iter.toIterator(func.argnames), function(argname) {
+                print("visiting argument", argname);
+                this.addDef(argname, DEF_PARAM);
+            }, this);
+    // todo; vararg?
+    // todo; kwargs?
+};
+
 SymbolTable.prototype.addDef = function(name, flag)
 {
     var mangled = this.mangle(name);
-    var val = this.symFlags[mangled];
+    var val = this.cur.symFlags[mangled];
     if (val !== undefined)
     {
         if ((flag & DEF_PARAM) && (val & DEF_PARAM))
@@ -127,66 +274,146 @@ SymbolTable.prototype.addDef = function(name, flag)
     {
         val = flag;
     }
-    this.symFlags[mangled] = val;
+    this.cur.symFlags[mangled] = val;
     if (flag & DEF_PARAM)
     {
-        this.varnames.push(mangled);
+        this.cur.varnames.push(mangled);
     }
     else if (flag & DEF_GLOBAL)
     {
         val = flag;
-        var fromGlobal = this.module[mangled];
+        var fromGlobal = this.global[mangled];
         if (fromGlobal !== undefined) val |= fromGlobal;
-        this.module[val];
+        this.global[val];
     }
 };
 
 SymbolTable.prototype.visitStmt = function(stmt)
 {
-    if (stmt instanceof Sk.Ast.Assign)
+    print("  stmt: ", stmt.constructor.name);
+    switch (stmt.constructor)
     {
-        SEQ(stmt.nodes, this.visitExpr, this);
-        this.visitExpr(stmt.expr);
-    }
-    else if (stmt instanceof Sk.Ast.Print)
-    {
-        if (stmt.dest) this.visitExpr(stmt.dest);
-        SEQ(stmt.nodes, this.visitExpr, this);
-    }
-    else
-    {
-        throw "Unhandled type " + stmt.constructor.name + " in visitStmt";
+        case Sk.Ast.Assign:
+            this.SEQExpr(stmt.nodes);
+            this.visitExpr(stmt.expr);
+            break;
+        case Sk.Ast.AugAssign:
+            this.visitExpr(stmt.node);
+            this.visitExpr(stmt.expr);
+            break;
+        case Sk.Ast.If_:
+            var isBody = false;
+            for (var i = 0; i < stmt.tests.length; ++i)
+            {
+                var tst = stmt.tests[i];
+                if (isBody)
+                    this.SEQStmt(tst.nodes);
+                else
+                    this.visitExpr(tst);
+                isBody = !isBody;
+            }
+            if (stmt.else_)
+                this.SEQStmt(stmt.else_.nodes);
+            break;
+        case Sk.Ast.Print:
+            if (stmt.dest) this.visitExpr(stmt.dest);
+            this.SEQExpr(stmt.nodes);
+            break;
+        case Sk.Ast.Function_:
+            this.addDef(stmt.name, DEF_LOCAL);
+            print("  func:", Sk.astDump(stmt));
+            if (stmt.defaults) this.SEQExpr(stmt.defaults);
+            if (stmt.decorators) this.SEQExpr(stmt.decorators);
+            this.enterBlock(stmt.name, FunctionBlock, stmt, stmt.lineno);
+            this.visitArguments(stmt);
+            this.SEQStmt(stmt.code.nodes);
+            this.exitBlock();
+            break;
+        case Sk.Ast.Return_:
+            if (stmt.value)
+            {
+                this.visitExpr(stmt.value);
+                this.cur.returnsValue = true;
+                if (this.cur.isGenerator)
+                {
+                    throw new SyntaxError("'return' with argument inside generator");
+                }
+            }
+            break;
+        default:
+            goog.asserts.fail("Unhandled type " + stmt.constructor.name + " in visitStmt");
     }
 };
 
 SymbolTable.prototype.visitExpr = function(expr)
 {
-    if (expr instanceof Sk.Ast.AssName)
+    print("  expr: ", expr.constructor.name);
+    switch (expr.constructor)
     {
-        this.addDef(expr.name, DEF_LOCAL);
-    }
-    else if (expr instanceof Sk.Ast.Name)
-    {
-        this.addDef(expr.name, USE);
-    }
-    else if (expr instanceof Sk.Ast.Const_)
-    {
-        // nothing to do for number, string, etc.
-    }
-    else
-    {
-        throw "Unhandled type " + expr.constructor.name + " in visitExpr";
+        case Sk.Ast.Add:
+        case Sk.Ast.Sub:
+        case Sk.Ast.Mul:
+        case Sk.Ast.Div:
+        case Sk.Ast.Mod:
+        case Sk.Ast.Power:
+        case Sk.Ast.FloorDiv:
+        case Sk.Ast.Bitor:
+        case Sk.Ast.Bitxor:
+        case Sk.Ast.Bitand:
+            this.visitExpr(expr.left);
+            this.visitExpr(expr.right);
+            break;
+        case Sk.Ast.Const_:
+            // nothing to do for number, string, etc.
+            break;
+        case Sk.Ast.Tuple:
+        case Sk.Ast.List:
+            this.SEQExpr(expr.nodes);
+            break;
+        case Sk.Ast.AssTuple:
+            this.SEQExpr(expr.nodes);
+            break;
+        case Sk.Ast.AssName:
+            this.addDef(expr.name, DEF_LOCAL);
+            break;
+        case Sk.Ast.Name:
+            this.addDef(expr.name, USE);
+            break;
+        case Sk.Ast.Compare:
+            this.visitExpr(expr.expr);
+            for (var i = 1; i < expr.ops.length; i += 2) this.visitExpr(expr.ops[i]);
+            break;
+        case Sk.Ast.CallFunc:
+            this.visitExpr(expr.node);
+            this.SEQExpr(expr.args);
+            // todo; keywords?
+            if (expr.star_args)
+                this.visitExpr(expr.star_args);
+            if (expr.dstar_args)
+                this.visitExpr(expr.dstar_args);
+            break;
+        default:
+            goog.asserts.fail("Unhandled type " + expr.constructor.name + " in visitExpr");
     }
 };
 
 Sk.symboltable = function(ast)
 {
     var ret = new SymbolTable();
-    //ret.symbols['a'] = new Symbol('a', DEF_LOCAL | USE); // XXX
+
+    ret.enterBlock('top', ModuleBlock, ast, 0);
+    ret.top = ret.cur;
+
     goog.iter.forEach(goog.iter.toIterator(ast.node.nodes), function(val) {
         ret.visitStmt(val);
     });
-    return ret;
+
+    ret.exitBlock();
+
+    // todo;
+    //ret.analyze();
+
+    return ret.top;
 };
 
 Sk.dumpSymtab = function(st)
@@ -203,9 +430,14 @@ Sk.dumpSymtab = function(st)
         ret += indent + "Sym_haschildren: " + pyBoolStr(obj.has_children()) + "\n";
         if (obj.get_type() === "class")
         {
+            ret += indent + "Class_methods: " + obj.get_methods() + "\n";
         }
         else if (obj.get_type() === "function")
         {
+            ret += indent + "Func_params: " + obj.get_parameters() + "\n";
+            ret += indent + "Func_locals: " + obj.get_locals() + "\n";
+            ret += indent + "Func_globals: " + obj.get_globals() + "\n";
+            ret += indent + "Func_frees: " + obj.get_frees() + "\n";
         }
         ret += indent + "-- Identifiers --\n";
         var objidents = obj.get_identifiers();
@@ -226,9 +458,13 @@ Sk.dumpSymtab = function(st)
             var nss = info.get_namespaces();
             var nsslen = nss.length;
             ret += indent + "  namespaces: [\n";
+            var sub = [];
             for (var j = 0; j < nsslen; ++j)
             {
+                var ns = nss[j];
+                sub.push(getIdents(ns, indent + "    "));
             }
+            ret += sub.join('\n');
             ret += indent + "  ]\n";
         }
         return ret;
