@@ -42,8 +42,8 @@ var ModuleBlock = 'module';
 var FunctionBlock = 'function';
 var ClassBlock = 'class';
 
-/**
- * 
+/*
+ *  
  */
 function Symbol(name, flags, namespaces)
 {
@@ -64,7 +64,7 @@ Symbol.prototype.is_assigned = function() { return !!(this.__flags & DEF_LOCAL);
 Symbol.prototype.is_namespace = function() { return this.__namespaces && this.__namespaces.length > 0; }
 Symbol.prototype.get_namespaces = function() { return this.__namespaces; }
 
-/**
+/*
  *
  */
 function SymbolTableScope(table, name, type, lineno)
@@ -175,7 +175,7 @@ SymbolTableScope.prototype.get_frees = function()
 };
 
 
-/**
+/*
  *
  */
 function SymbolTable(filename, mod_ast)
@@ -280,7 +280,7 @@ SymbolTable.prototype.addDef = function(name, flag)
         val = flag;
         var fromGlobal = this.global[mangled];
         if (fromGlobal !== undefined) val |= fromGlobal;
-        this.global[val];
+        this.global[mangled] = val;
     }
 };
 
@@ -538,7 +538,7 @@ Sk.dumpSymtab = function(st)
     return getIdents(st);
 };
 
-goog.exportSymbol("Sk.buildSymtab", Sk.buildSymtab);
+goog.exportSymbol("Sk.symboltable", Sk.symboltable);
 goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
 
 }());
