@@ -856,7 +856,7 @@ Transformer.prototype.funcTable[SYM.for_stmt] = Transformer.prototype.for_stmt =
 {
     // 'for' exprlist 'in' exprlist ':' suite ['else' ':' suite]
 
-    var assignNode = this.dispatch(nodelist[1], AST.OP_ASSIGN);
+    var assignNode = this.com_assign(nodelist[1], AST.OP_ASSIGN);
     var listNode = this.dispatch(nodelist[3]);
     var bodyNode = this.dispatch(nodelist[5]);
 
