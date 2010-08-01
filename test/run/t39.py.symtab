@@ -4,6 +4,18 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
+name: X
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
 name: test
   is_referenced: True
   is_imported: False
@@ -20,10 +32,10 @@ name: test
     Sym_lineno: 2
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ()
-    Func_locals: ('X',)
-    Func_globals: ()
-    Func_frees:()
+    Func_params: []
+    Func_locals: ['X']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
     name: X
       is_referenced: True
@@ -37,16 +49,4 @@ name: test
       is_namespace: False
       namespaces: [
       ]
-  ]
-name: X
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
   ]

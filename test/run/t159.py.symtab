@@ -4,19 +4,7 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: object
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: True
-  is_declared_global: False
-  is_local: False
-  is_free: False
-  is_assigned: False
-  is_namespace: False
-  namespaces: [
-  ]
-name: y
+name: X
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -25,20 +13,15 @@ name: y
   is_local: True
   is_free: False
   is_assigned: True
-  is_namespace: False
+  is_namespace: True
   namespaces: [
-  ]
-name: x
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
+    Sym_type: class
+    Sym_name: X
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: ()
+    -- Identifiers --
   ]
 name: Y
   is_referenced: True
@@ -59,24 +42,17 @@ name: Y
     Class_methods: ()
     -- Identifiers --
   ]
-name: X
+name: object
   is_referenced: True
   is_imported: False
   is_parameter: False
-  is_global: False
+  is_global: True
   is_declared_global: False
-  is_local: True
+  is_local: False
   is_free: False
-  is_assigned: True
-  is_namespace: True
+  is_assigned: False
+  is_namespace: False
   namespaces: [
-    Sym_type: class
-    Sym_name: X
-    Sym_lineno: 1
-    Sym_nested: False
-    Sym_haschildren: False
-    Class_methods: ()
-    -- Identifiers --
   ]
 name: type
   is_referenced: True
@@ -87,6 +63,30 @@ name: type
   is_local: False
   is_free: False
   is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: x
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: y
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
   is_namespace: False
   namespaces: [
   ]

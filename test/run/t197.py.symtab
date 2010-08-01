@@ -4,18 +4,6 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: range
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: True
-  is_declared_global: False
-  is_local: False
-  is_free: False
-  is_assigned: False
-  is_namespace: False
-  namespaces: [
-  ]
 name: f
   is_referenced: True
   is_imported: False
@@ -32,10 +20,10 @@ name: f
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('iter',)
-    Func_locals: ('iter', 'v')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: ['iter']
+    Func_locals: ['iter', 'v']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
     name: iter
       is_referenced: True
@@ -61,4 +49,16 @@ name: f
       is_namespace: False
       namespaces: [
       ]
+  ]
+name: range
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
   ]

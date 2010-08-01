@@ -16,7 +16,7 @@ name: a
   is_namespace: False
   namespaces: [
   ]
-name: x
+name: b
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -28,7 +28,7 @@ name: x
   is_namespace: False
   namespaces: [
   ]
-name: b
+name: x
   is_referenced: True
   is_imported: False
   is_parameter: False

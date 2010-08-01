@@ -4,7 +4,7 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: Things
+name: Other
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -16,58 +16,12 @@ name: Things
   is_namespace: True
   namespaces: [
     Sym_type: class
-    Sym_name: Things
-    Sym_lineno: 6
+    Sym_name: Other
+    Sym_lineno: 11
     Sym_nested: False
-    Sym_haschildren: True
-    Class_methods: ('__cmp__',)
+    Sym_haschildren: False
+    Class_methods: ()
     -- Identifiers --
-    name: __cmp__
-      is_referenced: False
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: True
-      namespaces: [
-        Sym_type: function
-        Sym_name: __cmp__
-        Sym_lineno: 7
-        Sym_nested: False
-        Sym_haschildren: False
-        Func_params: ('self', 'rhs')
-        Func_locals: ('self', 'rhs')
-        Func_globals: ()
-        Func_frees:()
-        -- Identifiers --
-        name: self
-          is_referenced: False
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
-        name: rhs
-          is_referenced: False
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
-      ]
   ]
 name: Stuff
   is_referenced: True
@@ -103,12 +57,12 @@ name: Stuff
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ('self', 'rhs')
-        Func_locals: ('self', 'rhs')
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['rhs', 'self']
+        Func_locals: ['rhs', 'self']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
-        name: self
+        name: rhs
           is_referenced: False
           is_imported: False
           is_parameter: True
@@ -120,7 +74,7 @@ name: Stuff
           is_namespace: False
           namespaces: [
           ]
-        name: rhs
+        name: self
           is_referenced: False
           is_imported: False
           is_parameter: True
@@ -134,7 +88,7 @@ name: Stuff
           ]
       ]
   ]
-name: Other
+name: Things
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -146,12 +100,58 @@ name: Other
   is_namespace: True
   namespaces: [
     Sym_type: class
-    Sym_name: Other
-    Sym_lineno: 11
+    Sym_name: Things
+    Sym_lineno: 6
     Sym_nested: False
-    Sym_haschildren: False
-    Class_methods: ()
+    Sym_haschildren: True
+    Class_methods: ('__cmp__',)
     -- Identifiers --
+    name: __cmp__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __cmp__
+        Sym_lineno: 7
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['rhs', 'self']
+        Func_locals: ['rhs', 'self']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: rhs
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
   ]
 name: object
   is_referenced: True

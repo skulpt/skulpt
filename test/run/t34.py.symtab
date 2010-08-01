@@ -4,8 +4,8 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
-name: x
-  is_referenced: False
+name: n
+  is_referenced: True
   is_imported: False
   is_parameter: False
   is_global: False
@@ -28,8 +28,8 @@ name: range
   is_namespace: False
   namespaces: [
   ]
-name: n
-  is_referenced: True
+name: x
+  is_referenced: False
   is_imported: False
   is_parameter: False
   is_global: False

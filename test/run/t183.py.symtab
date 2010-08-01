@@ -20,11 +20,23 @@ name: caller
     Sym_lineno: 10
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ()
-    Func_locals: ('i', 'r')
-    Func_globals: ('creator',)
-    Func_frees:()
+    Func_params: []
+    Func_locals: ['i', 'r']
+    Func_globals: ['creator']
+    Func_frees: []
     -- Identifiers --
+    name: creator
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
     name: i
       is_referenced: True
       is_imported: False
@@ -49,7 +61,41 @@ name: caller
       is_namespace: False
       namespaces: [
       ]
-    name: creator
+  ]
+name: creator
+  is_referenced: False
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: creator
+    Sym_lineno: 5
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: []
+    Func_locals: ['r']
+    Func_globals: ['yrange']
+    Func_frees: []
+    -- Identifiers --
+    name: r
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: False
+      namespaces: [
+      ]
+    name: yrange
       is_referenced: True
       is_imported: False
       is_parameter: False
@@ -78,10 +124,10 @@ name: yrange
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('n',)
-    Func_locals: ('i', 'n')
-    Func_globals: ('range',)
-    Func_frees:()
+    Func_params: ['n']
+    Func_locals: ['i', 'n']
+    Func_globals: ['range']
+    Func_frees: []
     -- Identifiers --
     name: i
       is_referenced: True
@@ -92,18 +138,6 @@ name: yrange
       is_local: True
       is_free: False
       is_assigned: True
-      is_namespace: False
-      namespaces: [
-      ]
-    name: range
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: True
-      is_declared_global: False
-      is_local: False
-      is_free: False
-      is_assigned: False
       is_namespace: False
       namespaces: [
       ]
@@ -119,41 +153,7 @@ name: yrange
       is_namespace: False
       namespaces: [
       ]
-  ]
-name: creator
-  is_referenced: False
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: True
-  namespaces: [
-    Sym_type: function
-    Sym_name: creator
-    Sym_lineno: 5
-    Sym_nested: False
-    Sym_haschildren: False
-    Func_params: ()
-    Func_locals: ('r',)
-    Func_globals: ('yrange',)
-    Func_frees:()
-    -- Identifiers --
-    name: r
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: False
-      namespaces: [
-      ]
-    name: yrange
+    name: range
       is_referenced: True
       is_imported: False
       is_parameter: False

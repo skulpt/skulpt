@@ -4,18 +4,6 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: s
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
 name: Stuff
   is_referenced: True
   is_imported: False
@@ -50,10 +38,10 @@ name: Stuff
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ('self',)
-        Func_locals: ('self',)
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
         name: self
           is_referenced: True
@@ -68,4 +56,16 @@ name: Stuff
           namespaces: [
           ]
       ]
+  ]
+name: s
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]

@@ -22,40 +22,6 @@ name: C
     Sym_haschildren: True
     Class_methods: ('pr', '__init__')
     -- Identifiers --
-    name: pr
-      is_referenced: False
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: True
-      namespaces: [
-        Sym_type: function
-        Sym_name: pr
-        Sym_lineno: 4
-        Sym_nested: False
-        Sym_haschildren: False
-        Func_params: ('self',)
-        Func_locals: ('self',)
-        Func_globals: ()
-        Func_frees:()
-        -- Identifiers --
-        name: self
-          is_referenced: True
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
-      ]
     name: __init__
       is_referenced: False
       is_imported: False
@@ -72,11 +38,23 @@ name: C
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ('self', 'data')
-        Func_locals: ('self', 'data')
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['data', 'self']
+        Func_locals: ['data', 'self']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
+        name: data
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
         name: self
           is_referenced: True
           is_imported: False
@@ -89,7 +67,29 @@ name: C
           is_namespace: False
           namespaces: [
           ]
-        name: data
+      ]
+    name: pr
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: pr
+        Sym_lineno: 4
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: self
           is_referenced: True
           is_imported: False
           is_parameter: True

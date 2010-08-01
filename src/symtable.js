@@ -96,18 +96,7 @@ SymbolTableScope.prototype.get_name = function() { return this.name; };
 SymbolTableScope.prototype.get_lineno = function() { return this.lineno; };
 SymbolTableScope.prototype.is_nested = function() { return this.isNested; };
 SymbolTableScope.prototype.has_children = function() { return this.children.length > 0; };
-SymbolTableScope.prototype.get_identifiers = function()
-{
-    var ret = [];
-    for (var k in this.symFlags)
-    {
-        if (this.symFlags.hasOwnProperty(k))
-        {
-            ret.push(k);
-        }
-    }
-    return ret;
-};
+SymbolTableScope.prototype.get_identifiers = function() { return this._identsMatching(function(x) { return true; }); };
 SymbolTableScope.prototype.lookup = function(name)
 {
     var sym = this.symbols[name];
@@ -132,39 +121,58 @@ SymbolTableScope.prototype.__check_children = function(name)
     return ret;
 };
 
-
-/**
- *
- */
-function SymbolTableScopeFunction()
+SymbolTableScope.prototype._identsMatching = function(f)
 {
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-}
+    var ret = [];
+    for (var k in this.symFlags)
+    {
+        if (this.symFlags.hasOwnProperty(k))
+        {
+            if (f(this.symFlags[k]))
+                ret.push(k);
+        }
+    }
+    ret.sort();
+    return ret;
+};
+SymbolTableScope.prototype.get_parameters = function()
+{
+    goog.asserts.assert(this.get_type() == 'function', "get_parameters only valid for function scopes");
+    if (!this._funcParams)
+        this._funcParams = this._identsMatching(function(x) { return x & DEF_PARAM; });
+    return this._funcParams;
+};
+SymbolTableScope.prototype.get_locals = function()
+{
+    goog.asserts.assert(this.get_type() == 'function', "get_locals only valid for function scopes");
+    if (!this._funcLocals)
+        this._funcLocals = this._identsMatching(function(x) { return x & DEF_BOUND; });
+    return this._funcLocals;
+};
+SymbolTableScope.prototype.get_globals = function()
+{
+    goog.asserts.assert(this.get_type() == 'function', "get_globals only valid for function scopes");
+    if (!this._funcGlobals)
+    {
+        this._funcGlobals = this._identsMatching(function(x) {
+                var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
+                return masked == GLOBAL_IMPLICIT || masked == GLOBAL_EXPLICIT;
+            });
+    }
+    return this._funcGlobals;
+};
+SymbolTableScope.prototype.get_frees = function()
+{
+    goog.asserts.assert(this.get_type() == 'function', "get_frees only valid for function scopes");
+    if (!this._funcFrees)
+    {
+        this._funcFrees = this._identsMatching(function(x) {
+                var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
+                return masked == FREE;
+            });
+    }
+    return this._funcFrees;
+};
 
 
 /**
@@ -180,18 +188,6 @@ function SymbolTable(filename, mod_ast)
     this.global = null; // points at top level module symFlags
     this.curClass = null; // current class or null
     this.tmpname = 0;
-
-    /*
-    this.type = 'module'; // or class or function
-    this.name = 'top';
-    this.lineno = 0;
-    this.isNested = false;
-    this.hasChildren = false;
-    this.symbols = {};
-    this.symFlags = {};
-    this.module = null; // points at top level Module
-    this.cur = null;
-    */
 }
 SymbolTable.prototype.SEQStmt = function(nodes)
 {
@@ -401,7 +397,7 @@ Sk.symboltable = function(ast)
 {
     var ret = new SymbolTable();
 
-    ret.enterBlock('top', ModuleBlock, ast, 0);
+    ret.enterBlock('top', ModuleBlock, ast, [[0,0],[0,0]]);
     ret.top = ret.cur;
 
     goog.iter.forEach(goog.iter.toIterator(ast.node.nodes), function(val) {
@@ -419,13 +415,21 @@ Sk.symboltable = function(ast)
 Sk.dumpSymtab = function(st)
 {
     var pyBoolStr = function(b) { return b ? "True" : "False"; }
+    var pyList = function(l) {
+        var ret = [];
+        for (var i = 0; i < l.length; ++i)
+        {
+            ret.push(Sk.uneval(l[i]).replace(/"/g, "'")); // todo; quote hacking
+        }
+        return '[' + ret.join(', ') + ']';
+    };
     var getIdents = function(obj, indent)
     {
         if (indent === undefined) indent = "";
         var ret = "";
         ret += indent + "Sym_type: " + obj.get_type() + "\n";
         ret += indent + "Sym_name: " + obj.get_name() + "\n";
-        ret += indent + "Sym_lineno: " + obj.get_lineno() + "\n";
+        ret += indent + "Sym_lineno: " + obj.get_lineno()[0][0] + "\n"; // [0] == our line is [[startrow,startcol],[endrow,endcol],text] rather than just lineno
         ret += indent + "Sym_nested: " + pyBoolStr(obj.is_nested()) + "\n";
         ret += indent + "Sym_haschildren: " + pyBoolStr(obj.has_children()) + "\n";
         if (obj.get_type() === "class")
@@ -434,10 +438,10 @@ Sk.dumpSymtab = function(st)
         }
         else if (obj.get_type() === "function")
         {
-            ret += indent + "Func_params: " + obj.get_parameters() + "\n";
-            ret += indent + "Func_locals: " + obj.get_locals() + "\n";
-            ret += indent + "Func_globals: " + obj.get_globals() + "\n";
-            ret += indent + "Func_frees: " + obj.get_frees() + "\n";
+            ret += indent + "Func_params: " + pyList(obj.get_parameters()) + "\n";
+            ret += indent + "Func_locals: " + pyList(obj.get_locals()) + "\n";
+            ret += indent + "Func_globals: " + pyList(obj.get_globals()) + "\n";
+            ret += indent + "Func_frees: " + pyList(obj.get_frees()) + "\n";
         }
         ret += indent + "-- Identifiers --\n";
         var objidents = obj.get_identifiers();

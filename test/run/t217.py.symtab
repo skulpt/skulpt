@@ -4,18 +4,6 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: s
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
 name: Stuff
   is_referenced: True
   is_imported: False
@@ -34,6 +22,18 @@ name: Stuff
     Sym_haschildren: True
     Class_methods: ('blah',)
     -- Identifiers --
+    name: False
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
     name: blah
       is_referenced: False
       is_imported: False
@@ -50,13 +50,13 @@ name: Stuff
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ('y', 'x', 'self')
-        Func_locals: ('y', 'x', 'self')
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['self', 'x', 'y']
+        Func_locals: ['self', 'x', 'y']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
-        name: y
-          is_referenced: True
+        name: self
+          is_referenced: False
           is_imported: False
           is_parameter: True
           is_global: False
@@ -79,8 +79,8 @@ name: Stuff
           is_namespace: False
           namespaces: [
           ]
-        name: self
-          is_referenced: False
+        name: y
+          is_referenced: True
           is_imported: False
           is_parameter: True
           is_global: False
@@ -92,16 +92,16 @@ name: Stuff
           namespaces: [
           ]
       ]
-    name: False
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: True
-      is_declared_global: False
-      is_local: False
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
+  ]
+name: s
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]

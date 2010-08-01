@@ -32,10 +32,10 @@ name: yrange
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('n',)
-    Func_locals: ('i', 'n')
-    Func_globals: ('range',)
-    Func_frees:()
+    Func_params: ['n']
+    Func_locals: ['i', 'n']
+    Func_globals: ['range']
+    Func_frees: []
     -- Identifiers --
     name: i
       is_referenced: True
@@ -49,18 +49,6 @@ name: yrange
       is_namespace: False
       namespaces: [
       ]
-    name: range
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: True
-      is_declared_global: False
-      is_local: False
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
     name: n
       is_referenced: True
       is_imported: False
@@ -68,6 +56,18 @@ name: yrange
       is_global: False
       is_declared_global: False
       is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: range
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
       is_free: False
       is_assigned: False
       is_namespace: False
@@ -90,11 +90,23 @@ name: zrange
     Sym_lineno: 5
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('n',)
-    Func_locals: ('y', 'n')
-    Func_globals: ('yrange',)
-    Func_frees:()
+    Func_params: ['n']
+    Func_locals: ['n', 'y']
+    Func_globals: ['yrange']
+    Func_frees: []
     -- Identifiers --
+    name: n
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
     name: y
       is_referenced: True
       is_imported: False
@@ -114,18 +126,6 @@ name: zrange
       is_global: True
       is_declared_global: False
       is_local: False
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
-    name: n
-      is_referenced: True
-      is_imported: False
-      is_parameter: True
-      is_global: False
-      is_declared_global: False
-      is_local: True
       is_free: False
       is_assigned: False
       is_namespace: False

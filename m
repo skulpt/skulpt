@@ -326,16 +326,16 @@ def symtabdump(fn):
         indent, obj.is_nested(),
         indent, obj.has_children())
         if obj.get_type() == "function":
-            ret += "%sFunc_params: %s\n%sFunc_locals: %s\n%sFunc_globals: %s\n%sFunc_frees:%s\n" % (
-                    indent, obj.get_parameters(),
-                    indent, obj.get_locals(),
-                    indent, obj.get_globals(),
-                    indent, obj.get_frees())
+            ret += "%sFunc_params: %s\n%sFunc_locals: %s\n%sFunc_globals: %s\n%sFunc_frees: %s\n" % (
+                    indent, sorted(obj.get_parameters()),
+                    indent, sorted(obj.get_locals()),
+                    indent, sorted(obj.get_globals()),
+                    indent, sorted(obj.get_frees()))
         elif obj.get_type() == "class":
             ret += "%sClass_methods: %s\n" % (
                     indent, obj.get_methods())
         ret += "%s-- Identifiers --\n" % indent
-        for ident in obj.get_identifiers():
+        for ident in sorted(obj.get_identifiers()):
             info = obj.lookup(ident)
             ret += "%sname: %s\n  %sis_referenced: %s\n  %sis_imported: %s\n  %sis_parameter: %s\n  %sis_global: %s\n  %sis_declared_global: %s\n  %sis_local: %s\n  %sis_free: %s\n  %sis_assigned: %s\n  %sis_namespace: %s\n  %snamespaces: [\n%s  %s]\n" % (
                     indent, info.get_name(),

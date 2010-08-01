@@ -4,6 +4,18 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
+name: c
+  is_referenced: False
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
 name: x
   is_referenced: True
   is_imported: False
@@ -20,11 +32,35 @@ name: x
     Sym_lineno: 4
     Sym_nested: False
     Sym_haschildren: True
-    Func_params: ()
-    Func_locals: ('y', 'b')
-    Func_globals: ('c',)
-    Func_frees:()
+    Func_params: []
+    Func_locals: ['b', 'y']
+    Func_globals: ['c']
+    Func_frees: []
     -- Identifiers --
+    name: b
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: False
+      namespaces: [
+      ]
+    name: c
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
     name: y
       is_referenced: True
       is_imported: False
@@ -41,10 +77,10 @@ name: x
         Sym_lineno: 7
         Sym_nested: True
         Sym_haschildren: True
-        Func_params: ()
-        Func_locals: ('a', 'z')
-        Func_globals: ()
-        Func_frees:('b',)
+        Func_params: []
+        Func_locals: ['a', 'z']
+        Func_globals: []
+        Func_frees: ['b']
         -- Identifiers --
         name: a
           is_referenced: True
@@ -86,12 +122,24 @@ name: x
             Sym_lineno: 10
             Sym_nested: True
             Sym_haschildren: False
-            Func_params: ()
-            Func_locals: ()
-            Func_globals: ('c',)
-            Func_frees:('a', 'b')
+            Func_params: []
+            Func_locals: []
+            Func_globals: ['c']
+            Func_frees: ['a', 'b']
             -- Identifiers --
             name: a
+              is_referenced: True
+              is_imported: False
+              is_parameter: False
+              is_global: False
+              is_declared_global: False
+              is_local: False
+              is_free: True
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
+              ]
+            name: b
               is_referenced: True
               is_imported: False
               is_parameter: False
@@ -115,54 +163,6 @@ name: x
               is_namespace: False
               namespaces: [
               ]
-            name: b
-              is_referenced: True
-              is_imported: False
-              is_parameter: False
-              is_global: False
-              is_declared_global: False
-              is_local: False
-              is_free: True
-              is_assigned: False
-              is_namespace: False
-              namespaces: [
-              ]
           ]
       ]
-    name: c
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: True
-      is_declared_global: False
-      is_local: False
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
-    name: b
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: False
-      namespaces: [
-      ]
-  ]
-name: c
-  is_referenced: False
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
   ]

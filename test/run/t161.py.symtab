@@ -20,10 +20,10 @@ name: doadd
     Sym_lineno: 2
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('a', 'b')
-    Func_locals: ('a', 'b')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: ['a', 'b']
+    Func_locals: ['a', 'b']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
     name: a
       is_referenced: True
@@ -66,10 +66,10 @@ name: dosub
     Sym_lineno: 4
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('a', 'b')
-    Func_locals: ('a', 'b')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: ['a', 'b']
+    Func_locals: ['a', 'b']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
     name: a
       is_referenced: True

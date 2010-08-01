@@ -44,10 +44,10 @@ name: f
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('l',)
-    Func_locals: ('i', 'l')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: ['l']
+    Func_locals: ['i', 'l']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
     name: i
       is_referenced: True

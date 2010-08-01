@@ -4,18 +4,6 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: x
-  is_referenced: False
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
 name: f
   is_referenced: False
   is_imported: False
@@ -32,18 +20,18 @@ name: f
     Sym_lineno: 2
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('arg',)
-    Func_locals: ('arg',)
-    Func_globals: ('x', 'str')
-    Func_frees:()
+    Func_params: ['arg']
+    Func_locals: ['arg']
+    Func_globals: ['str', 'x']
+    Func_frees: []
     -- Identifiers --
-    name: x
+    name: arg
       is_referenced: True
       is_imported: False
-      is_parameter: False
-      is_global: True
+      is_parameter: True
+      is_global: False
       is_declared_global: False
-      is_local: False
+      is_local: True
       is_free: False
       is_assigned: False
       is_namespace: False
@@ -61,16 +49,28 @@ name: f
       is_namespace: False
       namespaces: [
       ]
-    name: arg
+    name: x
       is_referenced: True
       is_imported: False
-      is_parameter: True
-      is_global: False
+      is_parameter: False
+      is_global: True
       is_declared_global: False
-      is_local: True
+      is_local: False
       is_free: False
       is_assigned: False
       is_namespace: False
       namespaces: [
       ]
+  ]
+name: x
+  is_referenced: False
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]

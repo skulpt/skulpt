@@ -20,11 +20,23 @@ name: funky
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ()
-    Func_locals: ()
-    Func_globals: ()
-    Func_frees:()
+    Func_params: []
+    Func_locals: []
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
+  ]
+name: g
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]
 name: gen
   is_referenced: True
@@ -42,23 +54,11 @@ name: gen
     Sym_lineno: 4
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ()
-    Func_locals: ('i',)
-    Func_globals: ('funky',)
-    Func_frees:()
+    Func_params: []
+    Func_locals: ['i']
+    Func_globals: ['funky']
+    Func_frees: []
     -- Identifiers --
-    name: i
-      is_referenced: False
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: False
-      namespaces: [
-      ]
     name: funky
       is_referenced: True
       is_imported: False
@@ -71,16 +71,16 @@ name: gen
       is_namespace: False
       namespaces: [
       ]
-  ]
-name: g
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
+    name: i
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: False
+      namespaces: [
+      ]
   ]

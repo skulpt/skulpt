@@ -20,23 +20,11 @@ name: x
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Func_params: ()
-    Func_locals: ('y', 'lambda')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: []
+    Func_locals: ['lambda', 'y']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
-    name: y
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: False
-      namespaces: [
-      ]
     name: lambda
       is_referenced: False
       is_imported: False
@@ -53,12 +41,12 @@ name: x
         Sym_lineno: 2
         Sym_nested: True
         Sym_haschildren: False
-        Func_params: ('y', 'x', 'z')
-        Func_locals: ('y', 'x', 'z')
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['x', 'y', 'z']
+        Func_locals: ['x', 'y', 'z']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
-        name: y
+        name: x
           is_referenced: True
           is_imported: False
           is_parameter: True
@@ -70,7 +58,7 @@ name: x
           is_namespace: False
           namespaces: [
           ]
-        name: x
+        name: y
           is_referenced: True
           is_imported: False
           is_parameter: True
@@ -94,5 +82,17 @@ name: x
           is_namespace: False
           namespaces: [
           ]
+      ]
+    name: y
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: False
+      namespaces: [
       ]
   ]

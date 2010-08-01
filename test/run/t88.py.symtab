@@ -4,7 +4,7 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
-name: y
+name: x
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -16,7 +16,7 @@ name: y
   is_namespace: False
   namespaces: [
   ]
-name: x
+name: y
   is_referenced: True
   is_imported: False
   is_parameter: False

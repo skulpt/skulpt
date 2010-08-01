@@ -38,10 +38,10 @@ name: X
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ('self',)
-        Func_locals: ('self',)
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
         name: self
           is_referenced: False
@@ -56,18 +56,6 @@ name: X
           namespaces: [
           ]
       ]
-  ]
-name: getattr
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: True
-  is_declared_global: False
-  is_local: False
-  is_free: False
-  is_assigned: False
-  is_namespace: False
-  namespaces: [
   ]
 name: f
   is_referenced: True
@@ -90,6 +78,18 @@ name: fu
   is_local: True
   is_free: False
   is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: getattr
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
   is_namespace: False
   namespaces: [
   ]

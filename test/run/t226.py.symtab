@@ -32,12 +32,12 @@ name: f
     Sym_lineno: 4
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ()
-    Func_locals: ('instanceof', 'const', 'default', 'void', 'object', 'catch', 'switch', 'var', 'delete')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: []
+    Func_locals: ['catch', 'const', 'default', 'delete', 'instanceof', 'object', 'switch', 'var', 'void']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
-    name: instanceof
+    name: catch
       is_referenced: True
       is_imported: False
       is_parameter: False
@@ -73,7 +73,19 @@ name: f
       is_namespace: False
       namespaces: [
       ]
-    name: void
+    name: delete
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: False
+      namespaces: [
+      ]
+    name: instanceof
       is_referenced: True
       is_imported: False
       is_parameter: False
@@ -86,18 +98,6 @@ name: f
       namespaces: [
       ]
     name: object
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: False
-      namespaces: [
-      ]
-    name: catch
       is_referenced: True
       is_imported: False
       is_parameter: False
@@ -133,7 +133,7 @@ name: f
       is_namespace: False
       namespaces: [
       ]
-    name: delete
+    name: void
       is_referenced: True
       is_imported: False
       is_parameter: False

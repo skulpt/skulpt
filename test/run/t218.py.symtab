@@ -38,10 +38,10 @@ name: X
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ('self',)
-        Func_locals: ('self',)
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
         name: self
           is_referenced: False

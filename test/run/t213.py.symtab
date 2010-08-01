@@ -44,12 +44,12 @@ name: wee
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Func_params: ('woo', 'wii', 'waa')
-    Func_locals: ('woo', 'wii', 'waa')
-    Func_globals: ()
-    Func_frees:()
+    Func_params: ['waa', 'wii', 'woo']
+    Func_locals: ['waa', 'wii', 'woo']
+    Func_globals: []
+    Func_frees: []
     -- Identifiers --
-    name: woo
+    name: waa
       is_referenced: True
       is_imported: False
       is_parameter: True
@@ -73,7 +73,7 @@ name: wee
       is_namespace: False
       namespaces: [
       ]
-    name: waa
+    name: woo
       is_referenced: True
       is_imported: False
       is_parameter: True

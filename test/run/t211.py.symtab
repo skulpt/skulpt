@@ -4,18 +4,6 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: y
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
 name: Stuff
   is_referenced: True
   is_imported: False
@@ -34,40 +22,6 @@ name: Stuff
     Sym_haschildren: True
     Class_methods: ('things', '__init__')
     -- Identifiers --
-    name: things
-      is_referenced: False
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: True
-      namespaces: [
-        Sym_type: function
-        Sym_name: things
-        Sym_lineno: 4
-        Sym_nested: False
-        Sym_haschildren: False
-        Func_params: ('self',)
-        Func_locals: ('self',)
-        Func_globals: ()
-        Func_frees:()
-        -- Identifiers --
-        name: self
-          is_referenced: False
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
-      ]
     name: __init__
       is_referenced: False
       is_imported: False
@@ -84,23 +38,11 @@ name: Stuff
         Sym_lineno: 2
         Sym_nested: False
         Sym_haschildren: True
-        Func_params: ('self',)
-        Func_locals: ('self', 'lambda')
-        Func_globals: ()
-        Func_frees:()
+        Func_params: ['self']
+        Func_locals: ['lambda', 'self']
+        Func_globals: []
+        Func_frees: []
         -- Identifiers --
-        name: self
-          is_referenced: True
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
         name: lambda
           is_referenced: False
           is_imported: False
@@ -117,10 +59,10 @@ name: Stuff
             Sym_lineno: 3
             Sym_nested: True
             Sym_haschildren: False
-            Func_params: ()
-            Func_locals: ()
-            Func_globals: ()
-            Func_frees:('self',)
+            Func_params: []
+            Func_locals: []
+            Func_globals: []
+            Func_frees: ['self']
             -- Identifiers --
             name: self
               is_referenced: True
@@ -135,5 +77,63 @@ name: Stuff
               namespaces: [
               ]
           ]
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
       ]
+    name: things
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: things
+        Sym_lineno: 4
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: self
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+  ]
+name: y
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
   ]
