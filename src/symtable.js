@@ -311,6 +311,11 @@ SymbolTable.prototype.visitStmt = function(stmt)
             if (stmt.else_)
                 this.SEQStmt(stmt.else_.nodes);
             break;
+        case Sk.Ast.While_:
+            this.visitExpr(stmt.test);
+            this.SEQStmt(stmt.body.nodes);
+            if (stmt.else_) this.SEQStmt(stmt.else_.nodes);
+            break;
         case Sk.Ast.Print:
             if (stmt.dest) this.visitExpr(stmt.dest);
             this.SEQExpr(stmt.nodes);
