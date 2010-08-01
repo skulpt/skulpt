@@ -110,7 +110,7 @@ SymbolTableScope.prototype.lookup = function(name)
 };
 SymbolTableScope.prototype.__check_children = function(name)
 {
-    print("  check_children:", name);
+    //print("  check_children:", name);
     var ret = [];
     for (var i = 0; i < this.children.length; ++i)
     {
@@ -212,7 +212,7 @@ SymbolTable.prototype.mangle = function(name)
 
 SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
 {
-    print("enterBlock:", name);
+    //print("enterBlock:", name);
     var prev = null;
     if (this.cur)
     {
@@ -222,19 +222,19 @@ SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
     this.cur = new SymbolTableScope(this, name, blockType, lineno);
     if (name === 'top')
     {
-        print("    setting global because it's top");
+        //print("    setting global because it's top");
         this.global = this.cur.symFlags;
     }
     if (prev)
     {
-        print("    adding", this.cur.name, "to", prev.name);
+        //print("    adding", this.cur.name, "to", prev.name);
         prev.children.push(this.cur);
     }
 };
 
 SymbolTable.prototype.exitBlock = function()
 {
-    print("exitBlock");
+    //print("exitBlock");
     this.cur = null;
     if (this.stack.length > 0)
         this.cur = this.stack.pop();
@@ -247,7 +247,7 @@ SymbolTable.prototype.visitArguments = function(func)
     // the ast/transform is wrong i think we just have argnames, but it
     // should really be nodes of either name or tuple
     goog.iter.forEach(goog.iter.toIterator(func.argnames), function(argname) {
-                print("visiting argument", argname);
+                //print("visiting argument", argname);
                 this.addDef(argname, DEF_PARAM);
             }, this);
     // todo; vararg?
@@ -286,7 +286,7 @@ SymbolTable.prototype.addDef = function(name, flag)
 
 SymbolTable.prototype.visitStmt = function(stmt)
 {
-    print("  stmt: ", stmt.constructor.name);
+    //print("  stmt: ", stmt.constructor.name);
     switch (stmt.constructor)
     {
         case Sk.Ast.Assign:
@@ -316,13 +316,19 @@ SymbolTable.prototype.visitStmt = function(stmt)
             this.SEQStmt(stmt.body.nodes);
             if (stmt.else_) this.SEQStmt(stmt.else_.nodes);
             break;
+        case Sk.Ast.For_:
+            this.visitExpr(stmt.assign);
+            this.visitExpr(stmt.list);
+            this.SEQStmt(stmt.body.nodes);
+            if (stmt.else_) this.SEQStmt(stmt.else_.nodes);
+            break;
         case Sk.Ast.Print:
             if (stmt.dest) this.visitExpr(stmt.dest);
             this.SEQExpr(stmt.nodes);
             break;
         case Sk.Ast.Function_:
             this.addDef(stmt.name, DEF_LOCAL);
-            print("  func:", Sk.astDump(stmt));
+            //print("  func:", Sk.astDump(stmt));
             if (stmt.defaults) this.SEQExpr(stmt.defaults);
             if (stmt.decorators) this.SEQExpr(stmt.decorators);
             this.enterBlock(stmt.name, FunctionBlock, stmt, stmt.lineno);
@@ -341,6 +347,14 @@ SymbolTable.prototype.visitStmt = function(stmt)
                 }
             }
             break;
+        case Sk.Ast.Pass:
+        case Sk.Ast.Break_:
+        case Sk.Ast.Continue_:
+            // nothing to do
+            break;
+        case Sk.Ast.Discard:
+            this.visitExpr(stmt.expr);
+            break;
         default:
             goog.asserts.fail("Unhandled type " + stmt.constructor.name + " in visitStmt");
     }
@@ -348,7 +362,7 @@ SymbolTable.prototype.visitStmt = function(stmt)
 
 SymbolTable.prototype.visitExpr = function(expr)
 {
-    print("  expr: ", expr.constructor.name);
+    //print("  expr: ", expr.constructor.name);
     switch (expr.constructor)
     {
         case Sk.Ast.Add:
@@ -363,6 +377,13 @@ SymbolTable.prototype.visitExpr = function(expr)
         case Sk.Ast.Bitand:
             this.visitExpr(expr.left);
             this.visitExpr(expr.right);
+            break;
+        case Sk.Ast.Or:
+        case Sk.Ast.And:
+            this.SEQExpr(expr.nodes);
+            break;
+        case Sk.Ast.Not:
+            this.visitExpr(expr.expr);
             break;
         case Sk.Ast.Const_:
             // nothing to do for number, string, etc.
@@ -392,6 +413,13 @@ SymbolTable.prototype.visitExpr = function(expr)
                 this.visitExpr(expr.star_args);
             if (expr.dstar_args)
                 this.visitExpr(expr.dstar_args);
+            break;
+        case Sk.Ast.Dict:
+            this.SEQExpr(expr.items);
+            break;
+        case Sk.Ast.Subscript:
+            this.visitExpr(expr.expr);
+            this.SEQExpr(expr.subs);
             break;
         default:
             goog.asserts.fail("Unhandled type " + expr.constructor.name + " in visitExpr");
