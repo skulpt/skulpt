@@ -286,6 +286,7 @@ SymbolTable.prototype.addDef = function(name, flag)
 
 SymbolTable.prototype.visitStmt = function(stmt)
 {
+    goog.asserts.assert(stmt !== undefined, "visitStmt called with undefined");
     //print("  stmt: ", stmt.constructor.name);
     switch (stmt.constructor)
     {
@@ -362,6 +363,7 @@ SymbolTable.prototype.visitStmt = function(stmt)
 
 SymbolTable.prototype.visitExpr = function(expr)
 {
+    goog.asserts.assert(expr !== undefined, "visitExpr called with undefined");
     //print("  expr: ", expr.constructor.name);
     switch (expr.constructor)
     {
@@ -383,6 +385,8 @@ SymbolTable.prototype.visitExpr = function(expr)
             this.SEQExpr(expr.nodes);
             break;
         case Sk.Ast.Not:
+        case Sk.Ast.UnaryAdd:
+        case Sk.Ast.UnarySub:
             this.visitExpr(expr.expr);
             break;
         case Sk.Ast.Const_:
@@ -421,8 +425,33 @@ SymbolTable.prototype.visitExpr = function(expr)
             this.visitExpr(expr.expr);
             this.SEQExpr(expr.subs);
             break;
+        case Sk.Ast.Sliceobj:
+            this.SEQExpr(expr.nodes);
+            break;
+        case Sk.Ast.ListComp:
+            this.addDef("_[" + (this.tmpname++) + "]", DEF_LOCAL);
+            this.visitExpr(expr.expr);
+            this.visitComprehension(expr.quals);
+            break;
         default:
             goog.asserts.fail("Unhandled type " + expr.constructor.name + " in visitExpr");
+    }
+};
+
+SymbolTable.prototype.visitComprehension = function(quals)
+{
+    var len = quals.length;
+    for (var i = 0; i < len; ++i)
+    {
+        var qual = quals[i];
+        switch (qual.constructor)
+        {
+            case Sk.Ast.ListCompFor:
+                this.visitExpr(qual.assign);
+                this.visitExpr(qual.list);
+                this.SEQExpr(qual.ifs);
+                break;
+        }
     }
 };
 
