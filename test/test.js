@@ -295,7 +295,7 @@ function main()
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 37; ++i)
+    for (i = 0; i <= 40; ++i)
     {
         testSymtab(sprintf("test/run/t%02d", i));
     }

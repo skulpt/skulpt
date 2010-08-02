@@ -128,7 +128,7 @@ Transformer.prototype.funcTable[SYM.com_list_constructor] = Transformer.prototyp
     {
         if (nodelist.children[i].type === SYM.comp_for)
         {
-            if (nodelist.children.length - i !== 1) throw "assert";
+            goog.asserts.assert(nodelist.children.length - i === 1);
             return this.com_list_comprehension(values[0], nodelist.children[i]);
         }
         else if (nodelist.children[i].type === TOK.T_COMMA)
@@ -189,7 +189,7 @@ Transformer.prototype.funcTable[SYM.com_list_comprehension] = Transformer.protot
 
 Transformer.prototype.funcTable[SYM.com_comp_iter] = Transformer.prototype.com_comp_iter = function(node)
 {
-    if (node.type !== SYM.comp_iter) throw "assert";
+    goog.asserts.assert(node.type === SYM.comp_iter);
     return node.children[0];
 };
 
@@ -598,7 +598,7 @@ Transformer.prototype.funcTable[SYM.com_sliceobj] = Transformer.prototype.com_sl
             && node.children[i].type === SYM.sliceop)
     {
         var so = node.children[i];
-        if (so.children[0].type !== TOK.T_COLON) throw "assert";
+        goog.asserts.assert(so.children[0].type === TOK.T_COLON);
         items.push(this.dispatch(so.children[1]));
     }
 
@@ -609,8 +609,11 @@ Transformer.prototype.funcTable[SYM.com_augassign] = Transformer.prototype.com_a
 {
     // Names, slices, and attributes are the only allowable nodes.
     var l = this.dispatch(node);
-    if (l instanceof AST.Name
-            || l instanceof AST.Slice
+    if (l instanceof AST.Name)
+    {
+        return new AST.AssName(l.name, AST.OP_ASSIGN, l.context);
+    }
+    if (l instanceof AST.Slice
             || l instanceof AST.Subscript
             || l instanceof AST.Getattr)
     {
@@ -621,7 +624,7 @@ Transformer.prototype.funcTable[SYM.com_augassign] = Transformer.prototype.com_a
 
 Transformer.prototype.funcTable[SYM.com_augassign_op] = Transformer.prototype.com_augassign_op = function(node)
 {
-    if (node.type !== SYM.augassign) throw "assert";
+    goog.asserts.assert(node.type === SYM.augassign);
     return node.children[0];
 };
 
@@ -703,12 +706,12 @@ Transformer.prototype.funcTable[SYM.funcdef] = Transformer.prototype.funcdef = f
     var decorators = null;
     if (nodelist.length === 6)
     {
-        if (nodelist[0].type !== SYM.decorators) throw "assert";
+        goog.asserts.assert(nodelist[0].type === SYM.decorators);
         decorators = this.decorators(nodelist[0].children); // ?
     }
     else
     {
-        if (nodelist.length !== 5) throw "assert";
+        goog.asserts.assert(nodelist.length === 5);
     }
 
     var lineno = nodelist[nodelist.length - 4].context;
@@ -736,8 +739,8 @@ Transformer.prototype.funcTable[SYM.funcdef] = Transformer.prototype.funcdef = f
 
     if (doc)
     {
-        if (!code instanceof AST.Stmt) throw "assert";
-        if (!code.nodes[0] instanceof AST.Discard) throw "assert";
+        goog.asserts.assert(code instanceof AST.Stmt);
+        goog.asserts.assert(code.nodes[0] instanceof AST.Discard);
         code.nodes.shift();
     }
     return new AST.Function_(decorators, name, names, defaults, varargs, varkeywords, doc, code, lineno);
@@ -802,7 +805,7 @@ Transformer.prototype.funcTable[SYM.print_stmt] = Transformer.prototype.print_st
     var start, dest;
     if (nodelist.length !== 1 && nodelist[1].type === TOK.T_RIGHTSHIFT)
     {
-        if (!(nodelist.length === 3 || nodelist[3].type === TOK.T_COMMA)) throw "assert";
+        goog.asserts.assert(nodelist.length === 3 || nodelist[3].type === TOK.T_COMMA);
         dest = this.dispatch(nodelist[2]);
         start = 4;
     }
@@ -890,20 +893,20 @@ Transformer.prototype.funcTable[SYM.com_dotted_name] = Transformer.prototype.com
 Transformer.prototype.funcTable[SYM.com_dotted_as_name] = Transformer.prototype.com_dotted_as_name = function(node)
 {
     //print(JSON2.stringify(node, null, 2));
-    if (node.type !== SYM.dotted_as_name) throw "assert";
+    goog.asserts.assert(node.type === SYM.dotted_as_name);
     var dot = this.com_dotted_name(node.children[0].children);
     if (node.children.length === 1)
     {
         return [dot, null];
     }
-    if (node.children[2].value !== 'as') throw "assert";
-    if (node.children[3].type !== TOK.T_NAME) throw "assert";
+    goog.asserts.assert(node.children[2].value === 'as');
+    goog.asserts.assert(node.children[3].value === TOK.T_NAME);
     return [dot, node.children[3].value];
 };
 
 Transformer.prototype.funcTable[SYM.com_dotted_as_names] = Transformer.prototype.com_dotted_as_names = function(node)
 {
-    if (node.type !== SYM.dotted_as_names) throw "assert";
+    goog.asserts.assert(node.type === SYM.dotted_as_names);
     var names = [];
     //print("node.children.length", node.children.length);
     for (var i = 0; i < node.children.length; i += 2)
@@ -935,7 +938,7 @@ Transformer.prototype.funcTable[SYM.com_dotted_as_names] = Transformer.prototype
 Transformer.prototype.funcTable[SYM.import_stmt] = Transformer.prototype.import_stmt = function(nodelist)
 {
     // import_stmt: import_name | import_from
-    if (nodelist.length !== 1) throw "assert";
+    goog.asserts.assert(nodelist.length === 1);
     return this.dispatch(nodelist[0]);
 };
 
@@ -1073,9 +1076,9 @@ Transformer.prototype.funcTable[SYM.test] = Transformer.prototype.test = functio
     var then = this.dispatch(nodelist[0]);
     if (nodelist.length > 1)
     {
-        if (nodelist.length !== 5) throw "assert";
-        if (nodelist[1].value !== "if") throw "assert";
-        if (nodelist[3].value !== "if") throw "else";
+        goog.asserts.assert(nodelist.length === 5);
+        goog.asserts.assert(nodelist[1].value === "if");
+        goog.asserts.assert(nodelist[3].value === "if");
         var test = this.dispatch(nodelist[2]);
         var else_ = this.dispatch(nodelist[4]);
         return new AST.IfExp(test, then, else_, nodelist[1].context);
@@ -1127,7 +1130,7 @@ Transformer.prototype.funcTable[SYM.com_generator_expression] = Transformer.prot
 
 Transformer.prototype.funcTable[SYM.com_gen_iter] = Transformer.prototype.com_gen_iter = function(node)
 {
-    if (node.type !== SYM.comp_iter) throw "assert";
+    goog.asserts.assert(node.type === SYM.comp_iter);
     return node.children[0];
 };
 

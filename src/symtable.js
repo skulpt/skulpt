@@ -510,6 +510,27 @@ SymbolTable.prototype.analyzeBlock = function(ste, bound, free, global)
 
 SymbolTable.prototype.analyzeChildBlock = function(entry, bound, free, global, childFree)
 {
+    var tempBound = {};
+    _dictUpdate(tempBound, bound);
+    var tempFree = {};
+    _dictUpdate(tempFree, free);
+    var tempGlobal = {};
+    _dictUpdate(tempGlobal, global);
+
+    this.analyzeBlock(entry, tempBound, tempFree, tempGlobal);
+    _dictUpdate(childFree, tempFree);
+};
+
+SymbolTable.prototype.analyzeCells = function(scope, free)
+{
+    for (var name in scope)
+    {
+        var flags = scope[name];
+        if (flags !== LOCAL) continue;
+        if (free[name] === undefined) continue;
+        scope[name] = CELL;
+        delete free[name];
+    }
 };
 
 /**
