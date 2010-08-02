@@ -429,7 +429,7 @@ SymbolTable.prototype.visitExpr = function(expr)
             this.SEQExpr(expr.nodes);
             break;
         case Sk.Ast.ListComp:
-            this.addDef("_[" + (this.tmpname++) + "]", DEF_LOCAL);
+            this.addDef("_[" + (++this.tmpname) + "]", DEF_LOCAL);
             this.visitExpr(expr.expr);
             this.visitComprehension(expr.quals);
             break;
