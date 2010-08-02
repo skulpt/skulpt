@@ -295,14 +295,8 @@ function main()
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 33; ++i)
+    for (i = 0; i <= 37; ++i)
     {
-        if (i == 19) { print("!skipping t19"); continue; } // todo; requires analyze in symtab (None)
-        if (i == 29) { print("!skipping t29"); continue; } // todo; requires analyze in symtab (range)
-        if (i == 34) { print("!skipping t34"); continue; } // todo; requires analyze in symtab (range)
-        if (i == 35) { print("!skipping t35"); continue; } // todo; requires analyze in symtab (max)
-        if (i == 36) { print("!skipping t36"); continue; } // todo; requires analyze in symtab (min)
-        if (i == 38) { print("!skipping t38"); continue; } // todo; requires analyze in symtab (X)
         testSymtab(sprintf("test/run/t%02d", i));
     }
     print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));

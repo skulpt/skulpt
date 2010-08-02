@@ -455,6 +455,142 @@ SymbolTable.prototype.visitComprehension = function(quals)
     }
 };
 
+function _dictUpdate(a, b)
+{
+    for (var kb in b)
+    {
+        a[kb] = b[kb];
+    }
+}
+
+SymbolTable.prototype.analyzeBlock = function(ste, bound, free, global)
+{
+    var local = {};
+    var scope = {};
+    var newglobal = {};
+    var newbound = {};
+    var newfree = {};
+
+    if (ste.blockType == ClassBlock)
+    {
+        goog.asserts.fail("todo; ClassBlock in analyze");
+    }
+
+    for (var name in ste.symFlags)
+    {
+        var flags = ste.symFlags[name];
+        this.analyzeName(ste, scope, name, flags, bound, local, free, global);
+    }
+
+    if (ste.blockType !== ClassBlock)
+    {
+        if (ste.blockType === FunctionBlock)
+            _dictUpdate(newbound, local);
+        if (bound)
+            _dictUpdate(newbound, bound);
+        _dictUpdate(newglobal, global);
+    }
+
+    var allfree = {};
+    var childlen = ste.children.length;
+    for (var i = 0; i < childlen; ++i)
+    {
+        var c = ste.children[i];
+        this.analyzeChildBlock(c, newbound, newfree, newglobal, allfree);
+        if (c.hasFree || c.childHasFree)
+            ste.childHasFree = true;
+    }
+
+    _dictUpdate(newfree, allfree);
+    if (ste.blockType === FunctionBlock) this.analyzeCells(scope, newfree);
+    this.updateSymbols(ste.symFlags, scope, bound, newfree, ste.blockType === ClassBlock);
+
+    _dictUpdate(free, newfree);
+};
+
+SymbolTable.prototype.analyzeChildBlock = function(entry, bound, free, global, childFree)
+{
+};
+
+/**
+ * store scope info back into the st symbols dict. symbols is modified,
+ * others are not.
+ */
+SymbolTable.prototype.updateSymbols = function(symbols, scope, bound, free, classflag)
+{
+    for (var name in symbols)
+    {
+        var flags = symbols[name];
+        var w = scope[name];
+        flags |= w << SCOPE_OFF;
+        symbols[name] = flags;
+    }
+
+    var freeValue = FREE << SCOPE_OFF;
+    var pos = 0;
+    for (var name in free)
+    {
+        var o = symbols[name];
+        if (o !== undefined)
+        {
+            // it could be a free variable in a method of the class that has
+            // the same name as a local or global in the class scope
+            if (classflag && (o & (DEF_BOUND | DEF_GLOBAL)))
+            {
+                var i = o | DEF_FREE_CLASS;
+                symbols[name] = i;
+            }
+            // else it's not free, probably a cell
+            continue;
+        }
+        if (bound[name] === undefined) continue;
+        symbols[name] = freeValue;
+    }
+};
+
+SymbolTable.prototype.analyzeName = function(ste, dict, name, flags, bound, local, free, global)
+{
+    if (flags & DEF_GLOBAL)
+    {
+        if (flags & DEF_PARAM) throw new Sk.builtin.SyntaxError("name '" + name + "' is local and global");
+        dict[name] = GLOBAL_EXPLICIT;
+        global[name] = null;
+        if (bound && bound[name] !== undefined) delete bound[name];
+        return;
+    }
+    if (flags & DEF_BOUND)
+    {
+        dict[name] = LOCAL;
+        local[name] = null;
+        delete global[name];
+        return;
+    }
+
+    if (bound && bound[name] !== undefined)
+    {
+        dict[name] = FREE;
+        ste.hasFree = true;
+        free[name] = null;
+    }
+    else if (global && global[name] !== undefined)
+    {
+        dict[name] = GLOBAL_IMPLICIT;
+    }
+    else
+    {
+        if (ste.isNested)
+            ste.hasFree = true;
+        dict[name] = GLOBAL_IMPLICIT;
+    }
+};
+
+SymbolTable.prototype.analyze = function()
+{
+    var free = {};
+    var global = {};
+    this.analyzeBlock(this.top, null, free, global);
+};
+
 Sk.symboltable = function(ast)
 {
     var ret = new SymbolTable();
@@ -468,8 +604,7 @@ Sk.symboltable = function(ast)
 
     ret.exitBlock();
 
-    // todo;
-    //ret.analyze();
+    ret.analyze();
 
     return ret.top;
 };
