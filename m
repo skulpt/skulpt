@@ -35,7 +35,7 @@ Files = [
         'src/tokenize.js',
         'gen/parse_tables.js',
         'src/parser.js',
-        'gen/ast.js',
+        'gen/astnodes.js',
         'src/transformer.js',
         'src/symtable.js',
         #'src/symtable.js',
@@ -43,8 +43,6 @@ Files = [
         #'src/entry.js',
         #('src/footer.js', 'dist'),
         #('test/footer_test.js', 'test'),
-
-        'gen/ast_debug.js', # this is only here for unit tests
         ]
 
 TestFiles = [
@@ -285,12 +283,13 @@ def dist():
 def regenparser():
     """regenerate the parser/ast source code"""
     if not os.path.exists("gen"): os.mkdir("gen")
-    os.chdir("src/pgen")
-    os.system("python main.py ../../gen/parse_tables.js")
-    os.system("python astgen.py ../../gen/ast.js ../../gen/ast_debug.js")
-    os.chdir("../..")
+    os.chdir("src/pgen/parser")
+    os.system("python main.py ../../../gen/parse_tables.js")
+    os.chdir("../ast")
+    os.system("python asdl_js.py Python.asdl ../../../gen/astnodes.js")
+    os.chdir("../../..")
     # sanity check that they at least parse
-    os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/ast.js gen/ast_debug.js")
+    #os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/astnodes.js")
 
 def regenruntests():
     """regenerate the test data by running the tests on real python"""

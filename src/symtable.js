@@ -348,6 +348,21 @@ SymbolTable.prototype.visitStmt = function(stmt)
                 }
             }
             break;
+        case Sk.Ast.Global:
+            for (var i = 0; i < stmt.names.length; ++i)
+            {
+                var name = this.mangle(stmt.names[i]);
+                var cur = this.cur.symFlags[name];
+                if (cur & (DEF_LOCAL | USE))
+                {
+                    if (cur & DEF_LOCAL)
+                        Sk.warn("name '" + name + "' is assigned to before global declaration");
+                    else
+                        Sk.warn("name '" + name + "' is used prior to global declaration");
+                }
+                this.addDef(name, DEF_GLOBAL);
+            }
+            break;
         case Sk.Ast.Pass:
         case Sk.Ast.Break_:
         case Sk.Ast.Continue_:
@@ -424,6 +439,9 @@ SymbolTable.prototype.visitExpr = function(expr)
         case Sk.Ast.Subscript:
             this.visitExpr(expr.expr);
             this.SEQExpr(expr.subs);
+            break;
+        case Sk.Ast.Getattr:
+            this.visitExpr(expr.expr);
             break;
         case Sk.Ast.Sliceobj:
             this.SEQExpr(expr.nodes);
