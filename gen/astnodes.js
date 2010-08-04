@@ -500,16 +500,6 @@ function Call(/* {expr_ty} */ func, /* {asdl_seq *} */ args, /* {asdl_seq *} */
 }
 
 /** @constructor */
-function Repr(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */ col_offset)
-{
-    goog.asserts.assert(value);
-    this.value = value;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
 function Num(/* {object} */ n, /* {int} */ lineno, /* {int} */ col_offset)
 {
     goog.asserts.assert(n);
@@ -684,4 +674,269 @@ function alias(/* {identifier} */ name, /* {identifier} */ asname)
     return this;
 }
 
+
+Module._astname = "Module";
+Module._fields = [
+    "body", function(n) { return n.body; }
+];
+Interactive._astname = "Interactive";
+Interactive._fields = [
+    "body", function(n) { return n.body; }
+];
+Expression._astname = "Expression";
+Expression._fields = [
+    "body", function(n) { return n.body; }
+];
+Suite._astname = "Suite";
+Suite._fields = [
+    "body", function(n) { return n.body; }
+];
+FunctionDef._astname = "FunctionDef";
+FunctionDef._fields = [
+    "name", function(n) { return n.name; },
+    "args", function(n) { return n.args; },
+    "body", function(n) { return n.body; },
+    "decorator_list", function(n) { return n.decorator_list; }
+];
+ClassDef._astname = "ClassDef";
+ClassDef._fields = [
+    "name", function(n) { return n.name; },
+    "bases", function(n) { return n.bases; },
+    "body", function(n) { return n.body; },
+    "decorator_list", function(n) { return n.decorator_list; }
+];
+Return_._astname = "Return_";
+Return_._fields = [
+    "value", function(n) { return n.value; }
+];
+Delete_._astname = "Delete_";
+Delete_._fields = [
+    "targets", function(n) { return n.targets; }
+];
+Assign._astname = "Assign";
+Assign._fields = [
+    "targets", function(n) { return n.targets; },
+    "value", function(n) { return n.value; }
+];
+AugAssign._astname = "AugAssign";
+AugAssign._fields = [
+    "target", function(n) { return n.target; },
+    "op", function(n) { return n.op; },
+    "value", function(n) { return n.value; }
+];
+Print._astname = "Print";
+Print._fields = [
+    "dest", function(n) { return n.dest; },
+    "values", function(n) { return n.values; },
+    "nl", function(n) { return n.nl; }
+];
+For_._astname = "For_";
+For_._fields = [
+    "target", function(n) { return n.target; },
+    "iter", function(n) { return n.iter; },
+    "body", function(n) { return n.body; },
+    "orelse", function(n) { return n.orelse; }
+];
+While_._astname = "While_";
+While_._fields = [
+    "test", function(n) { return n.test; },
+    "body", function(n) { return n.body; },
+    "orelse", function(n) { return n.orelse; }
+];
+If_._astname = "If_";
+If_._fields = [
+    "test", function(n) { return n.test; },
+    "body", function(n) { return n.body; },
+    "orelse", function(n) { return n.orelse; }
+];
+With_._astname = "With_";
+With_._fields = [
+    "context_expr", function(n) { return n.context_expr; },
+    "optional_vars", function(n) { return n.optional_vars; },
+    "body", function(n) { return n.body; }
+];
+Raise._astname = "Raise";
+Raise._fields = [
+    "type", function(n) { return n.type; },
+    "inst", function(n) { return n.inst; },
+    "tback", function(n) { return n.tback; }
+];
+TryExcept._astname = "TryExcept";
+TryExcept._fields = [
+    "body", function(n) { return n.body; },
+    "handlers", function(n) { return n.handlers; },
+    "orelse", function(n) { return n.orelse; }
+];
+TryFinally._astname = "TryFinally";
+TryFinally._fields = [
+    "body", function(n) { return n.body; },
+    "finalbody", function(n) { return n.finalbody; }
+];
+Assert._astname = "Assert";
+Assert._fields = [
+    "test", function(n) { return n.test; },
+    "msg", function(n) { return n.msg; }
+];
+Import_._astname = "Import_";
+Import_._fields = [
+    "names", function(n) { return n.names; }
+];
+ImportFrom._astname = "ImportFrom";
+ImportFrom._fields = [
+    "module", function(n) { return n.module; },
+    "names", function(n) { return n.names; },
+    "level", function(n) { return n.level; }
+];
+Exec._astname = "Exec";
+Exec._fields = [
+    "body", function(n) { return n.body; },
+    "globals", function(n) { return n.globals; },
+    "locals", function(n) { return n.locals; }
+];
+Global._astname = "Global";
+Global._fields = [
+    "names", function(n) { return n.names; }
+];
+Expr._astname = "Expr";
+Expr._fields = [
+    "value", function(n) { return n.value; }
+];
+BoolOp._astname = "BoolOp";
+BoolOp._fields = [
+    "op", function(n) { return n.op; },
+    "values", function(n) { return n.values; }
+];
+BinOp._astname = "BinOp";
+BinOp._fields = [
+    "left", function(n) { return n.left; },
+    "op", function(n) { return n.op; },
+    "right", function(n) { return n.right; }
+];
+UnaryOp._astname = "UnaryOp";
+UnaryOp._fields = [
+    "op", function(n) { return n.op; },
+    "operand", function(n) { return n.operand; }
+];
+Lambda._astname = "Lambda";
+Lambda._fields = [
+    "args", function(n) { return n.args; },
+    "body", function(n) { return n.body; }
+];
+IfExp._astname = "IfExp";
+IfExp._fields = [
+    "test", function(n) { return n.test; },
+    "body", function(n) { return n.body; },
+    "orelse", function(n) { return n.orelse; }
+];
+Dict._astname = "Dict";
+Dict._fields = [
+    "keys", function(n) { return n.keys; },
+    "values", function(n) { return n.values; }
+];
+ListComp._astname = "ListComp";
+ListComp._fields = [
+    "elt", function(n) { return n.elt; },
+    "generators", function(n) { return n.generators; }
+];
+GeneratorExp._astname = "GeneratorExp";
+GeneratorExp._fields = [
+    "elt", function(n) { return n.elt; },
+    "generators", function(n) { return n.generators; }
+];
+Yield._astname = "Yield";
+Yield._fields = [
+    "value", function(n) { return n.value; }
+];
+Compare._astname = "Compare";
+Compare._fields = [
+    "left", function(n) { return n.left; },
+    "ops", function(n) { return n.ops; },
+    "comparators", function(n) { return n.comparators; }
+];
+Call._astname = "Call";
+Call._fields = [
+    "func", function(n) { return n.func; },
+    "args", function(n) { return n.args; },
+    "keywords", function(n) { return n.keywords; },
+    "starargs", function(n) { return n.starargs; },
+    "kwargs", function(n) { return n.kwargs; }
+];
+Num._astname = "Num";
+Num._fields = [
+    "n", function(n) { return n.n; }
+];
+Str._astname = "Str";
+Str._fields = [
+    "s", function(n) { return n.s; }
+];
+Attribute._astname = "Attribute";
+Attribute._fields = [
+    "value", function(n) { return n.value; },
+    "attr", function(n) { return n.attr; },
+    "ctx", function(n) { return n.ctx; }
+];
+Subscript._astname = "Subscript";
+Subscript._fields = [
+    "value", function(n) { return n.value; },
+    "slice", function(n) { return n.slice; },
+    "ctx", function(n) { return n.ctx; }
+];
+Name._astname = "Name";
+Name._fields = [
+    "id", function(n) { return n.id; },
+    "ctx", function(n) { return n.ctx; }
+];
+List._astname = "List";
+List._fields = [
+    "elts", function(n) { return n.elts; },
+    "ctx", function(n) { return n.ctx; }
+];
+Tuple._astname = "Tuple";
+Tuple._fields = [
+    "elts", function(n) { return n.elts; },
+    "ctx", function(n) { return n.ctx; }
+];
+Slice._astname = "Slice";
+Slice._fields = [
+    "lower", function(n) { return n.lower; },
+    "upper", function(n) { return n.upper; },
+    "step", function(n) { return n.step; }
+];
+ExtSlice._astname = "ExtSlice";
+ExtSlice._fields = [
+    "dims", function(n) { return n.dims; }
+];
+Index._astname = "Index";
+Index._fields = [
+    "value", function(n) { return n.value; }
+];
+comprehension._astname = "comprehension";
+comprehension._fields = [
+    "target", function(n) { return n.target; },
+    "iter", function(n) { return n.iter; },
+    "ifs", function(n) { return n.ifs; }
+];
+ExceptHandler._astname = "ExceptHandler";
+ExceptHandler._fields = [
+    "type", function(n) { return n.type; },
+    "name", function(n) { return n.name; },
+    "body", function(n) { return n.body; }
+];
+arguments_._astname = "arguments_";
+arguments_._fields = [
+    "args", function(n) { return n.args; },
+    "vararg", function(n) { return n.vararg; },
+    "kwarg", function(n) { return n.kwarg; },
+    "defaults", function(n) { return n.defaults; }
+];
+keyword._astname = "keyword";
+keyword._fields = [
+    "arg", function(n) { return n.arg; },
+    "value", function(n) { return n.value; }
+];
+alias._astname = "alias";
+alias._fields = [
+    "name", function(n) { return n.name; },
+    "asname", function(n) { return n.asname; }
+];
 

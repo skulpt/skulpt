@@ -73,6 +73,28 @@ function numStmts(n)
     return 0;
 }
 
+function parsestr(c, s)
+{
+    var quote = s.substr(0, 1);
+
+    // todo; the string we get here still has the " or u""", or etc. Currently, we use JS strings raw.
+    // need to decode u'', b'', r'', etc. as well as backslash escapes
+
+    // todo; hack! just remove single quotes for now
+    return s.substr(1, s.length - 2);
+}
+
+function parsestrplus(c, n)
+{
+    REQ(CHILD(n, 0), TOK.T_STRING);
+    var ret = "";
+    for (var i = 0; i < NCH(n); ++i)
+    {
+        ret += parsestr(c, CHILD(n, i).value);
+    }
+    return ret;
+}
+
 function astForAtom(c, n)
 {
     /* atom: '(' [yield_expr|testlist_gexp] ')' | '[' [listmaker] ']'
@@ -85,7 +107,7 @@ function astForAtom(c, n)
             // All names start in Load context, but may be changed later
             return new Name(ch.value, expr_context.Load, n.lineno, n.col_offset);
         case TOK.T_STRING:
-            return new Str(ch.value, n.lineno, n.col_offset); // todo; 'preprocess' string joining handled here or in tokenizer?
+            return new Str(parsestrplus(c, n), n.lineno, n.col_offset);
         case TOK.T_NUMBER:
             return new Num(ch.value, n.lineno, n.col_offset);
         case TOK.LPAR: // various uses for parens
@@ -379,6 +401,63 @@ Sk.astFromParse = function(n, filename)
         default:
             goog.asserts.fail("todo;");
     }
-}
+};
+
+Sk.astDump = function(node)
+{
+    var spaces = function(n) // todo; blurgh
+    {
+        var ret = "";
+        for (var i = 0; i < n; ++i)
+            ret += " ";
+        return ret;
+    }
+
+    var _format = function(node, indent)
+    {
+        if (node === null)
+        {
+            return "None";
+        }
+        else if (node.constructor._astname !== undefined)
+        {
+            var nctor = node.constructor;
+            var namelen = spaces(nctor._astname.length + 1);
+            var fields = [];
+            for (var i = 0; i < nctor._fields.length; i += 2) // iter_fields
+            {
+                var a = nctor._fields[i]; // field name
+                var b = nctor._fields[i + 1](node); // field getter func
+                var fieldlen = spaces(a.length + 1);
+                fields.push([a, _format(b, indent + namelen + fieldlen)]);
+            }
+            var attrs = [];
+            for (var i = 0; i < fields.length; ++i)
+            {
+                var field = fields[i];
+                attrs.push(field[0] + "=" + field[1].replace(/^\s+/, ''));
+            }
+            var fieldstr = attrs.join(',\n' + indent + namelen);
+            return indent + nctor._astname + "(" + fieldstr + ")";
+        }
+        else if (goog.isArrayLike(node))
+        {
+            var elems = [];
+            for (var i = 0; i < node.length; ++i)
+            {
+                var x = node[i];
+                elems.push(_format(x, indent + " "));
+            }
+            var elemsstr = elems.join(',\n');
+            return indent + "[" + elemsstr.replace(/^\s+/, '') + "]";
+        }
+        else
+        {
+            return Sk.uneval(node);
+        }
+    };
+
+    return _format(node, "");
+};
 
 goog.exportSymbol("Sk.astFromParse", Sk.astFromParse);

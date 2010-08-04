@@ -286,13 +286,14 @@ function main()
     }
     print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
 
-    for (i = 0; i <= 200; ++i)
+    for (i = 0; i <= 0; ++i)
     {
         // todo; worth maintaining all the .trans files?
         if ((i > 112 && i < 144) || i >= 149 && i !== 194) continue;
         testTransform(sprintf("test/run/t%02d", i));
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
+return;
 
     for (i = 0; i <= 70; ++i)
     {
@@ -300,7 +301,6 @@ function main()
     }
     print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
 
-return;
     for (i = 0; i <= 300; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));

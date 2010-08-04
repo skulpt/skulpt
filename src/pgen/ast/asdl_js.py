@@ -256,6 +256,7 @@ class FunctionVisitor(PrototypeVisitor):
         emit("}")
         emit("")
 
+
     def emit_body_union(self, name, args, attrs):
         def emit(s, depth=0, reflow=1):
             self.emit(s, depth, reflow)
@@ -270,7 +271,6 @@ class FunctionVisitor(PrototypeVisitor):
         for argtype, argname, opt in args:
             emit("this.%s = %s;" % (argname, argname), 1)
         assert not attrs
-
 
 class PickleVisitor(EmitVisitor):
 
@@ -294,43 +294,33 @@ class PickleVisitor(EmitVisitor):
         pass
 
 
-class PyTypesDeclareVisitor(PickleVisitor):
+class FieldNamesVisitor(PickleVisitor):
 
     def visitProduct(self, prod, name):
-        self.emit("static PyTypeObject *%s_type;" % name, 0)
-        self.emit("static PyObject* ast2obj_%s(void*);" % name, 0)
         if prod.fields:
-            self.emit("static char *%s_fields[]={" % name,0)
+            self.emit('%s._astname = "%s";' % (name, name), 0)
+            self.emit("%s._fields = [" % name,0)
+            c = 0
+            # trailing , will kill IE
             for f in prod.fields:
-                self.emit('"%s",' % f.name, 1)
-            self.emit("};", 0)
+                c += 1
+                self.emit('"%s", function(n) { return n.%s; }%s' % (f.name, f.name, "," if c < len(prod.fields) else ""), 1)
+            self.emit("];", 0)
 
     def visitSum(self, sum, name):
-        self.emit("static PyTypeObject *%s_type;" % name, 0)
-        if sum.attributes:
-            self.emit("static char *%s_attributes[] = {" % name, 0)
-            for a in sum.attributes:
-                self.emit('"%s",' % a.name, 1)
-            self.emit("};", 0)
-        ptype = "void*"
-        if is_simple(sum):
-            ptype = get_c_type(name)
-            tnames = []
-            for t in sum.types:
-                tnames.append(str(t.name)+"_singleton")
-            tnames = ", *".join(tnames)
-            self.emit("static PyObject *%s;" % tnames, 0)
-        self.emit("static PyObject* ast2obj_%s(%s);" % (name, ptype), 0)
         for t in sum.types:
             self.visitConstructor(t, name)
 
     def visitConstructor(self, cons, name):
-        self.emit("static PyTypeObject *%s_type;" % cons.name, 0)
         if cons.fields:
-            self.emit("static char *%s_fields[]={" % cons.name, 0)
+            self.emit('%s._astname = "%s";' % (cons.name, cons.name), 0)
+            self.emit("%s._fields = [" % cons.name, 0)
+            # trailing , will kill IE
+            c = 0
             for t in cons.fields:
-                self.emit('"%s",' % t.name, 1)
-            self.emit("};",0)
+                c += 1
+                self.emit('"%s", function(n) { return n.%s; }%s' % (t.name, t.name, "," if c < len(cons.fields) else ""), 1)
+            self.emit("];",0)
 
 _SPECIALIZED_SEQUENCES = ('stmt', 'expr')
 
@@ -384,8 +374,8 @@ def main(asdlfile, outputfile):
     f.write("/* ---------------------- */\n")
     f.write("\n"*5)
     v = ChainOfVisitors(
-        #PyTypesDeclareVisitor(f),
         FunctionVisitor(f),
+        FieldNamesVisitor(f),
         )
     v.visit(mod)
 
