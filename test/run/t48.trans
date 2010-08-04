@@ -1,1 +1,13 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Getattr(expr=Const_(value=""), attrname=join), args=Add(left=List(nodes=Const_(value="O")), right=List(nodes=Const_(value="K"))), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Attribute(value=Str(s=''),
+                                               attr='join',
+                                               ctx=Load()),
+                                args=[BinOp(left=List(elts=[Str(s='O')],
+                                                      ctx=Load()),
+                                            op=Add(),
+                                            right=List(elts=[Str(s='K')],
+                                                       ctx=Load()))],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

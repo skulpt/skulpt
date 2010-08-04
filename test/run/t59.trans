@@ -1,1 +1,11 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Name(name=len), args=Dict(items=Const_(value='a'),Const_(value=1),Const_(value='b'),Const_(value=2)), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='len',
+                                          ctx=Load()),
+                                args=[Dict(keys=[Str(s='a'),
+                                                 Str(s='b')],
+                                           values=[Num(n=1),
+                                                   Num(n=2)])],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

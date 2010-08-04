@@ -1,1 +1,17 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=x, flags=OP_ASSIGN), expr=Dict(items=Const_(value=1),Const_(value=2))),Subscript(expr=Name(name=x), flags=OP_DELETE, subs=Const_(value=1)),Print(nodes=CallFunc(node=Name(name=len), args=Name(name=x), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=Dict(keys=[Num(n=1)],
+                               values=[Num(n=2)])),
+             Delete(targets=[Subscript(value=Name(id='x',
+                                                  ctx=Load()),
+                                       slice=Index(value=Num(n=1)),
+                                       ctx=Del())]),
+             Print(dest=None,
+                   values=[Call(func=Name(id='len',
+                                          ctx=Load()),
+                                args=[Name(id='x',
+                                           ctx=Load())],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

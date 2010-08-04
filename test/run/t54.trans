@@ -1,1 +1,13 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssTuple(nodes=AssName(name=a, flags=OP_ASSIGN),AssName(name=b, flags=OP_ASSIGN)), expr=Const_(value="OK")),Print(nodes=Add(left=Name(name=a), right=Name(name=b)), dest=null, nl=true)))
+Module(body=[Assign(targets=[Tuple(elts=[Name(id='a',
+                                              ctx=Store()),
+                                         Name(id='b',
+                                              ctx=Store())],
+                                   ctx=Store())],
+                    value=Str(s='OK')),
+             Print(dest=None,
+                   values=[BinOp(left=Name(id='a',
+                                           ctx=Load()),
+                                 op=Add(),
+                                 right=Name(id='b',
+                                            ctx=Load()))],
+                   nl=True)])

@@ -1,0 +1,9 @@
+Module(body=[Print(dest=None,
+                   values=[BinOp(left=Str(s='%s:%r:%d:%x'),
+                                 op=Mod(),
+                                 right=Tuple(elts=[Str(s='dog'),
+                                                   Str(s='cat'),
+                                                   Num(n=23456),
+                                                   Num(n=999999999999L)],
+                                             ctx=Load()))],
+                   nl=True)])

@@ -1,0 +1,6 @@
+Module(body=[Print(dest=None,
+                   values=[Str(s='this is a triple quote\nstring that \'"\'\' spans lines\nand "" \'"\\n \nhas crazy \'""\ncrap \'\'\' embedded')],
+                   nl=True),
+             Print(dest=None,
+                   values=[Str(s='this is a triple tick\nstring that \'"\'\' spans lines\nand "" \'"\\n \nhas crazy \'""\ncrap """ embedded')],
+                   nl=True)])

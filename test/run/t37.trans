@@ -1,1 +1,9 @@
-Module(doc=null, node=Stmt(nodes=For_(assign=AssName(name=k, flags=OP_ASSIGN), list=Dict(items=Const_(value='OK'),Const_(value=0)), body=Stmt(nodes=Print(nodes=Name(name=k), dest=null, nl=true)), else_=null)))
+Module(body=[For(target=Name(id='k',
+                             ctx=Store()),
+                 iter=Dict(keys=[Str(s='OK')],
+                           values=[Num(n=0)]),
+                 body=[Print(dest=None,
+                             values=[Name(id='k',
+                                          ctx=Load())],
+                             nl=True)],
+                 orelse=[])])

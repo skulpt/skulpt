@@ -288,8 +288,6 @@ function main()
 
     for (i = 0; i <= 0; ++i)
     {
-        // todo; worth maintaining all the .trans files?
-        if ((i > 112 && i < 144) || i >= 149 && i !== 194) continue;
         testTransform(sprintf("test/run/t%02d", i));
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));

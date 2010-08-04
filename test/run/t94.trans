@@ -1,1 +1,9 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=x, flags=OP_ASSIGN), expr=Const_(value='OK')),Print(nodes=Subscript(expr=Name(name=x), flags=OP_APPLY, subs=Const_(value=0)), dest=null, nl=true)))
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=Str(s='OK')),
+             Print(dest=None,
+                   values=[Subscript(value=Name(id='x',
+                                                ctx=Load()),
+                                     slice=Index(value=Num(n=0)),
+                                     ctx=Load())],
+                   nl=True)])

@@ -1,0 +1,8 @@
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='slice',
+                                          ctx=Load()),
+                                args=[Num(n=1)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

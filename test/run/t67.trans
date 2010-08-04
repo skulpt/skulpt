@@ -1,1 +1,8 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=Compare(expr=Const_(value=7), ops=in,Dict(items=Const_(value=1),Const_(value=2),Const_(value='a'),Const_(value=7))), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Compare(left=Num(n=7),
+                                   ops=[In()],
+                                   comparators=[Dict(keys=[Num(n=1),
+                                                           Str(s='a')],
+                                                     values=[Num(n=2),
+                                                             Num(n=7)])])],
+                   nl=True)])

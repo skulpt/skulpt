@@ -1,1 +1,5 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=Sub(left=Const_(value=4), right=Const_(value=1)), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[BinOp(left=Num(n=4),
+                                 op=Sub(),
+                                 right=Num(n=1))],
+                   nl=True)])

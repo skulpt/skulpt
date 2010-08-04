@@ -1,1 +1,11 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=Subscript(expr=CallFunc(node=Getattr(expr=Const_(value="X-OK-Y"), attrname=split), args=Const_(value="-"), star_args=null, dstar_args=null), flags=OP_APPLY, subs=Const_(value=1)), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Subscript(value=Call(func=Attribute(value=Str(s='X-OK-Y'),
+                                                               attr='split',
+                                                               ctx=Load()),
+                                                args=[Str(s='-')],
+                                                keywords=[],
+                                                starargs=None,
+                                                kwargs=None),
+                                     slice=Index(value=Num(n=1)),
+                                     ctx=Load())],
+                   nl=True)])

@@ -1,1 +1,6 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=Subscript(expr=Dict(items=Const_(value=1),Const_(value="OK")), flags=OP_APPLY, subs=Const_(value=1)), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Subscript(value=Dict(keys=[Num(n=1)],
+                                                values=[Str(s='OK')]),
+                                     slice=Index(value=Num(n=1)),
+                                     ctx=Load())],
+                   nl=True)])

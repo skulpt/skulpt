@@ -1,1 +1,13 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=x, flags=OP_ASSIGN), expr=Const_(value=4)),Assign(nodes=AssName(name=x, flags=OP_ASSIGN), expr=Mul(left=Name(name=x), right=Const_(value=3))),Print(nodes=Name(name=x), dest=null, nl=true)))
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=Num(n=4)),
+             Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=BinOp(left=Name(id='x',
+                                          ctx=Load()),
+                                op=Mult(),
+                                right=Num(n=3))),
+             Print(dest=None,
+                   values=[Name(id='x',
+                                ctx=Load())],
+                   nl=True)])

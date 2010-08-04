@@ -1,0 +1,7 @@
+Module(body=[Print(dest=None,
+                   values=[BinOp(left=BinOp(left=Num(n=7),
+                                            op=BitXor(),
+                                            right=Num(n=2)),
+                                 op=BitOr(),
+                                 right=Num(n=4))],
+                   nl=True)])

@@ -1,0 +1,11 @@
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=Num(n=2)),
+             AugAssign(target=Name(id='x',
+                                   ctx=Store()),
+                       op=BitXor(),
+                       value=Num(n=7)),
+             Print(dest=None,
+                   values=[Name(id='x',
+                                ctx=Load())],
+                   nl=True)])

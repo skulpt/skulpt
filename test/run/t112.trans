@@ -1,1 +1,8 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=a, flags=OP_ASSIGN), expr=Tuple(nodes=)),Print(nodes=Name(name=a), dest=null, nl=true)))
+Module(body=[Assign(targets=[Name(id='a',
+                                  ctx=Store())],
+                    value=Tuple(elts=[],
+                                ctx=Load())),
+             Print(dest=None,
+                   values=[Name(id='a',
+                                ctx=Load())],
+                   nl=True)])

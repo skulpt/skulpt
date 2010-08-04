@@ -1,0 +1,8 @@
+Module(body=[Print(dest=None,
+                   values=[ListComp(elt=Name(id='c',
+                                             ctx=Load()),
+                                    generators=[comprehension(target=Name(id='c',
+                                                                          ctx=Store()),
+                                                              iter=Str(s='asdf'),
+                                                              ifs=[])])],
+                   nl=True)])

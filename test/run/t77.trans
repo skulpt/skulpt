@@ -1,1 +1,8 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Name(name=abs), args=UnarySub(expr=Const_(value=5)), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='abs',
+                                          ctx=Load()),
+                                args=[Num(n=-5)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

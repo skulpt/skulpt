@@ -1,1 +1,10 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Getattr(expr=Const_(value="..bbb.."), attrname=replace), args=Const_(value=".."),Const_(value="X"), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Attribute(value=Str(s='..bbb..'),
+                                               attr='replace',
+                                               ctx=Load()),
+                                args=[Str(s='..'),
+                                      Str(s='X')],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

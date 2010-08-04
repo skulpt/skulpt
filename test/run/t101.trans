@@ -1,1 +1,13 @@
-Module(doc=null, node=Stmt(nodes=For_(assign=AssName(name=i, flags=OP_ASSIGN), list=CallFunc(node=Name(name=range), args=Const_(value=10), star_args=null, dstar_args=null), body=Stmt(nodes=Print(nodes=Name(name=i), dest=null, nl=true)), else_=null)))
+Module(body=[For(target=Name(id='i',
+                             ctx=Store()),
+                 iter=Call(func=Name(id='range',
+                                     ctx=Load()),
+                           args=[Num(n=10)],
+                           keywords=[],
+                           starargs=None,
+                           kwargs=None),
+                 body=[Print(dest=None,
+                             values=[Name(id='i',
+                                          ctx=Load())],
+                             nl=True)],
+                 orelse=[])])

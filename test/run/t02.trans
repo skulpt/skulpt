@@ -1,1 +1,7 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=a, flags=OP_ASSIGN), expr=Const_(value=3)),Print(nodes=Name(name=a), dest=null, nl=true)))
+Module(body=[Assign(targets=[Name(id='a',
+                                  ctx=Store())],
+                    value=Num(n=3)),
+             Print(dest=None,
+                   values=[Name(id='a',
+                                ctx=Load())],
+                   nl=True)])

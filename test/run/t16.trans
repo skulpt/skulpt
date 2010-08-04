@@ -1,1 +1,15 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssName(name=x, flags=OP_ASSIGN), expr=Dict(items=)),Assign(nodes=Subscript(expr=Name(name=x), flags=OP_ASSIGN, subs=Const_(value='y')), expr=Const_(value="test")),Print(nodes=Subscript(expr=Name(name=x), flags=OP_APPLY, subs=Const_(value='y')), dest=null, nl=true)))
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=Dict(keys=[],
+                               values=[])),
+             Assign(targets=[Subscript(value=Name(id='x',
+                                                  ctx=Load()),
+                                       slice=Index(value=Str(s='y')),
+                                       ctx=Store())],
+                    value=Str(s='test')),
+             Print(dest=None,
+                   values=[Subscript(value=Name(id='x',
+                                                ctx=Load()),
+                                     slice=Index(value=Str(s='y')),
+                                     ctx=Load())],
+                   nl=True)])

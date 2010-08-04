@@ -291,6 +291,11 @@ def regenparser():
     # sanity check that they at least parse
     #os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/astnodes.js")
 
+def regenasttests():
+    """regenerate the ast test files by running our helper script via real python"""
+    for f in glob.glob("test/run/*.py"):
+        os.system("python test/astppdump.py %s > %s" % (f, f.replace(".py", ".trans")))
+
 def regenruntests():
     """regenerate the test data by running the tests on real python"""
     for f in glob.glob("test/run/*.py"):
@@ -474,7 +479,7 @@ def vmwareregr(names):
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenruntests|regensymtabtests|upload|debug|nrt|run|runopt|parse|vmwareregr|symtab}"
+        print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload|debug|nrt|run|runopt|parse|vmwareregr|symtab}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -498,6 +503,8 @@ if __name__ == "__main__":
         parse(sys.argv[2])
     elif cmd == "regenparser":
         regenparser()
+    elif cmd == "regenasttests":
+        regenasttests()
     elif cmd == "regenruntests":
         regenruntests()
     elif cmd == "upload":

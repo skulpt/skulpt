@@ -1,1 +1,15 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Getattr(expr=CallFunc(node=Getattr(expr=Const_(value="1,2,3"), attrname=split), args=Const_(value=","), star_args=null, dstar_args=null), attrname=index), args=Const_(value="3"), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Attribute(value=Call(func=Attribute(value=Str(s='1,2,3'),
+                                                                         attr='split',
+                                                                         ctx=Load()),
+                                                          args=[Str(s=',')],
+                                                          keywords=[],
+                                                          starargs=None,
+                                                          kwargs=None),
+                                               attr='index',
+                                               ctx=Load()),
+                                args=[Str(s='3')],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

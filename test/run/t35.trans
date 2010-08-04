@@ -1,1 +1,11 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Name(name=max), args=Const_(value=3),Const_(value=8),Const_(value=2),Const_(value=6), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='max',
+                                          ctx=Load()),
+                                args=[Num(n=3),
+                                      Num(n=8),
+                                      Num(n=2),
+                                      Num(n=6)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

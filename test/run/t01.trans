@@ -1,1 +1,3 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=Const_(value=234), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Num(n=234)],
+                   nl=True)])

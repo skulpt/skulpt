@@ -1,1 +1,12 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=CallFunc(node=Getattr(expr=List(nodes=Const_(value=1),Const_(value=2),Const_(value=3)), attrname=index), args=Const_(value=3), star_args=null, dstar_args=null), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[Call(func=Attribute(value=List(elts=[Num(n=1),
+                                                                Num(n=2),
+                                                                Num(n=3)],
+                                                          ctx=Load()),
+                                               attr='index',
+                                               ctx=Load()),
+                                args=[Num(n=3)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

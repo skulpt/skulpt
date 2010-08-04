@@ -1,1 +1,5 @@
-Module(doc=null, node=Stmt(nodes=Print(nodes=Add(left=Const_(value="O"), right=Const_(value="K")), dest=null, nl=true)))
+Module(body=[Print(dest=None,
+                   values=[BinOp(left=Str(s='O'),
+                                 op=Add(),
+                                 right=Str(s='K'))],
+                   nl=True)])

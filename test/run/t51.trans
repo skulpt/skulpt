@@ -1,1 +1,16 @@
-Module(doc=null, node=Stmt(nodes=Assign(nodes=AssTuple(nodes=AssName(name=a, flags=OP_ASSIGN),AssName(name=b, flags=OP_ASSIGN),AssName(name=d, flags=OP_ASSIGN)), expr=Tuple(nodes=List(nodes=Const_(value=0)),Const_(value=2),Const_(value="OK"))),Print(nodes=Name(name=d), dest=null, nl=true)))
+Module(body=[Assign(targets=[Tuple(elts=[Name(id='a',
+                                              ctx=Store()),
+                                         Name(id='b',
+                                              ctx=Store()),
+                                         Name(id='d',
+                                              ctx=Store())],
+                                   ctx=Store())],
+                    value=Tuple(elts=[List(elts=[Num(n=0)],
+                                           ctx=Load()),
+                                      Num(n=2),
+                                      Str(s='OK')],
+                                ctx=Load())),
+             Print(dest=None,
+                   values=[Name(id='d',
+                                ctx=Load())],
+                   nl=True)])
