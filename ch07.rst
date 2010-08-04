@@ -228,9 +228,9 @@ Other comparison operations are useful for putting words in
 .. sourcecode:: python
     
     if word < "banana":
-        print "Your word," + word + ", comes before banana."
+        print "Your word, " + word + ", comes before banana."
     elif word > "banana":
-        print "Your word," + word + ", comes after banana."
+        print "Your word, " + word + ", comes after banana."
     else:
         print "Yes, we have no bananas!"
 
