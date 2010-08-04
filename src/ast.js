@@ -417,7 +417,7 @@ Sk.astDump = function(node)
     {
         if (node === null)
         {
-            return "None";
+            return indent+"None";
         }
         else if (node.constructor._astname !== undefined)
         {
@@ -453,10 +453,12 @@ Sk.astDump = function(node)
         }
         else
         {
-            if (typeof node === "string") return "'" + node + "'";
-            if (node === true) return "True";
-            if (node === false) return "False";
-            return ""+node;
+            var ret;
+            if (typeof node === "string") ret = "'" + node + "'";
+            else if (node === true) ret = "True";
+            else if (node === false) ret = "False";
+            else ret = "" + node;
+            return indent + ret;
         }
     };
 
