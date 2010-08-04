@@ -9,12 +9,12 @@ module Python version "$Revision: 62047 $"
 	    -- not really an actual node but useful in Jython's typesystem.
 	    | Suite(stmt* body)
 
-	stmt = FunctionDef(identifier name, _arguments args, 
+	stmt = FunctionDef(identifier name, arguments_ args, 
                             stmt* body, expr* decorator_list)
 	      | ClassDef(identifier name, expr* bases, stmt* body, expr *decorator_list)
-	      | _Return(expr? value)
+	      | Return_(expr? value)
 
-	      | _Delete(expr* targets)
+	      | Delete_(expr* targets)
 	      | Assign(expr* targets, expr value)
 	      | AugAssign(expr target, operator op, expr value)
 
@@ -22,10 +22,10 @@ module Python version "$Revision: 62047 $"
  	      | Print(expr? dest, expr* values, bool nl)
 
 	      -- use 'orelse' because else is a keyword in target languages
-	      | _For(expr target, expr iter, stmt* body, stmt* orelse)
-	      | _While(expr test, stmt* body, stmt* orelse)
-	      | _If(expr test, stmt* body, stmt* orelse)
-	      | _With(expr context_expr, expr? optional_vars, stmt* body)
+	      | For_(expr target, expr iter, stmt* body, stmt* orelse)
+	      | While_(expr test, stmt* body, stmt* orelse)
+	      | If_(expr test, stmt* body, stmt* orelse)
+	      | With_(expr context_expr, expr? optional_vars, stmt* body)
 
 	      -- 'type' is a bad name
 	      | Raise(expr? type, expr? inst, expr? tback)
@@ -33,7 +33,7 @@ module Python version "$Revision: 62047 $"
 	      | TryFinally(stmt* body, stmt* finalbody)
 	      | Assert(expr test, expr? msg)
 
-	      | _Import(alias* names)
+	      | Import_(alias* names)
 	      | ImportFrom(identifier module, alias* names, int? level)
 
 	      -- Doesn't capture requirement that locals must be
@@ -43,7 +43,7 @@ module Python version "$Revision: 62047 $"
 
 	      | Global(identifier* names)
 	      | Expr(expr value)
-	      | Pass | _Break | _Continue
+	      | Pass | Break_ | Continue_
 
 	      -- XXX Jython will be different
 	      -- col_offset is the byte offset in the utf8 string the parser uses
@@ -53,7 +53,7 @@ module Python version "$Revision: 62047 $"
 	expr = BoolOp(boolop op, expr* values)
 	     | BinOp(expr left, operator op, expr right)
 	     | UnaryOp(unaryop op, expr operand)
-	     | Lambda(_arguments args, expr body)
+	     | Lambda(arguments_ args, expr body)
 	     | IfExp(expr test, expr body, expr orelse)
 	     | Dict(expr* keys, expr* values)
 	     | ListComp(expr elt, comprehension* generators)
@@ -65,7 +65,6 @@ module Python version "$Revision: 62047 $"
 	     | Compare(expr left, cmpop* ops, expr* comparators)
 	     | Call(expr func, expr* args, keyword* keywords,
 			 expr? starargs, expr? kwargs)
-	     | Repr(expr value)
 	     | Num(object n) -- a number as a PyObject.
 	     | Str(string s) -- need to specify raw, unicode, etc?
 	     -- other literals? bools?
@@ -93,7 +92,7 @@ module Python version "$Revision: 62047 $"
 
 	unaryop = Invert | Not | UAdd | USub
 
-	cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | _In | NotIn
+	cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In_ | NotIn
 
 	comprehension = (expr target, expr iter, expr* ifs)
 
@@ -101,7 +100,7 @@ module Python version "$Revision: 62047 $"
 	excepthandler = ExceptHandler(expr? type, expr? name, stmt* body)
 	                attributes (int lineno, int col_offset)
 
-	_arguments = (expr* args, identifier? vararg, 
+	arguments_ = (expr* args, identifier? vararg, 
 		     identifier? kwarg, expr* defaults)
 
         -- keyword arguments supplied to call

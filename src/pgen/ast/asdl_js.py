@@ -121,7 +121,7 @@ class TypeDefVisitor(EmitVisitor):
  * @const
  * @enum {number}
  */""" % name, depth, reflow=False)
-        s = "var %s = { %s };" % (ctype, enums)
+        s = "var %s = { %s };" % (name, enums)
         self.emit(s, depth)
         self.emit("", depth)
 
@@ -140,24 +140,7 @@ class StructVisitor(EmitVisitor):
         self.visit(type.value, type.name, depth)
 
     def visitSum(self, sum, name, depth):
-        if not is_simple(sum):
-            self.sum_with_constructors(sum, name, depth)
-
-    def sum_with_constructors(self, sum, name, depth):
-        def emit(s, depth=depth):
-            self.emit(s % sys._getframe(1).f_locals, depth)
-        enum = []
-        for i in range(len(sum.types)):
-            type = sum.types[i]
-            enum.append("%s_kind:%d" % (type.name, i + 1))
-
-        self.emit("""/**
- * Enumeration for %s kinds.
- * @const
- * @enum {number}
- */""" % name, depth, reflow=False)
-        emit("var %(name)s_kind = {" + ", ".join(enum) + "};")
-        emit("")
+        pass
 
     def visitConstructor(self, cons, depth):
         pass
@@ -257,6 +240,7 @@ class FunctionVisitor(PrototypeVisitor):
             self.emit(s, depth, reflow)
         argstr = ", ".join(["/* {%s} */ %s" % (atype, aname)
                             for atype, aname, opt in args + attrs])
+        emit("/** @constructor */")
         emit("function %s(%s)" % (name, argstr))
         emit("{")
         for argtype, argname, opt in args:
@@ -264,29 +248,27 @@ class FunctionVisitor(PrototypeVisitor):
             if not opt and not (argtype == "bool" or argtype == "int"):
                 emit("goog.asserts.assert(%s);" % argname, 1)
 
-        emit("var p = {};", 1);
         if union:
             self.emit_body_union(name, args, attrs)
         else:
             self.emit_body_struct(name, args, attrs)
-        emit("return p;", 1)
+        emit("return this;", 1)
         emit("}")
         emit("")
 
     def emit_body_union(self, name, args, attrs):
         def emit(s, depth=0, reflow=1):
             self.emit(s, depth, reflow)
-        emit("p.kind = %s_kind;" % name, 1)
         for argtype, argname, opt in args:
-            emit("p.%s = %s;" % (argname, argname), 1)
+            emit("this.%s = %s;" % (argname, argname), 1)
         for argtype, argname, opt in attrs:
-            emit("p.%s = %s;" % (argname, argname), 1)
+            emit("this.%s = %s;" % (argname, argname), 1)
 
     def emit_body_struct(self, name, args, attrs):
         def emit(s, depth=0, reflow=1):
             self.emit(s, depth, reflow)
         for argtype, argname, opt in args:
-            emit("p.%s = %s;" % (argname, argname), 1)
+            emit("this.%s = %s;" % (argname, argname), 1)
         assert not attrs
 
 
@@ -393,7 +375,6 @@ def main(asdlfile, outputfile):
 
     f.write(auto_gen_msg)
     c = ChainOfVisitors(TypeDefVisitor(f),
-                        StructVisitor(f),
                         )
     c.visit(mod)
 

@@ -36,7 +36,7 @@ Files = [
         'gen/parse_tables.js',
         'src/parser.js',
         'gen/astnodes.js',
-        'src/transformer.js',
+        'src/ast.js',
         'src/symtable.js',
         #'src/symtable.js',
         #'src/compiler.js',

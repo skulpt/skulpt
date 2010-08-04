@@ -118,8 +118,7 @@ function testTransform(name)
     try { expect = read(name + ".trans"); }
     catch (e) {}
     var cst = Sk.parse(name + ".py", input);
-    var got = Sk.astDump(Sk.transform(cst)) + "\n";
-
+    var got = Sk.astDump(Sk.astFromParse(cst)) + "\n";
 
     if (expect !== got)
     {
