@@ -453,7 +453,10 @@ Sk.astDump = function(node)
         }
         else
         {
-            return Sk.uneval(node);
+            if (typeof node === "string") return "'" + node + "'";
+            if (node === true) return "True";
+            if (node === false) return "False";
+            return ""+node;
         }
     };
 
