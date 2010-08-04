@@ -110,19 +110,11 @@ class TypeDefVisitor(EmitVisitor):
             self.simple_sum(sum, name, depth)
 
     def simple_sum(self, sum, name, depth):
-        enum = []
+        self.emit("/* ----- %s ----- */" % name, depth);
         for i in range(len(sum.types)):
+            self.emit("/** @constructor */", depth);
             type = sum.types[i]
-            enum.append("%s:%d" % (type.name, i + 1))
-        enums = ", ".join(enum)
-        ctype = get_c_type(name)
-        self.emit("""/**
- * Enumeration for %s.
- * @const
- * @enum {number}
- */""" % name, depth, reflow=False)
-        s = "var %s = { %s };" % (name, enums)
-        self.emit(s, depth)
+            self.emit("function %s() {}" % type.name, depth)
         self.emit("", depth)
 
     def visitProduct(self, product, name, depth):
@@ -246,7 +238,7 @@ class FunctionVisitor(PrototypeVisitor):
         for argtype, argname, opt in args:
             # XXX hack alert: false is allowed for a bool
             if not opt and not (argtype == "bool" or argtype == "int"):
-                emit("goog.asserts.assert(%s);" % argname, 1)
+                emit("goog.asserts.assert(%s !== null && %s !== undefined);" % (argname, argname), 1)
 
         if union:
             self.emit_body_union(name, args, attrs)
@@ -294,33 +286,45 @@ class PickleVisitor(EmitVisitor):
         pass
 
 
+def cleanName(name):
+    name = str(name)
+    if name[-1] == "_": return name[:-1]
+    return name
+
 class FieldNamesVisitor(PickleVisitor):
+
+    """note that trailing comma is bad in IE so we have to fiddle a bit to avoid it"""
 
     def visitProduct(self, prod, name):
         if prod.fields:
-            self.emit('%s._astname = "%s";' % (name, name), 0)
+            self.emit('%s._astname = "%s";' % (name, cleanName(name)), 0)
             self.emit("%s._fields = [" % name,0)
             c = 0
-            # trailing , will kill IE
             for f in prod.fields:
                 c += 1
                 self.emit('"%s", function(n) { return n.%s; }%s' % (f.name, f.name, "," if c < len(prod.fields) else ""), 1)
             self.emit("];", 0)
 
     def visitSum(self, sum, name):
+        if is_simple(sum):
+            tnames = []
+            for t in sum.types:
+                self.emit('%s._astname = "%s";' % (t.name, cleanName(t.name)), 0)
         for t in sum.types:
             self.visitConstructor(t, name)
 
     def visitConstructor(self, cons, name):
         if cons.fields:
-            self.emit('%s._astname = "%s";' % (cons.name, cons.name), 0)
+            self.emit('%s._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
             self.emit("%s._fields = [" % cons.name, 0)
-            # trailing , will kill IE
             c = 0
             for t in cons.fields:
                 c += 1
                 self.emit('"%s", function(n) { return n.%s; }%s' % (t.name, t.name, "," if c < len(cons.fields) else ""), 1)
             self.emit("];",0)
+
+    def visitField(self, sum):
+        self.emit(get_c_name(sum), 0);
 
 _SPECIALIZED_SEQUENCES = ('stmt', 'expr')
 
