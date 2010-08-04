@@ -38,7 +38,7 @@ var uneval_default = function(o, np){
     var src = []; // a-ha!
     for (var p in o){
         if (!o.hasOwnProperty(p)) continue;
-        src[src.length] = uneval(p)  + ':' + uneval(o[p], 1);
+        src[src.length] = Sk.uneval(p)  + ':' + Sk.uneval(o[p], 1);
     }
     // parens needed to make eval() happy
     return np ? '{' + src.toString() + '}' : '({' + src.toString() + '})';
@@ -52,7 +52,7 @@ var uneval_set = function(proto, name, func){
 uneval_set(Array, 'array', function(o){
     var src = [];
     for (var i = 0, l = o.length; i < l; i++)
-        src[i] = uneval(o[i]);
+        src[i] = Sk.uneval(o[i]);
     return '[' + String(src) + ']';
 });
 //uneval_set(RegExp, 'regexp', uneval_asis);
