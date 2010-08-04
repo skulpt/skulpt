@@ -23,7 +23,7 @@ function Compiling(encoding, filename)
 /**
  * @return {number}
  */
-function NCH(n) { goog.asserts.assert(n !== undefined); return n.children.length; }
+function NCH(n) { goog.asserts.assert(n !== undefined); if (n.children === null) return 0; return n.children.length; }
 
 function CHILD(n, i) { goog.asserts.assert(n !== undefined); goog.asserts.assert(i !== undefined); return n.children[i]; }
 
@@ -802,6 +802,58 @@ function parsenumber(c, s)
     return parseInt(s);
 }
 
+function astForSlice(c, n)
+{
+    REQ(n, SYM.subscript);
+
+    /*
+       subscript: '.' '.' '.' | test | [test] ':' [test] [sliceop]
+       sliceop: ':' [test]
+    */
+    var ch = CHILD(n, 0);
+    var lower = null;
+    var upper = null;
+    var step = null;
+    if (ch.type === TOK.T_DOT)
+        return new Ellipsis();
+    if (NCH(n) === 1 && ch.type === SYM.test)
+        return new Index(astForExpr(c, ch));
+    if (ch.type === SYM.test)
+        lower = astForExpr(c, ch);
+    if (ch.type === TOK.T_COLON)
+    {
+        if (NCH(n) > 1)
+        {
+            var n2 = CHILD(n, 1);
+            if (n2.type === SYM.test)
+                upper = astForExpr(c, n2);
+        }
+    }
+    else if (NCH(n) > 2)
+    {
+        var n2 = CHILD(n, 2);
+        if (n2.type === SYM.test)
+            upper = astForExpr(c, n2);
+    }
+
+    ch = CHILD(n, NCH(n) - 1);
+    if (ch.type === SYM.sliceop)
+    {
+        if (NCH(ch) === 1)
+        {
+            ch = CHILD(ch, 0);
+            step = new Name("None", Load, ch.lineno, ch.col_offset);
+        }
+        else
+        {
+            ch = CHILD(ch, 1);
+            if (ch.type === SYM.test)
+                step = astForExpr(c, ch);
+        }
+    }
+    return new Slice(lower, upper, step);
+}
+
 function astForAtom(c, n)
 {
     /* atom: '(' [yield_expr|testlist_gexp] ')' | '[' [listmaker] ']'
@@ -817,7 +869,7 @@ function astForAtom(c, n)
             return new Str(parsestrplus(c, n), n.lineno, n.col_offset);
         case TOK.T_NUMBER:
             return new Num(parsenumber(c, ch.value), n.lineno, n.col_offset);
-        case TOK.LPAR: // various uses for parens
+        case TOK.T_LPAR: // various uses for parens
             ch = CHILD(n, 1);
             if (ch.type === TOK.RPAR)
                 return new Tuple(null, Load, n.lineno, n.col_offset);
@@ -826,7 +878,7 @@ function astForAtom(c, n)
             if (NCH(ch) > 1 && CHILD(ch, 1).type === SYM.gen_for)
                 return astForGenexp(c, ch);
             return astForTestlistGexp(c, ch);
-        case TOK.LSQB: // list or listcomp
+        case TOK.T_LSQB: // list or listcomp
             ch = CHILD(n, 1);
             if (ch.type === RSQB)
                 return new List(null, Load, n.lineno, n.col_offset);
@@ -835,7 +887,7 @@ function astForAtom(c, n)
                 return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
             else
                 return astForListcomp(c, ch);
-        case TOK.LBRACE:
+        case TOK.T_LBRACE:
             /* dictmaker: test ':' test (',' test ':' test)* [','] */
             ch = CHILD(n, 1);
             var size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
@@ -927,9 +979,9 @@ function astForExpr(c, n)
                 for (var i = 0; i < NCH(n); i += 2)
                     seq[i / 2] = astForExpr(c, CHILD(n, i));
                 if (CHILD(n, 1).value === "and")
-                    return new BoolOp(boolop.And, seq, n.lineno, n.col_offset);
+                    return new BoolOp(And, seq, n.lineno, n.col_offset);
                 goog.asserts.assert(CHILD(n, 1).value === "or");
-                return new BoolOp(boolop.Or, seq, n.lineno, n.col_offset);
+                return new BoolOp(Or, seq, n.lineno, n.col_offset);
             case SYM.not_test:
                 if (NCH(n) === 1)
                 {
