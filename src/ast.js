@@ -284,7 +284,10 @@ function astForIfStmt(c, n)
     */
     REQ(n, SYM.if_stmt);
     if (NCH(n) === 4)
-        return new If_(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), [], n.lineno, n.col_offset);
+        return new If_(
+                astForExpr(c, CHILD(n, 1)),
+                astForSuite(c, CHILD(n, 3)),
+                [], n.lineno, n.col_offset);
 
     var s = CHILD(n, 4).value;
     var decider = s.substr(2, 1); // elSe or elIf
@@ -321,7 +324,7 @@ function astForIfStmt(c, n)
                     astForSuite(c, CHILD(n, NCH(n) - 1)),
                     CHILD(n, NCH(n) - 6).lineno,
                     CHILD(n, NCH(n) - 6).col_offset)];
-            nElif -= 1;
+            nElif--;
         }
 
         for (var i = 0; i < nElif; ++i)
@@ -331,6 +334,7 @@ function astForIfStmt(c, n)
                 new If_(
                     astForExpr(c, CHILD(n, off)),
                     astForSuite(c, CHILD(n, off + 2)),
+                    orelse,
                     CHILD(n, off).lineno,
                     CHILD(n, off).col_offset)];
         }
@@ -341,6 +345,338 @@ function astForIfStmt(c, n)
     }
     
     goog.asserts.fail("unexpected token in 'if' statement");
+}
+
+function astForExprlist(c, n, context)
+{
+    REQ(n, SYM.exprlist);
+    var seq = [];
+    for (var i = 0; i < NCH(n); i += 2)
+    {
+        var e = astForExpr(c, CHILD(n, i));
+        seq[i / 2] = e;
+        if (context) setContext(c, e, context, CHILD(n, i));
+    }
+    return seq;
+}
+
+function astForDelStmt(c, n)
+{
+    /* del_stmt: 'del' exprlist */
+    REQ(n, SYM.del_stmt);
+    return new Delete_(astForExprlist(c, CHILD(n, 1), Del), n.lineno, n.col_offset);
+}
+
+function astForGlobalStmt(c, n)
+{
+    /* global_stmt: 'global' NAME (',' NAME)* */
+    REQ(n, SYM.global_stmt);
+    var s = [];
+    for (var i = 1; i < NCH(n); i += 2)
+    {
+        s[(i - 1) / 2] = CHILD(n, i).value;
+    }
+    return new Global(s, n.lineno, n.col_offset);
+}
+
+function astForAssertStmt(c, n)
+{
+    /* assert_stmt: 'assert' test [',' test] */
+    REQ(n, SYM.assert_stmt);
+    if (NCH(n) === 2)
+        return new Assert(astForExpr(c, CHILD(n, 1)), null, n.lineno, n.col_offset);
+    else if (NCH(n) === 4)
+        return new Assert(astForExpr(c, CHILD(n, 1)), astForExpr(c, CHILD(n, 3)), n.lineno, n.col_offset);
+    goog.asserts.fail("improper number of parts to assert stmt");
+}
+
+function aliasForImportName(c, n)
+{
+    /*
+      import_as_name: NAME ['as' NAME]
+      dotted_as_name: dotted_name ['as' NAME]
+      dotted_name: NAME ('.' NAME)*
+    */
+
+    loop: while (true) {
+        switch (n.type)
+        {
+            case SYM.import_as_name:
+                var str = null;
+                if (NCH(n) === 3)
+                    str = CHILD(n, 2).value;
+                var name = CHILD(n, 0).value;
+                return new alias(name, str);
+            case SYM.dotted_as_name:
+                if (NCH(n) === 1)
+                {
+                    n = CHILD(n, 0);
+                    continue loop;
+                }
+                else
+                {
+                    var a = aliasForImportName(c, CHILD(n, 0));
+                    goog.asserts.assert(!a.asname);
+                    a.asname = CHILD(n, 2).value;
+                    return a;
+                }
+            case SYM.dotted_name:
+                if (NCH(n) === 1)
+                    return new alias(CHILD(n, 0).value, null);
+                else
+                {
+                    // create a string of the form a.b.c
+                    var str = '';
+                    for (var i = 0; i < NCH(n); i += 2)
+                        str += CHILD(n, i) + ".";
+                    return new alias(str.substr(0, str.length - 1), null);
+                }
+            case TOK.T_STAR:
+                return new alias("*", null);
+            default:
+                throw new SyntaxError("unexpected import name");
+        }
+    break; }
+
+    goog.asserts.fail("unhandled import name condition");
+}
+
+function astForImportStmt(c, n)
+{
+    /*
+      import_stmt: import_name | import_from
+      import_name: 'import' dotted_as_names
+      import_from: 'from' ('.'* dotted_name | '.') 'import'
+                          ('*' | '(' import_as_names ')' | import_as_names)
+    */
+    REQ(n, SYM.import_stmt);
+    var lineno = n.lineno;
+    var col_offset = n.col_offset;
+    n = CHILD(n, 0);
+    if (n.type === SYM.import_name)
+    {
+        n = CHILD(n, 1);
+        REQ(n, SYM.dotted_as_names);
+        var aliases = [];
+        for (var i = 0; i < NCH(n); i += 2)
+            aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
+        return new Import_(aliases, lineno, col_offset);
+    }
+    else if (n.type === SYM.import_from)
+    {
+        var mod = null;
+        var ndots = 0;
+        var nchildren;
+
+        for (var idx = 1; idx < NCH(n); ++i)
+        {
+            if (CHILD(n, idx).type === SYM.dotted_name)
+            {
+                mod = aliasForImportName(c, CHILD(n, idx));
+                idx++;
+                break;
+            }
+            else if (CHILD(n, idx).type !== TOK.T_DOT)
+                break;
+            ndots++;
+        }
+        ++idx; // skip the import keyword
+        switch (CHILD(n, idx).type)
+        {
+            case TOK.T_STAR:
+                // from ... import
+                n = CHILD(n, idx);
+                nchildren = 1;
+                break;
+            case TOK.T_LPAR:
+                // from ... import (x, y, z)
+                n = CHILD(n, idx + 1);
+                nchildren = NCH(n);
+                break;
+            case SYM.import_as_names:
+                // from ... import x, y, z
+                n = CHILD(n, idx);
+                nchildren = NCH(n);
+                if (nchildren % 2 === 0)
+                    throw new SyntaxError("trailing comma not allowed without surrounding parentheses");
+                break;
+            default:
+                throw new SyntaxError("Unexpected node-type in from-import");
+        }
+        var aliases = [];
+        if (n.type === TOK.T_STAR)
+            aliases[0] = aliasForImportName(c, n);
+        else
+            for (var i = 0; i < NCH(n); i += 2)
+                aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
+        var modname = mod ? mod.name : "";
+        return new ImportFrom(modname, aliases, ndots, lineno, col_offset);
+    }
+    throw new SyntaxError("unknown import statement");
+}
+
+function astForTestlistGexp(c, n)
+{
+    /* testlist_gexp: test ( gen_for | (',' test)* [','] ) */
+    /* argument: test [ gen_for ] */
+    goog.asserts.assert(n.type === SYM.testlist_gexp || n.type === SYM.argument);
+    if (NCH(n) > 1 && CHILD(n, 1).type === SYM.gen_for)
+        return astForGenexp(c, n);
+    return astForTestlist(c, n);
+}
+
+function astForListcomp(c, n)
+{
+    /* listmaker: test ( list_for | (',' test)* [','] )
+       list_for: 'for' exprlist 'in' testlist_safe [list_iter]
+       list_iter: list_for | list_if
+       list_if: 'if' test [list_iter]
+       testlist_safe: test [(',' test)+ [',']]
+    */
+
+    function countListFors(c, n)
+    {
+        var nfors = 0;
+        var ch = CHILD(n, 1);
+        count_list_for: while(true) {
+            nfors++;
+            REQ(ch, SYM.list_for);
+            if (NCH(ch) === 5)
+                ch = CHILD(ch, 4);
+            else
+                return nfors;
+            count_list_iter: while(true) {
+                REQ(ch, SYM.list_iter);
+                ch = CHILD(ch, 0);
+                if (ch.type === SYM.list_for)
+                    continue count_list_for;
+                else if (ch.type === SYM.list_if)
+                {
+                    if (NCH(ch) === 3)
+                    {
+                        ch = CHILD(ch, 2);
+                        continue count_list_iter;
+                    }
+                    else
+                        return nfors;
+                }
+            break; }
+        break; }
+    }
+
+    function countListIfs(c, n)
+    {
+        var nifs = 0;
+        while (true)
+        {
+            REQ(n, SYM.list_iter);
+            if (CHILD(n, 0).type === SYM.list_for)
+                return nifs;
+            n = CHILD(n, 0);
+            REQ(n, SYM.list_if);
+            nifs++;
+            if (NCH(n) == 2)
+                return nifs;
+            n = CHILD(n, 2);
+        }
+    }
+
+    REQ(n, SYM.listmaker);
+    goog.asserts.assert(NCH(n) > 1);
+    var elt = astForExpr(c, CHILD(n, 0));
+    var nfors = countListFors(c, n);
+    var listcomps = [];
+    var ch = CHILD(n, 1);
+    for (var i = 0; i < nfors; ++i)
+    {
+        REQ(ch, SYM.list_for);
+        var forch = CHILD(ch, 1);
+        var t = astForExprlist(c, forch, Store);
+        var expression = astForTestlist(c, CHILD(ch, 3));
+        var lc;
+        if (NCH(forch) === 1)
+            lc = new comprehension(t[0], expression, []);
+        else
+            lc = new comprehension(new Tuple(t, Store, ch.lineno, ch.col_offset), expression, []);
+
+        if (NCH(ch) === 5)
+        {
+            ch = CHILD(ch, 4);
+            var nifs = countListIfs(c, ch);
+            var ifs = [];
+            for (var j = 0; j < nifs; ++j)
+            {
+                REQ(ch, SYM.list_iter);
+                ch = CHILD(ch, 0);
+                REQ(ch, SYM.list_if);
+                ifs[j] = astForExpr(c, CHILD(ch, 1));
+                if (NCH(ch) === 3)
+                    ch = CHILD(ch, 2);
+            }
+            if (ch.type === SYM.list_iter)
+                ch = CHILD(ch, 0);
+            lc.ifs = ifs;
+        }
+        listcomps[i] = lc;
+    }
+    return new ListComp(elt, listcomps, n.lineno, n.col_offset);
+}
+
+function astForFactor(c, n)
+{
+    /* some random peephole thing that cpy does */
+    if (CHILD(n, 0).type === TOK.T_MINUS && NCH(n) === 2)
+    {
+        var pfactor = CHILD(n, 1);
+        if (pfactor.type === SYM.factor && NCH(pfactor) === 1)
+        {
+            var ppower = CHILD(pfactor, 0);
+            if (ppower.type === SYM.power && NCH(ppower) === 1)
+            {
+                var patom = CHILD(ppower, 0);
+                if (patom.type === SYM.atom)
+                {
+                    var pnum = CHILD(patom, 0);
+                    if (pnum.type === TOK.T_NUMBER)
+                    {
+                        pnum.value = "-" + pnum.value;
+                        return astForAtom(c, patom);
+                    }
+                }
+            }
+        }
+    }
+
+    var expression = astForExpr(c, CHILD(n, 1));
+    switch (CHILD(n, 0).type)
+    {
+        case TOK.T_PLUS: return new UnaryOp(UAdd, expression, n.lineno, n.col_offset);
+        case TOK.T_MINUS: return new UnaryOp(USub, expression, n.lineno, n.col_offset);
+        case TOK.T_TILDE: return new UnaryOp(Invert, expression, n.lineno, n.col_offset);
+    }
+
+    goog.assert.fail("unhandled factor");
+}
+
+function astForForStmt(c, n)
+{
+    /* for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite] */
+    var seq = [];
+    REQ(n, SYM.for_stmt);
+    if (NCH(n) === 9)
+        seq = astForSuite(c, CHILD(n, 8));
+    var nodeTarget = CHILD(n, 1);
+    var _target = astForExprlist(c, nodeTarget, Store);
+    var target;
+    if (NCH(nodeTarget) === 1)
+        target = _target[0];
+    else
+        target = new Tuple(_target, Store, n.lineno, n.col_offset);
+
+    return new For_(target,
+            astForTestlist(c, CHILD(n, 3)),
+            astForSuite(c, CHILD(n, 5)),
+            seq, n.lineno, n.col_offset);
 }
 
 function astForCall(c, n, func)
@@ -364,7 +700,7 @@ function astForCall(c, n, func)
             else nkeywords++;
         }
     }
-    if (ngens > 1 || (ngens && (narsg || nkeywords)))
+    if (ngens > 1 || (ngens && (nargs || nkeywords)))
         throw new SyntaxError("Generator expression must be parenthesized if not sole argument");
     if (nargs + nkeywords + ngens > 255)
         throw new SyntaxError("more than 255 arguments");
@@ -391,7 +727,7 @@ function astForCall(c, n, func)
             {
                 var e = astForExpr(c, CHILD(ch, 0));
                 if (e.constructor === Lambda) throw new SyntaxError("lambda cannot contain assignment");
-                else if (e.constructor === Name) throw new SyntaxError("keyword can't be an expression");
+                else if (e.constructor !== Name) throw new SyntaxError("keyword can't be an expression");
                 var key = e.id;
                 forbiddenCheck(c, CHILD(ch, 0), key);
                 for (var k = 0; k < nkeywords; ++k)
@@ -420,7 +756,7 @@ function astForTrailer(c, n, leftExpr)
     if (CHILD(n, 0).type === TOK.T_LPAR)
     {
         if (NCH(n) === 2)
-            return new Call(leftExpr, null, null, null, null, n.lineno, n.col_offset);
+            return new Call(leftExpr, [], [], null, null, n.lineno, n.col_offset);
         else
             return astForCall(c, CHILD(n, 1), leftExpr);
     }
@@ -525,7 +861,7 @@ function astForArguments(c, n)
     if (n.type === SYM.parameters)
     {
         if (NCH(n) === 2) // () as arglist
-            return new arguments_(null, null, null, []);
+            return new arguments_([], null, null, []);
         n = CHILD(n, 1);
     }
     REQ(n, SYM.varargslist);
@@ -620,6 +956,144 @@ function astForFuncdef(c, n, decoratorSeq)
     var args = astForArguments(c, CHILD(n, 2));
     var body = astForSuite(c, CHILD(n, 4));
     return new FunctionDef(name, args, body, decoratorSeq, n.lineno, n.col_offset);
+}
+
+function astForClassBases(c, n)
+{
+    /* testlist: test (',' test)* [','] */
+    goog.asserts.assert(NCH(n) > 0);
+    REQ(n, SYM.testlist);
+    if (NCH(n) === 1)
+        return [ astForExpr(c, CHILD(n, 0)) ];
+    return seqForTestlist(c, n);
+}
+
+function astForClassdef(c, n, decoratorSeq)
+{
+    /* classdef: 'class' NAME ['(' testlist ')'] ':' suite */
+    REQ(n, SYM.classdef);
+    forbiddenCheck(c, n, CHILD(n, 1).value);
+    var classname = CHILD(n, 1).value;
+    if (NCH(n) === 4)
+        return new ClassDef(classname, [], astForSuite(c, CHILD(n, 3)), decoratorSeq, n.lineno, n.col_offset);
+    if (CHILD(n, 3).type === TOK.T_RPAR)
+        return new ClassDef(classname, [], astForSuite(c, CHILD(n, 5)), decoratorSeq, n.lineno, n.col_offset);
+
+    var bases = astForClassBases(c, CHILD(n, 3));
+    var s = astForSuite(c, CHILD(n, 6));
+    return new ClassDef(classname, bases, s, decoratorSeq, n.lineno, n.col_offset);
+}
+
+function astForLambdef(c, n)
+{
+    /* lambdef: 'lambda' [varargslist] ':' test */
+    var args;
+    var expression;
+    if (NCH(n) === 3)
+    {
+        args = new arguments_([], null, null, []);
+        expression = astForExpr(c, CHILD(n, 2));
+    }
+    else
+    {
+        args = astForArguments(c, CHILD(n, 1));
+        expression = astForExpr(c, CHILD(n, 3));
+    }
+    return new Lambda(args, expression, n.lineno, n.col_offset);
+}
+
+function astForGenexp(c, n)
+{
+    /* testlist_gexp: test ( gen_for | (',' test)* [','] )
+       argument: [test '='] test [gen_for]       # Really [keyword '='] test */
+    goog.asserts.assert(n.type === SYM.testlist_gexp || n.type === SYM.argument);
+    goog.asserts.assert(NCH(n) > 1);
+
+    function countGenFors(c, n)
+    {
+        var nfors = 0;
+        var ch = CHILD(n, 1);
+        count_gen_for: while(true) {
+            nfors++;
+            REQ(ch, SYM.gen_for);
+            if (NCH(ch) === 5)
+                ch = CHILD(ch, 4);
+            else
+                return nfors;
+            count_gen_iter: while(true) {
+                REQ(ch, SYM.gen_iter);
+                ch = CHILD(ch, 0);
+                if (ch.type === SYM.gen_for)
+                    continue count_gen_for;
+                else if (ch.type === SYM.gen_if)
+                {
+                    if (NCH(ch) === 3)
+                    {
+                        ch = CHILD(ch, 2);
+                        continue count_gen_iter;
+                    }
+                    else
+                        return nfors;
+                }
+            break; }
+        break; }
+        goog.asserts.fail("logic error in countGenFors");
+    }
+
+    function countGenIfs(c, n)
+    {
+        var nifs = 0;
+        while (true)
+        {
+            REQ(n, SYM.gen_iter);
+            if (CHILD(n, 0).type === SYM.gen_for)
+                return nifs;
+            n = CHILD(n, 0);
+            REQ(n, SYM.gen_if);
+            nifs++;
+            if (NCH(n) == 2)
+                return nifs;
+            n = CHILD(n, 2);
+        }
+    }
+
+    var elt = astForExpr(c, CHILD(n, 0));
+    var nfors = countGenFors(c, n);
+    var genexps = [];
+    var ch = CHILD(n, 1);
+    for (var i = 0; i < nfors; ++i)
+    {
+        REQ(ch, SYM.gen_for);
+        var forch = CHILD(ch, 1);
+        var t = astForExprlist(c, forch, Store);
+        var expression = astForExpr(c, CHILD(ch, 3));
+        var ge;
+        if (NCH(forch) === 1)
+            ge = new comprehension(t[0], expression, []);
+        else
+            ge = new comprehension(new Tuple(t, Store, ch.lineno, ch.col_offset), expression, []);
+        if (NCH(ch) === 5)
+        {
+            ch = CHILD(ch, 4);
+            nifs = countGenIfs(c, ch);
+            var ifs = [];
+            for (var j = 0; j < nifs; ++j)
+            {
+                REQ(ch, SYM.gen_iter);
+                ch = CHILD(ch, 0);
+                REQ(ch, SYM.gen_if);
+                expression = astForExpr(c, CHILD(ch, 1));
+                ifs[j] = expression;
+                if (NCH(ch) === 3)
+                    ch = CHILD(ch, 2);
+            }
+            if (ch.type === SYM.gen_iter)
+                ch = CHILD(ch, 0);
+            ge.ifs = ifs;
+        }
+        genexps[i] = ge;
+    }
+    return new GeneratorExp(elt, genexps, n.lineno, n.col_offset);
 }
 
 function astForWhileStmt(c, n)
@@ -798,7 +1272,7 @@ function parsenumber(c, s)
     // todo; no complex support
     var end = s.substr(s.length - 1, 1);
     if (end === 'l' || end === 'L')
-        return Sk.longfromStr(s);
+        return Sk.longFromStr(s);
     return parseInt(s);
 }
 
@@ -871,8 +1345,8 @@ function astForAtom(c, n)
             return new Num(parsenumber(c, ch.value), n.lineno, n.col_offset);
         case TOK.T_LPAR: // various uses for parens
             ch = CHILD(n, 1);
-            if (ch.type === TOK.RPAR)
-                return new Tuple(null, Load, n.lineno, n.col_offset);
+            if (ch.type === TOK.T_RPAR)
+                return new Tuple([], Load, n.lineno, n.col_offset);
             if (ch.type === SYM.yield_expr)
                 return astForExpr(c, ch);
             if (NCH(ch) > 1 && CHILD(ch, 1).type === SYM.gen_for)
@@ -880,8 +1354,8 @@ function astForAtom(c, n)
             return astForTestlistGexp(c, ch);
         case TOK.T_LSQB: // list or listcomp
             ch = CHILD(n, 1);
-            if (ch.type === RSQB)
-                return new List(null, Load, n.lineno, n.col_offset);
+            if (ch.type === TOK.T_RSQB)
+                return new List([], Load, n.lineno, n.col_offset);
             REQ(ch, SYM.listmaker);
             if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA)
                 return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
@@ -926,7 +1400,7 @@ function astForPower(c, n)
     if (CHILD(n, NCH(n) - 1).type === SYM.factor)
     {
         var f = astForExpr(c, CHILD(n, NCH(n) - 1));
-        e = new BinOp(e, binop.Pow, f, n.lineno, n.col_offset);
+        e = new BinOp(e, Pow, f, n.lineno, n.col_offset);
     }
     return e;
 }
@@ -990,7 +1464,7 @@ function astForExpr(c, n)
                 }
                 else
                 {
-                    return new UnaryOp(unaryop.Not, astForExpr(c, CHILD(n, 1)), n.lineno, n.col_offset);
+                    return new UnaryOp(Not, astForExpr(c, CHILD(n, 1)), n.lineno, n.col_offset);
                 }
             case SYM.comparison:
                 if (NCH(n) === 1)

@@ -842,6 +842,15 @@ Expr._astname = "Expr";
 Expr._fields = [
     "value", function(n) { return n.value; }
 ];
+Pass._astname = "Pass";
+Pass._fields = [
+];
+Break_._astname = "Break";
+Break_._fields = [
+];
+Continue_._astname = "Continue";
+Continue_._fields = [
+];
 BoolOp._astname = "BoolOp";
 BoolOp._fields = [
     "op", function(n) { return n.op; },
@@ -943,6 +952,27 @@ Del._astname = "Del";
 AugLoad._astname = "AugLoad";
 AugStore._astname = "AugStore";
 Param._astname = "Param";
+Load._astname = "Load";
+Load._fields = [
+];
+Store._astname = "Store";
+Store._fields = [
+];
+Del._astname = "Del";
+Del._fields = [
+];
+AugLoad._astname = "AugLoad";
+AugLoad._fields = [
+];
+AugStore._astname = "AugStore";
+AugStore._fields = [
+];
+Param._astname = "Param";
+Param._fields = [
+];
+Ellipsis._astname = "Ellipsis";
+Ellipsis._fields = [
+];
 Slice._astname = "Slice";
 Slice._fields = [
     "lower", function(n) { return n.lower; },
@@ -959,6 +989,12 @@ Index._fields = [
 ];
 And._astname = "And";
 Or._astname = "Or";
+And._astname = "And";
+And._fields = [
+];
+Or._astname = "Or";
+Or._fields = [
+];
 Add._astname = "Add";
 Sub._astname = "Sub";
 Mult._astname = "Mult";
@@ -971,10 +1007,58 @@ BitOr._astname = "BitOr";
 BitXor._astname = "BitXor";
 BitAnd._astname = "BitAnd";
 FloorDiv._astname = "FloorDiv";
+Add._astname = "Add";
+Add._fields = [
+];
+Sub._astname = "Sub";
+Sub._fields = [
+];
+Mult._astname = "Mult";
+Mult._fields = [
+];
+Div._astname = "Div";
+Div._fields = [
+];
+Mod._astname = "Mod";
+Mod._fields = [
+];
+Pow._astname = "Pow";
+Pow._fields = [
+];
+LShift._astname = "LShift";
+LShift._fields = [
+];
+RShift._astname = "RShift";
+RShift._fields = [
+];
+BitOr._astname = "BitOr";
+BitOr._fields = [
+];
+BitXor._astname = "BitXor";
+BitXor._fields = [
+];
+BitAnd._astname = "BitAnd";
+BitAnd._fields = [
+];
+FloorDiv._astname = "FloorDiv";
+FloorDiv._fields = [
+];
 Invert._astname = "Invert";
 Not._astname = "Not";
 UAdd._astname = "UAdd";
 USub._astname = "USub";
+Invert._astname = "Invert";
+Invert._fields = [
+];
+Not._astname = "Not";
+Not._fields = [
+];
+UAdd._astname = "UAdd";
+UAdd._fields = [
+];
+USub._astname = "USub";
+USub._fields = [
+];
 Eq._astname = "Eq";
 NotEq._astname = "NotEq";
 Lt._astname = "Lt";
@@ -985,6 +1069,36 @@ Is._astname = "Is";
 IsNot._astname = "IsNot";
 In_._astname = "In";
 NotIn._astname = "NotIn";
+Eq._astname = "Eq";
+Eq._fields = [
+];
+NotEq._astname = "NotEq";
+NotEq._fields = [
+];
+Lt._astname = "Lt";
+Lt._fields = [
+];
+LtE._astname = "LtE";
+LtE._fields = [
+];
+Gt._astname = "Gt";
+Gt._fields = [
+];
+GtE._astname = "GtE";
+GtE._fields = [
+];
+Is._astname = "Is";
+Is._fields = [
+];
+IsNot._astname = "IsNot";
+IsNot._fields = [
+];
+In_._astname = "In";
+In_._fields = [
+];
+NotIn._astname = "NotIn";
+NotIn._fields = [
+];
 comprehension._astname = "comprehension";
 comprehension._fields = [
     "target", function(n) { return n.target; },

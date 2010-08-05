@@ -286,7 +286,7 @@ function main()
     }
     print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
 
-    for (i = 0; i <= 20; ++i)
+    for (i = 0; i <= 300; ++i)
     {
         testTransform(sprintf("test/run/t%02d", i));
     }

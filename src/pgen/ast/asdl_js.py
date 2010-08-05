@@ -307,24 +307,20 @@ class FieldNamesVisitor(PickleVisitor):
 
     def visitSum(self, sum, name):
         if is_simple(sum):
-            tnames = []
             for t in sum.types:
                 self.emit('%s._astname = "%s";' % (t.name, cleanName(t.name)), 0)
         for t in sum.types:
             self.visitConstructor(t, name)
 
     def visitConstructor(self, cons, name):
+        self.emit('%s._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
+        self.emit("%s._fields = [" % cons.name, 0)
         if cons.fields:
-            self.emit('%s._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
-            self.emit("%s._fields = [" % cons.name, 0)
             c = 0
             for t in cons.fields:
                 c += 1
                 self.emit('"%s", function(n) { return n.%s; }%s' % (t.name, t.name, "," if c < len(cons.fields) else ""), 1)
-            self.emit("];",0)
-
-    def visitField(self, sum):
-        self.emit(get_c_name(sum), 0);
+        self.emit("];",0)
 
 _SPECIALIZED_SEQUENCES = ('stmt', 'expr')
 
