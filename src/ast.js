@@ -8,8 +8,6 @@
 // code and know that we're the same up to ast level, at least.
 //
 
-(function() {
-
 var SYM = Sk.ParseTables.sym;
 var TOK = Sk.Tokenizer;
 
@@ -119,7 +117,7 @@ function setContext(c, e, ctx, n)
         case UnaryOp:
             exprName = "operator";
             break;
-        case Generator:
+        case GeneratorExp:
             exprName = "generator expression";
             break;
         case Yield:
@@ -275,6 +273,37 @@ function astForSuite(c, n)
     }
     goog.asserts.assert(pos === numStmts(n));
     return seq;
+}
+
+function astForWithStmt(c, n)
+{
+    /* with_stmt: 'with' test [ with_var ] ':' suite */
+    var suiteIndex = 3; // skip with, test, :
+    goog.asserts.assert(n.type === SYM.with_stmt);
+    var contextExpr = astForExpr(c, CHILD(n, 1));
+    if (CHILD(n, 2).type === SYM.with_var)
+    {
+        var optionalVars = astForWithVar(c, CHILD(n, 2));
+        setContext(c, optionalVars, Store, n);
+        suiteIndex = 4;
+    }
+    return new With_(contextExpr, optionalVars, astForSuite(c, CHILD(n, suiteIndex)), n.lineno, n.col_offset);
+}
+
+function astForExecStmt(c, n)
+{
+    var expr1, globals = null, locals = null;
+    var nchildren = NCH(n);
+    goog.asserts.assert(nchildren === 2 || nchildren === 4 || nchildren === 6);
+
+    /* exec_stmt: 'exec' expr ['in' test [',' test]] */
+    REQ(n, SYM.exec_stmt);
+    var expr1 = astForExpr(c, CHILD(n, 1));
+    if (nchildren >= 4)
+        globals = astForExpr(c, CHILD(n, 3));
+    if (nchildren === 6)
+        locals = astForExpr(c, CHILD(n, 5));
+    return new Exec(expr1, globals, locals, n.lineno, n.col_offset);
 }
 
 function astForIfStmt(c, n)
@@ -786,7 +815,7 @@ function astForTrailer(c, n, leftExpr)
             }
             if (!simple)
             {
-                return new Subscript(leftExpr, new ExtSlice(slice), Load, n.lineno, n.col_offset);
+                return new Subscript(leftExpr, new ExtSlice(slices), Load, n.lineno, n.col_offset);
             }
             var elts = [];
             for (var j = 0; j < slices.length; ++j)
@@ -1075,7 +1104,7 @@ function astForGenexp(c, n)
         if (NCH(ch) === 5)
         {
             ch = CHILD(ch, 4);
-            nifs = countGenIfs(c, ch);
+            var nifs = countGenIfs(c, ch);
             var ifs = [];
             for (var j = 0; j < nifs; ++j)
             {
@@ -1215,6 +1244,7 @@ function astForExprStmt(c, n)
         setContext(c, expr1, Store, ch);
 
         ch = CHILD(n, 2);
+        var expr2;
         if (ch.type === SYM.testlist)
             expr2 = astForTestlist(c, ch);
         else
@@ -1243,6 +1273,17 @@ function astForExprStmt(c, n)
             expression = astForExpr(c, value);
         return new Assign(targets, expression, n.lineno, n.col_offset);
     }
+}
+
+function astForIfexpr(c, n)
+{
+    /* test: or_test 'if' or_test 'else' test */ 
+    goog.asserts.assert(NCH(n) === 5);
+    return new IfExp(
+            astForExpr(c, CHILD(n, 0)),
+            astForExpr(c, CHILD(n, 2)),
+            astForExpr(c, CHILD(n, 4)),
+            n.lineno, n.col_offset);
 }
 
 function parsestr(c, s)
@@ -1586,7 +1627,7 @@ function astForStmt(c, n)
             case SYM.while_stmt: return astForWhileStmt(c, ch);
             case SYM.for_stmt: return astForForStmt(c, ch);
             case SYM.try_stmt: return astForTryStmt(c, ch);
-            case SYM.with_stmt: return astForWith1Stmt(c, ch);
+            case SYM.with_stmt: return astForWithStmt(c, ch);
             case SYM.funcdef: return astForFuncdef(c, ch, []);
             case SYM.classdef: return astForClassdef(c, ch, []);
             case SYM.decorated: return astForDecorated(c, ch);
@@ -1703,5 +1744,3 @@ Sk.astDump = function(node)
 };
 
 goog.exportSymbol("Sk.astFromParse", Sk.astFromParse);
-
-}());

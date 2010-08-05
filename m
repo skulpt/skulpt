@@ -15,8 +15,9 @@ Files = [
         'support/closure-library/closure/goog/asserts/asserts.js',
         'support/closure-library/closure/goog/array/array.js',
         'support/closure-library/closure/goog/iter/iter.js',
+        #'src/full_wrapper_head.js',
         'src/env.js',
-        'src/uneval.js', # this is only here for unit tests
+        'src/uneval.js',
         'src/errors.js',
         'src/list.js',
         'src/type.js',
@@ -41,8 +42,7 @@ Files = [
         #'src/symtable.js',
         #'src/compiler.js',
         #'src/entry.js',
-        #('src/footer.js', 'dist'),
-        #('test/footer_test.js', 'test'),
+        #'src/full_wrapper_tail.js',
         ]
 
 TestFiles = [
@@ -241,7 +241,7 @@ def dist():
 
     # compress
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar  --compilation_level ADVANCED_OPTIMIZATIONS --js %s --js_output_file %s" % (uncompfn, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar  --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility --js %s --js_output_file %s" % (uncompfn, compfn)) 
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     if ret != 0:
         print "Couldn't run closure-compiler."
