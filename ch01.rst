@@ -64,7 +64,7 @@ and executes it, meaning that it does what the program says. It processes the
 program a little at a time, alternately reading lines and performing
 computations.
 
-.. image:: illustrations/interpret.svg
+.. image:: illustrations/interpret.png
    :alt: Interpret illustration
 
 A compiler reads the program and translates it completely before the program
@@ -73,7 +73,7 @@ code**, and the translated program is called the **object code** or the
 **executable**. Once a program is compiled, you can execute it repeatedly
 without further translation.
 
-.. image:: illustrations/compile.svg
+.. image:: illustrations/compile.png
    :alt: Compile illustration
 
 Many modern languages use both processes. They are first compiled into a lower

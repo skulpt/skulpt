@@ -775,57 +775,6 @@ exercises may prove helpful in remembering what you learned:
         you."`` evaluates to ``False``.
 
 
-**Exercises:**
-
-#. Write the Python interpreter's evaluation to each of the following
-   expressions:
-
-    * >>> 'Python'[1]
-    * >>> "Strings are sequences of characters."[5]
-    * >>> len("wonderful")
-    * >>> 'Mystery'[:4]
-    * >>> 'p' in 'Pinapple'
-    * >>> 'apple' in 'Pinapple'
-    * >>> 'pear' in 'Pinapple'
-    * >>> 'apple' > 'pinapple'
-    * >>> 'pinapple' < 'Peach'
-#. Write Python code to make each of the following doctests pass:
-    *
-      .. sourcecode:: python
-
-        """
-          >>> type(fruit)
-          <type 'str'>
-          >>> len(fruit)
-          8
-          >>> fruit[:3]
-          'ram'
-        """
-    *
-      .. sourcecode:: python
-
-        """
-          >>> group = "John, Paul, George, and Ringo"
-          >>> group[12:x]
-          'George'
-          >>> group[n:m]
-          'Paul'
-          >>> group[:r]
-          'John'
-          >>> group[s:]
-          'Ringo'
-        """
-    *
-      .. sourcecode:: python
-
-        """
-          >>> len(s)
-          8
-          >>> s[4:6] == 'on'
-          True
-        """
-
-
 Glossary
 --------
 
@@ -880,6 +829,79 @@ Glossary
 Exercises
 ---------
 
+#. Write the Python interpreter's evaluation to each of the following
+   expressions:
+
+   .. sourcecode:: python
+
+       >>> 'Python'[1]
+
+   .. sourcecode:: python
+
+       >>> "Strings are sequences of characters."[5]
+
+   .. sourcecode:: python
+
+       >>> len("wonderful")
+
+   .. sourcecode:: python
+
+       >>> 'Mystery'[:4]
+
+   .. sourcecode:: python
+
+       >>> 'p' in 'Pinapple'
+
+   .. sourcecode:: python
+
+       >>> 'apple' in 'Pinapple'
+
+   .. sourcecode:: python
+
+       >>> 'pear' in 'Pinapple'
+
+   .. sourcecode:: python
+
+       >>> 'apple' > 'pinapple'
+
+   .. sourcecode:: python
+
+       >>> 'pinapple' < 'Peach'
+#. Write Python code to make each of the following doctests pass:
+   
+   .. sourcecode:: python
+
+       """
+         >>> type(fruit)
+         <type 'str'>
+         >>> len(fruit)
+         8
+         >>> fruit[:3]
+         'ram'
+       """
+    
+   .. sourcecode:: python
+
+       """
+         >>> group = "John, Paul, George, and Ringo"
+         >>> group[12:x]
+         'George'
+         >>> group[n:m]
+         'Paul'
+         >>> group[:r]
+         'John'
+         >>> group[s:]
+         'Ringo'
+       """
+
+   .. sourcecode:: python
+
+       """
+         >>> len(s)
+         8
+         >>> s[4:6] == 'on'
+         True
+       """
 #. Modify:
 
    .. sourcecode:: python

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -8,14 +9,17 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="370"
-   height="120"
+   width="365"
+   height="116"
    id="svg2548"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.47 r22583"
    version="1.0"
    sodipodi:docname="stack.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/jelkner/Dropbox/Projects/thinkcspy2e/source/illustrations/stack.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs2550">
     <marker
@@ -28,7 +32,7 @@
       <path
          id="path3440"
          style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
-         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
          transform="scale(-0.6,-0.6)" />
     </marker>
     <inkscape:perspective
@@ -47,21 +51,27 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="0"
      inkscape:zoom="3.6099439"
-     inkscape:cx="-579.54334"
-     inkscape:cy="972.44501"
+     inkscape:cx="197.13916"
+     inkscape:cy="31.861972"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      showguides="true"
-     inkscape:window-width="1692"
-     inkscape:window-height="858"
-     inkscape:window-x="27"
-     inkscape:window-y="122">
+     inkscape:window-width="1736"
+     inkscape:window-height="1097"
+     inkscape:window-x="182"
+     inkscape:window-y="24"
+     showborder="true"
+     borderlayer="false"
+     inkscape:showpageshadow="true"
+     inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
        id="grid2580"
        visible="true"
-       enabled="true" />
+       enabled="true"
+       empspacing="5"
+       snapvisiblegridlinesonly="true" />
   </sodipodi:namedview>
   <metadata
      id="metadata2553">
@@ -71,6 +81,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -78,7 +89,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(769.57398,-17.774083)">
+     transform="translate(768.93398,-16.626271)">
     <rect
        style="fill:#d5e5ff;fill-rule:evenodd;stroke:#000000;stroke-width:1.00325847px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="rect4206"
@@ -102,7 +113,7 @@
        y="18.260733" />
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-752.60925"
        y="29.274357"
        id="text2560"><tspan
@@ -112,7 +123,7 @@
          y="29.274357">__main__</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-268.57144"
        y="580.93359"
        id="text2564"><tspan
@@ -122,7 +133,7 @@
          y="580.93359" /></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-233.21677"
        y="198.26367"
        id="text2568"><tspan
@@ -132,7 +143,7 @@
          y="198.26367" /></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-759.01459"
        y="70.906464"
        id="text2572"><tspan
@@ -142,7 +153,7 @@
          y="70.906464">cat_twice</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-769.26398"
        y="126.032"
        id="text2576"><tspan
@@ -152,7 +163,7 @@
          y="126.032">print_twice</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-695.85571"
        y="31.570688"
        id="text2582"><tspan
@@ -162,7 +173,7 @@
          y="31.570688">chant1</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-695.57867"
        y="47.362183"
        id="text2586"><tspan
@@ -172,7 +183,7 @@
          y="47.362183">chant2</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-688.65338"
        y="72.362183"
        id="text2590"><tspan
@@ -182,7 +193,7 @@
          y="72.362183">part1</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-688.65332"
        y="87.527245"
        id="text2594"><tspan
@@ -192,7 +203,7 @@
          y="87.527245">part2</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-677.84979"
        y="101.37787"
        id="text2598"><tspan
@@ -202,7 +213,7 @@
          y="101.37787">cat</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-689.48438"
        y="126.58602"
        id="text2602"><tspan
@@ -212,7 +223,7 @@
          y="126.58602">param</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-627.98761"
        y="32.124714"
        id="text2606"><tspan
@@ -222,7 +233,7 @@
          y="32.124714">&quot;Pie Jesu domine,&quot;</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-617.73816"
        y="49.576511"
        id="text2614"><tspan
@@ -232,7 +243,7 @@
          y="49.576511" /></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-627.71063"
        y="46.806381"
        id="text2618"><tspan
@@ -242,7 +253,7 @@
          y="46.806381">&quot;Dona eis requiem.&quot;</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        x="-627.71051"
        y="102.2089"
        id="text2622"><tspan
@@ -254,7 +265,7 @@
        id="text2626"
        y="72.62542"
        x="-627.43353"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        xml:space="preserve"><tspan
          y="72.62542"
          x="-627.43353"
@@ -264,7 +275,7 @@
        id="text2630"
        y="87.250221"
        x="-627.43359"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        xml:space="preserve"><tspan
          y="87.250221"
          x="-627.43359"
@@ -274,36 +285,36 @@
        id="text2634"
        y="127.14003"
        x="-627.71057"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier 10 Pitch;-inkscape-font-specification:Courier 10 Pitch"
        xml:space="preserve"><tspan
          y="127.14003"
          x="-627.71057"
          id="tspan2636"
          sodipodi:role="line">&quot;Pie Jesu domine, Dona eis requiem.&quot;</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Mend);stroke-opacity:1"
-       d="M -654.15968,29.768687 L -631.76501,29.768687"
+       style="fill:none;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Mend)"
+       d="m -654.15968,29.768687 22.39467,0"
        id="path2638" />
     <path
        id="path4188"
-       d="M -654.15968,45.281394 L -631.76501,45.281394"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Mend);stroke-opacity:1" />
+       d="m -654.15968,45.281394 22.39467,0"
+       style="fill:none;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Mend)" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Mend);stroke-opacity:1"
-       d="M -654.15968,69.658504 L -631.76501,69.658504"
+       style="fill:none;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Mend)"
+       d="m -654.15968,69.658504 22.39467,0"
        id="path4190" />
     <path
        id="path4192"
-       d="M -654.16896,84.894198 L -631.77429,84.894198"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Mend);stroke-opacity:1" />
+       d="m -654.16896,84.894198 22.39467,0"
+       style="fill:none;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Mend)" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Mend);stroke-opacity:1"
-       d="M -654.16896,99.575867 L -631.77429,99.575867"
+       style="fill:none;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Mend)"
+       d="m -654.16896,99.575867 22.39467,0"
        id="path4194" />
     <path
        id="path4198"
-       d="M -654.16896,124.22999 L -631.77429,124.22999"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Mend);stroke-opacity:1" />
+       d="m -654.16896,124.22999 22.39467,0"
+       style="fill:none;stroke:#000000;stroke-width:0.73419851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Mend)" />
     <rect
        style="fill:#0000ff;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="rect4202"

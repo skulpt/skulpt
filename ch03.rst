@@ -389,7 +389,7 @@ Each function is represented by a **frame**. A frame is a box with the name of
 a function beside it and the parameters and variables of the function inside
 it. The stack diagram for the previous example looks like this:
 
-.. image:: illustrations/stack.svg
+.. image:: illustrations/stack.png
    :alt: Stack diagram 
 
 The order of the stack shows the flow of execution. ``print_twice`` was called
