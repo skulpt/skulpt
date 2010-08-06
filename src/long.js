@@ -85,6 +85,8 @@ $.mulInt$ = function(a, n)
 // 0x, 0o, 0b, etc.
 Sk.longFromStr = function(s)
 {
+    goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
+
     //print("initial fromJsStr:",s);
     var neg = false;
     if (s.substr(0, 1) === "-")

@@ -83,33 +83,6 @@ $.prototype.__getitem__ = function(index)
         throw new TypeError("string indices must be numbers, not " + typeof index);
 };
 
-var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
-var meta = {
-    '\b': '\\b',
-    '\t': '\\t',
-    '\n': '\\n',
-    '\f': '\\f',
-    '\r': '\\r',
-    "'" : "\\'",
-    '\\': '\\\\'
-};
-
-var quote = function(string)
-{
-    // If the string contains no control characters, no quote characters, and no
-    // backslash characters, then we can safely slap some quotes around it.
-    // Otherwise we must also replace the offending characters with safe escape
-    // sequences.
-    escapable.lastIndex = 0;
-    return escapable.test(string) ?
-        "'" + string.replace(escapable, function (a) {
-            var c = meta[a];
-            return typeof c === 'string' ? c :
-                '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-        }) + "'" :
-        "'" + string + "'";
-};
-
 $.prototype.__add__ = function(other)
 {
     return new $(this.v + other.v);
@@ -328,7 +301,36 @@ $.prototype.__mod__ = function(rhs)
 
 $.prototype.__repr__ = function()
 {
-    return new $(quote(this.v));
+    // single is preferred
+    var quote = "'";
+    if (this.v.indexOf("'") !== -1 && this.v.indexOf('"') === -1)
+    {
+        quote = '"';
+    }
+    var len = this.v.length;
+    var ret = quote;
+    for (var i = 0; i < len; ++i)
+    {
+        var c = this.v.charAt(i);
+        if (c === quote || c === '\\')
+            ret += '\\' + c;
+        else if (c === '\t')
+            ret += '\\t';
+        else if (c === '\n')
+            ret += '\\n';
+        else if (c === '\r')
+            ret += '\\r';
+        else if (c < ' ' || c >= 0x7f)
+        {
+            var ashex = c.charCodeAt(0).toString(16);
+            if (ashex.length < 2) ashex = "0" + ashex;
+            ret += "\\x" + ashex;
+        }
+        else
+            ret += c;
+    }
+    ret += quote;
+    return new $(ret);
 };
 $.__repr__ = function()
 {

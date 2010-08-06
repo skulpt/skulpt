@@ -15,6 +15,8 @@ def astppdump(node):
         elif isinstance(node, list):
             elems = (',\n').join(_format(x, indent+" ") for x in node)
             return indent+"[%s]" % elems.lstrip()
+        elif isinstance(node, long): # L suffix depends on 32/64 python, and skulpt is ~30 because of number precision in js
+            return indent+str(node)
         return indent+repr(node)
     if not isinstance(node, ast.AST):
         raise TypeError('expected AST, got %r' % node.__class__.__name__)

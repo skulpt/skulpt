@@ -1,6 +1,6 @@
 Module(body=[Assign(targets=[Name(id='big',
                                   ctx=Store())],
-                    value=Num(n=12935167030485801517351291832L)),
+                    value=Num(n=12935167030485801517351291832)),
              Print(dest=None,
                    values=[BinOp(left=Str(s="'%o'"),
                                  op=Mod(),

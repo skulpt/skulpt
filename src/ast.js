@@ -27,6 +27,8 @@ function CHILD(n, i) { goog.asserts.assert(n !== undefined); goog.asserts.assert
 
 function REQ(n, type) { goog.asserts.assert(n.type === type, "node wasn't expected type"); }
 
+function strobj(s) { return new Sk.builtin.str(s); }
+
 /** @return {number} */
 function numStmts(n)
 {
@@ -352,11 +354,11 @@ function astForDottedName(c, n)
     REQ(n, SYM.dotted_name);
     var lineno = n.lineno;
     var col_offset = n.col_offset;
-    var id = CHILD(n, 0).value;
+    var id = strobj(CHILD(n, 0).value);
     var e = new Name(id, Load, lineno, col_offset);
     for (var i = 2; i < NCH(n); i += 2)
     {
-        id = CHILD(n, i).value;
+        id = strobj(CHILD(n, i).value);
         e = new Attribute(e, id, Load, lineno, col_offset);
     }
     return e;
@@ -456,7 +458,7 @@ function astForIfStmt(c, n)
                 [], n.lineno, n.col_offset);
 
     var s = CHILD(n, 4).value;
-    var decider = s.substr(2, 1); // elSe or elIf
+    var decider = s.charAt(2); // elSe or elIf
     if (decider === 's')
     {
         return new If_(
@@ -474,7 +476,7 @@ function astForIfStmt(c, n)
         /* must reference the child nElif+1 since 'else' token is third, not
          * fourth child from the end. */
         if (CHILD(n, nElif + 1).type === TOK.T_NAME
-            && CHILD(n, nElif + 1).value.substr(2, 1) === 's')
+            && CHILD(n, nElif + 1).value.charAt(2) === 's')
         {
             hasElse = true;
             nElif -= 3;
@@ -540,7 +542,7 @@ function astForGlobalStmt(c, n)
     var s = [];
     for (var i = 1; i < NCH(n); i += 2)
     {
-        s[(i - 1) / 2] = CHILD(n, i).value;
+        s[(i - 1) / 2] = strobj(CHILD(n, i).value);
     }
     return new Global(s, n.lineno, n.col_offset);
 }
@@ -571,7 +573,7 @@ function aliasForImportName(c, n)
                 var str = null;
                 if (NCH(n) === 3)
                     str = CHILD(n, 2).value;
-                var name = CHILD(n, 0).value;
+                var name = strobj(CHILD(n, 0).value);
                 return new alias(name, str);
             case SYM.dotted_as_name:
                 if (NCH(n) === 1)
@@ -588,17 +590,17 @@ function aliasForImportName(c, n)
                 }
             case SYM.dotted_name:
                 if (NCH(n) === 1)
-                    return new alias(CHILD(n, 0).value, null);
+                    return new alias(strobj(CHILD(n, 0).value), null);
                 else
                 {
                     // create a string of the form a.b.c
                     var str = '';
                     for (var i = 0; i < NCH(n); i += 2)
                         str += CHILD(n, i) + ".";
-                    return new alias(str.substr(0, str.length - 1), null);
+                    return new alias(strobj(str.substr(0, str.length - 1)), null);
                 }
             case TOK.T_STAR:
-                return new alias("*", null);
+                return new alias(strobj("*"), null);
             default:
                 throw new SyntaxError("unexpected import name");
         }
@@ -676,7 +678,7 @@ function astForImportStmt(c, n)
             for (var i = 0; i < NCH(n); i += 2)
                 aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
         var modname = mod ? mod.name : "";
-        return new ImportFrom(modname, aliases, ndots, lineno, col_offset);
+        return new ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
     }
     throw new SyntaxError("unknown import statement");
 }
@@ -927,7 +929,7 @@ function astForTrailer(c, n, leftExpr)
             return astForCall(c, CHILD(n, 1), leftExpr);
     }
     else if (CHILD(n, 0).type === TOK.T_DOT)
-        return new Attribute(leftExpr, CHILD(n, 1).value, Load, n.lineno, n.col_offset);
+        return new Attribute(leftExpr, strobj(CHILD(n, 1).value), Load, n.lineno, n.col_offset);
     else
     {
         REQ(CHILD(n, 0), TOK.T_LSQB);
@@ -1088,7 +1090,7 @@ function astForArguments(c, n)
                     if (CHILD(ch, 0).type === TOK.T_NAME)
                     {
                         forbiddenCheck(c, n, CHILD(ch, 0).value);
-                        var id = CHILD(ch, 0).value;
+                        var id = strobj(CHILD(ch, 0).value);
                         args[k++] = new Name(id, Param, ch.lineno, ch.col_offset);
                     }
                     i += 2;
@@ -1117,7 +1119,7 @@ function astForFuncdef(c, n, decoratorSeq)
 {
     /* funcdef: 'def' NAME parameters ':' suite */
     REQ(n, SYM.funcdef);
-    var name = CHILD(n, 1).value;
+    var name = strobj(CHILD(n, 1).value);
     forbiddenCheck(c, CHILD(n, 1), CHILD(n, 1).value);
     var args = astForArguments(c, CHILD(n, 2));
     var body = astForSuite(c, CHILD(n, 4));
@@ -1139,7 +1141,7 @@ function astForClassdef(c, n, decoratorSeq)
     /* classdef: 'class' NAME ['(' testlist ')'] ':' suite */
     REQ(n, SYM.classdef);
     forbiddenCheck(c, n, CHILD(n, 1).value);
-    var classname = CHILD(n, 1).value;
+    var classname = strobj(CHILD(n, 1).value);
     if (NCH(n) === 4)
         return new ClassDef(classname, [], astForSuite(c, CHILD(n, 3)), decoratorSeq, n.lineno, n.col_offset);
     if (CHILD(n, 3).type === TOK.T_RPAR)
@@ -1277,11 +1279,11 @@ function astForAugassign(c, n)
 {
     REQ(n, SYM.augassign);
     n = CHILD(n, 0);
-    switch (n.value.substr(0, 1))
+    switch (n.value.charAt(0))
     {
         case '+': return Add;
         case '-': return Sub;
-        case '/': if (n.value.substr(1, 1) === '/') return FloorDiv;
+        case '/': if (n.value.charAt(1) === '/') return FloorDiv;
                   return Div;
         case '%': return Mod;
         case '<': return LShift;
@@ -1289,7 +1291,7 @@ function astForAugassign(c, n)
         case '&': return BitAnd;
         case '^': return BitXor;
         case '|': return BitOr;
-        case '*': if (n.value.substr(1, 1) === '*') return Pow;
+        case '*': if (n.value.charAt(1) === '*') return Pow;
                   return Mult;
         default: goog.asserts.fail("invalid augassign");
     }
@@ -1423,24 +1425,98 @@ function astForIfexpr(c, n)
             n.lineno, n.col_offset);
 }
 
+/**
+ * s is a python-style string literal, including quote characters and u/r/b
+ * prefixes. Returns decoded string object.
+ */
 function parsestr(c, s)
 {
-    var quote = s.substr(0, 1);
+    var encodeUtf8 = function(s) { return unescape(encodeURIComponent(s)); };
+    var decodeUtf8 = function(s) { return decodeURIComponent(escape(s)); };
+    var decodeEscape = function(s)
+    {
+        var len = s.length;
+        var ret = '';
+        for (var i = 0; i < len; ++i)
+        {
+            var c = s[i];
+            if (c === '\\')
+            {
+                ++i;
+                c = s[i];
+                if (c === 'n') ret += "\n";
+                else if (c === '\\') ret += "\\";
+                else if (c === 't') ret += "\t";
+                else if (c === 'r') ret += "\r";
+                else if (c === '0') ret += "\0";
+                else if (c === 'x')
+                {
+                    var d0 = s[++i];
+                    var d1 = s[++i];
+                    ret += string.fromCharCode(parseInt(d0+d1));
+                }
+                else if (c === 'u' || c === 'U')
+                {
+                    var d0 = s[++i];
+                    var d1 = s[++i];
+                    var d2 = s[++i];
+                    var d3 = s[++i];
+                    ret += string.fromCharCode(parseInt(d0+d1), parseInt(d2+d3));
+                }
+                else
+                {
+                    goog.asserts.fail("unhandled escape");
+                }
+            }
+            else
+            {
+                ret += c;
+            }
+        }
+        return ret;
+    };
 
-    // todo; the string we get here still has the " or u""", or etc. Currently, we use JS strings raw.
-    // need to decode u'', b'', r'', etc. as well as backslash escapes
+    //print("parsestr", s);
 
-    // todo; hack! just remove single quotes for now
-    return s.substr(1, s.length - 2);
+    var quote = s.charAt(0);
+    var rawmode = false;
+
+    if (quote === 'u' || quote === 'U')
+    {
+        s = s.substr(1);
+        quote = s.charAt(0);
+    }
+    else if (quote === 'r' || quote === 'R')
+    {
+        s = s.substr(1);
+        quote = s.charAt(0);
+        rawmode = true;
+    }
+    goog.asserts.assert(quote !== 'b' && quote !== 'B', "todo; haven't done b'' strings yet");
+
+    goog.asserts.assert(quote === "'" || quote === '"' && s.charAt(s.length - 1) === quote);
+    s = s.substr(1, s.length - 2);
+
+    if (s.length >= 4 && s.charAt(0) === quote && s.charAt(1) === quote)
+    {
+        goog.asserts.assert(s.charAt(s.length - 1) === quote && s.charAt(s.length - 2) === quote);
+        s = s.substr(2, s.length - 4);
+    }
+
+    if (rawmode || s.indexOf('\\') === -1)
+    {
+        return strobj(decodeUtf8(s));
+    }
+    return strobj(decodeEscape(s));
 }
 
 function parsestrplus(c, n)
 {
     REQ(CHILD(n, 0), TOK.T_STRING);
-    var ret = "";
+    var ret = new Sk.builtin.str("");
     for (var i = 0; i < NCH(n); ++i)
     {
-        ret += parsestr(c, CHILD(n, i).value);
+        ret = ret.__add__(parsestr(c, CHILD(n, i).value));
     }
     return ret;
 }
@@ -1448,9 +1524,26 @@ function parsestrplus(c, n)
 function parsenumber(c, s)
 {
     // todo; no complex support
-    var end = s.substr(s.length - 1, 1);
+
+    var end = s.charAt(s.length - 1);
     if (end === 'l' || end === 'L')
+        return Sk.longFromStr(s.substr(0, s.length - 1));
+    var k = goog.global.eval(s);
+    if ((k > Sk.builtin.long_.threshold$ || k < -Sk.builtin.long_.threshold$)
+            && Math.floor(k) === k)
+    {
         return Sk.longFromStr(s);
+    }
+
+    // todo; we don't currently distinguish between int and float so str is wrong
+    // for these.
+    if (s.indexOf('.') !== -1
+            || s.indexOf('e') !== -1
+            || s.indexOf('E') !== -1)
+    {
+        return parseFloat(s);
+    }
+
     return parseInt(s);
 }
 
@@ -1494,7 +1587,7 @@ function astForSlice(c, n)
         if (NCH(ch) === 1)
         {
             ch = CHILD(ch, 0);
-            step = new Name("None", Load, ch.lineno, ch.col_offset);
+            step = new Name(strobj("None"), Load, ch.lineno, ch.col_offset);
         }
         else
         {
@@ -1516,7 +1609,7 @@ function astForAtom(c, n)
     {
         case TOK.T_NAME:
             // All names start in Load context, but may be changed later
-            return new Name(ch.value, Load, n.lineno, n.col_offset);
+            return new Name(strobj(ch.value), Load, n.lineno, n.col_offset);
         case TOK.T_STRING:
             return new Str(parsestrplus(c, n), n.lineno, n.col_offset);
         case TOK.T_NUMBER:
@@ -1869,9 +1962,10 @@ Sk.astDump = function(node)
         else
         {
             var ret;
-            if (typeof node === "string") ret = "'" + node + "'";
-            else if (node === true) ret = "True";
+            if (node === true) ret = "True";
             else if (node === false) ret = "False";
+            else if (node instanceof Sk.builtin.long_) ret = node.__str__().v;
+            else if (node instanceof Sk.builtin.str) ret = node.__repr__().v;
             else ret = "" + node;
             return indent + ret;
         }

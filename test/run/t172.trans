@@ -4,6 +4,6 @@ Module(body=[Print(dest=None,
                                  right=Tuple(elts=[Str(s='dog'),
                                                    Str(s='cat'),
                                                    Num(n=23456),
-                                                   Num(n=999999999999L)],
+                                                   Num(n=999999999999)],
                                              ctx=Load()))],
                    nl=True)])
