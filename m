@@ -73,7 +73,7 @@ jsengine = "support/d8/d8 --trace_exception"
 
 def test():
     """runs the unit tests."""
-    os.system("%s test/no_new_globals.js %s %s test/no_new_globals_at_end.js" % (
+    os.system("%s %s %s" % (
         jsengine,
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
