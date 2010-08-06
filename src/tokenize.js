@@ -104,6 +104,9 @@ $.T_ERRORTOKEN = 55;
 $.T_N_TOKENS = 56;
 $.T_NT_OFFSET = 256;
 
+/**
+ * @param {*} var_args
+ */
 function group()
 {
     var args = Array.prototype.slice.call(arguments);

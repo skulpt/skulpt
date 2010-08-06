@@ -245,9 +245,14 @@ Parser.prototype.pop = function()
     }
 };
 
-// parser for interactive input. returns a function that should be called with
-// lines of input as they are entered. the function will return false
-// until the input is complete, when it will return the rootnode of the parse.
+/**
+ * parser for interactive input. returns a function that should be called with
+ * lines of input as they are entered. the function will return false
+ * until the input is complete, when it will return the rootnode of the parse.
+ *
+ * @param {string} filename
+ * @param {string} opt_argument root of parse tree
+ */
 function makeParser(filename, style)
 {
     if (style === undefined) style = "file_input";

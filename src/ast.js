@@ -275,6 +275,143 @@ function astForSuite(c, n)
     return seq;
 }
 
+function astForExceptClause(c, exc, body)
+{
+    /* except_clause: 'except' [test [(',' | 'as') test]] */
+    REQ(exc, SYM.except_clause);
+    REQ(body, SYM.suite);
+    if (NCH(exc) === 1)
+        return new ExceptHandler(null, null, astForSuite(c, body), exc.lineno, exc.col_offset);
+    else if (NCH(exc) === 2)
+        return new ExceptHandler(astForExpr(c, CHILD(exc, 1)), null, astForSuite(c, body), exc.lineno, exc.col_offset);
+    else if (NCH(exc) === 4)
+    {
+        var e = astForExpr(c, CHILD(exc, 3));
+        setContext(c, e, Store, CHILD(exc, 3));
+        return new ExceptHandler(astForExpr(c, CHILD(exc, 1)), e, astForSuite(c, body), exc.lineno, exc.col_offset);
+    }
+    goog.asserts.fail("wrong number of children for except clause");
+}
+
+function astForTryStmt(c, n)
+{
+    var nc = NCH(n);
+    var nexcept = (nc - 3) / 3;
+    var body, orelse = null, finally_ = null;
+
+    REQ(n, SYM.try_stmt);
+    body = astForSuite(c, CHILD(n, 2));
+    if (CHILD(n, nc - 3).type === TOK.T_NAME)
+    {
+        if (CHILD(n, nc - 3).value === "finally")
+        {
+            if (nc >= 9 && CHILD(n, nc - 6).type === TOK.T_NAME)
+            {
+                /* we can assume it's an "else",
+                   because nc >= 9 for try-else-finally and
+                   it would otherwise have a type of except_clause */
+                orelse = astForSuite(c, CHILD(n, nc - 4));
+                nexcept--;
+            }
+
+            finally_ = astForSuite(c, CHILD(n, nc - 1));
+            nexcept--;
+        }
+        else
+        {
+            /* we can assume it's an "else",
+               otherwise it would have a type of except_clause */
+            orelse = astForSuite(c, CHILD(n, nc - 1));
+            nexcept--;
+        }
+    }
+    else if (CHILD(n, nc - 3).type !== SYM.except_clause)
+    {
+        throw new SyntaxError("malformed 'try' statement");
+    }
+
+    if (nexcept > 0)
+    {
+        var handlers = [];
+        for (var i = 0; i < nexcept; ++i)
+            handlers[i] = astForExceptClause(c, CHILD(n, 3 + i * 3), CHILD(n, 5 + i * 3));
+        var exceptSt = new TryExcept(body, handlers, orelse, n.lineno, n.col_offset);
+
+        /* if a 'finally' is present too, we nest the TryExcept within a
+           TryFinally to emulate try ... except ... finally */
+        body = [exceptSt];
+    }
+
+    goog.asserts.assert(finally_ !== null);
+    return new TryFinally(body, finally_, n.lineno, n.col_offset);
+}
+
+
+function astForDottedName(c, n)
+{
+    REQ(n, SYM.dotted_name);
+    var lineno = n.lineno;
+    var col_offset = n.col_offset;
+    var id = CHILD(n, 0).value;
+    var e = new Name(id, Load, lineno, col_offset);
+    for (var i = 2; i < NCH(n); i += 2)
+    {
+        id = CHILD(n, i).value;
+        e = new Attribute(e, id, Load, lineno, col_offset);
+    }
+    return e;
+}
+
+function astForDecorator(c, n)
+{
+    /* decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE */
+    REQ(n, SYM.decorator);
+    REQ(CHILD(n, 0), TOK.T_AT);
+    REQ(CHILD(n, NCH(n) - 1), TOK.T_NEWLINE);
+    var nameExpr = astForDottedName(c, CHILD(n, 1));
+    var d;
+    if (NCH(n) === 3) // no args
+        return nameExpr;
+    else if (NCH(n) === 5) // call with no args
+        return new Call(nameExpr, [], [], null, null, n.lineno, n.col_offset);
+    else
+        return astForCall(c, CHILD(n, 3), nameExpr);
+}
+
+function astForDecorators(c, n)
+{
+    REQ(n, SYM.decorators);
+    var decoratorSeq = [];
+    for (var i = 0; i < NCH(n); ++i)
+        decoratorSeq[i] = astForDecorator(c, CHILD(n, i));
+    return decoratorSeq;
+}
+
+function astForDecorated(c, n)
+{
+    REQ(n, SYM.decorated);
+    var decoratorSeq = astForDecorators(c, CHILD(n, 0));
+    goog.asserts.assert(CHILD(n, 1).type === SYM.funcdef || CHILD(n, 1).type === SYM.classdef);
+
+    var thing = null;
+    if (CHILD(n, 1).type === SYM.funcdef)
+        thing = astForFuncdef(c, CHILD(n, 1), decoratorSeq);
+    else if (CHILD(n, 1) === SYM.classdef)
+        thing = astForClassdef(c, CHILD(n, 1), decoratorSeq);
+    if (thing)
+    {
+        thing.lineno = n.lineno;
+        thing.col_offset = n.col_offset;
+    }
+    return thing;
+}
+
+function astForWithVar(c, n)
+{
+    REQ(n, SYM.with_var);
+    return astForExpr(c, CHILD(n, 1));
+}
+
 function astForWithStmt(c, n)
 {
     /* with_stmt: 'with' test [ with_var ] ':' suite */
@@ -497,7 +634,7 @@ function astForImportStmt(c, n)
         var ndots = 0;
         var nchildren;
 
-        for (var idx = 1; idx < NCH(n); ++i)
+        for (var idx = 1; idx < NCH(n); ++idx)
         {
             if (CHILD(n, idx).type === SYM.dotted_name)
             {
@@ -684,7 +821,7 @@ function astForFactor(c, n)
         case TOK.T_TILDE: return new UnaryOp(Invert, expression, n.lineno, n.col_offset);
     }
 
-    goog.assert.fail("unhandled factor");
+    goog.asserts.fail("unhandled factor");
 }
 
 function astForForStmt(c, n)
