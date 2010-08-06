@@ -15,7 +15,6 @@ Files = [
         'support/closure-library/closure/goog/asserts/asserts.js',
         'support/closure-library/closure/goog/array/array.js',
         'support/closure-library/closure/goog/iter/iter.js',
-        #'src/full_wrapper_head.js',
         'src/env.js',
         'src/uneval.js',
         'src/errors.js',
@@ -42,7 +41,6 @@ Files = [
         #'src/symtable.js',
         #'src/compiler.js',
         #'src/entry.js',
-        #'src/full_wrapper_tail.js',
         ]
 
 TestFiles = [
@@ -79,17 +77,6 @@ def test():
         jsengine,
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
-
-def compileUsingSkc1(fn):
-    f = open(fn, 'rb')
-    js = skc1.compilePyc(f.read())
-    ret = """
-var mainmodDict = {'__name__': '__main__'};
-var moduleBody = %s;
-moduleBody(mainmodDict);
-""" % js
-    return ret
-
 
 def buildBrowserTests():
     """combine all the tests data into something we can run from a browser
@@ -241,7 +228,7 @@ def dist():
 
     # compress
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar  --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility --js %s --js_output_file %s" % (uncompfn, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_warning accessControls --jscomp_warning checkRegExp --jscomp_warning checkTypes --jscomp_warning checkVars --jscomp_warning deprecated --jscomp_off fileoverviewTags --jscomp_warning invalidCasts --jscomp_warning missingProperties --jscomp_warning nonStandardJsDocs --jscomp_warning strictModuleDepCheck --jscomp_warning undefinedVars --jscomp_warning unknownDefines --jscomp_warning visibility --js %s --js_output_file %s" % (uncompfn, compfn)) 
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     if ret != 0:
         print "Couldn't run closure-compiler."
@@ -375,20 +362,6 @@ def upload():
         print "Couldn't upload."
         raise SystemExit()
 
-def debug(fn):
-    """pretty print the compilation of fn, and then start a debug console with
-    the environment loaded."""
-    if not os.path.exists(fn):
-        print "%s doesn't exist" % fn
-        raise SystemExit()
-    py_compile.compile(fn)
-    open("support/tmp/dump.js", "w").write(compileUsingSkc1(fn+"c"))
-    os.system("cat support/tmp/dump.js")
-    os.system("%s --shell %s %s support/tmp/dump.js" % (
-        jsengine,
-        ' '.join(getFileList('test')),
-        ' '.join(DebugFiles)))
-
 def run(fn):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
@@ -479,7 +452,7 @@ def vmwareregr(names):
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload|debug|nrt|run|runopt|parse|vmwareregr|symtab}"
+        print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload||nrt|run|runopt|parse|vmwareregr|symtab}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -491,8 +464,6 @@ if __name__ == "__main__":
         dist()
     elif cmd == "regensymtabtests":
         regensymtabtests()
-    elif cmd == "debug":
-        debug(sys.argv[2])
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "runopt":
