@@ -998,31 +998,26 @@ Exercises
 #. Give the Python interpreter's response to each of the following from a
    continuous interpreter session:
 
-   a.  
-      .. sourcecode:: python
+   .. sourcecode:: python
         
-          >>> s = "If we took the bones out, it wouldn't be crunchy, would it?"
-          >>> s.split()
+       >>> s = "If we took the bones out, it wouldn't be crunchy, would it?"
+       >>> s.split()
 
-   b.
-      .. sourcecode:: python
+   .. sourcecode:: python
         
-          >>> type(s.split())
+       >>> type(s.split())
           
-   c.
-      .. sourcecode:: python
+   .. sourcecode:: python
         
-          >>> s.split('o')
+       >>> s.split('o')
 
-   d.
-      .. sourcecode:: python
+   .. sourcecode:: python
         
-          >>> s.split('i')
+       >>> s.split('i')
           
-   e.
-      .. sourcecode:: python
+   .. sourcecode:: python
         
-          >>> '0'.join(s.split('o'))
+       >>> '0'.join(s.split('o'))
           
    Be sure you understand why you get each result. Then apply what you have
    learned to fill in the body of the function below using the ``split`` and
@@ -1066,6 +1061,8 @@ Exercises
               >>> cleanword('?+="word!,@$()"')
               'word'
             """
+
+   .. sourcecode:: python
     
         def has_dashdash(s):
             """
@@ -1080,6 +1077,8 @@ Exercises
               >>> has_dashdash('yo-yo')
               False
             """
+
+   .. sourcecode:: python
     
         def extract_words(s):
             """
@@ -1088,6 +1087,8 @@ Exercises
               >>> extract_words('she tried to curtsey as she spoke--fancy')
               ['she', 'tried', 'to', 'curtsey', 'as', 'she', 'spoke', 'fancy']
             """
+
+   .. sourcecode:: python
     
         def wordcount(word, wordlist):
             """
@@ -1100,6 +1101,8 @@ Exercises
               >>> wordcount('frog', ['now', 'is', 'time', 'is', 'now', 'is', 'is'])
               ['frog', 0]
             """
+
+   .. sourcecode:: python
     
         def wordset(wordlist):
             """
@@ -1110,6 +1113,8 @@ Exercises
               >>> wordset(['or', 'a', 'am', 'is', 'are', 'be', 'but', 'am'])
               ['a', 'am', 'are', 'be', 'but', 'is', 'or']
             """
+
+   .. sourcecode:: python
     
         def longestword(wordset):
             """
@@ -1129,47 +1134,47 @@ Exercises
    order to a file named ``sorted_fruits.txt``.
 #. Answer the following questions about ``countletters.py``:
 
-   a. Explain in detail what the three lines do:
+   * Explain in detail what the three lines do:
 
-      .. sourcecode:: python
+     .. sourcecode:: python
         
-            infile = open('alice_in_wonderland.txt', 'r')
-            text = infile.read()
-            infile.close()
+         infile = open('alice_in_wonderland.txt', 'r')
+         text = infile.read()
+         infile.close()
 
-      What would ``type(text)`` return after these lines have been executed?
-   b. What does the expression ``128 * [0]`` evaluate to? Read about `ASCII
-      <http://en.wikipedia.org/wiki/ASCII>`__ in Wikipedia and explain why you 
-      think the variable, ``counts`` is assigned to ``128 * [0]`` in light of
-      what you read.
-   c. What does
+     What would ``type(text)`` return after these lines have been executed?
+   * What does the expression ``128 * [0]`` evaluate to? Read about `ASCII
+     <http://en.wikipedia.org/wiki/ASCII>`__ in Wikipedia and explain why you 
+     think the variable, ``counts`` is assigned to ``128 * [0]`` in light of
+     what you read.
+   * What does
 
-      .. sourcecode:: python
+     .. sourcecode:: python
         
-            for letter in text:
-                counts[ord(letter)] += 1
+         for letter in text:
+             counts[ord(letter)] += 1
 
-      do to ``counts``?
-   d. Explain the purpose of the ``display`` function. Why does it check for
-      values ``10``, ``13``, and ``32``? What is special about those values?
-   e. Describe in detail what the lines
+     do to ``counts``?
+   * Explain the purpose of the ``display`` function. Why does it check for
+     values ``10``, ``13``, and ``32``? What is special about those values?
+   * Describe in detail what the lines
 
-      .. sourcecode:: python
+     .. sourcecode:: python
         
-            outfile = open('alice_counts.dat', 'w')
-            outfile.write("%-12s%s\n" % ("Character", "Count"))
-            outfile.write("=================\n")
+         outfile = open('alice_counts.dat', 'w')
+         outfile.write("%-12s%s\n" % ("Character", "Count"))
+         outfile.write("=================\n")
 
-      do. What will be in ``alice_counts.dat`` when they finish executing?
-   f. Finally, explain in detail what
+     do. What will be in ``alice_counts.dat`` when they finish executing?
+   * Finally, explain in detail what
 
-      .. sourcecode:: python
+     .. sourcecode:: python
         
-            for i in range(len(counts)):
-                if counts[i]:
-                    outfile.write("%-12s%d\n" % (display(i), counts[i]))
+         for i in range(len(counts)):
+             if counts[i]:
+                 outfile.write("%-12s%d\n" % (display(i), counts[i]))
 
-      does. What is the purpose of ``if counts[i]``?
+     does. What is the purpose of ``if counts[i]``?
 
 #. Write a program named ``mean.py`` that takes a sequence of numbers on the
    command line and returns the mean of their values. ::

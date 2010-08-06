@@ -1008,6 +1008,8 @@ Exercises
              >>> is_palindrome('straw warts')
              True
            """
+
+   .. sourcecode:: python
     
        def count(sub, s):
            """
@@ -1022,6 +1024,8 @@ Exercises
              >>> count('nanan', 'banana')
              0
            """
+
+   .. sourcecode:: python
     
        def remove(sub, s):
            """
@@ -1034,6 +1038,8 @@ Exercises
              >>> remove('egg', 'bicycle')
              'bicycle'
            """
+
+   .. sourcecode:: python
     
        def remove_all(sub, s):
            """

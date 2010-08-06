@@ -1105,55 +1105,51 @@ Exercises
    Add each of the following sets of doctests to the docstring at the top of
    the file and write Python code to make the doctests pass.
 
-    #.
-      .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> a_list[3]
-          42
-          >>> a_list[6]
-          'Ni!'
-          >>> len(a_list)
-          8
-        """
+       """
+         >>> a_list[3]
+         42
+         >>> a_list[6]
+         'Ni!'
+         >>> len(a_list)
+         8
+       """
 
-    #.
-       .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> b_list[1:]
-          ['Stills', 'Nash']
-          >>> group = b_list + c_list
-          >>> group[-1]
-          'Young'
-        """
+       """
+         >>> b_list[1:]
+         ['Stills', 'Nash']
+         >>> group = b_list + c_list
+         >>> group[-1]
+         'Young'
+       """
 
-    #.
-       .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> 'war' in mystery_list
-          False
-          >>> 'peace' in mystery_list
-          True
-          >>> 'justice' in mystery_list
-          True
-          >>> 'oppression' in mystery_list
-          False
-          >>> 'equality' in mystery_list
-          True
-        """
+       """
+         >>> 'war' in mystery_list
+         False
+         >>> 'peace' in mystery_list
+         True
+         >>> 'justice' in mystery_list
+         True
+         >>> 'oppression' in mystery_list
+         False
+         >>> 'equality' in mystery_list
+         True
+       """
 
-    #.
-       .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> range(a, b, c)
-          [5, 9, 13, 17]
-        """
+       """
+         >>> range(a, b, c)
+         [5, 9, 13, 17]
+       """
 
-   Only add one set of doctests at a time. The next set of doctests
-   should not be added until the previous set pass.
+   Only add one set of doctests at a time. The next set of doctests should not
+   be added until the previous set pass.
 #. What is the Python interpreter's response to the following?
 
    .. sourcecode:: python
@@ -1187,40 +1183,37 @@ Exercises
 #. Open a file named ``ch09e06.py`` and use the same procedure as in exercise 2 
    to make the following doctests pass:
 
-    #.
-       .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> 13 in junk
-          True
-          >>> del junk[4]
-          >>> junk
-          [3, 7, 9, 10, 17, 21, 24, 27]
-          >>> del junk[a:b]
-          >>> junk
-          [3, 7, 27]
-        """
+       """
+         >>> 13 in junk
+         True
+         >>> del junk[4]
+         >>> junk
+         [3, 7, 9, 10, 17, 21, 24, 27]
+         >>> del junk[a:b]
+         >>> junk
+         [3, 7, 27]
+       """
 
-    #.
-       .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> nlist[2][1]
-          0
-          >>> nlist[0][2]
-          17
-          >>> nlist[1][1]
-          5
-        """
+       """
+         >>> nlist[2][1]
+         0
+         >>> nlist[0][2]
+         17
+         >>> nlist[1][1]
+         5
+       """
 
-    #.
-       .. sourcecode:: python
+   .. sourcecode:: python
         
-        """
-          >>> import string
-          >>> string.split(message, '??')
-          ['this', 'and', 'that']
-        """
+       """
+         >>> import string
+         >>> string.split(message, '??')
+         ['this', 'and', 'that']
+       """
 
 #. Write a function ``add_lists(a, b)`` that takes two lists of numbers of the
    same length, and returns a new list containing the sums of the corresponding 
@@ -1272,6 +1265,8 @@ Exercises
              >>> n
              [[3, 2, 5], [1, 4, 7]]
            """
+
+   .. sourcecode:: python
     
        def add_column(matrix):
            """
@@ -1336,7 +1331,8 @@ Exercises
 
    Add your new function to ``matrices.py`` and be sure it passes the doctests
    above.
-#.
+#. Write functions ``row_times_column`` and ``matrix_mult``:
+
    .. sourcecode:: python
     
        def row_times_column(m1, row, m2, column):
@@ -1350,6 +1346,8 @@ Exercises
              >>> row_times_column([[1, 2], [3, 4]], 1, [[5, 6], [7, 8]], 1)
              50
            """
+
+   .. sourcecode:: python
     
        def matrix_mult(m1, m2):
           """
@@ -1363,7 +1361,8 @@ Exercises
 
    Add your new functions to ``matrices.py`` and be sure it passes the doctests 
    above.
-#.
+#. Given:
+
    .. sourcecode:: python
     
        import string
