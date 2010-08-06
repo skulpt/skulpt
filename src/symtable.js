@@ -709,7 +709,7 @@ Sk.dumpSymtab = function(st)
         }
         return ret;
     }
-    return getIdents(st);
+    return getIdents(st, "");
 };
 
 goog.exportSymbol("Sk.symboltable", Sk.symboltable);
