@@ -281,7 +281,11 @@ def regenparser():
 def regenasttests():
     """regenerate the ast test files by running our helper script via real python"""
     for f in glob.glob("test/run/*.py"):
-        os.system("python test/astppdump.py %s > %s" % (f, f.replace(".py", ".trans")))
+        transname = f.replace(".py", ".trans")
+        os.system("python test/astppdump.py %s > %s" % (f, transname))
+        forcename = f.replace(".py", ".trans.force")
+        if os.path.exists(forcename):
+            os.system("cp %s %s" % (forcename, transname))
 
 def regenruntests():
     """regenerate the test data by running the tests on real python"""
