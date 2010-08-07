@@ -104,16 +104,18 @@ $.T_ERRORTOKEN = 55;
 $.T_N_TOKENS = 56;
 $.T_NT_OFFSET = 256;
 
-/**
- * @param {*} var_args
- */
-function group()
+/** @param {...*} x */
+function group(x)
 {
     var args = Array.prototype.slice.call(arguments);
     return '(' + args.join('|') + ')'; 
 }
-function any() { return group.apply(null, arguments) + "*"; }
-function maybe() { return group.apply(null, arguments) + "?"; }
+
+/** @param {...*} x */
+function any(x) { return group.apply(null, arguments) + "*"; }
+
+/** @param {...*} x */
+function maybe(x) { return group.apply(null, arguments) + "?"; }
 
 /* we have to use string and ctor to be able to build patterns up. + on /.../
  * does something strange. */

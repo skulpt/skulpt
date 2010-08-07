@@ -1,5 +1,9 @@
 (function() {
 
+/**
+ * @constructor
+ * @param {Array.<Object>} L
+ */
 var $ = Sk.builtin.dict = function dict(L)
 {
     if (!(this instanceof $)) return new $(L);

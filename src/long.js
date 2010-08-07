@@ -17,6 +17,10 @@
 
 (function() {
 
+/**
+ * @constructor
+ * @param {number} size number of digits
+ */
 var $ = Sk.builtin.long_ = function(size)
 {
     if (!(this instanceof $)) return new $(size);

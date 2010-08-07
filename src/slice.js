@@ -1,5 +1,11 @@
 (function() {
 
+/**
+ * @constructor
+ * @param {number} start
+ * @param {number=} stop
+ * @param {number=} step
+ */
 var $ = Sk.builtin.slice = function slice(start, stop, step)
 {
     if (!(this instanceof $)) return new $(start, stop, step);

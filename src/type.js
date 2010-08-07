@@ -1,5 +1,12 @@
 (function() {
 
+/**
+ * @constructor
+ * @param {string} name
+ * @param {Array.<Object>=} bases
+ * @param {Object=} dict
+ * @param {Object=} body$
+ */
 var $ = Sk.builtin.type = function type(name, bases, dict, body$)
 {
     if (bases === undefined && dict === undefined)

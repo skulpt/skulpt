@@ -123,6 +123,7 @@ Sk.cmp = function cmp(lhs, rhs, op)
         if (lhs.richcmp$ !== undefined)
             return lhs.richcmp$(rhs, op);
         // todo; lookup
+        /* __cmp__ never defined right now
         else if (lhs.__cmp__ !== undefined)
             ret = lhs.__cmp__(rhs);
         else if (rhs.__cmp__ !== undefined)
@@ -131,12 +132,14 @@ Sk.cmp = function cmp(lhs, rhs, op)
             ret = lhs.__class__.__cmp__(lhs, rhs);
         else if (rhs.__class__.__cmp__ !== undefined)
             ret = -rhs.__class__.__cmp__(rhs, lhs);
+        */
         else
         {
             // todo; dispatch to the specific __eq__, etc.
             throw new Sk.builtin.AttributeError("no attribute __cmp__");
         }
 
+        /*
         switch (op)
         {
             case '<': return ret < 0;
@@ -147,6 +150,7 @@ Sk.cmp = function cmp(lhs, rhs, op)
             case '!=': return ret !== 0;
             default: throw "assert";
         }
+        */
     }
 };
 
@@ -376,7 +380,7 @@ Sk.getattr = function getattr(o, attrname, default_)
         throw new Sk.builtin.AttributeError(attrname + " not found");
     }
 
-    var getdesc2 = classAttrValue.__get__;
+    var getdesc2 = undefined; // todo; never set now according to closure //classAttrValue.__get__;
     if (getdesc2 === undefined && classAttrValue instanceof Function && o.nativeclass$)
         getdesc2 = $.fget;
     //print("getdesc2:",getdesc2);
@@ -557,11 +561,11 @@ Sk.import_ = function import_(name)
     }
     else
     {
+        /*
         var js = Sk.compileStr(filename, contents, module);
-        //print("/**** start", filename, "****/");
         //print(js);
-        //print("/**** end", filename, "****/");
         eval(js);
+        */
     }
 
     return module;

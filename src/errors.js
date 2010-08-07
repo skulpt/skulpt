@@ -31,6 +31,7 @@ Sk.builtin.AttributeError = function AttributeError(msg, file, lnum, col, line) 
 Sk.builtin.ImportError = function ImportError(msg, file, lnum, col, line) { return makeStdError(this, "ImportError", arguments); };
 Sk.builtin.IndentationError = function IndentationError(msg, file, lnum, col, line) { return makeStdError(this, "IndentationError", arguments); };
 Sk.builtin.IndexError = function IndexError(msg, file, lnum, col, line) { return makeStdError(this, "IndexError", arguments); };
+Sk.builtin.ParseError = function ParseError(msg, file, lnum, col, line) { return makeStdError(this, "ParseError", arguments); };
 Sk.builtin.SyntaxError = function SyntaxError(msg, file, lnum, col, line) { return makeStdError(this, "SyntaxError", arguments); };
 Sk.builtin.TokenError = function TokenError(msg, file, lnum, col, line) { return makeStdError(this, "TokenError", arguments); };
 Sk.builtin.TypeError = function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "TypeError", arguments); };

@@ -2,7 +2,11 @@
 
 (function() {
 
-/*
+/**
+ *
+ * @constructor
+ * @param {Object} grammar
+ *
  * p = new Parser(grammar);
  * p.setup([start]);
  * foreach input token:
@@ -12,22 +16,12 @@
  *
  * can throw ParseError
  */
-function Parser(grammar, convert)
+function Parser(grammar)
 {
     this.grammar = grammar;
-    this.convert = convert || function(grammar, node) { return node; };
     return this;
 }
 
-
-function ParseError(msg, type, value, context)
-{
-    this.msg = msg;
-    this.type = type;
-    this.value = value;
-    this.context = context;
-    return this;
-}
 
 Parser.prototype.setup = function(start)
 {
@@ -139,13 +133,13 @@ OUTERWHILE:
             this.pop();
             if (this.stack.length === 0)
             {
-                throw "ParseError: too much input"; //, type, value, context);
+                throw new Sk.builtin.ParseError("too much input");
             }
         }
         else
         {
             // no transition
-            throw "ParseError: bad input"; //, type, value, context);
+            throw new Sk.builtin.ParseError("bad input");
         }
     }
 };
@@ -166,7 +160,7 @@ Parser.prototype.classify = function(type, value, context)
     }
     ilabel = this.grammar.tokens[type];
     if (!ilabel)
-        throw new ParseError("bad token", type, value, context);
+        throw new Sk.builtin.ParseError("bad token", type, value, context);
     return ilabel;
 };
 
@@ -184,7 +178,6 @@ Parser.prototype.shift = function(type, value, newstate, context)
         col_offset: context[0][1],
         children: null
     };
-    newnode = this.convert(this.grammar, newnode);
     if (newnode)
     {
         node.children.push(newnode);
@@ -227,7 +220,7 @@ Parser.prototype.push = function(type, newdfa, newstate, context)
 Parser.prototype.pop = function()
 {
     var pop = this.stack.pop();
-    var newnode = this.convert(this.grammar, pop.node);
+    var newnode = pop.node;
     //print("POP");
     if (newnode)
     {
@@ -254,7 +247,7 @@ Parser.prototype.pop = function()
  * until the input is complete, when it will return the rootnode of the parse.
  *
  * @param {string} filename
- * @param {string} opt_argument root of parse tree
+ * @param {string=} style root of parse tree (optional)
  */
 function makeParser(filename, style)
 {

@@ -1,6 +1,10 @@
 (function() {
 
 var interned = {};
+/**
+ * @constructor
+ * @param {string} x
+ */
 var $ = Sk.builtin.str = function str(x)
 {
     if (x === undefined) throw "error: trying to str() undefined (should be at least null)";

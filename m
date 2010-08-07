@@ -36,9 +36,7 @@ Files = [
         'gen/astnodes.js',
         'src/ast.js',
         'src/symtable.js',
-        #'src/symtable.js',
         #'src/compiler.js',
-        #'src/entry.js',
         ]
 
 TestFiles = [
@@ -66,7 +64,7 @@ def getFileList(type):
             ret.append(f)
     return ret
 
-jsengine = "support/d8/d8 --trace_exception --debugger"
+jsengine = "support/d8/d8 --trace_exception"
 #jsengine = "rhino"
 
 def test():
@@ -204,6 +202,7 @@ def dist():
     uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
     open(uncompfn, "w").write(combined)
+    os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
     buildBrowserTests()
 
@@ -226,7 +225,7 @@ def dist():
 
     # compress
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_warning accessControls --jscomp_warning checkRegExp --jscomp_warning checkTypes --jscomp_warning checkVars --jscomp_warning deprecated --jscomp_off fileoverviewTags --jscomp_warning invalidCasts --jscomp_warning missingProperties --jscomp_warning nonStandardJsDocs --jscomp_warning strictModuleDepCheck --jscomp_warning undefinedVars --jscomp_warning unknownDefines --jscomp_warning visibility --js %s --js_output_file %s" % (uncompfn, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility --js %s --js_output_file %s" % (uncompfn, compfn)) 
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     if ret != 0:
         print "Couldn't run closure-compiler."
@@ -244,7 +243,7 @@ def dist():
         print "Couldn't copy for gzip test."
         raise SystemExit()
 
-    ret = os.system("gzip dist/tmp.js")
+    ret = os.system("gzip -9 dist/tmp.js")
     if ret != 0:
         print "Couldn't gzip to get final size."
         raise SystemExit()

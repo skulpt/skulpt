@@ -605,8 +605,6 @@ function aliasForImportName(c, n)
                 throw new SyntaxError("unexpected import name");
         }
     break; }
-
-    goog.asserts.fail("unhandled import name condition");
 }
 
 function astForImportStmt(c, n)
@@ -1453,7 +1451,7 @@ function parsestr(c, s)
                 {
                     var d0 = s[++i];
                     var d1 = s[++i];
-                    ret += string.fromCharCode(parseInt(d0+d1));
+                    ret += String.fromCharCode(parseInt(d0+d1, 16));
                 }
                 else if (c === 'u' || c === 'U')
                 {
@@ -1461,7 +1459,7 @@ function parsestr(c, s)
                     var d1 = s[++i];
                     var d2 = s[++i];
                     var d3 = s[++i];
-                    ret += string.fromCharCode(parseInt(d0+d1), parseInt(d2+d3));
+                    ret += String.fromCharCode(parseInt(d0+d1, 16), parseInt(d2+d3, 16));
                 }
                 else
                 {
@@ -1544,7 +1542,19 @@ function parsenumber(c, s)
         return parseFloat(s);
     }
 
-    return parseInt(s);
+    // ugly gunk to placate an overly-nanny closure-compiler: 
+    // http://code.google.com/p/closure-compiler/issues/detail?id=111
+    // this is all just to emulate "parseInt(s)" with no radix.
+    var tmp = s;
+    if (s.charAt(0) === '-') tmp = s.substr(1);
+    if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'x' || tmp.charAt(1) === 'X'))
+        return parseInt(s, 16);
+    else if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'b' || tmp.charAt(1) === 'B'))
+        return parseInt(s, 2);
+    else if (tmp.charAt(0) === '0')
+        return parseInt(s, 8);
+    else
+        return parseInt(s, 10);
 }
 
 function astForSlice(c, n)

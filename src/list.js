@@ -1,6 +1,10 @@
 (function() {
 
-var $ = Sk.builtin.list = function list(L)
+/**
+ * @constructor
+ * @param {Array.<Object>} L
+ */
+var $ = Sk.builtin.list = function(L)
 {
     if (L instanceof $) return L;
     if (!(this instanceof $)) return new $(L);

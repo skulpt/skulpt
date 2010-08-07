@@ -1,5 +1,11 @@
 (function() {
 
+/**
+ * @constructor
+ * @param {string} name
+ * @param {string} mode
+ * @param {Object} buffering
+ */
 var $ = Sk.builtin.file = function(name, mode, buffering)
 {
     this.mode = mode;

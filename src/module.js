@@ -3,7 +3,13 @@
 Sk.modules = new Sk.builtin.dict([]);
 Sk.syspath = new Sk.builtin.list([]);
 
-// not a builtin
+/**
+ * @constructor
+ * @param {string} name
+ * @param {string} file
+ *
+ * not a builtin
+ */
 var $ = Sk.module = function module(name, file)
 {
     if (!(this instanceof $)) return new $(name, file);

@@ -1,5 +1,9 @@
 (function() {
 
+/**
+ * @constructor
+ * @param {Array.<Object>} L
+ */
 var $ = Sk.builtin.tuple = function(L)
 {
     if (L instanceof $) return;
@@ -114,13 +118,13 @@ $.prototype.__hash__ = function()
     var len = this.v.length;
     for (var i = 0; i < len; ++i)
     {
-        var y = Sk.builtin.hash(this.v[i]) === -1;
+        var y = Sk.builtin.hash(this.v[i]);
         if (y === -1) return -1;
         x = (x ^ y) * mult;
         mult += 82520 + len + len;
     }
     x += 97531;
-    if (x === -1) x = -1;
+    if (x === -1) x = -2;
     return x;
 };
 

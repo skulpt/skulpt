@@ -42,8 +42,11 @@ var ModuleBlock = 'module';
 var FunctionBlock = 'function';
 var ClassBlock = 'class';
 
-/*
- *  
+/**
+ * @constructor
+ * @param {string} name
+ * @param {number} flags
+ * @param {Array.<SymbolTableScope>} namespaces
  */
 function Symbol(name, flags, namespaces)
 {
@@ -64,8 +67,12 @@ Symbol.prototype.is_assigned = function() { return !!(this.__flags & DEF_LOCAL);
 Symbol.prototype.is_namespace = function() { return this.__namespaces && this.__namespaces.length > 0; }
 Symbol.prototype.get_namespaces = function() { return this.__namespaces; }
 
-/*
- *
+/**
+ * @constructor
+ * @param {SymbolTable} table
+ * @param {string} name
+ * @param {string} type
+ * @param {number} lineno
  */
 function SymbolTableScope(table, name, type, lineno)
 {
@@ -189,10 +196,11 @@ SymbolTableScope.prototype.get_methods = function()
     return this._classMethods;
 }
 
-/*
- *
+/**
+ * @constructor
+ * @param {string} filename
  */
-function SymbolTable(filename, mod_ast)
+function SymbolTable(filename)
 {
     this.filename = filename;
     this.cur = null;
@@ -571,7 +579,7 @@ SymbolTable.prototype.visitExpr = function(e)
             this.SEQExpr(e.elts);
             break;
         default:
-            goog.asserts.fail("Unhandled type " + expr.constructor.name + " in visitExpr");
+            goog.asserts.fail("Unhandled type " + e.constructor.name + " in visitExpr");
     }
 };
 
@@ -624,6 +632,11 @@ SymbolTable.prototype.visitGenexp = function(e)
     this.visitComprehension(e.generators, 1);
     this.visitExpr(e.elt);
     this.exitBlock();
+};
+
+SymbolTable.prototype.visitExcepthandler = function(handlers)
+{
+    goog.asserts.fail("todo;");
 };
 
 function _dictUpdate(a, b)
@@ -785,9 +798,9 @@ SymbolTable.prototype.analyze = function()
     this.analyzeBlock(this.top, null, free, global);
 };
 
-Sk.symboltable = function(ast)
+Sk.symboltable = function(ast, filename)
 {
-    var ret = new SymbolTable();
+    var ret = new SymbolTable(filename);
 
     ret.enterBlock("top", ModuleBlock, ast, 0);
     ret.top = ret.cur;
