@@ -1,2 +1,3 @@
-This is a built-on-Ubuntu from some completely arbitrary pull from v8's SVN
-(around 11oct09)
+This is a built-on-Ubuntu x64 from v8 @ rev 5203.
+
+    scons d8 mode=release arch=x64
