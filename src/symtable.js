@@ -880,7 +880,7 @@ Sk.dumpSymtab = function(st)
     return getIdents(st, "");
 };
 
-goog.exportSymbol("Sk.symboltable", Sk.symboltable);
-goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
+//goog.exportSymbol("Sk.symboltable", Sk.symboltable);
+//goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
 
 }());

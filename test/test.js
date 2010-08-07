@@ -187,16 +187,16 @@ function testRun(name)
     }
 
     var got = '';
-    sk$output = function(str) { got += str; }
-    sk$sysargv = [ name + '.py' ];
+    Sk.output = function(str) { got += str; }
+    Sk.sysargv = [ name + '.py' ];
 
     var expect = read(name + ".py.real");
     var expectalt;
     try { expectalt = read(name + ".py.real.alt"); }
     catch (e) {}
-    var js = Skulpt.compileStr(name + ".py", input);
+    var js = Sk.compile(input, name + ".py", "exec");
     try {
-        eval(js);
+        goog.global.eval(js);
     }
     catch (e)
     {
@@ -278,7 +278,9 @@ function main()
 {
     var i;
 
-    // these use 'internal' symbols so they can't run when compiled
+    // these use internal symbols so they can't run when fully
+    // compiled/minimized
+    //if (0)
     {
         for (i = 0; i <= 100; i += 1)
         {
@@ -304,13 +306,13 @@ function main()
         }
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
-return;
-    for (i = 0; i <= 300; ++i)
+
+    for (i = 0; i <= 0; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
     print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
-
+return;
     for (i = 0; i <= 100; ++i)
     {
         testInteractive(sprintf("test/interactive/t%02d", i));
