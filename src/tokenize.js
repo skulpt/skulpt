@@ -466,8 +466,8 @@ Sk.Tokenizer.tokenNames = {
     256: 'T_NT_OFFSET'
 };
 
-goog.exportSymbol("Sk.Tokenizer", Sk.Tokenizer);
-goog.exportSymbol("Sk.Tokenizer.prototype.generateTokens", Sk.Tokenizer.prototype.generateTokens);
-goog.exportSymbol("Sk.Tokenizer.tokenNames", Sk.Tokenizer.tokenNames);
+//goog.exportSymbol("Sk.Tokenizer", Sk.Tokenizer);
+//goog.exportSymbol("Sk.Tokenizer.prototype.generateTokens", Sk.Tokenizer.prototype.generateTokens);
+//goog.exportSymbol("Sk.Tokenizer.tokenNames", Sk.Tokenizer.tokenNames);
 
 }());

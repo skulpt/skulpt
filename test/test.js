@@ -5,6 +5,10 @@ var tokenizepass = 0;
 
 function dump_tokens(fn, input)
 {
+    var uneval = function(t)
+    {
+        return new Sk.builtin.str(t).__repr__().v;
+    };
     var ret = '',
         lines = input.split("\n"),
         curIndex = 0,
@@ -14,7 +18,7 @@ function dump_tokens(fn, input)
                 scol = st[1],
                 erow = en[0],
                 ecol = en[1];
-            var data = sprintf("%-12.12s %-13.13s (%d, %d) (%d, %d)", Sk.Tokenizer.tokenNames[type], Sk.uneval(token), srow, scol, erow, ecol);
+            var data = sprintf("%-12.12s %-13.13s (%d, %d) (%d, %d)", Sk.Tokenizer.tokenNames[type], uneval(token), srow, scol, erow, ecol);
             //print("DUMP:"+data);
             ret += data;
             ret += "\n";
@@ -274,29 +278,32 @@ function main()
 {
     var i;
 
-    for (i = 0; i <= 100; i += 1)
+    // these use 'internal' symbols so they can't run when compiled
     {
-        testTokenize(sprintf("test/tokenize/t%02d", i));
-    }
-    print(sprintf("tokenize: %d/%d", tokenizepass, tokenizepass + tokenizefail));
+        for (i = 0; i <= 100; i += 1)
+        {
+            testTokenize(sprintf("test/tokenize/t%02d", i));
+        }
+        print(sprintf("tokenize: %d/%d", tokenizepass, tokenizepass + tokenizefail));
 
-    for (i = 0; i <= 10; i += 1)
-    {
-        testParse(sprintf("test/parse/t%02d", i));
-    }
-    print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
+        for (i = 0; i <= 10; i += 1)
+        {
+            testParse(sprintf("test/parse/t%02d", i));
+        }
+        print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
 
-    for (i = 0; i <= 300; ++i)
-    {
-        testTransform(sprintf("test/run/t%02d", i));
-    }
-    print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
+        for (i = 0; i <= 300; ++i)
+        {
+            testTransform(sprintf("test/run/t%02d", i));
+        }
+        print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
 
-    for (i = 0; i <= 300; ++i)
-    {
-        testSymtab(sprintf("test/run/t%02d", i));
+        for (i = 0; i <= 300; ++i)
+        {
+            testSymtab(sprintf("test/run/t%02d", i));
+        }
+        print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
-    print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
 return;
     for (i = 0; i <= 300; ++i)
     {

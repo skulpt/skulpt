@@ -823,7 +823,7 @@ Sk.dumpSymtab = function(st)
         var ret = [];
         for (var i = 0; i < l.length; ++i)
         {
-            ret.push(Sk.uneval(l[i]).replace(/"/g, "'")); // todo; quote hacking
+            ret.push(new Sk.builtin.str(l[i]).__repr__().v);
         }
         return '[' + ret.join(', ') + ']';
     };

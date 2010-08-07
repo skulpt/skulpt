@@ -3,7 +3,7 @@ file_input
     simple_stmt
       small_stmt
         print_stmt
-          T_NAME: "print"
+          T_NAME: 'print'
           test
             or_test
               and_test
@@ -18,17 +18,17 @@ file_input
                                 factor
                                   power
                                     atom
-                                      T_NAME: "x"
-                              T_PLUS: "+"
+                                      T_NAME: 'x'
+                              T_PLUS: '+'
                               term
                                 factor
                                   power
                                     atom
-                                      T_NUMBER: "2"
-                                T_STAR: "*"
+                                      T_NUMBER: '2'
+                                T_STAR: '*'
                                 factor
                                   power
                                     atom
-                                      T_NUMBER: "3"
-      T_NEWLINE: "\n"
-  T_ENDMARKER: ""
+                                      T_NUMBER: '3'
+      T_NEWLINE: '\n'
+  T_ENDMARKER: ''

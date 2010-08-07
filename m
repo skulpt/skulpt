@@ -14,7 +14,6 @@ Files = [
         'support/closure-library/closure/goog/string/string.js',
         'support/closure-library/closure/goog/asserts/asserts.js',
         'src/env.js',
-        'src/uneval.js',
         'src/errors.js',
         'src/list.js',
         'src/type.js',

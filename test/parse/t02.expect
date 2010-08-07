@@ -2,15 +2,15 @@ file_input
   stmt
     compound_stmt
       funcdef
-        T_NAME: "def"
-        T_NAME: "f"
+        T_NAME: 'def'
+        T_NAME: 'f'
         parameters
-          T_LPAR: "("
-          T_RPAR: ")"
-        T_COLON: ":"
+          T_LPAR: '('
+          T_RPAR: ')'
+        T_COLON: ':'
         suite
-          T_NEWLINE: "\n"
-          T_INDENT: "    "
+          T_NEWLINE: '\n'
+          T_INDENT: '    '
           stmt
             simple_stmt
               small_stmt
@@ -30,8 +30,8 @@ file_input
                                           factor
                                             power
                                               atom
-                                                T_NAME: "n"
-                  T_EQUAL: "="
+                                                T_NAME: 'n'
+                  T_EQUAL: '='
                   testlist
                     test
                       or_test
@@ -47,13 +47,13 @@ file_input
                                           factor
                                             power
                                               atom
-                                                T_STRING: "\"OK\""
-              T_NEWLINE: "\n"
+                                                T_STRING: '"OK"'
+              T_NEWLINE: '\n'
           stmt
             simple_stmt
               small_stmt
                 print_stmt
-                  T_NAME: "print"
+                  T_NAME: 'print'
                   test
                     or_test
                       and_test
@@ -68,9 +68,9 @@ file_input
                                         factor
                                           power
                                             atom
-                                              T_NAME: "n"
-              T_NEWLINE: "\n"
-          T_DEDENT: ""
+                                              T_NAME: 'n'
+              T_NEWLINE: '\n'
+          T_DEDENT: ''
   stmt
     simple_stmt
       small_stmt
@@ -90,9 +90,9 @@ file_input
                                   factor
                                     power
                                       atom
-                                        T_NAME: "f"
+                                        T_NAME: 'f'
                                       trailer
-                                        T_LPAR: "("
-                                        T_RPAR: ")"
-      T_NEWLINE: "\n"
-  T_ENDMARKER: ""
+                                        T_LPAR: '('
+                                        T_RPAR: ')'
+      T_NEWLINE: '\n'
+  T_ENDMARKER: ''

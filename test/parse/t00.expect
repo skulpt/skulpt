@@ -18,8 +18,8 @@ file_input
                                   factor
                                     power
                                       atom
-                                        T_NAME: "y"
-          T_EQUAL: "="
+                                        T_NAME: 'y'
+          T_EQUAL: '='
           testlist
             test
               or_test
@@ -35,6 +35,6 @@ file_input
                                   factor
                                     power
                                       atom
-                                        T_NUMBER: "1"
-      T_NEWLINE: "\n"
-  T_ENDMARKER: ""
+                                        T_NUMBER: '1'
+      T_NEWLINE: '\n'
+  T_ENDMARKER: ''

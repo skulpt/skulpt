@@ -338,13 +338,13 @@ Sk.parseTreeDump = function parseTreeDump(n, indent)
     }
     else
     {
-        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + Sk.uneval(n.value) + "\n";
+        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value).__repr__().v + "\n";
     }
     return ret;
 };
 
 
-goog.exportSymbol("Sk.parse", Sk.parse);
-goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
+//goog.exportSymbol("Sk.parse", Sk.parse);
+//goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
 
 }());
