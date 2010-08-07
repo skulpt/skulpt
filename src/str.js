@@ -339,6 +339,7 @@ $.__repr__ = function()
 
 $.prototype.__str__ = function()
 {
+    // todo; this is probably a bad thing? should return a py obj
     return this.v;
 };
 

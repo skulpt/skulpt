@@ -20,7 +20,7 @@ name: Stuff
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ('doit', '__init__')
+    Class_methods: ['__init__', 'doit']
     -- Identifiers --
     name: __init__
       is_referenced: False

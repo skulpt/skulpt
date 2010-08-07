@@ -585,7 +585,7 @@ function aliasForImportName(c, n)
                 {
                     var a = aliasForImportName(c, CHILD(n, 0));
                     goog.asserts.assert(!a.asname);
-                    a.asname = CHILD(n, 2).value;
+                    a.asname = strobj(CHILD(n, 2).value);
                     return a;
                 }
             case SYM.dotted_name:

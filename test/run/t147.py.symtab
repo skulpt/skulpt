@@ -20,7 +20,7 @@ name: A
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ('test', '__init__')
+    Class_methods: ['__init__', 'test']
     -- Identifiers --
     name: __init__
       is_referenced: False
@@ -107,7 +107,7 @@ name: B
     Sym_lineno: 8
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ('test', '__init__')
+    Class_methods: ['__init__', 'test']
     -- Identifiers --
     name: __init__
       is_referenced: False

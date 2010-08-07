@@ -20,7 +20,7 @@ name: Other
     Sym_lineno: 11
     Sym_nested: False
     Sym_haschildren: False
-    Class_methods: ()
+    Class_methods: []
     -- Identifiers --
   ]
 name: Stuff
@@ -39,7 +39,7 @@ name: Stuff
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ('__cmp__',)
+    Class_methods: ['__cmp__']
     -- Identifiers --
     name: __cmp__
       is_referenced: False
@@ -104,7 +104,7 @@ name: Things
     Sym_lineno: 6
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ('__cmp__',)
+    Class_methods: ['__cmp__']
     -- Identifiers --
     name: __cmp__
       is_referenced: False

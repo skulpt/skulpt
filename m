@@ -13,8 +13,6 @@ Files = [
         'support/closure-library/closure/goog/debug/error.js',
         'support/closure-library/closure/goog/string/string.js',
         'support/closure-library/closure/goog/asserts/asserts.js',
-        'support/closure-library/closure/goog/array/array.js',
-        'support/closure-library/closure/goog/iter/iter.js',
         'src/env.js',
         'src/uneval.js',
         'src/errors.js',
@@ -68,7 +66,7 @@ def getFileList(type):
             ret.append(f)
     return ret
 
-jsengine = "support/d8/d8 --trace_exception"
+jsengine = "support/d8/d8 --trace_exception --debugger"
 #jsengine = "rhino"
 
 def test():
@@ -328,7 +326,7 @@ def symtabdump(fn):
                     indent, sorted(obj.get_frees()))
         elif obj.get_type() == "class":
             ret += "%sClass_methods: %s\n" % (
-                    indent, obj.get_methods())
+                    indent, sorted(obj.get_methods()))
         ret += "%s-- Identifiers --\n" % indent
         for ident in sorted(obj.get_identifiers()):
             info = obj.lookup(ident)

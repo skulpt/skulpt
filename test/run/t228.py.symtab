@@ -20,7 +20,7 @@ name: X
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ('stuff',)
+    Class_methods: ['stuff']
     -- Identifiers --
     name: stuff
       is_referenced: False

@@ -20,7 +20,7 @@ name: X
     Sym_lineno: 1
     Sym_nested: False
     Sym_haschildren: False
-    Class_methods: ()
+    Class_methods: []
     -- Identifiers --
   ]
 name: Y
@@ -39,7 +39,7 @@ name: Y
     Sym_lineno: 5
     Sym_nested: False
     Sym_haschildren: False
-    Class_methods: ()
+    Class_methods: []
     -- Identifiers --
   ]
 name: object

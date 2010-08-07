@@ -176,10 +176,12 @@ Parser.prototype.shift = function(type, value, newstate, context)
     var dfa = this.stack[this.stack.length - 1].dfa;
     var state = this.stack[this.stack.length - 1].state;
     var node = this.stack[this.stack.length - 1].node;
+    //print("context", context);
     var newnode = {
         type: type, 
         value: value,
-        context: context,
+        lineno: context[0][0],         // throwing away end here to match cpython
+        col_offset: context[0][1],
         children: null
     };
     newnode = this.convert(this.grammar, newnode);
@@ -202,7 +204,8 @@ Parser.prototype.push = function(type, newdfa, newstate, context)
     var newnode = {
         type: type,
         value: null,
-        context: context,
+        lineno: context[0][0],      // throwing away end here to match cpython
+        col_offset: context[0][1],
         children: []
     };
     this.stack[this.stack.length - 1] = {

@@ -144,13 +144,13 @@ function testSymtab(name)
 {
     try { var input = read(name + ".py"); }
     catch (e) { return; }
-    print(name);
+    //print(name);
 
     var expect = 'NO_.SYMTAB_FILE';
     try { expect = read(name + ".py.symtab"); }
     catch (e) {}
     var cst = Sk.parse(name + ".py", input);
-    var ast = Sk.transform(cst);
+    var ast = Sk.astFromParse(cst);
     var st = Sk.symboltable(ast);
     var got = Sk.dumpSymtab(st);
 
@@ -291,14 +291,13 @@ function main()
         testTransform(sprintf("test/run/t%02d", i));
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
-return;
 
-    for (i = 0; i <= 70; ++i)
+    for (i = 0; i <= 300; ++i)
     {
         testSymtab(sprintf("test/run/t%02d", i));
     }
     print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
-
+return;
     for (i = 0; i <= 300; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));

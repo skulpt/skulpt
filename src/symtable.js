@@ -84,9 +84,11 @@ function SymbolTableScope(table, name, type, lineno)
     this.returnsValue = false;
 
     this.lineno = lineno;
-    this.tmpname = 0;
 
     this.table = table;
+
+    if (table.cur && (table.cur.nested || table.cur.blockType === FunctionBlock))
+        this.isNested = true;
 
     // cache of Symbols for returning to other parts of code
     this.symbols = {};
@@ -173,7 +175,19 @@ SymbolTableScope.prototype.get_frees = function()
     }
     return this._funcFrees;
 };
-
+SymbolTableScope.prototype.get_methods = function()
+{
+    goog.asserts.assert(this.get_type() == 'class', "get_methods only valid for class scopes");
+    if (!this._classMethods)
+    {
+        // todo; uniq?
+        var all = [];
+        for (var i = 0; i < this.children.length; ++i)
+            all.push(this.children[i].name);
+        this._classMethods = all;
+    }
+    return this._classMethods;
+}
 
 /*
  *
@@ -191,23 +205,29 @@ function SymbolTable(filename, mod_ast)
 }
 SymbolTable.prototype.SEQStmt = function(nodes)
 {
-    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s (%s)", nodes, nodes.constructor);
-    goog.iter.forEach(goog.iter.toIterator(nodes), function(val) {
-            if (val) this.visitStmt(val);
-        }, this);
+    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
+    var len = nodes.length;
+    for (var i = 0; i < len; ++i)
+    {
+        var val = nodes[i];
+        if (val) this.visitStmt(val);
+    }
 };
 SymbolTable.prototype.SEQExpr = function(nodes)
 {
-    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s (%s)", nodes, nodes.constructor);
-    goog.iter.forEach(goog.iter.toIterator(nodes), function(val) {
-            if (val) this.visitExpr(val);
-        }, this);
+    goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
+    var len = nodes.length;
+    for (var i = 0; i < len; ++i)
+    {
+        var val = nodes[i];
+        if (val) this.visitExpr(val);
+    }
 };
 
 SymbolTable.prototype.mangle = function(name)
 {
     // todo;
-    return name;
+    return name.__str__();
 };
 
 SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
@@ -240,19 +260,43 @@ SymbolTable.prototype.exitBlock = function()
         this.cur = this.stack.pop();
 };
 
-SymbolTable.prototype.visitArguments = function(func)
+SymbolTable.prototype.visitParams = function(args, toplevel)
 {
-    goog.asserts.assert(func instanceof Sk.Ast.Function_);
-    // todo; this doesn't handle tuple destructuring args yet;
-    // the ast/transform is wrong i think we just have argnames, but it
-    // should really be nodes of either name or tuple
-    goog.iter.forEach(goog.iter.toIterator(func.argnames), function(argname) {
-                //print("visiting argument", argname);
-                this.addDef(argname, DEF_PARAM);
-            }, this);
-    // todo; vararg?
-    // todo; kwargs?
+    for (var i = 0; i < args.length; ++i)
+    {
+        var arg = args[i];
+        if (arg.constructor === Name)
+        {
+            goog.asserts.assert(arg.ctx === Param || (arg.ctx === Store && !toplevel));
+            this.addDef(arg.id, DEF_PARAM);
+        }
+        else
+        {
+            // Tuple isn't supported
+            throw new SyntaxError("invalid expression in parameter list");
+        }
+    }
+}
+
+SymbolTable.prototype.visitArguments = function(a)
+{
+    if (a.args) this.visitParams(a.args, true);
+    if (a.vararg)
+    {
+        this.addDef(a.vararg, DEF_PARAM);
+        this.cur.varargs = true;
+    }
+    if (a.kwarg)
+    {
+        this.addDef(a.kwarg, DEF_PARAM);
+        this.cur.varkeywords = true;
+    }
 };
+
+SymbolTable.prototype.newTmpname = function()
+{
+    this.addDef(new Sk.builtin.str("_[" + (++this.tmpname) + "]"), DEF_LOCAL);
+}
 
 SymbolTable.prototype.addDef = function(name, flag)
 {
@@ -284,193 +328,302 @@ SymbolTable.prototype.addDef = function(name, flag)
     }
 };
 
-SymbolTable.prototype.visitStmt = function(stmt)
+SymbolTable.prototype.visitSlice = function(s)
 {
-    goog.asserts.assert(stmt !== undefined, "visitStmt called with undefined");
-    //print("  stmt: ", stmt.constructor.name);
-    switch (stmt.constructor)
+    switch (s.constructor)
     {
-        case Sk.Ast.Assign:
-            this.SEQExpr(stmt.nodes);
-            this.visitExpr(stmt.expr);
+        case Slice:
+            if (s.lower) this.visitExpr(s.lower);
+            if (s.upper) this.visitExpr(s.upper);
+            if (s.step) this.visitExpr(s.step);
             break;
-        case Sk.Ast.AugAssign:
-            this.visitExpr(stmt.node);
-            this.visitExpr(stmt.expr);
+        case ExtSlice:
+            for (var i = 0; i < s.dims.length; ++i)
+                this.visitSlice(s.dims[i]);
             break;
-        case Sk.Ast.If_:
-            var isBody = false;
-            for (var i = 0; i < stmt.tests.length; ++i)
-            {
-                var tst = stmt.tests[i];
-                if (isBody)
-                    this.SEQStmt(tst.nodes);
-                else
-                    this.visitExpr(tst);
-                isBody = !isBody;
-            }
-            if (stmt.else_)
-                this.SEQStmt(stmt.else_.nodes);
+        case Index:
+            this.visitExpr(s.value);
             break;
-        case Sk.Ast.While_:
-            this.visitExpr(stmt.test);
-            this.SEQStmt(stmt.body.nodes);
-            if (stmt.else_) this.SEQStmt(stmt.else_.nodes);
+        case Ellipsis:
             break;
-        case Sk.Ast.For_:
-            this.visitExpr(stmt.assign);
-            this.visitExpr(stmt.list);
-            this.SEQStmt(stmt.body.nodes);
-            if (stmt.else_) this.SEQStmt(stmt.else_.nodes);
-            break;
-        case Sk.Ast.Print:
-            if (stmt.dest) this.visitExpr(stmt.dest);
-            this.SEQExpr(stmt.nodes);
-            break;
-        case Sk.Ast.Function_:
-            this.addDef(stmt.name, DEF_LOCAL);
-            //print("  func:", Sk.astDump(stmt));
-            if (stmt.defaults) this.SEQExpr(stmt.defaults);
-            if (stmt.decorators) this.SEQExpr(stmt.decorators);
-            this.enterBlock(stmt.name, FunctionBlock, stmt, stmt.lineno);
-            this.visitArguments(stmt);
-            this.SEQStmt(stmt.code.nodes);
+    }
+};
+
+SymbolTable.prototype.visitStmt = function(s)
+{
+    goog.asserts.assert(s !== undefined, "visitStmt called with undefined");
+    switch (s.constructor)
+    {
+        case FunctionDef:
+            this.addDef(s.name, DEF_LOCAL);
+            if (s.args.defaults) this.SEQExpr(s.args.defaults);
+            if (s.decorator_list) this.SEQExpr(s.decorator_list);
+            this.enterBlock(s.name.__str__(), FunctionBlock, s, s.lineno);
+            this.visitArguments(s.args);
+            this.SEQStmt(s.body);
             this.exitBlock();
             break;
-        case Sk.Ast.Return_:
-            if (stmt.value)
+        case ClassDef:
+            this.addDef(s.name, DEF_LOCAL);
+            this.SEQExpr(s.bases);
+            if (s.decorator_list) this.SEQExpr(s.decorator_list);
+            this.enterBlock(s.name.__str__(), ClassBlock, s, s.lineno);
+            var tmp = this.curClass;
+            this.curClass = s.name;
+            this.SEQStmt(s.body);
+            this.curCalss = tmp;
+            this.exitBlock();
+            break;
+        case Return_:
+            if (s.value)
             {
-                this.visitExpr(stmt.value);
+                this.visitExpr(s.value);
                 this.cur.returnsValue = true;
-                if (this.cur.isGenerator)
-                {
+                if (this.cur.generator)
                     throw new SyntaxError("'return' with argument inside generator");
+            }
+            break;
+        case Delete_:
+            this.SEQExpr(s.targets);
+            break;
+        case Assign:
+            this.SEQExpr(s.targets);
+            this.visitExpr(s.value);
+            break;
+        case AugAssign:
+            this.visitExpr(s.target);
+            this.visitExpr(s.value);
+            break;
+        case Print:
+            if (s.dest) this.visitExpr(s.dest);
+            this.SEQExpr(s.values);
+            break;
+        case For_:
+            this.visitExpr(s.target);
+            this.visitExpr(s.iter);
+            this.SEQStmt(s.body);
+            if (s.orelse) this.SEQStmt(s.orelse);
+            break;
+        case While_:
+            this.visitExpr(s.test);
+            this.SEQStmt(s.body);
+            if (s.orelse) this.SEQStmt(s.orelse);
+            break;
+        case If_:
+            this.visitExpr(s.test);
+            this.SEQStmt(s.body);
+            if (s.orelse)
+                this.SEQStmt(s.orelse);
+            break;
+        case Raise:
+            if (s.type)
+            {
+                this.visitExpr(s.type);
+                if (s.inst)
+                {
+                    this.visitExpr(s.inst);
+                    if (s.tback)
+                        this.visitExpr(s.tback);
                 }
             }
             break;
-        case Sk.Ast.Global:
-            for (var i = 0; i < stmt.names.length; ++i)
+        case TryExcept:
+            this.SEQStmt(s.body);
+            this.SEQStmt(s.orelse);
+            this.visitExcepthandler(s.handlers);
+            break;
+        case TryFinally:
+            this.SEQStmt(s.body);
+            this.SEQStmt(s.finalbody);
+            break;
+        case Assert:
+            this.visitExpr(s.test);
+            if (s.msg) this.visitExpr(s.msg);
+            break;
+        case Import_:
+        case ImportFrom:
+            this.visitAlias(s.names);
+            break;
+        case Exec:
+            this.visitExpr(s.body);
+            if (s.globals)
             {
-                var name = this.mangle(stmt.names[i]);
+                this.visitExpr(s.globals);
+                if (s.locals)
+                    this.visitExpr(s.locals);
+            }
+            break;
+        case Global:
+            var nameslen = s.names.length;
+            for (var i = 0; i < nameslen; ++i)
+            {
+                var name = this.mangle(s.names[i]);
                 var cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE))
                 {
                     if (cur & DEF_LOCAL)
-                        Sk.warn("name '" + name + "' is assigned to before global declaration");
+                        throw new SyntaxError("name '" + name + "' is assigned to before global declaration");
                     else
-                        Sk.warn("name '" + name + "' is used prior to global declaration");
+                        throw new SyntaxError("name '" + name + "' is used prior to global declaration");
                 }
-                this.addDef(name, DEF_GLOBAL);
+                this.addDef(new Sk.builtin.str(name), DEF_GLOBAL);
             }
             break;
-        case Sk.Ast.Pass:
-        case Sk.Ast.Break_:
-        case Sk.Ast.Continue_:
-            // nothing to do
+        case Expr:
+            this.visitExpr(s.value);
             break;
-        case Sk.Ast.Discard:
-            this.visitExpr(stmt.expr);
+        case Pass:
+        case Break_:
+        case Continue_:
+            // nothing
             break;
+        case With_:
+            this.newTmpname();
+            this.visitExpr(s.context_expr);
+            if (s.optional_vars)
+            {
+                this.newTmpname();
+                this.visitExpr(s.optional_vars);
+            }
+            this.SEQStmt(s.body);
+            break;
+
         default:
-            goog.asserts.fail("Unhandled type " + stmt.constructor.name + " in visitStmt");
+            goog.asserts.fail("Unhandled type " + s.constructor.name + " in visitStmt");
     }
 };
 
-SymbolTable.prototype.visitExpr = function(expr)
+SymbolTable.prototype.visitExpr = function(e)
 {
-    goog.asserts.assert(expr !== undefined, "visitExpr called with undefined");
-    //print("  expr: ", expr.constructor.name);
-    switch (expr.constructor)
+    goog.asserts.assert(e !== undefined, "visitExpr called with undefined");
+    //print("  e: ", e.constructor.name);
+    switch (e.constructor)
     {
-        case Sk.Ast.Add:
-        case Sk.Ast.Sub:
-        case Sk.Ast.Mul:
-        case Sk.Ast.Div:
-        case Sk.Ast.Mod:
-        case Sk.Ast.Power:
-        case Sk.Ast.FloorDiv:
-        case Sk.Ast.Bitor:
-        case Sk.Ast.Bitxor:
-        case Sk.Ast.Bitand:
-            this.visitExpr(expr.left);
-            this.visitExpr(expr.right);
+        case BoolOp:
+            this.SEQExpr(e.values);
             break;
-        case Sk.Ast.Or:
-        case Sk.Ast.And:
-            this.SEQExpr(expr.nodes);
+        case BinOp:
+            this.visitExpr(e.left);
+            this.visitExpr(e.right);
             break;
-        case Sk.Ast.Not:
-        case Sk.Ast.UnaryAdd:
-        case Sk.Ast.UnarySub:
-            this.visitExpr(expr.expr);
+        case UnaryOp:
+            this.visitExpr(e.operand);
             break;
-        case Sk.Ast.Const_:
-            // nothing to do for number, string, etc.
+        case Lambda:
+            this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL);
+            if (e.args.defaults)
+                this.SEQExpr(e.args.defaults);
+            this.enterBlock("lambda", FunctionBlock, e, e.lineno);
+            this.visitArguments(e.args, e);
+            this.visitExpr(e.body);
+            this.exitBlock();
             break;
-        case Sk.Ast.Tuple:
-        case Sk.Ast.List:
-            this.SEQExpr(expr.nodes);
+        case IfExp:
+            this.visitExpr(e.test);
+            this.visitExpr(e.body);
+            this.visitExpr(e.orelse);
             break;
-        case Sk.Ast.AssTuple:
-            this.SEQExpr(expr.nodes);
+        case Dict:
+            this.SEQExpr(e.keys);
+            this.SEQExpr(e.values);
             break;
-        case Sk.Ast.AssName:
-            this.addDef(expr.name, DEF_LOCAL);
+        case ListComp:
+            this.newTmpname();
+            this.visitExpr(e.elt);
+            this.visitComprehension(e.generators, 0);
             break;
-        case Sk.Ast.Name:
-            this.addDef(expr.name, USE);
+        case GeneratorExp:
+            this.visitGenexp(e);
             break;
-        case Sk.Ast.Compare:
-            this.visitExpr(expr.expr);
-            for (var i = 1; i < expr.ops.length; i += 2) this.visitExpr(expr.ops[i]);
+        case Yield:
+            if (e.value) this.visitExpr(e.value);
+            this.cur.generator = true;
+            if (this.cur.returnsValue)
+                throw new SyntaxError("'return' with argument inside generator");
             break;
-        case Sk.Ast.CallFunc:
-            this.visitExpr(expr.node);
-            this.SEQExpr(expr.args);
-            // todo; keywords?
-            if (expr.star_args)
-                this.visitExpr(expr.star_args);
-            if (expr.dstar_args)
-                this.visitExpr(expr.dstar_args);
+        case Compare:
+            this.visitExpr(e.left);
+            this.SEQExpr(e.comparators);
             break;
-        case Sk.Ast.Dict:
-            this.SEQExpr(expr.items);
+        case Call:
+            this.visitExpr(e.func);
+            this.SEQExpr(e.args);
+            for (var i = 0; i < e.keywords.length; ++i)
+                this.visitExpr(e.keywords[i].value);
+            if (this.starargs) this.visitExpr(e.starargs);
+            if (this.kwargs) this.visitExpr(e.kwargs);
             break;
-        case Sk.Ast.Subscript:
-            this.visitExpr(expr.expr);
-            this.SEQExpr(expr.subs);
+        case Num:
+        case Str:
             break;
-        case Sk.Ast.Getattr:
-            this.visitExpr(expr.expr);
+        case Attribute:
+            this.visitExpr(e.value);
             break;
-        case Sk.Ast.Sliceobj:
-            this.SEQExpr(expr.nodes);
+        case Subscript:
+            this.visitExpr(e.value);
+            this.visitSlice(e.slice);
             break;
-        case Sk.Ast.ListComp:
-            this.addDef("_[" + (++this.tmpname) + "]", DEF_LOCAL);
-            this.visitExpr(expr.expr);
-            this.visitComprehension(expr.quals);
+        case Name:
+            this.addDef(e.id, e.ctx === Load ? USE : DEF_LOCAL);
+            break;
+        case List:
+        case Tuple:
+            this.SEQExpr(e.elts);
             break;
         default:
             goog.asserts.fail("Unhandled type " + expr.constructor.name + " in visitExpr");
     }
 };
 
-SymbolTable.prototype.visitComprehension = function(quals)
+SymbolTable.prototype.visitComprehension = function(lcs, startAt)
 {
-    var len = quals.length;
-    for (var i = 0; i < len; ++i)
+    var len = lcs.length;
+    for (var i = startAt; i < len; ++i)
     {
-        var qual = quals[i];
-        switch (qual.constructor)
+        var lc = lcs[i];
+        this.visitExpr(lc.target);
+        this.visitExpr(lc.iter);
+        this.SEQExpr(lc.ifs);
+    }
+};
+
+SymbolTable.prototype.visitAlias = function(names)
+{
+    /* Compute store_name, the name actually bound by the import
+        operation.  It is diferent than a->name when a->name is a
+        dotted package name (e.g. spam.eggs) 
+    */
+    for (var i = 0; i < names.length; ++i)
+    {
+        var a = names[i];
+        var name = a.asname === null ? a.name.__str__() : a.asname;
+        var storename = name;
+        var dot = name.indexOf('.');
+        if (dot !== -1)
+            storename = name.substr(0, dot);
+        if (name !== "*")
+            this.addDef(new Sk.builtin.str(storename), DEF_IMPORT);
+        else
         {
-            case Sk.Ast.ListCompFor:
-                this.visitExpr(qual.assign);
-                this.visitExpr(qual.list);
-                this.SEQExpr(qual.ifs);
-                break;
+            if (this.cur.blockType !== ModuleBlock)
+                throw new SyntaxError("import * only allowed at module level");
         }
     }
+};
+
+SymbolTable.prototype.visitGenexp = function(e)
+{
+    var outermost = e.generators[0];
+    // outermost is evaled in current scope
+    this.visitExpr(outermost.iter);
+    this.enterBlock("genexpr", FunctionBlock, e, e.lineno);
+    this.cur.generator = true;
+    this.addDef(new Sk.builtin.str(".0"), DEF_PARAM);
+    this.visitExpr(outermost.target);
+    this.SEQExpr(outermost.ifs);
+    this.visitComprehension(e.generators, 1);
+    this.visitExpr(e.elt);
+    this.exitBlock();
 };
 
 function _dictUpdate(a, b)
@@ -491,7 +644,9 @@ SymbolTable.prototype.analyzeBlock = function(ste, bound, free, global)
 
     if (ste.blockType == ClassBlock)
     {
-        goog.asserts.fail("todo; ClassBlock in analyze");
+        _dictUpdate(newglobal, global);
+        if (bound)
+            _dictUpdate(newbound, bound);
     }
 
     for (var name in ste.symFlags)
@@ -634,12 +789,12 @@ Sk.symboltable = function(ast)
 {
     var ret = new SymbolTable();
 
-    ret.enterBlock('top', ModuleBlock, ast, [[0,0],[0,0]]);
+    ret.enterBlock("top", ModuleBlock, ast, 0);
     ret.top = ret.cur;
 
-    goog.iter.forEach(goog.iter.toIterator(ast.node.nodes), function(val) {
-        ret.visitStmt(val);
-    });
+    //print(Sk.astDump(ast));
+    for (var i = 0; i < ast.body.length; ++i)
+        ret.visitStmt(ast.body[i]);
 
     ret.exitBlock();
 
@@ -665,12 +820,12 @@ Sk.dumpSymtab = function(st)
         var ret = "";
         ret += indent + "Sym_type: " + obj.get_type() + "\n";
         ret += indent + "Sym_name: " + obj.get_name() + "\n";
-        ret += indent + "Sym_lineno: " + obj.get_lineno()[0][0] + "\n"; // [0] == our line is [[startrow,startcol],[endrow,endcol],text] rather than just lineno
+        ret += indent + "Sym_lineno: " + obj.get_lineno() + "\n";
         ret += indent + "Sym_nested: " + pyBoolStr(obj.is_nested()) + "\n";
         ret += indent + "Sym_haschildren: " + pyBoolStr(obj.has_children()) + "\n";
         if (obj.get_type() === "class")
         {
-            ret += indent + "Class_methods: " + obj.get_methods() + "\n";
+            ret += indent + "Class_methods: " + pyList(obj.get_methods()) + "\n";
         }
         else if (obj.get_type() === "function")
         {
