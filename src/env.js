@@ -49,6 +49,8 @@ Sk.types = {};
 
 Sk.stdmodules = {};
 
+
+
 //
 // a wide variety of implementation details. these are generally
 // functions called by the compiler to implement details of the language.
@@ -173,60 +175,60 @@ Sk.print = function print(x)
 };
 
 Sk.opFuncs = {
-    "+": "__add__",
-    "-": "__sub__",
-    "*": "__mul__",
-    "/": "__truediv__",
-    "//": "__floordiv__",
-    "%": "__mod__",
-    "**": "__pow__",
-    "<<": "__lshift__",
-    ">>": "__rshift__",
-    "&": "__and__",
-    "|": "__or__",
-    "^": "__xor__"
+    "Add": "__add__",
+    "Sub": "__sub__",
+    "Mult": "__mul__",
+    "Div": "__truediv__",
+    "FloorDiv": "__floordiv__",
+    "Mod": "__mod__",
+    "Pow": "__pow__",
+    "LShift": "__lshift__",
+    "RShift": "__rshift__",
+    "BitAnd": "__and__",
+    "BitOr": "__or__",
+    "BitXor": "__xor__"
 };
 
 Sk.opRFuncs = {
-    "+": "__radd__",
-    "-": "__rsub__",
-    "*": "__rmul__",
-    "/": "__rtruediv__",
-    "//": "__rfloordiv__",
-    "%": "__rmod__",
-    "**": "__rpow__",
-    "<<": "__rlshift__",
-    ">>": "__rrshift__",
-    "&": "__rand__",
-    "|": "__ror__",
-    "^": "__rxor__"
+    "Add": "__radd__",
+    "Sub": "__rsub__",
+    "Mult": "__rmul__",
+    "Div": "__rtruediv__",
+    "FloorDiv": "__rfloordiv__",
+    "Mod": "__rmod__",
+    "Pow": "__rpow__",
+    "LShift": "__rlshift__",
+    "RShift": "__rrshift__",
+    "BitAnd": "__rand__",
+    "BitOr": "__ror__",
+    "BitXor": "__rxor__"
 };
 
 Sk.opIFuncs = {
-    "+=": "__iadd__",
-    "-=": "__isub__",
-    "*=": "__imul__",
-    "/=": "__itruediv__",
-    "//=": "__ifloordiv__",
-    "%=": "__imod__",
-    "**=": "__ipow__", // todo; modulo
-    "<<=": "__ilshift__",
-    ">>=": "__irshift__",
-    "&=": "__iand__",
-    "|=": "__ior__",
-    "^=": "__ixor__"
+    "Add": "__iadd__",
+    "Sub": "__isub__",
+    "Mult": "__imul__",
+    "Div": "__itruediv__",
+    "FloorDiv": "__ifloordiv__",
+    "Mod": "__imod__",
+    "Pow": "__ipow__", // todo; modulo
+    "LShift": "__ilshift__",
+    "RShift": "__irshift__",
+    "BitAnd": "__iand__",
+    "BitOr": "__ior__",
+    "BitXor": "__ixor__"
 };
 
 
 Sk.boNumPromote = {
-    "+": function(a, b) { return a + b; },
-    "-": function(a, b) { return a - b; },
-    "*": function(a, b) { return a * b; },
-    "%": function(a, b) { return a % b; },
-    "**": Math.pow,
-    "&": function(a, b) { return a & b; },
-    "|": function(a, b) { return a | b; },
-    "^": function(a, b) { return a ^ b; }
+    "Add": function(a, b) { return a + b; },
+    "Sub": function(a, b) { return a - b; },
+    "Mult": function(a, b) { return a * b; },
+    "Mod": function(a, b) { return a % b; },
+    "Pow": Math.pow,
+    "BitAnd": function(a, b) { return a & b; },
+    "BitOr": function(a, b) { return a | b; },
+    "BitXor": function(a, b) { return a ^ b; }
 };
 Sk.binop = function binop(lhs, rhs, op)
 {
@@ -258,20 +260,20 @@ Sk.binop = function binop(lhs, rhs, op)
 };
 
 Sk.ipNumPromote = {
-    "+=": function(a, b) { return a + b; },
-    "-=": function(a, b) { return a - b; },
-    "*=": function(a, b) { return a * b; },
-    "/=": function(a, b) { return a / b; },
-    "//=": Math.floor,
-    "%=": function(a, b) { return a + b; },
-    "**=": Math.pow,
-    "<<=": function(a, b) { return a << b; },
-    ">>=": function(a, b) { return a >> b; },
-    "&=": function(a, b) { return a & b; },
-    "|=": function(a, b) { return a | b; },
-    "^=": function(a, b) { return a ^ b; }
+    "Add": function(a, b) { return a + b; },
+    "Sub": function(a, b) { return a - b; },
+    "Mult": function(a, b) { return a * b; },
+    "Div": function(a, b) { return a / b; },
+    "FloorDiv": Math.floor,
+    "Mod": function(a, b) { return a + b; },
+    "Pow": Math.pow,
+    "LShift": function(a, b) { return a << b; },
+    "RShift": function(a, b) { return a >> b; },
+    "BitAnd": function(a, b) { return a & b; },
+    "BitOr": function(a, b) { return a | b; },
+    "BitXor": function(a, b) { return a ^ b; }
 };
-Sk.inplace = function inplace(lhs, rhs, op)
+Sk.inplacebinop = function(lhs, rhs, op)
 {
     var numPromote = $.ipNumPromote;
     var numPromoteFunc = numPromote[op];
@@ -405,7 +407,7 @@ Sk.setattr = function setattr(object, name, value)
 };
 
 // load a name, searching in various locations, and always ending in globals and builtins
-Sk.loadname = function loadname(name /*, locations*/)
+Sk.loadname = function(name /*, locations*/)
 {
     for (var i = 1; i < arguments.length; ++i)
     {
@@ -416,9 +418,13 @@ Sk.loadname = function loadname(name /*, locations*/)
     var bi = $.builtin[name];
     if (bi !== undefined) return bi;
 
+    print("HI!");
+
     // todo; should be NameError
     throw new ReferenceError("name '" + name + "' is not defined");
 };
+
+goog.exportSymbol("Sk.loadname", Sk.loadname);
 
 Sk.storename = function storename(name, value, globals /*, locations*/)
 {

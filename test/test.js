@@ -195,8 +195,13 @@ function testRun(name)
     try { expectalt = read(name + ".py.real.alt"); }
     catch (e) {}
     var js = Sk.compile(input, name + ".py", "exec");
+    //print("-----");
+    var beaut = js_beautify(js);
+    //print(beaut);
+    //print("-----");
     try {
-        goog.global.eval(js);
+        // todo; confirm beautify doesn't fix/break anything?
+        goog.global.eval(beaut);
     }
     catch (e)
     {
@@ -307,7 +312,7 @@ function main()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= 0; ++i)
+    for (i = 0; i <= 10; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }

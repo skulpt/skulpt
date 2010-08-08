@@ -1,5 +1,3 @@
-(function() {
-
 /* Flags for def-use information */
 
 var DEF_GLOBAL = 1;           /* global stmt */
@@ -67,6 +65,8 @@ Symbol.prototype.is_assigned = function() { return !!(this.__flags & DEF_LOCAL);
 Symbol.prototype.is_namespace = function() { return this.__namespaces && this.__namespaces.length > 0; }
 Symbol.prototype.get_namespaces = function() { return this.__namespaces; }
 
+var astScopeCounter = 0;
+
 /**
  * @constructor
  * @param {SymbolTable} table
@@ -74,7 +74,7 @@ Symbol.prototype.get_namespaces = function() { return this.__namespaces; }
  * @param {string} type
  * @param {number} lineno
  */
-function SymbolTableScope(table, name, type, lineno)
+function SymbolTableScope(table, name, type, ast, lineno)
 {
     this.symFlags = {};
     this.name = name;
@@ -96,6 +96,9 @@ function SymbolTableScope(table, name, type, lineno)
 
     if (table.cur && (table.cur.nested || table.cur.blockType === FunctionBlock))
         this.isNested = true;
+
+    ast.scopeId = astScopeCounter++;
+    table.stss[ast.scopeId] = this;
 
     // cache of Symbols for returning to other parts of code
     this.symbols = {};
@@ -194,7 +197,13 @@ SymbolTableScope.prototype.get_methods = function()
         this._classMethods = all;
     }
     return this._classMethods;
-}
+};
+SymbolTableScope.prototype.getScope = function(name)
+{
+    var v = this.symFlags[name];
+    if (v === undefined) return 0;
+    return (v >> SCOPE_OFF) & SCOPE_MASK;
+};
 
 /**
  * @constructor
@@ -205,12 +214,24 @@ function SymbolTable(filename)
     this.filename = filename;
     this.cur = null;
     this.top = null;
-    this.symbols = {};
     this.stack = [];
     this.global = null; // points at top level module symFlags
     this.curClass = null; // current class or null
     this.tmpname = 0;
+
+    // mapping from ast nodes to their scope if they have one. we add an
+    // id to the ast node when a scope is created for it, and store it in
+    // here for the compiler to lookup later.
+    this.stss = {};
 }
+SymbolTable.prototype.getStsForAst = function(ast)
+{
+    goog.asserts.assert(ast.scopeId !== undefined, "ast wasn't added to st?");
+    var v = this.stss[ast.scopeId];
+    goog.asserts.assert(v !== undefined, "unknown sym tab entry");
+    return v;
+};
+
 SymbolTable.prototype.SEQStmt = function(nodes)
 {
     goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
@@ -232,12 +253,6 @@ SymbolTable.prototype.SEQExpr = function(nodes)
     }
 };
 
-SymbolTable.prototype.mangle = function(name)
-{
-    // todo;
-    return name.__str__();
-};
-
 SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
 {
     //print("enterBlock:", name);
@@ -247,7 +262,7 @@ SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
         prev = this.cur;
         this.stack.push(this.cur);
     }
-    this.cur = new SymbolTableScope(this, name, blockType, lineno);
+    this.cur = new SymbolTableScope(this, name, blockType, ast, lineno);
     if (name === 'top')
     {
         //print("    setting global because it's top");
@@ -308,7 +323,7 @@ SymbolTable.prototype.newTmpname = function()
 
 SymbolTable.prototype.addDef = function(name, flag)
 {
-    var mangled = this.mangle(name);
+    var mangled = mangleName(this.curClass, name).__str__();
     var val = this.cur.symFlags[mangled];
     if (val !== undefined)
     {
@@ -465,7 +480,7 @@ SymbolTable.prototype.visitStmt = function(s)
             var nameslen = s.names.length;
             for (var i = 0; i < nameslen; ++i)
             {
-                var name = this.mangle(s.names[i]);
+                var name = mangleName(this.curClass, s.names[i]).__str__();
                 var cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE))
                 {
@@ -813,7 +828,7 @@ Sk.symboltable = function(ast, filename)
 
     ret.analyze();
 
-    return ret.top;
+    return ret;
 };
 
 Sk.dumpSymtab = function(st)
@@ -877,10 +892,8 @@ Sk.dumpSymtab = function(st)
         }
         return ret;
     }
-    return getIdents(st, "");
+    return getIdents(st.top, "");
 };
 
 //goog.exportSymbol("Sk.symboltable", Sk.symboltable);
 //goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
-
-}());

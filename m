@@ -36,11 +36,13 @@ Files = [
         'src/ast.js',
         'src/symtable.js',
         'src/compile.js',
+        ("support/jsbeautify/beautify.js", 'test'),
         ]
 
 TestFiles = [
         'test/sprintf.js',
         "test/json2.js",
+        "support/jsbeautify/beautify.js",
         "test/test.js"
         ]
 DebugFiles = TestFiles[:-1]
@@ -369,12 +371,19 @@ def run(fn):
     f = open("support/tmp/run.js", "w")
     f.write("""
 var input = read('%s');
-eval(Skulpt.compileStr('%s', input));
+print("-----");
+print(input);
+print("-----");
+var js = Sk.compile(input, "%s", "exec");
+print("-----");
+print(js_beautify(js));
+print("-----");
+goog.global.eval(js_beautify(js));
     """ % (fn, fn))
     f.close()
-    os.system("%s %s test/footer_test.js support/tmp/run.js" %
-            jsengine,
-            ' '.join(getFileList('test')))
+    os.system("%s %s support/tmp/run.js" %
+            (jsengine,
+                ' '.join(getFileList('test'))))
 
 def runopt(fn):
     if not os.path.exists(fn):
