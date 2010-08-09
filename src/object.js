@@ -1,5 +1,5 @@
 (function() {
-var $ = Sk.builtin.object = Sk.builtin.type('object', [], {}, function()
+var $ = Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()
 {
     this.__dict__ = new Sk.builtin.dict([]);
     return this;
@@ -18,5 +18,13 @@ $.__getattr__ = function(k)
 $.__repr__ = function()
 {
     return new Sk.builtin.str("<" + Sk.getattr(this, '__module__') + "." + this.__class__.__name__.v + " instance>");
+};
+$.isTrue$ = function(x)
+{
+    if (x === true) return true;
+    if (x === false) return false;
+    if (x === null) return false;
+    // todo; num, map len, seq len == 0
+    return true;
 };
 }());

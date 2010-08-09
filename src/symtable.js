@@ -200,6 +200,8 @@ SymbolTableScope.prototype.get_methods = function()
 };
 SymbolTableScope.prototype.getScope = function(name)
 {
+    //print("getScope");
+    //for (var k in this.symFlags) print(k);
     var v = this.symFlags[name];
     if (v === undefined) return 0;
     return (v >> SCOPE_OFF) & SCOPE_MASK;

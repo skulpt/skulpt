@@ -104,18 +104,18 @@ Sk.in_ = function in_(lhs, rhs)
 
 Sk.cmp = function cmp(lhs, rhs, op)
 {
-    if (op === 'is') return lhs === rhs;
-    if (op === 'is not') return lhs !== rhs;
+    if (op === 'Is') return lhs === rhs;
+    if (op === 'IsNot') return lhs !== rhs;
     if (typeof lhs === "number" && typeof rhs === "number")
     {
         switch (op)
         {
-            case '<': return lhs < rhs;
-            case '<=': return lhs <= rhs;
-            case '>': return lhs > rhs;
-            case '>=': return lhs >= rhs;
-            case '!=': return lhs !== rhs;
-            case '==': return lhs === rhs;
+            case 'Lt': return lhs < rhs;
+            case 'LtE': return lhs <= rhs;
+            case 'Gt': return lhs > rhs;
+            case 'GtE': return lhs >= rhs;
+            case 'NotEq': return lhs !== rhs;
+            case 'Eq': return lhs === rhs;
             default: throw "assert";
         }
     }

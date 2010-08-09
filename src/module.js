@@ -17,9 +17,9 @@ var $ = Sk.module = function module(name, file)
     if (file) this.__file__ = file;
 };
 
-$.prototype = new Sk.builtin.object();
+$.prototype = new Sk.builtin.object_();
 
-$.prototype.__class__ = new Sk.builtin.type('module', [Sk.types.object], {});
+$.prototype.__class__ = new Sk.builtin.type('module', [Sk.types.object_], {});
 $.prototype.__dir__ = function()
 {
     var names = [];
