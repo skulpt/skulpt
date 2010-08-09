@@ -493,6 +493,39 @@ Compiler.prototype.cwhile = function(s)
 
 Compiler.prototype.cfor = function(s)
 {
+    var start = this.newBlock('for start');
+    var cleanup = this.newBlock('for cleanup');
+    var end = this.newBlock('for end');
+
+    this.pushBreakBlock(end);
+    this.pushContinueBlock(start);
+
+    // get the iterator
+    var toiter = this.vexpr(s.iter);
+    var iter = this._gr("iter", toiter, ".__iter__()");
+    out("$blk=", start, ";continue;");
+
+    this.setBlock(start);
+
+    // load targets
+    var nexti = this._gr('next', iter, ".next()"); // todo; should be __next__
+    out("if(", nexti, "===undefined){$blk=", cleanup, ";continue;}"); // todo; this should be handled by StopIteration
+    var target = this.vexpr(s.target, nexti);
+
+    // execute body
+    this.vseqstmt(s.body);
+    
+    // jump to top of loop
+    out("$blk=", start, ";continue;");
+
+    this.setBlock(cleanup);
+    this.popContinueBlock();
+    this.popBreakBlock();
+
+    this.vseqstmt(s.orelse);
+    out("$blk=", end, ";continue;");
+
+    this.setBlock(end);
 };
 
 Compiler.prototype.cfunction = function(s)
