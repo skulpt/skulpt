@@ -126,8 +126,9 @@ Compiler.prototype._gr = function(hint)
     return v;
 }
 
-Compiler.prototype.ctuple = function(e, data)
+Compiler.prototype.ctupleorlist = function(e, data, tuporlist)
 {
+    goog.asserts.assert(tuporlist === 'tuple' || tuporlist === 'list');
     if (e.ctx === Store)
     {
         for (var i = 0; i < e.elts.length; ++i)
@@ -141,9 +142,9 @@ Compiler.prototype.ctuple = function(e, data)
         var items = [];
         for (var i = 0; i < e.elts.length; ++i)
         {
-            items.push(this._gr('tupelem', this.vexpr(e.elts[i])));
+            items.push(this._gr('elem', this.vexpr(e.elts[i])));
         }
-        return this._gr('loadtup', "new Sk.builtin.tuple([", items, "])");
+        return this._gr('load'+tuporlist, "new Sk.builtin.", tuporlist, "([", items, "])");
     }
 };
 
@@ -313,9 +314,9 @@ Compiler.prototype.vexpr = function(e, data)
         case Name:
             return this.nameop(e.id, e.ctx, data);
         case List:
-            return this.clist(e, data);
+            return this.ctupleorlist(e, data, 'list');
         case Tuple:
-            return this.ctuple(e, data);
+            return this.ctupleorlist(e, data, 'tuple');
         default:
             goog.asserts.fail("unhandled case in vexpr");
     }
@@ -490,6 +491,10 @@ Compiler.prototype.cwhile = function(s)
     }
 };
 
+Compiler.prototype.cfor = function(s)
+{
+};
+
 Compiler.prototype.cfunction = function(s)
 {
     goog.asserts.assert(s instanceof FunctionDef);
@@ -578,6 +583,9 @@ Compiler.prototype.vstmt = function(s)
             return this.cwhile(s);
         case If_:
             return this.cif(s);
+        case Expr:
+            this.vexpr(s.value);
+            break;
         case Pass:
             break;
         case Break_:
