@@ -48,7 +48,6 @@ function CompilerUnit()
 
     this.private_ = null;
     this.argcount = 0;
-    this.tmpname = 0;
     this.firstlineno = 0;
     this.lineno = 0;
     this.linenoSet = false;
@@ -132,6 +131,11 @@ Compiler.prototype._jumpfalse = function(test, block)
     out("if(", cond, "){/*test failed */$blk=", block, ";continue;}");
 };
 
+Compiler.prototype._jumpundef = function(test, block)
+{
+    out("if(", test, "===undefined){$blk=", block, ";continue;}");
+};
+
 Compiler.prototype._jumptrue = function(test, block)
 {
     var cond = this._gr('jtrue', "(", test, "===true||Sk.builtin.object_.isTrue$(", test, "))");
@@ -140,7 +144,7 @@ Compiler.prototype._jumptrue = function(test, block)
 
 Compiler.prototype._jump = function(block)
 {
-    out("{$blk=", block, ";continue;}");
+    out("$blk=", block, ";/* jump */continue;");
 };
 
 Compiler.prototype.ctupleorlist = function(e, data, tuporlist)
@@ -176,6 +180,35 @@ Compiler.prototype.cdict = function(e)
         items.push(v);
     }
     return this._gr('loaddict', "new Sk.builtin.dict([", items, "])");
+};
+
+Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
+{
+    var start = this.newBlock('list gen start');
+    var skip = this.newBlock('list gen skip');
+    var ifCleanup = this.newBlock('list gen cleanup');
+    var anchor = this.newBlock('list gen anchor');
+
+    var l = generators[genIndex];
+    var toiter = this.vexpr(l.iter);
+    var iter = this._gr("iter", toiter, ".__iter__()");
+    this._jump(start);
+    this.setBlock(start);
+
+    // load targets
+    var nexti = this._gr('next', iter, ".next()"); // todo; should be __next__
+    this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
+    var target = this.vexpr(l.target, nexti);
+
+    this.setBlock(anchor);
+};
+
+Compiler.prototype.clistcomp = function(e)
+{
+    goog.asserts.assert(e instanceof ListComp);
+    var tmp = new Sk.builtin.str(this.gensym("_compr")); // note: _ is impt. for hack in name mangling (same as cpy)
+    this.nameop(tmp, Store, "new Sk.builtin.list([])");
+    return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
 Compiler.prototype.ccompare = function(e)
@@ -452,7 +485,8 @@ Compiler.prototype.outputAllUnits = function()
         {
             ret += "case " + i + ": /* --- " + blocks[i]._name + " --- */";
             ret += blocks[i].join('');
-            ret += "break;";
+
+            ret += "goog.asserts.fail('unterminated block');";
         }
         ret += unit.suffixCode;
     }
@@ -480,11 +514,12 @@ Compiler.prototype.cif = function(s)
         var test = this.vexpr(s.test);
         this._jumpfalse(this.vexpr(s.test), next);
         this.vseqstmt(s.body);
+        this._jump(end);
 
         this.setBlock(next);
         if (s.orelse)
             this.vseqstmt(s.orelse);
-        out("$blk=", end, ";continue;");
+        this._jump(end);
     }
     this.setBlock(end);
 
@@ -501,7 +536,7 @@ Compiler.prototype.cwhile = function(s)
     else
     {
         var top = this.newBlock('while test');
-        out("$blk=", top, ";continue;");
+        this._jump(top);
         this.setBlock(top);
 
         var next = this.newBlock('after while');
@@ -516,7 +551,7 @@ Compiler.prototype.cwhile = function(s)
 
         this.setBlock(body);
         this.vseqstmt(s.body);
-        out("$blk=", top, ";continue;");
+        this._jump(top);
 
         this.popContinueBlock(top);
         this.popBreakBlock();
@@ -543,27 +578,27 @@ Compiler.prototype.cfor = function(s)
     // get the iterator
     var toiter = this.vexpr(s.iter);
     var iter = this._gr("iter", toiter, ".__iter__()");
-    out("$blk=", start, ";continue;");
+    this._jump(start);
 
     this.setBlock(start);
 
     // load targets
     var nexti = this._gr('next', iter, ".next()"); // todo; should be __next__
-    out("if(", nexti, "===undefined){$blk=", cleanup, ";continue;}"); // todo; this should be handled by StopIteration
+    this._jumpundef(nexti, cleanup); // todo; this should be handled by StopIteration
     var target = this.vexpr(s.target, nexti);
 
     // execute body
     this.vseqstmt(s.body);
     
     // jump to top of loop
-    out("$blk=", start, ";continue;");
+    this._jump(start);
 
     this.setBlock(cleanup);
     this.popContinueBlock();
     this.popBreakBlock();
 
     this.vseqstmt(s.orelse);
-    out("$blk=", end, ";continue;");
+    this._jump(end);
 
     this.setBlock(end);
 };
@@ -589,7 +624,7 @@ Compiler.prototype.cfunction = function(s)
             this.u.prefixCode += ",";
     }
 
-    var entryBlock = this.newBlock();
+    var entryBlock = this.newBlock('function entry');
     this.u.prefixCode += "){";
     /*
     if (args.defaults)
@@ -599,6 +634,7 @@ Compiler.prototype.cfunction = function(s)
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.vseqstmt(s.body);
+    out("break;");
 
     this.exitScope();
 
@@ -611,7 +647,7 @@ Compiler.prototype.ccontinue = function(s)
     if (this.u.continueBlocks.length === 0)
         throw new SyntaxError("'continue' outside loop");
     // todo; continue out of exception blocks
-    out("$blk=", this.u.continueBlocks[this.u.continueBlocks.length - 1], ";continue;");
+    this._jump(this.u.continueBlocks[this.u.continueBlocks.length - 1]);
 };
 
 /**
@@ -665,7 +701,7 @@ Compiler.prototype.vstmt = function(s)
         case Break_:
             if (this.u.breakBlocks.length === 0)
                 throw new SyntaxError("'break' outside loop");
-            out("$blk=", this.u.breakBlocks[this.u.breakBlocks.length - 1], ";continue;");
+            this._jump(this.u.breakBlocks[this.u.breakBlocks.length - 1]);
             break;
         case Continue_:
             this.ccontinue(s);
@@ -726,7 +762,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
     }
 
     //print("mangled", mangled);
-    goog.asserts.assert(scope || name.charAt(0) === '_');
+    goog.asserts.assert(scope || name.v.charAt(1) === '_');
 
     switch (optype)
     {
@@ -813,6 +849,7 @@ Compiler.prototype.cbody = function(stmts)
 {
     for (var i = 0; i < stmts.length; ++i)
         this.vstmt(stmts[i]);
+    out("break;");
 };
 
 Compiler.prototype.cprint = function(s)
@@ -836,7 +873,7 @@ Compiler.prototype.cmod = function(mod)
     //print(Sk.astDump(mod));
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0);
 
-    var entryBlock = this.newBlock();
+    var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function _module_(){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
