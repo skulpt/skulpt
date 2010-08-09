@@ -53,6 +53,9 @@ function CompilerUnit()
     this.blocknum = 0;
     this.blocks = [];
     this.curblock = 0;
+
+    // stack of where to go on a break
+    this.breakBlocks = [];
 }
 
 CompilerUnit.prototype.activateScope = function()
@@ -347,7 +350,16 @@ Compiler.prototype.setBlock = function(n)
 {
     goog.asserts.assert(n >= 0 && n < this.u.blocknum);
     this.u.curblock = n;
-}
+};
+Compiler.prototype.pushBreakBlock = function(n)
+{
+    goog.asserts.assert(n >= 0 && n < this.u.blocknum);
+    this.u.breakBlocks.push(n);
+};
+Compiler.prototype.popBreakBlock = function()
+{
+    this.u.breakBlocks.pop();
+};
 
 Compiler.prototype.outputAllUnits = function()
 {
@@ -421,9 +433,13 @@ Compiler.prototype.cwhile = function(s)
         out("if(",cond,"){$blk=", orelse ? orelse : next, ";continue;}");
         out("else{$blk=", body, ";continue;}");
 
+        this.pushBreakBlock(next);
+
         this.setBlock(body);
         this.vseqstmt(s.body);
         out("$blk=", top, ";continue;");
+
+        this.popBreakBlock();
 
         if (s.orelse.length > 0)
         {
@@ -512,6 +528,15 @@ Compiler.prototype.vstmt = function(s)
             return this.cwhile(s);
         case If_:
             return this.cif(s);
+        case Pass:
+            break;
+        case Break_:
+            if (this.u.breakBlocks.length === 0)
+                throw new SyntaxError("'break' outside loop");
+            out("$blk=", this.u.breakBlocks[this.u.breakBlocks.length - 1], ";continue;");
+            break;
+        case Continue_:
+            goog.asserts.fail("");
         default:
             goog.asserts.fail("unhandled case in vstmt");
     }
