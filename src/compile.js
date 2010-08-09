@@ -580,7 +580,7 @@ Compiler.prototype.cfunction = function(s)
 
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
 
-    this.u.prefixCode = "var " + scopename + "=(function(";
+    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "__$outer($globals,$rest){var $gbl=$globals;return(function " + s.name.v + "(";
 
     for (var i = 0; i < args.args.length; ++i)
     {
@@ -596,13 +596,14 @@ Compiler.prototype.cfunction = function(s)
         this.vseqexpr(args.defaults);
         */
     this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={};while(true){switch($blk){";
-    this.u.suffixCode = "}break;}});";
+    this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.vseqstmt(s.body);
 
     this.exitScope();
 
-    this.nameop(s.name, Store, scopename);
+    var wrapped = this._gr("wrapped", "(function ", s.name.v, "__$wrap(){return ", scopename, "($gbl,arguments);})");
+    this.nameop(s.name, Store, wrapped);
 };
 
 Compiler.prototype.ccontinue = function(s)
@@ -736,6 +737,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                     return mangled;
                 case Store:
                     out(mangled+ "=", dataToStore, ";");
+                    break;
                 default:
                     goog.asserts.fail("unhandled");
             }
@@ -745,14 +747,28 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             {
                 case Load:
                     var v = this.gensym('loadname');
-                    // todo; need to pass globals and builtins
-                    out("var ", v, "=$loc.", mangled, ";if(", v, "===undefined)", v, "=Sk.loadname('", mangled, "');");
+                    out("var ", v, "=$loc.", mangled, "!==undefined?$loc.",mangled,":Sk.loadname('",mangled,"',$gbl);");
                     return v;
                 case Store:
                     out("$loc.", mangled, "=", dataToStore, ';');
                     break;
                 default:
                     goog.asserts.fail("unhandled");
+            }
+            break;
+        case OP_GLOBAL:
+            switch (ctx)
+            {
+                case Load:
+                    return this._gr("loadgbl", "Sk.loadname('", mangled, "',$gbl)");
+                case Store:
+                    out("$gbl.", mangled, "=", dataToStore, ';');
+                    break;
+                case Del:
+                    out("delete $gbl.", mangled);
+                    break;
+                default:
+                    goog.asserts.fail("unhandled case in name op_global");
             }
             break;
         default:
@@ -821,7 +837,7 @@ Compiler.prototype.cmod = function(mod)
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0);
 
     var entryBlock = this.newBlock();
-    this.u.prefixCode = "var " + modf + "=(function(){var $blk=" + entryBlock + ",$loc={};while(true){switch($blk){";
+    this.u.prefixCode = "var " + modf + "=(function _module_(){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
     switch (mod.constructor)

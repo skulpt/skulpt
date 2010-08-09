@@ -216,7 +216,7 @@ function testRun(name)
         print("-----\nWANTED:\n-----");
         print(expect);
         print("-----\nJS:\n-----");
-        print(js);
+        print(beaut);
         runfail += 1;
         //throw "dying on first run fail";
     }
@@ -312,7 +312,7 @@ function main()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= 35; ++i)
+    for (i = 0; i <= 40; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
