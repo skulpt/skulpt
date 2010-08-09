@@ -4,8 +4,9 @@ var out;
  * @param {string} filename
  * @param {SymbolTable} st
  * @param {number} flags
+ * @param {string=} sourceCodeForAnnotation used to add original source to listing if desired
  */
-function Compiler(filename, st, flags)
+function Compiler(filename, st, flags, sourceCodeForAnnotation)
 {
     this.filename = filename;
     this.st = st;
@@ -21,6 +22,8 @@ function Compiler(filename, st, flags)
     this.gensymcount = 0;
 
     this.allUnits = [];
+
+    this.source = sourceCodeForAnnotation ? sourceCodeForAnnotation.split("\n") : false;
 }
 
 /**
@@ -56,6 +59,8 @@ function CompilerUnit()
 
     // stack of where to go on a break
     this.breakBlocks = [];
+    // stack of where to go on a continue
+    this.continueBlocks = [];
 }
 
 CompilerUnit.prototype.activateScope = function()
@@ -66,6 +71,24 @@ CompilerUnit.prototype.activateScope = function()
         for (var i = 0; i < arguments.length; ++i)
             b.push(arguments[i]);
     };
+};
+
+Compiler.prototype.getSourceLine = function(lineno)
+{
+    goog.asserts.assert(this.source);
+    return this.source[lineno - 1];
+};
+
+Compiler.prototype.annotateSource = function(ast)
+{
+    if (this.source)
+    {
+        var lineno = ast.lineno;
+        var col_offset = ast.col_offset;
+        out("\n/* line ", lineno, "\n", this.getSourceLine(lineno), "\n");
+        for (var i = 0; i < col_offset; ++i) out(" ");
+        out("^\n*/");
+    }
 };
 
 Compiler.prototype.gensym = function(hint)
@@ -240,6 +263,7 @@ Compiler.prototype.vexpr = function(e, data)
         this.u.lineno = e.lineno;
         this.u.linenoSet = false;
     }
+    //this.annotateSource(e);
     switch (e.constructor)
     {
         case BoolOp:
@@ -351,6 +375,7 @@ Compiler.prototype.setBlock = function(n)
     goog.asserts.assert(n >= 0 && n < this.u.blocknum);
     this.u.curblock = n;
 };
+
 Compiler.prototype.pushBreakBlock = function(n)
 {
     goog.asserts.assert(n >= 0 && n < this.u.blocknum);
@@ -359,6 +384,16 @@ Compiler.prototype.pushBreakBlock = function(n)
 Compiler.prototype.popBreakBlock = function()
 {
     this.u.breakBlocks.pop();
+};
+
+Compiler.prototype.pushContinueBlock = function(n)
+{
+    goog.asserts.assert(n >= 0 && n < this.u.blocknum);
+    this.u.continueBlocks.push(n);
+};
+Compiler.prototype.popContinueBlock = function()
+{
+    this.u.continueBlocks.pop();
 };
 
 Compiler.prototype.outputAllUnits = function()
@@ -397,14 +432,16 @@ Compiler.prototype.cif = function(s)
     {
         var end = this.newBlock('end of if');
         var next = this.newBlock('next branch of if');
+
         var test = this.vexpr(s.test);
         var cond = this._gr('ifbr', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
-        out("if(", cond, "){$blk=", next, ";continue;}");
+        out("if(", cond, "){/*if test failed */$blk=", next, ";continue;}");
         this.vseqstmt(s.body);
-        out("$blk=", end, ";continue;");
+
         this.setBlock(next);
         if (s.orelse)
             this.vseqstmt(s.orelse);
+        out("$blk=", end, ";continue;");
     }
     this.setBlock(end);
 
@@ -430,15 +467,17 @@ Compiler.prototype.cwhile = function(s)
 
         var test = this.vexpr(s.test);
         var cond = this._gr('whilebr', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
-        out("if(",cond,"){$blk=", orelse ? orelse : next, ";continue;}");
-        out("else{$blk=", body, ";continue;}");
+        out("if(", cond, "){/* while test failed */$blk=", orelse ? orelse : next, ";continue;}");
+        out("else{/* while test passed */$blk=", body, ";continue;}");
 
         this.pushBreakBlock(next);
+        this.pushContinueBlock(top);
 
         this.setBlock(body);
         this.vseqstmt(s.body);
         out("$blk=", top, ";continue;");
 
+        this.popContinueBlock(top);
         this.popBreakBlock();
 
         if (s.orelse.length > 0)
@@ -488,6 +527,14 @@ Compiler.prototype.cfunction = function(s)
     this.nameop(s.name, Store, scopename);
 };
 
+Compiler.prototype.ccontinue = function(s)
+{
+    if (this.u.continueBlocks.length === 0)
+        throw new SyntaxError("'continue' outside loop");
+    // todo; continue out of exception blocks
+    out("$blk=", this.u.continueBlocks[this.u.continueBlocks.length - 1], ";continue;");
+};
+
 /**
  * compiles a statement
  */
@@ -495,6 +542,9 @@ Compiler.prototype.vstmt = function(s)
 {
     this.u.lineno = s.lineno;
     this.u.linenoSet = false;
+
+    this.annotateSource(s);
+
     switch (s.constructor)
     {
         case FunctionDef:
@@ -536,7 +586,8 @@ Compiler.prototype.vstmt = function(s)
             out("$blk=", this.u.breakBlocks[this.u.breakBlocks.length - 1], ";continue;");
             break;
         case Continue_:
-            goog.asserts.fail("");
+            this.ccontinue(s);
+            break;
         default:
             goog.asserts.fail("unhandled case in vstmt");
     }
@@ -717,7 +768,7 @@ Sk.compile = function(source, filename, mode)
     var cst = Sk.parse(filename, source);
     var ast = Sk.astFromParse(cst, filename);
     var st = Sk.symboltable(ast);
-    var c = new Compiler(filename, st, 0); // todo; CO_xxx
+    var c = new Compiler(filename, st, 0, source); // todo; CO_xxx
     c.cmod(ast);
     var ret = c.result.join('');
     return ret;
