@@ -121,6 +121,19 @@ Compiler.prototype.ctuple = function(e, data)
     }
 };
 
+Compiler.prototype.cdict = function(e)
+{
+    goog.asserts.assert(e.values.length === e.keys.length);
+    var items = [];
+    for (var i = 0; i < e.values.length; ++i)
+    {
+        var v = this.vexpr(e.values[i]); // "backwards" to match order in cpy
+        items.push(this.vexpr(e.keys[i]));
+        items.push(v);
+    }
+    return this._gr('loaddict', "new Sk.builtin.dict([", items, "])");
+};
+
 Compiler.prototype.ccompare = function(e)
 {
     var left = this.vexpr(e.left);
@@ -140,6 +153,73 @@ Compiler.prototype.ccall = function(e)
     // todo; __call__ gunk
     return this._gr('call', func, "(", args, ")");
 };
+
+Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
+{
+    if (ctx === Load || ctx === AugLoad)
+        return this._gr('lsubscr', obj, '.__getitem__(', subs, ')');
+    else if (ctx === Store || ctx === AugStore)
+        out(obj, '.__setitem__(', subs, ',', data, ');');
+    else if (ctx === Del)
+        out(obj, '.__delitem__(', subs, ');');
+    else
+        goog.asserts.fail("handlesubscr fail");
+};
+
+Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
+{
+    var kindname = null;
+    var subs;
+    switch (s.constructor)
+    {
+        case Index:
+            kindname = "index";
+            if (ctx !== AugStore)
+                subs = this.vexpr(s.value);
+            break;
+        case Ellipsis:
+        case Slice:
+        case ExtSlice:
+            goog.asserts.fail("todo;");
+            break;
+        default:
+            goog.asserts.fail("invalid subscript kind");
+    }
+    return this.chandlesubscr(kindname, ctx, obj, subs, dataToStore);
+};
+
+Compiler.prototype.cboolop = function(e)
+{
+    goog.asserts.assert(e instanceof BoolOp);
+    var compareTo, isTruePrefix, ifFailed;
+    if (e.op === And)
+    {
+        compareTo = "false";
+        ifFailed = "true";
+        isTruePrefix = "!";
+    }
+    else
+    {
+        compareTo = "true";
+        ifFailed = "false";
+        isTruePrefix = "";
+    }
+    var end = this.newBlock('end of boolop');
+    var retval = this._gr('boolopsucc', compareTo);
+    var s = e.values;
+    var n = s.length;
+    for (var i = 0; i < n; ++i)
+    {
+        var val = this.vexpr(s[i]);
+        out("if(", val, "===", compareTo, "||", isTruePrefix,
+                "Sk.builtin.object_.isTrue$(", val, ")){$blk=",
+                end, ";continue;}");
+    }
+    out(retval, "=", ifFailed, ";");
+    this.setBlock(end);
+    return retval;
+};
+
 
 /**
  *
@@ -170,7 +250,7 @@ Compiler.prototype.vexpr = function(e, data)
         case IfExp:
             return this.cifexp(e);
         case Dict:
-            goog.asserts.fail();
+            return this.cdict(e);
         case ListComp:
             return this.clistcomp(e);
         case GeneratorExp:
@@ -188,7 +268,21 @@ Compiler.prototype.vexpr = function(e, data)
         case Attribute:
             goog.asserts.fail();
         case Subscript:
-            goog.asserts.fail();
+            switch (e.ctx)
+            {
+                case AugLoad:
+                case Load:
+                case Store:
+                case Del:
+                    return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
+                case AugStore:
+                    this.vslice(e.slice, e.ctx, data);
+                    break;
+                case Param:
+                default:
+                    goog.asserts.fail("invalid subscript expression");
+            }
+            break;
         case Name:
             return this.nameop(e.id, e.ctx, data);
         case List:
@@ -290,7 +384,7 @@ Compiler.prototype.cif = function(s)
     else
     {
         var end = this.newBlock('end of if');
-        var next = this.newBlock('after if');
+        var next = this.newBlock('next branch of if');
         var test = this.vexpr(s.test);
         var cond = this._gr('ifbr', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
         out("if(", cond, "){$blk=", next, ";continue;}");
@@ -437,8 +531,12 @@ var D_FREEVARS = 1;
 var D_CELLVARS = 2;
 Compiler.prototype.nameop = function(name, ctx, dataToStore)
 {
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name === "__debug__")
+    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.__str__() === "__debug__")
         this.error("can not assign to __debug__");
+    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.__str__() === "None")
+        this.error("can not assign to None");
+
+    if (name.__str__() === "None") return "null";
 
     var mangled = mangleName(this.u.private_, name).__str__();
     var op = 0;

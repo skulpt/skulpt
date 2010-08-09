@@ -418,8 +418,6 @@ Sk.loadname = function(name /*, locations*/)
     var bi = $.builtin[name];
     if (bi !== undefined) return bi;
 
-    print("HI!");
-
     // todo; should be NameError
     throw new ReferenceError("name '" + name + "' is not defined");
 };
