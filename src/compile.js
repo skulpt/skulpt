@@ -198,16 +198,36 @@ Compiler.prototype.ccall = function(e)
     return this._gr('call', func, "(", args, ")");
 };
 
-Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
+Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
 {
-    if (ctx === Load || ctx === AugLoad)
-        return this._gr('lsubscr', obj, '.__getitem__(', subs, ')');
-    else if (ctx === Store || ctx === AugStore)
-        out(obj, '.__setitem__(', subs, ',', data, ');');
-    else if (ctx === Del)
-        out(obj, '.__delitem__(', subs, ');');
-    else
-        goog.asserts.fail("handlesubscr fail");
+    goog.asserts.assert(s.step === null);
+    var lower, upper;
+    if (s.lower && ctx !== AugStore)
+        lower = this.vexpr(s.lower);
+    if (s.upper && ctx !== AugStore)
+        upper = this.vexpr(s.upper);
+
+    // todo; don't require making a slice obj, and move logic into general sequence place
+    switch (ctx)
+    {
+        case AugLoad:
+        case Load:
+            return this._gr("simpsliceload", obj, ".__getitem__(new Sk.builtin.slice(", lower, ",", upper, "))");
+        case AugStore:
+        case Store:
+            out(obj, ".__setitem__(new Sk.builtin.slice(", lower, ",", upper, "),", dataToStore, ");");
+            break;
+        case Del:
+            out(obj, ".__delitem__(new Sk.builtin.slice(", lower, ",", upper, ");");
+        case Param:
+        default:
+            goog.asserts.fail("invalid simple slice");
+    }
+};
+
+Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
+{
+    goog.asserts.fail("todo;");
 };
 
 Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
@@ -221,8 +241,12 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
             if (ctx !== AugStore)
                 subs = this.vexpr(s.value);
             break;
-        case Ellipsis:
         case Slice:
+            if (!s.step)
+                return this.csimpleslice(s, ctx, obj, dataToStore);
+            if (ctx !== AugStore)
+                return this.cslice(s, ctx, obj, dataToStore);
+        case Ellipsis:
         case ExtSlice:
             goog.asserts.fail("todo;");
             break;
@@ -230,6 +254,18 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
             goog.asserts.fail("invalid subscript kind");
     }
     return this.chandlesubscr(kindname, ctx, obj, subs, dataToStore);
+};
+
+Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
+{
+    if (ctx === Load || ctx === AugLoad)
+        return this._gr('lsubscr', obj, '.__getitem__(', subs, ')');
+    else if (ctx === Store || ctx === AugStore)
+        out(obj, '.__setitem__(', subs, ',', data, ');');
+    else if (ctx === Del)
+        out(obj, '.__delitem__(', subs, ');');
+    else
+        goog.asserts.fail("handlesubscr fail");
 };
 
 Compiler.prototype.cboolop = function(e)
@@ -299,7 +335,7 @@ Compiler.prototype.vexpr = function(e, data)
         case Num:
             return e.n;
         case Str:
-            return e.s.__repr__().v;
+            return this._gr('str', "new Sk.builtin.str(", e.s.__repr__().v, ")");
         case Attribute:
             goog.asserts.fail();
         case Subscript:
@@ -773,7 +809,7 @@ Compiler.prototype.cprint = function(s)
     var n = s.values.length;
     // todo; dest disabled
     for (var i = 0; i < n; ++i)
-        out('Sk.output(', /*dest, ',',*/ this.vexpr(s.values[i]), ');');
+        out('Sk.output(', /*dest, ',',*/ "new Sk.builtin.str(", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
         out('Sk.output(', /*dest, ',*/ '"\\n");');
 };
