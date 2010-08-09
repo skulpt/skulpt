@@ -126,6 +126,23 @@ Compiler.prototype._gr = function(hint)
     return v;
 }
 
+Compiler.prototype._jumpfalse = function(test, block)
+{
+    var cond = this._gr('jfalse', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
+    out("if(", cond, "){/*test failed */$blk=", block, ";continue;}");
+};
+
+Compiler.prototype._jumptrue = function(test, block)
+{
+    var cond = this._gr('jtrue', "(", test, "===true||Sk.builtin.object_.isTrue$(", test, "))");
+    out("if(", cond, "){/*test passed */$blk=", block, ";continue;}");
+};
+
+Compiler.prototype._jump = function(block)
+{
+    out("{$blk=", block, ";continue;}");
+};
+
 Compiler.prototype.ctupleorlist = function(e, data, tuporlist)
 {
     goog.asserts.assert(tuporlist === 'tuple' || tuporlist === 'list');
@@ -218,31 +235,21 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
 Compiler.prototype.cboolop = function(e)
 {
     goog.asserts.assert(e instanceof BoolOp);
-    var compareTo, isTruePrefix, ifFailed;
+    var jtype;
+    var ifFailed;
     if (e.op === And)
-    {
-        compareTo = "false";
-        ifFailed = "true";
-        isTruePrefix = "!";
-    }
+        jtype = this._jumpfalse;
     else
-    {
-        compareTo = "true";
-        ifFailed = "false";
-        isTruePrefix = "";
-    }
+        jtype = this._jumptrue;
     var end = this.newBlock('end of boolop');
-    var retval = this._gr('boolopsucc', compareTo);
+    var retval = this._gr('boolopsucc', e.op !== And);
     var s = e.values;
     var n = s.length;
     for (var i = 0; i < n; ++i)
     {
-        var val = this.vexpr(s[i]);
-        out("if(", val, "===", compareTo, "||", isTruePrefix,
-                "Sk.builtin.object_.isTrue$(", val, ")){$blk=",
-                end, ";continue;}");
+        jtype.call(this, this.vexpr(s[i]), end);
     }
-    out(retval, "=", ifFailed, ";");
+    out(retval, "=", e.op === And, ";");
     this.setBlock(end);
     return retval;
 };
@@ -435,8 +442,7 @@ Compiler.prototype.cif = function(s)
         var next = this.newBlock('next branch of if');
 
         var test = this.vexpr(s.test);
-        var cond = this._gr('ifbr', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
-        out("if(", cond, "){/*if test failed */$blk=", next, ";continue;}");
+        this._jumpfalse(this.vexpr(s.test), next);
         this.vseqstmt(s.body);
 
         this.setBlock(next);
@@ -466,10 +472,8 @@ Compiler.prototype.cwhile = function(s)
         var orelse = s.orelse.length > 0 ? this.newBlock('while orelse') : null;
         var body = this.newBlock('while body');
 
-        var test = this.vexpr(s.test);
-        var cond = this._gr('whilebr', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
-        out("if(", cond, "){/* while test failed */$blk=", orelse ? orelse : next, ";continue;}");
-        out("else{/* while test passed */$blk=", body, ";continue;}");
+        this._jumpfalse(this.vexpr(s.test), orelse ? orelse : next);
+        this._jump(body);
 
         this.pushBreakBlock(next);
         this.pushContinueBlock(top);
