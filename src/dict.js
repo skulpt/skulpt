@@ -29,8 +29,29 @@ Sk.builtin.dict.dict_subscript_ = function(key)
     return entry === undefined ? undefined : entry.rhs;
 };
 
+Sk.builtin.dict.dict_ass_sub_ = function(key, w)
+{
+    var k = kf(key);
+    if (w === null)
+    {
+        if (this[k] !== undefined)
+        {
+            this.size -=1;
+            delete this[k];
+        }
+        else
+        {
+            // todo; throw?
+        }
+    }
+    else
+    {
+        this[k] = w;
+    }
+};
 
 Sk.builtin.dict.prototype.mp$subscript = Sk.builtin.dict.dict_subscript_;
+Sk.builtin.dict.prototype.mp$ass_subscript = Sk.builtin.dict.dict_ass_sub_;
 
 Sk.builtin.dict.prototype.tp$iter = function()
 {
@@ -63,6 +84,8 @@ Sk.builtin.dict.prototype.tp$iter = function()
     };
     return ret;
 };
+
+
 
 $.prototype.clear = function() { throw "todo; dict.clear"; };
 $.prototype.copy = function() { throw "todo; dict.copy"; };

@@ -13,12 +13,8 @@ Sk.builtin.list = function(L)
     }
     else
     {
-        var g = L.__iter__();
         this.v = [];
-        for (var i = g.next(); i !== undefined; i = g.next())
-        {
-            this.v.push(i);
-        }
+        Sk.builtin.list.list_extend_.call(this, L);
     }
 
     // todo; this should be elsewhere
@@ -62,33 +58,53 @@ Sk.builtin.list.list_concat_ = function(other)
     return new Sk.builtin.list(ret);
 }
 
+Sk.builtin.list.list_ass_item_ = function(i, v)
+{
+    if (i < 0 || i >= this.v.length)
+        throw new IndexError("list assignement index out of range");
+    if (v === null)
+        return Sk.builtin.list.list_ass_slice_.call(this, i, i+1, v);
+    this.v[i] = v;
+};
+
+Sk.builtin.list.list_ass_slice_ = function(ilow, ihigh, v)
+{
+    // todo; item rather list/null
+    var args = v === null ? [] : v.slice(0);
+    args.unshift(ihigh - ilow);
+    args.unshift(ilow);
+    this.v.splice.apply(this.v, args);
+};
+
 // js types for some args. non-$ always use all python types.
 Sk.builtin.list.prototype.tp$name = "list";
-Sk.builtin.list.prototype.tp$repr = function(v)
+Sk.builtin.list.prototype.tp$repr = function()
 {
     var ret = [];
-    for (var it = v.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-        ret.push(object_Repr(i).v);
-    return string_FromString("[" + ret.join(", ") + "]");
+    for (var it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        ret.push(Sk.builtin.object.repr_(i).v);
+    return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };
 Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
 /*
-list.prototype.tp$richcompare = list_richcompare;
+Sk.builtin.list.prototype.tp$richcompare = list_richcompare;
 */
 Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.list_iter_;
 /*
-list.prototype.sq$length = list_length;
+Sk.builtin.list.prototype.sq$length = list_length;
 */
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.list_concat_;
 /*
-list.prototype.sq$repeat = list_repeat;
-list.prototype.sq$item = list_item;
-list.prototype.sq$slice = list_slice;
-list.prototype.sq$ass_item = list_ass_item;
-list.prototype.sq$ass_slice = list_ass_slice;
-list.prototype.sq$contains = list_contains;
-list.prototype.sq$inplace_concat = list_inplace_concat;
-list.prototype.sq$inplace_repeat = list_inplace_repeat;
+Sk.builtin.list.prototype.sq$repeat = list_repeat;
+Sk.builtin.list.prototype.sq$item = list_item;
+Sk.builtin.list.prototype.sq$slice = list_slice;
+*/
+Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.list_ass_item_;
+Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.list_ass_slice_;
+//Sk.builtin.list.prototype.sq$contains // iter version is fine
+/*
+Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
+Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
 */
 
 Sk.builtin.list.list_subscript_ = function(index)

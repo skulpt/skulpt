@@ -6,11 +6,11 @@ Sk.builtin.object.repr_ = function(v)
 {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
     if (v === null)
-        return string_FromString("<NULL>");
-    else if (v instanceof number)
-        return string_FromString("" + v);
+        return new Sk.builtin.str("<NULL>");
+    else if (typeof v === "number")
+        return new Sk.builtin.str("" + v);
     else if (!v.tp$repr)
-        return string_FromString("<" + v.tp$name + " object>");
+        return new Sk.builtin.str("<" + v.tp$name + " object>");
     else
         return v.tp$repr();
 };

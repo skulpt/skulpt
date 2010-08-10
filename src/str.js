@@ -27,7 +27,7 @@ var $ = Sk.builtin.str = function str(x)
         return ret;
     }
     else
-        return Sk.builtin.repr(x);
+        return Sk.builtin.object.repr_(x);
 
     // interning required for strings in py
     var it = interned[ret];

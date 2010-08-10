@@ -1,5 +1,15 @@
 Sk.abstract = {};
 
+//
+//
+//
+//
+// Number
+//
+//
+//
+//
+
 Sk.abstract.binop_type_error = function(v, w, name)
 {
     throw new TypeError("unsupported operand type(s) for " + name + ": '"
@@ -161,7 +171,31 @@ Sk.abstract.numberUnaryOp = function(v, op)
     goog.asserts.fail("todo; unary op dispatch");
 };
 
+//
+//
+//
+//
+// Misc
+//
+//
+//
+//
 
+Sk.abstract.asIndex = function(o)
+{
+    if (typeof o === "number") return o;
+    goog.asserts.fail("todo;");
+};
+
+//
+//
+//
+//
+// Sequence
+//
+//
+//
+//
 
 Sk.abstract.sequenceContains = function(seq, ob)
 {
@@ -175,4 +209,45 @@ Sk.abstract.sequenceContains = function(seq, ob)
             return true;
     }
     return false;
+};
+
+Sk.abstract.sequenceDelItem = function(seq, i)
+{
+    if (seq.sq$ass_item)
+    {
+        if (i < 0)
+        {
+            if (seq.sq$length)
+            {
+                i += seq.sq$length();
+            }
+        }
+        return seq.sq$ass_item(i, null);
+    }
+    throw new TypeError("'" + seq.tp$name + "' object does not support item deletion");
+};
+
+
+//
+//
+//
+//
+// Object
+//
+//
+//
+//
+
+Sk.abstract.objectDelItem = function(o, key)
+{
+    if (o.mp$ass_subscript)
+        return o.mp$ass_subscript(key, null);
+    if (o.sq$ass_item)
+    {
+        var keyValue = Sk.abstract.asIndex(key);
+        if (keyValue === undefined)
+            throw new TypeError("sequence index must be integer, not '" + key.tp$name + "'");
+        return Sk.abstract.sequenceDelItem(o, keyValue);
+    }
+    throw new TypeError("'" + o.tp$name + "' object does not support item deletion");
 };

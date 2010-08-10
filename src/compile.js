@@ -318,7 +318,7 @@ Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
     else if (ctx === Store || ctx === AugStore)
         out(obj, '.__setitem__(', subs, ',', data, ');');
     else if (ctx === Del)
-        out(obj, '.__delitem__(', subs, ');');
+        out("Sk.abstract.objectDelItem(", obj, ",", subs, ");");
     else
         goog.asserts.fail("handlesubscr fail");
 };
@@ -727,6 +727,9 @@ Compiler.prototype.vstmt = function(s)
                 out("return ", this.vexpr(s.value), ";");
             else
                 out("return null;");
+            break;
+        case Delete_:
+            this.vseqexpr(s.targets);
             break;
         case Assign:
             var n = s.targets.length;
