@@ -23,9 +23,9 @@ Sk.misceval.applySlice = function(u, v, w)
     {
         var ilow = Sk.misceval.asIndex(v) || 0;
         var ihigh = Sk.misceval.asIndex(w) || 1e100;
-        return Sk.abstract.sequenceGetSlice(u, ilow, ihigh);
+        return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
     }
-    return Sk.abstract.objectGetItem(u, new Sk.builtin.slice(v, w, null));
+    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null));
 };
 
 /**
@@ -38,17 +38,17 @@ Sk.misceval.assignSlice = function(u, v, w, x)
         var ilow = Sk.misceval.asIndex(v) || 0;
         var ihigh = Sk.misceval.asIndex(w) || 1e100;
         if (x === null)
-            Sk.abstract.sequenceDelSlice(u, ilow, ihigh);
+            Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
         else
-            Sk.abstract.sequenceSetSlice(u, ilow, ihigh, x);
+            Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
     }
     else
     {
         var slice = Sk.builtin.slice(v, w);
         if (x === null)
-            return Sk.abstract.objectSetItem(u, slice, x);
+            return Sk.abstr.objectSetItem(u, slice, x);
         else
-            return Sk.abstract.objectDelItem(u, slice);
+            return Sk.abstr.objectDelItem(u, slice);
     }
 };
 
@@ -91,8 +91,8 @@ Sk.misceval.richCompareBool = function(v, w, op)
     }
     else
     {
-        if (op === "In") return Sk.abstract.sequenceContains(w, v);
-        if (op === "NotIn") return !Sk.abstract.sequenceContains(w, v);
+        if (op === "In") return Sk.abstr.sequenceContains(w, v);
+        if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
 
         if (v.tp$richcompare)
             return v.tp$richcompare(w, op);

@@ -319,7 +319,7 @@ Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
     else if (ctx === Store || ctx === AugStore)
         out(obj, '.__setitem__(', subs, ',', data, ');');
     else if (ctx === Del)
-        out("Sk.abstract.objectDelItem(", obj, ",", subs, ");");
+        out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
     else
         goog.asserts.fail("handlesubscr fail");
 };
@@ -369,9 +369,9 @@ Compiler.prototype.vexpr = function(e, data)
         case BoolOp:
             return this.cboolop(e);
         case BinOp:
-            return this._gr('binop', "Sk.abstract.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
+            return this._gr('binop', "Sk.abstr.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
         case UnaryOp:
-            return this._gr('unaryop', "Sk.abstract.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op._astname, "')");
+            return this._gr('unaryop', "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op._astname, "')");
             goog.asserts.fail();
         case Lambda:
             return this.clambda(e);
@@ -457,7 +457,7 @@ Compiler.prototype.caugassign = function(s)
         case Name:
             var to = this.nameop(e.id, Load);
             var val = this.vexpr(s.value);
-            var res = this._gr('inplbinop', "Sk.abstract.numberInplaceBinOp(", to, ",", val, ",'", s.op._astname, "')");
+            var res = this._gr('inplbinop', "Sk.abstr.numberInplaceBinOp(", to, ",", val, ",'", s.op._astname, "')");
             return this.nameop(e.id, Store, res);
         default:
             goog.asserts.fail("unhandled case in augassign");

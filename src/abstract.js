@@ -1,4 +1,4 @@
-Sk.abstract = {};
+Sk.abstr = {};
 
 //
 //
@@ -10,14 +10,14 @@ Sk.abstract = {};
 //
 //
 
-Sk.abstract.binop_type_error = function(v, w, name)
+Sk.abstr.binop_type_error = function(v, w, name)
 {
     throw new TypeError("unsupported operand type(s) for " + name + ": '"
             + v.tp$name + "' and '" + w.tp$name + "'");
 };
 
 // this can't be a table for closure
-Sk.abstract.boNameToSlotFunc_ = function(obj, name)
+Sk.abstr.boNameToSlotFunc_ = function(obj, name)
 {
     switch (name)
     {
@@ -38,16 +38,16 @@ Sk.abstract.boNameToSlotFunc_ = function(obj, name)
     }
 };
 
-Sk.abstract.binary_op_ = function(v, w, opname)
+Sk.abstr.binary_op_ = function(v, w, opname)
 {
     var ret;
-    var vop = Sk.abstract.boNameToSlotFunc_(v, opname);
+    var vop = Sk.abstr.boNameToSlotFunc_(v, opname);
     if (vop !== undefined)
     {
         ret = vop.call(v, w);
         if (ret !== undefined) return ret;
     }
-    var wop = Sk.abstract.boNameToSlotFunc_(w, opname);
+    var wop = Sk.abstr.boNameToSlotFunc_(w, opname);
     if (wop !== undefined)
     {
         ret = wop.call(w, v);
@@ -57,25 +57,25 @@ Sk.abstract.binary_op_ = function(v, w, opname)
     if (opname === "Add" && v.sq$concat)
         return v.sq$concat(w);
     else if (opname === "Mult" && v.sq$repeat)
-        return Sk.abstract.sequenceRepeat(v.sq$repeat, v, w);
+        return Sk.abstr.sequenceRepeat(v.sq$repeat, v, w);
     else if (opname === "Mult" && w.sq$repeat)
-        return Sk.abstract.sequenceRepeat(w.sq$repeat, w, v);
+        return Sk.abstr.sequenceRepeat(w.sq$repeat, w, v);
 
-    Sk.abstract.binop_type_error(v, w, opname);
+    Sk.abstr.binop_type_error(v, w, opname);
 };
 
-Sk.abstract.binary_iop_ = function(v, w, opname)
+Sk.abstr.binary_iop_ = function(v, w, opname)
 {
-    var vop = Sk.abstract.boNameToSlotFunc_(v, opname);
-    var wop = Sk.abstract.boNameToSlotFunc_(w, opname);
+    var vop = Sk.abstr.boNameToSlotFunc_(v, opname);
+    var wop = Sk.abstr.boNameToSlotFunc_(w, opname);
 
-    Sk.abstract.binop_type_error(v, w, opname);
+    Sk.abstr.binop_type_error(v, w, opname);
 };
 
 //
 // handle upconverting a/b from number to long if op causes too big/small a
 // result, or if either of the ops are already longs
-Sk.abstract.numOpAndPromote = function(a, b, opfn)
+Sk.abstr.numOpAndPromote = function(a, b, opfn)
 {
     if (typeof a === "number" && typeof b === "number")
     {
@@ -94,7 +94,7 @@ Sk.abstract.numOpAndPromote = function(a, b, opfn)
     return undefined;
 };
 
-Sk.abstract.boNumPromote_ = {
+Sk.abstr.boNumPromote_ = {
     "Add": function(a, b) { return a + b; },
     "Sub": function(a, b) { return a - b; },
     "Mult": function(a, b) { return a * b; },
@@ -109,12 +109,12 @@ Sk.abstract.boNumPromote_ = {
     "RShift": function(a, b) { return a >> b; },
 };
 
-Sk.abstract.numberBinOp = function(v, w, op)
+Sk.abstr.numberBinOp = function(v, w, op)
 {
-    var numPromoteFunc = Sk.abstract.boNumPromote_[op];
+    var numPromoteFunc = Sk.abstr.boNumPromote_[op];
     if (numPromoteFunc !== undefined)
     {
-        var tmp = Sk.abstract.numOpAndPromote(v, w, numPromoteFunc);
+        var tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number")
         {
             return tmp;
@@ -126,15 +126,15 @@ Sk.abstract.numberBinOp = function(v, w, op)
         }
     }
 
-    return Sk.abstract.binary_op_(v, w, op);
+    return Sk.abstr.binary_op_(v, w, op);
 };
 
-Sk.abstract.numberInplaceBinOp = function(v, w, op)
+Sk.abstr.numberInplaceBinOp = function(v, w, op)
 {
-    var numPromoteFunc = Sk.abstract.boNumPromote_[op];
+    var numPromoteFunc = Sk.abstr.boNumPromote_[op];
     if (numPromoteFunc !== undefined)
     {
-        var tmp = Sk.abstract.numOpAndPromote(v, w, numPromoteFunc);
+        var tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number")
         {
             return tmp;
@@ -143,10 +143,10 @@ Sk.abstract.numberInplaceBinOp = function(v, w, op)
         w = tmp[1];
     }
 
-    return Sk.abstract.binary_iop_(v, w, op);
+    return Sk.abstr.binary_iop_(v, w, op);
 };
 
-Sk.abstract.numberUnaryOp = function(v, op)
+Sk.abstr.numberUnaryOp = function(v, op)
 {
     if (v === false && op === "Not") return true;
     else if (v === true && op === "Not") return false;
@@ -170,14 +170,14 @@ Sk.abstract.numberUnaryOp = function(v, op)
 //
 //
 
-Sk.abstract.fixSeqIndex_ = function(seq, i)
+Sk.abstr.fixSeqIndex_ = function(seq, i)
 {
     if (i < 0 && seq.sq$length)
         i += seq.sq$length();
     return i;
 };
 
-Sk.abstract.sequenceContains = function(seq, ob)
+Sk.abstr.sequenceContains = function(seq, ob)
 {
     if (seq.sq$contains) return seq.sq$contains(ob);
 
@@ -191,22 +191,22 @@ Sk.abstract.sequenceContains = function(seq, ob)
     return false;
 };
 
-Sk.abstract.sequenceSetItem = function(seq, i, x)
+Sk.abstr.sequenceSetItem = function(seq, i, x)
 {
     goog.asserts.fail();
 };
 
-Sk.abstract.sequenceDelItem = function(seq, i)
+Sk.abstr.sequenceDelItem = function(seq, i)
 {
     if (seq.sq$ass_item)
     {
-        i = Sk.abstract.fixSeqIndex_(seq, i);
+        i = Sk.abstr.fixSeqIndex_(seq, i);
         return seq.sq$ass_item(i, null);
     }
     throw new TypeError("'" + seq.tp$name + "' object does not support item deletion");
 };
 
-Sk.abstract.sequenceRepeat = function(f, seq, n)
+Sk.abstr.sequenceRepeat = function(f, seq, n)
 {
     var count = n.nb$index();
     if (count === undefined)
@@ -216,12 +216,12 @@ Sk.abstract.sequenceRepeat = function(f, seq, n)
     return f.call(seq, n);
 };
 
-Sk.abstract.sequenceGetSlice = function(seq, i1, i2)
+Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
 {
     if (seq.sq$slice)
     {
-        i1 = Sk.abstract.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstract.fixSeqIndex_(seq, i2);
+        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
+        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
         return seq.sq$slice(i1, i2);
     }
     else if (seq.mp$subscript)
@@ -231,18 +231,18 @@ Sk.abstract.sequenceGetSlice = function(seq, i1, i2)
     throw new TypeError("'" + seq.tp$name + "' object is unsliceable");
 };
 
-Sk.abstract.sequenceDelSlice = function(seq, i1, i2)
+Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
 {
     if (seq.sq$ass_slice)
     {
-        i1 = Sk.abstract.fixSeqIndex_(seq, i1);
-        i2 = Sk.abstract.fixSeqIndex_(seq, i2);
+        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
+        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
         return seq.sq$ass_slice(i1, i2, null);
     }
     throw new TypeError("'" + seq.tp$name + "' doesn't support slice deletion");
 };
 
-Sk.abstract.sequenceSetSlice = function(seq, ilow, ihigh, x)
+Sk.abstr.sequenceSetSlice = function(seq, ilow, ihigh, x)
 {
     goog.asserts.fail();
 };
@@ -259,7 +259,7 @@ Sk.abstract.sequenceSetSlice = function(seq, ilow, ihigh, x)
 //
 //
 
-Sk.abstract.objectDelItem = function(o, key)
+Sk.abstr.objectDelItem = function(o, key)
 {
     if (o.mp$ass_subscript)
         return o.mp$ass_subscript(key, null);
@@ -268,7 +268,7 @@ Sk.abstract.objectDelItem = function(o, key)
         var keyValue = Sk.misceval.asIndex(key);
         if (keyValue === undefined)
             throw new TypeError("sequence index must be integer, not '" + key.tp$name + "'");
-        return Sk.abstract.sequenceDelItem(o, keyValue);
+        return Sk.abstr.sequenceDelItem(o, keyValue);
     }
     throw new TypeError("'" + o.tp$name + "' object does not support item deletion");
 };
