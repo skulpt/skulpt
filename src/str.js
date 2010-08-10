@@ -68,10 +68,26 @@ Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str
 Sk.builtin.str.prototype.sq$repeat = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$slice = function() { goog.asserts.fail(); };
-Sk.builtin.str.prototype.sq$contains = function() { goog.asserts.fail(); };
+// Sk.builtin.str.prototype.sq$contains // iter version is fine
 
 Sk.builtin.str.prototype.tp$name = "str";
 Sk.builtin.str.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
+Sk.builtin.str.prototype.tp$iter = function()
+{
+    var ret =
+    {
+        tp$iter: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        tp$iternext: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$obj.v.length) return undefined;
+           return new $(ret.$obj.v.substr(ret.$index++, 1));
+        }
+    };
+    return ret;
+};
 
 Sk.builtin.str.string_join_ = function(seq)
 {
@@ -499,22 +515,5 @@ $.title = function() { throw "todo; title"; };
 $.translate = function() { throw "todo; translate"; };
 $.upper = function(self) { return new $(self.v.toUpperCase()); };
 $.zfill = function() { throw "todo; zfill"; };
-
-$.prototype.__iter__ = function()
-{
-    var ret =
-    {
-        __iter__: function() { return ret; },
-        $obj: this,
-        $index: 0,
-        next: function()
-        {
-            // todo; StopIteration
-            if (ret.$index >= ret.$obj.v.length) return undefined;
-           return new $(ret.$obj.v.substr(ret.$index++, 1));
-        }
-    };
-    return ret;
-};
 
 }());

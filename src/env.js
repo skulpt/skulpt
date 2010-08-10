@@ -121,7 +121,9 @@ Sk.cmp = function cmp(lhs, rhs, op)
     }
     else
     {
-        var ret;
+        if (op === "In") return Sk.abstract.sequenceContains(rhs, lhs);
+        if (op === "NotIn") return !Sk.abstract.sequenceContains(rhs, lhs);
+
         if (lhs.richcmp$ !== undefined)
             return lhs.richcmp$(rhs, op);
         // todo; lookup

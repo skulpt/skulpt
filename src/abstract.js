@@ -147,63 +147,32 @@ Sk.abstract.numberInplaceBinOp = function(v, w, op)
     return Sk.abstract.binary_iop_(v, w, op);
 };
 
-/*
-Sk.abstract.number_Add = function(v, w)
+Sk.abstract.numberUnaryOp = function(v, op)
 {
-    if (typeof(v) === 'number' && typeof(w) === 'number')
+    if (v === false && op === "Not") return true;
+    else if (v === true && op === "Not") return false;
+    else if (typeof v === "number")
     {
-        var i = v + w;
-        if (i >= -Sk.builtin.long.threshold$ && i < Sk.builtin.long.threshold$)
-            return i;
+        if (op === "USub") return -v;
+        else if (op === "Not") return Sk.builtin.object.isTrue$(v) ? false : true;
+        else if (op === "UAdd") return v;
+        else if (op === "Invert") return ~v;
     }
-    else if (v instanceof Sk.builtin.str && w instanceof Sk.builtin.str)
-    {
-        return new Sk.builtin.str(v.v + w.v);
-    }
-
-    var result = Sk.abstract.binary_op1_(v, w, v.nb$add, w.nb$add);
-    if (result === undefined) // wasn't implemented numerically
-    {
-        if (v.sq$concat)
-            return v.sq$concat(w);
-        Sk.abstract.binop_type_error(v, w, '+');
-    }
-    return result;
+    goog.asserts.fail("todo; unary op dispatch");
 };
 
-Sk.abstract.number_Sub = function(v, w)
-{
-    if (typeof(v) === 'number' && typeof(w) === 'number')
-    {
-        var i = v - w;
-        if (i >= -Sk.builtin.long.threshold$ && i < Sk.builtin.long.threshold$)
-            return i;
-    }
-    return Sk.abstract.binary_op_(v, w, v.nb$sub, w.nb$sub, '-')
-};
 
-Sk.abstract.sequenceRepeat_ = function(f, seq, n)
-{
-    var count = n.nb$index();
-    if (count === undefined)
-    {
-        throw new TypeError("can't multiply sequence by non-int of type '" + n.tp$name + "'");
-    }
-    return f.call(seq, n);
-};
 
-Sk.abstract.number_Mult = function(v, w)
+Sk.abstract.sequenceContains = function(seq, ob)
 {
-    var result = Sk.abstract.binary_op1_(v, w, v.nb$multiply, w.nb$multiply);
-    if (result === undefined)
-    {
-        if (v.sq$repeat)
-            return Sk.abstract.sequenceRepeat_(v.sq$repeat, v, w);
-        else if (w.sq$repeat)
-            return Sk.abstract.sequenceRepeat_(w.sq$repeat, w, v);
-        Sk.abstract.binop_type_error(v, w, '*');
-    }
-    return result;
-};
+    if (seq.sq$contains) return seq.sq$contains(ob);
 
-*/
+    if (!seq.tp$iter) throw new TypeError("argument of type '" + seq.tp$name + "' is not iterable");
+    
+    for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+    {
+        if (Sk.cmp(i, ob, "Eq"))
+            return true;
+    }
+    return false;
+};

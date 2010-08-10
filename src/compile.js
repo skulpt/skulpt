@@ -349,7 +349,7 @@ Compiler.prototype.cboolop = function(e)
 /**
  *
  * compiles an expression. to 'return' something, it'll gensym a var and store
- * into that var so that the calling code doesn't have avoid just paste the
+ * into that var so that the calling code doesn't have avoid just pasting the
  * returned name.
  *
  * @param {Object} e
@@ -370,6 +370,7 @@ Compiler.prototype.vexpr = function(e, data)
         case BinOp:
             return this._gr('binop', "Sk.abstract.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
         case UnaryOp:
+            return this._gr('unaryop', "Sk.abstract.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op._astname, "')");
             goog.asserts.fail();
         case Lambda:
             return this.clambda(e);
