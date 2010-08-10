@@ -76,6 +76,18 @@ Sk.builtin.list.list_ass_slice_ = function(ilow, ihigh, v)
     this.v.splice.apply(this.v, args);
 };
 
+Sk.builtin.list.listindex = function(item)
+{
+    var len = this.v.length;
+    var obj = this.v;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+            return i;
+    }
+    throw new Sk.builtin.ValueError("list.index(x): x not in list");
+}
+
 // js types for some args. non-$ always use all python types.
 Sk.builtin.list.prototype.tp$name = "list";
 Sk.builtin.list.prototype.tp$repr = function()
@@ -152,7 +164,9 @@ Sk.builtin.list.prototype.tp$dict = {
             /*
     pop: listpop,
     remove: listremove,
-    index: listindex,
+    */
+    index: Sk.builtin.list.listindex,
+    /*
     count: listcount,
     reverse: listreverse,
     sort: listsort
@@ -173,14 +187,6 @@ $.count = function() { throw "todo; list.count"; };
 
 $.index = function(self, item)
 {
-    var len = self.v.length;
-    var obj = self.v;
-    for (var i = 0; i < len; ++i)
-    {
-        // todo; eq
-        if (obj[i] === item) return i;
-    }
-    throw "ValueError: list.index(x): x not in list";
 };
 
 $.insert = function(self, i, x)

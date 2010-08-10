@@ -102,62 +102,6 @@ Sk.in_ = function in_(lhs, rhs)
     }
 };
 
-Sk.cmp = function cmp(lhs, rhs, op)
-{
-    if (op === 'Is') return lhs === rhs;
-    if (op === 'IsNot') return lhs !== rhs;
-    if (typeof lhs === "number" && typeof rhs === "number")
-    {
-        switch (op)
-        {
-            case 'Lt': return lhs < rhs;
-            case 'LtE': return lhs <= rhs;
-            case 'Gt': return lhs > rhs;
-            case 'GtE': return lhs >= rhs;
-            case 'NotEq': return lhs !== rhs;
-            case 'Eq': return lhs === rhs;
-            default: throw "assert";
-        }
-    }
-    else
-    {
-        if (op === "In") return Sk.abstract.sequenceContains(rhs, lhs);
-        if (op === "NotIn") return !Sk.abstract.sequenceContains(rhs, lhs);
-
-        if (lhs.richcmp$ !== undefined)
-            return lhs.richcmp$(rhs, op);
-        // todo; lookup
-        /* __cmp__ never defined right now
-        else if (lhs.__cmp__ !== undefined)
-            ret = lhs.__cmp__(rhs);
-        else if (rhs.__cmp__ !== undefined)
-            ret = -rhs.__cmp__(lhs);
-        else if (lhs.__class__.__cmp__ !== undefined)
-            ret = lhs.__class__.__cmp__(lhs, rhs);
-        else if (rhs.__class__.__cmp__ !== undefined)
-            ret = -rhs.__class__.__cmp__(rhs, lhs);
-        */
-        else
-        {
-            // todo; dispatch to the specific __eq__, etc.
-            throw new Sk.builtin.AttributeError("no attribute __cmp__");
-        }
-
-        /*
-        switch (op)
-        {
-            case '<': return ret < 0;
-            case '<=': return ret <= 0;
-            case '>': return ret > 0;
-            case '>=': return ret >= 0;
-            case '==': return ret === 0;
-            case '!=': return ret !== 0;
-            default: throw "assert";
-        }
-        */
-    }
-};
-
 Sk.softspace = false;
 Sk.print = function print(x)
 {

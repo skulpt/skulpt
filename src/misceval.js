@@ -9,6 +9,7 @@ Sk.misceval.isIndex = function(o)
 Sk.misceval.asIndex = function(o)
 {
     if (!Sk.misceval.isIndex(o)) return undefined;
+    if (o === null) return undefined;
     if (typeof o === "number") return o;
     goog.asserts.fail("todo;");
 };
@@ -49,4 +50,57 @@ Sk.misceval.assignSlice = function(u, v, w, x)
         else
             return Sk.abstract.objectDelItem(u, slice);
     }
+};
+
+Sk.misceval.richCompareBool = function(v, w, op)
+{
+    if (op === 'Is')
+        return v === w;
+
+    if (op === 'IsNot')
+        return v !== w;
+
+    if (v === w)
+    {
+        if (op === 'Eq')
+            return true;
+        else if (op === 'NotEq')
+            return false;
+    }
+
+    if (v instanceof Sk.builtin.str && w instanceof Sk.builtin.str)
+    {
+        if (op === 'Eq')
+            return v === w;
+        else if (op === 'NotEq')
+            return v !== w;
+    }
+
+    if (typeof v === "number" && typeof w === "number")
+    {
+        switch (op)
+        {
+            case 'Lt': return v < w;
+            case 'LtE': return v <= w;
+            case 'Gt': return v > w;
+            case 'GtE': return v >= w;
+            case 'NotEq': return v !== w;
+            case 'Eq': return v === w;
+            default: throw "assert";
+        }
+    }
+    else
+    {
+        if (op === "In") return Sk.abstract.sequenceContains(w, v);
+        if (op === "NotIn") return !Sk.abstract.sequenceContains(w, v);
+
+        if (v.tp$richcompare)
+            return v.tp$richcompare(w, op);
+        else if (w.tp$richcompare)
+            return w.tp$richcompare(v, Sk.misceval.swappedOp_[op]);
+        // todo; else here?
+    }
+
+    // is this true?
+    return false;
 };

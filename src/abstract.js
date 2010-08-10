@@ -185,7 +185,7 @@ Sk.abstract.sequenceContains = function(seq, ob)
     
     for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
     {
-        if (Sk.cmp(i, ob, "Eq"))
+        if (Sk.misceval.richCompareBool(i, ob, "Eq"))
             return true;
     }
     return false;

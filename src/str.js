@@ -106,7 +106,7 @@ Sk.builtin.str.string_split_ = function(on, howmany)
     var tmp = [];
     for (var i = 0; i < res.length; ++i)
     {
-        tmp.push(new $(res[i]));
+        tmp.push(new Sk.builtin.str(res[i]));
     }
     return new Sk.builtin.list(tmp);
 };

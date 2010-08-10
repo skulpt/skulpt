@@ -239,7 +239,7 @@ Compiler.prototype.ccompare = function(e)
     goog.asserts.assert(e.ops.length === 1 && e.comparators.length === 1, "todo; >1 compares");
 
     goog.asserts.assert(e.ops.length === e.comparators.length);
-    return this._gr('compare', "Sk.cmp(", left, ",", this.vexpr(e.comparators[0]), ",'", e.ops[0]._astname, "')");
+    return this._gr('compare', "Sk.misceval.richCompareBool(", left, ",", this.vexpr(e.comparators[0]), ",'", e.ops[0]._astname, "')");
 };
 
 Compiler.prototype.ccall = function(e)
