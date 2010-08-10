@@ -684,7 +684,7 @@ Compiler.prototype.cfunction = function(s)
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.vseqstmt(s.body);
-    out("break;");
+    out("return null;"); // if we fall off the bottom, we want the ret to be None
 
     this.exitScope();
 
@@ -744,6 +744,8 @@ Compiler.prototype.vstmt = function(s)
             return this.cwhile(s);
         case If_:
             return this.cif(s);
+        case Global:
+            break;
         case Expr:
             this.vexpr(s.value);
             break;

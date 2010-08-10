@@ -596,7 +596,7 @@ Sk.builtin.range = function range(start, stop, step)
     return new $.builtin.list(ret);
 };
 
-Sk.len = function len(item)
+Sk.builtin.len = function len(item)
 {
     // todo; dispatch to __len__
     if (item instanceof $.builtin.str || item instanceof $.builtin.list || item instanceof $.builtin.tuple)
