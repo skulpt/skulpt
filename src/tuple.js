@@ -16,11 +16,7 @@ var $ = Sk.builtin.tuple = function(L)
     return this;
 };
 
-$.prototype.count = function() { throw "todo; tuple.count"; };
-$.prototype.index = function() { throw "todo; tuple.index"; };
-$.prototype.__class__ = new Sk.builtin.type('tuple', [Sk.types.object], {});
-
-$.prototype.__getitem__ = function(index)
+Sk.builtin.tuple.prototype.mp$subscript = function(index)
 {
     if (typeof index === "number")
     {
@@ -40,6 +36,10 @@ $.prototype.__getitem__ = function(index)
     else
         throw new TypeError("tuple indices must be integers, not " + typeof index);
 };
+
+$.prototype.count = function() { throw "todo; tuple.count"; };
+$.prototype.index = function() { throw "todo; tuple.index"; };
+$.prototype.__class__ = new Sk.builtin.type('tuple', [Sk.types.object], {});
 
 $.prototype.__repr__ = function()
 {

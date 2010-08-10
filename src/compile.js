@@ -154,8 +154,7 @@ Compiler.prototype.ctupleorlist = function(e, data, tuporlist)
     {
         for (var i = 0; i < e.elts.length; ++i)
         {
-            // todo; the indexing is hokey, i think it needs to use a proper iter
-            this.vexpr(e.elts[i], data + ".v[" + i + "]");
+            this.vexpr(e.elts[i], data + ".mp$subscript(" + i + ")");
         }
     }
     else if (e.ctx === Load)
@@ -257,7 +256,7 @@ Compiler.prototype.ccall = function(e)
 Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
 {
     goog.asserts.assert(s.step === null);
-    var lower, upper;
+    var lower = 'null', upper = 'null';
     if (s.lower && ctx !== AugStore)
         lower = this.vexpr(s.lower);
     if (s.upper && ctx !== AugStore)
