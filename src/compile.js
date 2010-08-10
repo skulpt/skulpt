@@ -191,23 +191,46 @@ Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
 
     var l = generators[genIndex];
     var toiter = this.vexpr(l.iter);
-    var iter = this._gr("iter", toiter, ".__iter__()");
+    var iter = this._gr("iter", toiter, ".tp$iter()");
     this._jump(start);
     this.setBlock(start);
 
     // load targets
-    var nexti = this._gr('next', iter, ".next()"); // todo; should be __next__
+    var nexti = this._gr('next', iter, ".tp$iternext()");
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     var target = this.vexpr(l.target, nexti);
 
+    var n = l.ifs.length;
+    for (var i = 0; i < n; ++i)
+    {
+        var ifres = this.vexpr(l.ifs[i]);
+        this._jumpfalse(ifres, ifCleanup);
+    }
+
+    if (++genIndex < generators.length)
+    {
+        this.clistcompgen(tmpname, generators, genIndex, elt);
+    }
+
+    if (genIndex >= generators.length)
+    {
+        var velt = this.vexpr(elt);
+        out(tmpname, ".v.push(", velt, ");"); // todo;
+        this._jump(skip);
+        this.setBlock(skip);
+    }
+
+    this._jump(start);
+
     this.setBlock(anchor);
+
+    return tmpname;
 };
 
 Compiler.prototype.clistcomp = function(e)
 {
     goog.asserts.assert(e instanceof ListComp);
-    var tmp = new Sk.builtin.str(this.gensym("_compr")); // note: _ is impt. for hack in name mangling (same as cpy)
-    this.nameop(tmp, Store, "new Sk.builtin.list([])");
+    var tmp = this._gr("_compr", "new Sk.builtin.list([])"); // note: _ is impt. for hack in name mangling (same as cpy)
     return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
@@ -245,7 +268,7 @@ Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
     {
         case AugLoad:
         case Load:
-            return this._gr("simpsliceload", obj, ".__getitem__(new Sk.builtin.slice(", lower, ",", upper, "))");
+            return this._gr("simpsliceload", obj, ".mp$subscript(new Sk.builtin.slice(", lower, ",", upper, "))");
         case AugStore:
         case Store:
             out(obj, ".__setitem__(new Sk.builtin.slice(", lower, ",", upper, "),", dataToStore, ");");
@@ -292,7 +315,7 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
 Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
 {
     if (ctx === Load || ctx === AugLoad)
-        return this._gr('lsubscr', obj, '.__getitem__(', subs, ')');
+        return this._gr('lsubscr', obj, '.mp$subscript(', subs, ')');
     else if (ctx === Store || ctx === AugStore)
         out(obj, '.__setitem__(', subs, ',', data, ');');
     else if (ctx === Del)
@@ -370,7 +393,25 @@ Compiler.prototype.vexpr = function(e, data)
         case Str:
             return this._gr('str', "new Sk.builtin.str(", e.s.__repr__().v, ")");
         case Attribute:
-            goog.asserts.fail();
+            if (e.ctx !== AugStore)
+                var val = this.vexpr(e.value);
+            switch (e.ctx)
+            {
+                case AugLoad:
+                case Load:
+                    return this._gr("lattr", val, ".tp$getattr(string_FromString(", e.attr.__repr__().v, "))");
+                case AugStore:
+                case Store:
+                    goog.asserts.fail("todo;");
+                    break;
+                case Del:
+                    goog.asserts.fail("todo;");
+                    break;
+                case Param:
+                default:
+                    goog.asserts.fail("invalid attribute expression");
+            }
+            break;
         case Subscript:
             switch (e.ctx)
             {
@@ -577,13 +618,13 @@ Compiler.prototype.cfor = function(s)
 
     // get the iterator
     var toiter = this.vexpr(s.iter);
-    var iter = this._gr("iter", toiter, ".__iter__()");
+    var iter = this._gr("iter", toiter, ".tp$iter()");
     this._jump(start);
 
     this.setBlock(start);
 
     // load targets
-    var nexti = this._gr('next', iter, ".next()"); // todo; should be __next__
+    var nexti = this._gr('next', iter, ".tp$iternext()");
     this._jumpundef(nexti, cleanup); // todo; this should be handled by StopIteration
     var target = this.vexpr(s.target, nexti);
 
@@ -786,7 +827,10 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                     out("var ", v, "=$loc.", mangled, "!==undefined?$loc.",mangled,":Sk.loadname('",mangled,"',$gbl);");
                     return v;
                 case Store:
-                    out("$loc.", mangled, "=", dataToStore, ';');
+                    out("$loc.", mangled, "=", dataToStore, ";");
+                    break;
+                case Del:
+                    out("delete $loc.", mangled, ";");
                     break;
                 default:
                     goog.asserts.fail("unhandled");
@@ -862,7 +906,7 @@ Compiler.prototype.cprint = function(s)
     var n = s.values.length;
     // todo; dest disabled
     for (var i = 0; i < n; ++i)
-        out('Sk.output(', /*dest, ',',*/ "new Sk.builtin.str(", this.vexpr(s.values[i]), ').v);');
+        out('Sk.output(', /*dest, ',',*/ "string_FromString(", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
         out('Sk.output(', /*dest, ',*/ '"\\n");');
 };
@@ -871,7 +915,7 @@ Compiler.prototype.cmod = function(mod)
 {
     //print("-----");
     //print(Sk.astDump(mod));
-    var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0);
+    var modf = this.enterScope(string_FromString("<module>"), mod, 0);
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function _module_(){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;while(true){switch($blk){";

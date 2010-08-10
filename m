@@ -15,9 +15,9 @@ Files = [
         'support/closure-library/closure/goog/asserts/asserts.js',
         'src/env.js',
         'src/errors.js',
-        'src/list.js',
         'src/type.js',
         'src/object.js',
+        'src/list.js',
         'src/function.js',
         'src/str.js',
         'src/tuple.js',
@@ -364,7 +364,7 @@ def upload():
         print "Couldn't upload."
         raise SystemExit()
 
-def run(fn):
+def run(fn, shell=""):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -381,8 +381,9 @@ print("-----");
 goog.global.eval(js_beautify(js));
     """ % (fn, fn))
     f.close()
-    os.system("%s %s support/tmp/run.js" %
+    os.system("%s %s %s support/tmp/run.js" %
             (jsengine,
+                shell,
                 ' '.join(getFileList('test'))))
 
 def runopt(fn):
@@ -396,6 +397,9 @@ eval(Skulpt.compileStr('%s', input));
     """ % (fn, fn))
     f.close()
     os.system(jsengine + " --nodebugger dist/skulpt.js support/tmp/run.js")
+
+def shell(fn):
+    run(fn, "--shell")
 
 def parse(fn):
     if not os.path.exists(fn):
@@ -461,7 +465,7 @@ def vmwareregr(names):
 if __name__ == "__main__":
     os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload||nrt|run|runopt|parse|vmwareregr|symtab}"
+        print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|shell}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -491,5 +495,7 @@ if __name__ == "__main__":
         upload()
     elif cmd == "nrt":
         nrt()
+    elif cmd == "shell":
+        shell(sys.argv[2]);
     else:
         usage()

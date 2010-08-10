@@ -1,13 +1,11 @@
-(function() {
-
 /**
  * @constructor
  * @param {Array.<Object>} L
  */
-var $ = Sk.builtin.list = function(L)
+Sk.builtin.list = function(L)
 {
-    if (L instanceof $) return L;
-    if (!(this instanceof $)) return new $(L);
+    if (L instanceof Sk.builtin.list) return L;
+    if (!(this instanceof Sk.builtin.list)) return new list(L);
 
     if (Object.prototype.toString.apply(L) === '[object Array]')
     {
@@ -23,10 +21,115 @@ var $ = Sk.builtin.list = function(L)
         }
     }
 
-    this.__class__ = this.nativeclass$ = $;
+    // todo; this should be elsewhere
+    this.__dict__ = new Sk.builtin.dict([]);
+    // todo; add methods
+
+    this.__class__ = this.nativeclass$ = Sk.builtin.list;
     return this;
 };
 
+Sk.builtin.list.list_extend_ = function(b)
+{
+    for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        this.v.push(i);
+    return null;
+};
+
+Sk.builtin.list.list_iter_ = function()
+{
+    var ret =
+    {
+        tp$iter: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        tp$iternext: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$obj.v.length) return undefined;
+            return ret.$obj.v[ret.$index++];
+        }
+    };
+    return ret;
+};
+
+// js types for some args. non-$ always use all python types.
+Sk.builtin.list.prototype.tp$name = "list";
+Sk.builtin.list.prototype.tp$repr = function(v)
+{
+    var ret = [];
+    for (var it = v.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        ret.push(object_Repr(i).v);
+    return string_FromString("[" + ret.join(", ") + "]");
+};
+
+Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
+/*
+list.prototype.tp$richcompare = list_richcompare;
+*/
+Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.list_iter_;
+/*
+list.prototype.sq$length = list_length;
+list.prototype.sq$concat = list_concat;
+list.prototype.sq$repeat = list_repeat;
+list.prototype.sq$item = list_item;
+list.prototype.sq$slice = list_slice;
+list.prototype.sq$ass_item = list_ass_item;
+list.prototype.sq$ass_slice = list_ass_slice;
+list.prototype.sq$contains = list_contains;
+list.prototype.sq$inplace_concat = list_inplace_concat;
+list.prototype.sq$inplace_repeat = list_inplace_repeat;
+*/
+
+Sk.builtin.list.list_subscript_ = function(index)
+{
+    if (typeof index === "number")
+    {
+        if (index < 0) index = this.v.length + index;
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
+        return this.v[index];
+    }
+    else if (index instanceof Sk.builtin.slice)
+    {
+        var ret = [];
+        index.sssiter$(this, function(i, wrt)
+                {
+                    ret.push(wrt.v[i]);
+                });
+        return new Sk.builtin.list(ret);
+    }
+    else
+        throw new TypeError("list indices must be integers, not " + typeof index);
+};
+
+Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.list_subscript_;
+
+// tp$dict is the dict for the type object's attributes. this includes methods
+// for builtin types which are found during lookup. we use a js object for
+// these as a concession to some speed, though it strictly probably should be a
+// dict as well.
+Sk.builtin.list.prototype.tp$dict = {
+    __getitem__: Sk.builtin.list.list_subscript_,
+    /*
+    __reversed__: list_reversed,
+    append: listappend,
+    insert: listinsert,
+    */
+    extend: Sk.builtin.list.extend_,
+            /*
+    pop: listpop,
+    remove: listremove,
+    index: listindex,
+    count: listcount,
+    reverse: listreverse,
+    sort: listsort
+    */
+};
+
+
+// __dict__ is the instance's actual dict
+
+if (0) {
 $.append = function(self, item)
 {
     self.v.push(item);
@@ -266,5 +369,5 @@ $.prototype.__iter__ = function()
     };
     return ret;
 };
+}
 
-}());

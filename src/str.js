@@ -1,3 +1,9 @@
+function string_FromString(s)
+{
+    return new Sk.builtin.str(s);
+}
+
+
 (function() {
 
 var interned = {};
@@ -37,7 +43,29 @@ var $ = Sk.builtin.str = function str(x)
     this.v = ret;
     interned[ret] = this;
     return this;
-};
+
+}
+
+Sk.builtin.str.prototype.mp$subscript = function(index)
+{
+    if (typeof index === "number")
+    {
+        if (index < 0) index = this.v.length + index;
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("string index out of range");
+        return new Sk.builtin.str(this.v.charAt(index));
+    }
+    else if (index instanceof Sk.builtin.slice)
+    {
+        var ret = '';
+        index.sssiter$(this, function(i, wrt) {
+                if (i >= 0 && i < wrt.v.length)
+                    ret += wrt.v.charAt(i);
+                });
+        return new Sk.builtin.str(ret);
+    }
+    else
+        throw new TypeError("string indices must be numbers, not " + typeof index);
+};;
 
 var alphanum = {};
 var i;

@@ -22,6 +22,48 @@ var $ = Sk.builtin.dict = function dict(L)
 
 var kf = Sk.builtin.hash;
 
+Sk.builtin.dict.dict_subscript_ = function(key)
+{
+    var entry = this[kf(key)];
+    // todo; does this need to go through mp$ma_lookup
+    return entry === undefined ? undefined : entry.rhs;
+};
+
+
+Sk.builtin.dict.prototype.mp$subscript = Sk.builtin.dict.dict_subscript_;
+
+Sk.builtin.dict.prototype.tp$iter = function()
+{
+    var allkeys = [];
+    for (var k in this)
+    {
+        if (this.hasOwnProperty(k))
+        {
+            var i = this[k];
+            if (i && i.hasOwnProperty('lhs')) // skip internal stuff. todo; merge pyobj and this
+            {
+                allkeys.push(k);
+            }
+        }
+    }
+    //print(allkeys);
+
+    var ret =
+    {
+        tp$iter: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        $keys: allkeys,
+        tp$iternext: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$keys.length) return undefined;
+            return ret.$obj[ret.$keys[ret.$index++]].lhs;
+        }
+    };
+    return ret;
+};
+
 $.prototype.clear = function() { throw "todo; dict.clear"; };
 $.prototype.copy = function() { throw "todo; dict.copy"; };
 $.prototype.fromkeys = function() { throw "todo; dict.fromkeys"; };

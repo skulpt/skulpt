@@ -1,7 +1,7 @@
 (function() {
 
 Sk.modules = new Sk.builtin.dict([]);
-Sk.syspath = new Sk.builtin.list([]);
+//Sk.syspath = new Sk.builtin.list([]);
 
 /**
  * @constructor

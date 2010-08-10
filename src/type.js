@@ -1,3 +1,8 @@
+function type_Lookup(tp, name)
+{
+}
+
+
 (function() {
 
 /**
@@ -31,14 +36,16 @@ var $ = Sk.builtin.type = function type(name, bases, dict, body$)
                 return __body.apply(null, arguments);
         };
         ret.__name__ = name;
+        /*
         if (!(bases instanceof Sk.builtin.list))
             bases = new Sk.builtin.list(bases);
+            */
         ret.__bases__ = bases;
         ret.dict = dict;
         return ret;
     }
 };
-
+/*
 $.prototype.mro = function()
 {
     return new Sk.builtin.list(this.__bases__.v);
@@ -68,6 +75,6 @@ Sk.types.type = new $('type', [Sk.types.object], {});
 Sk.types.int_ = new $('int', [Sk.types.object], {});
 
 Sk.builtin.list.prototype.__class__ = new Sk.builtin.type('list', [Sk.types.object], {});
-
+*/
 
 }());
