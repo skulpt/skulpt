@@ -165,7 +165,7 @@ Sk.builtin.list.prototype.tp$dict = {
     pop: listpop,
     remove: listremove,
     */
-    index: Sk.builtin.list.listindex,
+    index: Sk.builtin.list.listindex
     /*
     count: listcount,
     reverse: listreverse,

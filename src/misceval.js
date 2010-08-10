@@ -3,7 +3,7 @@ Sk.misceval = {};
 
 Sk.misceval.isIndex = function(o)
 {
-    return o === null || typeof o === "number" || o.constructor === Sk.builtin.long || o.tp$index;
+    return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.tp$index;
 };
 
 Sk.misceval.asIndex = function(o)

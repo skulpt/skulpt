@@ -81,15 +81,15 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
     {
         var ans = opfn(a, b);
         // todo; handle float
-        if (ans > Sk.builtin.long.threshold$ || ans < -Sk.builtin.long.threshold$)
-            return [Sk.builtin.long.fromInt(a), Sk.builtin.long.fromInt(b)];
+        if (ans > Sk.builtin.lng.threshold$ || ans < -Sk.builtin.lng.threshold$)
+            return [Sk.builtin.lng.fromInt(a), Sk.builtin.lng.fromInt(b)];
         else
             return ans;
     }
-    else if (a.constructor === Sk.builtin.long && typeof b === "number")
-        return [a, Sk.builtin.long.fromInt$(b)];
-    else if (b.constructor === Sk.builtin.long && typeof a === "number")
-        return [Sk.builtin.long.fromInt$(a), b];
+    else if (a.constructor === Sk.builtin.lng && typeof b === "number")
+        return [a, Sk.builtin.lng.fromInt$(b)];
+    else if (b.constructor === Sk.builtin.lng && typeof a === "number")
+        return [Sk.builtin.lng.fromInt$(a), b];
 
     return undefined;
 };
@@ -106,7 +106,7 @@ Sk.abstr.boNumPromote_ = {
     "BitOr": function(a, b) { return a | b; },
     "BitXor": function(a, b) { return a ^ b; },
     "LShift": function(a, b) { return a << b; },
-    "RShift": function(a, b) { return a >> b; },
+    "RShift": function(a, b) { return a >> b; }
 };
 
 Sk.abstr.numberBinOp = function(v, w, op)

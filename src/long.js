@@ -21,7 +21,7 @@
  * @constructor
  * @param {number} size number of digits
  */
-var $ = Sk.builtin.long = function(size)
+var $ = Sk.builtin.lng = function(size) /* long is a reserved word */
 {
     if (!(this instanceof $)) return new $(size);
 
