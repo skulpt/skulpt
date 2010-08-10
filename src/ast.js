@@ -1527,7 +1527,7 @@ function parsenumber(c, s)
     if (end === 'l' || end === 'L')
         return Sk.longFromStr(s.substr(0, s.length - 1));
     var k = goog.global.eval(s);
-    if ((k > Sk.builtin.long_.threshold$ || k < -Sk.builtin.long_.threshold$)
+    if ((k > Sk.builtin.long.threshold$ || k < -Sk.builtin.long.threshold$)
             && Math.floor(k) === k)
     {
         return Sk.longFromStr(s);
@@ -1974,7 +1974,7 @@ Sk.astDump = function(node)
             var ret;
             if (node === true) ret = "True";
             else if (node === false) ret = "False";
-            else if (node instanceof Sk.builtin.long_) ret = node.__str__().v;
+            else if (node instanceof Sk.builtin.long) ret = node.__str__().v;
             else if (node instanceof Sk.builtin.str) ret = node.__repr__().v;
             else ret = "" + node;
             return indent + ret;

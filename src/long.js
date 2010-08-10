@@ -21,7 +21,7 @@
  * @constructor
  * @param {number} size number of digits
  */
-var $ = Sk.builtin.long_ = function(size)
+var $ = Sk.builtin.long = function(size)
 {
     if (!(this instanceof $)) return new $(size);
 
@@ -469,33 +469,5 @@ $.prototype.str$ = function(base, sign)
 };
 
 $.prototype.__class__ = new Sk.builtin.type('long', [Sk.types.object], {});
-
-// handle upconverting a/b from number to long if op causes too big/small a
-// result, or if either of the ops are already longs
-Sk.numOpAndPromotion = function(a, b, op)
-{
-    if (typeof a === "number" && typeof b === "number")
-    {
-        var ans = op(a, b);
-        if (ans > $.threshold$ || ans < -$.threshold$)
-        {
-            // todo; handle float
-            a = $.fromInt$(a);
-            b = $.fromInt$(b);
-        }
-        else
-        {
-            return ans;
-        }
-    }
-    else if (a.__class__ === $.prototype.__class__
-            || b.__class__ === $.prototype.__class__)
-    {
-        if (typeof a === "number") a = $.fromInt$(a);
-        if (typeof b === "number") b = $.fromInt$(b);
-    }
-    return [a, b];
-};
-
 
 }());

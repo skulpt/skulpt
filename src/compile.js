@@ -369,7 +369,7 @@ Compiler.prototype.vexpr = function(e, data)
         case BoolOp:
             return this.cboolop(e);
         case BinOp:
-            return this._gr('binop', "Sk.binop(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
+            return this._gr('binop', "Sk.abstract.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
         case UnaryOp:
             goog.asserts.fail();
         case Lambda:
@@ -399,7 +399,7 @@ Compiler.prototype.vexpr = function(e, data)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", val, ".tp$getattr(string_FromString(", e.attr.__repr__().v, "))");
+                    return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.__repr__().v, "))");
                 case AugStore:
                 case Store:
                     goog.asserts.fail("todo;");
@@ -456,7 +456,7 @@ Compiler.prototype.caugassign = function(s)
         case Name:
             var to = this.nameop(e.id, Load);
             var val = this.vexpr(s.value);
-            var res = this._gr('inplbinop', "Sk.inplacebinop(", to, ",", val, ",'", s.op._astname, "')");
+            var res = this._gr('inplbinop', "Sk.abstract.numberInplaceBinOp(", to, ",", val, ",'", s.op._astname, "')");
             return this.nameop(e.id, Store, res);
         default:
             goog.asserts.fail("unhandled case in augassign");
@@ -649,14 +649,28 @@ Compiler.prototype.cfunction = function(s)
     goog.asserts.assert(s instanceof FunctionDef);
     var args = s.args;
     var decos = s.decorator_list;
+    var defaults = [];
 
+    // decorators and defaults have to be evaluated out here
     //this.vseqexpr(decos);
+    if (args.defaults)
+    {
+        defaults = this.vseqexpr(args.defaults);
+    }
 
     var scopename = this.enterScope(s.name, s, s.lineno);
 
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
 
-    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "__$outer($globals,$rest){var $gbl=$globals;return(function " + s.name.v + "(";
+    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "__$outer($globals,"
+        + (defaults.length > 0 ? "$defaults," : "")
+        + "$rest){var $gbl=$globals;";
+    if (defaults.length > 0)
+    {
+        this.u.prefixCode += "$rest = Array.prototype.slice.call($rest);"; // this is 'arguments' from outer
+        this.u.prefixCode += "for (var $defi = 0; $defi < $defaults.length; ++$defi) { if ($rest[$defi] === undefined) $rest[$defi] = $defaults[$defi]; }";
+    }
+    this.u.prefixCode += "return(function " + s.name.v + "(";
 
     for (var i = 0; i < args.args.length; ++i)
     {
@@ -665,12 +679,8 @@ Compiler.prototype.cfunction = function(s)
             this.u.prefixCode += ",";
     }
 
-    var entryBlock = this.newBlock('function entry');
     this.u.prefixCode += "){";
-    /*
-    if (args.defaults)
-        this.vseqexpr(args.defaults);
-        */
+    var entryBlock = this.newBlock('function entry');
     this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={};while(true){switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
@@ -679,7 +689,8 @@ Compiler.prototype.cfunction = function(s)
 
     this.exitScope();
 
-    var wrapped = this._gr("wrapped", "(function ", s.name.v, "__$wrap(){return ", scopename, "($gbl,arguments);})");
+    var wrapped = this._gr("wrapped", "(function ", s.name.v, "__$wrap(){return ", scopename,
+            "($gbl,", (defaults.length > 0 ? "[" + defaults.join(',') + "]," : ""), "arguments);})");
     this.nameop(s.name, Store, wrapped);
 };
 
@@ -906,7 +917,7 @@ Compiler.prototype.cprint = function(s)
     var n = s.values.length;
     // todo; dest disabled
     for (var i = 0; i < n; ++i)
-        out('Sk.output(', /*dest, ',',*/ "string_FromString(", this.vexpr(s.values[i]), ').v);');
+        out('Sk.output(', /*dest, ',',*/ "new Sk.builtin.str(", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
         out('Sk.output(', /*dest, ',*/ '"\\n");');
 };
@@ -915,7 +926,7 @@ Compiler.prototype.cmod = function(mod)
 {
     //print("-----");
     //print(Sk.astDump(mod));
-    var modf = this.enterScope(string_FromString("<module>"), mod, 0);
+    var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0);
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function _module_(){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;while(true){switch($blk){";

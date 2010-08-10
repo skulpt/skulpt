@@ -1,9 +1,3 @@
-function string_FromString(s)
-{
-    return new Sk.builtin.str(s);
-}
-
-
 (function() {
 
 var interned = {};
@@ -39,6 +33,8 @@ var $ = Sk.builtin.str = function str(x)
     var it = interned[ret];
     if (it !== undefined) return it;
 
+    this.__dict__ = new Sk.builtin.dict([]);
+
     this.__class__ = this.nativeclass$ = $;
     this.v = ret;
     interned[ret] = this;
@@ -65,7 +61,45 @@ Sk.builtin.str.prototype.mp$subscript = function(index)
     }
     else
         throw new TypeError("string indices must be numbers, not " + typeof index);
-};;
+};
+
+Sk.builtin.str.prototype.sq$length = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str(this.v + other.v); };
+Sk.builtin.str.prototype.sq$repeat = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$slice = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$contains = function() { goog.asserts.fail(); };
+
+Sk.builtin.str.prototype.tp$name = "str";
+Sk.builtin.str.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
+
+Sk.builtin.str.string_join_ = function(seq)
+{
+    var arrOfStrs = [];
+    for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+    {
+        if (i.constructor !== $) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
+        arrOfStrs.push(i.v);
+    }
+    return new Sk.builtin.str(arrOfStrs.join(this.v));
+};
+
+Sk.builtin.str.string_split_ = function(on, howmany)
+{
+    var res = this.v.split(new Sk.builtin.str(on).v, howmany);
+    var tmp = [];
+    for (var i = 0; i < res.length; ++i)
+    {
+        tmp.push(new $(res[i]));
+    }
+    return new Sk.builtin.list(tmp);
+};
+
+Sk.builtin.str.prototype.tp$dict = {
+    join: Sk.builtin.str.string_join_,
+    split: Sk.builtin.str.string_split_,
+    rsplit: Sk.builtin.str.string_rsplit_,
+};
 
 var alphanum = {};
 var i;

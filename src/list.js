@@ -23,7 +23,6 @@ Sk.builtin.list = function(L)
 
     // todo; this should be elsewhere
     this.__dict__ = new Sk.builtin.dict([]);
-    // todo; add methods
 
     this.__class__ = this.nativeclass$ = Sk.builtin.list;
     return this;
@@ -53,6 +52,16 @@ Sk.builtin.list.list_iter_ = function()
     return ret;
 };
 
+Sk.builtin.list.list_concat_ = function(other)
+{
+    var ret = this.v.slice();
+    for (var i = 0; i < other.v.length; ++i)
+    {
+        ret.push(other.v[i]);
+    }
+    return new Sk.builtin.list(ret);
+}
+
 // js types for some args. non-$ always use all python types.
 Sk.builtin.list.prototype.tp$name = "list";
 Sk.builtin.list.prototype.tp$repr = function(v)
@@ -62,7 +71,6 @@ Sk.builtin.list.prototype.tp$repr = function(v)
         ret.push(object_Repr(i).v);
     return string_FromString("[" + ret.join(", ") + "]");
 };
-
 Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
 /*
 list.prototype.tp$richcompare = list_richcompare;
@@ -70,7 +78,9 @@ list.prototype.tp$richcompare = list_richcompare;
 Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.list_iter_;
 /*
 list.prototype.sq$length = list_length;
-list.prototype.sq$concat = list_concat;
+*/
+Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.list_concat_;
+/*
 list.prototype.sq$repeat = list_repeat;
 list.prototype.sq$item = list_item;
 list.prototype.sq$slice = list_slice;
@@ -102,6 +112,13 @@ Sk.builtin.list.list_subscript_ = function(index)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
+Sk.builtin.list.list_extend_ = function(L)
+{
+    for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        this.v.push(i);
+    return null;
+};
+
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.list_subscript_;
 
 // tp$dict is the dict for the type object's attributes. this includes methods
@@ -115,7 +132,7 @@ Sk.builtin.list.prototype.tp$dict = {
     append: listappend,
     insert: listinsert,
     */
-    extend: Sk.builtin.list.extend_,
+    extend: Sk.builtin.list.list_extend_,
             /*
     pop: listpop,
     remove: listremove,
@@ -137,13 +154,6 @@ $.append = function(self, item)
 };
 
 $.count = function() { throw "todo; list.count"; };
-
-$.extend = function(self, L)
-{
-    for (var it = L.__iter__(), i = it.next(); i !== undefined; i = it.next())
-        self.v.push(i);
-    return null;
-};
 
 $.index = function(self, item)
 {

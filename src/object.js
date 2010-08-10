@@ -15,24 +15,24 @@ Sk.builtin.object.repr_ = function(v)
         return v.tp$repr();
 };
 
-Sk.builtin.object.GenericGetAttr = function(obj, name)
+Sk.builtin.object.GenericGetAttr = function(name)
 {
     goog.asserts.assert(name instanceof Sk.builtin.str);
 
     // todo; data descriptors. we only do non-data descriptors which is what's needed for methods
 
-    goog.asserts.assert(obj.__dict__ !== undefined);
-    var res = dict_GetItem.call(obj.__dict__, name);
+    goog.asserts.assert(this.__dict__ !== undefined);
+    var res = this.__dict__.mp$subscript(name);
     if (res !== undefined)
         return res;
 
     // otherwise, look in the type for a descr
     // todo; follow mro
     // todo; where does the binding happen (in Sk.getattr before)
-    var descr = obj.tp$dict[name.v];
-    if (descr !== undefined) return descr.bind(obj);
+    var descr = this.tp$dict[name.v];
+    if (descr !== undefined) return descr.bind(this);
 
-    throw new Sk.builtin.AttributeError("'" + obj.tp$name + "' object has no attribute '" + name.v + "'");
+    throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
 };
 
 (function() {
