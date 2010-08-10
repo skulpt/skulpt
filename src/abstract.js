@@ -38,17 +38,6 @@ Sk.abstract.boNameToSlotFunc_ = function(obj, name)
     }
 };
 
-Sk.abstract.sequenceRepeat_ = function(f, seq, n)
-{
-    var count = n.nb$index();
-    if (count === undefined)
-    {
-        throw new TypeError("can't multiply sequence by non-int of type '" + n.tp$name + "'");
-    }
-    return f.call(seq, n);
-};
-
-
 Sk.abstract.binary_op_ = function(v, w, opname)
 {
     var ret;
@@ -68,9 +57,9 @@ Sk.abstract.binary_op_ = function(v, w, opname)
     if (opname === "Add" && v.sq$concat)
         return v.sq$concat(w);
     else if (opname === "Mult" && v.sq$repeat)
-        return Sk.abstract.sequenceRepeat_(v.sq$repeat, v, w);
+        return Sk.abstract.sequenceRepeat(v.sq$repeat, v, w);
     else if (opname === "Mult" && w.sq$repeat)
-        return Sk.abstract.sequenceRepeat_(w.sq$repeat, w, v);
+        return Sk.abstract.sequenceRepeat(w.sq$repeat, w, v);
 
     Sk.abstract.binop_type_error(v, w, opname);
 };
@@ -175,27 +164,18 @@ Sk.abstract.numberUnaryOp = function(v, op)
 //
 //
 //
-// Misc
-//
-//
-//
-//
-
-Sk.abstract.asIndex = function(o)
-{
-    if (typeof o === "number") return o;
-    goog.asserts.fail("todo;");
-};
-
-//
-//
-//
-//
 // Sequence
 //
 //
 //
 //
+
+Sk.abstract.fixSeqIndex_ = function(seq, i)
+{
+    if (i < 0 && seq.sq$length)
+        i += seq.sq$length();
+    return i;
+};
 
 Sk.abstract.sequenceContains = function(seq, ob)
 {
@@ -211,21 +191,62 @@ Sk.abstract.sequenceContains = function(seq, ob)
     return false;
 };
 
+Sk.abstract.sequenceSetItem = function(seq, i, x)
+{
+    goog.asserts.fail();
+};
+
 Sk.abstract.sequenceDelItem = function(seq, i)
 {
     if (seq.sq$ass_item)
     {
-        if (i < 0)
-        {
-            if (seq.sq$length)
-            {
-                i += seq.sq$length();
-            }
-        }
+        i = Sk.abstract.fixSeqIndex_(seq, i);
         return seq.sq$ass_item(i, null);
     }
     throw new TypeError("'" + seq.tp$name + "' object does not support item deletion");
 };
+
+Sk.abstract.sequenceRepeat = function(f, seq, n)
+{
+    var count = n.nb$index();
+    if (count === undefined)
+    {
+        throw new TypeError("can't multiply sequence by non-int of type '" + n.tp$name + "'");
+    }
+    return f.call(seq, n);
+};
+
+Sk.abstract.sequenceGetSlice = function(seq, i1, i2)
+{
+    if (seq.sq$slice)
+    {
+        i1 = Sk.abstract.fixSeqIndex_(seq, i1);
+        i2 = Sk.abstract.fixSeqIndex_(seq, i2);
+        return seq.sq$slice(i1, i2);
+    }
+    else if (seq.mp$subscript)
+    {
+        return seq.mp$subscript(new Sk.builtin.slice(i1, i2));
+    }
+    throw new TypeError("'" + seq.tp$name + "' object is unsliceable");
+};
+
+Sk.abstract.sequenceDelSlice = function(seq, i1, i2)
+{
+    if (seq.sq$ass_slice)
+    {
+        i1 = Sk.abstract.fixSeqIndex_(seq, i1);
+        i2 = Sk.abstract.fixSeqIndex_(seq, i2);
+        return seq.sq$ass_slice(i1, i2, null);
+    }
+    throw new TypeError("'" + seq.tp$name + "' doesn't support slice deletion");
+};
+
+Sk.abstract.sequenceSetSlice = function(seq, ilow, ihigh, x)
+{
+    goog.asserts.fail();
+};
+
 
 
 //
@@ -244,7 +265,7 @@ Sk.abstract.objectDelItem = function(o, key)
         return o.mp$ass_subscript(key, null);
     if (o.sq$ass_item)
     {
-        var keyValue = Sk.abstract.asIndex(key);
+        var keyValue = Sk.misceval.asIndex(key);
         if (keyValue === undefined)
             throw new TypeError("sequence index must be integer, not '" + key.tp$name + "'");
         return Sk.abstract.sequenceDelItem(o, keyValue);

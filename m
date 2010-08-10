@@ -17,6 +17,7 @@ Files = [
         'src/errors.js',
         'src/type.js',
         'src/object.js',
+        'src/misceval.js',
         'src/abstract.js',
         'src/list.js',
         'src/function.js',

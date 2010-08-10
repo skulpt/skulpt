@@ -273,7 +273,8 @@ Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
             out(obj, ".__setitem__(new Sk.builtin.slice(", lower, ",", upper, "),", dataToStore, ");");
             break;
         case Del:
-            out(obj, ".__delitem__(new Sk.builtin.slice(", lower, ",", upper, ");");
+            out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",null);");
+            break;
         case Param:
         default:
             goog.asserts.fail("invalid simple slice");
