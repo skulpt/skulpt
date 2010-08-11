@@ -1,15 +1,14 @@
-(function() {
-
 var interned = {};
+
 /**
  * @constructor
- * @param {string} x
+ * @param {*} x
  */
-var $ = Sk.builtin.str = function str(x)
+Sk.builtin.str = function str(x)
 {
     if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
-    if (x instanceof $) return x;
-    if (!(this instanceof $)) return new $(x);
+    if (x instanceof Sk.builtin.str) return x;
+    if (!(this instanceof Sk.builtin.str)) return new Sk.builtin.str(x);
 
     // convert to js string
     var ret;
@@ -23,7 +22,7 @@ var $ = Sk.builtin.str = function str(x)
     else if (x.__str__ !== undefined)
     {
         ret = x.__str__();
-        if (!(ret instanceof $)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
+        if (!(ret instanceof Sk.builtin.str)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
     }
     else
@@ -35,7 +34,7 @@ var $ = Sk.builtin.str = function str(x)
 
     this.__dict__ = new Sk.builtin.dict([]);
 
-    this.__class__ = this.nativeclass$ = $;
+    this.__class__ = this.nativeclass$ = Sk.builtin.str;
     this.v = ret;
     interned[ret] = this;
     return this;
@@ -83,10 +82,43 @@ Sk.builtin.str.prototype.tp$iter = function()
         {
             // todo; StopIteration
             if (ret.$index >= ret.$obj.v.length) return undefined;
-           return new $(ret.$obj.v.substr(ret.$index++, 1));
+           return new Sk.builtin.str(ret.$obj.v.substr(ret.$index++, 1));
         }
     };
     return ret;
+};
+Sk.builtin.str.prototype.tp$repr = function()
+{
+    // single is preferred
+    var quote = "'";
+    if (this.v.indexOf("'") !== -1 && this.v.indexOf('"') === -1)
+    {
+        quote = '"';
+    }
+    var len = this.v.length;
+    var ret = quote;
+    for (var i = 0; i < len; ++i)
+    {
+        var c = this.v.charAt(i);
+        if (c === quote || c === '\\')
+            ret += '\\' + c;
+        else if (c === '\t')
+            ret += '\\t';
+        else if (c === '\n')
+            ret += '\\n';
+        else if (c === '\r')
+            ret += '\\r';
+        else if (c < ' ' || c >= 0x7f)
+        {
+            var ashex = c.charCodeAt(0).toString(16);
+            if (ashex.length < 2) ashex = "0" + ashex;
+            ret += "\\x" + ashex;
+        }
+        else
+            ret += c;
+    }
+    ret += quote;
+    return new Sk.builtin.str(ret);
 };
 
 Sk.builtin.str.string_join_ = function(seq)
@@ -94,7 +126,7 @@ Sk.builtin.str.string_join_ = function(seq)
     var arrOfStrs = [];
     for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
     {
-        if (i.constructor !== $) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
+        if (i.constructor !== Sk.builtin.str) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
         arrOfStrs.push(i.v);
     }
     return new Sk.builtin.str(arrOfStrs.join(this.v));
@@ -115,6 +147,8 @@ Sk.builtin.str.prototype.tp$dict = {
     join: Sk.builtin.str.string_join_,
     split: Sk.builtin.str.string_split_
 };
+
+/*
 
 var alphanum = {};
 var i;
@@ -207,7 +241,7 @@ $.prototype.__mod__ = function(rhs)
     var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
         var i;
-        if (mappingKey === undefined || mappingKey === "" /* ff passes '' not undef for some reason */) i = index++;
+        if (mappingKey === undefined || mappingKey === "" ) i = index++; // ff passes '' not undef for some reason
 
         var zeroPad = false;
         var leftAdjust = false;
@@ -357,17 +391,15 @@ $.prototype.__mod__ = function(rhs)
                 if (precision) return r.v.substr(0, precision);
                 return r.v;
             case 's':
-                /*
-                print("value",value);
-                print("replace:");
-                print("  index", index);
-                print("  substring", substring);
-                print("  mappingKey", mappingKey);
-                print("  conversionFlags", conversionFlags);
-                print("  fieldWidth", fieldWidth);
-                print("  precision", precision);
-                print("  conversionType", conversionType);
-                */
+                //print("value",value);
+                //print("replace:");
+                //print("  index", index);
+                //print("  substring", substring);
+                //print("  mappingKey", mappingKey);
+                //print("  conversionFlags", conversionFlags);
+                //print("  fieldWidth", fieldWidth);
+                //print("  precision", precision);
+                //print("  conversionType", conversionType);
                 r = Sk.builtin.str(value);
                 if (precision) return r.v.substr(0, precision);
                 return r.v;
@@ -377,40 +409,6 @@ $.prototype.__mod__ = function(rhs)
     };
     
     var ret = this.v.replace(regex, replFunc);
-    return new $(ret);
-};
-
-$.prototype.__repr__ = function()
-{
-    // single is preferred
-    var quote = "'";
-    if (this.v.indexOf("'") !== -1 && this.v.indexOf('"') === -1)
-    {
-        quote = '"';
-    }
-    var len = this.v.length;
-    var ret = quote;
-    for (var i = 0; i < len; ++i)
-    {
-        var c = this.v.charAt(i);
-        if (c === quote || c === '\\')
-            ret += '\\' + c;
-        else if (c === '\t')
-            ret += '\\t';
-        else if (c === '\n')
-            ret += '\\n';
-        else if (c === '\r')
-            ret += '\\r';
-        else if (c < ' ' || c >= 0x7f)
-        {
-            var ashex = c.charCodeAt(0).toString(16);
-            if (ashex.length < 2) ashex = "0" + ashex;
-            ret += "\\x" + ashex;
-        }
-        else
-            ret += c;
-    }
-    ret += quote;
     return new $(ret);
 };
 $.__repr__ = function()
@@ -514,5 +512,4 @@ $.title = function() { throw "todo; title"; };
 $.translate = function() { throw "todo; translate"; };
 $.upper = function(self) { return new $(self.v.toUpperCase()); };
 $.zfill = function() { throw "todo; zfill"; };
-
-}());
+*/

@@ -338,7 +338,7 @@ Sk.parseTreeDump = function parseTreeDump(n, indent)
     }
     else
     {
-        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value).__repr__().v + "\n";
+        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value).tp$repr().v + "\n";
     }
     return ret;
 };

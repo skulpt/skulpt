@@ -325,7 +325,7 @@ SymbolTable.prototype.newTmpname = function()
 
 SymbolTable.prototype.addDef = function(name, flag)
 {
-    var mangled = mangleName(this.curClass, name).__str__();
+    var mangled = mangleName(this.curClass, name).v;
     var val = this.cur.symFlags[mangled];
     if (val !== undefined)
     {
@@ -383,7 +383,7 @@ SymbolTable.prototype.visitStmt = function(s)
             this.addDef(s.name, DEF_LOCAL);
             if (s.args.defaults) this.SEQExpr(s.args.defaults);
             if (s.decorator_list) this.SEQExpr(s.decorator_list);
-            this.enterBlock(s.name.__str__(), FunctionBlock, s, s.lineno);
+            this.enterBlock(s.name.v, FunctionBlock, s, s.lineno);
             this.visitArguments(s.args);
             this.SEQStmt(s.body);
             this.exitBlock();
@@ -392,7 +392,7 @@ SymbolTable.prototype.visitStmt = function(s)
             this.addDef(s.name, DEF_LOCAL);
             this.SEQExpr(s.bases);
             if (s.decorator_list) this.SEQExpr(s.decorator_list);
-            this.enterBlock(s.name.__str__(), ClassBlock, s, s.lineno);
+            this.enterBlock(s.name.v, ClassBlock, s, s.lineno);
             var tmp = this.curClass;
             this.curClass = s.name;
             this.SEQStmt(s.body);
@@ -482,7 +482,7 @@ SymbolTable.prototype.visitStmt = function(s)
             var nameslen = s.names.length;
             for (var i = 0; i < nameslen; ++i)
             {
-                var name = mangleName(this.curClass, s.names[i]).__str__();
+                var name = mangleName(this.curClass, s.names[i]).v;
                 var cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE))
                 {
@@ -621,7 +621,7 @@ SymbolTable.prototype.visitAlias = function(names)
     for (var i = 0; i < names.length; ++i)
     {
         var a = names[i];
-        var name = a.asname === null ? a.name.__str__() : a.asname;
+        var name = a.asname === null ? a.name.v : a.asname;
         var storename = name;
         var dot = name.indexOf('.');
         if (dot !== -1)
@@ -844,7 +844,7 @@ Sk.dumpSymtab = function(st)
         var ret = [];
         for (var i = 0; i < l.length; ++i)
         {
-            ret.push(new Sk.builtin.str(l[i]).__repr__().v);
+            ret.push(new Sk.builtin.str(l[i]).tp$repr().v);
         }
         return '[' + ret.join(', ') + ']';
     };

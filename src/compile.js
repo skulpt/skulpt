@@ -103,7 +103,7 @@ Compiler.prototype.gensym = function(hint)
 
 function mangleName(priv, ident)
 {
-    var name = ident.__str__();
+    var name = ident.v;
     if (priv === null || name === null || name.charAt(0) !== '_' || name.charAt(1) !== '_')
         return ident;
     // don't mangle __id__
@@ -401,7 +401,7 @@ Compiler.prototype.vexpr = function(e, data)
         case Num:
             return e.n;
         case Str:
-            return this._gr('str', "new Sk.builtin.str(", e.s.__repr__().v, ")");
+            return this._gr('str', "new Sk.builtin.str(", e.s.tp$repr().v, ")");
         case Attribute:
             if (e.ctx !== AugStore)
                 var val = this.vexpr(e.value);
@@ -409,7 +409,7 @@ Compiler.prototype.vexpr = function(e, data)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.__repr__().v, "))");
+                    return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.tp$repr().v, "))");
                 case AugStore:
                 case Store:
                     goog.asserts.fail("todo;");
@@ -804,14 +804,14 @@ var D_CELLVARS = 2;
  */
 Compiler.prototype.nameop = function(name, ctx, dataToStore)
 {
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.__str__() === "__debug__")
+    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__")
         this.error("can not assign to __debug__");
-    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.__str__() === "None")
+    if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None")
         this.error("can not assign to None");
 
-    if (name.__str__() === "None") return "null";
+    if (name.v === "None") return "null";
 
-    var mangled = mangleName(this.u.private_, name).__str__();
+    var mangled = mangleName(this.u.private_, name).v;
     var op = 0;
     var optype = OP_NAME;
     var scope = this.u.ste.getScope(mangled);

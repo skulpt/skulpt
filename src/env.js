@@ -5,25 +5,25 @@
  */
 
 var Sk = Sk || {};
-goog.exportSymbol('Sk', Sk);
+//goog.exportSymbol('Sk', Sk);
 
 /**
  * Replacable output redirection (called from print, etc).
  */
 Sk.output = function(x) {};
-goog.exportProperty(Sk, "Sk.output", Sk.output);
+goog.exportSymbol("Sk.output", Sk.output);
 
 /**
  * Replacable function to load modules with (called via import, etc.)
  */
-Sk.load = function(x) { throw "Sk.load has not been implemented"; },
-goog.exportProperty(Sk, "Sk.load", Sk.load);
+Sk.load = function(x) { throw "Sk.load has not been implemented"; };
+goog.exportSymbol("Sk.load", Sk.load);
 
 /**
  * Setable to emulate arguments to the script. Should be array of JS strings.
  */
 Sk.sysargv = [];
-goog.exportProperty(Sk, "Sk.sysargv", Sk.sysargv);
+goog.exportSymbol("Sk.sysargv", Sk.sysargv);
 
 
 (function() { var $ = Sk;
@@ -547,7 +547,5 @@ else if (goog.global.print !== undefined) $.output = goog.global.print;
 
 // todo; this should be an async api
 if (goog.global.read !== undefined) $.load = goog.global.read;
-
-return $;
 
 }());

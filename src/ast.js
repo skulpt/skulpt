@@ -1514,7 +1514,7 @@ function parsestrplus(c, n)
     var ret = new Sk.builtin.str("");
     for (var i = 0; i < NCH(n); ++i)
     {
-        ret = ret.__add__(parsestr(c, CHILD(n, i).value));
+        ret = ret.sq$concat(parsestr(c, CHILD(n, i).value));
     }
     return ret;
 }
@@ -1975,7 +1975,7 @@ Sk.astDump = function(node)
             if (node === true) ret = "True";
             else if (node === false) ret = "False";
             else if (node instanceof Sk.builtin.lng) ret = node.__str__().v;
-            else if (node instanceof Sk.builtin.str) ret = node.__repr__().v;
+            else if (node instanceof Sk.builtin.str) ret = node.tp$repr().v;
             else ret = "" + node;
             return indent + ret;
         }

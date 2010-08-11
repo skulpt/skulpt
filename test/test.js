@@ -7,7 +7,7 @@ function dump_tokens(fn, input)
 {
     var uneval = function(t)
     {
-        return new Sk.builtin.str(t).__repr__().v;
+        return new Sk.builtin.str(t).tp$repr().v;
     };
     var ret = '',
         lines = input.split("\n"),
@@ -254,8 +254,8 @@ function testInteractive(name)
         {
             try {
                 var ret = eval(js);
-                if (ret && ret.__repr__ !== undefined)
-                    got += ret.__repr__().v + "\n";
+                if (ret && ret.tp$repr !== undefined)
+                    got += ret.tp$repr().v + "\n";
             }
             catch (e) { got += "EXCEPTION: " + e.name + "\n" }
             //print("made new context");
@@ -285,7 +285,7 @@ function main()
 
     // these use internal symbols so they can't run when fully
     // compiled/minimized
-    if (0)
+    //if (0)
     {
         for (i = 0; i <= 100; i += 1)
         {
