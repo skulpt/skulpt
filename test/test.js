@@ -285,7 +285,7 @@ function main()
 
     // these use internal symbols so they can't run when fully
     // compiled/minimized
-    if (0)
+    //if (0)
     {
         for (i = 0; i <= 100; i += 1)
         {
