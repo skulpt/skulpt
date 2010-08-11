@@ -379,7 +379,7 @@ $.sub$ = function(a, b)
 		borrow >>= $.SHIFT$;
 		borrow &= 1; // Keep only one sign bit
 	}
-    if (borrow !== 0) throw "assert";
+    goog.asserts.assert(borrow === 0);
 	if (sign < 0)
 		z.size$ = -z.size$;
 	return $.normalize$(z);
@@ -411,7 +411,7 @@ $.mul$ = function(a, b)
             //print("stored:",z.digit$[i]);
             carry >>= $.SHIFT$;
             //print("carry shifted to:",carry);
-            if (carry > $.MASK$) throw "assert";
+            goog.asserts.assert(carry <= $.MASK$);
         }
         if (carry)
             z.digit$[k++] += carry & $.MASK$;
