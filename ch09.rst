@@ -87,7 +87,7 @@ Any integer expression can be used as an index:
 .. sourcecode:: python
 
     >>> numbers[9-8]
-    5
+    123
     >>> numbers[1.0]
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
@@ -110,7 +110,7 @@ the list:
 
     
     >>> numbers[-1]
-    5
+    123
     >>> numbers[-2]
     17
     >>> numbers[-3]
@@ -245,6 +245,8 @@ The slice operations we saw with strings also work on lists:
     ['a', 'b', 'c', 'd', 'e', 'f']
 
 
+.. index:: ``range`` function
+
 The ``range`` function
 ----------------------
 
@@ -291,6 +293,8 @@ or the result will be an empty list.
     >>> range(10, 20, -5)
     []
 
+
+.. index:: mutable, item assignment, immutable
 
 Lists are mutable
 -----------------
@@ -395,6 +399,8 @@ As usual, slices select all the elements up to, but not including, the second
 index.
 
 
+.. index:: ``is`` operator, objects and values
+
 Objects and values
 ------------------
 
@@ -406,49 +412,54 @@ If we execute these assignment statements,
     b = "banana"
 
 we know that ``a`` and ``b`` will refer to a string with the letters
-``"banana"``. But we can't tell whether they point to the *same* string.
+``"banana"``. But we don't know yet whether they point to the *same* string.
 
 There are two possible states:
 
-.. image:: illustrations/list1.png
-   :alt: List illustration 
+.. image:: illustrations/mult_references1.png
+   :alt: Two state diagrams for multiple references with strings
 
 In one case, ``a`` and ``b`` refer to two different things that have the same
 value. In the second case, they refer to the same thing. These things have
-names---they are called **objects**. An object is something a variable can
+names --- they are called **objects**. An object is something a variable can
 refer to.
 
-Every object has a unique **identifier**, which we can obtain with the ``id``
-function. By printing the identifier of ``a`` and ``b``, we can tell whether
-they refer to the same object.
+We can test whether two names have the same value using ``==``: 
 
 .. sourcecode:: python
-    
-    >>> id(a)
-    135044008
-    >>> id(b)
-    135044008
 
-In fact, we get the same identifier twice, which means that Python
-only created one string, and both ``a`` and ``b`` refer to it. Your actual
-id value will probably be different.
+    >>> a == b
+    True
 
-Interestingly, lists behave differently. When we create two lists, we
-get two objects:
+We can test whether two names refer to the same object using the *is*
+operator: 
+
+.. sourcecode:: python
+
+    >>> a is b
+    True
+
+This tells us that both ``a`` and ``b`` refer to the same object, and that it
+is the second of the two state diagrams that describes the relationship. 
+
+Since strings are *immutable*, Python optimizes resources by making two names
+that refer to the same string value refer to the same object.
+
+This is not the case with lists:
 
 .. sourcecode:: python
     
     >>> a = [1, 2, 3]
     >>> b = [1, 2, 3]
-    >>> id(a)
-    135045528
-    >>> id(b)
-    135041704
+    >>> a == b
+    True
+    >>> a is b
+    False
 
-So the state diagram looks like this:
+The state diagram here looks like this:
 
-.. image:: illustrations/list2.png
-   :alt: List illustration 2 
+.. image:: illustrations/mult_references2.png
+   :alt: State diagram for equal different lists 
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
 
@@ -463,13 +474,13 @@ variables refer to the same object:
     
     >>> a = [1, 2, 3]
     >>> b = a
-    >>> id(a) == id(b)
+    >>> a is b
     True
 
 In this case, the state diagram looks like this:
 
-.. image:: illustrations/list3.png
-   :alt: List illustration 3 
+.. image:: illustrations/mult_references3.png
+   :alt: State diagram for multiple references (aliases) to a list
 
 Because the same list has two different names, ``a`` and ``b``, we say that it
 is **aliased**. Changes made with one alias affect the other:
@@ -514,6 +525,8 @@ Now we are free to make changes to ``b`` without worrying about ``a``:
     >>> print a
     [1, 2, 3]
 
+
+.. index:: ``for`` loop, enumerate
 
 Lists and ``for`` loops
 -----------------------
@@ -633,8 +646,8 @@ this:
 The parameter ``a_list`` and the variable ``things`` are aliases for the
 same object. The state diagram looks like this:
 
-.. image:: illustrations/stack5.png
-       :alt: Stack illustration 5 
+.. image:: illustrations/mult_references4.png
+   :alt: State diagram for multiple references to a list as a parameter
 
 Since the list object is shared by two frames, we drew it between them.
 
@@ -762,6 +775,8 @@ Although this way of representing matrices is common, it is not the only
 possibility. A small variation is to use a list of columns instead of a list of
 rows. Later we will see a more radical alternative using a dictionary.
 
+
+.. index:: TDD, Test-driven development
 
 Test-driven development (TDD)
 -----------------------------
@@ -932,6 +947,8 @@ Using TDD has several benefits to our software development process.  It:
 * assures that we have a well developed automated test suite for our software,
   facilitating later additions and improvements.
 
+
+.. index:: strings and lists, ``split``, ``join``
 
 Strings and lists
 -----------------
@@ -1175,9 +1192,9 @@ Exercises
     
        this = ['I', 'am', 'not', 'a', 'crook']
        that = ['I', 'am', 'not', 'a', 'crook']
-       print "Test 1: %s" % (id(this) == id(that))
+       print "Test 1: %s" % (this is that)
        that = this
-       print "Test 2: %s" % (id(this) == id(that))
+       print "Test 2: %s" % (this is that)
 
    Provide a *detailed* explaination of the results.
 #. Open a file named ``ch09e06.py`` and use the same procedure as in exercise 2 

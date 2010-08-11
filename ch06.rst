@@ -36,7 +36,7 @@ which is why both outputs appear on the same line.
 
 Here is what **multiple assignment** looks like in a state diagram:
 
-.. image:: illustrations/mult_assign.svg
+.. image:: illustrations/mult_assign.png
    :alt: Multiple assignment 
 
 With multiple assignment it is especially important to distinguish between an
@@ -542,7 +542,7 @@ The stack diagram for this program shows that the two variables named ``i`` are
 not the same variable. They can refer to different values, and changing one
 does not affect the other.
 
-.. image:: illustrations/stack2.svg
+.. image:: illustrations/stack2.png
    :alt: Stack 2 diagram 
 
 The value of ``i`` in ``print_mult_table`` goes from 1 to 6. In the diagram it
