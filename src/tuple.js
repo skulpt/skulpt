@@ -1,18 +1,16 @@
-(function() {
-
 /**
  * @constructor
- * @param {Array.<Object>} L
+ * @param {Array.<Object>|Object} L
  */
-var $ = Sk.builtin.tuple = function(L)
+Sk.builtin.tuple = function(L)
 {
-    if (L instanceof $) return;
-    if (!(this instanceof $)) return new $(L);
+    if (L instanceof Sk.builtin.tuple) return;
+    if (!(this instanceof Sk.builtin.tuple)) return new Sk.builtin.tuple(L);
     if (Object.prototype.toString.apply(L) === '[object Array]')
         this.v = L;
     else
         this.v = L.v;
-    this.__class__ = this.nativeclass$ = $;
+    this.__class__ = this.nativeclass$ = Sk.builtin.tuple;
     return this;
 };
 
@@ -31,7 +29,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function(index)
                 {
                     ret.push(wrt.v[i]);
                 });
-        return new $(ret);
+        return new Sk.builtin.tuple(ret);
     }
     else
         throw new TypeError("tuple indices must be integers, not " + typeof index);
@@ -147,5 +145,3 @@ $.prototype.__iter__ = function()
     return ret;
 };
 */
-
-}());

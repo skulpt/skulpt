@@ -1,12 +1,10 @@
-(function() {
-
 /**
  * @constructor
  * @param {Array.<Object>} L
  */
-var $ = Sk.builtin.dict = function dict(L)
+Sk.builtin.dict = function dict(L)
 {
-    if (!(this instanceof $)) return new $(L);
+    if (!(this instanceof Sk.builtin.dict)) return new Sk.builtin.dict(L);
 
     this.size = 0;
 
@@ -15,7 +13,7 @@ var $ = Sk.builtin.dict = function dict(L)
         this.__setitem__(L[i], L[i+1]);
     }
 
-    this.__class__ = this.nativeclass$ = $;
+    this.__class__ = this.nativeclass$ = Sk.builtin.dict;
 
     return this;
 };
@@ -85,7 +83,29 @@ Sk.builtin.dict.prototype.tp$iter = function()
     return ret;
 };
 
+// TODO XXX this should go
+Sk.builtin.dict.prototype.__setitem__ = function(key, value)
+{
+    //print("__setitem__", key.v, value);
+    var k = kf(key);
 
+    if (this.hasOwnProperty(k))
+    {
+        this[k].rhs = value;
+    }
+    else
+    {
+        var entry = { lhs : key, rhs : value };
+        this[k] = entry;
+
+        this.size += 1;
+    }
+
+    return this;
+};
+
+
+/*
 
 $.prototype.clear = function() { throw "todo; dict.clear"; };
 $.prototype.copy = function() { throw "todo; dict.copy"; };
@@ -112,26 +132,6 @@ $.prototype.__getitem__ = function(key)
 {
     var entry = this[kf(key)];
     return typeof entry === 'undefined' ? undefined : entry.rhs;
-};
-
-$.prototype.__setitem__ = function(key, value)
-{
-    //print("__setitem__", key.v, value);
-    var k = kf(key);
-
-    if (this.hasOwnProperty(k))
-    {
-        this[k].rhs = value;
-    }
-    else
-    {
-        var entry = { lhs : key, rhs : value };
-        this[k] = entry;
-
-        this.size += 1;
-    }
-
-    return this;
 };
 
 $.prototype.__delitem__ = function(key)
@@ -197,5 +197,4 @@ $.prototype.__iter__ = function()
     };
     return ret;
 };
-
-}());
+*/

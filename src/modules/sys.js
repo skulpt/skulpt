@@ -1,5 +1,4 @@
-(function() {
-
+ /*
 Sk.stdmodules.sys = function(self)
 {
     self.__setattr__('modules', Sk.modules);
@@ -11,5 +10,4 @@ Sk.stdmodules.sys = function(self)
 
     self.__setattr__('path', Sk.syspath);
 };
-
-}());
+*/

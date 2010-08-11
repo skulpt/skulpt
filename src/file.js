@@ -1,23 +1,21 @@
-(function() {
-
 /**
  * @constructor
- * @param {string} name
- * @param {string} mode
+ * @param {Sk.builtin.str} name
+ * @param {Sk.builtin.str} mode
  * @param {Object} buffering
  */
-var $ = Sk.builtin.file = function(name, mode, buffering)
+Sk.builtin.file = function(name, mode, buffering)
 {
     this.mode = mode;
     this.name = name;
     this.closed = false;
     this.data$ = Sk.load(name.v);
     this.pos$ = 0;
-    this.__class__ = this.nativeclass$ = $;
+    this.__class__ = this.nativeclass$ = Sk.builtin.file;
     return this;
 };
-$.prototype.__class__ = new Sk.builtin.type('file', [Sk.types.object], {});
-$.prototype.__repr__ = function()
+Sk.builtin.file.prototype.__class__ = new Sk.builtin.type('file', [Sk.types.object], {});
+Sk.builtin.file.prototype.__repr__ = function()
 {
     return new Sk.builtin.str("<"
         + (this.closed ? "closed" : "open")
@@ -28,17 +26,17 @@ $.prototype.__repr__ = function()
         + "'>");
 };
 
-$.close = function(self)
+Sk.builtin.file.close = function(self)
 {
     self.closed = true;
 };
 
-$.flush = function(self) {};
+Sk.builtin.file.flush = function(self) {};
 
-$.fileno = function(self) { return 10; }; // > 0, not 1/2/3
-$.isatty = function(self) { return false; };
-$.next = function(self) { throw "todo; file.next"; };
-$.read = function(self, size)
+Sk.builtin.file.fileno = function(self) { return 10; }; // > 0, not 1/2/3
+Sk.builtin.file.isatty = function(self) { return false; };
+Sk.builtin.file.next = function(self) { throw "todo; file.next"; };
+Sk.builtin.file.read = function(self, size)
 {
     if (self.closed) throw new Sk.builtin.ValueError("I/O operation on closed file");
     var len = self.data$.length;
@@ -49,34 +47,32 @@ $.read = function(self, size)
     return ret;
 };
 
-$.readline = function(self, size)
+Sk.builtin.file.readline = function(self, size)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
-$.readlines = function(self, sizehint)
+Sk.builtin.file.readlines = function(self, sizehint)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
-$.seek = function(self, offset, whence)
+Sk.builtin.file.seek = function(self, offset, whence)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
-$.tell = function(self)
+Sk.builtin.file.tell = function(self)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
-$.truncate = function(self, size)
+Sk.builtin.file.truncate = function(self, size)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
-$.write = function(self, str)
+Sk.builtin.file.write = function(self, str)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
-$.writelines = function(self, sequence)
+Sk.builtin.file.writelines = function(self, sequence)
 {
-    throw "todo;";
+    goog.asserts.fail();
 };
 
-
-}());

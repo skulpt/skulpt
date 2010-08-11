@@ -15,15 +15,13 @@
 // it's better not to think about how many processor-level instructions this
 // is causing!
 
-(function() {
-
 /**
  * @constructor
  * @param {number} size number of digits
  */
-var $ = Sk.builtin.lng = function(size) /* long is a reserved word */
+Sk.builtin.lng = function(size) /* long is a reserved word */
 {
-    if (!(this instanceof $)) return new $(size);
+    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(size);
 
     this.digit$ = new Array(Math.abs(size));
     this.size$ = size;
@@ -35,12 +33,12 @@ Sk.builtin.lng.tp$index = function()
     goog.asserts.fail("todo;");
 };
 
-$.SHIFT$ = 15;
-$.BASE$ = 1 << $.SHIFT$;
-$.MASK$ = $.BASE$ - 1;
-$.threshold$ = Math.pow(2, 30);
+Sk.builtin.lng.SHIFT$ = 15;
+Sk.builtin.lng.BASE$ = 1 << Sk.builtin.lng.SHIFT$;
+Sk.builtin.lng.MASK$ = Sk.builtin.lng.BASE$ - 1;
+Sk.builtin.lng.threshold$ = Math.pow(2, 30);
 
-$.fromInt$ = function(ival)
+Sk.builtin.lng.fromInt$ = function(ival)
 {
     var negative = false;
     if (ival < 0)
@@ -54,17 +52,17 @@ $.fromInt$ = function(ival)
     while (t)
     {
         ndigits += 1;
-        t >>= $.SHIFT$;
+        t >>= Sk.builtin.lng.SHIFT$;
     }
 
-    var ret = new $(ndigits);
+    var ret = new Sk.builtin.lng(ndigits);
     if (negative) ret.size$ = -ret.size$;
     t = ival;
     var i = 0;
     while (t)
     {
-        ret.digit$[i] = t & $.MASK$;
-        t >>= $.SHIFT$;
+        ret.digit$[i] = t & Sk.builtin.lng.MASK$;
+        t >>= Sk.builtin.lng.SHIFT$;
         i += 1;
     }
 
@@ -73,21 +71,21 @@ $.fromInt$ = function(ival)
 
 
 // mul by single digit, ignoring sign
-$.mulInt$ = function(a, n)
+Sk.builtin.lng.mulInt$ = function(a, n)
 {
     var size_a = Math.abs(a.size$);
-    var z = new $(size_a + 1);
+    var z = new Sk.builtin.lng(size_a + 1);
     var carry = 0;
     var i;
 
     for (i = 0; i < size_a; ++i)
     {
         carry += a.digit$[i] * n;
-        z.digit$[i] = carry & $.MASK$;
-        carry >>= $.SHIFT$;
+        z.digit$[i] = carry & Sk.builtin.lng.MASK$;
+        carry >>= Sk.builtin.lng.SHIFT$;
     }
     z.digit$[i] = carry;
-    return $.normalize$(z);
+    return Sk.builtin.lng.normalize$(z);
 };
 
 // js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
@@ -125,28 +123,28 @@ Sk.longFromStr = function(s)
         base = 2;
     }
     //print("base:",base, "rest:",s);
-    var ret = $.fromInt$(0);
-    var col = $.fromInt$(1);
+    var ret = Sk.builtin.lng.fromInt$(0);
+    var col = Sk.builtin.lng.fromInt$(1);
     var add;
     for (var i = s.length - 1; i >= 0; --i)
     {
-        add = $.mulInt$(col, parseInt(s.substr(i, 1), 16));
+        add = Sk.builtin.lng.mulInt$(col, parseInt(s.substr(i, 1), 16));
         ret = ret.__add__(add);
-        col = $.mulInt$(col, base);
+        col = Sk.builtin.lng.mulInt$(col, base);
         //print("i", i, "ret", ret.digit$, ret.size$, "col", col.digit$, col.size$, ":",s.substr(i, 1), ":",parseInt(s.substr(i, 1), 10));
     }
     if (neg) ret.size$ = -ret.size$;
     return ret;
 };
 
-$.prototype.clone = function()
+Sk.builtin.lng.prototype.clone = function()
 {
-    var ret = new $(this.size$);
+    var ret = new Sk.builtin.lng(this.size$);
     ret.digit$ = this.digit$.slice(0);
     return ret;
 };
 
-$.prototype.__add__ = function(other)
+Sk.builtin.lng.prototype.__add__ = function(other)
 {
     // todo; upconvert other to long
 
@@ -155,25 +153,25 @@ $.prototype.__add__ = function(other)
     {
         if (other.size$ < 0)
         {
-            z = $.add$(this, other);
+            z = Sk.builtin.lng.add$(this, other);
             z.size$ = -z.size$;
         }
         else
         {
-            z = $.sub$(other, this);
+            z = Sk.builtin.lng.sub$(other, this);
         }
     }
     else
     {
         if (other.size$ < 0)
-            z = $.sub$(this, other);
+            z = Sk.builtin.lng.sub$(this, other);
         else
-            z = $.add$(this, other);
+            z = Sk.builtin.lng.add$(this, other);
     }
     return z;
 };
 
-$.prototype.__sub__ = function(other)
+Sk.builtin.lng.prototype.__sub__ = function(other)
 {
     // todo; upconvert other
 
@@ -181,58 +179,58 @@ $.prototype.__sub__ = function(other)
     if (this.size$ < 0)
     {
         if (other.size$ < 0)
-            z = $.sub$(this, other);
+            z = Sk.builtin.lng.sub$(this, other);
         else
-            z = $.add$(this, other);
+            z = Sk.builtin.lng.add$(this, other);
         z.size$ = -z.size$;
     }
     else
     {
         if (other.size < 0)
-            z = $.add$(this, other);
+            z = Sk.builtin.lng.add$(this, other);
         else
-            z = $.sub$(this, other);
+            z = Sk.builtin.lng.sub$(this, other);
     }
     return z;
 };
 
-$.prototype.__mul__ = function(other)
+Sk.builtin.lng.prototype.__mul__ = function(other)
 {
     // todo; upconvert
-    var z = $.mul$(this, other);
+    var z = Sk.builtin.lng.mul$(this, other);
 	if (this.size$ * other.size$ < 0)
 		z.size$ = -z.size$;
     return z;
 };
 
-$.prototype.__pow__ = function(n)
+Sk.builtin.lng.prototype.__pow__ = function(n)
 {
     // todo; upconvert n
 
-    var ret = $.fromInt$(1);
+    var ret = Sk.builtin.lng.fromInt$(1);
     var x = this.clone();
     while (n.size$ > 0)
     {
         if (n.digit$[0] % 2 !== 0) // odd
         {
-            ret = $.mul$(ret, x);
+            ret = Sk.builtin.lng.mul$(ret, x);
             n.digit$[0] &= ~1;
         }
-        x = $.mul$(x, x);
+        x = Sk.builtin.lng.mul$(x, x);
         n.divremInt$(2);
     }
     if (this.size$ < 0) ret.size$ = -ret.size$;
     return ret;
 };
 
-$.prototype.__neg__ = function()
+Sk.builtin.lng.prototype.__neg__ = function()
 {
     var ret = this.clone();
     ret.size$ = -ret.size$;
     return ret;
 };
 
-$.divrem$ = function(other)
+Sk.builtin.lng.divrem$ = function(other)
 {
     var size_a = Math.abs(this.size$);
     var size_b = Math.abs(other.size$);
@@ -252,12 +250,12 @@ $.divrem$ = function(other)
     {
         z = this.clone();
         var remi = z.divremInt$(other.digit$[0]);
-        rem = new $(1);
+        rem = new Sk.builtin.lng(1);
         rem.digit$[0] = remi;
     }
 	else
     {
-        var tmp = $.divremFull$(this, other);
+        var tmp = Sk.builtin.lng.divremFull$(this, other);
         z = tmp[0];
         rem = tmp[1];
 	}
@@ -269,19 +267,19 @@ $.divrem$ = function(other)
     return [z, rem];
 };
 
-$.divremFull$ = function(v1, w1)
+Sk.builtin.lng.divremFull$ = function(v1, w1)
 {
     throw "todo;";
     /*
     var size_v = Math.abs(v1.size$);
     var size_w = Math.abs(w1.size$);
-    var d = $.BASE$ / (w1.digit[size_w - 1] + 1);
-    var v = $.mulInt$(v1, d);
-    var w = $.mulInt$(w1, d);
+    var d = Sk.builtin.lng.BASE$ / (w1.digit[size_w - 1] + 1);
+    var v = Sk.builtin.lng.mulInt$(v1, d);
+    var w = Sk.builtin.lng.mulInt$(w1, d);
     */
 };
 
-$.normalize$ = function(v)
+Sk.builtin.lng.normalize$ = function(v)
 {
     var j = Math.abs(v.size$);
     var i = j;
@@ -294,7 +292,7 @@ $.normalize$ = function(v)
 };
 
 // Add the absolute values of two longs
-$.add$ = function(a, b)
+Sk.builtin.lng.add$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
@@ -309,26 +307,26 @@ $.add$ = function(a, b)
         tmp = size_a; size_a = size_b; size_b = tmp;
     }
 
-    z = new $(size_a + 1);
+    z = new Sk.builtin.lng(size_a + 1);
 	for (i = 0; i < size_b; ++i)
     {
 		carry += a.digit$[i] + b.digit$[i];
-		z.digit$[i] = carry & $.MASK$;
-		carry >>= $.SHIFT$;
+		z.digit$[i] = carry & Sk.builtin.lng.MASK$;
+		carry >>= Sk.builtin.lng.SHIFT$;
 	}
 	for (; i < size_a; ++i)
     {
 		carry += a.digit$[i];
-		z.digit$[i] = carry & $.MASK$;
-		carry >>= $.SHIFT$;
+		z.digit$[i] = carry & Sk.builtin.lng.MASK$;
+		carry >>= Sk.builtin.lng.SHIFT$;
 	}
 	z.digit$[i] = carry;
-	return $.normalize$(z);
+	return Sk.builtin.lng.normalize$(z);
 };
 
 // Subtract the absolute values of two longs
 
-$.sub$ = function(a, b)
+Sk.builtin.lng.sub$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
@@ -353,7 +351,7 @@ $.sub$ = function(a, b)
         {
             // nothing
         }
-		if (i < 0) return new $(0);
+		if (i < 0) return new Sk.builtin.lng(0);
 		if (a.digit$[i] < b.digit$[i])
         {
 			sign = -1;
@@ -361,39 +359,39 @@ $.sub$ = function(a, b)
 		}
 		size_a = size_b = i + 1;
 	}
-    z = new $(size_a);
+    z = new Sk.builtin.lng(size_a);
 	for (i = 0; i < size_b; ++i)
     {
         // todo; this isn't true in js i don't think
 		// The following assumes unsigned arithmetic
 	    // works modulo 2**N for some N>SHIFT
 		borrow = a.digit$[i] - b.digit$[i] - borrow;
-		z.digit$[i] = borrow & $.MASK$;
-		borrow >>= $.SHIFT$;
+		z.digit$[i] = borrow & Sk.builtin.lng.MASK$;
+		borrow >>= Sk.builtin.lng.SHIFT$;
 		borrow &= 1; // Keep only one sign bit
 	}
 	for (; i < size_a; ++i)
     {
 		borrow = a.digit$[i] - borrow;
-		z.digit$[i] = borrow & $.MASK$;
-		borrow >>= $.SHIFT$;
+		z.digit$[i] = borrow & Sk.builtin.lng.MASK$;
+		borrow >>= Sk.builtin.lng.SHIFT$;
 		borrow &= 1; // Keep only one sign bit
 	}
     goog.asserts.assert(borrow === 0);
 	if (sign < 0)
 		z.size$ = -z.size$;
-	return $.normalize$(z);
+	return Sk.builtin.lng.normalize$(z);
 };
 
 // "grade school" multiplication, ignoring the signs.
 // returns abs of product.
 // todo; karatsuba is O better after a few 100 digits long, but more
 // complicated for now.
-$.mul$ = function(a, b)
+Sk.builtin.lng.mul$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
-    var z = new $(size_a + size_b);
+    var z = new Sk.builtin.lng(size_a + size_b);
     var i;
     for (i = 0; i < size_a + size_b; ++i) z.digit$[i] = 0;
 
@@ -407,52 +405,52 @@ $.mul$ = function(a, b)
         {
             carry += z.digit$[k] + b.digit$[j] * f;
             //print("@",k,j,carry);
-            z.digit$[k++] = carry & $.MASK$;
+            z.digit$[k++] = carry & Sk.builtin.lng.MASK$;
             //print("stored:",z.digit$[i]);
-            carry >>= $.SHIFT$;
+            carry >>= Sk.builtin.lng.SHIFT$;
             //print("carry shifted to:",carry);
-            goog.asserts.assert(carry <= $.MASK$);
+            goog.asserts.assert(carry <= Sk.builtin.lng.MASK$);
         }
         if (carry)
-            z.digit$[k++] += carry & $.MASK$;
+            z.digit$[k++] += carry & Sk.builtin.lng.MASK$;
     }
 
-    $.normalize$(z);
+    Sk.builtin.lng.normalize$(z);
     return z;
 };
 
-$.prototype.__nonzero__ = function()
+Sk.builtin.lng.prototype.__nonzero__ = function()
 {
     return this.size$ !== 0;
 };
 
 // divide this by non-zero digit n (inplace). return remainder.
-$.prototype.divremInt$ = function(n)
+Sk.builtin.lng.prototype.divremInt$ = function(n)
 {
     var rem;
     var cur = Math.abs(this.size$);
     while (--cur >= 0)
     {
         var hi;
-        rem = (rem << $.SHIFT$) + this.digit$[cur];
+        rem = (rem << Sk.builtin.lng.SHIFT$) + this.digit$[cur];
         this.digit$[cur] = hi = Math.floor(rem / n);
         rem -= hi * n;
     }
-    $.normalize$(this);
+    Sk.builtin.lng.normalize$(this);
     return rem;
 };
 
-$.prototype.__repr__ = function()
+Sk.builtin.lng.prototype.__repr__ = function()
 {
-    return new Sk.builtin.str(this.str$() + "L");
+    return new Sk.builtin.str(this.str$(10, true) + "L");
 };
 
-$.prototype.__str__ = function()
+Sk.builtin.lng.prototype.__str__ = function()
 {
-    return new Sk.builtin.str(this.str$());
+    return new Sk.builtin.str(this.str$(10, true));
 };
 
-$.prototype.str$ = function(base, sign)
+Sk.builtin.lng.prototype.str$ = function(base, sign)
 {
     if (this.size$ === 0) return "0";
 
@@ -473,6 +471,4 @@ $.prototype.str$ = function(base, sign)
     return (sign && this.size$ < 0 ? "-" : "") + ret;
 };
 
-$.prototype.__class__ = new Sk.builtin.type('long', [Sk.types.object], {});
-
-}());
+Sk.builtin.lng.prototype.__class__ = new Sk.builtin.type('long', [Sk.types.object], {});

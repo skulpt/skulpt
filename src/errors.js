@@ -1,5 +1,3 @@
-(function() {
-
 function ErrorToString()
 {
     if (typeof this === "object" && this.isSkError === true)
@@ -37,5 +35,3 @@ Sk.builtin.TokenError = function TokenError(msg, file, lnum, col, line) { return
 Sk.builtin.TypeError = function TypeError(msg, file, lnum, col, line) { return makeStdError(this, "TypeError", arguments); };
 Sk.builtin.ValueError = function ValueError(msg, file, lnum, col, line) { return makeStdError(this, "ValueError", arguments); };
 Sk.builtin.ZeroDivisionError = function ZeroDivisionError(msg, file, lnum, col, line) { return makeStdError(this, "ZeroDivisionError", arguments); };
-
-}());

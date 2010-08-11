@@ -190,6 +190,7 @@ def dist():
     os.system("rm -rf dist/")
     if not os.path.exists("dist"): os.mkdir("dist")
 
+    """
     print ". Writing combined version..."
     combined = ''
     linemap = open("dist/linemap.txt", "w")
@@ -200,12 +201,13 @@ def dist():
         print >>linemap, "%d:%s" % (curline, file)
         curline += len(curfiledata.split("\n")) - 1
     linemap.close()
+    """
 
     # make combined version
-    uncompfn = "dist/skulpt-uncomp.js"
+    #uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
-    open(uncompfn, "w").write(combined)
-    os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
+    #open(uncompfn, "w").write(combined)
+    #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
     buildBrowserTests()
 
@@ -221,25 +223,26 @@ def dist():
 
     # run tests on uncompressed
     print ". Running tests on uncompressed..."
-    ret = os.system("%s %s %s" % (jsengine, uncompfn, ' '.join(TestFiles)))
+    ret = os.system("%s %s %s" % (jsengine, ' '.join(getFileList('dist')), ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on uncompressed version."
         raise SystemExit()
 
     # compress
+    uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility --js %s --js_output_file %s" % (uncompfn, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     if ret != 0:
         print "Couldn't run closure-compiler."
         raise SystemExit()
 
     # run tests on compressed
-    print ". Running tests on compressed..."
-    ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
-    if ret != 0:
-        print "Tests failed on compressed version."
-        raise SystemExit()
+    #print ". Running tests on compressed..."
+    #ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
+    #if ret != 0:
+        #print "Tests failed on compressed version."
+        #raise SystemExit()
 
     ret = os.system("cp %s dist/tmp.js" % compfn)
     if ret != 0:
@@ -264,7 +267,7 @@ def dist():
         """
 
     # all good!
-    print ". Wrote %s and %s (and copied to doc/static)." % (uncompfn, compfn)
+    print ". Wrote %s." % compfn
     print ". gzip of compressed: %d bytes" % size
 
 def regenparser():

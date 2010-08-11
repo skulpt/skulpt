@@ -134,7 +134,7 @@ Compiler.prototype._gr = function(hint, rest)
 
 Compiler.prototype._jumpfalse = function(test, block)
 {
-    var cond = this._gr('jfalse', "(", test, "===false||!Sk.builtin.object_.isTrue$(", test, "))");
+    var cond = this._gr('jfalse', "(", test, "===false||!Sk.builtin.object.isTrue$(", test, "))");
     out("if(", cond, "){/*test failed */$blk=", block, ";continue;}");
 };
 
@@ -145,7 +145,7 @@ Compiler.prototype._jumpundef = function(test, block)
 
 Compiler.prototype._jumptrue = function(test, block)
 {
-    var cond = this._gr('jtrue', "(", test, "===true||Sk.builtin.object_.isTrue$(", test, "))");
+    var cond = this._gr('jtrue', "(", test, "===true||Sk.builtin.object.isTrue$(", test, "))");
     out("if(", cond, "){/*test passed */$blk=", block, ";continue;}");
 };
 
@@ -486,9 +486,9 @@ Compiler.prototype.exprConstant = function(e)
     switch (e.constructor)
     {
         case Num:
-            return Sk.builtin.object_.isTrue$(e.n);
+            return Sk.builtin.object.isTrue$(e.n);
         case Str:
-            return Sk.builtin.object_.isTrue$(e.s);
+            return Sk.builtin.object.isTrue$(e.s);
         case Name:
             // todo; do __debug__ test here if opt
         default:

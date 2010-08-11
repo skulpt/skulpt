@@ -1,10 +1,3 @@
-function type_Lookup(tp, name)
-{
-}
-
-
-(function() {
-
 /**
  * @constructor
  * @param {string} name
@@ -12,7 +5,7 @@ function type_Lookup(tp, name)
  * @param {Object=} dict
  * @param {Object=} body$
  */
-var $ = Sk.builtin.type = function type(name, bases, dict, body$)
+Sk.builtin.type = function type(name, bases, dict, body$)
 {
     if (bases === undefined && dict === undefined)
     {
@@ -24,11 +17,11 @@ var $ = Sk.builtin.type = function type(name, bases, dict, body$)
             return Sk.types.int_;
         else
         */
-            return obj.__class__;
+            //return obj.__class__;
     }
-    else if (!(this instanceof $))
+    else if (!(this instanceof Sk.builtin.type))
     {
-        return new $(name, bases, dict);
+        return new Sk.builtin.type(name, bases, dict);
     }
     else
     {
@@ -78,5 +71,3 @@ Sk.types.int_ = new $('int', [Sk.types.object], {});
 
 Sk.builtin.list.prototype.__class__ = new Sk.builtin.type('list', [Sk.types.object], {});
 */
-
-}());

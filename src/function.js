@@ -1,6 +1,7 @@
-(function() {
-
-var $ = Sk.builtin['function'] = function() {};
+/**
+ * @constructor
+ */
+Sk.builtin.funct = function() {};
 
 Sk.fget = function fget(self, instance, owner)
 {
@@ -51,5 +52,3 @@ Sk.fget = function fget(self, instance, owner)
     }
     return ret;
 };
-
-}());

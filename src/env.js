@@ -151,6 +151,7 @@ Sk.lookupAttrOnClass = function lookupAttrOnClass(o, attrname)
 //   http://stackoverflow.com/questions/852308/how-the-method-resolution-and-invocation-works-internally-in-python/870650#870650
 // we only implement "non-data descriptors", currently since that's
 // what's needed for methods.
+/*
 Sk.getattr = function getattr(o, attrname, default_)
 {
     //print("getattr", o, attrname);
@@ -209,6 +210,7 @@ Sk.getattr = function getattr(o, attrname, default_)
 
     return classAttrValue;
 };
+*/
 
 Sk.setattr = function setattr(object, name, value)
 {

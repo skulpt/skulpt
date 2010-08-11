@@ -1,3 +1,6 @@
+/**
+ * @constructor
+ */
 Sk.builtin.object = function()
 {
 };
@@ -35,13 +38,24 @@ Sk.builtin.object.GenericGetAttr = function(name)
     throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
 };
 
-(function() {
-var $ = Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()
+/*
+Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()
 {
     this.__dict__ = new Sk.builtin.dict([]);
     return this;
 });
+*/
 
+Sk.builtin.object.isTrue$ = function(x)
+{
+    if (x === true) return true;
+    if (x === false) return false;
+    if (x === null) return false;
+    // todo; num, map len, seq len == 0
+    return true;
+};
+
+/*
 // todo; maybe a string-only dict here that's just an object+methods for efficiency
 $.__setattr__ = function(k,v)
 {
@@ -56,12 +70,4 @@ $.__repr__ = function()
 {
     return new Sk.builtin.str("<" + Sk.getattr(this, '__module__') + "." + this.__class__.__name__.v + " instance>");
 };
-$.isTrue$ = function(x)
-{
-    if (x === true) return true;
-    if (x === false) return false;
-    if (x === null) return false;
-    // todo; num, map len, seq len == 0
-    return true;
-};
-}());
+*/

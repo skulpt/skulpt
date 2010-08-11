@@ -1,14 +1,12 @@
-(function() {
-
 /**
  * @constructor
  * @param {number} start
  * @param {number=} stop
- * @param {number=} step
+ * @param {null|number=} step
  */
-var $ = Sk.builtin.slice = function slice(start, stop, step)
+Sk.builtin.slice = function slice(start, stop, step)
 {
-    if (!(this instanceof $)) return new $(start, stop, step);
+    if (!(this instanceof Sk.builtin.slice)) return new Sk.builtin.slice(start, stop, step);
 
     if (stop === undefined && step === undefined)
     {
@@ -24,7 +22,7 @@ var $ = Sk.builtin.slice = function slice(start, stop, step)
     return this;
 };
 
-$.prototype.__str__ = function()
+Sk.builtin.slice.prototype.__str__ = function()
 {
     var a = Sk.builtin.repr(this.start).v;
     var b = Sk.builtin.repr(this.stop).v;
@@ -32,7 +30,7 @@ $.prototype.__str__ = function()
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
 
-$.prototype.indices = function(length)
+Sk.builtin.slice.prototype.indices = function(length)
 {
     // this seems ugly, better way?
     var start = this.start, stop = this.stop, step = this.step, i;
@@ -54,7 +52,7 @@ $.prototype.indices = function(length)
     return [start, stop, step];
 };
 
-$.prototype.sssiter$ = function(wrt, f)
+Sk.builtin.slice.prototype.sssiter$ = function(wrt, f)
 {
     var sss = this.indices(typeof wrt === "number" ? wrt : wrt.v.length);
     if (sss[2] > 0)
@@ -70,5 +68,3 @@ $.prototype.sssiter$ = function(wrt, f)
 
     }
 };
-
-}());
