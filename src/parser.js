@@ -84,7 +84,7 @@ OUTERWHILE:
             if (ilabel === i)
             {
                 // look it up in the list of labels
-                if (t >= 256) throw "assert";
+                goog.asserts.assert(t < 256);
                 // shift a token; we're done with it
                 this.shift(type, value, newstate, context);
                 // pop while we are in an accept-only state

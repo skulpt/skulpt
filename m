@@ -235,11 +235,11 @@ def dist():
         raise SystemExit()
 
     # run tests on compressed
-    #print ". Running tests on compressed..."
-    #ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
-    #if ret != 0:
-        #print "Tests failed on compressed version."
-        #raise SystemExit()
+    print ". Running tests on compressed..."
+    ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
+    if ret != 0:
+        print "Tests failed on compressed version."
+        raise SystemExit()
 
     ret = os.system("cp %s dist/tmp.js" % compfn)
     if ret != 0:
