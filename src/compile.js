@@ -1,4 +1,6 @@
+/** @param {...*} x */
 var out;
+
 /**
  * @constructor
  * @param {string} filename
@@ -65,6 +67,7 @@ function CompilerUnit()
 CompilerUnit.prototype.activateScope = function()
 {
     var self = this;
+
     out = function() {
         var b = self.blocks[self.curblock];
         for (var i = 0; i < arguments.length; ++i)
@@ -113,7 +116,11 @@ function mangleName(priv, ident)
     return new Sk.builtin.str('_' + priv + name);
 }
 
-Compiler.prototype._gr = function(hint)
+/**
+ * @param {string} hint basename for gensym
+ * @param {...*} rest
+ */
+Compiler.prototype._gr = function(hint, rest)
 {
     var v = this.gensym(hint);
     out("var ", v, "=");
@@ -354,7 +361,7 @@ Compiler.prototype.cboolop = function(e)
  * returned name.
  *
  * @param {Object} e
- * @param {Object=} data
+ * @param {string=} data
  */
 Compiler.prototype.vexpr = function(e, data)
 {
@@ -372,17 +379,19 @@ Compiler.prototype.vexpr = function(e, data)
             return this._gr('binop', "Sk.abstr.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
         case UnaryOp:
             return this._gr('unaryop', "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op._astname, "')");
-            goog.asserts.fail();
         case Lambda:
-            return this.clambda(e);
+            goog.asserts.fail();
+            //return this.clambda(e);
         case IfExp:
-            return this.cifexp(e);
+            goog.asserts.fail();
+            //return this.cifexp(e);
         case Dict:
             return this.cdict(e);
         case ListComp:
             return this.clistcomp(e);
         case GeneratorExp:
-            return this.cgenexp(e);
+            goog.asserts.fail();
+            //return this.cgenexp(e);
         case Yield:
             goog.asserts.fail();
         case Compare:
@@ -422,7 +431,7 @@ Compiler.prototype.vexpr = function(e, data)
                 case Del:
                     return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
                 case AugStore:
-                    this.vslice(e.slice, e.ctx, data);
+                    this.vslice(e.slice, e.ctx, null, data);
                     break;
                 case Param:
                 default:
@@ -439,6 +448,11 @@ Compiler.prototype.vexpr = function(e, data)
             goog.asserts.fail("unhandled case in vexpr");
     }
 };
+
+/**
+ * @param {Array.<Object>} exprs
+ * @param {Array.<string>=} data
+ */
 Compiler.prototype.vseqexpr = function(exprs, data)
 {
     goog.asserts.assert(data === undefined || exprs.length === data.length);
@@ -595,7 +609,7 @@ Compiler.prototype.cwhile = function(s)
         this.vseqstmt(s.body);
         this._jump(top);
 
-        this.popContinueBlock(top);
+        this.popContinueBlock();
         this.popBreakBlock();
 
         if (s.orelse.length > 0)
@@ -719,7 +733,8 @@ Compiler.prototype.vstmt = function(s)
             this.cfunction(s);
             break;
         case ClassDef:
-            this.cclass(s);
+            goog.asserts.fail();
+            //this.cclass(s);
             break;
         case Return_:
             if (this.u.ste.blockType !== FunctionBlock)
@@ -781,6 +796,12 @@ var OP_NAME = 3;
 var D_NAMES = 0;
 var D_FREEVARS = 1;
 var D_CELLVARS = 2;
+
+/**
+ * @param {Sk.builtin.str} name
+ * @param {Object} ctx
+ * @param {string=} dataToStore
+ */
 Compiler.prototype.nameop = function(name, ctx, dataToStore)
 {
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.__str__() === "__debug__")
@@ -918,7 +939,7 @@ Compiler.prototype.cprint = function(s)
     goog.asserts.assert(s instanceof Print);
     var dest = 'null';
     if (s.dest)
-        dest = this.vexpr(v.dest);
+        dest = this.vexpr(s.dest);
 
     var n = s.values.length;
     // todo; dest disabled
@@ -962,7 +983,7 @@ Sk.compile = function(source, filename, mode)
     //print("FILE:", filename);
     var cst = Sk.parse(filename, source);
     var ast = Sk.astFromParse(cst, filename);
-    var st = Sk.symboltable(ast);
+    var st = Sk.symboltable(ast, filename);
     var c = new Compiler(filename, st, 0, source); // todo; CO_xxx
     c.cmod(ast);
     var ret = c.result.join('');

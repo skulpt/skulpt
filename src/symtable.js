@@ -539,7 +539,7 @@ SymbolTable.prototype.visitExpr = function(e)
             if (e.args.defaults)
                 this.SEQExpr(e.args.defaults);
             this.enterBlock("lambda", FunctionBlock, e, e.lineno);
-            this.visitArguments(e.args, e);
+            this.visitArguments(e.args);
             this.visitExpr(e.body);
             this.exitBlock();
             break;
@@ -815,6 +815,10 @@ SymbolTable.prototype.analyze = function()
     this.analyzeBlock(this.top, null, free, global);
 };
 
+/**
+ * @param {Object} ast
+ * @param {string} filename
+ */
 Sk.symboltable = function(ast, filename)
 {
     var ret = new SymbolTable(filename);

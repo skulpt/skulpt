@@ -19,6 +19,7 @@ Sk.abstr.binop_type_error = function(v, w, name)
 // this can't be a table for closure
 Sk.abstr.boNameToSlotFunc_ = function(obj, name)
 {
+    /* todo;
     switch (name)
     {
         case "Add": return obj.nb$add;
@@ -36,6 +37,7 @@ Sk.abstr.boNameToSlotFunc_ = function(obj, name)
         default:
             goog.asserts.fail();
     }
+        */
 };
 
 Sk.abstr.binary_op_ = function(v, w, opname)
@@ -82,7 +84,7 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
         var ans = opfn(a, b);
         // todo; handle float
         if (ans > Sk.builtin.lng.threshold$ || ans < -Sk.builtin.lng.threshold$)
-            return [Sk.builtin.lng.fromInt(a), Sk.builtin.lng.fromInt(b)];
+            return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
         else
             return ans;
     }
@@ -208,12 +210,15 @@ Sk.abstr.sequenceDelItem = function(seq, i)
 
 Sk.abstr.sequenceRepeat = function(f, seq, n)
 {
+    goog.asserts.fail("need to implement nb$index");
+    /*
     var count = n.nb$index();
     if (count === undefined)
     {
         throw new TypeError("can't multiply sequence by non-int of type '" + n.tp$name + "'");
     }
     return f.call(seq, n);
+    */
 };
 
 Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
@@ -271,4 +276,14 @@ Sk.abstr.objectDelItem = function(o, key)
         return Sk.abstr.sequenceDelItem(o, keyValue);
     }
     throw new TypeError("'" + o.tp$name + "' object does not support item deletion");
+};
+
+Sk.abstr.objectGetItem = function(o, key)
+{
+    goog.asserts.fail();
+};
+
+Sk.abstr.objectSetItem = function(o, key, v)
+{
+    goog.asserts.fail();
 };

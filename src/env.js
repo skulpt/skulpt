@@ -120,137 +120,6 @@ Sk.print = function print(x)
         $.softspace = true;
 };
 
-Sk.opFuncs = {
-    "Add": "__add__",
-    "Sub": "__sub__",
-    "Mult": "__mul__",
-    "Div": "__truediv__",
-    "FloorDiv": "__floordiv__",
-    "Mod": "__mod__",
-    "Pow": "__pow__",
-    "LShift": "__lshift__",
-    "RShift": "__rshift__",
-    "BitAnd": "__and__",
-    "BitOr": "__or__",
-    "BitXor": "__xor__"
-};
-
-Sk.opRFuncs = {
-    "Add": "__radd__",
-    "Sub": "__rsub__",
-    "Mult": "__rmul__",
-    "Div": "__rtruediv__",
-    "FloorDiv": "__rfloordiv__",
-    "Mod": "__rmod__",
-    "Pow": "__rpow__",
-    "LShift": "__rlshift__",
-    "RShift": "__rrshift__",
-    "BitAnd": "__rand__",
-    "BitOr": "__ror__",
-    "BitXor": "__rxor__"
-};
-
-Sk.opIFuncs = {
-    "Add": "__iadd__",
-    "Sub": "__isub__",
-    "Mult": "__imul__",
-    "Div": "__itruediv__",
-    "FloorDiv": "__ifloordiv__",
-    "Mod": "__imod__",
-    "Pow": "__ipow__", // todo; modulo
-    "LShift": "__ilshift__",
-    "RShift": "__irshift__",
-    "BitAnd": "__iand__",
-    "BitOr": "__ior__",
-    "BitXor": "__ixor__"
-};
-
-
-Sk.boNumPromote = {
-    "Add": function(a, b) { return a + b; },
-    "Sub": function(a, b) { return a - b; },
-    "Mult": function(a, b) { return a * b; },
-    "Mod": function(a, b) { return a % b; },
-    "Pow": Math.pow,
-    "BitAnd": function(a, b) { return a & b; },
-    "BitOr": function(a, b) { return a | b; },
-    "BitXor": function(a, b) { return a ^ b; }
-};
-Sk.binop = function binop(lhs, rhs, op)
-{
-    var numPromote = $.boNumPromote;
-    var numPromoteFunc = numPromote[op];
-    if (numPromoteFunc !== undefined)
-    {
-        var tmp = $.numOpAndPromotion(lhs, rhs, numPromoteFunc);
-        if (typeof tmp === "number")
-        {
-            return tmp;
-        }
-        lhs = tmp[0];
-        rhs = tmp[1];
-    }
-
-    var func = $.opFuncs[op];
-    var rfunc = $.opRFuncs[op];
-    if (!func || !rfunc) throw "assert";
-
-    if (lhs[func] !== undefined)
-        return lhs[func](rhs);
-    if (rhs[rfunc] !== undefined)
-        return rhs[rfunc](lhs);
-
-    throw new TypeError("unsupported operand type(s) for " + op + ": '" +
-            $.typename(lhs) + "' and '" + $.typename(rhs) + "'");
-
-};
-
-Sk.ipNumPromote = {
-    "Add": function(a, b) { return a + b; },
-    "Sub": function(a, b) { return a - b; },
-    "Mult": function(a, b) { return a * b; },
-    "Div": function(a, b) { return a / b; },
-    "FloorDiv": Math.floor,
-    "Mod": function(a, b) { return a + b; },
-    "Pow": Math.pow,
-    "LShift": function(a, b) { return a << b; },
-    "RShift": function(a, b) { return a >> b; },
-    "BitAnd": function(a, b) { return a & b; },
-    "BitOr": function(a, b) { return a | b; },
-    "BitXor": function(a, b) { return a ^ b; }
-};
-Sk.inplacebinop = function(lhs, rhs, op)
-{
-    var numPromote = $.ipNumPromote;
-    var numPromoteFunc = numPromote[op];
-    if (numPromoteFunc !== undefined)
-    {
-        var tmp = $.numOpAndPromotion(lhs, rhs, numPromoteFunc);
-        if (typeof tmp === "number")
-            return tmp;
-        lhs = tmp[0];
-        rhs = tmp[1];
-    }
-
-    var opname = $.opIFuncs[op];
-    if (lhs[opname] !== undefined)
-    {
-        return lhs[opname](rhs);
-    }
-    else
-    {
-        var opname2 = $.opFuncs[op.substring(0, op.length - 1)];
-        if (lhs[opname2] !== undefined)
-        {
-            return lhs[opname2](rhs);
-        }
-        else
-        {
-            throw "AttributeError: " + opname + " or " + opname2 + " not found on " + $.typename(lhs);
-        }
-    }
-};
-
 Sk.lookupAttrOnClass = function lookupAttrOnClass(o, attrname)
 {
     if (o.__class__ === undefined) return undefined;
@@ -521,14 +390,6 @@ Sk.import_ = function import_(name)
     return module;
 };
 
-// todo; this function smells wrong
-Sk.typename = function(o)
-{
-    if (typeof o === "number") return $.types.int_.name;
-    if (o.__class__ === undefined) return typeof o; // in case we haven't handled for this type yet
-    return o.__class__.__name__;
-};
-
 
 // builtins are supposed to come from the __builtin__ module, but we don't do
 // that yet.
@@ -650,12 +511,15 @@ Sk.builtin.open = function open(filename, mode, bufsize)
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
 {
-    if (value instanceof Object && value.__hash__ !== undefined)
+    // todo; readd after tp$hash defined
+    /*
+    if (value instanceof Object && value.tp$hash !== undefined)
     {
-        if (value.__hash) return value.__hash;
-        value.__hash = 'custom ' + value.__hash__();
-        return value.__hash;
+        if (value.$savedHash_) return value.$savedHash_;
+        value.$savedHash_ = 'custom ' + value.tp$hash();
+        return value.$savedHash_;
     }
+    */
 
     if (value instanceof Object)
     {

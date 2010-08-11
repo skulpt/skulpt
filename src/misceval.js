@@ -52,6 +52,23 @@ Sk.misceval.assignSlice = function(u, v, w, x)
     }
 };
 
+/**
+ * for reversed comparison: Eq -> NotEq, etc.
+ */
+Sk.misceval.swappedOp_ = {
+    'Eq': 'NotEq',
+    'NotEq': 'Eq',
+    'Lt': 'GtE',
+    'LtE': 'Gt',
+    'Gt': 'LtE',
+    'GtE': 'Lt',
+    'Is': 'IsNot',
+    'IsNot': 'Is',
+    'In_': 'NotIn',
+    'NotIn': 'In_'
+};
+
+
 Sk.misceval.richCompareBool = function(v, w, op)
 {
     if (op === 'Is')

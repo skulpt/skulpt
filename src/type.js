@@ -19,9 +19,11 @@ var $ = Sk.builtin.type = function type(name, bases, dict, body$)
         // type function, rather than type constructor
         var obj = name;
         // todo; less assey
+        /*
         if (typeof obj === "number")
             return Sk.types.int_;
         else
+        */
             return obj.__class__;
     }
     else if (!(this instanceof $))

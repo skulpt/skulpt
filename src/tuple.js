@@ -37,6 +37,8 @@ Sk.builtin.tuple.prototype.mp$subscript = function(index)
         throw new TypeError("tuple indices must be integers, not " + typeof index);
 };
 
+/*
+
 $.prototype.count = function() { throw "todo; tuple.count"; };
 $.prototype.index = function() { throw "todo; tuple.index"; };
 $.prototype.__class__ = new Sk.builtin.type('tuple', [Sk.types.object], {});
@@ -144,5 +146,6 @@ $.prototype.__iter__ = function()
     };
     return ret;
 };
+*/
 
 }());

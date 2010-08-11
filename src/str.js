@@ -113,8 +113,7 @@ Sk.builtin.str.string_split_ = function(on, howmany)
 
 Sk.builtin.str.prototype.tp$dict = {
     join: Sk.builtin.str.string_join_,
-    split: Sk.builtin.str.string_split_,
-    rsplit: Sk.builtin.str.string_rsplit_
+    split: Sk.builtin.str.string_split_
 };
 
 var alphanum = {};

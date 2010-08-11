@@ -155,7 +155,7 @@ function testSymtab(name)
     catch (e) {}
     var cst = Sk.parse(name + ".py", input);
     var ast = Sk.astFromParse(cst);
-    var st = Sk.symboltable(ast);
+    var st = Sk.symboltable(ast, name + ".py");
     var got = Sk.dumpSymtab(st);
 
     if (expect !== got)
@@ -285,7 +285,7 @@ function main()
 
     // these use internal symbols so they can't run when fully
     // compiled/minimized
-    //if (0)
+    if (0)
     {
         for (i = 0; i <= 100; i += 1)
         {

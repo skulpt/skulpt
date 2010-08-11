@@ -30,6 +30,11 @@ var $ = Sk.builtin.lng = function(size) /* long is a reserved word */
     return this;
 };
 
+Sk.builtin.lng.tp$index = function()
+{
+    goog.asserts.fail("todo;");
+};
+
 $.SHIFT$ = 15;
 $.BASE$ = 1 << $.SHIFT$;
 $.MASK$ = $.BASE$ - 1;

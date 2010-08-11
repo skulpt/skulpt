@@ -5,7 +5,7 @@
 Sk.builtin.list = function(L)
 {
     if (L instanceof Sk.builtin.list) return L;
-    if (!(this instanceof Sk.builtin.list)) return new list(L);
+    if (!(this instanceof Sk.builtin.list)) return new Sk.builtin.list(L);
 
     if (Object.prototype.toString.apply(L) === '[object Array]')
     {
@@ -61,7 +61,7 @@ Sk.builtin.list.list_concat_ = function(other)
 Sk.builtin.list.list_ass_item_ = function(i, v)
 {
     if (i < 0 || i >= this.v.length)
-        throw new IndexError("list assignement index out of range");
+        throw new Sk.builtin.IndexError("list assignement index out of range");
     if (v === null)
         return Sk.builtin.list.list_ass_slice_.call(this, i, i+1, v);
     this.v[i] = v;
@@ -176,7 +176,7 @@ Sk.builtin.list.prototype.tp$dict = {
 
 // __dict__ is the instance's actual dict
 
-if (0) {
+    /*
 $.append = function(self, item)
 {
     self.v.push(item);
@@ -401,5 +401,5 @@ $.prototype.__iter__ = function()
     };
     return ret;
 };
-}
+*/
 
