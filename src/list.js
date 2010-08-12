@@ -1,6 +1,7 @@
 /**
  * @constructor
  * @param {Array.<Object>} L
+ * @extends Sk.builtin.object
  */
 Sk.builtin.list = function(L)
 {
@@ -14,7 +15,7 @@ Sk.builtin.list = function(L)
     else
     {
         this.v = [];
-        Sk.builtin.list.list_extend_.call(this, L);
+        Sk.builtin.list.prototype.list_extend_.call(this, L);
     }
 
     // todo; this should be elsewhere
@@ -24,14 +25,14 @@ Sk.builtin.list = function(L)
     return this;
 };
 
-Sk.builtin.list.list_extend_ = function(b)
+Sk.builtin.list.prototype.list_extend_ = function(b)
 {
     for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
         this.v.push(i);
     return null;
 };
 
-Sk.builtin.list.list_iter_ = function()
+Sk.builtin.list.prototype.list_iter_ = function()
 {
     var ret =
     {
@@ -48,7 +49,7 @@ Sk.builtin.list.list_iter_ = function()
     return ret;
 };
 
-Sk.builtin.list.list_concat_ = function(other)
+Sk.builtin.list.prototype.list_concat_ = function(other)
 {
     var ret = this.v.slice();
     for (var i = 0; i < other.v.length; ++i)
@@ -58,16 +59,16 @@ Sk.builtin.list.list_concat_ = function(other)
     return new Sk.builtin.list(ret);
 }
 
-Sk.builtin.list.list_ass_item_ = function(i, v)
+Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 {
     if (i < 0 || i >= this.v.length)
         throw new Sk.builtin.IndexError("list assignement index out of range");
     if (v === null)
-        return Sk.builtin.list.list_ass_slice_.call(this, i, i+1, v);
+        return Sk.builtin.list.prototype.list_ass_slice_.call(this, i, i+1, v);
     this.v[i] = v;
 };
 
-Sk.builtin.list.list_ass_slice_ = function(ilow, ihigh, v)
+Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 {
     // todo; item rather list/null
     var args = v === null ? [] : v.slice(0);
@@ -76,7 +77,7 @@ Sk.builtin.list.list_ass_slice_ = function(ilow, ihigh, v)
     this.v.splice.apply(this.v, args);
 };
 
-Sk.builtin.list.listindex = function(item)
+Sk.builtin.list.prototype.listindex_ = function(item)
 {
     var len = this.v.length;
     var obj = this.v;
@@ -94,32 +95,32 @@ Sk.builtin.list.prototype.tp$repr = function()
 {
     var ret = [];
     for (var it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-        ret.push(Sk.builtin.object.repr_(i).v);
+        ret.push(Sk.misceval.objectRepr(i).v);
     return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };
-Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
+Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 /*
 Sk.builtin.list.prototype.tp$richcompare = list_richcompare;
 */
-Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.list_iter_;
+Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
 /*
 Sk.builtin.list.prototype.sq$length = list_length;
 */
-Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.list_concat_;
+Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
 /*
 Sk.builtin.list.prototype.sq$repeat = list_repeat;
 Sk.builtin.list.prototype.sq$item = list_item;
 Sk.builtin.list.prototype.sq$slice = list_slice;
 */
-Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.list_ass_item_;
-Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.list_ass_slice_;
+Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.prototype.list_ass_item_;
+Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.prototype.list_ass_slice_;
 //Sk.builtin.list.prototype.sq$contains // iter version is fine
 /*
 Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
 Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
 */
 
-Sk.builtin.list.list_subscript_ = function(index)
+Sk.builtin.list.prototype.list_subscript_ = function(index)
 {
     if (typeof index === "number")
     {
@@ -140,7 +141,7 @@ Sk.builtin.list.list_subscript_ = function(index)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
-Sk.builtin.list.listsort = function()
+Sk.builtin.list.prototype.listsort_ = function()
 {
     // todo; cmp, key, rev
     // todo; totally wrong except for numbers
@@ -148,30 +149,30 @@ Sk.builtin.list.listsort = function()
     return null;
 };
 
-Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.list_subscript_;
+Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
 
 // tp$dict is the dict for the type object's attributes. this includes methods
 // for builtin types which are found during lookup. we use a js object for
 // these as a concession to some speed, though it strictly probably should be a
 // dict as well.
 Sk.builtin.list.prototype.tp$dict = {
-    __getitem__: Sk.builtin.list.list_subscript_,
+    __getitem__: Sk.builtin.list.prototype.list_subscript_,
     /*
     __reversed__: list_reversed,
     append: listappend,
     insert: listinsert,
     */
-    extend: Sk.builtin.list.list_extend_,
+    extend: Sk.builtin.list.prototype.list_extend_,
             /*
     pop: listpop,
     remove: listremove,
     */
-    index: Sk.builtin.list.listindex,
+    index: Sk.builtin.list.prototype.listindex_,
     /*
     count: listcount,
     reverse: listreverse,
     */
-    sort: Sk.builtin.list.listsort
+    sort: Sk.builtin.list.prototype.listsort_
 };
 
 

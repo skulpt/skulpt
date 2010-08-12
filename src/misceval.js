@@ -1,6 +1,5 @@
 Sk.misceval = {};
 
-
 Sk.misceval.isIndex = function(o)
 {
     return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.tp$index;
@@ -120,4 +119,27 @@ Sk.misceval.richCompareBool = function(v, w, op)
 
     // is this true?
     return false;
+};
+
+Sk.misceval.objectRepr = function(v)
+{
+    goog.asserts.assert(v !== undefined, "trying to repr undefined");
+    if (v === null)
+        return new Sk.builtin.str("<NULL>");
+    else if (typeof v === "number")
+        return new Sk.builtin.str("" + v);
+    else if (!v.tp$repr)
+        return new Sk.builtin.str("<" + v.tp$name + " object>");
+    else
+        return v.tp$repr();
+};
+
+
+Sk.misceval.isTrue = function(x)
+{
+    if (x === true) return true;
+    if (x === false) return false;
+    if (x === null) return false;
+    // todo; num, map len, seq len == 0
+    return true;
 };

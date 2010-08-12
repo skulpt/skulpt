@@ -155,7 +155,7 @@ Sk.abstr.numberUnaryOp = function(v, op)
     else if (typeof v === "number")
     {
         if (op === "USub") return -v;
-        else if (op === "Not") return Sk.builtin.object.isTrue$(v) ? false : true;
+        else if (op === "Not") return Sk.misceval.isTrue(v) ? false : true;
         else if (op === "UAdd") return v;
         else if (op === "Invert") return ~v;
     }

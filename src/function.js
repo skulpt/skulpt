@@ -33,7 +33,7 @@ Sk.fget = function fget(self, instance, owner)
         var fname = owner.__name__.v + "." + __func.__name__.v;
         if (__instance !== null)
         {
-            var objrepr = Sk.builtin.object.prototype.__repr__.apply(__instance).v;
+            var objrepr = Sk.misceval.objectRepr(__instance).v;
             ret = "<bound method " + fname + " of " + objrepr + ">";
         }
         else

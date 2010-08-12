@@ -26,7 +26,7 @@ Sk.builtin.str = function str(x)
         return ret;
     }
     else
-        return Sk.builtin.object.repr_(x);
+        return Sk.misceval.objectRepr(x);
 
     // interning required for strings in py
     var it = interned[ret];
@@ -70,7 +70,7 @@ Sk.builtin.str.prototype.sq$slice = function() { goog.asserts.fail(); };
 // Sk.builtin.str.prototype.sq$contains // iter version is fine
 
 Sk.builtin.str.prototype.tp$name = "str";
-Sk.builtin.str.prototype.tp$getattr = Sk.builtin.object.GenericGetAttr;
+Sk.builtin.str.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.str.prototype.tp$iter = function()
 {
     var ret =
@@ -121,7 +121,7 @@ Sk.builtin.str.prototype.tp$repr = function()
     return new Sk.builtin.str(ret);
 };
 
-Sk.builtin.str.string_join_ = function(seq)
+Sk.builtin.str.prototype.string_join_ = function(seq)
 {
     var arrOfStrs = [];
     for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
@@ -132,7 +132,7 @@ Sk.builtin.str.string_join_ = function(seq)
     return new Sk.builtin.str(arrOfStrs.join(this.v));
 };
 
-Sk.builtin.str.string_split_ = function(on, howmany)
+Sk.builtin.str.prototype.string_split_ = function(on, howmany)
 {
     var res = this.v.split(new Sk.builtin.str(on).v, howmany);
     var tmp = [];
@@ -144,8 +144,8 @@ Sk.builtin.str.string_split_ = function(on, howmany)
 };
 
 Sk.builtin.str.prototype.tp$dict = {
-    join: Sk.builtin.str.string_join_,
-    split: Sk.builtin.str.string_split_
+    join: Sk.builtin.str.prototype.string_join_,
+    split: Sk.builtin.str.prototype.string_split_
 };
 
 /*

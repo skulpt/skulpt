@@ -20,7 +20,7 @@ Sk.builtin.tuple.prototype.tp$repr = function()
     var bits = [];
     for (var i = 0; i < this.v.length; ++i)
     {
-        bits[i] = Sk.builtin.object.repr_(this.v[i]).v;
+        bits[i] = Sk.misceval.objectRepr(this.v[i]).v;
     }
     var ret = bits.join(', ');
     if (this.v.length === 1) ret += ",";

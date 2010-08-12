@@ -230,7 +230,7 @@ Sk.builtin.lng.prototype.__neg__ = function()
     return ret;
 };
 
-Sk.builtin.lng.divrem$ = function(other)
+Sk.builtin.lng.prototype.divrem$ = function(other)
 {
     var size_a = Math.abs(this.size$);
     var size_b = Math.abs(other.size$);
