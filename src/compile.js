@@ -276,7 +276,7 @@ Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
             return this._gr("simpsliceload", obj, ".mp$subscript(new Sk.builtin.slice(", lower, ",", upper, "))");
         case AugStore:
         case Store:
-            out(obj, ".__setitem__(new Sk.builtin.slice(", lower, ",", upper, "),", dataToStore, ");");
+            out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",", dataToStore, ");");
             break;
         case Del:
             out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",null);");
@@ -321,9 +321,9 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
 Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
 {
     if (ctx === Load || ctx === AugLoad)
-        return this._gr('lsubscr', obj, '.mp$subscript(', subs, ')');
+        return this._gr('lsubscr', "Sk.abstr.objectGetItem(", obj, ",", subs, ")");
     else if (ctx === Store || ctx === AugStore)
-        out(obj, '.__setitem__(', subs, ',', data, ');');
+        out("Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ");");
     else if (ctx === Del)
         out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
     else

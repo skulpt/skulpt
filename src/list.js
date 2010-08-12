@@ -143,6 +143,31 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
+Sk.builtin.list.prototype.list_ass_item_ = function(i, value)
+{
+    if (i < 0 || i >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
+    if (value === null)
+        this.list_ass_slice_(i, i+1, value);
+    else
+        this.v[i] = value;
+};
+
+Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
+{
+    if (Sk.misceval.isIndex(index))
+    {
+        var i = Sk.misceval.asIndex(index);
+        if (i < 0) i = this.v.length + i;
+        this.list_ass_item_(i, value);
+    }
+    else if (index instanceof Sk.builtin.slice)
+    {
+        goog.asserts.fail("todo;");
+    }
+    else
+        throw new TypeError("list indices must be integers, not " + typeof index);
+};
+
 Sk.builtin.list.prototype.list_append_ = function(item)
 {
     this.v.push(item);
@@ -158,6 +183,7 @@ Sk.builtin.list.prototype.listsort_ = function()
 };
 
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
+Sk.builtin.list.prototype.mp$ass_subscript = Sk.builtin.list.prototype.list_ass_subscript_;
 
 // tp$dict is the dict for the type object's attributes. this includes methods
 // for builtin types which are found during lookup. we use a js object for

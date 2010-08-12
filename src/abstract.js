@@ -280,10 +280,18 @@ Sk.abstr.objectDelItem = function(o, key)
 
 Sk.abstr.objectGetItem = function(o, key)
 {
-    goog.asserts.fail();
+    if (o.mp$subscript)
+        return o.mp$subscript(key);
+    else if (Sk.misceval.isIndex(key) && o.sq$item)
+        return Sk.sequenceGetItem(o, Sk.misceval.asIndex(key), v);
+    throw new TypeError("'" + o.tp$name + "' does not support indexing");
 };
 
 Sk.abstr.objectSetItem = function(o, key, v)
 {
-    goog.asserts.fail();
+    if (o.mp$ass_subscript)
+        return o.mp$ass_subscript(key, v);
+    else if (Sk.misceval.isIndex(key) && o.sq$ass_item)
+        return Sk.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
+    throw new TypeError("'" + o.tp$name + "' does not support item assignment");
 };

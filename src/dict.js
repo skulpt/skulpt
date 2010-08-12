@@ -10,7 +10,7 @@ Sk.builtin.dict = function dict(L)
 
     for (var i = 0; i < L.length; i += 2)
     {
-        this.__setitem__(L[i], L[i+1]);
+        this.mp$ass_subscript(L[i], L[i+1]);
     }
 
     this.__class__ = this.nativeclass$ = Sk.builtin.dict;
@@ -43,7 +43,8 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
     }
     else
     {
-        this[k] = w;
+        this[k] = { lhs: key, rhs: w };
+        this.size += 1;
     }
 };
 
@@ -77,27 +78,6 @@ Sk.builtin.dict.prototype.tp$iter = function()
         }
     };
     return ret;
-};
-
-// TODO XXX this should go
-Sk.builtin.dict.prototype.__setitem__ = function(key, value)
-{
-    //print("__setitem__", key.v, value);
-    var k = kf(key);
-
-    if (this.hasOwnProperty(k))
-    {
-        this[k].rhs = value;
-    }
-    else
-    {
-        var entry = { lhs : key, rhs : value };
-        this[k] = entry;
-
-        this.size += 1;
-    }
-
-    return this;
 };
 
 
