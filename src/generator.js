@@ -1,4 +1,7 @@
 // not a builtin
+/**
+ * @constructor
+ */
 Sk.generator = function(iter, repr, next)
 {
     this.__iter__ = iter;

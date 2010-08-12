@@ -140,13 +140,6 @@ Sk.builtin.list.list_subscript_ = function(index)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
-Sk.builtin.list.list_extend_ = function(L)
-{
-    for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-        this.v.push(i);
-    return null;
-};
-
 Sk.builtin.list.listsort = function()
 {
     // todo; cmp, key, rev

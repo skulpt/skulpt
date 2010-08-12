@@ -20,14 +20,13 @@ Sk.builtin.dict = function dict(L)
 
 var kf = Sk.builtin.hash;
 
-Sk.builtin.dict.dict_subscript_ = function(key)
+Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
     var entry = this[kf(key)];
     // todo; does this need to go through mp$ma_lookup
     return entry === undefined ? undefined : entry.rhs;
 };
-
-Sk.builtin.dict.dict_ass_sub_ = function(key, w)
+Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
     if (w === null)
@@ -47,9 +46,6 @@ Sk.builtin.dict.dict_ass_sub_ = function(key, w)
         this[k] = w;
     }
 };
-
-Sk.builtin.dict.prototype.mp$subscript = Sk.builtin.dict.dict_subscript_;
-Sk.builtin.dict.prototype.mp$ass_subscript = Sk.builtin.dict.dict_ass_sub_;
 
 Sk.builtin.dict.prototype.tp$iter = function()
 {

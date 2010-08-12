@@ -14,6 +14,19 @@ Sk.builtin.tuple = function(L)
     return this;
 };
 
+Sk.builtin.tuple.prototype.tp$repr = function()
+{
+    if (this.v.length === 0) return new Sk.builtin.str("()");
+    var bits = [];
+    for (var i = 0; i < this.v.length; ++i)
+    {
+        bits[i] = Sk.builtin.object.repr_(this.v[i]).v;
+    }
+    var ret = bits.join(', ');
+    if (this.v.length === 1) ret += ",";
+    return new Sk.builtin.str("(" + ret + ")");
+};
+
 Sk.builtin.tuple.prototype.mp$subscript = function(index)
 {
     if (typeof index === "number")

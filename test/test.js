@@ -57,7 +57,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += e.toString();
+        got += e.tp$str().v;
     }
     if (expect !== got)
     {
