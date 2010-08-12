@@ -102,24 +102,6 @@ Sk.in_ = function in_(lhs, rhs)
     }
 };
 
-Sk.softspace = false;
-Sk.print = function print(x)
-{
-    if ($.softspace)
-    {
-        $.output(' ');
-        $.softspace = false;
-    }
-    var s = $.builtin.str(x);
-    $.output(s.v);
-    var isspace = function(c)
-    {
-        return c === '\n' || c === '\t' || c === '\r';
-    };
-    if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
-        $.softspace = true;
-};
-
 Sk.lookupAttrOnClass = function lookupAttrOnClass(o, attrname)
 {
     if (o.__class__ === undefined) return undefined;

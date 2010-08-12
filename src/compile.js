@@ -192,7 +192,6 @@ Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
 {
     var start = this.newBlock('list gen start');
     var skip = this.newBlock('list gen skip');
-    var ifCleanup = this.newBlock('list gen cleanup');
     var anchor = this.newBlock('list gen anchor');
 
     var l = generators[genIndex];
@@ -210,7 +209,7 @@ Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
     for (var i = 0; i < n; ++i)
     {
         var ifres = this.vexpr(l.ifs[i]);
-        this._jumpfalse(ifres, ifCleanup);
+        this._jumpfalse(ifres, start);
     }
 
     if (++genIndex < generators.length)
@@ -944,9 +943,9 @@ Compiler.prototype.cprint = function(s)
     var n = s.values.length;
     // todo; dest disabled
     for (var i = 0; i < n; ++i)
-        out('Sk.output(', /*dest, ',',*/ "new Sk.builtin.str(", this.vexpr(s.values[i]), ').v);');
+        out('Sk.misceval.print_(', /*dest, ',',*/ "new Sk.builtin.str(", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
-        out('Sk.output(', /*dest, ',*/ '"\\n");');
+        out('Sk.misceval.print_(', /*dest, ',*/ '"\\n");');
 };
 
 Compiler.prototype.cmod = function(mod)

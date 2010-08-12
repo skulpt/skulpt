@@ -143,3 +143,21 @@ Sk.misceval.isTrue = function(x)
     // todo; num, map len, seq len == 0
     return true;
 };
+
+Sk.misceval.softspace_ = false;
+Sk.misceval.print_ = function print(x)
+{
+    if (Sk.misceval.softspace_)
+    {
+        if (x !== "\n") Sk.output(' ');
+        Sk.misceval.softspace_ = false;
+    }
+    var s = new Sk.builtin.str(x);
+    Sk.output(s.v);
+    var isspace = function(c)
+    {
+        return c === '\n' || c === '\t' || c === '\r';
+    };
+    if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
+        Sk.misceval.softspace_ = true;
+};
