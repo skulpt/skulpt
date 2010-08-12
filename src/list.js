@@ -99,6 +99,8 @@ Sk.builtin.list.prototype.tp$repr = function()
     return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };
 Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.builtin.list.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+
 /*
 Sk.builtin.list.prototype.tp$richcompare = list_richcompare;
 */
@@ -141,6 +143,12 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
+Sk.builtin.list.prototype.list_append_ = function(item)
+{
+    this.v.push(item);
+    return null;
+};
+
 Sk.builtin.list.prototype.listsort_ = function()
 {
     // todo; cmp, key, rev
@@ -159,7 +167,9 @@ Sk.builtin.list.prototype.tp$dict = {
     __getitem__: Sk.builtin.list.prototype.list_subscript_,
     /*
     __reversed__: list_reversed,
-    append: listappend,
+    */
+    append: Sk.builtin.list.prototype.list_append_,
+    /*
     insert: listinsert,
     */
     extend: Sk.builtin.list.prototype.list_extend_,

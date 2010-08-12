@@ -25,6 +25,11 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
 };
 
+Sk.builtin.object.prototype.HashNotImplemented = function()
+{
+    throw new Sk.builtin.TypeError("unhashable type: '" + this.tp$name + "'");
+};
+
 /*
 Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()
 {

@@ -205,7 +205,16 @@ function testRun(name)
     }
     catch (e)
     {
-        got = "EXCEPTION: " + e.name + "\n";
+        if (e.name !== undefined)
+        {
+            // js exception, currently happens for del'd objects. shouldn't
+            // really though.
+            got = "EXCEPTION: " + e.name + "\n";
+        }
+        else
+        {
+            got = "EXCEPTION: " + e.tp$name + ": " + e.args.v[0].v + "\n";
+        }
     }
     if (expect !== got && (expectalt !== undefined || expectalt !== got))
     {
@@ -312,7 +321,7 @@ function main()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= 95; ++i)
+    for (i = 0; i <= 102; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
