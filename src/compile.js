@@ -273,7 +273,7 @@ Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
     {
         case AugLoad:
         case Load:
-            return this._gr("simpsliceload", obj, ".mp$subscript(new Sk.builtin.slice(", lower, ",", upper, "))");
+            return this._gr("simpsliceload", "Sk.misceval.applySlice(", obj, ",", lower, ",", upper, ")");
         case AugStore:
         case Store:
             out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",", dataToStore, ");");
@@ -289,7 +289,11 @@ Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
 
 Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
 {
-    goog.asserts.fail("todo;");
+    goog.asserts.assert(s instanceof Slice);
+    var low = s.lower ? this.vexpr(s.lower) : 'null';
+    var high = s.upper ? this.vexpr(s.upper) : 'null';
+    var step = s.step ? this.vexpr(s.step) : 'null';
+    return this._gr('slice', "new Sk.builtin.slice(", low, ",", high, ",", step, ")");
 };
 
 Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
@@ -307,7 +311,8 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
             if (!s.step)
                 return this.csimpleslice(s, ctx, obj, dataToStore);
             if (ctx !== AugStore)
-                return this.cslice(s, ctx, obj, dataToStore);
+                subs = this.cslice(s, ctx, obj, dataToStore);
+            break;
         case Ellipsis:
         case ExtSlice:
             goog.asserts.fail("todo;");

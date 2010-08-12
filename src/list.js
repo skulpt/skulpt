@@ -162,7 +162,34 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
     }
     else if (index instanceof Sk.builtin.slice)
     {
-        goog.asserts.fail("todo;");
+        if (index.step === 1)
+            this.list_ass_slice_(index.start, index.stop, value);
+        else
+        {
+            if (value === null)
+            {
+                var self = this;
+                var dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
+                var offdir = index.step > 0 ? 1 : 0;
+                index.sssiter$(this, function(i, wrt)
+                        {
+                            self.v.splice(i - dec, 1);
+                            dec += offdir;
+                        });
+            }
+            else
+            {
+                var tosub = [];
+                index.sssiter$(this, function(i, wrt) { tosub.push(i); });
+                var j = 0;
+                if (tosub.length !== value.v.length) throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
+                for (var i = 0; i < tosub.length; ++i)
+                {
+                    this.v.splice(tosub[i], 1, value.v[j]);
+                    j += 1;
+                }
+            }
+        }
     }
     else
         throw new TypeError("list indices must be integers, not " + typeof index);

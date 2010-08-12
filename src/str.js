@@ -63,11 +63,17 @@ Sk.builtin.str.prototype.mp$subscript = function(index)
         throw new TypeError("string indices must be numbers, not " + typeof index);
 };
 
-Sk.builtin.str.prototype.sq$length = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$length = function()
+{
+    return this.v.length;
+};
 Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str(this.v + other.v); };
 Sk.builtin.str.prototype.sq$repeat = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
-Sk.builtin.str.prototype.sq$slice = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$slice = function(i1, i2)
+{
+    return new Sk.builtin.str(this.v.substr(i1, i2 - i1));
+};
 // Sk.builtin.str.prototype.sq$contains // iter version is fine
 
 Sk.builtin.str.prototype.tp$name = "str";

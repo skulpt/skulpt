@@ -45,9 +45,9 @@ Sk.misceval.assignSlice = function(u, v, w, x)
     {
         var slice = new Sk.builtin.slice(v, w);
         if (x === null)
-            return Sk.abstr.objectSetItem(u, slice, x);
-        else
             return Sk.abstr.objectDelItem(u, slice);
+        else
+            return Sk.abstr.objectSetItem(u, slice, x);
     }
 };
 
