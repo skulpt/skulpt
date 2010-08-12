@@ -15,7 +15,7 @@ Sk.builtin.Exception = function(args)
 };
 Sk.builtin.Exception.prototype.tp$name = "Exception";
 
-Sk.builtin.Exception.prototype.tp$str = function(args)
+Sk.builtin.Exception.prototype.tp$str = function()
 {
     var ret = "File \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
         this.args.v[4].v + "\n";

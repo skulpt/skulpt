@@ -48,6 +48,27 @@ Sk.builtin.tuple.prototype.mp$subscript = function(index)
         throw new TypeError("tuple indices must be integers, not " + typeof index);
 };
 
+// todo; the numbers and order are taken from python, but the answer's
+// obviously not the same because there's no int wrapping. shouldn't matter,
+// but would be nice to make the hash() values the same if it's not too
+// expensive to simplify tests.
+Sk.builtin.tuple.prototype.tp$hash = function()
+{
+    var mult = 1000003;
+    var x = 0x345678;
+    var len = this.v.length;
+    for (var i = 0; i < len; ++i)
+    {
+        var y = Sk.builtin.hash(this.v[i]);
+        if (y === -1) return -1;
+        x = (x ^ y) * mult;
+        mult += 82520 + len + len;
+    }
+    x += 97531;
+    if (x === -1) x = -2;
+    return x;
+};
+
 /*
 
 $.prototype.count = function() { throw "todo; tuple.count"; };
@@ -118,27 +139,6 @@ $.prototype.richcmp$ = function(rhs, op)
 
     // or compare the final item
     return Sk.cmp(this.v[i], rhs.v[i], op);
-};
-
-// todo; the numbers and order are taken from python, but the answer's
-// obviously not the same because there's no int wrapping. shouldn't matter,
-// but would be nice to make the hash() values the same if it's not too
-// expensive to simplify tests.
-$.prototype.__hash__ = function()
-{
-    var mult = 1000003;
-    var x = 0x345678;
-    var len = this.v.length;
-    for (var i = 0; i < len; ++i)
-    {
-        var y = Sk.builtin.hash(this.v[i]);
-        if (y === -1) return -1;
-        x = (x ^ y) * mult;
-        mult += 82520 + len + len;
-    }
-    x += 97531;
-    if (x === -1) x = -2;
-    return x;
 };
 
 $.prototype.__iter__ = function()

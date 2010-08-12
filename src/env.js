@@ -513,15 +513,12 @@ Sk.builtin.open = function open(filename, mode, bufsize)
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
 {
-    // todo; readd after tp$hash defined
-    /*
     if (value instanceof Object && value.tp$hash !== undefined)
     {
         if (value.$savedHash_) return value.$savedHash_;
         value.$savedHash_ = 'custom ' + value.tp$hash();
         return value.$savedHash_;
     }
-    */
 
     if (value instanceof Object)
     {

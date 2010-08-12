@@ -3,6 +3,7 @@ var interned = {};
 /**
  * @constructor
  * @param {*} x
+ * @extends Sk.builtin.object
  */
 Sk.builtin.str = function str(x)
 {
@@ -143,26 +144,29 @@ Sk.builtin.str.prototype.string_split_ = function(on, howmany)
     return new Sk.builtin.list(tmp);
 };
 
-Sk.builtin.str.prototype.tp$dict = {
-    join: Sk.builtin.str.prototype.string_join_,
-    split: Sk.builtin.str.prototype.string_split_
+Sk.builtin.str.prototype.string_replace_ = function(oldS, newS, count)
+{
+    if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)
+        throw new Sk.builtin.TypeError("expecting a string");
+    goog.asserts.assert(count === undefined, "todo; replace() with could not implemented");
+    var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
+    return new Sk.builtin.str(this.v.replace(patt, newS.v));
 };
 
-/*
-
-var alphanum = {};
-var i;
-for (i = 'a'; i <= 'z'; ++i) alphanum[i] = 1;
-for (i = 'A'; i <= 'Z'; ++i) alphanum[i] = 1;
-for (i = '0'; i <= '9'; ++i) alphanum[i] = 1;
-
-var re_escape = function(s)
+Sk.builtin.str.alphanum_ = {};
+(function() {
+ var i;
+ for (i = 'a'; i <= 'z'; ++i) Sk.builtin.str.alphanum_[i] = 1;
+ for (i = 'A'; i <= 'Z'; ++i) Sk.builtin.str.alphanum_[i] = 1;
+ for (i = '0'; i <= '9'; ++i) Sk.builtin.str.alphanum_[i] = 1;
+}());
+Sk.builtin.str.re_escape_ = function(s)
 {
     var ret = [];
     for (var i = 0; i < s.length; ++i)
     {
         var c = s.charAt(i);
-        if (alphanum[c])
+        if (Sk.builtin.str.alphanum_[c])
         {
             ret.push(c);
         }
@@ -176,6 +180,13 @@ var re_escape = function(s)
     }
     return ret.join('');
 };
+Sk.builtin.str.prototype.tp$dict = {
+    join: Sk.builtin.str.prototype.string_join_,
+    split: Sk.builtin.str.prototype.string_split_,
+    replace: Sk.builtin.str.prototype.string_replace_
+};
+
+/*
 
 $.prototype.__getitem__ = function(index)
 {
