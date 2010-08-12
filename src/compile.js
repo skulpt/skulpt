@@ -416,7 +416,7 @@ Compiler.prototype.vexpr = function(e, data)
                     return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.tp$repr().v, "))");
                 case AugStore:
                 case Store:
-                    goog.asserts.fail("todo;");
+                    out(val, ".tp$setattr(new Sk.builtin.str(", e.attr.tp$repr().v, "),", data, ");");
                     break;
                 case Del:
                     goog.asserts.fail("todo;");
@@ -713,6 +713,39 @@ Compiler.prototype.cfunction = function(s)
     this.nameop(s.name, Store, wrapped);
 };
 
+Compiler.prototype.cclass = function(s)
+{
+    goog.asserts.assert(s instanceof ClassDef);
+    var decos = s.decorator_list;
+
+    // decorators and bases need to be eval'd out here
+    //this.vseqexpr(decos);
+    
+    var bases = this.vseqexpr(s.bases);
+
+    var scopename = this.enterScope(s.name, s, s.lineno);
+    this.u.prefixCode = "/* stuff for class setup */";
+    this.u.suffixCode = "/* stuff for class end */";
+    var entryBlock = this.newBlock('class entry');
+    this.u.private_ = s.name;
+    
+    // class.__module__ is the file's __name__
+    this.nameop(new Sk.builtin.str("__module__"), Store,
+            this.nameop(new Sk.builtin.str("__name__"), Load));
+
+    this.cbody(s.body);
+
+    // todo; return $loc
+
+    // build class
+
+    // apply decorators
+
+    this.exitScope();
+
+    this.nameop(s.name, Store);
+};
+
 Compiler.prototype.ccontinue = function(s)
 {
     if (this.u.continueBlocks.length === 0)
@@ -737,8 +770,7 @@ Compiler.prototype.vstmt = function(s)
             this.cfunction(s);
             break;
         case ClassDef:
-            goog.asserts.fail();
-            //this.cclass(s);
+            this.cclass(s);
             break;
         case Return_:
             if (this.u.ste.blockType !== FunctionBlock)
