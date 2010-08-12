@@ -317,6 +317,7 @@ Sk.call = function call(obj, kwargs)
 // http://docs.python.org/reference/simple_stmts.html#the-import-statement
 Sk.import_ = function import_(name)
 {
+    /*
     //
     // find the module. we don't do any of the PEP 302 stuff yet (or hardcode
     // it at least).
@@ -364,14 +365,13 @@ Sk.import_ = function import_(name)
     }
     else
     {
-        /*
         var js = Sk.compileStr(filename, contents, module);
         //print(js);
         eval(js);
-        */
     }
 
     return module;
+    */
 };
 
 
@@ -475,14 +475,7 @@ Sk.builtin.dir = function dir(x)
 
 Sk.builtin.repr = function repr(x)
 {
-    var ret;
-    if (typeof x === "number") ret = x.toString();
-    else if (x === true) ret = "True";
-    else if (x === false) ret = "False";
-    else if (x === null) ret = "None";
-    else if (x.__repr__ !== undefined)
-        return x.__repr__();
-    return new $.builtin.str(ret);
+    return Sk.misceval.objectRepr(x);
 };
 
 Sk.builtin.open = function open(filename, mode, bufsize)

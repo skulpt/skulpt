@@ -125,7 +125,11 @@ Sk.misceval.objectRepr = function(v)
 {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
     if (v === null)
-        return new Sk.builtin.str("<NULL>");
+        return new Sk.builtin.str("None"); // todo; these should be consts
+    else if (v === true)
+        return new Sk.builtin.str("True");
+    else if (v === false)
+        return new Sk.builtin.str("False");
     else if (typeof v === "number")
         return new Sk.builtin.str("" + v);
     else if (!v.tp$repr)

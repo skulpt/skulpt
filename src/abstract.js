@@ -193,6 +193,11 @@ Sk.abstr.sequenceContains = function(seq, ob)
     return false;
 };
 
+Sk.abstr.sequenceGetItem = function(seq, i)
+{
+    goog.asserts.fail();
+};
+
 Sk.abstr.sequenceSetItem = function(seq, i, x)
 {
     goog.asserts.fail();
@@ -296,7 +301,7 @@ Sk.abstr.objectGetItem = function(o, key)
     if (o.mp$subscript)
         return o.mp$subscript(key);
     else if (Sk.misceval.isIndex(key) && o.sq$item)
-        return Sk.sequenceGetItem(o, Sk.misceval.asIndex(key), v);
+        return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key));
     throw new TypeError("'" + o.tp$name + "' does not support indexing");
 };
 
@@ -305,6 +310,6 @@ Sk.abstr.objectSetItem = function(o, key, v)
     if (o.mp$ass_subscript)
         return o.mp$ass_subscript(key, v);
     else if (Sk.misceval.isIndex(key) && o.sq$ass_item)
-        return Sk.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
+        return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
     throw new TypeError("'" + o.tp$name + "' does not support item assignment");
 };

@@ -80,6 +80,23 @@ Sk.builtin.dict.prototype.tp$iter = function()
     return ret;
 };
 
+Sk.builtin.dict.prototype.tp$repr = function()
+{
+    var ret = [];
+    for (var iter = this.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext())
+    {
+        var v = this.mp$subscript(k);
+        if (v === undefined)
+        {
+            //print(k, "had undefined v");
+            v = null;
+        }
+        ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
+    }
+    return new Sk.builtin.str("{" + ret.join(", ") + "}");
+};
 
 /*
 
@@ -123,23 +140,6 @@ $.prototype.__delitem__ = function(key)
     return this;
 };
 
-$.prototype.__repr__ = function()
-{
-    var ret = [];
-    for (var iter = this.__iter__(), k = iter.next();
-            k !== undefined;
-            k = iter.next())
-    {
-        var v = this.__getitem__(k);
-        if (v === undefined)
-        {
-            //print(k, "had undefined v");
-            v = null;
-        }
-        ret.push(Sk.builtin.repr(k).v + ": " + Sk.builtin.repr(v).v);
-    }
-    return new Sk.builtin.str("{" + ret.join(", ") + "}");
-};
 $.prototype.__class__ = new Sk.builtin.type('dict', [Sk.types.object], {});
 
 $.prototype.__iter__ = function()
