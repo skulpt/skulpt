@@ -71,7 +71,7 @@ Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 {
     // todo; item rather list/null
-    var args = v === null ? [] : v.slice(0);
+    var args = v === null ? [] : v.v.slice(0);
     args.unshift(ihigh - ilow);
     args.unshift(ilow);
     this.v.splice.apply(this.v, args);

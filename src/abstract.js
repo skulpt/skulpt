@@ -247,9 +247,22 @@ Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
     throw new TypeError("'" + seq.tp$name + "' doesn't support slice deletion");
 };
 
-Sk.abstr.sequenceSetSlice = function(seq, ilow, ihigh, x)
+Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 {
-    goog.asserts.fail();
+    if (seq.sq$ass_slice)
+    {
+        i1 = Sk.abstr.fixSeqIndex_(seq, i1);
+        i2 = Sk.abstr.fixSeqIndex_(seq, i2);
+        seq.sq$ass_slice(i1, i2, x);
+    }
+    else if (seq.mp$ass_subscript)
+    {
+        seq.mp$ass_subscript(new Sk.builtin.slice(i1, i2), x);
+    }
+    else
+    {
+        throw new TypeError("'" + seq.tp$name + "' object doesn't support slice assignment");
+    }
 };
 
 
