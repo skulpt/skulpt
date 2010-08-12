@@ -147,6 +147,14 @@ Sk.builtin.list.list_extend_ = function(L)
     return null;
 };
 
+Sk.builtin.list.listsort = function()
+{
+    // todo; cmp, key, rev
+    // todo; totally wrong except for numbers
+    this.v.sort();
+    return null;
+};
+
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.list_subscript_;
 
 // tp$dict is the dict for the type object's attributes. this includes methods
@@ -165,12 +173,12 @@ Sk.builtin.list.prototype.tp$dict = {
     pop: listpop,
     remove: listremove,
     */
-    index: Sk.builtin.list.listindex
+    index: Sk.builtin.list.listindex,
     /*
     count: listcount,
     reverse: listreverse,
-    sort: listsort
     */
+    sort: Sk.builtin.list.listsort
 };
 
 
@@ -207,14 +215,6 @@ $.pop = function(self, i)
 $.remove = function() { throw "todo; list.remove"; };
 
 $.reverse = function() { throw "todo; list.reverse"; };
-
-$.sort = function(self)
-{
-    // todo; cmp, key, rev
-    // todo; totally wrong except for numbers
-    self.v.sort();
-    return null;
-};
 
 $.prototype.__setitem__ = function(index, value)
 {
