@@ -67,7 +67,11 @@ def getFileList(type):
             ret.append(f)
     return ret
 
-jsengine = "support/d8/d8 --trace_exception --debugger"
+if sys.platform == "win32":
+    jsengine = "support\\d8\\d8.exe --trace_exception --debugger"
+else:
+    jsengine = "support/d8/d8 --trace_exception --debugger"
+
 #jsengine = "rhino"
 
 def test():
@@ -468,7 +472,10 @@ def vmwareregr(names):
 
 
 if __name__ == "__main__":
-    os.system("clear")
+    if sys.platform == 'win32':
+        os.system("cls")
+    else:
+        os.system("clear")
     def usage():
         print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|shell}"
         sys.exit(1)
