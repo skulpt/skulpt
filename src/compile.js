@@ -681,7 +681,7 @@ Compiler.prototype.cfunction = function(s)
 
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
 
-    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "__$outer($globals,"
+    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$outer($globals,"
         + (defaults.length > 0 ? "$defaults," : "")
         + "$rest){var $gbl=$globals;";
     if (defaults.length > 0)
@@ -708,7 +708,7 @@ Compiler.prototype.cfunction = function(s)
 
     this.exitScope();
 
-    var wrapped = this._gr("wrapped", "(function ", s.name.v, "__$wrap(){return ", scopename,
+    var wrapped = this._gr("wrapped", "(function ", s.name.v, "$wrap(){return ", scopename,
             "($gbl,", (defaults.length > 0 ? "[" + defaults.join(',') + "]," : ""), "arguments);})");
     this.nameop(s.name, Store, wrapped);
 };
@@ -724,9 +724,13 @@ Compiler.prototype.cclass = function(s)
     var bases = this.vseqexpr(s.bases);
 
     var scopename = this.enterScope(s.name, s, s.lineno);
-    this.u.prefixCode = "/* stuff for class setup */";
-    this.u.suffixCode = "/* stuff for class end */";
     var entryBlock = this.newBlock('class entry');
+
+    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$class_outer($globals,$rest){var $gbl=$globals;";
+    this.u.prefixCode += "return(function " + s.name.v + "(){";
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={};while(true){switch($blk){";
+    this.u.suffixCode = "}break;}}).apply(null,$rest);});";
+
     this.u.private_ = s.name;
     
     // class.__module__ is the file's __name__
@@ -735,7 +739,7 @@ Compiler.prototype.cclass = function(s)
 
     this.cbody(s.body);
 
-    // todo; return $loc
+    out("return $loc;");
 
     // build class
 
@@ -743,7 +747,51 @@ Compiler.prototype.cclass = function(s)
 
     this.exitScope();
 
-    this.nameop(s.name, Store);
+    var wrapped = this._gr("wrapped", "(function ", s.name.v, "$wrap(){return ", scopename, "($gbl,arguments);})");
+
+    // Copy all prototype methods for the class type onto the instance.
+    //
+    // Classes are callable in python to create an instance of the class. If
+    // we're calling "C()" we cannot tell at the call site whether we're
+    // calling a standard function, or instantiating a class.
+    //
+    // JS does not support user-level callables. So, we can't use the normal
+    // prototype hierarchy to make the class inherit from a 'class' type where
+    // the various tp$getattr, etc. methods would live.
+    //
+    // Instead, we must copy all the methods from the prototype of our class
+    // type onto every instance of the class constructor function object. That
+    // way, both "C()" and "C.tp$getattr(...)" can still work. This is of
+    // course quite expensive.
+    //
+    // The alternative would be to indirect all calls (whether classes or
+    // regular functions) through something like C.$call(...). In the case of
+    // class construction, $call could then call the constructor after munging
+    // arguments to pass them on. This would impose a penalty on regular
+    // function calls unfortunately, as they would have to do the same thing.
+    //
+    // Note that the same problem exists for function objects too (a "def"
+    // creates a function object that also has properties. It just happens
+    // that attributes on classes in python are much more useful and common
+    // that the attributes on functions.
+    //
+    // Also note, that for full python compatibility we have to do the $call
+    // method because any python object could have a __call__ method which
+    // makes the python object callable too. So, unless we were to make *all*
+    // objects simply (function(){...}) and use the dict to create hierarchy,
+    // there would be no way to call that python user function. I think I'm
+    // prepared to sacrifice __call__ support, or only support it post-ECMA5
+    // or something.
+    //
+    // Is using (function(){...}) as the only object type too crazy? Probably.
+    // Better or worse than having two levels of function invocation for
+    // every function call?
+
+    // TODO decision
+
+
+    // store our new class under the right name
+    this.nameop(s.name, Store, wrapped);
 };
 
 Compiler.prototype.ccontinue = function(s)
@@ -992,8 +1040,8 @@ Compiler.prototype.cmod = function(mod)
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0);
 
     var entryBlock = this.newBlock('module entry');
-    this.u.prefixCode = "var " + modf + "=(function _module_(){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;while(true){switch($blk){";
-    this.u.suffixCode = "}break;}});";
+    this.u.prefixCode = "var " + modf + "=(function($modname){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;$gbl.__name__=$modname;while(true){switch($blk){";
+    this.u.suffixCode = "}return $loc;}});";
 
     switch (mod.constructor)
     {
@@ -1006,7 +1054,7 @@ Compiler.prototype.cmod = function(mod)
     this.exitScope();
 
     this.result.push(this.outputAllUnits());
-    this.result.push(modf + "();");
+    return modf;
 };
 
 /**
@@ -1021,9 +1069,59 @@ Sk.compile = function(source, filename, mode)
     var ast = Sk.astFromParse(cst, filename);
     var st = Sk.symboltable(ast, filename);
     var c = new Compiler(filename, st, 0, source); // todo; CO_xxx
-    c.cmod(ast);
+    var funcname = c.cmod(ast);
     var ret = c.result.join('');
-    return ret;
+    return {
+        funcname: funcname,
+        code: ret
+    };
+};
+
+if (COMPILED)
+{
+    var print = function(x) {};
+    var js_beautify = function(x) {};
+}
+
+/**
+ * @param {string} name the module name
+ * @param {string} filename the path to the file
+ * @param {string} the content of the file
+ * @param {boolean=} dumpJS print out the js code after compilation for debugging
+ */
+Sk.importModule = function(name, filename, source, dumpJS)
+{
+    // if already in sys.modules, return it
+    var prev = Sk.sys.modules.mp$subscript(name);
+    if (prev !== undefined) return prev;
+
+    // otherwise:
+    // - create module object
+    // - add module object to sys.modules
+    // - compile source to (function(){...});
+    // - run module and set the module locals returned to the module __dict__
+    var module = new Sk.builtin.module(name);
+    Sk.sys.modules.mp$ass_subscript(name, module);
+    var co = Sk.compile(source, filename, "exec");
+    module.$js = co.code; // todo; only in DEBUG?
+    var finalcode = co.code;
+
+    if (!COMPILED)
+    {
+        if (dumpJS)
+        {
+            print("-----");
+            finalcode = js_beautify(co.code);
+            print(finalcode);
+        }
+    }
+
+    var namestr = "new Sk.builtin.str(\"__main__\")";
+    finalcode += "\n" + co.funcname + "(" + namestr + ");";
+    var modlocs = goog.global.eval(finalcode);
+    module.__dict__ = modlocs;
+    return module;
 };
 
 goog.exportSymbol("Sk.compile", Sk.compile);
+goog.exportSymbol("Sk.importModule", Sk.importModule);

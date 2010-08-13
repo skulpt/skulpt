@@ -194,14 +194,9 @@ function testRun(name)
     var expectalt;
     try { expectalt = read(name + ".py.real.alt"); }
     catch (e) {}
-    var js = Sk.compile(input, name + ".py", "exec");
-    //print("-----");
-    var beaut = js_beautify(js);
-    //print(beaut);
-    //print("-----");
+    var module;
     try {
-        // todo; confirm beautify doesn't fix/break anything?
-        goog.global.eval(beaut);
+        module = Sk.importModule(name, name + ".py", input);
     }
     catch (e)
     {
@@ -225,6 +220,7 @@ function testRun(name)
         print("-----\nWANTED:\n-----");
         print(expect);
         print("-----\nJS:\n-----");
+        var beaut = js_beautify(module.$js);
         print(beaut);
         runfail += 1;
         //throw "dying on first run fail";

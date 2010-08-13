@@ -451,6 +451,7 @@ Sk.builtin.chr = function chr(x)
     return new $.builtin.str(String.fromCharCode(x));
 };
 
+/*
 Sk.builtin.dir = function dir(x)
 {
     var names;
@@ -472,6 +473,7 @@ Sk.builtin.dir = function dir(x)
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new $.builtin.list(names);
 };
+*/
 
 Sk.builtin.repr = function repr(x)
 {

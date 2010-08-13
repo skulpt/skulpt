@@ -378,17 +378,15 @@ def run(fn, shell=""):
         print "%s doesn't exist" % fn
         raise SystemExit()
     f = open("support/tmp/run.js", "w")
+    modname = os.path.splitext(os.path.basename(fn))[0]
     f.write("""
 var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-var js = Sk.compile(input, "%s", "exec");
+var module = Sk.importModule("%s", "%s", input, true);
 print("-----");
-print(js_beautify(js));
-print("-----");
-goog.global.eval(js_beautify(js));
-    """ % (fn, fn))
+    """ % (fn, modname, fn))
     f.close()
     os.system("%s %s %s support/tmp/run.js" %
             (jsengine,

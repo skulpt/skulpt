@@ -11,3 +11,7 @@ Sk.stdmodules.sys = function(self)
     self.__setattr__('path', Sk.syspath);
 };
 */
+
+// todo; totally hacky, sys needs to be created somewhere early on with a dict in it
+Sk.sys = {};
+Sk.sys.modules = new Sk.builtin.dict([]);
