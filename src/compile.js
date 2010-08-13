@@ -255,8 +255,8 @@ Compiler.prototype.ccall = function(e)
     goog.asserts.assert(e.keywords.length === 0, "todo;");
     goog.asserts.assert(!e.starargs, "todo;");
     goog.asserts.assert(!e.kwargs, "todo;");
-    // todo; __call__ gunk
-    return this._gr('call', func, "(", args, ")");
+    // todo; undefined is kw
+    return this._gr('call', "Sk.misceval.call(", func, ", undefined", args.length > 0 ? "," : "", args, ")");
 };
 
 Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
@@ -749,43 +749,8 @@ Compiler.prototype.cclass = function(s)
 
     var wrapped = this._gr("wrapped", "(function ", s.name.v, "$wrap(){return ", scopename, "($gbl,arguments);})");
 
-    // Copy all prototype methods for the class type onto the instance.
+    // Copy all prototype methods for the class type on to the instance.
     //
-    // Classes are callable in python to create an instance of the class. If
-    // we're calling "C()" we cannot tell at the call site whether we're
-    // calling a standard function, or instantiating a class.
-    //
-    // JS does not support user-level callables. So, we can't use the normal
-    // prototype hierarchy to make the class inherit from a 'class' type where
-    // the various tp$getattr, etc. methods would live.
-    //
-    // Instead, we must copy all the methods from the prototype of our class
-    // type onto every instance of the class constructor function object. That
-    // way, both "C()" and "C.tp$getattr(...)" can still work. This is of
-    // course quite expensive.
-    //
-    // The alternative would be to indirect all calls (whether classes or
-    // regular functions) through something like C.$call(...). In the case of
-    // class construction, $call could then call the constructor after munging
-    // arguments to pass them on. This would impose a penalty on regular
-    // function calls unfortunately, as they would have to do the same thing.
-    //
-    // Note that the same problem exists for function objects too (a "def"
-    // creates a function object that also has properties. It just happens
-    // that attributes on classes in python are much more useful and common
-    // that the attributes on functions.
-    //
-    // Also note, that for full python compatibility we have to do the $call
-    // method because any python object could have a __call__ method which
-    // makes the python object callable too. So, unless we were to make *all*
-    // objects simply (function(){...}) and use the dict to create hierarchy,
-    // there would be no way to call that python user function. I think I'm
-    // prepared to sacrifice __call__ support, or only support it post-ECMA5
-    // or something.
-    //
-    // Is using (function(){...}) as the only object type too crazy? Probably.
-    // Better or worse than having two levels of function invocation for
-    // every function call?
 
     // TODO decision
 
@@ -946,7 +911,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             {
                 case Load:
                     var v = this.gensym('loadname');
-                    out("var ", v, "=$loc.", mangled, "!==undefined?$loc.",mangled,":Sk.loadname('",mangled,"',$gbl);");
+                    out("var ", v, "=$loc.", mangled, "!==undefined?$loc.",mangled,":Sk.misceval.loadname('",mangled,"',$gbl);");
                     return v;
                 case Store:
                     out("$loc.", mangled, "=", dataToStore, ";");
@@ -962,7 +927,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             switch (ctx)
             {
                 case Load:
-                    return this._gr("loadgbl", "Sk.loadname('", mangled, "',$gbl)");
+                    return this._gr("loadgbl", "Sk.misceval.loadname('", mangled, "',$gbl)");
                 case Store:
                     out("$gbl.", mangled, "=", dataToStore, ';');
                     break;
@@ -1015,7 +980,6 @@ Compiler.prototype.cbody = function(stmts)
 {
     for (var i = 0; i < stmts.length; ++i)
         this.vstmt(stmts[i]);
-    out("break;");
 };
 
 Compiler.prototype.cprint = function(s)
@@ -1041,12 +1005,13 @@ Compiler.prototype.cmod = function(mod)
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;$gbl.__name__=$modname;while(true){switch($blk){";
-    this.u.suffixCode = "}return $loc;}});";
+    this.u.suffixCode = "}}});";
 
     switch (mod.constructor)
     {
         case Module:
             this.cbody(mod.body);
+            out("return $loc;");
             break;
         default:
             goog.asserts.fail("todo; unhandled case in compilerMod");

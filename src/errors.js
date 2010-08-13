@@ -68,6 +68,15 @@ Sk.builtin.IndexError.prototype.tp$name = "IndexError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
+Sk.builtin.NameError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.NameError, Sk.builtin.Exception);
+Sk.builtin.NameError.prototype.tp$name = "NameError";
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
 Sk.builtin.ParseError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.ParseError, Sk.builtin.Exception);
 Sk.builtin.ParseError.prototype.tp$name = "ParseError";

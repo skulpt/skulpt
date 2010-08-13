@@ -165,3 +165,107 @@ Sk.misceval.print_ = function print(x)
     if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
         Sk.misceval.softspace_ = true;
 };
+
+/**
+ * @param {string} name
+ * @param {Object=} other generally globals
+ */
+Sk.misceval.loadname = function(name, other)
+{
+    var v = other[name];
+    if (v !== undefined) return v;
+
+    var bi = Sk.builtin[name];
+    if (bi !== undefined) return bi;
+
+    throw new NameError("name '" + name + "' is not defined");
+};
+
+/**
+ *
+ * Notes on necessity for 'call()':
+ *
+ * Classes are callable in python to create an instance of the class. If
+ * we're calling "C()" we cannot tell at the call site whether we're
+ * calling a standard function, or instantiating a class.
+ *
+ * JS does not support user-level callables. So, we can't use the normal
+ * prototype hierarchy to make the class inherit from a 'class' type
+ * where the various tp$getattr, etc. methods would live.
+ *
+ * Instead, we must copy all the methods from the prototype of our class
+ * type onto every instance of the class constructor function object.
+ * That way, both "C()" and "C.tp$getattr(...)" can still work. This is
+ * of course quite expensive.
+ *
+ * The alternative would be to indirect all calls (whether classes or
+ * regular functions) through something like C.$call(...). In the case
+ * of class construction, $call could then call the constructor after
+ * munging arguments to pass them on. This would impose a penalty on
+ * regular function calls unfortunately, as they would have to do the
+ * same thing.
+ *
+ * Note that the same problem exists for function objects too (a "def"
+ * creates a function object that also has properties). It just happens
+ * that attributes on classes in python are much more useful and common
+ * that the attributes on functions.
+ *
+ * Also note, that for full python compatibility we have to do the $call
+ * method because any python object could have a __call__ method which
+ * makes the python object callable too. So, unless we were to make
+ * *all* objects simply (function(){...}) and use the dict to create
+ * hierarchy, there would be no way to call that python user function. I
+ * think I'm prepared to sacrifice __call__ support, or only support it
+ * post-ECMA5 or something.
+ *
+ * Is using (function(){...}) as the only object type too crazy?
+ * Probably. Better or worse than having two levels of function
+ * invocation for every function call?
+ *
+ * For a class `C' with instance `inst' we have the following cases:
+ *
+ * 1. C.attr
+ *
+ * 2. C.staticmeth()
+ *
+ * 3. x = C.staticmeth; x()
+ *
+ * 4. inst = C()
+ *
+ * 5. inst.attr
+ *
+ * 6. inst.meth()
+ *
+ * 7. x = inst.meth; x()
+ *
+ * 8. inst(), where C defines a __call__
+ *
+ * Because in general these are accomplished by a helper function
+ * (tp$getattr/setattr/slice/ass_slice/etc.) it seems appropriate to add
+ * a call that generally just calls through, but sometimes handles the
+ * unusual cases. Once ECMA-5 is more broadly supported we can revisit
+ * and hopefully optimize.
+ *
+ * @param {Object} func the thing to call
+ * @param {Object} kw keyword args or undef
+ * @param {...*} args stuff to pass it
+ */
+
+Sk.misceval.call = function(func, kw, args)
+{
+    if (typeof func === "function" && kw === undefined)
+    {
+        var args = Array.prototype.slice.call(arguments, 2);
+        return func.apply(null, args);
+    }
+    // todo; else if special case bound methods since they're so common
+    else
+    {
+        var call = func.tp$call;
+        if (call !== undefined)
+        {
+            goog.asserts.fail();
+        }
+        throw new TypeError("'" + func.tp$name + "' object is not callable");
+    }
+};
