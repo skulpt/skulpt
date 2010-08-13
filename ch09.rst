@@ -1177,15 +1177,15 @@ Exercises
    respectively. In this example, ``start`` is greater than ``stop``.  What
    happens if ``start < stop`` and ``step < 0``? Write a rule for the
    relationships among ``start``, ``stop``, and ``step``.
-#.
+#. Draw a state diagram for ``a`` and ``b`` before and after the third line of
+   the following python code is executed:
+
    .. sourcecode:: python
     
        a = [1, 2, 3]
        b = a[:]
        b[0] = 5
 
-   Draw a state diagram for ``a`` and ``b`` before and after the third line is
-   executed.
 #. What will be the output of the following program?
 
    .. sourcecode:: python
@@ -1232,42 +1232,74 @@ Exercises
          ['this', 'and', 'that']
        """
 
-#. Write a function ``add_lists(a, b)`` that takes two lists of numbers of the
-   same length, and returns a new list containing the sums of the corresponding 
-   elements of each.
+#. Lists can be used to represent mathematical *vectors*.  In this exercise
+   and several that follow you will write functions to perform standard
+   operations on vectors.  Create a file named ``vectors.py`` and write Python
+   code to the doctests for each function pass.
+
+   Write a function ``add_vectors(u, v)`` that takes two lists of numbers of
+   the same length, and returns a new list containing the sums of the
+   corresponding elements of each.
 
    .. sourcecode:: python
     
-       def add_lists(a, b):
+       def add_vectors(u, v):
            """
-             >>> add_lists([1, 1], [1, 1])
-             [2, 2]
-             >>> add_lists([1, 2], [1, 4])
+             >>> add_vectors([1, 0], [1, 1])
+             [2, 1]
+             >>> add_vectors([1, 2], [1, 4])
              [2, 6]
-             >>> add_lists([1, 2, 1], [1, 4, 3])
+             >>> add_vectors([1, 2, 1], [1, 4, 3])
              [2, 6, 4]
+             >>> add_vectors([11, 0, -4, 5], [2, -4, 17, 0])
+             [13, -4, 13, 5]
            """
 
-   ``add_lists`` should pass the doctests above.
-#. Write a function ``mult_lists(a, b)`` that takes two lists of numbers of the 
-   same length, and returns the sum of the products of the corresponding
-   elements of each.
+   ``add_vectors`` should pass the doctests above.
+#. Write a function ``scalar_mult(s, v)`` that takes a number, ``s``, and a
+   list, ``v`` and returns the `scalar multiple
+   <http://en.wikipedia.org/wiki/Scalar_multiple>`__ of ``v`` by ``s``.
+
+   .. sourcecode:: python
+
+       def scalar_mult(s, v):
+           """
+             >>> scalar_mult(5, [1, 2])
+             [5, 10]
+             >>> scalar_mult(3, [1, 0, -1])
+             [3, 0, -3]
+             >>> scalar_mult(7, [3, 0, 5, 11, 2])
+             [21, 0, 35, 77, 14]
+           """
+
+#. Write a function ``dot_product(u, v)`` that takes two lists of numbers of
+   the same length, and returns the sum of the products of the corresponding
+   elements of each (the `dot_product
+   <http://en.wikipedia.org/wiki/Dot_product>`__).
 
    .. sourcecode:: python
     
-       def mult_lists(a, b):
+       def dot_product(u, v):
            """
-             >>> mult_lists([1, 1], [1, 1])
+             >>> dot_product([1, 1], [1, 1])
              2
-             >>> mult_lists([1, 2], [1, 4])
+             >>> dot_product([1, 2], [1, 4])
              9
-             >>> mult_lists([1, 2, 1], [1, 4, 3])
+             >>> dot_product([1, 2, 1], [1, 4, 3])
              12
+             >>> dot_product([2, 0, -1, 1], [1, 5, 2, 0])
+             0
            """
 
-   Verify that ``mult_lists`` passes the doctests above.
-#. Add the following two functions to the ``matrices.py`` module introduced in
-   the section on test-driven development:
+   Verify that ``dot_product`` passes the doctests above.
+#. *Extra challenge for the mathematically inclined*: Write a function
+   ``cross_product(u, v)`` that takes two lists of numbers of length 3 and
+   returns their
+   `cross product <http://en.wikipedia.org/wiki/Cross_product>`__.  You should
+   write your own doctests and use the test driven development process
+   described in the chapter.
+#. Create a new module named ``matrices.py`` and add the following two
+   functions introduced in the section on test-driven development:
 
    .. sourcecode:: python
     
@@ -1329,8 +1361,8 @@ Exercises
    Add your new function to ``matrices.py`` and be sure it passes the doctests
    above. The last two doctests confirm that ``add_matrices`` is a pure
    function.
-#. Write a function ``scalar_mult(n, m)`` that multiplies a matrix, ``m``, by a 
-   scalar, ``n``.
+#. Write a function ``scalar_mult(s, m)`` that multiplies a matrix, ``m``, by a 
+   scalar, ``s``.
 
    .. sourcecode:: python
     
