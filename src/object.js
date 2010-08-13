@@ -22,13 +22,33 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     var descr = this.tp$dict[name.v];
     if (descr !== undefined) return descr.bind(this);
 
+    var cur = this.ob$type;
+    while (cur !== undefined)
+    {
+        descr = cur.tp$dict[name.v];
+        if (descr !== undefined) return descr.bind(this);
+        cur = cur.ob$type;
+    }
+
     throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
+};
+
+Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
+{
+    // todo; lots o' stuff
+    this.__dict__.mp$ass_subscript(name, value);
+    //print("obj now", this.__dict__.tp$repr().v);
 };
 
 Sk.builtin.object.prototype.HashNotImplemented = function()
 {
     throw new Sk.builtin.TypeError("unhashable type: '" + this.tp$name + "'");
 };
+
+Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+
+Sk.builtin.object.prototype.tp$dict = {};
 
 /*
 Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()

@@ -1,45 +1,71 @@
 /**
+ *
  * @constructor
+ *
  * @param {string} name
+ *
  * @param {Array.<Object>=} bases
+ *
  * @param {Object=} dict
- * @param {Object=} body$
+ *
+ *
+ * This type represents the type of `type'. *Calling* an instance of
+ * this builtin type named "type" creates class objects. The resulting
+ * class objects will have various tp$xyz attributes on them that allow
+ * for the various operations on that object.
+ *
+ * calling the type or calling an instance of the type? or both?
  */
-Sk.builtin.type = function type(name, bases, dict, body$)
+
+Sk.builtin.type = function(name, bases, dict)
 {
     if (bases === undefined && dict === undefined)
     {
-        // type function, rather than type constructor
+        // 1 arg version of type()
         var obj = name;
-        // todo; less assey
-        /*
-        if (typeof obj === "number")
-            return Sk.types.int_;
-        else
-        */
-            //return obj.__class__;
-    }
-    else if (!(this instanceof Sk.builtin.type))
-    {
-        return new Sk.builtin.type(name, bases, dict);
+        return obj.ob$type;
     }
     else
     {
-        var __body = body$;
-        var ret = function() {
-            if (__body)
-                return __body.apply(null, arguments);
-        };
-        ret.__name__ = name;
-        /*
-        if (!(bases instanceof Sk.builtin.list))
-            bases = new Sk.builtin.list(bases);
-            */
-        ret.__bases__ = bases;
-        ret.dict = dict;
-        return ret;
+        // type building version of type
+        if (!(this instanceof Sk.builtin.type)) return new Sk.builtin.type(name, bases, dict);
+
+        // todo; verify all this
+        this.tp$new = (function() {});
+        this.tp$new.prototype = new Sk.builtin.object();
+        for (var v in dict)
+            this.tp$new.prototype[v] = dict[v];
+        this.tp$new.prototype.ob$type = this;
+        this.tp$name = name.v;
+        this.tp$bases = bases;
+        this.tp$dict = dict;
+        return this;
     }
+
 };
+
+Sk.builtin.type.prototype.tp$name = "type";
+
+Sk.builtin.type.prototype.tp$call = function()
+{
+    // arguments here are args to __init__
+
+    var obj = new this.tp$new();
+    obj.__dict__ = new Sk.builtin.dict([]);
+
+    // todo; __init__
+    var init = obj.__init__;
+    if (init !== undefined)
+    {
+        // return ignored I guess?
+        var args = Array.prototype.slice.call(arguments, 0);
+        args.unshift(obj);
+        init.apply(null, args);
+    }
+
+    return obj;
+};
+
 /*
 $.prototype.mro = function()
 {

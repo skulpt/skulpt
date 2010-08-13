@@ -726,9 +726,9 @@ Compiler.prototype.cclass = function(s)
     var scopename = this.enterScope(s.name, s, s.lineno);
     var entryBlock = this.newBlock('class entry');
 
-    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$class_outer($globals,$rest){var $gbl=$globals;";
+    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
     this.u.prefixCode += "return(function " + s.name.v + "(){";
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={};while(true){switch($blk){";
+    this.u.prefixCode += "var $blk=" + entryBlock + ";while(true){switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.u.private_ = s.name;
@@ -738,8 +738,7 @@ Compiler.prototype.cclass = function(s)
             this.nameop(new Sk.builtin.str("__name__"), Load));
 
     this.cbody(s.body);
-
-    out("return $loc;");
+    out("break;");
 
     // build class
 
@@ -747,7 +746,8 @@ Compiler.prototype.cclass = function(s)
 
     this.exitScope();
 
-    var wrapped = this._gr("wrapped", "(function ", s.name.v, "$wrap(){return ", scopename, "($gbl,arguments);})");
+    // todo; metaclass
+    var wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name.tp$repr().v, ",[", bases, "])");
 
     // Copy all prototype methods for the class type on to the instance.
     //

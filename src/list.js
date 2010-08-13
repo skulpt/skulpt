@@ -62,7 +62,7 @@ Sk.builtin.list.prototype.list_concat_ = function(other)
 Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 {
     if (i < 0 || i >= this.v.length)
-        throw new Sk.builtin.IndexError("list assignement index out of range");
+        throw new Sk.builtin.IndexError("list assignment index out of range");
     if (v === null)
         return Sk.builtin.list.prototype.list_ass_slice_.call(this, i, i+1, v);
     this.v[i] = v;

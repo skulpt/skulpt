@@ -253,19 +253,50 @@ Sk.misceval.loadname = function(name, other)
 
 Sk.misceval.call = function(func, kw, args)
 {
+    var args = Array.prototype.slice.call(arguments, 2);
     if (typeof func === "function" && kw === undefined)
     {
-        var args = Array.prototype.slice.call(arguments, 2);
         return func.apply(null, args);
     }
     // todo; else if special case bound methods since they're so common
     else
     {
-        var call = func.tp$call;
-        if (call !== undefined)
+        var fcall = func.tp$call;
+        if (fcall !== undefined)
         {
-            goog.asserts.fail();
+            // todo; kwargs
+            return fcall.apply(func, args);
         }
         throw new TypeError("'" + func.tp$name + "' object is not callable");
     }
+};
+
+/**
+ * Constructs a class object given a code object representing the body
+ * of the class, the name of the class, and the list of bases.
+ *
+ * There are no "old-style" classes in Skulpt, so use the user-specified
+ * metaclass (todo;) if there is one, the type of the 0th base class if
+ * there's bases, or otherwise the 'type' type.
+ *
+ * The func code object is passed a (js) dict for its locals which it
+ * stores everything into.
+ *
+ * The metaclass is then called as metaclass(name, bases, locals) and
+ * should return a newly constructed class object.
+ *
+ */
+Sk.misceval.buildClass = function(globals, func, name, bases)
+{
+    // todo; metaclass
+    var meta = Sk.builtin.type; // todo; base classes
+
+    var locals = {};
+
+    // init the dict for the class
+    func(globals, locals);
+
+    var klass = Sk.misceval.call(meta, undefined, name, bases, locals);
+    //print("class", klass);
+    return klass;
 };
