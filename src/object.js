@@ -9,25 +9,44 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
 {
     goog.asserts.assert(name instanceof Sk.builtin.str);
 
-    // todo; data descriptors. we only do non-data descriptors which is what's needed for methods
-
     goog.asserts.assert(this.__dict__ !== undefined);
     var res = this.__dict__.mp$subscript(name);
     if (res !== undefined)
         return res;
 
-    // otherwise, look in the type for a descr
-    // todo; follow mro
-    // todo; where does the binding happen (in Sk.getattr before)
-    var descr = this.tp$dict[name.v];
-    if (descr !== undefined) return descr.bind(this);
-
-    var cur = this.ob$type;
-    while (cur !== undefined)
+    var typeLookup = function(cur, name)
     {
-        descr = cur.tp$dict[name.v];
-        if (descr !== undefined) return descr.bind(this);
-        cur = cur.ob$type;
+        // todo; follow mro properly
+        while (cur !== undefined)
+        {
+            descr = cur.tp$dict[name];
+            if (descr !== undefined) return descr;
+            cur = cur.ob$type;
+        }
+        return undefined;
+    };
+
+    // otherwise, look in the type for a descr
+    var descr = typeLookup(this, name.v);
+    var f;
+    if (descr !== undefined)
+    {
+        f = descr.tp$descr_get;
+        if (f && desc.tp$descr_set) // is a data descriptor
+            return f(descr, this, this.ob$type);
+    }
+
+    // todo; look in instance's __dict__ and return it if there
+
+    if (f)
+    {
+        // non-data descriptor
+        return f(descr, this, this.ob$type);
+    }
+
+    if (descr)
+    {
+        return descr.bind(this); // todo; this bind shouldn't be necessary
     }
 
     throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
