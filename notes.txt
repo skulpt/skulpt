@@ -1,0 +1,74 @@
+todo:
+object genericgetattr is wrong. should be looking up bases, not types. dummy
+can tp$getattr take a js string rather than Sk.builtin.str?
+
+
+notes:
+
+both the type object's slots, and the tp_dict elements of a CPython
+typeobject are handled by the prototype object in js. ob$type, tp$xyz,
+sq$xyz, etc. correspond to slots, and non-$-containing ones are entries
+in tp$dict (that is methods, etc defined on the class).
+
+there is still a __dict__ object on instances (corresponding to dict at
+tp_dictoffset in CPython) which holds the attributes for the instance.
+these are not stored in the "object" js storage because objects in js
+are only string->obj, not obj->obj mappings. we might want to revisit
+that at some point, depending on whether anything other than strings
+really goes on the lhs. the __dict__ is accessible as inst.inst$dict on
+instances.
+
+having the prototype be the type object is slightly not good. when we
+want to get the type of a list, we do:
+
+listinst = []
+listinst.ob$type == list.prototype;         // <- great
+listinst.ob$type.ob$type == list.prototype; // <- bad!
+
+we want the second one to be type.prototype because the type of the type
+of a list instance is infact 'type'. this is just a silly artifact of
+how javascript inheritance works: by copying that prototype object. so,
+if we make a new thing based on the object that's using that as its
+prototype, we can't tell the difference between the copy and the
+prototype itself.
+
+what if we made the type object for a list instance be a "new list()"
+i.e. based on the prototype, but then with its ob$type set?
+
+todo;;;
+prototype should contain pyfunction objects, not just typeof x ===
+'function'. in lookup, the 'descr' from type lookup should be a function
+object so that it can get its ob$type (which would be the function type)
+would have a descriptor on it, so it can wrap (or not) the function into
+a bound method.
+
+??? how does cpython work? they're obviously just regular c functions in the slots.
+
+ -- ah. tp_methods is a list of the methods which is some data that gets
+ wrapped into appropriate method objects on startup to build the type
+ up.
+
+descriptor lookup:
+
+    looking up 'name' on obj
+    get obj.ob_type, pass to type_lookup (e.g. Sk.builtin.list.ob$type, which is basically the prototype obj of list)
+    descr = obj.ob_type[name] (a builtin.func object)
+    f = descr.ob_type.tp_descr_get
+    result = f(descr, obj, obj.ob_type)
+
+so, the functions on list (say, 'extend') are actually descriptors
+        
+SO!
+- for the builtin types, the 'slot' functions tp$stuff are just js
+functions. but, the accessible functions like list.extend are
+builtin.func's. that way they have the various methods, they have an
+ob$type, and they have a tp$descr_get which does appropriate binding.
+
+
+oh, ffs I hate JS.
+
+klass = new Object();
+klass.prototype.x = function(){};
+new klass();
+
+# vim: set tw=72:

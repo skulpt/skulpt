@@ -681,6 +681,7 @@ Compiler.prototype.cfunction = function(s)
 
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
 
+    /*
     this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$outer($globals,"
         + (defaults.length > 0 ? "$defaults," : "")
         + "$rest){var $gbl=$globals;";
@@ -689,7 +690,9 @@ Compiler.prototype.cfunction = function(s)
         this.u.prefixCode += "$rest = Array.prototype.slice.call($rest);"; // this is 'arguments' from outer
         this.u.prefixCode += "for (var $defi = 0; $defi < $defaults.length; ++$defi) { if ($rest[$defi] === undefined) $rest[$defi] = $defaults[$defi]; }";
     }
-    this.u.prefixCode += "return(function " + s.name.v + "(";
+    */
+    // todo; defaults in new way
+    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "(";
 
     for (var i = 0; i < args.args.length; ++i)
     {
@@ -700,17 +703,28 @@ Compiler.prototype.cfunction = function(s)
 
     this.u.prefixCode += "){";
     var entryBlock = this.newBlock('function entry');
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={};while(true){switch($blk){";
-    this.u.suffixCode = "}break;}}).apply(null,$rest);});";
+    if (defaults.length > 0)
+    {
+        for (var i = 0; i < defaults.length; ++i)
+        {
+            var argname = this.nameop(args.args[i].id, Load);
+            this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
+        }
+    }
+    // note special usage of this to avoid having to slice globals from
+    // function object into all invocations.
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={},$gbl=this;while(true){switch($blk){";
+    this.u.suffixCode = "}break;}});";
 
     this.vseqstmt(s.body);
     out("return null;"); // if we fall off the bottom, we want the ret to be None
 
     this.exitScope();
 
-    var wrapped = this._gr("wrapped", "(function ", s.name.v, "$wrap(){return ", scopename,
-            "($gbl,", (defaults.length > 0 ? "[" + defaults.join(',') + "]," : ""), "arguments);})");
-    this.nameop(s.name, Store, wrapped);
+    if (defaults.length > 0)
+        out(scopename, ".$defaults=[", defaults.join(','), "];");
+    var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl)");
+    this.nameop(s.name, Store, funcobj);
 };
 
 Compiler.prototype.cclass = function(s)

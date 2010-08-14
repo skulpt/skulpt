@@ -15,21 +15,10 @@ Sk.builtin.list = function(L)
     else
     {
         this.v = [];
-        Sk.builtin.list.prototype.list_extend_.call(this, L);
+        Sk.builtin.list.prototype.extend.call(this, L);
     }
 
-    // todo; this should be elsewhere
-    this.__dict__ = new Sk.builtin.dict([]);
-
-    this.__class__ = this.nativeclass$ = Sk.builtin.list;
     return this;
-};
-
-Sk.builtin.list.prototype.list_extend_ = function(b)
-{
-    for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-        this.v.push(i);
-    return null;
 };
 
 Sk.builtin.list.prototype.list_iter_ = function()
@@ -77,19 +66,6 @@ Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
     this.v.splice.apply(this.v, args);
 };
 
-Sk.builtin.list.prototype.listindex_ = function(item)
-{
-    var len = this.v.length;
-    var obj = this.v;
-    for (var i = 0; i < len; ++i)
-    {
-        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
-            return i;
-    }
-    throw new Sk.builtin.ValueError("list.index(x): x not in list");
-}
-
-// js types for some args. non-$ always use all python types.
 Sk.builtin.list.prototype.tp$name = "list";
 Sk.builtin.list.prototype.tp$repr = function()
 {
@@ -195,49 +171,54 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
-Sk.builtin.list.prototype.list_append_ = function(item)
-{
-    this.v.push(item);
-    return null;
-};
-
-Sk.builtin.list.prototype.listsort_ = function()
-{
-    // todo; cmp, key, rev
-    // todo; totally wrong except for numbers
-    this.v.sort();
-    return null;
-};
-
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
 Sk.builtin.list.prototype.mp$ass_subscript = Sk.builtin.list.prototype.list_ass_subscript_;
 
-// tp$dict is the dict for the type object's attributes. this includes methods
-// for builtin types which are found during lookup. we use a js object for
-// these as a concession to some speed, though it strictly probably should be a
-// dict as well.
-Sk.builtin.list.prototype.tp$dict = {
-    __getitem__: Sk.builtin.list.prototype.list_subscript_,
-    /*
-    __reversed__: list_reversed,
-    */
-    append: Sk.builtin.list.prototype.list_append_,
-    /*
-    insert: listinsert,
-    */
-    extend: Sk.builtin.list.prototype.list_extend_,
-            /*
-    pop: listpop,
-    remove: listremove,
-    */
-    index: Sk.builtin.list.prototype.listindex_,
-    /*
-    count: listcount,
-    reverse: listreverse,
-    */
-    sort: Sk.builtin.list.prototype.listsort_
-};
+Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index)
+        {
+            return Sk.builtin.list.prototype.list_subscript_.call(self, index);
+        });
+//Sk.builtin.list.prototype.__reversed__ = todo;
+Sk.builtin.list.prototype.append = new Sk.builtin.func(function(self, item)
+{
+    self.v.push(item);
+    return null;
+});
 
+//Sk.builtin.list.prototype.insert = todo;
+Sk.builtin.list.prototype.extend = new Sk.builtin.func(function(self, b)
+{
+    for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        self.v.push(i);
+    return null;
+});
+
+//Sk.builtin.list.prototype.pop = todo;
+//Sk.builtin.list.prototype.remove = todo;
+Sk.builtin.list.prototype.index = new Sk.builtin.func(function(self, item)
+{
+    var len = self.v.length;
+    var obj = self.v;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+            return i;
+    }
+    throw new Sk.builtin.ValueError("list.index(x): x not in list");
+});
+
+//Sk.builtin.list.prototype.count = todo;
+//Sk.builtin.list.prototype.reverse = todo;
+Sk.builtin.list.prototype.sort = new Sk.builtin.func(function(self)
+{
+    // todo; cmp, key, rev
+    // todo; totally wrong except for numbers
+    self.v.sort();
+    return null;
+});
+
+
+Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeTypeObj('list', new Sk.builtin.list([]));
 
 // __dict__ is the instance's actual dict
 

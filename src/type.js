@@ -30,20 +30,37 @@ Sk.builtin.type = function(name, bases, dict)
         // type building version of type
         if (!(this instanceof Sk.builtin.type)) return new Sk.builtin.type(name, bases, dict);
 
-        // todo; verify all this
-        this.tp$new = (function() {});
-        this.tp$new.prototype = new Sk.builtin.object();
+        // dict is the result of running the classes code object
+        // (basically the dict of functions). those become the prototype
+        // object of the class).
+
+        this.tp$new = (function(){});
+        var klass = this.tp$new;
+        //print(JSON.stringify(dict));
         for (var v in dict)
-            this.tp$new.prototype[v] = dict[v];
-        this.tp$new.prototype.ob$type = this;
-        this.tp$name = name.v;
-        this.tp$bases = bases;
-        this.tp$dict = dict;
+            klass.prototype[v] = dict[v];
+        klass.prototype.tp$name = name;
+        klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+        klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+        klass.prototype.ob$type = new klass();
+        // todo; bases
         return this;
     }
 
 };
 
+/**
+ *
+ */
+Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
+{
+    var t = newedInstanceOfType;
+    // todo;
+    t.ob$type = Sk.builtin.type;
+    return t;
+};
+
+//Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 Sk.builtin.type.prototype.tp$name = "type";
 
 Sk.builtin.type.prototype.tp$call = function()
@@ -51,16 +68,16 @@ Sk.builtin.type.prototype.tp$call = function()
     // arguments here are args to __init__
 
     var obj = new this.tp$new();
-    obj.__dict__ = new Sk.builtin.dict([]);
 
-    // todo; __init__
+    obj.inst$dict = new Sk.builtin.dict([]);
+
     var init = obj.__init__;
     if (init !== undefined)
     {
         // return ignored I guess?
         var args = Array.prototype.slice.call(arguments, 0);
         args.unshift(obj);
-        init.apply(null, args);
+        Sk.misceval.apply(init, undefined, args);
     }
 
     return obj;

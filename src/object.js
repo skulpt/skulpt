@@ -9,44 +9,53 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
 {
     goog.asserts.assert(name instanceof Sk.builtin.str);
 
-    goog.asserts.assert(this.__dict__ !== undefined);
-    var res = this.__dict__.mp$subscript(name);
-    if (res !== undefined)
-        return res;
+    var tp = this.ob$type;
+    goog.asserts.assert(tp !== undefined);
 
-    var typeLookup = function(cur, name)
+    var typeLookup = function(curtype, name)
     {
         // todo; follow mro properly
-        while (cur !== undefined)
+        while (curtype)
         {
-            descr = cur.tp$dict[name];
+            descr = curtype[name];
             if (descr !== undefined) return descr;
-            cur = cur.ob$type;
+            curtype = curtype.ob$type;
         }
         return undefined;
     };
 
     // otherwise, look in the type for a descr
-    var descr = typeLookup(this, name.v);
+    var descr = tp[name.v];
+    //print("looking for ", name.v);
+    //print(descr, JSON.stringify(descr));
     var f;
     if (descr !== undefined)
     {
-        f = descr.tp$descr_get;
-        if (f && desc.tp$descr_set) // is a data descriptor
-            return f(descr, this, this.ob$type);
+        f = descr.ob$type.tp$descr_get;
+        if (f && descr.tp$descr_set) // is a data descriptor if it has a set
+            return f.call(descr, this, this.ob$type);
     }
 
-    // todo; look in instance's __dict__ and return it if there
+    // todo; assert? force?
+    //print("getattr", name.v, this.inst$dict.tp$repr().v);
+    if (this.inst$dict)
+    {
+        //print("hi");
+        var res = this.inst$dict.mp$subscript(name);
+        //print(res);
+        if (res !== undefined)
+            return res;
+    }
 
     if (f)
     {
         // non-data descriptor
-        return f(descr, this, this.ob$type);
+        return f.call(descr, this, this.ob$type);
     }
 
     if (descr)
     {
-        return descr.bind(this); // todo; this bind shouldn't be necessary
+        return descr;
     }
 
     throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
@@ -55,7 +64,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
 Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
 {
     // todo; lots o' stuff
-    this.__dict__.mp$ass_subscript(name, value);
+    this.inst$dict.mp$ass_subscript(name, value);
     //print("obj now", this.__dict__.tp$repr().v);
 };
 
@@ -67,7 +76,7 @@ Sk.builtin.object.prototype.HashNotImplemented = function()
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 
-Sk.builtin.object.prototype.tp$dict = {};
+Sk.builtin.baseobject = new Sk.builtin.type('object', null, {});
 
 /*
 Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()

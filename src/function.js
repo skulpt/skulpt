@@ -1,54 +1,30 @@
 /**
  * @constructor
+ *
+ * @param {Function} code the javascript implementation of this function
+ * @param {Object=} globals the globals where this function was defined.
+ * Can be undefined (which will be stored as null) for builtins. (is
+ * that ok?)
+ *
  */
-Sk.builtin.funct = function() {};
-
-Sk.fget = function fget(self, instance, owner)
+Sk.builtin.func = function(code, globals)
 {
-    var __func = self;
-    var __instance = instance;
-    var ret = function() {
-        //print("bound call", __func, __instance, __instance !== null);
-        if (__instance !== null)
-        {
-            var tmpargs = Array.prototype.slice.call(arguments, 0);
-            //print("bound invoke", JSON2.stringify(tmpargs));
-            tmpargs.unshift(__instance);
-            //print("bound invoke", JSON2.stringify(tmpargs));
-            return __func.apply("nothis_bound", tmpargs);
-        }
-        else // if (arguments[0] instanceof owner.__class__)
-        {
-            //print("unbound function invoke:", arguments.length, arguments);
-            return __func.apply("nothis_unbound", arguments);
-        }
-        throw new TypeError("Unbound method expects an instance of " + owner + " as first argument");
-    };
-
-    // todo; ret should be constructing a function object. maybe. or
-    // something. not this anyway.
-    ret.__repr__ = function()
-    {
-        var ret;
-        var fname = owner.__name__.v + "." + __func.__name__.v;
-        if (__instance !== null)
-        {
-            var objrepr = Sk.misceval.objectRepr(__instance).v;
-            ret = "<bound method " + fname + " of " + objrepr + ">";
-        }
-        else
-        {
-            ret = "<unbound method " + fname + ">";
-        }
-        return new Sk.builtin.str(ret);
-    };
-
-    if (self.argnames$) // todo; builtins can't be called with kwargs yet
-    {
-        if (instance === null)
-            ret.argnames$ = self.argnames$;
-        else
-            ret.argnames$ = self.argnames$.slice(1);
-    }
-    return ret;
+    this.func_code = code;
+    this.func_globals = globals || null;
 };
+
+Sk.builtin.func.prototype.tp$name = "function";
+Sk.builtin.func.prototype.tp$descr_get = function(obj, objtype)
+{
+    goog.asserts.assert(obj !== undefined && objtype !== undefined)
+    if (obj == null) return this;
+    return new Sk.builtin.method(this, obj);
+};
+Sk.builtin.func.prototype.tp$call = function()
+{
+    // note: functions expect 'this' to be globals to avoid having to
+    // slice/unshift onto the main args
+    return this.func_code.apply(this.func_globals, arguments); 
+};
+
+Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new Sk.builtin.func(null, null));

@@ -33,8 +33,6 @@ Sk.builtin.str = function str(x)
     var it = interned[ret];
     if (it !== undefined) return it;
 
-    this.__dict__ = new Sk.builtin.dict([]);
-
     this.__class__ = this.nativeclass$ = Sk.builtin.str;
     this.v = ret;
     interned[ret] = this;
@@ -128,37 +126,6 @@ Sk.builtin.str.prototype.tp$repr = function()
     return new Sk.builtin.str(ret);
 };
 
-Sk.builtin.str.prototype.string_join_ = function(seq)
-{
-    var arrOfStrs = [];
-    for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-    {
-        if (i.constructor !== Sk.builtin.str) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
-        arrOfStrs.push(i.v);
-    }
-    return new Sk.builtin.str(arrOfStrs.join(this.v));
-};
-
-Sk.builtin.str.prototype.string_split_ = function(on, howmany)
-{
-    var res = this.v.split(new Sk.builtin.str(on).v, howmany);
-    var tmp = [];
-    for (var i = 0; i < res.length; ++i)
-    {
-        tmp.push(new Sk.builtin.str(res[i]));
-    }
-    return new Sk.builtin.list(tmp);
-};
-
-Sk.builtin.str.prototype.string_replace_ = function(oldS, newS, count)
-{
-    if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)
-        throw new Sk.builtin.TypeError("expecting a string");
-    goog.asserts.assert(count === undefined, "todo; replace() with could not implemented");
-    var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
-    return new Sk.builtin.str(this.v.replace(patt, newS.v));
-};
-
 Sk.builtin.str.alphanum_ = {};
 (function() {
  var i;
@@ -186,11 +153,39 @@ Sk.builtin.str.re_escape_ = function(s)
     }
     return ret.join('');
 };
-Sk.builtin.str.prototype.tp$dict = {
-    join: Sk.builtin.str.prototype.string_join_,
-    split: Sk.builtin.str.prototype.string_split_,
-    replace: Sk.builtin.str.prototype.string_replace_
-};
+
+Sk.builtin.str.prototype.join = new Sk.builtin.func(function(self, seq)
+{
+    var arrOfStrs = [];
+    for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+    {
+        if (i.constructor !== Sk.builtin.str) throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
+        arrOfStrs.push(i.v);
+    }
+    return new Sk.builtin.str(arrOfStrs.join(self.v));
+});
+
+Sk.builtin.str.prototype.split = new Sk.builtin.func(function(self, on, howmany)
+{
+    var res = self.v.split(new Sk.builtin.str(on).v, howmany);
+    var tmp = [];
+    for (var i = 0; i < res.length; ++i)
+    {
+        tmp.push(new Sk.builtin.str(res[i]));
+    }
+    return new Sk.builtin.list(tmp);
+});
+
+Sk.builtin.str.prototype.replace = new Sk.builtin.func(function(self, oldS, newS, count)
+{
+    if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)
+        throw new Sk.builtin.TypeError("expecting a string");
+    goog.asserts.assert(count === undefined, "todo; replace() with could not implemented");
+    var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
+    return new Sk.builtin.str(self.v.replace(patt, newS.v));
+});
+
+Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeTypeObj('str', new Sk.builtin.str(null));
 
 /*
 

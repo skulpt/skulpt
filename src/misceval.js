@@ -254,6 +254,15 @@ Sk.misceval.loadname = function(name, other)
 Sk.misceval.call = function(func, kw, args)
 {
     var args = Array.prototype.slice.call(arguments, 2);
+    return Sk.misceval.apply(func, kw, args);
+};
+
+/**
+ * same as Sk.misceval.call except args is an actual array, rather than
+ * varargs.
+ */
+Sk.misceval.apply = function(func, kw, args)
+{
     if (typeof func === "function" && kw === undefined)
     {
         return func.apply(null, args);
@@ -269,7 +278,7 @@ Sk.misceval.call = function(func, kw, args)
         }
         throw new TypeError("'" + func.tp$name + "' object is not callable");
     }
-};
+}
 
 /**
  * Constructs a class object given a code object representing the body
@@ -294,9 +303,10 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
     var locals = {};
 
     // init the dict for the class
+    //print("CALLING", func);
     func(globals, locals);
 
     var klass = Sk.misceval.call(meta, undefined, name, bases, locals);
-    //print("class", klass);
+    //print("class", klass, JSON.stringify(klass.prototype));
     return klass;
 };
