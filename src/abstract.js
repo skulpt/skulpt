@@ -19,7 +19,6 @@ Sk.abstr.binop_type_error = function(v, w, name)
 // this can't be a table for closure
 Sk.abstr.boNameToSlotFunc_ = function(obj, name)
 {
-    /* todo;
     switch (name)
     {
         case "Add": return obj.nb$add;
@@ -37,7 +36,6 @@ Sk.abstr.boNameToSlotFunc_ = function(obj, name)
         default:
             goog.asserts.fail();
     }
-        */
 };
 
 Sk.abstr.binary_op_ = function(v, w, opname)
@@ -150,16 +148,20 @@ Sk.abstr.numberInplaceBinOp = function(v, w, op)
 
 Sk.abstr.numberUnaryOp = function(v, op)
 {
-    if (v === false && op === "Not") return true;
-    else if (v === true && op === "Not") return false;
+    if (op === "Not") return Sk.misceval.isTrue(v) ? false : true;
     else if (typeof v === "number")
     {
         if (op === "USub") return -v;
-        else if (op === "Not") return Sk.misceval.isTrue(v) ? false : true;
-        else if (op === "UAdd") return v;
-        else if (op === "Invert") return ~v;
+        if (op === "UAdd") return v;
+        if (op === "Invert") return ~v;
     }
-    goog.asserts.fail("todo; unary op dispatch");
+    else
+    {
+        if (op === "USub" && v.nb$negative) return v.nb$negative();
+        if (op === "UAdd" && v.nb$positive) return v.nb$positive();
+        if (op === "Inver" && v.nb$positive) return v.nb$invert();
+    }
+    throw new TypeError("unsupported operand type for " + op + " '" + v.tp$name + "'");
 };
 
 //

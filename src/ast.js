@@ -1974,7 +1974,7 @@ Sk.astDump = function(node)
             var ret;
             if (node === true) ret = "True";
             else if (node === false) ret = "False";
-            else if (node instanceof Sk.builtin.lng) ret = node.__str__().v;
+            else if (node instanceof Sk.builtin.lng) ret = node.tp$str().v;
             else if (node instanceof Sk.builtin.str) ret = node.tp$repr().v;
             else ret = "" + node;
             return indent + ret;

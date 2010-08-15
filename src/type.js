@@ -23,6 +23,15 @@ Sk.builtin.type = function(name, bases, dict)
     {
         // 1 arg version of type()
         var obj = name;
+        if (obj === true || obj === false) return Sk.builtin.BoolObj.prototype.ob$type;
+        if (obj === null) return Sk.builtin.NoneObj.prototype.ob$type;
+        if (typeof obj === "number")
+        {
+            if (Math.floor(obj) === obj)
+                return Sk.builtin.IntObj.prototype.ob$type;
+            else
+                return Sk.builtin.FloatObj.prototype.ob$type;
+        }
         return obj.ob$type;
     }
     else
@@ -43,6 +52,13 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { print("in type descr_get"); };
+        klass.prototype.tp$repr = function()
+        {
+            var mod = this.ob$type.__module__;
+            var cname = "?";
+            if (mod) cname = mod.v;
+            return new Sk.builtin.str("<" + cname + "." + name + " instance>");
+        };
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass());
         // todo; bases
         return this;
@@ -56,8 +72,13 @@ Sk.builtin.type = function(name, bases, dict)
 Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
 {
     var t = newedInstanceOfType;
-    // todo;
-    t.ob$type = Sk.builtin.type;
+    // todo; clarify why these can't go on type.prototype
+    t.ob$type = Sk.builtin.type.prototype.ob$type;
+    t.tp$name = name;
+    t.tp$repr = function()
+    {
+        return new Sk.builtin.str("<type '" + this.tp$name + "'>");
+    };
     return t;
 };
 
@@ -121,6 +142,15 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
     throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name.v + "'");
 };
+
+
+/*Sk.builtin.type.TrueType = Sk.builtin.type.makeTypeObj('True', (function(){}));
+Sk.builtin.type.FalseType = Sk.builtin.type.makeTypeObj('False', (function(){}));
+Sk.builtin.type.NoneType = Sk.builtin.type.makeTypeObj('None', (function(){}));
+Sk.builtin.type.IntType = Sk.builtin.type.makeTypeObj('int', (function(){}));
+Sk.builtin.type.FloatType = Sk.builtin.type.makeTypeObj('float', (function(){}));
+*/
+
 
 /*
 $.prototype.mro = function()

@@ -3,12 +3,14 @@ var interned = {};
 /**
  * @constructor
  * @param {*} x
+ * @param {bool=} $ctorhack
  * @extends Sk.builtin.object
  */
-Sk.builtin.str = function str(x)
+Sk.builtin.str = function(x, $ctorhack)
 {
+    if ($ctorhack) return this;
     if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
-    if (x instanceof Sk.builtin.str) return x;
+    if (x instanceof Sk.builtin.str && x !== Sk.builtin.str.prototype.ob$type) return x;
     if (!(this instanceof Sk.builtin.str)) return new Sk.builtin.str(x);
 
     // convert to js string
@@ -185,7 +187,7 @@ Sk.builtin.str.prototype.replace = new Sk.builtin.func(function(self, oldS, newS
     return new Sk.builtin.str(self.v.replace(patt, newS.v));
 });
 
-Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeTypeObj('str', new Sk.builtin.str(null));
+Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeTypeObj('str', new Sk.builtin.str(undefined, true));
 
 /*
 

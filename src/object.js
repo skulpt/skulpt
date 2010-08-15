@@ -65,6 +65,14 @@ Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetA
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 
 Sk.builtin.baseobject = new Sk.builtin.type('object', null, {});
+Sk.builtin.type.prototype.ob$type = new Sk.builtin.type('type', null, {});
+
+Sk.builtin.BoolObj = function() {};
+Sk.builtin.BoolObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('Bool', new Sk.builtin.BoolObj());
+
+Sk.builtin.IntObj = function() {};
+Sk.builtin.IntObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('int', new Sk.builtin.IntObj());
+
 
 /*
 Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()

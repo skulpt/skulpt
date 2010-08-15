@@ -87,9 +87,9 @@ Compiler.prototype.annotateSource = function(ast)
     {
         var lineno = ast.lineno;
         var col_offset = ast.col_offset;
-        out("\n/* line ", lineno, "\n", this.getSourceLine(lineno), "\n");
+        out("\n//\n// line ", lineno, ":\n// ", this.getSourceLine(lineno), "\n// ");
         for (var i = 0; i < col_offset; ++i) out(" ");
-        out("^\n*/");
+        out("^\n//\n");
     }
 };
 
@@ -1090,7 +1090,20 @@ Sk.importModule = function(name, filename, source, dumpJS)
         if (dumpJS)
         {
             print("-----");
-            finalcode = js_beautify(co.code);
+            var withLineNumbers = function(code)
+            {
+                var beaut = js_beautify(co.code);
+                var lines = beaut.split("\n");
+                for (var i = 1; i <= lines.length; ++i)
+                {
+                    var width = ("" + i).length;
+                    var pad = "";
+                    for (var j = width; j < 5; ++j) pad += " ";
+                    lines[i - 1] = "/* " + pad + i + " */ " + lines[i - 1];
+                }
+                return lines.join("\n");
+            };
+            finalcode = withLineNumbers(co.code);
             print(finalcode);
         }
     }

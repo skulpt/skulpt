@@ -33,6 +33,9 @@ Sk.builtin.lng.tp$index = function()
     goog.asserts.fail("todo;");
 };
 
+Sk.builtin.lng.prototype.tp$name = "long";
+Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeTypeObj('long', new Sk.builtin.lng(0));
+
 Sk.builtin.lng.SHIFT$ = 15;
 Sk.builtin.lng.BASE$ = 1 << Sk.builtin.lng.SHIFT$;
 Sk.builtin.lng.MASK$ = Sk.builtin.lng.BASE$ - 1;
@@ -129,7 +132,7 @@ Sk.longFromStr = function(s)
     for (var i = s.length - 1; i >= 0; --i)
     {
         add = Sk.builtin.lng.mulInt$(col, parseInt(s.substr(i, 1), 16));
-        ret = ret.__add__(add);
+        ret = ret.nb$add(add);
         col = Sk.builtin.lng.mulInt$(col, base);
         //print("i", i, "ret", ret.digit$, ret.size$, "col", col.digit$, col.size$, ":",s.substr(i, 1), ":",parseInt(s.substr(i, 1), 10));
     }
@@ -144,7 +147,7 @@ Sk.builtin.lng.prototype.clone = function()
     return ret;
 };
 
-Sk.builtin.lng.prototype.__add__ = function(other)
+Sk.builtin.lng.prototype.nb$add = function(other)
 {
     // todo; upconvert other to long
 
@@ -171,7 +174,7 @@ Sk.builtin.lng.prototype.__add__ = function(other)
     return z;
 };
 
-Sk.builtin.lng.prototype.__sub__ = function(other)
+Sk.builtin.lng.prototype.nb$subtract = function(other)
 {
     // todo; upconvert other
 
@@ -194,7 +197,7 @@ Sk.builtin.lng.prototype.__sub__ = function(other)
     return z;
 };
 
-Sk.builtin.lng.prototype.__mul__ = function(other)
+Sk.builtin.lng.prototype.nb$multiply = function(other)
 {
     // todo; upconvert
     var z = Sk.builtin.lng.mul$(this, other);
@@ -203,7 +206,7 @@ Sk.builtin.lng.prototype.__mul__ = function(other)
     return z;
 };
 
-Sk.builtin.lng.prototype.__pow__ = function(n)
+Sk.builtin.lng.prototype.nb$power = function(n)
 {
     // todo; upconvert n
 
@@ -223,7 +226,7 @@ Sk.builtin.lng.prototype.__pow__ = function(n)
     return ret;
 };
 
-Sk.builtin.lng.prototype.__neg__ = function()
+Sk.builtin.lng.prototype.nb$negative = function()
 {
     var ret = this.clone();
     ret.size$ = -ret.size$;
@@ -440,12 +443,12 @@ Sk.builtin.lng.prototype.divremInt$ = function(n)
     return rem;
 };
 
-Sk.builtin.lng.prototype.__repr__ = function()
+Sk.builtin.lng.prototype.tp$repr = function()
 {
     return new Sk.builtin.str(this.str$(10, true) + "L");
 };
 
-Sk.builtin.lng.prototype.__str__ = function()
+Sk.builtin.lng.prototype.tp$str = function()
 {
     return new Sk.builtin.str(this.str$(10, true));
 };
