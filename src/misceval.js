@@ -265,9 +265,9 @@ Sk.misceval.apply = function(func, kw, args)
 {
     if (typeof func === "function" && kw === undefined)
     {
+        // todo; can this happen anymore?
         return func.apply(null, args);
     }
-    // todo; else if special case bound methods since they're so common
     else
     {
         var fcall = func.tp$call;
@@ -275,6 +275,17 @@ Sk.misceval.apply = function(func, kw, args)
         {
             // todo; kwargs
             return fcall.apply(func, args);
+        }
+
+        // todo; can we push this into a tp$call somewhere so there's
+        // not redundant checks everywhere for all of these __x__ ones?
+        fcall = func.__call__;
+        if (fcall !== undefined)
+        {
+            // func is actually the object here because we got __call__
+            // from it. todo; should probably use descr_get here
+            args.unshift(func);
+            return Sk.misceval.apply(fcall, kw, args);
         }
         throw new TypeError("'" + func.tp$name + "' object is not callable");
     }

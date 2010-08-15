@@ -12,22 +12,10 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     var tp = this.ob$type;
     goog.asserts.assert(tp !== undefined);
 
-    var typeLookup = function(curtype, name)
-    {
-        // todo; follow mro properly
-        while (curtype)
-        {
-            descr = curtype[name];
-            if (descr !== undefined) return descr;
-            curtype = curtype.ob$type;
-        }
-        return undefined;
-    };
+    // todo; mro
 
     // otherwise, look in the type for a descr
     var descr = tp[name.v];
-    //print("looking for ", name.v);
-    //print(descr, JSON.stringify(descr));
     var f;
     if (descr !== undefined)
     {

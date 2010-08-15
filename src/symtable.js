@@ -194,6 +194,7 @@ SymbolTableScope.prototype.get_methods = function()
         var all = [];
         for (var i = 0; i < this.children.length; ++i)
             all.push(this.children[i].name);
+        all.sort();
         this._classMethods = all;
     }
     return this._classMethods;

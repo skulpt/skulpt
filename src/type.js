@@ -36,13 +36,14 @@ Sk.builtin.type = function(name, bases, dict)
 
         this.tp$new = (function(){});
         var klass = this.tp$new;
-        //print(JSON.stringify(dict));
+        //print("type(nbd):",name,JSON.stringify(dict, null,2));
         for (var v in dict)
             klass.prototype[v] = dict[v];
         klass.prototype.tp$name = name;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-        klass.prototype.ob$type = new klass();
+        klass.prototype.tp$descr_get = function() { print("in type descr_get"); };
+        klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass());
         // todo; bases
         return this;
     }
@@ -81,6 +82,44 @@ Sk.builtin.type.prototype.tp$call = function()
     }
 
     return obj;
+};
+
+
+// basically the same as GenericGetAttr except looks in the proto instead
+Sk.builtin.type.prototype.tp$getattr = function(name)
+{
+    var tp = this.tp$new.prototype;
+    var descr = tp[name.v];
+    var f;
+    //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name.v);
+    if (descr !== undefined)
+    {
+        f = descr.ob$type.tp$descr_get;
+        if (f && descr.tp$descr_set) // is a data descriptor if it has a set
+            return f.call(descr, this, this.ob$type);
+    }
+
+    if (this.inst$dict)
+    {
+        //print("hi");
+        var res = this.inst$dict.mp$subscript(name);
+        //print(res);
+        if (res !== undefined)
+            return res;
+    }
+
+    if (f)
+    {
+        // non-data descriptor
+        return f.call(descr, null, tp);
+    }
+
+    if (descr)
+    {
+        return descr;
+    }
+
+    throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name.v + "'");
 };
 
 /*
