@@ -178,7 +178,7 @@ Sk.misceval.loadname = function(name, other)
     var bi = Sk.builtin[name];
     if (bi !== undefined) return bi;
 
-    throw new NameError("name '" + name + "' is not defined");
+    throw new Sk.builtin.NameError("name '" + name + "' is not defined");
 };
 
 /**

@@ -1,1 +1,1 @@
-EXCEPTION: ReferenceError
+EXCEPTION: NameError: name 'xyzy' is not defined
