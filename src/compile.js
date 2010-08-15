@@ -239,6 +239,11 @@ Compiler.prototype.clistcomp = function(e)
     return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
+Compiler.prototype.cgenexp = function(e)
+{
+    goog.asserts.fail("todo; generator expression");
+};
+
 Compiler.prototype.cyield = function(e)
 {
     if (this.u.ste.blockType !== FunctionBlock)
@@ -407,8 +412,7 @@ Compiler.prototype.vexpr = function(e, data)
         case ListComp:
             return this.clistcomp(e);
         case GeneratorExp:
-            goog.asserts.fail();
-            //return this.cgenexp(e);
+            return this.cgenexp(e);
         case Yield:
             return this.cyield(e);
         case Compare:
@@ -695,6 +699,7 @@ Compiler.prototype.cfor = function(s)
 // - no decos for lambda
 // - no store at end for lambda
 // - lambda can't be generator
+// todo; update for cell/free, not handled currently (i guess not cell, only free)
 Compiler.prototype.clambda = function(e)
 {
     goog.asserts.assert(e instanceof Lambda);
@@ -755,6 +760,8 @@ Compiler.prototype.cfunction = function(s)
     var scopename = this.enterScope(s.name, s, s.lineno);
 
     var isGenerator = this.u.ste.generator;
+    var hasCell = this.u.ste.childHasFree;
+    var hasFree = this.u.ste.hasFree;
 
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
 
@@ -762,21 +769,27 @@ Compiler.prototype.cfunction = function(s)
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "(";
 
+    var funcArgs = [];
     if (isGenerator)
     {
-        this.u.prefixCode += "$gen";
+        funcArgs.push("$gen");
     }
     else
     {
         for (var i = 0; i < args.args.length; ++i)
-        {
-            this.u.prefixCode += this.nameop(args.args[i].id, Load);
-            if (i !== args.args.length - 1)
-                this.u.prefixCode += ",";
-        }
+            funcArgs.push(this.nameop(args.args[i].id, Load));
     }
+    if (hasFree)
+        funcArgs.push("$free");
+
+    this.u.prefixCode += funcArgs.join(",");
 
     this.u.prefixCode += "){";
+
+    if (isGenerator) this.u.prefixCode += " /* generator */ ";
+    if (hasFree) this.u.prefixCode += " /* has free */ ";
+    if (hasCell) this.u.prefixCode += " /* has cell */ ";
+
     if (defaults.length > 0)
     {
         for (var i = 0; i < defaults.length; ++i)
@@ -793,8 +806,11 @@ Compiler.prototype.cfunction = function(s)
         entryBlock = "$gen.gi$resumeat";
         locals = "$gen.gi$locals";
     }
+    var cells = "";
+    if (hasCell)
+        cells = ",$cell={}";
 
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + ",$gbl=this;while(true){switch($blk){";
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
     this.vseqstmt(s.body);
@@ -819,7 +835,10 @@ Compiler.prototype.cfunction = function(s)
     }
     else
     {
-        var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl)");
+        frees = "";
+        if (hasFree)
+            frees = ",$cell";
+        var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl", frees ,")");
         this.nameop(s.name, Store, funcobj);
     }
 };
@@ -975,15 +994,15 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
     var op = 0;
     var optype = OP_NAME;
     var scope = this.u.ste.getScope(mangled);
-    var dict = D_NAMES;
+    var dict = null;
     switch (scope)
     {
         case FREE:
-            dict = D_FREEVARS;
+            dict = "$free";
             optype = OP_DEREF;
             break;
         case CELL:
-            dict = D_CELLVARS;
+            dict = "$cell";
             optype = OP_DEREF;
             break;
         case LOCAL:
@@ -1047,6 +1066,18 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                     break;
                 default:
                     goog.asserts.fail("unhandled case in name op_global");
+            }
+            break;
+        case OP_DEREF:
+            switch (ctx)
+            {
+                case Load:
+                    return dict + "." + mangled;
+                case Store:
+                    out(dict, ".", mangled, "=", dataToStore, ";");
+                    break;
+                default:
+                    goog.asserts.fail("unhandled case in name op_deref");
             }
             break;
         default:

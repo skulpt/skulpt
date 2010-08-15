@@ -81,6 +81,23 @@ Sk.builtin.tuple.prototype.sq$repeat = function(n)
 
 Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeTypeObj('tuple', new Sk.builtin.tuple([]));
 
+Sk.builtin.tuple.prototype.tp$iter = function()
+{
+    var ret =
+    {
+        tp$iter: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        tp$iternext: function()
+        {
+            // todo; StopIteration
+            if (ret.$index >= ret.$obj.v.length) return undefined;
+            return ret.$obj.v[ret.$index++];
+        }
+    };
+    return ret;
+};
+
 /*
 
 $.prototype.count = function() { throw "todo; tuple.count"; };
@@ -137,22 +154,5 @@ $.prototype.richcmp$ = function(rhs, op)
 
     // or compare the final item
     return Sk.cmp(this.v[i], rhs.v[i], op);
-};
-
-$.prototype.__iter__ = function()
-{
-    var ret =
-    {
-        __iter__: function() { return ret; },
-        $obj: this,
-        $index: 0,
-        next: function()
-        {
-            // todo; StopIteration
-            if (ret.$index >= ret.$obj.v.length) return undefined;
-            return ret.$obj.v[ret.$index++];
-        }
-    };
-    return ret;
 };
 */
