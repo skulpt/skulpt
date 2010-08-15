@@ -7,7 +7,9 @@ generator test that has multiple iterations of same func
 generator test with diff args to orig call
 generator that uses locals across yield
 functions named loc, gbl, free, cell, gen, etc. will fail right now
-generator with free vars
+generator with free vars test
+genexpr with free vars test
+generator func repr test
 
 
 notes:

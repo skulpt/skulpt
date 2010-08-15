@@ -38,3 +38,8 @@ Sk.builtin.func.prototype.tp$call = function()
 };
 
 Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new Sk.builtin.func(null, null));
+
+Sk.builtin.func.prototype.tp$repr = function()
+{
+    return new Sk.builtin.str("<function " + this.func_code.co_name.v + ">");
+};

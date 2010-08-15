@@ -53,3 +53,8 @@ Sk.builtin.generator.prototype.next = new Sk.builtin.func(function(self)
 });
 
 Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeTypeObj('generator', new Sk.builtin.generator());
+
+Sk.builtin.generator.prototype.tp$repr = function()
+{
+    return new Sk.builtin.str("<generator object " + this.func_code.co_name.v + ">");
+};

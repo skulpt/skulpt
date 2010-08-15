@@ -58,6 +58,8 @@ function CompilerUnit()
     this.blocks = [];
     this.curblock = 0;
 
+    this.scopename = null;
+
     // stack of where to go on a break
     this.breakBlocks = [];
     // stack of where to go on a continue
@@ -239,9 +241,28 @@ Compiler.prototype.clistcomp = function(e)
     return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
+Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
+{
+};
+
 Compiler.prototype.cgenexp = function(e)
 {
-    goog.asserts.fail("todo; generator expression");
+    var name = new Sk.builtin.str("<genexpr>");
+    var outermostIter = e.generators[0].iter;
+
+    var scopename = this.enterScope(name, e, e.lineno);
+
+    var entryBlock = this.newBlock("body of genexpr");
+
+    this.u.prefixCode = "var " + scopename + "=(function(){";
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={},$gbl=this;while(true){switch($blk){";
+    this.u.suffixCode = "}break;}});";
+    this.cgenexpgen(e.generators, 0, e.elt);
+
+    this.exitScope();
+
+    var wrapped = this._gr("gener", "new Sk.builtin.generator(", scopename, ",$gbl,[],[])");
+    return this._gr("genexpiter", wrapped, ".tp$iter()");
 };
 
 Compiler.prototype.cyield = function(e)
@@ -790,16 +811,6 @@ Compiler.prototype.cfunction = function(s)
     if (hasFree) this.u.prefixCode += " /* has free */ ";
     if (hasCell) this.u.prefixCode += " /* has cell */ ";
 
-    if (defaults.length > 0)
-    {
-        for (var i = 0; i < defaults.length; ++i)
-        {
-            var argname = this.nameop(args.args[i].id, Load);
-            this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
-        }
-    }
-    // note special usage of this to avoid having to slice globals from
-    // function object into all invocations.
     var locals = "{}";
     if (isGenerator)
     {
@@ -810,7 +821,21 @@ Compiler.prototype.cfunction = function(s)
     if (hasCell)
         cells = ",$cell={}";
 
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;while(true){switch($blk){";
+    // note special usage of 'this' to avoid having to slice globals from
+    // function object into all invocations.
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;";
+    
+    // set defaults. has to go after locals are declared for generators which store to $loc
+    if (defaults.length > 0)
+    {
+        for (var i = 0; i < defaults.length; ++i)
+        {
+            var argname = this.nameop(args.args[i].id, Load);
+            this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
+        }
+    }
+
+    this.u.prefixCode += "while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
     this.vseqstmt(s.body);
@@ -972,6 +997,7 @@ var OP_FAST = 0;
 var OP_GLOBAL = 1;
 var OP_DEREF = 2;
 var OP_NAME = 3;
+var OP_GEN_FAST = 4; // not in cpy
 var D_NAMES = 0;
 var D_FREEVARS = 1;
 var D_CELLVARS = 2;
@@ -1006,8 +1032,13 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             optype = OP_DEREF;
             break;
         case LOCAL:
-            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator)
-                optype = OP_FAST;
+            if (this.u.ste.blockType === FunctionBlock)
+            {
+                if (!this.u.ste.generator)
+                    optype = OP_FAST;
+                else if (ctx === Load)
+                    optype = OP_GEN_FAST;
+            }
             break;
         case GLOBAL_IMPLICIT:
             if (this.u.ste.blockType === FunctionBlock)
@@ -1036,11 +1067,16 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                     goog.asserts.fail("unhandled");
             }
             break;
+        case OP_GEN_FAST:
+            goog.asserts.assert(ctx === Load);
+            // store/del are the same as NAME in a generator
+            return "$loc." + mangled;
         case OP_NAME:
             switch (ctx)
             {
                 case Load:
                     var v = this.gensym('loadname');
+                    // can't be || for loc.x = 0 or null
                     out("var ", v, "=$loc.", mangled, "!==undefined?$loc.",mangled,":Sk.misceval.loadname('",mangled,"',$gbl);");
                     return v;
                 case Store:
@@ -1096,9 +1132,10 @@ Compiler.prototype.enterScope = function(name, key, lineno)
 
     this.stack.push(this.u);
     this.allUnits.push(u);
-    this.u = u;
+    var scopeName = this.gensym('scope');
+    u.scopename = scopeName;
 
-    var scopeName = this.gensym('scope')
+    this.u = u;
     this.u.activateScope();
 
     this.nestlevel++;
@@ -1108,6 +1145,7 @@ Compiler.prototype.enterScope = function(name, key, lineno)
 
 Compiler.prototype.exitScope = function()
 {
+    var prev = this.u;
     this.nestlevel--;
     if (this.stack.length - 1 >= 0)
         this.u = this.stack.pop();
@@ -1115,7 +1153,8 @@ Compiler.prototype.exitScope = function()
         this.u = null;
     if (this.u)
         this.u.activateScope();
-    
+
+    out(prev.scopename, ".co_name=new Sk.builtin.str(", prev.name.tp$repr().v, ");");
 };
 
 Compiler.prototype.cbody = function(stmts)
