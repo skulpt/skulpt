@@ -14,7 +14,14 @@ Sk.builtin.list = function(L)
     }
     else
     {
-        goog.asserts.fail("todo; handle iterable i guess");
+        if (L.tp$iter)
+        {
+            this.v = [];
+            for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+                this.v.push(i);
+        }
+        else
+            throw new Sk.builtin.ValueError("expecting Array or iterable");
     }
 
     return this;
