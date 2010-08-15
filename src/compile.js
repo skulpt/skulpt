@@ -736,7 +736,7 @@ Compiler.prototype.clambda = function(e)
     this.u.prefixCode = "var " + scopename + "=(function(";
     for (var i = 0; i < args.args.length; ++i)
     {
-        this.u.prefixCode += this.nameop(args.args[i].id, Load);
+        this.u.prefixCode += this.nameop(args.args[i].id, Param);
         if (i !== args.args.length - 1)
             this.u.prefixCode += ",";
     }
@@ -745,7 +745,7 @@ Compiler.prototype.clambda = function(e)
     {
         for (var i = 0; i < defaults.length; ++i)
         {
-            var argname = this.nameop(args.args[i].id, Load);
+            var argname = this.nameop(args.args[i].id, Param);
             this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
         }
     }
@@ -798,7 +798,7 @@ Compiler.prototype.cfunction = function(s)
     else
     {
         for (var i = 0; i < args.args.length; ++i)
-            funcArgs.push(this.nameop(args.args[i].id, Load));
+            funcArgs.push(this.nameop(args.args[i].id, Param));
     }
     if (hasFree)
         funcArgs.push("$free");
@@ -830,7 +830,7 @@ Compiler.prototype.cfunction = function(s)
     {
         for (var i = 0; i < defaults.length; ++i)
         {
-            var argname = this.nameop(args.args[i].id, Load);
+            var argname = this.nameop(args.args[i].id, Param);
             this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
         }
     }
@@ -997,7 +997,6 @@ var OP_FAST = 0;
 var OP_GLOBAL = 1;
 var OP_DEREF = 2;
 var OP_NAME = 3;
-var OP_GEN_FAST = 4; // not in cpy
 var D_NAMES = 0;
 var D_FREEVARS = 1;
 var D_CELLVARS = 2;
@@ -1032,13 +1031,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             optype = OP_DEREF;
             break;
         case LOCAL:
-            if (this.u.ste.blockType === FunctionBlock)
-            {
-                if (!this.u.ste.generator)
-                    optype = OP_FAST;
-                else if (ctx === Load)
-                    optype = OP_GEN_FAST;
-            }
+            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator)
+                optype = OP_FAST;
             break;
         case GLOBAL_IMPLICIT:
             if (this.u.ste.blockType === FunctionBlock)
@@ -1059,6 +1053,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             switch (ctx)
             {
                 case Load:
+                case Param:
                     return mangled;
                 case Store:
                     out(mangled+ "=", dataToStore, ";");
@@ -1067,10 +1062,6 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                     goog.asserts.fail("unhandled");
             }
             break;
-        case OP_GEN_FAST:
-            goog.asserts.assert(ctx === Load);
-            // store/del are the same as NAME in a generator
-            return "$loc." + mangled;
         case OP_NAME:
             switch (ctx)
             {
@@ -1085,6 +1076,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                 case Del:
                     out("delete $loc.", mangled, ";");
                     break;
+                case Param:
+                    return "$loc." + mangled;
                 default:
                     goog.asserts.fail("unhandled");
             }
@@ -1112,6 +1105,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                 case Store:
                     out(dict, ".", mangled, "=", dataToStore, ";");
                     break;
+                case Param:
+                    return mangled;
                 default:
                     goog.asserts.fail("unhandled case in name op_deref");
             }
