@@ -1,6 +1,7 @@
 todo:
 object genericgetattr is wrong. should be looking up bases, not types. dummy
 can tp$getattr take a js string rather than Sk.builtin.str?
+make a type-name-getting function, rather than obj.tp$name so that number works (and it'd be a good error checking place too)
 
 
 notes:

@@ -195,35 +195,7 @@ Sk.builtin.str.prototype.replace = new Sk.builtin.func(function(self, oldS, newS
 
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeTypeObj('str', new Sk.builtin.str(undefined, true));
 
-/*
-
-$.prototype.__getitem__ = function(index)
-{
-    if (typeof index === "number")
-    {
-        if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("string index out of range");
-        return new $(this.v.charAt(index));
-    }
-    else if (index instanceof Sk.builtin.slice)
-    {
-        var ret = '';
-        index.sssiter$(this, function(i, wrt) {
-                if (i >= 0 && i < wrt.v.length)
-                    ret += wrt.v.charAt(i);
-                });
-        return new $(ret);
-    }
-    else
-        throw new TypeError("string indices must be numbers, not " + typeof index);
-};
-
-$.prototype.__add__ = function(other)
-{
-    return new $(this.v + other.v);
-};
-
-$.prototype.__mod__ = function(rhs)
+Sk.builtin.str.prototype.nb$remainder = function(rhs)
 {
     // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)
 
@@ -239,7 +211,7 @@ $.prototype.__mod__ = function(rhs)
     //
     // length modifier is ignored
 
-    if (rhs.constructor !== Sk.builtin.tuple && (rhs.__getitem__ === undefined || rhs.constructor === $)) rhs = new Sk.builtin.tuple([rhs]);
+    if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) rhs = new Sk.builtin.tuple([rhs]);
     
     // general approach is to use a regex that matches the format above, and
     // do an re.sub with a function as replacement to make the subs.
@@ -288,13 +260,13 @@ $.prototype.__mod__ = function(rhs)
                 }
                 r = n.toString(base);
             }
-            else if (n instanceof Sk.builtin.long_)
+            else if (n instanceof Sk.builtin.lng)
             {
                 r = n.str$(base, false);
                 neg = n.size$ < 0;
             }
 
-            if (r === undefined) throw "unhandled number format";
+            goog.asserts.assert(r !== undefined, "unhandled number format");
 
             var precZeroPadded = false;
 
@@ -351,13 +323,13 @@ $.prototype.__mod__ = function(rhs)
         {
             value = rhs.v[i];
         }
-        else if (rhs.__getitem__ !== undefined)
+        else if (rhs.mp$subscript !== undefined)
         {
             var mk = mappingKey.substring(1, mappingKey.length - 1);
             //print("mk",mk);
-            value = rhs.__getitem__(new $(mk));
+            value = rhs.mp$subscript(new Sk.builtin.str(mk));
         }
-        else throw new Sk.builtin.AttributeError(rhs.__class__.name + " instance has no attribute '__getitem__'");
+        else throw new Sk.builtin.AttributeError(rhs.tp$name + " instance has no attribute 'mp$subscript'");
         var r;
         var base = 10;
         switch (conversionType)
@@ -387,9 +359,9 @@ $.prototype.__mod__ = function(rhs)
             case 'c':
                 if (typeof value === "number")
                     return String.fromCharCode(value);
-                else if (value instanceof Sk.builtin.long_)
+                else if (value instanceof Sk.builtin.lng)
                     return String.fromCharCode(value.digit$[0] & 255);
-                else if (value.constructor === $)
+                else if (value.constructor === Sk.builtin.str)
                     return value.v.substr(0, 1);
                 else
                     throw new TypeError("an integer is required");
@@ -418,8 +390,37 @@ $.prototype.__mod__ = function(rhs)
     };
     
     var ret = this.v.replace(regex, replFunc);
-    return new $(ret);
+    return new Sk.builtin.str(ret);
 };
+
+/*
+
+$.prototype.__getitem__ = function(index)
+{
+    if (typeof index === "number")
+    {
+        if (index < 0) index = this.v.length + index;
+        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("string index out of range");
+        return new $(this.v.charAt(index));
+    }
+    else if (index instanceof Sk.builtin.slice)
+    {
+        var ret = '';
+        index.sssiter$(this, function(i, wrt) {
+                if (i >= 0 && i < wrt.v.length)
+                    ret += wrt.v.charAt(i);
+                });
+        return new $(ret);
+    }
+    else
+        throw new TypeError("string indices must be numbers, not " + typeof index);
+};
+
+$.prototype.__add__ = function(other)
+{
+    return new $(this.v + other.v);
+};
+
 $.__repr__ = function()
 {
     return new $("<type 'str'>");

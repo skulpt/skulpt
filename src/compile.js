@@ -696,7 +696,7 @@ Compiler.prototype.cfunction = function(s)
     }
     */
     // todo; defaults in new way
-    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "(";
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "(";
 
     for (var i = 0; i < args.args.length; ++i)
     {
@@ -744,7 +744,7 @@ Compiler.prototype.cclass = function(s)
     var scopename = this.enterScope(s.name, s, s.lineno);
     var entryBlock = this.newBlock('class entry');
 
-    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
     this.u.prefixCode += "return(function " + s.name.v + "(){";
     this.u.prefixCode += "var $blk=" + entryBlock + ";while(true){switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
