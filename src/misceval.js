@@ -265,7 +265,10 @@ Sk.misceval.apply = function(func, kw, args)
 {
     if (typeof func === "function" && kw === undefined)
     {
-        // todo; can this happen anymore?
+        // todo; i believe the only time this happens is the wrapper
+        // function around generators (that creates the iterator).
+        // should just make that a real function object and get rid
+        // of this case.
         return func.apply(null, args);
     }
     else

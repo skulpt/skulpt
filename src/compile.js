@@ -239,6 +239,20 @@ Compiler.prototype.clistcomp = function(e)
     return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
+Compiler.prototype.cyield = function(e)
+{
+    if (this.u.ste.blockType !== FunctionBlock)
+        throw new SyntaxError("'yield' outside function");
+    var val = 'null';
+    if (e.value)
+        val = this.vexpr(e.value);
+    var nextBlock = this.newBlock('after yield');
+    // return a pair: resume target block and yielded value
+    out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
+    this.setBlock(nextBlock);
+    return 'null'; // todo; sends from outside
+}
+
 Compiler.prototype.ccompare = function(e)
 {
     var left = this.vexpr(e.left);
@@ -396,7 +410,7 @@ Compiler.prototype.vexpr = function(e, data)
             goog.asserts.fail();
             //return this.cgenexp(e);
         case Yield:
-            goog.asserts.fail();
+            return this.cyield(e);
         case Compare:
             return this.ccompare(e);
         case Call:
@@ -640,7 +654,17 @@ Compiler.prototype.cfor = function(s)
 
     // get the iterator
     var toiter = this.vexpr(s.iter);
-    var iter = this._gr("iter", toiter, ".tp$iter()");
+    var iter;
+    if (this.u.ste.generator)
+    {
+        // if we're in a generator, we have to store the iterator to a local
+        // so it's preserved (as we cross blocks here and assume it survives)
+        iter = "$loc." + this.gensym("iter");
+        out(iter, "=", toiter, ".tp$iter();");
+    }
+    else
+        iter = this._gr("iter", toiter, ".tp$iter()");
+
     this._jump(start);
 
     this.setBlock(start);
@@ -670,6 +694,7 @@ Compiler.prototype.cfor = function(s)
 // - seqstmt vs. expr
 // - no decos for lambda
 // - no store at end for lambda
+// - lambda can't be generator
 Compiler.prototype.clambda = function(e)
 {
     goog.asserts.assert(e instanceof Lambda);
@@ -729,19 +754,29 @@ Compiler.prototype.cfunction = function(s)
 
     var scopename = this.enterScope(s.name, s, s.lineno);
 
+    var isGenerator = this.u.ste.generator;
+
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
+
+    var entryBlock = this.newBlock('function entry');
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "(";
 
-    for (var i = 0; i < args.args.length; ++i)
+    if (isGenerator)
     {
-        this.u.prefixCode += this.nameop(args.args[i].id, Load);
-        if (i !== args.args.length - 1)
-            this.u.prefixCode += ",";
+        this.u.prefixCode += "$gen";
+    }
+    else
+    {
+        for (var i = 0; i < args.args.length; ++i)
+        {
+            this.u.prefixCode += this.nameop(args.args[i].id, Load);
+            if (i !== args.args.length - 1)
+                this.u.prefixCode += ",";
+        }
     }
 
     this.u.prefixCode += "){";
-    var entryBlock = this.newBlock('function entry');
     if (defaults.length > 0)
     {
         for (var i = 0; i < defaults.length; ++i)
@@ -752,7 +787,14 @@ Compiler.prototype.cfunction = function(s)
     }
     // note special usage of this to avoid having to slice globals from
     // function object into all invocations.
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={},$gbl=this;while(true){switch($blk){";
+    var locals = "{}";
+    if (isGenerator)
+    {
+        entryBlock = "$gen.gi$resumeat";
+        locals = "$gen.gi$locals";
+    }
+
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + ",$gbl=this;while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
     this.vseqstmt(s.body);
@@ -762,8 +804,24 @@ Compiler.prototype.cfunction = function(s)
 
     if (defaults.length > 0)
         out(scopename, ".$defaults=[", defaults.join(','), "];");
-    var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl)");
-    this.nameop(s.name, Store, funcobj);
+
+    if (isGenerator)
+    {
+        var argnames = ""
+        for (var i = 0; i < args.args.length; ++i)
+        {
+            argnames += "'" + args.args[i].id.v + "'"; // todo; should really be nameop, but that would get $loc.x
+            if (i !== args.args.length - 1)
+                argnames += ",";
+        }
+        var wrapped = this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs,[", argnames ,"]);})");
+        this.nameop(s.name, Store, wrapped);
+    }
+    else
+    {
+        var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl)");
+        this.nameop(s.name, Store, funcobj);
+    }
 };
 
 Compiler.prototype.cclass = function(s)
@@ -929,7 +987,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             optype = OP_DEREF;
             break;
         case LOCAL:
-            if (this.u.ste.blockType === FunctionBlock)
+            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator)
                 optype = OP_FAST;
             break;
         case GLOBAL_IMPLICIT:

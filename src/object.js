@@ -10,13 +10,14 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     goog.asserts.assert(name instanceof Sk.builtin.str);
 
     var tp = this.ob$type;
-    goog.asserts.assert(tp !== undefined);
+    goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     // todo; mro
 
     // otherwise, look in the type for a descr
     var descr = tp[name.v];
     var f;
+    //print("descr", descr);
     if (descr !== undefined)
     {
         f = descr.ob$type.tp$descr_get;

@@ -107,9 +107,9 @@ Sk.builtin = {};
 Sk.builtin.range = function range(start, stop, step)
 {
     var ret = [];
-    var s = new $.builtin.slice(start, stop, step);
+    var s = new Sk.builtin.slice(start, stop, step);
     s.sssiter$(0, function(i) { ret.push(i); });
-    return new $.builtin.list(ret);
+    return new Sk.builtin.list(ret);
 };
 
 Sk.builtin.len = function len(item)
