@@ -3,7 +3,7 @@ var interned = {};
 /**
  * @constructor
  * @param {*} x
- * @param {bool=} $ctorhack
+ * @param {boolean=} $ctorhack
  * @extends Sk.builtin.object
  */
 Sk.builtin.str = function(x, $ctorhack)
@@ -381,7 +381,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
                 //print("  fieldWidth", fieldWidth);
                 //print("  precision", precision);
                 //print("  conversionType", conversionType);
-                r = Sk.builtin.str(value);
+                r = new Sk.builtin.str(value);
                 if (precision) return r.v.substr(0, precision);
                 return r.v;
             case '%':

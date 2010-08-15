@@ -24,15 +24,15 @@ Sk.abstr.boNameToSlotFunc_ = function(obj, name)
         case "Add": return obj.nb$add;
         case "Sub": return obj.nb$subtract;
         case "Mult": return obj.nb$multiply;
-        case "Div": return obj.nb$divide;
-        case "FloorDiv": return obj.nb$floor_divide;
+        //case "Div": return obj.nb$divide;
+        //case "FloorDiv": return obj.nb$floor_divide;
         case "Mod": return obj.nb$remainder;
         case "Pow": return obj.nb$power;
-        case "LShift": return obj.nb$lshift;
-        case "RShift": return obj.nb$rshift;
-        case "BitAnd": return obj.nb$and;
-        case "BitOr": return obj.nb$or;
-        case "BitXor": return obj.nb$xor;
+        //case "LShift": return obj.nb$lshift;
+        //case "RShift": return obj.nb$rshift;
+        //case "BitAnd": return obj.nb$and;
+        //case "BitOr": return obj.nb$or;
+        //case "BitXor": return obj.nb$xor;
         default:
             goog.asserts.fail();
     }
@@ -159,7 +159,7 @@ Sk.abstr.numberUnaryOp = function(v, op)
     {
         if (op === "USub" && v.nb$negative) return v.nb$negative();
         if (op === "UAdd" && v.nb$positive) return v.nb$positive();
-        if (op === "Inver" && v.nb$positive) return v.nb$invert();
+        //todo; if (op === "Invert" && v.nb$positive) return v.nb$invert();
     }
     throw new TypeError("unsupported operand type for " + op + " '" + v.tp$name + "'");
 };

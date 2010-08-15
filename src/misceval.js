@@ -247,7 +247,7 @@ Sk.misceval.loadname = function(name, other)
  * and hopefully optimize.
  *
  * @param {Object} func the thing to call
- * @param {Object} kw keyword args or undef
+ * @param {Object=} kw keyword args or undef
  * @param {...*} args stuff to pass it
  */
 

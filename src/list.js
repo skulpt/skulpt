@@ -14,8 +14,7 @@ Sk.builtin.list = function(L)
     }
     else
     {
-        this.v = [];
-        Sk.builtin.list.prototype.extend.call(this, L);
+        goog.asserts.fail("todo; handle iterable i guess");
     }
 
     return this;

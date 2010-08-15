@@ -2,7 +2,7 @@
  *
  * @constructor
  *
- * @param {string} name
+ * @param {*} name name or object to get type of, if only one arg
  *
  * @param {Array.<Object>=} bases
  *
@@ -43,8 +43,10 @@ Sk.builtin.type = function(name, bases, dict)
         // (basically the dict of functions). those become the prototype
         // object of the class).
 
-        this.tp$new = (function(){});
-        var klass = this.tp$new;
+        /**
+         * @constructor
+         */
+        var klass = this.tp$new = (function(){});
         //print("type(nbd):",name,JSON.stringify(dict, null,2));
         for (var v in dict)
             klass.prototype[v] = dict[v];
@@ -54,7 +56,7 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$descr_get = function() { print("in type descr_get"); };
         klass.prototype.tp$repr = function()
         {
-            var mod = this.ob$type.__module__;
+            var mod = this.ob$type['__module__'];
             var cname = "?";
             if (mod) cname = mod.v;
             return new Sk.builtin.str("<" + cname + "." + name + " instance>");
@@ -94,7 +96,7 @@ Sk.builtin.type.prototype.tp$call = function()
 
     obj.inst$dict = new Sk.builtin.dict([]);
 
-    var init = obj.__init__;
+    var init = obj["__init__"];
     if (init !== undefined)
     {
         // return ignored I guess?
@@ -117,8 +119,8 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
     if (descr !== undefined)
     {
         f = descr.ob$type.tp$descr_get;
-        if (f && descr.tp$descr_set) // is a data descriptor if it has a set
-            return f.call(descr, this, this.ob$type);
+        // todo;if (f && descr.tp$descr_set) // is a data descriptor if it has a set
+            // return f.call(descr, this, this.ob$type);
     }
 
     if (this.inst$dict)

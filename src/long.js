@@ -233,6 +233,8 @@ Sk.builtin.lng.prototype.nb$negative = function()
     return ret;
 };
 
+Sk.builtin.lng.prototype.nb$positive = function() { return this; };
+
 Sk.builtin.lng.prototype.divrem$ = function(other)
 {
     var size_a = Math.abs(this.size$);
@@ -422,7 +424,7 @@ Sk.builtin.lng.mul$ = function(a, b)
     return z;
 };
 
-Sk.builtin.lng.prototype.__nonzero__ = function()
+Sk.builtin.lng.prototype.nb$nonzero = function()
 {
     return this.size$ !== 0;
 };
@@ -463,7 +465,7 @@ Sk.builtin.lng.prototype.str$ = function(base, sign)
     var ret = "";
 
     var tmp = this.clone();
-    while (tmp.__nonzero__())
+    while (tmp.nb$nonzero())
     {
         //print("before d:",tmp.digit$, "s:",tmp.size$);
         var t = tmp.divremInt$(base);

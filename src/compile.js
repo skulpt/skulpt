@@ -1069,7 +1069,7 @@ if (COMPILED)
 /**
  * @param {string} name the module name
  * @param {string} filename the path to the file
- * @param {string} the content of the file
+ * @param {string} source the content of the file
  * @param {boolean=} dumpJS print out the js code after compilation for debugging
  */
 Sk.importModule = function(name, filename, source, dumpJS)
