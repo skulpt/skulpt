@@ -217,15 +217,12 @@ Sk.abstr.sequenceDelItem = function(seq, i)
 
 Sk.abstr.sequenceRepeat = function(f, seq, n)
 {
-    goog.asserts.fail("need to implement nb$index");
-    /*
-    var count = n.nb$index();
+    var count = Sk.misceval.asIndex(n);
     if (count === undefined)
     {
         throw new TypeError("can't multiply sequence by non-int of type '" + n.tp$name + "'");
     }
     return f.call(seq, n);
-    */
 };
 
 Sk.abstr.sequenceGetSlice = function(seq, i1, i2)

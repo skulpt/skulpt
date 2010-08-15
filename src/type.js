@@ -79,6 +79,7 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
     {
         return new Sk.builtin.str("<type '" + this.tp$name + "'>");
     };
+    t.tp$str = undefined;
     return t;
 };
 

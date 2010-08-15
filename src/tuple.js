@@ -69,6 +69,18 @@ Sk.builtin.tuple.prototype.tp$hash = function()
     return x;
 };
 
+Sk.builtin.tuple.prototype.sq$repeat = function(n)
+{
+    var ret = [];
+    for (var i = 0; i < n; ++i)
+        for (var j = 0; j < this.v.length; ++ j)
+            ret.push(this.v[j]);
+    return new Sk.builtin.tuple(ret);
+};
+
+
+Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeTypeObj('tuple', new Sk.builtin.tuple([]));
+
 /*
 
 $.prototype.count = function() { throw "todo; tuple.count"; };
@@ -89,20 +101,6 @@ $.prototype.__repr__ = function()
 $.prototype.__add__ = $.prototype.__radd__ = function(other)
 {
     return new $(this.v.concat(other.v));
-};
-
-$.prototype.__mul__ = $.prototype.__rmul__ = function(other)
-{
-    if (typeof other !== "number") throw "TypeError"; // todo; long, better error
-    var ret = [];
-    for (var i = 0; i < other; ++i)
-    {
-        for (var j = 0; j < this.v.length; ++ j)
-        {
-            ret.push(this.v[j]);
-        }
-    }
-    return new $(ret);
 };
 
 $.prototype.richcmp$ = function(rhs, op)

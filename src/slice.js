@@ -22,7 +22,7 @@ Sk.builtin.slice = function slice(start, stop, step)
     return this;
 };
 
-Sk.builtin.slice.prototype.__str__ = function()
+Sk.builtin.slice.prototype.tp$str = function()
 {
     var a = Sk.builtin.repr(this.start).v;
     var b = Sk.builtin.repr(this.stop).v;

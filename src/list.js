@@ -85,8 +85,15 @@ Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
 Sk.builtin.list.prototype.sq$length = list_length;
 */
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
+Sk.builtin.list.prototype.sq$repeat = function(n)
+{
+    var ret = [];
+    for (var i = 0; i < n; ++i)
+        for (var j = 0; j < this.v.length; ++j)
+            ret.push(this.v[j]);
+    return new Sk.builtin.list(ret);
+};
 /*
-Sk.builtin.list.prototype.sq$repeat = list_repeat;
 Sk.builtin.list.prototype.sq$item = list_item;
 Sk.builtin.list.prototype.sq$slice = list_slice;
 */
@@ -345,28 +352,6 @@ $.prototype.__add__ = function(other)
         ret.push(other.v[i]);
     }
     return new $(ret);
-};
-
-$.prototype.__mul__ = $.prototype.__rmul__ = function(other)
-{
-    if (typeof other !== "number") throw "TypeError"; // todo; long, better error
-    var ret = [];
-    for (var i = 0; i < other; ++i)
-    {
-        for (var j = 0; j < this.v.length; ++ j)
-        {
-            ret.push(this.v[j]);
-        }
-    }
-    return new $(ret);
-};
-
-$.prototype.__repr__ = function()
-{
-    var asStrs = [];
-    for (var it = this.__iter__(), i = it.next(); i !== undefined; i = it.next())
-        asStrs.push(Sk.builtin.repr(i).v);
-    return new Sk.builtin.str("[" + asStrs.join(", ") + "]");
 };
 
 $.prototype.richcmp$ = function(rhs, op)

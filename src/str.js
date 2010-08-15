@@ -22,9 +22,9 @@ Sk.builtin.str = function(x, $ctorhack)
         ret = x.toString();
     else if (typeof x === "string")
         ret = x;
-    else if (x.__str__ !== undefined)
+    else if (x.tp$str !== undefined)
     {
-        ret = x.__str__();
+        ret = x.tp$str();
         if (!(ret instanceof Sk.builtin.str)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
     }
@@ -68,7 +68,13 @@ Sk.builtin.str.prototype.sq$length = function()
     return this.v.length;
 };
 Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str(this.v + other.v); };
-Sk.builtin.str.prototype.sq$repeat = function() { goog.asserts.fail(); };
+Sk.builtin.str.prototype.sq$repeat = function(n)
+{
+    var ret = "";
+    for (var i = 0; i < n; ++i)
+        ret += this.v;
+    return new Sk.builtin.str(ret);
+};
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
@@ -215,17 +221,6 @@ $.prototype.__getitem__ = function(index)
 $.prototype.__add__ = function(other)
 {
     return new $(this.v + other.v);
-};
-
-$.prototype.__mul__ = $.prototype.__rmul__ = function(other)
-{
-    if (typeof other !== "number") throw "TypeError"; // todo; long, better error
-    var ret = "";
-    for (var i = 0; i < other; ++i)
-    {
-        ret += this.v;
-    }
-    return new $(ret);
 };
 
 $.prototype.__mod__ = function(rhs)

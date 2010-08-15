@@ -403,7 +403,11 @@ Compiler.prototype.vexpr = function(e, data)
         case Call:
             return this.ccall(e);
         case Num:
-            return e.n;
+            if (typeof e.n === "number")
+                return e.n;
+            else if (e.n instanceof Sk.builtin.lng)
+                return "Sk.longFromStr('" + e.n.tp$str().v + "')";
+            goog.asserts.fail("unhandled Num type");
         case Str:
             return this._gr('str', "new Sk.builtin.str(", e.s.tp$repr().v, ")");
         case Attribute:
