@@ -384,8 +384,7 @@ Compiler.prototype.vexpr = function(e, data)
         case UnaryOp:
             return this._gr('unaryop', "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op._astname, "')");
         case Lambda:
-            goog.asserts.fail();
-            //return this.clambda(e);
+            return this.clambda(e);
         case IfExp:
             goog.asserts.fail();
             //return this.cifexp(e);
@@ -667,6 +666,55 @@ Compiler.prototype.cfor = function(s)
     this.setBlock(end);
 };
 
+// todo; merge with cfunction:
+// - seqstmt vs. expr
+// - no decos for lambda
+// - no store at end for lambda
+Compiler.prototype.clambda = function(e)
+{
+    goog.asserts.assert(e instanceof Lambda);
+    var args = e.args;
+    var name = new Sk.builtin.str("<lambda>");
+    var defaults = [];
+    if (args.defaults)
+        defaults = this.vseqexpr(args.defaults);
+
+    var scopename = this.enterScope(name, e, e.lineno);
+
+    // args
+    this.u.prefixCode = "var " + scopename + "=(function(";
+    for (var i = 0; i < args.args.length; ++i)
+    {
+        this.u.prefixCode += this.nameop(args.args[i].id, Load);
+        if (i !== args.args.length - 1)
+            this.u.prefixCode += ",";
+    }
+    this.u.prefixCode += "){";
+    if (defaults.length > 0)
+    {
+        for (var i = 0; i < defaults.length; ++i)
+        {
+            var argname = this.nameop(args.args[i].id, Load);
+            this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
+        }
+    }
+
+    var entryBlock = this.newBlock('body of lambda');
+
+    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={},$gbl=this;while(true){switch($blk){";
+    this.u.suffixCode = "}break;}});";
+
+    var val = this.vexpr(e.body);
+    out("return ", val, ";");
+
+    this.exitScope();
+
+    if (defaults.length > 0)
+        out(scopename, ".$defaults=[", defaults.join(','), "];");
+    var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl)");
+    return funcobj;
+};
+
 Compiler.prototype.cfunction = function(s)
 {
     goog.asserts.assert(s instanceof FunctionDef);
@@ -677,25 +725,12 @@ Compiler.prototype.cfunction = function(s)
     // decorators and defaults have to be evaluated out here
     //this.vseqexpr(decos);
     if (args.defaults)
-    {
         defaults = this.vseqexpr(args.defaults);
-    }
 
     var scopename = this.enterScope(s.name, s, s.lineno);
 
     // todo; probably need to have 'out' go to the prefix/suffix properly for this
 
-    /*
-    this.u.prefixCode = "var " + scopename + "=(function " + s.name.v + "$outer($globals,"
-        + (defaults.length > 0 ? "$defaults," : "")
-        + "$rest){var $gbl=$globals;";
-    if (defaults.length > 0)
-    {
-        this.u.prefixCode += "$rest = Array.prototype.slice.call($rest);"; // this is 'arguments' from outer
-        this.u.prefixCode += "for (var $defi = 0; $defi < $defaults.length; ++$defi) { if ($rest[$defi] === undefined) $rest[$defi] = $defaults[$defi]; }";
-    }
-    */
-    // todo; defaults in new way
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "(";
 
     for (var i = 0; i < args.args.length; ++i)
