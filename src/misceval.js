@@ -320,6 +320,9 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
     //print("CALLING", func);
     func(globals, locals);
 
+    // file's __name__ is class's __module__
+    locals.__module__ = globals.__name__;
+
     var klass = Sk.misceval.call(meta, undefined, name, bases, locals);
     //print("class", klass, JSON.stringify(klass.prototype));
     return klass;

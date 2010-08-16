@@ -36,7 +36,7 @@ name: Y
   namespaces: [
     Sym_type: class
     Sym_name: Y
-    Sym_lineno: 5
+    Sym_lineno: 6
     Sym_nested: False
     Sym_haschildren: False
     Class_methods: []

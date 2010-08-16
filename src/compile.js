@@ -888,10 +888,6 @@ Compiler.prototype.cclass = function(s)
 
     this.u.private_ = s.name;
     
-    // class.__module__ is the file's __name__
-    this.nameop(new Sk.builtin.str("__module__"), Store,
-            this.nameop(new Sk.builtin.str("__name__"), Load));
-
     this.cbody(s.body);
     out("break;");
 

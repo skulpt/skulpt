@@ -56,10 +56,10 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$descr_get = function() { print("in type descr_get"); };
         klass.prototype.tp$repr = function()
         {
-            var mod = this.ob$type['__module__'];
-            var cname = "?";
-            if (mod) cname = mod.v;
-            return new Sk.builtin.str("<" + cname + "." + name + " instance>");
+            var mod = dict.__module__;
+            var cname = "";
+            if (mod) cname = mod.v + ".";
+            return new Sk.builtin.str("<" + cname + name + " object>");
         };
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass());
         // todo; bases
@@ -79,7 +79,10 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
     t.tp$name = name;
     t.tp$repr = function()
     {
-        return new Sk.builtin.str("<type '" + this.tp$name + "'>");
+        var mod = t.__module__;
+        var cname = "";
+        if (mod) cname = mod.v + ".";
+        return new Sk.builtin.str("<class '" + cname + t.tp$name + "'>");
     };
     t.tp$str = undefined;
     return t;
@@ -144,6 +147,11 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
     }
 
     throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name.v + "'");
+};
+
+Sk.builtin.type.prototype.tp$repr = function()
+{
+    return new Sk.builtin.str("<type 'type'>");
 };
 
 
