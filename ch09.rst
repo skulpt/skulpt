@@ -1235,7 +1235,7 @@ Exercises
 #. Lists can be used to represent mathematical *vectors*.  In this exercise
    and several that follow you will write functions to perform standard
    operations on vectors.  Create a file named ``vectors.py`` and write Python
-   code to the doctests for each function pass.
+   code to make the doctests for each function pass.
 
    Write a function ``add_vectors(u, v)`` that takes two lists of numbers of
    the same length, and returns a new list containing the sums of the
@@ -1410,6 +1410,53 @@ Exercises
 
    Add your new functions to ``matrices.py`` and be sure it passes the doctests 
    above.
+#. Create a new module named ``numberlists.py`` and add the following functions
+   to the module:
+
+   .. sourcecode:: python
+
+       def only_evens(numbers):
+           """
+             >>> only_evens([1, 3, 4, 6, 7, 8])
+             [4, 6, 8]
+             >>> only_evens([2, 4, 6, 8, 10, 11, 0])
+             [2, 4, 6, 8, 10, 0]
+             >>> only_evens([1, 3, 5, 7, 9, 11])
+             []
+             >>> only_evens([4, 0, -1, 2, 6, 7, -4])
+             [4, 0, 2, 6, -4]
+             >>> nums = [1, 2, 3, 4]
+             >>> only_evens(nums)
+             [2, 4]
+             >>> nums
+             [1, 2, 3, 4]
+           """
+
+   .. sourcecode:: python
+
+       def only_odds(numbers):
+           """
+             >>> only_odds([1, 3, 4, 6, 7, 8])
+             [3, 7]
+             >>> only_odds([2, 4, 6, 8, 10, 11, 0])
+             [11]
+             >>> only_odds([1, 3, 5, 7, 9, 11])
+             [1, 3, 5, 7, 9, 11]
+             >>> only_odds([4, 0, -1, 2, 6, 7, -4])
+             [-1, 7]
+             >>> nums = [1, 2, 3, 4]
+             >>> only_odds(nums)
+             [1, 3]
+             >>> nums
+             [1, 2, 3, 4]
+           """
+
+   Be sure these new functions pass the doctests.
+#. Add a function ``multiples_of(num, numlist)`` to ``numberlists.py`` that
+   takes an integer (``num``), and a list of integers (``numlist``) as
+   arguments and returns a list of those integers in ``numlist`` that are
+   multiples of ``num``.  Add your own doctests and use TDD to develope this
+   function.
 #. Given:
 
    .. sourcecode:: python
