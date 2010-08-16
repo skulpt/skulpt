@@ -103,6 +103,11 @@ Compiler.prototype.gensym = function(hint)
     return hint;
 };
 
+Compiler.prototype.niceName = function(roughName)
+{
+    return this.gensym(roughName.replace("<", "").replace(">", "").replace(" ", "_"));
+}
+
 function mangleName(priv, ident)
 {
     var name = ident.v;
@@ -243,6 +248,7 @@ Compiler.prototype.clistcomp = function(e)
 
 Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
 {
+
 };
 
 Compiler.prototype.cgenexp = function(e)
@@ -715,86 +721,59 @@ Compiler.prototype.cfor = function(s)
     this.setBlock(end);
 };
 
-// todo; merge with cfunction:
-// - seqstmt vs. expr
-// - no decos for lambda
-// - no store at end for lambda
-// - lambda can't be generator
-// todo; update for cell/free, not handled currently (i guess not cell, only free)
-Compiler.prototype.clambda = function(e)
+/**
+ * builds a code object (js function) for various constructs. used by def,
+ * lambda, generator expressions. it isn't used for class because it seemed
+ * different enough.
+ *
+ * handles:
+ * - setting up a new scope
+ * - decorators (if any)
+ * - defaults setup
+ * - setup for cell and free vars
+ * - setup and modification for generators
+ *
+ * @param {Object} n ast node to build for
+ * @param {Sk.builtin.str} coname name of code object to build
+ * @param {function} callback called after setup to do actual work of function
+ *
+ * @returns the name of the newly created function or generator object.
+ *
+ */
+Compiler.prototype.buildcodeobj = function(n, coname, callback)
 {
-    goog.asserts.assert(e instanceof Lambda);
-    var args = e.args;
-    var name = new Sk.builtin.str("<lambda>");
+    var args = n.args;
+    var decos = [];
     var defaults = [];
+
+    // decorators and defaults have to be evaluated out here before we enter
+    // the new scope. we output the defaults and attach them to this code
+    // object, but only once we know the name of it (so we do it after we've
+    // exited the scope near the end of this function).
+    if (n.decorator_list)
+        decos = this.vseqexpr(n.decorator_list);
     if (args.defaults)
         defaults = this.vseqexpr(args.defaults);
 
-    var scopename = this.enterScope(name, e, e.lineno);
-
-    // args
-    this.u.prefixCode = "var " + scopename + "=(function(";
-    for (var i = 0; i < args.args.length; ++i)
-    {
-        this.u.prefixCode += this.nameop(args.args[i].id, Param);
-        if (i !== args.args.length - 1)
-            this.u.prefixCode += ",";
-    }
-    this.u.prefixCode += "){";
-    if (defaults.length > 0)
-    {
-        for (var i = 0; i < defaults.length; ++i)
-        {
-            var argname = this.nameop(args.args[i].id, Param);
-            this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
-        }
-    }
-
-    var entryBlock = this.newBlock('body of lambda');
-
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={},$gbl=this;while(true){switch($blk){";
-    this.u.suffixCode = "}break;}});";
-
-    var val = this.vexpr(e.body);
-    out("return ", val, ";");
-
-    this.exitScope();
-
-    if (defaults.length > 0)
-        out(scopename, ".$defaults=[", defaults.join(','), "];");
-    var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl)");
-    return funcobj;
-};
-
-Compiler.prototype.cfunction = function(s)
-{
-    goog.asserts.assert(s instanceof FunctionDef);
-    var args = s.args;
-    var decos = s.decorator_list;
-    var defaults = [];
-
-    // decorators and defaults have to be evaluated out here
-    //this.vseqexpr(decos);
-    if (args.defaults)
-        defaults = this.vseqexpr(args.defaults);
-
-    var scopename = this.enterScope(s.name, s, s.lineno);
+    //
+    // enter the new scope, and create the first block
+    //
+    var scopename = this.enterScope(coname, n, n.lineno);
 
     var isGenerator = this.u.ste.generator;
-    var hasCell = this.u.ste.childHasFree;
     var hasFree = this.u.ste.hasFree;
+    var hasCell = this.u.ste.childHasFree;
 
-    // todo; probably need to have 'out' go to the prefix/suffix properly for this
+    var entryBlock = this.newBlock('codeobj entry');
 
-    var entryBlock = this.newBlock('function entry');
-
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "(";
+    //
+    // the header of the function, and arguments
+    //
+    this.u.prefixCode = "var " + scopename + "=(function " + this.niceName(coname.v) + "$(";
 
     var funcArgs = [];
     if (isGenerator)
-    {
         funcArgs.push("$gen");
-    }
     else
     {
         for (var i = 0; i < args.args.length; ++i)
@@ -802,7 +781,6 @@ Compiler.prototype.cfunction = function(s)
     }
     if (hasFree)
         funcArgs.push("$free");
-
     this.u.prefixCode += funcArgs.join(",");
 
     this.u.prefixCode += "){";
@@ -811,6 +789,9 @@ Compiler.prototype.cfunction = function(s)
     if (hasFree) this.u.prefixCode += " /* has free */ ";
     if (hasCell) this.u.prefixCode += " /* has cell */ ";
 
+    //
+    // set up standard dicts/variables
+    //
     var locals = "{}";
     if (isGenerator)
     {
@@ -821,11 +802,14 @@ Compiler.prototype.cfunction = function(s)
     if (hasCell)
         cells = ",$cell={}";
 
-    // note special usage of 'this' to avoid having to slice globals from
-    // function object into all invocations.
+    // note special usage of 'this' to avoid having to slice globals into
+    // all function invocations in call
     this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;";
-    
-    // set defaults. has to go after locals are declared for generators which store to $loc
+
+    //
+    // initialize default arguments. we store the values of the defaults to
+    // this code object as .$defaults just below after we exit this scope.
+    //
     if (defaults.length > 0)
     {
         for (var i = 0; i < defaults.length; ++i)
@@ -835,17 +819,44 @@ Compiler.prototype.cfunction = function(s)
         }
     }
 
+    //
+    // finally, set up the block switch that the jump code expects
+    //
     this.u.prefixCode += "while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
-    this.vseqstmt(s.body);
-    out("return null;"); // if we fall off the bottom, we want the ret to be None
+    //
+    // jump back to the handler so it can do the main actual work of the
+    // function
+    //
+    callback.call(this, n, scopename);
 
+    //
+    // and exit the code object scope
+    //
     this.exitScope();
 
+    //
+    // attach the default values we evaluated at the beginning to the code
+    // object so that it can get at them to set any arguments that are left
+    // unset.
+    //
     if (defaults.length > 0)
         out(scopename, ".$defaults=[", defaults.join(','), "];");
 
+    //
+    // build either a 'function' or 'generator'. the function is just a simple
+    // constructor call. the generator is more complicated. it needs to make a
+    // new generator every time it's called, so the thing that's returned is
+    // actually a function that makes the generator (and passes arguments to
+    // the function onwards to the generator). this should probably actually
+    // be a function object, rather than a js function like it is now. we also
+    // have to build the argument names to pass to the generator because it
+    // needs to store all locals into itself so that they're maintained across
+    // yields.
+    //
+    // todo; possibly this should be outside?
+    // 
     if (isGenerator)
     {
         var argnames = ""
@@ -855,18 +866,39 @@ Compiler.prototype.cfunction = function(s)
             if (i !== args.args.length - 1)
                 argnames += ",";
         }
-        var wrapped = this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs,[", argnames ,"]);})");
-        this.nameop(s.name, Store, wrapped);
+        return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs,[", argnames ,"]);})");
     }
     else
     {
         frees = "";
         if (hasFree)
             frees = ",$cell";
-        var funcobj = this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl", frees ,")");
-        this.nameop(s.name, Store, funcobj);
+        return this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl", frees ,")");
     }
 };
+
+Compiler.prototype.cfunction = function(s)
+{
+    goog.asserts.assert(s instanceof FunctionDef);
+    var funcorgen = this.buildcodeobj(s, s.name, function(scopename)
+            {
+                this.vseqstmt(s.body);
+                out("return null;"); // if we fall off the bottom, we want the ret to be None
+            });
+    this.nameop(s.name, Store, funcorgen);
+};
+
+Compiler.prototype.clambda = function(e)
+{
+    goog.asserts.assert(e instanceof Lambda);
+    var func = this.buildcodeobj(e, new Sk.builtin.str("<lambda>"), function(scopename)
+            {
+                var val = this.vexpr(e.body);
+                out("return ", val, ";");
+            });
+    return func;
+};
+
 
 Compiler.prototype.cclass = function(s)
 {
