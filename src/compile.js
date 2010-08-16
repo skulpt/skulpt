@@ -246,31 +246,6 @@ Compiler.prototype.clistcomp = function(e)
     return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
-Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
-{
-
-};
-
-Compiler.prototype.cgenexp = function(e)
-{
-    var name = new Sk.builtin.str("<genexpr>");
-    var outermostIter = e.generators[0].iter;
-
-    var scopename = this.enterScope(name, e, e.lineno);
-
-    var entryBlock = this.newBlock("body of genexpr");
-
-    this.u.prefixCode = "var " + scopename + "=(function(){";
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc={},$gbl=this;while(true){switch($blk){";
-    this.u.suffixCode = "}break;}});";
-    this.cgenexpgen(e.generators, 0, e.elt);
-
-    this.exitScope();
-
-    var wrapped = this._gr("gener", "new Sk.builtin.generator(", scopename, ",$gbl,[],[])");
-    return this._gr("genexpiter", wrapped, ".tp$iter()");
-};
-
 Compiler.prototype.cyield = function(e)
 {
     if (this.u.ste.blockType !== FunctionBlock)
@@ -735,14 +710,15 @@ Compiler.prototype.cfor = function(s)
  *
  * @param {Object} n ast node to build for
  * @param {Sk.builtin.str} coname name of code object to build
+ * @param {Array} decorator_list ast of decorators if any
+ * @param {Array} args arguments to function, if any
  * @param {function} callback called after setup to do actual work of function
  *
  * @returns the name of the newly created function or generator object.
  *
  */
-Compiler.prototype.buildcodeobj = function(n, coname, callback)
+Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, callback, addZeroArg)
 {
-    var args = n.args;
     var decos = [];
     var defaults = [];
 
@@ -750,9 +726,9 @@ Compiler.prototype.buildcodeobj = function(n, coname, callback)
     // the new scope. we output the defaults and attach them to this code
     // object, but only once we know the name of it (so we do it after we've
     // exited the scope near the end of this function).
-    if (n.decorator_list)
-        decos = this.vseqexpr(n.decorator_list);
-    if (args.defaults)
+    if (decorator_list)
+        decos = this.vseqexpr(decorator_list);
+    if (args && args.defaults)
         defaults = this.vseqexpr(args.defaults);
 
     //
@@ -776,7 +752,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, callback)
         funcArgs.push("$gen");
     else
     {
-        for (var i = 0; i < args.args.length; ++i)
+        for (var i = 0; args && i < args.args.length; ++i)
             funcArgs.push(this.nameop(args.args[i].id, Param));
     }
     if (hasFree)
@@ -829,7 +805,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, callback)
     // jump back to the handler so it can do the main actual work of the
     // function
     //
-    callback.call(this, n, scopename);
+    callback.call(this, scopename);
 
     //
     // and exit the code object scope
@@ -859,14 +835,21 @@ Compiler.prototype.buildcodeobj = function(n, coname, callback)
     // 
     if (isGenerator)
     {
-        var argnames = ""
-        for (var i = 0; i < args.args.length; ++i)
+        if (args)
         {
-            argnames += "'" + args.args[i].id.v + "'"; // todo; should really be nameop, but that would get $loc.x
-            if (i !== args.args.length - 1)
-                argnames += ",";
+            var argnames = ""
+            for (var i = 0; i < args.args.length; ++i)
+            {
+                argnames += "'" + args.args[i].id.v + "'"; // todo; should really be nameop, but that would get $loc.x
+                if (i !== args.args.length - 1)
+                    argnames += ",";
+            }
+            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs,[", argnames ,"]);})");
         }
-        return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs,[", argnames ,"]);})");
+        else
+        {
+            return this._gr("gener", "(function(){return new Sk.builtin.generator(", scopename, ",$gbl,[],[]);})");
+        }
     }
     else
     {
@@ -880,7 +863,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, callback)
 Compiler.prototype.cfunction = function(s)
 {
     goog.asserts.assert(s instanceof FunctionDef);
-    var funcorgen = this.buildcodeobj(s, s.name, function(scopename)
+    var funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function(scopename)
             {
                 this.vseqstmt(s.body);
                 out("return null;"); // if we fall off the bottom, we want the ret to be None
@@ -891,13 +874,87 @@ Compiler.prototype.cfunction = function(s)
 Compiler.prototype.clambda = function(e)
 {
     goog.asserts.assert(e instanceof Lambda);
-    var func = this.buildcodeobj(e, new Sk.builtin.str("<lambda>"), function(scopename)
+    var func = this.buildcodeobj(e, new Sk.builtin.str("<lambda>"), null, e.args, function(scopename)
             {
                 var val = this.vexpr(e.body);
                 out("return ", val, ";");
             });
     return func;
 };
+
+Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
+{
+    var start = this.newBlock();
+    var skip = this.newBlock();
+    var ifCleanup = this.newBlock();
+    var anchor = this.newBlock();
+    var end = this.newBlock();
+
+    var ge = generators[genIndex];
+
+    var iter;
+    if (genIndex === 0)
+    {
+        // the outer most iterator is evaluated in the scope outside so we
+        // have to evaluate it outside and store it into the generator as a
+        // local, which we retrieve here.
+        iter = "$loc.$iter0";
+    }
+    else
+    {
+        var toiter = this.vexpr(ge.iter);
+        iter = this._gr("iter", toiter, ".tp$iter()");
+    }
+    this._jump(start);
+    this.setBlock(start);
+
+    // load targets
+    var nexti = this._gr('next', iter, ".tp$iternext()");
+    this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
+    var target = this.vexpr(ge.target, nexti);
+
+    var n = ge.ifs.length;
+    for (var i = 0; i < n; ++i)
+    {
+        var ifres = this.vexpr(ge.ifs[i]);
+        this._jumpfalse(ifres, start);
+    }
+
+    if (++genIndex < generators.length)
+    {
+        this.cgenexpgen(generators, genIndex, elt);
+    }
+
+    if (genIndex >= generators.length)
+    {
+        var velt = this.vexpr(elt);
+        out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
+        this.setBlock(skip);
+    }
+
+    this._jump(start);
+
+    this.setBlock(anchor);
+};
+
+Compiler.prototype.cgenexp = function(e)
+{
+    var gen = this.buildcodeobj(e, Sk.builtin.str("<genexpr>"), null, null, function(scopename)
+            {
+                this.cgenexpgen(e.generators, 0, e.elt);
+            });
+
+    // call the generator maker to get the generator. this is kind of dumb,
+    // but the code builder builds a wrapper that makes generators for normal
+    // function generators, so we just do it outside (even just new'ing it
+    // inline would be fine).
+    var gener = this._gr("gener", gen, "()");
+    // stuff the outermost iterator into the generator after evaluating it
+    // outside of the function. it's retrieved by the fixed name above.
+    out(gener, ".gi$locals.$iter0=", this.vexpr(e.generators[0].iter), "();");
+    return gener;
+};
+
 
 
 Compiler.prototype.cclass = function(s)
