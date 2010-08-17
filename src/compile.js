@@ -696,6 +696,21 @@ Compiler.prototype.cfor = function(s)
     this.setBlock(end);
 };
 
+Compiler.prototype.cassert = function(s)
+{
+    /* todo; warnings method
+    if (s.test instanceof Tuple && s.test.elts.length > 0)
+        Sk.warn("assertiong is always true, perhaps remove parentheses?");
+    */
+
+    var test = this.vexpr(s.test);
+    var end = this.newBlock("end");
+    this._jumptrue(test, end);
+    // todo; exception handling
+    out("throw new Sk.builtin.AssertionError(", s.msg ? this.vexpr(s.msg) : "", ");");
+    this.setBlock(end);
+};
+
 /**
  * builds a code object (js function) for various constructs. used by def,
  * lambda, generator expressions. it isn't used for class because it seemed
@@ -884,11 +899,10 @@ Compiler.prototype.clambda = function(e)
 
 Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
 {
-    var start = this.newBlock();
-    var skip = this.newBlock();
-    var ifCleanup = this.newBlock();
-    var anchor = this.newBlock();
-    var end = this.newBlock();
+    var start = this.newBlock('start for ' + genIndex);
+    var skip = this.newBlock('skip for ' + genIndex);
+    var ifCleanup = this.newBlock('if cleanup for ' + genIndex);
+    var end = this.newBlock('end for ' + genIndex);
 
     var ge = generators[genIndex];
 
@@ -903,14 +917,15 @@ Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
     else
     {
         var toiter = this.vexpr(ge.iter);
-        iter = this._gr("iter", toiter, ".tp$iter()");
+        iter = "$loc." + this.gensym("iter");
+        out(iter, "=", toiter, ".tp$iter();");
     }
     this._jump(start);
     this.setBlock(start);
 
     // load targets
     var nexti = this._gr('next', iter, ".tp$iternext()");
-    this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
+    this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     var target = this.vexpr(ge.target, nexti);
 
     var n = ge.ifs.length;
@@ -934,7 +949,10 @@ Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
 
     this._jump(start);
 
-    this.setBlock(anchor);
+    this.setBlock(end);
+
+    if (genIndex === 1)
+        out("return null;");
 };
 
 Compiler.prototype.cgenexp = function(e)
@@ -951,7 +969,7 @@ Compiler.prototype.cgenexp = function(e)
     var gener = this._gr("gener", gen, "()");
     // stuff the outermost iterator into the generator after evaluating it
     // outside of the function. it's retrieved by the fixed name above.
-    out(gener, ".gi$locals.$iter0=", this.vexpr(e.generators[0].iter), "();");
+    out(gener, ".gi$locals.$iter0=", this.vexpr(e.generators[0].iter), ".tp$iter();");
     return gener;
 };
 
@@ -1053,6 +1071,8 @@ Compiler.prototype.vstmt = function(s)
             return this.cwhile(s);
         case If_:
             return this.cif(s);
+        case Assert:
+            return this.cassert(s);
         case Global:
             break;
         case Expr:
@@ -1234,7 +1254,8 @@ Compiler.prototype.exitScope = function()
     if (this.u)
         this.u.activateScope();
 
-    out(prev.scopename, ".co_name=new Sk.builtin.str(", prev.name.tp$repr().v, ");");
+    if (prev.name.v !== "<module>") // todo; hacky
+        out(prev.scopename, ".co_name=new Sk.builtin.str(", prev.name.tp$repr().v, ");");
 };
 
 Compiler.prototype.cbody = function(stmts)

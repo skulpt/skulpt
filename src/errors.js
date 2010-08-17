@@ -32,6 +32,15 @@ Sk.builtin.Exception.prototype.tp$str = function()
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
+Sk.builtin.AssertionError = function(args) { Sk.builtin.Exception.apply(this, arguments); };
+goog.inherits(Sk.builtin.AssertionError, Sk.builtin.Exception);
+Sk.builtin.AssertionError.prototype.tp$name = "AssertionError";
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
 Sk.builtin.AttributeError = function(args) { Sk.builtin.Exception.apply(this, arguments); };
 goog.inherits(Sk.builtin.AttributeError, Sk.builtin.Exception);
 Sk.builtin.AttributeError.prototype.tp$name = "AttributeError";
