@@ -20,8 +20,10 @@ Sk.misceval.applySlice = function(u, v, w)
 {
     if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w))
     {
-        var ilow = Sk.misceval.asIndex(v) || 0;
-        var ihigh = Sk.misceval.asIndex(w) || 1e100;
+        var ilow = Sk.misceval.asIndex(v);
+        if (ilow === undefined) ilow = 0;
+        var ihigh = Sk.misceval.asIndex(w);
+        if (ihigh === undefined) ihigh = 1e100;
         return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
     }
     return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null));

@@ -386,9 +386,11 @@ Compiler.prototype.cboolop = function(e)
  * returned name.
  *
  * @param {Object} e
- * @param {string=} data
+ * @param {string=} data data to store in a store operation
+ * @param {Object=} augstoreval value to store to for an aug operation (not
+ * vexpr'd yet)
  */
-Compiler.prototype.vexpr = function(e, data)
+Compiler.prototype.vexpr = function(e, data, augstoreval)
 {
     if (e.lineno > this.u.lineno)
     {
@@ -431,13 +433,18 @@ Compiler.prototype.vexpr = function(e, data)
             return this._gr('str', "new Sk.builtin.str(", e.s.tp$repr().v, ")");
         case Attribute:
             if (e.ctx !== AugStore)
-                var val = this.vexpr(e.value);
+                val = this.vexpr(e.value);
             switch (e.ctx)
             {
                 case AugLoad:
                 case Load:
                     return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.tp$repr().v, "))");
                 case AugStore:
+                    out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
+                    val = this.vexpr(augstoreval);
+                    out(val, ".tp$setattr(new Sk.builtin.str(", e.attr.tp$repr().v, "),", data, ");");
+                    out("}");
+                    break;
                 case Store:
                     out(val, ".tp$setattr(new Sk.builtin.str(", e.attr.tp$repr().v, "),", data, ");");
                     break;
@@ -495,6 +502,13 @@ Compiler.prototype.caugassign = function(s)
     var e = s.target;
     switch (e.constructor)
     {
+        case Attribute:
+            var auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
+            var aug = this.vexpr(auge);
+            var val = this.vexpr(s.value);
+            var res = this._gr('inplbinopattr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op._astname, "')");
+            auge.ctx = AugStore;
+            return this.vexpr(auge, res, e.value)
         case Name:
             var to = this.nameop(e.id, Load);
             var val = this.vexpr(s.value);

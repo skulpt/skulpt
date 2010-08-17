@@ -33,8 +33,24 @@ Sk.abstr.boNameToSlotFunc_ = function(obj, name)
         //case "BitAnd": return obj.nb$and;
         //case "BitOr": return obj.nb$or;
         //case "BitXor": return obj.nb$xor;
-        default:
-            goog.asserts.fail();
+    }
+};
+Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
+{
+    switch (name)
+    {
+        case "Add": return obj.nb$inplace_add;
+        case "Sub": return obj.nb$inplace_subtract;
+        case "Mult": return obj.nb$inplace_multiply;
+        //case "Div": return obj.nb$divide;
+        //case "FloorDiv": return obj.nb$floor_divide;
+        case "Mod": return obj.nb$inplace_remainder;
+        case "Pow": return obj.nb$inplace_power;
+        //case "LShift": return obj.nb$lshift;
+        //case "RShift": return obj.nb$rshift;
+        //case "BitAnd": return obj.nb$and;
+        //case "BitOr": return obj.nb$or;
+        //case "BitXor": return obj.nb$xor;
     }
 };
 
@@ -66,8 +82,36 @@ Sk.abstr.binary_op_ = function(v, w, opname)
 
 Sk.abstr.binary_iop_ = function(v, w, opname)
 {
-    var vop = Sk.abstr.boNameToSlotFunc_(v, opname);
-    var wop = Sk.abstr.boNameToSlotFunc_(w, opname);
+    var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
+    if (vop !== undefined)
+    {
+        ret = vop.call(v, w);
+        if (ret !== undefined) return ret;
+    }
+    var wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
+    if (wop !== undefined)
+    {
+        ret = wop.call(w, v);
+        if (ret !== undefined) return ret;
+    }
+
+    if (opname === "Add")
+    {
+        if (v.sq$inplace_concat)
+            return v.sq$inplace_concat(w);
+        else if (v.sq$concat)
+            return v.sq$concat(w);
+    }
+    else if (opname === "Mult")
+    {
+        if (v.sq$inplace_repeat)
+            return Sk.abstr.sequenceRepeat(v.sq$inplace_repeat, v, w);
+        else if (v.sq$repeat)
+            return Sk.abstr.sequenceRepeat(v.sq$repeat, v, w);
+        // note, don't use w inplace_repeat because we don't want to mutate rhs
+        else if (w.sq$repeat)
+            return Sk.abstr.sequenceRepeat(w.sq$repeat, w, v);
+    }
 
     Sk.abstr.binop_type_error(v, w, opname);
 };
@@ -139,8 +183,11 @@ Sk.abstr.numberInplaceBinOp = function(v, w, op)
         {
             return tmp;
         }
-        v = tmp[0];
-        w = tmp[1];
+        else if (tmp !== undefined)
+        {
+            v = tmp[0];
+            w = tmp[1];
+        }
     }
 
     return Sk.abstr.binary_iop_(v, w, op);

@@ -174,6 +174,8 @@ Sk.builtin.lng.prototype.nb$add = function(other)
     return z;
 };
 
+Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
+
 Sk.builtin.lng.prototype.nb$subtract = function(other)
 {
     // todo; upconvert other
