@@ -1133,6 +1133,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
         this.error("can not assign to None");
 
     if (name.v === "None") return "null";
+    if (name.v === "True") return "true";
+    if (name.v === "False") return "false";
 
     var mangled = mangleName(this.u.private_, name).v;
     var op = 0;
