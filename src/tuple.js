@@ -141,59 +141,8 @@ Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
 
 /*
 
-$.prototype.count = function() { throw "todo; tuple.count"; };
-$.prototype.index = function() { throw "todo; tuple.index"; };
-$.prototype.__class__ = new Sk.builtin.type('tuple', [Sk.types.object], {});
-
-$.prototype.__repr__ = function()
-{
-    var asStrs = [];
-    for (var it = this.__iter__(), i = it.next(); i !== undefined; i = it.next())
-        asStrs.push(Sk.builtin.repr(i).v);
-    if (asStrs.length === 1)
-        return new Sk.builtin.str("(" + asStrs[0] + ",)");
-    else
-        return new Sk.builtin.str("(" + asStrs.join(", ") + ")");
-};
-
 $.prototype.__add__ = $.prototype.__radd__ = function(other)
 {
     return new $(this.v.concat(other.v));
-};
-
-$.prototype.richcmp$ = function(rhs, op)
-{
-    if (rhs.constructor !== $) return false;
-
-    // find the first item where they're different
-    for (var i = 0; i < this.v.length && i < rhs.v.length; ++i)
-    {
-        if (!Sk.cmp(this.v[i], rhs.v[i], '=='))
-            break;
-    }
-
-    // no items to compare (compare func could have modified for ==/!=)
-    var ts = this.v.length;
-    var rs = rhs.v.length;
-    if (i >= ts || i >= rs)
-    {
-        switch (op)
-        {
-            case '<': return ts < rs;
-            case '<=': return ts <= rs;
-            case '>': return ts > rs;
-            case '>=': return ts >= rs;
-            case '!=': return ts !== rs;
-            case '==': return ts === rs;
-            default: throw "assert";
-        }
-    }
-
-    // we have a different item
-    if (op === '==') return false;
-    if (op === '!=') return true;
-
-    // or compare the final item
-    return Sk.cmp(this.v[i], rhs.v[i], op);
 };
 */
