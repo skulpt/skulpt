@@ -57,10 +57,10 @@ Sk.misceval.assignSlice = function(u, v, w, x)
 Sk.misceval.swappedOp_ = {
     'Eq': 'NotEq',
     'NotEq': 'Eq',
-    'Lt': 'GtE',
-    'LtE': 'Gt',
-    'Gt': 'LtE',
-    'GtE': 'Lt',
+    'Lt': 'Gt',
+    'LtE': 'GtE',
+    'Gt': 'Lt',
+    'GtE': 'LtE',
     'Is': 'IsNot',
     'IsNot': 'Is',
     'In_': 'NotIn',
@@ -114,11 +114,74 @@ Sk.misceval.richCompareBool = function(v, w, op)
             return v.tp$richcompare(w, op);
         else if (w.tp$richcompare)
             return w.tp$richcompare(v, Sk.misceval.swappedOp_[op]);
-        // todo; else here?
+        else
+        {
+            // depending on the op, try left:op:right, and if not, then
+            // right:reversed-top:left
+            // yeah, a macro or 3 would be nice...
+            if (op === 'Eq')
+                if (v.__eq__)
+                    return Sk.misceval.call(v.__eq__, undefined, v, w);
+                else if (w.__ne__)
+                    return Sk.misceval.call(w.__ne__, undefined, w, v);
+            else if (op === 'NotEq')
+                if (v.__ne__)
+                    return Sk.misceval.call(v.__ne__, undefined, v, w);
+                else if (w.__eq__)
+                    return Sk.misceval.call(w.__eq__, undefined, w, v);
+            else if (op === 'Gt')
+                if (v.__gt__)
+                    return Sk.misceval.call(v.__gt__, undefined, v, w);
+                else if (w.__lt__)
+                    return Sk.misceval.call(w.__lt__, undefined, w, v);
+            else if (op === 'Lt')
+                if (v.__lt__)
+                    return Sk.misceval.call(v.__lt__, undefined, v, w);
+                else if (w.__gt__)
+                    return Sk.misceval.call(w.__gt__, undefined, w, v);
+            else if (op === 'GtE')
+                if (v.__ge__)
+                    return Sk.misceval.call(v.__ge__, undefined, v, w);
+                else if (w.__le__)
+                    return Sk.misceval.call(w.__le__, undefined, w, v);
+            else if (op === 'LtE')
+                if (v.__le__)
+                    return Sk.misceval.call(v.__le__, undefined, v, w);
+                else if (w.__ge__)
+                    return Sk.misceval.call(w.__ge__, undefined, w, v);
+
+            // if those aren't defined, fallback on the __cmp__ method if it
+            // exists
+            if (v.__cmp__)
+            {
+                var ret = Sk.misceval.call(v.__cmp__, undefined, v, w);
+                if (op === 'Eq') return ret === 0;
+                else if (op === 'NotEq') return ret !== 0;
+                else if (op === 'Lt') return ret < 0;
+                else if (op === 'Gt') return ret > 0;
+                else if (op === 'LtE') return ret <= 0;
+                else if (op === 'GtE') return ret >= 0;
+            }
+            else if (w.__cmp__)
+            {
+                // note, flipped on return value and call
+                var ret = Sk.misceval.call(w.__cmp__, undefined, w, v);
+                if (op === 'Eq') return ret === 0;
+                else if (op === 'NotEq') return ret !== 0;
+                else if (op === 'Lt') return ret > 0;
+                else if (op === 'Gt') return ret < 0;
+                else if (op === 'LtE') return ret >= 0;
+                else if (op === 'GtE') return ret <= 0;
+            }
+
+        }
     }
 
-    // is this true?
-    return false;
+    // todo; some defaults, mostly to handle diff types -> false. are these ok?
+    if (op === 'Eq') return v === w;
+    if (op === 'NotEq') return v !== w;
+
+    throw new Sk.builtin.ValueError("don't know how to compare '" + v.tp$name + "' and '" + w.tp$name + "'");
 };
 
 Sk.misceval.objectRepr = function(v)

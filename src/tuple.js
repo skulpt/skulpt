@@ -98,6 +98,47 @@ Sk.builtin.tuple.prototype.tp$iter = function()
     return ret;
 };
 
+Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
+{
+    // todo; NotImplemented if either isn't a tuple
+        
+    var v = this.v;
+    var w = w.v;
+    var vl = v.length;
+    var wl = w.length;
+
+    var i;
+    for (i = 0; i < vl && i < wl; ++i)
+    {
+        var k = Sk.misceval.richCompareBool(v[i], w[i], 'Eq');
+        if (!k) break;
+    }
+
+    if (i >= vl || i >= wl)
+    {
+        // no more items to compare, compare sizes
+        switch (op)
+        {
+            case 'Lt': return vl < wl;
+            case 'LtE': return vl <= wl;
+            case 'Eq': return vl === wl;
+            case 'NotEq': return vl !== wl;
+            case 'Gt': return vl > wl;
+            case 'GtE': return vl >= wl;
+            default: goog.asserts.fail();
+        }
+    }
+
+    // we have an item that's different
+
+    // shortcuts for eq/not
+    if (op === 'Eq') return false;
+    if (op === 'NotEq') return true;
+
+    // or, compare the differing element using the proper operator
+    return Sk.misceval.richCompareBool(v[i], w[i], op);
+};
+
 /*
 
 $.prototype.count = function() { throw "todo; tuple.count"; };

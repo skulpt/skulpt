@@ -83,9 +83,52 @@ Sk.builtin.list.prototype.tp$repr = function()
 Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.list.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
 
-/*
-Sk.builtin.list.prototype.tp$richcompare = list_richcompare;
-*/
+Sk.builtin.list.prototype.tp$richcompare = function(w, op)
+{
+    // todo; NotImplemented if either isn't a list
+
+    // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
+    // perhaps by trapping a stack overflow? otherwise i'm not sure for more
+    // complicated cases. bleh
+    if (this === w) return op === 'Eq';
+        
+    var v = this.v;
+    var w = w.v;
+    var vl = v.length;
+    var wl = w.length;
+
+    var i;
+    for (i = 0; i < vl && i < wl; ++i)
+    {
+        var k = Sk.misceval.richCompareBool(v[i], w[i], 'Eq');
+        if (!k) break;
+    }
+
+    if (i >= vl || i >= wl)
+    {
+        // no more items to compare, compare sizes
+        switch (op)
+        {
+            case 'Lt': return vl < wl;
+            case 'LtE': return vl <= wl;
+            case 'Eq': return vl === wl;
+            case 'NotEq': return vl !== wl;
+            case 'Gt': return vl > wl;
+            case 'GtE': return vl >= wl;
+            default: goog.asserts.fail();
+        }
+    }
+
+    // we have an item that's different
+
+    // shortcuts for eq/not
+    if (op === 'Eq') return false;
+    if (op === 'NotEq') return true;
+
+    // or, compare the differing element using the proper operator
+    return Sk.misceval.richCompareBool(v[i], w[i], op);
+};
+
 Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
 /*
 Sk.builtin.list.prototype.sq$length = list_length;
