@@ -378,6 +378,8 @@ def run(fn, shell=""):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
     f.write("""
