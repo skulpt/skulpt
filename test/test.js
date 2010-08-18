@@ -317,7 +317,7 @@ function main()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= 210; ++i)
+    for (i = 0; i <= 213; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }

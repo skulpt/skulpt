@@ -81,4 +81,11 @@ klass = new Object();
 klass.prototype.x = function(){};
 new klass();
 
+
+assigning keyword arguments:
+- place all positional into array
+- for each keyword, figure out what it's position would be
+-    if there's nothing there, then insert
+-    otherwise, throw TypeError multiple values
+
 # vim: set tw=72:
