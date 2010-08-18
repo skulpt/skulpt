@@ -27,6 +27,8 @@ Sk.builtin.list = function(L)
     return this;
 };
 
+Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeTypeObj('list', new Sk.builtin.list([]));
+
 Sk.builtin.list.prototype.list_iter_ = function()
 {
     var ret =
@@ -241,7 +243,13 @@ Sk.builtin.list.prototype.append = new Sk.builtin.func(function(self, item)
     return null;
 });
 
-//Sk.builtin.list.prototype.insert = todo;
+Sk.builtin.list.prototype.insert = new Sk.builtin.func(function(self, i, x)
+{
+    if (i < 0) i = 0;
+    else if (i > self.v.length) i = self.v.length - 1;
+    self.v.splice(i, 0, x);
+});
+
 Sk.builtin.list.prototype.extend = new Sk.builtin.func(function(self, b)
 {
     for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
@@ -249,7 +257,14 @@ Sk.builtin.list.prototype.extend = new Sk.builtin.func(function(self, b)
     return null;
 });
 
-//Sk.builtin.list.prototype.pop = todo;
+Sk.builtin.list.prototype.pop = new Sk.builtin.func(function(self, i)
+{
+    if (i === undefined) i = self.v.length - 1;
+    var ret = self.v[i];
+    self.v.splice(i, 1);
+    return ret;
+});
+
 //Sk.builtin.list.prototype.remove = todo;
 Sk.builtin.list.prototype.index = new Sk.builtin.func(function(self, item)
 {
@@ -272,52 +287,4 @@ Sk.builtin.list.prototype.sort = new Sk.builtin.func(function(self)
     self.v.sort();
     return null;
 });
-
-
-Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeTypeObj('list', new Sk.builtin.list([]));
-
-// __dict__ is the instance's actual dict
-
-    /*
-$.append = function(self, item)
-{
-    self.v.push(item);
-    return null;
-};
-
-$.count = function() { throw "todo; list.count"; };
-
-$.index = function(self, item)
-{
-};
-
-$.insert = function(self, i, x)
-{
-    if (i < 0) i = 0;
-    else if (i > self.v.length) i = self.v.length;
-    self.v.splice(i, 0, x);
-};
-
-$.pop = function(self, i)
-{
-    if (i === undefined) i = self.v.length - 1;
-    var ret = self.v[i];
-    self.v.splice(i, 1);
-    return ret;
-};
-
-$.remove = function() { throw "todo; list.remove"; };
-
-$.reverse = function() { throw "todo; list.reverse"; };
-
-$.prototype.__add__ = function(other)
-{
-    var ret = this.v.slice();
-    for (var i = 0; i < other.v.length; ++i)
-    {
-        ret.push(other.v[i]);
-    }
-    return new $(ret);
-};
-*/
 
