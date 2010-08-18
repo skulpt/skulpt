@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Sk.builtin.generator = function(code, globals, args, argnames)
+Sk.builtin.generator = function(code, globals, args)
 {
     if (code === undefined) return; // ctor hack
     this.func_code = code;
@@ -9,10 +9,13 @@ Sk.builtin.generator = function(code, globals, args, argnames)
     this.gi$running = false;
     this.gi$resumeat = 0;
     this.gi$locals = {};
-    // store arguments into locals because they have to be maintained
-    // too. 'fast' var lookups are locals in generator functions.
-    for (var i = 0; i < argnames.length; ++i)
-        this.gi$locals[argnames[i]] = args[i];
+    if (args.length > 0)
+    {
+        // store arguments into locals because they have to be maintained
+        // too. 'fast' var lookups are locals in generator functions.
+        for (var i = 0; i < code.co_varnames.length; ++i)
+            this.gi$locals[code.co_varnames[i]] = args[i];
+    }
     return this;
 };
 

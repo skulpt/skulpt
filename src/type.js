@@ -91,7 +91,7 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 Sk.builtin.type.prototype.tp$name = "type";
 
-Sk.builtin.type.prototype.tp$call = function()
+Sk.builtin.type.prototype.tp$call = function(args, kw)
 {
     // arguments here are args to __init__
 
@@ -103,7 +103,6 @@ Sk.builtin.type.prototype.tp$call = function()
     if (init !== undefined)
     {
         // return ignored I guess?
-        var args = Array.prototype.slice.call(arguments, 0);
         args.unshift(obj);
         Sk.misceval.apply(init, undefined, args);
     }

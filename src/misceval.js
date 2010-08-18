@@ -319,6 +319,7 @@ Sk.misceval.loadname = function(name, other)
 Sk.misceval.call = function(func, kw, args)
 {
     var args = Array.prototype.slice.call(arguments, 2);
+    // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.apply(func, kw, args);
 };
 
@@ -328,8 +329,9 @@ Sk.misceval.call = function(func, kw, args)
  */
 Sk.misceval.apply = function(func, kw, args)
 {
-    if (typeof func === "function" && kw === undefined)
+    if (typeof func === "function")
     {
+        goog.asserts.assert(kw === undefined);
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
@@ -341,8 +343,7 @@ Sk.misceval.apply = function(func, kw, args)
         var fcall = func.tp$call;
         if (fcall !== undefined)
         {
-            // todo; kwargs
-            return fcall.apply(func, args);
+            return fcall.call(func, args, kw);
         }
 
         // todo; can we push this into a tp$call somewhere so there's

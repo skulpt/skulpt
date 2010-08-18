@@ -273,11 +273,20 @@ Compiler.prototype.ccall = function(e)
 {
     var func = this.vexpr(e.func);
     var args = this.vseqexpr(e.args);
-    goog.asserts.assert(e.keywords.length === 0, "todo;");
     goog.asserts.assert(!e.starargs, "todo;");
     goog.asserts.assert(!e.kwargs, "todo;");
-    // todo; undefined is kw
-    return this._gr('call', "Sk.misceval.call(", func, ", undefined", args.length > 0 ? "," : "", args, ")");
+    var keywords = "undefined";
+    if (e.keywords.length > 0)
+    {
+        var kwarray = [];
+        for (var i = 0; i < e.keywords.length; ++i)
+        {
+            kwarray.push("'" + e.keywords[i].arg.v + "'");
+            kwarray.push(this.vexpr(e.keywords[i].value));
+        }
+        keywords = "[" + kwarray.join(",") + "]";
+    }
+    return this._gr('call', "Sk.misceval.call(", func, ",", keywords, args.length > 0 ? "," : "", args, ")");
 };
 
 Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
@@ -864,6 +873,21 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     if (defaults.length > 0)
         out(scopename, ".$defaults=[", defaults.join(','), "];");
 
+
+    //
+    // attach co_varnames (only the argument names) for keyword argument
+    // binding.
+    //
+    var argnames;
+    if (args)
+    {
+        var argnamesarr = [];
+        for (var i = 0; i < args.args.length; ++i)
+            argnamesarr.push(args.args[i].id.v);
+        argnames = argnamesarr.join("', '");
+        out(scopename, ".co_varnames=['", argnames, "'];");
+    }
+
     //
     // build either a 'function' or 'generator'. the function is just a simple
     // constructor call. the generator is more complicated. it needs to make a
@@ -881,14 +905,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     {
         if (args)
         {
-            var argnames = ""
-            for (var i = 0; i < args.args.length; ++i)
-            {
-                argnames += "'" + args.args[i].id.v + "'"; // todo; should really be nameop, but that would get $loc.x
-                if (i !== args.args.length - 1)
-                    argnames += ",";
-            }
-            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs,[", argnames ,"]);})");
+            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs);})");
         }
         else
         {

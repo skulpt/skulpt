@@ -21,20 +21,35 @@ Sk.builtin.func.prototype.tp$descr_get = function(obj, objtype)
     if (obj == null) return this;
     return new Sk.builtin.method(this, obj);
 };
-Sk.builtin.func.prototype.tp$call = function()
+Sk.builtin.func.prototype.tp$call = function(args, kw)
 {
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     if (this.func_closure)
     {
-        var args = Array.prototype.slice.call(arguments, 0);
+        // todo; OK to modify?
         args.unshift(this.func_closure);
-        return this.func_code.apply(this.func_globals, args); 
     }
-    else
+
+    if (kw)
     {
-        return this.func_code.apply(this.func_globals, arguments); 
+        // bind the kw args
+        var kwlen = kw.length;
+        for (var i = 0; i < kwlen; i += 2)
+        {
+            // todo; make this a dict mapping name to offset
+            var varnames = this.func_code.co_varnames;
+            var numvarnames = varnames.length;
+            for (var j = 0; j < numvarnames; ++j)
+            {
+                if (kw[i] === varnames[j])
+                    break;
+            }
+            args[j] = kw[i+1];
+        }
     }
+
+    return this.func_code.apply(this.func_globals, args); 
 };
 
 Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new Sk.builtin.func(null, null));

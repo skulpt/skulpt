@@ -8,13 +8,33 @@ Sk.builtin.method = function(func, self)
     //print("constructing method", this.im_func.tp$name, this.im_self.tp$name);
 };
 
-Sk.builtin.method.prototype.tp$call = function()
+Sk.builtin.method.prototype.tp$call = function(args, kw)
 {
     goog.asserts.assert(this.im_self, "should just be a function, not a method since there's no self?");
-    var args = Array.prototype.slice.call(arguments, 0);
     goog.asserts.assert(this.im_func instanceof Sk.builtin.func);
+
     //print("calling method");
+    // todo; modification OK?
     args.unshift(this.im_self);
+
+    if (kw)
+    {
+        // bind the kw args
+        var kwlen = kw.length;
+        for (var i = 0; i < kwlen; i += 2)
+        {
+            // todo; make this a dict mapping name to offset
+            var varnames = this.im_func.func_code.co_varnames;
+            var numvarnames = varnames.length;
+            for (var j = 0; j < numvarnames; ++j)
+            {
+                if (kw[i] === varnames[j])
+                    break;
+            }
+            args[j] = kw[i+1];
+        }
+    }
+
     // note: functions expect globals to be their 'this'. see compile.js and function.js also
     return this.im_func.func_code.apply(this.im_func.func_globals, args);
 };

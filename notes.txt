@@ -87,5 +87,11 @@ assigning keyword arguments:
 - for each keyword, figure out what it's position would be
 -    if there's nothing there, then insert
 -    otherwise, throw TypeError multiple values
+Oh wait, no, that's dumb. We don't know the target we're calling so the
+binding has to be in the call not at the call site (though it could look
+in the function object that's being called.)
+
+So, just build up a list of name/value for keywords, and .call has to
+put them in the right place by looking at something. code obj? func obj?
 
 # vim: set tw=72:
