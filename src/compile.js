@@ -41,24 +41,23 @@ function CompilerUnit()
 {
     this.ste = null;
     this.name = null;
-    this.consts = null;
-
-    this.names = null;
-    this.varnames = null;
-    this.cellvars = null;
-    this.freevars = null;
 
     this.private_ = null;
-    this.argcount = 0;
     this.firstlineno = 0;
     this.lineno = 0;
     this.linenoSet = false;
+    this.localnames = [];
 
     this.blocknum = 0;
     this.blocks = [];
     this.curblock = 0;
 
     this.scopename = null;
+
+    this.prefixCode = '';
+    this.varDeclsCode = '';
+    this.switchCode = '';
+    this.suffixCode = '';
 
     // stack of where to go on a break
     this.breakBlocks = [];
@@ -579,6 +578,28 @@ Compiler.prototype.popContinueBlock = function()
     this.u.continueBlocks.pop();
 };
 
+Compiler.prototype.outputLocals = function(unit)
+{
+    var have = {};
+    //print("args", unit.name.v, JSON.stringify(unit.argnames));
+    for (var i = 0; unit.argnames && i < unit.argnames.length; ++i)
+        have[unit.argnames[i]] = true;
+    unit.localnames.sort();
+    var output = [];
+    for (var i = 0; i < unit.localnames.length; ++i)
+    {
+        var name = unit.localnames[i];
+        if (have[name] === undefined)
+        {
+            output.push(name);
+            have[name] = true;
+        }
+    }
+    if (output.length > 0)
+        return "var " + output.join(",") + "; /* locals */";
+    return "";
+};
+
 Compiler.prototype.outputAllUnits = function()
 {
     var ret = '';
@@ -586,6 +607,9 @@ Compiler.prototype.outputAllUnits = function()
     {
         var unit = this.allUnits[j];
         ret += unit.prefixCode;
+        ret += this.outputLocals(unit);
+        ret += unit.varDeclsCode;
+        ret += unit.switchCode;
         var blocks = unit.blocks;
         for (var i = 0; i < blocks.length; ++i)
         {
@@ -834,7 +858,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;";
 
     //
     // copy all parameters that are also cells into the cells dict. this is so
@@ -844,7 +868,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     {
         var id = args.args[i].id;
         if (this.isCell(id))
-            this.u.prefixCode += "$cell." + id.v + "=" + id.v + ";";
+            this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
     }
 
     //
@@ -860,14 +884,14 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         for (var i = 0; i < defaults.length; ++i)
         {
             var argname = this.nameop(args.args[i + offset].id, Param);
-            this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
+            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
         }
     }
 
     //
     // finally, set up the block switch that the jump code expects
     //
-    this.u.prefixCode += "while(true){switch($blk){";
+    this.u.switchCode += "while(true){switch($blk){";
     this.u.suffixCode = "}break;}});";
 
     //
@@ -875,6 +899,22 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     // function
     //
     callback.call(this, scopename);
+
+    //
+    // get a list of all the argument names (used to attach to the code
+    // object, and also to allow us to declare only locals that aren't also
+    // parameters).
+    var argnames;
+    if (args && args.args.length > 0)
+    {
+        var argnamesarr = [];
+        for (var i = 0; i < args.args.length; ++i)
+            argnamesarr.push(args.args[i].id.v);
+
+        argnames = argnamesarr.join("', '");
+        // store to unit so we know what local variables not to declare
+        this.u.argnames = argnamesarr;
+    }
 
     //
     // and exit the code object scope
@@ -894,13 +934,8 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     // attach co_varnames (only the argument names) for keyword argument
     // binding.
     //
-    var argnames;
-    if (args)
+    if (argnames)
     {
-        var argnamesarr = [];
-        for (var i = 0; i < args.args.length; ++i)
-            argnamesarr.push(args.args[i].id.v);
-        argnames = argnamesarr.join("', '");
         out(scopename, ".co_varnames=['", argnames, "'];");
     }
 
@@ -919,7 +954,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     // 
     if (isGenerator)
     {
-        if (args)
+        if (args && args.args.length > 0)
         {
             return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs);})");
         }
@@ -1051,8 +1086,8 @@ Compiler.prototype.cclass = function(s)
     var entryBlock = this.newBlock('class entry');
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
-    this.u.prefixCode += "return(function " + s.name.v + "(){";
-    this.u.prefixCode += "var $blk=" + entryBlock + ";while(true){switch($blk){";
+    this.u.switchCode += "return(function " + s.name.v + "(){";
+    this.u.switchCode += "var $blk=" + entryBlock + ";while(true){switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.u.private_ = s.name;
@@ -1208,7 +1243,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             optype = OP_DEREF;
             break;
         case LOCAL:
-            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator)
+            // can't do FAST in generators or at module/class scope
+            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator && this.u.ste.blockType === FunctionBlock)
                 optype = OP_FAST;
             break;
         case GLOBAL_IMPLICIT:
@@ -1223,6 +1259,14 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
 
     //print("mangled", mangled);
     goog.asserts.assert(scope || name.v.charAt(1) === '_');
+
+    // in generator or at module scope, we need to store to $loc, rather that
+    // to actual JS stack variables.
+    var mangledNoPre = mangled;
+    if (this.u.ste.generator || this.u.ste.blockType !== FunctionBlock)
+        mangled = "$loc." + mangled;
+    else if (optype === OP_FAST || optype === OP_NAME)
+        this.u.localnames.push(mangled);
 
     switch (optype)
     {
@@ -1245,16 +1289,16 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                 case Load:
                     var v = this.gensym('loadname');
                     // can't be || for loc.x = 0 or null
-                    out("var ", v, "=$loc.", mangled, "!==undefined?$loc.",mangled,":Sk.misceval.loadname('",mangled,"',$gbl);");
+                    out("var ", v, "=", mangled, "!==undefined?",mangled,":Sk.misceval.loadname('",mangledNoPre,"',$gbl);");
                     return v;
                 case Store:
-                    out("$loc.", mangled, "=", dataToStore, ";");
+                    out(mangled, "=", dataToStore, ";");
                     break;
                 case Del:
-                    out("delete $loc.", mangled, ";");
+                    out("delete ", mangled, ";");
                     break;
                 case Param:
-                    return "$loc." + mangled;
+                    return mangled;
                 default:
                     goog.asserts.fail("unhandled");
             }
@@ -1263,12 +1307,12 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             switch (ctx)
             {
                 case Load:
-                    return this._gr("loadgbl", "Sk.misceval.loadname('", mangled, "',$gbl)");
+                    return this._gr("loadgbl", "Sk.misceval.loadname('", mangledNoPre, "',$gbl)");
                 case Store:
-                    out("$gbl.", mangled, "=", dataToStore, ';');
+                    out("$gbl.", mangledNoPre, "=", dataToStore, ';');
                     break;
                 case Del:
-                    out("delete $gbl.", mangled);
+                    out("delete $gbl.", mangledNoPre);
                     break;
                 default:
                     goog.asserts.fail("unhandled case in name op_global");
@@ -1278,12 +1322,12 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             switch (ctx)
             {
                 case Load:
-                    return dict + "." + mangled;
+                    return dict + "." + mangledNoPre;
                 case Store:
-                    out(dict, ".", mangled, "=", dataToStore, ";");
+                    out(dict, ".", mangledNoPre, "=", dataToStore, ";");
                     break;
                 case Param:
-                    return mangled;
+                    return mangledNoPre;
                 default:
                     goog.asserts.fail("unhandled case in name op_deref");
             }
@@ -1299,8 +1343,6 @@ Compiler.prototype.enterScope = function(name, key, lineno)
     u.ste = this.st.getStsForAst(key);
     u.name = name;
     u.firstlineno = lineno;
-    u.consts = {};
-    u.names = {};
 
     this.stack.push(this.u);
     this.allUnits.push(u);
@@ -1358,7 +1400,9 @@ Compiler.prototype.cmod = function(mod)
     var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0);
 
     var entryBlock = this.newBlock('module entry');
-    this.u.prefixCode = "var " + modf + "=(function($modname){var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;$gbl.__name__=$modname;while(true){switch($blk){";
+    this.u.prefixCode = "var " + modf + "=(function($modname){";
+    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;$gbl.__name__=$modname;";
+    this.u.switchCode = "while(true){switch($blk){";
     this.u.suffixCode = "}}});";
 
     switch (mod.constructor)
