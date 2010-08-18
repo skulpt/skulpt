@@ -29,7 +29,7 @@ Sk.builtin.str = function(x, $ctorhack)
         return ret;
     }
     else
-        ret = Sk.misceval.objectRepr(x);
+        return Sk.misceval.objectRepr(x);
 
     // interning required for strings in py
     var it = interned[ret];
