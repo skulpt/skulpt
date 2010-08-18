@@ -812,14 +812,29 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     this.u.prefixCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;";
 
     //
+    // copy all parameters that are also cells into the cells dict. this is so
+    // they can be accessed correctly by nested scopes.
+    //
+    for (var i = 0; args && i < args.args.length; ++i)
+    {
+        var id = args.args[i].id;
+        if (this.isCell(id))
+            this.u.prefixCode += "$cell." + id.v + "=" + id.v + ";";
+    }
+
+    //
     // initialize default arguments. we store the values of the defaults to
     // this code object as .$defaults just below after we exit this scope.
     //
     if (defaults.length > 0)
     {
+        // defaults have to be "right justified" so if there's less defaults
+        // than args we offset to make them match up (we don't need another
+        // correlation in the ast)
+        var offset = args.args.length - defaults.length;
         for (var i = 0; i < defaults.length; ++i)
         {
-            var argname = this.nameop(args.args[i].id, Param);
+            var argname = this.nameop(args.args[i + offset].id, Param);
             this.u.prefixCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
         }
     }
@@ -1119,6 +1134,16 @@ var OP_NAME = 3;
 var D_NAMES = 0;
 var D_FREEVARS = 1;
 var D_CELLVARS = 2;
+
+Compiler.prototype.isCell = function(name)
+{
+    var mangled = mangleName(this.u.private_, name).v;
+    var scope = this.u.ste.getScope(mangled);
+    var dict = null;
+    if (scope === CELL)
+        return true;
+    return false;
+};
 
 /**
  * @param {Sk.builtin.str} name
