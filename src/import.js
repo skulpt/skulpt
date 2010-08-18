@@ -40,7 +40,7 @@ Sk.importModule = function(name, dumpJS, modname)
     // from js or from py.
     if (!Sk.realsyspath)
     {
-        var paths = [ new Sk.builtin.str("src/builtin") ];
+        var paths = [ new Sk.builtin.str("src/builtin"), new Sk.builtin.str(".") ];
         for (var i = 0; i < Sk.syspath.length; ++i)
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
         Sk.realsyspath = new Sk.builtin.list(paths);
