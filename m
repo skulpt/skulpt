@@ -30,7 +30,6 @@ Files = [
         'src/module.js',
         'src/generator.js',
         'src/file.js',
-        'src/modules/sys.js',
 
         'src/tokenize.js',
         'gen/parse_tables.js',
@@ -39,6 +38,7 @@ Files = [
         'src/ast.js',
         'src/symtable.js',
         'src/compile.js',
+        'src/import.js',
         ("support/jsbeautify/beautify.js", 'test'),
         ]
 
@@ -387,9 +387,10 @@ var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-var module = Sk.importModule("%s", "%s", input, true);
+Sk.syspath = ["test/run"];
+var module = Sk.importModule("%s", true);
 print("-----");
-    """ % (fn, modname, fn))
+    """ % (fn, modname))
     f.close()
     os.system("%s %s %s support/tmp/run.js" %
             (jsengine,

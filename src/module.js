@@ -1,14 +1,11 @@
-Sk.modules = new Sk.builtin.dict([]);
-//Sk.syspath = new Sk.builtin.list([]);
-
 /**
  * @constructor
  * @param {string} name
  */
-Sk.builtin.module = function(name)
+Sk.builtin.module = function()
 {
-
-    this.__dict__ = new Sk.builtin.dict([]);
-    this.__dict__.mp$ass_subscript(new Sk.builtin.str("__name__"), name);
-    // todo; file
 };
+
+Sk.builtin.module.prototype.ob$type = Sk.builtin.type.makeTypeObj('module', new Sk.builtin.module());
+Sk.builtin.module.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.builtin.module.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;

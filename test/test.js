@@ -189,6 +189,7 @@ function testRun(name)
     var got = '';
     Sk.output = function(str) { got += str; }
     Sk.sysargv = [ name + '.py' ];
+    Sk.syspath = ["test/run"];
 
     var expect = read(name + ".py.real");
     var expectalt;
@@ -196,7 +197,8 @@ function testRun(name)
     catch (e) {}
     var module;
     try {
-        module = Sk.importModule(name, name + ".py", input);
+        var justname = name.substr(name.lastIndexOf('/') + 1);
+        module = Sk.importMain(justname);
     }
     catch (e)
     {
@@ -317,7 +319,7 @@ function main()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= 218; ++i)
+    for (i = 0; i <= 222; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }

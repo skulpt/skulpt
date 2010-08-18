@@ -734,6 +734,22 @@ Compiler.prototype.cassert = function(s)
     this.setBlock(end);
 };
 
+Compiler.prototype.cimport = function(s)
+{
+    var n = s.names.length;
+    for (var i = 0; i < n; ++i)
+    {
+        var alias = s.names[i];
+        var mod = this._gr('module', "Sk.builtin.__import__(", alias.name.tp$repr().v, ",$gbl,$loc,[])");
+        out("$loc.", alias.name.v, "=", mod, ";");
+    }
+};
+
+Compiler.prototype.cfromimport = function(s)
+{
+    goog.asserts.fail("todo;");
+};
+
 /**
  * builds a code object (js function) for various constructs. used by def,
  * lambda, generator expressions. it isn't used for class because it seemed
@@ -1053,12 +1069,6 @@ Compiler.prototype.cclass = function(s)
     // todo; metaclass
     var wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name.tp$repr().v, ",[", bases, "])");
 
-    // Copy all prototype methods for the class type on to the instance.
-    //
-
-    // TODO decision
-
-
     // store our new class under the right name
     this.nameop(s.name, Store, wrapped);
 };
@@ -1119,6 +1129,10 @@ Compiler.prototype.vstmt = function(s)
             return this.cif(s);
         case Assert:
             return this.cassert(s);
+        case Import_:
+            return this.cimport(s);
+        case ImportFrom:
+            return this.cfromimport(s);
         case Global:
             break;
         case Expr:
@@ -1382,64 +1396,4 @@ Sk.compile = function(source, filename, mode)
     };
 };
 
-if (COMPILED)
-{
-    var print = function(x) {};
-    var js_beautify = function(x) {};
-}
-
-/**
- * @param {string} name the module name
- * @param {string} filename the path to the file
- * @param {string} source the content of the file
- * @param {boolean=} dumpJS print out the js code after compilation for debugging
- */
-Sk.importModule = function(name, filename, source, dumpJS)
-{
-    // if already in sys.modules, return it
-    var prev = Sk.sys.modules.mp$subscript(name);
-    if (prev !== undefined) return prev;
-
-    // otherwise:
-    // - create module object
-    // - add module object to sys.modules
-    // - compile source to (function(){...});
-    // - run module and set the module locals returned to the module __dict__
-    var module = new Sk.builtin.module(name);
-    Sk.sys.modules.mp$ass_subscript(name, module);
-    var co = Sk.compile(source, filename, "exec");
-    module.$js = co.code; // todo; only in DEBUG?
-    var finalcode = co.code;
-
-    if (!COMPILED)
-    {
-        if (dumpJS)
-        {
-            print("-----");
-            var withLineNumbers = function(code)
-            {
-                var beaut = js_beautify(co.code);
-                var lines = beaut.split("\n");
-                for (var i = 1; i <= lines.length; ++i)
-                {
-                    var width = ("" + i).length;
-                    var pad = "";
-                    for (var j = width; j < 5; ++j) pad += " ";
-                    lines[i - 1] = "/* " + pad + i + " */ " + lines[i - 1];
-                }
-                return lines.join("\n");
-            };
-            finalcode = withLineNumbers(co.code);
-            print(finalcode);
-        }
-    }
-
-    var namestr = "new Sk.builtin.str(\"__main__\")";
-    finalcode += "\n" + co.funcname + "(" + namestr + ");";
-    var modlocs = goog.global.eval(finalcode);
-    module.__dict__ = modlocs;
-    return module;
-};
-
 goog.exportSymbol("Sk.compile", Sk.compile);
-goog.exportSymbol("Sk.importModule", Sk.importModule);

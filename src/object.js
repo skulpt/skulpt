@@ -30,9 +30,11 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     //print("getattr", name.v, this.inst$dict.tp$repr().v);
     if (this.inst$dict)
     {
-        //print("hi");
-        var res = this.inst$dict.mp$subscript(name);
-        //print(res);
+        var res;
+        if (this.inst$dict.mp$subscript)
+            res = this.inst$dict.mp$subscript(name);
+        else if (typeof this.inst$dict === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object
+            res = this.inst$dict[name.v];
         if (res !== undefined)
             return res;
     }
@@ -54,8 +56,10 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
 Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
 {
     // todo; lots o' stuff
-    this.inst$dict.mp$ass_subscript(name, value);
-    //print("obj now", this.__dict__.tp$repr().v);
+    if (this.inst$dict.mp$ass_subscript)
+        this.inst$dict.mp$ass_subscript(name, value);
+    else if (typeof this.inst$dict === "object")
+        this.inst$dict[name.v] = value;
 };
 
 Sk.builtin.object.prototype.HashNotImplemented = function()

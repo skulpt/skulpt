@@ -16,8 +16,8 @@ goog.exportSymbol("Sk.output", Sk.output);
 /**
  * Replacable function to load modules with (called via import, etc.)
  */
-Sk.load = function(x) { throw "Sk.load has not been implemented"; };
-goog.exportSymbol("Sk.load", Sk.load);
+Sk.read = function(x) { throw "Sk.read has not been implemented"; };
+goog.exportSymbol("Sk.read", Sk.read);
 
 /**
  * Setable to emulate arguments to the script. Should be array of JS strings.
@@ -25,6 +25,12 @@ goog.exportSymbol("Sk.load", Sk.load);
 Sk.sysargv = [];
 goog.exportSymbol("Sk.sysargv", Sk.sysargv);
 
+/**
+ * Setable to emulate PYTHONPATH environment variable (for finding modules).
+ * Should be an array of JS strings.
+ */
+Sk.syspath = [];
+goog.exportSymbol("Sk.syspath", Sk.syspath);
 
 (function() { var $ = Sk;
 
@@ -242,11 +248,11 @@ Sk.builtin.getattr = function getattr(object, name, default_)
 };
 
 // set up some sane defaults based on availability
-if (goog.global.write !== undefined) $.output = goog.global.write;
-else if (goog.global.console !== undefined && goog.global.console.log !== undefined) $.output = function (x) {goog.global.console.log(x);};
-else if (goog.global.print !== undefined) $.output = goog.global.print;
+if (goog.global.write !== undefined) Sk.output = goog.global.write;
+else if (goog.global.console !== undefined && goog.global.console.log !== undefined) Sk.output = function (x) {goog.global.console.log(x);};
+else if (goog.global.print !== undefined) Sk.output = goog.global.print;
 
 // todo; this should be an async api
-if (goog.global.read !== undefined) $.load = goog.global.read;
+if (goog.global.read !== undefined) Sk.read = goog.global.read;
 
 }());
