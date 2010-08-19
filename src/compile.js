@@ -107,6 +107,30 @@ Compiler.prototype.niceName = function(roughName)
     return this.gensym(roughName.replace("<", "").replace(">", "").replace(" ", "_"));
 }
 
+var reservedWords_ = { 'abstract': true, 'as': true, 'boolean': true,
+    'break': true, 'byte': true, 'case': true, 'catch': true, 'char': true,
+    'class': true, 'continue': true, 'const': true, 'debugger': true,
+    'default': true, 'delete': true, 'do': true, 'double': true, 'else': true,
+    'enum': true, 'export': true, 'extends': true, 'false': true,
+    'final': true, 'finally': true, 'float': true, 'for': true,
+    'function': true, 'goto': true, 'if': true, 'implements': true,
+    'import': true, 'in': true, 'instanceof': true, 'int': true,
+    'interface': true, 'is': true, 'long': true, 'namespace': true,
+    'native': true, 'new': true, 'null': true, 'package': true,
+    'private': true, 'protected': true, 'public': true, 'return': true,
+    'short': true, 'static': true, 'super': true, 'switch': true,
+    'synchronized': true, 'this': true, 'throw': true, 'throws': true,
+    'transient': true, 'true': true, 'try': true, 'typeof': true, 'use': true,
+    'var': true, 'void': true, 'volatile': true, 'while': true, 'with': true
+};
+
+function fixReservedWords(name)
+{
+    if (reservedWords_[name] === undefined)
+        return name;
+    return name + "_$rw$";
+}
+
 function mangleName(priv, ident)
 {
     var name = ident.v;
@@ -119,7 +143,7 @@ function mangleName(priv, ident)
     if (priv.replace(/_/g, '') === '')
         return ident;
     priv = priv.replace(/^_*/, '');
-    return new Sk.builtin.str('_' + priv + name);
+    return '_' + priv + name;
 }
 
 /**
@@ -1265,6 +1289,9 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             break;
     }
 
+    // have to do this after looking it up in the scope
+    mangled = fixReservedWords(mangled);
+
     //print("mangled", mangled);
     goog.asserts.assert(scope || name.v.charAt(1) === '_');
 
@@ -1285,7 +1312,10 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
                 case Param:
                     return mangled;
                 case Store:
-                    out(mangled+ "=", dataToStore, ";");
+                    out(mangled, "=", dataToStore, ";");
+                    break;
+                case Del:
+                    out("delete ", mangled, ";");
                     break;
                 default:
                     goog.asserts.fail("unhandled");

@@ -139,10 +139,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
     return Sk.misceval.richCompareBool(v[i], w[i], op);
 };
 
-/*
-
-$.prototype.__add__ = $.prototype.__radd__ = function(other)
+Sk.builtin.tuple.prototype.sq$concat = function(other)
 {
-    return new $(this.v.concat(other.v));
+    return new Sk.builtin.tuple(this.v.concat(other.v));
 };
-*/
