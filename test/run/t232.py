@@ -12,7 +12,7 @@ def x():
         a = "cat"
         print a,b,d
         def z():
-            for i in range(10):
+            for i in range(10*time):
                 yield i,a,b,c,d
         return z
     return y("blorp")
