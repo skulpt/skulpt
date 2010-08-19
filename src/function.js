@@ -6,11 +6,21 @@
  * Can be undefined (which will be stored as null) for builtins. (is
  * that ok?)
  *
+ * closure is the cell variables from the parent scope that we need to close
+ * over. closure2 is the free variables in the parent scope that we also might
+ * need to access.
+ *
  */
-Sk.builtin.func = function(code, globals, closure)
+Sk.builtin.func = function(code, globals, closure, closure2)
 {
     this.func_code = code;
     this.func_globals = globals || null;
+    if (closure2 !== undefined)
+    {
+        // todo; confirm that modification here can't cause problems
+        for (var k in closure2)
+            closure[k] = closure2[k];
+    }
     this.func_closure = closure;
 };
 
@@ -28,7 +38,7 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
     if (this.func_closure)
     {
         // todo; OK to modify?
-        args.unshift(this.func_closure);
+        args.push(this.func_closure);
     }
 
     if (kw)

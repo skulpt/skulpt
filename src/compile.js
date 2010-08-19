@@ -839,9 +839,9 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     this.u.prefixCode += "){";
 
-    if (isGenerator) this.u.prefixCode += " /* generator */ ";
-    if (hasFree) this.u.prefixCode += " /* has free */ ";
-    if (hasCell) this.u.prefixCode += " /* has cell */ ";
+    if (isGenerator) this.u.prefixCode += "\n// generator\n";
+    if (hasFree) this.u.prefixCode += "\n// has free\n";
+    if (hasCell) this.u.prefixCode += "\n// has cell\n";
 
     //
     // set up standard dicts/variables
@@ -967,7 +967,15 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     {
         frees = "";
         if (hasFree)
+        {
             frees = ",$cell";
+            // if the scope we're in where we're defining this one has free
+            // vars, they may also be cell vars, so we pass those to the
+            // closure too.
+            var containingHasFree = this.u.ste.hasFree;
+            if (containingHasFree)
+                frees += ",$free";
+        }
         return this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl", frees ,")");
     }
 };
