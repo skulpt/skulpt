@@ -130,5 +130,17 @@ Sk.builtin.hash = function hash(value)
 
 Sk.builtin.getattr = function(obj, name, default_)
 {
-    return obj.tp$getattr(name, default_);
+    // todo; try/catch is pretty awful. redo attr stuff to return undef and
+    // throw at an outer scope as necessary rather than calling tp$getattr
+    // directly. 
+    try
+    {
+        return obj.tp$getattr(name, default_);
+    }
+    catch (e)
+    {
+        if (e instanceof Sk.builtin.AttributeError)
+            return default_;
+        throw e;
+    }
 };
