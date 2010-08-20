@@ -450,7 +450,7 @@ def nrt():
         disfn = fn + ".disabled"
         if not os.path.exists(fn) and not os.path.exists(disfn):
             os.system("vim " + fn)
-            print "don't forget to ./m regenruntests && ./m regensymtabtests && ./m regenasttests"
+            print "don't forget to ./m regentests"
             break
 
 def vmwareregr(names):
@@ -494,7 +494,7 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|shell}"
+        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|shell}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -504,6 +504,10 @@ if __name__ == "__main__":
         test()
     elif cmd == "dist":
         dist()
+    elif cmd == "regentests":
+        regensymtabtests()
+        regenasttests()
+        regenruntests()
     elif cmd == "regensymtabtests":
         regensymtabtests()
     elif cmd == "run":

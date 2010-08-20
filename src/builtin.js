@@ -71,29 +71,28 @@ Sk.builtin.chr = function chr(x)
     return new Sk.builtin.str(String.fromCharCode(x));
 };
 
-/*
 Sk.builtin.dir = function dir(x)
 {
-    var names;
-    if (x.__dir__ !== undefined)
+    var names = [];
+    for (var k in x.constructor.prototype)
     {
-        names = x.__dir__().v;
-    }
-    else
-    {
-        names = [];
-        for (var k in x)
-        {
-            if (x.hasOwnProperty(k) && k.indexOf("$") === -1)
-            {
-                names.push(new Sk.builtin.str(k));
-            }
-        }
+        var s;
+        if (k.indexOf('$') !== -1)
+            s = Sk.builtin.dir.slotNameToRichName(k);
+        else if (k.charAt(k.length - 1) !== '_')
+            s = k;
+        if (s)
+            names.push(Sk.builtin.str(s));
     }
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new Sk.builtin.list(names);
 };
-*/
+
+Sk.builtin.dir.slotNameToRichName = function(k)
+{
+    // todo; map tp$xyz to __xyz__ properly
+    return undefined;
+};
 
 Sk.builtin.repr = function repr(x)
 {
