@@ -2,6 +2,9 @@
 // that yet.
 Sk.builtin = {};
 
+// todo; these should all be func objects too, otherwise str() of them won't
+// work, etc.
+
 Sk.builtin.range = function(start, stop, step)
 {
     var ret = [];
@@ -135,7 +138,7 @@ Sk.builtin.getattr = function(obj, name, default_)
     // directly. 
     try
     {
-        return obj.tp$getattr(name, default_);
+        return obj.tp$getattr(name.v, default_);
     }
     catch (e)
     {

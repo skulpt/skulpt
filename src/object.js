@@ -7,7 +7,7 @@ Sk.builtin.object = function()
 
 Sk.builtin.object.prototype.GenericGetAttr = function(name)
 {
-    goog.asserts.assert(name instanceof Sk.builtin.str);
+    goog.asserts.assert(typeof name === "string");
 
     var tp = this.ob$type;
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
@@ -15,7 +15,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     // todo; mro
 
     // otherwise, look in the type for a descr
-    var descr = tp[name.v];
+    var descr = tp[name];
     var f;
     //print("descr", descr);
     if (descr !== undefined)
@@ -27,14 +27,14 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     }
 
     // todo; assert? force?
-    //print("getattr", name.v, this.inst$dict.tp$repr().v);
+    //print("getattr", name, this.inst$dict.tp$repr().v);
     if (this.inst$dict)
     {
         var res;
         if (this.inst$dict.mp$subscript)
-            res = this.inst$dict.mp$subscript(name);
+            res = this.inst$dict.mp$subscript(new Sk.builtin.str(name));
         else if (typeof this.inst$dict === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object
-            res = this.inst$dict[name.v];
+            res = this.inst$dict[name];
         if (res !== undefined)
             return res;
     }
@@ -50,16 +50,17 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
         return descr;
     }
 
-    throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name.v + "'");
+    throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name + "'");
 };
 
 Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
 {
+    goog.asserts.assert(typeof name === "string");
     // todo; lots o' stuff
     if (this.inst$dict.mp$ass_subscript)
-        this.inst$dict.mp$ass_subscript(name, value);
+        this.inst$dict.mp$ass_subscript(new Sk.builtin.str(name), value);
     else if (typeof this.inst$dict === "object")
-        this.inst$dict[name.v] = value;
+        this.inst$dict[name] = value;
 };
 
 Sk.builtin.object.prototype.HashNotImplemented = function()

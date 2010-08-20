@@ -471,15 +471,15 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.tp$repr().v, "))");
+                    return this._gr("lattr", val, ".tp$getattr(", e.attr.tp$repr().v, ")");
                 case AugStore:
                     out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
                     val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out(val, ".tp$setattr(new Sk.builtin.str(", e.attr.tp$repr().v, "),", data, ");");
+                    out(val, ".tp$setattr(", e.attr.tp$repr().v, ",", data, ");");
                     out("}");
                     break;
                 case Store:
-                    out(val, ".tp$setattr(new Sk.builtin.str(", e.attr.tp$repr().v, "),", data, ");");
+                    out(val, ".tp$setattr(", e.attr.tp$repr().v, ",", data, ");");
                     break;
                 case Del:
                     goog.asserts.fail("todo;");

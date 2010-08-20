@@ -115,7 +115,7 @@ Sk.builtin.type.prototype.tp$call = function(args, kw)
 Sk.builtin.type.prototype.tp$getattr = function(name)
 {
     var tp = this.tp$new.prototype;
-    var descr = tp[name.v];
+    var descr = tp[name];
     var f;
     //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name.v);
     if (descr !== undefined)
@@ -128,7 +128,7 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
     if (this.inst$dict)
     {
         //print("hi");
-        var res = this.inst$dict.mp$subscript(name);
+        var res = this.inst$dict.mp$subscript(new Sk.builtin.str(name));
         //print(res);
         if (res !== undefined)
             return res;
@@ -145,7 +145,7 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
         return descr;
     }
 
-    throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name.v + "'");
+    throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name + "'");
 };
 
 Sk.builtin.type.prototype.tp$repr = function()
