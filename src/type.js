@@ -61,6 +61,31 @@ Sk.builtin.type = function(name, bases, dict)
             if (mod) cname = mod.v + ".";
             return new Sk.builtin.str("<" + cname + name + " object>");
         };
+        klass.prototype.tp$call = function(args, kw)
+        {
+            var callf = this.tp$getattr("__call__");
+            if (callf)
+                return Sk.misceval.apply(callf, kw, args);
+            throw new Sk.builtin.TypeError("'" + this.tp$name + "' object is not callable");
+        };
+        klass.prototype.tp$iter = function()
+        {
+            var iterf = this.tp$getattr("__iter__");
+            if (iterf)
+            {
+                 var ret = Sk.misceval.call(iterf);
+                 if (ret.tp$getattr("next") === undefined)
+                    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + this.tp$name + "'");
+                 return ret;
+            }
+            throw new Sk.builtin.TypeError("'" + this.tp$name + "' object is not iterable");
+        };
+        klass.prototype.tp$iternext = function()
+        {
+            var iternextf = this.tp$getattr("next");
+            goog.asserts.assert(iternextf !== undefined, "iter() should have caught this");
+            return Sk.misceval.call(iternextf);
+        };
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass());
         // todo; bases
         return this;

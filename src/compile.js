@@ -768,6 +768,16 @@ Compiler.prototype.cfor = function(s)
     this.setBlock(end);
 };
 
+Compiler.prototype.craise = function(s)
+{
+    // currently, we only handle StopIteration, and all it does it return
+    // undefined which is what our iterator protocol requires.
+    //
+    // totally hacky, but good enough for now.
+    goog.asserts.assert(s.type.id.v === "StopIteration", "only support 'raise' of StopIteration currently");
+    out("return undefined;");
+};
+
 Compiler.prototype.cassert = function(s)
 {
     /* todo; warnings method
@@ -1187,6 +1197,8 @@ Compiler.prototype.vstmt = function(s)
             return this.cwhile(s);
         case If_:
             return this.cif(s);
+        case Raise:
+            return this.craise(s);
         case Assert:
             return this.cassert(s);
         case Import_:
