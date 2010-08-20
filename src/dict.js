@@ -98,6 +98,8 @@ Sk.builtin.dict.prototype.tp$repr = function()
     return new Sk.builtin.str("{" + ret.join(", ") + "}");
 };
 
+Sk.builtin.dict.prototype.mp$length = function() { return this.size; };
+
 /*
 
 $.prototype.clear = function() { throw "todo; dict.clear"; };

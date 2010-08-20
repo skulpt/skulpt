@@ -132,9 +132,7 @@ Sk.builtin.list.prototype.tp$richcompare = function(w, op)
 };
 
 Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
-/*
-Sk.builtin.list.prototype.sq$length = list_length;
-*/
+Sk.builtin.list.prototype.sq$length = function() { return this.v.length; };
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
 Sk.builtin.list.prototype.sq$repeat = function(n)
 {

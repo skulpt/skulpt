@@ -38,3 +38,9 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
     // note: functions expect globals to be their 'this'. see compile.js and function.js also
     return this.im_func.func_code.apply(this.im_func.func_globals, args);
 };
+
+Sk.builtin.method.prototype.tp$repr = function()
+{
+    return new Sk.builtin.str("<bound method " + this.im_self.tp$name + "." + this.im_func.func_code.co_name.v
+            + " of " + this.im_self.tp$repr().v + ">");
+};

@@ -11,11 +11,9 @@ Sk.builtin.file = function(name, mode, buffering)
     this.closed = false;
     this.data$ = Sk.load(name.v);
     this.pos$ = 0;
-    this.__class__ = this.nativeclass$ = Sk.builtin.file;
     return this;
 };
-Sk.builtin.file.prototype.__class__ = new Sk.builtin.type('file', [Sk.types.object], {});
-Sk.builtin.file.prototype.__repr__ = function()
+Sk.builtin.file.prototype.tp$repr = function()
 {
     return new Sk.builtin.str("<"
         + (this.closed ? "closed" : "open")

@@ -143,3 +143,5 @@ Sk.builtin.tuple.prototype.sq$concat = function(other)
 {
     return new Sk.builtin.tuple(this.v.concat(other.v));
 };
+
+Sk.builtin.tuple.prototype.sq$length = function() { return this.v.length; };

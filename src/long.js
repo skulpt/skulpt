@@ -477,5 +477,3 @@ Sk.builtin.lng.prototype.str$ = function(base, sign)
     }
     return (sign && this.size$ < 0 ? "-" : "") + ret;
 };
-
-Sk.builtin.lng.prototype.__class__ = new Sk.builtin.type('long', [Sk.types.object], {});
