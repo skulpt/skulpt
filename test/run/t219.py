@@ -1,2 +1,2 @@
 import sys
-print sys.argv
+print [x.replace("\\", "/") for x in sys.argv]

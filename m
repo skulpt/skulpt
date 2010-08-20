@@ -6,6 +6,7 @@ import sys
 import glob
 import py_compile
 import symtable
+import shutil
 
 # order is important!
 Files = [
@@ -70,8 +71,12 @@ def getFileList(type):
 
 if sys.platform == "win32":
     jsengine = "support\\d8\\d8.exe --trace_exception --debugger"
+    nul = "nul"
+    crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 else:
     jsengine = "support/d8/d8 --trace_exception --debugger"
+    nul = "/dev/null"
+    crlfprog = None
 
 #jsengine = "rhino"
 
@@ -293,7 +298,10 @@ def regenasttests():
         os.system("python test/astppdump.py %s > %s" % (f, transname))
         forcename = f.replace(".py", ".trans.force")
         if os.path.exists(forcename):
-            os.system("cp %s %s" % (forcename, transname))
+            shutil.copy(forcename, transname)
+        if crlfprog:
+            os.system("python %s %s" % (crlfprog, transname))
+
 
 def regenruntests():
     """regenerate the test data by running the tests on real python"""
@@ -301,13 +309,19 @@ def regenruntests():
         os.system("python %s > %s.real 2>&1" % (f, f))
         forcename = f + ".real.force"
         if os.path.exists(forcename):
-            os.system("cp %s %s.real" % (forcename, f))
+            shutil.copy(forcename, "%s.real" % f)
+        if crlfprog:
+            os.system("python %s %s.real" % (crlfprog, f))
     for f in glob.glob("test/interactive/*.py"):
-        p = Popen("python -i > %s.real 2>/dev/null" % f, shell=True, stdin=PIPE)
+        p = Popen("python -i > %s.real 2>%s" % (f, nul), shell=True, stdin=PIPE)
         p.communicate(open(f).read() + "\004")
         forcename = f + ".real.force"
         if os.path.exists(forcename):
-            os.system("cp %s %s.real" % (forcename, f))
+            shutil.copy(forcename, "%s.real" % f)
+        if crlfprog:
+            os.system("python %s %s.real" % (crlfprog, f))
+
+
 
 def symtabdump(fn):
     if not os.path.exists(fn):
@@ -361,7 +375,7 @@ def regensymtabtests():
     """regenerate the test data by running the symtab dump via real python"""
     for fn in glob.glob("test/run/*.py"):
         outfn = "%s.symtab" % fn
-        f = open(outfn, "w")
+        f = open(outfn, "wb")
         f.write(symtabdump(fn))
         f.close()
 
