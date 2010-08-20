@@ -450,7 +450,7 @@ def nrt():
         disfn = fn + ".disabled"
         if not os.path.exists(fn) and not os.path.exists(disfn):
             os.system("vim " + fn)
-            print "don't forget to ./m regenruntests && ./m regensymtabtests"
+            print "don't forget to ./m regenruntests && ./m regensymtabtests && ./m regenasttests"
             break
 
 def vmwareregr(names):

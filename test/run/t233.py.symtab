@@ -1,0 +1,182 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: g1
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: g2
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: genmaker
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: genmaker
+    Sym_lineno: 4
+    Sym_nested: False
+    Sym_haschildren: True
+    Func_params: ['a', 'b']
+    Func_locals: ['a', 'b', 'gen', 'z']
+    Func_globals: []
+    Func_frees: []
+    -- Identifiers --
+    name: a
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: b
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: gen
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: gen
+        Sym_lineno: 6
+        Sym_nested: True
+        Sym_haschildren: False
+        Func_params: ['y']
+        Func_locals: ['i', 'y']
+        Func_globals: ['range']
+        Func_frees: ['a', 'b', 'z']
+        -- Identifiers --
+        name: a
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: b
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: i
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: False
+          namespaces: [
+          ]
+        name: range
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: y
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: z
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: z
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: False
+      namespaces: [
+      ]
+  ]

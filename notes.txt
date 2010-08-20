@@ -1,16 +1,8 @@
 todo:
 object genericgetattr is wrong. should be looking up bases, not types. dummy
-can tp$getattr take a js string rather than Sk.builtin.str?
 make a type-name-getting function, rather than obj.tp$name so that number works (and it'd be a good error checking place too)
-merge clambda/cfunction in compiler
-generator test that has multiple iterations of same func
-generator test with diff args to orig call
-functions named loc, gbl, free, cell, gen, etc. will fail right now
-generator with free vars test
 genexpr with free vars test
 generator func repr test
-test var that's free and cell
-test var that's param and cell
 __builtin__ needs work
 
 
