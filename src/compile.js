@@ -976,32 +976,24 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     // todo; possibly this should be outside?
     // 
+    var frees = "";
+    if (hasFree)
+    {
+        frees = ",$cell";
+        // if the scope we're in where we're defining this one has free
+        // vars, they may also be cell vars, so we pass those to the
+        // closure too.
+        var containingHasFree = this.u.ste.hasFree;
+        if (containingHasFree)
+            frees += ",$free";
+    }
     if (isGenerator)
-    {
         if (args && args.args.length > 0)
-        {
-            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs);})");
-        }
+            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs", frees, ");})");
         else
-        {
-            return this._gr("gener", "(function(){return new Sk.builtin.generator(", scopename, ",$gbl,[],[]);})");
-        }
-    }
+            return this._gr("gener", "(function(){return new Sk.builtin.generator(", scopename, ",$gbl,[]", frees, ");})");
     else
-    {
-        frees = "";
-        if (hasFree)
-        {
-            frees = ",$cell";
-            // if the scope we're in where we're defining this one has free
-            // vars, they may also be cell vars, so we pass those to the
-            // closure too.
-            var containingHasFree = this.u.ste.hasFree;
-            if (containingHasFree)
-                frees += ",$free";
-        }
         return this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl", frees ,")");
-    }
 };
 
 Compiler.prototype.cfunction = function(s)

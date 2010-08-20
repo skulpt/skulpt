@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-Sk.builtin.generator = function(code, globals, args)
+Sk.builtin.generator = function(code, globals, args, closure, closure2)
 {
     if (code === undefined) return; // ctor hack
     this.func_code = code;
@@ -16,6 +16,14 @@ Sk.builtin.generator = function(code, globals, args)
         for (var i = 0; i < code.co_varnames.length; ++i)
             this.gi$locals[code.co_varnames[i]] = args[i];
     }
+    if (closure2 !== undefined)
+    {
+        // todo; confirm that modification here can't cause problems
+        for (var k in closure2)
+            closure[k] = closure2[k];
+    }
+    //print(JSON.stringify(closure));
+    this.func_closure = closure;
     return this;
 };
 
@@ -29,11 +37,14 @@ Sk.builtin.generator.prototype.tp$iter = function()
 Sk.builtin.generator.prototype.tp$iternext = function()
 {
     this.gi$running = true;
+
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
-    // 
-    var ret = this.func_code.call(this.func_globals, this); 
-    //print("ret", ret);
+    var args = [ this ];
+    if (this.func_closure)
+        args.push(this.func_closure);
+    var ret = this.func_code.apply(this.func_globals, args); 
+    //print("ret", JSON.stringify(ret));
     this.gi$running = false;
     goog.asserts.assert(ret !== undefined);
     if (ret !== null)
@@ -47,6 +58,7 @@ Sk.builtin.generator.prototype.tp$iternext = function()
         // todo; StopIteration
         return undefined;
     }
+    //print("returning:", JSON.stringify(ret));
     return ret;
 };
 
