@@ -11,6 +11,7 @@ genexpr with free vars test
 generator func repr test
 test var that's free and cell
 test var that's param and cell
+__builtin__ needs work
 
 
 notes:

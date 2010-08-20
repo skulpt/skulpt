@@ -5,10 +5,17 @@
  * @param {Object=} globals the globals where this function was defined.
  * Can be undefined (which will be stored as null) for builtins. (is
  * that ok?)
+ * @param {Object=} closure dict of free variables
+ * @param {Object=} closure2 another dict of free variables that will be
+ * merged into 'closure'. there's 2 to simplify generated code (one is $free,
+ * the other is $cell)
  *
  * closure is the cell variables from the parent scope that we need to close
  * over. closure2 is the free variables in the parent scope that we also might
  * need to access.
+ *
+ * NOTE: co_varnames and co_name are defined by compiled code only, so we have
+ * to access them via dict-style lookup for closure.
  *
  */
 Sk.builtin.func = function(code, globals, closure, closure2)
@@ -48,7 +55,7 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
         for (var i = 0; i < kwlen; i += 2)
         {
             // todo; make this a dict mapping name to offset
-            var varnames = this.func_code.co_varnames;
+            var varnames = this.func_code['co_varnames'];
             var numvarnames = varnames.length;
             for (var j = 0; j < numvarnames; ++j)
             {
@@ -66,5 +73,5 @@ Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new 
 
 Sk.builtin.func.prototype.tp$repr = function()
 {
-    return new Sk.builtin.str("<function " + this.func_code.co_name.v + ">");
+    return new Sk.builtin.str("<function " + this.func_code['co_name'].v + ">");
 };

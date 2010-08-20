@@ -1,6 +1,5 @@
 /**
  * @constructor
- * @param {string} name
  */
 Sk.builtin.module = function()
 {

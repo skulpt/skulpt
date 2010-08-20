@@ -12,6 +12,11 @@ if (COMPILED)
     var js_beautify = function(x) {};
 }
 
+/**
+ * @param {string} name to look for
+ * @param {string} ext extension to use (.py or .js)
+ * @param {boolean=} failok will throw if not true
+ */
 Sk.importSearchPathForName = function(name, ext, failok)
 {
     var L = Sk.realsyspath;
@@ -57,7 +62,7 @@ Sk.importModule = function(name, dumpJS, modname)
     // - add module object to sys.modules
     // - compile source to (function(){...});
     // - run module and set the module locals returned to the module __dict__
-    var module = new Sk.builtin.module(name);
+    var module = new Sk.builtin.module();
     Sk.sysmodules.mp$ass_subscript(name, module);
     var filename, co;
 

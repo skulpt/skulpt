@@ -1,5 +1,7 @@
 /**
  * @constructor
+ *
+ * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.method = function(func, self)
 {
@@ -24,7 +26,7 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
         for (var i = 0; i < kwlen; i += 2)
         {
             // todo; make this a dict mapping name to offset
-            var varnames = this.im_func.func_code.co_varnames;
+            var varnames = this.im_func.func_code['co_varnames'];
             var numvarnames = varnames.length;
             for (var j = 0; j < numvarnames; ++j)
             {
@@ -41,6 +43,6 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
 
 Sk.builtin.method.prototype.tp$repr = function()
 {
-    return new Sk.builtin.str("<bound method " + this.im_self.tp$name + "." + this.im_func.func_code.co_name.v
+    return new Sk.builtin.str("<bound method " + this.im_self.tp$name + "." + this.im_func.func_code['co_name'].v
             + " of " + this.im_self.tp$repr().v + ">");
 };

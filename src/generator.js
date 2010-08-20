@@ -1,9 +1,19 @@
 /**
  * @constructor
+ * @param {Function} code javascript code object for the function
+ * @param {Object} globals where this function was defined
+ * @param {Object} args arguments to the original call (stored into locals for
+ * the generator to reenter)
+ * @param {Object=} closure dict of free variables
+ * @param {Object=} closure2 another dict of free variables that will be
+ * merged into 'closure'. there's 2 to simplify generated code (one is $free,
+ * the other is $cell)
+ *
+ * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.generator = function(code, globals, args, closure, closure2)
 {
-    if (code === undefined) return; // ctor hack
+    if (!code) return; // ctor hack
     this.func_code = code;
     this.func_globals = globals || null;
     this.gi$running = false;
@@ -13,8 +23,8 @@ Sk.builtin.generator = function(code, globals, args, closure, closure2)
     {
         // store arguments into locals because they have to be maintained
         // too. 'fast' var lookups are locals in generator functions.
-        for (var i = 0; i < code.co_varnames.length; ++i)
-            this.gi$locals[code.co_varnames[i]] = args[i];
+        for (var i = 0; i < code['co_varnames'].length; ++i)
+            this.gi$locals[code['co_varnames'][i]] = args[i];
     }
     if (closure2 !== undefined)
     {
@@ -67,9 +77,9 @@ Sk.builtin.generator.prototype.next = new Sk.builtin.func(function(self)
     return self.tp$iternext();
 });
 
-Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeTypeObj('generator', new Sk.builtin.generator());
+Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeTypeObj('generator', new Sk.builtin.generator(null,null,null));
 
 Sk.builtin.generator.prototype.tp$repr = function()
 {
-    return new Sk.builtin.str("<generator object " + this.func_code.co_name.v + ">");
+    return new Sk.builtin.str("<generator object " + this.func_code['co_name'].v + ">");
 };

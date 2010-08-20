@@ -464,6 +464,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case Str:
             return this._gr('str', "new Sk.builtin.str(", e.s.tp$repr().v, ")");
         case Attribute:
+            var val;
             if (e.ctx !== AugStore)
                 val = this.vexpr(e.value);
             switch (e.ctx)
@@ -473,7 +474,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
                     return this._gr("lattr", val, ".tp$getattr(new Sk.builtin.str(", e.attr.tp$repr().v, "))");
                 case AugStore:
                     out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
-                    val = this.vexpr(augstoreval);
+                    val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
                     out(val, ".tp$setattr(new Sk.builtin.str(", e.attr.tp$repr().v, "),", data, ");");
                     out("}");
                     break;
@@ -813,13 +814,13 @@ Compiler.prototype.cfromimport = function(s)
  * @param {Object} n ast node to build for
  * @param {Sk.builtin.str} coname name of code object to build
  * @param {Array} decorator_list ast of decorators if any
- * @param {Array} args arguments to function, if any
- * @param {function} callback called after setup to do actual work of function
+ * @param {arguments_} args arguments to function, if any
+ * @param {Function} callback called after setup to do actual work of function
  *
  * @returns the name of the newly created function or generator object.
  *
  */
-Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, callback, addZeroArg)
+Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, callback)
 {
     var decos = [];
     var defaults = [];
@@ -1078,7 +1079,7 @@ Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
 
 Compiler.prototype.cgenexp = function(e)
 {
-    var gen = this.buildcodeobj(e, Sk.builtin.str("<genexpr>"), null, null, function(scopename)
+    var gen = this.buildcodeobj(e, new Sk.builtin.str("<genexpr>"), null, null, function(scopename)
             {
                 this.cgenexpgen(e.generators, 0, e.elt);
             });

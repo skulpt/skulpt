@@ -9,7 +9,7 @@ Sk.builtin.file = function(name, mode, buffering)
     this.mode = mode;
     this.name = name;
     this.closed = false;
-    this.data$ = Sk.load(name.v);
+    this.data$ = Sk.read(name.v);
     this.pos$ = 0;
     return this;
 };
