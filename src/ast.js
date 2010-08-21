@@ -596,7 +596,7 @@ function aliasForImportName(c, n)
                     // create a string of the form a.b.c
                     var str = '';
                     for (var i = 0; i < NCH(n); i += 2)
-                        str += CHILD(n, i) + ".";
+                        str += CHILD(n, i).value + ".";
                     return new alias(strobj(str.substr(0, str.length - 1)), null);
                 }
             case TOK.T_STAR:

@@ -7,6 +7,8 @@ import glob
 import py_compile
 import symtable
 import shutil
+import re
+import pprint
 
 # order is important!
 Files = [
@@ -41,6 +43,7 @@ Files = [
         'src/symtable.js',
         'src/compile.js',
         'src/import.js',
+        'gen/googlocs.js',
         ("support/jsbeautify/beautify.js", 'test'),
         ]
 
@@ -486,6 +489,30 @@ def vmwareregr(names):
             ]
 
 
+def regengooglocs():
+    """scans the closure library and creates a mapping of what files all the
+    modules are located in. i suspect this isn't required in compiled builds
+    because closure-compiler will find them somehow or another?"""
+
+    # from calcdeps.py
+    prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
+    
+    # walk whole tree, find all the 'provide's in a file, and note the location
+    root = "support/closure-library/closure"
+    modToFile = {}
+    for dirpath, dirnames, filenames in os.walk(root):
+        for filename in filenames:
+            f = os.path.join(dirpath, filename)
+            if ".svn" in f: continue
+            if os.path.splitext(f)[1] == ".js":
+                contents = open(f).read()
+                for prov in prov_regex.findall(contents):
+                    modToFile[prov] = f.lstrip(root)
+
+    with open("gen/googlocs.js", "w") as glf:
+        print >>glf, "Sk.googlocs ="
+        pprint.pprint(modToFile, glf)
+        print >>glf, ";"
 
 
 if __name__ == "__main__":
@@ -504,6 +531,8 @@ if __name__ == "__main__":
         test()
     elif cmd == "dist":
         dist()
+    elif cmd == "regengooglocs":
+        regengooglocs()
     elif cmd == "regentests":
         regensymtabtests()
         regenasttests()

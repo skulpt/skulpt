@@ -1,0 +1,6 @@
+imported modc
+a name pkga
+a.b name pkga.pkgb
+a.b.c name pkga.pkgb.modc
+stuff 942
+things squirrel

@@ -782,7 +782,7 @@ Compiler.prototype.cassert = function(s)
 {
     /* todo; warnings method
     if (s.test instanceof Tuple && s.test.elts.length > 0)
-        Sk.warn("assertiong is always true, perhaps remove parentheses?");
+        Sk.warn("assertion is always true, perhaps remove parentheses?");
     */
 
     var test = this.vexpr(s.test);
@@ -800,7 +800,12 @@ Compiler.prototype.cimport = function(s)
     {
         var alias = s.names[i];
         var mod = this._gr('module', "Sk.builtin.__import__(", alias.name.tp$repr().v, ",$gbl,$loc,[])");
-        out("$loc.", alias.name.v, "=", mod, ";");
+        var tmp = alias.name;
+        var lastDot = tmp.v.indexOf('.');
+        if (lastDot !== -1)
+            tmp = new Sk.builtin.str(tmp.v.substr(0, lastDot));
+        this.nameop(tmp, Store, mod);
+        //out("$loc.", tmp, "=", mod, ";");
     }
 };
 
@@ -1281,7 +1286,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             break;
         case LOCAL:
             // can't do FAST in generators or at module/class scope
-            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator && this.u.ste.blockType === FunctionBlock)
+            if (this.u.ste.blockType === FunctionBlock && !this.u.ste.generator)
                 optype = OP_FAST;
             break;
         case GLOBAL_IMPLICIT:
