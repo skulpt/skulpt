@@ -405,10 +405,10 @@ var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.syspath = ["test/run"];
+Sk.syspath = ["%s"];
 var module = Sk.importModule("%s", true);
 print("-----");
-    """ % (fn, modname))
+    """ % (fn, os.path.split(fn)[0], modname))
     f.close()
     os.system("%s %s %s support/tmp/run.js" %
             (jsengine,
@@ -491,8 +491,11 @@ def vmwareregr(names):
 
 def regengooglocs():
     """scans the closure library and creates a mapping of what files all the
-    modules are located in. i suspect this isn't required in compiled builds
-    because closure-compiler will find them somehow or another?"""
+    modules are located in.
+
+    add fake null entries for package init files
+    
+    """
 
     # from calcdeps.py
     prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
@@ -508,6 +511,18 @@ def regengooglocs():
                 contents = open(f).read()
                 for prov in prov_regex.findall(contents):
                     modToFile[prov] = f.lstrip(root)
+
+    # for all modules, if their parent package isn't already defined, we add a
+    # fake entry that's equivalent to __init__.py
+    def addFakeParentEntries(mod):
+        parent = ".".join(mod.split(".")[:-1])
+        if parent not in modToFile:
+            modToFile[parent] = "/".join(parent.split(".")) + "/__init__.js"
+            print parent
+            addFakeParentEntries(parent)
+
+    for modname in modToFile.keys():
+        addFakeParentEntries(modname)
 
     with open("gen/googlocs.js", "w") as glf:
         print >>glf, "Sk.googlocs ="
