@@ -29,89 +29,30 @@ Sk.importSearchPathForName = function(name, ext, failok)
             try {
                 // todo; lame, this is the only way we have to test existence right now
                 Sk.read(fn);
-                //print("import search, found at", name, ext, "at", fn);
+                //print("import search, found at", name, "type", ext, "at", fn);
                 return fn;
             } catch (e) {};
         }
     }
+   
     if (!failok)
         throw new Sk.builtin.ImportError("No module named " + name);
+    //print("import search, nothing found, but failure was ok");
 };
 
-/**
- * @param {string} name the dotted module name
- * (goog.graphics.ext.Rectangle). Note that in this case 'goog' is just a
- * container (or a package with an empty __init__.py in Python-style), whereas
- * goog.graphics and goog.graphics.ext are modules of their own that need to
- * be imported.
- * @param {filename} filename the filename where the tail-most module can be
- * found. must be searched for on the search path stil.
- */
-/*
-Sk.buildClosureWrapper_ = function(name, filename)
+Sk.loadClosureModule = function(name, filename)
 {
-    // we just assume the equivalent of empty __init__.py files in all the
-    // directories for any packages
-    var packagesAndModule = name.split(".");
-
-    var fn = Sk.importSearchPathForName(filename, "");
+    goog.asserts.assert(filename.lastIndexOf(".js") == filename.length - 3);
+    var fnWithoutExt = filename.substr(0, filename.length - 3);
+    var fn = Sk.importSearchPathForName(fnWithoutExt, ".js");
     var rawSrc = Sk.read(fn);
 
-    var lastPackage = null;
-    for (var i = 0; i < packagesAndModule.length - 1; ++i)
-    {
-        var curParts = [];
-        for (var j = 0; j <= i; ++j)
-            curParts.push(packagesAndModule[j]);
-        var pkgname = curParts.join(".");
-        var initFileName = pkgname + "
-        Sk.importModuleInternal_(pkgname, false, undefined, initFileName);
-    }
-
-    // todo; build wrapper around closure
     var wrap = "\n" +
         "var $closuremodule = function(name) {" +
         "return " + name + ";" +
         "};";
 
-    return rawSrc + wrap;
-};
-*/
-
-Sk.importClosureModule = function(name)
-{
-    print("importClosureModule:", name);
-    // if we have a parent, import that one first
-    var parts = name.split(".");
-    var parentPackage = null;
-    var justModuleName;
-    if (parts.length > 1)
-    {
-        justModuleName = parts.pop();
-        var parentName = parts.join(".");
-        parentPackage = Sk.importClosureModule(parentName);
-    }
-
-    var fileloc = Sk.googlocs[name];
-    if (fileloc !== undefined)
-    {
-        print("importing closure module", fileloc);
-        module = Sk.importModuleInternal_(name, true);
-    }
-    else
-    {
-        print("importing empty __init__", name);
-        module = Sk.importModuleInternal_(name, true, undefined, "todo/__init__.py");
-    }
-    
-    if (parentPackage)
-    {
-        goog.asserts.assert(justModuleName);
-        print("setting", justModuleName, "in", parentPackage.__name__.v);
-        parentPackage.tp$setattr(justModuleName, module);
-    }
-
-    return module;
+    return { funcname: "$closuremodule", code: rawSrc + wrap };
 };
 
 if (COMPILED)
@@ -185,7 +126,11 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname)
     }
     else if ((googClosure = Sk.googlocs[name]) !== undefined)
     {
-        co = Sk.importClosureModule(name);
+        //print("importing closure module", googClosure);
+        if (googClosure.indexOf("__init__.js") !== -1) // special entry for fake __init__.py/js
+            co = Sk.compile("\n", googClosure, "exec");
+        else
+            co = Sk.loadClosureModule(name, googClosure);
     }
     else
     {
