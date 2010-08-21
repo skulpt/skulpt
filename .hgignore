@@ -6,6 +6,7 @@ tmp/*
 *.pyc
 .d8_history
 *.swp
+*.swo
 dist/*
 support/selenium
 .svn
