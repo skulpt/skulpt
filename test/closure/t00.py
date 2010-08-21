@@ -1,5 +1,6 @@
 import goog.json
 
+print goog.json.parse
 obj = goog.json.parse("""
 {
     "glossary": {
