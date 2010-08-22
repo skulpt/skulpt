@@ -13,9 +13,8 @@ import pprint
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/debug/error.js',
-        'support/closure-library/closure/goog/string/string.js',
-        'support/closure-library/closure/goog/asserts/asserts.js',
+        'support/closure-library/closure/goog/deps.js',
+        'src/closure-loader.js',
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -70,7 +69,11 @@ def getFileList(type):
             if f[1] == type:
                 ret.append(f[0])
         else:
-            ret.append(f)
+            if "*" in f:
+                for g in glob.glob(f):
+                    ret.append(f)
+            else:
+                ret.append(f)
     return ret
 
 if sys.platform == "win32":

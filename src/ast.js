@@ -574,7 +574,7 @@ function aliasForImportName(c, n)
                 if (NCH(n) === 3)
                     str = CHILD(n, 2).value;
                 var name = strobj(CHILD(n, 0).value);
-                return new alias(name, str);
+                return new alias(name, strobj(str));
             case SYM.dotted_as_name:
                 if (NCH(n) === 1)
                 {

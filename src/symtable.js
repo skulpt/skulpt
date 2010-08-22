@@ -622,7 +622,7 @@ SymbolTable.prototype.visitAlias = function(names)
     for (var i = 0; i < names.length; ++i)
     {
         var a = names[i];
-        var name = a.asname === null ? a.name.v : a.asname;
+        var name = a.asname === null ? a.name.v : a.asname.v;
         var storename = name;
         var dot = name.indexOf('.');
         if (dot !== -1)

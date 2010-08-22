@@ -793,6 +793,32 @@ Compiler.prototype.cassert = function(s)
     this.setBlock(end);
 };
 
+Compiler.prototype.cimportas = function(name, asname, mod)
+{
+    var src = name.v;
+    var dotLoc = src.indexOf(".");
+    //print("src", src);
+    //print("dotLoc", dotLoc);
+    var cur = mod;
+    if (dotLoc !== -1)
+    {
+        // if there's dots in the module name, __import__ will have returned
+        // the top-level module. so, we need to extract the actual module by
+        // getattr'ing up through the names, and then storing the leaf under
+        // the name it was to be imported as.
+        src = src.substr(dotLoc + 1);
+        //print("src now", src);
+        while (dotLoc !== -1)
+        {
+            dotLoc = src.indexOf(".");
+            var attr = dotLoc !== -1 ? src.substr(0, dotLoc) : src;
+            cur = this._gr('lattr', cur, ".tp$getattr('", attr, "')");
+            src = src.substr(dotLoc + 1);
+        }
+    }
+    return this.nameop(asname, Store, cur);
+};
+
 Compiler.prototype.cimport = function(s)
 {
     var n = s.names.length;
@@ -800,18 +826,45 @@ Compiler.prototype.cimport = function(s)
     {
         var alias = s.names[i];
         var mod = this._gr('module', "Sk.builtin.__import__(", alias.name.tp$repr().v, ",$gbl,$loc,[])");
-        var tmp = alias.name;
-        var lastDot = tmp.v.indexOf('.');
-        if (lastDot !== -1)
-            tmp = new Sk.builtin.str(tmp.v.substr(0, lastDot));
-        this.nameop(tmp, Store, mod);
-        //out("$loc.", tmp, "=", mod, ";");
+
+        if (alias.asname)
+        {
+            this.cimportas(alias.name, alias.asname, mod);
+        }
+        else
+        {
+            var tmp = alias.name;
+            var lastDot = tmp.v.indexOf('.');
+            if (lastDot !== -1)
+                tmp = new Sk.builtin.str(tmp.v.substr(0, lastDot));
+            this.nameop(tmp, Store, mod);
+        }
     }
 };
 
 Compiler.prototype.cfromimport = function(s)
 {
-    goog.asserts.fail("todo;");
+    var n = s.names.length;
+    var names = [];
+    for (var i = 0; i < n; ++i)
+        names[i] = s.names[i].name.tp$repr().v;
+    var mod = this._gr('module', "Sk.builtin.__import__(", s.module.tp$repr().v, ",$gbl,$loc,[", names, "])");
+    for (var i = 0; i < n; ++i)
+    {
+        var alias = s.names[i];
+        if (i === 0 && alias.name === "*")
+        {
+            goog.asserts.assert(n === 1);
+            out("Sk.importStar(", mod, ");");
+            return;
+        }
+
+        var got = this._gr('item', mod, ".tp$getattr(", alias.name.tp$repr().v, ")");
+        var storeName = alias.name;
+        if (alias.asname)
+            storeName = alias.asname;
+        this.nameop(storeName, Store, got);
+    }
 };
 
 /**

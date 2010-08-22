@@ -4,6 +4,8 @@
  * below.
  */
 
+goog.require("goog.asserts");
+
 var Sk = Sk || {};
 
 /**

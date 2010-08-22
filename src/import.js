@@ -3,7 +3,14 @@ Sk.sysmodules = new Sk.builtin.dict([]);
 
 Sk.builtin.__import__ = function(name, globals, locals, fromlist)
 {
-    return Sk.importModule(name);
+    var ret = Sk.importModuleInternal_(name);
+    if (!fromlist || fromlist.length === 0)
+        return ret;
+    // if there's a fromlist we want to return the actual module, not the
+    // toplevel namespace
+    ret = Sk.sysmodules.mp$subscript(name);
+    goog.asserts.assert(ret);
+    return ret;
 };
 
 /**
@@ -45,10 +52,14 @@ Sk.loadClosureModule = function(name, filename)
     goog.asserts.assert(filename.lastIndexOf(".js") == filename.length - 3);
     var fnWithoutExt = filename.substr(0, filename.length - 3);
     var fn = Sk.importSearchPathForName(fnWithoutExt, ".js");
-    var rawSrc = Sk.read(fn);
+    //var rawSrc = Sk.read(fn);
+    var rawSrc = "goog.require('" + name + "');";
 
     var wrap = "\n" +
         "var $closuremodule = function(name) {" +
+        "for (var nat in " + name + "){" +
+            name + "[nat].$isnative=true;" +
+        "}" +
         "return " + name + ";" +
         "};";
 
