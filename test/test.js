@@ -191,6 +191,9 @@ function testRun(name)
     Sk.sysargv = [ name + '.py' ];
     Sk.syspath = ["test/run"];
 
+    // reset this so that we force reload all imports for each run
+    Sk.sysmodules = new Sk.builtin.dict([]);
+
     var expect = read(name + ".py.real");
     var expectalt;
     try { expectalt = read(name + ".py.real.alt"); }
