@@ -13,8 +13,6 @@ import pprint
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/deps.js',
-        'src/closure-loader.js',
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -49,7 +47,6 @@ Files = [
 TestFiles = [
         'test/sprintf.js',
         "test/json2.js",
-        "support/jsbeautify/beautify.js",
         "test/test.js"
         ]
 DebugFiles = TestFiles[:-1]
@@ -94,6 +91,42 @@ def test():
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
 
+def buildDebugBrowser():
+    tmpl = """
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+        <title>Skulpt test</title>
+        <style>
+            .type { font-size:14px; font-weight:bold; font-family:arial; background-color:#f7f7f7; text-align:center }
+        </style>
+
+%s
+    </head>
+
+    <body onload="testsMain()">
+        <div>
+            <pre id="output"></pre>
+        </div>
+    </body>
+</html>
+"""
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+    scripts = []
+    for f in getFileList('test') + ["test/browser-stubs.js"] + TestFiles:
+        scripts.append('<script type="text/javascript" src="%s"></script>' %
+                os.path.join('../..', f))
+ 
+    with open("support/tmp/test.html", "w") as f:
+        print >>f, tmpl % '\n'.join(scripts)
+
+    if sys.platform == "win32":
+        os.system("start support/tmp/test.html")
+    else:
+        os.system("gnome-open support/tmp/test.html")
+
 def buildBrowserTests():
     """combine all the tests data into something we can run from a browser
     page (so that it can be tested in the various crappy engines)
@@ -101,24 +134,26 @@ def buildBrowserTests():
     we want to use the same code that the command line version of the tests
     uses so we stub the d8 functions to push to the browser."""
 
-    print "todo; browser tests not building right now"
-    return
-
     outfn = "doc/static/browser-test.js"
     out = open(outfn, "w")
 
     print >>out, """
-window.addEvent('domready', function() {
+window.addevent('onload', function(){
 """
 
     # build a silly virtual file system to support 'read'
     print ". Slurping test data"
     print >>out, "VFSData = {"
     all = []
-    for pat in ("test/tokenize/*", "test/parse/*", "test/run/*", "test/interactive/*"):
-        for file in glob.glob(pat):
-            data = open(file, "rb").read()
-            all.append("'%s': '%s'" % (file, data.encode("hex")))
+    for root in ("test", "src/builtin"):
+        for dirpath, dirnames, filenames in os.walk(root):
+            for filename in filenames:
+                f = os.path.join(dirpath, filename)
+                if ".svn" in f: continue
+                if ".swp" in f: continue
+                if ".pyc" in f: continue
+                data = open(f, "rb").read()
+                all.append("'%s': '%s'" % (f, data.encode("hex")))
     print >>out, ",\n".join(all)
     print >>out, "};"
 
@@ -539,7 +574,7 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|shell}"
+        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|browser|shell|debugbrowser}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -575,6 +610,10 @@ if __name__ == "__main__":
         upload()
     elif cmd == "nrt":
         nrt()
+    elif cmd == "browser":
+        buildBrowserTests()
+    elif cmd == "debugbrowser":
+        buildDebugBrowser()
     elif cmd == "shell":
         shell(sys.argv[2]);
     else:

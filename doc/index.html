@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Skulpt</title>
+<link rel="stylesheet" type="text/css" media="all" href="static/main.css">
+<script src="http://ajax.googleapis.com/ajax/libs/mootools/1.2.3/mootools.js" type="text/javascript"></script>
+<script src="static/mootools-1.2.3.1-more.js" type="text/javascript"></script>
+<script src="static/env/codemirror/js/codemirror.js" type="text/javascript"></script>
+<script src="static/env/editor.js" type="text/javascript"></script>
+<script src="static/skulpt.js" type="text/javascript"></script>
+</head><body>
+
+<div class="page">
+    <div class="body">
+        <div class="main">
+<img src="static/logo.png" alt="Skulpt" id="logo">
+
+<h2>Python. Client side.</h2>
+
+<p>Skulpt is an <em>entirely in-browser</em> implementation of Python.</p>
+
+<p>No preprocessing, plugins, or server-side support required, just write
+Python and reload.</p>
+
+<h2>Demo</h2>
+
+    <p>The code is run entirely in your browser, so don't feel
+    obligated to &quot;crash the server&quot;, you'll only stub your
+    toe. <a id="toggledocs" href="#">Help</a>, or examples:
+        <a href="#" id="codeexample1">1</a> 
+        <a href="#" id="codeexample2">2</a> 
+        <a href="#" id="codeexample3">3</a> 
+        <a href="#" id="codeexample4">4</a> 
+        <a href="#" id="codeexample5">5</a> 
+        <a href="#" id="codeexample6">6</a>. Ctrl-Enter to run.
+    </p>
+
+    <div id="quickdocs">
+        <ul>
+            <li>cut/copy/paste/undo/redo with the usual shortcut keys</li>
+            <li>Tab does decent indenting.
+            Thanks to <a href="http://marijn.haverbeke.nl/codemirror/"
+                target="_blank">CodeMirror</a> for the text editor.
+            </li>
+            <li>Ctrl-Enter to run, Shift-Enter to run selected</li>
+            <!--
+            <li>F9 to toggle breakpoints</li>
+            <li>F10 to step over</li>
+            <li>F11 to step in</li>
+            <li>Shift-F11 to step out.</li>
+            <li>You can inspect values with e.g. 'print foo' in the
+            &quot;Interactive&quot; box. When debugging, this will
+            execute in the debug context.</li>
+            -->
+        </ul>
+    </div>
+
+
+    <p></p>
+
+    <textarea id="code" cols="85" rows="25">
+def test(name):
+    print "Hello", name
+
+test("world")
+</textarea>
+
+<!--
+<p>Interactive:<textarea id="interactive" cols="85" rows="1"></textarea></p>
+-->
+
+<p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
+<pre id="edoutput">
+</pre>
+
+<p>This is mostly just for demo purposes. Normally you'd slap your code
+in some <tt>.py</tt> files and use <tt>import</tt> to
+XmlHttpRequest 'em.</p>
+
+<h2>Your Very Own Copy</h2>
+
+<p>Want to give it a shot? Grab it with a:</p>
+<pre>
+    hg clone https://skulpt.googlecode.com/hg/ skulpt
+</pre>
+
+<p>Skulpt surely isn't done yet.</p>
+
+<p>If you want to check out a list of bugs, or add to it, or see what's been
+fixed recently, you can head over to the always-euphemistic-sounding <a
+    href="http://code.google.com/p/skulpt/issues/list">issues page</a>.
+
+<p>I'd call it something like 0.12 alpha if it had a version, but versions
+are just SHA1's these days.</p>
+
+<p>It's peeking out into the world now, as it's fun to play with already. If
+you decide to peek back, first imagine a fearsomely comprehensive disclaimer
+of liability. Then fear, comprehensively<sup><a
+        href="http://www.cliki.net/">&dagger;</a></sup>.
+
+<p>The entire Python test suite does not run correctly yet, but that is the
+long term goal, insofar as it makes sense.</p>
+
+<p>If you'd like to chit-chat, <a href="http://groups.google.com/group/skulpt">there's a list for
+    that</a>.</p>
+
+<p>And, if &quot;daring&quot; is your <em>middle</em> name, there's a wee bit of <a
+    href="http://code.google.com/p/skulpt/w/list">developer docs</a>.</p>
+
+<h2>Pleasant</h2>
+
+<p>Originally, I had planned to write a GUI framework of some sort.</p>
+
+<p>But, I think a nice binding to an existing library would be much more
+sensible. The <a
+href="http://code.google.com/closure/library/index.html">Closure</a>
+library is a static sort of Javascript which is convenient because it'll
+let me generate an FFI from Skulpt.</p>
+
+<p><code>import</code> for Python code works fine, but I'm hoping you'll
+just be able to <code>import goog.<em>xyz</em></code> in the same way
+you would <code>goog.require('goog.<em>xyz</em>')</code> if you were
+writing in Javascript.</p>
+
+<h2>License</h2>
+
+<p>Skulpt may be licensed under:</p>
+<ol>
+    <li>The <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</li>
+    <li>Or, for compatibility with Python, the <a href="http://www.opensource.org/licenses/PythonSoftFoundation.php">PSFLv2</a>.</li>
+</ol>
+
+<p> Please note that this dual license only applies to the part of Skulpt that
+is included in the runtime, and not necessarily to surrounding code for build
+processing or testing. Tests are run using <a
+    href="http://code.google.com/p/v8/">V8</a>, <a
+    href="http://www.jslint.com/">JSLint</a>, and <a
+    href="http://code.google.com/closure/compiler/">Closure Compiler</a>, and
+some test code is taken from the <a href="http://www.tinypy.org/">tinypy</a>
+and <a href="http://www.python.org/">Python</a> test suites, which may be
+distributed under different licensing terms. </p>
+
+</div>
+
+<div class="footer">
+
+    <p>
+    Yes, I know how &quot;sculpt&quot; is spelled. The correct spelling was
+    thoroughly reserved according to ICANN and search engines.
+    </p>
+
+    <p><a href="static/unittest.html">unit tests</a></p>
+
+</div>
+
+</div>
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10993568-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body></html>
