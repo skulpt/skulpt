@@ -114,8 +114,9 @@ def buildDebugBrowser():
 """
     if not os.path.exists("support/tmp"):
         os.mkdir("support/tmp")
+    buildVFS()
     scripts = []
-    for f in getFileList('test') + ["test/browser-stubs.js"] + TestFiles:
+    for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js"] + TestFiles:
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
  
@@ -126,6 +127,38 @@ def buildDebugBrowser():
         os.system("start support/tmp/test.html")
     else:
         os.system("gnome-open support/tmp/test.html")
+
+def buildVFS():
+    """ build a silly virtual file system to support 'read'"""
+    print ". Slurping test data"
+    with open("support/tmp/vfs.js", "w") as out:
+        print >>out, "VFSData = {"
+        all = []
+        for root in ("test", "src/builtin"):
+            for dirpath, dirnames, filenames in os.walk(root):
+                for filename in filenames:
+                    f = os.path.join(dirpath, filename)
+                    if ".svn" in f: continue
+                    if ".swp" in f: continue
+                    if ".pyc" in f: continue
+                    data = open(f, "rb").read()
+                    all.append("'%s': '%s'" % (f.replace("\\", "/"), data.encode("hex")))
+        print >>out, ",\n".join(all)
+        print >>out, "};"
+        print >>out, """
+function readFromVFS(fn)
+{
+    var hexToStr = function(str)
+    {
+        var ret = "";
+        for (var i = 0; i < str.length; i += 2)
+            ret += unescape("%" + str.substr(i, 2));
+        return ret;
+    }
+    if (VFSData[fn] === undefined) throw "file not found: " + fn;
+    return hexToStr(VFSData[fn]);
+}
+"""
 
 def buildBrowserTests():
     """combine all the tests data into something we can run from a browser
@@ -140,22 +173,6 @@ def buildBrowserTests():
     print >>out, """
 window.addevent('onload', function(){
 """
-
-    # build a silly virtual file system to support 'read'
-    print ". Slurping test data"
-    print >>out, "VFSData = {"
-    all = []
-    for root in ("test", "src/builtin"):
-        for dirpath, dirnames, filenames in os.walk(root):
-            for filename in filenames:
-                f = os.path.join(dirpath, filename)
-                if ".svn" in f: continue
-                if ".swp" in f: continue
-                if ".pyc" in f: continue
-                data = open(f, "rb").read()
-                all.append("'%s': '%s'" % (f, data.encode("hex")))
-    print >>out, ",\n".join(all)
-    print >>out, "};"
 
     # stub the d8 functions we use
     print >>out, """
@@ -574,7 +591,7 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|browser|shell|debugbrowser}"
+        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|browser|shell|debugbrowser|vfs}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -614,6 +631,8 @@ if __name__ == "__main__":
         buildBrowserTests()
     elif cmd == "debugbrowser":
         buildDebugBrowser()
+    elif cmd == "vfs":
+        buildVFS()
     elif cmd == "shell":
         shell(sys.argv[2]);
     else:

@@ -1,9 +1,8 @@
-goog.require('goog.net.IframeIo');
-
 function read(fn)
 {
-    return document.getElementById("test_run_t00_py").innerText;
+    return readFromVFS(fn);
 }
+Sk.read = read;
 
 function print()
 {

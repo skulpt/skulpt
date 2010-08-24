@@ -1,4 +1,3 @@
-(function() {
 var tokenizefail = 0;
 var tokenizepass = 0;
 
@@ -289,7 +288,7 @@ function testInteractive(name)
     }
 }
 
-function main()
+function testsMain()
 {
     var i;
 
@@ -336,7 +335,3 @@ return;
 
     quit(tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail);
 }
-
-main();
-
-}());
