@@ -1,3 +1,6 @@
+goog.require('goog.dom');
+goog.require('goog.ui.ComboBox');
+
 var tokenizefail = 0;
 var tokenizepass = 0;
 
@@ -173,6 +176,7 @@ function testSymtab(name)
     }
 }
 
+var AllRunTests = [];
 var runpass = 0;
 var runfail = 0;
 var rundisabled = 0;
@@ -185,12 +189,16 @@ function testRun(name)
         return;
     }
 
+    AllRunTests.unshift(name);
+
     var got = '';
     Sk.output = function(str) { got += str; }
     Sk.sysargv = [ name + '.py' ];
-    Sk.syspath = ["test/run"];
+    var justpath = name.substr(0, name.lastIndexOf('/'));
 
-    // reset this so that we force reload all imports for each run
+    Sk.syspath = [justpath];
+    // reset these so that we force reload all imports for each run
+    Sk.realsyspath = undefined;
     Sk.sysmodules = new Sk.builtin.dict([]);
 
     var expect = read(name + ".py.real");
@@ -223,9 +231,12 @@ function testRun(name)
         print(got);
         print("-----\nWANTED:\n-----");
         print(expect);
-        print("-----\nJS:\n-----");
-        var beaut = js_beautify(module.$js);
-        print(beaut);
+        if (module)
+        {
+            print("-----\nJS:\n-----");
+            var beaut = js_beautify(module.$js);
+            print(beaut);
+        }
         runfail += 1;
         //throw "dying on first run fail";
     }
@@ -326,6 +337,40 @@ function testsMain()
         testRun(sprintf("test/run/t%02d", i));
     }
     print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
+
+    var inBrowser = document !== undefined;
+
+    if (inBrowser)
+    {
+        var origrunfail = runfail;
+        runpass = runfail = rundisabled = 0;
+        for (i = 0; i <= 20; ++i)
+        {
+            testRun(sprintf("test/closure/t%02d", i));
+        }
+        print(sprintf("closure: %d/%d", runpass, runpass + runfail));
+        runfail += origrunfail; // for exit code
+
+        // make a combobox of all tests so we can run just one
+        var el = goog.dom.getElement('one-test');
+        var cb = new goog.ui.ComboBox();
+        cb.setUseDropdownArrow(true);
+        cb.setDefaultText('Run one test...');
+        for (var i = 0; i < AllRunTests.length; ++i)
+        {
+            cb.addItem(new goog.ui.ComboBoxItem(AllRunTests[i]));
+        }
+        cb.render(el);
+        goog.events.listen(cb, 'change', function(e) {
+            goog.dom.setTextContent(goog.dom.getElement('output'), "");
+            print("running", e.target.getValue());
+            testRun(e.target.getValue());
+        });
+    }
+    else
+    {
+        print("not in browser, skipping closure tests");
+    }
 return;
     for (i = 0; i <= 100; ++i)
     {

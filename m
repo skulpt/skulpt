@@ -98,6 +98,11 @@ def buildDebugBrowser():
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
         <title>Skulpt test</title>
+        <link rel="stylesheet" href="../closure-library/closure/goog/demos/css/demo.css"> 
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menu.css"> 
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuitem.css"> 
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuseparator.css"> 
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/combobox.css"> 
         <style>
             .type { font-size:14px; font-weight:bold; font-family:arial; background-color:#f7f7f7; text-align:center }
         </style>
@@ -106,9 +111,20 @@ def buildDebugBrowser():
     </head>
 
     <body onload="testsMain()">
-        <div>
+        <table>
+        <tr>
+            <td>
+                <div id="one-test" class="use-arrow"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
             <pre id="output"></pre>
-        </div>
+            </td>
+            <td>
+            <span id="canv"></span>
+            </td>
+        </tr>
     </body>
 </html>
 """

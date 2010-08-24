@@ -33,6 +33,6 @@ def main():
     g.drawCircle(560, 210, 45, stroke, None); # no fill
     g.drawCircle(600, 90, 30, stroke, fill);
 
-    g.render(dom.getElement('shapes'))
+    g.render(dom.getElement('canv'))
  
 main()
