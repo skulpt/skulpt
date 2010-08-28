@@ -13,10 +13,7 @@ import pprint
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
-        'support/closure-library/closure/goog/debug/error.js',
-        'support/closure-library/closure/goog/string/string.js',
-        'support/closure-library/closure/goog/asserts/asserts.js',
-        'support/closure-library/closure/goog/json/json.js', # todo;
+        'support/closure-library/closure/goog/deps.js',
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',

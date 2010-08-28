@@ -1,7 +1,8 @@
-//goog.require('goog.json'); // todo; inside or out?
-
 var $builtinmodule = function(name)
 {
+    // todo; is this ok inside the module function when in browser?
+    goog.require('goog.json');
+
     var mod = {};
 
     mod.parse = new Sk.builtin.func(function(s)

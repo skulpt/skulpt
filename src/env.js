@@ -4,8 +4,6 @@
  * below.
  */
 
-goog.require("goog.asserts");
-
 var Sk = Sk || {};
 
 /**
@@ -44,3 +42,19 @@ Sk.inBrowser = goog.global.document !== undefined;
     // todo; this should be an async api
     if (goog.global.read !== undefined) Sk.read = goog.global.read;
 }());
+
+// override for closure to load stuff from the command line.
+if (!Sk.inBrowser)
+{
+    goog.writeScriptTag_ = function(src)
+    {
+        if (!goog.dependencies_.written[src])
+        {
+            goog.dependencies_.written[src] = true;
+            goog.global.eval(goog.global.read("support/closure-library/closure/goog/" + src));
+        }
+    };
+}
+
+goog.require("goog.asserts");
+
