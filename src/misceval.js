@@ -342,10 +342,42 @@ Sk.misceval.apply = function(func, kw, args)
             debugger;
             for (var i = 0; i < args.length; ++i)
             {
-                if (args[i].ob$type && args[i].v)
+                if (args[i].constructor === Sk.builtin.str)
                     args[i] = args[i].v;
+                else if (args[i].constructor === Sk.builtin.wrappedObject)
+                    args[i] = args[i].inst$dict;
             }
-            var ret = func.apply(null, args);
+            var ret;
+
+            // closure ctors don't return this, so we have to do magic to have
+            // them return the right thing.
+            if (func.$isctor)
+            { 
+                // have i mentioned in the last 15 minutes how non-orthogonal
+                // and ugly javascript is? raaaar
+                if (args.length === 0)
+                    ret = new func();
+                else if (args.length === 1)
+                    ret = new func(args[0]);
+                else if (args.length === 2)
+                    ret = new func(args[0], args[1]);
+                else if (args.length === 3)
+                    ret = new func(args[0], args[1], args[2]);
+                else if (args.length === 4)
+                    ret = new func(args[0], args[1], args[2], args[3]);
+                else if (args.length === 5)
+                    ret = new func(args[0], args[1], args[2], args[3], args[4]);
+                else if (args.length === 6)
+                    ret = new func(args[0], args[1], args[2], args[3], args[4], args[5]);
+                else if (args.length === 7)
+                    ret = new func(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+                else
+                    goog.asserts.assert("no constructor apply");
+            }
+            else
+            {
+                ret = func.apply(null, args);
+            }
             // if it's native, we want to return something that has a
             // tp$getattr. todo; need to do this for typeof ret === object,
             // but callables need to be functions

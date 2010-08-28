@@ -132,7 +132,7 @@ def buildDebugBrowser():
         os.mkdir("support/tmp")
     buildVFS()
     scripts = []
-    for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js", "gen/debug_import_all_closure.js"] + TestFiles:
+    for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js", "gen/closure_ctor_hack.js", "gen/debug_import_all_closure.js"] + TestFiles:
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
  
@@ -587,6 +587,32 @@ def regengooglocs():
             if not m.startswith("goog."): continue
             print >>glf, "goog.require('%s');" % m
 
+def regenclosurebindings():
+    """uses jsdoc-toolkit to scan closure library. generates a table of
+    constructors that we use to call them properly. could perhaps generate more
+    complex ffi in the future. or maybe just grep ourselves because
+    jsdoc-toolkit is so freakin' slow.
+    
+    see publish.js in the closure-wrap-gen dir."""
+
+    os.system("java -jar support/closure-wrap-gen/jsdoc-toolkit/jsrun.jar support/closure-wrap-gen/jsdoc-toolkit/app/run.js support/closure-library/closure/goog/* -t=support/closure-wrap-gen/skulptwrap > support/tmp/closure_ctor_hack.txt")
+
+    with open("support/tmp/closure_ctor_hack.txt") as f:
+        with open("gen/closure_ctor_hack.js", "w") as out:
+            print >>out, "Sk.closureCtorHack = function() {"
+
+            for l in f.readlines():
+                # strip some junk and output the rest that we actual make in publish.js
+                if l.startswith(">>"): continue
+                if ", not found." in l: continue
+                if "-tempCtor" in l: continue
+                if "-nodeCreator" in l: continue
+                if "-temp" in l: continue
+                if "warnings." in l: continue
+
+                out.write(l)
+            print >>out, "};"
+
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
@@ -594,7 +620,7 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|browser|shell|debugbrowser|vfs}"
+        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|browser|shell|debugbrowser|regenclosurebindings|vfs}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -634,6 +660,8 @@ if __name__ == "__main__":
         buildBrowserTests()
     elif cmd == "debugbrowser":
         buildDebugBrowser()
+    elif cmd == "regenclosurebindings":
+        regenclosurebindings()
     elif cmd == "vfs":
         buildVFS()
     elif cmd == "shell":

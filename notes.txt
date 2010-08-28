@@ -112,8 +112,15 @@ like a reasonable approach. at least we could build a list of ctors.
 
 maybe do 1-3 dynamically, and just put ctors in a table and change .call
 to handle the 'new' stupid magic?
+can't quite build a useful table because all type objects won't be
+defined. could use string, but constructor.name is only the last and is
+non-standard anyway.
 
+here's a disgusting idea: after every goog.require() do
 
+    if (goog && goog.ui && goog.ui.QueryData) goog.ui.QueryData.$isctor = true;
+
+for every one. blech.
 
 
 

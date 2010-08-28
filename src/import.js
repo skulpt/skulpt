@@ -100,6 +100,10 @@ Sk.importSetUpPath = function()
         for (var i = 0; i < Sk.syspath.length; ++i)
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
         Sk.realsyspath = new Sk.builtin.list(paths);
+
+        // todo; totally the wrong place for this, just need to do it sometime
+        // after init for closure in debug mode
+        Sk.closureCtorHack();
     }
 };
 
