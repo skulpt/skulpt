@@ -32,6 +32,37 @@ Sk.ffi.remapToPy = function(obj)
     goog.asserts.fail("unhandled remap type");
 };
 
+/**
+ * maps from Python dict/list/str to Javascript Object/Array/string.
+ */
 Sk.ffi.remapToJs = function(obj)
 {
+    if (obj instanceof Sk.builtin.dict)
+    {
+        var ret = {};
+        for (var iter = obj.tp$iter(), k = iter.tp$iternext();
+                k !== undefined;
+                k = iter.tp$iternext())
+        {
+            var v = obj.mp$subscript(k);
+            if (v === undefined)
+                v = null;
+            var kAsJs = Sk.ffi.remapToJs(k);
+            // todo; assert that this is a reasonble lhs?
+            ret[kAsJs] = Sk.ffi.remapToJs(v);
+        }
+        return ret;
+    }
+    else if (obj instanceof Sk.builtin.list)
+    {
+        var ret = [];
+        for (var i = 0; i < obj.v.length; ++i)
+            ret.push(Sk.ffi.remapToJs(obj.v[i]));
+        return ret;
+    }
+    else if (obj instanceof Sk.builtin.str)
+        return obj.v;
+    else if (typeof obj === "number" || typeof obj === "boolean")
+        return obj;
+    goog.asserts.fail("unhandled remap type");
 };
