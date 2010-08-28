@@ -3,6 +3,7 @@ import goog.dom as dom
 
 def main():
     g = gfx.createSimpleGraphics(600, 200)
+    print g
     fill = gfx.SolidFill('yellow')
     stroke = gfx.Stroke(2, 'green')
 

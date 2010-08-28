@@ -336,7 +336,26 @@ Sk.misceval.apply = function(func, kw, args)
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
         // of this case.
-        return func.apply(null, args);
+        if (func.$isnative) // a closure function
+        {
+            // todo; for now, lame attempt to 'marshal' between python and js
+            debugger;
+            for (var i = 0; i < args.length; ++i)
+            {
+                if (args[i].ob$type && args[i].v)
+                    args[i] = args[i].v;
+            }
+            var ret = func.apply(null, args);
+            // if it's native, we want to return something that has a
+            // tp$getattr. todo; need to do this for typeof ret === object,
+            // but callables need to be functions
+            return new Sk.builtin.wrappedObject(ret);
+        }
+        else
+        {
+            debugger;
+            return func.apply(null, args);
+        }
     }
     else
     {

@@ -31,6 +31,7 @@ Files = [
         'src/module.js',
         'src/generator.js',
         'src/file.js',
+        'src/wrapped_object.js',
 
         'src/tokenize.js',
         'gen/parse_tables.js',
@@ -40,7 +41,6 @@ Files = [
         'src/symtable.js',
         'src/compile.js',
         'src/import.js',
-        'gen/googlocs.js',
         ("support/jsbeautify/beautify.js", 'test'),
         ]
 
@@ -132,7 +132,7 @@ def buildDebugBrowser():
         os.mkdir("support/tmp")
     buildVFS()
     scripts = []
-    for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js"] + TestFiles:
+    for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js", "gen/debug_import_all_closure.js"] + TestFiles:
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
  
@@ -561,12 +561,8 @@ def vmwareregr(names):
 
 
 def regengooglocs():
-    """scans the closure library and creates a mapping of what files all the
-    modules are located in.
-
-    add fake null entries for package init files
-    
-    """
+    """scans the closure library and builds an import-everything file to be
+    used during dev. """
 
     # from calcdeps.py
     prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
@@ -583,22 +579,13 @@ def regengooglocs():
                 for prov in prov_regex.findall(contents):
                     modToFile[prov] = f.lstrip(root)
 
-    # for all modules, if their parent package isn't already defined, we add a
-    # fake entry that's equivalent to __init__.py
-    def addFakeParentEntries(mod):
-        parent = ".".join(mod.split(".")[:-1])
-        if parent not in modToFile:
-            modToFile[parent] = "/".join(parent.split(".")) + "/__init__.js"
-            print parent
-            addFakeParentEntries(parent)
-
-    for modname in modToFile.keys():
-        addFakeParentEntries(modname)
-
-    with open("gen/googlocs.js", "w") as glf:
-        print >>glf, "Sk.googlocs ="
-        pprint.pprint(modToFile, glf)
-        print >>glf, ";"
+    with open("gen/debug_import_all_closure.js", "w") as glf:
+        keys = modToFile.keys()
+        keys.sort()
+        for m in keys:
+            if "demos." in m: continue
+            if not m.startswith("goog."): continue
+            print >>glf, "goog.require('%s');" % m
 
 
 if __name__ == "__main__":

@@ -180,7 +180,7 @@ var AllRunTests = [];
 var runpass = 0;
 var runfail = 0;
 var rundisabled = 0;
-function testRun(name)
+function testRun(name, nocatch)
 {
     try { var input = read(name + ".py"); }
     catch (e) { 
@@ -206,43 +206,52 @@ function testRun(name)
     try { expectalt = read(name + ".py.real.alt"); }
     catch (e) {}
     var module;
-    try {
+    if (nocatch)
+    {
         var justname = name.substr(name.lastIndexOf('/') + 1);
         module = Sk.importMain(justname);
-    }
-    catch (e)
-    {
-        if (e.name !== undefined)
-        {
-            // js exception, currently happens for del'd objects. shouldn't
-            // really though.
-            got = "EXCEPTION: " + e.name + "\n";
-        }
-        else
-        {
-            got = "EXCEPTION: " + e.tp$name + ": " + e.args.v[0].v + "\n";
-        }
-    }
-    if (expect !== got && (expectalt !== undefined || expectalt !== got))
-    {
-        print("FAILED: (" + name + ".py)\n-----");
-        print(input);
-        print("-----\nGOT:\n-----");
         print(got);
-        print("-----\nWANTED:\n-----");
-        print(expect);
-        if (module)
-        {
-            print("-----\nJS:\n-----");
-            var beaut = js_beautify(module.$js);
-            print(beaut);
-        }
-        runfail += 1;
-        //throw "dying on first run fail";
     }
     else
     {
-        runpass += 1;
+        try {
+            var justname = name.substr(name.lastIndexOf('/') + 1);
+            module = Sk.importMain(justname);
+        }
+        catch (e)
+        {
+            if (e.name !== undefined)
+            {
+                // js exception, currently happens for del'd objects. shouldn't
+                // really though.
+                got = "EXCEPTION: " + e.name + "\n";
+            }
+            else
+            {
+                got = "EXCEPTION: " + e.tp$name + ": " + e.args.v[0].v + "\n";
+            }
+        }
+        if (expect !== got && (expectalt !== undefined || expectalt !== got))
+        {
+            print("FAILED: (" + name + ".py)\n-----");
+            print(input);
+            print("-----\nGOT:\n-----");
+            print(got);
+            print("-----\nWANTED:\n-----");
+            print(expect);
+            if (module)
+            {
+                print("-----\nJS:\n-----");
+                var beaut = js_beautify(module.$js);
+                print(beaut);
+            }
+            runfail += 1;
+            //throw "dying on first run fail";
+        }
+        else
+        {
+            runpass += 1;
+        }
     }
 }
 
@@ -332,7 +341,7 @@ function testsMain()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= 300; ++i)
+    for (i = 0; i <= -1; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
@@ -364,7 +373,7 @@ function testsMain()
         goog.events.listen(cb, 'change', function(e) {
             goog.dom.setTextContent(goog.dom.getElement('output'), "");
             print("running", e.target.getValue());
-            testRun(e.target.getValue());
+            testRun(e.target.getValue(), true);
         });
     }
     else

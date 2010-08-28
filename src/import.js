@@ -49,19 +49,35 @@ Sk.importSearchPathForName = function(name, ext, failok)
 
 Sk.loadClosureModule = function(name, filename)
 {
-    goog.asserts.assert(filename.lastIndexOf(".js") == filename.length - 3);
-    var fnWithoutExt = filename.substr(0, filename.length - 3);
-    var fn = Sk.importSearchPathForName(fnWithoutExt, ".js");
-    //var rawSrc = Sk.read(fn);
     var rawSrc = "goog.require('" + name + "');";
+    if (document !== undefined)
+    {
+        //goog.global.eval(rawSrc);
+        rawSrc = "";
+    }
 
+    // we can't just return the closure object as the locals dict because it
+    // gets assigned to inst$dict. When a submodule or subpackage is imported,
+    // it'll be assigned to the parent module under that name, which would
+    // overwrite itself. For example, if we returned the 'goog' object when
+    // importing goog (as it's an object that contains all the locals), then
+    // when we import goog.json, the goog.json-Sk.module would be assigned
+    // over top of goog.json (the JS object), which means that goog.json
+    // wouldn't be accessible from JS any more (only via tp$getattr). So, we
+    // do a shallow copy of the 'module' here to create a new object for the
+    // module's inst$dict.
     var wrap = "\n" +
-        "var $closuremodule = function(name) {" +
+        "var $closuremodule = function(name) { /*" + name + "*/" +
+        "var $loc = {};\n" +
         "for (var nat in " + name + "){" +
-            name + "[nat].$isnative=true;" +
-        "}" +
-        "return " + name + ";" +
+            "$loc[nat] = " + name + "[nat];\n" +
+            "if(typeof $loc[nat] === 'function'){\n" +
+                "$loc[nat].$isnative=true;\n" +
+        "}}" +
+        "return $loc;\n" +
         "};";
+
+        print(wrap);
 
     return { funcname: "$closuremodule", code: rawSrc + wrap };
 };
@@ -89,6 +105,7 @@ Sk.importSetUpPath = function()
 
 Sk.importModuleInternal_ = function(name, dumpJS, modname)
 {
+    //dumpJS = true;
     Sk.importSetUpPath();
 
     // if no module name override, supplied, use default name
@@ -135,13 +152,12 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname)
         filename = builtinfn;
         co = { funcname: "$builtinmodule", code: Sk.read(filename) };
     }
-    else if ((googClosure = Sk.googlocs[name]) !== undefined)
+    else if (name.indexOf("goog") == 0) // special case for goog closure
     {
-        //print("importing closure module", googClosure);
-        if (googClosure.indexOf("__init__.js") !== -1) // special entry for fake __init__.py/js
-            co = Sk.compile("\n", googClosure, "exec");
+        if (goog.global.eval(name) === undefined)
+            co = Sk.compile("\n", googClosure, "exec"); // assume it's a package, so make an empty module
         else
-            co = Sk.loadClosureModule(name, googClosure);
+            co = Sk.loadClosureModule(name);
     }
     else
     {
@@ -154,7 +170,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname)
 
     if (!COMPILED)
     {
-        if (dumpJS)
+        //if (dumpJS)
         {
             print("-----");
             var withLineNumbers = function(code)

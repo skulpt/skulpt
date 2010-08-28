@@ -6,6 +6,8 @@ Sk.read = read;
 
 function print()
 {
+    console.log.apply(console, arguments);
+
     var output = document.getElementById('output');
     for (var i = 0; i < arguments.length; ++i)
     {

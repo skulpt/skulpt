@@ -1,3 +1,4 @@
+
 todo:
 object genericgetattr is wrong. should be looking up bases, not types. dummy
 make a type-name-getting function, rather than obj.tp$name so that number works (and it'd be a good error checking place too)
@@ -86,5 +87,39 @@ in the function object that's being called.)
 
 So, just build up a list of name/value for keywords, and .call has to
 put them in the right place by looking at something. code obj? func obj?
+
+
+
+closure binding:
+
+1. need to handle converting from skulpt objects to js objects (for
+   number, bool, string) maybe only handle those 3 and use something
+   manual for others?
+2. need to handle getting the return value to be an object that has a
+   tp$getattr, so getting something out of it works
+3. need to handle binding methods to their objects (creating something
+   like a Sk.builtin.method) e.g. for g.drawRect
+4. need to handle calling @constructor functions with 'new' because
+   closure doesn't do return this; in its ctors.
+
+first 3 can do dynamically. there's no tag on ctors though, except in
+the comment annotations.
+- fork closure-compiler and generate a full set of wrappers offline?
+  they could even be simple python
+
+seems like jsdoc-toolkit can handle parsing comments pretty well, seems
+like a reasonable approach. at least we could build a list of ctors.
+
+maybe do 1-3 dynamically, and just put ctors in a table and change .call
+to handle the 'new' stupid magic?
+
+
+
+
+
+
+
+
+
 
 # vim: set tw=72:
