@@ -96,7 +96,11 @@ Sk.importSetUpPath = function()
 {
     if (!Sk.realsyspath)
     {
-        var paths = [ new Sk.builtin.str("src/builtin"), new Sk.builtin.str("."), new Sk.builtin.str("support/closure-library/closure") ];
+        var paths = [
+            new Sk.builtin.str("src/builtin"),
+            new Sk.builtin.str("src/lib"),
+            new Sk.builtin.str("."),
+        ];
         for (var i = 0; i < Sk.syspath.length; ++i)
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
         Sk.realsyspath = new Sk.builtin.list(paths);
