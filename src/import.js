@@ -103,7 +103,8 @@ Sk.importSetUpPath = function()
 
         // todo; totally the wrong place for this, just need to do it sometime
         // after init for closure in debug mode
-        Sk.closureCtorHack();
+        if (Sk.inBrowser)
+            Sk.closureCtorHack();
     }
 };
 
@@ -156,13 +157,13 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname)
         filename = builtinfn;
         co = { funcname: "$builtinmodule", code: Sk.read(filename) };
     }
-    else if (name.indexOf("goog") == 0) // special case for goog closure
+    /*else if (name.indexOf("goog") == 0) // special case for goog closure
     {
         if (goog.global.eval(name) === undefined)
             co = Sk.compile("\n", googClosure, "exec"); // assume it's a package, so make an empty module
         else
             co = Sk.loadClosureModule(name);
-    }
+    }*/
     else
     {
         filename = Sk.importSearchPathForName(name, ".py");
@@ -174,7 +175,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname)
 
     if (!COMPILED)
     {
-        //if (dumpJS)
+        if (dumpJS)
         {
             print("-----");
             var withLineNumbers = function(code)

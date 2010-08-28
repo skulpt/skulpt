@@ -1,5 +1,8 @@
-goog.require('goog.dom');
-goog.require('goog.ui.ComboBox');
+if (Sk.inBrowser)
+{
+    goog.require('goog.dom');
+    goog.require('goog.ui.ComboBox');
+}
 
 var tokenizefail = 0;
 var tokenizepass = 0;
@@ -341,15 +344,24 @@ function testsMain()
         print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
     }
 
-    for (i = 0; i <= -1; ++i)
+    for (i = 0; i <= 300; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
     print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
 
-    var inBrowser = document !== undefined;
+    {
+        var origrunfail = runfail;
+        runpass = runfail = rundisabled = 0;
+        for (i = 0; i <= 20; ++i)
+        {
+            testRun(sprintf("test/closure-cmd/t%02d", i));
+        }
+        print(sprintf("closure-cmd: %d/%d", runpass, runpass + runfail));
+        runfail += origrunfail; // for exit code
+    }
 
-    if (inBrowser)
+    if (Sk.inBrowser)
     {
         var origrunfail = runfail;
         runpass = runfail = rundisabled = 0;
@@ -378,7 +390,7 @@ function testsMain()
     }
     else
     {
-        print("not in browser, skipping closure tests");
+        print("closure: skipped");
     }
 return;
     for (i = 0; i <= 100; ++i)
@@ -388,4 +400,9 @@ return;
     print(sprintf("interactive: %d/%d (+%d disabled)", interactivepass, interactivepass + interactivefail, interactivedisabled));
 
     quit(tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail);
+}
+
+if (!Sk.inBrowser)
+{
+    testsMain();
 }

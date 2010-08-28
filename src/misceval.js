@@ -331,15 +331,17 @@ Sk.misceval.apply = function(func, kw, args)
 {
     if (typeof func === "function")
     {
-        goog.asserts.assert(kw === undefined);
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
         // of this case.
+
+        goog.asserts.assert(kw === undefined);
+        /*
         if (func.$isnative) // a closure function
         {
             // todo; for now, lame attempt to 'marshal' between python and js
-            debugger;
+            //debugger;
             for (var i = 0; i < args.length; ++i)
             {
                 if (args[i].constructor === Sk.builtin.str)
@@ -384,8 +386,9 @@ Sk.misceval.apply = function(func, kw, args)
             return new Sk.builtin.wrappedObject(ret);
         }
         else
+        */
         {
-            debugger;
+            //debugger;
             return func.apply(null, args);
         }
     }

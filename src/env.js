@@ -33,6 +33,8 @@ goog.exportSymbol("Sk.sysargv", Sk.sysargv);
 Sk.syspath = [];
 goog.exportSymbol("Sk.syspath", Sk.syspath);
 
+Sk.inBrowser = goog.global.document !== undefined;
+
 (function() {
     // set up some sane defaults based on availability
     if (goog.global.write !== undefined) Sk.output = goog.global.write;
