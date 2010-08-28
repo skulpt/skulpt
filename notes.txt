@@ -89,6 +89,7 @@ So, just build up a list of name/value for keywords, and .call has to
 put them in the right place by looking at something. code obj? func obj?
 
 
+------------
 
 closure binding:
 
@@ -122,10 +123,16 @@ here's a disgusting idea: after every goog.require() do
 
 for every one. blech.
 
+-----------
 
+ffi
 
-
-
+pretty simple with a helper .js file?
+- remap from dict <-> obj with helper
+- remap from long/number -> number and back
+- functions/methods can't just pass in the raw code object to js because
+  they'll not have access to their globals. wrap a closure that calls
+  tp$call around them.
 
 
 

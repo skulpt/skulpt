@@ -66,3 +66,11 @@ Sk.ffi.remapToJs = function(obj)
         return obj;
     goog.asserts.fail("unhandled remap type");
 };
+
+Sk.ffi.callback = function(fn)
+{
+    if (fn === undefined) return fn;
+    return function() {
+        return Sk.misceval.apply(fn, undefined, Array.prototype.slice.call(arguments, 0));
+    };
+};
