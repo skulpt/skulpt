@@ -56,6 +56,10 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$descr_get = function() { print("in type descr_get"); };
         klass.prototype.tp$repr = function()
         {
+            // todo; these should probably call tp$getattr directly, and it should return undef if there's none.
+            var reprf = Sk.builtin.getattr(this, new Sk.builtin.str("__repr__"), undefined);
+            if (reprf !== undefined)
+                return Sk.misceval.apply(reprf, undefined, []);
             var mod = dict.__module__;
             var cname = "";
             if (mod) cname = mod.v + ".";
@@ -134,7 +138,6 @@ Sk.builtin.type.prototype.tp$call = function(args, kw)
 
     return obj;
 };
-
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function(name)

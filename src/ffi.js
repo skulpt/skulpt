@@ -74,3 +74,10 @@ Sk.ffi.callback = function(fn)
         return Sk.misceval.apply(fn, undefined, Array.prototype.slice.call(arguments, 0));
     };
 };
+
+Sk.ffi.stdwrap = function(type, towrap)
+{
+    var inst = new type.tp$new();
+    inst.v = towrap;
+    return inst;
+};

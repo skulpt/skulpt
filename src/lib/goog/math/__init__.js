@@ -115,5 +115,54 @@ var $builtinmodule = function(name)
                 return goog.math.isFiniteNumber(num);
             });
 
+
+    goog.require('goog.math.Coordinate');
+    var coord = function($gbl, $loc)
+    {
+        $loc.__init__ = new Sk.builtin.func(function(self, opt_x, opt_y)
+                {
+                    self.v = new goog.math.Coordinate(opt_x, opt_y);
+                });
+
+        $loc.clone = new Sk.builtin.func(function(self)
+                {
+                    return Sk.ffi.stdwrap(mod.Coordinate, self.v.clone());
+                });
+
+        $loc.toString = new Sk.builtin.func(function(self)
+                {
+                    return new Sk.builtin.str(self.v.toString());
+                });
+        $loc.__repr__ = $loc.toString;
+
+        $loc.equals = new Sk.builtin.func(function(a, b)
+                {
+                    return goog.math.Coordinate.equals(a.v, b.v);
+                });
+
+        $loc.distance = new Sk.builtin.func(function(a, b)
+                {
+                    return goog.math.Coordinate.distance(a.v, b.v);
+                });
+
+        $loc.squaredDistance = new Sk.builtin.func(function(a, b)
+                {
+                    return goog.math.Coordinate.squaredDistance(a.v, b.v);
+                });
+
+        $loc.difference = new Sk.builtin.func(function(a, b)
+                {
+                    return Sk.ffi.stdwrap(mod.Coordinate, goog.math.Coordinate.difference(a.v, b.v));
+                });
+
+        $loc.sum = new Sk.builtin.func(function(a, b)
+                {
+                    return Sk.ffi.stdwrap(mod.Coordinate, goog.math.Coordinate.sum(a.v, b.v));
+                });
+
+
+    };
+    mod.Coordinate = Sk.misceval.buildClass(mod, coord, new Sk.builtin.str('Coordinate'), []);
+
     return mod;
 };
