@@ -7,3 +7,4 @@ class B(D,E): pass
 class A(B,C): pass
 
 print A.__bases__
+print A.__mro__
