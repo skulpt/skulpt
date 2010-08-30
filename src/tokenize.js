@@ -370,7 +370,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             pos = end;
             var token = line.substring(start, end);
             var initial = line.charAt(start);
-            //print("initial:'" +initial +"'");
+            //print("initial:'" +initial +"'", token);
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.'))
             {
                 if (this.callback(Sk.Tokenizer.T_NUMBER, token, spos, epos, line)) return 'done';
@@ -386,7 +386,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             {
                 if (this.callback(Sk.Tokenizer.T_COMMENT, token, spos, epos, line)) return 'done';
             }
-            else if (token in triple_quoted)
+            else if (triple_quoted.hasOwnProperty(token))
             {
                 this.endprog = endprogs[token];
                 endmatch = this.endprog.test(line.substring(pos));
@@ -404,9 +404,9 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
                     return false;
                 }
             }
-            else if (initial in single_quoted ||
-                    token.substring(0, 2) in single_quoted ||
-                    token.substring(0, 3) in single_quoted)
+            else if (single_quoted.hasOwnProperty(initial) ||
+                    single_quoted.hasOwnProperty(token.substring(0, 2)) ||
+                    single_quoted.hasOwnProperty(token.substring(0, 3)))
             {
                 if (token[token.length - 1] === '\n')
                 {

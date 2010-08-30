@@ -34,8 +34,10 @@ Sk.builtin.str = function(x, $ctorhack)
         return Sk.misceval.objectRepr(x);
 
     // interning required for strings in py
-    var it = interned[ret];
-    if (it !== undefined) return it;
+    if (interned.hasOwnProperty(ret))
+    {
+        return interned[ret];
+    }
 
     this.__class__ = this.nativeclass$ = Sk.builtin.str;
     this.v = ret;

@@ -126,7 +126,7 @@ var reservedWords_ = { 'abstract': true, 'as': true, 'boolean': true,
 
 function fixReservedWords(name)
 {
-    if (reservedWords_[name] === undefined)
+    if (reservedWords_[name] !== true)
         return name;
     return name + "_$rw$";
 }

@@ -111,12 +111,16 @@ SymbolTableScope.prototype.has_children = function() { return this.children.leng
 SymbolTableScope.prototype.get_identifiers = function() { return this._identsMatching(function(x) { return true; }); };
 SymbolTableScope.prototype.lookup = function(name)
 {
-    var sym = this.symbols[name];
-    if (sym === undefined)
+    var sym;
+    if (!this.symbols.hasOwnProperty(name))
     {
         var flags = this.symFlags[name];
         var namespaces = this.__check_children(name);
         sym = this.symbols[name] = new Symbol(name, flags, namespaces);
+    }
+    else
+    {
+        sym = this.symbols[name];
     }
     return sym;
 };

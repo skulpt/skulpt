@@ -114,7 +114,7 @@ OUTERWHILE:
             {
                 var itsdfa = this.grammar.dfas[t];
                 var itsfirst = itsdfa[1];
-                if (ilabel in itsfirst)
+                if (itsfirst.hasOwnProperty(ilabel))
                 {
                     // push a symbol
                     this.push(t, this.grammar.dfas[t], newstate, context);
@@ -149,14 +149,14 @@ Parser.prototype.classify = function(type, value, context)
     if (type === Sk.Tokenizer.T_NAME)
     {
         this.used_names[value] = true;
-        ilabel = this.grammar.keywords[value];
+        ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
         if (ilabel)
         {
             //print("is keyword");
             return ilabel;
         }
     }
-    ilabel = this.grammar.tokens[type];
+    ilabel = this.grammar.tokens.hasOwnProperty(type) && this.grammar.tokens[type];
     if (!ilabel)
         throw new Sk.builtin.ParseError("bad token", type, value, context);
     return ilabel;

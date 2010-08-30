@@ -23,11 +23,20 @@ function Compiling(encoding, filename)
  */
 function NCH(n) { goog.asserts.assert(n !== undefined); if (n.children === null) return 0; return n.children.length; }
 
-function CHILD(n, i) { goog.asserts.assert(n !== undefined); goog.asserts.assert(i !== undefined); return n.children[i]; }
+function CHILD(n, i)
+{
+    goog.asserts.assert(n !== undefined);
+    goog.asserts.assert(i !== undefined);
+    return n.children[i];
+}
 
 function REQ(n, type) { goog.asserts.assert(n.type === type, "node wasn't expected type"); }
 
-function strobj(s) { return new Sk.builtin.str(s); }
+function strobj(s)
+{
+    goog.asserts.assert(typeof s === "string", "expecting string, got " + (typeof s));
+    return new Sk.builtin.str(s);
+}
 
 /** @return {number} */
 function numStmts(n)
@@ -675,7 +684,7 @@ function astForImportStmt(c, n)
         else
             for (var i = 0; i < NCH(n); i += 2)
                 aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
-        var modname = mod ? mod.name : "";
+        var modname = mod ? mod.name.v : "";
         return new ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
     }
     throw new SyntaxError("unknown import statement");
