@@ -5,6 +5,7 @@ make a type-name-getting function, rather than obj.tp$name so that number works 
 genexpr with free vars test
 generator func repr test
 __builtin__ needs work
+test for __bases__ and __mro__ of list/str/dict/etc
 
 
 notes:

@@ -53,7 +53,7 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$name = name;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-        klass.prototype.tp$descr_get = function() { print("in type descr_get"); };
+        klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
         klass.prototype.tp$repr = function()
         {
             // todo; these should probably call tp$getattr directly, and it should return undef if there's none.
@@ -91,7 +91,9 @@ Sk.builtin.type = function(name, bases, dict)
             return Sk.misceval.call(iternextf);
         };
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass());
-        // todo; bases
+
+        klass.prototype.__bases__ = bases;
+
         return this;
     }
 
@@ -106,6 +108,10 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
     // todo; clarify why these can't go on type.prototype
     t.ob$type = Sk.builtin.type.prototype.ob$type;
     t.tp$name = name;
+    t.tp$call = function()
+    {
+        printf("IN HERE");
+    };
     t.tp$repr = function()
     {
         var mod = t.__module__;

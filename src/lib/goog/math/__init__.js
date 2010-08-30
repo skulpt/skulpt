@@ -164,5 +164,12 @@ var $builtinmodule = function(name)
     };
     mod.Coordinate = Sk.misceval.buildClass(mod, coord, new Sk.builtin.str('Coordinate'), []);
 
+
+    goog.require('goog.math.Vec2');
+    var vec2 = function($gbl, $loc)
+    {
+    };
+    mod.Vec2 = Sk.misceval.buildClass(mod, vec2, new Sk.builtin.str('Vec2'), [ mod.Coordinate ]);
+
     return mod;
 };

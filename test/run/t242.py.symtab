@@ -1,0 +1,208 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: A
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: A
+    Sym_lineno: 2
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: B
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: B
+    Sym_lineno: 3
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: C
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: C
+    Sym_lineno: 4
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: D
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: D
+    Sym_lineno: 5
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: E
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: E
+    Sym_lineno: 6
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: K1
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: K1
+    Sym_lineno: 7
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: K2
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: K2
+    Sym_lineno: 8
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: K3
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: K3
+    Sym_lineno: 9
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: O
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: O
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: Z
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: Z
+    Sym_lineno: 10
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: object
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
