@@ -110,22 +110,21 @@ Sk.builtin.type = function(name, bases, dict)
 
         if (bases)
         {
-            var obtypeOfBases = [];
-            for (var i = 0; i < bases.length; ++i)
-            {
-                obtypeOfBases.push(bases[i].ob$type);
-            }
-            klass.prototype.__bases__ = new Sk.builtin.tuple(obtypeOfBases);
+            klass.prototype.__bases__ = new Sk.builtin.tuple(bases);
             //print(Sk.builtin.repr(klass.prototype.__bases__).v);
+            klass.prototype.__mro__ = new Sk.builtin.tuple(bases); // todo;
         }
 
         // because we're not returning a new type() here, we have to manually
         // add all the methods we want from the type class.
         klass.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
         klass.ob$type = Sk.builtin.type.prototype.ob$type;
-        klass.tp$repr = function() { return new Sk.builtin.str("<type 'type'>"); };
 
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass(Sk.$ctorhack));
+        // the klass that's returned (i.e. the constructor 'A'), and the type
+        // the objects that are created by instantiating it, both want the same
+        // repr. grab this after the method is created in makeTypeObj.
+        klass.tp$repr = klass.prototype.ob$type.tp$repr;
 
         return klass;
     }
@@ -152,6 +151,12 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
     t.tp$str = undefined;
     return t;
 };
+Sk.builtin.type.prototype.ob$type = {
+    tp$name: 'type',
+    tp$repr: function() { return new Sk.builtin.str("<type 'type'>"); },
+    tp$str: undefined
+};
+Sk.builtin.type.prototype.ob$type.ob$type = Sk.builtin.type.prototype.ob$type;
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 Sk.builtin.type.prototype.tp$name = "type";
@@ -216,9 +221,4 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
     }
 
     throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name + "'");
-};
-
-Sk.builtin.type.prototype.tp$repr = function()
-{
-    debugger;
 };
