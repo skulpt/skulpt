@@ -37,7 +37,6 @@ Sk.builtin.type = function(name, bases, dict)
     else
     {
         // type building version of type
-        if (!(this instanceof Sk.builtin.type)) return new Sk.builtin.type(name, bases, dict);
 
         // dict is the result of running the classes code object
         // (basically the dict of functions). those become the prototype
@@ -46,7 +45,25 @@ Sk.builtin.type = function(name, bases, dict)
         /**
          * @constructor
          */
-        var klass = this.tp$new = (function(){});
+        var klass = (function(args)
+                {
+                    if (args === Sk.$ctorhack) return this;
+                    if (!(this instanceof klass)) return new klass(Array.prototype.slice.call(arguments, 0));
+
+                    args = args || [];
+                    if (Sk.builtin.dict)
+                        this.inst$dict = new Sk.builtin.dict([]);
+
+                    var init = this["__init__"];
+                    if (init !== undefined)
+                    {
+                        // return ignored I guess?
+                        args.unshift(this);
+                        Sk.misceval.apply(init, undefined, args);
+                    }
+
+                    return this;
+                });
         //print("type(nbd):",name,JSON.stringify(dict, null,2));
         for (var v in dict)
             klass.prototype[v] = dict[v];
@@ -90,11 +107,27 @@ Sk.builtin.type = function(name, bases, dict)
             goog.asserts.assert(iternextf !== undefined, "iter() should have caught this");
             return Sk.misceval.call(iternextf);
         };
-        klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass());
 
-        klass.prototype.__bases__ = bases;
+        if (bases)
+        {
+            var obtypeOfBases = [];
+            for (var i = 0; i < bases.length; ++i)
+            {
+                obtypeOfBases.push(bases[i].ob$type);
+            }
+            klass.prototype.__bases__ = new Sk.builtin.tuple(obtypeOfBases);
+            //print(Sk.builtin.repr(klass.prototype.__bases__).v);
+        }
 
-        return this;
+        // because we're not returning a new type() here, we have to manually
+        // add all the methods we want from the type class.
+        klass.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
+        klass.ob$type = Sk.builtin.type.prototype.ob$type;
+        klass.tp$repr = function() { return new Sk.builtin.str("<type 'type'>"); };
+
+        klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass(Sk.$ctorhack));
+
+        return klass;
     }
 
 };
@@ -105,13 +138,10 @@ Sk.builtin.type = function(name, bases, dict)
 Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
 {
     var t = newedInstanceOfType;
-    // todo; clarify why these can't go on type.prototype
+    // todo; clarify why these can't go on type.prototype. needs to be
+    // revisited.
     t.ob$type = Sk.builtin.type.prototype.ob$type;
     t.tp$name = name;
-    t.tp$call = function()
-    {
-        printf("IN HERE");
-    };
     t.tp$repr = function()
     {
         var mod = t.__module__;
@@ -126,6 +156,12 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 Sk.builtin.type.prototype.tp$name = "type";
 
+/**
+ * this is on the proto of things that are created by doing type(n,b,d).
+ * 
+ * so, this defines a call operator on regular user classes (assuming they have
+ * 'type' as their metaclass).
+ */
 Sk.builtin.type.prototype.tp$call = function(args, kw)
 {
     // arguments here are args to __init__
@@ -148,10 +184,10 @@ Sk.builtin.type.prototype.tp$call = function(args, kw)
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function(name)
 {
-    var tp = this.tp$new.prototype;
+    var tp = this.prototype;
     var descr = tp[name];
     var f;
-    //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name.v);
+    //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
     if (descr !== undefined)
     {
         f = descr.ob$type.tp$descr_get;
@@ -184,46 +220,5 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
 Sk.builtin.type.prototype.tp$repr = function()
 {
-    return new Sk.builtin.str("<type 'type'>");
+    debugger;
 };
-
-
-/*Sk.builtin.type.TrueType = Sk.builtin.type.makeTypeObj('True', (function(){}));
-Sk.builtin.type.FalseType = Sk.builtin.type.makeTypeObj('False', (function(){}));
-Sk.builtin.type.NoneType = Sk.builtin.type.makeTypeObj('None', (function(){}));
-Sk.builtin.type.IntType = Sk.builtin.type.makeTypeObj('int', (function(){}));
-Sk.builtin.type.FloatType = Sk.builtin.type.makeTypeObj('float', (function(){}));
-*/
-
-
-/*
-$.prototype.mro = function()
-{
-    return new Sk.builtin.list(this.__bases__.v);
-};
-
-$.prototype.__repr__ = function()
-{
-    return new Sk.builtin.str("<type '" + this.__name__ + "'>");
-};
-
-Sk.types.object = new $('object', [], {});
-
-// TODO
-//
-// type(n,b,d) should be called when constructing a class
-// user and builtin both need to go through here so that .inherits and
-// base class lookup work properly
-//
-// this is why t144 doesn't work right now; trying to find a __setattr__ on a
-// class X(object): pass, but it's not found because <type 'object'> isn't
-// really Sk.builtin.object
-//
-// so, i think the 3 parameter version of type needs to return a new
-// constructor that all the builtin types use to make themselves.
-
-Sk.types.type = new $('type', [Sk.types.object], {});
-Sk.types.int_ = new $('int', [Sk.types.object], {});
-
-Sk.builtin.list.prototype.__class__ = new Sk.builtin.type('list', [Sk.types.object], {});
-*/

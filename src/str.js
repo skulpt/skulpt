@@ -28,8 +28,6 @@ Sk.builtin.str = function(x, $ctorhack)
         if (!(ret instanceof Sk.builtin.str)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
     }
-    else if (typeof x === "function")
-        ret = "<raw JS function " + (x.name ? x.name : "(unnamed)") + ">";
     else
         return Sk.misceval.objectRepr(x);
 

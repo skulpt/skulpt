@@ -135,6 +135,10 @@ pretty simple with a helper .js file?
   they'll not have access to their globals. wrap a closure that calls
   tp$call around them.
 
+----------------
 
+bases and mro
+
+type(name, bases, dict)
 
 # vim: set tw=72:

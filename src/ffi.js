@@ -77,7 +77,7 @@ Sk.ffi.callback = function(fn)
 
 Sk.ffi.stdwrap = function(type, towrap)
 {
-    var inst = new type.tp$new();
+    var inst = new type();
     inst.v = towrap;
     return inst;
 };

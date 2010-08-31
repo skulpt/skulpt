@@ -56,5 +56,7 @@ if (!Sk.inBrowser)
     };
 }
 
+Sk.$ctorhack = {};
+
 goog.require("goog.asserts");
 

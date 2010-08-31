@@ -3,6 +3,8 @@
  */
 Sk.builtin.object = function()
 {
+    if (!(this instanceof Sk.builtin.object)) return new Sk.builtin.object();
+    return this;
 };
 
 Sk.builtin.object.prototype.GenericGetAttr = function(name)
@@ -94,7 +96,7 @@ Sk.builtin.object.prototype.HashNotImplemented = function()
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 
-Sk.builtin.baseobject = new Sk.builtin.type('object', null, {});
+Sk.builtin.object.ob$type = new Sk.builtin.type('object', null, {});
 Sk.builtin.type.prototype.ob$type = new Sk.builtin.type('type', null, {});
 
 Sk.builtin.BoolObj = function() {};
