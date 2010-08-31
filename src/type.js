@@ -112,7 +112,7 @@ Sk.builtin.type = function(name, bases, dict)
         {
             klass.prototype.__bases__ = new Sk.builtin.tuple(bases);
             //print(Sk.builtin.repr(klass.prototype.__bases__).v);
-            klass.prototype.__mro__ = new Sk.builtin.tuple(bases); // todo;
+            klass.prototype.__mro__ = Sk.builtin.type.buildMRO(klass);
         }
 
         // because we're not returning a new type() here, we have to manually
@@ -222,3 +222,70 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
     throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name + "'");
 };
+
+Sk.builtin.type.mroMerge_ = function(seqs)
+{
+    var res = [];
+    for (;;)
+    {
+        for (var i = 0; i < seqs.length; ++i)
+            if (seq.length !== 0)
+                break;
+        if (i === seqs.length) // all empty
+            return res;
+        var cands = [];
+        for (var i = 0; i < seqs.length; ++i)
+        {
+            if (seq.length !== 0)
+            {
+                var cand = seq[0];
+
+                Outer:
+                for (var j = 0; j < seqs.length; ++j)
+                {
+                    for (var k = 1; k < seq.length; ++k)
+                        if (seq[k] === cand)
+                            break Outer;
+                }
+
+                // cand is not in any sequences' tail -> constraint-free
+                if (j === seqs.length)
+                    cands.append(cand);
+            }
+        }
+        if (cands.length == 0)
+            throw new TypeError("Inconsistent precedences in type hierarchy");
+        var next = cands[0];
+        // append next to result and remove from sequences
+        res.push(next);
+        for (var i = 0; i < seqs.length; ++i)
+        {
+            if (seq.length > 0 && seq[0] === next)
+                seq.splice(0, 1);
+        }
+    }
+};
+
+/*
+ * C3 MRO (aka CPL) linearization. Figures out which order to search through
+ * base classes to determine what should override what. C3 does the "right
+ * thing", and it's what Python has used since 2.3.
+ *
+ * Kind of complicated to explain, but not really that complicated in
+ * implementation. Explanations:
+ * 
+ * http://people.csail.mit.edu/jrb/goo/manual.43/goomanual_55.html
+ * http://www.python.org/download/releases/2.3/mro/
+ * http://192.220.96.201/dylan/linearization-oopsla96.html
+ */ 
+Sk.builtin.type.buildMRO = function(klass)
+{
+    // MERGE(klass + mro(bases) + bases)
+    var all = [ [klass] ];
+    for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
+        all.push(Sk.builtin.type.buildMRO(klass.prototype.__bases__.v[i]));
+    for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
+        all.push(klass.prototype.__bases__.v[i]);
+    return Sk.builtin.type.mroMerge_(all);
+};
+
