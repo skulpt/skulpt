@@ -225,17 +225,31 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
 Sk.builtin.type.mroMerge_ = function(seqs)
 {
+    print("merge");
+    for (var i = 0; i < seqs.length; ++i)
+    {
+        var seq = seqs[i];
+        for (var j = 0; j < seq.length; ++j)
+        {
+            print(seq[j].tp$name);
+        }
+    }
+    print("--------");
     var res = [];
     for (;;)
     {
         for (var i = 0; i < seqs.length; ++i)
+        {
+            var seq = seqs[i];
             if (seq.length !== 0)
                 break;
+        }
         if (i === seqs.length) // all empty
             return res;
         var cands = [];
         for (var i = 0; i < seqs.length; ++i)
         {
+            var seq = seqs[i];
             if (seq.length !== 0)
             {
                 var cand = seq[0];
@@ -243,23 +257,27 @@ Sk.builtin.type.mroMerge_ = function(seqs)
                 Outer:
                 for (var j = 0; j < seqs.length; ++j)
                 {
-                    for (var k = 1; k < seq.length; ++k)
-                        if (seq[k] === cand)
+                    var sseq = seqs[i];
+                    for (var k = 1; k < sseq.length; ++k)
+                        if (sseq[k] === cand)
                             break Outer;
                 }
 
                 // cand is not in any sequences' tail -> constraint-free
                 if (j === seqs.length)
-                    cands.append(cand);
+                    cands.push(cand);
             }
         }
-        if (cands.length == 0)
+
+        if (cands.length === 0)
             throw new TypeError("Inconsistent precedences in type hierarchy");
+
         var next = cands[0];
         // append next to result and remove from sequences
         res.push(next);
         for (var i = 0; i < seqs.length; ++i)
         {
+            var seq = seqs[i];
             if (seq.length > 0 && seq[0] === next)
                 seq.splice(0, 1);
         }
@@ -277,15 +295,27 @@ Sk.builtin.type.mroMerge_ = function(seqs)
  * http://people.csail.mit.edu/jrb/goo/manual.43/goomanual_55.html
  * http://www.python.org/download/releases/2.3/mro/
  * http://192.220.96.201/dylan/linearization-oopsla96.html
+ *
+ * This implementation is based on a post by Samuele Pedroni on python-dev
+ * (http://mail.python.org/pipermail/python-dev/2002-October/029176.html) when
+ * discussing its addition to Python.
  */ 
 Sk.builtin.type.buildMRO = function(klass)
 {
     // MERGE(klass + mro(bases) + bases)
     var all = [ [klass] ];
-    for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
-        all.push(Sk.builtin.type.buildMRO(klass.prototype.__bases__.v[i]));
-    for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
-        all.push(klass.prototype.__bases__.v[i]);
+
+    if (klass.prototype.__bases__) // todo; only for 'object' because we don't construct properly yet
+    {
+        for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
+            all.push(Sk.builtin.type.buildMRO(klass.prototype.__bases__.v[i]));
+
+        var bases = [];
+        for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
+            bases.push(klass.prototype.__bases__.v[i]);
+        all.push(bases);
+    }
+
     return Sk.builtin.type.mroMerge_(all);
 };
 
