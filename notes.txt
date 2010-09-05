@@ -141,4 +141,16 @@ bases and mro
 
 type(name, bases, dict)
 
-# vim: set tw=72:
+things are wrong with the ob$type vs. the actual JS type (i.e.
+Sk.builtin.object) vs the prototype.
+
+object is the name of a type. you can also call it, but that's pretty
+useless.
+
+trying to make the ctor function the type object means that the sneaky
+thing of putting the functions into the prototype so that they can be
+looked up as A.__init__ or a = A(); a.__init__() doesn't work because
+they would only be in one place.
+
+
+# vim: set tw=72 formatoptions=croqln:

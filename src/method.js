@@ -43,6 +43,6 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
 
 Sk.builtin.method.prototype.tp$repr = function()
 {
-    return new Sk.builtin.str("<bound method " + this.im_self.tp$name + "." + this.im_func.func_code['co_name'].v
+    return new Sk.builtin.str("<bound method " + this.im_self.ob$type.tp$name + "." + this.im_func.func_code['co_name'].v
             + " of " + this.im_self.tp$repr().v + ">");
 };

@@ -27,6 +27,11 @@ Sk.builtin.Exception.prototype.tp$str = function()
     return new Sk.builtin.str(ret);
 };
 
+Sk.builtin.Exception.prototype.toString = function()
+{
+    return this.tp$str().v;
+}
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception

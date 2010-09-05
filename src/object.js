@@ -95,8 +95,7 @@ Sk.builtin.object.prototype.HashNotImplemented = function()
 
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-
-Sk.builtin.object.ob$type = new Sk.builtin.type('object', null, {});
+Sk.builtin.type.makeIntoTypeObj('object', Sk.builtin.object);
 
 Sk.builtin.BoolObj = function() {};
 Sk.builtin.BoolObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('Bool', new Sk.builtin.BoolObj());
@@ -109,29 +108,3 @@ Sk.builtin.FloatObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('float', new
 
 Sk.builtin.NoneObj = function() {};
 Sk.builtin.NoneObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('None', new Sk.builtin.NoneObj());
-
-
-/*
-Sk.builtin.object_ = Sk.builtin.type('object', [], {}, function()
-{
-    this.__dict__ = new Sk.builtin.dict([]);
-    return this;
-});
-*/
-
-/*
-// todo; maybe a string-only dict here that's just an object+methods for efficiency
-$.__setattr__ = function(k,v)
-{
-    //print("in __setattr__",k,v);
-    this.__dict__.__setitem__(new Sk.builtin.str(k), v);
-};
-$.__getattr__ = function(k)
-{
-    return this.__dict__.__getitem__(new Sk.builtin.str(k));
-};
-$.__repr__ = function()
-{
-    return new Sk.builtin.str("<" + Sk.getattr(this, '__module__') + "." + this.__class__.__name__.v + " instance>");
-};
-*/

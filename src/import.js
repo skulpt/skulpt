@@ -88,6 +88,21 @@ if (COMPILED)
     var js_beautify = function(x) {};
 }
 
+Sk.doOneTimeInitialization = function()
+{
+    // sometime after init for closure in debug mode
+    if (Sk.inBrowser)
+        Sk.closureCtorHack();
+
+    // can't fill these out when making the type because tuple/dict aren't
+    // defined yet.
+    Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
+    Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
+    Sk.builtin.object.inst$dict = new Sk.builtin.dict([]);
+    Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
+    Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+};
+
 /**
  * currently only pull once from Sk.syspath. User might want to change
  * from js or from py.
@@ -105,10 +120,8 @@ Sk.importSetUpPath = function()
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
         Sk.realsyspath = new Sk.builtin.list(paths);
 
-        // todo; totally the wrong place for this, just need to do it sometime
-        // after init for closure in debug mode
-        if (Sk.inBrowser)
-            Sk.closureCtorHack();
+        Sk.doOneTimeInitialization();
+
     }
 };
 

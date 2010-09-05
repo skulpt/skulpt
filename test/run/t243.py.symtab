@@ -1,0 +1,56 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: X
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: X
+    Sym_lineno: 3
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: Y
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: Y
+    Sym_lineno: 4
+    Sym_nested: False
+    Sym_haschildren: False
+    Class_methods: []
+    -- Identifiers --
+  ]
+name: object
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]

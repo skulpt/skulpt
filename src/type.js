@@ -51,8 +51,8 @@ Sk.builtin.type = function(name, bases, dict)
                     if (!(this instanceof klass)) return new klass(Array.prototype.slice.call(arguments, 0));
 
                     args = args || [];
-                    if (Sk.builtin.dict)
-                        this.inst$dict = new Sk.builtin.dict([]);
+                    goog.asserts.assert(Sk.builtin.dict !== undefined);
+                    this.inst$dict = new Sk.builtin.dict([]);
 
                     var init = this["__init__"];
                     if (init !== undefined)
@@ -66,8 +66,10 @@ Sk.builtin.type = function(name, bases, dict)
                 });
         //print("type(nbd):",name,JSON.stringify(dict, null,2));
         for (var v in dict)
+        {
             klass.prototype[v] = dict[v];
-        klass.prototype.tp$name = name;
+            klass[v] = dict[v];
+        }
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
@@ -110,15 +112,16 @@ Sk.builtin.type = function(name, bases, dict)
 
         if (bases)
         {
-            klass.prototype.__bases__ = new Sk.builtin.tuple(bases);
-            //print(Sk.builtin.repr(klass.prototype.__bases__).v);
-            klass.prototype.__mro__ = Sk.builtin.type.buildMRO(klass);
+            klass.inst$dict = new Sk.builtin.dict([]);
+            klass.inst$dict.mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
+            klass.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, Sk.builtin.type.buildMRO(klass));
         }
 
         // because we're not returning a new type() here, we have to manually
         // add all the methods we want from the type class.
         klass.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-        klass.ob$type = Sk.builtin.type.prototype.ob$type;
+        klass.ob$type = Sk.builtin.type;
+        klass.tp$name = name;
 
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass(Sk.$ctorhack));
         // the klass that's returned (i.e. the constructor 'A'), and the type
@@ -137,9 +140,13 @@ Sk.builtin.type = function(name, bases, dict)
 Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
 {
     var t = newedInstanceOfType;
-    // todo; clarify why these can't go on type.prototype. needs to be
-    // revisited.
-    t.ob$type = Sk.builtin.type.prototype.ob$type;
+    Sk.builtin.type.makeIntoTypeObj(name, t);
+    return newedInstanceOfType;
+};
+
+Sk.builtin.type.makeIntoTypeObj = function(name, t)
+{
+    t.ob$type = Sk.builtin.type;
     t.tp$name = name;
     t.tp$repr = function()
     {
@@ -149,17 +156,17 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
         return new Sk.builtin.str("<class '" + cname + t.tp$name + "'>");
     };
     t.tp$str = undefined;
-    return t;
+    t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
+    t.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
 };
-Sk.builtin.type.prototype.ob$type = {
-    tp$name: 'type',
-    tp$repr: function() { return new Sk.builtin.str("<type 'type'>"); },
-    tp$str: undefined
-};
-Sk.builtin.type.prototype.ob$type.ob$type = Sk.builtin.type.prototype.ob$type;
+
+Sk.builtin.type.ob$type = Sk.builtin.type;
+Sk.builtin.type.tp$name = "type";
+Sk.builtin.type.tp$repr = function() { return new Sk.builtin.str("<type 'type'>"); };
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
-Sk.builtin.type.prototype.tp$name = "type";
+
+//Sk.builtin.type.prototype.tp$name = "type";
 
 /**
  * this is on the proto of things that are created by doing type(n,b,d).
@@ -225,16 +232,20 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
 Sk.builtin.type.mroMerge_ = function(seqs)
 {
+    /*
     print("merge");
     for (var i = 0; i < seqs.length; ++i)
     {
         var seq = seqs[i];
         for (var j = 0; j < seq.length; ++j)
         {
-            print(seq[j].tp$name);
+            //if (seq[j].prototype.tp$name === undefined)
+                //debugger;
+            print(seq[j].prototype.tp$name);
         }
     }
     print("--------");
+    */
     var res = [];
     for (;;)
     {
@@ -254,13 +265,13 @@ Sk.builtin.type.mroMerge_ = function(seqs)
             {
                 var cand = seq[0];
 
-                Outer:
+                OUTER:
                 for (var j = 0; j < seqs.length; ++j)
                 {
                     var sseq = seqs[i];
                     for (var k = 1; k < sseq.length; ++k)
                         if (sseq[k] === cand)
-                            break Outer;
+                            break OUTER;
                 }
 
                 // cand is not in any sequences' tail -> constraint-free
@@ -284,6 +295,23 @@ Sk.builtin.type.mroMerge_ = function(seqs)
     }
 };
 
+Sk.builtin.type.buildMRO_ = function(klass)
+{
+    // MERGE(klass + mro(bases) + bases)
+    var all = [ [klass] ];
+
+    var kbases = klass.inst$dict.mp$subscript(Sk.builtin.type.basesStr_);
+    for (var i = 0; i < kbases.v.length; ++i)
+        all.push(Sk.builtin.type.buildMRO_(kbases.v[i]));
+
+    var bases = [];
+    for (var i = 0; i < kbases.v.length; ++i)
+        bases.push(kbases.v[i]);
+    all.push(bases);
+
+    return Sk.builtin.type.mroMerge_(all);
+};
+
 /*
  * C3 MRO (aka CPL) linearization. Figures out which order to search through
  * base classes to determine what should override what. C3 does the "right
@@ -302,20 +330,6 @@ Sk.builtin.type.mroMerge_ = function(seqs)
  */ 
 Sk.builtin.type.buildMRO = function(klass)
 {
-    // MERGE(klass + mro(bases) + bases)
-    var all = [ [klass] ];
-
-    if (klass.prototype.__bases__) // todo; only for 'object' because we don't construct properly yet
-    {
-        for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
-            all.push(Sk.builtin.type.buildMRO(klass.prototype.__bases__.v[i]));
-
-        var bases = [];
-        for (var i = 0; i < klass.prototype.__bases__.v.length; ++i)
-            bases.push(klass.prototype.__bases__.v[i]);
-        all.push(bases);
-    }
-
-    return Sk.builtin.type.mroMerge_(all);
+    return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
 };
 

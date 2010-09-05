@@ -29,6 +29,7 @@ Sk.builtin.func = function(code, globals, closure, closure2)
             closure[k] = closure2[k];
     }
     this.func_closure = closure;
+    return this;
 };
 
 Sk.builtin.func.prototype.tp$name = "function";

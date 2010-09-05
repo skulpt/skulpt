@@ -479,7 +479,7 @@ print("-----");
 print(input);
 print("-----");
 Sk.syspath = ["%s"];
-var module = Sk.importModule("%s", true);
+var module = Sk.importMain("%s", true);
 print("-----");
     """ % (fn, os.path.split(fn)[0], modname))
     f.close()
