@@ -14,31 +14,9 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     var tp = this.ob$type;
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
-    var descr;
-    var mro = tp.tp$mro;
-    if (!mro)
-    {
-        descr = tp[name];
-    }
-    else
-    {
-        goog.asserts.assert(mro instanceof Sk.builtin.tuple);
-        for (var i = 0; i < mro.v.length; ++i)
-        {
-            var base = mro.v[i];
-            if (base.hasOwnProperty(name))
-            {
-                descr = base[name];
-                break;
-            }
-            var res = base.inst$dict.mp$subscript(new Sk.builtin.str(name));
-            if (res !== undefined)
-            {
-                descr = res;
-                break;
-            }
-        }
-    }
+    //print("getattr", tp.tp$name, name);
+
+    var descr = Sk.builtin.type.typeLookup(tp, name);
 
     // otherwise, look in the type for a descr
     var f;

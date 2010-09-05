@@ -432,16 +432,7 @@ Sk.misceval.apply = function(func, kw, args)
 Sk.misceval.buildClass = function(globals, func, name, bases)
 {
     // todo; metaclass
-    var meta = Sk.builtin.type; // todo; base classes
-
-    /*
-    print("bases", JSON.stringify(bases));
-    if (bases.length > 0)
-    {
-        print("b", JSON.stringify(bases[0]), JSON.stringify(bases[0].__proto__));
-        meta = bases[0].ob$type;
-    }
-    */
+    var meta = Sk.builtin.type;
 
     var locals = {};
 

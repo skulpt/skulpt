@@ -114,9 +114,15 @@ Sk.builtin.type = function(name, bases, dict)
 
         if (bases)
         {
+            //print("building mro for", name);
+            //for (var i = 0; i < bases.length; ++i)
+                //print("base[" + i + "]=" + bases[i].tp$name);
             klass.inst$dict = new Sk.builtin.dict([]);
             klass.inst$dict.mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-            klass.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, Sk.builtin.type.buildMRO(klass));
+            var mro = Sk.builtin.type.buildMRO(klass);
+            klass.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
+            klass.tp$mro = mro;
+            //print("mro result", Sk.builtin.repr(mro).v);
         }
 
         // because we're not returning a new type() here, we have to manually
@@ -124,11 +130,8 @@ Sk.builtin.type = function(name, bases, dict)
         klass.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
         klass.ob$type = Sk.builtin.type;
 
-        klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass(Sk.$ctorhack));
-        // the klass that's returned (i.e. the constructor 'A'), and the type
-        // the objects that are created by instantiating it, both want the same
-        // repr. grab this after the method is created in makeTypeObj.
-        klass.tp$repr = klass.prototype.ob$type.tp$repr;
+        klass.prototype.ob$type = klass;
+        Sk.builtin.type.makeIntoTypeObj(name, klass);
 
         return klass;
     }
@@ -147,6 +150,8 @@ Sk.builtin.type.makeTypeObj = function(name, newedInstanceOfType)
 
 Sk.builtin.type.makeIntoTypeObj = function(name, t)
 {
+    goog.asserts.assert(name !== undefined);
+    goog.asserts.assert(t !== undefined);
     t.ob$type = Sk.builtin.type;
     t.tp$name = name;
     t.tp$repr = function()
@@ -229,6 +234,28 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
     }
 
     throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name + "'");
+};
+
+Sk.builtin.type.typeLookup = function(type, name)
+{
+    var mro = type.tp$mro;
+
+    // todo; probably should fix this, used for builtin types to get stuff
+    // from prototype
+    if (!mro)
+        return type[name];
+
+    for (var i = 0; i < mro.v.length; ++i)
+    {
+        var base = mro.v[i];
+        if (base.hasOwnProperty(name))
+            return base[name];
+        var res = base.inst$dict.mp$subscript(new Sk.builtin.str(name));
+        if (res !== undefined)
+            return res;
+    }
+
+    return undefined;
 };
 
 Sk.builtin.type.mroMerge_ = function(seqs)
