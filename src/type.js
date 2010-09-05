@@ -54,7 +54,7 @@ Sk.builtin.type = function(name, bases, dict)
                     goog.asserts.assert(Sk.builtin.dict !== undefined);
                     this.inst$dict = new Sk.builtin.dict([]);
 
-                    var init = this["__init__"];
+                    var init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
                     if (init !== undefined)
                     {
                         // return ignored I guess?
