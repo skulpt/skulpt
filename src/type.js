@@ -110,6 +110,8 @@ Sk.builtin.type = function(name, bases, dict)
             return Sk.misceval.call(iternextf);
         };
 
+        klass.tp$name = name;
+
         if (bases)
         {
             klass.inst$dict = new Sk.builtin.dict([]);
@@ -121,7 +123,6 @@ Sk.builtin.type = function(name, bases, dict)
         // add all the methods we want from the type class.
         klass.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
         klass.ob$type = Sk.builtin.type;
-        klass.tp$name = name;
 
         klass.prototype.ob$type = Sk.builtin.type.makeTypeObj(name, new klass(Sk.$ctorhack));
         // the klass that's returned (i.e. the constructor 'A'), and the type
@@ -233,18 +234,12 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 Sk.builtin.type.mroMerge_ = function(seqs)
 {
     /*
-    print("merge");
+    var tmp = [];
     for (var i = 0; i < seqs.length; ++i)
     {
-        var seq = seqs[i];
-        for (var j = 0; j < seq.length; ++j)
-        {
-            //if (seq[j].prototype.tp$name === undefined)
-                //debugger;
-            print(seq[j].prototype.tp$name);
-        }
+        tmp.push(new Sk.builtin.list(seqs[i]));
     }
-    print("--------");
+    print(Sk.builtin.repr(new Sk.builtin.list(tmp)).v);
     */
     var res = [];
     for (;;)
@@ -261,14 +256,15 @@ Sk.builtin.type.mroMerge_ = function(seqs)
         for (var i = 0; i < seqs.length; ++i)
         {
             var seq = seqs[i];
+            //print("XXX", Sk.builtin.repr(new Sk.builtin.list(seq)).v);
             if (seq.length !== 0)
             {
                 var cand = seq[0];
-
+                //print("CAND", Sk.builtin.repr(cand).v);
                 OUTER:
                 for (var j = 0; j < seqs.length; ++j)
                 {
-                    var sseq = seqs[i];
+                    var sseq = seqs[j];
                     for (var k = 1; k < sseq.length; ++k)
                         if (sseq[k] === cand)
                             break OUTER;
@@ -299,6 +295,8 @@ Sk.builtin.type.buildMRO_ = function(klass)
 {
     // MERGE(klass + mro(bases) + bases)
     var all = [ [klass] ];
+
+    //print("buildMRO for", klass.tp$name);
 
     var kbases = klass.inst$dict.mp$subscript(Sk.builtin.type.basesStr_);
     for (var i = 0; i < kbases.v.length; ++i)
