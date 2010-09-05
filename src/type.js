@@ -202,8 +202,8 @@ Sk.builtin.type.prototype.tp$call = function(args, kw)
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function(name)
 {
-    var tp = this.prototype;
-    var descr = tp[name];
+    var tp = this;
+    var descr = Sk.builtin.type.typeLookup(tp, name);
     var f;
     //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
     if (descr !== undefined)

@@ -1,18 +1,6 @@
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
 
-Sk.builtin.__import__ = function(name, globals, locals, fromlist)
-{
-    var ret = Sk.importModuleInternal_(name);
-    if (!fromlist || fromlist.length === 0)
-        return ret;
-    // if there's a fromlist we want to return the actual module, not the
-    // toplevel namespace
-    ret = Sk.sysmodules.mp$subscript(name);
-    goog.asserts.assert(ret);
-    return ret;
-};
-
 /**
  * @param {string} name to look for
  * @param {string} ext extension to use (.py or .js)
@@ -90,10 +78,6 @@ if (COMPILED)
 
 Sk.doOneTimeInitialization = function()
 {
-    // sometime after init for closure in debug mode
-    if (Sk.inBrowser)
-        Sk.closureCtorHack();
-
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
@@ -114,7 +98,7 @@ Sk.importSetUpPath = function()
         var paths = [
             new Sk.builtin.str("src/builtin"),
             new Sk.builtin.str("src/lib"),
-            new Sk.builtin.str("."),
+            new Sk.builtin.str(".")
         ];
         for (var i = 0; i < Sk.syspath.length; ++i)
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
@@ -125,6 +109,12 @@ Sk.importSetUpPath = function()
     }
 };
 
+/**
+ * @param name {string} name of module to import
+ * @param dumpJS {boolean=} whether to output the generated js code
+ * @param modname {string=} what to call the module after it's imported if
+ * it's to be renamed (i.e. __main__)
+ */
 Sk.importModuleInternal_ = function(name, dumpJS, modname)
 {
     //dumpJS = true;
@@ -252,6 +242,18 @@ Sk.importModule = function(name, dumpJS)
 Sk.importMain = function(name, dumpJS)
 {
     return Sk.importModuleInternal_(name, dumpJS, "__main__");
+};
+
+Sk.builtin.__import__ = function(name, globals, locals, fromlist)
+{
+    var ret = Sk.importModuleInternal_(name);
+    if (!fromlist || fromlist.length === 0)
+        return ret;
+    // if there's a fromlist we want to return the actual module, not the
+    // toplevel namespace
+    ret = Sk.sysmodules.mp$subscript(name);
+    goog.asserts.assert(ret);
+    return ret;
 };
 
 goog.exportSymbol("Sk.importMain", Sk.importMain);

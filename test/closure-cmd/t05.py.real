@@ -1,0 +1,20 @@
+ctor (10, 12)
+randomunit True
+fromcoord (4, 5)
+clone (4, 5)
+mag 6.4031242374328485
+magsq 41
+scaled (2, 2.5)
+inverted (-2, -2.5)
+normalize (-0.6246950475544243, -0.7808688094430304) 1
+add (10, 1) (9.375304952445576, 0.2191311905569696)
+sub (100, 100) (-90.62469504755443, -99.78086880944304)
+equals False
+equals True
+dist 100
+dist 0
+distsq 0
+sum (200, 200)
+diff (0, 0)
+dot 30000
+lerp (100, 125)

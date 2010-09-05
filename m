@@ -14,6 +14,9 @@ import pprint
 Files = [
         'support/closure-library/closure/goog/base.js',
         'support/closure-library/closure/goog/deps.js',
+        #'support/closure-library/closure/goog/string/string.js',
+        #'support/closure-library/closure/goog/debug/error.js',
+        #'support/closure-library/closure/goog/asserts/asserts.js',
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -33,7 +36,7 @@ Files = [
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',
-        'src/wrapped_object.js',
+        #'src/wrapped_object.js',
 
         'src/tokenize.js',
         'gen/parse_tables.js',

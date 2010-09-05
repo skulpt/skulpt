@@ -162,14 +162,98 @@ var $builtinmodule = function(name)
 
 
     };
-    mod.Coordinate = Sk.misceval.buildClass(mod, coord, new Sk.builtin.str('Coordinate'), []);
+    mod.Coordinate = Sk.misceval.buildClass(mod, coord, 'Coordinate', []);
 
 
     goog.require('goog.math.Vec2');
     var vec2 = function($gbl, $loc)
     {
+        $loc.__init__ = new Sk.builtin.func(function(self, opt_x, opt_y)
+                {
+                    self.v = new goog.math.Vec2(opt_x, opt_y);
+                });
+
+        $loc.randomUnit = new Sk.builtin.func(function()
+                {
+                    return Sk.ffi.stdwrap(mod.Vec2, goog.math.Vec2.randomUnit());
+                });
+
+        $loc.random = new Sk.builtin.func(function()
+                {
+                    return Sk.ffi.stdwrap(mod.Vec2, goog.math.Vec2.random());
+                });
+
+        $loc.clone = new Sk.builtin.func(function(self)
+                {
+                    return new Sk.ffi.stdwrap(mod.Vec2, self.v.clone());
+                });
+
+        $loc.fromCoordinate = new Sk.builtin.func(function(a)
+                {
+                    return Sk.ffi.stdwrap(mod.Vec2, goog.math.Vec2.fromCoordinate(a.v));
+                });
+
+        $loc.magnitude = new Sk.builtin.func(function(self)
+                {
+                    return self.v.magnitude();
+                });
+
+        $loc.squaredMagnitude = new Sk.builtin.func(function(self)
+                {
+                    return self.v.squaredMagnitude();
+                });
+
+        $loc.scale = new Sk.builtin.func(function(self, s)
+                {
+                    self.v.scale(s);
+                });
+
+        $loc.invert = new Sk.builtin.func(function(self)
+                {
+                    self.v.invert();
+                });
+
+        $loc.normalize = new Sk.builtin.func(function(self)
+                {
+                    self.v.normalize();
+                });
+
+        $loc.add = new Sk.builtin.func(function(self, b)
+                {
+                    self.v.add(b.v);
+                });
+
+        $loc.subtract = new Sk.builtin.func(function(self, b)
+                {
+                    self.v.subtract(b.v);
+                });
+
+        $loc.equals = new Sk.builtin.func(function(self, b)
+                {
+                    return self.v.equals(b.v);
+                });
+
+        $loc.sum = new Sk.builtin.func(function(a, b)
+                {
+                    return Sk.ffi.stdwrap(mod.Vec2, goog.math.Vec2.sum(a.v, b.v));
+                });
+
+        $loc.difference = new Sk.builtin.func(function(a, b)
+                {
+                    return Sk.ffi.stdwrap(mod.Vec2, goog.math.Vec2.difference(a.v, b.v));
+                });
+
+        $loc.dot = new Sk.builtin.func(function(a, b)
+                {
+                    return goog.math.Vec2.dot(a.v, b.v);
+                });
+
+        $loc.lerp = new Sk.builtin.func(function(a, b, x)
+                {
+                    return Sk.ffi.stdwrap(mod.Vec2, goog.math.Vec2.lerp(a.v, b.v, x));
+                });
     };
-    mod.Vec2 = Sk.misceval.buildClass(mod, vec2, new Sk.builtin.str('Vec2'), [ mod.Coordinate ]);
+    mod.Vec2 = Sk.misceval.buildClass(mod, vec2, 'Vec2', [ mod.Coordinate ]);
 
     return mod;
 };

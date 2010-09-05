@@ -82,7 +82,7 @@ Sk.builtin.dir = function dir(x)
         else if (k.charAt(k.length - 1) !== '_')
             s = k;
         if (s)
-            names.push(Sk.builtin.str(s));
+            names.push(new Sk.builtin.str(s));
     }
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new Sk.builtin.list(names);
