@@ -81,3 +81,28 @@ Sk.ffi.stdwrap = function(type, towrap)
     inst.v = towrap;
     return inst;
 };
+
+/**
+ * for when the return type might be one of a variety of basic types.
+ * number|string, etc.
+ */
+Sk.ffi.basicwrap = function(obj)
+{
+    if (typeof obj === "number" || typeof obj === "boolean")
+        return obj;
+    if (typeof obj === "string")
+        return new Sk.builtin.str(obj);
+    goog.asserts.fail("unexpected type for basicwrap");
+};
+
+Sk.ffi.unwrapo = function(obj)
+{
+    if (obj === undefined) return undefined;
+    return obj.v;
+};
+
+Sk.ffi.unwrapn = function(obj)
+{
+    if (obj === null) return null;
+    return obj.v;
+};

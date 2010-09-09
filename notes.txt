@@ -135,6 +135,10 @@ pretty simple with a helper .js file?
   they'll not have access to their globals. wrap a closure that calls
   tp$call around them.
 
+todo;
+more helpers for ffi
+verify that numbers are numbers, not longs (and maybe a compile mode to disable longs entirely?)
+
 ----------------
 
 bases and mro

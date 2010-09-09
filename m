@@ -96,7 +96,7 @@ def test():
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
 
-def buildDebugBrowser():
+def debugbrowser():
     tmpl = """
 <!DOCTYPE HTML>
 <html>
@@ -155,7 +155,7 @@ def buildVFS():
     with open("support/tmp/vfs.js", "w") as out:
         print >>out, "VFSData = {"
         all = []
-        for root in ("test", "src/builtin"):
+        for root in ("test", "src/builtin", "src/lib"):
             for dirpath, dirnames, filenames in os.walk(root):
                 for filename in filenames:
                     f = os.path.join(dirpath, filename)
@@ -664,7 +664,7 @@ if __name__ == "__main__":
     elif cmd == "browser":
         buildBrowserTests()
     elif cmd == "debugbrowser":
-        buildDebugBrowser()
+        debugbrowser()
     elif cmd == "regenclosurebindings":
         regenclosurebindings()
     elif cmd == "vfs":
