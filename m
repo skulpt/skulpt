@@ -83,7 +83,7 @@ if sys.platform == "win32":
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 else:
-    jsengine = "support/d8/d8 --trace_exception --debugger" # --max_stack_trace_source_length 3"
+    jsengine = "support/d8/d8 --trace_exception --debugger --max_stack_trace_source_length 3"
     #jsengine = "support/d8/d8"
     nul = "/dev/null"
     crlfprog = None

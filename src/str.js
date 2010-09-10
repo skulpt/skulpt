@@ -195,7 +195,7 @@ Sk.builtin.str.prototype.replace = new Sk.builtin.func(function(self, oldS, newS
     return new Sk.builtin.str(self.v.replace(patt, newS.v));
 });
 
-Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeTypeObj('str', new Sk.builtin.str(undefined, true));
+Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('str', Sk.builtin.str);
 
 Sk.builtin.str.prototype.nb$remainder = function(rhs)
 {

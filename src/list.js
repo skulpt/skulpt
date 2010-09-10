@@ -27,7 +27,7 @@ Sk.builtin.list = function(L)
     return this;
 };
 
-Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeTypeObj('list', new Sk.builtin.list([]));
+Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('list', Sk.builtin.list);
 
 Sk.builtin.list.prototype.list_iter_ = function()
 {

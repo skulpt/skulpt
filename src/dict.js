@@ -18,7 +18,7 @@ Sk.builtin.dict = function dict(L)
     return this;
 };
 
-Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeTypeObj('dict', new Sk.builtin.dict([]));
+Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('dict', Sk.builtin.dict);
 
 var kf = Sk.builtin.hash;
 

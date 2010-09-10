@@ -77,7 +77,7 @@ Sk.builtin.generator.prototype.next = new Sk.builtin.func(function(self)
     return self.tp$iternext();
 });
 
-Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeTypeObj('generator', new Sk.builtin.generator(null,null,null));
+Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('generator', Sk.builtin.generator);
 
 Sk.builtin.generator.prototype.tp$repr = function()
 {

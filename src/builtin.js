@@ -106,6 +106,36 @@ Sk.builtin.open = function open(filename, mode, bufsize)
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
+Sk.builtin.isinstance = function(obj, type)
+{
+    if (obj.ob$type === type) return true;
+
+    if (type instanceof Sk.builtin.tuple)
+    {
+        for (var i = 0; i < type.v.length; ++i)
+        {
+            if (Sk.builtin.isinstance(obj, type.v[i]))
+                return true;
+        }
+        return false;
+    }
+
+    var issubclass = function(klass, base)
+    {
+        if (klass === base) return true;
+        if (klass.inst$dict === undefined) return false;
+        var bases = klass.inst$dict.mp$subscript(Sk.builtin.type.basesStr_);
+        for (var i = 0; i < bases.v.length; ++i)
+        {
+            if (issubclass(bases.v[i], base))
+                return true;
+        }
+        return false;
+    };
+
+    return issubclass(obj.ob$type, type);
+};
+
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
 {

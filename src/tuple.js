@@ -79,7 +79,7 @@ Sk.builtin.tuple.prototype.sq$repeat = function(n)
 };
 
 
-Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeTypeObj('tuple', new Sk.builtin.tuple([]));
+Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('tuple', Sk.builtin.tuple);
 
 Sk.builtin.tuple.prototype.tp$iter = function()
 {

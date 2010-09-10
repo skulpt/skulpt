@@ -164,6 +164,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
     t.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
+    return t;
 };
 
 Sk.builtin.type.ob$type = Sk.builtin.type;
@@ -243,7 +244,7 @@ Sk.builtin.type.typeLookup = function(type, name)
     // todo; probably should fix this, used for builtin types to get stuff
     // from prototype
     if (!mro)
-        return type[name];
+        return type.prototype[name];
 
     for (var i = 0; i < mro.v.length; ++i)
     {

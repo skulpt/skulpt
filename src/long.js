@@ -34,7 +34,7 @@ Sk.builtin.lng.tp$index = function()
 };
 
 Sk.builtin.lng.prototype.tp$name = "long";
-Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeTypeObj('long', new Sk.builtin.lng(0));
+Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.builtin.lng);
 
 Sk.builtin.lng.SHIFT$ = 15;
 Sk.builtin.lng.BASE$ = 1 << Sk.builtin.lng.SHIFT$;
