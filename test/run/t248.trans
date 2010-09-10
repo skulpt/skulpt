@@ -1,0 +1,9 @@
+Module(body=[Print(dest=None,
+                   values=[Str(s='Hello')],
+                   nl=True),
+             Print(dest=None,
+                   values=[Str(s='stuff')],
+                   nl=True),
+             Print(dest=None,
+                   values=[Str(s='things')],
+                   nl=True)])
