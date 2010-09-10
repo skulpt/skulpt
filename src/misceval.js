@@ -209,7 +209,8 @@ Sk.misceval.isTrue = function(x)
     if (x === true) return true;
     if (x === false) return false;
     if (x === null) return false;
-    // todo; num, map len, seq len == 0
+    if (typeof x === "number") return x !== 0;
+    // todo; map len, seq len == 0
     return true;
 };
 
