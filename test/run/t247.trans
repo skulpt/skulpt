@@ -1,0 +1,5 @@
+Module(body=[Print(dest=None,
+                   values=[Subscript(value=Str(s='abc'),
+                                     slice=Index(value=Num(n=1.5)),
+                                     ctx=Load())],
+                   nl=True)])

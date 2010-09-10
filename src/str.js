@@ -46,7 +46,7 @@ Sk.builtin.str = function(x, $ctorhack)
 
 Sk.builtin.str.prototype.mp$subscript = function(index)
 {
-    if (typeof index === "number")
+    if (typeof index === "number" && Math.floor(index) === index /* not a float*/ )
     {
         if (index < 0) index = this.v.length + index;
         if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("string index out of range");
