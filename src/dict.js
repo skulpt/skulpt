@@ -18,6 +18,8 @@ Sk.builtin.dict = function dict(L)
     return this;
 };
 
+Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeTypeObj('dict', new Sk.builtin.dict([]));
+
 var kf = Sk.builtin.hash;
 
 Sk.builtin.dict.prototype.mp$subscript = function(key)
@@ -99,6 +101,15 @@ Sk.builtin.dict.prototype.tp$repr = function()
 };
 
 Sk.builtin.dict.prototype.mp$length = function() { return this.size; };
+
+Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
+Sk.builtin.dict.prototype.get = new Sk.builtin.func(function(self, k, d)
+{
+    var ret = self.mp$subscript(k);
+    if (ret !== undefined) return ret;
+    return d;
+});
 
 /*
 
