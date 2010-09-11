@@ -316,9 +316,9 @@ Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
 {
     goog.asserts.assert(s.step === null);
     var lower = 'null', upper = 'null';
-    if (s.lower && ctx !== AugStore)
+    if (s.lower)
         lower = this.vexpr(s.lower);
-    if (s.upper && ctx !== AugStore)
+    if (s.upper)
         upper = this.vexpr(s.upper);
 
     // todo; don't require making a slice obj, and move logic into general sequence place
@@ -357,8 +357,7 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
     {
         case Index:
             kindname = "index";
-            if (ctx !== AugStore)
-                subs = this.vexpr(s.value);
+            subs = this.vexpr(s.value);
             break;
         case Slice:
             if (!s.step)
@@ -490,6 +489,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
             }
             break;
         case Subscript:
+            var val;
             switch (e.ctx)
             {
                 case AugLoad:
@@ -498,7 +498,10 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
                 case Del:
                     return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
                 case AugStore:
-                    this.vslice(e.slice, e.ctx, null, data);
+                    out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
+                    val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
+                    this.vslice(e.slice, e.ctx, val, data);
+                    out("}");
                     break;
                 case Param:
                 default:
@@ -540,6 +543,13 @@ Compiler.prototype.caugassign = function(s)
             var aug = this.vexpr(auge);
             var val = this.vexpr(s.value);
             var res = this._gr('inplbinopattr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op._astname, "')");
+            auge.ctx = AugStore;
+            return this.vexpr(auge, res, e.value)
+        case Subscript:
+            var auge = new Subscript(e.value, e.slice, AugLoad, e.lineno, e.col_offset);
+            var aug = this.vexpr(auge);
+            var val = this.vexpr(s.value);
+            var res = this._gr('inplbinopsubscr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op._astname, "')");
             auge.ctx = AugStore;
             return this.vexpr(auge, res, e.value)
         case Name:
