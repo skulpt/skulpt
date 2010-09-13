@@ -21,7 +21,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     // otherwise, look in the type for a descr
     var f;
     //print("descr", descr);
-    if (descr !== undefined)
+    if (descr !== undefined && descr.ob$type !== undefined)
     {
         f = descr.ob$type.tp$descr_get;
         // todo;
