@@ -548,23 +548,8 @@ Exercises
 #. Type `print 'hello'`. Python executes this statement, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
    used to enclose the string are not part of the output.  Now type ``"hello"``
-   and describe your result.
-
-   Now make a script named `hello.py` containing the following:
-
-   .. sourcecode:: python
-
-       print 'Hello there world!'
-
-    Run the script and make note of what happens.  Now remove the `print`
-    so that your program looks like this:
-
-   .. sourcecode:: python
-
-       'Hello there world!'
-
-   Run it again and notice what happens.  If you see nothing at all the 2nd
-   time, everything is working as it should.
+   and describe your result.  Make note of when you see the quotation marks
+   and when you don't.
 #. Type ``print cheese`` without the quotation marks. The output will look
    something like this::
 
@@ -600,4 +585,4 @@ Exercises
    expression, which evaluates to ``'This is a test...'`` (just like the
    expression ``42`` evaluates to ``42``). In a script, however, evaluations of
    expressions are not sent to the program output, so it is necessary to
-   explicitly print it.
+   explicitly print them.
