@@ -548,7 +548,23 @@ Exercises
 #. Type `print 'hello'`. Python executes this statement, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
    used to enclose the string are not part of the output.  Now type ``"hello"``
-   and describe and explain your result.
+   and describe your result.
+
+   Now make a script named `hello.py` containing the following:
+
+   .. sourcecode:: python
+
+       print 'Hello there world!'
+
+    Run the script and make note of what happens.  Now remove the `print`
+    so that your program looks like this:
+
+   .. sourcecode:: python
+
+       'Hello there world!'
+
+   Run it again and notice what happens.  If you see nothing at all the 2nd
+   time, everything is working as it should.
 #. Type ``print cheese`` without the quotation marks. The output will look
    something like this::
 
