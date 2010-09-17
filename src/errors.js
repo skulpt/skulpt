@@ -17,13 +17,17 @@ Sk.builtin.Exception.prototype.tp$name = "Exception";
 
 Sk.builtin.Exception.prototype.tp$str = function()
 {
-    var ret = "File \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
-        this.args.v[4].v + "\n";
-    for (var i = 0; i < this.args.v[3]; ++i) ret += " ";
-    ret += "^\n";
+    var ret = "";
+    if (this.args.v.length > 1)
+    {
+        var ret = "File \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
+            this.args.v[4].v + "\n";
+        for (var i = 0; i < this.args.v[3]; ++i) ret += " ";
+        ret += "^\n";
+    }
     ret += this.tp$name;
     if (this.args)
-        ret += ": " + this.args.v[0].v + "\n";
+        ret += ": " + this.args.v[0].v;
     return new Sk.builtin.str(ret);
 };
 

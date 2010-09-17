@@ -229,7 +229,7 @@ function testRun(name, nocatch)
             }
             else
             {
-                got = "EXCEPTION: " + e.tp$name + ": " + e.args.v[0].v + "\n";
+                got = "EXCEPTION: " + Sk.builtin.str(e).v + "\n";
             }
         }
         if (expect !== got && (expectalt !== undefined || expectalt !== got))
@@ -315,7 +315,7 @@ function testsMain()
 
     // these use internal symbols so they can't run when fully
     // compiled/minimized
-    //if (!COMPILED)
+    if (0)
     {
         for (i = 0; i <= 100; i += 1)
         {
