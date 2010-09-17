@@ -4,6 +4,7 @@
 Sk.builtin.object = function()
 {
     if (!(this instanceof Sk.builtin.object)) return new Sk.builtin.object();
+    this.inst$dict = new Sk.builtin.dict([]);
     return this;
 };
 

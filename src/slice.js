@@ -21,6 +21,7 @@ Sk.builtin.slice = function slice(start, stop, step)
     this.step = step;
     return this;
 };
+goog.exportSymbol("Sk.builtin.slice", Sk.builtin.slice);
 
 Sk.builtin.slice.prototype.tp$str = function()
 {

@@ -12,7 +12,7 @@ function dump_tokens(fn, input)
 {
     var uneval = function(t)
     {
-        return new Sk.builtin.str(t).tp$repr().v;
+        return new Sk.builtin.repr(new Sk.builtin.str(t)).v;
     };
     var ret = '',
         lines = input.split("\n"),
@@ -62,7 +62,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += e.tp$str().v;
+        got += Sk.builtin.str(e).v;
     }
     if (expect !== got)
     {
@@ -195,14 +195,12 @@ function testRun(name, nocatch)
     AllRunTests.unshift(name);
 
     var got = '';
-    Sk.output = function(str) { got += str; }
-    Sk.sysargv = [ name + '.py' ];
     var justpath = name.substr(0, name.lastIndexOf('/'));
-
-    Sk.syspath = [justpath];
-    // reset these so that we force reload all imports for each run
-    Sk.realsyspath = undefined;
-    Sk.sysmodules = new Sk.builtin.dict([]);
+    Sk.configure({
+        output: function(str) { got += str; },
+        sysargv: [ name + '.py' ],
+        syspath: [ justpath ]
+    });
 
     var expect = read(name + ".py.real");
     var expectalt;
@@ -317,7 +315,7 @@ function testsMain()
 
     // these use internal symbols so they can't run when fully
     // compiled/minimized
-    //if (0)
+    //if (!COMPILED)
     {
         for (i = 0; i <= 100; i += 1)
         {

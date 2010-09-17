@@ -175,31 +175,6 @@ Sk.builtin.type.tp$repr = function() { return new Sk.builtin.str("<type 'type'>"
 
 //Sk.builtin.type.prototype.tp$name = "type";
 
-/**
- * this is on the proto of things that are created by doing type(n,b,d).
- * 
- * so, this defines a call operator on regular user classes (assuming they have
- * 'type' as their metaclass).
- */
-Sk.builtin.type.prototype.tp$call = function(args, kw)
-{
-    // arguments here are args to __init__
-
-    var obj = new this.tp$new();
-
-    obj.inst$dict = new Sk.builtin.dict([]);
-
-    var init = obj["__init__"];
-    if (init !== undefined)
-    {
-        // return ignored I guess?
-        args.unshift(obj);
-        Sk.misceval.apply(init, undefined, args);
-    }
-
-    return obj;
-};
-
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function(name)
 {

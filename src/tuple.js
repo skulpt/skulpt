@@ -13,6 +13,7 @@ Sk.builtin.tuple = function(L)
     this.__class__ = this.nativeclass$ = Sk.builtin.tuple;
     return this;
 };
+goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
 
 Sk.builtin.tuple.prototype.tp$repr = function()
 {

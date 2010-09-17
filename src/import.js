@@ -1,5 +1,6 @@
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
+Sk.realsyspath = undefined;
 
 /**
  * @param {string} name to look for
@@ -20,7 +21,7 @@ Sk.importSearchPathForName = function(name, ext, failok)
         for (var j = 0; j < fns.length; ++j)
         {
             var fn = fns[j];
-            //print("  import search, trying", fn);
+            //Sk.debugout("  import search, trying", fn);
             try {
                 // todo; lame, this is the only way we have to test existence right now
                 Sk.read(fn);
@@ -110,12 +111,14 @@ Sk.importSetUpPath = function()
 };
 
 /**
- * @param name {string} name of module to import
- * @param dumpJS {boolean=} whether to output the generated js code
- * @param modname {string=} what to call the module after it's imported if
+ * @param {string} name name of module to import
+ * @param {boolean=} dumpJS whether to output the generated js code
+ * @param {string=} modname what to call the module after it's imported if
  * it's to be renamed (i.e. __main__)
+ * @param {string=} suppliedPyBody use as the body of the text for the module
+ * rather than Sk.read'ing it.
  */
-Sk.importModuleInternal_ = function(name, dumpJS, modname)
+Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
 {
     //dumpJS = true;
     Sk.importSetUpPath();
@@ -157,24 +160,25 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname)
     Sk.sysmodules.mp$ass_subscript(name, module);
     var filename, co, googClosure;
 
-    // if we have it as a builtin (i.e. already in JS) module then load that.
-    var builtinfn = Sk.importSearchPathForName(name, ".js", true);
-    if (builtinfn)
+    if (suppliedPyBody)
     {
-        filename = builtinfn;
-        co = { funcname: "$builtinmodule", code: Sk.read(filename) };
+        filename = name + ".py";
+        co = Sk.compile(suppliedPyBody, filename, "exec");
     }
-    /*else if (name.indexOf("goog") == 0) // special case for goog closure
-    {
-        if (goog.global.eval(name) === undefined)
-            co = Sk.compile("\n", googClosure, "exec"); // assume it's a package, so make an empty module
-        else
-            co = Sk.loadClosureModule(name);
-    }*/
     else
     {
-        filename = Sk.importSearchPathForName(name, ".py");
-        co = Sk.compile(Sk.read(filename), filename, "exec");
+        // if we have it as a builtin (i.e. already in JS) module then load that.
+        var builtinfn = Sk.importSearchPathForName(name, ".js", true);
+        if (builtinfn)
+        {
+            filename = builtinfn;
+            co = { funcname: "$builtinmodule", code: Sk.read(filename) };
+        }
+        else
+        {
+            filename = Sk.importSearchPathForName(name, ".py");
+            co = Sk.compile(Sk.read(filename), filename, "exec");
+        }
     }
 
     module.$js = co.code; // todo; only in DEBUG?
@@ -244,6 +248,11 @@ Sk.importMain = function(name, dumpJS)
     return Sk.importModuleInternal_(name, dumpJS, "__main__");
 };
 
+Sk.importMainWithBody = function(name, dumpJS, body)
+{
+    return Sk.importModuleInternal_(name, dumpJS, "__main__", body);
+};
+
 Sk.builtin.__import__ = function(name, globals, locals, fromlist)
 {
     var ret = Sk.importModuleInternal_(name);
@@ -257,3 +266,4 @@ Sk.builtin.__import__ = function(name, globals, locals, fromlist)
 };
 
 goog.exportSymbol("Sk.importMain", Sk.importMain);
+goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);

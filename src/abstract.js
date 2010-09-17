@@ -178,6 +178,7 @@ Sk.abstr.numberBinOp = function(v, w, op)
 
     return Sk.abstr.binary_op_(v, w, op);
 };
+goog.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
 Sk.abstr.numberInplaceBinOp = function(v, w, op)
 {
@@ -198,6 +199,7 @@ Sk.abstr.numberInplaceBinOp = function(v, w, op)
 
     return Sk.abstr.binary_iop_(v, w, op);
 };
+goog.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
 Sk.abstr.numberUnaryOp = function(v, op)
 {
@@ -216,6 +218,7 @@ Sk.abstr.numberUnaryOp = function(v, op)
     }
     throw new TypeError("unsupported operand type for " + op + " '" + v.tp$name + "'");
 };
+goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
 //
 //
@@ -347,6 +350,7 @@ Sk.abstr.objectDelItem = function(o, key)
     }
     throw new TypeError("'" + o.tp$name + "' object does not support item deletion");
 };
+goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function(o, key)
 {
@@ -356,6 +360,7 @@ Sk.abstr.objectGetItem = function(o, key)
         return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key));
     throw new TypeError("'" + o.tp$name + "' does not support indexing");
 };
+goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function(o, key, v)
 {
@@ -365,3 +370,4 @@ Sk.abstr.objectSetItem = function(o, key, v)
         return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
     throw new TypeError("'" + o.tp$name + "' does not support item assignment");
 };
+goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);

@@ -27,6 +27,7 @@ Sk.builtin.lng = function(size) /* long is a reserved word */
     this.size$ = size;
     return this;
 };
+goog.exportSymbol("Sk.builtin.lng", Sk.builtin.lng);
 
 Sk.builtin.lng.tp$index = function()
 {
@@ -139,6 +140,7 @@ Sk.longFromStr = function(s)
     if (neg) ret.size$ = -ret.size$;
     return ret;
 };
+goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.clone = function()
 {

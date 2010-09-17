@@ -9,6 +9,7 @@ Sk.builtin.method = function(func, self)
     this.im_self = self;
     //print("constructing method", this.im_func.tp$name, this.im_self.tp$name);
 };
+goog.exportSymbol("Sk.builtin.method", Sk.builtin.method);
 
 Sk.builtin.method.prototype.tp$call = function(args, kw)
 {

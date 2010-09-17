@@ -6,6 +6,9 @@ genexpr with free vars test
 generator func repr test
 __builtin__ needs work
 test for __bases__ and __mro__ of list/str/dict/etc
+IfExp: a if a < b else b
+why aren't the methods in .js's actually method? (have to pass 'self' to loadIdentity)
+need to make a build mode that compiles all py, removes all goog.exportSymbol, then compiles all resulting .js for final dist type builds
 
 
 notes:
@@ -155,6 +158,20 @@ trying to make the ctor function the type object means that the sneaky
 thing of putting the functions into the prototype so that they can be
 looked up as A.__init__ or a = A(); a.__init__() doesn't work because
 they would only be in one place.
+
+------------------
+
+bespin:
+- python plugin for syntax hl doesn't work
+
+- can it do autoindent? i.e. indent after :?
+
+- home-home is wrong
+- ctrl-home/ctrl-end don't work
+- ctrl-arrow is wrong
+- pageup/down are wrong
+
+
 
 
 # vim: set tw=72 formatoptions=croqln:

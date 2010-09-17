@@ -31,6 +31,8 @@ Sk.builtin.func = function(code, globals, closure, closure2)
     this.func_closure = closure;
     return this;
 };
+goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
+
 
 Sk.builtin.func.prototype.tp$name = "function";
 Sk.builtin.func.prototype.tp$descr_get = function(obj, objtype)

@@ -17,6 +17,7 @@ Sk.builtin.dict = function dict(L)
 
     return this;
 };
+goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('dict', Sk.builtin.dict);
 

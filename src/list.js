@@ -26,6 +26,7 @@ Sk.builtin.list = function(L)
 
     return this;
 };
+goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
 
 Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('list', Sk.builtin.list);
 

@@ -42,7 +42,8 @@ Sk.builtin.str = function(x, $ctorhack)
     interned[ret] = this;
     return this;
 
-}
+};
+goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.builtin.str.prototype.mp$subscript = function(index)
 {

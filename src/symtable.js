@@ -906,5 +906,5 @@ Sk.dumpSymtab = function(st)
     return getIdents(st.top, "");
 };
 
-//goog.exportSymbol("Sk.symboltable", Sk.symboltable);
-//goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);
+goog.exportSymbol("Sk.symboltable", Sk.symboltable);
+goog.exportSymbol("Sk.dumpSymtab", Sk.dumpSymtab);

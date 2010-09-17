@@ -36,6 +36,7 @@ Sk.builtin.generator = function(code, globals, args, closure, closure2)
     this.func_closure = closure;
     return this;
 };
+goog.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
 
 Sk.builtin.generator.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 

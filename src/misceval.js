@@ -4,6 +4,7 @@ Sk.misceval.isIndex = function(o)
 {
     return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.tp$index;
 };
+goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
 Sk.misceval.asIndex = function(o)
 {
@@ -28,6 +29,7 @@ Sk.misceval.applySlice = function(u, v, w)
     }
     return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null));
 };
+goog.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
 
 /**
  * u[v:w] = x
@@ -52,6 +54,7 @@ Sk.misceval.assignSlice = function(u, v, w, x)
             return Sk.abstr.objectSetItem(u, slice, x);
     }
 };
+goog.exportSymbol("Sk.misceval.assignSlice", Sk.misceval.assignSlice);
 
 /**
  * for reversed comparison: Eq -> NotEq, etc.
@@ -185,6 +188,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
 
     throw new Sk.builtin.ValueError("don't know how to compare '" + v.tp$name + "' and '" + w.tp$name + "'");
 };
+goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
 Sk.misceval.objectRepr = function(v)
 {
@@ -202,6 +206,7 @@ Sk.misceval.objectRepr = function(v)
     else
         return v.tp$repr();
 };
+goog.exportSymbol("Sk.misceval.objectRepr", Sk.misceval.objectRepr);
 
 
 Sk.misceval.isTrue = function(x)
@@ -213,6 +218,7 @@ Sk.misceval.isTrue = function(x)
     // todo; map len, seq len == 0
     return true;
 };
+goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
 Sk.misceval.print_ = function print(x)
@@ -231,6 +237,7 @@ Sk.misceval.print_ = function print(x)
     if (s.v.length === 0 || !isspace(s.v[s.v.length - 1]) || s.v[s.v.length - 1] === ' ')
         Sk.misceval.softspace_ = true;
 };
+goog.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 
 /**
  * @param {string} name
@@ -246,6 +253,7 @@ Sk.misceval.loadname = function(name, other)
 
     throw new Sk.builtin.NameError("name '" + name + "' is not defined");
 };
+goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
 
 /**
  *
@@ -323,6 +331,7 @@ Sk.misceval.call = function(func, kw, args)
     // todo; possibly inline apply to avoid extra stack frame creation
     return Sk.misceval.apply(func, kw, args);
 };
+goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
@@ -413,7 +422,8 @@ Sk.misceval.apply = function(func, kw, args)
         }
         throw new TypeError("'" + func.tp$name + "' object is not callable");
     }
-}
+};
+goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
 
 /**
  * Constructs a class object given a code object representing the body
@@ -448,3 +458,4 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
     //print("class", klass, JSON.stringify(klass.prototype));
     return klass;
 };
+goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);

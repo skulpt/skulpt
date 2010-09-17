@@ -1993,4 +1993,5 @@ Sk.astDump = function(node)
     return _format(node, "");
 };
 
-//goog.exportSymbol("Sk.astFromParse", Sk.astFromParse);
+goog.exportSymbol("Sk.astFromParse", Sk.astFromParse);
+goog.exportSymbol("Sk.astDump", Sk.astDump);

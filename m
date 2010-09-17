@@ -14,9 +14,14 @@ import pprint
 Files = [
         'support/closure-library/closure/goog/base.js',
         'support/closure-library/closure/goog/deps.js',
-        #'support/closure-library/closure/goog/string/string.js',
-        #'support/closure-library/closure/goog/debug/error.js',
-        #'support/closure-library/closure/goog/asserts/asserts.js',
+        ('support/closure-library/closure/goog/string/string.js', 'dist'),
+        ('support/closure-library/closure/goog/debug/error.js', 'dist'),
+        ('support/closure-library/closure/goog/asserts/asserts.js', 'dist'),
+        ('support/closure-library/closure/goog/array/array.js', 'dist'),
+        ('support/closure-library/closure/goog/math/math.js', 'dist'),
+        ('support/closure-library/closure/goog/math/coordinate.js', 'dist'),
+        ('support/closure-library/closure/goog/math/vec2.js', 'dist'),
+        ('support/closure-library/closure/goog/json/json.js', 'dist'),
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -117,6 +122,7 @@ def debugbrowser():
     </head>
 
     <body onload="testsMain()">
+        <canvas id="__webglhelpercanvas" style="border: none;" width="500" height="500"></canvas> 
         <table>
         <tr>
             <td>
@@ -300,7 +306,7 @@ def dist():
     #open(uncompfn, "w").write(combined)
     #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
-    buildBrowserTests()
+    #buildBrowserTests()
 
     """
     # run jslint on uncompressed
@@ -313,27 +319,27 @@ def dist():
     """
 
     # run tests on uncompressed
-    print ". Running tests on uncompressed..."
-    ret = os.system("%s %s %s" % (jsengine, ' '.join(getFileList('dist')), ' '.join(TestFiles)))
-    if ret != 0:
-        print "Tests failed on uncompressed version."
-        raise SystemExit()
+    #print ". Running tests on uncompressed..."
+    #ret = os.system("%s %s %s" % (jsengine, ' '.join(getFileList('dist')), ' '.join(TestFiles)))
+    #if ret != 0:
+        #print "Tests failed on uncompressed version."
+        #raise SystemExit()
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     if ret != 0:
-        print "Couldn't run closure-compiler."
+        print "closure-compiler failed."
         raise SystemExit()
 
     # run tests on compressed
-    #print ". Running tests on compressed..."
-    #ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
-    #if ret != 0:
-        #print "Tests failed on compressed version."
-        #raise SystemExit()
+    print ". Running tests on compressed..."
+    ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
+    if ret != 0:
+        print "Tests failed on compressed version."
+        raise SystemExit()
 
     ret = os.system("cp %s dist/tmp.js" % compfn)
     if ret != 0:
@@ -483,7 +489,7 @@ print("-----");
 print(input);
 print("-----");
 Sk.syspath = ["%s"];
-var module = Sk.importMain("%s", true);
+Sk.importMain("%s", true);
 print("-----");
     """ % (fn, os.path.split(fn)[0], modname))
     f.close()
@@ -506,22 +512,6 @@ eval(Skulpt.compileStr('%s', input));
 
 def shell(fn):
     run(fn, "--shell")
-
-def parse(fn):
-    if not os.path.exists(fn):
-        print "%s doesn't exist" % fn
-        raise SystemExit()
-    f = open("support/tmp/parse.js", "w")
-    f.write("""
-var input = read('%s');
-var cst = Skulpt._parse('%s', input);
-print(astDump(Skulpt._transform(cst)));
-    """ % (fn, fn))
-    f.close()
-    os.system("%s %s test/footer_test.js %s support/tmp/parse.js" % (
-        jsengine,
-        ' '.join(getFileList('test')),
-        ' '.join(DebugFiles)))
 
 def nrt():
     """open a new run test"""
@@ -619,6 +609,15 @@ def regenclosurebindings():
                 out.write(l)
             print >>out, "};"
 
+def host():
+    """simple http host from root of dir for testing"""
+    import SimpleHTTPServer
+    import SocketServer
+    PORT = 20710
+    Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+    httpd = SocketServer.TCPServer(("", PORT), Handler)
+    print "serving at port", PORT
+    httpd.serve_forever()
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
@@ -626,7 +625,7 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|parse|vmwareregr|browser|shell|debugbrowser|regenclosurebindings|vfs}"
+        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|vmwareregr|browser|shell|debugbrowser|regenclosurebindings|vfs|host}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -648,10 +647,8 @@ if __name__ == "__main__":
         run(sys.argv[2])
     elif cmd == "runopt":
         runopt(sys.argv[2])
-    elif cmd == "parse":
-        parse(sys.argv[2])
     elif cmd == "vmwareregr":
-        parse(sys.argv[2])
+        vmwareregr()
     elif cmd == "regenparser":
         regenparser()
     elif cmd == "regenasttests":
@@ -670,6 +667,8 @@ if __name__ == "__main__":
         regenclosurebindings()
     elif cmd == "vfs":
         buildVFS()
+    elif cmd == "host":
+        host()
     elif cmd == "shell":
         shell(sys.argv[2]);
     else:

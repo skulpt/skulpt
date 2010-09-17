@@ -342,5 +342,5 @@ Sk.parseTreeDump = function parseTreeDump(n, indent)
 };
 
 
-//goog.exportSymbol("Sk.parse", Sk.parse);
-//goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
+goog.exportSymbol("Sk.parse", Sk.parse);
+goog.exportSymbol("Sk.parseTreeDump", Sk.parseTreeDump);
