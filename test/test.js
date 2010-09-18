@@ -62,7 +62,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += Sk.builtin.str(e).v;
+        got += Sk.builtin.str(e).v + "\n";
     }
     if (expect !== got)
     {
@@ -315,7 +315,7 @@ function testsMain()
 
     // these use internal symbols so they can't run when fully
     // compiled/minimized
-    if (0)
+    //if (0)
     {
         for (i = 0; i <= 100; i += 1)
         {
