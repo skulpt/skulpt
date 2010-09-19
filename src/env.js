@@ -23,8 +23,10 @@ Sk.configure = function(options)
 {
     Sk.output = options["output"] || Sk.output;
     goog.asserts.assert(typeof Sk.output === "function");
+
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
+
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
 
@@ -47,6 +49,7 @@ Sk.output = function(x) {};
 
 /*
  * Replacable function to load modules with (called via import, etc.)
+ * todo; this should be an async api
  */
 Sk.read = function(x) { throw "Sk.read has not been implemented"; };
 
@@ -84,9 +87,6 @@ Sk.debugout = function(args) {};
     else if (goog.global.print !== undefined) Sk.output = goog.global.print;
 
     if (goog.global.print !== undefined) Sk.debugout = goog.global.print;
-
-    // todo; this should be an async api
-    if (goog.global.read !== undefined) Sk.read = goog.global.read;
 }());
 
 // override for closure to load stuff from the command line.
@@ -101,8 +101,6 @@ if (!Sk.inBrowser)
         }
     };
 }
-
-Sk.$ctorhack = {};
 
 goog.require("goog.asserts");
 

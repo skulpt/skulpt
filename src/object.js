@@ -4,7 +4,7 @@
 Sk.builtin.object = function()
 {
     if (!(this instanceof Sk.builtin.object)) return new Sk.builtin.object();
-    this.inst$dict = new Sk.builtin.dict([]);
+    this['$d'] = new Sk.builtin.dict([]);
     return this;
 };
 
@@ -31,14 +31,13 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     }
 
     // todo; assert? force?
-    //print("getattr", name, this.inst$dict.tp$repr().v);
-    if (this.inst$dict)
+    if (this['$d'])
     {
         var res;
-        if (this.inst$dict.mp$subscript)
-            res = this.inst$dict.mp$subscript(new Sk.builtin.str(name));
-        else if (typeof this.inst$dict === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object
-            res = this.inst$dict[name];
+        if (this['$d'].mp$subscript)
+            res = this['$d'].mp$subscript(new Sk.builtin.str(name));
+        else if (typeof this['$d'] === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object
+            res = this['$d'][name];
         if (res !== undefined)
             return res;
     }
@@ -54,17 +53,17 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
         return descr;
     }
 
-    throw new Sk.builtin.AttributeError("'" + this.tp$name + "' object has no attribute '" + name + "'");
+    return undefined;
 };
 
 Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
 {
     goog.asserts.assert(typeof name === "string");
     // todo; lots o' stuff
-    if (this.inst$dict.mp$ass_subscript)
-        this.inst$dict.mp$ass_subscript(new Sk.builtin.str(name), value);
-    else if (typeof this.inst$dict === "object")
-        this.inst$dict[name] = value;
+    if (this['$d'].mp$ass_subscript)
+        this['$d'].mp$ass_subscript(new Sk.builtin.str(name), value);
+    else if (typeof this['$d'] === "object")
+        this['$d'][name] = value;
 };
 
 Sk.builtin.object.prototype.HashNotImplemented = function()

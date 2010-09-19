@@ -64,11 +64,6 @@ function js_beautify(js_source_text, options) {
         }
     }
 
-    function is_array(mode) {
-        return mode === '[EXPRESSION]' || mode === '[INDENTED-EXPRESSION]';
-    }
-
-
     function print_newline(ignore_repeated) {
 
         flags.eat_next_space = false;
@@ -1003,9 +998,11 @@ function js_beautify(js_source_text, options) {
                 print_single_space();
             }
 
+            /*
             if (token_text === '!') {
                 // flags.eat_next_space = true;
             }
+            */
 
             break;
 

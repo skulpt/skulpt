@@ -3,12 +3,10 @@ var interned = {};
 /**
  * @constructor
  * @param {*} x
- * @param {boolean=} $ctorhack
  * @extends Sk.builtin.object
  */
-Sk.builtin.str = function(x, $ctorhack)
+Sk.builtin.str = function(x)
 {
-    if ($ctorhack) return this;
     if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
     if (x instanceof Sk.builtin.str && x !== Sk.builtin.str.prototype.ob$type) return x;
     if (!(this instanceof Sk.builtin.str)) return new Sk.builtin.str(x);
@@ -39,6 +37,7 @@ Sk.builtin.str = function(x, $ctorhack)
 
     this.__class__ = this.nativeclass$ = Sk.builtin.str;
     this.v = ret;
+    this["v"] = this.v;
     interned[ret] = this;
     return this;
 
@@ -103,7 +102,7 @@ Sk.builtin.str.prototype.tp$iter = function()
     };
     return ret;
 };
-Sk.builtin.str.prototype.tp$repr = function()
+Sk.builtin.str.prototype['$r'] = function()
 {
     // single is preferred
     var quote = "'";

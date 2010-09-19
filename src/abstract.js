@@ -371,3 +371,32 @@ Sk.abstr.objectSetItem = function(o, key, v)
     throw new TypeError("'" + o.tp$name + "' does not support item assignment");
 };
 goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
+
+
+
+Sk.abstr.gattr = function(obj, nameJS)
+{
+    var ret = obj.tp$getattr(nameJS);
+    if (ret === undefined)
+        throw new Sk.builtin.AttributeError("'" + obj.tp$name + "' object has no attribute '" + nameJS + "'");
+    return ret;
+};
+goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
+
+Sk.abstr.sattr = function(obj, nameJS, data)
+{
+    obj.tp$setattr(nameJS, data);
+};
+goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
+
+Sk.abstr.iter = function(obj)
+{
+    return obj.tp$iter();
+};
+goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
+
+Sk.abstr.iternext = function(it)
+{
+    return it.tp$iternext();
+};
+goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);

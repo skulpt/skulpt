@@ -27,7 +27,6 @@ Sk.builtin.lng = function(size) /* long is a reserved word */
     this.size$ = size;
     return this;
 };
-goog.exportSymbol("Sk.builtin.lng", Sk.builtin.lng);
 
 Sk.builtin.lng.tp$index = function()
 {
@@ -449,7 +448,7 @@ Sk.builtin.lng.prototype.divremInt$ = function(n)
     return rem;
 };
 
-Sk.builtin.lng.prototype.tp$repr = function()
+Sk.builtin.lng.prototype['$r'] = function()
 {
     return new Sk.builtin.str(this.str$(10, true) + "L");
 };

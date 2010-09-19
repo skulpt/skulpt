@@ -17,11 +17,6 @@ Files = [
         ('support/closure-library/closure/goog/string/string.js', 'dist'),
         ('support/closure-library/closure/goog/debug/error.js', 'dist'),
         ('support/closure-library/closure/goog/asserts/asserts.js', 'dist'),
-        ('support/closure-library/closure/goog/array/array.js', 'dist'),
-        ('support/closure-library/closure/goog/math/math.js', 'dist'),
-        ('support/closure-library/closure/goog/math/coordinate.js', 'dist'),
-        ('support/closure-library/closure/goog/math/vec2.js', 'dist'),
-        ('support/closure-library/closure/goog/json/json.js', 'dist'),
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -41,7 +36,6 @@ Files = [
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',
-        #'src/wrapped_object.js',
 
         'src/tokenize.js',
         'gen/parse_tables.js',
@@ -51,15 +45,22 @@ Files = [
         'src/symtable.js',
         'src/compile.js',
         'src/import.js',
+        'src/builtindict.js',
         ("support/jsbeautify/beautify.js", 'test'),
         ]
 
 TestFiles = [
+        'support/closure-library/closure/goog/base.js',
+        'support/closure-library/closure/goog/deps.js',
+        'support/closure-library/closure/goog/math/math.js',
+        'support/closure-library/closure/goog/math/coordinate.js',
+        'support/closure-library/closure/goog/math/vec2.js',
+        'support/closure-library/closure/goog/json/json.js',
+        'support/jsbeautify/beautify.js',
         'test/sprintf.js',
         "test/json2.js",
         "test/test.js"
         ]
-DebugFiles = TestFiles[:-1]
 
 def isClean():
     out, err = Popen("hg status", shell=True, stdout=PIPE).communicate()
@@ -97,7 +98,7 @@ else:
 
 def test():
     """runs the unit tests."""
-    os.system("%s %s %s" % (
+    return os.system("%s %s %s" % (
         jsengine,
         ' '.join(getFileList('test')),
         ' '.join(TestFiles)))
@@ -283,9 +284,9 @@ def dist():
 
     label = getTip()
 
-    print ". Nuking old dist/"
-    os.system("rm -rf dist/")
-    if not os.path.exists("dist"): os.mkdir("dist")
+    #print ". Nuking old dist/"
+    #os.system("rm -rf dist/")
+    #if not os.path.exists("dist"): os.mkdir("dist")
 
     """
     print ". Writing combined version..."
@@ -308,28 +309,25 @@ def dist():
 
     #buildBrowserTests()
 
-    """
-    # run jslint on uncompressed
-    print ". Running JSLint on uncompressed..."
-    ret = os.system("python support/jslint/wrapper.py %s dist/linemap.txt" % uncompfn)
-    os.unlink("dist/linemap.txt")
-    if ret != 0:
-        print "JSLint complained."
-        raise SystemExit()
-    """
-
     # run tests on uncompressed
-    #print ". Running tests on uncompressed..."
-    #ret = os.system("%s %s %s" % (jsengine, ' '.join(getFileList('dist')), ' '.join(TestFiles)))
-    #if ret != 0:
-        #print "Tests failed on uncompressed version."
-        #raise SystemExit()
+    print ". Running tests on uncompressed..."
+    ret = test()
+    if ret != 0:
+        print "Tests failed on uncompressed version."
+        raise SystemExit()
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
+    # to disable asserts
+    # --define goog.DEBUG=false 
+    #
+    # to make a file that for ff plugin, not sure of format
+    # --create_source_map dist/srcmap.txt 
+    #
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
+    #
     if ret != 0:
         print "closure-compiler failed."
         raise SystemExit()
@@ -475,7 +473,7 @@ def upload():
         print "Couldn't upload."
         raise SystemExit()
 
-def run(fn, shell=""):
+def run(fn, shell="", opt=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -488,27 +486,21 @@ var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.syspath = ["%s"];
+Sk.configure({syspath:["%s"], read:read});
 Sk.importMain("%s", true);
 print("-----");
     """ % (fn, os.path.split(fn)[0], modname))
     f.close()
-    os.system("%s %s %s support/tmp/run.js" %
-            (jsengine,
-                shell,
-                ' '.join(getFileList('test'))))
+    if opt:
+        os.system("%s dist/skulpt.js support/tmp/run.js" % jsengine)
+    else:
+        os.system("%s %s %s support/tmp/run.js" %
+                (jsengine,
+                    shell,
+                    ' '.join(getFileList('test'))))
 
 def runopt(fn):
-    if not os.path.exists(fn):
-        print "%s doesn't exist" % fn
-        raise SystemExit()
-    f = open("support/tmp/run.js", "w")
-    f.write("""
-var input = read('%s');
-eval(Skulpt.compileStr('%s', input));
-    """ % (fn, fn))
-    f.close()
-    os.system(jsengine + " --nodebugger dist/skulpt.js support/tmp/run.js")
+    run(fn, "", True)
 
 def shell(fn):
     run(fn, "--shell")

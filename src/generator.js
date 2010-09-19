@@ -17,14 +17,14 @@ Sk.builtin.generator = function(code, globals, args, closure, closure2)
     this.func_code = code;
     this.func_globals = globals || null;
     this.gi$running = false;
-    this.gi$resumeat = 0;
-    this.gi$locals = {};
+    this['gi$resumeat'] = 0;
+    this['gi$locals'] = {};
     if (args.length > 0)
     {
         // store arguments into locals because they have to be maintained
         // too. 'fast' var lookups are locals in generator functions.
         for (var i = 0; i < code['co_varnames'].length; ++i)
-            this.gi$locals[code['co_varnames'][i]] = args[i];
+            this['gi$locals'][code['co_varnames'][i]] = args[i];
     }
     if (closure2 !== undefined)
     {
@@ -61,7 +61,7 @@ Sk.builtin.generator.prototype.tp$iternext = function()
     if (ret !== null)
     {
         // returns a pair: resume target and yielded value
-        this.gi$resumeat = ret[0];
+        this['gi$resumeat'] = ret[0];
         ret = ret[1];
     }
     else
@@ -73,14 +73,14 @@ Sk.builtin.generator.prototype.tp$iternext = function()
     return ret;
 };
 
-Sk.builtin.generator.prototype.next = new Sk.builtin.func(function(self)
+Sk.builtin.generator.prototype['next'] = new Sk.builtin.func(function(self)
 {
     return self.tp$iternext();
 });
 
 Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('generator', Sk.builtin.generator);
 
-Sk.builtin.generator.prototype.tp$repr = function()
+Sk.builtin.generator.prototype['$r'] = function()
 {
     return new Sk.builtin.str("<generator object " + this.func_code['co_name'].v + ">");
 };

@@ -47,12 +47,11 @@ Sk.builtin.type = function(name, bases, dict)
          */
         var klass = (function(args)
                 {
-                    if (args === Sk.$ctorhack) return this;
                     if (!(this instanceof klass)) return new klass(Array.prototype.slice.call(arguments, 0));
 
                     args = args || [];
                     goog.asserts.assert(Sk.builtin.dict !== undefined);
-                    this.inst$dict = new Sk.builtin.dict([]);
+                    this['$d'] = new Sk.builtin.dict([]);
 
                     var init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
                     if (init !== undefined)
@@ -73,10 +72,9 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
-        klass.prototype.tp$repr = function()
+        klass.prototype['$r'] = function()
         {
-            // todo; these should probably call tp$getattr directly, and it should return undef if there's none.
-            var reprf = Sk.builtin.getattr(this, new Sk.builtin.str("__repr__"), undefined);
+            var reprf = this.tp$getattr("__repr__");
             if (reprf !== undefined)
                 return Sk.misceval.apply(reprf, undefined, []);
             var mod = dict.__module__;
@@ -117,10 +115,10 @@ Sk.builtin.type = function(name, bases, dict)
             //print("building mro for", name);
             //for (var i = 0; i < bases.length; ++i)
                 //print("base[" + i + "]=" + bases[i].tp$name);
-            klass.inst$dict = new Sk.builtin.dict([]);
-            klass.inst$dict.mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
+            klass['$d'] = new Sk.builtin.dict([]);
+            klass['$d'].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
             var mro = Sk.builtin.type.buildMRO(klass);
-            klass.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
+            klass['$d'].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
             klass.tp$mro = mro;
             //print("mro result", Sk.builtin.repr(mro).v);
         }
@@ -154,7 +152,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
     goog.asserts.assert(t !== undefined);
     t.ob$type = Sk.builtin.type;
     t.tp$name = name;
-    t.tp$repr = function()
+    t['$r'] = function()
     {
         var mod = t.__module__;
         var cname = "";
@@ -169,7 +167,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
 
 Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
-Sk.builtin.type.tp$repr = function() { return new Sk.builtin.str("<type 'type'>"); };
+Sk.builtin.type['$r'] = function() { return new Sk.builtin.str("<type 'type'>"); };
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
 
@@ -189,10 +187,10 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
             // return f.call(descr, this, this.ob$type);
     }
 
-    if (this.inst$dict)
+    if (this['$d'])
     {
         //print("hi");
-        var res = this.inst$dict.mp$subscript(new Sk.builtin.str(name));
+        var res = this['$d'].mp$subscript(new Sk.builtin.str(name));
         //print(res);
         if (res !== undefined)
             return res;
@@ -209,7 +207,7 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
         return descr;
     }
 
-    throw new Sk.builtin.AttributeError("type object '" + this.tp$name + "' has no attribute '" + name + "'");
+    return undefined;
 };
 
 Sk.builtin.type.typeLookup = function(type, name)
@@ -226,7 +224,7 @@ Sk.builtin.type.typeLookup = function(type, name)
         var base = mro.v[i];
         if (base.hasOwnProperty(name))
             return base[name];
-        var res = base.inst$dict.mp$subscript(new Sk.builtin.str(name));
+        var res = base['$d'].mp$subscript(new Sk.builtin.str(name));
         if (res !== undefined)
             return res;
     }
@@ -299,9 +297,9 @@ Sk.builtin.type.buildMRO_ = function(klass)
     // MERGE(klass + mro(bases) + bases)
     var all = [ [klass] ];
 
-    //print("buildMRO for", klass.tp$name);
+    //Sk.debugout("buildMRO for", klass.tp$name);
 
-    var kbases = klass.inst$dict.mp$subscript(Sk.builtin.type.basesStr_);
+    var kbases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
     for (var i = 0; i < kbases.v.length; ++i)
         all.push(Sk.builtin.type.buildMRO_(kbases.v[i]));
 

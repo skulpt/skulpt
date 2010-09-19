@@ -125,41 +125,41 @@ Sk.misceval.richCompareBool = function(v, w, op)
             // right:reversed-top:left
             // yeah, a macro or 3 would be nice...
             if (op === 'Eq')
-                if (v.__eq__)
-                    return Sk.misceval.call(v.__eq__, undefined, v, w);
-                else if (w.__ne__)
-                    return Sk.misceval.call(w.__ne__, undefined, w, v);
+                if (v['__eq__'])
+                    return Sk.misceval.call(v['__eq__'], undefined, v, w);
+                else if (w['__ne__'])
+                    return Sk.misceval.call(w['__ne__'], undefined, w, v);
             else if (op === 'NotEq')
-                if (v.__ne__)
-                    return Sk.misceval.call(v.__ne__, undefined, v, w);
-                else if (w.__eq__)
-                    return Sk.misceval.call(w.__eq__, undefined, w, v);
+                if (v['__ne__'])
+                    return Sk.misceval.call(v['__ne__'], undefined, v, w);
+                else if (w['__eq__'])
+                    return Sk.misceval.call(w['__eq__'], undefined, w, v);
             else if (op === 'Gt')
-                if (v.__gt__)
-                    return Sk.misceval.call(v.__gt__, undefined, v, w);
-                else if (w.__lt__)
-                    return Sk.misceval.call(w.__lt__, undefined, w, v);
+                if (v['__gt__'])
+                    return Sk.misceval.call(v['__gt__'], undefined, v, w);
+                else if (w['__lt__'])
+                    return Sk.misceval.call(w['__lt__'], undefined, w, v);
             else if (op === 'Lt')
-                if (v.__lt__)
-                    return Sk.misceval.call(v.__lt__, undefined, v, w);
-                else if (w.__gt__)
-                    return Sk.misceval.call(w.__gt__, undefined, w, v);
+                if (v['__lt__'])
+                    return Sk.misceval.call(v['__lt__'], undefined, v, w);
+                else if (w['__gt__'])
+                    return Sk.misceval.call(w['__gt__'], undefined, w, v);
             else if (op === 'GtE')
-                if (v.__ge__)
-                    return Sk.misceval.call(v.__ge__, undefined, v, w);
-                else if (w.__le__)
-                    return Sk.misceval.call(w.__le__, undefined, w, v);
+                if (v['__ge__'])
+                    return Sk.misceval.call(v['__ge__'], undefined, v, w);
+                else if (w['__le__'])
+                    return Sk.misceval.call(w['__le__'], undefined, w, v);
             else if (op === 'LtE')
-                if (v.__le__)
-                    return Sk.misceval.call(v.__le__, undefined, v, w);
-                else if (w.__ge__)
-                    return Sk.misceval.call(w.__ge__, undefined, w, v);
+                if (v['__le__'])
+                    return Sk.misceval.call(v['__le__'], undefined, v, w);
+                else if (w['__ge__'])
+                    return Sk.misceval.call(w['__ge__'], undefined, w, v);
 
             // if those aren't defined, fallback on the __cmp__ method if it
             // exists
-            if (v.__cmp__)
+            if (v['__cmp__'])
             {
-                var ret = Sk.misceval.call(v.__cmp__, undefined, v, w);
+                var ret = Sk.misceval.call(v['__cmp__'], undefined, v, w);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret < 0;
@@ -167,10 +167,10 @@ Sk.misceval.richCompareBool = function(v, w, op)
                 else if (op === 'LtE') return ret <= 0;
                 else if (op === 'GtE') return ret >= 0;
             }
-            else if (w.__cmp__)
+            else if (w['__cmp__'])
             {
                 // note, flipped on return value and call
-                var ret = Sk.misceval.call(w.__cmp__, undefined, w, v);
+                var ret = Sk.misceval.call(w['__cmp__'], undefined, w, v);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret > 0;
@@ -201,10 +201,10 @@ Sk.misceval.objectRepr = function(v)
         return new Sk.builtin.str("False");
     else if (typeof v === "number")
         return new Sk.builtin.str("" + v);
-    else if (!v.tp$repr)
+    else if (!v['$r'])
         return new Sk.builtin.str("<" + v.tp$name + " object>");
     else
-        return v.tp$repr();
+        return v['$r']();
 };
 goog.exportSymbol("Sk.misceval.objectRepr", Sk.misceval.objectRepr);
 
@@ -248,7 +248,7 @@ Sk.misceval.loadname = function(name, other)
     var v = other[name];
     if (v !== undefined) return v;
 
-    var bi = Sk.builtin[name];
+    var bi = Sk.builtins[name];
     if (bi !== undefined) return bi;
 
     throw new Sk.builtin.NameError("name '" + name + "' is not defined");
@@ -345,62 +345,11 @@ Sk.misceval.apply = function(func, kw, args)
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
         // of this case.
+        // alternatively, put it to more use, and perhaps use
+        // descriptors to create builtin.func's in other places.
 
         goog.asserts.assert(kw === undefined);
-        /*
-        if (func.$isnative) // a closure function
-        {
-            // todo; for now, lame attempt to 'marshal' between python and js
-            //debugger;
-            for (var i = 0; i < args.length; ++i)
-            {
-                if (args[i].constructor === Sk.builtin.str)
-                    args[i] = args[i].v;
-                else if (args[i].constructor === Sk.builtin.wrappedObject)
-                    args[i] = args[i].inst$dict;
-            }
-            var ret;
-
-            // closure ctors don't return this, so we have to do magic to have
-            // them return the right thing.
-            if (func.$isctor)
-            { 
-                // have i mentioned in the last 15 minutes how non-orthogonal
-                // and ugly javascript is? raaaar
-                if (args.length === 0)
-                    ret = new func();
-                else if (args.length === 1)
-                    ret = new func(args[0]);
-                else if (args.length === 2)
-                    ret = new func(args[0], args[1]);
-                else if (args.length === 3)
-                    ret = new func(args[0], args[1], args[2]);
-                else if (args.length === 4)
-                    ret = new func(args[0], args[1], args[2], args[3]);
-                else if (args.length === 5)
-                    ret = new func(args[0], args[1], args[2], args[3], args[4]);
-                else if (args.length === 6)
-                    ret = new func(args[0], args[1], args[2], args[3], args[4], args[5]);
-                else if (args.length === 7)
-                    ret = new func(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-                else
-                    goog.asserts.assert("no constructor apply");
-            }
-            else
-            {
-                ret = func.apply(null, args);
-            }
-            // if it's native, we want to return something that has a
-            // tp$getattr. todo; need to do this for typeof ret === object,
-            // but callables need to be functions
-            return new Sk.builtin.wrappedObject(ret);
-        }
-        else
-        */
-        {
-            //debugger;
-            return func.apply(null, args);
-        }
+        return func.apply(null, args);
     }
     else
     {
@@ -452,7 +401,7 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
     func(globals, locals);
 
     // file's __name__ is class's __module__
-    locals.__module__ = globals.__name__;
+    locals.__module__ = globals['__name__'];
 
     var klass = Sk.misceval.call(meta, undefined, name, bases, locals);
     //print("class", klass, JSON.stringify(klass.prototype));

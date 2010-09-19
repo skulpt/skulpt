@@ -72,9 +72,11 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
     return this.func_code.apply(this.func_globals, args); 
 };
 
+//todo; investigate why the other doesn't work
+//Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
 Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new Sk.builtin.func(null, null));
 
-Sk.builtin.func.prototype.tp$repr = function()
+Sk.builtin.func.prototype['$r'] = function()
 {
     var name = (this.func_code && this.func_code['co_name'] && this.func_code['co_name'].v) || '<native JS>';
     return new Sk.builtin.str("<function " + name + ">");

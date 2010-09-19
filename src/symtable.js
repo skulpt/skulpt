@@ -849,7 +849,7 @@ Sk.dumpSymtab = function(st)
         var ret = [];
         for (var i = 0; i < l.length; ++i)
         {
-            ret.push(new Sk.builtin.str(l[i]).tp$repr().v);
+            ret.push(new Sk.builtin.str(l[i])['$r']().v);
         }
         return '[' + ret.join(', ') + ']';
     };

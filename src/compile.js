@@ -191,7 +191,7 @@ Compiler.prototype.ctupleorlist = function(e, data, tuporlist)
     {
         for (var i = 0; i < e.elts.length; ++i)
         {
-            this.vexpr(e.elts[i], data + ".mp$subscript(" + i + ")");
+            this.vexpr(e.elts[i], "Sk.abstr.objectGetItem(" + data + "," + i + ")");
         }
     }
     else if (e.ctx === Load)
@@ -201,7 +201,7 @@ Compiler.prototype.ctupleorlist = function(e, data, tuporlist)
         {
             items.push(this._gr('elem', this.vexpr(e.elts[i])));
         }
-        return this._gr('load'+tuporlist, "new Sk.builtin.", tuporlist, "([", items, "])");
+        return this._gr('load'+tuporlist, "new Sk.builtins['", tuporlist, "']([", items, "])");
     }
 };
 
@@ -215,7 +215,7 @@ Compiler.prototype.cdict = function(e)
         items.push(this.vexpr(e.keys[i]));
         items.push(v);
     }
-    return this._gr('loaddict', "new Sk.builtin.dict([", items, "])");
+    return this._gr('loaddict', "new Sk.builtins['dict']([", items, "])");
 };
 
 Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
@@ -226,12 +226,12 @@ Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
 
     var l = generators[genIndex];
     var toiter = this.vexpr(l.iter);
-    var iter = this._gr("iter", toiter, ".tp$iter()");
+    var iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
     this._jump(start);
     this.setBlock(start);
 
     // load targets
-    var nexti = this._gr('next', iter, ".tp$iternext()");
+    var nexti = this._gr('next', "Sk.abstr.iternext(", iter, ")");
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     var target = this.vexpr(l.target, nexti);
 
@@ -265,7 +265,7 @@ Compiler.prototype.clistcompgen = function(tmpname, generators, genIndex, elt)
 Compiler.prototype.clistcomp = function(e)
 {
     goog.asserts.assert(e instanceof ListComp);
-    var tmp = this._gr("_compr", "new Sk.builtin.list([])"); // note: _ is impt. for hack in name mangling (same as cpy)
+    var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
     return this.clistcompgen(tmp, e.generators, 0, e.elt);
 };
 
@@ -289,7 +289,7 @@ Compiler.prototype.ccompare = function(e)
     goog.asserts.assert(e.ops.length === 1 && e.comparators.length === 1, "todo; >1 compares");
 
     goog.asserts.assert(e.ops.length === e.comparators.length);
-    return this._gr('compare', "Sk.misceval.richCompareBool(", left, ",", this.vexpr(e.comparators[0]), ",'", e.ops[0]._astname, "')");
+    return this._gr('compare', "Sk.misceval.richCompareBool(", left, ",", this.vexpr(e.comparators[0]), ",'", e.ops[0].prototype._astname, "')");
 };
 
 Compiler.prototype.ccall = function(e)
@@ -346,7 +346,7 @@ Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
     var low = s.lower ? this.vexpr(s.lower) : 'null';
     var high = s.upper ? this.vexpr(s.upper) : 'null';
     var step = s.step ? this.vexpr(s.step) : 'null';
-    return this._gr('slice', "new Sk.builtin.slice(", low, ",", high, ",", step, ")");
+    return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
 
 Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
@@ -434,9 +434,9 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case BoolOp:
             return this.cboolop(e);
         case BinOp:
-            return this._gr('binop', "Sk.abstr.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op._astname, "')");
+            return this._gr('binop', "Sk.abstr.numberBinOp(", this.vexpr(e.left), ",", this.vexpr(e.right), ",'", e.op.prototype._astname, "')");
         case UnaryOp:
-            return this._gr('unaryop', "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op._astname, "')");
+            return this._gr('unaryop', "Sk.abstr.numberUnaryOp(", this.vexpr(e.operand), ",'", e.op.prototype._astname, "')");
         case Lambda:
             return this.clambda(e);
         case IfExp:
@@ -461,7 +461,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             goog.asserts.fail("unhandled Num type");
         case Str:
-            return this._gr('str', "new Sk.builtin.str(", e.s.tp$repr().v, ")");
+            return this._gr('str', "new Sk.builtins['str'](", e.s['$r']().v, ")");
         case Attribute:
             var val;
             if (e.ctx !== AugStore)
@@ -470,15 +470,15 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", val, ".tp$getattr(", e.attr.tp$repr().v, ")");
+                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",", e.attr['$r']().v, ")");
                 case AugStore:
                     out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
                     val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out(val, ".tp$setattr(", e.attr.tp$repr().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
                     out("}");
                     break;
                 case Store:
-                    out(val, ".tp$setattr(", e.attr.tp$repr().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
                     break;
                 case Del:
                     goog.asserts.fail("todo;");
@@ -542,20 +542,20 @@ Compiler.prototype.caugassign = function(s)
             var auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
             var aug = this.vexpr(auge);
             var val = this.vexpr(s.value);
-            var res = this._gr('inplbinopattr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op._astname, "')");
+            var res = this._gr('inplbinopattr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
             auge.ctx = AugStore;
             return this.vexpr(auge, res, e.value)
         case Subscript:
             var auge = new Subscript(e.value, e.slice, AugLoad, e.lineno, e.col_offset);
             var aug = this.vexpr(auge);
             var val = this.vexpr(s.value);
-            var res = this._gr('inplbinopsubscr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op._astname, "')");
+            var res = this._gr('inplbinopsubscr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
             auge.ctx = AugStore;
             return this.vexpr(auge, res, e.value)
         case Name:
             var to = this.nameop(e.id, Load);
             var val = this.vexpr(s.value);
-            var res = this._gr('inplbinop', "Sk.abstr.numberInplaceBinOp(", to, ",", val, ",'", s.op._astname, "')");
+            var res = this._gr('inplbinop', "Sk.abstr.numberInplaceBinOp(", to, ",", val, ",'", s.op.prototype._astname, "')");
             return this.nameop(e.id, Store, res);
         default:
             goog.asserts.fail("unhandled case in augassign");
@@ -748,17 +748,17 @@ Compiler.prototype.cfor = function(s)
         // if we're in a generator, we have to store the iterator to a local
         // so it's preserved (as we cross blocks here and assume it survives)
         iter = "$loc." + this.gensym("iter");
-        out(iter, "=", toiter, ".tp$iter();");
+        out(iter, "=Sk.abstr.iter(", toiter, ");");
     }
     else
-        iter = this._gr("iter", toiter, ".tp$iter()");
+        iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
 
     this._jump(start);
 
     this.setBlock(start);
 
     // load targets
-    var nexti = this._gr('next', iter, ".tp$iternext()");
+    var nexti = this._gr('next', "Sk.abstr.iternext(", iter, ")");
     this._jumpundef(nexti, cleanup); // todo; this should be handled by StopIteration
     var target = this.vexpr(s.target, nexti);
 
@@ -799,7 +799,7 @@ Compiler.prototype.cassert = function(s)
     var end = this.newBlock("end");
     this._jumptrue(test, end);
     // todo; exception handling
-    out("throw new Sk.builtin.AssertionError(", s.msg ? this.vexpr(s.msg) : "", ");");
+    out("throw new Sk.builtins['AssertionError'](", s.msg ? this.vexpr(s.msg) : "", ");");
     this.setBlock(end);
 };
 
@@ -822,7 +822,7 @@ Compiler.prototype.cimportas = function(name, asname, mod)
         {
             dotLoc = src.indexOf(".");
             var attr = dotLoc !== -1 ? src.substr(0, dotLoc) : src;
-            cur = this._gr('lattr', cur, ".tp$getattr('", attr, "')");
+            cur = this._gr('lattr', "Sk.abstr.gattr(", cur, ",'", attr, "')");
             src = src.substr(dotLoc + 1);
         }
     }
@@ -835,7 +835,7 @@ Compiler.prototype.cimport = function(s)
     for (var i = 0; i < n; ++i)
     {
         var alias = s.names[i];
-        var mod = this._gr('module', "Sk.builtin.__import__(", alias.name.tp$repr().v, ",$gbl,$loc,[])");
+        var mod = this._gr('module', "Sk.builtin.__import__(", alias.name['$r']().v, ",$gbl,$loc,[])");
 
         if (alias.asname)
         {
@@ -857,8 +857,8 @@ Compiler.prototype.cfromimport = function(s)
     var n = s.names.length;
     var names = [];
     for (var i = 0; i < n; ++i)
-        names[i] = s.names[i].name.tp$repr().v;
-    var mod = this._gr('module', "Sk.builtin.__import__(", s.module.tp$repr().v, ",$gbl,$loc,[", names, "])");
+        names[i] = s.names[i].name['$r']().v;
+    var mod = this._gr('module', "Sk.builtin.__import__(", s.module['$r']().v, ",$gbl,$loc,[", names, "])");
     for (var i = 0; i < n; ++i)
     {
         var alias = s.names[i];
@@ -869,7 +869,7 @@ Compiler.prototype.cfromimport = function(s)
             return;
         }
 
-        var got = this._gr('item', mod, ".tp$getattr(", alias.name.tp$repr().v, ")");
+        var got = this._gr('item', "Sk.abstr.gattr(", mod, ",", alias.name['$r']().v, ")");
         var storeName = alias.name;
         if (alias.asname)
             storeName = alias.asname;
@@ -1068,11 +1068,11 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     }
     if (isGenerator)
         if (args && args.args.length > 0)
-            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtin.generator(", scopename, ",$gbl,$origargs", frees, ");})");
+            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");})");
         else
-            return this._gr("gener", "(function(){return new Sk.builtin.generator(", scopename, ",$gbl,[]", frees, ");})");
+            return this._gr("gener", "(function(){return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");})");
     else
-        return this._gr("funcobj", "new Sk.builtin.func(", scopename, ",$gbl", frees ,")");
+        return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees ,")");
 };
 
 Compiler.prototype.cfunction = function(s)
@@ -1118,13 +1118,13 @@ Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
     {
         var toiter = this.vexpr(ge.iter);
         iter = "$loc." + this.gensym("iter");
-        out(iter, "=", toiter, ".tp$iter();");
+        out(iter, "=", "Sk.abstr.iter(", toiter, ");");
     }
     this._jump(start);
     this.setBlock(start);
 
     // load targets
-    var nexti = this._gr('next', iter, ".tp$iternext()");
+    var nexti = this._gr('next', "Sk.abstr.iternext(", iter, ")");
     this._jumpundef(nexti, end); // todo; this should be handled by StopIteration
     var target = this.vexpr(ge.target, nexti);
 
@@ -1169,7 +1169,7 @@ Compiler.prototype.cgenexp = function(e)
     var gener = this._gr("gener", gen, "()");
     // stuff the outermost iterator into the generator after evaluating it
     // outside of the function. it's retrieved by the fixed name above.
-    out(gener, ".gi$locals.$iter0=", this.vexpr(e.generators[0].iter), ".tp$iter();");
+    out(gener, ".gi$locals.$iter0=Sk.abstr.iter(", this.vexpr(e.generators[0].iter), ");");
     return gener;
 };
 
@@ -1205,7 +1205,7 @@ Compiler.prototype.cclass = function(s)
     this.exitScope();
 
     // todo; metaclass
-    var wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name.tp$repr().v, ",[", bases, "])");
+    var wrapped = this._gr("built", "Sk.misceval.buildClass($gbl,", scopename, ",", s.name['$r']().v, ",[", bases, "])");
 
     // store our new class under the right name
     this.nameop(s.name, Store, wrapped);
@@ -1480,7 +1480,7 @@ Compiler.prototype.exitScope = function()
         this.u.activateScope();
 
     if (prev.name.v !== "<module>") // todo; hacky
-        out(prev.scopename, ".co_name=new Sk.builtin.str(", prev.name.tp$repr().v, ");");
+        out(prev.scopename, ".co_name=new Sk.builtins['str'](", prev.name['$r']().v, ");");
 };
 
 Compiler.prototype.cbody = function(stmts)
@@ -1499,7 +1499,7 @@ Compiler.prototype.cprint = function(s)
     var n = s.values.length;
     // todo; dest disabled
     for (var i = 0; i < n; ++i)
-        out('Sk.misceval.print_(', /*dest, ',',*/ "new Sk.builtin.str(", this.vexpr(s.values[i]), ').v);');
+        out('Sk.misceval.print_(', /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
         out('Sk.misceval.print_(', /*dest, ',*/ '"\\n");');
 };

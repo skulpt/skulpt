@@ -12,7 +12,6 @@ Sk.builtin.range = function(start, stop, step)
     s.sssiter$(0, function(i) { ret.push(i); });
     return new Sk.builtin.list(ret);
 };
-goog.exportSymbol("Sk.builtin.range", Sk.builtin.range);
 
 Sk.builtin.len = function(item)
 {
@@ -24,7 +23,6 @@ Sk.builtin.len = function(item)
 
     throw new Sk.builtin.TypeError("object of type '" + item.tp$name + "' has no len()");
 };
-goog.exportSymbol("Sk.builtin.len", Sk.builtin.len);
 
 Sk.builtin.min = function min()
 {
@@ -37,7 +35,6 @@ Sk.builtin.min = function min()
     }
     return lowest;
 };
-goog.exportSymbol("Sk.builtin.min", Sk.builtin.min);
 
 Sk.builtin.max = function max()
 {
@@ -50,13 +47,11 @@ Sk.builtin.max = function max()
     }
     return highest;
 };
-goog.exportSymbol("Sk.builtin.max", Sk.builtin.max);
 
 Sk.builtin.abs = function abs(x)
 {
     return Math.abs(x);
 };
-goog.exportSymbol("Sk.builtin.abs", Sk.builtin.abs);
 
 Sk.builtin.ord = function ord(x)
 {
@@ -66,7 +61,6 @@ Sk.builtin.ord = function ord(x)
     }
     return (x.v).charCodeAt(0);
 };
-goog.exportSymbol("Sk.builtin.ord", Sk.builtin.ord);
 
 Sk.builtin.chr = function chr(x)
 {
@@ -76,7 +70,6 @@ Sk.builtin.chr = function chr(x)
     }
     return new Sk.builtin.str(String.fromCharCode(x));
 };
-goog.exportSymbol("Sk.builtin.chr", Sk.builtin.chr);
 
 Sk.builtin.dir = function dir(x)
 {
@@ -94,7 +87,6 @@ Sk.builtin.dir = function dir(x)
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new Sk.builtin.list(names);
 };
-goog.exportSymbol("Sk.builtin.dir", Sk.builtin.dir);
 
 Sk.builtin.dir.slotNameToRichName = function(k)
 {
@@ -106,7 +98,6 @@ Sk.builtin.repr = function repr(x)
 {
     return Sk.misceval.objectRepr(x);
 };
-goog.exportSymbol("Sk.builtin.repr", Sk.builtin.repr);
 
 Sk.builtin.open = function open(filename, mode, bufsize)
 {
@@ -114,7 +105,6 @@ Sk.builtin.open = function open(filename, mode, bufsize)
     if (mode !== "r" && mode !== "rb") throw "todo; haven't implemented non-read opens";
     return new Sk.builtin.file(filename, mode, bufsize);
 };
-goog.exportSymbol("Sk.builtin.open", Sk.builtin.open);
 
 Sk.builtin.isinstance = function(obj, type)
 {
@@ -133,8 +123,8 @@ Sk.builtin.isinstance = function(obj, type)
     var issubclass = function(klass, base)
     {
         if (klass === base) return true;
-        if (klass.inst$dict === undefined) return false;
-        var bases = klass.inst$dict.mp$subscript(Sk.builtin.type.basesStr_);
+        if (klass['$d'] === undefined) return false;
+        var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
         for (var i = 0; i < bases.v.length; ++i)
         {
             if (issubclass(bases.v[i], base))
@@ -145,7 +135,6 @@ Sk.builtin.isinstance = function(obj, type)
 
     return issubclass(obj.ob$type, type);
 };
-goog.exportSymbol("Sk.builtin.isinstance", Sk.builtin.isinstance);
 
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
@@ -170,22 +159,11 @@ Sk.builtin.hash = function hash(value)
 
     // todo; throw properly for unhashable types
 };
-goog.exportSymbol("Sk.builtin.hash", Sk.builtin.hash);
 
 Sk.builtin.getattr = function(obj, name, default_)
 {
-    // todo; try/catch is pretty awful. redo attr stuff to return undef and
-    // throw at an outer scope as necessary rather than calling tp$getattr
-    // directly. 
-    try
-    {
-        return obj.tp$getattr(name.v, default_);
-    }
-    catch (e)
-    {
-        if (e instanceof Sk.builtin.AttributeError)
-            return default_;
-        throw e;
-    }
+    var ret = obj.tp$getattr(name.v);
+    if (ret === undefined)
+        return default_;
+    return ret;
 };
-goog.exportSymbol("Sk.builtin.getattr", Sk.builtin.getattr);

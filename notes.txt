@@ -1,4 +1,3 @@
-
 todo:
 object genericgetattr is wrong. should be looking up bases, not types. dummy
 make a type-name-getting function, rather than obj.tp$name so that number works (and it'd be a good error checking place too)
@@ -8,8 +7,31 @@ __builtin__ needs work
 test for __bases__ and __mro__ of list/str/dict/etc
 IfExp: a if a < b else b
 why aren't the methods in .js's actually method? (have to pass 'self' to loadIdentity)
-need to make a build mode that compiles all py, removes all goog.exportSymbol, then compiles all resulting .js for final dist type builds
+final mode:
+    make a build mode that compiles all py
+    removes all goog.exportSymbol
+    then compiles all resulting .js for final dist type builds
+    generated code will make closure v unhappy right now though
+builtinslookup dict for closure
 
+ah, damnit. closure is kind of a pain in the ass
+
+    - trying to model type/object, so instances are types but types are
+    also types, and type itself is also a type. but closure flattens
+    everything that isn't a prototype. so Sk.builtin.object.inst$dict
+    is getting flattened to just 'Sa', which means of course that when
+    some generic code tries to look up something in an instance, or class,
+    or the type type, there's no inst$dict.
+
+    - maybe putting a non-function (i.e. inst$dict) in the .prototype,
+    and then removing it from actual instances with a delete in the
+    constructor?
+
+    - or, switch to using ["$d"] or something instead of inst$dict. kind
+    of sucks, but probably the easiest way.
+
+    - blurgh. same for tp$repr, tp$name, ob$type just because of 'type'
+    object. shit-tay. ['$r'] ['$n'] ['$t'] :(
 
 notes:
 

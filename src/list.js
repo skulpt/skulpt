@@ -24,9 +24,10 @@ Sk.builtin.list = function(L)
             throw new Sk.builtin.ValueError("expecting Array or iterable");
     }
 
+    this["v"] = this.v;
     return this;
 };
-goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
+
 
 Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('list', Sk.builtin.list);
 
@@ -76,7 +77,7 @@ Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 };
 
 Sk.builtin.list.prototype.tp$name = "list";
-Sk.builtin.list.prototype.tp$repr = function()
+Sk.builtin.list.prototype['$r'] = function()
 {
     var ret = [];
     for (var it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
@@ -236,27 +237,27 @@ Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index
             return Sk.builtin.list.prototype.list_subscript_.call(self, index);
         });
 //Sk.builtin.list.prototype.__reversed__ = todo;
-Sk.builtin.list.prototype.append = new Sk.builtin.func(function(self, item)
+Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
 {
     self.v.push(item);
     return null;
 });
 
-Sk.builtin.list.prototype.insert = new Sk.builtin.func(function(self, i, x)
+Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
 {
     if (i < 0) i = 0;
     else if (i > self.v.length) i = self.v.length - 1;
     self.v.splice(i, 0, x);
 });
 
-Sk.builtin.list.prototype.extend = new Sk.builtin.func(function(self, b)
+Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
 {
     for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
         self.v.push(i);
     return null;
 });
 
-Sk.builtin.list.prototype.pop = new Sk.builtin.func(function(self, i)
+Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
 {
     if (i === undefined) i = self.v.length - 1;
     var ret = self.v[i];
@@ -265,7 +266,7 @@ Sk.builtin.list.prototype.pop = new Sk.builtin.func(function(self, i)
 });
 
 //Sk.builtin.list.prototype.remove = todo;
-Sk.builtin.list.prototype.index = new Sk.builtin.func(function(self, item)
+Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
 {
     var len = self.v.length;
     var obj = self.v;
@@ -279,7 +280,7 @@ Sk.builtin.list.prototype.index = new Sk.builtin.func(function(self, item)
 
 //Sk.builtin.list.prototype.count = todo;
 //Sk.builtin.list.prototype.reverse = todo;
-Sk.builtin.list.prototype.sort = new Sk.builtin.func(function(self)
+Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self)
 {
     // todo; cmp, key, rev
     // todo; totally wrong except for numbers

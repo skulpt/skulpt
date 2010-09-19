@@ -297,8 +297,8 @@ class FieldNamesVisitor(PickleVisitor):
 
     def visitProduct(self, prod, name):
         if prod.fields:
-            self.emit('%s._astname = "%s";' % (name, cleanName(name)), 0)
-            self.emit("%s._fields = [" % name,0)
+            self.emit('%s.prototype._astname = "%s";' % (name, cleanName(name)), 0)
+            self.emit("%s.prototype._fields = [" % name,0)
             c = 0
             for f in prod.fields:
                 c += 1
@@ -308,13 +308,15 @@ class FieldNamesVisitor(PickleVisitor):
     def visitSum(self, sum, name):
         if is_simple(sum):
             for t in sum.types:
-                self.emit('%s._astname = "%s";' % (t.name, cleanName(t.name)), 0)
-        for t in sum.types:
-            self.visitConstructor(t, name)
+                self.emit('%s.prototype._astname = "%s";' % (t.name, cleanName(t.name)), 0)
+                self.emit('%s.prototype._isenum = true;' % (t.name), 0)
+        else:
+            for t in sum.types:
+                self.visitConstructor(t, name)
 
     def visitConstructor(self, cons, name):
-        self.emit('%s._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
-        self.emit("%s._fields = [" % cons.name, 0)
+        self.emit('%s.prototype._astname = "%s";' % (cons.name, cleanName(cons.name)), 0)
+        self.emit("%s.prototype._fields = [" % cons.name, 0)
         if cons.fields:
             c = 0
             for t in cons.fields:

@@ -25,7 +25,7 @@ Sk.importSearchPathForName = function(name, ext, failok)
             try {
                 // todo; lame, this is the only way we have to test existence right now
                 Sk.read(fn);
-                //print("import search, found at", name, "type", ext, "at", fn);
+                //Sk.debugout("import search, found at", name, "type", ext, "at", fn);
                 return fn;
             } catch (e) {};
         }
@@ -33,49 +33,8 @@ Sk.importSearchPathForName = function(name, ext, failok)
    
     if (!failok)
         throw new Sk.builtin.ImportError("No module named " + name);
-    //print("import search, nothing found, but failure was ok");
+    //Sk.debugout("import search, nothing found, but failure was ok");
 };
-
-Sk.loadClosureModule = function(name, filename)
-{
-    var rawSrc = "goog.require('" + name + "');";
-    if (document !== undefined)
-    {
-        //goog.global.eval(rawSrc);
-        rawSrc = "";
-    }
-
-    // we can't just return the closure object as the locals dict because it
-    // gets assigned to inst$dict. When a submodule or subpackage is imported,
-    // it'll be assigned to the parent module under that name, which would
-    // overwrite itself. For example, if we returned the 'goog' object when
-    // importing goog (as it's an object that contains all the locals), then
-    // when we import goog.json, the goog.json-Sk.module would be assigned
-    // over top of goog.json (the JS object), which means that goog.json
-    // wouldn't be accessible from JS any more (only via tp$getattr). So, we
-    // do a shallow copy of the 'module' here to create a new object for the
-    // module's inst$dict.
-    var wrap = "\n" +
-        "var $closuremodule = function(name) { /*" + name + "*/" +
-        "var $loc = {};\n" +
-        "for (var nat in " + name + "){" +
-            "$loc[nat] = " + name + "[nat];\n" +
-            "if(typeof $loc[nat] === 'function'){\n" +
-                "$loc[nat].$isnative=true;\n" +
-        "}}" +
-        "return $loc;\n" +
-        "};";
-
-        print(wrap);
-
-    return { funcname: "$closuremodule", code: rawSrc + wrap };
-};
-
-if (COMPILED)
-{
-    var print = function(x) {};
-    var js_beautify = function(x) {};
-}
 
 Sk.doOneTimeInitialization = function()
 {
@@ -83,9 +42,9 @@ Sk.doOneTimeInitialization = function()
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
-    Sk.builtin.object.inst$dict = new Sk.builtin.dict([]);
-    Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
-    Sk.builtin.object.inst$dict.mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+    Sk.builtin.object['$d'] = new Sk.builtin.dict([]);
+    Sk.builtin.object['$d'].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
+    Sk.builtin.object['$d'].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
 };
 
 /**
@@ -109,6 +68,11 @@ Sk.importSetUpPath = function()
 
     }
 };
+
+if (COMPILED)
+{
+    var js_beautify = function(x) { return x; };
+}
 
 /**
  * @param {string} name name of module to import
@@ -184,11 +148,11 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
     module.$js = co.code; // todo; only in DEBUG?
     var finalcode = co.code;
 
-    if (!COMPILED)
+    //if (!COMPILED)
     {
         if (dumpJS)
         {
-            print("-----");
+            Sk.debugout("-----");
             var withLineNumbers = function(code)
             {
                 var beaut = js_beautify(co.code);
@@ -203,7 +167,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
                 return lines.join("\n");
             };
             finalcode = withLineNumbers(co.code);
-            print(finalcode);
+            Sk.debugout(finalcode);
         }
     }
 
@@ -214,10 +178,10 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
     // pass in __name__ so the module can set it (so that the code can access
     // it), but also set it after we're done so that builtins don't have to
     // remember to do it.
-    if (!modlocs.__name__)
-        modlocs.__name__ = new Sk.builtin.str(modname);
+    if (!modlocs['__name__'])
+        modlocs['__name__'] = new Sk.builtin.str(modname);
 
-    module.inst$dict = modlocs;
+    module['$d'] = modlocs;
 
     if (toReturn)
     {

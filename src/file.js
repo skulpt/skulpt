@@ -13,7 +13,7 @@ Sk.builtin.file = function(name, mode, buffering)
     this.pos$ = 0;
     return this;
 };
-Sk.builtin.file.prototype.tp$repr = function()
+Sk.builtin.file.prototype['$r'] = function()
 {
     return new Sk.builtin.str("<"
         + (this.closed ? "closed" : "open")

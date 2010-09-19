@@ -12,7 +12,7 @@ function dump_tokens(fn, input)
 {
     var uneval = function(t)
     {
-        return new Sk.builtin.repr(new Sk.builtin.str(t)).v;
+        return new Sk.builtins['repr'](new Sk.builtins['str'](t)).v;
     };
     var ret = '',
         lines = input.split("\n"),
@@ -62,7 +62,7 @@ function testTokenize(name)
     }
     catch (e)
     {
-        got += Sk.builtin.str(e).v + "\n";
+        got += Sk.builtins['str'](e).v + "\n";
     }
     if (expect !== got)
     {
@@ -129,6 +129,9 @@ function testTransform(name)
     var cst = Sk.parse(name + ".py", input);
     var got = Sk.astDump(Sk.astFromParse(cst)) + "\n";
 
+    //print(got);
+    //print(Sk.parseTreeDump(cst));
+
     if (expect !== got)
     {
         print("FAILED: (" + name + ".py)\n-----");
@@ -138,7 +141,7 @@ function testTransform(name)
         print("-----\nWANTED:\n-----");
         print(expect);
         //print("-----\nCST:\n-----");
-        //print(parseTestDump(cst));
+        //print(Sk.parseTestDump(cst));
         transformfail += 1;
     }
     else
@@ -199,6 +202,7 @@ function testRun(name, nocatch)
     Sk.configure({
         output: function(str) { got += str; },
         sysargv: [ name + '.py' ],
+        read: read,
         syspath: [ justpath ]
     });
 
@@ -207,11 +211,12 @@ function testRun(name, nocatch)
     try { expectalt = read(name + ".py.real.alt"); }
     catch (e) {}
     var module;
+    //nocatch=true;
     if (nocatch)
     {
         var justname = name.substr(name.lastIndexOf('/') + 1);
         module = Sk.importMain(justname);
-        print(got);
+        //print(got);
     }
     else
     {
@@ -229,7 +234,7 @@ function testRun(name, nocatch)
             }
             else
             {
-                got = "EXCEPTION: " + Sk.builtin.str(e).v + "\n";
+                got = "EXCEPTION: " + Sk.builtins['str'](e).v + "\n";
             }
         }
         if (expect !== got && (expectalt !== undefined || expectalt !== got))
@@ -240,7 +245,7 @@ function testRun(name, nocatch)
             print(got);
             print("-----\nWANTED:\n-----");
             print(expect);
-            if (module)
+            if (module && module.$js)
             {
                 print("-----\nJS:\n-----");
                 var beaut = js_beautify(module.$js);
@@ -313,34 +318,28 @@ function testsMain()
 {
     var i;
 
-    // these use internal symbols so they can't run when fully
-    // compiled/minimized
-    //if (0)
+    for (i = 0; i <= 100; i += 1)
     {
-        for (i = 0; i <= 100; i += 1)
-        {
-            testTokenize(sprintf("test/tokenize/t%02d", i));
-        }
-        print(sprintf("tokenize: %d/%d", tokenizepass, tokenizepass + tokenizefail));
-
-        for (i = 0; i <= 10; i += 1)
-        {
-            testParse(sprintf("test/parse/t%02d", i));
-        }
-        print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
-
-        for (i = 0; i <= 300; ++i)
-        {
-            testTransform(sprintf("test/run/t%02d", i));
-        }
-        print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
-
-        for (i = 0; i <= 300; ++i)
-        {
-            testSymtab(sprintf("test/run/t%02d", i));
-        }
-        print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
+        testTokenize(sprintf("test/tokenize/t%02d", i));
     }
+    print(sprintf("tokenize: %d/%d", tokenizepass, tokenizepass + tokenizefail));
+
+    for (i = 0; i <= 10; i += 1)
+    {
+        testParse(sprintf("test/parse/t%02d", i));
+    }
+    print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
+
+    for (i = 0; i <= 300; ++i)
+    {
+        testTransform(sprintf("test/run/t%02d", i));
+    }
+    print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
+    for (i = 0; i <= 300; ++i)
+    {
+        testSymtab(sprintf("test/run/t%02d", i));
+    }
+    print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
 
     for (i = 0; i <= 300; ++i)
     {

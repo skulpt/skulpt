@@ -146,7 +146,7 @@ OUTERWHILE:
 Parser.prototype.classify = function(type, value, context)
 {
     var ilabel;
-    if (type === Sk.Tokenizer.T_NAME)
+    if (type === Sk.Tokenizer.Tokens.T_NAME)
     {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
@@ -251,14 +251,18 @@ function makeParser(filename, style)
 {
     if (style === undefined) style = "file_input";
     var p = new Parser(Sk.ParseTables);
-    p.setup(Sk.ParseTables.sym[style]);
+    // for closure's benefit
+    if (style === "file_input")
+        p.setup(Sk.ParseTables.sym.file_input);
+    else
+        goog.asserts.fail("todo;");
     var curIndex = 0;
     var lineno = 1;
     var column = 0;
     var prefix = "";
-    var T_COMMENT = Sk.Tokenizer.T_COMMENT;
-    var T_NL = Sk.Tokenizer.T_NL;
-    var T_OP = Sk.Tokenizer.T_OP;
+    var T_COMMENT = Sk.Tokenizer.Tokens.T_COMMENT;
+    var T_NL = Sk.Tokenizer.Tokens.T_NL;
+    var T_OP = Sk.Tokenizer.Tokens.T_OP;
     var tokenizer = new Sk.Tokenizer(filename, style === "single_input", function(type, value, start, end, line)
             {
                 //print(JSON.stringify([type, value, start, end, line]));
@@ -336,7 +340,7 @@ Sk.parseTreeDump = function parseTreeDump(n, indent)
     }
     else
     {
-        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value).tp$repr().v + "\n";
+        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)['$r']().v + "\n";
     }
     return ret;
 };

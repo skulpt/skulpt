@@ -9,7 +9,7 @@
 //
 
 var SYM = Sk.ParseTables.sym;
-var TOK = Sk.Tokenizer;
+var TOK = Sk.Tokenizer.Tokens;
 
 /** @constructor */
 function Compiling(encoding, filename)
@@ -1942,15 +1942,18 @@ Sk.astDump = function(node)
         {
             return indent+"None";
         }
-        else if (node.constructor._astname !== undefined)
+        else if (node.prototype && node.prototype._astname !== undefined && node.prototype._isenum)
         {
-            var nctor = node.constructor;
-            var namelen = spaces(nctor._astname.length + 1);
+            return indent + node.prototype._astname + "()";
+        }
+        else if (node._astname !== undefined)
+        {
+            var namelen = spaces(node._astname.length + 1);
             var fields = [];
-            for (var i = 0; i < nctor._fields.length; i += 2) // iter_fields
+            for (var i = 0; i < node._fields.length; i += 2) // iter_fields
             {
-                var a = nctor._fields[i]; // field name
-                var b = nctor._fields[i + 1](node); // field getter func
+                var a = node._fields[i]; // field name
+                var b = node._fields[i + 1](node); // field getter func
                 var fieldlen = spaces(a.length + 1);
                 fields.push([a, _format(b, indent + namelen + fieldlen)]);
             }
@@ -1961,14 +1964,11 @@ Sk.astDump = function(node)
                 attrs.push(field[0] + "=" + field[1].replace(/^\s+/, ''));
             }
             var fieldstr = attrs.join(',\n' + indent + namelen);
-            return indent + nctor._astname + "(" + fieldstr + ")";
-        }
-        else if (node._astname !== undefined) // an 'enumeration' node
-        {
-            return indent + node._astname + "()";
+            return indent + node._astname + "(" + fieldstr + ")";
         }
         else if (goog.isArrayLike(node))
         {
+            //Sk.debugout("arr", node.length);
             var elems = [];
             for (var i = 0; i < node.length; ++i)
             {
@@ -1984,7 +1984,7 @@ Sk.astDump = function(node)
             if (node === true) ret = "True";
             else if (node === false) ret = "False";
             else if (node instanceof Sk.builtin.lng) ret = node.tp$str().v;
-            else if (node instanceof Sk.builtin.str) ret = node.tp$repr().v;
+            else if (node instanceof Sk.builtin.str) ret = node['$r']().v;
             else ret = "" + node;
             return indent + ret;
         }

@@ -17,7 +17,6 @@ Sk.builtin.dict = function dict(L)
 
     return this;
 };
-goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('dict', Sk.builtin.dict);
 
@@ -59,7 +58,7 @@ Sk.builtin.dict.prototype.tp$iter = function()
         if (this.hasOwnProperty(k))
         {
             var i = this[k];
-            if (i && i.hasOwnProperty('lhs')) // skip internal stuff. todo; merge pyobj and this
+            if (i && i.lhs !== undefined) // skip internal stuff. todo; merge pyobj and this
             {
                 allkeys.push(k);
             }
@@ -83,7 +82,7 @@ Sk.builtin.dict.prototype.tp$iter = function()
     return ret;
 };
 
-Sk.builtin.dict.prototype.tp$repr = function()
+Sk.builtin.dict.prototype['$r'] = function()
 {
     var ret = [];
     for (var iter = this.tp$iter(), k = iter.tp$iternext();
@@ -105,7 +104,7 @@ Sk.builtin.dict.prototype.mp$length = function() { return this.size; };
 
 Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
-Sk.builtin.dict.prototype.get = new Sk.builtin.func(function(self, k, d)
+Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 {
     var ret = self.mp$subscript(k);
     if (ret !== undefined) return ret;

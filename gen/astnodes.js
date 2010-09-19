@@ -716,415 +716,347 @@ function alias(/* {identifier} */ name, /* {identifier} */ asname)
 }
 
 
-Module._astname = "Module";
-Module._fields = [
+Module.prototype._astname = "Module";
+Module.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Interactive._astname = "Interactive";
-Interactive._fields = [
+Interactive.prototype._astname = "Interactive";
+Interactive.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Expression._astname = "Expression";
-Expression._fields = [
+Expression.prototype._astname = "Expression";
+Expression.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Suite._astname = "Suite";
-Suite._fields = [
+Suite.prototype._astname = "Suite";
+Suite.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-FunctionDef._astname = "FunctionDef";
-FunctionDef._fields = [
+FunctionDef.prototype._astname = "FunctionDef";
+FunctionDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "args", function(n) { return n.args; },
     "body", function(n) { return n.body; },
     "decorator_list", function(n) { return n.decorator_list; }
 ];
-ClassDef._astname = "ClassDef";
-ClassDef._fields = [
+ClassDef.prototype._astname = "ClassDef";
+ClassDef.prototype._fields = [
     "name", function(n) { return n.name; },
     "bases", function(n) { return n.bases; },
     "body", function(n) { return n.body; },
     "decorator_list", function(n) { return n.decorator_list; }
 ];
-Return_._astname = "Return";
-Return_._fields = [
+Return_.prototype._astname = "Return";
+Return_.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Delete_._astname = "Delete";
-Delete_._fields = [
+Delete_.prototype._astname = "Delete";
+Delete_.prototype._fields = [
     "targets", function(n) { return n.targets; }
 ];
-Assign._astname = "Assign";
-Assign._fields = [
+Assign.prototype._astname = "Assign";
+Assign.prototype._fields = [
     "targets", function(n) { return n.targets; },
     "value", function(n) { return n.value; }
 ];
-AugAssign._astname = "AugAssign";
-AugAssign._fields = [
+AugAssign.prototype._astname = "AugAssign";
+AugAssign.prototype._fields = [
     "target", function(n) { return n.target; },
     "op", function(n) { return n.op; },
     "value", function(n) { return n.value; }
 ];
-Print._astname = "Print";
-Print._fields = [
+Print.prototype._astname = "Print";
+Print.prototype._fields = [
     "dest", function(n) { return n.dest; },
     "values", function(n) { return n.values; },
     "nl", function(n) { return n.nl; }
 ];
-For_._astname = "For";
-For_._fields = [
+For_.prototype._astname = "For";
+For_.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-While_._astname = "While";
-While_._fields = [
+While_.prototype._astname = "While";
+While_.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-If_._astname = "If";
-If_._fields = [
+If_.prototype._astname = "If";
+If_.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-With_._astname = "With";
-With_._fields = [
+With_.prototype._astname = "With";
+With_.prototype._fields = [
     "context_expr", function(n) { return n.context_expr; },
     "optional_vars", function(n) { return n.optional_vars; },
     "body", function(n) { return n.body; }
 ];
-Raise._astname = "Raise";
-Raise._fields = [
+Raise.prototype._astname = "Raise";
+Raise.prototype._fields = [
     "type", function(n) { return n.type; },
     "inst", function(n) { return n.inst; },
     "tback", function(n) { return n.tback; }
 ];
-TryExcept._astname = "TryExcept";
-TryExcept._fields = [
+TryExcept.prototype._astname = "TryExcept";
+TryExcept.prototype._fields = [
     "body", function(n) { return n.body; },
     "handlers", function(n) { return n.handlers; },
     "orelse", function(n) { return n.orelse; }
 ];
-TryFinally._astname = "TryFinally";
-TryFinally._fields = [
+TryFinally.prototype._astname = "TryFinally";
+TryFinally.prototype._fields = [
     "body", function(n) { return n.body; },
     "finalbody", function(n) { return n.finalbody; }
 ];
-Assert._astname = "Assert";
-Assert._fields = [
+Assert.prototype._astname = "Assert";
+Assert.prototype._fields = [
     "test", function(n) { return n.test; },
     "msg", function(n) { return n.msg; }
 ];
-Import_._astname = "Import";
-Import_._fields = [
+Import_.prototype._astname = "Import";
+Import_.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
-ImportFrom._astname = "ImportFrom";
-ImportFrom._fields = [
+ImportFrom.prototype._astname = "ImportFrom";
+ImportFrom.prototype._fields = [
     "module", function(n) { return n.module; },
     "names", function(n) { return n.names; },
     "level", function(n) { return n.level; }
 ];
-Exec._astname = "Exec";
-Exec._fields = [
+Exec.prototype._astname = "Exec";
+Exec.prototype._fields = [
     "body", function(n) { return n.body; },
     "globals", function(n) { return n.globals; },
     "locals", function(n) { return n.locals; }
 ];
-Global._astname = "Global";
-Global._fields = [
+Global.prototype._astname = "Global";
+Global.prototype._fields = [
     "names", function(n) { return n.names; }
 ];
-Expr._astname = "Expr";
-Expr._fields = [
+Expr.prototype._astname = "Expr";
+Expr.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Pass._astname = "Pass";
-Pass._fields = [
+Pass.prototype._astname = "Pass";
+Pass.prototype._fields = [
 ];
-Break_._astname = "Break";
-Break_._fields = [
+Break_.prototype._astname = "Break";
+Break_.prototype._fields = [
 ];
-Continue_._astname = "Continue";
-Continue_._fields = [
+Continue_.prototype._astname = "Continue";
+Continue_.prototype._fields = [
 ];
-BoolOp._astname = "BoolOp";
-BoolOp._fields = [
+BoolOp.prototype._astname = "BoolOp";
+BoolOp.prototype._fields = [
     "op", function(n) { return n.op; },
     "values", function(n) { return n.values; }
 ];
-BinOp._astname = "BinOp";
-BinOp._fields = [
+BinOp.prototype._astname = "BinOp";
+BinOp.prototype._fields = [
     "left", function(n) { return n.left; },
     "op", function(n) { return n.op; },
     "right", function(n) { return n.right; }
 ];
-UnaryOp._astname = "UnaryOp";
-UnaryOp._fields = [
+UnaryOp.prototype._astname = "UnaryOp";
+UnaryOp.prototype._fields = [
     "op", function(n) { return n.op; },
     "operand", function(n) { return n.operand; }
 ];
-Lambda._astname = "Lambda";
-Lambda._fields = [
+Lambda.prototype._astname = "Lambda";
+Lambda.prototype._fields = [
     "args", function(n) { return n.args; },
     "body", function(n) { return n.body; }
 ];
-IfExp._astname = "IfExp";
-IfExp._fields = [
+IfExp.prototype._astname = "IfExp";
+IfExp.prototype._fields = [
     "test", function(n) { return n.test; },
     "body", function(n) { return n.body; },
     "orelse", function(n) { return n.orelse; }
 ];
-Dict._astname = "Dict";
-Dict._fields = [
+Dict.prototype._astname = "Dict";
+Dict.prototype._fields = [
     "keys", function(n) { return n.keys; },
     "values", function(n) { return n.values; }
 ];
-ListComp._astname = "ListComp";
-ListComp._fields = [
+ListComp.prototype._astname = "ListComp";
+ListComp.prototype._fields = [
     "elt", function(n) { return n.elt; },
     "generators", function(n) { return n.generators; }
 ];
-GeneratorExp._astname = "GeneratorExp";
-GeneratorExp._fields = [
+GeneratorExp.prototype._astname = "GeneratorExp";
+GeneratorExp.prototype._fields = [
     "elt", function(n) { return n.elt; },
     "generators", function(n) { return n.generators; }
 ];
-Yield._astname = "Yield";
-Yield._fields = [
+Yield.prototype._astname = "Yield";
+Yield.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-Compare._astname = "Compare";
-Compare._fields = [
+Compare.prototype._astname = "Compare";
+Compare.prototype._fields = [
     "left", function(n) { return n.left; },
     "ops", function(n) { return n.ops; },
     "comparators", function(n) { return n.comparators; }
 ];
-Call._astname = "Call";
-Call._fields = [
+Call.prototype._astname = "Call";
+Call.prototype._fields = [
     "func", function(n) { return n.func; },
     "args", function(n) { return n.args; },
     "keywords", function(n) { return n.keywords; },
     "starargs", function(n) { return n.starargs; },
     "kwargs", function(n) { return n.kwargs; }
 ];
-Num._astname = "Num";
-Num._fields = [
+Num.prototype._astname = "Num";
+Num.prototype._fields = [
     "n", function(n) { return n.n; }
 ];
-Str._astname = "Str";
-Str._fields = [
+Str.prototype._astname = "Str";
+Str.prototype._fields = [
     "s", function(n) { return n.s; }
 ];
-Attribute._astname = "Attribute";
-Attribute._fields = [
+Attribute.prototype._astname = "Attribute";
+Attribute.prototype._fields = [
     "value", function(n) { return n.value; },
     "attr", function(n) { return n.attr; },
     "ctx", function(n) { return n.ctx; }
 ];
-Subscript._astname = "Subscript";
-Subscript._fields = [
+Subscript.prototype._astname = "Subscript";
+Subscript.prototype._fields = [
     "value", function(n) { return n.value; },
     "slice", function(n) { return n.slice; },
     "ctx", function(n) { return n.ctx; }
 ];
-Name._astname = "Name";
-Name._fields = [
+Name.prototype._astname = "Name";
+Name.prototype._fields = [
     "id", function(n) { return n.id; },
     "ctx", function(n) { return n.ctx; }
 ];
-List._astname = "List";
-List._fields = [
+List.prototype._astname = "List";
+List.prototype._fields = [
     "elts", function(n) { return n.elts; },
     "ctx", function(n) { return n.ctx; }
 ];
-Tuple._astname = "Tuple";
-Tuple._fields = [
+Tuple.prototype._astname = "Tuple";
+Tuple.prototype._fields = [
     "elts", function(n) { return n.elts; },
     "ctx", function(n) { return n.ctx; }
 ];
-Load._astname = "Load";
-Store._astname = "Store";
-Del._astname = "Del";
-AugLoad._astname = "AugLoad";
-AugStore._astname = "AugStore";
-Param._astname = "Param";
-Load._astname = "Load";
-Load._fields = [
+Load.prototype._astname = "Load";
+Load.prototype._isenum = true;
+Store.prototype._astname = "Store";
+Store.prototype._isenum = true;
+Del.prototype._astname = "Del";
+Del.prototype._isenum = true;
+AugLoad.prototype._astname = "AugLoad";
+AugLoad.prototype._isenum = true;
+AugStore.prototype._astname = "AugStore";
+AugStore.prototype._isenum = true;
+Param.prototype._astname = "Param";
+Param.prototype._isenum = true;
+Ellipsis.prototype._astname = "Ellipsis";
+Ellipsis.prototype._fields = [
 ];
-Store._astname = "Store";
-Store._fields = [
-];
-Del._astname = "Del";
-Del._fields = [
-];
-AugLoad._astname = "AugLoad";
-AugLoad._fields = [
-];
-AugStore._astname = "AugStore";
-AugStore._fields = [
-];
-Param._astname = "Param";
-Param._fields = [
-];
-Ellipsis._astname = "Ellipsis";
-Ellipsis._fields = [
-];
-Slice._astname = "Slice";
-Slice._fields = [
+Slice.prototype._astname = "Slice";
+Slice.prototype._fields = [
     "lower", function(n) { return n.lower; },
     "upper", function(n) { return n.upper; },
     "step", function(n) { return n.step; }
 ];
-ExtSlice._astname = "ExtSlice";
-ExtSlice._fields = [
+ExtSlice.prototype._astname = "ExtSlice";
+ExtSlice.prototype._fields = [
     "dims", function(n) { return n.dims; }
 ];
-Index._astname = "Index";
-Index._fields = [
+Index.prototype._astname = "Index";
+Index.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
-And._astname = "And";
-Or._astname = "Or";
-And._astname = "And";
-And._fields = [
-];
-Or._astname = "Or";
-Or._fields = [
-];
-Add._astname = "Add";
-Sub._astname = "Sub";
-Mult._astname = "Mult";
-Div._astname = "Div";
-Mod._astname = "Mod";
-Pow._astname = "Pow";
-LShift._astname = "LShift";
-RShift._astname = "RShift";
-BitOr._astname = "BitOr";
-BitXor._astname = "BitXor";
-BitAnd._astname = "BitAnd";
-FloorDiv._astname = "FloorDiv";
-Add._astname = "Add";
-Add._fields = [
-];
-Sub._astname = "Sub";
-Sub._fields = [
-];
-Mult._astname = "Mult";
-Mult._fields = [
-];
-Div._astname = "Div";
-Div._fields = [
-];
-Mod._astname = "Mod";
-Mod._fields = [
-];
-Pow._astname = "Pow";
-Pow._fields = [
-];
-LShift._astname = "LShift";
-LShift._fields = [
-];
-RShift._astname = "RShift";
-RShift._fields = [
-];
-BitOr._astname = "BitOr";
-BitOr._fields = [
-];
-BitXor._astname = "BitXor";
-BitXor._fields = [
-];
-BitAnd._astname = "BitAnd";
-BitAnd._fields = [
-];
-FloorDiv._astname = "FloorDiv";
-FloorDiv._fields = [
-];
-Invert._astname = "Invert";
-Not._astname = "Not";
-UAdd._astname = "UAdd";
-USub._astname = "USub";
-Invert._astname = "Invert";
-Invert._fields = [
-];
-Not._astname = "Not";
-Not._fields = [
-];
-UAdd._astname = "UAdd";
-UAdd._fields = [
-];
-USub._astname = "USub";
-USub._fields = [
-];
-Eq._astname = "Eq";
-NotEq._astname = "NotEq";
-Lt._astname = "Lt";
-LtE._astname = "LtE";
-Gt._astname = "Gt";
-GtE._astname = "GtE";
-Is._astname = "Is";
-IsNot._astname = "IsNot";
-In_._astname = "In";
-NotIn._astname = "NotIn";
-Eq._astname = "Eq";
-Eq._fields = [
-];
-NotEq._astname = "NotEq";
-NotEq._fields = [
-];
-Lt._astname = "Lt";
-Lt._fields = [
-];
-LtE._astname = "LtE";
-LtE._fields = [
-];
-Gt._astname = "Gt";
-Gt._fields = [
-];
-GtE._astname = "GtE";
-GtE._fields = [
-];
-Is._astname = "Is";
-Is._fields = [
-];
-IsNot._astname = "IsNot";
-IsNot._fields = [
-];
-In_._astname = "In";
-In_._fields = [
-];
-NotIn._astname = "NotIn";
-NotIn._fields = [
-];
-comprehension._astname = "comprehension";
-comprehension._fields = [
+And.prototype._astname = "And";
+And.prototype._isenum = true;
+Or.prototype._astname = "Or";
+Or.prototype._isenum = true;
+Add.prototype._astname = "Add";
+Add.prototype._isenum = true;
+Sub.prototype._astname = "Sub";
+Sub.prototype._isenum = true;
+Mult.prototype._astname = "Mult";
+Mult.prototype._isenum = true;
+Div.prototype._astname = "Div";
+Div.prototype._isenum = true;
+Mod.prototype._astname = "Mod";
+Mod.prototype._isenum = true;
+Pow.prototype._astname = "Pow";
+Pow.prototype._isenum = true;
+LShift.prototype._astname = "LShift";
+LShift.prototype._isenum = true;
+RShift.prototype._astname = "RShift";
+RShift.prototype._isenum = true;
+BitOr.prototype._astname = "BitOr";
+BitOr.prototype._isenum = true;
+BitXor.prototype._astname = "BitXor";
+BitXor.prototype._isenum = true;
+BitAnd.prototype._astname = "BitAnd";
+BitAnd.prototype._isenum = true;
+FloorDiv.prototype._astname = "FloorDiv";
+FloorDiv.prototype._isenum = true;
+Invert.prototype._astname = "Invert";
+Invert.prototype._isenum = true;
+Not.prototype._astname = "Not";
+Not.prototype._isenum = true;
+UAdd.prototype._astname = "UAdd";
+UAdd.prototype._isenum = true;
+USub.prototype._astname = "USub";
+USub.prototype._isenum = true;
+Eq.prototype._astname = "Eq";
+Eq.prototype._isenum = true;
+NotEq.prototype._astname = "NotEq";
+NotEq.prototype._isenum = true;
+Lt.prototype._astname = "Lt";
+Lt.prototype._isenum = true;
+LtE.prototype._astname = "LtE";
+LtE.prototype._isenum = true;
+Gt.prototype._astname = "Gt";
+Gt.prototype._isenum = true;
+GtE.prototype._astname = "GtE";
+GtE.prototype._isenum = true;
+Is.prototype._astname = "Is";
+Is.prototype._isenum = true;
+IsNot.prototype._astname = "IsNot";
+IsNot.prototype._isenum = true;
+In_.prototype._astname = "In";
+In_.prototype._isenum = true;
+NotIn.prototype._astname = "NotIn";
+NotIn.prototype._isenum = true;
+comprehension.prototype._astname = "comprehension";
+comprehension.prototype._fields = [
     "target", function(n) { return n.target; },
     "iter", function(n) { return n.iter; },
     "ifs", function(n) { return n.ifs; }
 ];
-ExceptHandler._astname = "ExceptHandler";
-ExceptHandler._fields = [
+ExceptHandler.prototype._astname = "ExceptHandler";
+ExceptHandler.prototype._fields = [
     "type", function(n) { return n.type; },
     "name", function(n) { return n.name; },
     "body", function(n) { return n.body; }
 ];
-arguments_._astname = "arguments";
-arguments_._fields = [
+arguments_.prototype._astname = "arguments";
+arguments_.prototype._fields = [
     "args", function(n) { return n.args; },
     "vararg", function(n) { return n.vararg; },
     "kwarg", function(n) { return n.kwarg; },
     "defaults", function(n) { return n.defaults; }
 ];
-keyword._astname = "keyword";
-keyword._fields = [
+keyword.prototype._astname = "keyword";
+keyword.prototype._fields = [
     "arg", function(n) { return n.arg; },
     "value", function(n) { return n.value; }
 ];
-alias._astname = "alias";
-alias._fields = [
+alias.prototype._astname = "alias";
+alias.prototype._fields = [
     "name", function(n) { return n.name; },
     "asname", function(n) { return n.asname; }
 ];
