@@ -39,8 +39,6 @@ var $builtinmodule = function(name)
                                 }(k));
                             }
                         }
-                        canvas.width = 512;
-                        canvas.height = 384;
                     });
 
                 $loc.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
