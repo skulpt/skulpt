@@ -55,6 +55,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
 
     return undefined;
 };
+goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
 Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
 {
@@ -65,6 +66,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function(name, value)
     else if (typeof this['$d'] === "object")
         this['$d'][name] = value;
 };
+goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
 Sk.builtin.object.prototype.HashNotImplemented = function()
 {

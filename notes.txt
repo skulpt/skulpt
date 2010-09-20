@@ -12,26 +12,10 @@ final mode:
     removes all goog.exportSymbol
     then compiles all resulting .js for final dist type builds
     generated code will make closure v unhappy right now though
-builtinslookup dict for closure
+add line/col numbers to all error messages
+change .tp$name to ['$n'] so external module tpnames work
 
-ah, damnit. closure is kind of a pain in the ass
-
-    - trying to model type/object, so instances are types but types are
-    also types, and type itself is also a type. but closure flattens
-    everything that isn't a prototype. so Sk.builtin.object.inst$dict
-    is getting flattened to just 'Sa', which means of course that when
-    some generic code tries to look up something in an instance, or class,
-    or the type type, there's no inst$dict.
-
-    - maybe putting a non-function (i.e. inst$dict) in the .prototype,
-    and then removing it from actual instances with a delete in the
-    constructor?
-
-    - or, switch to using ["$d"] or something instead of inst$dict. kind
-    of sucks, but probably the easiest way.
-
-    - blurgh. same for tp$repr, tp$name, ob$type just because of 'type'
-    object. shit-tay. ['$r'] ['$n'] ['$t'] :(
+-------------------
 
 notes:
 
@@ -212,5 +196,26 @@ to subdivide it a bit eventually
 
 -----------------
 
+ah, damnit. closure is kind of a pain in the ass
+
+    - trying to model type/object, so instances are types but types are
+    also types, and type itself is also a type. but closure flattens
+    everything that isn't a prototype. so Sk.builtin.object.inst$dict
+    is getting flattened to just 'Sa', which means of course that when
+    some generic code tries to look up something in an instance, or class,
+    or the type type, there's no inst$dict.
+
+    - maybe putting a non-function (i.e. inst$dict) in the .prototype,
+    and then removing it from actual instances with a delete in the
+    constructor?
+
+    - or, switch to using ["$d"] or something instead of inst$dict. kind
+    of sucks, but probably the easiest way.
+
+    - blurgh. same for tp$repr, tp$name, ob$type just because of 'type'
+    object. shit-tay. ['$r'] ['$n'] ['$t'] :(
+
+
+-----------------
 
 # vim: set tw=72 formatoptions=croqln:

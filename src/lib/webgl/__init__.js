@@ -2,7 +2,10 @@ var $builtinmodule = function(name)
 {
     var mod = {};
 
-    mod.GL = Sk.misceval.buildClass(mod, function($gbl, $loc)
+    // todo; won't work compressed
+    mod.tp$name = "webgl";
+
+    mod.Context = Sk.misceval.buildClass(mod, function($gbl, $loc)
             {
                 $loc.__init__ = new Sk.builtin.func(function(self, canvasid)
                     {
@@ -24,12 +27,12 @@ var $builtinmodule = function(name)
                         {
                             if (typeof gl.__proto__[k] === "number")
                             {
-                                self['$d'].mp$ass_subscript(new Sk.builtin.str(k), gl.__proto__[k]);
+                                Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str(k), gl.__proto__[k]);
                             }
                             else if (typeof gl.__proto__[k] === "function")
                             {
                                 (function(key) {
-                                self['$d'].mp$ass_subscript(new Sk.builtin.str(key), new Sk.builtin.func(function()
+                                Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str(k), new Sk.builtin.func(function()
                                     {
                                         var f = gl.__proto__[key];
                                         // todo; assuming only basic
@@ -39,16 +42,29 @@ var $builtinmodule = function(name)
                                 }(k));
                             }
                         }
+
+                        // set to something ugly so we know it's initialized,
+                        // but nothing's happened
+                        gl.clearColor(1, 0, 1, 1);
+                        gl.viewport(0, 0, canvas.width, canvas.height);
+                        gl.clear(gl.COLOR_BUFFER_BIT);
+                        gl.flush();
                     });
 
                 $loc.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
-                $loc.redrawAt = new Sk.builtin.func(function(self, func, fps)
+                $loc.setDrawFunc = new Sk.builtin.func(function(self, func)
                         {
-                            var rate = 1000.0 / fps;
-                            setInterval(function() {
-                                    Sk.misceval.call(func, undefined, self);
-                                }, rate);
+                            var startTime = (new Date()).getTime();
+                            setTimeout(function() {
+                                    Sk.misceval.call(func, undefined, self, (new Date()).getTime() - startTime);
+                                    if (goog.global.shutdownGLContext)
+                                    {
+                                        //console.log("Shutting down..");
+                                        return;
+                                    }
+                                    setTimeout(arguments.callee, 0);
+                                }, 0);
                                 
                         });
 
@@ -57,7 +73,7 @@ var $builtinmodule = function(name)
                             
                         });
             },
-            'GL', []);
+            'Context', []);
 
     mod.Shader = Sk.misceval.buildClass(mod, function($gbl, $loc)
             {

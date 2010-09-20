@@ -24,6 +24,9 @@ Sk.configure = function(options)
     Sk.output = options["output"] || Sk.output;
     goog.asserts.assert(typeof Sk.output === "function");
 
+    Sk.debugout = options["debugout"] || Sk.debugout;
+    goog.asserts.assert(typeof Sk.debugout === "function");
+
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 

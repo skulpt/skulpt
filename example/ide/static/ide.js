@@ -94,6 +94,7 @@ function startup()
     goog.events.listen(backToCodeButton, goog.ui.Component.EventType.ACTION, function(e) {
             goog.style.showElement(goog.dom.getElement('codeui'), true);
             goog.style.showElement(goog.dom.getElement('output_container'), false);
+            goog.global.shutdownGLContext = true;
             setTimeout(function() { editor.focus(); }, 0);
             });
     backToCodeButton.render(el);
@@ -101,12 +102,15 @@ function startup()
     var runOutput = goog.dom.getElement("runoutput");
     function runCode()
     {
+        delete goog.global.shutdownGLContext;
         runoutput.innerHTML = "";
         goog.style.showElement(goog.dom.getElement('codeui'), false);
         goog.style.showElement(goog.dom.getElement('output_container'), true);
         var code = editor.getCode();
         Sk.configure({
             output: function(x) { runOutput.innerHTML += x; },
+            debugout: function() { runOutput.innerHTML += "<font color='red'>" + Array.prototype.slice.call(arguments,0).join(' ') + "</font>\n"; },
+            read: builtinRead,
             sysargv: [ '__init__.py' ],
         });
         try
@@ -119,11 +123,24 @@ function startup()
         }
     }
 
-    goog.net.XhrIo.send("http://localhost:20710/example/env/default/__init__.py", function(e) {
-      var xhr = e.target;
-      var obj = xhr.getResponseText();
-      editor.setCode(obj);
-      });
+    goog.net.XhrIo.send("http://localhost:20710/example/ide/default/__init__.py", function(e) {
+            var xhr = e.target;
+            var text = xhr.getResponseText();
+            editor.setCode(text);
+            });
+
+    var builtinFiles;
+    goog.net.XhrIo.send("http://localhost:20710/import", function(e) {
+            var xhr = e.target;
+            var obj = xhr.getResponseJson();
+            builtinFiles = obj['files'];
+            });
+    function builtinRead(x)
+    {
+        if (builtinFiles === undefined || builtinFiles[x] === undefined)
+            throw "File not found: '" + x + "'";
+        return builtinFiles[x];
+    }
 
     editor.focus();
 }
