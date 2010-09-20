@@ -15,6 +15,13 @@ final mode:
 add line/col numbers to all error messages
 change .tp$name to ['$n'] so external module tpnames work
 
+ide:
+- load shaders
+- switch btwn files and set defaulttext
+- perspective matrix
+- matrix lib
+- basic procedural objects
+
 -------------------
 
 notes:

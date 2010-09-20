@@ -86,6 +86,8 @@ function startup()
     filesBox.setUseDropdownArrow(true);
     filesBox.setDefaultText('__init__.py');
     filesBox.addItem(new goog.ui.ComboBoxItem('__init__.py'));
+    filesBox.addItem(new goog.ui.ComboBoxItem('simple.vp'));
+    filesBox.addItem(new goog.ui.ComboBoxItem('simple.fp'));
 
     filesBox.render(el);
 
