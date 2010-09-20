@@ -193,7 +193,24 @@ bespin:
 - ctrl-arrow is wrong
 - pageup/down are wrong
 
+===> Code Mirror is much better
 
+-----------------
+
+importing:
+
+- import is a statement, the load a create of a module has to happen
+synchronously so that it's available to the next line of code
+
+- xhrio is async, and without webworkers, can't be faked to be
+synchronous.
+
+- so, we have to pull all builtins/lib ahead of time, or otherwise pull
+from other sources, and then have all local code via a simple read that
+returns a string. since std lib is small this is ok for now. might have
+to subdivide it a bit eventually
+
+-----------------
 
 
 # vim: set tw=72 formatoptions=croqln:
