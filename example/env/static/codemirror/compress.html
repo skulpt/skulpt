@@ -1,0 +1,129 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>CodeMirror: Script Compression</title>
+    <link rel="stylesheet" type="text/css" href="css/docs.css"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style type="text/css">
+      .field {border: 1px solid black; padding: .4em;}
+      button {border: 1px solid black; background-color: #eee;}
+    </style>
+  </head>
+  <body>
+    <div class="top underline" style="text-align: center">
+      <h1 style="margin-bottom: 0;"><a href="index.html" style="text-decoration: none; color: black;">CodeMirror</a></h1>
+      <h2 style="margin-top: 0; margin-bottom: .3em;">Script Compression</h2>
+    </div>
+
+    <p>The CodeMirror scripts, as distributed, are many, and full of
+    comments. To optimize page loading, it is recommended to
+    concatenate the scripts loaded in the CodeMirror frame, and
+    compress them. This page may be useful if you intend to do this:
+    it provides an interface go Google's <a
+    href="http://closure-compiler.appspot.com/">Closure compiler</a>,
+    allowing you to easily load in CodeMirror scripts.</p>
+
+    <p>You will have to compress <code>codemirror.js</code>
+    separately, since that will be loaded into the top-level page from
+    which you use CodeMirror. Inside the frame, the
+    <code>parserfile</code> and <code>basefiles</code> options control
+    which files are loaded. If you combine the parser(s) you need with
+    the basefiles, you can set <code>basefiles</code> to point at your
+    compressed file, and leave <code>parserfiles</code> at
+    <code>[]</code>.</p>
+
+    <p>For example, you have a page that uses CodeMirror to edit some
+    JavaScript code. You could save a minimized version of
+    <code>codemirror.js</code> as <code>codemirror_min.js</code>, and
+    include that (with a <code>&lt;script></code> tag) in your page.
+    Next, you compress all the files under "In-frame base code", plus
+    <code>tokenizejavascript.js</code> and
+    <code>parsejavascript.js</code> into
+    <code>codemirror_base.js</code>, and load the editor like
+    this:</p>
+
+    <pre class="code">CodeMirror.fromTextArea("mytextarea", {
+  basefiles: ["js/codemirror_base.js"],
+  lineNumbers: true
+});</pre>
+
+    <p>Clicking the "Compress" buttons below will take you to a file
+    containing the compressed code. Copy-paste this into your script
+    file. ("Save as" for that page is broken on some browsers, so be
+    careful).</p>
+
+    <script type="text/javascript">
+      function setVersion(ver) {
+        var urlprefix = ver.options[ver.selectedIndex].value;
+        console.log(urlprefix);
+        var select = document.getElementById("files"), m;
+        for (var optgr = select.firstChild; optgr; optgr = optgr.nextSibling)
+          for (var opt = optgr.firstChild; opt; opt = opt.nextSibling) {
+            if (opt.nodeName != "OPTION")
+              continue;
+            else if (m = opt.value.match(/^http:\/\/marijn.haverbeke.nl\/codemirror\/(.*)$/))
+              opt.value = urlprefix + m[1];
+            else if (m = opt.value.match(/http:\/\/marijn.haverbeke.nl\/git\/codemirror\?a=blob_plain;hb=[^;]+;f=(.*)$/))
+              opt.value = urlprefix + m[1];
+          }
+      }
+      function verify() {
+        document.getElementById("output").value="warnings";
+        document.getElementById("form").submit();
+        document.getElementById("output").value="compiled_code";
+      }
+    </script>
+
+    <form id="form" action="http://closure-compiler.appspot.com/compile" method="post" id="form">
+      <p>Version: <select id="version" onchange="setVersion(this);" class="field" style="padding: 1px">
+        <option value="http://marijn.haverbeke.nl/codemirror/" selected>Development head</option>
+        <option value="http://marijn.haverbeke.nl/git/codemirror?a=blob_plain;hb=v0.8;f=">v0.8</option>
+        <option value="http://marijn.haverbeke.nl/git/codemirror?a=blob_plain;hb=v0.7;f=">v0.7</option>
+        <option value="http://marijn.haverbeke.nl/git/codemirror?a=blob_plain;hb=v0.67;f=">v0.67</option>
+        <option value="http://marijn.haverbeke.nl/git/codemirror?a=blob_plain;hb=v0.66;f=">v0.66</option>
+      </select></p>
+
+      <p><input type="hidden" value="compiled_code" name="output_info" id="output"/>
+
+      <select multiple="multiple" name="code_url" style="width: 40em;" class="field" id="files">
+        <optgroup label="CodeMirror Library">
+          <option value="http://marijn.haverbeke.nl/codemirror/js/codemirror.js">codemirror.js</option>
+        </optgroup>
+        <optgroup label="In-frame base files">
+          <option value="http://marijn.haverbeke.nl/codemirror/js/util.js">util.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/stringstream.js">stringstream.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/select.js">select.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/undo.js">undo.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/editor.js">editor.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/tokenize.js">tokenize.js</option>
+        </optgroup>
+        <optgroup label="Parsers">
+          <option value="http://marijn.haverbeke.nl/codemirror/js/tokenizejavascript.js">tokenizejavascript.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/parsejavascript.js">parsejavascript.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/parsexml.js">parsexml.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/parsecss.js">parsecss.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/parsesparql.js">parsesparql.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/parsehtmlmixed.js">parsehtmlmixed.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/js/parsedummy.js">parsedummy.js</option>
+        </optgroup>
+        <optgroup label="Contributed parsers">
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/lua/js/parselua.js">parselua.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/python/js/parsepython.js">parsepython.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/php/js/tokenizephp.js">tokenizephp.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/php/js/parsephp.js">parsephp.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/php/js/parsephphtmlmixed.js">parsephphtmlmixed.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/csharp/js/tokenizecsharp.js">tokenizecsharp.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/csharp/js/parsecsharp.js">parsecsharp.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/sql/js/parsesql.js">parsesql.js</option>
+          <option value="http://marijn.haverbeke.nl/codemirror/contrib/plsql/js/parseplsql.js">parseplsql.js</option>
+          <option value="http://svn.exoplatform.org/projects/gwt/trunk/exo.gwtframework.editor/src/main/resources/org/exoplatform/gwtframework/editor/public/codemirror/js/tokenizegroovy.js">tokenizegroovy.js</option>
+          <option value="http://svn.exoplatform.org/projects/gwt/trunk/exo.gwtframework.editor/src/main/resources/org/exoplatform/gwtframework/editor/public/codemirror/js/parsegroovy.js">parsegroovy.js</option>
+        </optgroup>
+      </select></p>
+
+      <p><button type="submit">Compress!</button> <button type="button" onclick="verify();">Check for errors</button></p>
+
+      <p>Custom code to add to the compressed file:<textarea name="js_code" style="width: 100%; height: 15em;" class="field"></textarea></p>
+    </form>
+
+  </body>
+</html>
