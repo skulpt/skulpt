@@ -1,0 +1,209 @@
+/*
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 3.0.0pr2
+*/
+/* reset */
+html{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}li{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup{vertical-align:text-top;}sub{vertical-align:text-bottom;}input,textarea,select{font-family:inherit;font-size:inherit;font-weight:inherit;}input,textarea,select{*font-size:100%;}legend{color:#000;}
+/* fonts */
+body{font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}select,input,button,textarea{font:99% arial,helvetica,clean,sans-serif;}table{font-size:inherit;font:100%;}pre,code,kbd,samp,tt{font-family:monospace;*font-size:108%;line-height:100%;}
+
+
+.body{overflow:hidden; _overflow:visible; _zoom:1;}
+.page{margin: 0 auto; width: 750px;_text-align:left; padding-bottom:40px;}
+.main{overflow: hidden;_overflow:visible;_zoom:1;}
+.rightCol{float:right; width: 300px;_margin-left:-3px;}
+
+
+html {
+	background-color: white;
+}
+
+body {
+	font-family: "Bitstream Vera Sans", "Arial", "Helvetica", sans-serif;
+    font-weight: normal;
+	color: black;
+    font-size: 13px;
+	background-color: white;
+    line-height: 1.5;
+}
+
+#logo {
+    padding-top: 40px;
+    padding-bottom: 30px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Bitstream Vera Serif", "Georgia", "Times New Roman", Times, serif;
+    margin-top: 1em;
+}
+
+p, pre {
+    line-height: 160%;
+    margin: 1em;
+}
+
+h1, .h1 {
+	font-size: 1.8em;
+	font-weight: bold;
+	font-style: normal;
+    letter-spacing: -0.05em;
+	color: rgb(31,72,100);
+	/*font-variant: small-caps;*/
+}
+
+h2, .h2 {
+	font-size: 1.4em;
+    letter-spacing: -0.05em;
+	font-weight: bold;
+	font-style: normal;
+	color: rgb(31,72,100);
+	/*font-variant: small-caps;*/
+}
+
+ul.simpleList li {
+	list-style-type: disc;
+	margin-left: 40px;
+}
+
+
+a {
+	color: rgb(4,47,83);
+}
+
+a:visited {
+	color: rgb(4,47,83);
+}
+
+
+.main ul li {
+	list-style-type: disc;
+	list-style-position: outside;
+	margin-left: 20px;
+    clear:both;
+}
+
+.main ol li {
+	list-style-type: decimal;
+	list-style-position: outside;
+	margin-left: 40px;
+}
+
+.footer {
+    padding-top: 5em;
+    font-size: 9px;
+    text-align: center;
+}
+
+.rightCol {
+    background-color: rgb(233, 228, 229);
+    padding: 30px 30px 30px 30px;
+    margin: 0px;
+    margin-top: 2em;
+    /*width: 240px;*/
+}
+
+.termcell {
+    /*
+    width: 10px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    */
+    /*letter-spacing: -1px; /* hmm, chromium-linux needs this right now */
+    background-color: rgb(0,0,0);
+    width: 8px;
+    height: 16px;
+}
+
+#terminal {
+    line-height: 16px;
+    color: rgb(180,180,180);
+    font-family: "Consolas","Lucida Console","Monaco",monospace;
+    font-size: 13px;
+    border: 3px solid rgb(31,72,100);
+    width: 640px;
+    margin: 20px;
+}
+
+code, pre {
+	color: #444;
+	font-family: "Consolas","Lucida Console","Monaco",monospace;
+}
+
+pre {
+    margin-left: 14px;
+    font-size: 16px;
+    line-height: 1.2em;
+}
+
+cite {
+    display: block;
+    font-style: italic;
+    font-size: .85em;
+    padding-left: 20px;
+}
+
+em {
+    font-style: oblique;
+}
+
+sup {
+    vertical-align: super;
+}
+
+.under {
+    text-decoration: underline;
+}
+
+#field {
+    margin-top: 20px;
+    margin-left: 20px;
+}
+
+#ed {
+    font-family: "Consolas","Lucida Console","Monaco",monospace;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.edline {
+    background: black;
+    font-size: 14px;
+    height: 16px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: white;
+}
+
+#cursor {
+    position: absolute;
+    background: red;
+    height: 16px;
+    width: 8px;
+}
+
+
+.CodeMirror-line-numbers {
+  width: 2.2em;
+  color: #aaa;
+  background-color: #eee;
+  text-align: right;
+  padding: .4em;
+  margin: 0;
+  font-family: "Consolas","Lucida Console","Monaco",monospace;
+  font-size: 9pt;
+  line-height: 1.1em;
+}
+
+#edoutput {
+    background: #ccc;
+    color: #black;
+    height: 100px;
+    overflow: auto;
+    font-family: "Consolas","Lucida Console","Monaco",monospace;
+    font-size: 9pt;
+}
