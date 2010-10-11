@@ -284,9 +284,9 @@ def dist():
 
     label = getTip()
 
-    #print ". Nuking old dist/"
-    #os.system("rm -rf dist/")
-    #if not os.path.exists("dist"): os.mkdir("dist")
+    print ". Nuking old dist/"
+    os.system("rm -rf dist/")
+    if not os.path.exists("dist"): os.mkdir("dist")
 
     """
     print ". Writing combined version..."
@@ -353,13 +353,11 @@ def dist():
     os.unlink("dist/tmp.js.gz")
 
     # update doc copy
-    """
     ret = os.system("cp %s doc/static/skulpt.js" % compfn)
-    ret |= os.system("cp %s doc/static/skulpt-uncomp.js" % uncompfn)
+    #ret |= os.system("cp %s doc/static/skulpt-uncomp.js" % uncompfn)
     if ret != 0:
         print "Couldn't copy to docs dir."
         raise SystemExit()
-        """
 
     # all good!
     print ". Wrote %s." % compfn
@@ -466,9 +464,7 @@ def regensymtabtests():
 
 def upload():
     """uploads doc to GAE (stub app for static hosting, mostly)"""
-    print "you probably don't want to do that right now"
-    return
-    ret = os.system("python2.5 support/tmp/google_appengine/appcfg.py update doc")
+    ret = os.system("python2.6 ~/Desktop/3rdparth/google_appengine/appcfg.py update doc")
     if ret != 0:
         print "Couldn't upload."
         raise SystemExit()

@@ -34,14 +34,16 @@ Python and reload.</p>
         <a href="#" id="codeexample3">3</a> 
         <a href="#" id="codeexample4">4</a> 
         <a href="#" id="codeexample5">5</a> 
-        <a href="#" id="codeexample6">6</a>. Ctrl-Enter to run.
+        <a href="#" id="codeexample6">6</a>
+        <a href="#" id="codeexample7">7</a>.
+        Ctrl-Enter to run.
     </p>
 
     <div id="quickdocs">
         <ul>
             <li>cut/copy/paste/undo/redo with the usual shortcut keys</li>
             <li>Tab does decent indenting.
-            Thanks to <a href="http://marijn.haverbeke.nl/codemirror/"
+            Thanks to <a href="http://codemirror.net/"
                 target="_blank">CodeMirror</a> for the text editor.
             </li>
             <li>Ctrl-Enter to run, Shift-Enter to run selected</li>
@@ -67,6 +69,7 @@ def test(name):
 test("world")
 </textarea>
 
+
 <!--
 <p>Interactive:<textarea id="interactive" cols="85" rows="1"></textarea></p>
 -->
@@ -75,9 +78,9 @@ test("world")
 <pre id="edoutput">
 </pre>
 
-<p>This is mostly just for demo purposes. Normally you'd slap your code
-in some <tt>.py</tt> files and use <tt>import</tt> to
-XmlHttpRequest 'em.</p>
+<p>If you're a saucy fellow with a WebGL <a
+href="http://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">
+enabled</a> browser, you can <a href="ide">play with a WebGL binding</a> too.</p>
 
 <h2>Your Very Own Copy</h2>
 
@@ -92,7 +95,7 @@ XmlHttpRequest 'em.</p>
 fixed recently, you can head over to the always-euphemistic-sounding <a
     href="http://code.google.com/p/skulpt/issues/list">issues page</a>.
 
-<p>I'd call it something like 0.12 alpha if it had a version, but versions
+<p>I'd call it something like 0.56 if it had a version, but versions
 are just SHA1's these days.</p>
 
 <p>It's peeking out into the world now, as it's fun to play with already. If
@@ -101,7 +104,9 @@ of liability. Then fear, comprehensively<sup><a
         href="http://www.cliki.net/">&dagger;</a></sup>.
 
 <p>The entire Python test suite does not run correctly yet, but that is the
-long term goal, insofar as it makes sense.</p>
+long term goal, insofar as it makes sense. The compiler has been completely
+rewritten since this time last year, and it's getting much closer to that goal
+now.</p>
 
 <p>If you'd like to chit-chat, <a href="http://groups.google.com/group/skulpt">there's a list for
     that</a>.</p>
@@ -109,20 +114,15 @@ long term goal, insofar as it makes sense.</p>
 <p>And, if &quot;daring&quot; is your <em>middle</em> name, there's a wee bit of <a
     href="http://code.google.com/p/skulpt/w/list">developer docs</a>.</p>
 
-<h2>Pleasant</h2>
+<h2>Usability</h2>
 
-<p>Originally, I had planned to write a GUI framework of some sort.</p>
+<p>There's two bindings in the works. One is to the <a
+    href="http://code.google.com/p/closure-library/">Closure Library</a>.
+Currently this is done manually by making Python modules that know how to call the associated Closure module. It seems it should be possible to automate this, but it hasn't happened yet.
+</p>
 
-<p>But, I think a nice binding to an existing library would be much more
-sensible. The <a
-href="http://code.google.com/closure/library/index.html">Closure</a>
-library is a static sort of Javascript which is convenient because it'll
-let me generate an FFI from Skulpt.</p>
-
-<p><code>import</code> for Python code works fine, but I'm hoping you'll
-just be able to <code>import goog.<em>xyz</em></code> in the same way
-you would <code>goog.require('goog.<em>xyz</em>')</code> if you were
-writing in Javascript.</p>
+<p>There's also a binding to WebGL. If you have a WebGL enabled browser, you
+can play with <a href="ide">the beginnings of that</a>. </p>
 
 <h2>License</h2>
 
@@ -135,8 +135,7 @@ writing in Javascript.</p>
 <p> Please note that this dual license only applies to the part of Skulpt that
 is included in the runtime, and not necessarily to surrounding code for build
 processing or testing. Tests are run using <a
-    href="http://code.google.com/p/v8/">V8</a>, <a
-    href="http://www.jslint.com/">JSLint</a>, and <a
+    href="http://code.google.com/p/v8/">V8</a>, and <a
     href="http://code.google.com/closure/compiler/">Closure Compiler</a>, and
 some test code is taken from the <a href="http://www.tinypy.org/">tinypy</a>
 and <a href="http://www.python.org/">Python</a> test suites, which may be
@@ -150,8 +149,6 @@ distributed under different licensing terms. </p>
     Yes, I know how &quot;sculpt&quot; is spelled. The correct spelling was
     thoroughly reserved according to ICANN and search engines.
     </p>
-
-    <p><a href="static/unittest.html">unit tests</a></p>
 
 </div>
 

@@ -37,6 +37,7 @@ window.addEvent('domready', function() {
     exampleCode('codeexample4', "print 45**123");
     exampleCode('codeexample5', "print \"%s:%r:%d:%x\\n%#-+37.34o\" % (\n        \"dog\",\n        \"cat\",\n        23456,\n        999999999999L,\n        0123456702345670123456701234567L)");
     exampleCode('codeexample6', "def genr(n):\n    i = 0\n    while i < n:\n        yield i\n        i += 1\n\nprint list(genr(12))\n");
+    exampleCode('codeexample7', "# obscure C3 MRO example from Python docs\nclass O(object): pass\nclass A(O): pass\nclass B(O): pass\nclass C(O): pass\nclass D(O): pass\nclass E(O): pass\nclass K1(A,B,C): pass\nclass K2(D,B,E): pass\nclass K3(D,A): pass\nclass Z(K1,K2,K3): pass\nprint Z.__mro__\n");
 
     $('clearoutput').addEvent('click', function(e)
             {
@@ -52,20 +53,21 @@ window.addEvent('domready', function() {
                     if (e.keyCode === 13)
                     {
                         var output = $('edoutput');
-                        sk$output = function(text)
+                        var outf = function(text)
                         {
-                            output.set('html', output.get('html') + text.replace("\n", "<br/>"));
+                            output.set('html', output.get('html') + text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>"));
                         };
+                        Sk.configure({output:outf});
                         if (e.ctrlKey)
                         {
                             e.stop();
-                            eval(Skulpt.compileStr("<stdin>", editor.getCode()));
+                            eval(Sk.importMainWithBody("<stdin>", false, editor.getCode()));
                             new Fx.Scroll('edoutput').toBottom();
                         }
                         else if (e.shiftKey)
                         {
                             e.stop();
-                            eval(Skulpt.compileStr("<stdin>", editor.selection()));
+                            eval(Sk.importMainWithBody("<stdin>", false, editor.selection()));
                             new Fx.Scroll('edoutput').toBottom();
                         }
                     }
