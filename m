@@ -464,7 +464,7 @@ def regensymtabtests():
 
 def upload():
     """uploads doc to GAE (stub app for static hosting, mostly)"""
-    ret = os.system("python2.6 ~/Desktop/3rdparth/google_appengine/appcfg.py update doc")
+    ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/appcfg.py update doc")
     if ret != 0:
         print "Couldn't upload."
         raise SystemExit()
