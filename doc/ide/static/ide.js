@@ -91,6 +91,8 @@ function startup()
 
     filesBox.render(el);
 
+
+
     var backToCodeButton = new goog.ui.CustomButton("Back to code");
     el = goog.dom.getElement("output_container");
     goog.events.listen(backToCodeButton, goog.ui.Component.EventType.ACTION, function(e) {
@@ -124,6 +126,21 @@ function startup()
             runOutput.innerHTML += e.toString();
         }
     }
+
+    var toggleEdit = new goog.ui.CustomButton("Edit...");
+    el = goog.dom.getElement("editbutton");
+    goog.events.listen(toggleEdit, goog.ui.Component.EventType.ACTION, function(e) {
+            goog.style.showElement(goog.dom.getElement('codeoroutput'), true);
+            goog.style.showElement(el, false);
+            });
+    toggleEdit.render(el);
+
+    var hideCodeButton = new goog.ui.CustomButton("Hide code");
+    goog.events.listen(hideCodeButton, goog.ui.Component.EventType.ACTION, function(e) {
+            goog.style.showElement(goog.dom.getElement('codeoroutput'), false);
+            goog.style.showElement(goog.dom.getElement('editbutton'), true);
+            });
+    hideCodeButton.render(goog.dom.getElement('hidecode'));
 
     goog.net.XhrIo.send("http://localhost:20710/example/ide/default/__init__.py", function(e) {
             var xhr = e.target;
