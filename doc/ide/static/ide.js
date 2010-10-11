@@ -6,26 +6,29 @@ function startup()
 
     editor = CodeMirror.fromTextArea("code", {
         parserfile: ["../contrib/python/js/parsepython.js"],
-        path: "static/codemirror/js/",
+        path: "/ide/static/codemirror/js/",
         autoMatchParens: true,
-        stylesheet: "static/codemirror/contrib/python/css/pythoncolors.css",
+        stylesheet: "/ide/static/codemirror/contrib/python/css/pythoncolors.css",
         lineNumbers: true,
         indentUnit: 4,
         height: "100%",
         saveFunction: function() { alert('saved'); },
-        });
-    editor.grabKeys(function(e) {
-            if (e.ctrlKey && e.keyCode == 74)
-            {
-                filesBox.keyHandler_.element_.focus();
+        initCallback: function(e) {
+            e.grabKeys(function(e) {
+                    if (e.ctrlKey && e.keyCode == 74)
+                    {
+                        filesBox.keyHandler_.element_.focus();
+                    }
+                    else if (e.keyIdentifier == "F8")
+                    {
+                        runCode();
+                    }
+                }, function(kc, e) {
+                    return (kc == 74 && e.ctrlKey && !e.altKey && !e.shiftKey)
+                            || e.keyIdentifier == "F8";
+                });
+            e.focus();
             }
-            else if (e.keyIdentifier == "F8")
-            {
-                runCode();
-            }
-        }, function(kc, e) {
-            return (kc == 74 && e.ctrlKey && !e.altKey && !e.shiftKey)
-                    || e.keyIdentifier == "F8";
         });
 
     function makeMenu(name, items)
@@ -160,6 +163,4 @@ function startup()
             throw "File not found: '" + x + "'";
         return builtinFiles[x];
     }
-
-    editor.focus();
 }

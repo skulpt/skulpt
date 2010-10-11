@@ -469,6 +469,9 @@ def upload():
         print "Couldn't upload."
         raise SystemExit()
 
+def doctest():
+    ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
+
 def run(fn, shell="", opt=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
@@ -617,7 +620,7 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|nrt|run|runopt|vmwareregr|browser|shell|debugbrowser|vfs|host}"
+        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|doctest|nrt|run|runopt|vmwareregr|browser|shell|debugbrowser|vfs|host}"
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
@@ -649,6 +652,8 @@ if __name__ == "__main__":
         regenruntests()
     elif cmd == "upload":
         upload()
+    elif cmd == "doctest":
+        doctest()
     elif cmd == "nrt":
         nrt()
     elif cmd == "browser":

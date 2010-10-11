@@ -16,6 +16,12 @@ class TurtlePage(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'turtle.html')
         self.response.out.write(open(path).read())
 
+class IdePage(webapp.RequestHandler):
+    def get(self):
+        self.response.headers['Content-Type'] = 'text/html'
+        path = os.path.join(os.path.dirname(__file__), 'ide/index.html')
+        self.response.out.write(open(path).read())
+
 class TestResult(db.Model):
     browsername = db.StringProperty()
     browserversion = db.StringProperty()
@@ -43,7 +49,9 @@ class TestResults(webapp.RequestHandler):
 application = webapp.WSGIApplication(
         [('/', MainPage),
          ('/testresults', TestResults),
-         ('/turtle', TurtlePage)],
+         ('/turtle', TurtlePage),
+         ('/ide', IdePage)
+         ],
         debug=False)
 
 def main():
