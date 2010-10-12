@@ -145,7 +145,7 @@ function startup()
             });
     hideCodeButton.render(goog.dom.getElement('hidecode'));
 
-    goog.net.XhrIo.send("http://localhost:20710/example/ide/default/__init__.py", function(e) {
+    goog.net.XhrIo.send("/ide/static/default/__init__.py", function(e) {
             var xhr = e.target;
             var text = xhr.getResponseText();
             editor.setCode(text);
