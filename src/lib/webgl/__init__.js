@@ -43,9 +43,8 @@ var $builtinmodule = function(name)
                             }
                         }
 
-                        // set to something ugly so we know it's initialized,
-                        // but nothing's happened
-                        gl.clearColor(1, 0, 1, 1);
+                        // set to cornflower so we know we're init'd at least
+                        gl.clearColor(100/255.0,149/255.0,237/255.0,1)
                         gl.viewport(0, 0, canvas.width, canvas.height);
                         gl.clear(gl.COLOR_BUFFER_BIT);
                         gl.flush();
@@ -60,11 +59,11 @@ var $builtinmodule = function(name)
                                     Sk.misceval.call(func, undefined, self, (new Date()).getTime() - startTime);
                                     if (goog.global.shutdownGLContext)
                                     {
-                                        //console.log("Shutting down..");
+                                        console.log("Shutting down..");
                                         return;
                                     }
-                                    setTimeout(arguments.callee, 0);
-                                }, 0);
+                                    setTimeout(arguments.callee, 1);
+                                }, 1);
                                 
                         });
 
