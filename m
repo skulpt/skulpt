@@ -598,6 +598,7 @@ class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                         ext = os.path.splitext(f)[1]
                         if ext == ".py" or ext == ".js":
                             print "reading", f
+                            f = f.replace("\\", "/")
                             ret['files'][f] = open(f).read()
             self.send_response(200)
             self.send_header("Content-type", "application/json")
