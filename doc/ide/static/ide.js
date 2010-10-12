@@ -28,6 +28,13 @@ function startup()
                             || e.keyIdentifier == "F8";
                 });
             e.focus();
+
+            goog.net.XhrIo.send("/ide/static/default/__init__.py", function(e) {
+                    var xhr = e.target;
+                    var text = xhr.getResponseText();
+                    editor.setCode(text);
+                    });
+
             }
         });
 
@@ -144,12 +151,6 @@ function startup()
             goog.style.showElement(goog.dom.getElement('editbutton'), true);
             });
     hideCodeButton.render(goog.dom.getElement('hidecode'));
-
-    goog.net.XhrIo.send("/ide/static/default/__init__.py", function(e) {
-            var xhr = e.target;
-            var text = xhr.getResponseText();
-            editor.setCode(text);
-            });
 
     var builtinFiles;
     goog.net.XhrIo.send("http://localhost:20710/import", function(e) {
