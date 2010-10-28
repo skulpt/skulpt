@@ -14,5 +14,9 @@ var $builtinmodule = function(name)
 
     sys.path = Sk.realsyspath;
 
+    sys.debug = new Sk.builtin.func(function() {
+        debugger;
+    });
+
     return sys;
 };
