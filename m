@@ -9,6 +9,7 @@ import symtable
 import shutil
 import re
 import pprint
+import json
 
 # order is important!
 Files = [
@@ -272,6 +273,20 @@ function quit(rc)
     print ". Built %s" % outfn
 
 
+def getBuiltinsAsJson():
+    ret = {}
+    ret['files'] = {}
+    for root in ["src/builtin", "src/lib"]:
+        for dirpath, dirnames, filenames in os.walk(root):
+            for filename in filenames:
+                f = os.path.join(dirpath, filename)
+                ext = os.path.splitext(f)[1]
+                if ext == ".py" or ext == ".js":
+                    print "reading", f
+                    f = f.replace("\\", "/")
+                    ret['files'][f] = open(f).read()
+    return json.dumps(ret)
+
 def dist():
     """builds a 'shippable' version of Skulpt.
     
@@ -304,6 +319,7 @@ def dist():
     # make combined version
     #uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
+    builtinfn = "dist/builtin.js"
     #open(uncompfn, "w").write(combined)
     #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
@@ -319,7 +335,7 @@ def dist():
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level ADVANCED_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
     # to disable asserts
     # --define goog.DEBUG=false 
     #
@@ -352,9 +368,13 @@ def dist():
     size = os.path.getsize("dist/tmp.js.gz")
     os.unlink("dist/tmp.js.gz")
 
+    with open(builtinfn, "w") as f:
+        f.write(getBuiltinsAsJson())
+        print ". Wrote %s" % builtinfn
+
     # update doc copy
     ret = os.system("cp %s doc/static/skulpt.js" % compfn)
-    #ret |= os.system("cp %s doc/static/skulpt-uncomp.js" % uncompfn)
+    ret |= os.system("cp %s doc/static/builtin.js" % builtinfn)
     if ret != 0:
         print "Couldn't copy to docs dir."
         raise SystemExit()
@@ -472,6 +492,12 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
+def docbi():
+    builtinfn = "doc/static/builtin.js"
+    with open(builtinfn, "w") as f:
+        f.write(getBuiltinsAsJson())
+        print ". Wrote %s" % builtinfn
+
 def run(fn, shell="", opt=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
@@ -575,7 +601,6 @@ def regengooglocs():
 
 import SimpleHTTPServer
 import urlparse
-import json
 class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     """allow grabbing any file for testing, and support /import
     which grabs all builtin and lib modules in a json request.
@@ -589,21 +614,10 @@ class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_GET(self):
         prefix = "/import"
         if self.path == prefix:
-            ret = {}
-            ret['files'] = {}
-            for root in ["src/builtin", "src/lib"]:
-                for dirpath, dirnames, filenames in os.walk(root):
-                    for filename in filenames:
-                        f = os.path.join(dirpath, filename)
-                        ext = os.path.splitext(f)[1]
-                        if ext == ".py" or ext == ".js":
-                            print "reading", f
-                            f = f.replace("\\", "/")
-                            ret['files'][f] = open(f).read()
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(json.dumps(ret))
+            self.wfile.write(getBuiltinsAsJson())
         else:
             SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
@@ -655,6 +669,8 @@ if __name__ == "__main__":
         upload()
     elif cmd == "doctest":
         doctest()
+    elif cmd == "docbi":
+        docbi()
     elif cmd == "nrt":
         nrt()
     elif cmd == "browser":

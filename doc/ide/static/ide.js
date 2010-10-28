@@ -72,10 +72,10 @@ function startup()
     }
 
     var fileMenu = makeMenu('File', [
-            [ 'New Python File...', function() { alert('new py'); } ],
-            [ 'New Vertex Shader...', function() { alert('new vp'); } ],
-            [ 'New Fragment Shader...', function() { alert('new fp'); } ],
-            [ 'Save All', function() { alert('save'); } ],
+            [ 'New Python File...', function() { alert('todo;'); } ],
+            [ 'New Vertex Shader...', function() { alert('todo;'); } ],
+            [ 'New Fragment Shader...', function() { alert('todo;'); } ],
+            [ 'Save All', function() { alert('todo;'); } ],
             ]);
     var projectMenu = makeMenu('Project', [
             [ 'Save All and Run (F8)', function()
@@ -85,7 +85,7 @@ function startup()
             [ null, null ],
             [ 'Delete...', function() { alert('delete'); } ],
             [ null, null ],
-            [ 'Share...', function() { alert('share'); } ]
+            [ 'Share...', function() { alert('todo;'); } ]
             ]);
 
     projectMenu.getChildAt(2).setEnabled(false); // since we start with only one item
@@ -96,8 +96,8 @@ function startup()
     filesBox.setUseDropdownArrow(true);
     filesBox.setDefaultText('__init__.py');
     filesBox.addItem(new goog.ui.ComboBoxItem('__init__.py'));
-    filesBox.addItem(new goog.ui.ComboBoxItem('simple.vp'));
-    filesBox.addItem(new goog.ui.ComboBoxItem('simple.fp'));
+    //filesBox.addItem(new goog.ui.ComboBoxItem('simple.vp'));
+    //filesBox.addItem(new goog.ui.ComboBoxItem('simple.fp'));
 
     filesBox.render(el);
 
@@ -122,7 +122,7 @@ function startup()
         goog.style.showElement(goog.dom.getElement('output_container'), true);
         var code = editor.getCode();
         Sk.configure({
-            output: function(x) { runOutput.innerHTML += x; },
+            output: function(x) { runOutput.innerHTML += x.replace("<", "&lt;"); },
             debugout: function() { runOutput.innerHTML += "<font color='red'>" + Array.prototype.slice.call(arguments,0).join(' ') + "</font>\n"; },
             read: builtinRead,
             sysargv: [ '__init__.py' ],
@@ -153,7 +153,7 @@ function startup()
     hideCodeButton.render(goog.dom.getElement('hidecode'));
 
     var builtinFiles;
-    goog.net.XhrIo.send("http://localhost:20710/import", function(e) {
+    goog.net.XhrIo.send("/static/builtin.js", function(e) {
             var xhr = e.target;
             var obj = xhr.getResponseJson();
             builtinFiles = obj['files'];

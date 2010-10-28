@@ -5,14 +5,104 @@ var $builtinmodule = function(name)
     // todo; won't work compressed
     mod.tp$name = "webgl";
 
+    //
+    // Setup code taken from 'tdl'. I tried to use more of it, but it's a bit
+    // broken.
+    //
+    var makeFailHTML = function(msg) {
+        return '' +
+            '<table style="background-color: #8CE; width: 100%; height: 100%;"><tr>' +
+            '<td align="center">' +
+            '<div style="display: table-cell; vertical-align: middle;">' +
+            '<div style="">' + msg + '</div>' +
+            '</div>' +
+            '</td></tr></table>';
+    };
+
+    var GET_A_WEBGL_BROWSER = '' +
+        'This page requires a browser that supports WebGL.<br/>' +
+        '<a href="http://get.webgl.org">Click here to upgrade your browser.</a>';
+
+    var NEED_HARDWARE = '' +
+        "It doesn't appear your computer can support WebGL.<br/>" +
+        '<a href="http://get.webgl.org">Click here for more information.</a>';
+  
+    var create3DContext = function(canvas) {
+        var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+        var context = null;
+        for (var ii = 0; ii < names.length; ++ii) {
+            try {
+                context = canvas.getContext(names[ii]);
+            } catch(e) {}
+            if (context) {
+                break;
+            }
+        }
+        if (context) {
+            // Disallow selection by default. This keeps the cursor from changing to an
+            // I-beam when the user clicks and drags.  It's easier on the eyes.
+            function returnFalse() {
+                return false;
+            }
+
+            canvas.onselectstart = returnFalse;
+            canvas.onmousedown = returnFalse;
+        }
+        return context;
+    };
+
+    var setupWebGL = function(canvasContainerId, opt_canvas) {
+        var container = document.getElementById(canvasContainerId);
+        var context;
+        if (!opt_canvas) {
+            opt_canvas = container.getElementsByTagName("canvas")[0];
+        }
+        if (!opt_canvas) {
+            // this browser doesn't support the canvas tag at all. Not even 2d.
+            container.innerHTML = makeFailHTML(
+                    GET_A_WEBGL_BROWSER);
+            return;
+        }
+
+        var context = create3DContext(opt_canvas);
+        if (!context) {
+            // TODO(gman): fix to official way to detect that it's the user's machine, not the browser.
+            var browserStrings = navigator.userAgent.match(/(\w+\/.*? )/g);
+            var browsers = {};
+            try {
+                for (var b = 0; b < browserStrings.length; ++b) {
+                    var parts = browserStrings[b].match(/(\w+)/g);
+                    var bb = [];
+                    for (var ii = 1; ii < parts.length; ++ii) {
+                        bb.push(parseInt(parts[ii]));
+                    }
+                    browsers[parts[0]] = bb;
+                }
+            } catch (e) {
+            }
+            if (browsers.Chrome &&
+                    (browsers.Chrome[0] > 7 ||
+                     (browsers.Chrome[0] == 7 && browsers.Chrome[1] > 0) ||
+                     (browsers.Chrome[0] == 7 && browsers.Chrome[1] == 0 && browsers.Chrome[2] >= 521))) {
+                container.innerHTML = makeFailHTML(
+                        NEED_HARDWARE);
+            } else {
+                container.innerHTML = makeFailHTML(
+                        GET_A_WEBGL_BROWSER);
+            }
+        }
+        return context;
+    };
+
     mod.Context = Sk.misceval.buildClass(mod, function($gbl, $loc)
             {
                 $loc.__init__ = new Sk.builtin.func(function(self, canvasid)
                     {
                         var canvas = document.getElementById(canvasid.v);
-                        var gl = canvas.getContext("experimental-webgl");
-                        if (!gl)
-                            gl = canvas.getContext("webgl");
+                        // NB: purposefully leak this to global because
+                        // everything wants it (esp. for constants it's a pain
+                        // to have to pass it to utility functions)
+                        /*var*/ gl = setupWebGL(canvasid.v, canvas)
                         if (!gl)
                             throw "couldn't get webgl context, unsupported browser?";
 
@@ -48,6 +138,7 @@ var $builtinmodule = function(name)
                         gl.viewport(0, 0, canvas.width, canvas.height);
                         gl.clear(gl.COLOR_BUFFER_BIT);
                         gl.flush();
+                        console.log("gl initialized", gl);
                     });
 
                 $loc.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
@@ -55,21 +146,16 @@ var $builtinmodule = function(name)
                 $loc.setDrawFunc = new Sk.builtin.func(function(self, func)
                         {
                             var startTime = (new Date()).getTime();
-                            setTimeout(function() {
+                            var intervalId = setInterval(function() {
                                     Sk.misceval.call(func, undefined, self, (new Date()).getTime() - startTime);
                                     if (goog.global.shutdownGLContext)
                                     {
-                                        console.log("Shutting down..");
+                                        clearInterval(intervalId);
+                                        console.log("gl draw function shutting down");
                                         return;
                                     }
-                                    setTimeout(arguments.callee, 1);
-                                }, 1);
+                                }, 1000.0 / 60.0);
                                 
-                        });
-
-                $loc.perspective = new Sk.builtin.func(function(self, fov, aspect, near, far)
-                        {
-                            
                         });
             },
             'Context', []);
@@ -85,7 +171,10 @@ var $builtinmodule = function(name)
                             gl.shaderSource(vs, vertex.v);
                             gl.compileShader(vs);
                             if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS))
+                            {
+                                console.log(gl.getShaderInfoLog(vs));
                                 throw new Sk.builtin.SyntaxError("Error compiling vertex shader:" + gl.getShaderInfoLog(vs));
+                            }
                             gl.attachShader(self.program, vs);
                             gl.deleteShader(vs);
                             
@@ -93,81 +182,170 @@ var $builtinmodule = function(name)
                             gl.shaderSource(fs, fragment.v);
                             gl.compileShader(fs);
                             if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS))
+                            {
+                                console.log(gl.getShaderInfoLog(fs));
                                 throw new Sk.builtin.SyntaxError("Error compiling fragment shader:" + gl.getShaderInfoLog(fs));
+                            }
                             gl.attachShader(self.program, fs);
                             gl.deleteShader(fs);
 
                             gl.linkProgram(self.program);
                             gl.useProgram(self.program);
 
-                            var re = /(uniform|attribute)\s+\S+\s+(\S+)\s*;/g;
-                            var match = null;
-                            while ((match = re.exec(vertex.v + "\n" + fragment.v)) != null)
+
+                            //
+                            //
+                            // Some more init code from 'tdl' (slightly
+                            // tweaked)
+                            //
+                            //
+
+                            var endsWith = function(haystack, needle) {
+                                return haystack.substr(haystack.length - needle.length) === needle;
+                            };
+
+                            // Look up attribs.
+                            var attribs = {
+                            };
+                            // Also make a plain table of the locs.
+                            var attribLocs = {
+                            };
+
+                            function createAttribSetter(info, index) {
+                                if (info.size != 1) {
+                                    throw("arrays of attribs not handled");
+                                }
+                                return function(b) {
+                                    gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer());
+                                    gl.enableVertexAttribArray(index);
+                                    gl.vertexAttribPointer(
+                                            index, b.numComponents(), b.type(), false, b.stride(), b.offset());
+                                };
+                            }
+
+                            var numAttribs = gl.getProgramParameter(self.program, gl.ACTIVE_ATTRIBUTES);
+                            for (var ii = 0; ii < numAttribs; ++ii) {
+                                var info = gl.getActiveAttrib(self.program, ii);
+                                name = info.name;
+                                if (endsWith(name, "[0]")) {
+                                    name = name.substr(0, name.length - 3);
+                                }
+                                var index = gl.getAttribLocation(self.program, info.name);
+                                attribs[name] = createAttribSetter(info, index);
+                                attribLocs[name] = index
+                            }
+
+                            // Look up uniforms
+                            var numUniforms = gl.getProgramParameter(self.program, gl.ACTIVE_UNIFORMS);
+                            var uniforms = {
+                            };
+
+                            function createUniformSetter(info) {
+                                var loc = gl.getUniformLocation(self.program, info.name);
+                                var type = info.type;
+                                if (info.size > 1 && endsWith(info.name, "[0]")) {
+                                    // It's an array.
+                                    if (type == gl.FLOAT)
+                                        return function(v) { gl.uniform1fv(loc, v); };
+                                    if (type == gl.FLOAT_VEC2)
+                                        return function(v) { gl.uniform2fv(loc, v); };
+                                    if (type == gl.FLOAT_VEC3)
+                                        return function(v) { gl.uniform3fv(loc, v); };
+                                    if (type == gl.FLOAT_VEC4)
+                                        return function(v) { gl.uniform4fv(loc, v); };
+                                    if (type == gl.INT)
+                                        return function(v) { gl.uniform1iv(loc, v); };
+                                    if (type == gl.INT_VEC2)
+                                        return function(v) { gl.uniform2iv(loc, v); };
+                                    if (type == gl.INT_VEC3)
+                                        return function(v) { gl.uniform3iv(loc, v); };
+                                    if (type == gl.INT_VEC4)
+                                        return function(v) { gl.uniform4iv(loc, v); };
+                                    if (type == gl.BOOL)
+                                        return function(v) { gl.uniform1iv(loc, v); };
+                                    if (type == gl.BOOL_VEC2)
+                                        return function(v) { gl.uniform2iv(loc, v); };
+                                    if (type == gl.BOOL_VEC3)
+                                        return function(v) { gl.uniform3iv(loc, v); };
+                                    if (type == gl.BOOL_VEC4)
+                                        return function(v) { gl.uniform4iv(loc, v); };
+                                    if (type == gl.FLOAT_MAT2)
+                                        return function(v) { gl.uniformMatrix2fv(loc, false, v); };
+                                    if (type == gl.FLOAT_MAT3)
+                                        return function(v) { gl.uniformMatrix3fv(loc, false, v); };
+                                    if (type == gl.FLOAT_MAT4)
+                                        return function(v) { gl.uniformMatrix4fv(loc, false, v); };
+                                    if (type == gl.SAMPLER_2D)
+                                        return function(v) { gl.uniform1iv(loc, v); };
+                                    if (type == gl.SAMPLER_CUBE_MAP)
+                                        return function(v) { gl.uniform1iv(loc, v); };
+                                    throw ("unknown type: 0x" + type.toString(16));
+                                } else {
+                                    if (type == gl.FLOAT)
+                                        return function(v) { gl.uniform1f(loc, v); };
+                                    if (type == gl.FLOAT_VEC2)
+                                        return function(v) { gl.uniform2fv(loc, v); };
+                                    if (type == gl.FLOAT_VEC3)
+                                        return function(v) { gl.uniform3fv(loc, v); };
+                                    if (type == gl.FLOAT_VEC4)
+                                        return function(v) { gl.uniform4fv(loc, v); };
+                                    if (type == gl.INT)
+                                        return function(v) { gl.uniform1i(loc, v); };
+                                    if (type == gl.INT_VEC2)
+                                        return function(v) { gl.uniform2iv(loc, v); };
+                                    if (type == gl.INT_VEC3)
+                                        return function(v) { gl.uniform3iv(loc, v); };
+                                    if (type == gl.INT_VEC4)
+                                        return function(v) { gl.uniform4iv(loc, v); };
+                                    if (type == gl.BOOL)
+                                        return function(v) { gl.uniform1i(loc, v); };
+                                    if (type == gl.BOOL_VEC2)
+                                        return function(v) { gl.uniform2iv(loc, v); };
+                                    if (type == gl.BOOL_VEC3)
+                                        return function(v) { gl.uniform3iv(loc, v); };
+                                    if (type == gl.BOOL_VEC4)
+                                        return function(v) { gl.uniform4iv(loc, v); };
+                                    if (type == gl.FLOAT_MAT2)
+                                        return function(v) { gl.uniformMatrix2fv(loc, false, v); };
+                                    if (type == gl.FLOAT_MAT3)
+                                        return function(v) { gl.uniformMatrix3fv(loc, false, v); };
+                                    if (type == gl.FLOAT_MAT4)
+                                        return function(v) { gl.uniformMatrix4fv(loc, false, v); };
+                                    if (type == gl.SAMPLER_2D)
+                                        return function(v) { gl.uniform1i(loc, v); };
+                                    if (type == gl.SAMPLER_CUBE)
+                                        return function(v) { gl.uniform1i(loc, v); };
+                                    throw ("unknown type: 0x" + type.toString(16));
+                                }
+                            }
+
+                            for (var ii = 0; ii < numUniforms; ++ii) {
+                                var info = gl.getActiveUniform(self.program, ii);
+                                name = info.name;
+                                if (endsWith(name, "[0]")) {
+                                    name = name.substr(0, name.length - 3);
+                                }
+                                uniforms[name] = createUniformSetter(info);
+                            }
+
+                            self.attrib = attribs;
+                            self.attribLoc = attribLocs;
+                            self.uniform = uniforms;
+                        });
+
+                $loc.setUniform = new Sk.builtin.func(function(self, uniform, value)
+                        {
+                            var func = self.uniform[uniform.v];
+                            if (func)
                             {
-                                var name = match[2];
-                                var into = new Sk.builtin.str(name + "Loc");
-                                var loc = null;
-                                if (match[1] === "uniform")
-                                    loc = gl.getUniformLocation(self.program, name);
-                                else if (match[1] === "attribute")
-                                    loc = gl.getAttribLocation(self.program, name);
-                                self['$d'].mp$ass_subscript(into, loc);
+                                console.log("SET UNI:", uniform.v, value);
+                                func(Sk.ffi.remapToJs(value));
                             }
                         });
 
                 $loc.use = new Sk.builtin.func(function(self)
                         {
                             self.gl.useProgram(self.program);
-                            /*
-"""
-function computeNormalMatrix(matrix, normal) {
-    var e = matrix.elements;
-
-    var det = (e[0 * 4 + 0] * (e[1 * 4 + 1] * e[2 * 4 + 2] -
-                               e[2 * 4 + 1] * e[1 * 4 + 2]) -
-               e[0 * 4 + 1] * (e[1 * 4 + 0] * e[2 * 4 + 2] -
-                               e[1 * 4 + 2] * e[2 * 4 + 0]) +
-               e[0 * 4 + 2] * (e[1 * 4 + 0] * e[2 * 4 + 1] -
-                               e[1 * 4 + 1] * e[2 * 4 + 0]));
-    var invDet = 1. / det;
-
-    normal[0 * 3 + 0] = invDet * (e[1 * 4 + 1] * e[2 * 4 + 2] -
-                                  e[2 * 4 + 1] * e[1 * 4 + 2]);
-    normal[1 * 3 + 0] = invDet * -(e[0 * 4 + 1] * e[2 * 4 + 2] -
-                                   e[0 * 4 + 2] * e[2 * 4 + 1]);
-    normal[2 * 3 + 0] = invDet * (e[0 * 4 + 1] * e[1 * 4 + 2] -
-                                  e[0 * 4 + 2] * e[1 * 4 + 1]);
-    normal[0 * 3 + 1] = invDet * -(e[1 * 4 + 0] * e[2 * 4 + 2] -
-                                   e[1 * 4 + 2] * e[2 * 4 + 0]);
-    normal[1 * 3 + 1] = invDet * (e[0 * 4 + 0] * e[2 * 4 + 2] -
-                                  e[0 * 4 + 2] * e[2 * 4 + 0]);
-    normal[2 * 3 + 1] = invDet * -(e[0 * 4 + 0] * e[1 * 4 + 2] -
-                                   e[1 * 4 + 0] * e[0 * 4 + 2]);
-    normal[0 * 3 + 2] = invDet * (e[1 * 4 + 0] * e[2 * 4 + 1] -
-                                  e[2 * 4 + 0] * e[1 * 4 + 1]);
-    normal[1 * 3 + 2] = invDet * -(e[0 * 4 + 0] * e[2 * 4 + 1] -
-                                   e[2 * 4 + 0] * e[0 * 4 + 1]);
-    normal[2 * 3 + 2] = invDet * (e[0 * 4 + 0] * e[1 * 4 + 1] -
-                                  e[1 * 4 + 0] * e[0 * 4 + 1]);
-
-    return normal;
-}
-"""
-
-
-if (this.mvpLoc != undefined) {
-    // TODO(kwaters): hack
-    mvp.loadIdentity();
-    mvp.multiply(modelview);
-    mvp.multiply(projection);
-    gl.uniformMatrix4fv(this.mvpLoc, gl.FALSE, mvp.elements);
-}
-
-if (this.normalMatrixLoc !== undefined) {
-    gl.uniformMatrix3fv(this.normalMatrixLoc, gl.FALSE, computeNormalMatrix(modelview, normalMatrix));
-}
-*/
-
                         });
             },
             'Shader', []);
