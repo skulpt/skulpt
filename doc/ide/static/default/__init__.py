@@ -1,6 +1,7 @@
 import webgl
 import webgl.primitives
 import webgl.models
+import webgl.matrix4 as m4
 
 def main():
     print "Starting up..."
@@ -10,10 +11,21 @@ def main():
     
     m = webgl.models.Model(sh, webgl.primitives.createCube(1), [])
 
+    eyePos = webgl.Float32Array([0, 0, 3])
+    target = webgl.Float32Array([-0.3, 0, 0])
+    up = webgl.Float32Array([0, 1, 0])
+
+    view = webgl.Float32Array(16)
+    wvp = webgl.Float32Array(16)
+
+    m4.lookAt(view, eyePos, target, up)
+
+    print view
+
     def draw(gl, time):
         print "wee", time
-        #m.drawPrep()
-        #m.draw()
+        m.drawPrep()
+        m.draw()
 
     gl.setDrawFunc(draw)
 

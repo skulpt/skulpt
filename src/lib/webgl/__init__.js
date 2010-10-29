@@ -351,5 +351,27 @@ var $builtinmodule = function(name)
             'Shader', []);
 
 
+    mod.Float32Array = Sk.misceval.buildClass(mod, function($gbl, $loc)
+            {
+                $loc.__init__ = new Sk.builtin.func(function(self, data)
+                        {
+                            if (typeof data === "number")
+                                self.v = new Float32Array(data);
+                            else
+                                self.v = new Float32Array(Sk.ffi.remapToJs(data));
+                        });
+
+                $loc.__repr__ = new Sk.builtin.func(function(self)
+                    {
+                        var copy = [];
+                        for (var i = 0; i < self.v.length; ++i)
+                            copy.push(self.v[i]);
+                        return new Sk.builtin.str("["+copy.join(', ')+"]");
+                    });
+
+            },
+            'Float32Array', []);
+
+
     return mod;
 };
