@@ -343,6 +343,16 @@ var $builtinmodule = function(name)
                             }
                         });
 
+                $loc.setUniform$impl = function(self, uniform, value)
+                        {
+                            var func = self.uniform[uniform];
+                            if (func)
+                            {
+                                console.log("SET UNI:", uniform, value);
+                                func(value);
+                            }
+                        };
+
                 $loc.use = new Sk.builtin.func(function(self)
                         {
                             self.gl.useProgram(self.program);

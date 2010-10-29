@@ -1,3 +1,4 @@
+import sys
 import webgl
 import webgl.primitives
 import webgl.models
@@ -16,16 +17,34 @@ def main():
     up = webgl.Float32Array([0, 1, 0])
 
     view = webgl.Float32Array(16)
-    wvp = webgl.Float32Array(16)
+    world = webgl.Float32Array(16)
+    view = webgl.Float32Array(16)
+    viewproj = webgl.Float32Array(16)
+    worldview = webgl.Float32Array(16)
+    worldviewproj = webgl.Float32Array(16)
+    proj = webgl.Float32Array(16)
 
     m4.lookAt(view, eyePos, target, up)
 
     print view
 
     def draw(gl, time):
-        print "wee", time
-        m.drawPrep()
-        m.draw()
+
+        m4.perspective(proj, 60, 16.0/9.0, 0.1, 500);
+        m4.rotationY(world, time * 0.2)
+        m4.mul(viewproj, view, proj)
+        m4.mul(worldview, world, view)
+        m4.mul(worldviewproj, world, viewproj)
+
+        #m4.identity(worldviewproj);
+
+        uniforms = {
+            'u_worldviewproj': worldviewproj,
+        }
+        m.drawPrep(uniforms)
+        m.draw({})
+
+        print worldviewproj
 
     gl.setDrawFunc(draw)
 

@@ -107,6 +107,8 @@ var $builtinmodule = function(name)
                         var buffers = self.buffers;
                         var textures = self.textures;
 
+                        uniforms = Sk.ffi.remapToJs(uniforms);
+
                         Sk.misceval.call(shader.use, undefined, shader);
 
                         for (var buffer in buffers) {
@@ -123,12 +125,12 @@ var $builtinmodule = function(name)
 
                         for (var texture in textures) {
                             var unit = self.textureUnits[texture];
-                            Sk.misceval.call(shader.setUniform, undefined, shader, texture, unit);
+                            shader.setUniform$impl(shader, textuer, unit);
                             textures[texture].bindToUnit(unit);
                         }
 
                         for (var uniform in uniforms) {
-                            Sk.misceval.call(shader.setUniform, undefined, shader, uniform, uniforms[uniform]);
+                            shader.setUniform$impl(shader, uniform, uniforms[uniform]);
                         }
                     });
 
@@ -144,14 +146,15 @@ var $builtinmodule = function(name)
                 $loc.draw = new Sk.builtin.func(function(self, uniforms, opt_textures)
                     {
                         var shader = self.shader;
+                        uniforms = Sk.ffi.remapToJs(uniforms);
                         for (uniform in uniforms) {
-                            Sk.misceval.call(shader.setUniform, undefined, shader, uniform, uniforms[uniform]);
+                            shader.setUniform$impl(shader, uniform, uniforms[uniform]);
                         }
 
                         if (opt_textures) {
                             for (var texture in opt_textures) {
                                 var unit = self.textureUnits[texture];
-                                Sk.misceval.call(shader.setUniform, undefined, shader, texture, unit);
+                                shader.setUniform$impl(shader, texture, unit);
                                 opt_textures[texture].bindToUnit(unit);
                             }
                         }

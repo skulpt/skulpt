@@ -61,11 +61,10 @@ Sk.ffi.remapToJs = function(obj)
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         return ret;
     }
-    else if (obj instanceof Sk.builtin.str)
-        return obj.v;
     else if (typeof obj === "number" || typeof obj === "boolean")
         return obj;
-    goog.asserts.fail("unhandled remap type");
+    else
+        return obj.v;
 };
 goog.exportSymbol("Sk.ffi.remapToJs", Sk.ffi.remapToJs);
 
