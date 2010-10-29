@@ -133,12 +133,14 @@ var $builtinmodule = function(name)
                             }
                         }
 
+                        console.log("gl initialized", gl, canvas, canvas.width, canvas.height);
+
                         // set to cornflower so we know we're init'd at least
-                        gl.clearColor(100/255.0,149/255.0,237/255.0,1)
+                        gl.clearColor(100/255.0,149/255.0,237/255.0,1);
+                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                         gl.viewport(0, 0, canvas.width, canvas.height);
                         gl.clear(gl.COLOR_BUFFER_BIT);
                         gl.flush();
-                        console.log("gl initialized", gl);
                     });
 
                 $loc.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
@@ -338,7 +340,7 @@ var $builtinmodule = function(name)
                             var func = self.uniform[uniform.v];
                             if (func)
                             {
-                                console.log("SET UNI:", uniform.v, value);
+                                //console.log("SET UNI:", uniform.v, value);
                                 func(Sk.ffi.remapToJs(value));
                             }
                         });
@@ -348,7 +350,7 @@ var $builtinmodule = function(name)
                             var func = self.uniform[uniform];
                             if (func)
                             {
-                                console.log("SET UNI:", uniform, value);
+                                //console.log("SET UNI:", uniform, value);
                                 func(value);
                             }
                         };
