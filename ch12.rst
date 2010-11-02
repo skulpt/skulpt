@@ -348,7 +348,7 @@ with a capital ``L`` at the end of your number:
     >>> type(1L)
 
 The third is to call ``long`` with the value to be converted as an argument.
-``long``, just like ``int`` and ``float``, can convert ``int``s, ``floats``,
+``long``, just like ``int`` and ``float``, can convert ``int``\s, ``float``\s,
 and even strings of digits to long integers:
 
 .. sourcecode:: python

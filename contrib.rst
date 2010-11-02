@@ -45,7 +45,7 @@ Second Edition
   the book.  You set the standard for the active and engaged learners that will
   help make the new Governor's Academy what it is to become.  Thanks to you
   this is truly a *student tested* text.
-* Thanks in a similar vain to the students in Jeff's Computer Science
+* Thanks in a similar vein to the students in Jeff's Computer Science
   class at the HB-Woodlawn program during the 2007-2008 school year: James
   Crowley, Joshua Eddy, Eric Larson, Brian McGrail, and Iliana Vazuka.
 * Ammar Nabulsi sent in numerous corrections from Chapters 1 and 2.

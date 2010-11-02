@@ -69,12 +69,19 @@ and ending with a colon.
 
 This definition creates a new class called ``Point``. The **pass** statement
 has no effect; it is only necessary because a compound statement must have
-something in its body.
+something in its body.  A docstring could serve the same purpose:
+
+.. sourcecode:: python
+    
+    class Point:
+        "Point class for storing mathematical points." 
+
 
 By creating the ``Point`` class, we created a new type, also called ``Point``.
 The members of this type are called **instances** of the type or **objects**.
-Creating a new instance is called **instantiation**.  To instantiate a
-``Point`` object, we call a function named (you guessed it) ``Point``:
+Creating a new instance is called **instantiation**, and is accomplished by
+**calling the class**. Classes, like functions, are callable, and we
+instantiate a ``Point`` object by calling the ``Point`` class:
 
 .. sourcecode:: python
     
@@ -84,8 +91,11 @@ Creating a new instance is called **instantiation**.  To instantiate a
     >>> type(p)
     <type 'instance'>    
     
-The variable ``p`` is assigned a reference to a new ``Point`` object. A
-function like ``Point`` that creates new objects is called a **constructor**.
+The variable ``p`` is assigned a reference to a new ``Point`` object.
+
+It may be helpful to think of a class as a factory for making objects, so
+our ``Point`` class is a factory for making points.  The class itself isn't an
+instance of a point, but it contains the machinary to make point instances.
 
 
 Attributes
@@ -125,8 +135,8 @@ We can read the value of an attribute using the same syntax:
     >>> print x
     3
 
-The expression ``p.x`` means, Go to the object ``p`` refers to and get the
-value of ``x``. In this case, we assign that value to a variable named ``x``.
+The expression ``p.x`` means, "Go to the object ``p`` refers to and get the
+value of ``x``". In this case, we assign that value to a variable named ``x``.
 There is no conflict between the variable ``x`` and the attribute ``x``. The
 purpose of dot notation is to identify which variable you are referring to
 unambiguously.
@@ -167,6 +177,49 @@ To solve this problem we add an **initialization method** to our class.
             self.x = x
             self.y = y 
 
+A **method** behaves like a function but it is part of an object instance.
+Like a data attribute it is accessed using dot notation.  The initialization
+method is called automatically when the class is called.
+
+Let's add another method, ``distance_from_origin``, to see better how methods
+work:
+
+.. sourcecode:: python
+    
+    class Point:
+        def __init__(self, x=0, y=0):
+            self.x = x
+            self.y = y 
+
+        def distance_from_origin(self):
+            return ((self.x ** 2) + (self.y ** 2) ** 0.5)
+
+Creating a few point instances and looking at their attributes and calling
+our new method on them shows how to use ``Points``:
+
+.. sourcecode:: python
+
+    >>> p = Point(3, 4)
+    >>> p.x
+    3
+    >>> p.y
+    4
+    >>> p.distance_from_origin()
+    5.0
+    >>> q = Point(5, 12)
+    >>> q.x
+    5
+    >>> q.y
+    12
+    >>> q.distance_from_origin()
+    13.0
+    >>> r = Point()
+    >>> r.x
+    0
+    >>> r.y
+    0
+    >>> r.distance_from_origin()
+    0.0
 
 Instances as parameters
 -----------------------
@@ -180,74 +233,6 @@ You can pass an instance as a parameter in the usual way. For example:
 
 ``print_point`` takes a point as an argument and displays it in the standard
 format. If you call ``print_point(blank)``, the output is ``(3, 4)``.
-
-
-Sameness
---------
-
-The meaning of the word same seems perfectly clear until you give it some
-thought, and then you realize there is more to it than you expected.
-
-For example, if you say, Chris and I have the same car, you mean that his car
-and yours are the same make and model, but that they are two different cars. If
-you say, Chris and I have the same mother, you mean that his mother and yours
-are the same person.
-
-When you talk about objects, there is a similar ambiguity. For example, if two
-``Point``\ s are the same, does that mean they contain the same data
-(coordinates) or that they are actually the same object?
-
-To find out if two references refer to the same object, use the ``==``
-operator. For example:
-
-.. sourcecode:: python
-    
-    >>> p1 = Point()
-    >>> p1.x = 3
-    >>> p1.y = 4
-    >>> p2 = Point()
-    >>> p2.x = 3
-    >>> p2.y = 4
-    >>> p1 == p2
-    False
-
-Even though ``p1`` and ``p2`` contain the same coordinates, they are not the
-same object. If we assign ``p1`` to ``p2``, then the two variables are aliases
-of the same object:
-
-.. sourcecode:: python
-    
-    >>> p2 = p1
-    >>> p1 == p2
-    True
-
-This type of equality is called **shallow equality** because it compares only
-the references, not the contents of the objects.
-
-To compare the contents of the objects --- **deep equality** --- we can write a
-function called ``same_point``:
-
-.. sourcecode:: python
-    
-    def same_point(p1, p2):
-        return (p1.x == p2.x) and (p1.y == p2.y)
-
-Now if we create two different objects that contain the same data, we can use
-``same_point`` to find out if they represent the same point.
-
-.. sourcecode:: python
-    
-    >>> p1 = Point()
-    >>> p1.x = 3
-    >>> p1.y = 4
-    >>> p2 = Point()
-    >>> p2.x = 3
-    >>> p2.y = 4
-    >>> same_point(p1, p2)
-    True
-
-Of course, if the two variables refer to the same object, they have both
-shallow and deep equality.
 
 
 Rectangles

@@ -780,7 +780,7 @@ The following program implements a subset of the behavior of the Unix `tree
         dirlist = getdirlist(path)
     
         for num, file in enumerate(dirlist):
-            lastprefix = prefix[:-3] + '``--'
+            lastprefix = prefix[:-3] + '`--'
             dirsize = len(dirlist)
     
             if num < dirsize - 1:
@@ -800,7 +800,7 @@ The following program implements a subset of the behavior of the Unix `tree
     
     
     if __name__ == '__main__':
-        root =  getroot()
+        root = getroot()
         tree_str, files, dirs = traverse(root)
     
         if dirs == 1:
