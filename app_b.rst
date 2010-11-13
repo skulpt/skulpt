@@ -133,7 +133,7 @@ Plot
 
 .. sourcecode:: python
     
-    Plot(pos, color=color.black, size=1)
+    Plot(pos, color=color.BLACK, size=1)
 
 It puts a dot on the screen.
 
@@ -152,7 +152,7 @@ Line
 
 .. sourcecode:: python
     
-    Line(start, end, color=color.black)
+    Line(start, end, color=color.BLACK)
 
 Creates a line on the screen.
 
@@ -171,7 +171,7 @@ Box
 
 .. sourcecode:: python
     
-    Box(center, width, height, filled=False, color=color.black, thickness=1)
+    Box(center, width, height, filled=False, color=color.BLACK, thickness=1)
 
 This creates a Box on the screen
 
@@ -199,7 +199,7 @@ Polygon
 
 .. sourcecode:: python
     
-    Polygon(points, filled=False, color=color.black, thickness=1) 
+    Polygon(points, filled=False, color=color.BLACK, thickness=1) 
 
 
 Creates a polygon on the screen
@@ -224,7 +224,7 @@ Circle
 
 .. sourcecode:: python
     
-    Circle(center, radius, filled=False, color=color.black, thickness=1)
+    Circle(center, radius, filled=False, color=color.BLACK, thickness=1)
 
 Draws a circle, its ``center`` is a set of coordinates, and the ``radius``
 is in pixels. It defaults to not being filled and the color black.
@@ -250,7 +250,7 @@ Arc
 
 .. sourcecode:: python
     
-    Arc(center, radius, start_angle, end_angle, filled=False, color=color.black, thickness=1)
+    Arc(center, radius, start_angle, end_angle, filled=False, color=color.BLACK, thickness=1)
 
 Creates an arc on the screen.
 
@@ -282,7 +282,7 @@ Oval
 
 .. sourcecode:: python
     
-    Oval(center, width, height, filled=False, color=color.black, thickness=1)
+    Oval(center, width, height, filled=False, color=color.BLACK, thickness=1)
 
 Puts an oval on the screen wherever you want.
 
@@ -413,7 +413,7 @@ Text()
 
 .. sourcecode:: python
     
-    Text(text, pos, color=color.black, size=12)
+    Text(text, pos, color=color.BLACK, size=12)
 
 Puts text on the screen
 
