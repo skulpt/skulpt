@@ -542,7 +542,7 @@ Exercises
    In this case, Python is complaining because there is no operator between the
    numbers.
    
-   See if you can a few more examples of things that will produce error
+   See if you can find a few more examples of things that will produce error
    messages when you enter them at the Python prompt. Write down what you enter
    at the prompt and the last line of the error message that Python reports
    back to you. 
