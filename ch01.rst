@@ -516,8 +516,8 @@ Exercises
 ---------
 
 #. Write an English sentence with understandable semantics but incorrect
-   syntax. Write another sentence which has correct syntax but has semantic
-   errors.
+   syntax. Write another English sentence which has correct syntax but has
+   semantic errors.
 #. Start a Python shell. Type ``1 + 2`` and then hit return. Python *evaluates* 
    this *expression*, prints the result, and then prints another prompt. ``*``
    is the *multiplication operator*, and ``**`` is the
@@ -542,9 +542,10 @@ Exercises
    In this case, Python is complaining because there is no operator between the
    numbers.
    
-   Write down three more examples of strings that will produce error messages
-   when you enter them at the Python prompt. Explain why each example is not
-   valid Python syntax.
+   See if you can a few more examples of things that will produce error
+   messages when you enter them at the Python prompt. Write down what you enter
+   at the prompt and the last line of the error message that Python reports
+   back to you. 
 #. Type `print 'hello'`. Python executes this statement, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
    used to enclose the string are not part of the output.  Now type ``"hello"``
