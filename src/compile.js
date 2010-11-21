@@ -405,6 +405,7 @@ Compiler.prototype.cboolop = function(e)
         jtype.call(this, this.vexpr(s[i]), end);
     }
     out(retval, "=", e.op === And, ";");
+    this._jump(end);
     this.setBlock(end);
     return retval;
 };

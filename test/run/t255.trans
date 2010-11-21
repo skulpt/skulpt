@@ -1,0 +1,7 @@
+Module(body=[Print(dest=None,
+                   values=[BoolOp(op=Or(),
+                                  values=[Name(id='False',
+                                               ctx=Load()),
+                                          Name(id='False',
+                                               ctx=Load())])],
+                   nl=True)])
