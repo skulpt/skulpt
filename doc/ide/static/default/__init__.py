@@ -26,7 +26,8 @@ def main():
     normalmat = webgl.Float32Array(16)
     tmp = webgl.Float32Array(16)
 
-    gl.disable(gl.CULL_FACE)
+    gl.cullFace(gl.BACK)
+    gl.depthFunc(gl.LEQUAL)
 
     m4.lookAt(view, eyePos, target, up)
 
@@ -41,7 +42,7 @@ def main():
         m4.mul(worldview, world, view)
         m4.mul(worldviewproj, world, viewproj)
 
-        m4.transpose(normalmat, worldview)
+        m4.invert(normalmat, world)
 
         uniforms = {
             'u_worldviewproj': worldviewproj,
@@ -65,7 +66,7 @@ void main()
 {
     gl_Position = u_worldviewproj * vec4(position, 1);
     vec4 transNormal = u_normalmat * vec4(normal, 1);
-    v_dot = max(dot(transNormal.xyz, normalize(vec3(1, 1, 1))), 0.0);
+    v_dot = max(dot(transNormal.xyz, normalize(vec3(0, 0, 1))), 0.0);
 }
 """
  

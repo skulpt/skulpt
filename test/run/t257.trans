@@ -1,0 +1,6 @@
+Module(body=[Print(dest=None,
+                   values=[BoolOp(op=Or(),
+                                  values=[List(elts=[],
+                                               ctx=Load()),
+                                          Num(n=5)])],
+                   nl=True)])
