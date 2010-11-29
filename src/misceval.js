@@ -215,7 +215,8 @@ Sk.misceval.isTrue = function(x)
     if (x === false) return false;
     if (x === null) return false;
     if (typeof x === "number") return x !== 0;
-    // todo; map len, seq len == 0
+    if (x.mp$length) return x.mp$length() !== 0;
+    if (x.sq$length) return x.sq$length() !== 0;
     return true;
 };
 goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);

@@ -397,14 +397,19 @@ Compiler.prototype.cboolop = function(e)
     else
         jtype = this._jumptrue;
     var end = this.newBlock('end of boolop');
-    var retval = this._gr('boolopsucc', e.op !== And);
     var s = e.values;
     var n = s.length;
+    var retval;
     for (var i = 0; i < n; ++i)
     {
-        jtype.call(this, this.vexpr(s[i]), end);
+        var expres = this.vexpr(s[i])
+        if (i === 0)
+        {
+            retval = this._gr('boolopsucc', expres);
+        }
+        out(retval, "=", expres, ";");
+        jtype.call(this, expres, end);
     }
-    out(retval, "=", e.op === And, ";");
     this._jump(end);
     this.setBlock(end);
     return retval;
