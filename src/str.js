@@ -164,6 +164,16 @@ Sk.builtin.str.re_escape_ = function(s)
     return ret.join('');
 };
 
+Sk.builtin.str.prototype.lower = new Sk.builtin.func(function(self)
+{
+    return new Sk.builtin.str(self.v.toLowerCase());
+});
+
+Sk.builtin.str.prototype.upper = new Sk.builtin.func(function(self)
+{
+    return new Sk.builtin.str(self.v.toUpperCase());
+});
+
 Sk.builtin.str.prototype.join = new Sk.builtin.func(function(self, seq)
 {
     var arrOfStrs = [];
