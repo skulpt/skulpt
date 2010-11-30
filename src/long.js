@@ -17,7 +17,7 @@
 
 /**
  * @constructor
- * @param {number} size number of digits
+ * @param {number} $size number of digits
  */
 Sk.builtin.lng = function(x, $size) /* long is a reserved word */
 {
