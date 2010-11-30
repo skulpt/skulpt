@@ -1,0 +1,10 @@
+Module(body=[Print(dest=None,
+                   values=[UnaryOp(op=Invert(),
+                                   operand=Name(id='True',
+                                                ctx=Load()))],
+                   nl=True),
+             Print(dest=None,
+                   values=[UnaryOp(op=Invert(),
+                                   operand=Name(id='False',
+                                                ctx=Load()))],
+                   nl=True)])

@@ -204,7 +204,7 @@ goog.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 Sk.abstr.numberUnaryOp = function(v, op)
 {
     if (op === "Not") return Sk.misceval.isTrue(v) ? false : true;
-    else if (typeof v === "number")
+    else if (typeof v === "number" || typeof v === "boolean")
     {
         if (op === "USub") return -v;
         if (op === "UAdd") return v;
