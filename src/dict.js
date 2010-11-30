@@ -111,6 +111,56 @@ Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
     return d;
 });
 
+Sk.builtin.dict.prototype['items'] = new Sk.builtin.func(function(self)
+{
+    var ret = [];
+
+    for (var iter = self.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext())
+    {
+        var v = self.mp$subscript(k);
+        if (v === undefined)
+        {
+            //print(k, "had undefined v");
+            v = null;
+        }
+        ret.push(new Sk.builtin.tuple([k, v]));
+    }
+    return new Sk.builtin.list(ret);
+});
+
+Sk.builtin.dict.prototype['keys'] = new Sk.builtin.func(function(self)
+{
+    var ret = [];
+
+    for (var iter = self.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext())
+    {
+        ret.push(k);
+    }
+    return new Sk.builtin.list(ret);
+});
+
+Sk.builtin.dict.prototype['values'] = new Sk.builtin.func(function(self)
+{
+    var ret = [];
+
+    for (var iter = self.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext())
+    {
+        var v = self.mp$subscript(k);
+        if (v === undefined)
+        {
+            v = null;
+        }
+        ret.push(v);
+    }
+    return new Sk.builtin.list(ret);
+});
+
 /*
 
 $.prototype.clear = function() { throw "todo; dict.clear"; };
