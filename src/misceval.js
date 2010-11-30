@@ -115,9 +115,9 @@ Sk.misceval.richCompareBool = function(v, w, op)
         if (op === "In") return Sk.abstr.sequenceContains(w, v);
         if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
 
-        if (v.tp$richcompare)
+        if (v && v.tp$richcompare)
             return v.tp$richcompare(w, op);
-        else if (w.tp$richcompare)
+        else if (w && w.tp$richcompare)
             return w.tp$richcompare(v, Sk.misceval.swappedOp_[op]);
         else
         {
@@ -125,39 +125,39 @@ Sk.misceval.richCompareBool = function(v, w, op)
             // right:reversed-top:left
             // yeah, a macro or 3 would be nice...
             if (op === 'Eq')
-                if (v['__eq__'])
+                if (v && v['__eq__'])
                     return Sk.misceval.call(v['__eq__'], undefined, v, w);
-                else if (w['__ne__'])
+                else if (w && w['__ne__'])
                     return Sk.misceval.call(w['__ne__'], undefined, w, v);
             else if (op === 'NotEq')
-                if (v['__ne__'])
+                if (v && v['__ne__'])
                     return Sk.misceval.call(v['__ne__'], undefined, v, w);
-                else if (w['__eq__'])
+                else if (w && w['__eq__'])
                     return Sk.misceval.call(w['__eq__'], undefined, w, v);
             else if (op === 'Gt')
-                if (v['__gt__'])
+                if (v && v['__gt__'])
                     return Sk.misceval.call(v['__gt__'], undefined, v, w);
-                else if (w['__lt__'])
+                else if (w && w['__lt__'])
                     return Sk.misceval.call(w['__lt__'], undefined, w, v);
             else if (op === 'Lt')
-                if (v['__lt__'])
+                if (v && v['__lt__'])
                     return Sk.misceval.call(v['__lt__'], undefined, v, w);
-                else if (w['__gt__'])
+                else if (w && w['__gt__'])
                     return Sk.misceval.call(w['__gt__'], undefined, w, v);
             else if (op === 'GtE')
-                if (v['__ge__'])
+                if (v && v['__ge__'])
                     return Sk.misceval.call(v['__ge__'], undefined, v, w);
-                else if (w['__le__'])
+                else if (w && w['__le__'])
                     return Sk.misceval.call(w['__le__'], undefined, w, v);
             else if (op === 'LtE')
-                if (v['__le__'])
+                if (v && v['__le__'])
                     return Sk.misceval.call(v['__le__'], undefined, v, w);
-                else if (w['__ge__'])
+                else if (w && w['__ge__'])
                     return Sk.misceval.call(w['__ge__'], undefined, w, v);
 
             // if those aren't defined, fallback on the __cmp__ method if it
             // exists
-            if (v['__cmp__'])
+            if (v && v['__cmp__'])
             {
                 var ret = Sk.misceval.call(v['__cmp__'], undefined, v, w);
                 if (op === 'Eq') return ret === 0;
@@ -167,7 +167,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
                 else if (op === 'LtE') return ret <= 0;
                 else if (op === 'GtE') return ret >= 0;
             }
-            else if (w['__cmp__'])
+            else if (w && w['__cmp__'])
             {
                 // note, flipped on return value and call
                 var ret = Sk.misceval.call(w['__cmp__'], undefined, w, v);
