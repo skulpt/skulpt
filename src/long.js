@@ -19,12 +19,17 @@
  * @constructor
  * @param {number} size number of digits
  */
-Sk.builtin.lng = function(size) /* long is a reserved word */
+Sk.builtin.lng = function(x, $size) /* long is a reserved word */
 {
-    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(size);
+    if (x)
+    {
+        return Sk.builtin.lng.fromInt$(x);
+    }
 
-    this.digit$ = new Array(Math.abs(size));
-    this.size$ = size;
+    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(x, $size);
+
+    this.digit$ = new Array(Math.abs($size));
+    this.size$ = $size;
     return this;
 };
 
@@ -58,7 +63,7 @@ Sk.builtin.lng.fromInt$ = function(ival)
         t >>= Sk.builtin.lng.SHIFT$;
     }
 
-    var ret = new Sk.builtin.lng(ndigits);
+    var ret = new Sk.builtin.lng(undefined, ndigits);
     if (negative) ret.size$ = -ret.size$;
     t = ival;
     var i = 0;
@@ -77,7 +82,7 @@ Sk.builtin.lng.fromInt$ = function(ival)
 Sk.builtin.lng.mulInt$ = function(a, n)
 {
     var size_a = Math.abs(a.size$);
-    var z = new Sk.builtin.lng(size_a + 1);
+    var z = new Sk.builtin.lng(undefined, size_a + 1);
     var carry = 0;
     var i;
 
@@ -143,7 +148,7 @@ goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
 Sk.builtin.lng.prototype.clone = function()
 {
-    var ret = new Sk.builtin.lng(this.size$);
+    var ret = new Sk.builtin.lng(undefined, this.size$);
     ret.digit$ = this.digit$.slice(0);
     return ret;
 };
@@ -258,7 +263,7 @@ Sk.builtin.lng.prototype.divrem$ = function(other)
     {
         z = this.clone();
         var remi = z.divremInt$(other.digit$[0]);
-        rem = new Sk.builtin.lng(1);
+        rem = new Sk.builtin.lng(undefined, 1);
         rem.digit$[0] = remi;
     }
 	else
@@ -315,7 +320,7 @@ Sk.builtin.lng.add$ = function(a, b)
         tmp = size_a; size_a = size_b; size_b = tmp;
     }
 
-    z = new Sk.builtin.lng(size_a + 1);
+    z = new Sk.builtin.lng(undefined, size_a + 1);
 	for (i = 0; i < size_b; ++i)
     {
 		carry += a.digit$[i] + b.digit$[i];
@@ -359,7 +364,7 @@ Sk.builtin.lng.sub$ = function(a, b)
         {
             // nothing
         }
-		if (i < 0) return new Sk.builtin.lng(0);
+		if (i < 0) return new Sk.builtin.lng(undefined, 0);
 		if (a.digit$[i] < b.digit$[i])
         {
 			sign = -1;
@@ -367,7 +372,7 @@ Sk.builtin.lng.sub$ = function(a, b)
 		}
 		size_a = size_b = i + 1;
 	}
-    z = new Sk.builtin.lng(size_a);
+    z = new Sk.builtin.lng(undefined, size_a);
 	for (i = 0; i < size_b; ++i)
     {
         // todo; this isn't true in js i don't think
@@ -399,7 +404,7 @@ Sk.builtin.lng.mul$ = function(a, b)
 {
     var size_a = Math.abs(a.size$);
     var size_b = Math.abs(b.size$);
-    var z = new Sk.builtin.lng(size_a + size_b);
+    var z = new Sk.builtin.lng(undefined, size_a + size_b);
     var i;
     for (i = 0; i < size_a + size_b; ++i) z.digit$[i] = 0;
 

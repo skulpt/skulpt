@@ -32,6 +32,8 @@ Files = [
         'src/tuple.js',
         'src/dict.js',
         'src/long.js',
+        'src/int.js',
+        'src/float.js',
         'src/slice.js',
         'src/module.js',
         'src/generator.js',
@@ -378,6 +380,7 @@ def dist():
     if ret != 0:
         print "Couldn't copy to docs dir."
         raise SystemExit()
+    print ". Updated doc dir"
 
     # all good!
     print ". Wrote %s." % compfn

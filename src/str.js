@@ -17,7 +17,11 @@ Sk.builtin.str = function(x)
     else if (x === false) ret = "False";
     else if (x === null) ret = "None";
     else if (typeof x === "number")
+    {
         ret = x.toString();
+        if (ret === "Infinity") ret = "inf";
+        else if (ret === "-Infinity") ret = "-inf";
+    }
     else if (typeof x === "string")
         ret = x;
     else if (x.tp$str !== undefined)

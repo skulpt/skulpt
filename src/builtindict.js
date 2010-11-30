@@ -1,3 +1,6 @@
+// Note: the hacky names on int, long, float have to correspond with the
+// uniquization that the compiler does for words that are reserved in
+// Javascript. This is a bit hokey.
 Sk.builtins = {
 'range': Sk.builtin.range,
 'len': Sk.builtin.len,
@@ -12,13 +15,15 @@ Sk.builtins = {
 'isinstance': Sk.builtin.isinstance,
 'hash': Sk.builtin.hash,
 'getattr': Sk.builtin.getattr,
+'float_$rw$': Sk.builtin.float_,
+'int_$rw$': Sk.builtin.int_,
 
 'dict': Sk.builtin.dict,
 'file': Sk.builtin.file,
 'function': Sk.builtin.func,
 'generator': Sk.builtin.generator,
 'list': Sk.builtin.list,
-'long': Sk.builtin.lng,
+'long_$rw$': Sk.builtin.lng,
 'method': Sk.builtin.method,
 'object': Sk.builtin.object,
 'slice': Sk.builtin.slice,
