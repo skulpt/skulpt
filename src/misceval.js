@@ -97,7 +97,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             return v !== w;
     }
 
-    if (typeof v === "number" && typeof w === "number")
+    if ((typeof v === "number" || typeof v === "boolean") && (typeof w === "number" || typeof w === "boolean"))
     {
         switch (op)
         {
@@ -105,8 +105,8 @@ Sk.misceval.richCompareBool = function(v, w, op)
             case 'LtE': return v <= w;
             case 'Gt': return v > w;
             case 'GtE': return v >= w;
-            case 'NotEq': return v !== w;
-            case 'Eq': return v === w;
+            case 'NotEq': return v != w;
+            case 'Eq': return v == w;
             default: throw "assert";
         }
     }
