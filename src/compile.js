@@ -285,11 +285,23 @@ Compiler.prototype.cyield = function(e)
 
 Compiler.prototype.ccompare = function(e)
 {
-    var left = this.vexpr(e.left);
-    goog.asserts.assert(e.ops.length === 1 && e.comparators.length === 1, "todo; >1 compares");
-
     goog.asserts.assert(e.ops.length === e.comparators.length);
-    return this._gr('compare', "Sk.misceval.richCompareBool(", left, ",", this.vexpr(e.comparators[0]), ",'", e.ops[0].prototype._astname, "')");
+    var cur = this.vexpr(e.left);
+    var n = e.ops.length;
+    var done = this.newBlock("done");
+    var fres = this._gr('compareres', 'null');
+
+    for (var i = 0; i < n; ++i)
+    {
+        var rhs = this.vexpr(e.comparators[i]);
+        var res = this._gr('compare', "Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "')");
+        out(fres, '=', res, ';');
+        this._jumpfalse(res, done);
+        cur = rhs;
+    }
+    this._jump(done);
+    this.setBlock(done);
+    return fres;
 };
 
 Compiler.prototype.ccall = function(e)
