@@ -1,0 +1,107 @@
+file_input
+  stmt
+    simple_stmt
+      small_stmt
+        print_stmt
+          T_NAME: 'print'
+          test
+            or_test
+              and_test
+                not_test
+                  comparison
+                    expr
+                      xor_expr
+                        and_expr
+                          shift_expr
+                            arith_expr
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_STRING: '\'0"1\''
+      T_NEWLINE: '\n'
+  stmt
+    simple_stmt
+      small_stmt
+        print_stmt
+          T_NAME: 'print'
+          test
+            or_test
+              and_test
+                not_test
+                  comparison
+                    expr
+                      xor_expr
+                        and_expr
+                          shift_expr
+                            arith_expr
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_STRING: "'2\\'3'"
+      T_NEWLINE: '\n'
+  stmt
+    simple_stmt
+      small_stmt
+        print_stmt
+          T_NAME: 'print'
+          test
+            or_test
+              and_test
+                not_test
+                  comparison
+                    expr
+                      xor_expr
+                        and_expr
+                          shift_expr
+                            arith_expr
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_STRING: '"4\'5"'
+      T_NEWLINE: '\n'
+  stmt
+    simple_stmt
+      small_stmt
+        print_stmt
+          T_NAME: 'print'
+          test
+            or_test
+              and_test
+                not_test
+                  comparison
+                    expr
+                      xor_expr
+                        and_expr
+                          shift_expr
+                            arith_expr
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_STRING: '"6\\"7"'
+      T_NEWLINE: '\n'
+  stmt
+    simple_stmt
+      small_stmt
+        print_stmt
+          T_NAME: 'print'
+          test
+            or_test
+              and_test
+                not_test
+                  comparison
+                    expr
+                      xor_expr
+                        and_expr
+                          shift_expr
+                            arith_expr
+                              term
+                                factor
+                                  power
+                                    atom
+                                      T_STRING: '\'\'\'8\'9"0\'\'\''
+      T_NEWLINE: '\n'
+  T_ENDMARKER: ''

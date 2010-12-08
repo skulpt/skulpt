@@ -1440,7 +1440,7 @@ function parsestr(c, s)
 {
     var encodeUtf8 = function(s) { return unescape(encodeURIComponent(s)); };
     var decodeUtf8 = function(s) { return decodeURIComponent(escape(s)); };
-    var decodeEscape = function(s)
+    var decodeEscape = function(s, quote)
     {
         var len = s.length;
         var ret = '';
@@ -1456,6 +1456,7 @@ function parsestr(c, s)
                 else if (c === 't') ret += "\t";
                 else if (c === 'r') ret += "\r";
                 else if (c === '0') ret += "\0";
+                else if (c === quote) ret += quote;
                 else if (c === 'x')
                 {
                     var d0 = s[++i];
@@ -1514,7 +1515,7 @@ function parsestr(c, s)
     {
         return strobj(decodeUtf8(s));
     }
-    return strobj(decodeEscape(s));
+    return strobj(decodeEscape(s, quote));
 }
 
 function parsestrplus(c, n)
