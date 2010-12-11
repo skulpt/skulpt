@@ -330,7 +330,7 @@ SymbolTable.prototype.newTmpname = function()
 
 SymbolTable.prototype.addDef = function(name, flag)
 {
-    var mangled = mangleName(this.curClass, name).v;
+    var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
     var val = this.cur.symFlags[mangled];
     if (val !== undefined)
     {

@@ -142,9 +142,9 @@ function mangleName(priv, ident)
     if (name.charAt(name.length - 1) === '_' && name.charAt(name.length - 2) === '_')
         return ident;
     // don't mangle classes that are all _ (obscure much?)
-    if (priv.replace(/_/g, '') === '')
+    if (priv.v.replace(/_/g, '') === '')
         return ident;
-    priv = priv.replace(/^_*/, '');
+    priv = priv.v.replace(/^_*/, '');
     return '_' + priv + name;
 }
 
@@ -310,8 +310,8 @@ Compiler.prototype.ccall = function(e)
 {
     var func = this.vexpr(e.func);
     var args = this.vseqexpr(e.args);
-    goog.asserts.assert(!e.starargs, "todo;");
-    goog.asserts.assert(!e.kwargs, "todo;");
+    goog.asserts.assert(!e.starargs, "todo; starargs");
+    goog.asserts.assert(!e.kwargs, "todo; kwargs");
     var keywords = "undefined";
     if (e.keywords.length > 0)
     {

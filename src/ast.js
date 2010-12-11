@@ -1460,6 +1460,7 @@ function parsestr(c, s)
                 else if (c === 'r') ret += "\r";
                 else if (c === '0') ret += "\0";
                 else if (c === quote) ret += quote;
+                else if (c === '\n') /* escaped newline, join lines */ {}
                 else if (c === 'x')
                 {
                     var d0 = s[++i];
@@ -1476,7 +1477,7 @@ function parsestr(c, s)
                 }
                 else
                 {
-                    goog.asserts.fail("unhandled escape");
+                    goog.asserts.fail("unhandled escape: '" + c.charCodeAt(0) + "'");
                 }
             }
             else
