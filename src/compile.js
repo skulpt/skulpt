@@ -844,7 +844,10 @@ Compiler.prototype.craise = function(s)
     else
     {
         // todo;
-        out("throw new " + this.vexpr(s.type) + "();");
+        var inst = '';
+        if (s.inst)
+            inst = this.vexpr(s.inst);
+        out("throw new ", this.vexpr(s.type), "(", inst, ");");
     }
 };
 
