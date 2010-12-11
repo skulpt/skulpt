@@ -308,7 +308,7 @@ function astForTryStmt(c, n)
 {
     var nc = NCH(n);
     var nexcept = (nc - 3) / 3;
-    var body, orelse = null, finally_ = null;
+    var body, orelse = [], finally_ = null;
 
     REQ(n, SYM.try_stmt);
     body = astForSuite(c, CHILD(n, 2));
@@ -347,6 +347,9 @@ function astForTryStmt(c, n)
         for (var i = 0; i < nexcept; ++i)
             handlers[i] = astForExceptClause(c, CHILD(n, 3 + i * 3), CHILD(n, 5 + i * 3));
         var exceptSt = new TryExcept(body, handlers, orelse, n.lineno, n.col_offset);
+
+        if (!finally_)
+            return exceptSt;
 
         /* if a 'finally' is present too, we nest the TryExcept within a
            TryFinally to emulate try ... except ... finally */

@@ -18,6 +18,9 @@ Sk.builtins = {
 'float_$rw$': Sk.builtin.float_,
 'int_$rw$': Sk.builtin.int_,
 
+'AttributeError': Sk.builtin.AttributeError,
+'ValueError': Sk.builtin.ValueError,
+
 'dict': Sk.builtin.dict,
 'file': Sk.builtin.file,
 'function': Sk.builtin.func,

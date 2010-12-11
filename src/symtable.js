@@ -460,7 +460,7 @@ SymbolTable.prototype.visitStmt = function(s)
         case TryExcept:
             this.SEQStmt(s.body);
             this.SEQStmt(s.orelse);
-            this.visitExcepthandler(s.handlers);
+            this.visitExcepthandlers(s.handlers);
             break;
         case TryFinally:
             this.SEQStmt(s.body);
@@ -656,9 +656,14 @@ SymbolTable.prototype.visitGenexp = function(e)
     this.exitBlock();
 };
 
-SymbolTable.prototype.visitExcepthandler = function(handlers)
+SymbolTable.prototype.visitExcepthandlers = function(handlers)
 {
-    goog.asserts.fail("todo;");
+    for (var i = 0, eh; eh = handlers[i]; ++i)
+    {
+        if (eh.type) this.visitExpr(eh.type);
+        if (eh.name) this.visitExpr(eh.name);
+        this.SEQStmt(eh.body);
+    }
 };
 
 function _dictUpdate(a, b)

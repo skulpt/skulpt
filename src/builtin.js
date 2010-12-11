@@ -164,6 +164,11 @@ Sk.builtin.getattr = function(obj, name, default_)
 {
     var ret = obj.tp$getattr(name.v);
     if (ret === undefined)
-        return default_;
+    {
+        if (default_ !== undefined)
+            return default_;
+        else
+            throw new Sk.builtin.AttributeError();
+    }
     return ret;
 };

@@ -63,6 +63,8 @@ function CompilerUnit()
     this.breakBlocks = [];
     // stack of where to go on a continue
     this.continueBlocks = [];
+    this.exceptBlocks = [];
+    this.finallyBlocks = [];
 }
 
 CompilerUnit.prototype.activateScope = function()
@@ -631,6 +633,39 @@ Compiler.prototype.popContinueBlock = function()
     this.u.continueBlocks.pop();
 };
 
+Compiler.prototype.pushExceptBlock = function(n)
+{
+    goog.asserts.assert(n >= 0 && n < this.u.blocknum);
+    this.u.exceptBlocks.push(n);
+};
+Compiler.prototype.popExceptBlock = function()
+{
+    this.u.exceptBlocks.pop();
+};
+
+Compiler.prototype.pushFinallyBlock = function(n)
+{
+    goog.asserts.assert(n >= 0 && n < this.u.blocknum);
+    this.u.finallyBlocks.push(n);
+};
+Compiler.prototype.popFinallyBlock = function()
+{
+    this.u.finallyBlocks.pop();
+};
+
+Compiler.prototype.setupExcept = function(eb)
+{
+    out("$exc.push(", eb, ");try{");
+    //this.pushExceptBlock(eb);
+};
+
+Compiler.prototype.endExcept = function(eb)
+{
+    out("$exc.pop();}catch($err){");
+    out("$blk=$exc.pop();");
+    out("continue;}");
+};
+
 Compiler.prototype.outputLocals = function(unit)
 {
     var have = {};
@@ -798,12 +833,61 @@ Compiler.prototype.cfor = function(s)
 
 Compiler.prototype.craise = function(s)
 {
-    // currently, we only handle StopIteration, and all it does it return
-    // undefined which is what our iterator protocol requires.
-    //
-    // totally hacky, but good enough for now.
-    goog.asserts.assert(s.type.id.v === "StopIteration", "only support 'raise' of StopIteration currently");
-    out("return undefined;");
+    if (s.type.id.v === "StopIteration")
+    {
+        // currently, we only handle StopIteration, and all it does it return
+        // undefined which is what our iterator protocol requires.
+        //
+        // totally hacky, but good enough for now.
+        out("return undefined;");
+    }
+    else
+    {
+        // todo;
+        out("throw new " + this.vexpr(s.type) + "();");
+    }
+};
+
+Compiler.prototype.ctryexcept = function(s)
+{
+    var except = this.newBlock("except");
+    var orelse = this.newBlock("orelse");
+    var end = this.newBlock("end");
+
+    this.setupExcept(except);
+
+    this.vseqstmt(s.body);
+
+    this.endExcept();
+
+    this._jump(orelse);
+
+    this.setBlock(except);
+    var n = s.handlers.length;
+    for (var i = 0; i < n; ++i)
+    {
+        var handler = s.handlers[i];
+        if (handler.type && i < n - 1)
+            throw new SyntaxError("default 'except:' must be last");
+        except = this.newBlock("except_" + i + "_");
+        if (handler.type)
+        {
+            // todo; not right at all
+            this._jumpfalse(this.vexpr(handler.type), except);
+        }
+        // todo; name
+        this.vseqstmt(handler.body);
+    }
+
+    this.setBlock(orelse);
+    this.vseqstmt(s.orelse);
+    this._jump(end);
+    this.setBlock(end);
+};
+
+Compiler.prototype.ctryfinally = function(s)
+{
+    out("/*todo; tryfinally*/");
 };
 
 Compiler.prototype.cassert = function(s)
@@ -979,7 +1063,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$loc=" + locals + cells + ",$gbl=this;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this;";
 
     //
     // copy all parameters that are also cells into the cells dict. this is so
@@ -1208,7 +1292,7 @@ Compiler.prototype.cclass = function(s)
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
     this.u.switchCode += "return(function " + s.name.v + "(){";
-    this.u.switchCode += "var $blk=" + entryBlock + ";while(true){switch($blk){";
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[];while(true){switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.u.private_ = s.name;
@@ -1285,6 +1369,10 @@ Compiler.prototype.vstmt = function(s)
             return this.cif(s);
         case Raise:
             return this.craise(s);
+        case TryExcept:
+            return this.ctryexcept(s);
+        case TryFinally:
+            return this.ctryfinally(s);
         case Assert:
             return this.cassert(s);
         case Import_:
@@ -1530,7 +1618,7 @@ Compiler.prototype.cmod = function(mod)
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$gbl={},$loc=$gbl;$gbl.__name__=$modname;";
+    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;";
     this.u.switchCode = "while(true){switch($blk){";
     this.u.suffixCode = "}}});";
 
