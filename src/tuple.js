@@ -10,7 +10,7 @@ Sk.builtin.tuple = function(L)
         this.v = L;
     else
         this.v = L.v;
-    this.__class__ = this.nativeclass$ = Sk.builtin.tuple;
+    this.__class__ = Sk.builtin.tuple;
     return this;
 };
 

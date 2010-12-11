@@ -39,7 +39,7 @@ Sk.builtin.str = function(x)
         return interned[ret];
     }
 
-    this.__class__ = this.nativeclass$ = Sk.builtin.str;
+    this.__class__ = Sk.builtin.str;
     this.v = ret;
     this["v"] = this.v;
     interned[ret] = this;

@@ -13,7 +13,7 @@ Sk.builtin.dict = function dict(L)
         this.mp$ass_subscript(L[i], L[i+1]);
     }
 
-    this.__class__ = this.nativeclass$ = Sk.builtin.dict;
+    this.__class__ = Sk.builtin.dict;
 
     return this;
 };

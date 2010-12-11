@@ -69,6 +69,7 @@ Sk.builtin.type = function(name, bases, dict)
             klass.prototype[v] = dict[v];
             klass[v] = dict[v];
         }
+        klass['__class__'] = klass;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
