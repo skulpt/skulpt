@@ -1,0 +1,7 @@
+Module(body=[Assign(targets=[Name(id='y',
+                                  ctx=Store())],
+                    value=Str(s='\nThe "quick"\nbrown fox\njumps over\nthe \'lazy\' dog.\n')),
+             Print(dest=None,
+                   values=[Name(id='y',
+                                ctx=Load())],
+                   nl=True)])

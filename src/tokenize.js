@@ -143,9 +143,9 @@ var Imagnumber = group("\\d+[jJ]", Floatnumber + "[jJ]");
 var Number_ = group(Imagnumber, Floatnumber, Intnumber);
 
 // tail end of ' string
-var Single = "[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
+var Single = "^[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
 // tail end of " string
-var Double_= '[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
+var Double_= '^[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
 // tail end of ''' string
 var Single3 = "[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
 // tail end of """ string
@@ -368,9 +368,11 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
         // js regexes don't return any info about matches, other than the
         // content. we'd like to put a \w+ before pseudomatch, but then we
         // can't get any data
-        while (line.charAt(pos) === ' ' || line.charAt(pos) === '\f' || line.charAt(pos) === '\t')
+        var capos = line.charAt(pos);
+        while (capos === ' ' || capos === '\f' || capos === '\t')
         {
             pos += 1;
+            capos = line.charAt(pos);
         }
         var pseudomatch = pseudoprog.exec(line.substring(pos));
         if (pseudomatch)
@@ -382,7 +384,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             pos = end;
             var token = line.substring(start, end);
             var initial = line.charAt(start);
-            //Sk.debugout("token:",token, "initial:",initial);
+            //Sk.debugout("token:",token, "initial:",initial, start, end);
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.'))
             {
                 if (this.callback(Sk.Tokenizer.Tokens.T_NUMBER, token, spos, epos, line)) return 'done';
@@ -427,6 +429,8 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
                     this.contstr = line.substring(start);
                     this.needcont = true;
                     this.contline = line;
+                    //print("i, t1, t2", initial, token[1], token[2]);
+                    //print("ep, cs", this.endprog, this.contstr);
                     return false;
                 }
                 else
