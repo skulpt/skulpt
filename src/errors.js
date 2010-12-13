@@ -13,13 +13,12 @@ Sk.builtin.Exception = function(args)
     }
     this.args = new Sk.builtin.tuple(args);
 };
-Sk.builtin.Exception.prototype = new Error();
 Sk.builtin.Exception.prototype.tp$name = "Exception";
 
 Sk.builtin.Exception.prototype.tp$str = function()
 {
     var ret = "";
-    print(JSON.stringify(this.args));
+    //print(JSON.stringify(this.args));
     if (this.args.v.length > 1)
     {
         var ret = "File \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
