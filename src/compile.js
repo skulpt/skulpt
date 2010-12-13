@@ -663,7 +663,7 @@ Compiler.prototype.setupExcept = function(eb)
     //this.pushExceptBlock(eb);
 };
 
-Compiler.prototype.endExcept = function(eb)
+Compiler.prototype.endExcept = function()
 {
     out("$exc.pop();}catch($err){");
     out("$blk=$exc.pop();");
@@ -1108,7 +1108,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     if (vararg)
     {
-        this.u.varDeclsCode += vararg.v + "=new Sk.builtin.tuple(Array.prototype.slice.call(arguments," + funcArgs.length + "));";
+        this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + funcArgs.length + "));";
     }
 
     //

@@ -322,7 +322,9 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  * and hopefully optimize.
  *
  * @param {Object} func the thing to call
- * @param {Object=} kw keyword args or undef
+ * @param {Object=} kwdict **kwargs
+ * @param {Object=} varargtup **args
+ * @param {Object=} kws keyword args or undef
  * @param {...*} args stuff to pass it
  *
  *
@@ -337,12 +339,16 @@ Sk.misceval.call = function(func, kwdict, varargtup, kws, args)
 };
 goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
 
-/** same as call, but no kw/varargs */
+/**
+ * @param {Object} func the thing to call
+ * @param {...*} args stuff to pass it
+ */
 Sk.misceval.callsim = function(func, args)
 {
     var args = Array.prototype.slice.call(arguments, 1);
     return Sk.misceval.apply(func, undefined, undefined, undefined, args);
 };
+goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
