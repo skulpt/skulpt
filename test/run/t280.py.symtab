@@ -1,0 +1,202 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: f
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: f
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: ['a']
+    Func_locals: ['a']
+    Func_globals: []
+    Func_frees: []
+    -- Identifiers --
+    name: a
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: g
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: g
+    Sym_lineno: 4
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: ['a', 'x']
+    Func_locals: ['a', 'x']
+    Func_globals: []
+    Func_frees: []
+    -- Identifiers --
+    name: a
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: x
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: h
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: h
+    Sym_lineno: 7
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: ['a', 'x', 'y']
+    Func_locals: ['a', 'x', 'y']
+    Func_globals: []
+    Func_frees: []
+    -- Identifiers --
+    name: a
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: x
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: y
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: i
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: i
+    Sym_lineno: 10
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: ['a', 'x', 'y']
+    Func_locals: ['a', 'x', 'y']
+    Func_globals: []
+    Func_frees: []
+    -- Identifiers --
+    name: a
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: x
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: y
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
