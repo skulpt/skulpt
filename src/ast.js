@@ -1110,12 +1110,12 @@ function astForArguments(c, n)
                 break;
             case TOK.T_STAR:
                 forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value);
-                vararg = CHILD(n, i + 1).value;
+                vararg = strobj(CHILD(n, i + 1).value);
                 i += 3;
                 break;
             case TOK.T_DOUBLESTAR:
                 forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value);
-                kwarg = CHILD(n, i + 1).value;
+                kwarg = strobj(CHILD(n, i + 1).value);
                 i += 3;
                 break;
             default:
