@@ -967,7 +967,7 @@ Compiler.prototype.cfromimport = function(s)
     for (var i = 0; i < n; ++i)
     {
         var alias = s.names[i];
-        if (i === 0 && alias.name === "*")
+        if (i === 0 && alias.name.v === "*")
         {
             goog.asserts.assert(n === 1);
             out("Sk.importStar(", mod, ");");
