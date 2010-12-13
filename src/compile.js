@@ -1475,6 +1475,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
     mangled = fixReservedWords(mangled);
 
     //print("mangled", mangled);
+    // TODO TODO TODO todo; import * at global scope failing here
     goog.asserts.assert(scope || name.v.charAt(1) === '_');
 
     // in generator or at module scope, we need to store to $loc, rather that
