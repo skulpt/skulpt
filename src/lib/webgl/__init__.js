@@ -149,7 +149,7 @@ var $builtinmodule = function(name)
                         {
                             var startTime = (new Date()).getTime();
                             var intervalId = setInterval(function() {
-                                    Sk.misceval.call(func, undefined, self, (new Date()).getTime() - startTime);
+                                    Sk.misceval.callsim(func, self, (new Date()).getTime() - startTime);
                                     if (goog.global.shutdownGLContext)
                                     {
                                         clearInterval(intervalId);

@@ -126,40 +126,40 @@ Sk.misceval.richCompareBool = function(v, w, op)
             // yeah, a macro or 3 would be nice...
             if (op === 'Eq')
                 if (v && v['__eq__'])
-                    return Sk.misceval.call(v['__eq__'], undefined, v, w);
+                    return Sk.misceval.callsim(v['__eq__'], v, w);
                 else if (w && w['__ne__'])
-                    return Sk.misceval.call(w['__ne__'], undefined, w, v);
+                    return Sk.misceval.callsim(w['__ne__'], w, v);
             else if (op === 'NotEq')
                 if (v && v['__ne__'])
-                    return Sk.misceval.call(v['__ne__'], undefined, v, w);
+                    return Sk.misceval.callsim(v['__ne__'], v, w);
                 else if (w && w['__eq__'])
-                    return Sk.misceval.call(w['__eq__'], undefined, w, v);
+                    return Sk.misceval.callsim(w['__eq__'], w, v);
             else if (op === 'Gt')
                 if (v && v['__gt__'])
-                    return Sk.misceval.call(v['__gt__'], undefined, v, w);
+                    return Sk.misceval.callsim(v['__gt__'], v, w);
                 else if (w && w['__lt__'])
-                    return Sk.misceval.call(w['__lt__'], undefined, w, v);
+                    return Sk.misceval.callsim(w['__lt__'], w, v);
             else if (op === 'Lt')
                 if (v && v['__lt__'])
-                    return Sk.misceval.call(v['__lt__'], undefined, v, w);
+                    return Sk.misceval.callsim(v['__lt__'], v, w);
                 else if (w && w['__gt__'])
-                    return Sk.misceval.call(w['__gt__'], undefined, w, v);
+                    return Sk.misceval.callsim(w['__gt__'], w, v);
             else if (op === 'GtE')
                 if (v && v['__ge__'])
-                    return Sk.misceval.call(v['__ge__'], undefined, v, w);
+                    return Sk.misceval.callsim(v['__ge__'], v, w);
                 else if (w && w['__le__'])
-                    return Sk.misceval.call(w['__le__'], undefined, w, v);
+                    return Sk.misceval.callsim(w['__le__'], w, v);
             else if (op === 'LtE')
                 if (v && v['__le__'])
-                    return Sk.misceval.call(v['__le__'], undefined, v, w);
+                    return Sk.misceval.callsim(v['__le__'], v, w);
                 else if (w && w['__ge__'])
-                    return Sk.misceval.call(w['__ge__'], undefined, w, v);
+                    return Sk.misceval.callsim(w['__ge__'], w, v);
 
             // if those aren't defined, fallback on the __cmp__ method if it
             // exists
             if (v && v['__cmp__'])
             {
-                var ret = Sk.misceval.call(v['__cmp__'], undefined, v, w);
+                var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret < 0;
@@ -170,7 +170,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             else if (w && w['__cmp__'])
             {
                 // note, flipped on return value and call
-                var ret = Sk.misceval.call(w['__cmp__'], undefined, w, v);
+                var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret > 0;
@@ -324,21 +324,31 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  * @param {Object} func the thing to call
  * @param {Object=} kw keyword args or undef
  * @param {...*} args stuff to pass it
+ *
+ *
+ * TODO I think all the above is out of date.
  */
 
-Sk.misceval.call = function(func, kw, args)
+Sk.misceval.call = function(func, kwdict, varargtup, kws, args)
 {
-    var args = Array.prototype.slice.call(arguments, 2);
+    var args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
-    return Sk.misceval.apply(func, kw, args);
+    return Sk.misceval.apply(func, kwdict, varargtup, kws, args);
 };
 goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
+
+/** same as call, but no kw/varargs */
+Sk.misceval.callsim = function(func, args)
+{
+    var args = Array.prototype.slice.call(arguments, 1);
+    return Sk.misceval.apply(func, undefined, undefined, undefined, args);
+};
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
  */
-Sk.misceval.apply = function(func, kw, args)
+Sk.misceval.apply = function(func, kwdict, varargtup, kws, args)
 {
     if (typeof func === "function")
     {
@@ -349,7 +359,7 @@ Sk.misceval.apply = function(func, kw, args)
         // alternatively, put it to more use, and perhaps use
         // descriptors to create builtin.func's in other places.
 
-        goog.asserts.assert(kw === undefined);
+        goog.asserts.assert(kws === undefined);
         return func.apply(null, args);
     }
     else
@@ -357,7 +367,7 @@ Sk.misceval.apply = function(func, kw, args)
         var fcall = func.tp$call;
         if (fcall !== undefined)
         {
-            return fcall.call(func, args, kw);
+            return fcall.call(func, args, kws, kwdict, varargtup);
         }
 
         // todo; can we push this into a tp$call somewhere so there's
@@ -368,7 +378,7 @@ Sk.misceval.apply = function(func, kw, args)
             // func is actually the object here because we got __call__
             // from it. todo; should probably use descr_get here
             args.unshift(func);
-            return Sk.misceval.apply(fcall, kw, args);
+            return Sk.misceval.apply(fcall, kws, args, kwdict, varargtup);
         }
         throw new TypeError("'" + func.tp$name + "' object is not callable");
     }
@@ -404,7 +414,7 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
     // file's __name__ is class's __module__
     locals.__module__ = globals['__name__'];
 
-    var klass = Sk.misceval.call(meta, undefined, name, bases, locals);
+    var klass = Sk.misceval.callsim(meta, name, bases, locals);
     //print("class", klass, JSON.stringify(klass.prototype));
     return klass;
 };

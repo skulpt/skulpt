@@ -322,8 +322,12 @@ Compiler.prototype.ccall = function(e)
             kwarray.push(this.vexpr(e.keywords[i].value));
         }
         keywords = "[" + kwarray.join(",") + "]";
+        return this._gr('call', "Sk.misceval.call(", func, ",undefined,undefined,", keywords, args.length > 0 ? "," : "", args, ")");
     }
-    return this._gr('call', "Sk.misceval.call(", func, ",", keywords, args.length > 0 ? "," : "", args, ")");
+    else
+    {
+        return this._gr('call', "Sk.misceval.callsim(", func, args.length > 0 ? "," : "", args, ")");
+    }
 };
 
 Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
@@ -1007,6 +1011,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 {
     var decos = [];
     var defaults = [];
+    var vararg = null;
 
     // decorators and defaults have to be evaluated out here before we enter
     // the new scope. we output the defaults and attach them to this code
@@ -1016,6 +1021,8 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         decos = this.vseqexpr(decorator_list);
     if (args && args.defaults)
         defaults = this.vseqexpr(args.defaults);
+    if (args && args.vararg)
+        vararg = args.vararg;
 
     //
     // enter the new scope, and create the first block

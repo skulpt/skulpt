@@ -58,7 +58,7 @@ Sk.builtin.type = function(name, bases, dict)
                     {
                         // return ignored I guess?
                         args.unshift(this);
-                        Sk.misceval.apply(init, undefined, args);
+                        Sk.misceval.apply(init, undefined, undefined, undefined, args);
                     }
 
                     return this;
@@ -77,7 +77,7 @@ Sk.builtin.type = function(name, bases, dict)
         {
             var reprf = this.tp$getattr("__repr__");
             if (reprf !== undefined)
-                return Sk.misceval.apply(reprf, undefined, []);
+                return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             var mod = dict.__module__;
             var cname = "";
             if (mod) cname = mod.v + ".";
@@ -86,8 +86,9 @@ Sk.builtin.type = function(name, bases, dict)
         klass.prototype.tp$call = function(args, kw)
         {
             var callf = this.tp$getattr("__call__");
+            /* todo; vararg kwdict */
             if (callf)
-                return Sk.misceval.apply(callf, kw, args);
+                return Sk.misceval.apply(callf, undefined, undefined, kw, args);
             throw new Sk.builtin.TypeError("'" + this.tp$name + "' object is not callable");
         };
         klass.prototype.tp$iter = function()
@@ -95,7 +96,7 @@ Sk.builtin.type = function(name, bases, dict)
             var iterf = this.tp$getattr("__iter__");
             if (iterf)
             {
-                 var ret = Sk.misceval.call(iterf);
+                 var ret = Sk.misceval.callsim(iterf);
                  if (ret.tp$getattr("next") === undefined)
                     throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + this.tp$name + "'");
                  return ret;
@@ -106,7 +107,7 @@ Sk.builtin.type = function(name, bases, dict)
         {
             var iternextf = this.tp$getattr("next");
             goog.asserts.assert(iternextf !== undefined, "iter() should have caught this");
-            return Sk.misceval.call(iternextf);
+            return Sk.misceval.callsim(iternextf);
         };
 
         klass.tp$name = name;

@@ -72,7 +72,7 @@ Sk.ffi.callback = function(fn)
 {
     if (fn === undefined) return fn;
     return function() {
-        return Sk.misceval.apply(fn, undefined, Array.prototype.slice.call(arguments, 0));
+        return Sk.misceval.apply(fn, undefined, undefined, undefined, Array.prototype.slice.call(arguments, 0));
     };
 };
 goog.exportSymbol("Sk.ffi.callback", Sk.ffi.callback);
