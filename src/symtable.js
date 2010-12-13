@@ -330,6 +330,7 @@ SymbolTable.prototype.newTmpname = function()
 
 SymbolTable.prototype.addDef = function(name, flag)
 {
+    //print("addDef:", name.v, flag);
     var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
     var val = this.cur.symFlags[mangled];
     if (val !== undefined)
@@ -580,8 +581,10 @@ SymbolTable.prototype.visitExpr = function(e)
             this.SEQExpr(e.args);
             for (var i = 0; i < e.keywords.length; ++i)
                 this.visitExpr(e.keywords[i].value);
-            if (this.starargs) this.visitExpr(e.starargs);
-            if (this.kwargs) this.visitExpr(e.kwargs);
+            //print(JSON.stringify(e.starargs, null, 2));
+            //print(JSON.stringify(e.kwargs, null,2));
+            if (e.starargs) this.visitExpr(e.starargs);
+            if (e.kwargs) this.visitExpr(e.kwargs);
             break;
         case Num:
         case Str:
