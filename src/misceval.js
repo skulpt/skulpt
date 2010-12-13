@@ -323,7 +323,7 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  *
  * @param {Object} func the thing to call
  * @param {Object=} kwdict **kwargs
- * @param {Object=} varargtup **args
+ * @param {Object=} varargseq **args
  * @param {Object=} kws keyword args or undef
  * @param {...*} args stuff to pass it
  *
@@ -331,11 +331,11 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  * TODO I think all the above is out of date.
  */
 
-Sk.misceval.call = function(func, kwdict, varargtup, kws, args)
+Sk.misceval.call = function(func, kwdict, varargseq, kws, args)
 {
     var args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
-    return Sk.misceval.apply(func, kwdict, varargtup, kws, args);
+    return Sk.misceval.apply(func, kwdict, varargseq, kws, args);
 };
 goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
 
@@ -354,7 +354,7 @@ goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
  */
-Sk.misceval.apply = function(func, kwdict, varargtup, kws, args)
+Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
 {
     if (typeof func === "function")
     {
@@ -373,7 +373,18 @@ Sk.misceval.apply = function(func, kwdict, varargtup, kws, args)
         var fcall = func.tp$call;
         if (fcall !== undefined)
         {
-            return fcall.call(func, args, kws, kwdict, varargtup);
+            if (varargseq)
+            {
+                for (var it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+                {
+                    args.push(i);
+                }
+            }
+            if (kwdict)
+            {
+                goog.asserts.fail("todo;");
+            }
+            return fcall.call(func, args, kws, kwdict);
         }
 
         // todo; can we push this into a tp$call somewhere so there's
@@ -384,7 +395,7 @@ Sk.misceval.apply = function(func, kwdict, varargtup, kws, args)
             // func is actually the object here because we got __call__
             // from it. todo; should probably use descr_get here
             args.unshift(func);
-            return Sk.misceval.apply(fcall, kws, args, kwdict, varargtup);
+            return Sk.misceval.apply(fcall, kws, args, kwdict, varargseq);
         }
         throw new TypeError("'" + func.tp$name + "' object is not callable");
     }

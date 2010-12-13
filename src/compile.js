@@ -310,10 +310,8 @@ Compiler.prototype.ccall = function(e)
 {
     var func = this.vexpr(e.func);
     var args = this.vseqexpr(e.args);
-    goog.asserts.assert(!e.starargs, "todo; starargs");
-    goog.asserts.assert(!e.kwargs, "todo; kwargs");
     //print(JSON.stringify(e, null, 2));
-    if (e.keywords.length > 0)
+    if (e.keywords.length > 0 || e.starargs || e.kwargs)
     {
         var kwarray = [];
         for (var i = 0; i < e.keywords.length; ++i)
@@ -322,7 +320,13 @@ Compiler.prototype.ccall = function(e)
             kwarray.push(this.vexpr(e.keywords[i].value));
         }
         var keywords = "[" + kwarray.join(",") + "]";
-        return this._gr('call', "Sk.misceval.call(", func, ",undefined,undefined,", keywords, args.length > 0 ? "," : "", args, ")");
+        var starargs = "undefined";
+        if (e.starargs)
+        {
+            starargs = this.vexpr(e.starargs);
+        }
+        goog.asserts.assert(!e.kwargs, "todo; kwargs");
+        return this._gr('call', "Sk.misceval.call(", func, ",undefined,", starargs, ",", keywords, args.length > 0 ? "," : "", args, ")");
     }
     else
     {
