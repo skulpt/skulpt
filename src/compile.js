@@ -312,7 +312,7 @@ Compiler.prototype.ccall = function(e)
     var args = this.vseqexpr(e.args);
     goog.asserts.assert(!e.starargs, "todo; starargs");
     goog.asserts.assert(!e.kwargs, "todo; kwargs");
-    var keywords = "undefined";
+    //print(JSON.stringify(e, null, 2));
     if (e.keywords.length > 0)
     {
         var kwarray = [];
@@ -321,7 +321,7 @@ Compiler.prototype.ccall = function(e)
             kwarray.push("'" + e.keywords[i].arg.v + "'");
             kwarray.push(this.vexpr(e.keywords[i].value));
         }
-        keywords = "[" + kwarray.join(",") + "]";
+        var keywords = "[" + kwarray.join(",") + "]";
         return this._gr('call', "Sk.misceval.call(", func, ",undefined,undefined,", keywords, args.length > 0 ? "," : "", args, ")");
     }
     else
@@ -1099,8 +1099,16 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         for (var i = 0; i < defaults.length; ++i)
         {
             var argname = this.nameop(args.args[i + offset].id, Param);
-            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
+            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "]; /*vararg*/";
         }
+    }
+
+    //
+    // initialize vararg, if any
+    //
+    if (vararg)
+    {
+        this.u.varDeclsCode += vararg.v + "=new Sk.builtin.tuple(Array.prototype.slice.call(arguments," + funcArgs.length + "));";
     }
 
     //
