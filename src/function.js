@@ -51,15 +51,18 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
         args.push(this.func_closure);
     }
 
+    var expectskw = this.func_code['co_kwargs'];
+    var kwargsarr = [];
+
     if (kw)
     {
         // bind the kw args
         var kwlen = kw.length;
+        var varnames = this.func_code['co_varnames'];
+        var numvarnames = varnames && varnames.length;
         for (var i = 0; i < kwlen; i += 2)
         {
             // todo; make this a dict mapping name to offset
-            var varnames = this.func_code['co_varnames'];
-            var numvarnames = varnames && varnames.length;
             for (var j = 0; j < numvarnames; ++j)
             {
                 if (kw[i] === varnames[j])
@@ -69,14 +72,20 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
             {
                 args[j] = kw[i+1];
             }
-            else
+            else if (this.func_code['co_kwargs'])
             {
                 // build kwargs dict
-                args.push(new Sk.builtin.str(kw[i]));
-                args.push(kw[i + 1]);
+                kwargsarr.push(new Sk.builtin.str(kw[i]));
+                kwargsarr.push(kw[i + 1]);
             }
         }
     }
+    if (expectskw)
+    {
+        args.unshift(kwargsarr);
+    }
+
+    //print(JSON.stringify(args, null, 2));
 
     return this.func_code.apply(this.func_globals, args);
 };

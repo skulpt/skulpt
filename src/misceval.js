@@ -115,10 +115,16 @@ Sk.misceval.richCompareBool = function(v, w, op)
         if (op === "In") return Sk.abstr.sequenceContains(w, v);
         if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
 
-        if (v && v.tp$richcompare)
-            return v.tp$richcompare(w, op);
-        else if (w && w.tp$richcompare)
-            return w.tp$richcompare(v, Sk.misceval.swappedOp_[op]);
+        var res;
+        //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
+        if (v && v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
+        {
+            return res;
+        }
+        else if (w && w.tp$richcompare && (res = v.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
+        {
+            return res;
+        }
         else
         {
             // depending on the op, try left:op:right, and if not, then

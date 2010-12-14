@@ -280,11 +280,11 @@ Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
 
 //Sk.builtin.list.prototype.count = todo;
 //Sk.builtin.list.prototype.reverse = todo;
-Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self)
+Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key, reverse)
 {
-    // todo; cmp, key, rev
-    // todo; totally wrong except for numbers
-    self.v.sort();
+    goog.asserts.assert(!key, "todo;");
+    goog.asserts.assert(!reverse, "todo;");
+    Sk.mergeSort(self.v, cmp);
     return null;
 });
 

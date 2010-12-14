@@ -108,6 +108,59 @@ Sk.builtin.str.prototype.tp$iter = function()
     };
     return ret;
 };
+
+Sk.builtin.str.prototype.tp$richcompare = function(other, op)
+{
+    if (!(other instanceof Sk.builtin.str)) return undefined;
+
+    if (this === other)
+    {
+        switch (op)
+        {
+            case 'Eq': case 'LtE': case 'GtE':
+                return true;
+            case 'NotEq': case 'Lt': case 'Gt':
+                return false;
+        }
+    }
+    var lenA = this.v.length;
+    var lenB = other.v.length;
+    var minLength = Math.min(lenA, lenB);
+    var c = 0;
+    if (minLength > 0)
+    {
+        for (var i = 0; i < minLength; ++i)
+        {
+            if (this.v[i] != other.v[i])
+            {
+                c = this.v[i].charCodeAt(0) - other.v[i].charCodeAt(0);
+                break;
+            }
+        }
+    }
+    else
+    {
+        c = 0;
+    }
+
+    if (c == 0)
+    {
+        c = (lenA < lenB) ? -1 : (lenA > lenB) ? 1 : 0;
+    }
+
+    switch (op)
+    {
+        case 'Lt': return c < 0;
+        case 'LtE': return c <= 0;
+        case 'Eq': return c == 0;
+        case 'NotEq': return c != 0;
+        case 'Gt': return c > 0;
+        case 'GtE': return c >= 0;
+        default:
+            goog.asserts.fail();
+    }
+};
+
 Sk.builtin.str.prototype['$r'] = function()
 {
     // single is preferred

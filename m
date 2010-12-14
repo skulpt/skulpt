@@ -27,6 +27,7 @@ Files = [
         'src/object.js',
         'src/misceval.js',
         'src/abstract.js',
+        'src/mergesort.js',
         'src/list.js',
         'src/str.js',
         'src/tuple.js',

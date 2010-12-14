@@ -1052,6 +1052,8 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         funcArgs.push("$gen");
     else
     {
+        if (kwarg)
+            funcArgs.push("$kwa");
         for (var i = 0; args && i < args.args.length; ++i)
             funcArgs.push(this.nameop(args.args[i].id, Param));
     }
@@ -1106,7 +1108,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         for (var i = 0; i < defaults.length; ++i)
         {
             var argname = this.nameop(args.args[i + offset].id, Param);
-            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "]; /*vararg*/";
+            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
         }
     }
 
@@ -1115,7 +1117,8 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     if (vararg)
     {
-        this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + funcArgs.length + "));";
+        var start = funcArgs.length;
+        this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + start + ")); /*vararg*/";
     }
 
     //
@@ -1123,9 +1126,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     if (kwarg)
     {
-        var start = funcArgs.length;
-        if (vararg) start += 1;
-        this.u.varDeclsCode += kwarg.v + "=new Sk.builtins['dict'](Array.prototype.slice.call(arguments," + start + "));";
+        this.u.varDeclsCode += kwarg.v + "=new Sk.builtins['dict']($kwa);";
     }
 
     //
@@ -1177,6 +1178,14 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     if (argnames)
     {
         out(scopename, ".co_varnames=['", argnames, "'];");
+    }
+
+    //
+    // attach flags
+    //
+    if (kwarg)
+    {
+        out(scopename, ".co_kwargs=1;");
     }
 
     //

@@ -101,6 +101,8 @@ Sk.builtin.tuple.prototype.tp$iter = function()
 Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
 {
     // todo; NotImplemented if either isn't a tuple
+
+    //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
         
     var v = this.v;
     var w = w.v;
@@ -136,6 +138,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
     if (op === 'NotEq') return true;
 
     // or, compare the differing element using the proper operator
+    //print("  tup rcb end", i, v[i] instanceof Sk.builtin.str, JSON.stringify(v[i]), w[i] instanceof Sk.builtin.str, JSON.stringify(w[i]), op);
     return Sk.misceval.richCompareBool(v[i], w[i], op);
 };
 
