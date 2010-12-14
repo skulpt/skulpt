@@ -1,6 +1,14 @@
-// py sort is guaranteed to be stable, js's is not (and isn't in some
-// browsers)
-// cmp and key are both py functions
+/**
+ * py sort is guaranteed to be stable, js's is not (and isn't in some
+ * browsers). we also have to do cmp/key/rev anyway, so this is a simple
+ * mergesort implementation to handle sorting for list (and other stuff
+ * eventually).
+ *
+ * @param {Array.<Object>} arr
+ * @param {Sk.builtin.func} cmp
+ * @param {Sk.builtin.func=} key
+ * @param {boolean=} reverse
+ */
 Sk.mergeSort = function(arr, cmp, key, reverse)
 {
     goog.asserts.assert(!key, "todo;");
