@@ -321,12 +321,12 @@ Compiler.prototype.ccall = function(e)
         }
         var keywords = "[" + kwarray.join(",") + "]";
         var starargs = "undefined";
+        var kwargs = "undefined";
         if (e.starargs)
-        {
             starargs = this.vexpr(e.starargs);
-        }
-        goog.asserts.assert(!e.kwargs, "todo; kwargs");
-        return this._gr('call', "Sk.misceval.call(", func, ",undefined,", starargs, ",", keywords, args.length > 0 ? "," : "", args, ")");
+        if (e.kwargs)
+            kwargs = this.vexpr(e.kwargs);
+        return this._gr('call', "Sk.misceval.call(", func, "," , kwargs, ",", starargs, ",", keywords, args.length > 0 ? "," : "", args, ")");
     }
     else
     {
@@ -1016,6 +1016,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     var decos = [];
     var defaults = [];
     var vararg = null;
+    var kwarg = null;
 
     // decorators and defaults have to be evaluated out here before we enter
     // the new scope. we output the defaults and attach them to this code
@@ -1027,6 +1028,8 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         defaults = this.vseqexpr(args.defaults);
     if (args && args.vararg)
         vararg = args.vararg;
+    if (args && args.kwarg)
+        kwarg = args.kwarg;
 
     //
     // enter the new scope, and create the first block
@@ -1113,6 +1116,16 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     if (vararg)
     {
         this.u.varDeclsCode += vararg.v + "=new Sk.builtins['tuple'](Array.prototype.slice.call(arguments," + funcArgs.length + "));";
+    }
+
+    //
+    // initialize kwarg, if any
+    //
+    if (kwarg)
+    {
+        var start = funcArgs.length;
+        if (vararg) start += 1;
+        this.u.varDeclsCode += kwarg.v + "=new Sk.builtins['dict'](Array.prototype.slice.call(arguments," + start + "));";
     }
 
     //

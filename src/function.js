@@ -59,17 +59,27 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
         {
             // todo; make this a dict mapping name to offset
             var varnames = this.func_code['co_varnames'];
-            var numvarnames = varnames.length;
-            for (var j = 0; j < numvarnames; ++j)
+            if (varnames)
             {
-                if (kw[i] === varnames[j])
+                var numvarnames = varnames.length;
+                for (var j = 0; j < numvarnames; ++j)
+                {
+                    if (kw[i] === varnames[j])
                     break;
+                }
+
+                args[j] = kw[i+1];
             }
-            args[j] = kw[i+1];
+            else
+            {
+                // build kwargs dict
+                args.push(new Sk.builtin.str(kw[i]));
+                args.push(kw[i + 1]);
+            }
         }
     }
 
-    return this.func_code.apply(this.func_globals, args); 
+    return this.func_code.apply(this.func_globals, args);
 };
 
 //todo; investigate why the other doesn't work
