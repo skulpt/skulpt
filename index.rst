@@ -4,8 +4,10 @@ How to Think Like a Computer Scientist
 .. image:: _static/gasp_lessons.png
     :alt: GASP Logo
 
-Learning with Python 2nd Edition
---------------------------------
+Learning with Python
+--------------------
+
+2nd Edition (Using Python 2.x)
 
 by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 
