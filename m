@@ -92,6 +92,11 @@ if sys.platform == "win32":
     jsengine = "support\\d8\\d8.exe --trace_exception --debugger"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
+elif sys.platform == "darwin":
+    jsengine = "support/d8/d8m --trace_exception --debugger"
+    #jsengine = "support/d8/d8"
+    nul = "/dev/null"
+    crlfprog = None
 else:
     jsengine = "support/d8/d8 --trace_exception --debugger"
     #jsengine = "support/d8/d8"
