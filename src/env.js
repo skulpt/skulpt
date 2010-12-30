@@ -42,6 +42,8 @@ Sk.configure = function(options)
         Sk.realsyspath = undefined;
         Sk.sysmodules = new Sk.builtin.dict([]);
     }
+
+    Sk.misceval.softspace_ = false;
 };
 goog.exportSymbol("Sk.configure", Sk.configure);
 
