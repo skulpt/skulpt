@@ -1,0 +1,12 @@
+Module(body=[Print(dest=None,
+                   values=[IfExp(test=Name(id='True',
+                                           ctx=Load()),
+                                 body=Str(s='Yes'),
+                                 orelse=Str(s='No'))],
+                   nl=True),
+             Print(dest=None,
+                   values=[IfExp(test=Name(id='False',
+                                           ctx=Load()),
+                                 body=Str(s='Yes'),
+                                 orelse=Str(s='No'))],
+                   nl=True)])
