@@ -468,8 +468,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case Lambda:
             return this.clambda(e);
         case IfExp:
-            goog.asserts.fail();
-            //return this.cifexp(e);
+            return this.cifexp(e);
         case Dict:
             return this.cdict(e);
         case ListComp:
@@ -1241,6 +1240,26 @@ Compiler.prototype.clambda = function(e)
                 out("return ", val, ";");
             });
     return func;
+};
+
+Compiler.prototype.cifexp = function(e)
+{
+    var next = this.newBlock('next of ifexp');
+    var end = this.newBlock('end of ifexp');
+    var ret = this._gr('res', 'null');
+
+    var test = this.vexpr(e.test);
+    this._jumpfalse(test, next);
+
+    out(ret, '=', this.vexpr(e.body), ';');
+    this._jump(end);
+
+    this.setBlock(next);
+    out(ret, '=', this.vexpr(e.orelse), ';');
+    this._jump(end);
+
+    this.setBlock(end);
+    return ret;
 };
 
 Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)

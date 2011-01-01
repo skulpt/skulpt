@@ -1429,8 +1429,8 @@ function astForIfexpr(c, n)
     /* test: or_test 'if' or_test 'else' test */ 
     goog.asserts.assert(NCH(n) === 5);
     return new IfExp(
-            astForExpr(c, CHILD(n, 0)),
             astForExpr(c, CHILD(n, 2)),
+            astForExpr(c, CHILD(n, 0)),
             astForExpr(c, CHILD(n, 4)),
             n.lineno, n.col_offset);
 }
