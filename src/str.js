@@ -34,15 +34,15 @@ Sk.builtin.str = function(x)
         return Sk.misceval.objectRepr(x);
 
     // interning required for strings in py
-    if (interned.hasOwnProperty(ret))
+    if (Object.prototype.hasOwnProperty.call(interned, "1"+ret)) // note, have to use Object to avoid __proto__, etc. failing
     {
-        return interned[ret];
+        return interned["1"+ret];
     }
 
     this.__class__ = Sk.builtin.str;
     this.v = ret;
     this["v"] = this.v;
-    interned[ret] = this;
+    interned["1"+ret] = this;
     return this;
 
 };

@@ -257,6 +257,14 @@ function testDuplicateKeys() {
   assertEquals(7, m.getKeys().length);
 }
 
+function testMagicWords() {
+  var map1 = getMap();
+  x = map1.get('hasOwnProperty', 'X');
+  assertEquals(x, 'X');
+  var x = map1.get('__proto__', 'X');
+  assertEquals(x, 'X');
+}
+
 function testGetKeyIterator() {
   var m = new goog.structs.Map;
   m.set('a', 1);

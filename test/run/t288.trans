@@ -1,0 +1,13 @@
+Module(body=[Assign(targets=[Name(id='d',
+                                  ctx=Store())],
+                    value=Dict(keys=[],
+                               values=[])),
+             Assign(targets=[Subscript(value=Name(id='d',
+                                                  ctx=Load()),
+                                       slice=Index(value=Str(s='__proto__')),
+                                       ctx=Store())],
+                    value=Str(s='testing')),
+             Print(dest=None,
+                   values=[Name(id='d',
+                                ctx=Load())],
+                   nl=True)])
