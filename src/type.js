@@ -163,7 +163,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
     };
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-    t.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
+    t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
     return t;
 };
 
