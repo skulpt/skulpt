@@ -1,11 +1,21 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C) Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|    
+    
 Modules and files
 =================
 
@@ -16,102 +26,180 @@ Modules
 A **module** is a file containing Python definitions and statements intended
 for use in other Python programs. There are many Python modules that come with
 Python as part of the **standard library**. We have seen two of these already,
-the ``doctest`` module and the ``string`` module.
+the ``turtle`` module and the ``string`` module.
 
+We have also shown you how to access help. The help system contains 
+a listing of all the standard modules that are available with Python.  
+You are encouraged to use and navigate help. 
 
-pydoc
------
+.. _random_numbers:
 
-You can use **pydoc** to search through the Python libraries installed on your
-system. At the **command prompt** type the following:
+Random numbers
+--------------
+
+We often want to use random numbers in programs: here are a few typical uses:
+
+* To play a game of chance where the computer needs to throw some dice, pick a number, or flip a coin,
+* To shuffle a deck of playing cards randomly,
+* To randomly allow a new enemy spaceship to appear and shoot at you,
+* To simulate possible rainfall when we make a computerized model for
+  estimating the environmental impact of builing a dam on a river,
+* For encrypting your banking session on the Internet.
+  
+Python provides a module ``random`` that helps with tasks like this.  You can
+look it up using help, but here are the key things we'll do with it::
+
+    import random
+    
+    rng = random.Random()    # create a black box object that generates random numbers
+    
+    dice_throw = rng.randrange(1,7)       # return an int, one of 1,2,3,4,5,6
+    delay_in_seconds = rng.random() * 5.0
+    
+The ``randrange`` method call generates generates an integer between its lower and upper
+argument, using the same semantics as ``range`` --- so the lower bound is included, but
+the upper bound is excluded.   All the values have an equal probability of occurring  
+(i.e. the results are *uniformly* distributed).   Like ``range``, ``randrange`` can 
+also take an optional step argument. So let's assume we needed a random odd number less
+than 100, we could say::
+
+    r_odd = rng.randrange(1, 100, 2)  
+
+Other methods can also generate other distributions e.g. a bell-shaped, 
+or "normal" distribution might be more appropriate for estimating seasonal rainfall,
+or the concentration of a compound in the body after taking a dose of medicine. 
+
+The ``random()`` method returns a floating number in the range [0.0, 1.0) --- the
+square bracket means "closed interval on the left" and the round parenthesis means
+"open interval on the right".  In other words, 0.0 is possible, but all returned
+numbers will be strictly less than 1.0.  It is usual to *scale* the results after
+calling this method, to get them into a range suitable for your application.  In the
+case shown here, we've converted the result of the method call to a number in
+the range [0.0, 5.0).  Once more, these are uniformly distributed numbers --- numbers
+close to 0 are just as likely to occur as numbers close to 0.5, or numbers close to 1.0.
+
+This example shows how to shuffle a list.  (`shuffle` cannot work directly
+with a lazy promise, so notice that we had to convert the range object
+using the ``list`` type converter first.) ::
+
+    cards = list(range(52))         # generate integers 0..51, representing a pack of cards
+    rng.shuffle(cards)              # shuffle the pack
+
+Repeatability and Testing
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Random number generators are based on a **deterministic** algorithm --- repeatable and predictable.
+So they're called **pseudo-random** generators --- they are not genuinely random.
+They start with a *seed* value. Each time you ask for another random number, you'll get
+one based on the current seed attribute, and the state of the seed (which is one
+of the attributes of the generator) will be updated. 
+
+For debugging and for writing unit tests, it is convenient
+to have repeatability --- programs that do the same thing every time they are run.  
+We can arrange this by forcing the random number generator to be initialized with
+a known seed every time.  (Often this is only wanted during testing --- playing a game
+of cards where the shuffled deck was always in the same order as last time you played
+would get boring very rapidly!)   ::
+
+    drng = random.Random(123)  # create a generator with a known starting state 
+     
+This alternative way of creating a random number generator gives an explicit seed
+value to the object. Without this argument, the system probably uses something based
+on the time.  So grabbing some random numbers from ``drng`` today will give you 
+precisely the same random sequence as it will tomorrow! 
+
+Picking balls from bags, throwing dice, shuffling a pack of cards
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here is an example to generate a list containing `n` random ints between one and
+`limit`: 
 
 .. sourcecode:: python
+
+    import random
+
+    def make_random_ints(num, lower_bound, upper_bound): 
+       """ 
+         Generate a list containing num random ints between lower_bound
+         and upper_bound. upper_bound is an open bound.
+       """
+       result = []
+       rng = random.Random()
+       for i in range(num):
+          result.append(rng.randrange(lower_bound, upper_bound))
+       return result
     
-    $ pydoc -g
+>>> make_random_ints(5, 1, 13)  # pick 5 random month numbers
+[8, 1, 8, 5, 6] 
 
-and the following will appear:
+Notice that we got a duplicate in the result. Often this is
+wanted, e.g. if we throw a die five times, we would expect
+duplicates. 
 
-.. image:: illustrations/pydoc_tk.png
-   :alt: pydoc tk window 
+But what if you don't want duplicates?  If you wanted 5 distinct months, 
+then this algorithm is wrong.  A better algorithm is to generate the 
+list of possibilities, shuffle it, and slice off the number of elements you want::
 
-(*note*: see exercise 2 if you get an error)
+    xs = list(range(1,13))  # make the list 1..12
+    random.shuffle(xs)      # shuffle it
+    result = xs[:5]         # take the first five elements
+ 
+In statistics courses, the first case is usually described as
+pulling balls out of a bag *with replacement* --- you put the drawn
+ball back in each time.  The latter case, with no duplicates, 
+is usually described as pulling balls out of the bag *without
+replacement*. 
 
-Click on the open browser button to launch a web browser window containing the
-documentation generated by ``pydoc``:
 
-.. image:: illustrations/pydoc_firefox.png
-   :alt: Python: Index of Modules 
+The `math` module
+-----------------
 
-This is a listing of all the python libraries found by Python on your system.
-Clicking on a module name opens a new page with documenation for that module.
-Clicking ``keyword``, for example, opens the following page:
+The ``math`` module contains the kinds of mathematical functions you'd typically find on your
+calculator (`sin`, `cos`, `sqrt`, `asin`, `log`, `log10`) and some mathematical constants
+like `pi` and `e`::  
 
-.. image:: illustrations/pydoc_keyword_firefox.png
-   :alt: Python: module keyword 
-
-Documentation for most modules contains three color coded sections:
-
-* *Classes* in pink
-* *Functions* in orange
-* *Data* in green
-
-Classes will be discussed in later chapters, but for now we can use pydoc to
-see the functions and data contained within modules.
-
-The ``keyword`` module contains a single function, ``iskeyword``, which as its
-name suggests is a boolean function that returns ``True`` if a string passed to
-it is a keyword:
-
-.. sourcecode:: python
+    >>> import math
     
-    >>> from keyword import *
-    >>> iskeyword('for')
-    True
-    >>> iskeyword('all')
-    False
-    >>>
+    >>> math.pi                     # constant attribute for pi
+    3.141592653589793
+    >>> math.e                      # constant natural log base
+    2.718281828459045
+    >>> math.sqrt(2.0)              # square root function
+    1.4142135623730951
+    >>> math.radians(90)            # convert 90 degrees to radians
+    1.5707963267948966
+    >>> math.sin(math.radians(90))  # find sin of 90 degrees.
+    1.0
+    >>> math.asin(1.0) * 2          # find arcsin of 1, double it, to get pi
+    3.141592653589793
 
-The data item, ``kwlist`` contains a list of all the current keywords in
-Python:
+Like almost all other programming languages, angles are expressed in *radians*
+rather than degrees.  There are two functions ``radians`` and ``degrees`` to
+convert between the two popular ways of measuring angles.
 
-.. sourcecode:: python
-    
-    >>> from keyword import *
-    >>> print kwlist
-    ['and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif',
-    'else', 'except', 'exec', 'finally', 'for', 'from', 'global', 'if', 'import',
-    'in', 'is', 'lambda', 'not', 'or', 'pass', 'print', 'raise', 'return', 'try',
-    'while', 'with', 'yield']
-    >>>
+Notice another difference between this module and our use of ``random`` and ``turtle``:
+in ``random`` and ``turtle`` we create objects and call methods on the object.  This is
+because objects have *state* --- a turtle has a colour, a position, a heading, etc., 
+and every random number generator has a seed value that determines its next result. 
 
-We encourage you to use ``pydoc`` to explore the extensive libraries that come
-with Python. There are so many treasures to discover!
+Mathematical functions are "pure" and don't need any state --- calculating the square root of
+2.0 doesn't depend on any kind of state or history about what happened in the past.  
+So the functions are not methods of a stateful object --- 
+they are simply housed together in a module called `math`.  
 
 
-Creating modules
-----------------
+Creating your own modules
+-------------------------
 
-All we need to create a module is a text file with a ``.py`` extension on the
-filename:
+All we need to create our own modules is to save our script as 
+a file with a ``.py`` extension on the filename.  Suppose,
+for example, this script is saved as a file named ``seqtools.py``::
 
-.. sourcecode:: python
-    
-    #  seqtools.py
-    #
     def remove_at(pos, seq):
         return seq[:pos] + seq[pos+1:]
 
 We can now use our module in both scripts and the Python shell. To do so, we
-must first *import* the module. There are two ways to do this:
-
-.. sourcecode:: python
-    
-    >>> from seqtools import remove_at
-    >>> s = "A string!"
-    >>> remove_at(4, s)
-    'A sting!'
-
-and:
+must first *import* the module.  
 
 .. sourcecode:: python
     
@@ -120,26 +208,52 @@ and:
     >>> seqtools.remove_at(4, s)
     'A sting!'
 
-In the first example, ``remove_at`` is called just like the functions we have
-seen previously. In the second example the name of the module and a dot (.) are
-written before the function name.
 
-Notice that in either case we do not include the ``.py`` file extension when
+Notice that  we do not include the ``.py`` file extension when
 importing. Python expects the file names of Python modules to end in ``.py``,
 so the file extention is not included in the **import statement**.
 
 The use of modules makes it possible to break up very large programs into
-manageable sized parts, and to keep related parts together.
+managable sized parts, and to keep related parts together.
 
 
 Namespaces
 ----------
 
-A **namespace** is a syntactic container which permits the same name to be used
-in different modules or functions (and as we will see soon, in classes and
-methods).
+.. sidebar:: How are namespaces, files and modules related?
 
-Each module determines its own namespace, so we can use the same name in
+  Python has a convenient and simplifying one-to-one mapping, one module per file, 
+  giving rise to one namespace. Also, Python takes the module name from the file name,
+  and this becomes the name of the namespace.  ``math.py`` is a filename, the module
+  is called ``math``, and its namespace is ``math``.
+  So in Python the concepts are more or less interchangeable.
+  
+  But you will encounter other languages (e.g. C#), that allow one module 
+  to span multiple files, or one file to have multiple namespaces, 
+  or many files to all share the same namespace. So the name of the file doesn't
+  need to be the same as the namespace.   
+  
+  So a good idea is to try to keep the concepts distinct in your mind.  
+  
+  Files and directories organize *where* things are stored in our computer.  
+  On the other hand, namespaces and modules are a programming concept: 
+  they help us organize how we want to group related functions and attributes.  
+  They are not about "where" to store things, and should not have to 
+  coincide with the file and directory structures.
+  
+  So in Python, if you rename the file ``math.py``, its module name also changes, 
+  your ``import`` statements would need to change, and your code that refers to
+  functions or attributes inside that namespace would also need to change.  
+  
+  In other languages this is not necessarily the case.  So don't blur the concepts,
+  just because Python blurs them!
+
+A **namespace** is a collection of identifiers that belong to 
+a module, or to a function, (and as we will see soon, in classes too).  Generally,
+we like a namespace to hold "related" things, e.g. all the math functions, or all
+the typical things we'd do with random numbers.
+ 
+Each module has its own namespace, so we can use the same identifier name in
 multiple modules without causing an identification problem.
 
 .. sourcecode:: python
@@ -160,40 +274,39 @@ We can now import both modules and access ``question`` and ``answer`` in each:
 
 .. sourcecode:: python
     
-    >>> import module1
-    >>> import module2
-    >>> print module1.question
+    import module1
+    import module2
+    
+    print(module1.question)
+    print(module2.question)
+    print(module1.answer)
+    print(module2.answer)
+    
+will output the following::
+
     What is the meaning of life, the Universe, and everything?
-    >>> print module2.question
     What is your quest?
-    >>> print module1.answer
     42
-    >>> print module2.answer
     To seek the holy grail.
-    >>>
-
-If we had used ``from module1 import *`` and ``from module2 import *`` instead,
-we would have a **naming collision** and would not be able to access
-``question`` and ``answer`` from ``module1``.
-
-Functions also have their own namespace:
+    
+Functions also have their own namespaces:
 
 .. sourcecode:: python
     
     def f():
         n = 7
-        print "printing n inside of f: %d"  % n
-    
+        print("printing n inside of f:", n)
+
     def g():
         n = 42
-        print "printing n inside of g: %d"  % n
-    
+        print("printing n inside of g:", n)
+
     n = 11
-    print "printing n before calling f: %d"  % n
+    print("printing n before calling f:", n)
     f()
-    print "printing n after calling f: %d"  % n
+    print("printing n after calling f:", n)
     g()
-    print "printing n after calling g: %d"  % n
+    print("printing n after calling g:", n)
 
 Running this program produces the following output:
 
@@ -206,17 +319,86 @@ Running this program produces the following output:
     printing n after calling g: 11
 
 The three ``n``'s here do not collide since they are each in a different
-namespace.
+namespace --- they are three names for three different variables, just like
+there might be three different instances of people, all called "Bruce".
 
 Namespaces permit several programmers to work on the same project without
 having naming collisions.
 
+    
+Scope and lookup rules
+----------------------
 
+The **scope** of an identifier is the region of program code in which the 
+identifier can be accessed, or used.  
+
+There are three important scopes in Python:
+
+* **Local scope** refers to identifiers declared within a function.  These identifiers are kept
+  in the namespace that belongs to the function, and each function has its own namespace. 
+* **Global scope** refers to all the identifiers declared within the current module, or file.  
+* **Built-in scope** refers to all the identifiers built into Python --- those like ``range`` and
+  ``min`` that can be used without having to import anything, and are (almost) always available.
+  
+Python (like most other computer languages) uses precedence rules: the same name could occur in
+more than one of these scopes, but the innermost, or local scope, will always take
+precedence over the global scope, and the global scope always gets used in preference to the
+built-in scope.  Let's start with a simple example:
+
+.. sourcecode:: python
+    
+    def range(n):
+        return 123*n
+        
+    print(range(10))
+    
+What gets printed?  We've defined our own function called ``range``, so there
+is now a potential ambiguity.  When we use ``range``, do we mean our own one,
+or the built-in one?  Using the scope lookup rules determines this: our own
+range function, not the built-in one, is called, because our function ``range``
+is in the global namespace, which takes precedence over the built-in names.
+
+So although names likes ``range`` and ``min`` are built-in, they can be "hidden"
+from your use if you choose to define your own variables or functions that reuse
+those names.  (It is a confusing practice to redefine built-in names --- so to be 
+a good programmer you need to understand the scope rules and understand 
+that you can do nasty things that will cause confusion, and then you avoid doing them!)  
+
+Now, a slightly more complex example:
+
+.. sourcecode:: python
+   :linenos:
+
+   n = 10
+   m = 3
+   def f(n):
+      m = 7
+      return 2*n+m
+      
+   print(f(5), n, m)
+    
+This prints 17 10 3.  The reason is that the two variables ``m`` and ``n`` in lines 1 and 2
+are outside the function in the global namespace.  Inside the function, new variables
+called ``n`` and ``m`` are created *just for the duration of the execution of f*. These are 
+created in the local namespace of function ``f``.  Within the body of ``f``, the scope lookup rules
+determine that we use the local variables m and n.  By contrast, after we've returned from ``f``,
+the ``n`` and ``m`` arguments to the ``print`` function refer to the original variables
+on lines 1 and 2, and these have not been changed in any way by executing function ``f``.
+
+Notice too that the ``def`` puts name ``f`` into the global namespace here.  So it can be
+called on line 7.
+
+What is the scope of the variable ``n`` on line 1?  Its scope --- the region in which it is
+visible ---  is lines 1, 2, 6, 7.  It is hidden from view in lines 3,4,5 because of the 
+local variable ``n``.
+   
 Attributes and the dot operator
 -------------------------------
 
-Variables defined inside a module are called **attributes** of the module. They
-are accessed by using the **dot operator** ( ``.``). The ``question`` attribute
+Variables defined inside a module are called **attributes** of the module. 
+We've seen that objects have attributes too: for example, most objects have
+a ``__doc__`` attribute, some functions have a ``__annotations__`` attribute.
+Attributes are accessed by using the **dot operator** ( ``.``). The ``question`` attribute
 of ``module1`` and ``module2`` are accessed using ``module1.question`` and
 ``module2.question``.
 
@@ -224,106 +406,70 @@ Modules contain functions as well as attributes, and the dot operator is used
 to access them in the same way. ``seqtools.remove_at`` refers to the
 ``remove_at`` function in the ``seqtools`` module.
 
-In Chapter 7 we introduced the ``find`` function from the ``string`` module.
-The ``string`` module contains many other useful functions:
-
-.. sourcecode:: python
+When we use a dotted name, we often refer to it as a **fully qualified name**,
+because we're saying exactly which ``question`` attribute we mean.
     
-    >>> import string
-    >>> string.capitalize('maryland')
-    'Maryland'
-    >>> string.capwords("what's all this, then, amen?")
-    "What's All This, Then, Amen?"
-    >>> string.center('How to Center Text Using Python', 70)
-    '                   How to Center Text Using Python                    '
-    >>> string.upper('angola')
-    'ANGOLA'
-    >>> 
-
-You should use pydoc to browse the other functions and attributes in the string 
-module.
-
-
-String and list methods
------------------------
-
-As the Python language developed, most of functions from the ``string`` module
-have also been added as **methods** of string objects. A method acts much like
-a function, but the syntax for calling it is a bit different:
-
-.. sourcecode:: python
     
-    >>> 'maryland'.capitalize()
-    'Maryland'
-    >>> "what's all this, then, amen?".title()
-    "What'S All This, Then, Amen?"
-    >>> 'How to Center Text Using Python'.center(70)
-    '                   How to Center Text Using Python                    '
-    >>> 'angola'.upper()
-    'ANGOLA'
-    >>>
-
-String methods are built into string objects, and they are *invoked* (called)
-by following the object with the dot operator and the method name.
-
-We will be learning how to create our own objects with their own methods in
-later chapters. For now we will only be using methods that come with Python's
-built-in objects.
-
-The dot operator can also be used to access built-in methods of list objects:
-
-.. sourcecode:: python
+Three ``import`` variants
+-------------------------
     
-    >>> mylist = []
-    >>> mylist.append(5)
-    >>> mylist.append(27)
-    >>> mylist.append(3)
-    >>> mylist.append(12)
-    >>> mylist
-    [5, 27, 3, 12]
-    >>>
+Here are three different ways to import names into the current namespace, and to use them::
 
-``append`` is a list method which adds the argument passed to it to the end of
-the list. Continuing with this example, we show several other list methods:
+    import math
+    x = math.sqrt(10)
 
-.. sourcecode:: python
+Here just the single identifier ``math`` is added to the current namespace.  If you want to 
+access one of the functions in the module, you need to use the dot notation to get to it.
+
+Here is a different arrangement::
+
+    from math import cos, sin, sqrt
+    x = sqrt(10)
+
+The names are added directly to the current namespace, and can be used without qualification. The name
+``math`` is not itself imported, so trying to use the qualified form ``math.sqrt`` would give an error.
+ 
+Then we have a convenient shorthand:: 
     
-    >>> mylist.insert(1, 12)
-    >>> mylist
-    [5, 12, 27, 3, 12]
-    >>> mylist.count(12)
-    2
-    >>> mylist.extend([5, 9, 5, 11])
-    >>> mylist
-    [5, 12, 27, 3, 12, 5, 9, 5, 11])
-    >>> mylist.index(9)
-    6
-    >>> mylist.count(5)
-    3
-    >>> mylist.reverse()
-    >>> mylist
-    [11, 5, 9, 5, 12, 3, 27, 12, 5]
-    >>> mylist.sort()
-    >>> mylist
-    [3, 5, 5, 5, 9, 11, 12, 12, 27]
-    >>> mylist.remove(12)
-    >>> mylist
-    [3, 5, 5, 5, 9, 11, 12, 27]
-    >>>
+    from math import *   # import all the identifiers from math,
+                         # adding them to the current namespace.
+    x = sqrt(10)         # Use them without qualification.
+    
+Of these three, the first method is generally preferred, even though it means
+a little more typing each time. (But hey, with nice editors that do auto-completion,
+and fast fingers, that is a small price.)
 
-Experiment with the list methods in this example until you feel confident that
-you understand how they work.
+Finally, observe this case::
 
+    def area(radius):
+        import math
+        return math.pi * r * r
+         
+    x = math.sqrt(10)      # this gives an error
+    
+Here we imported ``math``, but we imported it into the local namespace of ``area``.
+So the name is usable within the function body, but not in the enclosing script,
+because it is not in the global namespace. 
 
-Reading and writing text files
-------------------------------
+Turn your unit tester into a module
+-----------------------------------
+
+Near the end of Chapter 6 we introduced unit testing, and our own ``test``
+function, and you've had to copy this into each module for which you 
+wrote tests.   Now we can put that definition into a module of its
+own, say ``my_own_unit_tester.py``, and simply use one line in each new script instead::
+
+    from my_own_unit_tester import test
+
+Reading and writing files
+-------------------------
 
 While a program is running, its data is stored in *random access memory* (RAM).
 RAM is fast and inexpensive, but it is also **volatile**, which means that when
 the program ends, or the computer shuts down, data in RAM disappears. To make
 data available the next time you turn on your computer and start your program,
-you have to write it to a **non-volatile** storage medium, such as a hard
-drive, usb drive, or CD-RW.
+you have to write it to a **non-volatile** storage medium, such a hard drive,
+usb drive, or CD-RW.
 
 Data on non-volatile storage media is stored in named locations on the media
 called **files**. By reading and writing files, programs can save information
@@ -336,16 +482,14 @@ you know where you are in the notebook. You can read the whole notebook in its
 natural order or you can skip around.
 
 All of this applies to files as well. To open a file, you specify its name and
-indicate whether you want to read or write.
+indicate whether you want to read or write. 
 
 Opening a file creates a file object. In this example, the variable ``myfile``
-refers to the new file object.
+refers to the new object.
 
 .. sourcecode:: python
     
-    >>> myfile = open('test.dat', 'w')
-    >>> print myfile
-    <open file 'test.dat', mode 'w' at 0x2aaaaab80cd8>
+    myfile = open('test.dat', 'w')
 
 The open function takes two arguments. The first is the name of the file, and
 the second is the **mode**. Mode ``'w'`` means that we are opening the file for
@@ -354,22 +498,19 @@ writing.
 If there is no file named ``test.dat``, it will be created. If there already is
 one, it will be replaced by the file we are writing.
 
-When we print the file object, we see the name of the file, the mode, and the
-location of the object.
-
-To put data in the file we invoke the ``write`` method on the file object:
+To put data in the file we invoke the ``write`` method on the object:
 
 .. sourcecode:: python
     
-    >>> myfile.write("Now is the time")
-    >>> myfile.write("to close the file")
+    myfile.write("Now is the time")
+    myfile.write("to close the file")
 
 Closing the file tells the system that we are done writing and makes
 the file available for reading:
 
 .. sourcecode:: python
     
-    >>> myfile.close()
+    myfile.close()
 
 Now we can open the file again, this time for reading, and read the
 contents into a string. This time, the mode argument is ``'r'`` for reading:
@@ -392,7 +533,7 @@ string:
 .. sourcecode:: python
     
     >>> text = myfile.read()
-    >>> print text
+    >>> print(text)
     Now is the timeto close the file
 
 There is no space between time and to because we did not write a space
@@ -403,7 +544,7 @@ between the strings.
 .. sourcecode:: python
     
     >>> myfile = open('test.dat', 'r')
-    >>> print myfile.read(5)
+    >>> print(myfile.read(5))
     Now i
 
 If not enough characters are left in the file, ``read`` returns the remaining
@@ -412,9 +553,9 @@ string:
 
 .. sourcecode:: python
     
-    >>> print myfile.read(1000006)
+    >>> print(myfile.read(1000006))
     s the timeto close the file
-    >>> print myfile.read()
+    >>> print(myfile.read())
        
     >>>
 
@@ -434,7 +575,6 @@ second is the name of the new file:
             outfile.write(text)
         infile.close()
         outfile.close()
-        return
 
 This functions continues looping, reading 50 characters from ``infile`` and
 writing the same 50 charaters to ``outfile`` until the end of ``infile`` is
@@ -449,6 +589,12 @@ A **text file** is a file that contains printable characters and whitespace,
 organized into lines separated by newline characters.  Since Python is
 specifically designed to process text files, it provides methods that make the
 job easy.
+
+Notice the subtle difference in abstraction here: in the previous section, we
+simply regarded a file as containing many characters, and could read them one
+at a time, many at a time, or all at once.  In this section, specifically for
+reading data, we're interested in files that are organized into lines, 
+and will process them line-at-a-time.
 
 To demonstrate, we'll create a text file with three lines of text separated by
 newlines:
@@ -465,7 +611,7 @@ next newline character:
 .. sourcecode:: python
     
     >>> infile = open("test.dat","r")
-    >>> print infile.readline()
+    >>> print(infile.readline())
     line one
        
     >>>
@@ -476,7 +622,7 @@ next newline character:
 .. sourcecode:: python
 
     
-    >>> print infile.readlines()
+    >>> print(infile.readlines())
     ['line two\012', 'line three\012']
 
 
@@ -489,9 +635,9 @@ At the end of the file, ``readline`` returns the empty string and
 
 .. sourcecode:: python
     
-    >>> print infile.readline()
+    >>> print(infile.readline())
        
-    >>> print infile.readlines()
+    >>> print(infile.readlines())
     []
 
 The following is an example of a line-processing program. ``filter`` makes a
@@ -541,21 +687,60 @@ located:
     
     >>> wordsfile = open('/usr/share/dict/words', 'r')
     >>> wordlist = wordsfile.readlines()
-    >>> print wordlist[:6]
+    >>> print(wordlist[:6])
     ['\n', 'A\n', "A's\n", 'AOL\n', "AOL's\n", 'Aachen\n']
 
-This example opens a file named ``words`` that resides in a directory named
+This (unix) example opens a file named ``words`` that resides in a directory named
 ``dict``, which resides in ``share``, which resides in ``usr``, which resides
 in the top-level directory of the system, called ``/``. It then reads in each
 line into a list using ``readlines``, and prints out the first 5 elements from
-that list.
+that list.  
 
-You cannot use ``/`` as part of a filename; it is reserved as a **delimiter**
+A Windows path might be ``"c:/temp/words.txt"`` or ``"c:\\temp\\words.txt"``.
+Because backslashes are used to escape things like newlines and tabs, you need 
+to write two backslashes in a literal string to get one!  So the length of these two
+strings is the same!
+
+You cannot use ``/`` or ``\`` as part of a filename; they are reserved as a **delimiter**
 between directory and filenames.
 
-The file ``/usr/share/dict/words`` should exist on unix based systems, and
+The file ``/usr/share/dict/words`` should exist on unix-based systems, and
 contains a list of words in alphabetical order.
 
+
+What about fetching something from the web?
+-------------------------------------------
+
+The Python libraries are pretty messy in places.  But here is a very
+simple example that copies a web URL to a local file, and then opens
+and prints the file contents using the techniques we've covered above.
+
+.. sourcecode:: python
+    :linenos:
+    
+    import urllib.request
+
+    url = 'http://www.cs.ru.ac.za/courses/CSc102/pythons.txt' 
+    destination_filename = 'c:\\temp\\tempfile.txt'
+    
+    wf = urllib.request.urlretrieve(url, destination_filename)
+
+    f = open(destination_filename)
+    s = f.read()
+    f.close()
+    print(s)
+    
+The ``urlretrieve`` function collects the resource at the url, and
+saves it to a local file.  You could use this to download any kind
+of content from Internet.
+   
+You'll need to get a few things right before this works:  
+ * The page you're trying to fetch must exist!  Check this using a browser.
+ * You'll need permission to write to the destination filename.
+ * If you are behind a proxy server, (as many schools are), this may
+   require some more special handling to work around your proxy. 
+   Use a local text resource for the purpose of this demonstration! 
+  
 
 Counting Letters
 ----------------
@@ -578,7 +763,7 @@ argument and returns its character representation:
 .. sourcecode:: python
     
     >>> for i in range(65, 71):
-    ...     print chr(i)
+    ...     print(chr(i))
     ...
     A
     B
@@ -612,13 +797,14 @@ character occurs in the book `Alice in Wonderland <./resources/ch10/alice_in_won
     for letter in text:
         counts[ord(letter)] += 1
     
+    layout = "{0:>12} {1:>5}\n"
     outfile = open('alice_counts.dat', 'w')
-    outfile.write("%-12s%s\n" % ("Character", "Count"))
-    outfile.write("=================\n")
+    outfile.write(layout.format("Character", "Count"))
+    outfile.write("============ =====\n")
     
     for i in range(len(counts)):
-        if counts[i]:
-            outfile.write("%-12s%d\n" % (display(i), counts[i]))
+        if counts[i] > 0:
+            outfile.write(layout.format(display(i), counts[i]))
     
     outfile.close()
 
@@ -626,116 +812,11 @@ Run this program and look at the output file it generates using a text editor.
 You will be asked to analyze the program in the exercises below.
 
 
-The ``sys`` module and ``argv``
--------------------------------
-
-The ``sys`` module contains functions and variables which provide access to the
-*environment* in which the python interpreter runs.
-
-The following example shows the values of a few of these variables on one of
-our systems:
-
-.. sourcecode:: python
-    
-    >>> import sys
-    >>> sys.platform
-    'linux2'
-    >>> sys.path
-    ['', '/home/jelkner/lib/python', '/usr/lib/python25.zip', '/usr/lib/python2.5',
-    '/usr/lib/python2.5/plat-linux2', '/usr/lib/python2.5/lib-tk',
-    '/usr/lib/python2.5/lib-dynload', '/usr/local/lib/python2.5/site-packages',
-    '/usr/lib/python2.5/site-packages', '/usr/lib/python2.5/site-packages/Numeric', 
-    '/usr/lib/python2.5/site-packages/gst-0.10',
-    '/var/lib/python-support/python2.5', '/usr/lib/python2.5/site-packages/gtk-2.0',
-    '/var/lib/python-support/python2.5/gtk-2.0']
-    >>> sys.version
-    '2.5.1 (r251:54863, Mar  7 2008, 04:10:12) \n[GCC 4.1.3 20070929 (prerelease)
-    (Ubuntu 4.1.2-16ubuntu2)]'
-    >>> 
-
-Starting **Jython** on the same machine produces different values for the same
-variables:
-
-.. sourcecode:: python
-    
-    >>> import sys
-    >>> sys.platform
-    'java1.6.0_03'
-    >>> sys.path
-    ['', '/home/jelkner/.', '/usr/share/jython/Lib', '/usr/share/jython/Lib-cpython']
-    >>> sys.version
-    '2.1'
-    >>> 
-
-The results will be different on your machine of course.
-
-The ``argv`` variable holds a list of strings read in from the **command line**
-when a Python script is run. These **command line arguments** can be used to
-pass information into a program at the same time it is invoked.
-
-.. sourcecode:: python
-    
-    #
-    # demo_argv.py
-    #
-    import sys
-    
-    print sys.argv 
-
-Running this program from the unix command prompt demonstrates how ``sys.argv``
-works::
-
-    $ python demo_argv.py this and that 1 2 3
-    ['demo_argv.py', 'this', 'and', 'that', '1', '2', '3']
-    $ 
-
-``argv`` is a list of strings. Notice that the first element is the name of the
-program. Arguments are separated by white space, and separated into a list in
-the same way that ``string.split`` operates. If you want an argument with white
-space in it, use quotes::
-
-    
-    $ python demo_argv.py "this and" that "1 2" 3
-    ['demo_argv.py', 'this and', 'that', '1 2', '3']
-    $ 
-
-With ``argv`` we can write useful programs that take their input directly from
-the command line. For example, here is a program that finds the sum of a series
-of numbers:
-
-.. sourcecode:: python
-    
-    #
-    # sum.py
-    #
-    from sys import argv
-    
-    nums = argv[1:]
-    
-    for index, value in enumerate(nums):
-        nums[index] = float(value)
-    
-    print sum(nums)
-
-In this program we use the ``from <module> import <attribute>`` style of
-importing, so ``argv`` is brought into the module's main namespace.
-
-We can now run the program from the command prompt like this:
-
-.. sourcecode:: python
-    
-    $ python sum.py 3 4 5 11
-    23
-    $ python sum.py 3.5 5 11 100
-    119.5
-
-You are asked to write similar programs as exercises.
-
-
 Glossary
 --------
 
 .. glossary::
+
 
     argv
         ``argv`` is short for *argument vector* and is a variable in the
@@ -763,9 +844,10 @@ Glossary
         can be entered.
 
     continue statement
-        A statement that causes the current iteration of a loop to end. The
-        flow of execution goes to the top of the loop, evaluates the condition,
-        and proceeds accordingly.
+        A statement that causes the current iteration of a loop to be skipped. The
+        flow of execution goes back to the top of the loop, evaluates the condition,
+        and proceeds accordingly, so further execution of the loop body may still take
+        place.
 
     delimiter
         A sequence of one or more characters used to specify the boundary
@@ -779,7 +861,7 @@ Glossary
     dot operator
         The dot operator ( ``.``) permits access to attributes and functions of
         a module (or attributes and methods of a class or instance -- as we
-        will see later).
+        have seen elsewhere).
 
     file
         A named entity, usually stored on a hard drive, floppy disk, or CD-ROM,
@@ -787,29 +869,33 @@ Glossary
 
     file system
         A method for naming, accessing, and organizing files and the data they
-        contain.
+        contain. 
+            
+    fully qualified name
+        A name that is prefixed by some namespace identifier and the dot operator, or
+        by an instance object, e.g. ``math.sqrt`` or ``tess.forward(10)``.
 
     import statement
-	A statement which makes the objects contained in a module available for
-	use within another module. There are two forms for the import
-	statement. Using a hypothetical module named ``mymod`` containing
-	functions ``f1`` and ``f2``, and variables ``v1`` and ``v2``, examples
+        A statement which makes the objects contained in a module available for
+        use within another module. There are two forms for the import
+        statement. Using a hypothetical module named ``mymod`` containing
+        functions ``f1`` and ``f2``, and variables ``v1`` and ``v2``, examples
         of these two forms include:
 
-        .. sourcecode:: python
-        
-            import mymod 
+            .. sourcecode:: python
+            
+                import mymod 
 
-        and
+            and
 
-        .. sourcecode:: python
+            .. sourcecode:: python
 
-            from mymod import f1, f2, v1, v2 
+                from mymod import f1, f2, v1, v2 
 
-        The second form brings the imported objects into the namespace of
-        the importing module, while the first form preserves a seperate
-        namespace for the imported module, requiring ``mymod.v1`` to access
-        the ``v1`` variable.
+            The second form brings the imported objects into the namespace of
+            the importing module, while the first form preserves a seperate
+            namespace for the imported module, requiring ``mymod.v1`` to access
+            the ``v1`` variable.
 
     Jython
         An implementation of the Python programming language written in Java.
@@ -828,11 +914,11 @@ Glossary
             >>>
 
         We say that the method, ``upper`` is invoked on the string, ``s``.
-        ``s`` is implicitly the first argument to ``upper``.
+        ``s`` is implicitely the first argument to ``upper``.
 
     mode
         A distinct method of operation within a computer program.  Files in
-        Python can be opened in one of three modes: read (``'r'``), write
+        Python can be openned in one of three modes: read (``'r'``), write
         (``'w'``), and append (``'a'``).
 
     module
@@ -867,15 +953,8 @@ Glossary
         non-volatile memory.
 
     path
-        The name and location of a file within a file system. For example::
-
-            /usr/share/dict/words
-
-        indicates a file named ``words`` found in the ``dict`` subdirectory of
-        the ``share`` subdirectory of the ``usr`` directory.
-
-    pydoc
-        A documentation generator that comes with the Python standard library.
+        A sequence of directory names that specifies the exact location of a
+        file.
 
     standard library
         A library is a collection of software used as tools in the development
@@ -891,58 +970,104 @@ Glossary
         Memory which requires an electrical current to maintain state. The
         *main memory* or RAM of a computer is volatile.  Information stored in
         RAM is lost when the computer is turned off.
-
-
+ 
 Exercises
 ---------
 
-#. Complete the following:
+#. Every week a computer scientist buys four lotto tickets. He always choses the 
+   same prime numbers, with the hope that he ever hits the jackpot, others
+   will suddenly get interested in prime numbers.  He represents his weekly tickets
+   in Python as a list of lists::
 
-   * Start the pydoc server with the command ``pydoc -g`` at the command
-     prompt.
-   * Click on the open browser button in the pydoc tk window.
-   * Find the ``calendar`` module and click on it.
-   * While looking at the *Functions* section, try out the following in a
-     Python shell:
-
-     .. sourcecode:: python
-        
-          >>> import calendar
-          >>> year = calendar.calendar(2008)
-          >>> print year                      # What happens here?
-
-   * Experiment with ``calendar.isleap``. What does it expect as an
-     argument? What does it return as a result? What kind of a function is
-     this?
-
-   Make detailed notes about what you learned from this exercise.
-#. If you don't have ``Tkinter`` installed on your computer, then ``pydoc
-   -g`` will return an error, since the graphics window that it opens
-   requires ``Tkinter``. An alternative is to start the web server
-   directly::
+        my_tickets = [ [ 7, 17, 37, 19, 23, 43], 
+                       [ 7,  2, 13, 41, 31, 43], 
+                       [ 2,  5,  7, 11, 13, 17], 
+                       [13, 17, 37, 19, 23, 43] ]
+                       
+   Complete these exercises.
     
-      $ pydoc -p 7464
+   a. Each lotto draw takes six random balls, numbered from 1 to 49.  Write
+      a function to return a lotto draw.
+   b. Write a function that returns compares a single ticket and a draw, and returns
+      the number of correct picks on that ticket::
+      
+        test(lotto_match([42, 4, 7, 11, 1, 13], [2, 5, 7, 11, 13, 17]), 3)
+         
+   c. Write a function that takes a list of tickets and a draw, and returns a list 
+      telling how many picks were correct on each ticket::
+      
+        test(lotto_matches([42, 4, 7, 11, 1, 13], my_tickets), [1, 2, 3, 1])
+      
+   d. Write a function that takes a list of integers, and returns the number of primes in the list::
+   
+        test(primes_in([42, 4, 7, 11, 1, 13]), 3)
+   
+   e. Write a function to discover whether the computer scientist has missed any
+      prime numbers in his selection of the four tickets.  Return a list of all primes that he has missed::
+      
+         test(prime_misses(my_tickets), [3, 29, 47])
+         
+   f. Write a function that repeatedly makes a new draw, and compares the draw to the four tickets.
+   
+      i. Count how many draws are needed until one of the computer scientist's tickets has at least 
+         3 correct picks.
+         Try the experiment twenty times, and average out the number of draws needed.
+       
+      ii. How many draws are needed, on average, before he gets at least 4 picks correct?  
+              
+      iii. How many draws are needed, on average, before he gets at least 5 correct?  (Hint: this
+           might take a while.  It would be nice if you could print some dots, like a progress bar,
+           to show when each of the 20 experiments has completed.)
 
-   This starts the pydoc web server on port 7464. Now point your web browser
-   at::
+      Notice that we have difficulty constructing test cases here, because our random numbers
+      are not deterministic. Automated testing only really works if you already know what 
+      the answer should be! 
 
-        http://localhost:7464
+#. Open help for the ``calendar`` module. 
 
-   and you will be able to browse the Python libraries installed on your
-   system. Use this approach to start ``pydoc`` and take a look at the ``math`` 
-   module.
+    a. Try the following:
+ 
+         .. sourcecode:: python
+            
+            import calendar
+            cal = calendar.TextCalendar()      # create an instance
+            cal.pryear(2011)                   # What happens here?
 
-   a. How many functions are there in the ``math`` module?
+    b. Observe that the week starts on Monday. An adventurous CompSci student
+       believes that it is better mental chunking to have his week start on
+       Thursday, because then there are only two working days to the weekend, and
+       every week has a break in the middle.  Read the documentation for TextCalendar, 
+       and see how you can help him print a calendar that suits his needs. 
+    
+    c. Find a function to print just the month in which your birthday occurs this year.
+
+    d. Try this::
+    
+         d = calendar.LocalTextCalendar(6, "SPANISH")    # create an instance
+         d.pryear(2011)   
+        
+       Try a few other languages, including one that doesn't work, and see what happens.
+        
+    e. Experiment with ``calendar.isleap``. What does it expect as an
+       argument? What does it return as a result? What kind of a function is this?
+
+   Make detailed notes about what you learned from htese exercises.
+   
+#. Open help for the ``math`` module. 
+
+   a. How many functions are in the ``math`` module?
    b. What does ``math.ceil`` do? What about ``math.floor``? ( *hint:* both
       ``floor`` and ``ceil`` expect floating point arguments.)
    c. Describe how we have been computing the same value as ``math.sqrt``
       without using the ``math`` module.
-   d. What are the two data constants in the ``math`` module?
+   d. What are the two data contstants in the ``math`` module?
 
    Record detailed notes of your investigation in this exercise.
-#. Use ``pydoc`` to investigate the ``copy`` module. What does ``deepcopy``
+   
+#. Investigate the ``copy`` module. What does ``deepcopy``
    do? In which exercises from last chapter would ``deepcopy`` have come in
    handy?
+   
 #. Create a module named ``mymodule1.py``. Add attributes ``myage`` set to
    your current age, and ``year`` set to the current year. Create another
    module named ``mymodule2.py``. Add attributes ``myage`` set to 0, and
@@ -952,17 +1077,18 @@ Exercises
 
    .. sourcecode:: python
     
-        print (mymodule2.myage - mymodule1.myage) == (mymodule2.year - mymodule1.year)
+        print( (mymodule2.myage - mymodule1.myage) == (mymodule2.year - mymodule1.year))
 
    When you will run ``namespace_test.py`` you will see either ``True`` or
    ``False`` as output depending on whether or not you've already had your
    birthday this year.
+   
 #. Add the following statement to ``mymodule1.py``, ``mymodule2.py``, and
    ``namespace_test.py`` from the previous exercise:
 
    .. sourcecode:: python
     
-        print "My name is %s" % __name__
+        print("My name is", __name__)
 
    Run ``namespace_test.py``. What happens? Why? Now add the following to the
    bottom of ``mymodule1.py``:
@@ -970,54 +1096,33 @@ Exercises
    .. sourcecode:: python
     
         if __name__ == '__main__':
-            print "This won't run if I'm  imported."
+            print("This won't run if I'm  imported.")
 
    Run ``mymodule1.py`` and ``namespace_test.py`` again. In which case do you
    see the new print statement?
+   
 #. In a Python shell try the following:
 
    .. sourcecode:: python
     
         >>> import this
 
-   What does Tim Peters have to say about namespaces?
-#. Use ``pydoc`` to find and test three other functions from the ``string``
-   module. Record your findings.
+   What does Tim Peter's have to say about namespaces?
+   
 #. Rewrite ``matrix_mult`` from the last chapter using what you have learned
    about list methods.
-#. The ``dir`` function, which we first saw in Chapter 7, prints out a list of
-   the *attributes* of an object passed to it as an argument. In other words,
-   ``dir`` returns the contents of the *namespace* of its argument. Use
-   ``dir(str)`` and ``dir(list)`` to find at least three string and list
-   methods which have not been introduced in the examples in the chapter. You
-   should ignore anything that begins with double underscore (__) for the time
-   being. Be sure to make detailed notes of your findings, including names of
-   the new methods and examples of their use. ( *hint:* Print the docstring of
-   a function you want to explore.  For example, to find out how ``str.join``
-   works, ``print str.join.__doc__``)
+   
 #. Give the Python interpreter's response to each of the following from a
    continuous interpreter session:
 
    .. sourcecode:: python
-        
-       >>> s = "If we took the bones out, it wouldn't be crunchy, would it?"
-       >>> s.split()
-
-   .. sourcecode:: python
-        
-       >>> type(s.split())
-          
-   .. sourcecode:: python
-        
-       >>> s.split('o')
-
-   .. sourcecode:: python
-        
-       >>> s.split('i')
-          
-   .. sourcecode:: python
-        
-       >>> '0'.join(s.split('o'))
+    
+      >>> s = "If we took the bones out, it wouldn't be crunchy, would it?"
+      >>> s.split()
+      >>> type(s.split())
+      >>> s.split('o')
+      >>> s.split('i')
+      >>> '0'.join(s.split('o'))
           
    Be sure you understand why you get each result. Then apply what you have
    learned to fill in the body of the function below using the ``split`` and
@@ -1026,179 +1131,108 @@ Exercises
    .. sourcecode:: python
     
         def myreplace(old, new, s):
-            """
-            Replace all occurences of old with new in the string s.
+            """ Replace all occurences of old with new in the string s. """
+            ...
+            
+            
+        test(myreplace(',', ';', 'this, that, and some other thing'),
+                                 'this; that; and some other thing')
+        test(myreplace(' ', '**', 'Words will now      be  separated by stars.')
+                                  'Words**will**now**be**separated**by**stars.')
     
-              >>> myreplace(',', ';', 'this, that, and, some, other, thing')
-             'this; that; and; some; other; thing'
-             >>> myreplace(' ', '**', 'Words will now be separated by stars.')
-             'Words**will**now**be**separated**by**stars.'
-            """
+   Your solution should pass the tests.
+   
+#. Create a module named ``wordtools.py`` with our test scaffolding in place.
 
-   Your solution should pass all doctests.
-#. Create a module named ``wordtools.py`` with the following at the bottom:
-
-   .. sourcecode:: python
+   Now add functions to these tests pass::
+   
+        test(cleanword('what?'),  'what')
+        test(cleanword('"now!"'), 'now')
+        test(cleanword('?+="w-o-r-d!,@$()"''),  'word')
     
-        if __name__ == '__main__':
-            import doctest
-            doctest.testmod()
+        test(has_dashdash('distance--but'), True)
+        test(has_dashdash('several'), False)
+        test(has_dashdash('spoke--'), True)
+        test(has_dashdash('distance--but'), True)
+        test(has_dashdash('-yo-yo-'), False)
 
-   Explain how this statement makes both using and testing this module
-   convenient. What will be the value of ``__name__`` when ``wordtools.py`` is
-   imported from another module? What will it be when it is run as a main
-   program? In which case will the doctests run? Now add bodies to each of the
-   following functions to make the doctests pass:
-
-   .. sourcecode:: python
+        test(extract_words('Now is the time!  "Now", is the time? Yes, now.'),
+              ['now', 'is', 'the', 'time', 'now', 'is', 'the', 'time', 'yes', 'now'])
+        test(extract_words('she tried to curtsey as she spoke--fancy'),
+              ['she', 'tried', 'to', 'curtsey', 'as', 'she', 'spoke', 'fancy'])
     
-        def cleanword(word):
-            """
-              >>> cleanword('what?')
-              'what'
-              >>> cleanword('"now!"')
-              'now'
-              >>> cleanword('?+="word!,@$()"')
-              'word'
-            """
-
-   .. sourcecode:: python
+        test(wordcount('now', ['now', 'is', 'time', 'is', 'now', 'is', 'is']), 2)
+        test(wordcount('is', ['now', 'is', 'time', 'is', 'now', 'is', 'the', 'is']), 4)
+        test(wordcount('time', ['now', 'is', 'time', 'is', 'now', 'is', 'is']), 1)
+        test(wordcount('frog', ['now', 'is', 'time', 'is', 'now', 'is', 'is']), 0)
     
-        def has_dashdash(s):
-            """
-              >>> has_dashdash('distance--but')
-              True
-              >>> has_dashdash('several')
-              False
-              >>> has_dashdash('critters')
-              False
-              >>> has_dashdash('spoke--fancy')
-              True
-              >>> has_dashdash('yo-yo')
-              False
-            """
+        test(wordset(['now', 'is', 'time', 'is', 'now', 'is', 'is']), 
+              ['is', 'now', 'time'])
+        test(wordset(['I', 'a', 'a', 'is', 'a', 'is', 'I', 'am']),
+              ['I', 'a', 'am', 'is'])
+        test(wordset(['or', 'a', 'am', 'is', 'are', 'be', 'but', 'am']),
+              ['a', 'am', 'are', 'be', 'but', 'is', 'or'])
+       
+        test(longestword(['a', 'apple', 'pear', 'grape']), 5)
+        test(longestword(['a', 'am', 'I', 'be']), 2)
+        test(longestword(['this', 'that', 'supercalifragilisticexpialidocious']), 34)
+        test(longestword([ ]), 0)
 
-   .. sourcecode:: python
-    
-        def extract_words(s):
-            """
-              >>> extract_words('Now is the time!  "Now", is the time? Yes, now.')
-              ['now', 'is', 'the', 'time', 'now', 'is', 'the', 'time', 'yes', 'now']
-              >>> extract_words('she tried to curtsey as she spoke--fancy')
-              ['she', 'tried', 'to', 'curtsey', 'as', 'she', 'spoke', 'fancy']
-            """
-
-   .. sourcecode:: python
-    
-        def wordcount(word, wordlist):
-            """
-              >>> wordcount('now', ['now', 'is', 'time', 'is', 'now', 'is', 'is'])
-              ['now', 2]
-              >>> wordcount('is', ['now', 'is', 'time', 'is', 'now', 'is', 'the', 'is'])
-              ['is', 4]
-              >>> wordcount('time', ['now', 'is', 'time', 'is', 'now', 'is', 'is'])
-              ['time', 1]
-              >>> wordcount('frog', ['now', 'is', 'time', 'is', 'now', 'is', 'is'])
-              ['frog', 0]
-            """
-
-   .. sourcecode:: python
-    
-        def wordset(wordlist):
-            """
-              >>> wordset(['now', 'is', 'time', 'is', 'now', 'is', 'is'])
-              ['is', 'now', 'time']
-              >>> wordset(['I', 'a', 'a', 'is', 'a', 'is', 'I', 'am'])
-              ['I', 'a', 'am', 'is']
-              >>> wordset(['or', 'a', 'am', 'is', 'are', 'be', 'but', 'am'])
-              ['a', 'am', 'are', 'be', 'but', 'is', 'or']
-            """
-
-   .. sourcecode:: python
-    
-        def longestword(wordset):
-            """
-              >>> longestword(['a', 'apple', 'pear', 'grape'])
-              5
-              >>> longestword(['a', 'am', 'I', 'be'])
-              2
-              >>> longestword(['this', 'that', 'supercalifragilisticexpialidocious'])
-              34
-            """
-
-   Save this module so you can use the tools it contains in your programs.
+   Save this module so you can use the tools it contains in future programs.
+   
 #. `unsorted_fruits.txt <resources/ch10/unsorted_fruits.txt>`__ contains a
    list of 26 fruits, each one with a name that begins with a different letter
    of the alphabet. Write a program named ``sort_fruits.py`` that reads in the
    fruits from ``unsorted_fruits.txt`` and writes them out in alphabetical
    order to a file named ``sorted_fruits.txt``.
+   
 #. Answer the following questions about ``countletters.py``:
 
-   * Explain in detail what the three lines do:
+   a. Explain in detail what the three lines do:
 
-     .. sourcecode:: python
+      .. sourcecode:: python
         
-         infile = open('alice_in_wonderland.txt', 'r')
-         text = infile.read()
-         infile.close()
+            infile = open('alice_in_wonderland.txt', 'r')
+            text = infile.read()
+            infile.close()
 
-     What would ``type(text)`` return after these lines have been executed?
-   * What does the expression ``128 * [0]`` evaluate to? Read about `ASCII
-     <http://en.wikipedia.org/wiki/ASCII>`__ in Wikipedia and explain why you 
-     think the variable, ``counts`` is assigned to ``128 * [0]`` in light of
-     what you read.
-   * What does
+      What would ``type(text)`` return after these lines have been executed?
+      
+   b. What does the expression ``128 * [0]`` evaluate to? Read about `ASCII
+      <http://en.wikipedia.org/wiki/ASCII>`__ in Wikipedia and explain why you 
+      think the variable, ``counts`` is assigned to ``128 * [0]`` in light of
+      what you read.
+      
+   c. What does
 
-     .. sourcecode:: python
+      .. sourcecode:: python
         
-         for letter in text:
-             counts[ord(letter)] += 1
+            for letter in text:
+                counts[ord(letter)] += 1
 
-     do to ``counts``?
-   * Explain the purpose of the ``display`` function. Why does it check for
-     values ``10``, ``13``, and ``32``? What is special about those values?
-   * Describe in detail what the lines
+      do to ``counts``?
+      
+   d. Explain the purpose of the ``display`` function. Why does it check for
+      values ``10``, ``13``, and ``32``? What is special about those values?
+      
+   e. Describe in detail what the lines
 
-     .. sourcecode:: python
+      .. sourcecode:: python
         
-         outfile = open('alice_counts.dat', 'w')
-         outfile.write("%-12s%s\n" % ("Character", "Count"))
-         outfile.write("=================\n")
+            layout = "{0:>9} {1:>5}\n"
+            outfile = open('alice_counts.dat', 'w')
+            outfile.write(layout.format("Character", "Count"))
+                          outfile.write("========= =====\n")
 
-     do. What will be in ``alice_counts.dat`` when they finish executing?
-   * Finally, explain in detail what
+      do. What will be in ``alice_counts.dat`` when they finish executing?
+      
+   f. Finally, explain in detail what
 
-     .. sourcecode:: python
+      .. sourcecode:: python
         
-         for i in range(len(counts)):
-             if counts[i]:
-                 outfile.write("%-12s%d\n" % (display(i), counts[i]))
+            for i in range(len(counts)):
+                if counts[i] > 0:
+                    outfile.write(layout.format(display(i), counts[i]))
 
-     does. What is the purpose of ``if counts[i]``?
+      does. 
 
-#. Write a program named ``mean.py`` that takes a sequence of numbers on the
-   command line and returns the mean of their values. ::
-
-        $ python mean.py 3 4
-        3.5
-        $ python mean.py 3 4 5
-        4.0
-        $ python mean.py 11 15 94.5 22
-        35.625
-
-   A session of your program running on the same input should produce the same
-   output as the sample session above.
-#. Write a program named ``median.py`` that takes a sequence of numbers on the
-   command line and returns the median of their values. ::
-
-        $ python median.py 3 7 11
-        7
-        $ python median.py 19 85 121
-        85
-        $ python median.py 11 15 16 22
-        15.5
-
-   A session of your program running on the same input should produce the same
-   output as the sample session above.
-#. Modify the ``countletters.py`` program so that it takes the file to open as
-   a command line argument. How will you handle the naming of the output file?
