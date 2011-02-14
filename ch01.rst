@@ -1,11 +1,23 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png
+    
+|    
+    
 The way of the program
 ======================
 
@@ -75,59 +87,47 @@ without further translation.
 
 .. image:: illustrations/compile.png
    :alt: Compile illustration
-
+    
 Many modern languages use both processes. They are first compiled into a lower
 level language, called **byte code**, and then interpreted by a program called
 a **virtual machine**. Python uses both processes, but because of the way
 programmers interact with it, it is usually considered an interpreted language.
 
-There are two ways to use the Python interpreter: *shell mode* and *script
-mode*. In shell mode, you type Python statements into the **Python shell** and
-the interpreter immediately prints the result:
+There are two ways to use the Python interpreter: *immediate mode* and *script
+mode*. In immediate mode, you type Python expressions into the **Python Interpreter** window, 
+and the interpreter immediately shows the result:
 
-.. sourcecode:: python
-    
-    $ python
-    Python 2.5.1 (r251:54863, May  2 2007, 16:56:35) 
-    [GCC 4.1.2 (Ubuntu 4.1.2-0ubuntu4)] on linux2
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> print 1 + 1
-    2
+.. image:: illustrations/interpreter_sshot.png
+   :alt: Screen shot of interpreter
 
-The first line of this example is the command that starts the Python
-interpreter at a Unix command prompt. The next three lines are messages from
-the interpreter. The fourth line starts with ``>>>``, which is the **Python
-prompt**. The interpreter uses the prompt to indicate that it is ready for
-instructions. We typed ``print 1 + 1``, and the interpreter replied ``2``.
+The ``>>>`` is called the **Python prompt**. The interpreter uses the prompt to indicate that it is ready for
+instructions. We typed ``2 + 2``, and the interpreter evaluated our expression, and replied ``4``, 
+and on the next line it gave a new prompt, indicating that it is ready for more input.
 
 Alternatively, you can write a program in a file and use the interpreter to
-execute the contents of the file. Such a file is called a **script**. For
-example, we used a text editor to create a file named ``firstprogram.py`` with
-the following contents:
+execute the contents of the file. Such a file is called a **script**. 
 
-.. sourcecode:: python
-    
-    print 1 + 1
+|rle_start|
+   
+In this Rhodes Local Edition of the textbook, we use a program development environment called
+**PyScripter**. (It is available at http://code.google.com/p/pyscripter.)  There are various other
+development environments. If you're using one of the others, you might be
+better off working with the authors' original book rather than this edition.
 
+For example, we created a file named ``firstprogram.py`` using PyScripter.
 By convention, files that contain Python programs have names that end with
-``.py``.
+``.py``
 
-To execute the program, we have to tell the interpreter the name of the script:
+To execute the program, we can click the **Run** button in PyScripter:
 
-.. sourcecode:: python
-    
-    $ python firstprogram.py
-    2
+.. image:: illustrations/my_first_program.png
+   :alt: first program screenshot
+   
+|rle_end|
 
-These examples show Python being run from a Unix command line. In other
-development environments, the details of executing programs may differ. Also,
-most programs are more interesting than this one.
+Most programs are more interesting than this one.
 
-The examples in this book use both the Python interpreter and scripts.  You
-will be able to tell which is intended since shell mode examples will always
-start with the Python prompt.
-
-Working in shell mode is convenient for testing short bits of code because you
+Working directly in the interpreter is convenient for testing short bits of code because you
 get immediate feedback. Think of it as scratch paper used to help you work out
 problems. Anything longer than a few lines should be put into a script.
 
@@ -166,7 +166,7 @@ Believe it or not, that's pretty much all there is to it. Every program you've
 ever used, no matter how complicated, is made up of instructions that look more
 or less like these. Thus, we can describe programming as the process of
 breaking a large, complex task into smaller and smaller subtasks until the
-subtasks are simple enough to be performed with one of these basic
+subtasks are simple enough to be performed with sequences of these basic
 instructions.
 
 That may be a little vague, but we will come back to this topic later when we
@@ -179,9 +179,11 @@ What is debugging?
 ------------------
 
 Programming is a complex process, and because it is done by human beings, it
-often leads to errors. For whimsical reasons, programming errors are called
+often leads to errors. Programming errors are called
 **bugs** and the process of tracking them down and correcting them is called
-**debugging**.
+**debugging**.  Some claim that in 1945, a dead moth caused a problem on relay 
+number 70, panel F, of one of the first computers at Harvard, and the term **bug** 
+has remained in use since. 
 
 Three kinds of errors can occur in a program: `syntax errors
 <http://en.wikipedia.org/wiki/Syntax_error>`__, `runtime errors
@@ -196,15 +198,15 @@ Syntax errors
 -------------
 
 Python can only execute a program if the program is syntactically correct;
-otherwise, the process fails and returns an error message.  **syntax** refers
+otherwise, the process fails and returns an error message.  **Syntax** refers
 to the structure of a program and the rules about that structure. For example,
 in English, a sentence must begin with a capital letter and end with a period.
-this sentence contains a **syntax error**. So does this one
+this sentence contains a **syntax error**. So does this one  
 
 For most readers, a few syntax errors are not a significant problem, which is
-why we can read the poetry of e. e. cummings without spewing error messages.
+why we can read the poetry of e. e. cummings without problems.
 Python is not so forgiving. If there is a single syntax error anywhere in your
-program, Python will print an error message and quit, and you will not be able
+program, Python will display an error message and quit, and you will not be able
 to run your program. During the first few weeks of your programming career, you
 will probably spend a lot of time tracking down syntax errors. As you gain
 experience, though, you will make fewer errors and find them faster.
@@ -272,7 +274,7 @@ always have a working program.
 For example, Linux is an operating system kernel that contains millions of
 lines of code, but it started out as a simple program Linus Torvalds used to
 explore the Intel 80386 chip. According to Larry Greenfield, one of Linus's
-earlier projects was a program that would switch between printing AAAA and
+earlier projects was a program that would switch between displaying AAAA and
 BBBB. This later evolved to Linux (*The Linux Users' Guide* Beta Version 1).
 
 Later chapters will make more suggestions about debugging and other programming
@@ -309,7 +311,7 @@ legal token in mathematics (at least as far as we know). Similarly,
 :sub:`2`\ Zz is not legal because there is no element with the abbreviation
 ``Zz``.
 
-The second type of syntax rule pertains to the structure of a statement--- that
+The second type of syntax rule pertains to the **structure** of a statement--- that
 is, the way the tokens are arranged. The statement ``3=+6$`` is structurally
 illegal because you can't place a plus sign immediately after an equal sign.
 Similarly, molecular formulas have to have subscripts after the element name,
@@ -319,9 +321,9 @@ When you read a sentence in English or a statement in a formal language, you
 have to figure out what the structure of the sentence is (although in a natural
 language you do this subconsciously). This process is called **parsing**.
 
-For example, when you hear the sentence, The other shoe fell, you understand
+For example, when you hear the sentence, "The other shoe fell", you understand
 that the other shoe is the subject and fell is the verb.  Once you have parsed
-a sentence, you can figure out what it means, or the semantics of the sentence.
+a sentence, you can figure out what it means, or the **semantics** of the sentence.
 Assuming that you know what a shoe is and what it means to fall, you will
 understand the general implication of this sentence.
 
@@ -342,9 +344,12 @@ structure, syntax, and semantics --- there are many differences:
         verbose.  Formal languages are less redundant and more concise.
 
     literalness
-        Natural languages are full of idiom and metaphor. If someone says, The
-        other shoe fell, there is probably no shoe and nothing falling. Formal
-        languages mean exactly what they say.
+        Formal languages mean exactly what they say.  On the other hand, natural languages 
+        are full of idiom and metaphor. If someone says, "The
+        other shoe fell", there is probably no shoe and nothing falling.  
+        |rle_open| You'll need to find the 
+        original joke to understand the idiomatic meaning of the other shoe falling. 
+        *Yahoo! Answers* thinks it knows! |rle_close|
 
 People who grow up speaking a natural language---everyone---often have a hard
 time adjusting to formal languages. In some ways, the difference between formal
@@ -377,20 +382,20 @@ like spelling errors and bad punctuation, which you can get away with in
 natural languages, can make a big difference in a formal language.
 
 
-.. index:: "hello world!", print statement
+.. index:: "hello world!"
 
 The first program
 -----------------
 
-Traditionally, the first program written in a new language is called Hello,
-World! because all it does is display the words, Hello, World!  In Python, it
+Traditionally, the first program written in a new language is called *Hello,
+World!* because all it does is display the words, Hello, World!  In Python, the script
 looks like this:
 
 .. sourcecode:: python
     
-    print "Hello, World!"
+    print("Hello, World!")
 
-This is an example of a **print statement**, which doesn't actually print
+This is an example of using the **print function**, which doesn't actually print
 anything on paper. It displays a value on the screen. In this case, the result
 is the words
 
@@ -404,6 +409,40 @@ they don't appear in the result.
 Some people judge the quality of a programming language by the simplicity of
 the Hello, World! program. By this standard, Python does about as well as
 possible.
+
+
+
+.. index:: comments
+
+Comments
+--------
+
+As programs get bigger and more complicated, they get more difficult to read.
+Formal languages are dense, and it is often difficult to look at a piece of
+code and figure out what it is doing, or why.
+
+For this reason, it is a good idea to add notes to your programs to explain in
+natural language what the program is doing.  
+
+A **comment** in a computer program is text that is intended
+only for the human reader - it is completely ignored by the interpreter.
+
+In Python, the `#` token starts a comment.  The rest of the line 
+is ignored.   Here is a new version of *Hello, World!*.
+
+.. sourcecode:: python
+    
+    #---------------------------------------------------
+    # This demo program shows off how elegant Python is!
+    # Written by Joe Soap, December 2010.
+    # Anyone may freely copy or modify this program.
+    #---------------------------------------------------
+    
+    print("Hello, World!")     # Isn't this easy! 
+      
+You'll also notice that we've left a blank line in the program.  Blank lines
+are also ignored by the interpreter, but comments and blank lines can make your
+programs much easier for humans to parse.  Use them liberally! 
 
 
 Glossary
@@ -422,6 +461,11 @@ Glossary
         modern languages first compile source code into byte code and then
         interpret the byte code with a program called a *virtual machine*.
 
+    comment
+        Information in a program that is meant for other programmers (or anyone
+        reading the source code) and has no effect on the execution of the
+        program.    
+        
     compile
         To translate a program written in a high-level language into a
         low-level language all at once, in preparation for later execution.
@@ -445,6 +489,11 @@ Glossary
         A programming language like Python that is designed to be easy for
         humans to read and write.
 
+    immediate mode
+        A style of using Python where we type expressions at the command prompt, and 
+        the results are shown immediately.  Contrast with **script**, and see the
+        entry under **Python shell**.
+    
     interpret
         To execute a program in a high-level language by translating it one
         line at a time.
@@ -465,9 +514,9 @@ Glossary
     portability
         A property of a program that can run on more than one kind of computer.
 
-    print statement
-        An instruction that causes the Python interpreter to display a value on
-        the screen.
+    print function
+        A function used in a program or script that causes the Python interpreter to 
+        display a value on its output device.
 
     problem solving
         The process of formulating a problem, finding a solution, and
@@ -481,7 +530,9 @@ Glossary
         An interactive user interface to the Python interpreter. The user of a
         Python shell types commands at the prompt (>>>), and presses the return
         key to send these commands immediately to the interpreter for
-        processing.
+        processing.  |rle_open| The word *shell* comes from Unix.  In the PyScripter 
+        used in this RLE version of the book, the Interpreter Window is where
+        we'd do the immediate mode interaction. |rle_close|
 
     runtime error
         An error that does not occur until the program has started to execute
@@ -516,19 +567,18 @@ Exercises
 ---------
 
 #. Write an English sentence with understandable semantics but incorrect
-   syntax. Write another English sentence which has correct syntax but has
+   syntax. Write another English sentence which has correct syntax but has 
    semantic errors.
-#. Start a Python shell. Type ``1 + 2`` and then hit return. Python *evaluates* 
-   this *expression*, prints the result, and then prints another prompt. ``*``
+#. Using the Python interpreter, type ``1 + 2`` and then hit return. Python *evaluates* 
+   this *expression*, displays the result, and then shows another prompt. ``*``
    is the *multiplication operator*, and ``**`` is the
    *exponentiation operator*. Experiment by entering different expressions and
-   recording what is printed by the Python interpreter.  What happens if you
-   use the ``/`` operator? Are the results what you expect? Explain.
+   recording what is displayed by the Python interpreter. 
 #. Type ``1 2`` and then hit return. Python tries to evaluate the expression,
    but it can't because the expression is not syntactically legal. Instead, it
-   prints the error message::
+   shows the error message::
 
-          File "<stdin>", line 1
+          File "<interactive input>", line 1
             1 2
               ^
         SyntaxError: invalid syntax
@@ -546,44 +596,49 @@ Exercises
    messages when you enter them at the Python prompt. Write down what you enter
    at the prompt and the last line of the error message that Python reports
    back to you. 
-#. Type `print 'hello'`. Python executes this statement, which has the effect
+   
+#. Type `print('hello')`. Python executes this, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
    used to enclose the string are not part of the output.  Now type ``"hello"``
-   and describe your result.  Make note of when you see the quotation marks
+   and describe your result.  Make notes of when you see the quotation marks
    and when you don't.
-#. Type ``print cheese`` without the quotation marks. The output will look
+    
+#. Type ``cheese`` without the quotation marks. The output will look
    something like this::
 
         Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
+          File "<interactive input>", line 1, in ?
         NameError: name 'cheese' is not defined
 
    This is a run-time error; specifically, it is a NameError, and even more
    specifically, it is an error because the name `cheese` is not defined. If
    you don't know what that means yet, you will soon.
-#. Type ``'This is a test...'`` at the Python prompt and hit enter.  Record what
+#. Type ``6 + 4 * 9`` at the Python prompt and hit enter.  Record what
    happens.
    
-   Now create a python script named ``test1.py`` with the following contents
-   (be sure to save it before you try to run it):
+   Now create a python script named ``test1.py`` with the following contents:
 
    .. sourcecode:: python
     
-       'This is a test...'
+       6 + 4 * 9
 
    What happens when you run this script? Now change the contents to:
 
    .. sourcecode:: python
     
-       print 'This is a test...'
+       print(6 + 4 * 9)
 
    and run it again.
    
    What happened this time?
    
-   Whenever an *expression* is typed at the Python prompt, it is *evaluated*
-   and the result is printed on the line below. ``'This is a test...'`` is an
-   expression, which evaluates to ``'This is a test...'`` (just like the
-   expression ``42`` evaluates to ``42``). In a script, however, evaluations of
-   expressions are not sent to the program output, so it is necessary to
-   explicitly print them.
+   Whenever an *expression* is typed at the Python prompt, it is evaluated
+   and the result is *automatically* shown on the line below.  (Like on your calculator,
+   if you type this expression you'll get the result 42.)   
+   
+   A script is different, however.  Evaluations of
+   expressions are not automatically displayed, 
+   so it is necessary to use the **print** function to make the answer
+   show up.  
+   
+   It is hardly ever necessary to use the print function in immediate mode / at the command prompt.  
