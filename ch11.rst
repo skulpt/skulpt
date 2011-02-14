@@ -1,15 +1,26 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|      
+    
 Recursion and exceptions
 ========================
 
-.. index:: mutable, immutable, tuple 
+.. index:: mutable, immutable, tuple
 
 Tuples and mutability
 ---------------------
@@ -22,90 +33,80 @@ lists are **mutable**.
 
 A **tuple**, like a list, is a sequence of items of any type. Unlike lists,
 however, tuples are immutable. Syntactically, a tuple is a comma-separated
-sequence of values:
+sequence of values.  Although it is not necessary, it is conventional to 
+enclose tuples in parentheses:
 
 .. sourcecode:: python
     
-    >>> tup = 2, 4, 6, 8, 10
-
-Although it is not necessary, it is conventional to enclose tuples in
-parentheses:
-
-.. sourcecode:: python
+    >>> julia = ("Julia", "Roberts", 1967, "Duplicity", 2009, "Actress", "Atlanta, Georgia")
     
-    >>> tup = (2, 4, 6, 8, 10)
-
-To create a tuple with a single element, we have to include the final comma:
-
-.. sourcecode:: python
-    
-    >>> tup = (5,)
-    >>> type(tup)
-    <type 'tuple'> 
-    
-Without the comma, Python treats ``(5)`` as an integer in parentheses:
-
-.. sourcecode:: python
-    
-    >>> tup = (5)
-    >>> type(tup)
-    <type 'int'> 
-
-Syntax issues aside, tuples support the same sequence operations as strings and
+Tuples are useful for representing what other languages often call *records* ---
+some related information that belongs together, like your student record.  There is
+no description of what each of these *fields* means, but we can guess.  A tuple
+lets us "chunk" together related information and use it as a single thing.
+ 
+Tuples support the same sequence operations as strings and
 lists. The index operator selects an element from a tuple.
 
 .. sourcecode:: python
     
-    >>> tup = ('a', 'b', 'c', 'd', 'e')
-    >>> tup[0]
-    'a'
-
-And the slice operator selects a range of elements.
-
-.. sourcecode:: python
-    
-    >>> tup[1:3]
-    ('b', 'c')
+    >>> julia[2]
+    1967
 
 But if we try to use item assignment to modify one of the elements of the
 tuple, we get an error:
 
 .. sourcecode:: python
     
-    >>> tup[0] = 'X'
+    >>> julia[0] = 'X'
     TypeError: 'tuple' object does not support item assignment
 
-Of course, even if we can't modify the elements of a tuple, we can replace it
-with a different tuple:
+Of course, even if we can't modify the elements of a tuple, we can make a variable
+reference a new tuple holding different information.  To construct the new tuple,
+it is convenient that we can slice parts of the old tuple and join up the
+bits to make the new tuple.  So ``julia`` has a new recent film, and we might want
+to change her tuple:
 
 .. sourcecode:: python
     
-    >>> tup = ('X',) + tup[1:]
-    >>> tup
-    ('X', 'b', 'c', 'd', 'e')
+    >>> julia = julia[:3] + ("Eat Pray Love", 2010) + julia[5:]
+    >>> julia
+    ('Julia', 'Roberts', 1967, 'Eat Pray Love', 2010, 'Actress', 'Atlanta, Georgia')
 
-Alternatively, we could first convert it to a list, modify it, and convert it
-back into a tuple:
+
+To create a tuple with a single element (but you're probably not likely
+to do that too often), we have to include the final comma, because without
+the final comma, Python treats the ``(5)`` below as an integer in parentheses:
 
 .. sourcecode:: python
     
-    >>> tup = ('X', 'b', 'c', 'd', 'e')
-    >>> tup = list(tup)
-    >>> tup
-    ['X', 'b', 'c', 'd', 'e']
-    >>> tup[0] = 'a'
-    >>> tup = tuple(tup)
-    >>> tup
-    ('a', 'b', 'c', 'd', 'e')
-
+    >>> tup = (5,)
+    >>> type(tup)
+    <class 'tuple'> 
+    >>> x = (5)
+    >>> type(x)
+    <class 'int'>     
+    
 .. index::
     single: tuple assignment 
     single: assignment; tuple 
-    single: tuple; assignment
-
+    single: tuple; assignment  
+  
 Tuple assignment
 ----------------
 
+Python has a very powerful **tuple assignment** feature that allows a tuple of variables 
+on the left of an assignment to be assigned values from a tuple
+on the right of the assignment.
+
+.. sourcecode:: python
+    
+    (name, surname, birth_year, movie, movie_year, profession, birth_place) = julia
+    
+This does the equivalent of seven assignment statements, all on one easy line.  
+One requirement is that the number of variables on the left must match the number
+of elements in the tuple. 
+     
 Once in a while, it is useful to swap the values of two variables.  With
 conventional assignment statements, we have to use a temporary variable. For
 example, to swap ``a`` and ``b``:
@@ -116,12 +117,11 @@ example, to swap ``a`` and ``b``:
     a = b
     b = temp
 
-If we have to do this often, this approach becomes cumbersome. Python provides
-a form of **tuple assignment** that solves this problem neatly:
+Tuple assignment solves this problem neatly:
 
 .. sourcecode:: python
     
-    a, b = b, a
+    (a, b) = (b, a)
 
 The left side is a tuple of variables; the right side is a tuple of values.
 Each value is assigned to its respective variable. All the expressions on the
@@ -133,172 +133,181 @@ right have to be the same:
 
 .. sourcecode:: python
     
-    >>> a, b, c, d = 1, 2, 3
+    >>> (a, b, c, d) = (1, 2, 3)
     ValueError: need more than 3 values to unpack 
-
 
 .. index::
     single: tuple; return value 
 
-
 Tuples as return values
 -----------------------
 
-Functions can return tuples as return values. For example, we could
-write a function that swaps two parameters:
+Functions can return tuples as return values. This is very useful --- we often want to
+know some batsman's highest and lowest score, or we want to find the mean and the standard 
+deviation, or we want to know the year, the month, and the day, or if we're doing some
+some ecological modelling we may want to know the number of rabbits and the number
+of wolves on an island at a given time.  In each case, a function (which 
+can only return a single value), can create a single tuple holding multiple elements. 
+
+For example, we could write a function that returns both the area and the circumference
+of a circle of radius r:
 
 .. sourcecode:: python
     
-    def swap(x, y):
-        return y, x
+    def f(r):
+        """ Return (circumference, area) of a circle of radius r """
+        c = 2 * math.pi * r
+        a = math.pi * r * r
+        return (c, a)
+        
+Drawing Fractals
+----------------
 
-Then we can assign the return value to a tuple with two variables:
+**Recursion** means "defining something in terms of itself" usually at some 
+smaller scale, perhaps multiple times, to achieve your objective.  
+For example, we might say "A human being is someone whose mother is a human being."   
 
-.. sourcecode:: python
-    
-    a, b = swap(a, b)
+For our purposes, a **fractal** is drawing which also has self-similar* structure,
+where it can be defined in terms of itself.
 
-In this case, there is no great advantage in making ``swap`` a function.  In
-fact, there is a danger in trying to encapsulate ``swap``, which is the
-following tempting mistake:
+Let us start by looking at the famous Koch fractal.  An order 0 Koch fractal is simply
+a straight line of a given size.
 
-.. sourcecode:: python
-    
-    def swap(x, y):      # incorrect version
-         x, y = y, x
+.. image:: illustrations/koch_0.png
 
-If we call this function like this:
+An order 1 Koch fractal is obtained like this: instead of drawing just one line,
+draw instead four smaller segments, in the pattern shown here:
 
-.. sourcecode:: python
-    
-    swap(a, b)
+.. image:: illustrations/koch_1.png
 
-then ``a`` and ``x`` are aliases for the same value. Changing ``x`` inside
-``swap`` makes ``x`` refer to a different value, but it has no effect on ``a``
-in ``__main__``. Similarly, changing ``y`` has no effect on ``b``.
+Now what would happen if we repeated this Koch pattern again on each of the order 1 segments?  
+We'd get this order 2 Koch fractal:
 
-This function runs without producing an error message, but it doesn't do what
-we intended. This is an example of a semantic error.
+.. image:: illustrations/koch_2.png
 
+Repeating our pattern again gets us an order 3 Koch fractal:
 
-.. index:: pure functions, modifiers
+.. image:: illustrations/koch_3.png
 
-Pure functions and modifiers revisited
---------------------------------------
-
-In :ref:`pure-func-mod` we discussed *pure functions* and *modifiers* as
-related to lists.  Since tuples are immutable we can not write modifiers on
-them.
-
-Here is a modifier that inserts a new value into the middle of a list:
+Now let us think about it the other way around.  To draw a Koch fractal
+of order 3, we can simply draw four order 2 Koch fractals.  But each of these
+in turn needs four order 1 Koch fractals, and each of those in turn needs four
+order 0 fractals.  Ultimately, the only drawing that will take place is 
+at order 0. This is very simple to code up in Python:
 
 .. sourcecode:: python
-    
-    #
-    # seqtools.py
-    #
-    
-    def insert_in_middle(val, lst):
-        middle = len(lst)/2
-        lst[middle:middle] = [val]
+   :linenos: 
+   
+    def koch(t, order, size):
+        """
+           Make turtle t draw a Koch fractal of 'order' and 'size'.
+           Leave the turtle facing the same direction.
+        """
 
-We can run it to see that it works:
+        if order == 0:                  # The base case is just a straight line
+            t.forward(size)
+        else:
+            koch(t, order-1, size/3)   # go 1/3 of the way
+            t.left(60)
+            koch(t, order-1, size/3)
+            t.right(120)
+            koch(t, order-1, size/3)
+            t.left(60)
+            koch(t, order-1, size/3) 
+            
+The key thing that is new here is that if order is not zero,
+``koch`` calls itself recursively to get its job done.
 
-.. sourcecode:: python
-    
-    >>> from seqtools import *
-    >>> my_list = ['a', 'b', 'd', 'e']
-    >>> insert_in_middle('c', my_list)
-    >>> my_list
-    ['a', 'b', 'c', 'd', 'e']
-
-If we try to use it with a tuple, however, we get an error:
-
-.. sourcecode:: python
-    
-    >>> my_tuple = ('a', 'b', 'd', 'e')
-    >>> insert_in_middle('c', my_tuple)
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "seqtools.py", line 7, in insert_in_middle
-        lst[middle:middle] = [val]
-    TypeError: 'tuple' object does not support item assignment
-    >>> 
-
-The problem is that tuples are immutable, and don't support slice assignment. A
-simple solution to this problem is to make ``insert_in_middle`` a pure
-function:
+Let's make a simple observation and tighten up this code.  Remember that
+turning right by 120 is the same as turning left by -120.  So with a 
+bit of clever rearrangement, we can use a loop instead of lines 10-16:
 
 .. sourcecode:: python
+   :linenos:
+
+    def koch(t, order, size):
+        if order == 0:                  
+            t.forward(size)
+        else:
+            for angle in [60, -120, 60, 0]:
+               koch(t, order-1, size/3)   
+               t.left(angle)
+               
+The final turn is 0 degrees --- so it has no effect.  But it has allowed us to
+find a pattern and reduce seven lines of code to three, which will make  
+things easier for our next observations.
+
+.. admonition:: Recursion, the high-level view
+
+    One way to think about this is to convince yourself that the function
+    works correctly when you call it for an order 0 fractal.  Then do
+    a mental *leap of faith*, saying *"the fairy godmother* (or Python, if
+    you can think of Python as your fairy godmother) *knows how to 
+    handle the recursive level 0 calls for me on lines 11, 13, 15, and 17, so
+    I don't need to think about that detail!"*  All I need to focus on
+    is how to draw an order 1 fractal *if I can assume the order 0 one is
+    already working.*
     
-    def insert_in_middle(val, tup):
-        middle = len(tup)/2
-        return tup[:middle] + (val,) + tup[middle:]
+    You're practicing *mental abstraction* --- ignoring the subproblem 
+    while you solve the big problem.
 
-This version now works for tuples, but not for lists or strings. If we want a
-version that works for all sequence types, we need a way to encapsulate our
-value into the correct sequence type. A small helper function does the trick:
+    If this mode of thinking works (and you should practice it!), then take
+    it to the next level.  Aha! now can I see that it will work when called
+    for order 2 *under the assumption that it is already working for level 1*.  
 
-.. sourcecode:: python
+    And, in general, if I can assume the order n-1 case works, can I just 
+    solve the level n problem?
+
+    Students of mathematics who have played with proofs of induction should
+    see some very strong similarities here.  
+
+.. admonition:: Recursion, the low-level operational view
+
+    Another way of trying to understand recursion is to get rid of it! If we
+    had separate functions to draw a level 3 fractal, a level 2 fractal, a level 1
+    fractal and a level 0 fractal, we could simplify the above code, quite mechanically,
+    to code where there was no longer any recursion, like this:
     
-    def encapsulate(val, seq):
-        if type(seq) == type(""):
-            return str(val)
-        if type(seq) == type([]):
-            return [val]
-        return (val,) 
+    .. sourcecode:: python
+        :linenos:
+        
+        def koch_0(t, size):
+            t.forward(size)
 
-Now we can write ``insert_in_middle`` to work with each of the built-in
-sequence types:
+        def koch_1(t, size):
+            for angle in [60, -120, 60, 0]:
+               koch_0(t,  size/3)
+               t.left(angle)
 
-.. sourcecode:: python
+        def koch_2(t, size):
+            for angle in [60, -120, 60, 0]:
+               koch_1(t,  size/3)
+               t.left(angle)
+
+        def koch_3(t, size):
+            for angle in [60, -120, 60, 0]:
+               koch_2(t,  size/3)
+               t.left(angle)
     
-    def insert_in_middle(val, seq):
-        middle = len(seq)/2
-        return seq[:middle] + encapsulate(val, seq) + seq[middle:]
-
-The last two versions of ``insert_in_middle`` are pure functions. They don't
-have any side effects. Adding ``encapsulate`` and the last version of
-``insert_in_middle`` to the ``seqtools.py`` module, we can test it:
-
-.. sourcecode:: python
+    This trick of "unrolling" the recursion gives us an operational view
+    of what happens.  You can trace the program into ``koch_3``, and from
+    there, into ``koch_2``, and then into ``koch_1``, etc., all the way down
+    the different layers of the recursion.  
     
-    >>> from seqtools import *
-    >>> my_string = 'abde'
-    >>> my_list = ['a', 'b', 'd', 'e']
-    >>> my_tuple = ('a', 'b', 'd', 'e')
-    >>> insert_in_middle('c', my_string)
-    'abcde'
-    >>> insert_in_middle('c', my_list)
-    ['a', 'b', 'c', 'd', 'e']
-    >>> insert_in_middle('c', my_tuple)
-    ('a', 'b', 'c', 'd', 'e')
-    >>> my_string
-    'abde'
-
-The values of ``my_string``, ``my_list``, and ``my_tuple`` are not changed.
-If we want to use ``insert_in_middle`` to change them, we have to assign the
-value returned by the function call back to the variable:
-
-.. sourcecode:: python
-    
-    >>> my_string = insert_in_middle('c', my_string)
-    >>> my_string
-    'abcde' 
-
+    This might be a useful hint to build your understanding.  The mental goal
+    is, however, to be able to do the abstraction!
 
 .. index::
     single: data structures
     single: data structures; recursive
     single: recursive definition
     single: recursive data structure
-
-
+       
 Recursive data structures
 -------------------------
 
 All of the Python data types we have seen can be grouped inside lists and
-tuples in a variety of ways. Lists and tuples can also be nested, providing
+tuples in a variety of ways. Lists and tuples can also be nested, providing a
 myriad possibilities for organizing data. The organization of data for the
 purpose of making it easier to use is called a **data structure**.
 
@@ -313,7 +322,7 @@ A *nested number list* is a list whose elements are either:
 a. numbers
 b. nested number lists
 
-Notice that the term, nested number list is used in its own definition.
+Notice that the term, *nested number list* is used in its own definition.
 **Recursive definitions** like this are quite common in mathematics and
 computer science. They provide a concise and powerful way to describe
 **recursive data structures** that are partially composed of smaller and
@@ -328,9 +337,6 @@ sequence of numbers:
     
     >>> sum([1, 2, 8])
     11
-    >>> sum((3, 5, 8.5))
-    16.5
-    >>>
 
 For our *nested number list*, however, ``sum`` will not work:
 
@@ -338,13 +344,12 @@ For our *nested number list*, however, ``sum`` will not work:
     
     >>> sum([1, 2, [11, 13], 8])
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
     TypeError: unsupported operand type(s) for +: 'int' and 'list'
     >>> 
 
 The problem is that the third element of this list, ``[11, 13]``, is itself a
 list, which can not be added to ``1``, ``2``, and ``8``.
-
 
 .. index:: recursion, recursive call, base case, infinite recursion
 
@@ -363,16 +368,16 @@ surprisingly short:
 
 .. sourcecode:: python
     
-    def recursive_sum(nested_num_list):
+    def r_sum(nested_num_list):
         sum = 0
         for element in nested_num_list:
             if type(element) == type([]):
-                sum = sum + recursive_sum(element)
+                sum += r_sum(element)
             else:
-                sum = sum + element
+                sum += element
         return sum
 
-The body of ``recursive_sum`` consists mainly of a ``for`` loop that traverses
+The body of ``r_sum`` consists mainly of a ``for`` loop that traverses
 ``nested_num_list``. If ``element`` is a numerical value (the ``else`` branch),
 it is simply added to ``sum``. If ``element`` is a list, then ``recursive_sum``
 is called again, with the element as an argument.  The statement inside the
@@ -387,38 +392,37 @@ number list:
 
 .. sourcecode:: python
     
-    def recursive_max(nested_num_list):
+    def r_max(nxs):
+        """ 
+          Find the maximum in a recursive structure of lists inside other lists.
+          Pre: No lists or sublists are empty. 
         """
-          >>> recursive_max([2, 9, [1, 13], 8, 6])
-          13
-          >>> recursive_max([2, [[100, 7], 90], [1, 13], 8, 6])
-          100
-          >>> recursive_max([2, [[13, 7], 90], [1, 100], 8, 6])
-          100
-          >>> recursive_max([[[13, 7], 90], 2, [1, 100], 8, 6])
-          100
-        """
-        largest = nested_num_list[0]
-        while type(largest) == type([]):
-            largest = largest[0]
-    
-        for element in nested_num_list:
-            if type(element) == type([]):
-                max_of_elem = recursive_max(element)
-                if largest < max_of_elem:
-                    largest = max_of_elem
-            else:                           # element is not a list
-                if largest < element:
-                    largest = element
-    
-        return largest
+        largest = None 
+        first_time = True
+        for e in nxs:
+            if type(e) == type([]):
+                val = r_max(e)
+            else:
+                val = e
+            if first_time or val > largest:
+                largest = val
+                first_time = False
 
-Doctests are included to provide examples of ``recursive_max`` at work.
+    return largest
+        
+    test(r_max([2, 9, [1, 13], 8, 6]), 13)
+    test(r_max([2, [[100, 7], 90], [1, 13], 8, 6]), 100)
+    test(r_max([[[13, 7], 90], 2, [1, 100], 8, 6]), 100)
+    test(r_max(["joe", ["sam", "ben"]]), "sam")
 
-The added twist to this problem is finding a numerical value for initializing
-``largest``. We can't just use ``nested_num_list[0]``, since that my be either
-a number or a list. To solve this problem we use a while loop that assigns
-``largest`` to the first numerical value no matter how deeply it is nested.
+Tests are included to provide examples of ``r_max`` at work. 
+
+The added twist to this problem is finding a value for initializing
+``largest``. We can't just use ``nxs[0]``, since that may be either
+a element or a list. To solve this problem (at every recursive call)
+we initialize a boolean flag.  When we've found the value of interest,
+we check to see whether this is the initializing (first) value for
+``largest``, or a value that could potentially change ``largest``.
 
 The two examples above each have a **base case** which does not lead to a
 recursive call: the case where the element is a number and not a list. Without
@@ -426,38 +430,24 @@ a base case, you have **infinite recursion**, and your program will not work.
 Python stops after reaching a maximum recursion depth and returns a runtime
 error.
 
-Write the following in a file named ``infinite_recursion.py``:
+Run this little script:
 
 .. sourcecode:: python
     
-    #
-    # infinite_recursion.py
-    #
     def recursion_depth(number):
-        print "Recursion depth number %d." % number
+        print("{0}, ".format(number), end="")
         recursion_depth(number + 1)
     
     recursion_depth(0)
 
-At the unix command prompt in the same directory in which you saved your
-program, type the following::
-
-    python infinite_recursion.py
-
 After watching the messages flash by, you will be presented with the end of a
-long traceback that ends in with the following:
+long traceback that ends with a message like the following::
 
-.. sourcecode:: python
-
-      ...
-      File "infinite_recursion.py", line 3, in recursion_depth
-        recursion_depth(number + 1)
     RuntimeError: maximum recursion depth exceeded
 
 We would certainly never want something like this to happen to a user of one of
 our programs, so before finishing the recursion discussion, let's see how
 errors like this are handled in Python.
-
 
 .. index:: exception, handling an exception
 
@@ -474,18 +464,18 @@ For example, dividing by zero creates an exception:
     
     >>> print 55/0
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
     ZeroDivisionError: integer division or modulo by zero
     >>>
 
-So does accessing a nonexistent list item:
+So does accessing a non-existent list item:
 
 .. sourcecode:: python
     
     >>> a = []
     >>> print a[5]
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
     IndexError: list index out of range
     >>>
 
@@ -496,7 +486,7 @@ Or trying to make an item assignment on a tuple:
     >>> tup = ('a', 'b', 'd', 'd')
     >>> tup[2] = 'c' 
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
     TypeError: 'tuple' object does not support item assignment
     >>>
 
@@ -505,7 +495,7 @@ error before the colon, and specifics about the error after the colon.
 
 Sometimes we want to execute an operation that might cause an exception, but we
 don't want the program to stop. We can **handle the exception** using the
-``try`` and ``except`` statements.
+``try`` statement to "wrap" a region of code.  
 
 For example, we might prompt the user for the name of a file and then try to
 open it. If the file doesn't exist, we don't want the program to crash; we want
@@ -513,15 +503,20 @@ to handle the exception:
 
 .. sourcecode:: python
     
-    filename = raw_input('Enter a file name: ')
+    filename = input('Enter a file name: ')
     try:
         f = open (filename, "r")
     except:
-        print 'There is no file named', filename
+        print('There is no file named', filename)
 
-The ``try`` statement executes the statements in the first block. If no
-exceptions occur, it ignores the ``except`` statement. If any exception occurs,
-it executes the statements in the ``except`` branch and then continues.
+The ``try`` statement has three separate clauses, or parts, 
+introduced by the keywords ``try`` ... ``except`` ... ``finally``.
+The ``finally`` clause can be omitted, so we'll consider the two-clause version
+of the ``try`` statement first.        
+        
+The ``try`` statement executes and monitors the statements in the first block. If no
+exceptions occur, it skips the block under the ``except`` clause. If any exception occurs,
+it executes the statements in the ``except`` clause and then continues.
 
 We can encapsulate this capability in a function: ``exists`` takes a filename
 and returns true if the file exists, false if it doesn't:
@@ -536,7 +531,31 @@ and returns true if the file exists, false if it doesn't:
         except:
             return False 
 
-You can use multiple ``except`` blocks to handle different kinds of exceptions
+.. sidebar:: How to test if a file exists, without using exceptions
+
+    The function we've just shown is not one we'd recommend. It opens
+    and closes the file, which is semantically different from asking "does
+    it exist?". How?  Firstly, it might update some timestamps on the file.  
+    Secondly, it might tell you that there is no such file if some other 
+    program already happens to have the file open, or if your permissions 
+    settings don't allow you to access the file.
+
+    Python provides a module called ``os.path`` (this is the first
+    time we've seen a module name with two namespace components). It
+    provides a number of useful functions to work with paths, files and directories,
+    so you should check out the help.  
+    
+    .. sourcecode:: python
+    
+        import os.path
+        
+        # This is the preferred way to check if a file exists.
+        if os.path.isfile("c:/temp/testdata.txt"):
+           ...
+           
+   
+            
+You can use multiple ``except`` clauses to handle different kinds of exceptions
 (see the `Errors and Exceptions <http://docs.python.org/tut/node10.html>`__
 lesson from Python creator Guido van Rossum's `Python Tutorial
 <http://docs.python.org/tut/tut.html>`__ for a more complete discussion of
@@ -548,21 +567,19 @@ number is non-negative.
 
 .. sourcecode:: python
     
-    #
-    # learn_exceptions.py
-    #
     def get_age():
-        age = input('Please enter your age: ')
+        age = int(input('Please enter your age: '))
         if age < 0:
-            raise ValueError, '%s is not a valid age' % age
+            raise ValueError('{0} is not a valid age'.format(age))
         return age
 
-The ``raise`` statement takes two arguments: the exception type, and specific
-information about the error. ``ValueError`` is the built-in exception which
+The ``raise`` statement creates an exception object, in this case, a ValueError 
+object, which encapsulates your specific information about the error.   
+``ValueError`` is one of the built-in exception types which
 most closely matches the kind of error we want to raise. The complete listing
-of built-in exceptions is found in the `Built-in Exceptions
-<http://docs.python.org/lib/module-exceptions.html>`__ section of the `Python
-Library Reference <http://docs.python.org/lib/>`__, again by Python's creator,
+of built-in exceptions is found in  the `Built-in Exceptions
+<http://docs.python.org/lib/module-exceptions.html>`__ section of the `Python 
+Library Reference <http://docs.python.org/lib/>`__, again by Python's creator, 
 Guido van Rossum.
 
 If the function that called ``get_age`` handles the error, then the program can
@@ -576,246 +593,178 @@ continue; otherwise, Python prints the traceback and exits:
     >>> get_age()
     Please enter your age: -2
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
       File "learn_exceptions.py", line 4, in get_age
-        raise ValueError, '%s is not a valid age' % age
+        raise ValueError, '{0} is not a valid age'.format(age)
     ValueError: -2 is not a valid age
     >>>
 
 The error message includes the exception type and the additional information
 you provided.
 
-Using exception handling, we can now modify ``infinite_recursion.py`` so that
-it stops when it reaches the maximum recursion depth allowed:
+Using exception handling, we can now modify our infinite recursion function
+so that it stops when it reaches the maximum recursion depth allowed:
 
 .. sourcecode:: python
     
-    #
-    # infinite_recursion.py
-    #
     def recursion_depth(number):
-        print "Recursion depth number %d." % number
+        print("Recursion depth number", number)
         try:
             recursion_depth(number + 1)
         except:
-            print "Maximum recursion depth exceeded."
+            print("Maximum recursion depth exceeded.")
     
     recursion_depth(0)
 
 Run this version and observe the results.
 
+The ``finally`` clause of the ``try`` statement
+-----------------------------------------------
 
-.. index:: tail recursion
+A common programming pattern is to grab a resource of some kind --- e.g. 
+we create a window for turtles to draw on, or dial up a connection to our
+internet service provider, or we may open a file for writing.   
+Then we perform some computation which may raise exceptions, 
+or may work without any problems.
 
-Tail recursion
---------------
-
-When the only thing returned from a function is a recursive call, it is refered
-to as **tail recursion**.
-
-Here is a version of the ``countdown`` function from chapter 6 written using
-tail recursion:
-
-.. sourcecode:: python
-    
-    def countdown(n):
-        if n == 0:
-            print "Blastoff!"
-        else:
-            print n
-            countdown(n-1)
-
-
-Any computation that can be made using iteration can also be made using
-recursion. Here is a version of ``find_max`` written using tail recursion:
+In either case, we want to "clean up" the resources we grabbed --- e.g. close
+the window, disconnect our dial-up connection, or close the file.  The ``finally``
+clause of the ``try`` statement is the mechanism for doing just this.  Consider
+this (somewhat contrived) example:
 
 .. sourcecode:: python
+   :linenos:
 
-    def find_max(seq, max_so_far):
-        if not seq:
-            return max_so_far
-        if max_so_far < seq[0]:
-            return find_max(seq[1:], seq[0])
-        else:
-            return find_max(seq[1:], max_so_far)
+    import turtle, time
 
-Tail recursion is considered a bad practice in Python, since the Python
-compiler does not handle optimization for tail recursive calls. The recursive
-solution in cases like this use more system resources than the equivalent
-iterative solution.
-
-
-.. index:: factorial, fibonacci
-
-Recursive mathematical functions
---------------------------------
-
-Several well known mathematical functions are defined recursively. `Factorial
-<http://en.wikipedia.org/wiki/Factorial>`__, for example, is given the special
-operator, ``!``, and is defined by:: 
-
-    0! = 1
-    n! = n(n-1)
-
-We can easily code this into Python:
-
-.. sourcecode:: python
-    
-    def factorial(n):
-        if n == 0:
-            return 1
-        else:
-            return n * factorial(n-1) 
-
-Another well know recursive relation in mathematics is the `fibonacci
-sequence <http://en.wikipedia.org/wiki/Fibonacci_number>`__, which is defined
-by::
-    
-    fibonacci(0) = 1
-    fibonacci(1) = 1
-    fibonacci(n) = fibonacci(n-1) + fibonacci(n-2)
-
-This can also be written easily in Python:
-
-.. sourcecode:: python
-    
-    def fibonacci (n):
-        if n == 0 or n == 1:
-            return 1
-        else:
-            return fibonacci(n-1) + fibonacci(n-2)
+    def show_poly():
+        try:
+            win = turtle.Screen()   # Grab or create some resource - a window...
+            tess = turtle.Turtle()
+                # This dialog could be cancelled, or the conversion to int might fail.
+            n = int(input("How many sides do you want in your polygon?"))
+            angle = 360 / n
+            for i in range(n):      # Draw the polygon 
+                tess.forward(10)
+                tess.left(angle)
+            time.sleep(3)           # make program wait for a few seconds
+        finally:         
+            win.bye()               # close the turtle's window.
 
 
-Calling ``factorial(1000)`` will exceed the maximum recursion depth. And try
-running ``fibonacci(35)`` and see how long it takes to complete (be patient, it
-will complete).
+    show_poly()
+    show_poly()
+    show_poly()
 
-You will be asked to write an iterative version of ``factorial`` as an
-exercise, and we will see a better way to handle ``fibonacci`` in the next
-chapter.
+In lines 18-20, ``show_poly`` is called three times.  Each one creates a new
+window for its turtle, and draws a polygon with the number of sides
+input by the user.  But what if the user enters a string that cannot be
+converted to an int?  What if they close the dialog?  We'll get an exception, 
+*but even though we've had an exception, we still want to close the turtle's window*.  
+Lines 14-15 does this for us.  Whether we complete the statements in the ``try`` 
+clause successfully or not, the ``finally`` block will always be executed.
+
+Notice that the exception is still unhandled --- only an ``except`` clause can
+handle an exception, so your program will still crash.  But it's turtle window
+will be closed when it crashes! 
 
 
-.. index:: list comprehension
+.. index:: fibonacci 
 
-List comprehensions
--------------------
+Case study: Fibonacci numbers  
+----------------------------- 
 
-A **list comprehension** is a syntactic construct that enables lists to be
-created from other lists using a compact, mathematical syntax:
+The famous **Fibonacci sequence** 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 134, ... was devised by 
+Fibonacci (1170-1250), who used this to model the breeding of (pairs) of rabbits.   
+If, in generation 7 you had 21 pairs in total, of which 13 were adults, 
+then next generation the adults will all have bred new children, 
+and the previous children will have grown up to become adults.  
+So in generation 8 you'll have 13+21=34, of which 21 are adults.
+
+This *model* to explain rabbit breeding made the simplifying assumption that rabbits never died. 
+Scientists often make (unrealistic) simplifying assumptions and restrictions 
+to make some headway with the problem.
+
+If we number the terms of the sequence from 0, we can describe each term recursively
+as the sum of the previous two terms::
+ 
+    fib(0) = 0
+    fib(1) = 1
+    fib(n) = fib(n-1) + fib(n-2)  for n >= 2
+
+This translates very directly into some Python: 
 
 .. sourcecode:: python
-    
-    >>> numbers = [1, 2, 3, 4]
-    >>> [x**2 for x in numbers]
-    [1, 4, 9, 16]
-    >>> [x**2 for x in numbers if x**2 > 8]
-    [9, 16] 
-    >>> [(x, x**2, x**3) for x in numbers]
-    [(1, 1, 1), (2, 4, 8), (3, 9, 27), (4, 16, 64)]
-    >>> files = ['bin', 'Data', 'Desktop', '.bashrc', '.ssh', '.vimrc']
-    >>> [name for name in files if name[0] != '.']
-    ['bin', 'Data', 'Desktop']
-    >>> letters = ['a', 'b', 'c']
-    >>> [n*letter for n in numbers for letter in letters]
-    ['a', 'b', 'c', 'aa', 'bb', 'cc', 'aaa', 'bbb', 'ccc', 'aaaa', 'bbbb', 'cccc']
-    >>>
 
-The general syntax for a list comprehension expression is:
+    def fib(n):
+        if n <= 1:
+            return n
+        t = fib(n-1) + fib(n-2)
+        return t
+
+This is a particularly inefficient algorithm, and we'll show one way of fixing it in the next chapter::
+
+    t0 = time.time()
+    n = 35
+    result = fib(n)
+    t1 = time.time()
+    
+    print('fib({0}) = {1}, ({2:.2f} secs)'.format(n, result, t1-t0))
+    
+    
+We get the correct result, but an exploding amount of work! ::
+
+     fib(35) = 9227465, (10.54 secs)
+    
+
+Example with recursive directories and files
+--------------------------------------------
+
+The following program lists the contents of a directory and all its subdirectories.
 
 .. sourcecode:: python
-    
-    [expr for  item1 in  seq1 for item2 in seq2 ... for itemx in seqx if condition]
-
-This list expression has the same effect as:
-
-.. sourcecode:: python
-    
-    output_sequence = []
-    for item1 in seq1:
-        for item2 in seq2:
-            ...
-                for itemx in seqx:
-                    if condition:
-                        output_sequence.append(expr)
-
-As you can see, the list comprehension is much more compact.
-
-
-Mini case study: tree
----------------------
-
-The following program implements a subset of the behavior of the Unix `tree
-<http://en.wikipedia.org/wiki/Tree_(Unix)>`__ program.
-
-.. sourcecode:: python
-    
-    #!/usr/bin/env python
     
     import os
-    import sys
-    
-    
-    def getroot():
-        if len(sys.argv) == 1:
-            path = ''
-        else:
-            path = sys.argv[1]
-    
-        if os.path.isabs(path):
-            tree_root = path
-        else:
-            tree_root = os.path.join(os.getcwd(), path)
-    
-        return tree_root
-    
-    
-    def getdirlist(path):
+
+    def get_dirlist(path):
+        """ 
+          Return a sorted list of all entries in path.
+          This returns just the names, not the full path to the names.
+        """
         dirlist = os.listdir(path)
-        dirlist = [name for name in dirlist if name[0] != '.']
         dirlist.sort()
         return dirlist
-    
-    
-    def traverse(path, prefix='|--', s='.\n', f=0, d=0):
-        dirlist = getdirlist(path)
-    
-        for num, file in enumerate(dirlist):
-            lastprefix = prefix[:-3] + '`--'
-            dirsize = len(dirlist)
-    
-            if num < dirsize - 1:
-                s += '%s %s\n' % (prefix, file)
-            else:
-                s += '%s %s\n' % (lastprefix, file)
-            path2file = os.path.join(path, file)
-    
-            if os.path.isdir(path2file):
-                d += 1
-                if getdirlist(path2file):
-                    s, f, d = traverse(path2file, '|   ' + prefix, s, f, d)
-            else:
-                f += 1
-    
-        return s, f, d
-    
-    
-    if __name__ == '__main__':
-        root = getroot()
-        tree_str, files, dirs = traverse(root)
-    
-        if dirs == 1:
-            dirstring = 'directory'
-        else:
-            dirstring = 'directories'
-        if files == 1:
-            filestring = 'file'
-        else:
-            filestring = 'files'
-    
-        print tree_str
-        print '%d %s, %d %s' % (dirs, dirstring, files, filestring)
 
-You will be asked to explore this program in several of the exercises below.
+    def print_files(path, prefix = ""):
+        """ Print recursive listing of contents of path """
+        if prefix == "":  # detect outermost call, print a heading
+            print('Folder listing for', path)
+            prefix = "| "
+
+        dirlist = get_dirlist(path)
+        for f in dirlist:
+            print(prefix+f)                 # print the line 
+            fullE = os.path.join(path, f)   # turn the name into a full path
+            if os.path.isdir(fullE):        # if it is a directory, recurse. 
+                print_files(fullE, prefix + "| ")
+
+Calling the function ``print_files`` with some folder name will produce output similar to this::       
+ 
+    Folder listing for c:\python31\Lib\site-packages\pygame\examples
+    | __init__.py
+    | aacircle.py
+    | aliens.py
+    | arraydemo.py
+    | blend_fill.py
+    | blit_blends.py
+    | camera.py
+    | chimp.py
+    | cursors.py
+    | data
+    | | alien1.png
+    | | alien2.png
+    | | alien3.png
+    ...    
 
 
 Glossary
@@ -825,7 +774,7 @@ Glossary
 
     base case
         A branch of the conditional statement in a recursive function that does
-        not result in a recursive call.
+        not give rise to further recursive calls.
 
     data structure
         An organization of data for the purpose of making it easier to use.
@@ -834,8 +783,8 @@ Glossary
         An error that occurs at runtime.
 
     handle an exception
-        To prevent an exception from terminating a program using the ``try``
-        and ``except`` statements.
+        To prevent an exception from terminating a program by wrapping
+        the block of code in a ``try`` / ``except`` construct.
 
     immutable data type
         A data type which cannot be modified.  Assignments to elements or
@@ -856,13 +805,15 @@ Glossary
         types; strings and tuples are not.
 
     raise
-        To signal an exception using the ``raise`` statement.
+        To cause an exception by using the ``raise`` statement.
 
     recursion
-        The process of calling the function that is currently executing.
+        The process of calling the function that is already executing.
 
     recursive call
-        The statement in a recursive function with is a call to itself.
+        The statement that calls an already executing function.  Recursion can
+        even be indirect --- function `f` can call `g` which calls `h`, 
+        and `h` could make a call back to `f`.
 
     recursive definition
         A definition which defines something in terms of itself. To be useful
@@ -896,253 +847,205 @@ Exercises
    .. sourcecode:: python
     
         def swap(x, y):      # incorrect version
-             print  "before swap statement: id(x):", id(x), "id(y):", id(y)
+             print("before swap statement: id(x):", id(x), "id(y):", id(y))
              x, y = y, x
-             print  "after swap statement: id(x):", id(x), "id(y):", id(y)
+             print "after swap statement: id(x):", id(x), "id(y):", id(y))
     
-        a, b = 0, 1
-        print  "before swap function call: id(a):", id(a), "id(b):", id(b)
+        (a, b) = (0, 1)
+        print( "before swap function call: id(a):", id(a), "id(b):", id(b)
         swap(a, b)
-        print  "after swap function call: id(a):", id(a), "id(b):", id(b)
+        print("after swap function call: id(a):", id(a), "id(b):", id(b))
 
    Run this program and describe the results. Use the results to explain
    why this version of ``swap`` does not work as intended. What will be the
    values of ``a`` and ``b`` after the call to ``swap``?
+   
+#. Modify the Koch fractal program so that it draws a Koch snowflake, like this:
+
+   .. image:: illustrations/koch_snowflake.png
+   
+#. Draw a Cesaro torn square fractal, of the order given by the user.  A torn square 
+   consists of four torn lines.   We show four different squares of orders 0,1,2,3.     
+   In this example, the angle of the tear is 10 degrees.   
+   Varying the angle gives interesting effects --- experiment a bit, 
+   or perhaps let the user input the angle of the tear. 
+
+   .. image:: illustrations/cesaro_torn_square.png
+   
+#. A Sierpinski triangle of order 0 is an equilateral triangle.  
+   An order 1 triangle can be drawn by drawing 3 smaller triangles 
+   (shown slightly disconnected here, just to help our understanding).   
+   Higher order 2 and 3 triangles are also shown.  
+   Adapt the Koch snowflake program to draw Sierpinski triangles of any order 
+   input by the user.   
+   
+   .. image:: illustrations/sierpinski.png
+  
+#. Adapt the above program to draw its three major sub-triangles in different colours, 
+   as shown here in this order 4 case:
+
+   .. image:: illustrations/sierpinski_colour.png
+   
 #. Create a module named ``seqtools.py``. Add the functions ``encapsulate`` and 
-   ``insert_in_middle`` from the chapter. Add doctests which test that these
+   ``insert_in_middle`` from the chapter. Add tests which test that these
    two functions work as intended with all three sequence types.
+   
+   
+   
 #. Add each of the following functions to ``seqtools.py``:
 
    .. sourcecode:: python
     
-        def make_empty(seq):
-            """
-              >>> make_empty([1, 2, 3, 4])
-              []
-              >>> make_empty(('a', 'b', 'c'))
-              ()
-              >>> make_empty("No, not me!")
-              ''
-            """
-    
-        def insert_at_end(val, seq):
-            """
-              >>> insert_at_end(5, [1, 3, 4, 6])
-              [1, 3, 4, 6, 5]
-              >>> insert_at_end('x', 'abc')
-              'abcx'
-              >>> insert_at_end(5, (1, 3, 4, 6))
-              (1, 3, 4, 6, 5)
-            """
-    
-        def insert_in_front(val, seq):
-            """
-              >>> insert_in_front(5, [1, 3, 4, 6])
-              [5, 1, 3, 4, 6]
-              >>> insert_in_front(5, (1, 3, 4, 6))
-              (5, 1, 3, 4, 6)
-              >>> insert_in_front('x', 'abc')
-              'xabc'
-            """
-    
-        def index_of(val, seq, start=0):
-            """
-              >>> index_of(9, [1, 7, 11, 9, 10])
-              3
-              >>> index_of(5, (1, 2, 4, 5, 6, 10, 5, 5))
-              3
-              >>> index_of(5, (1, 2, 4, 5, 6, 10, 5, 5), 4)
-              6
-              >>> index_of('y', 'happy birthday')
-              4
-              >>> index_of('banana', ['apple', 'banana', 'cherry', 'date'])
-              1
-              >>> index_of(5, [2, 3, 4])
-              -1
-              >>> index_of('b', ['apple', 'banana', 'cherry', 'date'])
-              -1
-            """
-    
-        def remove_at(index, seq):
-            """
-              >>> remove_at(3, [1, 7, 11, 9, 10])
-              [1, 7, 11, 10]
-              >>> remove_at(5, (1, 4, 6, 7, 0, 9, 3, 5))
-              (1, 4, 6, 7, 0, 3, 5)
-              >>> remove_at(2, "Yomrktown")
-              'Yorktown'
-            """
-    
-        def remove_val(val, seq):
-            """
-              >>> remove_val(11, [1, 7, 11, 9, 10])
-              [1, 7, 9, 10]
-              >>> remove_val(15, (1, 15, 11, 4, 9))
-              (1, 11, 4, 9)
-              >>> remove_val('what', ('who', 'what', 'when', 'where', 'why', 'how'))
-              ('who', 'when', 'where', 'why', 'how')
-            """
-    
-        def remove_all(val, seq):
-            """
-              >>> remove_all(11, [1, 7, 11, 9, 11, 10, 2, 11])
-              [1, 7, 9, 10, 2]
-              >>> remove_all('i', 'Mississippi')
-              'Msssspp'
-            """
-    
-        def count(val, seq):
-            """
-              >>> count(5, (1, 5, 3, 7, 5, 8, 5))
-              3
-              >>> count('s', 'Mississippi')
-              4
-              >>> count((1, 2), [1, 5, (1, 2), 7, (1, 2), 8, 5])
-              2
-            """
-    
-        def reverse(seq):
-            """
-              >>> reverse([1, 2, 3, 4, 5])
-              [5, 4, 3, 2, 1]
-              >>> reverse(('shoe', 'my', 'buckle', 2, 1))
-              (1, 2, 'buckle', 'my', 'shoe')
-              >>> reverse('Python')
-              'nohtyP'
-            """
-    
-        def sort_sequence(seq):
-            """
-              >>> sort_sequence([3, 4, 6, 7, 8, 2])
-              [2, 3, 4, 6, 7, 8]
-              >>> sort_sequence((3, 4, 6, 7, 8, 2))
-              (2, 3, 4, 6, 7, 8)
-              >>> sort_sequence("nothappy")
-              'ahnoppty'
-            """
-    
-        if __name__ == "__main__":
-            import doctest
-            doctest.testmod()
+        def make_empty(seq): pass  
+        def insert_at_end(val, seq): pass
+        def insert_in_front(val, seq): pass
+        def index_of(val, seq, start=0): pass
+        def remove_at(index, seq): pass            
+        def remove_val(val, seq): pass
+        def remove_all(val, seq): pass            
+        def count(val, seq): pass     
+        def reverse(seq): pass
+        def sort_sequence(seq): pass
+        
+        def testsuite():
+            test(make_empty([1, 2, 3, 4]), [])
+            test(make_empty(('a', 'b', 'c')), ())
+            test(make_empty("No, not me!"), '')
+            
+            test(insert_at_end(5, [1, 3, 4, 6]), [1, 3, 4, 6, 5])
+            test(insert_at_end('x', 'abc'),  'abcx')
+            test(insert_at_end(5, (1, 3, 4, 6)), (1, 3, 4, 6, 5))
 
-   As usual, work on each of these one at a time until they pass all of the
-   doctests.
+            test(insert_in_front(5, [1, 3, 4, 6]),   [5, 1, 3, 4, 6])
+            test(insert_in_front(5, (1, 3, 4, 6)),   (5, 1, 3, 4, 6))
+            test(insert_in_front('x', 'abc'),        'xabc')
+
+            test(index_of(9, [1, 7, 11, 9, 10]), 3)
+            test(index_of(5, (1, 2, 4, 5, 6, 10, 5, 5)), 3)
+            test(index_of(5, (1, 2, 4, 5, 6, 10, 5, 5), 4), 6)
+            test(index_of('y', 'happy birthday'), 4)
+            test(ndex_of('banana', ['apple', 'banana', 'cherry', 'date']), 1)
+            test(index_of(5, [2, 3, 4]), -1)
+            test(index_of('b', ['apple', 'banana', 'cherry', 'date']), -1)
+     
+            test(remove_at(3, [1, 7, 11, 9, 10]), [1, 7, 11, 10])
+            test(remove_at(5, (1, 4, 6, 7, 0, 9, 3, 5)), (1, 4, 6, 7, 0, 3, 5))
+            test(remove_at(2, "Yomrktown"), 'Yorktown')
+          
+            test(remove_val(11, [1, 7, 11, 9, 10]), [1, 7, 9, 10])
+            test(remove_val(15, (1, 15, 11, 4, 9)), (1, 11, 4, 9))
+            test(remove_val('what', ('who', 'what', 'when', 'where', 'why', 'how')),
+                  ('who', 'when', 'where', 'why', 'how'))
+             
+            test(remove_all(11, [1, 7, 11, 9, 11, 10, 2, 11]),  [1, 7, 9, 10, 2])
+            test(remove_all('i', 'Mississippi'), 'Msssspp')
+             
+            test(count(5, (1, 5, 3, 7, 5, 8, 5)), 3)
+            test(count('s', 'Mississippi'), 4)
+            test(count((1, 2), [1, 5, (1, 2), 7, (1, 2), 8, 5]), 2)
+            
+            test(reverse([1, 2, 3, 4, 5]), [5, 4, 3, 2, 1])
+            test(reverse(('shoe', 'my', 'buckle', 2, 1)), (1, 2, 'buckle', 'my', 'shoe'))
+            test(reverse('Python'), 'nohtyP')         
+                
+            test(sort_sequence([3, 4, 6, 7, 8, 2]),  [2, 3, 4, 6, 7, 8])
+            test(sort_sequence((3, 4, 6, 7, 8, 2)),  (2, 3, 4, 6, 7, 8))
+            test(sort_sequence("nothappy"), 'ahnoppty')
+         
+   As usual, work on each of these one at a time until they pass all the tests.
+   
+   .. admonition:: |rle_open|  But do you really want to do this? |rle_close| 
+   
+       Disclaimer.  These exercises illustrate nicely that the sequence abstraction is
+       general, (because slicing, indexing, and concatenation is so general), so it is possible to 
+       write general functions that work over all sequence types.  Nice lesson about generalization!
+       
+       Another view is that tuples are different from lists and strings precisely 
+       because you want to think about them very differently. 
+       It usually doesn't make sense to sort the fields of the `julia`
+       tuple we saw earlier, or to cut bits out or insert bits into the middle, 
+       *even if Python lets you do so!*  
+       Tuple fields get their meaning from their position in the tuple.  
+       Don't mess with that.
+       
+       Use lists for "many things of the same type", like an 
+       enrollment of many students for a course.
+       
+       Use tuples for "fields of different types that make up a compound record". 
+  
+   
 #. Write a function, ``recursive_min``, that returns the smallest value in a
-   nested number list:
+   nested number list.  Assume there are no empty lists or sublists:
 
    .. sourcecode:: python
     
-        def recursive_min(nested_num_list):
-            """
-              >>> recursive_min([2, 9, [1, 13], 8, 6])
-              1
-              >>> recursive_min([2, [[100, 1], 90], [10, 13], 8, 6])
-              1
-              >>> recursive_min([2, [[13, -7], 90], [1, 100], 8, 6])
-              -7
-              >>> recursive_min([[[-13, 7], 90], 2, [1, 100], 8, 6])
-              -13
-            """
-
-   Your function should pass the doctests.
-#. Write a function ``recursive_count`` that returns the number of occurances
-   of ``target`` in ``nested_number_list``:
+        test(recursive_min([2, 9, [1, 13], 8, 6]), 1)
+        test(recursive_min([2, [[100, 1], 90], [10, 13], 8, 6]), 1)
+        test(recursive_min([2, [[13, -7], 90], [1, 100], 8, 6]), -7)
+        test(recursive_min([[[-13, 7], 90], 2, [1, 100], 8, 6]), 13)
+ 
+#. Write a function ``count`` that returns the number of occurences
+   of ``target`` in  a nested list:
 
    .. sourcecode:: python
     
-        def recursive_count(target, nested_num_list):
-            """
-              >>> recursive_count(2, [2, 9, [2, 1, 13, 2], 8, [2, 6]])
-              4
-              >>> recursive_count(7, [[9, [7, 1, 13, 2], 8], [7, 6]])
-              2
-              >>> recursive_count(15, [[9, [7, 1, 13, 2], 8], [2, 6]])
-              0
-              >>> recursive_count(5, [[5, [5, [1, 5], 5], 5], [5, 6]])
-              6
-            """
-
-   As usual, your function should pass the doctests.
-#. Write a function ``flatten`` that returns a simple list of numbers
-   containing all the values in a ``nested_number_list``:
+        test(count(2, []), 0)
+        test(count(2, [2, 9, [2, 1, 13, 2], 8, [2, 6]]), 4)
+        test(count(7, [[9, [7, 1, 13, 2], 8], [7, 6]]), 2)
+        test(count(15, [[9, [7, 1, 13, 2], 8], [2, 6]]), 0)
+        test(count(5, [[5, [5, [1, 5], 5], 5], [5, 6]]), 6)
+        test(count('a', [['this', ['a', ['thing', 'a'], 'a'], 'is'], ['a', 'easy']]), 5)
+ 
+#. Write a function ``flatten`` that returns a simple list  
+   containing all the values in a nested list:
 
    .. sourcecode:: python
     
-        def flatten(nested_num_list):
-            """
-              >>> flatten([2, 9, [2, 1, 13, 2], 8, [2, 6]])
-              [2, 9, 2, 1, 13, 2, 8, 2, 6]
-              >>> flatten([[9, [7, 1, 13, 2], 8], [7, 6]])
-              [9, 7, 1, 13, 2, 8, 7, 6]
-              >>> flatten([[9, [7, 1, 13, 2], 8], [2, 6]])
-              [9, 7, 1, 13, 2, 8, 2, 6]
-              >>> flatten([[5, [5, [1, 5], 5], 5], [5, 6]])
-              [5, 5, 1, 5, 5, 5, 5, 6]
-            """
-
-   Run your function to confirm that the doctests pass.
-#. Write a function named ``readposint`` that prompts the user for a positive
+       test(flatten([2, 9, [2, 1, 13, 2], 8, [2, 6]]), [2, 9, 2, 1, 13, 2, 8, 2, 6])
+       test(flatten([[9, [7, 1, 13, 2], 8], [7, 6]]), [9, 7, 1, 13, 2, 8, 7, 6])
+       test(flatten([[9, [7, 1, 13, 2], 8], [2, 6]]), [9, 7, 1, 13, 2, 8, 2, 6])
+       test(flatten([['this', ['a', ['thing'], 'a'], 'is'], ['a', 'easy']]), 
+                     ['this', 'a', 'thing', 'a', 'is', 'a', 'easy'])
+       test(flatten([]), [])
+       
+#. Rewrite the fibonacci algorithm without using recursion. Can you find bigger
+   terms of the sequence?  Can you find ``fib(200)``?
+                 
+#. Write a function named ``readposint`` that uses the ``input`` dialog to
+   prompt the user for a positive
    integer and then checks the input to confirm that it meets the requirements. 
-   A sample session might look like this:
-
-   .. sourcecode:: python
-    
-        >>> num = readposint()
-        Please enter a positive integer: yes
-        yes is not a positive integer.  Try again.
-        Please enter a positive integer: 3.14
-        3.14 is not a positive integer.  Try again.
-        Please enter a positive integer: -6
-        -6 is not a positive integer.  Try again.
-        Please enter a positive integer: 42
-        >>> num
-        42
-        >>> num2 = readposint("Now enter another one: ")
-        Now enter another one: 31
-        >>> num2
-        31
-        >>>
-
-   Use Python's exception handling mechanisms in confirming that the user's
-   input is valid.
-#. Give the Python interpreter's response to each of the following:
-
-   #. 
-     .. sourcecode:: python
-        
-         >>> nums = [1, 2, 3, 4]
-         >>> [x**3 for x in nums]
-
-   #.
-     .. sourcecode:: python
-        
-         >>> nums = [1, 2, 3, 4]
-         >>> [x**2 for x in nums if x**2 != 4]
-
-   #.
-     .. sourcecode:: python
-        
-         >>> nums = [1, 2, 3, 4]
-         >>> [(x, y) for x in nums for y in nums]
-
-   #.
-     .. sourcecode:: python
-        
-         >>> nums = [1, 2, 3, 4]
-         >>> [(x, y) for x in nums for y in nums if x != y]
-
-   You should anticipate the results *before* you try them in the interpreter.
-#. Use either ``pydoc`` or the on-line documentation at `http://pydoc.org
-   <http://pydoc.org>`__ to find out what ``sys.getrecursionlimit()`` and
-   ``sys.setrecursionlimit(n)`` do. Create several *experiments* like what
+   It should be able to handle inputs that cannot be converted to int, as well
+   as negative ints, and edge cases (e.g. when the user closes the dialog, or
+   does not enter anything at all.)   
+   
+#. Use help to find out what ``sys.getrecursionlimit()`` and
+   ``sys.setrecursionlimit(n)`` do. Create several *experiments* similar to what
    was done in ``infinite_recursion.py`` to test your understanding of how
    these module functions work.
-#. Rewrite the ``factorial`` function using iteration instead of recursion.
-   Call your new function with 1000 as an argument and make note of how fast it 
-   returns a value.
+   
+#. Write a program that walks a directory structure (as in the last section of
+   this chapter), but instead of printing filenames, it returns a list of all
+   the full paths of files in the directory or the subdirectories.  (Don't include
+   directories in this list --- just files.)  For example, the output list might
+   have elements like this::
+   
+      ['C:\Python31\Lib\site-packages\pygame\docs\ref\mask.html',
+       'C:\Python31\Lib\site-packages\pygame\docs\ref\midi.html',
+       ...
+       'C:\Python31\Lib\site-packages\pygame\examples\aliens.py',
+       ...
+       'C:\Python31\Lib\site-packages\pygame\examples\data\boom.wav', 
+       ... ]   
+
 #. Write a program named ``litter.py`` that creates an empty file named
    ``trash.txt`` in each subdirectory of a directory tree given the root of the 
    tree as an argument (or the current directory as a default). Now write a
    program named ``cleanup.py`` that removes all these files.  *Hint:* Use the
-   ``tree`` program from the mini case study as a basis for these two recursive 
-   programs.
+   program from the example in the last section of this chapter as a basis for 
+   these two recursive programs.  Because you're going to destroy files on your disks, you better
+   get this right, or you risk losing files you care about.  So excellent
+   advice is that initially you should fake the deletion of the files --- just print
+   the full path names of each file that you intent to delete.  Once you're happy
+   that your logic is correct, and you can see that you're not deleting the wrong
+   things, you can replace the print statement with the real thing.
+   
