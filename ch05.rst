@@ -6,577 +6,547 @@
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
-Fruitful functions
-==================
-
-.. index:: return, return statement, return value, temporary variable,
-           dead code, None, NoneType
+Conditionals
+============
 
 .. index::
-    single: value; None
-    single: variable; temporary 
+    single: modulus operator
+    single: operator; modulus
 
-Return values
--------------
+The modulus operator
+--------------------
 
-The built-in functions we have used, such as ``abs``, ``pow``, and ``max``,
-have produced results. Calling each of these functions generates a value, which
-we usually assign to a variable or use as part of an expression.
-
-.. sourcecode:: python
-    
-    biggest = max(3, 7, 2, 5)
-    x = abs(3 - 11) + 10 
-
-But so far, none of the functions we have written has returned a value.
-
-In this chapter, we are going to write functions that return values, which we
-will call *fruitful functions*, for want of a better name.  The first example
-is ``area``, which returns the area of a circle with the given radius:
+The **modulus operator** works on integers (and integer expressions) and yields
+the remainder when the first operand is divided by the second. In Python, the
+modulus operator is a percent sign (``%``). The syntax is the same as for other
+operators:
 
 .. sourcecode:: python
     
-    def area(radius):
-        temp = 3.14159 * radius**2
-        return temp
+    >>> quotient = 7 / 3
+    >>> print quotient
+    2
+    >>> remainder = 7 % 3
+    >>> print remainder
+    1
 
-We have seen the ``return`` statement before, but in a fruitful function the
-``return`` statement includes a **return value**. This statement means: Return
-immediately from this function and use the following expression as a return
-value. The expression provided can be arbitrarily complicated, so we could have
-written this function more concisely:
+So 7 divided by 3 is 2 with 1 left over.
 
-.. sourcecode:: python
-    
-    def area(radius):
-        return 3.14159 * radius**2
+The modulus operator turns out to be surprisingly useful. For example, you can
+check whether one number is divisible by another---if ``x % y`` is zero, then
+``x`` is divisible by ``y``.
 
-On the other hand, **temporary variables** like ``temp`` often make debugging
-easier.
+Also, you can extract the right-most digit or digits from a number.  For
+example, ``x % 10`` yields the right-most digit of ``x`` (in base 10).
+Similarly ``x % 100`` yields the last two digits.
 
-Sometimes it is useful to have multiple return statements, one in each branch
-of a conditional. We have already seen the built-in ``abs``, now we see how to
-write our own:
 
-.. sourcecode:: python
-    
-    def absolute_value(x):
-        if x < 0:
-            return -x
-        else:
-            return x
+.. index::
+    single: boolean value
+    single: value; boolean
+    single: boolean expression
+    single: expression; boolean
+    single: logical operator
+    single: operator; logical 
 
-Since these ``return`` statements are in an alternative conditional, only one
-will be executed. As soon as one is executed, the function terminates without
-executing any subsequent statements.
+Boolean values and expressions
+------------------------------
 
-Another way to write the above function is to leave out the ``else`` and just
-follow the ``if`` condition by the second ``return`` statement.
+The Python type for storing true and false values is called ``bool``, named
+after the British mathematician, George Boole. George Boole created *Boolean
+algebra*, which is the basis of all modern computer arithmetic.
 
-.. sourcecode:: python
-    
-    def absolute_value(x):
-        if x < 0:
-            return -x
-        return x
-
-Think about this version and convince yourself it works the same as the first
-one.
-
-Code that appears after a ``return`` statement, or any other place the flow of
-execution can never reach, is called **dead code**.
-
-In a fruitful function, it is a good idea to ensure that every possible path
-through the program hits a ``return`` statement. The following version of
-``absolute_value`` fails to do this:
+There are only two **boolean values**: ``True`` and ``False``.  Capitalization
+is important, since ``true`` and ``false`` are not boolean values.
 
 .. sourcecode:: python
     
-    def absolute_value(x):
-        if x < 0:
-            return -x
-        elif x > 0:
-            return x
+    >>> type(True)
+    <type 'bool'> 
+    >>> type(true)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    NameError: name 'true' is not defined
 
-This version is not correct because if ``x`` happens to be 0, neither condition
-is true, and the function ends without hitting a ``return`` statement. In this
-case, the return value is a special value called **None**:
-
-.. sourcecode:: python
-    
-    >>> print absolute_value(0)
-    None
-
-``None`` is the unique value of a type called the ``NoneType``:
+A **boolean expression** is an expression that evaluates to a boolean value.
+The operator ``==`` compares two values and produces a boolean value:
 
 .. sourcecode:: python
     
-    >>> type(None)
+    >>> 5 == 5
+    True
+    >>> 5 == 6
+    False
 
+In the first statement, the two operands are equal, so the expression evaluates
+to ``True``; in the second statement, 5 is not equal to 6, so we get ``False``.
 
-All Python functions return ``None`` whenever they do not return another value.
-
-
-.. index:: scaffolding, incremental development
-
-Program development
--------------------
-
-At this point, you should be able to look at complete functions and tell what
-they do. Also, if you have been doing the exercises, you have written some
-small functions. As you write larger functions, you might start to have more
-difficulty, especially with runtime and semantic errors.
-
-To deal with increasingly complex programs, we are going to suggest a technique
-called **incremental development**. The goal of incremental development is to
-avoid long debugging sessions by adding and testing only a small amount of code
-at a time.
-
-As an example, suppose you want to find the distance between two points, given
-by the coordinates (x\ :sub:`1`\ , y\ :sub:`1`\ ) and
-(x\ :sub:`2`\ , y\ :sub:`2`\ ).  By the Pythagorean theorem, the distance is:
-
-.. image:: illustrations/distance_formula.png
-   :alt: Distance formula 
-
-The first step is to consider what a ``distance`` function should look like in
-Python. In other words, what are the inputs (parameters) and what is the output
-(return value)?
-
-In this case, the two points are the inputs, which we can represent using four
-parameters. The return value is the distance, which is a floating-point value.
-
-Already we can write an outline of the function:
+The ``==`` operator is one of the **comparison operators**; the others are:
 
 .. sourcecode:: python
     
-    def distance(x1, y1, x2, y2):
-        return 0.0
+    x != y               # x is not equal to y
+    x > y                # x is greater than y
+    x < y                # x is less than y
+    x >= y               # x is greater than or equal to y
+    x <= y               # x is less than or equal to y
 
-Obviously, this version of the function doesn't compute distances; it always
-returns zero. But it is syntactically correct, and it will run, which means
-that we can test it before we make it more complicated.
-
-To test the new function, we call it with sample values:
-
-.. sourcecode:: python
-    
-    >>> distance(1, 2, 4, 6)
-    0.0
-
-We chose these values so that the horizontal distance equals 3 and the vertical
-distance equals 4; that way, the result is 5 (the hypotenuse of a 3-4-5
-triangle). When testing a function, it is useful to know the right answer.
-
-At this point we have confirmed that the function is syntactically correct, and
-we can start adding lines of code. After each incremental change, we test the
-function again. If an error occurs at any point, we know where it must be --- in
-the last line we added.
-
-A logical first step in the computation is to find the differences
-x\ :sub:`2`\ - x\ :sub:`1`\  and y\ :sub:`2`\ - y\ :sub:`1`\ .  We will store
-those values in temporary variables named ``dx`` and ``dy`` and print them.
-
-.. sourcecode:: python
-    
-    def distance(x1, y1, x2, y2):
-        dx = x2 - x1
-        dy = y2 - y1
-        print "dx is", dx
-        print "dy is", dy
-        return 0.0
-
-If the function is working, the outputs should be 3 and 4. If so, we know that
-the function is getting the right parameters and performing the first
-computation correctly. If not, there are only a few lines to check.
-
-Next we compute the sum of squares of ``dx`` and ``dy``:
-
-.. sourcecode:: python
-    
-    def distance(x1, y1, x2, y2):
-        dx = x2 - x1
-        dy = y2 - y1
-        dsquared = dx**2 + dy**2
-        print "dsquared is: ", dsquared
-        return 0.0
-
-Notice that we removed the ``print`` statements we wrote in the previous step.
-Code like that is called **scaffolding** because it is helpful for building the
-program but is not part of the final product.
-
-Again, we would run the program at this stage and check the output (which
-should be 25).
-
-Finally, using the fractional exponent ``0.5`` to find the square root,
-we compute and return the result:
-
-.. sourcecode:: python
-    
-    def distance(x1, y1, x2, y2):
-        dx = x2 - x1
-        dy = y2 - y1
-        dsquared = dx**2 + dy**2
-        result = dsquared**0.5
-        return result
-
-If that works correctly, you are done. Otherwise, you might want to print the
-value of ``result`` before the return statement.
-
-When you start out, you should add only a line or two of code at a time. As you
-gain more experience, you might find yourself writing and debugging bigger
-chunks. Either way, the incremental development process can save you a lot of
-debugging time.
-
-The key aspects of the process are:
-
-#. Start with a working program and make small incremental changes. At any
-   point, if there is an error, you will know exactly where it is.
-#. Use temporary variables to hold intermediate values so you can output and
-   check them.
-#. Once the program is working, you might want to remove some of the
-   scaffolding or consolidate multiple statements into compound expressions,
-   but only if it does not make the program difficult to read.
+Although these operations are probably familiar to you, the Python symbols are
+different from the mathematical symbols. A common error is to use a single
+equal sign (``=``) instead of a double equal sign (``==``). Remember that ``=``
+is an assignment operator and ``==`` is a comparison operator. Also, there is
+no such thing as ``=<`` or ``=>``.
 
 
-.. index:: composition, function composition
-
-Composition
------------
-
-As you should expect by now, you can call one function from within another.
-This ability is called **composition**.
-
-As an example, we'll write a function that takes two points, the center of the
-circle and a point on the perimeter, and computes the area of the circle.
-
-Assume that the center point is stored in the variables ``xc`` and ``yc``, and
-the perimeter point is in ``xp`` and ``yp``. The first step is to find the
-radius of the circle, which is the distance between the two points.
-Fortunately, we've just written a function, ``distance``, that does just that,
-so now all we have to do is use it:
-
-.. sourcecode:: python
-    
-    radius = distance(xc, yc, xp, yp)
-
-The second step is to find the area of a circle with that radius and return it.
-Again we will use one of our earlier functions:
-
-.. sourcecode:: python
-    
-    result = area(radius)
-    return result
-
-Wrapping that up in a function, we get:
-
-.. sourcecode:: python
-    
-    def area2(xc, yc, xp, yp):
-        radius = distance(xc, yc, xp, yp)
-        result = area(radius)
-        return result
-
-We called this function ``area2`` to distinguish it from the ``area`` function
-defined earlier. There can only be one function with a given name within a
-given module.
-
-The temporary variables ``radius`` and ``result`` are useful for development
-and debugging, but once the program is working, we can make it more concise by
-composing the function calls:
-
-.. sourcecode:: python
-    
-    def area2(xc, yc, xp, yp):
-        return area(distance(xc, yc, xp, yp))
-
-
-.. index:: boolean function
-
-Boolean functions
+Logical operators
 -----------------
 
-Functions can return boolean values, which is often convenient for hiding
-complicated tests inside functions. For example:
+There are three **logical operators**: ``and``, ``or``, and ``not``. The
+semantics (meaning) of these operators is similar to their meaning in English.
+For example, ``x > 0 and x < 10`` is true only if ``x`` is greater than 0 *and*
+less than 10.
 
-.. sourcecode:: python
-    
-    def is_divisible(x, y):
-        if x % y == 0:
-            return True 
-        else:
-            return False 
+``n % 2 == 0 or n % 3 == 0`` is true if *either* of the conditions is true,
+that is, if the number is divisible by 2 *or* 3.
 
-The name of this function is ``is_divisible``. It is common to give **boolean
-functions** names that sound like yes/no questions.  ``is_divisible`` returns
-either ``True`` or ``False`` to indicate whether the ``x`` is or is not
-divisible by ``y``.
-
-We can make the function more concise by taking advantage of the fact that the
-condition of the ``if`` statement is itself a boolean expression. We can return
-it directly, avoiding the ``if`` statement altogether:
-
-.. sourcecode:: python
-    
-    def is_divisible(x, y):
-        return x % y == 0
-
-This session shows the new function in action:
-
-.. sourcecode:: python
-    
-    >>> is_divisible(6, 4)
-    False
-    >>> is_divisible(6, 3)
-    True
-
-Boolean functions are often used in conditional statements:
-
-.. sourcecode:: python
-    
-    if is_divisible(x, y):
-        print "x is divisible by y"
-    else:
-        print "x is not divisible by y"
-
-It might be tempting to write something like:
-
-.. sourcecode:: python
-    
-    if is_divisible(x, y) == True:
+Finally, the ``not`` operator negates a boolean expression, so ``not(x > y)``
+is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
+``y``.
 
 
-but the extra comparison is unnecessary.
+.. index:: conditional branching, conditional execution, if, elif, else,
+           if statement, compound statement, statement block, block, body,
+           pass, pass statement
 
+.. index::
+    single: statement; if
+    single: compound statement; header
+    single: compound statement; body
+    single: statement; pass
 
-The ``function`` type
+Conditional execution
 ---------------------
 
-A function is another type in Python, joining ``int``, ``float``, ``str``,
-``bool``, and ``NoneType``.
+In order to write useful programs, we almost always need the ability to check
+conditions and change the behavior of the program accordingly. **Conditional
+statements** give us this ability. The simplest form is the ** ``if``
+statement**:
 
 .. sourcecode:: python
     
-    >>> def func():
-    ...    return "function func was called..."
-    ...
-    >>> type(func)
-    <type 'function'> 
-    >>>
+    if x > 0:
+        print "x is positive"
 
-Just like the other types, functions can be passed as arguments to other
-functions:
+The boolean expression after the ``if`` statement is called the **condition**.
+If it is true, then the indented statement gets executed. If not, nothing
+happens.
+
+The syntax for an ``if`` statement looks like this:
 
 .. sourcecode:: python
     
-    def f(n):
-        return 3*n - 6
+    if BOOLEAN EXPRESSION:
+        STATEMENTS
+
+As with the function definition from last chapter and other compound
+statements, the ``if`` statement consists of a header and a body. The header
+begins with the keyword ``if`` followed by a *boolean expression* and ends with
+a colon (:).
+
+The indented statements that follow are called a **block**. The first
+unindented statement marks the end of the block. A statement block
+inside a compound statement is called the **body** of the statement.
+
+Each of the statements inside the body are executed in order if the boolean
+expression evaluates to ``True``. The entire block is skipped if the boolean
+expression evaluates to ``False``.
+
+There is no limit on the number of statements that can appear in the body of an
+``if`` statement, but there has to be at least one.  Occasionally, it is useful
+to have a body with no statements (usually as a place keeper for code you
+haven't written yet). In that case, you can use the ``pass`` statement, which
+does nothing.
+
+.. sourcecode:: python
     
-    def g(n):
-        return 5*n + 2
+    if True:          # This is always true
+        pass          # so this is always executed, but it does nothing
+
+
+.. index:: alternative execution, branch, wrapping code in a function
+
+Alternative execution
+---------------------
+
+A second form of the ``if`` statement is alternative execution, in which there
+are two possibilities and the condition determines which one gets executed. The
+syntax looks like this:
+
+.. sourcecode:: python
     
-    def h(n):
-        return -2*n + 17
+    if x % 2 == 0:
+        print x, "is even"
+    else:
+        print x, "is odd"
+
+If the remainder when ``x`` is divided by 2 is 0, then we know that ``x`` is
+even, and the program displays a message to that effect. If the condition is
+false, the second set of statements is executed. Since the condition must be
+true or false, exactly one of the alternatives will be executed. The
+alternatives are called **branches**, because they are branches in the flow of
+execution.
+
+As an aside, if you need to check the parity (evenness or oddness) of numbers
+often, you might *wrap this code in a function*:
+
+.. sourcecode:: python
     
-    def doto(value, func):
-        return func(value)
-        
-    print doto(7, f)
-    print doto(7, g)
-    print doto(7, h)
+    def print_parity(x):
+        if x % 2 == 0:
+            print x, "is even"
+        else:
+            print x, "is odd"
 
-``doto`` is called three times. 7 is the argument for value each time, and the
-functions ``f``, ``g``, and ``h`` are passed in for ``func`` in turn.  The
-output of this script is::
+For any value of ``x``, ``print_parity`` displays an appropriate message.
+When you call it, you can provide any integer expression as an argument.
+
+.. sourcecode:: python
     
-    15
-    37
-    3
-
-This example is a bit contrived, but we will see situations later where it is
-quite useful to pass a function to a function.
-
-
-Programming with style
-----------------------
-
-Readability is very important to programmers, since in practice programs are
-read and modified far more often then they are written.  All the code examples
-in this book will be consistent with the *Python Enhancement Proposal 8*
-(`PEP 8 <http://www.python.org/dev/peps/pep-0008/>`__), a style guide developed by the Python community.
-
-We'll have more to say about style as our programs become more complex, but a
-few pointers will be helpful already:
-
-* use 4 spaces for indentation
-* imports should go at the top of the file
-* separate function definitions with two blank lines
-* keep function definitions together
-* keep top level statements, including function calls, together at the
-  bottom of the program
+    >>> print_parity(17)
+    17 is odd.
+    >>> y = 41
+    >>> print_parity(y+1)
+    42 is even.
 
 
 .. index::
-    single: triple quoted string
+    single: chained conditional 
+    single: conditional; chained
 
-Triple quoted strings
----------------------
+Chained conditionals
+--------------------
 
-In addition to the single and double quoted strings we first saw in
-:ref:`values_n_types`, Python also has *triple quoted strings*:
+Sometimes there are more than two possibilities and we need more than two
+branches. One way to express a computation like that is a **chained
+conditional**:
 
 .. sourcecode:: python
     
-    >>> type("""This is a triple quoted string using 3 double quotes.""")
-    <type 'str'> 
-    >>> type('''This triple quoted strings uses 3 single quotes.''')
-    <type 'str'> 
+    if x < y:
+        print x, "is less than", y
+    elif x > y:
+        print x, "is greater than", y
+    else:
+        print x, "and", y, "are equal"
+
+``elif`` is an abbreviation of else if . Again, exactly one branch will be
+executed. There is no limit of the number of ``elif`` statements but only a
+single (and optional) ``else`` statement is allowed and it must be the last
+branch in the statement:
+
+.. sourcecode:: python
+    
+    if choice == 'a':
+        function_a()
+    elif choice == 'b':
+        function_b()
+    elif choice == 'c':
+        function_c()
+    else:
+        print "Invalid choice."
+
+Each condition is checked in order. If the first is false, the next is checked,
+and so on. If one of them is true, the corresponding branch executes, and the
+statement ends. Even if more than one condition is true, only the first true
+branch executes.
+
+
+.. index::
+    single: nested conditionals
+    single: conditionals; nested
+
+Nested conditionals
+-------------------
+
+One conditional can also be **nested** within another. We could have written
+the trichotomy example as follows:
+
+.. sourcecode:: python
+    
+    if x == y:
+        print x, "and", y, "are equal"
+    else:
+        if x < y:
+            print x, "is less than", y
+        else:
+            print x, "is greater than", y
+
+The outer conditional contains two branches. The first branch contains a simple
+output statement. The second branch contains another ``if`` statement, which
+has two branches of its own. Those two branches are both output statements,
+although they could have been conditional statements as well.
+
+Although the indentation of the statements makes the structure apparent, nested
+conditionals become difficult to read very quickly.  In general, it is a good
+idea to avoid them when you can.
+
+Logical operators often provide a way to simplify nested conditional
+statements. For example, we can rewrite the following code using a single
+conditional:
+
+.. sourcecode:: python
+    
+    if 0 < x:
+        if x < 10:
+            print "x is a positive single digit."
+
+The ``print`` statement is executed only if we make it past both the
+conditionals, so we can use the ``and`` operator:
+
+.. sourcecode:: python
+    
+    if 0 < x and x < 10:
+        print "x is a positive single digit."
+
+These kinds of conditions are common, so Python provides an alternative syntax
+that is similar to mathematical notation:
+
+.. sourcecode:: python
+    
+    if 0 < x < 10:
+        print "x is a positive single digit."
+
+This condition is semantically the same as the compound boolean expression and
+the nested conditional.
+
+
+.. index::
+    single: return
+    single: return statement
+    single: statement; return
+
+The ``return`` statement
+------------------------
+
+The ``return`` statement allows you to terminate the execution of a function
+before you reach the end. One reason to use it is if you detect an error
+condition:
+
+.. sourcecode:: python
+    
+    def print_square_root(x):
+        if x <= 0:
+            print "Positive numbers only, please."
+            return
+    
+        result = x**0.5
+        print "The square root of", x, "is", result
+
+The function ``print_square_root`` has a parameter named ``x``. The first thing
+it does is check whether ``x`` is less than or equal to 0, in which case it
+displays an error message and then uses ``return`` to exit the function. The
+flow of execution immediately returns to the caller, and the remaining lines of
+the function are not executed.
+
+
+.. index:: prompt
+
+Keyboard input
+--------------
+
+In :ref:`input` we were introduced to Python's built-in functions that get
+input from the keyboard: ``raw_input`` and ``input``. Now let's look at these
+again in greater depth.
+
+When either of these functions are called, the program stops and waits for the
+user to type something. When the user presses Return or the Enter key, the
+program resumes and ``raw_input`` returns what the user typed as a ``string``:
+
+.. sourcecode:: python
+    
+    >>> my_input = raw_input()
+    What are you waiting for?
+    >>> print my_input
+    What are you waiting for?
+
+Before calling ``raw_input``, it is a good idea to print a message telling the
+user what to input. This message is called a **prompt**.  We can supply a
+prompt as an argument to ``raw_input``:
+
+.. sourcecode:: python
+    
+    >>> name = raw_input("What...is your name? ")
+    What...is your name? Arthur, King of the Britons!
+    >>> print name
+    Arthur, King of the Britons!
+
+Notice that the prompt is a string, so it must be enclosed in quotation marks.
+
+If we expect the response to be an integer, we can use the ``input`` function
+which evaluates the response as a Python expression:
+
+.. sourcecode:: python
+    
+    prompt = "What...is the airspeed velocity of an unladen swallow?\n"
+    speed = input(prompt)
+
+If the user types a string of digits, it is converted to an integer and
+assigned to ``speed``. Unfortunately, if the user types characters that do not
+make up a valid Python expression, the program crashes:
+
+.. sourcecode:: python
+    
+    >>> speed = input(prompt)
+    What...is the airspeed velocity of an unladen swallow?
+    What do you mean, an African or a European swallow?
+    ...
+    SyntaxError: invalid syntax
+
+In the last example, if the user had made the response a valid Python
+expression by putting quotes around it, it would not have given an error:
+
+.. sourcecode:: python
+    
+    >>> speed = input(prompt)
+    What...is the airspeed velocity of an unladen swallow?
+    "What do you mean, an African or a European swallow?"
+    >>> speed
+    'What do you mean, an African or a European swallow?'
     >>>
 
-Triple quoted strings can contain both single and double quotes inside them:
+To avoid this kind of error, it is a good idea to use ``raw_input`` to get a
+string and then use conversion commands to convert it to other types.
+
+
+.. index::
+    single: type conversion
+    single: type; conversion
+
+Type conversion
+---------------
+
+Each Python type comes with a built-in command that attempts to convert values
+of another type into that type. The ``int(ARGUMENT)`` command, for example,
+takes any value and converts it to an integer, if possible, or complains
+otherwise:
 
 .. sourcecode:: python
     
-    >>> print '''"Oh no", she exclaimed, "Ben's bike is broken!"'''
-    "Oh no", she exclaimed, "Ben's bike is broken!"
-    >>>
+    >>> int("32")
+    32
+    >>> int("Hello")
+    ValueError: invalid literal for int() with base 10: 'Hello'
 
-Finally, triple quoted strings can span multiple lines:
-
-.. sourcecode:: python
-    
-    >>> message = """This message will
-    ... span several
-    ... lines."""
-    >>> print message
-    This message will
-    span several
-    lines.
-    >>>
-
-
-.. index:: unit testing, doctest
-
-Unit testing with ``doctest``
------------------------------
-
-It is a common best practice in software development these days to include
-automatic **unit testing** of source code. Unit testing provides a way to
-automatically verify that individual pieces of code, such as functions, are
-working properly. This makes it possible to change the implementation of a
-function at a later time and quickly test that it still does what it was
-intended to do.
-
-Python has a built-in ``doctest`` module for easy unit testing. Doctests can be
-written within a triple quoted string on the *first line* of the body of a
-function or script. They consist of sample interpreter sessions with a series
-of inputs to a Python prompt followed by the expected output from the Python
-interpreter.
-
-The ``doctest`` module automatically runs any statement begining with >>> and
-compares the following line with the output from the interpreter.
-
-To see how this works, put the following in a script named ``myfunctions.py``:
+``int`` can also convert floating-point values to integers, but remember
+that it truncates the fractional part:
 
 .. sourcecode:: python
     
-    def is_divisible_by_2_or_5(n):
-        """
-          >>> is_divisible_by_2_or_5(8)
-          True
-        """
-    
-    if __name__ == '__main__':
-        import doctest
-        doctest.testmod()
+    >>> int(-2.3)
+    -2
+    >>> int(3.99999)
+    3
+    >>> int("42")
+    42
+    >>> int(1.0)
+    1
 
-The last three lines are what make ``doctest`` run. Put them at the bottom of
-any file that includes doctests. We will explain how they work in Chapter 10
-when we discuss modules.
-
-Running the script will produce the following output::
-    
-    $ python myfunctions.py 
-    **********************************************************************
-    File "myfunctions.py", line 3, in __main__.is_divisible_by_2_or_5
-    Failed example:
-        is_divisible_by_2_or_5(8)
-    Expected:
-        True
-    Got nothing
-    **********************************************************************
-    1 items had failures:
-       1 of   1 in __main__.is_divisible_by_2_or_5
-    ***Test Failed*** 1 failures.
-    $
-
-This is an example of a *failing test*. The test says: if you call
-``is_divisible_by_2_or_5(8)`` the result should be ``True``. Since
-``is_divisible_by_2_or_5`` as written doesn't return anything at all, the test
-fails, and doctest tells us that it expected ``True`` but got nothing.
-
-We can make this test pass by returning ``True``:
+The ``float(ARGUMENT)`` command converts integers and strings to floating-point
+numbers:
 
 .. sourcecode:: python
     
-    def is_divisible_by_2_or_5(n):
-        """
-          >>> is_divisible_by_2_or_5(8)
-          True
-        """
-        return True
-    
-    if __name__ == '__main__':
-        import doctest
-        doctest.testmod()
+    >>> float(32)
+    32.0
+    >>> float("3.14159")
+    3.14159
+    >>> float(1)
+    1.0
 
-If we run it now, there will be no output, which indicates that the test
-passed. Note again that the doctest string must be placed immediately after the
-function definition header in order to run.
+It may seem odd that Python distinguishes the integer value ``1`` from the
+floating-point value ``1.0``. They may represent the same number, but they
+belong to different types. The reason is that they are represented differently
+inside the computer.
 
-To see more detailed out put, call the script with the ``-v`` command line
-option::
-    
-    $ python myfunctions.py -v
-    Trying:
-        is_divisible_by_2_or_5(8)
-    Expecting:
-        True
-    ok
-    1 items had no tests:
-        __main__
-    1 items passed all tests:
-       1 tests in __main__.is_divisible_by_2_or_5
-    1 tests in 2 items.
-    1 passed and 0 failed.
-    Test passed.
-    $
-
-While the test passed, our test suite is clearly inadequete, since
-``is_divisible_by_2_or_5`` will now return ``True`` no matter what argument is
-passed to it. Here is a completed version with a more complete test suite and
-code that makes the tests pass:
+The ``str(ARGUMENT)`` command converts any argument given to it to type
+``string``:
 
 .. sourcecode:: python
     
-    def is_divisible_by_2_or_5(n):
-        """
-          >>> is_divisible_by_2_or_5(8)
-          True
-          >>> is_divisible_by_2_or_5(7)
-          False
-          >>> is_divisible_by_2_or_5(5)
-          True
-          >>> is_divisible_by_2_or_5(9)
-          False
-        """
-        return n % 2 == 0 or n % 5 == 0 
-    
-    if __name__ == '__main__':
-        import doctest
-        doctest.testmod()
+    >>> str(32)
+    '32'
+    >>> str(3.14149)
+    '3.14149'
+    >>> str(True)
+    'True'
+    >>> str(true)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    NameError: name 'true' is not defined
 
-Run this script now with the ``-v`` command line option and see what you get.
+``str(ARGUMENT)`` will work with any value and convert it into a string.  As
+mentioned earlier, ``True`` is boolean value; ``true`` is not.
+
+For boolean values, the situation is especially interesting:
+
+.. sourcecode:: python
+    
+    >>> bool(1)
+    True
+    >>> bool(0)
+    False
+    >>> bool("Ni!")
+    True
+    >>> bool("")
+    False
+    >>> bool(3.14159)
+    True
+    >>> bool(0.0)
+    False
+
+Python assigns boolean values to values of other types. For numerical types
+like integers and floating-points, zero values are false and non-zero values
+are true. For strings, empty strings are false and non-empty strings are true.
+
+
+.. index:: GASP
+
+GASP
+----
+
+GASP (**G**\ raphics **A**\ PI for **S**\ tudents of **P**\ ython) will enable
+us to write programs involving graphics.  Before you can use GASP, it needs
+to be installed on your machine.  If you are running Ubuntu GNU/Linux, see
+:ref:`installing-gasp` in `Appendix A <app_a.html>`__.  Current instructions
+for installing GASP on other platforms can be found at
+http://dev.laptop.org/pub/gasp/downloads.
+
+After installing gasp, try the following python script:
+
+.. sourcecode:: python
+    
+    from gasp import *
+
+    begin_graphics()
+
+    Circle((200, 200), 60)
+    Line((100, 400), (580, 200))
+    Box((400, 350), 120, 100)
+ 
+    update_when('key_pressed')
+    end_graphics()
+
+The second to the last command pauses and waits until a key is pressed.
+Without it, the screen would flash by so quickly you wouldn't see it.
+
+Running this script, you should see a graphics window that looks like this:
+
+.. image:: illustrations/gasp01.png
+   :alt: GASP illustration 1 
+
+We will be using gasp from here on to illustrate (pun intended) computer
+programming concepts and to add to our fun while learning.  You can find out
+more about the GASP module by reading `Appendix B <app_b.html>`__.
 
 
 Glossary
@@ -584,229 +554,296 @@ Glossary
 
 .. glossary::
 
-    boolean function
-        A function that returns a boolean value.
+    block
+        A group of consecutive statements with the same indentation.
 
-    composition (of functions)
-        Calling one function from within the body of another, or using the
-        return value of one function as an argument to the call of another.
+    body
+        The block of statements in a compound statement that follows the
+        header.
 
-    dead code
-        Part of a program that can never be executed, often because it appears
-        after a ``return`` statement.
+    boolean expression
+        An expression that is either true or false.
 
-    fruitful function
-        A function that yields a return value.
+    boolean value
+        There are exactly two boolean values: ``True`` and ``False``. Boolean
+        values result when a boolean expression is evaluated by the Python
+        interepreter.  They have type ``bool``.
 
-    incremental development
-        A program development plan intended to avoid debugging by adding and
-        testing only a small amount of code at a time.
+    branch
+        One of the possible paths of the flow of execution determined by
+        conditional execution.
 
-    None
-        A special Python value returned by functions that have no return
-        statement, or a return statement without an argument. ``None`` is the
-        only value of the type, ``NoneType``.
+    chained conditional
+        A conditional branch with more than two possible flows of execution. In
+        Python chained conditionals are written with ``if ... elif ... else``
+        statements.
 
-    return value
-        The value provided as the result of a function call.
+    comparison operator
+        One of the operators that compares two values: ``==``, ``!=``, ``>``,
+        ``<``, ``>=``, and ``<=``.
 
-    scaffolding
-        Code that is used during program development but is not part of the
-        final version.
+    condition
+        The boolean expression in a conditional statement that determines which
+        branch is executed.
 
-    temporary variable
-        A variable used to store an intermediate value in a complex
-        calculation.
+    conditional statement
+        A statement that controls the flow of execution depending on some
+        condition. In Python the keywords ``if``, ``elif``, and ``else`` are
+        used for conditional statements.
 
-    unit testing
-        An automatic procedure used to validate that individual units of code
-        are working properly. Python has ``doctest`` built in for this purpose.
+    logical operator
+        One of the operators that combines boolean expressions: ``and``,
+        ``or``, and ``not``.
+
+    modulus operator
+        An operator, denoted with a percent sign ( ``%``), that works on
+        integers and yields the remainder when one number is divided by
+        another.
+
+    nesting
+        One program structure within another, such as a conditional statement
+        inside a branch of another conditional statement.
+
+    prompt
+        A visual cue that tells the user to input data.
+
+    type conversion
+        An explicit statement that takes a value of one type and computes a
+        corresponding value of another type.
+
+    wrapping code in a function
+        The process of adding a function header and parameters to a sequence
+        of program statements is often refered to as "wrapping the code in
+        a function".  This process is very useful whenever the program
+        statements in question are going to be used multiple times.
 
 
 Exercises
 ---------
 
-All of the exercises below should be added to a file named ``ch05.py`` that
-contains the following at the bottom:
+#. Try to evaluate the following numerical expressions in your head, then use
+   the Python interpreter to check your results:
 
-.. sourcecode:: python
-    
-    if __name__ == '__main__':
-        import doctest
-        doctest.testmod()
+    #. ``>>> 5 % 2``
+    #. ``>>> 9 % 5``
+    #. ``>>> 15 % 12``
+    #. ``>>> 12 % 15``
+    #. ``>>> 6 % 6``
+    #. ``>>> 0 % 7``
+    #. ``>>> 7 % 0``
 
-After completing each exercise in turn, run the program to confirm that the
-doctests for your new function pass.
-
-#. Write a ``compare`` function that returns ``1`` if ``a > b``, ``0`` if
-   ``a == b``, and ``-1`` if ``a < b``.
-
+   What happened with the last example? Why? If you were able to correctly
+   anticipate the computer's response in all but the last one, it is time to
+   move on. If not, take time now to make up examples of your own. Explore the
+   modulus operator until you are confident you understand how it works.
+#.
    .. sourcecode:: python
     
-       def compare(a, b):
-           """
-             >>> compare(5, 4)
-             1
-             >>> compare(7, 7)
-             0
-             >>> compare(2, 3)
-             -1
-             >>> compare(42, 1)
-             1
-           """
-           #  Your function body should begin here.
+        if x < y:
+            print x, "is less than", y
+        elif x > y:
+            print x, "is greater than", y
+        else:
+            print x, "and", y, "are equal"
 
-   Fill in the body of the function so the doctests pass.
-#. Use incremental development to write a function called ``hypotenuse`` that
-   returns the length of the hypotenuse of a right triangle given the lengths
-   of the two legs as parameters. Record each stage of the incremental
-   development process as you go.
-
-   .. sourcecode:: python
-    
-       def hypotenuse(a, b):
-           """
-             >>> hypotenuse(3, 4)
-             5.0
-             >>> hypotenuse(12, 5)
-             13.0
-             >>> hypotenuse(7, 24)
-             25.0
-             >>> hypotenuse(9, 12)
-             15.0
-           """
-
-   When you are finished add your completed function with the doctests to
-   ``ch05.py`` and confirm that the doctests pass.
-#. Write a function ``slope(x1, y1, x2, y2)`` that returns the slope of
-   the line through the points (x1, y1) and (x2, y2). Be sure your
-   implementation of ``slope`` can pass the following doctests:
-
-   .. sourcecode:: python
-    
-       def slope(x1, y1, x2, y2):
-           """
-             >>> slope(5, 3, 4, 2)
-             1.0
-             >>> slope(1, 2, 3, 2)
-             0.0
-             >>> slope(1, 2, 3, 3)
-             0.5
-             >>> slope(2, 4, 1, 2)
-             2.0
-           """
-
-   Then a call to ``slope`` in a new function named
-   ``intercept(x1, y1, x2, y2)`` that returns the y-intercept of the line
-   through the points ``(x1, y1)`` and ``(x2, y2)``.
-
-   .. sourcecode:: python
-    
-       def intercept(x1, y1, x2, y2):
-           """
-             >>> intercept(1, 6, 3, 12)
-             3.0
-             >>> intercept(6, 1, 1, 6)
-             7.0
-             >>> intercept(4, 6, 12, 8)
-             5.0
-           """
-
-   ``intercept`` should pass the doctests above.
-#. Write a function called ``is_even(n)`` that takes an integer as an argument
-   and returns ``True`` if the argument is an **even number** and ``False`` if
-   it is **odd**.
+   *Wrap* this code in a function called ``compare(x, y)``. Call ``compare``
+   three times: one each where the first argument is less than, greater
+   than, and equal to the second argument.
+#. To better understand boolean expressions, it is helpful to construct truth
+   tables. Two boolean expressions are *logically equivalent* if and only if
+   they have the same truth table.
    
-   Add your own doctests to this function.
-#. Now write the function ``is_odd(n)`` that returns ``True`` when ``n`` is odd
-   and ``False`` otherwise. Include doctests for this function as you write it. 
-
-   Finally, modify it so that it uses a call to ``is_even`` to determine if its 
-   argument is an odd integer.
-#. Add the following function definition header and doctests to ``ch05.py``:
+   The following Python script prints out the truth table for any boolean
+   expression in two variables: p and q:
 
    .. sourcecode:: python
     
-       def is_factor(f, n):
-           """
-             >>> is_factor(3, 12)
-             True
-             >>> is_factor(5, 12)
-             False
-             >>> is_factor(7, 14)
-             True
-             >>> is_factor(2, 14)
-             True
-             >>> is_factor(7, 15)
-             False
-           """
+        expression = raw_input("Enter a boolean expression in two variables, p and q: ")
+    
+        print " p      q      %s"  % expression
+        length = len( " p      q      %s"  % expression)
+        print length*"="
+    
+        for p in True, False:
+            for q in True, False:
+                print "%-7s %-7s %-7s" % (p, q, eval(expression))
 
-   Add a body to ``is_factor`` to make the doctests pass.
-#. Add the following function definition header and doctests to ``ch05.py``:
+   You will learn how this script works in later chapters. For now, you
+   will use it to learn about boolean expressions. Copy this program to a
+   file named ``p_and_q.py``, then run it from the command line and give
+   it: ``p or q``, when prompted for a boolean expression. You should get
+   the following output::
+
+         p      q      p or q
+        =====================
+        True    True    True   
+        True    False   True   
+        False   True    True   
+        False   False   False
+
+   Now that we see how it works, let's wrap it in a function to make it
+   easier to use:
 
    .. sourcecode:: python
     
-       def is_multiple(m, n):
-           """
-             >>> is_multiple(12, 3)
-             True
-             >>> is_multiple(12, 4)
-             True
-             >>> is_multiple(12, 5)
-             False
-             >>> is_multiple(12, 6)
-             True
-             >>> is_multiple(12, 7)
-             False
-           """
+       def truth_table(expression):
+           print " p      q      %s"  % expression
+           length = len( " p      q      %s"  % expression)
+           print length*"="
+    
+           for p in True, False:
+               for q in True, False:
+                   print "%-7s %-7s %-7s" % (p, q, eval(expression))
 
-   Add a body to ``is_multiple`` to make the doctests pass. Can you find a way
-   to use ``is_factor`` in your definition of ``is_multiple``?
-#. Add the following function definition header and doctests to ``ch05.py``:
+   We can import it into a Python shell and call ``truth_table`` with a string
+   containing our boolean expression in p and q as an argument:
 
    .. sourcecode:: python
     
-       def f2c(t):
-           """
-             >>> f2c(212)
-             100
-             >>> f2c(32)
-             0
-             >>> f2c(-40)
-             -40
-             >>> f2c(36)
-             2
-             >>> f2c(37)
-             3
-             >>> f2c(38)
-             3
-             >>> f2c(39)
-             4
-           """
+       >>> from p_and_q import *
+       >>> truth_table("p or q")
+       p      q      p or q
+       =====================
+       True    True    True   
+       True    False   True   
+       False   True    True   
+       False   False   False
+       >>>
 
-   Write a body for the function definition of ``f2c`` designed to return the
-   integer value of the nearest degree Celsius for given tempurature in
-   Fahrenheit. (*hint:* you may want to make use of the built-in function,
-   ``round``. Try printing ``round.__doc__`` in a Python shell and
-   experimenting with round until you are comfortable with how it works.)
-#. Add the following function definition header and doctests to ``ch05.py``:
+   Use the ``truth_table`` functions with the following boolean expressions,
+   recording the truth table produced each time:
+
+    #. not(p or q)
+    #. p and q
+    #. not(p and q)
+    #. not(p) or not(q)
+    #. not(p) and not(q)
+
+   Which of these are logically equivalent?
+#. Enter the following expressions into the Python shell:
+
+   .. sourcecode:: python
+
+       True or False
+       True and False
+       not(False) and True
+       True or 7
+       False or 7
+       True and 0
+       False or 8
+       "happy" and "sad"
+       "happy" or "sad"
+       "" and "sad"
+       "happy" and ""
+
+   Analyze these results. What observations can you make about values of
+   different types and logical operators? Can you write these observations in
+   the form of simple *rules* about ``and`` and ``or`` expressions?
+#.
+   .. sourcecode:: python
+    
+       if choice == 'a':
+           function_a()
+       elif choice == 'b':
+           function_b()
+       elif choice == 'c':
+           function_c()
+       else:
+           print "Invalid choice."
+
+   Wrap this code in a function called ``dispatch(choice)``. Then define
+   ``function_a``, ``function_b``, and ``function_c`` so that they print out a
+   message saying they were called. For example:
+
+   .. sourcecode:: python
+
+       def function_a():
+           print "function_a was called..."
+
+   Put the four functions ( ``dispatch``, ``function_a``, ``function_b``, and
+   ``function_c`` into a script named ``ch04e05.py``. At the bottom of this
+   script add a call to ``dispatch('b')``. Your output should be::
+
+      function_b was called...
+
+   Finally, modify the script so that user can enter 'a', 'b', or 'c'.  Test it 
+   by importing your script into the Python shell.
+#. Write a function named ``is_divisible_by_3`` that takes a single integer as
+   an argument and prints "This number is divisible by three." if the argument
+   is evenly divisible by 3 and "This number is not divisible by three."
+   otherwise.
+   
+   Now write a similar function named ``is_divisible_by_5``.
+#. Generalize the functions you wrote in the previous exercise into a function
+   named ``is_divisible_by_n(x, n)`` that takes two integer arguments and
+   prints out whether the first is divisible by the second.  Save this in a
+   file named ``ch04e07.py``. Import it into a shell and try it out. A sample
+   session might look like this:
 
    .. sourcecode:: python
     
-       def c2f(t):
-           """
-             >>> c2f(0)
-             32
-             >>> c2f(100)
-             212
-             >>> c2f(-40)
-             -40
-             >>> c2f(12)
-             54
-             >>> c2f(18)
-             64
-             >>> c2f(-48)
-             -54
-           """
+       >>> from ch04e07 import *
+       >>> is_divisible_by_n(20, 4)
+       Yes, 20 is divisible by 4
+       >>> is_divisible_by_n(21, 8)
+       No, 21 is not divisible by 8
 
-   Add a function body for ``c2f`` to convert from Celsius to Fahrenheit.
+#. What will be the output of the following?
+
+   .. sourcecode:: python
+    
+       if "Ni!":
+           print 'We are the Knights who say, "Ni!"'
+       else:
+           print "Stop it! No more of this!"
+    
+       if 0:
+           print "And now for something completely different..."
+       else:
+           print "What's all this, then?"
+
+   Explain what happened and why it happened.
+#. The following gasp script, in a file named ``house.py``, draws a simple
+   house on a gasp canvas:
+
+   .. sourcecode:: python
+    
+       from gasp import *          # import everything from the gasp library
+   
+       begin_graphics()            # open the graphics canvas
+    
+       Box((20, 20), 100, 100)     # the house
+       Box((55, 20), 30, 50)       # the door
+       Box((40, 80), 20, 20)       # the left window
+       Box((80, 80), 20, 20)       # the right window
+       Line((20, 120), (70, 160))  # the left roof
+       Line((70, 160), (120, 120)) # the right roof
+    
+       update_when('key_pressed')  # keep the canvas open until a key is pressed
+       end_graphics()              # close the canvas (which would happen
+                                   # anyway, since the script ends here, but it 
+                                   # is better to be explicit).
+
+   Run this script and confirm that you get a window that looks like
+   this:
+
+   .. image:: illustrations/gasp02.png
+      :alt: GASP illustration 2 
+    
+   #. Wrap the house code in a function named ``draw_house()``.
+   #. Run the script now. Do you see a house? Why not?
+   #. Add a call to ``draw_house()`` at the botton of the script so that the
+      house returns to the screen.
+   #. *Parameterize* the function with x and y parameters -- the header
+      should then become ``def draw_house(x, y):``, so that you can pass in
+      the location of the house on the canvas.
+   #. Use ``draw_house`` to place five houses on the canvas in different
+      locations.
+#. *Exploration:*  Read over `Appendix B <app_b.html>`__ and write a script
+   named ``houses.py`` that produces the following when run:
+
+   .. image:: illustrations/gasp03.png
+      :alt: GASP illustration 3
+
+   *hint*: You will need to use a ``Polygon`` for the roof instead of two
+   ``Line``\s to get ``filled=True`` to work with it.

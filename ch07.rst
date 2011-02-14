@@ -6,851 +6,736 @@
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
-Strings
-=======
+Iteration
+=========
 
-.. index:: compound data types, character, bracket operator, index
-
-A compound data type
---------------------
-
-So far we have seen five types: ``int``, ``float``, ``bool``, ``NoneType`` and
-``str``.  Strings are qualitatively different from the other four because they
-are made up of smaller pieces --- **characters**.
-
-Types that comprise smaller pieces are called **compound data types**.
-Depending on what we are doing, we may want to treat a compound data type as a
-single thing, or we may want to access its parts. This ambiguity is useful.
-
-The **bracket operator** selects a single character from a string:
-
-.. sourcecode:: python
-    
-    >>> fruit = "banana"
-    >>> letter = fruit[1]
-    >>> print letter
-
-The expression ``fruit[1]`` selects character number 1 from ``fruit``. The
-variable ``letter`` refers to the result. When we display ``letter``, we get a
-surprise:
-
-.. sourcecode:: python
-    
-    a
-
-The first letter of ``"banana"`` is not ``a``, unless you are a computer
-scientist.  For perverse reasons, computer scientists always start counting
-from zero. The 0th letter ( zero-eth ) of ``"banana"`` is ``b``.  The 1th
-letter ( one-eth ) is ``a``, and the 2th ( two-eth ) letter is ``n``.
-
-If you want the zero-eth letter of a string, you just put 0, or any expression
-with the value 0, in the brackets:
-
-.. sourcecode:: python
-    
-    >>> letter = fruit[0]
-    >>> print letter
-    b
-
-The expression in brackets is called an **index**. An index specifies a member
-of an ordered set, in this case the set of characters in the string. The index
-*indicates* which one you want, hence the name. It can be any integer
-expression.
-
+.. index:: iteration, assignment, assignment statement, multiple assignment
 
 .. index::
-    single: len function
-    single: function; len
-    single: runtime error
-    single: negative index
-    single: index; negative
+    single: statement; assignment
+    single: assignment; multiple 
 
-Length
-------
-
-The ``len`` function returns the number of characters in a string:
-
-.. sourcecode:: python
-    
-    >>> fruit = "banana"
-    >>> len(fruit)
-    6
-
-To get the last letter of a string, you might be tempted to try something like
-this:
-
-.. sourcecode:: python
-    
-    length = len(fruit)
-    last = fruit[length]       # ERROR!
-
-That won't work. It causes the runtime error
-``IndexError: string index out of range``. The reason is that there is no 6th
-letter in ``"banana"``. Since we started counting at zero, the six letters are
-numbered 0 to 5. To get the last character, we have to subtract 1 from
-``length``:
-
-.. sourcecode:: python
-    
-    length = len(fruit)
-    last = fruit[length-1]
-
-Alternatively, we can use **negative indices**, which count backward from the
-end of the string. The expression ``fruit[-1]`` yields the last letter,
-``fruit[-2]`` yields the second to last, and so on.
-
-
-.. index:: traversal, for loop, concatenation, abecedarian series
-
-.. index::
-    single: McCloskey, Robert
-    single: Make Way for Ducklings    
-
-Traversal and the ``for`` loop
-------------------------------
-
-A lot of computations involve processing a string one character at a time.
-Often they start at the beginning, select each character in turn, do something
-to it, and continue until the end. This pattern of processing is called a
-**traversal**. One way to encode a traversal is with a ``while`` statement:
-
-.. sourcecode:: python
-    
-    index = 0
-    while index < len(fruit):
-        letter = fruit[index]
-        print letter
-        index += 1
-
-This loop traverses the string and displays each letter on a line by itself.
-The loop condition is ``index < len(fruit)``, so when ``index`` is equal to the
-length of the string, the condition is false, and the body of the loop is not
-executed. The last character accessed is the one with the index
-``len(fruit)-1``, which is the last character in the string.
-
-Using an index to traverse a set of values is so common that Python provides an
-alternative, simpler syntax --- the ``for`` loop:
-
-.. sourcecode:: python
-    
-    for char in fruit:
-        print char
-
-Each time through the loop, the next character in the string is assigned to the
-variable ``char``. The loop continues until no characters are left.
-
-The following example shows how to use concatenation and a ``for`` loop to
-generate an abecedarian series. Abecedarian refers to a series or list in which
-the elements appear in alphabetical order. For example, in Robert McCloskey's
-book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
-Mack, Nack, Ouack, Pack, and Quack.  This loop outputs these names in order:
-
-.. sourcecode:: python
-    
-    prefixes = "JKLMNOPQ"
-    suffix = "ack"
-       
-    for letter in prefixes:
-        print letter + suffix
-
-The output of this program is::
-    
-    Jack
-    Kack
-    Lack
-    Mack
-    Nack
-    Oack
-    Pack
-    Qack
-
-
-Of course, that's not quite right because Ouack and Quack are misspelled.
-You'll fix this as an exercise below.
-
-
-.. index:: slice, string slice
-
-String slices
--------------
-
-A substring of a string is called a **slice**. Selecting a slice is similar to
-selecting a character:
-
-.. sourcecode:: python
-    
-    >>> s = "Peter, Paul, and Mary"
-    >>> print s[0:5]
-    Peter
-    >>> print s[7:11]
-    Paul
-    >>> print s[17:21]
-    Mary
-
-The operator ``[n:m]`` returns the part of the string from the n-eth character
-to the m-eth character, including the first but excluding the last. This
-behavior is counterintuitive; it makes more sense if you imagine the indices
-pointing *between* the characters, as in the following diagram:
-
-.. image:: illustrations/banana.png
-   :alt: 'banana' string
-
-If you omit the first index (before the colon), the slice starts at the
-beginning of the string. If you omit the second index, the slice goes to the
-end of the string. Thus:
-
-.. sourcecode:: python
-    
-    >>> fruit = "banana"
-    >>> fruit[:3]
-    'ban'
-    >>> fruit[3:]
-    'ana'
-
-What do you think ``s[:]`` means?
-
-
-.. index:: string comparison, comparison of strings
-
-String comparison
------------------
-
-The comparison operators work on strings. To see if two strings are equal:
-
-.. sourcecode:: python
-    
-    if word == "banana":
-        print  "Yes, we have no bananas!"
-
-Other comparison operations are useful for putting words in
-`lexigraphical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__:
-
-.. sourcecode:: python
-    
-    if word < "banana":
-        print "Your word, " + word + ", comes before banana."
-    elif word > "banana":
-        print "Your word, " + word + ", comes after banana."
-    else:
-        print "Yes, we have no bananas!"
-
-This is similar to the alphabetical order you would use with a dictionary,
-except that all the uppercase letters come before all the lowercase letters. As
-a result:
-
-.. sourcecode:: python
-    
-    Your word, Zebra, comes before banana.
-
-A common way to address this problem is to convert strings to a standard
-format, such as all lowercase, before performing the comparison. A more
-difficult problem is making the program realize that zebras are not fruit.
-
-
-.. index:: mutable, immutable, runtime error
-
-Strings are immutable
----------------------
-
-It is tempting to use the ``[]`` operator on the left side of an assignment,
-with the intention of changing a character in a string.  For example:
-
-.. sourcecode:: python
-    
-    greeting = "Hello, world!"
-    greeting[0] = 'J'            # ERROR!
-    print greeting
-
-Instead of producing the output ``Jello, world!``, this code produces the
-runtime error ``TypeError: 'str' object doesn't support item assignment``.
-
-Strings are **immutable**, which means you can't change an existing string. The
-best you can do is create a new string that is a variation on the original:
-
-.. sourcecode:: python
-    
-    greeting = "Hello, world!"
-    newGreeting = 'J' + greeting[1:]
-    print newGreeting
-
-The solution here is to concatenate a new first letter onto a slice of
-``greeting``. This operation has no effect on the original string.
-
-
-.. index::
-    single: in
-    single: in operator
-    single: operator; in
-
-The ``in`` operator
+Multiple assignment
 -------------------
 
-The ``in`` operator tests if one string is a substring of another:
+As you may have discovered, it is legal to make more than one assignment to the
+same variable. A new assignment makes an existing variable refer to a new value
+(and stop referring to the old value).
 
 .. sourcecode:: python
     
-    >>> 'p' in 'apple'
-    True
-    >>> 'i' in 'apple'
-    False
-    >>> 'ap' in 'apple'
-    True
-    >>> 'pa' in 'apple'
-    False
+    bruce = 5
+    print bruce,
+    bruce = 7
+    print bruce
 
-Note that a string is a substring of itself:
+The output of this program is ``5 7``, because the first time ``bruce`` is
+printed, his value is 5, and the second time, his value is 7. The comma at the
+end of the first ``print`` statement suppresses the newline after the output,
+which is why both outputs appear on the same line.
 
-.. sourcecode:: python
-    
-    >>> 'a' in 'a'
-    True
-    >>> 'apple' in 'apple'
-    True
+Here is what **multiple assignment** looks like in a state diagram:
 
-Combining the ``in`` operator with string concatenation using ``+``, we can
-write a function that removes all the vowels from a string:
+.. image:: illustrations/mult_assign.png
+   :alt: Multiple assignment 
 
-.. sourcecode:: python
-    
-    def remove_vowels(s):
-        vowels = "aeiouAEIOU"
-        s_without_vowels = ""
-        for letter in s:
-            if letter not in vowels:
-                s_without_vowels += letter
-        return s_without_vowels 
+With multiple assignment it is especially important to distinguish between an
+assignment operation and a statement of equality. Because Python uses the equal
+sign (``=``) for assignment, it is tempting to interpret a statement like
+``a = b`` as a statement of equality. It is not!
 
-Test this function to confirm that it does what we wanted it to do.
+First, equality is symmetric and assignment is not. For example, in
+mathematics, if a = 7 then 7 = a. But in Python, the statement ``a = 7``
+is legal and ``7 = a`` is not.
 
-
-.. index:: traversal, eureka traversal, pattern of computation,
-           computation pattern
-
-A ``find`` function
--------------------
-
-What does the following function do?
+Furthermore, in mathematics, a statement of equality is always true.  If a = b
+now, then a will always equal b. In Python, an assignment statement can make
+two variables equal, but they don't have to stay that way:
 
 .. sourcecode:: python
     
-    def find(strng, ch):
-        index = 0
-        while index < len(strng):
-            if strng[index] == ch:
-                return index
-            index += 1
-        return -1
+    a = 5
+    b = a    # a and b are now equal
+    a = 3    # a and b are no longer equal
 
-In a sense, ``find`` is the opposite of the ``[]`` operator. Instead of taking
-an index and extracting the corresponding character, it takes a character and
-finds the index where that character appears. If the character is not found,
-the function returns ``-1``.
-
-This is the first example we have seen of a ``return`` statement inside a loop.
-If ``strng[index] == ch``, the function returns immediately, breaking out of
-the loop prematurely.
-
-If the character doesn't appear in the string, then the program exits the loop
-normally and returns ``-1``.
-
-This pattern of computation is sometimes called a eureka traversal because as
-soon as we find what we are looking for, we can cry Eureka!  and stop looking.
+The third line changes the value of ``a`` but does not change the value of
+``b``, so they are no longer equal. (In some programming languages, a different
+symbol is used for assignment, such as ``<-`` or ``:=``, to avoid confusion.)
 
 
-.. index:: counting pattern
+Updating variables
+------------------
 
-Looping and counting
---------------------
-
-The following program counts the number of times the letter ``a`` appears in a
-string, and is another example of the counter pattern introduced in
-:ref:`counting`:
+One of the most common forms of multiple assignment is an update, where the new
+value of the variable depends on the old.
 
 .. sourcecode:: python
     
-    fruit = "banana"
-    count = 0
-    for char in fruit:
-        if char == 'a':
-            count += 1
-    print count
+    x = x + 1
 
+This means get the current value of x, add one, and then update x with the new
+value.
 
-.. index:: optional parameter, default value
-
-.. _optional_parameters:
-
-Optional parameters
--------------------
-
-To find the locations of the second or third occurence of a character in a
-string, we can modify the ``find`` function, adding a third parameter for the
-starting postion in the search string:
+If you try to update a variable that doesn't exist, you get an error, because
+Python evaluates the expression on the right side of the assignment operator
+before it assigns the resulting value to the name on the left:
 
 .. sourcecode:: python
     
-    def find2(strng, ch, start):
-        index = start 
-        while index < len(strng):
-            if strng[index] == ch:
-                return index
-            index += 1
-        return -1
+    >>> x = x + 1
+    Traceback (most recent call last):
+      File "", line 1, in 
+    NameError: name 'x' is not defined
 
-The call ``find2('banana', 'a', 2)`` now returns ``3``, the index of the first
-occurance of 'a' in 'banana' after index 2. What does
-``find2('banana', 'n', 3)`` return? If you said, 4, there is a good chance you
-understand how ``find2`` works.
-
-Better still, we can combine ``find`` and ``find2`` using an
-**optional parameter**:
+Before you can update a variable, you have to **initialize** it, usually with a
+simple assignment:
 
 .. sourcecode:: python
     
-    def find(strng, ch, start=0):
-        index = start 
-        while index < len(strng):
-            if strng[index] == ch:
-                return index
-            index += 1
-        return -1
-
-The call ``find('banana', 'a', 2)`` to this version of ``find`` behaves just
-like ``find2``, while in the call ``find('banana', 'a')``, ``start`` will be
-set to the **default value** of ``0``.
-
-Adding another optional parameter to ``find`` makes it search both forward and
-backward:
-
-.. sourcecode:: python
-    
-    def find(strng, ch, start=0, step=1):
-        index = start 
-        while 0 <= index < len(strng):
-            if strng[index] == ch:
-                return index
-            index += step 
-        return -1
-
-Passing in a value of ``len(strng)-1`` for start and ``-1`` for ``step`` will
-make it search toward the beginning of the string instead of the end. Note that
-we needed to check for a lower bound for ``index`` in the while loop as well as
-an upper bound to accomodate this change.
-
-
-.. index:: module, string module, dir function, dot notation, function type,
-           docstring
-
-The ``string`` module
----------------------
-
-The ``string`` module contains useful functions that manipulate strings.  As
-usual, we have to import the module before we can use it:
-
-.. sourcecode:: python
-    
-    >>> import string
-
-To see what is inside it, use the ``dir`` function with the module name as an
-argument.
-
-.. sourcecode:: python
-    
-    >>> dir(string)
-
-which will return the list of items inside the string module:
-
-``['Template', '_TemplateMetaclass', '__builtins__', '__doc__',
-'__file__', '__name__', '_float', '_idmap', '_idmapL', '_int',
-'_long', '_multimap', '_re', 'ascii_letters', 'ascii_lowercase',
-'ascii_uppercase', 'atof', 'atof_error', 'atoi', 'atoi_error', 'atol',
-'atol_error', 'capitalize', 'capwords', 'center', 'count', 'digits',
-'expandtabs', 'find', 'hexdigits', 'index', 'index_error', 'join',
-'joinfields', 'letters', 'ljust', 'lower', 'lowercase', 'lstrip',
-'maketrans', 'octdigits', 'printable', 'punctuation', 'replace',
-'rfind', 'rindex', 'rjust', 'rsplit', 'rstrip', 'split',
-'splitfields', 'strip', 'swapcase', 'translate', 'upper', 'uppercase',
-'whitespace', 'zfill']``
-
-To find out more about an item in this list, we can use the ``type`` command.
-We need to specify the module name followed by the item using **dot notation**.
-
-.. sourcecode:: python
-    
-    >>> type(string.digits)
-    <type 'str'> 
-    >>> type(string.find)
-    <type 'function'> 
-
-Since ``string.digits`` is a string, we can print it to see what it contains:
-
-.. sourcecode:: python
-    
-    >>> print string.digits
-    0123456789
-
-Not surprisingly, it contains each of the decimal digits.
-
-``string.find`` is a function which does much the same thing as the function we
-wrote. To find out more about it, we can print out its **docstring**,
-``__doc__``, which contains documentation on the function:
-
-.. sourcecode:: python
-    
-    >>> print string.find.__doc__
-    find(s, sub [,start [,end]]) -> in
-    
-        Return the lowest index in s where substring sub is found,
-        such that sub is contained within s[start,end].  Optional
-        arguments start and end are interpreted as in slice notation.
-    
-        Return -1 on failure.
-    
-The parameters in square brackets are optional parameters. We can use
-``string.find`` much as we did our own ``find``:
-
-.. sourcecode:: python
-    
-    >>> fruit = "banana"
-    >>> index = string.find(fruit, "a")
-    >>> print index
-    1
-
-This example demonstrates one of the benefits of modules --- they help avoid
-collisions between the names of built-in functions and user-defined functions.
-By using dot notation we can specify which version of ``find`` we want.
-
-Actually, ``string.find`` is more general than our version. it can find
-substrings, not just characters:
-
-.. sourcecode:: python
-    
-    >>> string.find("banana", "na")
-    2
-
-Like ours, it takes an additional argument that specifies the index at which it
-should start:
-
-.. sourcecode:: python
-    
-    >>> string.find("banana", "na", 3)
-    4
-
-Unlike ours, its second optional parameter specifies the index at which the
-search should end:
-
-.. sourcecode:: python
-    
-    >>> string.find("bob", "b", 1, 2)
-    -1
-
-In this example, the search fails because the letter *b* does not appear in the
-index range from ``1`` to ``2`` (not including ``2``).
-
-
-.. index:: character classification, uppercase, lowercase, dot notation,
-           whitespace, string module, Python Library Reference
-
-Character classification
-------------------------
-
-It is often helpful to examine a character and test whether it is upper- or
-lowercase, or whether it is a character or a digit. The ``string`` module
-provides several constants that are useful for these purposes. One of these,
-``string.digits``, we have already seen.
-
-The string ``string.lowercase`` contains all of the letters that the system
-considers to be lowercase. Similarly, ``string.uppercase`` contains all of the
-uppercase letters. Try the following and see what you get:
-
-.. sourcecode:: python
-    
-    print string.lowercase
-    print string.uppercase
-    print string.digits
-
-We can use these constants and ``find`` to classify characters. For example, if
-``find(lowercase, ch)`` returns a value other than ``-1``, then ``ch`` must be
-lowercase:
-
-.. sourcecode:: python
-    
-    def is_lower(ch):
-        return string.find(string.lowercase, ch) != -1
-
-Alternatively, we can take advantage of the ``in`` operator:
-
-.. sourcecode:: python
-    
-    def is_lower(ch):
-        return ch in string.lowercase
-
-As yet another alternative, we can use the comparison operator:
-
-.. sourcecode:: python
-    
-    def is_lower(ch):
-        return 'a' <= ch <= 'z'
-
-If ``ch`` is between *a* and *z*, it must be a lowercase letter.
-
-Another constant defined in the ``string`` module may surprise you when you
-print it:
-
-.. sourcecode:: python
-    
-    >>> print string.whitespace
-
-**Whitespace** characters move the cursor without printing anything.  They
-create the white space between visible characters (at least on white paper).
-The constant ``string.whitespace`` contains all the whitespace characters,
-including space, tab (``\t``), and newline (``\n``).
-
-There are other useful functions in the ``string`` module, but this book isn't
-intended to be a reference manual. On the other hand, the *Python Library
-Reference* is. Along with a wealth of other documentation, it's available from
-the Python website, `http://www.python.org <http://www.python.org>`__.
-
-
-.. index:: string formating, operations on strings
-
-String formatting
------------------
-
-The most concise and powerful way to format a string in Python is to use the
-*string formatting operator*, ``%``, together with Python's string formatting
-operations. To see how this works, let's start with a few examples:
-
-.. sourcecode:: python
-    
-    >>> "His name is %s."  % "Arthur"
-    'His name is Arthur.'
-    >>> name = "Alice"
-    >>> age = 10
-    >>> "I am %s and I am %d years old." % (name, age)
-    'I am Alice and I am 10 years old.'
-    >>> n1 = 4
-    >>> n2 = 5
-    >>> "2**10 = %d and %d * %d = %f" % (2**10, n1, n2, n1 * n2)
-    '2**10 = 1024 and 4 * 5 = 20.000000'
+    >>> x = 0
+    >>> x = x + 1
     >>>
 
-The syntax for the string formatting operation looks like this:
+Updating a variable by adding 1 is called an **increment**; subtracting 1 is
+called a **decrement**.
+
+
+.. index:: while, while statement, while loop, iteration, loop, loop body,
+           infinite loop, condition
+
+The ``while`` statement
+-----------------------
+
+Computers are often used to automate repetitive tasks. Repeating identical or
+similar tasks without making errors is something that computers do well and
+people do poorly.
+
+Repeated execution of a set of statements is called **iteration**.  Because
+iteration is so common, Python provides several language features to make it
+easier. The first feature we are going to look at is the ``while`` statement.
+
+Here is a function called ``countdown`` that demonstrates the use of the
+``while`` statement:
 
 .. sourcecode:: python
     
-    "<FORMAT>" % (<VALUES>)
+    def countdown(n):
+        while n > 0:
+            print n
+            n = n-1
+        print "Blastoff!"
 
-It begins with a *format* which contains a sequence of characters and
-*conversion specifications*. Conversion specifications start with a ``%``
-operator. Following the format string is a single ``%`` and then a sequence of
-values, *one per conversion specification*, seperated by commas and enclosed in
-parenthesis. The parenthesis are optional if there is only a single value.
+You can almost read the ``while`` statement as if it were English. It means,
+While ``n`` is greater than 0, continue displaying the value of ``n`` and then
+reducing the value of ``n`` by 1. When you get to 0, display the word
+``Blastoff!``
 
-In the first example above, there is a single conversion specification, ``%s``,
-which indicates a string. The single value, ``"Arthur"``, maps to it, and is
-not enclosed in parenthesis.
+More formally, here is the flow of execution for a ``while`` statement:
 
-In the second example, ``name`` has string value, ``"Alice"``, and ``age`` has
-integer value, ``10``. These map to the two converstion specifications, ``%s``
-and ``%d``. The ``d`` in the second converstion specification indicates that
-the value is a decimal integer.
+#. Evaluate the condition, yielding ``False`` or ``True``.
+#. If the condition is false, exit the ``while`` statement and continue
+   execution at the next statement.
+#. If the condition is true, execute each of the statements in the body and
+   then go back to step 1.
 
-In the third example variables ``n1`` and ``n2`` have integer values ``4`` and
-``5`` respectively. There are four converstion specifications in the format
-string: three ``%d``'s and a ``%f``. The ``f`` indicates that the value should
-be represented as a floating point number. The four values that map to the four
-converstion specifications are: ``2**10``, ``n1``, ``n2``, and ``n1 * n2``.
+The body consists of all of the statements below the header with the same
+indentation.
 
-``s``, ``d``, and ``f`` are all the conversion types we will need for this
-book. To see a complete list, see the `String Formatting Operations
-<http://docs.python.org/lib/typesseq-strings.html>`__ section of the
-Python Library Reference.
+This type of flow is called a **loop** because the third step loops back around
+to the top. Notice that if the condition is false the first time through the
+loop, the statements inside the loop are never executed.
 
-The following example illustrates the real utility of string formatting:
+The body of the loop should change the value of one or more variables so that
+eventually the condition becomes false and the loop terminates. Otherwise the
+loop will repeat forever, which is called an **infinite loop**. An endless
+source of amusement for computer scientists is the observation that the
+directions on shampoo, Lather, rinse, repeat, are an infinite loop.
+
+In the case of ``countdown``, we can prove that the loop terminates because we
+know that the value of ``n`` is finite, and we can see that the value of ``n``
+gets smaller each time through the loop, so eventually we have to get to 0. In
+other cases, it is not so easy to tell.  Look at the following function,
+defined for all positive integers ``n``:
+
+.. sourcecode:: python
+    
+    def sequence(n):
+        while n != 1:
+            print n,
+            if n % 2 == 0:        # n is even
+                n = n / 2
+            else:                 # n is odd
+                n = n * 3 + 1
+
+The condition for this loop is ``n != 1``, so the loop will continue until
+``n`` is ``1``, which will make the condition false.
+
+Each time through the loop, the program outputs the value of ``n`` and then
+checks whether it is even or odd. If it is even, the value of ``n`` is divided
+by 2. If it is odd, the value is replaced by ``n * 3 + 1``.  For example, if
+the starting value (the argument passed to sequence) is 3, the resulting
+sequence is 3, 10, 5, 16, 8, 4, 2, 1.
+
+Since ``n`` sometimes increases and sometimes decreases, there is no obvious
+proof that ``n`` will ever reach 1, or that the program terminates. For some
+particular values of ``n``, we can prove termination. For example, if the
+starting value is a power of two, then the value of ``n`` will be even each
+time through the loop until it reaches 1. The previous example ends with such a
+sequence, starting with 16.
+
+Particular values aside, the interesting question is whether we can prove that
+this program terminates for *all* values of ``n``. So far, no one has been able
+to prove it *or* disprove it!
+
+
+.. index:: program tracing, hand trace, tracing a program
+
+Tracing a program
+-----------------
+
+To write effective computer programs a programmer needs to develop the ability
+to **trace** the execution of a computer program. Tracing involves becoming the
+computer and following the flow of execution through a sample program run,
+recording the state of all variables and any output the program generates after
+each instruction is executed.
+
+To understand this process, let's trace the call to ``sequence(3)`` from the
+previous section. At the start of the trace, we have a local variable, ``n``
+(the parameter), with an initial value of 3. Since 3 is not equal to 1, the
+``while`` loop body is executed. 3 is printed and ``3 % 2 == 0`` is evaluated.
+Since it evaluates to ``False``, the ``else`` branch is executed and
+``3 * 3 + 1`` is evaluated and assigned to ``n``.
+
+To keep track of all this as you hand trace a program, make a column heading on
+a piece of paper for each variable created as the program runs and another one
+for output. Our trace so far would look something like this::
+    
+    n               output
+    --              ------
+    3               3
+    10
+
+Since ``10 != 1`` evaluates to ``True``, the loop body is again executed,
+and 10 is printed. ``10 % 2 == 0`` is true, so the ``if`` branch is
+executed and ``n`` becomes 5. By the end of the trace we have::
+
+      n               output
+      --              ------
+      3               3
+      10              10
+      5               5
+      16              16
+      8               8
+      4               4
+      2               2
+      1
+
+Tracing can be a bit tedious and error prone (that's why we get computers to do
+this stuff in the first place!), but it is an essential skill for a programmer
+to have. From this trace we can learn a lot about the way our code works. We
+can observe that as soon as n becomes a power of 2, for example, the program
+will require log\ :sub:`2`\ (n) executions of the loop body to complete. We can
+also see that the final 1 will not be printed as output.
+
+
+.. _counting:
+
+Counting digits
+---------------
+
+The following function counts the number of decimal digits in a positive
+integer expressed in decimal format:
+
+.. sourcecode:: python
+    
+    def num_digits(n):
+        count = 0
+        while n:
+            count = count + 1
+            n = n / 10
+        return count
+
+A call to ``num_digits(710)`` will return ``3``. Trace the execution of this
+function call to convince yourself that it works.
+
+This function demonstrates another pattern of computation called a **counter**.
+The variable ``count`` is initialized to 0 and then incremented each time the
+loop body is executed. When the loop exits, ``count`` contains the result --
+the total number of times the loop body was executed, which is the same as the
+number of digits.
+
+If we wanted to only count digits that are either 0 or 5, adding a conditional
+before incrementing the counter will do the trick:
+
+.. sourcecode:: python
+    
+    def num_zero_and_five_digits(n):
+        count = 0
+        while n:
+            digit = n % 10
+            if digit == 0 or digit == 5:
+                count = count + 1
+            n = n / 10
+        return count
+
+Confirm that ``num_zero_and_five_digits(1055030250)`` returns 7.
+
+
+Abbreviated assignment
+----------------------
+
+Incrementing a variable is so common that Python provides an abbreviated syntax
+for it:
+
+.. sourcecode:: python
+    
+    >>> count = 0
+    >>> count += 1
+    >>> count
+    1
+    >>> count += 1
+    >>> count
+    2
+    >>>
+
+``count += 1`` is an abreviation for ``count = count + 1`` . The increment
+value does not have to be 1:
+
+.. sourcecode:: python
+    
+    >>> n = 2
+    >>> n += 5
+    >>> n
+    7
+    >>>
+
+There are also abbreviations for ``-=``, ``*=``, ``/=``, and ``%=``:
+
+.. sourcecode:: python
+    
+    >>> n = 2
+    >>> n *= 5
+    >>> n
+    10
+    >>> n -= 4
+    >>> n
+    6
+    >>> n /= 2
+    >>> n
+    3
+    >>> n %= 2
+    >>> n
+    1
+
+
+.. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
+           cursor
+
+Tables
+------
+
+One of the things loops are good for is generating tabular data.  Before
+computers were readily available, people had to calculate logarithms, sines and
+cosines, and other mathematical functions by hand. To make that easier,
+mathematics books contained long tables listing the values of these functions.
+Creating the tables was slow and boring, and they tended to be full of errors.
+
+When computers appeared on the scene, one of the initial reactions was, This is
+great! We can use the computers to generate the tables, so there will be no
+errors. That turned out to be true (mostly) but shortsighted. Soon thereafter,
+computers and calculators were so pervasive that the tables became obsolete.
+
+Well, almost. For some operations, computers use tables of values to get an
+approximate answer and then perform computations to improve the approximation.
+In some cases, there have been errors in the underlying tables, most famously
+in the table the Intel Pentium used to perform floating-point division.
+
+Although a log table is not as useful as it once was, it still makes a good
+example of iteration. The following program outputs a sequence of values in the
+left column and 2 raised to the power of that value in the right column:
+
+.. sourcecode:: python
+    
+    x = 1
+    while x < 13:
+        print x, '\t', 2**x
+        x += 1
+
+The string ``'\t'`` represents a **tab character**. The backslash character in
+``'\t'`` indicates the beginning of an **escape sequence**.  Escape sequences
+are used to represent invisible characters like tabs and newlines. The sequence
+``\n`` represents a **newline**.
+
+An escape sequence can appear anywhere in a string; in this example, the tab
+escape sequence is the only thing in the string. How do you think you represent
+a backslash in a string?
+
+As characters and strings are displayed on the screen, an invisible marker
+called the **cursor** keeps track of where the next character will go. After a
+``print`` statement, the cursor normally goes to the beginning of the next
+line.
+
+The tab character shifts the cursor to the right until it reaches one of the
+tab stops. Tabs are useful for making columns of text line up, as in the output
+of the previous program::
+    
+    1       2
+    2       4
+    3       8
+    4       16
+    5       32
+    6       64
+    7       128
+    8       256
+    9       512
+    10      1024
+    11      2048
+    12      4096
+
+Because of the tab characters between the columns, the position of the second
+column does not depend on the number of digits in the first column.
+
+
+.. index:: two-dimensional table
+
+Two-dimensional tables
+----------------------
+
+A two-dimensional table is a table where you read the value at the intersection
+of a row and a column. A multiplication table is a good example. Let's say you
+want to print a multiplication table for the values from 1 to 6.
+
+A good way to start is to write a loop that prints the multiples of 2, all on
+one line:
 
 .. sourcecode:: python
     
     i = 1
-    print "i\ti**2\ti**3\ti**5\ti**10\ti**20"
-    while i <= 10:
-        print i, '\t', i**2, '\t', i**3, '\t', i**5, '\t', i**10, '\t', i**20
+    while i <= 6:
+        print 2 * i, '   ',
         i += 1
+    print
 
-This program prints out a table of various powers of the numbers from 1 to 10.
-In its current form it relies on the tab character ( ``\t``) to align the
-columns of values, but this breaks down when the values in the table get larger
-than the 8 character tab width::
+The first line initializes a variable named ``i``, which acts as a counter or
+**loop variable**. As the loop executes, the value of ``i`` increases from 1 to
+6. When ``i`` is 7, the loop terminates. Each time through the loop, it
+displays the value of ``2 * i``, followed by three spaces.
+
+Again, the comma in the ``print`` statement suppresses the newline.  After the
+loop completes, the second ``print`` statement starts a new line.
+
+The output of the program is::
     
-    i       i**2    i**3    i**5    i**10   i**20
-    1       1       1       1       1       1
-    2       4       8       32      1024    1048576
-    3       9       27      243     59049   3486784401
-    4       16      64      1024    1048576         1099511627776
-    5       25      125     3125    9765625         95367431640625
-    6       36      216     7776    60466176        3656158440062976
-    7       49      343     16807   282475249       79792266297612001
-    8       64      512     32768   1073741824      1152921504606846976
-    9       81      729     59049   3486784401      12157665459056928801
-    10      100     1000    100000  10000000000     100000000000000000000
+    2      4      6      8      10     12
 
-One possible solution would be to change the tab width, but the first column
-already has more space than it needs. The best solution would be to set the
-width of each column independently. As you may have guessed by now, string
-formatting provides the solution:
+So far, so good. The next step is to **encapsulate** and **generalize**.
+
+
+.. index:: encapsulation, generalization, program development
+
+Encapsulation and generalization
+--------------------------------
+
+Encapsulation is the process of wrapping a piece of code in a function,
+allowing you to take advantage of all the things functions are good for. You
+have already seen two examples of encapsulation: ``print_parity`` in chapter 4;
+and ``is_divisible`` in chapter 5.
+
+Generalization means taking something specific, such as printing the multiples
+of 2, and making it more general, such as printing the multiples of any
+integer.
+
+This function encapsulates the previous loop and generalizes it to print
+multiples of ``n``:
+
+.. sourcecode:: python
+    
+    def print_multiples(n):
+        i = 1
+        while i <= 6:
+            print n * i, '\t',
+            i += 1
+        print
+
+To encapsulate, all we had to do was add the first line, which declares the
+name of the function and the parameter list. To generalize, all we had to do
+was replace the value 2 with the parameter ``n``.
+
+If we call this function with the argument 2, we get the same output as before.
+With the argument 3, the output is::
+
+    3      6      9      12     15     18
+
+With the argument 4, the output is::
+
+    4      8      12     16     20     24
+
+By now you can probably guess how to print a multiplication table --- by
+calling ``print_multiples`` repeatedly with different arguments. In fact, we
+can use another loop:
 
 .. sourcecode:: python
     
     i = 1
-    print "%-4s%-5s%-6s%-8s%-13s%-15s" % \
-          ('i', 'i**2', 'i**3', 'i**5', 'i**10', 'i**20')
-    while i <= 10:
-        print "%-4d%-5d%-6d%-8d%-13d%-15d" % (i, i**2, i**3, i**5, i**10, i**20)
+    while i <= 6:
+        print_multiples(i)
         i += 1
 
-Running this version produces the following output::
+Notice how similar this loop is to the one inside ``print_multiples``.  All we
+did was replace the ``print`` statement with a function call.
+
+The output of this program is a multiplication table::
+
+    1      2      3      4      5      6
+    2      4      6      8      10     12
+    3      6      9      12     15     18
+    4      8      12     16     20     24
+    5      10     15     20     25     30
+    6      12     18     24     30     36
+
+
+.. index:: development plan
+
+More encapsulation
+------------------
+
+To demonstrate encapsulation again, let's take the code from the last section
+and wrap it up in a function:
+
+.. sourcecode:: python
     
-    i   i**2 i**3  i**5    i**10        i**20          
-    1   1    1     1       1            1              
-    2   4    8     32      1024         1048576        
-    3   9    27    243     59049        3486784401     
-    4   16   64    1024    1048576      1099511627776  
-    5   25   125   3125    9765625      95367431640625 
-    6   36   216   7776    60466176     3656158440062976
-    7   49   343   16807   282475249    79792266297612001
-    8   64   512   32768   1073741824   1152921504606846976
-    9   81   729   59049   3486784401   12157665459056928801
-    10  100  1000  100000  10000000000  100000000000000000000
+    def print_mult_table():
+        i = 1
+        while i <= 6:
+            print_multiples(i)
+            i += 1
 
-The ``-`` after each ``%`` in the converstion specifications indicates left
-justification. The numerical values specify the minimum length, so ``%-13d`` is
-a left justified number at least 13 characters wide.
+This process is a common **development plan**. We develop code by writing lines
+of code outside any function, or typing them in to the interpreter. When we get
+the code working, we extract it and wrap it up in a function.
+
+This development plan is particularly useful if you don't know how to divide
+the program into functions when you start writing. This approach lets you
+design as you go along.
 
 
-Summary and First Exercises
----------------------------
+.. index::
+    single: local variable
+    single: variable; local
 
-This chapter introduced a lot of new ideas.  The following summary and set of
-exercises may prove helpful in remembering what you learned:
+Local variables
+---------------
 
-.. glossary::
+You might be wondering how we can use the same variable, ``i``, in both
+``print_multiples`` and ``print_mult_table``. Doesn't it cause problems when
+one of the functions changes the value of the variable?
 
-    indexing (``[]``)
-        Access a single character in a string using its position (starting from
-        0).  Example: ``'This'[2]`` evaluates to ``'i'``.
+The answer is no, because the ``i`` in ``print_multiples`` and the ``i`` in
+``print_mult_table`` are *not* the same variable.
 
-    length function (``len``)
-        Returns the number of characters in a string.  Example:
-        ``len('happy')`` evaluates to ``5``.
+Variables created inside a function definition are local; you can't access a
+local variable from outside its home function. That means you are free to have
+multiple variables with the same name as long as they are not in the same
+function.
 
-    for loop traversal (``for``)
-        *Traversing* a string means accessing each character in the string, one
-        at a time.  For example, the following for loop:
+The stack diagram for this program shows that the two variables named ``i`` are
+not the same variable. They can refer to different values, and changing one
+does not affect the other.
 
-        .. sourcecode:: python
+.. image:: illustrations/stack2.png
+   :alt: Stack 2 diagram 
 
-            for letter in 'Example':
-                print 2 * letter,
+The value of ``i`` in ``print_mult_table`` goes from 1 to 6. In the diagram it
+happens to be 3. The next time through the loop it will be 4. Each time through
+the loop, ``print_mult_table`` calls ``print_multiples`` with the current value
+of ``i`` as an argument. That value gets assigned to the parameter ``n``.
 
-        evaluates to ``EE xx aa mm pp ll ee``
+Inside ``print_multiples``, the value of ``i`` goes from 1 to 6. In the
+diagram, it happens to be 2. Changing this variable has no effect on the value
+of ``i`` in ``print_mult_table``.
 
-    slicing (``[:]``)
-        A *slice* is a substring of a string. Example: ``'bananas and
-        cream'[3:6]`` evaluates to ``ana`` (so does ``'bananas and
-        cream'[1:4]``).
-
-    string comparison (``>, <, >=, <=, ==``)
-        The comparision operators work with strings, evaluating according to
-        `lexigraphical order
-        <http://en.wikipedia.org/wiki/Lexicographic_order>`__.  Examples:
-        ``'apple' < 'banana'`` evaluates to ``True``.
-        ``'Zeta' < 'Appricot'`` evaluates to ``False`` .
-        ``'Zebra' <= 'aardvark'`` evaluates to ``True`` because all upper case
-        letters precede lower case letters.
-
-    in operator (``in``)
-        The ``in`` operator tests whether one character or string is contained
-        inside another string.  Examples: ``'heck' in "I'll be checking for
-        you."`` evaluates to ``True``.  ``'cheese' in "I'll be checking for
-        you."`` evaluates to ``False``.
+It is common and perfectly legal to have different local variables with the
+same name. In particular, names like ``i`` and ``j`` are used frequently as
+loop variables. If you avoid using them in one function just because you used
+them somewhere else, you will probably make the program harder to read.
 
 
-First Exercises
-~~~~~~~~~~~~~~~
+More generalization
+-------------------
 
-#. Write the Python interpreter's evaluation to each of the following
-   expressions:
+As another example of generalization, imagine you wanted a program that would
+print a multiplication table of any size, not just the six-by-six table. You
+could add a parameter to ``print_mult_table``:
 
-   .. sourcecode:: python
-
-       >>> 'Python'[1]
-
-   .. sourcecode:: python
-
-       >>> "Strings are sequences of characters."[5]
-
-   .. sourcecode:: python
-
-       >>> len("wonderful")
-
-   .. sourcecode:: python
-
-       >>> 'Mystery'[:4]
-
-   .. sourcecode:: python
-
-       >>> 'p' in 'Pinapple'
-
-   .. sourcecode:: python
-
-       >>> 'apple' in 'Pinapple'
-
-   .. sourcecode:: python
-
-       >>> 'pear' in 'Pinapple'
-
-   .. sourcecode:: python
-
-       >>> 'apple' > 'pinapple'
-
-   .. sourcecode:: python
-
-       >>> 'pinapple' < 'Peach'
-#. Write Python code to make each of the following doctests pass:
-   
-   .. sourcecode:: python
-
-       """
-         >>> type(fruit)
-         <type 'str'>
-         >>> len(fruit)
-         8
-         >>> fruit[:3]
-         'ram'
-       """
+.. sourcecode:: python
     
-   .. sourcecode:: python
+    def print_mult_table(high):
+        i = 1
+        while i <= high:
+            print_multiples(i)
+            i += 1
 
-       """
-         >>> group = "John, Paul, George, and Ringo"
-         >>> group[12:x]
-         'George'
-         >>> group[n:m]
-         'Paul'
-         >>> group[:r]
-         'John'
-         >>> group[s:]
-         'Ringo'
-       """
+We replaced the value 6 with the parameter ``high``. If we call
+``print_mult_table`` with the argument 7, it displays::
+    
+    1      2      3      4      5      6
+    2      4      6      8      10     12
+    3      6      9      12     15     18
+    4      8      12     16     20     24
+    5      10     15     20     25     30
+    6      12     18     24     30     36
+    7      14     21     28     35     42
 
-   .. sourcecode:: python
+This is fine, except that we probably want the table to be square --- with the
+same number of rows and columns. To do that, we add another parameter to
+``print_multiples`` to specify how many columns the table should have.
 
-       """
-         >>> len(s)
-         8
-         >>> s[4:6] == 'on'
-         True
-       """
+Just to be annoying, we call this parameter ``high``, demonstrating that
+different functions can have parameters with the same name (just like local
+variables). Here's the whole program:
+
+.. sourcecode:: python
+    
+    def print_multiples(n, high):
+        i = 1
+        while i <= high:
+            print n*i, '\t',
+            i += 1
+        print
+       
+    def print_mult_table(high):
+        i = 1
+        while i <= high:
+            print_multiples(i, high)
+            i += 1
+
+Notice that when we added a new parameter, we had to change the first line of
+the function (the function heading), and we also had to change the place where
+the function is called in ``print_mult_table``.
+
+As expected, this program generates a square seven-by-seven table::
+
+    1      2      3      4      5      6      7
+    2      4      6      8      10     12     14
+    3      6      9      12     15     18     21
+    4      8      12     16     20     24     28
+    5      10     15     20     25     30     35
+    6      12     18     24     30     36     42
+    7      14     21     28     35     42     49
+
+When you generalize a function appropriately, you often get a program with
+capabilities you didn't plan. For example, you might notice that, because ab =
+ba, all the entries in the table appear twice. You could save ink by printing
+only half the table. To do that, you only have to change one line of
+``print_mult_table``. Change
+
+.. sourcecode:: python
+    
+            print_multiples(i, high)
+
+to
+
+.. sourcecode:: python
+    
+            print_multiples(i, i)
+
+and you get::
+    
+    1
+    2      4
+    3      6      9
+    4      8      12     16
+    5      10     15     20     25
+    6      12     18     24     30     36
+    7      14     21     28     35     42     49
+
+
+.. index:: function
+
+Functions
+---------
+
+A few times now, we have mentioned all the things functions are good for. By
+now, you might be wondering what exactly those things are.  Here are some of
+them:
+
+#. Giving a name to a sequence of statements makes your program easier to read
+   and debug.
+#. Dividing a long program into functions allows you to separate parts of the
+   program, debug them in isolation, and then compose them into a whole.
+#. Functions facilitate the use of iteration.
+#. Well-designed functions are often useful for many programs. Once you write
+   and debug one, you can reuse it.
+
+
+.. index::
+    single: Newton's method
+
+Newton's Method
+---------------
+
+Loops are often used in programs that compute numerical results by starting
+with an approximate answer and iteratively improving it.
+
+For example, one way of computing square roots is Newton's method.  Suppose
+that you want to know the square root of ``n``. If you start with almost any
+approximation, you can compute a better approximation with the following
+formula:
+
+.. sourcecode:: python
+    
+    better =  (approx + n/approx)/2
+
+By repeatedly applying this formula until the better approximation is equal to
+the previous one, we can write a function for computing the square root:
+
+.. sourcecode:: python
+    
+    def sqrt(n):
+        approx = n/2.0
+        better = (approx + n/approx)/2.0
+        while better != approx:
+            approx = better
+            better = (approx + n/approx)/2.0
+        return approx
+
+Try calling this function with ``25`` as an argument to confirm that it returns ``5.0``.
+
+
+.. index:: algorithm 
+
+Algorithms
+----------
+
+Newton's method is an example of an **algorithm**: it is a mechanical process
+for solving a category of problems (in this case, computing square roots).
+
+It is not easy to define an algorithm. It might help to start with something
+that is not an algorithm. When you learned to multiply single-digit numbers,
+you probably memorized the multiplication table.  In effect, you memorized 100
+specific solutions. That kind of knowledge is not algorithmic.
+
+But if you were lazy, you probably cheated by learning a few tricks.  For
+example, to find the product of n and 9, you can write n - 1 as the first digit
+and 10 - n as the second digit. This trick is a general solution for
+multiplying any single-digit number by 9. That's an algorithm!
+
+Similarly, the techniques you learned for addition with carrying, subtraction
+with borrowing, and long division are all algorithms. One of the
+characteristics of algorithms is that they do not require any intelligence to
+carry out. They are mechanical processes in which each step follows from the
+last according to a simple set of rules.
+
+In our opinion, it is embarrassing that humans spend so much time in school
+learning to execute algorithms that, quite literally, require no intelligence.
+
+On the other hand, the process of designing algorithms is interesting,
+intellectually challenging, and a central part of what we call programming.
+
+Some of the things that people do naturally, without difficulty or conscious
+thought, are the hardest to express algorithmically.  Understanding natural
+language is a good example. We all do it, but so far no one has been able to
+explain *how* we do it, at least not in the form of an algorithm.
 
 
 Glossary
@@ -858,217 +743,193 @@ Glossary
 
 .. glossary::
 
-    compound data type
-        A data type in which the values are made up of components, or elements,
-        that are themselves values.
+    algorithm
+        A step-by-step process for solving a category of problems.
 
-    default value
-        The value given to an optional parameter if no argument for it is
-        provided in the function call.
+    body
+        The statements inside a loop.
 
-    docstring
-        A string constant on the first line of a function or module definition
-        (and as we will see later, in class and method definitions as well).
-        Docstrings provide a convenient way to associate documentation with
-        code. Docstrings are also used by the ``doctest`` module for automated
-        testing.
+    counter
+        A variable used to count something, usually initialized to zero and
+        incremented in the body of a loop.
 
-    dot notation
-        Use of the **dot operator**, ``.``, to access functions inside a
-        module.
+    cursor
+        An invisible marker that keeps track of where the next character will
+        be printed.
 
-    immutable
-        A compound data type whose elements cannot be assigned new values.
+    decrement
+        Decrease by 1.
 
-    index
-        A variable or value used to select a member of an ordered set, such as
-        a character from a string.
+    development plan
+        A process for developing a program. In this chapter, we demonstrated a
+        style of development based on developing code to do simple, specific
+        things and then encapsulating and generalizing.
 
-    optional parameter
-        A parameter written in a function header with an assignment to a
-        default value which it will receive if no corresponding argument is
-        given for it in the function call.
+    encapsulate
+        To divide a large complex program into components (like functions) and
+        isolate the components from each other (by using local variables, for
+        example).
 
-    slice
-        A part of a string (substring) specified by a range of indices. More
-        generally, a subsequence of any sequence type in Python can be created
-        using the slice operator (``sequence[start:stop]``).
+    escape sequence
+        An escape character, \\, followed by one or more printable characters
+        used to designate a nonprintable character.
 
-    traverse
-        To iterate through the elements of a set, performing a similar
-        operation on each.
+    generalize
+        To replace something unnecessarily specific (like a constant value)
+        with something appropriately general (like a variable or parameter).
+        Generalization makes code more versatile, more likely to be reused, and
+        sometimes even easier to write.
 
-    whitespace
-        Any of the characters that move the cursor without printing visible
-        characters. The constant ``string.whitespace`` contains all the
-        white-space characters.
+    increment
+        Both as a noun and as a verb, increment means to increase by 1.
+
+    infinite loop
+        A loop in which the terminating condition is never satisfied.
+
+    initialization (of a variable)
+        To initialize a variable is to give it an initial value, usually in the
+        context of multiple assignment.  Since in Python variables don't exist
+        until they are assigned values, they are initialized when they are
+        created.  In other programming languages this is not the case, and
+        variables can be created without being initialized, in which case they
+        have either default or *garbage* values.
+
+    iteration
+        Repeated execution of a set of programming statements.
+
+    loop
+        A statement or group of statements that execute repeatedly until a
+        terminating condition is satisfied.
+
+    loop variable
+        A variable used as part of the terminating condition of a loop.
+
+    multiple assignment
+        Making more than one assignment to the same variable during the
+        execution of a program.
+
+    newline
+        A special character that causes the cursor to move to the beginning of
+        the next line.
+
+    tab
+        A special character that causes the cursor to move to the next tab stop
+        on the current line.
+
+    trace
+        To follow the flow of execution of a program by hand, recording the
+        change of state of the variables and any output produced.
 
 
 Exercises
 ---------
 
-#. Modify:
+#. Write a single string that::
+    
+       produces
+       this
+       output.
+    
+#. Add a print statement to the ``sqrt`` function defined in section 6.14 that
+   prints out ``better`` each time it is calculated. Call your modified
+   function with 25 as an argument and record the results.
+#. Trace the execution of the last version of ``print_mult_table`` and figure
+   out how it works.
+#. Write a function ``print_triangular_numbers(n)`` that prints out the first
+   n triangular numbers. A call to ``print_triangular_numbers(5)`` would
+   produce the following output::
+    
+       1       1
+       2       3
+       3       6
+       4       10
+       5       15
+
+   (*hint: use a web search to find out what a triangular number is.*)
+#. Open a file named ``ch06.py`` and add the following:
 
    .. sourcecode:: python
-    
-       prefixes = "JKLMNOPQ"
-       suffix = "ack"
-       
-       for letter in prefixes:
-           print letter + suffix
-
-   so that ``Ouack`` and ``Quack`` are spelled correctly.
-#. Encapsulate
-
-   .. sourcecode:: python
-    
-       fruit = "banana"
-       count = 0
-       for char in fruit:
-           if char == 'a':
-               count += 1
-       print count
-
-   in a function named ``count_letters``, and generalize it so that it accepts
-   the string and the letter as arguments.
-#. Now rewrite the ``count_letters`` function so that instead of traversing the 
-   string, it repeatedly calls ``find`` (the version from
-   :ref:`optional_parameters`), with the optional third parameter to locate
-   new occurences of the letter being counted.
-#. Which version of ``is_lower`` do you think will be fastest? Can you think of 
-   other reasons besides speed to prefer one version or the other?
-#. Create a file named ``stringtools.py`` and put the following in it:
-
-   .. sourcecode:: python
-    
-       def reverse(s):
-           """
-             >>> reverse('happy')
-             'yppah'
-             >>> reverse('Python')
-             'nohtyP'
-             >>> reverse("")
-             ''
-             >>> reverse("P")
-             'P'
-           """
     
        if __name__ == '__main__':
            import doctest
            doctest.testmod()
 
-   Add a function body to ``reverse`` to make the doctests pass.
-#. Add ``mirror`` to ``stringtools.py`` .
+   Write a function, ``is_prime``, which takes a single integral argument
+   and returns ``True`` when the argument is a **prime number** and ``False``
+   otherwise. Add doctests to your function as you develop it.
+#. What will ``num_digits(0)`` return? Modify it to return ``1`` for this
+   case. Why does a call to ``num_digits(-24)`` result in an infinite loop
+   (*hint: -1/10 evaluates to -1*)? Modify ``num_digits`` so that it works
+   correctly with any integer value. Add the following to the ``ch06.py``
+   file you created in the previous exercise:
 
    .. sourcecode:: python
     
-       def mirror(s):
+       def num_digits(n):
            """
-             >>> mirror("good")
-             'gooddoog'
-             >>> mirror("yes")
-             'yessey'
-             >>> mirror('Python')
-             'PythonnohtyP'
-             >>> mirror("")
-             ''
-             >>> mirror("a")
-             'aa'
-           """
-
-   Write a function body for it that will make it work as indicated by the
-   doctests.
-#. Include ``remove_letter`` in ``stringtools.py`` .
-
-   .. sourcecode:: python
-    
-       def remove_letter(letter, strng):
-           """
-             >>> remove_letter('a', 'apple')
-             'pple'
-             >>> remove_letter('a', 'banana')
-             'bnn'
-             >>> remove_letter('z', 'banana')
-             'banana'
-             >>> remove_letter('i', 'Mississippi')
-             'Msssspp'
-           """
-
-   Write a function body for it that will make it work as indicated by the
-   doctests.
-#. Finally, add bodies to each of the following functions, one at a time
-
-   .. sourcecode:: python
-    
-       def is_palindrome(s):
-           """
-             >>> is_palindrome('abba')
-             True
-             >>> is_palindrome('abab')
-             False
-             >>> is_palindrome('tenet')
-             True
-             >>> is_palindrome('banana')
-             False
-             >>> is_palindrome('straw warts')
-             True
-           """
-
-   .. sourcecode:: python
-    
-       def count(sub, s):
-           """
-             >>> count('is', 'Mississippi')
-             2
-             >>> count('an', 'banana')
-             2
-             >>> count('ana', 'banana')
-             2
-             >>> count('nana', 'banana')
+             >>> num_digits(12345)
+             5
+             >>> num_digits(0)
              1
-             >>> count('nanan', 'banana')
+             >>> num_digits(-12345)
+             5
+           """
+
+   Add your function body to ``num_digits`` and confirm that it passes the
+   doctests.
+#. Add the following to the ``ch06.py``:
+
+   .. sourcecode:: python
+    
+       def num_even_digits(n):
+           """
+             >>> num_even_digits(123456)
+             3
+             >>> num_even_digits(2468)
+             4
+             >>> num_even_digits(1357)
              0
+             >>> num_even_digits(2)
+             1
+             >>> num_even_digits(20)
+             2
            """
+
+   Write a body for ``num_even_digits`` so that it works as expected.
+#. Add the following to ``ch06.py``:
 
    .. sourcecode:: python
     
-       def remove(sub, s):
+       def print_digits(n):
            """
-             >>> remove('an', 'banana')
-             'bana'
-             >>> remove('cyc', 'bicycle')
-             'bile'
-             >>> remove('iss', 'Mississippi')
-             'Missippi'
-             >>> remove('egg', 'bicycle')
-             'bicycle'
+             >>> print_digits(13789)
+             9 8 7 3 1
+             >>> print_digits(39874613)
+             3 1 6 4 7 8 9 3
+             >>> print_digits(213141)
+             1 4 1 3 1 2
            """
+
+   Write a body for ``print_digits`` so that it passes the given doctests.
+#. Write a function ``sum_of_squares_of_digits`` that computes the sum
+   of the squares of the digits of an integer passed to it. For example,
+   ``sum_of_squares_of_digits(987)`` should return 194, since
+   ``9**2 + 8**2 + 7**2 == 81 + 64 + 49 == 194``.
 
    .. sourcecode:: python
     
-       def remove_all(sub, s):
+       def sum_of_squares_of_digits(n):
            """
-             >>> remove_all('an', 'banana')
-             'ba'
-             >>> remove_all('cyc', 'bicycle')
-             'bile'
-             >>> remove_all('iss', 'Mississippi')
-             'Mippi'
-             >>> remove_all('eggs', 'bicycle')
-             'bicycle'
+             >>> sum_of_squares_of_digits(1)
+             1
+             >>> sum_of_squares_of_digits(9)
+             81
+             >>> sum_of_squares_of_digits(11)
+             2
+             >>> sum_of_squares_of_digits(121)
+             6
+             >>> sum_of_squares_of_digits(987)
+             194
            """
 
-   until all the doctests pass.
-#. Try each of the following formatted string operations in a Python shell and
-   record the results:
-
-   #. "%s %d %f" % (5, 5, 5)
-   #. "%-.2f" % 3
-   #. "%-10.2f%-10.2f" % (7, 1.0/2)
-   #. print " $%5.2f\n $%5.2f\n $%5.2f" % (3, 4.5, 11.2)
-
-#. The following formatted strings have errors. Fix them:
-
-   #. "%s %s %s %s" % ('this', 'that', 'something')
-   #. "%s %s %s" % ('yes', 'no', 'up', 'down')
-   #. "%d %f %f" % (3, 3, 'three')
+   Check your solution against the doctests above.

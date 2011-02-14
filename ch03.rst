@@ -2,618 +2,573 @@
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
+    
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|
 
-Functions
-=========
+ 
+Hello, little turtles!
+======================
 
 .. index::
     single: function
     single: function definition
     single: definition; function
 
-Definitions and use
--------------------
 
-In the context of programming, a **function** is a named sequence of statements
-that performs a desired operation. This operation is specified in a **function
-definition**. In Python, the syntax for a function definition is:
+There are many *modules* in Python that provide very powerful features that we
+can use in our own programs.  Some of these can send email, or fetch web pages.
+The one we'll look at in this chapter allows us to create turtles and get them
+to draw shapes and patterns.
 
-.. sourcecode:: python
-    
-    def NAME( LIST OF PARAMETERS ):
-        STATEMENTS
+The turtles are fun, but the real purpose of the chapter is to teach ourselves
+a little more Python, and to develop our theme of *computational thinking*, 
+or *thinking like a computer scientist*.  Most of the Python covered here 
+will be explored in more depth later.
 
-You can make up any names you want for the functions you create, except that
-you can't use a name that is a Python keyword. The list of parameters specifies
-what information, if any, you have to provide in order to use the new function.
+Our first turtle program
+------------------------
 
-There can be any number of statements inside the function, but they have to be
-indented from the ``def``. In the examples in this book, we will use the
-standard indentation of four spaces. Function definitions are the first of
-several **compound statements** we will see, all of which have the same
-pattern:
-
-#. A **header**, which begins with a keyword and ends with a colon.
-#. A **body** consisting of one or more Python statements, each
-   indented the same amount -- *4 spaces is the Python standard* -- from
-   the header.
-
-In a function definition, the keyword in the header is ``def``, which is
-followed by the name of the function and a list of *parameters* enclosed in
-parentheses. The parameter list may be empty, or it may contain any number of
-parameters. In either case, the parentheses are required.
-
-The first couple of functions we are going to write have no parameters, so the
-syntax looks like this:
+Let's write a couple of lines of Python program to create a new
+turtle and start drawing a rectangle. (We'll call the variable that 
+refers to our first turtle `alex`, but you can choose another 
+name if you follow the naming rules from the previous chapter).
 
 .. sourcecode:: python
+   :linenos:
+
+    import turtle                    # allows us to use turtles
+    wn = turtle.Screen()             # creates a playground for turtles
+    alex = turtle.Turtle()           # create a turtle, assign to alex
+
+    alex.forward(50)                 # tell alex to move forward by 50 units
+    alex.left(90)                    # turn by 90 degrees
+    alex.forward(30)                 # complete the second side of a rectangle
+
+    wn.exitonclick()                 # Wait for a mouseclick, then exit
     
-    def new_line():
-        print          # a print statement with no arguments prints a new line
+When we run this program, a new window pops up:
 
-This function is named ``new_line``. The empty parentheses indicate that it has
-no parameters. Its body contains only a single statement, which outputs a
-newline character. (That's what happens when you use a ``print`` command
-without any arguments.)
+.. image:: illustrations/tess01.png  
+    
+Here are a couple of things you'll need to understand about this program. 
+  
+The first line tells Python to load a module named ``turtle``.  
+That module brings us two new types that we can use: 
+the ``Turtle`` type, and the ``Screen`` type.  The dot
+notation ``turtle.Turtle`` means *"The Turtle type that is defined within
+the turtle module"*.   (Remember that Python is case sensitive, so the 
+module name, with a lowercase `t`, is different from the type Turtle.)
+ 
+We then create and open what it calls a screen (we would perfer to call it 
+a window), which we assign to variable `wn`. Every window contains 
+a **canvas**, which is the area inside the window on which we can draw. 
 
-Defining a new function does not make the function run. To do that we need a
-**function call**. Function calls contain the name of the function being
-executed followed by a list of values, called *arguments*, which are assigned
-to the parameters in the function definition. Our first examples have an empty
-parameter list, so the function calls do not take any arguments. Notice,
-however, that the *parentheses are required in the function call*:
+In line 3 we create a turtle. The variable `alex` is made to refer to this turtle.   
+These first three lines set us up, ready for doing some useful things.
+    
+In lines 5-7, we instruct the **object** alex to move, and to turn. We
+do this by **invoking**, or activating, alex's **methods** --- these are 
+the instructions that all turtles know how to respond to.
 
+The last line plays a part too: the `wn` variable refers to
+the window shown above. When we invoke its `exitonclick` method, it pauses
+the execution of the program, and waits for the user to click the mouse in
+somewhere the window.  When this click event occurs, the response is to close the 
+turtle window and exit (stop execution of) the Python program.   
+    
+An object can have various methods --- things it can do --- and it can also have
+**attributes** --- (sometimes called *properties*).  For example, each turtle has
+a *color* attribute.  The method invocation  
+`alex.color("red")` will make alex red, and drawing will be red too.
+(Note the word `color`  is spelled the American way!) 
+
+The colour of the turtle, the width of its pen, the position of the
+turtle within the window, which way it is facing, and so on are all part of its 
+current **state**.   Similarly, the window object has a background colour, and
+some text in the title bar, and a size and position on the screen.  These are all
+part of the state of the window object. 
+
+Quite a number of methods exist that allow us to modify the turtle and the
+window objects.  We'll just show a couple. We've only commented those
+lines that are different from the previous example (and we've used a different
+variable name for this turtle):
+    
 .. sourcecode:: python
     
-    print "First Line."
-    new_line()
-    print "Second Line."
+    import turtle
+    wn = turtle.Screen()
+    wn.bgcolor("lightgreen")         # set the window background colour
+    wn.title("Hello, Tess!")         # set the window title
 
-The output of this program is:
+    tess = turtle.Turtle()
+    tess.color("blue")               # make tess blue
+    tess.pensize(3)                  # set the width of her pen
+
+    tess.forward(50)
+    tess.left(120)
+    tess.forward(50)
+
+    wn.exitonclick()
+  
+When we run this program, this new window pops up, and will remain on the 
+screen until we click on it.
+
+.. image:: illustrations/tess02.png 
+
+  
+.. admonition:: Extend this program ...
+    
+    #. Modify this program so that before it creates the window, it prompts
+       the user to enter the desired background colour. It should store the user's 
+       responses in a variable, and modify the colour of the window 
+       according to the user's wishes.
+       (Hint: you can find a list of permitted colour names at 
+       http://www.tcl.tk/man/tcl8.4/TkCmd/colors.htm.  It includes some quite unusual
+       ones, like "peach puff"  and "HotPink".)    
+    #. Do similar changes to allow the user, at runtime, to set tess' colour.
+    #. Do the same for the width of tess' pen.  *Hint:* your dialog with the 
+       user will return a string, but tess' ``pensize`` method 
+       expects its argument to be an int.  So you'll need to convert 
+       the string to an int before you pass it to ``pensize``.   
+ 
+  
+Instances --- a herd of turtles
+-------------------------------
+
+Just like we can have many different integers in a program, we can have many turtles.
+Each of them is called an **instance**.  Each instance has its own attributes and 
+methods --- so alex might draw with a thin black pen and be at some position,
+while tess might be going in her own direction with a fat pink pen.  So here is
+what happens when alex completes his rectangle, and tess completes her triangle:
 
 .. sourcecode:: python
-    
-    First line.
-    
-    Second line.
+   :linenos:
 
-The extra space between the two lines is a result of the ``new_line()``
-function call. What if we wanted more space between the lines? We could call
-the same function repeatedly:
+    import turtle
+    wn = turtle.Screen()             # Set up the window and its attributes
+    wn.bgcolor("lightgreen")
+    wn.title("Tess & Alex")
 
-.. sourcecode:: python
-    
-    print "First Line."
-    new_line()
-    new_line()
-    new_line()
-    print "Second Line."
+    tess = turtle.Turtle()           # create tess and set some attributes
+    tess.color("hotpink")
+    tess.pensize(5)
 
-Or we could write a new function named ``three_lines`` that prints three new
-lines:
+    alex = turtle.Turtle()           # create alex
 
-.. sourcecode:: python
-    
-    def three_lines():
-        new_line()
-        new_line()
-        new_line()
-    
-    print "First Line."
-    three_lines()
-    print "Second Line."
+    tess.forward(80)                 # Let tess draw an equilateral triangle
+    tess.left(120)
+    tess.forward(80)
+    tess.left(120)
+    tess.forward(80)
+    tess.left(120)                   # complete the triangle
 
-This function contains three statements, all of which are indented by four
-spaces. Since the next statement is not indented, Python knows that it is not
-part of the function.
+    tess.right(180)                  # turn tess around
+    tess.forward(80)                 # and move her away from the origin
+ 
+    alex.forward(50)                 # make alex draw a square
+    alex.left(90)
+    alex.forward(50)
+    alex.left(90)
+    alex.forward(50)
+    alex.left(90)
+    alex.forward(50)
+    alex.left(90)
 
-You should notice a few things about this program:
+    wn.exitonclick()
 
-* You can call the same procedure repeatedly. In fact, it is quite common and
-  useful to do so.
-* You can have one function call another function; in this case ``three_lines`` 
-  calls ``new_line``.
+.. image:: illustrations/tess03.png  
+  
+Here are some *How to think like a computer scientist* observations:
 
-So far, it may not be clear why it is worth the trouble to create all of these
-new functions. Actually, there are a lot of reasons, but this example
-demonstrates two:
+* There are 360 degrees in a full circle.  If you add up all the turns that a turtle makes,
+  *no matter what steps occurred between the turns*, you can easily figure out if they
+  add up to some multiple of 360.  This should convince you that alex is facing in 
+  exactly the same direction as he was when he was first created. (Geometry
+  conventions have 0 degrees facing East, and that is the case here too!)
+* We could have left out the last turn for alex, but that would not have been
+  as satisfying.  If you're asked to draw a closed shape like a 
+  square or a rectangle, it is a good idea to
+  complete all the turns and to leave the turtle back where it started, facing the
+  same direction as it started in.  
+  This makes reasoning about the program and composing chunks of code into bigger programs
+  easier for us humans! 
+* We did the same with tess: she drew her triangle, and turned through a full 360 degress.
+  Then we turned her around and moved her aside.  Even the blank line 18 
+  is a hint about how the programmer's *mental chunking* is working:
+  in big terms, tess' movements were chunked as "draw the triangle"  
+  (lines 12-17) and then "move away from the origin" (lines 19 and 20). 
+* One of the key uses for comments is to record your mental chunking, and big ideas.   
+  They're not always explicit in the code.  
+* And, uh-huh, two turtles may not be enough for a herd, but you get the idea! 
 
-#. Creating a new function gives you an opportunity to name a group of
-   statements. Functions can simplify a program by hiding a complex computation 
-   behind a single command and by using English words in place of arcane code.
-#. Creating a new function can make a program smaller by eliminating repetitive 
-   code. For example, a short way to print nine consecutive new lines is to
-   call ``three_lines`` three times.
+  
+  
+The **for** loop
+----------------
 
-Pulling together the code fragments from the previous section into a script
-named ``tryme1.py``, the whole program looks like this:
+When we drew the square, it was quite tedious.  We had to move then turn, move then turn,
+etc. etc. four times.  If we were drawing a hexagon, or an octogon, or a polygon with 42 sides,
+it would have been a nightmare.
 
-.. sourcecode:: python
-    
-    def new_line():
-        print
-    
-    def three_lines():
-        new_line()
-        new_line()
-        new_line()
-    
-    print "First Line."
-    three_lines()
-    print "Second Line."
+So a basic building block of all programs is to be able to repeat some code, over and 
+over again.  
 
-This program contains two function definitions: ``new_line`` and
-``three_lines``. Function definitions get executed just like other statements,
-but the effect is to create the new function. The statements inside the
-function do not get executed until the function is called, and the function
-definition generates no output.
-
-As you might expect, you have to create a function before you can execute it.
-In other words, the function definition has to be executed before the first
-time it is called.
-
-
-.. index:: flow of execution
-
-Flow of execution
------------------
-
-In order to ensure that a function is defined before its first use, you have to
-know the order in which statements are executed, which is called the **flow of
-execution**.
-
-Execution always begins at the first statement of the program.  Statements are
-executed one at a time, in order from top to bottom.
-
-Function definitions do not alter the flow of execution of the program, but
-remember that statements inside the function are not executed until the
-function is called. Although it is not common, you can define one function
-inside another. In this case, the inner definition isn't executed until the
-outer function is called.
-
-Function calls are like a detour in the flow of execution. Instead of going to
-the next statement, the flow jumps to the first line of the called function,
-executes all the statements there, and then comes back to pick up where it left
-off.
-
-That sounds simple enough, until you remember that one function can call
-another. While in the middle of one function, the program might have to execute
-the statements in another function. But while executing that new function, the
-program might have to execute yet another function!
-
-Fortunately, Python is adept at keeping track of where it is, so each time a
-function completes, the program picks up where it left off in the function that
-called it. When it gets to the end of the program, it terminates.
-
-What's the moral of this sordid tale? When you read a program, don't read from
-top to bottom. Instead, follow the flow of execution.
-
-
-.. index::
-    single: parameter
-    single: function; parameter
-    single: argument
-    single: function; argument
-    single: import
-    single: import statement
-
-Parameters, arguments, and the ``import`` statement
----------------------------------------------------
-
-Most functions require arguments, values that control how the function does its
-job. For example, if you want to find the absolute value of a number, you have
-to indicate what the number is. Python has a built-in function for computing
-the absolute value:
+Python's **for** loop solves this for us.   Let's say we have some friends, and
+we'd like to send them each an email inviting them to our party.  We'll we don't
+quite know how to send email yet, so for the moment we'll just print a message for each friend:
 
 .. sourcecode:: python
-    
-    >>> abs(5)
-    5
-    >>> abs(-5)
-    5
+    :linenos:
 
-In this example, the arguments to the ``abs`` function are 5 and -5.
+    for f in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
+        invitation = "Hi " + f + ".  Please come to my party on Saturday!"
+        print(invitation) 
+      
 
-Some functions take more than one argument. For example the built-in function
-``pow`` takes two arguments, the base and the exponent. Inside the function,
-the values that are passed get assigned to variables called **parameters**.
+When we run this, the output looks like this:
 
-.. sourcecode:: python
-    
-    >>> pow(2, 3)
-    8
-    >>> pow(7, 4)
-    2401
+.. image:: illustrations/partyInvite.png  
 
-Another built-in function that takes more than one argument is ``max``.
+* **f** in this ``for`` statement is called the **loop variable**.  
+* Lines 2 and 3 are the **loop body**.  The loop body is always
+  indented. The indentation determines exactly what statements are "in the loop".
+* On each *iteration* or *pass* of the loop, first a check is done to see if there are 
+  still more items to be processed.  If there are none left (this is called
+  the **terminating condition** of the loop), the loop has finished.
+  Program execution continues at the next statement after the loop body. 
+* If there are items still to be processed, the loop variable is updated to refer to the
+  next item in the list.  This means, in this case, that the loop body is executed 
+  here 7 times, and each time `f` will refer to a different friend. 
+* At the end of each execution of the body of the loop, Python returns 
+  to the ``for`` statement, to see if there are more items to be handled.
 
-.. sourcecode:: python
-    
-    >>> max(7, 11)
-    11
-    >>> max(4, 1, 17, 2, 12)
-    17
-    >>> max(3 * 11, 5**3, 512 - 9, 1024**0)
-    503
+  
+Flow of Execution of the for loop
+---------------------------------
 
-``max`` can be sent any number of arguments, separated by commas, and will
-return the maximum value sent. The arguments can be either simple values or
-expressions. In the last example, 503 is returned, since it is larger than 33,
-125, and 1.
+.. sidebar:: Flowchart of a **for** loop
 
-Here is an example of a user-defined function that has a parameter:
+   .. image:: illustrations/flowchart_for.png  
+ 
+As a program executes, the interpreter always keeps track of which statement is
+about to be executed.  We call this the **control flow**, of the **flow of execution** 
+of the program.  When humans execute programs, they often use their finger to point 
+to each statement in turn.  So you could think of control flow as "Python's moving finger". 
 
-.. sourcecode:: python
-    
-    def print_twice(param):
-        print param, param 
+Control flow until now has been strictly
+top to bottom, one statement at a time.  The ``for`` loop changes this. 
 
-This function takes a single **argument** and assigns it to the parameter named
-``param``. The value of the parameter (at this point we have no idea what it
-will be) is printed twice, followed by a newline.  The name ``param`` was
-chosen to reinforce the idea that it is a *parameter*, but in general, you will
-want to choose a name for your parameters that describes their use in the
-function.
+Control flow is often easy to visualize and understand if we draw a flowchart.
+This shows the exact steps and logic of how the ``for`` statement executes.
 
-The interactive Python shell provides us with a convenient way to test our
-functions. We can use the **import statement** to bring the functions we have
-defined in a script into the interpreter session. To see how this works, assume
-the ``print_twice`` function is defined in a script named ``chap03.py``. We can
-now test it interactively by *importing* it into our Python shell session:
+
+The loop simplifies our turtle program
+--------------------------------------
+
+To draw a square we'd like to do the same thing four times --- move the turtle, and turn.
+We previously used 8 lines to have alex draw the four sides of a square.  
+This does exactly the same, but using just three lines:
 
 .. sourcecode:: python
-    
-    >>> from chap03 import *
-    >>> print_twice('Spam')
-    Spam Spam
-    >>> print_twice(5)
-    5 5
-    >>> print_twice(3.14159)
-    3.14159 3.14159
 
-In a function call, the value of the argument is assigned to the corresponding
-parameter in the function definition. In effect, it is if ``param = 'Spam'`` is
-executed when ``print_twice('Spam')`` is called, ``param = 5`` in
-``print_twice(5)``, and ``param = 3.14159`` in ``print_twice(3.14159)``.
+   for i in [0,1,2,3]:
+       alex.forward(50)
+       alex.left(90) 
 
-Any type of argument that can be printed can be sent to ``print_twice`` In the
-first function call, the argument is a string. In the second, it's an integer.
-In the third, it's a ``float``.
-
-As with built-in functions, we can use an expression as an argument for
-``print_twice``:
+* While "saving some lines of code" might be convenient, it is not the big deal here.
+  What is much more important is that we've found a "repeating pattern" of statements,
+  and reorganized our program to repeat the pattern.  Finding the chunks and somehow
+  getting our programs arranged around those chunks is a vital  
+  skill in *How to think like a computer scientist*.  
+* The values [0,1,2,3] were provided to make the loop body execute 4 times. 
+  We could
+  have used any four values, but these are the conventional ones to use.  In fact, they are
+  so popular that Python gives us special built-in ``range`` objects:
 
 .. sourcecode:: python
-    
-    >>> print_twice('Spam' * 4)
-    SpamSpamSpamSpam SpamSpamSpamSpam
 
-``'Spam'*4`` is first evaluated to ``'SpamSpamSpamSpam'``, which is then
-passed as an argument to ``print_twice``.
-
-
-.. index::
-    single: composition
-    single: function; composition
-
-Composition
------------
-
-Just as with mathematical functions, Python functions can be **composed**,
-meaning that you use the result of one function as the input to another.
-
-.. sourcecode:: python
-    
-    >>> print_twice(abs(-7))
-    7 7
-    >>> print_twice(max(3, 1, abs(-11), 7))
-    11 11
-
-In the first example, ``abs(-7)`` evaluates to 7, which then becomes the
-argument to ``print_twice``. In the second example we have two levels of
-composition, since ``abs(-11)`` is first evaluated to 11 before ``max(3,
-1, 11, 7)`` is evaluated to 11 and ``print_twice(11)`` then displays the
-result.
-
-We can also use a variable as an argument:
+    for i in range(4):
+        # Executes the body with i = 0, then 1, then 2, then 3
+    for x in range(10):
+        # sets x to each of ... [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+   
+* Computer scientists like to count from 0!
+* ``range`` creates an object that can deliver a sequence of values to the ``for`` loop.
+  They start at 0, and in these cases do not include the 4 or the 10. 
+* Our little trick earlier to make sure that alex did the final turn to complete
+  360 degrees has paid off: if we had not done that, then we would not have been
+  able to use a loop for the fourth side of the square. 
+  It would have become a "special case",
+  different from the other sides.  When possible, we'd much prefer to make 
+  our code fit a general pattern, rather than have to create a special case.
+  
+So to repeat something four times, a good Python programmer would do this:
 
 .. sourcecode:: python
+
+   for i in range(4):
+       alex.forward(50)
+       alex.left(90)
+
+By now you should be able to see how to change our previous program so that
+tess can also use a ``for`` loop to draw her equilateral triangle.
+
+.. admonition:: What would happen if we made this change ...
     
-    >>> sval = 'Eric, the half a bee.'
-    >>> print_twice(sval)
-    Eric, the half a bee. Eric, the half a bee.
+   .. sourcecode:: python
 
-Notice something very important here. The name of the variable we pass as an
-argument (``sval``) has nothing to do with the name of the parameter
-(``param``).  Again, it is as if  ``param = sval`` is executed when
-``print_twice(sval)`` is called. It doesn't matter what the value was named in
-the caller, in ``print_twice`` it's name is ``param``.
+      for c in ["yellow", "red", "purple", "blue"]:
+          alex.color(c)
+          alex.forward(50)
+          alex.left(90)
+ 
+   A variable can also be assigned a value that is a list.  So lists can also be used in
+   situations other than the ``for`` loop.  The code above could be rewritten like this:
+ 
+   .. sourcecode:: python
 
-.. index::
-    single: local variable
-    single: variable; local
+      clrs = ["yellow", "red", "purple", "blue"]   # make the variable refer to this list
+      for c in clrs:
+          alex.color(c)
+          alex.forward(50)
+          alex.left(90)
+ 
+A few more turtle methods and tricks
+------------------------------------
 
-Variables and parameters are local
-----------------------------------
+* Turtle methods can use negative angles or distances.  So ``tess.foward(-100)``
+  will move tess backwards, and ``tess.left(-30)`` turns her to the right.  Additionally,
+  because there are 360 degrees in a circle, turning 30 to the left will get you facing
+  in the same direction as turning 330 to the right!  (The on-screen animation will differ,
+  though --- you will be able to tell if tess is turning clockwise or counter-clockwise!)
 
-When you create a **local variable** inside a function, it only exists inside
-the function, and you cannot use it outside. For example:
+  This suggests that we don't need both a left and a right turn method --- we could be 
+  minimalists, and just have one method.  There is also a *backward*
+  method.  (If you are very nerdy, you might enjoy saying ``alex.backward(-100)`` to
+  move alex forward!)   
+
+  Part of *thinking like a scientist* is to understand more of the structure and rich
+  relationships in your field.  So revising a few basic facts about
+  geometry and number lines, like we're done here is a good start 
+  if we're going to play with turtles. 
+
+* A turtle's pen can be picked up or put down.  This allows us to move a turtle
+  to a different place without drawing a line.   The methods are 
+
+  .. sourcecode:: python
+
+     alex.penup()
+     alex.forward(100)     # this moves alex, but no line is drawn
+     alex.pendown()   
+       
+* Every turtle can have its own shape.  The ones available "out of the box"
+  are ``arrow``, ``blank``, ``circle``, ``classic``, ``square``, ``triangle``, ``turtle``.
+
+  .. sourcecode:: python
+
+     ...            
+     alex.shape("turtle")           
+     ...                 
+
+  .. image:: illustrations/alex06.png
+
+* You can speed up or slow down the turtle's animation speed. (Animation controls how
+  quickly the turtle turns and moves forward).  Speed settings can be set
+  between 1 (slowest) to 10 (fastest).  But if you set the speed to 0, it has 
+  a special meaning --- turn off animation and go as fast as possible. 
+
+  .. sourcecode:: python
+       
+     alex.speed(10)
+          
+* A turtle can "stamp" its footprint onto the canvas, 
+  and this will remain after the turtle has moved somewhere else. 
+  Stamping works, even when the pen is up. 
+    
+Let's do an example that shows off some of these new features:
 
 .. sourcecode:: python
-    
-    def cat_twice(part1, part2):
-        cat = part1 + part2
-        print_twice(cat)
+   :linenos:
+   
+   import turtle
+   wn = turtle.Screen()             
+   wn.bgcolor("lightgreen")
+   tess = turtle.Turtle()            
+   tess.shape("turtle")
+   tess.color("blue")
 
-This function takes two arguments, concatenates them, and then prints the
-result twice. We can call the function with two strings:
+   tess.penup()                    # this is new
+   size = 20
+   for i in range(30):
+       tess.stamp()                # leave an impression on the canvas
+       size = size + 3             # increase the size on every iteration
+       tess.forward(size)          # move tess along  
+       tess.right(24)              # and turn her
 
-.. sourcecode:: python
-    
-    >>> chant1 = "Pie Jesu domine, "
-    >>> chant2 = "Dona eis requiem."
-    >>> cat_twice(chant1, chant2)
-    Pie Jesu domine, Dona eis requiem. Pie Jesu domine, Dona eis requiem.
+   wn.exitonclick()
+   
+.. image:: illustrations/tess07.png   
 
-When ``cat_twice`` terminates, the variable ``cat`` is destroyed. If we
-try to print it, we get an error:
-
-.. sourcecode:: python
-    
-    >>> print cat
-    NameError: name 'cat' is not defined
-
-Parameters are also local. For example, outside the function ``print_twice``,
-there is no such thing as ``param``. If you try to use it, Python will
-complain.
-
-
-.. index::
-    single: stack diagram
-    single: function frame
-    single: frame
-    single: traceback
-    single: stack trace
-
-Stack diagrams
---------------
-
-To keep track of which variables can be used where, it is sometimes useful to
-draw a **stack diagram**. Like state diagrams, stack diagrams show the value of
-each variable, but they also show the function to which each variable belongs.
-
-Each function is represented by a **frame**. A frame is a box with the name of
-a function beside it and the parameters and variables of the function inside
-it. The stack diagram for the previous example looks like this:
-
-.. image:: illustrations/stack.png
-   :alt: Stack diagram 
-
-The order of the stack shows the flow of execution. ``print_twice`` was called
-by ``cat_twice``, and ``cat_twice`` was called by ``__main__``, which is a
-special name for the topmost function. When you create a variable outside of
-any function, it belongs to ``__main__``.
-
-Each parameter refers to the same value as its corresponding argument.  So,
-``part1`` has the same value as ``chant1``, ``part2`` has the same value as
-``chant2``, and ``param`` has the same value as ``cat``.
-
-If an error occurs during a function call, Python prints the name of the
-function, and the name of the function that called it, and the name of the
-function that called *that*, all the way back to the top most function.
-
-To see how this works, create a Python script named ``tryme2.py`` that looks
-like this:
-
-.. sourcecode:: python
-    
-    def print_twice(param):
-        print param, param 
-        print cat
-    
-    def cat_twice(part1, part2):
-        cat = part1 + part2
-        print_twice(cat)
-    
-    chant1 = "Pie Jesu domine, "
-    chant2 = "Dona eis requim."
-    cat_twice(chant1, chant2)
-
-We've added the statement, ``print cat`` inside the ``print_twice`` function,
-but ``cat`` is not defined there. Running this script will produce an error
-message like this:
-
-.. sourcecode:: python
-    
-    Traceback (innermost last):
-      File "tryme2.py", line 11, in <module>
-        cat_twice(chant1, chant2)
-      File "tryme2.py", line 7, in cat_twice
-        print_twice(cat)
-      File "tryme2.py", line 3, in print_twice
-        print cat
-    NameError: global name 'cat' is not defined
-
-This list of functions is called a **traceback**. It tells you what program
-file the error occurred in, and what line, and what functions were executing at
-the time. It also shows the line of code that caused the error.
-
-Notice the similarity between the traceback and the stack diagram.  It's not a
-coincidence. In fact, another common name for a traceback is a *stack trace*.
-
-
+Be careful now: all except one of the shapes you see on the screen here
+are footprints created by ``stamp``.  But the program still only has *one* turtle
+instance --- can you figure out which one is the real tess?  (Hint: if you're not
+sure, write a new line of code after the ``for`` loop to change tess' colour,
+or to put her pen down and draw a line, or to change her shape, etc.)
+   
 Glossary
 --------
 
 .. glossary::
 
-    argument
-        A value provided to a function when the function is called. This value
-        is assigned to the corresponding parameter in the function.
 
-    body
-        The second part of a compound statement. The body consists of a
-        sequence of statements all indented the same amount from the beginning
-        of the header.  The standard amount of indentation used within the
-        Python community is 4 spaces.
-
-    compound statement
-        A statement that consists of two parts:
-
-        #. header - which begins with a keyword determining the statement
-           type, and ends with a colon.
-        #. body - containing one or more statements indented the same amount
-           from the header.
-
-        The syntax of a compound statement looks like this:
-
-        .. sourcecode:: python
+    attribute
+        Some state or value that belongs to a particular object.  For example, tess has
+        a color. 
         
-            keyword expression:
-                statement
-                statement ...
-
-    flow of execution
-        The order in which statements are executed during a program run.
-
-    frame
-        A box in a stack diagram that represents a function call. It contains
-        the local variables and parameters of the function.
-
-    function
-        A named sequence of statements that performs some useful operation.
-        Functions may or may not take parameters and may or may not produce a
-        result.
-
-    function call
-        A statement that executes a function. It consists of the name of the
-        function followed by a list of arguments enclosed in parentheses.
-
-    function composition
-        Using the output from one function call as the input to another.
-
-    function definition
-        A statement that creates a new function, specifying its name,
-        parameters, and the statements it executes.
-
-    header
-        The first part of a compound statement. Headers begin with a keyword and
-        end with a colon (:)
-
-    import
-        A statement which permits functions and variables defined in a Python
-        script to be brought into the environment of another script or a
-        running Python shell.For example, assume the following is in a script
-        named ``tryme.py``:
-
-        .. sourcecode:: python
+    canvas
+        A surface within a window where drawing takes place.
         
-            def print_thrice(thing):
-                print thing, thing, thing
+    control flow
+        See *flow of execution* in the next chapter.
         
-            n = 42
-            s = "And now for something completely different..."
-
-        Now begin a python shell from within the same directory where
-        ``tryme.py`` is located::
-
-            $ ls
-            tryme.py  
-            $ python
-            >>>
-
-        Three names are defined in ``tryme.py``: ``print_thrice``, ``n``, and
-        ``s``.  If we try to access any of these in the shell without first
-        importing, we get an error:
-
-        .. sourcecode:: python
-
-            >>> n
-            Traceback (most recent call last):
-              File "<stdin>", line 1, in <module> 
-            NameError: name 'n' is not defined
-            >>> print_thrice("ouch!")
-            Traceback (most recent call last):
-              File "<stdin>", line 1, in <module>
-            NameError: name 'print_thrice' is not defined
-
-        If we import everything from ``tryme.py``, however, we can use
-        everything defined in it:
-
-        .. sourcecode:: python
+    for loop
+        A statement in Python for convenient repetition of statements in the *body* of the loop.
         
-            >>> from tryme import *
-            >>> n
-            42
-            >>> s
-            'And now for something completely different...'
-            >>> print_thrice("Yipee!")
-            Yipee! Yipee! Yipee!
-            >>>
+    loop body
+        Any number of statements nested inside a loop. The nesting is indicated
+        by the fact that the statements are indented under the for loop statement.
+    
+    loop variable
+        A variable used as part of a for loop. It is assigned a different value on
+        each iteration of the loop, and is used as part of the terminating condition of the loop,
+    
+    instance
+        An object that belongs to a class.  `tess` and `alex` are different instances of
+        the class `Turtle` 
+    
+    method
+        A function that is attached to an object.  Invoking or activating the method
+        causes the object to respond in some way, e.g. ``forward`` is the method
+        when we say ``tess.forward(100)``.
 
-        Note that you do not include the ``.py`` from the script name in the
-        import statement.
-
-    local variable
-        A variable defined inside a function. A local variable can only be used
-        inside its function.
-
-    parameter
-        A name used inside a function to refer to the value passed as an
-        argument.
-
-    stack diagram
-        A graphical representation of a stack of functions, their variables,
-        and the values to which they refer.
-
-    traceback
-        A list of the functions that are executing, printed when a runtime
-        error occurs. A traceback is also commonly refered to as a
-        *stack trace*, since it lists the functions in the order in which they
-        are stored in the
-        `runtime stack <http://en.wikipedia.org/wiki/Runtime_stack>`__.
+    invoke
+        An object has methods.  We use the verb invoke to mean *activate the
+        method*.  Invoking a method is done by putting parentheses after the method
+        name, with some possible arguments.  So  ``wn.exitonclick()`` is an invocation
+        of the ``exitonclick`` method.  
+         
+    module
+        A file containing Python definitions and statements intended for use in other 
+        Python programs. The contents of a module are made available to the other 
+        program by using the *import* statement.
+        
+    object
+        A "thing" to which a variable can refer.  This could be a screen window,
+        or one of the turtles you have created.        
+    
+    range
+        A built-in function in Python for generating sequences of integers.  It is especially
+        useful when we need to write a for loop that executes a fixed number of times.
+ 
+    terminating condition
+        A condition that occurs which causes a loop to stop repeating its body.
+        In the ``for`` loops we saw in this chapter, the terminating condition 
+        has been when there are no more elements to assign to the loop variable.
+    
 
 
 Exercises
 ---------
+#. Write a program that prints ``We like Python's turtles!`` 1000 times. 
 
-#. Using a text editor, create a Python script named ``tryme3.py`` .  Write a
-   function in this file called ``nine_lines`` that uses ``three_lines`` to
-   print nine blank lines. Now add a function named ``clear_screen`` that
-   prints out twenty-five blank lines. The last line of your program should be
-   a *call* to ``clear_screen``.
-#. Move the last line of ``tryme3.py`` to the top of the program, so the
-   *function call* to ``clear_screen`` appears before the *function
-   definition*.   Run the program and record what error message you get.  Can
-   you state a rule about *function definitions* and *function calls* which
-   describes where they can appear relative to each other in a program?
-#. Starting with a working version of ``tryme3.py`` , move the definition of
-   ``new_line`` after the definition of ``three_lines``. Record what happens
-   when you run this program. Now move the definition of ``new_line`` below a
-   call to ``three_lines()``. Explain how this is an example of the rule you
-   stated in the previous exercise.
-#. Fill in the *body* of the *function definition* for ``cat_n_times`` so that
-   it will print the string, s, n times:
+#. Give three attributes of your cellphone object.  Give three methods of your cellphone.  
 
-   .. sourcecode:: python
+#. Write a program that uses a for loop to print
+     |  ``One of the months of the year is January``
+     |  ``One of the months of the year is February``
+     |  ... etc
+     
+#. Assume you have the assignment ``xs = [12, 10, 32, 3, 66, 17, 42, 99, 20]``
     
-       def cat_n_times(s, n):
-           <fill in your code here> 
+   a. Write a loop that prints each of the numbers on a new line.
+   b. Write a loop that prints each number and its square on a new line.
+   c. Write a loop that adds all the numbers from the list into a variable called `total`.
+      You should set the `total` variable to have the value 0 before you start adding them up,
+      and print the value in ``total`` after the loop has completed.  
+   d. Print the product of all the numbers in the list. 
+      (product means all multiplied together)   
+      
+#. Use ``for`` loops to make a turtle draw these regular polygons 
+   (regular means all sides the same lengths, all angles the same):  
+  
+   * An equilateral triangle    
+   * A square    
+   * A hexagon (six sides)    
+   * An octagon (eight sides)
+      
+#. .. _drunk_student_problem:
 
-   Save this function in a script named ``import_test.py``. Now at a unix
-   prompt, make sure you are in the same directory where the
-   ``import_test.py`` is located ( ``ls`` should show ``import_test.py``).
-   Start a Python shell and try the following:
+   A drunk student makes a random turn and then takes 100 steps forward, makes another random turn, 
+   takes another 100 steps, turns another random amount, etc.  A social science student records the angle of each turn
+   before the next 100 steps are taken. Her experimental data is ``[160, -43, 270, -97, -43, 200, -940, 17, -86]``.  
+   (Positive angles are counter-clockwise.)  Use a turtle to draw the path taken by our drunk friend.   
+   
+#. Enhance your program above to also tell us what the drunk student's heading is after he has finished stumbling
+   around.  (Assume he begins at heading 0).   
+ 
+#. If you were going to draw a regular polygon with 18 sides, what angle would you need to 
+   turn the turtle at each corner?
+   
+#. At the interactive prompt, anticipate what each of the following lines will do, and 
+   then record what happens. Score yourself, giving yourself one point for each one you 
+   anticipate correctly::
+   
+        >>> import turtle
+        >>> wn = turtle.Screen()
+        >>> tess = turtle.Turtle()
+        >>> tess.right(90)
+        >>> tess.left(3600)
+        >>> tess.right(-90)
+        >>> tess.speed(10)
+        >>> tess.left(3600)
+        >>> tess.speed(0)
+        >>> tess.left(3645)
+        >>> tess.forward(-100)
+   
+#. Write a program to draw a shape like this:
 
-   .. sourcecode:: python
+   .. image:: illustrations/star.png
+   
+   Hints: 
+   
+   * Try this on a piece of paper, moving and turning your cellphone as if it was a 
+     turtle.  Watch how many complete rotations your cellphone makes before you complete the 
+     star.  Since each full rotation is 360 degrees, you can figure out the total 
+     number of degrees that your phone was rotated through.  If you divide that by 5, because
+     there are five points to the star, you'll know how many degrees to turn the turtle at each point.
+   * You can hide a turtle behind its invisibility cloak if you don't want it shown.  It will still
+     draw its lines if its pen is down.  The method is invoked as ``tess.hideturtle()``.  
+     ``tess.showturtle()`` makes the turtle visible again.
+     
+#. Write a program to draw a face of a clock that looks something like this:
     
-        >>> from import_test import *
-        >>> cat_n_times('Spam', 7)
-        SpamSpamSpamSpamSpamSpamSpam
+   .. image:: illustrations/tess_clock1.png
+      
+   
+#. Create a turtle, and assign it to a variable.  When you ask for its type, what do you get?
 
-   If all is well, your session should work the same as this one.  Experiment
-   with other calls to ``cat_n_times`` until you feel comfortable with how it
-   works.
+#. What is the collective noun for turtles?  (Hint: they don't come in *herds*.)
+
+#. What the collective noun for pythons?  Is a python a viper?  Is a python venomous?  
+    
