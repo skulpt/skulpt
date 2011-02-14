@@ -708,4 +708,4 @@ Exercises
       if  abs(x-y) < 0.000001:      # if x is approximately equal to y
           ...    
    
-#.  Extend the above program so that the sides can 
+#.  Extend the above program so that the sides can be given to the function in any order.
