@@ -4,25 +4,36 @@ How to Think Like a Computer Scientist
 .. image:: _static/gasp_lessons.png
     :alt: GASP Logo
 
-Learning with Python
---------------------
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png
 
-2nd Edition (Using Python 2.x)
+Learning with Python 3 (RLE)
+---------------------------- 
 
-by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
+3rd Edition (Using Python 3.x)
+
+by Peter Wentworth, Jeffrey Elkner, Allen B. Downey, and Chris Meyers
+
+  (based on 2nd edition by Jeffrey Elkner, Allen B. Downey, and Chris Meyers)
 
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__
 * `Preface <preface.html>`__
+* `Preface-3 <preface3-rle.html>`__   *This Rhodes Local Edition (RLE) of the book* 
 * `Contributor List <contrib.html>`__
 * `Chapter 1 <ch01.html>`__ *The way of the program*
 * `Chapter 2 <ch02.html>`__ *Variables, expressions, and statements*
-* `Chapter 3 <ch03.html>`__ *Functions*
-* `Chapter 4 <ch04.html>`__ *Conditionals*
-* `Chapter 5 <ch05.html>`__ *Fruitful functions*
-* `Chapter 6 <ch06.html>`__ *Iteration*
-* `Chapter 7 <ch07.html>`__ *Strings*
-* `Chapter 8 <ch08.html>`__ *Case Study: Catch*
+* `Chapter 3 <ch03.html>`__ *Hello, little turtles!*  
+* `Chapter 4 <ch04.html>`__ *Functions*
+* `Chapter 5 <ch05.html>`__ *Conditionals*
+* `Chapter 6 <ch06.html>`__ *Fruitful functions*
+* `Chapter 7 <ch07.html>`__ *Iteration*
+* `Chapter 8 <ch08.html>`__ *Strings*
 * `Chapter 9 <ch09.html>`__ *Lists*
 * `Chapter 10 <ch10.html>`__ *Modules and files*
 * `Chapter 11 <ch11.html>`__ *Recursion and exceptions*
@@ -37,10 +48,11 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 20 <ch20.html>`__ *Queues*
 * `Chapter 21 <ch21.html>`__ *Trees*
 * `Appendix A <app_a.html>`__ *Debugging*
-* `Appendix B <app_b.html>`__ *GASP*
-* `Appendix c <app_c.html>`__ *Configuring Ubuntu for Python Development*
+* `Appendix B <app_b.html>`__ *An odds-and-ends Workbook*
+* `Appendix C <app_c.html>`__ *Configuring Ubuntu for Python Development*
 * `Appendix D <app_d.html>`__ *Customizing and Contributing to the Book*
 * `GNU Free Document License <fdl-1.3.html>`__ 
+
 
 .. toctree::
     :maxdepth: 1
@@ -49,6 +61,7 @@ by Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     copyright.rst
     foreword.rst
     preface.rst
+    preface3-rle.rst
     contrib.rst
 
 .. toctree::
