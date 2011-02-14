@@ -1,11 +1,22 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+    
+|    
+    
 Conditionals
 ============
 
@@ -23,11 +34,11 @@ operators:
 
 .. sourcecode:: python
     
-    >>> quotient = 7 / 3
-    >>> print quotient
+    >>> quotient = 7 // 3     # This is the integer division operator
+    >>> print(quotient)
     2
     >>> remainder = 7 % 3
-    >>> print remainder
+    >>> print(remainder)
     1
 
 So 7 divided by 3 is 2 with 1 left over.
@@ -39,6 +50,20 @@ check whether one number is divisible by another---if ``x % y`` is zero, then
 Also, you can extract the right-most digit or digits from a number.  For
 example, ``x % 10`` yields the right-most digit of ``x`` (in base 10).
 Similarly ``x % 100`` yields the last two digits.
+
+It is also extremely useful for doing conversions, say from seconds,
+to hours, minutes and seconds. So let's write a program to ask the user to enter
+some seconds, and we'll convert them into hours, minutes, and remaining seconds.
+
+.. sourcecode:: python
+
+    total_secs = int(input("How many seconds, in total?"))
+    hours = total_secs // 3600      
+    secs_still_remaining = hours % 3600
+    minutes =  secs_still_remaining // 60 
+    secs_finally_remaining = secs_still_remaining  % 60
+    
+    print("Hrs=", hours, "  mins=", minutes,  "secs=", secs_finally_remaining)
 
 
 .. index::
@@ -62,10 +87,10 @@ is important, since ``true`` and ``false`` are not boolean values.
 .. sourcecode:: python
     
     >>> type(True)
-    <type 'bool'> 
+    <class 'bool'> 
     >>> type(true)
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
     NameError: name 'true' is not defined
 
 A **boolean expression** is an expression that evaluates to a boolean value.
@@ -81,7 +106,7 @@ The operator ``==`` compares two values and produces a boolean value:
 In the first statement, the two operands are equal, so the expression evaluates
 to ``True``; in the second statement, 5 is not equal to 6, so we get ``False``.
 
-The ``==`` operator is one of the **comparison operators**; the others are:
+The ``==`` operator is one of six common **comparison operators**; the others are:
 
 .. sourcecode:: python
     
@@ -104,10 +129,10 @@ Logical operators
 There are three **logical operators**: ``and``, ``or``, and ``not``. The
 semantics (meaning) of these operators is similar to their meaning in English.
 For example, ``x > 0 and x < 10`` is true only if ``x`` is greater than 0 *and*
-less than 10.
+at the same time, x is less than 10.
 
 ``n % 2 == 0 or n % 3 == 0`` is true if *either* of the conditions is true,
-that is, if the number is divisible by 2 *or* 3.
+that is, if the number is divisible by 2 *or* divisible by 3.
 
 Finally, the ``not`` operator negates a boolean expression, so ``not(x > y)``
 is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
@@ -129,96 +154,90 @@ Conditional execution
 
 In order to write useful programs, we almost always need the ability to check
 conditions and change the behavior of the program accordingly. **Conditional
-statements** give us this ability. The simplest form is the ** ``if``
-statement**:
+statements** give us this ability. The simplest form is the **if**
+statement:
 
 .. sourcecode:: python
     
-    if x > 0:
-        print "x is positive"
+    if x % 2 == 0:
+        print(x, " is even")
+    else:
+        print(x, " is odd")    
 
 The boolean expression after the ``if`` statement is called the **condition**.
-If it is true, then the indented statement gets executed. If not, nothing
-happens.
+If it is true, then the indented statements get executed. If not, then the statements
+indented under the `else` clause get executed. 
+
+.. sidebar::  Flowchart of a **if** statement with an **else** 
+
+   .. image:: illustrations/flowchart_if_else.png  
 
 The syntax for an ``if`` statement looks like this:
 
 .. sourcecode:: python
     
     if BOOLEAN EXPRESSION:
-        STATEMENTS
+        STATEMENTS_1        # executed if condition evaluates to True
+    else:
+        STATEMENTS_2        # executed if condition evaluates to False
 
-As with the function definition from last chapter and other compound
-statements, the ``if`` statement consists of a header and a body. The header
-begins with the keyword ``if`` followed by a *boolean expression* and ends with
+As with the function definition from the last chapter and other compound
+statements like ``for``, the ``if`` statement consists of a header line and a body. The header
+line begins with the keyword ``if`` followed by a *boolean expression* and ends with
 a colon (:).
 
 The indented statements that follow are called a **block**. The first
-unindented statement marks the end of the block. A statement block
-inside a compound statement is called the **body** of the statement.
+unindented statement marks the end of the block. 
 
-Each of the statements inside the body are executed in order if the boolean
-expression evaluates to ``True``. The entire block is skipped if the boolean
-expression evaluates to ``False``.
+Each of the statements inside the first block of statements are executed in order if the boolean
+expression evaluates to ``True``. The entire first block of statements 
+is skipped if the boolean expression evaluates to ``False``, and instead
+all the statements under the ``else`` clause are executed. 
 
-There is no limit on the number of statements that can appear in the body of an
-``if`` statement, but there has to be at least one.  Occasionally, it is useful
-to have a body with no statements (usually as a place keeper for code you
-haven't written yet). In that case, you can use the ``pass`` statement, which
-does nothing.
+There is no limit on the number of statements that can appear under the two clauses of an
+``if`` statement, but there has to be at least one statement in each block.  Occasionally, it is useful
+to have a section with no statements (usually as a place keeper, or scaffolding, 
+for code you haven't written yet). In that case, you can use the ``pass`` statement, which
+does nothing except act as a placeholder.
 
 .. sourcecode:: python
     
     if True:          # This is always true
         pass          # so this is always executed, but it does nothing
+    else:
+        pass 
 
 
 .. index:: alternative execution, branch, wrapping code in a function
 
-Alternative execution
----------------------
+Omitting the `else` clause
+--------------------------
 
-A second form of the ``if`` statement is alternative execution, in which there
-are two possibilities and the condition determines which one gets executed. The
-syntax looks like this:
+.. sidebar::  Flowchart of an **if** with no **else** 
 
+   .. image:: illustrations/flowchart_if_only.png
+
+Another form of the ``if`` statement is one in which the ``else`` clause is omitted entirely.  
+In this case, when the condition evaluates to ``True``, the statements are
+executed, otherwise the flow of execution continues to the statement after the ``if``.
+
+      
 .. sourcecode:: python
     
-    if x % 2 == 0:
-        print x, "is even"
-    else:
-        print x, "is odd"
+    if x < 0:
+        print("The negative number ",  x, " is not valid here.")
+        
 
-If the remainder when ``x`` is divided by 2 is 0, then we know that ``x`` is
-even, and the program displays a message to that effect. If the condition is
-false, the second set of statements is executed. Since the condition must be
-true or false, exactly one of the alternatives will be executed. The
-alternatives are called **branches**, because they are branches in the flow of
-execution.
-
-As an aside, if you need to check the parity (evenness or oddness) of numbers
-often, you might *wrap this code in a function*:
-
-.. sourcecode:: python
+.. admonition:: Python terminology
     
-    def print_parity(x):
-        if x % 2 == 0:
-            print x, "is even"
-        else:
-            print x, "is odd"
-
-For any value of ``x``, ``print_parity`` displays an appropriate message.
-When you call it, you can provide any integer expression as an argument.
-
-.. sourcecode:: python
+    Python documentation sometimes uses the term **suite** of statements to mean what we
+    have called a *block* here. They mean the same thing, and since most other languages and
+    computer scientists use the word *block*, we'll stick with that.
     
-    >>> print_parity(17)
-    17 is odd.
-    >>> y = 41
-    >>> print_parity(y+1)
-    42 is even.
-
-
+    Notice too that ``else`` is not a statement.  The ``if`` statement has 
+    two *clauses*, one of which is the (optional) ``else`` clause.
+      
+        
 .. index::
     single: chained conditional 
     single: conditional; chained
@@ -229,19 +248,23 @@ Chained conditionals
 Sometimes there are more than two possibilities and we need more than two
 branches. One way to express a computation like that is a **chained
 conditional**:
-
+   
 .. sourcecode:: python
     
     if x < y:
-        print x, "is less than", y
+        STATEMENTS_A
     elif x > y:
-        print x, "is greater than", y
+        STATEMENTS_B
     else:
-        print x, "and", y, "are equal"
+        STATEMENTS_C
 
-``elif`` is an abbreviation of else if . Again, exactly one branch will be
+Flowchart of this chained conditional 
+
+.. image:: illustrations/flowchart_chained_conditional.png        
+        
+``elif`` is an abbreviation of ``else if``. Again, exactly one branch will be
 executed. There is no limit of the number of ``elif`` statements but only a
-single (and optional) ``else`` statement is allowed and it must be the last
+single (and optional) final ``else`` statement is allowed and it must be the last
 branch in the statement:
 
 .. sourcecode:: python
@@ -253,7 +276,7 @@ branch in the statement:
     elif choice == 'c':
         function_c()
     else:
-        print "Invalid choice."
+        print("Invalid choice.")
 
 Each condition is checked in order. If the first is false, the next is checked,
 and so on. If one of them is true, the corresponding branch executes, and the
@@ -268,26 +291,31 @@ branch executes.
 Nested conditionals
 -------------------
 
-One conditional can also be **nested** within another. We could have written
-the trichotomy example as follows:
+One conditional can also be **nested** within another. (It is the same theme of
+composibility, again!)  We could have written
+the previous example as follows:
+
+.. sidebar:: Flowchart of this nested conditional
+
+   .. image:: illustrations/flowchart_nested_conditional.png
 
 .. sourcecode:: python
     
-    if x == y:
-        print x, "and", y, "are equal"
+    if x < y:
+        STATEMENTS_A
     else:
-        if x < y:
-            print x, "is less than", y
+        if x > y:
+            STATEMENTS_B
         else:
-            print x, "is greater than", y
+            STATEMENTS_C
 
-The outer conditional contains two branches. The first branch contains a simple
-output statement. The second branch contains another ``if`` statement, which
-has two branches of its own. Those two branches are both output statements,
-although they could have been conditional statements as well.
+The outer conditional contains two branches. 
+The second branch contains another ``if`` statement, which
+has two branches of its own. Those two branches could contain
+conditional statements as well.
 
 Although the indentation of the statements makes the structure apparent, nested
-conditionals become difficult to read very quickly.  In general, it is a good
+conditionals very quickly become difficult to read.  In general, it is a good
 idea to avoid them when you can.
 
 Logical operators often provide a way to simplify nested conditional
@@ -296,28 +324,17 @@ conditional:
 
 .. sourcecode:: python
     
-    if 0 < x:
+    if 0 < x:            # assume x is an int here
         if x < 10:
-            print "x is a positive single digit."
+            print("x is a positive single digit.")
 
-The ``print`` statement is executed only if we make it past both the
+The ``print`` function is called only if we make it past both the
 conditionals, so we can use the ``and`` operator:
 
 .. sourcecode:: python
     
     if 0 < x and x < 10:
-        print "x is a positive single digit."
-
-These kinds of conditions are common, so Python provides an alternative syntax
-that is similar to mathematical notation:
-
-.. sourcecode:: python
-    
-    if 0 < x < 10:
-        print "x is a positive single digit."
-
-This condition is semantically the same as the compound boolean expression and
-the nested conditional.
+        print("x is a positive single digit.")
 
 
 .. index::
@@ -328,7 +345,8 @@ the nested conditional.
 The ``return`` statement
 ------------------------
 
-The ``return`` statement allows you to terminate the execution of a function
+The ``return`` statement, with or without a value, depending on whether the 
+function is fruitful or not, allows you to terminate the execution of a function
 before you reach the end. One reason to use it is if you detect an error
 condition:
 
@@ -336,11 +354,11 @@ condition:
     
     def print_square_root(x):
         if x <= 0:
-            print "Positive numbers only, please."
+            print("Positive numbers only, please.")
             return
     
         result = x**0.5
-        print "The square root of", x, "is", result
+        print("The square root of", x, "is", result)
 
 The function ``print_square_root`` has a parameter named ``x``. The first thing
 it does is check whether ``x`` is less than or equal to 0, in which case it
@@ -351,72 +369,6 @@ the function are not executed.
 
 .. index:: prompt
 
-Keyboard input
---------------
-
-In :ref:`input` we were introduced to Python's built-in functions that get
-input from the keyboard: ``raw_input`` and ``input``. Now let's look at these
-again in greater depth.
-
-When either of these functions are called, the program stops and waits for the
-user to type something. When the user presses Return or the Enter key, the
-program resumes and ``raw_input`` returns what the user typed as a ``string``:
-
-.. sourcecode:: python
-    
-    >>> my_input = raw_input()
-    What are you waiting for?
-    >>> print my_input
-    What are you waiting for?
-
-Before calling ``raw_input``, it is a good idea to print a message telling the
-user what to input. This message is called a **prompt**.  We can supply a
-prompt as an argument to ``raw_input``:
-
-.. sourcecode:: python
-    
-    >>> name = raw_input("What...is your name? ")
-    What...is your name? Arthur, King of the Britons!
-    >>> print name
-    Arthur, King of the Britons!
-
-Notice that the prompt is a string, so it must be enclosed in quotation marks.
-
-If we expect the response to be an integer, we can use the ``input`` function
-which evaluates the response as a Python expression:
-
-.. sourcecode:: python
-    
-    prompt = "What...is the airspeed velocity of an unladen swallow?\n"
-    speed = input(prompt)
-
-If the user types a string of digits, it is converted to an integer and
-assigned to ``speed``. Unfortunately, if the user types characters that do not
-make up a valid Python expression, the program crashes:
-
-.. sourcecode:: python
-    
-    >>> speed = input(prompt)
-    What...is the airspeed velocity of an unladen swallow?
-    What do you mean, an African or a European swallow?
-    ...
-    SyntaxError: invalid syntax
-
-In the last example, if the user had made the response a valid Python
-expression by putting quotes around it, it would not have given an error:
-
-.. sourcecode:: python
-    
-    >>> speed = input(prompt)
-    What...is the airspeed velocity of an unladen swallow?
-    "What do you mean, an African or a European swallow?"
-    >>> speed
-    'What do you mean, an African or a European swallow?'
-    >>>
-
-To avoid this kind of error, it is a good idea to use ``raw_input`` to get a
-string and then use conversion commands to convert it to other types.
-
 
 .. index::
     single: type conversion
@@ -425,8 +377,10 @@ string and then use conversion commands to convert it to other types.
 Type conversion
 ---------------
 
-Each Python type comes with a built-in command that attempts to convert values
-of another type into that type. The ``int(ARGUMENT)`` command, for example,
+We've had a first look at this in an earlier chapter.  Seeing it again won't hurt! 
+
+Many Python types comes with a built-in function that attempts to convert values
+of another type into its own type. The ``int(ARGUMENT)`` function, for example,
 takes any value and converts it to an integer, if possible, or complains
 otherwise:
 
@@ -451,7 +405,7 @@ that it truncates the fractional part:
     >>> int(1.0)
     1
 
-The ``float(ARGUMENT)`` command converts integers and strings to floating-point
+The ``float(ARGUMENT)`` function converts integers and strings to floating-point
 numbers:
 
 .. sourcecode:: python
@@ -468,7 +422,7 @@ floating-point value ``1.0``. They may represent the same number, but they
 belong to different types. The reason is that they are represented differently
 inside the computer.
 
-The ``str(ARGUMENT)`` command converts any argument given to it to type
+The ``str(ARGUMENT)`` function converts any argument given to it to type
 ``string``:
 
 .. sourcecode:: python
@@ -481,72 +435,105 @@ The ``str(ARGUMENT)`` command converts any argument given to it to type
     'True'
     >>> str(true)
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
+      File "<interactive input>", line 1, in <module>
     NameError: name 'true' is not defined
 
 ``str(ARGUMENT)`` will work with any value and convert it into a string.  As
 mentioned earlier, ``True`` is boolean value; ``true`` is not.
 
-For boolean values, the situation is especially interesting:
+A Turtle Bar Chart
+------------------
+
+The turtle has a lot more power than we've seen so far.  If you want to see the full documentation,
+look at http://docs.python.org/library/turtle.html, or within PyScripter, use *Help* and search for the
+turtle module.
+
+Here are a couple of new tricks for our turtles: 
+
+* We can get a turtle to display text on the canvas at the turtle's current position.  The method is
+  ``alex.write("Hello")``.
+* One can fill a shape (circle, semicircle, triangle, etc.) with a fill colour.  It is a two-step process.
+  First you call the method ``alex.begin_fill()``, then you draw the shape, then call ``alex.end_fill()``. 
+* We've previously set the color of our turtle - we can now also set it's fill-colour, which need not
+  be the same as the turtle and the pen colour.  We use ``alex.color("blue","red")`` to set the turtle
+  to draw in blue, and fill in red. 
+  
+  
+Ok, so can we get tess to draw a bar chart?  Let us start with some data to be charted,
+
+``xs = [48, 117, 200, 240, 160, 260, 220]``
+
+Corresponding to each data measurement, we'll draw a simple rectangle of that height, with a fixed width.
 
 .. sourcecode:: python
-    
-    >>> bool(1)
-    True
-    >>> bool(0)
-    False
-    >>> bool("Ni!")
-    True
-    >>> bool("")
-    False
-    >>> bool(3.14159)
-    True
-    >>> bool(0.0)
-    False
 
-Python assigns boolean values to values of other types. For numerical types
-like integers and floating-points, zero values are false and non-zero values
-are true. For strings, empty strings are false and non-empty strings are true.
+    def draw_bar(t, height):
+        """ Get turtle t to draw one bar, of height. """
+        t.left(90)           
+        t.forward(height)        # Draw up the left side
+        t.right(90)
+        t.forward(40)            # width of bar, along the top
+        t.right(90)
+        t.forward(height)        # And down again!
+        t.left(90)               # put the turtle facing the way we found it.
+        
+    ...    
+    for v in xs:                 # assume xs and tess are ready 
+        draw_bar(tess, v)    
 
+.. image:: illustrations/tess_bar_1.png
 
-.. index:: GASP
+Ok, not fantasically impressive, but it is a nice start!  The important thing here
+was the mental chunking, or how we broke the problem into smaller pieces. Our chunk
+is to draw one bar, and we wrote a function to do that. Then, for the whole
+chart, we repeatedly called our function.
 
-GASP
-----
+Next, at the top of each bar, we'll print the value of the data.
+We'll do this in the body of ``draw_bar``, by adding   ``t.write('  ' + str(height))`` 
+as the new third line of the body.
+We've put a little space in front of the number, and turned the 
+number into a string.  Without this extra space we tend
+to cramp our text awkwardly against the bar to the left.   
+The result looks a lot better now:
 
-GASP (**G**\ raphics **A**\ PI for **S**\ tudents of **P**\ ython) will enable
-us to write programs involving graphics.  Before you can use GASP, it needs
-to be installed on your machine.  If you are running Ubuntu GNU/Linux, see
-:ref:`installing-gasp` in `Appendix A <app_a.html>`__.  Current instructions
-for installing GASP on other platforms can be found at
-http://dev.laptop.org/pub/gasp/downloads.
+.. image:: illustrations/tess_bar_2.png
 
-After installing gasp, try the following python script:
+And now we'll add two lines to fill each bar.  Our final program now looks like this:
 
 .. sourcecode:: python
-    
-    from gasp import *
 
-    begin_graphics()
+    import turtle
 
-    Circle((200, 200), 60)
-    Line((100, 400), (580, 200))
-    Box((400, 350), 120, 100)
- 
-    update_when('key_pressed')
-    end_graphics()
+    def draw_bar(t, height):
+        """ Get turtle t to draw one bar, of height. """
+        t.begin_fill()               # added this line
+        t.left(90)
+        t.forward(height)
+        t.write('  '+ str(height))
+        t.right(90)
+        t.forward(40)
+        t.right(90)
+        t.forward(height)
+        t.left(90)
+        t.end_fill()                 # added this line
 
-The second to the last command pauses and waits until a key is pressed.
-Without it, the screen would flash by so quickly you wouldn't see it.
+    wn = turtle.Screen()             # Set up the window and its attributes
+    wn.bgcolor("lightgreen")
 
-Running this script, you should see a graphics window that looks like this:
+    tess = turtle.Turtle()           # create tess and set some attributes
+    tess.color("blue", "red")
+    tess.pensize(3)
 
-.. image:: illustrations/gasp01.png
-   :alt: GASP illustration 1 
+    xs = [48,117,200,240,160,260,220]
 
-We will be using gasp from here on to illustrate (pun intended) computer
-programming concepts and to add to our fun while learning.  You can find out
-more about the GASP module by reading `Appendix B <app_b.html>`__.
+    for a in xs:
+         draw_bar(tess, a)
+
+    wn.exitonclick()
+
+It produces the following, which is more satisfying:
+
+.. image:: illustrations/tess_bar_3.png
 
 
 Glossary
@@ -608,20 +595,22 @@ Glossary
         A visual cue that tells the user to input data.
 
     type conversion
-        An explicit statement that takes a value of one type and computes a
+        An explicit function call that takes a value of one type and computes a
         corresponding value of another type.
 
     wrapping code in a function
         The process of adding a function header and parameters to a sequence
         of program statements is often refered to as "wrapping the code in
         a function".  This process is very useful whenever the program
-        statements in question are going to be used multiple times.
+        statements in question are going to be used multiple times.  It is
+        even more useful when it allows the programmer to express their mental
+        chunking, and how they've broken a complex problem into pieces.
 
 
 Exercises
 ---------
 
-#. Try to evaluate the following numerical expressions in your head, then use
+#. Evaluate the following numerical expressions in your head, then use
    the Python interpreter to check your results:
 
     #. ``>>> 5 % 2``
@@ -636,214 +625,87 @@ Exercises
    anticipate the computer's response in all but the last one, it is time to
    move on. If not, take time now to make up examples of your own. Explore the
    modulus operator until you are confident you understand how it works.
-#.
-   .. sourcecode:: python
-    
-        if x < y:
-            print x, "is less than", y
-        elif x > y:
-            print x, "is greater than", y
-        else:
-            print x, "and", y, "are equal"
-
-   *Wrap* this code in a function called ``compare(x, y)``. Call ``compare``
-   three times: one each where the first argument is less than, greater
-   than, and equal to the second argument.
-#. To better understand boolean expressions, it is helpful to construct truth
-   tables. Two boolean expressions are *logically equivalent* if and only if
-   they have the same truth table.
    
-   The following Python script prints out the truth table for any boolean
-   expression in two variables: p and q:
-
-   .. sourcecode:: python
-    
-        expression = raw_input("Enter a boolean expression in two variables, p and q: ")
-    
-        print " p      q      %s"  % expression
-        length = len( " p      q      %s"  % expression)
-        print length*"="
-    
-        for p in True, False:
-            for q in True, False:
-                print "%-7s %-7s %-7s" % (p, q, eval(expression))
-
-   You will learn how this script works in later chapters. For now, you
-   will use it to learn about boolean expressions. Copy this program to a
-   file named ``p_and_q.py``, then run it from the command line and give
-   it: ``p or q``, when prompted for a boolean expression. You should get
-   the following output::
-
-         p      q      p or q
-        =====================
-        True    True    True   
-        True    False   True   
-        False   True    True   
-        False   False   False
-
-   Now that we see how it works, let's wrap it in a function to make it
-   easier to use:
-
-   .. sourcecode:: python
-    
-       def truth_table(expression):
-           print " p      q      %s"  % expression
-           length = len( " p      q      %s"  % expression)
-           print length*"="
-    
-           for p in True, False:
-               for q in True, False:
-                   print "%-7s %-7s %-7s" % (p, q, eval(expression))
-
-   We can import it into a Python shell and call ``truth_table`` with a string
-   containing our boolean expression in p and q as an argument:
-
-   .. sourcecode:: python
-    
-       >>> from p_and_q import *
-       >>> truth_table("p or q")
-       p      q      p or q
-       =====================
-       True    True    True   
-       True    False   True   
-       False   True    True   
-       False   False   False
-       >>>
-
-   Use the ``truth_table`` functions with the following boolean expressions,
-   recording the truth table produced each time:
-
-    #. not(p or q)
-    #. p and q
-    #. not(p and q)
-    #. not(p) or not(q)
-    #. not(p) and not(q)
-
-   Which of these are logically equivalent?
-#. Enter the following expressions into the Python shell:
-
-   .. sourcecode:: python
-
-       True or False
-       True and False
-       not(False) and True
-       True or 7
-       False or 7
-       True and 0
-       False or 8
-       "happy" and "sad"
-       "happy" or "sad"
-       "" and "sad"
-       "happy" and ""
-
-   Analyze these results. What observations can you make about values of
-   different types and logical operators? Can you write these observations in
-   the form of simple *rules* about ``and`` and ``or`` expressions?
-#.
-   .. sourcecode:: python
-    
-       if choice == 'a':
-           function_a()
-       elif choice == 'b':
-           function_b()
-       elif choice == 'c':
-           function_c()
-       else:
-           print "Invalid choice."
-
-   Wrap this code in a function called ``dispatch(choice)``. Then define
-   ``function_a``, ``function_b``, and ``function_c`` so that they print out a
-   message saying they were called. For example:
-
-   .. sourcecode:: python
-
-       def function_a():
-           print "function_a was called..."
-
-   Put the four functions ( ``dispatch``, ``function_a``, ``function_b``, and
-   ``function_c`` into a script named ``ch04e05.py``. At the bottom of this
-   script add a call to ``dispatch('b')``. Your output should be::
-
-      function_b was called...
-
-   Finally, modify the script so that user can enter 'a', 'b', or 'c'.  Test it 
-   by importing your script into the Python shell.
-#. Write a function named ``is_divisible_by_3`` that takes a single integer as
-   an argument and prints "This number is divisible by three." if the argument
-   is evenly divisible by 3 and "This number is not divisible by three."
-   otherwise.
+#. You look at the clock and it is exactly 2pm.  You set an alarm to go off
+   in 51 hours.  At what time does the alarm go off?  
    
-   Now write a similar function named ``is_divisible_by_5``.
-#. Generalize the functions you wrote in the previous exercise into a function
-   named ``is_divisible_by_n(x, n)`` that takes two integer arguments and
-   prints out whether the first is divisible by the second.  Save this in a
-   file named ``ch04e07.py``. Import it into a shell and try it out. A sample
-   session might look like this:
-
-   .. sourcecode:: python
-    
-       >>> from ch04e07 import *
-       >>> is_divisible_by_n(20, 4)
-       Yes, 20 is divisible by 4
-       >>> is_divisible_by_n(21, 8)
-       No, 21 is not divisible by 8
-
-#. What will be the output of the following?
-
-   .. sourcecode:: python
-    
-       if "Ni!":
-           print 'We are the Knights who say, "Ni!"'
-       else:
-           print "Stop it! No more of this!"
-    
-       if 0:
-           print "And now for something completely different..."
-       else:
-           print "What's all this, then?"
-
-   Explain what happened and why it happened.
-#. The following gasp script, in a file named ``house.py``, draws a simple
-   house on a gasp canvas:
-
-   .. sourcecode:: python
-    
-       from gasp import *          # import everything from the gasp library
+#. Write a Python program to solve the general version of the above problem.
+   Ask the user for the time now (in hours), and ask for the number of hours to wait.  
+   Your program should output what the time will be on the clock when the alarm goes off.
    
-       begin_graphics()            # open the graphics canvas
+#. Assume the days of the week are numbered 0,1,2,3,4,5,6 from Sunday to Saturday.
+   Write a function which is given the day number, and it returns the day name (a string).
+ 
+#. You go on a wonderful holiday (perhaps to jail, if you don't like happy exercises)
+   leaving on day number 3 (a Wednesday).  You return home after 137 sleeps. 
+   Write a general version of the program which asks for the starting day number, and
+   the length of your stay, and it will tell you the name of day of the week you will return on.   
+   
+#. Give the logical opposites of these conditions
     
-       Box((20, 20), 100, 100)     # the house
-       Box((55, 20), 30, 50)       # the door
-       Box((40, 80), 20, 20)       # the left window
-       Box((80, 80), 20, 20)       # the right window
-       Line((20, 120), (70, 160))  # the left roof
-       Line((70, 160), (120, 120)) # the right roof
+    #.  ``a > b`` 
+    #.  ``a >= b``
+    #.  ``a >= 18  and  day == 3``
+    #.  ``a >= 18  and  day != 3``
     
-       update_when('key_pressed')  # keep the canvas open until a key is pressed
-       end_graphics()              # close the canvas (which would happen
-                                   # anyway, since the script ends here, but it 
-                                   # is better to be explicit).
+#.  What do these expressions evaluate to?
 
-   Run this script and confirm that you get a window that looks like
-   this:
-
-   .. image:: illustrations/gasp02.png
-      :alt: GASP illustration 2 
+    #.  ``3 == 3``
+    #.  ``3 != 3``
+    #.  ``3 >= 4``
+    #.  ``not (3 < 4)``
     
-   #. Wrap the house code in a function named ``draw_house()``.
-   #. Run the script now. Do you see a house? Why not?
-   #. Add a call to ``draw_house()`` at the botton of the script so that the
-      house returns to the screen.
-   #. *Parameterize* the function with x and y parameters -- the header
-      should then become ``def draw_house(x, y):``, so that you can pass in
-      the location of the house on the canvas.
-   #. Use ``draw_house`` to place five houses on the canvas in different
-      locations.
-#. *Exploration:*  Read over `Appendix B <app_b.html>`__ and write a script
-   named ``houses.py`` that produces the following when run:
+#.  Write a function which is given an exam mark, and it returns a string --- the grade for that mark --- according to this 
+    scheme:   
+    
+    .. table::  
+    
+       =======   =====
+       Mark      Grade
+       =======   =====
+       >= 75     First   
+       [70-75)   Upper Second   
+       [60-70)   Second   
+       [50-60)   Third 
+       [45-50)   F1 Supp   
+       [40-45)   F2   
+       < 40      F3   
+       =======   =====    
+    
+    The square and round brackets denote closed and open intervals. 
+    A closed interval includes the number, and open interval excludes it.   So 39.99999 gets grade F3, but 40 gets grade F2.
+    
+    Let ``xs = [83, 75, 74.9, 70, 69.9, 65, 60, 59.9, 55, 50, 49.9, 45, 44.9, 40, 39.9, 2, 0]`` 
+    
+    Test your function by printing the mark and the grade for all the elements in this list.
+    
+#.  Modify the turtle bar chart program so that it leaves small gaps between each bar.
 
-   .. image:: illustrations/gasp03.png
-      :alt: GASP illustration 3
-
-   *hint*: You will need to use a ``Polygon`` for the roof instead of two
-   ``Line``\s to get ``filled=True`` to work with it.
+#.  Modify the turtle bar chart program so that the bar for any value 
+    of 200 or more is filled with red, values between [100 and 200) are filled yellow,
+    and bars representing values less than 100 are filled green.    
+  
+#.  In the turtle bar chart program, what do you expect to happen if one or more 
+    of the data values in the list is negative?   Try it out.  Change the
+    program so that when it prints the text value for the negative bars, it puts
+    the text below the bottom of the bar. 
+  
+#.  Write a function ``find_hypot`` which, given the length of two sides of a right-angled triangle, returns
+    the length of the hypotenuse.  (Hint:  ``x ** 0.5`` will return the square root.)
+    
+#.  Write a function ``is_rightangled`` which, given the length of three sides of a triangle, 
+    will determine whether the triangle is right-angled.  Assume that the third argument to the
+    function is always the longest side.  It will return ``True`` if the triangle 
+    is right-angled, or ``False`` otherwise.  
+    
+    Hint: floating point arithmetic is not always exactly accurate,
+    so it is not safe to test floating point numbers for equality. 
+    If a good programmer wants to know whether
+    ``x`` is equal or close enough to ``y``, they would probably code it up as
+    
+    .. sourcecode:: python
+    
+      if  abs(x-y) < 0.000001:      # if x is approximately equal to y
+          ...    
+   
+#.  Extend the above program so that the sides can 
