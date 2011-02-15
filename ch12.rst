@@ -1,18 +1,29 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|          
+    
 Dictionaries
 ============
 
 .. index:: dictionary, mapping type, key, value, key-value pair
 
 All of the compound data types we have studied in detail so far --- strings,
-lists, and tuples---are sequence types, which use integers as indices to access
+lists, and tuples --- are sequence types, which use integers as indices to access
 the values they contain within them.
 
 **Dictionaries** are a different kind of compound type. They are Python's
@@ -37,14 +48,15 @@ value of the dictionary in the usual way:
 
 .. sourcecode:: python
     
-    >>> print eng2sp
+    >>> print(eng2sp)
     {'two': 'dos', 'one': 'uno'}
 
 The key-value pairs of the dictionary are seperated by commas. Each pair
 contains a key and a value separated by a colon.
 
 The order of the pairs may not be what you expected. Python uses complex
-algorithms to determine where the key-value pairs are stored in a dictionary.
+algorithms, designed for very fast access, to determine where the 
+key-value pairs are stored in a dictionary.
 For our purposes we can think of this ordering as unpredicatable.
 
 Another way to create a dictionary is to provide a list of key-value pairs
@@ -62,7 +74,7 @@ Here is how we use a key to look up the corresponding value:
 
 .. sourcecode:: python
     
-    >>> print eng2sp['two']
+    >>> print(eng2sp['two'])
     'dos'
 
 The key ``'two'`` yields the value ``'dos'``.
@@ -78,16 +90,16 @@ each fruit in stock:
 .. sourcecode:: python
     
     >>> inventory = {'apples': 430, 'bananas': 312, 'oranges': 525, 'pears': 217}
-    >>> print inventory
-    {'oranges': 525, 'apples': 430, 'pears': 217, 'bananas': 312}
+    >>> print(inventory)
+    {'pears': 217, 'apples': 430, 'oranges': 525, 'bananas': 312}
 
 If someone buys all of the pears, we can remove the entry from the dictionary:
 
 .. sourcecode:: python
     
     >>> del inventory['pears']
-    >>> print inventory
-    {'oranges': 525, 'apples': 430, 'bananas': 312}
+    >>> print(inventory)
+    {'apples': 430, 'oranges': 525, 'bananas': 312}
 
 Or if we're expecting more pears soon, we might just change the value
 associated with pears:
@@ -95,8 +107,16 @@ associated with pears:
 .. sourcecode:: python
     
     >>> inventory['pears'] = 0
-    >>> print inventory
-    {'oranges': 525, 'apples': 430, 'pears': 0, 'bananas': 312}
+    >>> print(inventory)
+    {'pears': 0, 'apples': 430, 'oranges': 525, 'bananas': 312}
+    
+A new shipment of bananas arriving could be handled like this:
+
+.. sourcecode:: python
+    
+    >>> inventory['bananas'] += 200
+    >>> print(inventory)
+    {'pears': 0, 'apples': 430, 'oranges': 525, 'bananas': 512}
 
 The ``len`` function also works on dictionaries; it returns the number
 of key-value pairs:
@@ -112,13 +132,37 @@ Dictionary methods
 
 Dictionaries have a number of useful built-in methods.
 
-The ``keys`` method takes a dictionary and returns a list of its keys.
+The ``keys`` method returns what Python 3 calls a **view** of its underlying keys.  
+A view object has some similarities to the ``range`` object we saw earlier ---
+it is a lazy promise, to deliver its elements when they're needed by the 
+rest of the program.  We can iterate over the view, or turn the view into a 
+list like this:
 
 .. sourcecode:: python
     
-    >>> eng2sp.keys()
-    ['three', 'two', 'one']
+    for k in eng2sp.keys():     # the order in which we get the k's is not defined
+       print("Got key", k, "which maps to value", eng2sp[k])     
+       
+    ks = list(eng2sp.keys())
+    print(ks)
+    
+This produces this output::
 
+    Got key three which maps to value tres
+    Got key two which maps to value dos
+    Got key one which maps to value uno
+    ['three', 'two', 'one']
+    
+It is so common to iterate over the keys in a dictionary that you can
+omit the ``keys`` method call in the ``for`` loop --- iterating over
+a dictionary implicitly iterates over its keys:
+
+.. sourcecode:: python
+    
+    for k in eng2sp:     
+       print("Got key", k)     
+       
+ 
 As we saw earlier with strings and lists, dictionary methods use dot notation,
 which specifies the name of the method to the right of the dot and the name of
 the object on which to apply the method immediately to the left of the dot. The
@@ -129,40 +173,57 @@ are invoking the ``keys`` method on the object ``eng2sp``. As we will see in a
 few chapters when we talk about object oriented programming, the object on
 which a method is invoked is actually the first argument to the method.
 
-The ``values`` method is similar; it returns a list of the values in the
-dictionary:
+The ``values`` method is similar; it returns a view object which can be turned
+into a list:  
 
 .. sourcecode:: python
     
-    >>> eng2sp.values()
+    >>> list(eng2sp.values())
     ['tres', 'dos', 'uno']
 
-The ``items`` method returns both, in the form of a list of tuples --- one for
-each key-value pair:
+The ``items`` method also returns a view, which promises a list of tuples --- one 
+tuple for each key-value pair:
 
 .. sourcecode:: python
     
-    >>> eng2sp.items()
+    >>> list(eng2sp.items())
     [('three', 'tres'), ('two', 'dos'), ('one', 'uno')]
+    
+Tuples are often useful for getting both the key and the value at the same
+time while you are looping:
 
-The ``has_key`` method takes a key as an argument and returns ``True`` if the
-key appears in the dictionary and ``False`` otherwise:
+    .. sourcecode:: python
+    
+       for (k,v) in eng2sp.items():
+           print("Got",k,"that maps to",v)
+           
+This produces::
+
+    Got three that maps to tres
+    Got two that maps to dos
+    Got one that maps to uno
+
+    
+The ``in`` and ``not in`` operators can test if a key is in the dictionary:
 
 .. sourcecode:: python
     
-    >>> eng2sp.has_key('one')
+    >>> 'one' in eng2sp
     True
-    >>> eng2sp.has_key('deux')
+    >>> 'six' in eng2sp
     False
+    >>> 'tres' in eng2sp    # notice that 'in' tests against keys, not against values.
+    False
+     
 
-This method can be very useful, since looking up a non-existant key in a
+This method can be very useful, since looking up a non-existent key in a
 dictionary causes a runtime error:
 
 .. sourcecode:: python
     
     >>> eng2esp['dog']
     Traceback (most recent call last):
-      File "", line 1, in 
+      ...
     KeyError: 'dog'
     >>> 
 
@@ -271,7 +332,7 @@ return if the key is not in the dictionary:
 about the syntax.
 
 
-Hints
+Memos
 -----
 
 If you played around with the ``fibonacci`` function from the last chapter, you
@@ -286,7 +347,8 @@ To understand why, consider this **call graph** for ``fibonacci`` with
 .. image:: illustrations/fibonacci.png
    :alt: fibonacci tree 
 
-A call graph shows a set function frames, with lines connecting each frame to
+A call graph shows some function frames (instances when the function has
+been invoked), with lines connecting each frame to
 the frames of the functions it calls. At the top of the graph, ``fibonacci``
 with ``n = 4`` calls ``fibonacci`` with ``n = 3`` and ``n = 2``. In turn,
 ``fibonacci`` with ``n = 3`` calls ``fibonacci`` with ``n = 2`` and ``n = 1``.
@@ -298,15 +360,15 @@ gets bigger.
 
 A good solution is to keep track of values that have already been computed by
 storing them in a dictionary. A previously computed value that is stored for
-later use is called a **hint**. Here is an implementation of ``fibonacci``
-using hints:
+later use is called a **memo**. Here is an implementation of ``fibonacci``
+using memos:
 
 .. sourcecode:: python
     
     previous = {0: 0, 1: 1}
        
     def fibonacci(n):
-        if previous.has_key(n):
+        if n in previous:
             return previous[n]
         else:
             new_value = fibonacci(n-1) + fibonacci(n-2)
@@ -327,44 +389,12 @@ Using this version of ``fibonacci``, our machines can compute
 .. sourcecode:: python
     
     >>> fibonacci(100)
-    354224848179261915075L
-
-The ``L`` at the end of the number indicates that it is a ``long`` integer.
-
-
-Long integers
--------------
-
-Python provides a type called ``long`` that can handle any size integer
-(limited only by the amount of memory you have on your computer).
-
-There are three ways to create a ``long`` value. The first one is to compute an
-arithmetic expression too large to fit inside an ``int``. We already saw this
-in the ``fibonacci(100)`` example above. Another way is to write an integer
-with a capital ``L`` at the end of your number:
-
-.. sourcecode:: python
-    
-    >>> type(1L)
-
-The third is to call ``long`` with the value to be converted as an argument.
-``long``, just like ``int`` and ``float``, can convert ``int``\s, ``float``\s,
-and even strings of digits to long integers:
-
-.. sourcecode:: python
-    
-    >>> long(7)
-    7L
-    >>> long(3.9)
-    3L
-    >>> long('59')
-    59L
-
+    354224848179261915075
 
 Counting letters
 ----------------
 
-In Chapter 7, we wrote a function that counted the number of occurrences of a
+In the exercises in Chapter 8 we wrote a function that counted the number of occurrences of a
 letter in a string. A more general version of this problem is to form a
 histogram of the letters in the string, that is, how many times each letter
 appears.
@@ -394,592 +424,29 @@ can do that with the ``items`` and ``sort`` methods:
 
 .. sourcecode:: python
     
-    >>> letter_items = letter_counts.items()
+    >>> letter_items = list(letter_counts.items())
     >>> letter_items.sort()
-    >>> print letter_items
+    >>> print(letter_items)
     [('M', 1), ('i', 4), ('p', 2), ('s', 4)]
 
+Notice in the first line we had to call the type conversion function ``list``.
+That turns the promise we get from ``items`` into a list, a step that is 
+needed before we can use the list's ``sort`` method. 
 
-Case Study: Robots
-------------------
-
-
-The game
-~~~~~~~~
-
-In this case study we will write a version of the classic console
-based game, `robots <http://en.wikipedia.org/wiki/Robots_(computer_game)>`__.
-
-Robots is a turn-based game in which the protagonist, you, are trying to stay
-alive while being chased by stupid, but relentless robots.  Each robot moves
-one square toward you each time you move. If they catch you, you are dead, but
-if they collide they die, leaving a pile of dead robot junk in their wake. If
-other robots collide with the piles of junk, they die.
-
-The basic strategy is to position yourself so that the robots collide with each
-other and with piles of junk as they move toward you. To make the game
-playable, you also are given the ability to teleport to another location on the
-screen -- 3 times safely and randomly thereafter, so that you don't just get
-forced into a corner and loose every time.
-
-
-Setting up the world, the player, and the main loop
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Let's start with a program that places the player on the screen and has a
-function to move her around in response to keys pressed:
-
-.. sourcecode:: python
     
-    #
-    # robots.py
-    #
-    from gasp import *
-    
-    SCREEN_WIDTH = 640
-    SCREEN_HEIGHT = 480
-    GRID_WIDTH = SCREEN_WIDTH/10 - 1
-    GRID_HEIGHT = SCREEN_HEIGHT/10 - 1
-    
-    
-    def place_player():
-        x = random.randint(0, GRID_WIDTH)
-        y = random.randint(0, GRID_HEIGHT)
-        return {'shape': Circle((10*x+5, 10*y+5), 5, filled=True), 'x': x, 'y': y}
-    
-    
-    def move_player(player):
-        update_when('key_pressed')
-        if key_pressed('escape'):
-            return True
-        elif key_pressed('4'):
-            if player['x'] > 0: player['x'] -= 1
-        elif key_pressed('7'):
-            if player['x'] > 0: player['x'] -= 1
-            if player['y'] < GRID_HEIGHT: player['y'] += 1
-        elif key_pressed('8'):
-            if player['y'] < GRID_HEIGHT: player['y'] += 1
-        elif key_pressed('9'):
-            if player['x'] < GRID_WIDTH: player['x'] += 1
-            if player['y'] < GRID_HEIGHT: player['y'] += 1
-        elif key_pressed('6'):
-            if player['x'] < GRID_WIDTH: player['x'] += 1
-        elif key_pressed('3'):
-            if player['x'] < GRID_WIDTH: player['x'] += 1
-            if player['y'] > 0: player['y'] -= 1
-        elif key_pressed('2'):
-            if player['y'] > 0: player['y'] -= 1
-        elif key_pressed('1'):
-            if player['x'] > 0: player['x'] -= 1
-            if player['y'] > 0: player['y'] -= 1
-        else:
-            return False
-    
-        move_to(player['shape'], (10*player['x']+5, 10*player['y']+5))
-    
-        return False
-    
-    
-    def play_game():
-        begin_graphics(SCREEN_WIDTH, SCREEN_HEIGHT, title="Robots")
-        player = place_player()
-        finished = False
-        while not finished:
-            finished = move_player(player)
-        end_graphics()
-    
-    
-    if __name__ == '__main__':
-        play_game()
-
-Programs like this one that involve interacting with the user through
-**events** such as key presses and mouse clicks are called `event-driven
-programs <http://en.wikipedia.org/wiki/Event_driven_programming>`__.
-
-The main **event loop** at this stage is simply:
-
-.. sourcecode:: python
-    
-    while not finished:
-        finished = move_player(player)
-
-The event handling is done inside the ``move_player`` function.
-``update_when('key_pressed')`` waits until a key has been pressed before moving
-to the next statement. The multi-way branching statement then handles the all
-keys relevent to game play.
-
-Pressing the escape key causes ``move_player`` to return ``True``, making
-``not finished`` false, thus exiting the main loop and ending the game.  The 4,
-7, 8, 9, 6, 3, 2, and 1 keys all cause the player to move in the appropriate
-direction, if she isn't blocked by the edge of a window.
-
-
-Adding a robot
-~~~~~~~~~~~~~~
-
-Now let's add a single robot that heads toward the player each time the player
-moves.
-
-Add the following ``place_robot`` function between ``place_player`` and
-``move_player``:
-
-.. sourcecode:: python
-    
-    def place_robot():
-        x = random.randint(0, GRID_WIDTH)
-        y = random.randint(0, GRID_HEIGHT)
-        return {'shape': Box((10*x, 10*y), 10, 10), 'x': x, 'y': y}
-
-Add ``move_robot`` immediately after ``move_player``:
-
-.. sourcecode:: python
-    
-    def move_robot(robot, player):
-        if robot['x'] < player['x']: robot['x'] += 1
-        elif robot['x'] > player['x']: robot['x'] -= 1
-    
-        if robot['y'] < player['y']: robot['y'] += 1
-        elif robot['y'] > player['y']: robot['y'] -= 1
-    
-        move_to(robot['shape'], (10*robot['x'], 10*robot['y']))
-
-We need to pass both the robot and the player to this function so that it can
-compare their locations and move the robot toward the player.
-
-Now add the line ``robot = place_robot()`` in the main body of the program
-immediately after the line ``player = place_player()``, and add the
-``move_robot(robot, player)`` call inside the main loop immediately after
-``finished = move_player(player)``.
-
-
-Checking for Collisions
-~~~~~~~~~~~~~~~~~~~~~~~
-
-We now have a robot that moves relentlessly toward our player, but once it
-catches her it just follows her around wherever she goes. What we want to
-happen is for the game to end as soon as the player is caught. The following
-function will determine if that has happened:
-
-.. sourcecode:: python
-    
-    def collided(robot, player):
-        return player['x'] == robot['x'] and player['y'] == robot['y']
-
-Place this new function immediately below the ``move_player`` function.
-Now let's modify ``play_game`` to check for collisions:
-
-.. sourcecode:: python
-    
-    def play_game():
-        begin_graphics(SCREEN_WIDTH, SCREEN_HEIGHT)
-        player = place_player()
-        robot = place_robot()
-        defeated = False
-    
-        while not defeated:
-            quit =  move_player(player)
-            if quit:
-                break
-            move_robot(robot, player)
-            defeated = collided(robot, player)
-    
-        if defeated:
-            remove_from_screen(player['shape'])
-            remove_from_screen(robot['shape'])
-            Text("They got you!", (240, 240), size=32)
-            sleep(3)
-    
-        end_graphics()
-
-We rename the variable ``finished`` to ``defeated``, which is now set to the
-result of ``collided``. The main loop runs as long as ``defeated`` is false.
-Pressing the key still ends the program, since we check for ``quit`` and break
-out of the main loop if it is true. Finally, we check for ``defeated``
-immediately after the main loop and display an appropriate message if it is
-true.
-
-
-Adding more robots
-~~~~~~~~~~~~~~~~~~
-
-There are several things we could do next:
-
-* give the player the ability to *teleport* to another location to escape
-  pursuit.
-* provide safe placement of the player so that it never starts on top of a
-  robot.
-* add more robots.
-
-Adding the ability to teleport to a random location is the easiest task, and it
-has been left to you to complete as an exercise.
-
-How we provide safe placement of the player will depend on how we represent
-multiple robots, so it makes sense to tackle adding more robots first.
-
-To add a second robot, we could just create another variable named something
-like ``robot2`` with another call to ``place_robot``. The problem with this
-approach is that we will soon want lots of robots, and giving them all their
-own names will be cumbersome. A more elegant solution is to place all the
-robots in a list:
-
-.. sourcecode:: python
-    
-    def place_robots(numbots):
-        robots = []
-        for i in range(numbots):
-            robots.append(place_robot())
-        return robots
-
-Now instead of calling ``place_robot`` in ``play_game``, call ``place_robots``,
-which returns a single list containing all the robots:
-
-.. sourcecode:: python
-    
-        robots = place_robots(2)
-
-With more than one robot placed, we have to handle moving each one of them. We
-have already solved the problem of moving a single robot, however, so
-traversing the list and moving each one in turn does the trick:
-
-.. sourcecode:: python
-    
-    def move_robots(robots, player):
-        for robot in robots:
-            move_robot(robot, player)
-
-Add ``move_robots`` immediately after ``move_robot``, and change ``play_game``
-to call ``move_robots`` instead of ``move_robot``.
-
-We now need to check each robot to see if it has collided with the player:
-
-.. sourcecode:: python
-    
-    def check_collisions(robots, player):
-        for robot in robots:
-            if collided(robot, player):
-                return True
-        return False
-
-Add ``check_collisions`` immediately after ``collided`` and change the line in
-``play_game`` that sets ``defeated`` to call ``check_collisions`` instead of
-``collided``.
-
-Finally, we need to loop over ``robots`` to remove each one in turn if
-``defeated`` becomes true. Adding this has been left as an exercise.
-
-
-Winning the game
-~~~~~~~~~~~~~~~~
-
-The biggest problem left in our game is that there is no way to win.  The
-robots are both relentless and *indestructible*. With careful maneuvering and a
-bit of luck teleporting, we can reach the point where it appears there is only
-one robot chasing the player (all the robots will actually just be on top of
-each other). This moving pile of robots will continue chasing our hapless
-player until it catches it, either by a bad move on our part or a teleport that
-lands the player directly on the robots.
-
-When two robots collide they are supposed to die, leaving behind a pile of
-junk. A robot (or the player) is also supposed to die when it collides with a
-pile of junk. The logic for doing this is quite tricky. After the player and
-each of the robots have moved, we need to:
-
-#. Check whether the player has collided with a robot or a pile of junk. If so, 
-   set ``defeated`` to true and break out of the game loop.
-#. Check each robot in the ``robots`` list to see if it has collided with a
-   pile of junk. If it has, disgard the robot (remove it from the ``robots``
-   list).
-#. Check each of the remaining robots to see if they have collided with another 
-   robot. If they have, disgard all the robots that have collided and place a
-   pile of junk at the locations they occupied.
-#. Check if any robots remain. If not, end the game and mark the player the
-   winner.
-
-Let's take on each of these tasks in turn.
-
-
-Adding ``junk``
-~~~~~~~~~~~~~~~
-
-Most of this work will take place inside our ``check_collisions``
-function. Let's start by modifying ``collided``, changing the names of
-the parameters to reflect its more general use:
-
-.. sourcecode:: python
-    
-    def collided(thing1, thing2):
-        return thing1['x'] == thing2['x'] and thing1['y'] == thing2['y']
-
-We now introduce a new empty list named ``junk`` immediately after the
-call to ``place_robots``:
-
-.. sourcecode:: python
-    
-        junk = []
-
-and modify ``check_collisions`` to incorporate the new list:
-
-.. sourcecode:: python
-    
-    def check_collisions(robots, junk, player):
-        # check whether player has collided with anything
-        for thing in robots + junk:
-            if collided(thing, player):
-                return True
-        return False
-
-Be sure to modify the call to ``check_collisions`` (currently
-``defeated = check_collisions(robots, player)``) to include ``junk`` as a new
-argument.
-
-Again, we need to fix the logic after ``if defeated:`` to remove the new
-``junk`` from the screen before displaying the They got you! message:
-
-.. sourcecode:: python
-    
-    for thing in robots + junk:
-        remove_from_screen(thing['shape'])
-
-Since at this point ``junk`` is always an empty list, we haven't changed the
-behavior of our program. To test whether our new logic is actually working, we
-could introduce a single junk pile and run our player into it, at which point
-the game should remove all items from the screen and display the ending
-message.
-
-It will be helpful to modify our program temporarily to change the random
-placement of robots and player to predetermined locations for testing. We plan
-to use solid boxes to represent junk piles. We observe that placing a robot is
-very similar to placing a junk pile, and modify ``place_robot`` to do both:
-
-.. sourcecode:: python
-    
-    def place_robot(x, y, junk=False):
-        return {'shape': Box((10*x, 10*y), 10, 10, filled=junk), 'x': x, 'y': y}
-
-Notice that ``x`` and ``y`` are now parameters, along with a new parameter that
-we will use to set ``filled`` to true for piles of junk.
-
-Our program is now broken, since the call in ``place_robots`` to
-``place_robot`` does not pass arguments for ``x`` and ``y``. Fixing this and
-setting up the program for testing is left to you as an exercise.
-
-
-Removing robots that hit junk
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To remove robots that collide with piles of junk, we add a *nested loop* to
-``check_collisions`` between each robot and each pile of junk.  Our first
-attempt at this does not work:
-
-.. sourcecode:: python
-    
-    def check_collisions(robots, junk, player):
-        # check whether player has collided with anything
-        for thing in robots + junk:
-            if collided(thing, player):
-                return True
-    
-        # remove robots that have collided with a pile of junk
-        for robot in robots:
-            for pile in junk:
-                if collided(robot, pile):
-                    robots.remove(robot)
-    
-        return False
-
-Running this new code with the program as setup in exercise 11, we find a bug.
-It appears that the robots continue to pass through the pile of junk as before.
-
-Actually, the bug is more subtle. Since we have two robots on top of each
-other, when the collision of the first one is detected and that robot is
-removed, we move the second robot into the first position in the list and *it
-is missed by the next iteration*. It is generally dangerous to modify a list
-while you are iterating over it. Doing so can introduce a host of difficult to
-find errors into your program.
-
-The solution in this case is to loop over the ``robots`` list backwards, so
-that when we remove a robot from the list all the robots whose list indeces
-change as a result are robots we have already evaluated.
-
-As usual, Python provides an elegant way to do this. The built-in function,
-``reversed`` provides for backward iteration over a sequence.  Replacing:
-
-.. sourcecode:: python
-    
-    for robot in robots:
-
-with:
-
-.. sourcecode:: python
-    
-    for robot in reversed(robots):
-
-will make our program work the way we intended.
-
-
-Turning robots into junk and enabling the player to win
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We now want to check each robot to see if it has collided with any other
-robots. We will remove all robots that have collided, leaving a single pile of
-junk in their wake. If we reach a state where there are no more robots, the
-player wins.
-
-Once again we have to be careful not to introduce bugs related to removing
-things from a list over which we are iterating.
-
-Here is the plan:
-
-#. Check each robot in ``robots`` (an outer loop, traversing forward).
-#. Compare it with every robot that follows it (an inner loop, traversing
-   backward).
-#. If the two robots have collided, add a piece of junk at their location,
-   mark the first robot as junk, and remove the second one.
-#. Once all robots have been checked for collisions, traverse the robots list
-   once again in reverse, removing all robots marked as junk.
-#. Check to see if any robots remain. If not, declare the player the winner.
-
-Adding the following to ``check_collisions`` will accomplish most of what we
-need to do:
-
-.. sourcecode:: python
-    
-    # remove robots that collide and leave a pile of junk
-    for index, robot1 in enumerate(robots):
-        for robot2 in reversed(robots[index+1:]):
-            if collided(robot1, robot2):
-                robot1['junk'] = True
-                junk.append(place_robot(robot1['x'], robot1['y'], True))
-                remove_from_screen(robot2['shape'])
-                robots.remove(robot2)
-    
-    for robot in reversed(robots):
-        if robot['junk']:
-            remove_from_screen(robot['shape'])
-            robots.remove(robot)
-
-We make use of the ``enumerate`` function we saw in Chapter 9 to get both the
-index and value of each robot as we traverse forward. Then a reverse traversal
-of the slice of the remaining robots, ``reversed(robots[index+1:])``, sets up
-the collision check.
-
-Whenever two robots collide, our plan calls for adding a piece of junk at that
-location, marking the first robot for later removal (we still need it to
-compare with the other robots), and immediately removing the second one. The
-body of the ``if collided(robot1, robot2):`` conditional is designed to do just
-that, but if you look carefully at the line:
-
-.. sourcecode:: python
-    
-    robot1['junk'] = True
-
-you should notice a problem. ``robot1['junk']`` will result in a systax error,
-since our robot dictionary does not yet contain a ``'junk'`` key.  To fix this
-we modify ``place_robot`` to accomodate the new key:
-
-.. sourcecode:: python
-    
-    def place_robot(x, y, junk=False):
-        return {'shape': Box((10*x, 10*y), 10, 10, filled=junk),
-                'x': x, 'y': y, 'junk': junk}
-
-It is not at all unusual for data structures to change as program development
-proceeds. **Stepwise refinement** of both program data and logic is a normal
-part of the **structured programming** process.
-
-After ``robot1`` is marked as junk, we add a pile of junk to the junk list at
-the same location with
-``junk.append(place_robot(robot1['x'], robot1['y'], True))``, and then remove
-``robot2`` from the game by first removing its shape from the graphics window
-and then removing it from the robots list.
-
-The next loop traverses backward over the robots list removing all the robots
-previously marked as junk. Since the player wins when all the robots die, and
-the robot list will be empty when it no longer contains live robots, we can
-simply check whether ``robots`` is empty to determine whether or not the player
-has won.
-
-This can be done in ``check_collisions`` immediately after we finish checking
-robot collisions and removing dead robots by adding:
-
-.. sourcecode:: python
-    
-    if not robots:
-        return ... 
-
-Hmmm... What should we return? In its current state, ``check_collisions`` is a
-boolean function that returns true when the player has collided with something
-and lost the game, and false when the player has not lost and the game should
-continue. That is why the variable in the ``play_game`` function that catches
-the return value is called ``defeated``.
-
-Now we have three possible states:
-
-#. ``robots`` is not empty and the player has not collided with anything
-   -- the game is still in play
-#. the player has collided with something -- the robots win
-#. the player has not collided with anything and ``robots`` is empty -- the
-   player wins
-
-In order to handle this with as few changes as possible to our present program,
-we will take advantage of the way that Python permits sequence types to live
-double lives as boolean values. We will return an empty string -- which is
-false -- when game play should continue, and either ``"robots_win"`` or
-``"player_wins"`` to handle the other two cases. ``check_collisions`` should
-now look like this:
-
-.. sourcecode:: python
-    
-    def check_collisions(robots, junk, player):
-        # check whether player has collided with anything
-        for thing in robots + junk:
-            if collided(thing, player):
-                return "robots_win"
-    
-        # remove robots that have collided with a pile of junk
-        for robot in reversed(robots):
-            for pile in junk:
-                if collided(robot, pile):
-                    robots.remove(robot)
-    
-        # remove robots that collide and leave a pile of junk
-        for index, robot1 in enumerate(robots):
-            for robot2 in reversed(robots[index+1:]):
-                if collided(robot1, robot2):
-                    robot1['junk'] = True
-                    junk.append(place_robot(robot1['x'], robot1['y'], True))
-                    remove_from_screen(robot2['shape'])
-                    robots.remove(robot2)
-    
-        for robot in reversed(robots):
-            if robot['junk']:
-                remove_from_screen(robot['shape'])
-                robots.remove(robot)
-    
-        if not robots:
-            return "player_wins"
-    
-        return ""
-
-A few corresponding changes need to be made to ``play_game`` to use the new
-return values. These are left as an exercise.
-
-
 Glossary
 --------
 
 .. glossary::
-
+       
+    call graph 
+        A graph consisting of nodes which represent function frames (or invocations), 
+        and directed edges (lines with arrows) showing which frames gave
+        rise to other frames.       
+        
     dictionary
         A collection of key-value pairs that maps from keys to values. The keys
         can be any immutable type, and the values can be any type.
-
-    mapping type
-        A mapping type is a data type comprised of a collection of keys and
-        associated values. Python's only built-in mapping type is the
-        dictionary.  Dictionaries implement the
-        `associative array <http://en.wikipedia.org/wiki/Associative_array>`__
-        abstract data type.
 
     key
         A data item that is *mapped to* a value in a dictionary. Keys are used
@@ -988,24 +455,16 @@ Glossary
     key-value pair
         One of the pairs of items in a dictionary. Values are looked up in a
         dictionary by key.
+        
+    mapping type
+        A mapping type is a data type comprised of a collection of keys and
+        associated values. Python's only built-in mapping type is the
+        dictionary.  Dictionaries implement the
+        `associative array <http://en.wikipedia.org/wiki/Associative_array>`__
+        abstract data type.
 
-    hint
-        Temporary storage of a precomputed value to avoid redundant
-        computation.
-
-    event
-        A signal such as a keyboard press, mouse click, or message from another
-        program.
-
-    event-driven program
-        <fill in definition here>
-
-    event loop
-        A programming construct that waits for events and processes them.
-
-    overflow
-        A numerical result that is too large to be represented in a numerical
-        format.
+    memo
+        Temporary storage of precomputed values to avoid duplicating the same computation.
 
 
 Exercises
@@ -1038,45 +497,45 @@ Exercises
 #. Give the Python interpreter's response to each of the following from a
    continuous interpreter session:
 
-   #.
+   a.
       .. sourcecode:: python
         
           >>> d = {'apples': 15, 'bananas': 35, 'grapes': 12} 
           >>> d['banana'] 
 
-   #.
+   b.
       .. sourcecode:: python
         
           >>> d['oranges'] = 20
           >>> len(d) 
 
-   #.
+   c.
       .. sourcecode:: python
         
-          >>> d.has_key('grapes')
+          >>> 'grapes' in d
           
-   #.
+   d.
       .. sourcecode:: python
         
           >>> d['pears']
           
-   #.
+   e.
       .. sourcecode:: python
         
           >>> d.get('pears', 0)
           
-   #.
+   f.
       .. sourcecode:: python
         
           >>> fruits = d.keys()
           >>> fruits.sort()
-          >>> print fruits
+          >>> print(fruits)
           
-   #.
+   g.
       .. sourcecode:: python
         
           >>> del d['apples']
-          >>> d.has_key('apples') 
+          >>> 'apples' in d 
           
 
    Be sure you understand why you get each result. Then apply what you
@@ -1084,26 +543,22 @@ Exercises
 
    .. sourcecode:: python
     
-       def add_fruit(inventory, fruit, quantity=0):
-            """
-            Adds quantity of fruit to inventory. 
-    
-              >>> new_inventory = {}
-              >>> add_fruit(new_inventory, 'strawberries', 10)
-              >>> new_inventory.has_key('strawberries')
-              True
-              >>> new_inventory['strawberries']
-              10
-              >>> add_fruit(new_inventory, 'strawberries', 25)
-              >>> new_inventory['strawberries']       
-            """
+       def add_fruit(inventory, fruit, quantity=0): 
+            pass
+       
+       # make these tests work...
+       new_inventory = {}
+       add_fruit(new_inventory, 'strawberries', 10)
+       test('strawberries' in new_inventory, True)
+       test(new_inventory['strawberries'], 10)
+       add_fruit(new_inventory, 'strawberries', 25)
+       test(new_inventory['strawberries'] , 35)      
 
-   Your solution should pass the doctests.
 #. Write a program called ``alice_words.py`` that creates a text file named
-   ``alice_words.txt`` containing an alphabetical listing of all the words
-   found in `alice_in_wonderland.txt
-   <resources/ch10/alice_in_wonderland.txt>`__ together with the number of
-   times each word occurs. The first 10 lines of your output file should look
+   ``alice_words.txt`` containing an alphabetical listing of all the words, and the
+   number of times each occurs, in the text version of `Alice's Adventures in Wonderland`.  
+   (You can obtain a free plain text version of the book, along with many others, from 
+   http://www.gutenberg.org.) The first 10 lines of your output file should look
    something like this::
 
         Word              Count
@@ -1118,89 +573,6 @@ Exercises
         absurd            2
 
    How many times does the word, ``alice``, occur in the book?
-#. What is the longest word in Alice in Wonderland ? How many charactes does it    have?
-#. Copy the code from the *Setting up the world, the player, and the main loop* 
-   section into a file named ``robots.py`` and run it. You should be able to
-   move the player around the screen using the numeric keypad and to quit the
-   program by pressing the escape key.
-#. Laptops usually have smaller keyboards than desktop computers that do not
-   include a seperate numeric keypad. Modify the robots program so that it uses 
-   'a', 'q', 'w', 'e', 'd', 'c', 'x', and 'z' instead of '4', '7', '8', '9',
-   '6', '3', '2', and '1' so that it will work on a typical laptop keyboard.
-#. Add all the code from the *Adding a robot* section in the places indicated.
-   Make sure the program works and that you now have a robot following around
-   your player.
-#. Add all the code from the *Checking for Collisions* section in the places
-   indicated. Verify that the program ends when the robot catches the player
-   after displaying a They got you! message for 3 seconds.
-#. Modify the ``move_player`` function to add the ability for the player to
-   jump to a random location whenever the ``0`` key is pressed. (*hint:*
-   ``place_player`` already has the logic needed to place the player in a
-   random location. Just add another conditional branch to ``move_player``
-   that uses this logic when ``key_pressed('0')`` is true.) Test the program to 
-   verify that your player can now teleport to a random place on the screen to
-   get out of trouble.
-#. Make all the changes to your program indicated in *Adding more robots*. Be
-   sure to loop over the ``robots`` list, removing each robot in turn, after
-   ``defeated`` becomes true. Test your program to verify that there are now
-   two robots chasing your player. Let a robot catch you to test whether you
-   have correctly handled removing all the robots. Change the argument from 2
-   to 4 in ``robots = place_robots(2)`` and confirm that you have 4 robots.
-#. Make the changes to your program indicated in *Adding ``junk``*. Fix
-   ``place_robots`` by moving the random generation of values for ``x`` and
-   ``y`` to the appropriate location and passing these values as arguments in
-   the call to ``place_robot``. Now we are ready to make temporary modifications
-   to our program to remove the randomness so we can control it for testing. We 
-   can start by placing a pile of junk in the center of our game board. Change:
-
-   .. sourcecode:: python
-    
-            junk = []
-
-   to:
-
-   .. sourcecode:: python
-    
-            junk = [place_robot(GRID_WIDTH/2, GRID_HEIGHT/2, junk=True)]
-
-   Run the program and confirm that there is a black box in the center of the
-   board.Now change ``place_player`` so that it looks like this:
-
-   .. sourcecode:: python
-    
-        def place_player():
-            # x = random.randint(0, GRID_WIDTH)
-            # y = random.randint(0, GRID_HEIGHT)
-            x, y = GRID_WIDTH/2 + 3, GRID_HEIGHT/2
-            return {'shape': Circle((10*x+5, 10*y+5), 5, filled=True), 'x': x, 'y': y}
-
-   Finally, temporarily **comment out** the random generation of ``x`` and
-   ``y`` values in ``place_robots`` and the creation of ``numbots`` robots.
-   Replace this logic with code to create two robots in fixed locations:
-
-   .. sourcecode:: python
-    
-        def place_robots(numbots):
-            robots = []
-            # for i in range(numbots):
-            #    x = random.randint(0, GRID_WIDTH)
-            #    y = random.randint(0, GRID_HEIGHT)
-            #    robots.append(place_robot(x, y))
-            robots.append(place_robot(GRID_WIDTH/2 - 4, GRID_HEIGHT/2 + 2))
-            robots.append(place_robot(GRID_WIDTH/2 - 4, GRID_HEIGHT/2 - 2))
-            return robots
-
-   When you start your program now, it should look like this:
-
-   .. image:: illustrations/robots01.png
-      :alt: robots 1 
    
-   When you run this program and either stay still (by pressing the ``5``
-   repeatedly) or move away from the pile of junk, you can confirm that the
-   robots move through it unharmed. When you move into the junk pile, on the
-   other hand, you die.
-#. Make the following modifications to ``play_game`` to integrate with the
-   changes made in *Turning robots into junk and enabling the player to win*:
+#. What is the longest word in Alice in Wonderland? How many characters does it have?
 
-   #. Rename ``defeated`` to ``winner`` and initialize it to the empty string
-      instead of ``False``.
