@@ -1,11 +1,21 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
-
+    
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|
+    
 Linked lists
 ============
 
@@ -62,7 +72,7 @@ To test the implementation so far, we can create a ``Node`` and print it:
 .. sourcecode:: python
     
     >>> node = Node("test")
-    >>> print node
+    >>> print(node)
     test
 
 To make it interesting, we need a list with more than one node:
@@ -107,7 +117,7 @@ to the end:
     
     def print_list(node):
         while node:
-            print node,
+            print(node, end=' ')
             node = node.next
         print
 
@@ -154,7 +164,7 @@ natural base case is the empty list, represented by ``None``:
         head = list
         tail = list.next
         print_backward(tail)
-        print head,
+        print(head,end=' ')
 
 The first line handles the base case by doing nothing. The next two lines split
 the list into ``head`` and ``tail``. The last two lines print the list. The
@@ -237,7 +247,7 @@ makes it more concise but possibly less clear:
     def print_backward(list) :
         if list == None : return
         print_backward(list.next)
-        print list,
+        print(list,end=' ')
 
 Looking at the two function calls, we have to remember that ``print_backward``
 treats its argument as a collection and ``print`` treats its argument as a
@@ -304,13 +314,13 @@ to print the brackets and the first node. Let's call it
 
     
     def print_backward_nicely(list) :
-        print "[",
+        print("[", end=' ')
         if list != None :
             head = list
             tail = list.next
             print_backward(tail)
-            print head,
-        print "]",
+            print(head, end=' ')
+        print("]", end=' ')
 
 Again, it is a good idea to check methods like this to see if they work with
 special cases like an empty list or a singleton.
@@ -349,10 +359,10 @@ make a method of the ``LinkedList`` class:
     class LinkedList:
         ...
         def print_backward(self):
-            print "[",
+            print("[", end=' ')
             if self.head != None:
                 self.head.print_backward()
-            print "]",
+            print("]", end=' ')
        
     class Node:
         ...
@@ -360,7 +370,7 @@ make a method of the ``LinkedList`` class:
         if self.next != None:
             tail = self.next
             tail.print_backward()
-        print self.cargo,
+        print(self.cargo, end=' ')
 
 Just to make things confusing, we renamed ``print_backward_nicely``. Now there
 are two methods named ``print_backward``: one in the ``Node`` class (the
