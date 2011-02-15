@@ -1,321 +1,341 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
-Classes and functions
-=====================
-
-
-Time
-----
-
-As another example of a user-defined type, we'll define a class called ``Time``
-that records the time of day. The class definition looks like this:
-
-.. sourcecode:: python
+        
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+| 
     
-    class Time:
-        pass
-
-We can create a new ``Time`` object and assign attributes for hours, minutes,
-and seconds:
-
-.. sourcecode:: python
-    
-    time = Time()
-    time.hours = 11
-    time.minutes = 59
-    time.seconds = 30
-
-The state diagram for the ``Time`` object looks like this:
+Classes and Objects - Digging a little deeper
+=============================================
 
 
-Pure functions
---------------
-
-In the next few sections, we'll write two versions of a function called
-``add_time``, which calculates the sum of two ``Time``\s. They will demonstrate
-two kinds of functions: pure functions and modifiers.
-
-The following is a rough version of ``add_time``:
-
-.. sourcecode:: python
-    
-    def add_time(t1, t2):
-        sum = Time()
-        sum.hours = t1.hours + t2.hours
-        sum.minutes = t1.minutes + t2.minutes
-        sum.seconds = t1.seconds + t2.seconds
-        return sum
-
-The function creates a new ``Time`` object, initializes its attributes, and
-returns a reference to the new object. This is called a **pure function**
-because it does not modify any of the objects passed to it as parameters and it
-has no side effects, such as displaying a value or getting user input.
-
-Here is an example of how to use this function. We'll create two ``Time``
-objects: ``current_time``, which contains the current time; and ``bread_time``,
-which contains the amount of time it takes for a breadmaker to make bread. Then
-we'll use ``add_time`` to figure out when the bread will be done. If you
-haven't finished writing ``print_time`` yet, take a look ahead to Section
-before you try this:
-
-.. sourcecode:: python
-    
-    >>> current_time = Time()
-    >>> current_time.hours = 9
-    >>> current_time.minutes = 14
-    >>> current_time.seconds =  30
-    >>> bread_time = Time()
-    >>> bread_time.hours = 3
-    >>> bread_time.minutes = 35
-    >>> bread_time.seconds = 0
-    >>> done_time = add_time(current_time, bread_time)
-    >>> print_time(done_time)
-    12:49:30
-
-The output of this program is ``12:49:30``, which is correct. On the other
-hand, there are cases where the result is not correct. Can you think of one?
-
-The problem is that this function does not deal with cases where the number of
-seconds or minutes adds up to more than sixty. When that happens, we have to
-carry the extra seconds into the minutes column or the extra minutes into the
-hours column.
-
-Here's a second corrected version of the function:
-
-.. sourcecode:: python
-    
-    def add_time(t1, t2):
-        sum = Time()
-        sum.hours = t1.hours + t2.hours
-        sum.minutes = t1.minutes + t2.minutes
-        sum.seconds = t1.seconds + t2.seconds
-       
-        if sum.seconds >= 60:
-            sum.seconds = sum.seconds - 60
-            sum.minutes = sum.minutes + 1
-       
-        if sum.minutes >= 60:
-            sum.minutes = sum.minutes - 60
-            sum.hours = sum.hours + 1
-       
-        return sum
-
-Although this function is correct, it is starting to get big. Later we will
-suggest an alternative approach that yields shorter code.
-
-
-Modifiers
----------
-
-There are times when it is useful for a function to modify one or more of the
-objects it gets as parameters. Usually, the caller keeps a reference to the
-objects it passes, so any changes the function makes are visible to the caller.
-Functions that work this way are called **modifiers**.
-
-``increment``, which adds a given number of seconds to a ``Time`` object, would
-be written most naturally as a modifier. A rough draft of the function looks
-like this:
-
-.. sourcecode:: python
-    
-    def increment(time, seconds):
-        time.seconds = time.seconds + seconds
-       
-        if time.seconds >= 60:
-            time.seconds = time.seconds - 60
-            time.minutes = time.minutes + 1
-       
-        if time.minutes >= 60:
-            time.minutes = time.minutes - 60
-            time.hours = time.hours + 1
-
-
-The first line performs the basic operation; the remainder deals with the
-special cases we saw before.
-
-Is this function correct? What happens if the parameter ``seconds`` is much
-greater than sixty? In that case, it is not enough to carry once; we have to
-keep doing it until ``seconds`` is less than sixty. One solution is to replace
-the ``if`` statements with ``while`` statements:
-
-.. sourcecode:: python
-    
-    def increment(time, seconds):
-        time.seconds = time.seconds + seconds
-       
-        while time.seconds >= 60:
-            time.seconds = time.seconds - 60
-            time.minutes = time.minutes + 1
-       
-        while time.minutes >= 60:
-            time.minutes = time.minutes - 60
-            time.hours = time.hours + 1
-
-This function is now correct, but it is not the most efficient solution.
-
-
-Prototype development versus planning
--------------------------------------
-
-In this chapter, we demonstrated an approach to program development that we
-call **prototype development**. In each case, we wrote a rough draft (or
-prototype) that performed the basic calculation and then tested it on a few
-cases, correcting flaws as we found them.
-
-Although this approach can be effective, it can lead to code that is
-unnecessarily complicated -- since it deals with many special cases -- and
-unreliable -- since it is hard to know if you have found all the errors.
-
-An alternative is **planned development**, in which high-level insight into the
-problem can make the programming much easier. In this case, the insight is that
-a ``Time`` object is really a three-digit number in base 60! The ``second``
-component is the ones column, the ``minute`` component is the sixties column,
-and the ``hour`` component is the thirty-six hundreds column.
-
-When we wrote ``add_time`` and ``increment``, we were effectively doing
-addition in base 60, which is why we had to carry from one column to the next.
-
-This observation suggests another approach to the whole problem -- we can
-convert a ``Time`` object into a single number and take advantage of the fact
-that the computer knows how to do arithmetic with numbers.  The following
-function converts a ``Time`` object into an integer:
-
-.. sourcecode:: python
-    
-    def convert_to_seconds(t):
-        minutes = t.hours * 60 + t.minutes
-        seconds = minutes * 60 + t.seconds
-        return seconds
-
-Now, all we need is a way to convert from an integer to a ``Time`` object:
-
-.. sourcecode:: python
-    
-    def make_time(seconds):
-        time = Time()
-        time.hours = seconds/3600
-        seconds = seconds - time.hours * 3600
-        time.minutes = seconds/60
-        seconds = seconds - time.minutes * 60
-        time.seconds = seconds
-        return time
-
-You might have to think a bit to convince yourself that this technique to
-convert from one base to another is correct. Assuming you are convinced, you
-can use these functions to rewrite ``add_time``:
-
-.. sourcecode:: python
-    
-    def add_time(t1, t2):
-        seconds = convert_to_seconds(t1) + convert_to_seconds(t2)
-        return make_time(seconds)
-
-This version is much shorter than the original, and it is much easier to
-demonstrate that it is correct (assuming, as usual, that the functions it calls
-are correct).
-
-
-Generalization
---------------
-
-In some ways, converting from base 60 to base 10 and back is harder than just
-dealing with times. Base conversion is more abstract; our intuition for dealing
-with times is better.
-
-But if we have the insight to treat times as base 60 numbers and make the
-investment of writing the conversion functions (``convert_to_seconds`` and
-``make_time``), we get a program that is shorter, easier to read and debug, and
-more reliable.
-
-It is also easier to add features later. For example, imagine subtracting two
-``Time``\s to find the duration between them. The naive approach would be to
-implement subtraction with borrowing. Using the conversion functions would be
-easier and more likely to be correct.
-
-Ironically, sometimes making a problem harder (or more general) makes it easier
-(because there are fewer special cases and fewer opportunities for error).
-
-
-Algorithms
+Rectangles
 ----------
 
-When you write a general solution for a class of problems, as opposed to a
-specific solution to a single problem, you have written an **algorithm**. We
-mentioned this word before but did not define it carefully. It is not easy to
-define, so we will try a couple of approaches.
+Let's say that we want a class to represent a rectangle which is located 
+somewhere in the XY plane. The question is, what information do we have 
+to provide in order to specify such a rectangle? To keep things simple, 
+assume that the rectangle is oriented either vertically or
+horizontally, never at an angle.
 
-First, consider something that is not an algorithm. When you learned to
-multiply single-digit numbers, you probably memorized the multiplication table.
-In effect, you memorized 100 specific solutions.  That kind of knowledge is not
-algorithmic.
+There are a few possibilities: we could specify the center of the rectangle
+(two coordinates) and its size (width and height); or we could specify one of
+the corners and the size; or we could specify two opposing corners. A
+conventional choice is to specify the upper-left corner of the rectangle and
+the size.
 
-But if you were lazy, you probably cheated by learning a few tricks.  For
-example, to find the product of `n` and 9, you can write ``n-1`` as the first
-digit and ``10-n`` as the second digit. This trick is a general solution for
-multiplying any single-digit number by 9. That's an algorithm!
+Again, we'll define a new class, and provide it with an initializer and
+a string converter method:
 
-Similarly, the techniques you learned for addition with carrying, subtraction
-with borrowing, and long division are all algorithms. One of the
-characteristics of algorithms is that they do not require any intelligence to
-carry out. They are mechanical processes in which each step follows from the
-last according to a simple set of rules.
+.. sourcecode:: python
+    
+    class Rectangle:
+        """ A class to manufacture rectangle objects """
+        
+        def __init__(self, posn, w, h):
+            """ Initialize a rectangle at posn, with width w and height h """
+            self.corner = posn
+            self.width = w
+            self.height = h
+            
+        def __str__(self):
+            return  "({0}, {1}, {2})".format(self.corner, self.width, self.height)
+            
+    box = Rectangle(Point(0, 0), 100, 200)
+    bomb = Rectangle(Point(100, 80), 5, 10)    # in my video game
+    print("box: ", box)
+    print("bomb: ", bomb)     
+    
+To specify the upper-left corner, we have embedded an object within an object!
+We create two new ``Rectangle`` objects, and then print them producing:: 
 
-In our opinion, it is embarrassing that humans spend so much time in school
-learning to execute algorithms that, quite literally, require no intelligence.
+    box: ((0, 0), 100, 200)
+    bomb: ((100, 80), 5, 10)
 
-On the other hand, the process of designing algorithms is interesting,
-intellectually challenging, and a central part of what we call programming.
+The dot operator composes. The expression ``box.corner.x`` means, Go to the
+object that ``box`` refers to and select its attribute named ``corner``; then go to
+that object and select its attribute named ``x``.
 
-Some of the things that people do naturally, without difficulty or conscious
-thought, are the hardest to express algorithmically.  Understanding natural
-language is a good example. We all do it, but so far no one has been able to
-explain *how* we do it, at least not in the form of an algorithm.
+The figure shows the state of this object:
+
+.. image:: illustrations/rectangle.png
+   
+
+Objects are mutable
+-------------------
+
+We can change the state of an object by making an assignment to one of
+its attributes. For example, to grow the size of a rectangle without
+changing its position, we could modify the values of ``width`` and
+``height``:
+
+.. sourcecode:: python
+    
+    box.width += 50
+    box.height += 100
+    
+Of course, we'd probably like to provide a method to encapsulate this
+inside the class.  We will also provide another method to move the 
+position of the rectangle elsewhere: 
+
+.. sourcecode:: python
+
+        class Rectangle:
+            # ...
+        
+            def grow(self, delta_width, delta_height):
+                """ Grow (or shrink) this object by the deltas """
+                self.width += delta_width
+                self.height += delta_height
+
+            def move(self, dx, dy):
+                """ Move this object by the deltas """
+                self.corner.x += dx
+                self.corner.y += dy
+
+Let us try this::
+
+    >>> r = Rectangle(Point(10,5), 100, 50)
+    >>> print(r)
+    ((10, 5), 100, 50)
+    >>> r.grow(25, -10)
+    >>> print(r)
+    ((10, 5), 125, 40)
+    >>> r.move(-10, 10)
+    print(r)
+    ((0, 15), 125, 40)
+                   
+
+Sameness
+--------
+
+The meaning of the word *same* seems perfectly clear until you give it some
+thought, and then you realize there is more to it than you expected.
+
+For example, if you say, Chris and I have the same car, you mean that his car
+and yours are the same make and model, but that they are two different cars. If
+you say, Chris and I have the same mother, you mean that his mother and yours
+are the same person.
+
+When you talk about objects, there is a similar ambiguity. For example, if two
+``Point``\ s are the same, does that mean they contain the same data
+(coordinates) or that they are actually the same object?
+
+We've already seen the ``is`` operator in the chapter on lists, where we
+talked about aliases:
+it allows us to find out if two references refer to the same object: 
+
+.. sourcecode:: python
+    
+    >>> p1 = Point(3, 4)
+    >>> p2 = Point(3, 4)
+    >>> p1 is p2
+    False
+
+Even though ``p1`` and ``p2`` contain the same coordinates, they are not the
+same object. If we assign ``p1`` to ``p3``, then the two variables are aliases
+of the same object:
+
+.. sourcecode:: python
+    
+    >>> p3 = p1
+    >>> p1 is p3
+    True
+
+This type of equality is called **shallow equality** because it compares only
+the references, not the contents of the objects.
+
+To compare the contents of the objects --- **deep equality** --- we can write a
+function called ``same_coordinates``:
+
+.. sourcecode:: python
+    
+    def same_coordinates(p1, p2):
+        return (p1.x == p2.x) and (p1.y == p2.y)
+
+Now if we create two different objects that contain the same data, we can use
+``same_point`` to find out if they represent points with the same coordinates.
+
+.. sourcecode:: python
+    
+    >>> p1 = Point(3, 4)
+    >>> p2 = Point(3, 4)
+    >>> same_coordinates(p1, p2)
+    True
+
+Of course, if the two variables refer to the same object, they have both
+shallow and deep equality.
+
+.. admonition:: Beware of  == 
+
+    "When I use a word," Humpty Dumpty said, in a rather scornful tone, "it means just what I choose it to mean --- neither more nor less."   *Alice in Wonderland*
+    
+    Python has a powerful feature that allows a designer of a class to decide what an operation
+    like ``==`` or ``<`` should mean.  (We've just shown how we can control how our own objects
+    are converted to strings, so we've already made a start!)  We'll cover more detail later. 
+    But sometimes the implementors will attach shallow equality semantics, and 
+    sometimes deep equality, as shown in this little experiment:  
+    
+    .. sourcecode:: python
+    
+        p = Point(4, 2)
+        s = Point(4, 2)
+        print("== on Points returns", p == s)  # by default, == does a shallow equality test here
+
+        a = [2,3]
+        b = [2,3]
+        print("== on lists returns",  a == b)  # by default, == does a deep equality test on lists
+
+    This outputs::
+    
+        == on Points returns False
+        == on lists returns True  
+        
+    So we conclude that even though the two lists (or tuples, etc.) are distinct objects
+    with different memory addresses, in one case the ``==`` operator tests for deep equality, 
+    while in the case of points it makes a shallow test. 
+
+
+   
+
+
+Copying
+-------
+
+Aliasing can make a program difficult to read because changes made in
+one place might have unexpected effects in another place. It is hard
+to keep track of all the variables that might refer to a given object.
+
+Copying an object is often an alternative to aliasing. The ``copy``
+module contains a function called ``copy`` that can duplicate any
+object:
+
+.. sourcecode:: python
+
+    
+    >>> import copy
+    >>> p1 = Point(3, 4)
+    >>> p2 = copy.copy(p1)   # ugly!  <module_name>.<function_name> are identical! 
+    >>> p1 is p2
+    False
+    >>> same_coordinates(p1, p2)
+    True
+
+Once we import the ``copy`` module, we can use the ``copy`` function to make
+a new ``Point``. ``p1`` and ``p2`` are not the same point, but they contain
+the same data.
+
+To copy a simple object like a ``Point``, which doesn't contain any
+embedded objects, ``copy`` is sufficient. This is called **shallow
+copying**.
+
+For something like a ``Rectangle``, which contains a reference to a
+``Point``, ``copy`` doesn't do quite the right thing. It copies the
+reference to the ``Point`` object, so both the old ``Rectangle`` and the
+new one refer to a single ``Point``.
+
+If we create a box, ``b1``, in the usual way and then make a copy, ``b2``,
+using ``copy``, the resulting state diagram looks like this:
+
+.. image:: illustrations/rectangle2.png
+
+This is almost certainly not what we want. In this case, invoking
+``grow`` on one of the ``Rectangles`` would not affect the other, but
+invoking ``move`` on either would affect both! This behavior is
+confusing and error-prone. The shallow copy has created an alias to the
+Point that represents the corner. 
+
+Fortunately, the ``copy`` module contains a function named ``deepcopy`` that
+copies not only the object but also any embedded objects. You will not
+be surprised to learn that this operation is called a **deep copy**.
+
+.. sourcecode:: python
+
+    >>> b2 = copy.deepcopy(b1)
+
+Now ``b1`` and ``b2`` are completely separate objects.
 
 
 Glossary
 --------
 
 .. glossary::
-
-    pure function
-        A function that does not modify any of the objects it receives as
-        parameters. Most pure functions are fruitful.
-
-    modifier
-        A function that changes one or more of the objects it receives as
-        parameters. Most modifiers are void.
-
-    functional programming style
-        A style of program design in which the majority of functions are pure.
-
-    prototype development
-        A way of developing programs starting with a prototype and gradually
-        testing and improving it.
-
-    planned development
-        A way of developing programs that involves high-level insight into the
-        problem and more planning than incremental development or prototype
-        development.
-
-    algorithm
-        A set of instructions for solving a class of problems by a mechanical,
-        unintelligent process.
+        
+    deep copy
+        To copy the contents of an object as well as any embedded objects, and
+        any objects embedded in them, and so on; implemented by the
+        ``deepcopy`` function in the ``copy`` module.
+        
+    deep equality
+        Equality of values, or two references that point to objects that have
+        the same value.
+            
+    shallow copy
+        To copy the contents of an object, including any references to embedded
+        objects; implemented by the ``copy`` function in the ``copy`` module.
+        
+    shallow equality
+        Equality of references, or two references that point to the same object.
 
 
 Exercises
 ---------
+   
+#. Add a method ``area`` to the Rectangle class that returns the area of any instance::
 
-#. Write a function ``print_time`` that takes a ``Time`` object as an argument
-   and prints it in the form ``hours:minutes:seconds``.
-#. Write a boolean function ``after`` that takes two ``Time`` objects, ``t1``
-   and ``t2``, as arguments, and returns ``True`` if ``t1`` follows ``t2``
-   chronologically and ``False`` otherwise.
-#. Rewrite the ``increment`` function so that it doesn't contain any loops.
-#. Now rewrite ``increment`` as a pure function, and write function calls to
-   both versions.
+      r = Rectangle(Point(0, 0), 10, 5)
+      test(r.area(), 50)
+
+#. Write a ``perimeter`` method in the Rectangle class so that we can find
+   the perimeter of any rectangle instance::
+   
+      r = Rectangle(Point(0, 0), 10, 5)
+      test(r.perimeter(), 30)
+
+#. Write a ``transpose`` method in the Rectangle class that swaps the width
+   and the height of any rectangle instance::
+   
+      r = Rectangle(Point(100, 50), 10, 5)
+      test(r.width, 10)
+      test(r.height, 5)
+      r.flip()
+      test(r.width, 5)
+      test(r.height, 10)
+      
+#. Write a new method in the Rectangle class to test if a Point falls within
+   the rectangle.  For this exercise, assume that a rectangle at (0,0) with
+   width 10 and height 5 has *open* upper bounds on the width and height, 
+   i.e. it stretches in the x direction from [0 to 10), where 0 is included
+   but 10 is excluded, and from [0 to 5) in the y direction.  So
+   it does not contain the point (10, 2).  These tests should pass::
+   
+      r = Rectangle(Point(0, 0), 10, 5)
+      test(r.contains(Point(0, 0)), True)
+      test(r.contains(Point(3, 3)), True)
+      test(r.contains(Point(3, 7)), False)
+      test(r.contains(Point(3, 5)), False)
+      test(r.contains(Point(3, 4.99999)), True)
+      test(r.contains(Point(-3, -3)), False)
+   
+#. In games, we often put a rectangular "bounding box" around our sprites in
+   the game.  We can then do *collision detection* between, say, bombs and 
+   spaceships, by comparing whether their rectangles overlap anywhere. 
+   
+   Write a function to determine whether two rectangles collide. *Hint:
+   this might be quite a tough exercise!  Think carefully about all the
+   cases before you code.* 
+
+     
+ 
