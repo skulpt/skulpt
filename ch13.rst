@@ -458,7 +458,7 @@ are also composable, leading to this alternative that uses no variables::
 
     
 A change of perspective
-=======================
+-----------------------
 
 The original syntax for a function call, ``print_time(current_time)``, suggests that the
 function is the active agent. It says something like, *"Hey, print_time!  
