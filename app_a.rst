@@ -1,11 +1,21 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png     
+    
+|
+    
 Debugging
 =========
 
@@ -150,14 +160,25 @@ For example:
         # do something to x
         # do something to y
        
-        print  "x: ", x
-        print  "y: ", y
-        print  "condition: ", (x > 0 and y < 0)
+        print("x: ", x)
+        print("y: ", y)
+        print("condition: ", (x > 0 and y < 0))
 
 Now when you run the program, you will see three lines of output for each time
 through the loop. The last time through the loop, the condition should be
 ``false``. If the loop keeps going, you will be able to see the values of ``x``
 and ``y``, and you might figure out why they are not being updated correctly.
+
+In a development environment like PyScripter, one can also set a breakpoint
+at the start of the loop, and single-step through the loop.  While you do
+this, inspect the values of ``x`` and ``y`` by hovering your cursor over 
+them. 
+
+Of course, all programming and debugging require that you have a good mental 
+model of what the algorithm ought to be doing: if you don't understand what 
+ought to happen to ``x`` and ``y``, printing or inspecting its value is
+of little use. Probably the best place to debug the code is away from 
+your computer, working on your understanding of what should be happening. 
 
 
 Infinite Recursion
@@ -179,6 +200,11 @@ every time the function or method is invoked, and you will see the parameters.
 If the parameters are not moving toward the base case, you will get some ideas
 about why not.
 
+|rle_open| Once again, if you have an environment that supports easy single-stepping, 
+breakpoints, and inspection, learn to use them well. It is our opinion that walking 
+through code step-by-step builds the best and most accurate mental model of
+how computation happens. Use it if you have it! |rle_close|  
+
 
 Flow of Execution
 -----------------
@@ -190,6 +216,7 @@ entering function ``foo``, where ``foo`` is the name of the function.
 Now when you run the program, it will print a trace of each function as it is
 invoked.
 
+|rle_open| If you're not sure, step through the program with your debugger. |rle_close| 
 
 When I run the program I get an exception.
 ------------------------------------------
@@ -197,6 +224,8 @@ When I run the program I get an exception.
 If something goes wrong during runtime, Python prints a message that includes
 the name of the exception, the line of the program where the problem occurred,
 and a traceback.
+
+|rle_open| Put a breakpoint on the line causing the exception, and look around! |rle_close| 
 
 The traceback identifies the function that is currently running, and then the
 function that invoked it, and then the function that invoked *that*, and so on.
@@ -272,6 +301,16 @@ Similarly, rewriting a piece of code can help you find subtle bugs. If
 you make a change that you think doesn't affect the program, and it
 does, that can tip you off.
 
+|rle_open| You can also wrap your debugging print statements in some
+condition, so that you suppress much of the output. For example, if
+you are trying to find an element using a binary search, and it is
+not working, you might code up a debugging print statement inside
+a conditional:  if the range of candidate elements is less that 6,
+then print debugging information, otherwise don't print. 
+
+Similarly, breakpoints can be made conditional: you can set a breakpoint
+on a statement, then edit the breakpoint to say "only break if this
+expression becomes true".  |rle_close| 
 
 Semantic errors
 ---------------
@@ -350,7 +389,7 @@ This can be rewritten as:
 
 The explicit version is easier to read because the variable names provide
 additional documentation, and it is easier to debug because you can check the
-types of the intermediate variables and display their values.
+types of the intermediate variables and display or inspect their values.
 
 Another problem that can occur with big expressions is that the order of
 evaluation may not be what you expect. For example, if you are translating the
@@ -395,7 +434,7 @@ you could write:
     count = self.hands[i].removeMatches()
     return count
 
-Now you have the opportunity to display the value of ``count`` before
+Now you have the opportunity to display or inspect the value of ``count`` before
 returning.
 
 
@@ -443,6 +482,15 @@ need:
 #. What was the last thing you did before this error occurred? What were the
    last lines of code that you wrote, or what is the new test case that fails?
 #. What have you tried so far, and what have you learned?
+
+|rle_open| Good instructors and helpers will also do something that should not 
+offend you: they won't believe when you tell them *"I'm sure all the input
+routines are working just fine, and that I've set up the data correctly!"*.
+They will want to validate and check things for themselves.  
+After all, your program has a bug.  
+Your understanding and inspection of the code have not found it yet. So you
+should expect to have your assumptions challenged.  And as you gain skills
+and help others, you'll need to do the same for them.   |rle_close| 
 
 When you find the bug, take a second to think about what you could have done to
 find it faster. Next time you see something similar, you will be able to find
