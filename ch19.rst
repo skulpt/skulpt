@@ -1,11 +1,21 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|
+    
 Stacks
 ======
 
@@ -135,7 +145,7 @@ the stack:
 .. sourcecode:: python
     
     while not s.is_empty():
-        print s.pop(),
+        print(s.pop(), end=' ')
 
 The output is ``+ 45 54``. In other words, we just used a stack to print the
 items backward! Granted, it's not the standard format for printing a list, but
@@ -251,7 +261,7 @@ Let's test it by evaluating the postfix form of ``(56+47)*2``:
 
 .. sourcecode:: python
     
-    >>> print eval_postfix ("56 47 + 2 \*")
+    >>> print(eval_postfix ("56 47 + 2 \*"))
     206
 
 That's close enough.
@@ -284,48 +294,47 @@ Glossary
         A data type (usually a collection of objects) that is defined by a set
         of operations but that can be implemented in a variety of ways.
 
-    interface
-        The set of operations that define an ADT.
+    client
+        A program (or the person who wrote it) that uses an ADT.
+        
+    delimiter
+        A character that is used to separate tokens, such as punctuation in a
+        natural language.
+
+    generic data structure
+        A kind of data structure that can contain data of any type.
 
     implementation
         Code that satisfies the syntactic and semantic requirements of an
         interface.
+        
+    interface
+        The set of operations that define an ADT.       
+        
+    infix
+        A way of writing mathematical expressions with the operators between
+        the operands.
 
-    client
-        A program (or the person who wrote it) that uses an ADT.
+    parse
+        To read a string of characters or tokens and analyze its grammatical
+        structure.
 
+    postfix
+        A way of writing mathematical expressions with the operators after the
+        operands.
+        
     provider
         The code (or the person who wrote it) that implements an ADT.
+
+    token
+        A set of characters that are treated as a unit for purposes of parsing,
+        such as the words in a natural language.
 
     veneer
         A class definition that implements an ADT with method definitions that
         are invocations of other methods, sometimes with simple
         transformations. The veneer does no significant work, but it improves
         or standardizes the interface seen by the client.
-
-    generic data structure
-        A kind of data structure that can contain data of any type.
-
-    infix
-        A way of writing mathematical expressions with the operators between
-        the operands.
-
-    postfix
-        A way of writing mathematical expressions with the operators after the
-        operands.
-
-    parse
-        To read a string of characters or tokens and analyze its grammatical
-        structure.
-
-    token
-        A set of characters that are treated as a unit for purposes of parsing,
-        such as the words in a natural language.
-
-    delimiter
-        A character that is used to separate tokens, such as punctuation in a
-        natural language.
-
 
 Exercises
 ---------
