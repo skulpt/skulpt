@@ -17,7 +17,7 @@
  
 |      
     
-Recursion and exceptions
+Recursion and Exceptions
 ========================
 
 .. index:: mutable, immutable, tuple

@@ -35,12 +35,12 @@ by Peter Wentworth, Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 * `Chapter 7 <ch07.html>`__ *Iteration*
 * `Chapter 8 <ch08.html>`__ *Strings*
 * `Chapter 9 <ch09.html>`__ *Lists*
-* `Chapter 10 <ch10.html>`__ *Modules and files*
-* `Chapter 11 <ch11.html>`__ *Recursion and exceptions*
+* `Chapter 10 <ch10.html>`__ *Modules and Files*
+* `Chapter 11 <ch11.html>`__ *Recursion and Exceptions*
 * `Chapter 12 <ch12.html>`__ *Dictionaries*
-* `Chapter 13 <ch13.html>`__ *Classes and objects*
-* `Chapter 14 <ch14.html>`__ *Classes and functions*
-* `Chapter 15 <ch15.html>`__ *Classes and methods*
+* `Chapter 13 <ch13.html>`__ *Classes and Objects - the Basics*
+* `Chapter 14 <ch14.html>`__ *Classes and Objects - Digging a little deeper*
+* `Chapter 15 <ch15.html>`__ *Even more OOP*
 * `Chapter 16 <ch16.html>`__ *Sets of Objects*
 * `Chapter 17 <ch17.html>`__ *Inheritance*
 * `Chapter 18 <ch18.html>`__ *Linked Lists*
