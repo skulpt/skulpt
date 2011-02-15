@@ -1,11 +1,21 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|
+    
 Trees
 =====
 
@@ -148,7 +158,7 @@ We can traverse an expression tree and print the contents like this:
     
     def print_tree(tree):
         if tree == None: return
-        print tree.cargo,
+        print(tree.cargo, end=' ')
         print_tree(tree.left)
         print_tree(tree.right)
 
@@ -177,7 +187,7 @@ subtrees first and then the root node, you get:
         if tree == None: return
         print_tree_postorder(tree.left)
         print_tree_postorder(tree.right)
-        print tree.cargo,
+        print(tree.cargo, end=' ')
 
 The result, ``1 2 3 * +``, is in postfix! This order of traversal is called
 **postorder**.
@@ -190,7 +200,7 @@ root, and then the right tree:
     def print_tree_inorder(tree):
         if tree == None: return
         print_tree_inorder(tree.left)
-        print tree.cargo,
+        print(tree.cargo, end=' ')
         print_tree_inorder(tree.right)
 
 The result is ``1 + 2 * 3``, which is the expression in infix.
@@ -212,7 +222,7 @@ on, we can generate a graphical representation of a tree:
     def print_tree_indented(tree, level=0):
         if tree == None: return
         print_tree_indented(tree.right, level+1)
-        print '  ' * level + str(tree.cargo)
+        print('  ' * level + str(tree.cargo))
         print_tree_indented(tree.left, level+1)
 
 The parameter ``level`` keeps track of where we are in the tree. By default, it
@@ -295,7 +305,7 @@ what remains of the token list:
     >>> x = get_number(token_list)
     >>> print_tree_postorder(x)
     9
-    >>> print token_list
+    >>> print(token_list)
     [11, 'end']
 
 The next method we need is ``get_product``, which builds an expression
@@ -508,7 +518,7 @@ Here is the code:
 .. sourcecode:: python
     
     def yes(ques):
-        ans = raw_input(ques).lower()
+        ans = input(ques).lower()
         return ans[0] == 'y'
     
     def animal():
@@ -533,19 +543,19 @@ Here is the code:
             guess = tree.cargo
             prompt = "Is it a " + guess + "? "
             if yes(prompt):
-                print "I rule!"
+                print("I rule!")
                 continue
      
             # get new information
             prompt  = "What is the animal's name? "
-            animal  = raw_input(prompt)
-            prompt  = "What question would distinguish a %s from a %s? "
-            question = raw_input(prompt % (animal, guess))
+            animal  = input(prompt)
+            prompt  = "What question would distinguish a {0} from a {1}? "
+            question = input(prompt.format(animal, guess))
      
             # add new information to the tree
             tree.cargo = question
-            prompt = "If the animal were %s the answer would be? "
-            if yes(prompt % animal):
+            prompt = "If the animal were {0} the answer would be? "
+            if yes(prompt.format(animal)):
                 tree.left = Tree(guess)
                 tree.right = Tree(animal)
             else:
@@ -575,48 +585,44 @@ Glossary
 
 .. glossary::
 
+    binary operator
+        An operator that takes two operands.    
+        
     binary tree
         A tree in which each node refers to zero, one, or two dependent nodes.
-
-    root
-        The topmost node in a tree, with no parent.
+      
+    child
+        One of the nodes referred to by a node.
 
     leaf
         A bottom-most node in a tree, with no children.
 
+    level
+        The set of nodes equidistant from the root.
+        
     parent
         The node that refers to a given node.
+        
+    postorder
+        A way to traverse a tree, visiting the children of each node before the
+        node itself.    
+        
+    prefix notation
+        A way of writing a mathematical expression with each operator appearing
+        before its operands.
+        
+    preorder
+        A way to traverse a tree, visiting each node before its children.
 
-    child
-        One of the nodes referred to by a node.
+    root
+        The topmost node in a tree, with no parent.
 
     siblings
         Nodes that share a common parent.
 
-    level
-        The set of nodes equidistant from the root.
-
-    binary operator
-        An operator that takes two operands.
-
     subexpression
         An expression in parentheses that acts as a single operand in a larger
         expression.
-
-    preorder
-        A way to traverse a tree, visiting each node before its children.
-
-    prefix notation
-        A way of writing a mathematical expression with each operator appearing
-        before its operands.
-
-    postorder
-        A way to traverse a tree, visiting the children of each node before the
-        node itself.
-
-    inorder
-        A way to traverse a tree, visiting the left subtree, then the root, and
-        then the right subtree.
 
 
 Exercises
