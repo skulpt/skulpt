@@ -1,11 +1,21 @@
-..  Copyright (C)  Jeffrey Elkner, Allen B. Downey and Chris Meyers.
+..  Copyright (C)  Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers.
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
     or any later version published by the Free Software Foundation;
-    with Invariant Sections being Foreward, Preface, and Contributor List, no
+    with Invariant Sections being Foreword, Preface, and Contributor List, no
     Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is
     included in the section entitled "GNU Free Documentation License".
 
+.. |rle_start| image:: illustrations/rle_start.png
+   
+.. |rle_end| image:: illustrations/rle_end.png
+ 
+.. |rle_open| image:: illustrations/rle_open.png
+   
+.. |rle_close| image:: illustrations/rle_close.png    
+ 
+|
+    
 Inheritance
 ===========
 
@@ -152,7 +162,7 @@ To print the contents of a hand, we can take advantage of the ``printDeck`` and
     >>> deck.shuffle()
     >>> hand = Hand("frank")
     >>> deck.deal([hand], 5)
-    >>> print hand
+    >>> print(hand)
     Hand frank contains
     2 of Spades
      3 of Spades
@@ -258,7 +268,7 @@ inherits from ``Hand`` and provides an additional method called
                 if match in self.cards:
                     self.cards.remove(card)
                     self.cards.remove(match)
-                    print "Hand %s: %s matches %s" % (self.name, card, match)
+                    print("Hand {0}: {1} matches {2}".format(self.name, card, match))
                     count = count + 1
             return count
 
@@ -281,7 +291,7 @@ The following example demonstrates how to use ``remove_matches``:
     >>> game = CardGame()
     >>> hand = OldMaidHand("frank")
     >>> game.deck.deal([hand], 13)
-    >>> print hand
+    >>> print(hand)
     Hand frank contains
     Ace of Spades
      2 of Diamonds
@@ -300,7 +310,7 @@ The following example demonstrates how to use ``remove_matches``:
     Hand frank: 7 of Spades matches 7 of Clubs
     Hand frank: 8 of Spades matches 8 of Clubs
     Hand frank: 10 of Diamonds matches 10 of Hearts
-    >>> print hand
+    >>> print(hand)
     Hand frank contains
     Ace of Spades
      2 of Diamonds
@@ -338,12 +348,12 @@ contains a new shuffled deck:
        
             # deal the cards
             self.deck.deal(self.hands)
-            print "---------- Cards have been dealt"
+            print("---------- Cards have been dealt")
             self.printHands()
        
             # remove initial matches
             matches = self.removeAllMatches()
-            print "---------- Matches discarded, play begins"
+            print("---------- Matches discarded, play begins")
             self.printHands()
        
             # play until all 50 cards are matched
@@ -353,7 +363,7 @@ contains a new shuffled deck:
                 matches = matches + self.playOneTurn(turn)
                 turn = (turn + 1) % numHands
        
-            print "---------- Game is Over"
+            print("---------- Game is Over")
             self.printHands()
 
 The writing of ``printHands()`` is left as an exercise.
@@ -396,7 +406,7 @@ The return value is the number of matches made during this turn:
             neighbor = self.find_neighbor(i)
             pickedCard = self.hands[neighbor].popCard()
             self.hands[i].add(pickedCard)
-            print "Hand", self.hands[i].name, "picked", pickedCard
+            print("Hand", self.hands[i].name, "picked", pickedCard)
             count = self.hands[i].remove_matches()
             self.hands[i].shuffle()
             return count
@@ -532,3 +542,11 @@ Exercises
 
 #. Add a method, ``print_hands``, to the ``OldMaidGame`` class which traverses
    ``self.hands`` and prints each hand.
+   
+#. Define a new kind of Turtle that comes with an odometer that keeps track of how
+   far the turtle has travelled since it came off the production line.  Think carefully
+   about how to count the distance if the turtle moves backwards.  (We would not want
+   to buy a second-hand turtle whose odometer reading was faked because its previous
+   owner drove it backwards around the block too often.  Try this in a car near you, and see
+   if the odometer goes forward or backwards.)
+   
