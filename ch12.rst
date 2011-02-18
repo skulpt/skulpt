@@ -79,6 +79,7 @@ Here is how we use a key to look up the corresponding value:
 
 The key ``'two'`` yields the value ``'dos'``.
 
+.. index:: del statement, statement; del
 
 Dictionary operations
 ---------------------
@@ -227,6 +228,7 @@ dictionary causes a runtime error:
     KeyError: 'dog'
     >>> 
 
+.. index:: aliases
 
 Aliasing and copying
 --------------------
@@ -262,6 +264,7 @@ If we modify ``copy``, ``opposites`` is unchanged:
     >>> opposites['right']
     'left'
 
+.. index:: matrix
 
 Sparse matrices
 ---------------
@@ -331,6 +334,7 @@ return if the key is not in the dictionary:
 ``get`` definitely improves the semantics of accessing a sparse matrix.  Shame
 about the syntax.
 
+.. index:: memo
 
 Memos
 -----

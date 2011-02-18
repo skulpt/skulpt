@@ -73,6 +73,8 @@ some seconds, and we'll convert them into hours, minutes, and remaining seconds.
     single: expression; boolean
     single: logical operator
     single: operator; logical 
+    single: operator; comparison
+    single: comparison operator
 
 Boolean values and expressions
 ------------------------------
@@ -122,7 +124,10 @@ equal sign (``=``) instead of a double equal sign (``==``). Remember that ``=``
 is an assignment operator and ``==`` is a comparison operator. Also, there is
 no such thing as ``=<`` or ``=>``.
 
-
+.. index::
+    single: logical operator
+    single: operator; logical 
+    
 Logical operators
 -----------------
 
@@ -141,12 +146,13 @@ is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
 
 .. index:: conditional branching, conditional execution, if, elif, else,
            if statement, compound statement, statement block, block, body,
-           pass, pass statement
+           pass statement
 
 .. index::
     single: statement; if
     single: compound statement; header
     single: compound statement; body
+    single: conditional statement
     single: statement; pass
 
 Conditional execution
@@ -338,7 +344,6 @@ conditionals, so we can use the ``and`` operator:
 
 
 .. index::
-    single: return
     single: return statement
     single: statement; return
 
@@ -365,9 +370,6 @@ it does is check whether ``x`` is less than or equal to 0, in which case it
 displays an error message and then uses ``return`` to exit the function. The
 flow of execution immediately returns to the caller, and the remaining lines of
 the function are not executed.
-
-
-.. index:: prompt
 
 
 .. index::
@@ -440,6 +442,8 @@ The ``str(ARGUMENT)`` function converts any argument given to it to type
 
 ``str(ARGUMENT)`` will work with any value and convert it into a string.  As
 mentioned earlier, ``True`` is boolean value; ``true`` is not.
+
+.. index:: bar chart
 
 A Turtle Bar Chart
 ------------------

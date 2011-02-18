@@ -262,6 +262,8 @@ called it. When it gets to the end of the program, it terminates.
 What's the moral of this sordid tale? When you read a program, don't read from
 top to bottom. Instead, follow the flow of execution.
 
+.. index:: PyScripter; single stepping
+
 .. admonition:: Watch the flow of execution in action
 
    In PyScripter, you can watch the flow of execution by "single-stepping" through
@@ -319,8 +321,8 @@ top to bottom. Instead, follow the flow of execution.
     single: function; parameter
     single: argument
     single: function; argument
-    single: import
     single: import statement
+    single: statement; import
     single: composition
     single: function; composition
     
@@ -495,6 +497,7 @@ time, recover the local variable.  Each call of the function creates
 new local variables, and their lifetimes expire when the function returns
 to the caller. 
     
+.. index:: refactoring code, chunking    
 
 Turtles Revisited
 -----------------
@@ -609,7 +612,7 @@ Glossary
         The first part of a compound statement. A header line begins with a keyword and
         ends with a colon (:)
 
-    import
+    import statement
         A statement which permits functions and variables defined in another Python
         module to be brought into the environment of another script.  To use the 
         features of the turtle, we need to first import the turtle module.

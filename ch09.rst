@@ -16,6 +16,8 @@
  
 |    
     
+.. index:: list, element, sequence, collection    
+    
 Lists
 =====
 
@@ -25,6 +27,7 @@ similar to strings, which are ordered collections of characters, except that the
 elements of a list can have any type.  Lists and strings --- and other things
 that behave like ordered sets --- are called **sequences**.
 
+.. index:: nested list, list; nested
 
 List values
 -----------
@@ -64,6 +67,8 @@ have already seen that we can:
     ['ameliorate', 'castigate', 'defenestrate'] [17, 123] []
 
 .. _accessing-elements:
+
+.. index:: list index, index, list traversal
 
 Accessing elements
 ------------------
@@ -306,6 +311,7 @@ desired location:
     >>> a_list
     ['a', 'b', 'c', 'd', 'e', 'f']
 
+.. index:: del statement, statement; del
 
 List deletion
 -------------
@@ -313,7 +319,7 @@ List deletion
 Using slices to delete list elements can be awkward, and therefore error-prone.
 Python provides an alternative that is more readable.
 
-``del`` removes an element from a list:
+The ``del`` statement removes an element from a list:
 
 .. sourcecode:: python
     
@@ -337,7 +343,7 @@ You can use a slice as an index for ``del``:
 As usual, slices select all the elements up to, but not including, the second
 index.
 
-.. index:: ``is`` operator, objects and values
+.. index:: is operator, objects and values
 
 Objects and values
 ------------------
@@ -394,6 +400,7 @@ The state snapshot here looks like this:
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
 
+.. index:: aliases
 
 Aliasing
 --------
@@ -428,6 +435,7 @@ with mutable objects. Of course, for immutable objects, there's no problem.
 That's why Python is free to alias strings when it sees an opportunity to
 economize.
 
+.. index:: clone
 
 Cloning lists
 -------------
@@ -456,7 +464,9 @@ Now we are free to make changes to ``b`` without worrying about ``a``:
     >>> a
     [1, 2, 3]
 
-.. index:: ``for`` loop, enumerate
+.. index:: for loop, enumerate
+
+.. index:: for loop
 
 Lists and ``for`` loops
 -----------------------
@@ -534,6 +544,7 @@ works:
     3 quince
     >>>
 
+.. index:: parameter
 
 List parameters
 ---------------
@@ -581,6 +592,8 @@ If a function modifies the elements of a list parameter, the caller sees the cha
     It is a very useful tool for building a good understanding of aliases, assignments,
     and passing arguments to functions.  
 
+.. index:: list; append
+    
 List methods
 ------------
 
@@ -627,6 +640,8 @@ the list. Continuing with this example, we show several other list methods:
 
 Experiment with the list methods shown here, and read their documentation until you feel confident that
 you understand how they work.
+
+.. index:: side effect, modifier
 
 .. _pure-func-mod:
 
@@ -712,6 +727,8 @@ to return a list of all prime numbers less than n::
                result.append(i)
        return result
 
+.. index:: nested list, list; nested
+       
 Nested lists
 ------------
 
@@ -741,6 +758,7 @@ Or we can combine them:
 Bracket operators evaluate from left to right, so this expression gets the
 three-eth element of ``nested`` and extracts the one-eth element from it.
 
+.. index:: matrix
 
 Matrices
 --------
@@ -773,7 +791,7 @@ Although this way of representing matrices is common, it is not the only
 possibility. A small variation is to use a list of columns instead of a list of
 rows. Later we will see a more radical alternative using a dictionary.
 
-.. index:: TDD, Test-driven development
+.. index:: Test-driven development, scaffolding
 
 Test-driven development (TDD)
 -----------------------------
@@ -911,7 +929,7 @@ Using TDD has several benefits to our software development process.  It:
 * assures that we have a well developed automated test suite for our software,
   facilitating later additions and improvements.
 
-.. index:: strings and lists, ``split``, ``join``
+.. index:: strings and lists, split, join
 
 Strings and lists
 -----------------
@@ -956,7 +974,7 @@ next examples show, you can use empty glue or multi-character strings as glue::
     >>> '' . join(wds)
     'TheraininSpain...'
 
-.. index:: lazy promise, promise
+.. index:: promise, range function
     
 ``list`` and ``range``
 ----------------------   
@@ -1053,7 +1071,7 @@ Glossary
         A function which changes its arguments inside the function body. Only
         mutable types can be changed by modifiers.
         
-    mutable type
+    mutable data type
         A data type in which the elements can be modified. All mutable types
         are compound types. Lists are mutable data types; strings are not.
 
@@ -1147,12 +1165,7 @@ Exercises
        print("Test 2: {0}".format(this == that))
 
    Provide a *detailed* explaination of the results.
-   
-
-#. Write a function ``add_lists(a, b)`` that takes two lists of numbers of the
-   same length, and returns a new list containing the sums of the corresponding 
-   elements of each:: 
-   
+     
 #. Lists can be used to represent mathematical *vectors*.  In this exercise
    and several that follow you will write functions to perform standard
    operations on vectors.  Create a script named ``vectors.py`` and 
@@ -1162,9 +1175,9 @@ Exercises
    the same length, and returns a new list containing the sums of the
    corresponding elements of each::
    
-   test(add_vectors([1, 1], [1, 1]), [2, 2])
-   test(add_vectors([1, 2], [1, 4]), [2, 6])
-   test(add_vectors([1, 2, 1], [1, 4, 3]), [2, 6, 4])
+       test(add_vectors([1, 1], [1, 1]), [2, 2])
+       test(add_vectors([1, 2], [1, 4]), [2, 6])
+       test(add_vectors([1, 2, 1], [1, 4, 3]), [2, 6, 4])
  
 #. Write a function ``scalar_mult(s, v)`` that takes a number, ``s``, and a
    list, ``v`` and returns the `scalar multiple
@@ -1174,7 +1187,7 @@ Exercises
         test(scalar_mult(3, [1, 0, -1]), [3, 0, -3])
         test(scalar_mult(7, [3, 0, 5, 11, 2]), [21, 0, 35, 77, 14])
 
-#.  Write a function ``dot_product(u, v)`` that takes two lists of numbers of
+#. Write a function ``dot_product(u, v)`` that takes two lists of numbers of
    the same length, and returns the sum of the products of the corresponding
    elements of each (the `dot_product
    <http://en.wikipedia.org/wiki/Dot_product>`__).

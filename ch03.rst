@@ -20,11 +20,12 @@
 Hello, little turtles!
 ======================
 
-.. index::
+.. index::  
+    single: module
     single: function
     single: function definition
     single: definition; function
-
+    single: turtle module
 
 There are many *modules* in Python that provide very powerful features that we
 can use in our own programs.  Some of these can send email, or fetch web pages.
@@ -35,6 +36,9 @@ The turtles are fun, but the real purpose of the chapter is to teach ourselves
 a little more Python, and to develop our theme of *computational thinking*, 
 or *thinking like a computer scientist*.  Most of the Python covered here 
 will be explored in more depth later.
+
+
+.. index:: object, invoke, method, attribute, state, canvas
 
 Our first turtle program
 ------------------------
@@ -142,6 +146,7 @@ screen until we click on it.
        expects its argument to be an int.  So you'll need to convert 
        the string to an int before you pass it to ``pensize``.   
  
+.. index:: instance
   
 Instances --- a herd of turtles
 -------------------------------
@@ -212,7 +217,7 @@ Here are some *How to think like a computer scientist* observations:
   They're not always explicit in the code.  
 * And, uh-huh, two turtles may not be enough for a herd, but you get the idea! 
 
-  
+.. index:: for loop
   
 The **for** loop
 ----------------
@@ -253,6 +258,7 @@ When we run this, the output looks like this:
 * At the end of each execution of the body of the loop, Python returns 
   to the ``for`` statement, to see if there are more items to be handled.
 
+.. index:: control flow, flow of execution
   
 Flow of Execution of the for loop
 ---------------------------------
@@ -272,6 +278,7 @@ top to bottom, one statement at a time.  The ``for`` loop changes this.
 Control flow is often easy to visualize and understand if we draw a flowchart.
 This shows the exact steps and logic of how the ``for`` statement executes.
 
+.. index:: range function, chunking
 
 The loop simplifies our turtle program
 --------------------------------------

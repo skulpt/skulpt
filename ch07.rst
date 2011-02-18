@@ -131,6 +131,8 @@ Updating a variable by adding 1 is called an **increment**; subtracting 1 is
 called a **decrement**.  Sometimes programmers also talk about **bumping**
 a variable, which means the same as incrementing it by 1.
 
+.. index:: for loop
+
 The ``for`` loop revisited
 --------------------------
 
@@ -173,7 +175,7 @@ to update the running total by adding the next number to it.
     test(mysum(range(11)), 55)    # Remember that 11 is not in the list that range generates.
       
         
-.. index:: while, while statement, while loop, iteration, loop, loop body,
+.. index:: while statement, while loop, iteration, loop, loop body,
            infinite loop, condition
 
 The ``while`` statement
@@ -248,6 +250,8 @@ made the investment of writing some unit tests, our test suite would have caught
         
 So why have two kinds of loop if ``for`` looks easier?  This next example shows a case where
 we need the extra power that we get from the ``while`` loop.        
+        
+.. index:: 3n + 1 sequence        
         
 The 3n + 1 sequence
 -------------------
@@ -463,6 +467,8 @@ the code, or a bug in the specifications, our expectations, or the tests? ::
     test(num_digits(0050), 4)
     test(num_digits(0), 1)
 
+.. index:: abbreviated assignment    
+    
 Abbreviated assignment
 ----------------------
 
@@ -509,6 +515,8 @@ There are similar abbreviations for ``-=``, ``*=``, ``/=``, ``//=`` and ``%=``:
     >>> n
     1
 
+.. index:: help, meta-notation   
+    
 Help and meta-notation
 ----------------------
 
@@ -778,6 +786,8 @@ two variables ``i`` are distinct variables, and how they have independent values
 (The visualizer has a limit of showing 100 steps, though --- not quite enough
 to run this particular example all the way to the end.)
 
+.. index:: break statement,  statement: break
+
 The ``break`` statement, and flavours of loops
 ----------------------------------------------
 
@@ -890,6 +900,8 @@ Each time through the loop we extend the message being displayed: this allows us
 display the program's feedback right at the same place as we're asking for the next guess. 
 
 .. image:: illustrations/Python_input.png
+
+.. index:: continue statement,  statement; continue
 
 The ``continue`` statement
 --------------------------

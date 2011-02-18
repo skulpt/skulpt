@@ -20,6 +20,7 @@
 Classes and Objects - Digging a little deeper
 =============================================
 
+.. index:: rectangle
 
 Rectangles
 ----------
@@ -72,6 +73,7 @@ The figure shows the state of this object:
 
 .. image:: illustrations/rectangle.png
    
+.. index:: mutable data type
 
 Objects are mutable
 -------------------
@@ -116,7 +118,8 @@ Let us try this::
     >>> r.move(-10, 10)
     print(r)
     ((0, 15), 125, 40)
-                   
+      
+.. index:: equality, equality; deep, equality; shallow, shallow equality, deep equality      
 
 Sameness
 --------
@@ -207,9 +210,7 @@ shallow and deep equality.
     with different memory addresses, in one case the ``==`` operator tests for deep equality, 
     while in the case of points it makes a shallow test. 
 
-
-   
-
+..index:: copy, copy; deep, copy; shallow 
 
 Copying
 -------

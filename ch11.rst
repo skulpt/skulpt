@@ -88,7 +88,6 @@ the final comma, Python treats the ``(5)`` below as an integer in parentheses:
     <class 'int'>     
     
 .. index::
-    single: tuple assignment 
     single: assignment; tuple 
     single: tuple; assignment  
   
@@ -159,7 +158,9 @@ of a circle of radius r:
         c = 2 * math.pi * r
         a = math.pi * r * r
         return (c, a)
-        
+    
+.. index:: fractal, fractal; Koch, Koch fractal
+    
 Drawing Fractals
 ----------------
 
@@ -167,7 +168,7 @@ Drawing Fractals
 smaller scale, perhaps multiple times, to achieve your objective.  
 For example, we might say "A human being is someone whose mother is a human being."   
 
-For our purposes, a **fractal** is drawing which also has self-similar* structure,
+For our purposes, a **fractal** is drawing which also has *self-similar* structure,
 where it can be defined in terms of itself.
 
 Let us start by looking at the famous Koch fractal.  An order 0 Koch fractal is simply
@@ -298,9 +299,10 @@ things easier for our next observations.
     is, however, to be able to do the abstraction!
 
 .. index::
-    single: data structures
-    single: data structures; recursive
+    single: data structure
+    single: data structure; recursive
     single: recursive definition
+    single: definition; recursive
     single: recursive data structure
        
 Recursive data structures
@@ -351,7 +353,7 @@ For our *nested number list*, however, ``sum`` will not work:
 The problem is that the third element of this list, ``[11, 13]``, is itself a
 list, which can not be added to ``1``, ``2``, and ``8``.
 
-.. index:: recursion, recursive call, base case, infinite recursion
+.. index:: recursion, recursive call, base case, infinite recursion, recursion; infinite
 
 Recursion
 ---------
@@ -449,7 +451,7 @@ We would certainly never want something like this to happen to a user of one of
 our programs, so before finishing the recursion discussion, let's see how
 errors like this are handled in Python.
 
-.. index:: exception, handling an exception
+.. index:: exception, handling an exception, exception; handling, try ... except 
 
 Exceptions
 ----------
@@ -618,6 +620,8 @@ so that it stops when it reaches the maximum recursion depth allowed:
 
 Run this version and observe the results.
 
+.. index:: try ... except ... finally
+
 The ``finally`` clause of the ``try`` statement
 -----------------------------------------------
 
@@ -669,7 +673,7 @@ handle an exception, so your program will still crash.  But it's turtle window
 will be closed when it crashes! 
 
 
-.. index:: fibonacci 
+.. index:: fibonacci numbers
 
 Case study: Fibonacci numbers  
 ----------------------------- 
@@ -794,11 +798,6 @@ Glossary
         A function that calls itself recursively without ever reaching the base
         case. Eventually, an infinite recursion causes a runtime error.
 
-    list comprehension
-        A syntactic construct which enables lists to be generated from other
-        lists using a syntax analogous to the mathematical `set-builder
-        notation <http://en.wikipedia.org/wiki/Set-builder_notation>`__.
-
     mutable data type
         A data type which can be modified. All mutable types are compound
         types.  Lists and dictionaries (see next chapter) are mutable data
@@ -820,14 +819,6 @@ Glossary
         it must include *base cases* which are not recursive. In this way it
         differs from a *circular definition*.  Recursive definitions often
         provide an elegant way to express complex data structures.
-        
-    tail recursion
-        A recursive call that occurs as the last statement (at the tail) of a
-        function definition. Tail recursion is considered bad practice in
-        Python programs since a logically equivalent function can be written
-        using *iteration* which is more efficient (see the Wikipedia article on
-        `tail recursion <http://en.wikipedia.org/wiki/Tail_recursion>`__ for
-        more information).
 
     tuple
         A data type that contains a sequence of elements of any type, like a
@@ -864,6 +855,9 @@ Exercises
 
    .. image:: illustrations/koch_snowflake.png
    
+   
+.. index:: fractal; Cesaro torn square
+   
 #. Draw a Cesaro torn square fractal, of the order given by the user.  A torn square 
    consists of four torn lines.   We show four different squares of orders 0,1,2,3.     
    In this example, the angle of the tear is 10 degrees.   
@@ -871,6 +865,8 @@ Exercises
    or perhaps let the user input the angle of the tear. 
 
    .. image:: illustrations/cesaro_torn_square.png
+   
+.. index:: fractal; Sierpinski triangle
    
 #. A Sierpinski triangle of order 0 is an equilateral triangle.  
    An order 1 triangle can be drawn by drawing 3 smaller triangles 

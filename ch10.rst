@@ -34,6 +34,8 @@ You are encouraged to use and navigate help.
 
 .. _random_numbers:
 
+.. index:: random numbers, shuffle, promise
+
 Random numbers
 --------------
 
@@ -43,7 +45,7 @@ We often want to use random numbers in programs: here are a few typical uses:
 * To shuffle a deck of playing cards randomly,
 * To randomly allow a new enemy spaceship to appear and shoot at you,
 * To simulate possible rainfall when we make a computerized model for
-  estimating the environmental impact of builing a dam on a river,
+  estimating the environmental impact of builing a dam,
 * For encrypting your banking session on the Internet.
   
 Python provides a module ``random`` that helps with tasks like this.  You can
@@ -85,6 +87,8 @@ using the ``list`` type converter first.) ::
     cards = list(range(52))         # generate integers 0..51, representing a pack of cards
     rng.shuffle(cards)              # shuffle the pack
 
+.. index:: deterministic algorithm,  algorithm; deterministic, unit tests   
+    
 Repeatability and Testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -187,6 +191,7 @@ Mathematical functions are "pure" and don't need any state --- calculating the s
 So the functions are not methods of a stateful object --- 
 they are simply housed together in a module called `math`.  
 
+.. index:: import statement, statement; import
 
 Creating your own modules
 -------------------------
@@ -216,6 +221,7 @@ so the file extention is not included in the **import statement**.
 The use of modules makes it possible to break up very large programs into
 managable sized parts, and to keep related parts together.
 
+.. index:: namespace
 
 Namespaces
 ----------
@@ -325,6 +331,7 @@ there might be three different instances of people, all called "Bruce".
 Namespaces permit several programmers to work on the same project without
 having naming collisions.
 
+.. index:: scope, scope; global, scope; local, scope; builtin, builtin scope, global scope, local scope
     
 Scope and lookup rules
 ----------------------
@@ -391,6 +398,8 @@ called on line 7.
 What is the scope of the variable ``n`` on line 1?  Its scope --- the region in which it is
 visible ---  is lines 1, 2, 6, 7.  It is hidden from view in lines 3,4,5 because of the 
 local variable ``n``.
+
+.. index:: attribute, dot operator
    
 Attributes and the dot operator
 -------------------------------
@@ -409,9 +418,10 @@ to access them in the same way. ``seqtools.remove_at`` refers to the
 When we use a dotted name, we often refer to it as a **fully qualified name**,
 because we're saying exactly which ``question`` attribute we mean.
     
+.. index:: import statement  
     
-Three ``import`` variants
--------------------------
+Three ``import`` statement variants
+-----------------------------------
     
 Here are three different ways to import names into the current namespace, and to use them::
 
@@ -461,6 +471,8 @@ own, say ``my_own_unit_tester.py``, and simply use one line in each new script i
 
     from my_own_unit_tester import test
 
+.. index:: file   
+    
 Reading and writing files
 -------------------------
 
@@ -581,6 +593,7 @@ writing the same 50 charaters to ``outfile`` until the end of ``infile`` is
 reached, at which point ``text`` is empty and the ``break`` statement is
 executed.
 
+.. index:: file; text,  text file
 
 Text files
 ----------
@@ -667,6 +680,7 @@ Thus, if ``text`` is the empty string, the loop exits. If the first character
 of ``text`` is a hash mark, the flow of execution goes to the top of the loop.
 Only if both conditions fail do we copy ``text`` into the new file.
 
+.. index:: directory
 
 Directories
 -----------
@@ -737,7 +751,7 @@ of content from Internet.
 You'll need to get a few things right before this works:  
  * The page you're trying to fetch must exist!  Check this using a browser.
  * You'll need permission to write to the destination filename.
- * If you are behind a proxy server, (as many schools are), this may
+ * If you are behind a proxy server, (as many students are), this may
    require some more special handling to work around your proxy. 
    Use a local text resource for the purpose of this demonstration! 
   

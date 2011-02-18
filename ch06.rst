@@ -19,11 +19,11 @@
 Fruitful functions
 ==================
 
-.. index:: return, return statement, return value, temporary variable,
-           dead code, None, NoneType
+.. index:: return statement, return value, temporary variable,
+           dead code, None, unreachable code
 
 .. index::
-    single: value; None
+    single: value 
     single: variable; temporary 
 
 Return values
@@ -262,6 +262,8 @@ The key aspects of the process are:
    into compound expressions,
    but only do this if it does not make the program more difficult to read.
 
+.. index:: debugging   
+   
 Debugging with ``print``
 ------------------------
 
@@ -406,6 +408,7 @@ It might be tempting to write something like:
 
 but the extra comparison is unnecessary.
 
+.. index:: style
 
 Programming with style
 ----------------------
@@ -424,8 +427,6 @@ few pointers will be helpful already:
 * keep function definitions together
 * keep top level statements, including function calls, together at the
   bottom of the program
-
-.. index:: unit testing
 
 
 Unit testing 

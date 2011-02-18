@@ -42,7 +42,7 @@ that end will become clearer.
 
 
 .. index:: programming language, portable, high-level language,
-           low-level language, compile, interpret
+           low-level language, compile, interpret, PyScripter
 
 The Python programming language
 -------------------------------
@@ -281,7 +281,7 @@ Later chapters will make more suggestions about debugging and other programming
 practices.
 
 
-.. index:: formal language, natural language, parse
+.. index:: formal language, natural language, parse, token
 
 Formal and natural languages
 ----------------------------
@@ -358,17 +358,17 @@ so:
 
 .. glossary::
 
-    Poetry
+    poetry
         Words are used for their sounds as well as for their meaning, and the
         whole poem together creates an effect or emotional response. Ambiguity
         is not only common but often deliberate.
 
-    Prose
+    prose
         The literal meaning of words is more important, and the structure
         contributes more meaning. Prose is more amenable to analysis than
         poetry but still often ambiguous.
 
-    Programs
+    program
         The meaning of a computer program is unambiguous and literal, and can
         be understood entirely by analysis of the tokens and structure.
 
@@ -381,8 +381,6 @@ and interpreting the structure.  Finally, the details matter. Little things
 like spelling errors and bad punctuation, which you can get away with in
 natural languages, can make a big difference in a formal language.
 
-
-.. index:: "hello world!"
 
 The first program
 -----------------

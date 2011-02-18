@@ -19,7 +19,7 @@ Variables, expressions and statements
 =====================================
 
 
-.. index:: value, data type, string, integer, int, float
+.. index:: value, data type, string, integer, int, float, class
 
 .. index::
     single: triple quoted string
@@ -92,7 +92,7 @@ Double quoted strings can contain single quotes inside them, as in
 inside them, as in ``'The knights who say "Ni!"'``. 
 
 Strings enclosed with three occurrences of either quote symbol are
-called triple-quoted strings.  They can 
+called triple quoted strings.  They can 
 contain either single or double quotes: 
 
 .. sourcecode:: python
@@ -175,8 +175,8 @@ up, Doc?"`` to a new variable named ``message``. The second gives the integer
 ``17`` to ``n``, and the third assigns the floating-point number ``3.14159`` to
 a variable called ``pi``.
 
-The **assignment operator**, ``=``, should not be confused with *equals*, which uses
-the token `==`.  Assignment operators link a *name*,
+The **assignment token**, ``=``, should not be confused with *equals*, which uses
+the token `==`.  The assignment statement links a *name*,
 on the left hand side of the operator, with a *value*, on the right hand side.
 This is why you will get an error if you enter:
 
@@ -254,13 +254,16 @@ Variable names and keywords
 ---------------------------
 
 **Variable names** can be arbitrarily long. They can contain both letters and
-numbers, but they have to begin with a letter. Although it is legal to use
+digits, but they have to begin with a letter or an underscore. Although it is legal to use
 uppercase letters, by convention we don't. If you do, remember that case
 matters. ``Bruce`` and ``bruce`` are different variables.
 
 The underscore character ( ``_``) can appear in a name. It is often used in
 names with multiple words, such as ``my_name`` or ``price_of_tea_in_china``.
 
+There are some situations in which names beginning with an underscore have
+special meaning, so a safe rule for beginners is to start all names with a letter.
+ 
 If you give a variable an illegal name, you get a syntax error:
 
 .. sourcecode:: python
@@ -646,14 +649,10 @@ Glossary
 
 .. glossary::
 
-    assignment operator
-        ``=`` is Python's assignment operator, which should not be confused
-        with the mathematical comparison operator using the same symbol.
-
     assignment statement
         A statement that assigns a value to a name (variable). To the left of
         the assignment operator, ``=``, is a name. To the right of the
-        assignment operator is an expression which is evaluated by the Python
+        assignment token is an expression which is evaluated by the Python
         interpreter and then assigned to the name. The difference between the
         left and right hand sides of the assignment statement is often
         confusing to new programmers. In the following assignment:
@@ -666,6 +665,10 @@ Glossary
         right it is a *value* and makes up part of the *expression* which will
         be evaluated by the Python interpreter before assigning it to the name
         on the left.
+        
+    assignment token
+        ``=`` is Python's assignment token, which should not be confused
+        with the mathematical comparison operator using the same symbol.    
 
     comment
         Information in a program that is meant for other programmers (or anyone

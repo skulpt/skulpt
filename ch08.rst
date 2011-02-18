@@ -19,7 +19,7 @@
 Strings
 =======
 
-.. index:: compound data types, character, subscript operator, index
+.. index:: compound data type, character, subscript operator, index
 
 A compound data type
 --------------------
@@ -350,7 +350,6 @@ The solution here is to concatenate a new first letter onto a slice of
 
 
 .. index::
-    single: in
     single: in operator
     single: operator; in
 
@@ -472,7 +471,7 @@ string, and is another example of the counter pattern introduced in
 
     test(count_a("banana"), 3)    
 
-.. index:: optional parameter, default value
+.. index:: optional parameter, default value, parameter; optional
 
 .. _optional_parameters:
 
@@ -611,7 +610,7 @@ substrings, not just characters:
     4
 
 
-.. index:: character classification, uppercase, lowercase, dot notation,
+.. index:: character classification, uppercase, lowercase,  
            whitespace, string module, Python Library Reference
 
 Character classification
@@ -696,7 +695,7 @@ Reference* is. Along with a wealth of other documentation, it's available from
 the Python website, `http://www.python.org <http://www.python.org>`__.
 
 
-.. index:: string formating, operations on strings
+.. index:: string formatting, operations on strings, formatting; strings, justification, field width
 
 The format method for strings
 -----------------------------

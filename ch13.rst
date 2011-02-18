@@ -21,6 +21,8 @@ Classes and Objects - the Basics
 ================================
 
 
+.. index:: object-oriented programming
+
 Object-oriented programming
 ---------------------------
 
@@ -47,9 +49,10 @@ Usually, each object definition corresponds to some object or concept in the rea
 world, and the functions that operate on that object correspond to the ways
 real-world objects interact.
  
+.. index:: compound data type
 
-User-defined compound types
----------------------------
+User-defined compound data types
+--------------------------------
 
 We've already seen classes like ``str``, ``int``, ``float`` and ``Turtle``.  
 We are now ready to create our own user-defined class: the ``Point``.
@@ -147,6 +150,7 @@ get the object properly set up with it's factory default settings.
 The combined process of "make me a new object" and "get its settings initialized
 to the factory default settings" is called **instantiation**.  
 
+.. index:: attribute
 
 Attributes
 ----------
