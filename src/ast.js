@@ -1543,7 +1543,8 @@ function parsenumber(c, s)
         return Sk.longFromStr(s.substr(0, s.length - 1));
     var k = goog.global.eval(s);
     if ((k > Sk.builtin.lng.threshold$ || k < -Sk.builtin.lng.threshold$)
-            && Math.floor(k) === k)
+            && Math.floor(k) === k
+            && (s.indexOf('e') === -1 && s.indexOf('E') === -1))
     {
         return Sk.longFromStr(s);
     }

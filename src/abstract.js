@@ -143,7 +143,7 @@ Sk.abstr.boNumPromote_ = {
     "Add": function(a, b) { return a + b; },
     "Sub": function(a, b) { return a - b; },
     "Mult": function(a, b) { return a * b; },
-    "Mod": function(a, b) { return a % b; },
+    "Mod": function(a, b) { return (b < 0 ? -1 : 1) * (Math.abs(a) % b); },
     "Div": function(a, b) {
         if (b === 0)
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
