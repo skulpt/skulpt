@@ -15,7 +15,7 @@
         Sk.configure({output:outf});
         try {
             var module = Sk.importMainWithBody("<stdin>", false, prog);
-            var obj = module['$d'].a;
+            var obj = module.tp$getattr('a');
             var runMethod = obj.tp$getattr('run');
             var ret = Sk.misceval.call(runMethod, undefined, undefined, undefined, 10);
             alert(ret);
