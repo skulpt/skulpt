@@ -1,0 +1,40 @@
+<script src="../dist/skulpt.js" type="text/javascript"></script>
+<script type="text/javascript">
+    function outf(text)
+    {
+        var output = document.getElementById("output");
+        text = text.replace(/</g, '&lt;');
+        output.innerHTML = output.innerHTML + text;
+    }
+
+    function runit()
+    {
+        var prog = document.getElementById("code").value;
+        var output = document.getElementById("output");
+        output.innerHTML = '';
+        Sk.configure({output:outf});
+        try {
+            var module = Sk.importMainWithBody("<stdin>", false, prog);
+            var obj = module['$d'].a;
+            var runMethod = obj.tp$getattr('run');
+            var ret = Sk.misceval.call(runMethod, undefined, undefined, undefined, 10);
+            alert(ret);
+        } catch (e) {
+            alert(e);
+        }
+    }
+</script>
+<form>
+<textarea id="code" rows="24" cols="80">
+class Test:
+     def run(self, b):
+         self.a = 10 + b
+         return self.a
+
+print "Hello World"
+a = Test()
+</textarea><br>
+<button onclick="runit()" type="button">Run</button>
+</form>
+
+<pre id="output"></pre>
