@@ -293,7 +293,7 @@ def getBuiltinsAsJson():
                     print "reading", f
                     f = f.replace("\\", "/")
                     ret['files'][f] = open(f).read()
-    return json.dumps(ret)
+    return "Sk.builtinFiles=" + json.dumps(ret)
 
 def dist():
     """builds a 'shippable' version of Skulpt.

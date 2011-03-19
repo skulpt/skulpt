@@ -152,16 +152,10 @@ function startup()
             });
     hideCodeButton.render(goog.dom.getElement('hidecode'));
 
-    var builtinFiles;
-    goog.net.XhrIo.send("/static/builtin.js", function(e) {
-            var xhr = e.target;
-            var obj = xhr.getResponseJson();
-            builtinFiles = obj['files'];
-            });
     function builtinRead(x)
     {
-        if (builtinFiles === undefined || builtinFiles[x] === undefined)
+        if (Sk.builtinFiles === undefined || Sk.builtinFiles[x] === undefined)
             throw "File not found: '" + x + "'";
-        return builtinFiles[x];
+        return Sk.builtinFiles[x];
     }
 }
