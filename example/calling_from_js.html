@@ -17,7 +17,7 @@
             var module = Sk.importMainWithBody("<stdin>", false, prog);
             var obj = module.tp$getattr('a');
             var runMethod = obj.tp$getattr('run');
-            var ret = Sk.misceval.call(runMethod, undefined, undefined, undefined, 10);
+            var ret = Sk.misceval.callsim(runMethod, 10);
             alert(ret);
         } catch (e) {
             alert(e);
