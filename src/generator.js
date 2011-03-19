@@ -18,6 +18,7 @@ Sk.builtin.generator = function(code, globals, args, closure, closure2)
     this.func_globals = globals || null;
     this.gi$running = false;
     this['gi$resumeat'] = 0;
+    this['gi$sentvalue'] = undefined;
     this['gi$locals'] = {};
     if (args.length > 0)
     {
@@ -45,9 +46,11 @@ Sk.builtin.generator.prototype.tp$iter = function()
     return this;
 };
 
-Sk.builtin.generator.prototype.tp$iternext = function()
+Sk.builtin.generator.prototype.tp$iternext = function(yielded)
 {
     this.gi$running = true;
+    if (yielded === undefined) yielded = null;
+    this['gi$sentvalue'] = yielded;
 
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
@@ -84,3 +87,9 @@ Sk.builtin.generator.prototype['$r'] = function()
 {
     return new Sk.builtin.str("<generator object " + this.func_code['co_name'].v + ">");
 };
+
+Sk.builtin.generator.prototype['send'] = new Sk.builtin.func(function(self, value)
+{
+    return self.tp$iternext(value);
+});
+

@@ -282,7 +282,7 @@ Compiler.prototype.cyield = function(e)
     // return a pair: resume target block and yielded value
     out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
     this.setBlock(nextBlock);
-    return 'null'; // todo; sends from outside
+    return '$gen.gi$sentvalue'; // will either be null if none sent, or the value from gen.send(value)
 }
 
 Compiler.prototype.ccompare = function(e)

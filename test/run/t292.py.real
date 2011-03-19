@@ -1,0 +1,10 @@
+i 0
+num 0
+signalling
+got sig
+i 1
+foo 1
+got None
+i 2
+num 2
+got None
