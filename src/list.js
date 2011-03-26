@@ -5,7 +5,6 @@
  */
 Sk.builtin.list = function(L)
 {
-    if (L instanceof Sk.builtin.list) return L;
     if (!(this instanceof Sk.builtin.list)) return new Sk.builtin.list(L);
 
     if (Object.prototype.toString.apply(L) === '[object Array]')
