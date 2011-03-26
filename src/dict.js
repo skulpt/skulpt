@@ -45,8 +45,9 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
     }
     else
     {
+        // only increment if it's not already used as a key
+        if ( !(k in this) ) this.size += 1;
         this[k] = { lhs: key, rhs: w };
-        this.size += 1;
     }
 };
 

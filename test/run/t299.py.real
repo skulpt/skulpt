@@ -1,0 +1,23 @@
+[1, 2, 3, 4, 1, 1]
+set([1, 2, 3, 4])
+# self
+# forwards
+False
+False
+True
+True
+True
+False
+True
+True
+False
+# backwards
+False
+False
+True
+True
+True
+False
+True
+True
+False

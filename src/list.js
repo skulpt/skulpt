@@ -5,7 +5,6 @@
  */
 Sk.builtin.list = function(L)
 {
-    if (L instanceof Sk.builtin.list) return L;
     if (!(this instanceof Sk.builtin.list)) return new Sk.builtin.list(L);
 
     if (Object.prototype.toString.apply(L) === '[object Array]')
@@ -94,7 +93,10 @@ Sk.builtin.list.prototype.tp$richcompare = function(w, op)
     // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
     // perhaps by trapping a stack overflow? otherwise i'm not sure for more
     // complicated cases. bleh
-    if (this === w) return op === 'Eq';
+    //
+    // if the comparison allows for equality then short-circuit it here
+    if (this === w && Sk.misceval.opAllowsEquality(op))
+        return true;
 
     var v = this.v;
     var w = w.v;

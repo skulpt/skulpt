@@ -36,6 +36,7 @@ Files = [
         'src/int.js',
         'src/float.js',
         'src/slice.js',
+        'src/set.js',
         'src/module.js',
         'src/generator.js',
         'src/file.js',
@@ -545,7 +546,11 @@ def nrt():
         fn = "test/run/t%02d.py" % i
         disfn = fn + ".disabled"
         if not os.path.exists(fn) and not os.path.exists(disfn):
-            os.system("vim " + fn)
+            if 'EDITOR' in os.environ:
+                editor = os.environ['EDITOR']
+            else:
+                editor = 'vim'
+            os.system(editor + ' ' + fn)
             print "don't forget to ./m regentests"
             break
 

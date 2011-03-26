@@ -1,0 +1,225 @@
+/**
+ * @constructor
+ * @param {Array.<Object>} S
+ */
+Sk.builtin.set = function(S)
+{
+    if (!(this instanceof Sk.builtin.set)) return new Sk.builtin.set(S);
+
+    this.v = new Sk.builtin.dict([]);
+    S = new Sk.builtin.list(S);
+    // python sorts sets on init, but not thereafter.
+    // Skulpt seems to init a new set each time you add/remove something
+    //Sk.builtin.list.prototype['sort'].func_code(S);
+    for (var it = S.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+    {
+        Sk.builtin.set.prototype['add'].func_code(this, i);
+    }
+
+    this.__class__ = Sk.builtin.set;
+
+    this["v"] = this.v;
+    return this;
+};
+
+
+Sk.builtin.set.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('set', Sk.builtin.set);
+
+Sk.builtin.set.prototype.set_iter_ = function()
+{
+    var ret = Sk.builtin.dict.prototype['keys'].func_code(this['v']);
+    return ret.tp$iter();
+};
+
+Sk.builtin.set.prototype.tp$name = 'set';
+Sk.builtin.set.prototype['$r'] = function()
+{
+    var ret = [];
+    for (var it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+    {
+        ret.push(Sk.misceval.objectRepr(i).v);
+    }
+    return new Sk.builtin.str('set([' + ret.join(', ') + '])');
+};
+Sk.builtin.set.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+// todo; you can't hash a set() -- what should this be?
+Sk.builtin.set.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+
+Sk.builtin.set.prototype.tp$richcompare = function(w, op)
+{
+    // todo; NotImplemented if either isn't a set
+
+    if (this === w && Sk.misceval.opAllowsEquality(op))
+        return true;
+
+    var vl = this.sq$length();
+    var wl = w.sq$length();
+
+    // easy short-cut
+    if (wl !== vl)
+    {
+        if (op === 'Eq')
+            return false;
+        if (op === 'NotEq')
+            return true;
+    }
+
+    // used quite a lot in comparisons.
+    var isSub = false;
+    var isSuper = false;
+
+    // gather common info
+    switch (op)
+    {
+        case 'Lt':
+        case 'LtE':
+        case 'Eq':
+        case 'NotEq':
+            isSub = Sk.builtin.set.prototype['issubset'].func_code(this, w);
+            break;
+        case 'Gt':
+        case 'GtE':
+            isSuper = Sk.builtin.set.prototype['issuperset'].func_code(this, w);
+            break;
+        default:
+            goog.asserts.fail();
+    }
+
+    switch (op)
+    {
+        case 'Lt':
+            return vl < wl && isSub;
+        case 'LtE':
+        case 'Eq':  // we already know that the lengths are equal
+            return isSub;
+        case 'NotEq':
+            return !isSub;
+        case 'Gt':
+            return vl > wl && isSuper;
+        case 'GtE':
+            return isSuper;
+    }
+};
+
+Sk.builtin.set.prototype.tp$iter = Sk.builtin.set.prototype.set_iter_;
+Sk.builtin.set.prototype.sq$length = function() { return this['v'].mp$length(); }
+
+Sk.builtin.set.prototype['isdisjoint'] = new Sk.builtin.func(function(self, other)
+{
+    // requires all items in self to not be in other
+    for (var it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
+    {
+        var isIn = Sk.abstr.sequenceContains(other, item);
+        if (isIn)
+        {
+            return false;
+        }
+    }
+    return true;
+});
+
+Sk.builtin.set.prototype['issubset'] = new Sk.builtin.func(function(self, other)
+{
+    var selfLength = self.sq$length();
+    var otherLength = other.sq$length();
+    if (selfLength > otherLength)
+    {
+        // every item in this set can't be in other if it's shorter!
+        return false;
+    }
+    for (var it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
+    {
+        var isIn = Sk.abstr.sequenceContains(other, item);
+        if (!isIn)
+        {
+            return false;
+        }
+    }
+    return true;
+});
+
+Sk.builtin.set.prototype['issuperset'] = new Sk.builtin.func(function(self, other)
+{
+    return Sk.builtin.set.prototype['issubset'].func_code(other, self);
+});
+
+Sk.builtin.set.prototype['union'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['intersection'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['difference'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['symmetric_difference'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['copy'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['update'] = new Sk.builtin.func(function(self, other)
+{
+    for (var it = other.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
+    {
+        Sk.builtin.set.prototype['add'].func_code(self, item);
+    }
+});
+
+Sk.builtin.set.prototype['intersection_update'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['difference_update'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+Sk.builtin.set.prototype['symmetric_difference_update'] = new Sk.builtin.func(function(self, other)
+{
+});
+
+
+Sk.builtin.set.prototype['add'] = new Sk.builtin.func(function(self, item)
+{
+    self.v.mp$ass_subscript(item, true);
+    return null;
+});
+
+Sk.builtin.set.prototype['discard'] = new Sk.builtin.func(function(self, item)
+{
+    if (self.v.mp$subscript(item) !== undefined)
+    {
+        self.v.mp$ass_subscript(item, null);
+    }
+    return null;
+});
+
+Sk.builtin.set.prototype['pop'] = new Sk.builtin.func(function(self)
+{
+    if (self.sq$length() === 0)
+    {
+        throw new Sk.builtin.KeyError("pop from an empty set");
+    }
+
+    var it = self.tp$iter(), item = it.tp$iternext();
+    Sk.builtin.set.prototype['discard'].func_code(self, item);
+    return item;
+});
+
+Sk.builtin.set.prototype['remove'] = new Sk.builtin.func(function(self, item)
+{
+    if (Sk.abstr.sequenceContains(self, item))
+    {
+        Sk.builtin.set.prototype['discard'].func_code(self, item);
+    }
+    else
+    {
+        throw new Sk.builtin.KeyError(item);
+    }
+    return null;
+});
