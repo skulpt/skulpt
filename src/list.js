@@ -93,8 +93,8 @@ Sk.builtin.list.prototype.tp$richcompare = function(w, op)
     // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
     // perhaps by trapping a stack overflow? otherwise i'm not sure for more
     // complicated cases. bleh
-
-    // PJCL: if the comparison allows for equality then short-cicuit it here
+    //
+    // if the comparison allows for equality then short-circuit it here
     if (this === w && Sk.misceval.opAllowsEquality(op))
         return true;
 
