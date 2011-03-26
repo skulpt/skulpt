@@ -265,7 +265,13 @@ Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
     return ret;
 });
 
-//Sk.builtin.list.prototype.remove = todo;
+Sk.builtin.list.prototype['remove'] = new Sk.builtin.func(function(self, item)
+{
+    var idx = Sk.builtin.list.prototype['index'].func_code(self, item);
+    self.v.splice(idx, 1);
+    return null;
+});
+
 Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
 {
     var len = self.v.length;
@@ -278,8 +284,34 @@ Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
     throw new Sk.builtin.ValueError("list.index(x): x not in list");
 });
 
-//Sk.builtin.list.prototype.count = todo;
-//Sk.builtin.list.prototype.reverse = todo;
+Sk.builtin.list.prototype['count'] = new Sk.builtin.func(function(self, item)
+{
+    var len = self.v.length;
+    var obj = self.v;
+    var count = 0;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+        {
+            count += 1;
+        }
+    }
+    return count;
+});
+
+Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(function(self)
+{
+    var len = self.v.length;
+    var old = self.v;
+    var newarr = [];
+    for (var i = len -1; i > -1; --i)
+    {
+        newarr.push(old[i]);
+    }
+    self.v = newarr;
+    return null;
+});
+
 Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key, reverse)
 {
     goog.asserts.assert(!key, "todo;");
