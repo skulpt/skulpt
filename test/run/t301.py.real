@@ -1,0 +1,23 @@
+# actual super & subsets
+set([1, 2, 3, 4, 100])
+set([2, 3, 4])
+# forwards
+False
+True
+True
+True
+False
+True
+False
+False
+False
+# backwards
+False
+False
+False
+False
+False
+True
+True
+True
+True

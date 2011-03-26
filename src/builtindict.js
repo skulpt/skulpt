@@ -31,6 +31,7 @@ Sk.builtins = {
 'object': Sk.builtin.object,
 'slice': Sk.builtin.slice,
 'str': Sk.builtin.str,
+'set': Sk.builtin.set,
 'tuple': Sk.builtin.tuple,
 'type': Sk.builtin.type
 };
