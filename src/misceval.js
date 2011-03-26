@@ -70,12 +70,15 @@ Sk.misceval.arrayFromArguments = function(args)
     var arg = args[0];
     if ( arg instanceof Sk.builtin.set )
     {
-        arg = arg.tp$iter().$obj.v;
+        // this is a Sk.builtin.list
+        arg = arg.tp$iter().$obj;
     }
-    if ( arg instanceof Sk.builtin.dict )
+    else if ( arg instanceof Sk.builtin.dict )
     {
-        arg = arg['keys']; // this is a Sk.builtin.list
+        // this is a Sk.builtin.list
+        arg = Sk.builtin.dict.prototype['keys'].func_code(arg);
     }
+    // shouldn't else if here as the two above output lists to arg.
     if ( arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple )
     {
         return arg.v;
