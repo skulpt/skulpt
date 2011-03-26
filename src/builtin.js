@@ -27,11 +27,7 @@ Sk.builtin.len = function(item)
 Sk.builtin.min = function min()
 {
     // todo; throw if no args
-    // If args is a single list or tuple, convert to array
-    if ( arguments.length == 1 && (arguments[0] instanceof Sk.builtin.list || arguments[0] instanceof Sk.builtin.tuple) )
-    {
-        arguments = arguments[0].v
-    }
+    arguments = Sk.misceval.arrayFromArguments(arguments);
     var lowest = arguments[0];
     for (var i = 1; i < arguments.length; ++i)
     {
@@ -44,11 +40,7 @@ Sk.builtin.min = function min()
 Sk.builtin.max = function max()
 {
     // todo; throw if no args
-    // If args is a single list or tuple, convert to array
-    if ( arguments.length == 1 && (arguments[0] instanceof Sk.builtin.list || arguments[0] instanceof Sk.builtin.tuple) )
-    {
-        arguments = arguments[0].v
-    }
+    arguments = Sk.misceval.arrayFromArguments(arguments);
     var highest = arguments[0];
     for (var i = 1; i < arguments.length; ++i)
     {

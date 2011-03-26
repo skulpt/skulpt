@@ -57,6 +57,34 @@ Sk.misceval.assignSlice = function(u, v, w, x)
 goog.exportSymbol("Sk.misceval.assignSlice", Sk.misceval.assignSlice);
 
 /**
+ * Used by min() and max() to get an array from arbitrary input.
+ * Note that this does no validation, just coercion.
+ */
+Sk.misceval.arrayFromArguments = function(args)
+{
+    // If args is not a single thing return as is
+    if ( args.length != 1 )
+    {
+        return args;
+    }
+    var arg = args[0];
+    if ( arg instanceof Sk.builtin.set )
+    {
+        arg = arg.tp$iter().$obj.v;
+    }
+    if ( arg instanceof Sk.builtin.dict )
+    {
+        arg = arg['keys']; // this is a Sk.builtin.list
+    }
+    if ( arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple )
+    {
+        return arg.v;
+    }
+    return args;
+};
+goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
+
+/**
  * for reversed comparison: Eq -> NotEq, etc.
  */
 Sk.misceval.swappedOp_ = {
