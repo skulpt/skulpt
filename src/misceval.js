@@ -214,6 +214,18 @@ Sk.misceval.objectRepr = function(v)
 };
 goog.exportSymbol("Sk.misceval.objectRepr", Sk.misceval.objectRepr);
 
+Sk.misceval.opAllowsEquality = function(op)
+{
+    switch (op)
+    {
+        case 'LtE':
+        case 'Eq':
+        case 'GtE':
+            return true;
+    }
+    return false;
+};
+goog.exportSymbol("Sk.misceval.opAllowsEquality", Sk.misceval.opAllowsEquality);
 
 Sk.misceval.isTrue = function(x)
 {
