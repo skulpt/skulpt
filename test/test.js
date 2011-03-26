@@ -330,18 +330,18 @@ function testsMain()
     }
     print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
 
-    for (i = 0; i <= 300; ++i)
+    for (i = 0; i <= 1000; ++i)
     {
         testTransform(sprintf("test/run/t%02d", i));
     }
     print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
-    for (i = 0; i <= 300; ++i)
+    for (i = 0; i <= 1000; ++i)
     {
         testSymtab(sprintf("test/run/t%02d", i));
     }
     print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
 
-    for (i = 0; i <= 300; ++i)
+    for (i = 0; i <= 1000; ++i)
     {
         testRun(sprintf("test/run/t%02d", i));
     }
