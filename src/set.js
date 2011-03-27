@@ -163,12 +163,20 @@ Sk.builtin.set.prototype['union'] = new Sk.builtin.func(function(self)
     return S;
 });
 
-Sk.builtin.set.prototype['intersection'] = new Sk.builtin.func(function(self, other)
+Sk.builtin.set.prototype['intersection'] = new Sk.builtin.func(function(self)
 {
+    var S = Sk.builtin.set.prototype['copy'].func_code(self);
+    arguments[0] = S;
+    Sk.builtin.set.prototype['intersection_update'].func_code.apply(null, arguments);
+    return S;
 });
 
 Sk.builtin.set.prototype['difference'] = new Sk.builtin.func(function(self, other)
 {
+    var S = Sk.builtin.set.prototype['copy'].func_code(self);
+    arguments[0] = S;
+    Sk.builtin.set.prototype['difference_update'].func_code.apply(null, arguments);
+    return S;
 });
 
 Sk.builtin.set.prototype['symmetric_difference'] = new Sk.builtin.func(function(self, other)
@@ -184,8 +192,9 @@ Sk.builtin.set.prototype['symmetric_difference'] = new Sk.builtin.func(function(
     return S;
 });
 
-Sk.builtin.set.prototype['copy'] = new Sk.builtin.func(function(self, other)
+Sk.builtin.set.prototype['copy'] = new Sk.builtin.func(function(self)
 {
+    return new Sk.builtin.set(self);
 });
 
 Sk.builtin.set.prototype['update'] = new Sk.builtin.func(function(self, other)
@@ -194,14 +203,39 @@ Sk.builtin.set.prototype['update'] = new Sk.builtin.func(function(self, other)
     {
         Sk.builtin.set.prototype['add'].func_code(self, item);
     }
+    return null;
 });
 
-Sk.builtin.set.prototype['intersection_update'] = new Sk.builtin.func(function(self, other)
+Sk.builtin.set.prototype['intersection_update'] = new Sk.builtin.func(function(self)
 {
+    for (var it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
+    {
+        for (var i=1; i < arguments.length; i++)
+        {
+            if (!Sk.abstr.sequenceContains(arguments[i], item))
+            {
+                Sk.builtin.set.prototype['discard'].func_code(self, item);
+                break;
+            }
+        }
+    }
+    return null;
 });
 
 Sk.builtin.set.prototype['difference_update'] = new Sk.builtin.func(function(self, other)
 {
+    for (var it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
+    {
+        for (var i=1; i < arguments.length; i++)
+        {
+            if (Sk.abstr.sequenceContains(arguments[i], item))
+            {
+                Sk.builtin.set.prototype['discard'].func_code(self, item);
+                break;
+            }
+        }
+    }
+    return null;
 });
 
 Sk.builtin.set.prototype['symmetric_difference_update'] = new Sk.builtin.func(function(self, other)
