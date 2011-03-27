@@ -143,8 +143,14 @@ Sk.builtin.set.prototype['issuperset'] = new Sk.builtin.func(function(self, othe
     return Sk.builtin.set.prototype['issubset'].func_code(other, self);
 });
 
-Sk.builtin.set.prototype['union'] = new Sk.builtin.func(function(self, other)
+Sk.builtin.set.prototype['union'] = new Sk.builtin.func(function(self)
 {
+    var S = new Sk.builtin.set(self);
+    for (var i=1; i < arguments.length; i++)
+    {
+        Sk.builtin.set.prototype['update'].func_code(S, arguments[i]);
+    }
+    return S;
 });
 
 Sk.builtin.set.prototype['intersection'] = new Sk.builtin.func(function(self, other)
