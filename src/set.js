@@ -6,6 +6,11 @@ Sk.builtin.set = function(S)
 {
     if (!(this instanceof Sk.builtin.set)) return new Sk.builtin.set(S);
 
+    if (typeof(S) === 'undefined')
+    {
+        S = [];
+    }
+
     this.v = new Sk.builtin.dict([]);
     S = new Sk.builtin.list(S);
     // python sorts sets on init, but not thereafter.
