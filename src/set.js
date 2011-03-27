@@ -11,7 +11,7 @@ Sk.builtin.set = function(S)
         S = [];
     }
 
-    this.v = new Sk.builtin.dict([]);
+    this.set_reset_();
     S = new Sk.builtin.list(S);
     // python sorts sets on init, but not thereafter.
     // Skulpt seems to init a new set each time you add/remove something
@@ -34,6 +34,11 @@ Sk.builtin.set.prototype.set_iter_ = function()
 {
     var ret = Sk.builtin.dict.prototype['keys'].func_code(this['v']);
     return ret.tp$iter();
+};
+
+Sk.builtin.set.prototype.set_reset_ = function()
+{
+    this.v = new Sk.builtin.dict([]);
 };
 
 Sk.builtin.set.prototype.tp$name = 'set';
@@ -168,6 +173,15 @@ Sk.builtin.set.prototype['difference'] = new Sk.builtin.func(function(self, othe
 
 Sk.builtin.set.prototype['symmetric_difference'] = new Sk.builtin.func(function(self, other)
 {
+    var S = Sk.builtin.set.prototype['union'].func_code(self, other);
+    for (var it = S.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
+    {
+        if ( Sk.abstr.sequenceContains(self, item) && Sk.abstr.sequenceContains(other, item) )
+        {
+            Sk.builtin.set.prototype['discard'].func_code(S, item);
+        }
+    }
+    return S;
 });
 
 Sk.builtin.set.prototype['copy'] = new Sk.builtin.func(function(self, other)
@@ -192,6 +206,10 @@ Sk.builtin.set.prototype['difference_update'] = new Sk.builtin.func(function(sel
 
 Sk.builtin.set.prototype['symmetric_difference_update'] = new Sk.builtin.func(function(self, other)
 {
+    var sd = Sk.builtin.set.prototype['symmetric_difference'].func_code(self, other);
+    self.set_reset_();
+    Sk.builtin.set.prototype['update'].func_code(self, sd);
+    return null;
 });
 
 
