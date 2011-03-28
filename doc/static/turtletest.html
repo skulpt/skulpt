@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="skulpt.js" type="text/javascript"></script>
+<script src="builtin.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+<script type="text/javascript">
+function outf(text) {
+   var mypre = document.getElementById("output");
+   mypre.innerHTML = mypre.innerHTML + text;
+}
+
+function builtinRead(x)
+{
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+function runit() {
+   var prog = document.getElementById("yourcode").value;
+   var mypre = document.getElementById("output");
+   mypre.innerHTML = '';
+   Sk.configure({output:outf,
+  	        read: builtinRead
+              });
+   try {
+      Sk.importMainWithBody("<stdin>",false,prog);
+   } catch (e) {
+      alert(e);
+   }
+}
+</script>
+<h3>Try This</h3>
+<form>
+<textarea edit_id="eta_5" id="yourcode">
+print "Hello World"
+</textarea>
+<button onclick="runit()" type="button">Run</button>
+</form>
+
+<pre id="output"></pre>
+
+<canvas id="mycanvas" height="500" width="800" />
+</body>
+</html>
