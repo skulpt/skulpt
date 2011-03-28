@@ -4,27 +4,17 @@ How to Think Like a Computer Scientist
 .. image:: _static/gasp_lessons.png
     :alt: GASP Logo
 
-.. |rle_start| image:: illustrations/rle_start.png
-   
-.. |rle_end| image:: illustrations/rle_end.png
- 
-.. |rle_open| image:: illustrations/rle_open.png
-   
-.. |rle_close| image:: illustrations/rle_close.png
-
-Learning with Python 3 (RLE)
----------------------------- 
+Learning with Python
+--------------------
 
 3rd Edition (Using Python 3.x)
 
 by Peter Wentworth, Jeffrey Elkner, Allen B. Downey, and Chris Meyers
 
-  (based on 2nd edition by Jeffrey Elkner, Allen B. Downey, and Chris Meyers)
-
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__
 * `Preface <preface.html>`__
-* `Preface-3 <preface3-rle.html>`__   *This Rhodes Local Edition (RLE) of the book* 
+* `Preface to the 2nd Edition <preface2e.html>`__
 * `Contributor List <contrib.html>`__
 * `Chapter 1 <ch01.html>`__ *The way of the program*
 * `Chapter 2 <ch02.html>`__ *Variables, expressions, and statements*
@@ -61,7 +51,7 @@ by Peter Wentworth, Jeffrey Elkner, Allen B. Downey, and Chris Meyers
     copyright.rst
     foreword.rst
     preface.rst
-    preface3-rle.rst
+    preface2e.rst
     contrib.rst
 
 .. toctree::
