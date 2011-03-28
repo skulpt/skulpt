@@ -899,7 +899,7 @@ Also notice the use of the ``msg`` variable, initially an empty string, on lines
 Each time through the loop we extend the message being displayed: this allows us to 
 display the program's feedback right at the same place as we're asking for the next guess. 
 
-.. image:: illustrations/Python_input.png
+.. image:: illustrations/python_input.png
 
 .. index:: continue statement,  statement; continue
 
