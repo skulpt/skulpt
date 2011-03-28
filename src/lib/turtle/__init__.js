@@ -348,20 +348,11 @@ if ( ! TurtleGraphics ) {
 	}
     }
 
-    Turtle.prototype.dot = function() {
+    Turtle.prototype.Dot = function() {
 	var size = 2;
 	if (arguments.length >= 1) size = arguments[0];
 	with (this) {
 	    with ( context ) {
-		// beginPath();
-		// moveTo(position[y]-size/2,position[x]-size/2);
-		// lineTo(position[y]-size/2,position[x]+size/2);
-		// lineTo(position[y]+size/2,position[x]+size/2);
-		// lineTo(position[y]+size/2,position[x]-size/2);
-		// lineTo(position[y]-size/2,position[x]-size/2);
-		// closePath();
-		// stroke();
-		// fill();
 		if (arguments.length >= 2) {
 		    fillStyle = arguments[1];
 		}
@@ -624,11 +615,27 @@ var $builtinmodule = function(name)
 	});
 
 	$loc.right = new Sk.builtin.func(function(self, angle) {
-	    self.theTurtle.Turn(angle);
+	    self.theTurtle.Turn(-angle);
 	});
 
 	$loc.left = new Sk.builtin.func(function(self, angle) {
-	    self.theTurtle.Turn(-angle);
+	    self.theTurtle.Turn(angle);
+	});
+
+	$loc.up = new Sk.builtin.func(function(self) {
+	    self.theTurtle.PenUp();
+	});
+
+	$loc.down = new Sk.builtin.func(function(self) {
+	    self.theTurtle.PenDown();
+	});
+
+	$loc.dot = new Sk.builtin.func(function(self) {
+	    self.theTurtle.Dot();
+	});
+
+	$loc.goto = new Sk.builtin.func(function(self,nx,ny) {
+	    self.theTurtle.Goto(nx,ny);
 	});
 
 

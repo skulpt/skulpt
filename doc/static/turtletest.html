@@ -35,8 +35,20 @@ function runit() {
 </script>
 <h3>Try This</h3>
 <form>
-<textarea edit_id="eta_5" id="yourcode">
-print "Hello World"
+<textarea edit_id="eta_5" id="yourcode" cols="60" rows="10">
+import turtle
+t = turtle.Turtle()
+t.up()
+for i in range(4):
+   t.forward(100)
+   t.dot()
+   t.right(90)
+t.goto(50,50)
+t.down()
+for i in range(4):
+   t.forward(100)
+   t.right(90)
+
 </textarea>
 <button onclick="runit()" type="button">Run</button>
 </form>
