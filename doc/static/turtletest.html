@@ -41,14 +41,22 @@ t = turtle.Turtle()
 t.up()
 for i in range(4):
    t.forward(100)
-   t.dot()
+   t.dot(20,'blue')
    t.right(90)
 t.goto(50,50)
 t.down()
 for i in range(4):
    t.forward(100)
    t.right(90)
-
+t.up()
+t.goto(300,500)
+t.down()
+t.fillcolor('red')
+t.begin_fill()
+for i in range(4):
+   t.forward(150)
+   t.right(90)
+t.end_fill()
 </textarea>
 <button onclick="runit()" type="button">Run</button>
 </form>

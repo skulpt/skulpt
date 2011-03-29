@@ -187,6 +187,7 @@ if ( ! TurtleGraphics ) {
 	    this.pen = true; // active
 	    this.penStyle = 'black';
 	    this.penWidth = 2;
+	    this.fillStyle = 'white';
 	    this.Home();
 	    this.logging = true;
 	    //writeObject(this, 'this');
@@ -258,6 +259,35 @@ if ( ! TurtleGraphics ) {
 	}
     }
 
+    Turtle.prototype.SetFillStyle = function (c) {
+	with ( this ) {
+	    if ( logging ) {
+		log += 'SetPenStyle(\'' + c + '\');\n';
+	    }
+	    fillStyle = c;
+	}
+    }
+
+    Turtle.prototype.BeginFill = function () {
+	with ( this ) {
+	    if ( logging ) {
+		log += 'BeginFill();\n';
+	    }
+	    context.beginPath();
+	}
+    }
+
+    Turtle.prototype.EndFill = function () {
+	with ( this ) {
+	    if ( logging ) {
+		log += 'EndFill();\n';
+	    }
+	    context.closePath();
+	    context.fill();
+	}
+    }
+
+
     Turtle.prototype.Move = function (d) {
 	with ( this ) {
 	    if ( logging ) {
@@ -266,16 +296,12 @@ if ( ! TurtleGraphics ) {
 	    var newposition = linear(1, position, d * unit, heading);
 	    if ( pen ) {
 		with ( context ) {
-		    save();
 		    lineCap = 'round';
 		    lineJoin = 'round';
 		    lineWidth = penWidth;
 		    strokeStyle = penStyle;
-		    beginPath();
-		    moveTo(position[y], position[x]);
 		    lineTo(newposition[y], newposition[x]);
 		    stroke();
-		    restore();
 		}
 	    }
 	    position = newposition;
@@ -287,19 +313,18 @@ if ( ! TurtleGraphics ) {
 	with (this) {
 	    if (pen) {
 		with ( context ) {
-		    save();
 		    lineCap = 'round';
 		    lineJoin = 'round';
 		    lineWidth = penWidth;
 		    strokeStyle = penStyle;
-		    beginPath();
-		    moveTo(position[y], position[x]);
 		    lineTo(newposition[y], newposition[x]);
 		    stroke();
-		    restore();
 		}
+	    } else {
+		context.moveTo(newposition[y], newposition[x]);
 	    }
 	    position = newposition;
+	    
 	}
     }
 
@@ -630,14 +655,30 @@ var $builtinmodule = function(name)
 	    self.theTurtle.PenDown();
 	});
 
-	$loc.dot = new Sk.builtin.func(function(self) {
-	    self.theTurtle.Dot();
+	$loc.dot = new Sk.builtin.func(function(self, /*opt*/ size, color) {
+	    size = size || 1;
+	    if (color)
+		color = color.v || self.theTurtle.context.fillStyle;
+	    self.theTurtle.Dot(size,color);
 	});
 
 	$loc.goto = new Sk.builtin.func(function(self,nx,ny) {
 	    self.theTurtle.Goto(nx,ny);
 	});
 
+	$loc.begin_fill = new Sk.builtin.func(function(self) {
+	    self.theTurtle.BeginFill();
+	});
+
+	$loc.end_fill = new Sk.builtin.func(function(self) {
+	    self.theTurtle.EndFill();
+	});
+
+	$loc.fillcolor = new Sk.builtin.func(function(self, color) {
+	    if (color)
+		color = color.v || self.theTurtle.context.fillStyle;
+	    self.theTurtle.context.fillStyle = color;
+	});
 
     }
     
