@@ -939,7 +939,7 @@ Exercises
          
    As usual, work on each of these one at a time until they pass all the tests.
    
-   .. admonition:: |rle_open|  But do you really want to do this? |rle_close| 
+   .. admonition:: But do you really want to do this?
    
        Disclaimer.  These exercises illustrate nicely that the sequence abstraction is
        general, (because slicing, indexing, and concatenation is so general), so it is possible to 

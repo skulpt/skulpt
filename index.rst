@@ -9,7 +9,7 @@ Learning with Python
 
 3rd Edition (Using Python 3.x)
 
-by Peter Wentworth, Jeffrey Elkner, Allen B. Downey, and Chris Meyers
+by Jeffrey Elkner, Peter Wentworth, Allen B. Downey, and Chris Meyers
 
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__

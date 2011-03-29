@@ -190,10 +190,10 @@ every time the function or method is invoked, and you will see the parameters.
 If the parameters are not moving toward the base case, you will get some ideas
 about why not.
 
-|rle_open| Once again, if you have an environment that supports easy single-stepping, 
-breakpoints, and inspection, learn to use them well. It is our opinion that walking 
-through code step-by-step builds the best and most accurate mental model of
-how computation happens. Use it if you have it! |rle_close|  
+Once again, if you have an environment that supports easy single-stepping,
+breakpoints, and inspection, learn to use them well. It is our opinion that
+walking through code step-by-step builds the best and most accurate mental
+model of how computation happens. Use it if you have it!
 
 
 Flow of Execution
@@ -206,7 +206,7 @@ entering function ``foo``, where ``foo`` is the name of the function.
 Now when you run the program, it will print a trace of each function as it is
 invoked.
 
-|rle_open| If you're not sure, step through the program with your debugger. |rle_close| 
+If you're not sure, step through the program with your debugger.
 
 When I run the program I get an exception.
 ------------------------------------------
@@ -215,7 +215,7 @@ If something goes wrong during runtime, Python prints a message that includes
 the name of the exception, the line of the program where the problem occurred,
 and a traceback.
 
-|rle_open| Put a breakpoint on the line causing the exception, and look around! |rle_close| 
+Put a breakpoint on the line causing the exception, and look around!
 
 The traceback identifies the function that is currently running, and then the
 function that invoked it, and then the function that invoked *that*, and so on.
@@ -291,7 +291,7 @@ Similarly, rewriting a piece of code can help you find subtle bugs. If
 you make a change that you think doesn't affect the program, and it
 does, that can tip you off.
 
-|rle_open| You can also wrap your debugging print statements in some
+You can also wrap your debugging print statements in some
 condition, so that you suppress much of the output. For example, if
 you are trying to find an element using a binary search, and it is
 not working, you might code up a debugging print statement inside
@@ -300,7 +300,7 @@ then print debugging information, otherwise don't print.
 
 Similarly, breakpoints can be made conditional: you can set a breakpoint
 on a statement, then edit the breakpoint to say "only break if this
-expression becomes true".  |rle_close| 
+expression becomes true".
 
 Semantic errors
 ---------------
@@ -473,14 +473,14 @@ need:
    last lines of code that you wrote, or what is the new test case that fails?
 #. What have you tried so far, and what have you learned?
 
-|rle_open| Good instructors and helpers will also do something that should not 
+Good instructors and helpers will also do something that should not 
 offend you: they won't believe when you tell them *"I'm sure all the input
 routines are working just fine, and that I've set up the data correctly!"*.
 They will want to validate and check things for themselves.  
 After all, your program has a bug.  
 Your understanding and inspection of the code have not found it yet. So you
 should expect to have your assumptions challenged.  And as you gain skills
-and help others, you'll need to do the same for them.   |rle_close| 
+and help others, you'll need to do the same for them.
 
 When you find the bug, take a second to think about what you could have done to
 find it faster. Next time you see something similar, you will be able to find
