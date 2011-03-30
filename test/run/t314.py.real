@@ -1,0 +1,7 @@
+set([2, 3, 4])
+set([2])
+set([1])
+True
+True
+set([5])
+True
