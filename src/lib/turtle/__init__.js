@@ -1,35 +1,27 @@
-// Turtle Graphics module for <canvas id="..." width=... height=...></canvas>
-// This is pseudo 3D: each turtle moves in 3D space, but it is projected on
-// the x,y-plane, and order along the z-coordinate is based on time rather
-// than space, i.e. the most recent passage over an x,y-point is drawn last,
-// regardsless of its z-coordinate.
+//
+//
+// Turtle Graphics Module for Skulpt
+//
+// Brad Miller
+//
+//
+//
+//
+// ----------------------------------------------------------------------
+// The skulpt module wraps an extended version of the TurtleGraphics
+// module written by Tom Verhoeff, although I've pretty much modified it
+// beyond all recognition, so any problems with it are likely mine and
+// not Tom's
 // http://www.win.tue.nl/~wstomv/edu/javascript/tg-commands.html
-//
-// Usage example
-//   <script type="text/javascript" src="turtle-graphics.js"></script>
-//   ...
-//   <canvas id="TGspace" width="400" height="300"></canvas>
-//   <script>
-//   with ( TurtleGraphics ) {
-//     SetDefaults({ canvasID: 'TGspace', unit = 30 });
-//     var turtle = new Turtle();
-//     with ( turtle ) {
-//       DrawTurtle('blue');
-//       Move(1); Turn(90); Move(1);
-//       DrawTurtle('red');
-//     }
-//   }
-//
-// N.B. On a canvas x+ is to the right, and y+ is down (not up).
-// For the turtle state, x+ is down on the canvas, y+ is to the right.
-// Thus turtle position [a, b, c] is at canvas position (b, a).
-// We start the turtle heading to the right.  This creates the
-// impression that x+ is to the right and y+ is above.
-//
 // Author: Tom Verhoeff (Eindhoven University of Techology, Netherlands)
 // Contact information: <T.Verhoeff@tue.nl>
 // License: GPL version 3
 
+
+// In the first part of the file I have extended/implemented a turtle graphics 
+// module natively in Javascript.  In the second half of the file there is a 
+// skulpt wrapper around the first.
+//
 var TurtleGraphics; // the single identifier needed in the global scope
 
 if ( ! TurtleGraphics ) {
@@ -265,6 +257,7 @@ if ( ! TurtleGraphics ) {
 		log += 'SetPenStyle(\'' + c + '\');\n';
 	    }
 	    fillStyle = c;
+	    context.fillStyle = c;
 	}
     }
 
@@ -338,6 +331,21 @@ if ( ! TurtleGraphics ) {
 	    var newheading = rotateNormal(heading, left, normal, alpha);
 	    heading = newheading;
 	}
+    }
+
+    Turtle.prototype.GetHeading = function () {
+	with ( this ) {
+            // workaround for values getting set to +/i xxx e -16 fooling the +/- checks below
+	    if (Math.abs(heading[y]) < 0.00001) heading[y] = 0.0;
+	    if (Math.abs(heading[x]) < 0.00001) heading[x] = 0.0;
+	    var rads = Math.atan(Math.abs(heading[y]) / Math.abs(heading[x]));
+	    var deg = rads * 180.0 / Math.PI;
+	    if (heading[x] <= 0 && heading[y] >= 0) deg = 90.0 + deg;
+	    else if (heading[x] <= 0 && heading[y] <= 0) deg = 180.0 + deg;
+            else if (heading[x] >= 0 && heading[y] <= 0) deg = 270 + deg;
+	}
+	alert (this.heading + " : " + deg);
+	return deg;
     }
 
     Turtle.prototype.Roll = function (psi) {
@@ -621,13 +629,18 @@ if ( ! TurtleGraphics ) {
 
 })();
 
+//
+// Wrapper around the Turtle Module starts here.
+//
+//
 var $builtinmodule = function(name)
 {
     var mod = {};
-    
+    // First we create an object, this will end up being the class
+    // class
     var turtle = function($gbl, $loc) {
 	$loc.__init__ = new Sk.builtin.func(function(self) {
-	    TurtleGraphics.SetDefaults({canvasID: "mycanvas", unit:1, origin: "mc"});
+	    TurtleGraphics.SetDefaults({canvasID: Sk.canvas, unit:1, origin: "mc"});
 	    self.theTurtle = new TurtleGraphics.Turtle();
 	});
 
@@ -675,9 +688,23 @@ var $builtinmodule = function(name)
 	});
 
 	$loc.fillcolor = new Sk.builtin.func(function(self, color) {
-	    if (color)
+	    if (color) {
 		color = color.v || self.theTurtle.context.fillStyle;
-	    self.theTurtle.context.fillStyle = color;
+		self.theTurtle.SetFillStyle(color);
+	    } else
+		return self.theTurtle.fillStyle;
+	});
+
+	$loc.color = new Sk.builtin.func(function(self, color) {
+	    if (color) {
+		color = color.v || self.theTurtle.context.fillStyle;
+		self.theTurtle.SetPenStyle(color);
+	    } else
+		return self.theTurtle.penStyle;
+	});
+
+	$loc.heading = new Sk.builtin.func(function(self) {
+	    return self.theTurtle.GetHeading();
 	});
 
     }
