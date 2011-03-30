@@ -130,7 +130,7 @@ if ( ! TurtleGraphics ) {
 	    }
 	    position = home;
 	    heading = [1.0, 0.0, 0.0]; // to the right; in turtle space x+ direction
-	    normal = [0.0, 0.0, -1.0]; // in z+ direction
+	    normal = [0.0, 0.0, 1.0]; // in z+ direction
 	}
     };
 
@@ -286,7 +286,6 @@ if ( ! TurtleGraphics ) {
 	    if ( logging ) {
 		log += 'Move(' + d + ');\n';
 	    }
-	    alert("heading = " + heading);
 	    var newposition = linear(1, position, d * unit, heading);
 	    if ( pen ) {
 		with ( context ) {
@@ -341,46 +340,16 @@ if ( ! TurtleGraphics ) {
 	    if (Math.abs(heading[x]) < 0.00001) heading[x] = 0.0;
 	    var rads = Math.atan(Math.abs(heading[y]) / Math.abs(heading[x]));
 	    var deg = rads * 180.0 / Math.PI;
-	    if (heading[x] < 0 && heading[y] > 0) deg = 90.0 + deg;
-	    else if (heading[x] < 0 && heading[y] < 0) deg = 180.0 + deg;
-            else if (heading[x] > 0 && heading[y] < 0) deg = 270 + deg;
+//	    alert("raw deg = " + deg);
+	    if (heading[x] < 0 && heading[y] < 0) deg = 180 - deg;
+	    else if (heading[x] < 0 && heading[y] >= 0) deg = 180.0 + deg;
+            else if (heading[x] >= 0 && heading[y] > 0) deg = 360 - deg;
 	}
-	alert(this.heading + " = " + deg);
+//	alert(this.heading + " = " + deg);
 	return deg;
     }
 
-    Turtle.prototype.Roll = function (psi) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'Roll(' + psi + ');\n';
-	    }
-	    var alpha = psi * Degree;
-	    var right = cross(heading, normal);
-	    var newnormal = rotateNormal(normal, right, heading, alpha);
-	    normal = newnormal;
-	}
-    }
 
-    Turtle.prototype.Dive = function (theta) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'Dive(' + theta + ');\n';
-	    }
-	    var alpha = theta * Degree;
-	    var left = cross(normal, heading);
-	    var newnormal = rotateNormal(normal, heading, left, alpha);
-	    normal = newnormal;
-	    heading = cross(left, normal);
-	}
-    }
-
-    Turtle.prototype.Segment = function (d, psi, phi) {
-	with ( this ) {
-	    Move(d);
-	    Roll(psi);
-	    Turn(phi);
-	}
-    }
 
     Turtle.prototype.Dot = function() {
 	var size = 2;
@@ -559,9 +528,6 @@ if ( ! TurtleGraphics ) {
     Turtle.prototype.PU = Turtle.prototype.PenUp;
     Turtle.prototype.M = Turtle.prototype.Move;
     Turtle.prototype.T = Turtle.prototype.Turn;
-    Turtle.prototype.R = Turtle.prototype.Roll;
-    Turtle.prototype.D = Turtle.prototype.Dive;
-    Turtle.prototype.S = Turtle.prototype.Segment;
     Turtle.prototype.DT = Turtle.prototype.DrawTurtle;
 
 
@@ -654,11 +620,11 @@ var $builtinmodule = function(name)
 	});
 
 	$loc.right = new Sk.builtin.func(function(self, angle) {
-	    self.theTurtle.Turn(-angle);
+	    self.theTurtle.Turn(angle);
 	});
 
 	$loc.left = new Sk.builtin.func(function(self, angle) {
-	    self.theTurtle.Turn(angle);
+	    self.theTurtle.Turn(-angle);
 	});
 
 	$loc.up = new Sk.builtin.func(function(self) {

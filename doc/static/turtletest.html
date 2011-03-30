@@ -56,6 +56,9 @@ function runit(myDiv) {
 import turtle
 t = turtle.Turtle()
 print "initial heading = ", t.heading()
+for i in range(10,361,10):
+   t.left(10)
+   print i, t.heading()
 t.up()
 for i in range(4):
    t.forward(100)
@@ -86,10 +89,11 @@ for i in range(0,400,10):
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
 
+<canvas id="example1_canvas" height="500" width="800"
+	style="border-style: solid;"></canvas>
+
 <pre id="example1_pre"></pre>
 
-<canvas id="example1_canvas" height="500" width="800"
-	style="border-style: solid;"/>
 </div>
 </body>
 </html>
