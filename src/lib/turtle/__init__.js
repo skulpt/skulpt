@@ -129,8 +129,8 @@ if ( ! TurtleGraphics ) {
 		log += 'Home();\n';
 	    }
 	    position = home;
-	    heading = [0.0, 1.0, 0.0]; // to the right; in turtle space x+ direction
-	    normal = [0.0, 0.0, 1.0]; // in z+ direction
+	    heading = [1.0, 0.0, 0.0]; // to the right; in turtle space x+ direction
+	    normal = [0.0, 0.0, -1.0]; // in z+ direction
 	}
     };
 
@@ -158,17 +158,17 @@ if ( ! TurtleGraphics ) {
 	//writeObject(this.context.canvas, 'canvas'); // test
 	//writeObject(this.context, 'context'); // test
 	with ( this.context ) {
-	    var x0 = canvas.height / 2;
-	    var y0 = canvas.width / 2;
+	    var x0 = canvas.width / 2;
+	    var y0 = canvas.height / 2;
 	    if ( options.origin ) {
 		for (var i = 0; i != options.origin.length; ++i) {
 		    switch ( options.origin.charAt(i) ) {
 		    case 't': x0 = 0.0; break;
-		    case 'm': x0 = canvas.height / 2; break;
-		    case 'b': x0 = canvas.height; break;
+		    case 'm': x0 = canvas.width / 2; break;
+		    case 'b': x0 = canvas.width; break;
 		    case 'l': y0 = 0.0; break;
-		    case 'c': y0 = canvas.width / 2; break;
-		    case 'r': y0 = canvas.width; break;
+		    case 'c': y0 = canvas.height / 2; break;
+		    case 'r': y0 = canvas.height; break;
 		    }
 		}
 	    }
@@ -286,6 +286,7 @@ if ( ! TurtleGraphics ) {
 	    if ( logging ) {
 		log += 'Move(' + d + ');\n';
 	    }
+	    alert("heading = " + heading);
 	    var newposition = linear(1, position, d * unit, heading);
 	    if ( pen ) {
 		with ( context ) {
@@ -293,7 +294,7 @@ if ( ! TurtleGraphics ) {
 		    lineJoin = 'round';
 		    lineWidth = penWidth;
 		    strokeStyle = penStyle;
-		    lineTo(newposition[y], newposition[x]);
+		    lineTo(newposition[x], newposition[y]);
 		    stroke();
 		}
 	    }
@@ -310,11 +311,11 @@ if ( ! TurtleGraphics ) {
 		    lineJoin = 'round';
 		    lineWidth = penWidth;
 		    strokeStyle = penStyle;
-		    lineTo(newposition[y], newposition[x]);
+		    lineTo(newposition[x], newposition[y]);
 		    stroke();
 		}
 	    } else {
-		context.moveTo(newposition[y], newposition[x]);
+		context.moveTo(newposition[x], newposition[y]);
 	    }
 	    position = newposition;
 	    
@@ -340,11 +341,11 @@ if ( ! TurtleGraphics ) {
 	    if (Math.abs(heading[x]) < 0.00001) heading[x] = 0.0;
 	    var rads = Math.atan(Math.abs(heading[y]) / Math.abs(heading[x]));
 	    var deg = rads * 180.0 / Math.PI;
-	    if (heading[x] <= 0 && heading[y] >= 0) deg = 90.0 + deg;
-	    else if (heading[x] <= 0 && heading[y] <= 0) deg = 180.0 + deg;
-            else if (heading[x] >= 0 && heading[y] <= 0) deg = 270 + deg;
+	    if (heading[x] < 0 && heading[y] > 0) deg = 90.0 + deg;
+	    else if (heading[x] < 0 && heading[y] < 0) deg = 180.0 + deg;
+            else if (heading[x] > 0 && heading[y] < 0) deg = 270 + deg;
 	}
-	alert (this.heading + " : " + deg);
+	alert(this.heading + " = " + deg);
 	return deg;
     }
 
@@ -389,7 +390,7 @@ if ( ! TurtleGraphics ) {
 		if (arguments.length >= 2) {
 		    fillStyle = arguments[1];
 		}
-		fillRect(position[y]-size/2, position[x]-size/2, size, size);
+		fillRect(position[x]-size/2, position[y]-size/2, size, size);
 	    }
 	}
 	    

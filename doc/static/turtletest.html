@@ -55,6 +55,7 @@ function runit(myDiv) {
 <textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
 import turtle
 t = turtle.Turtle()
+print "initial heading = ", t.heading()
 t.up()
 for i in range(4):
    t.forward(100)
@@ -64,12 +65,11 @@ t.goto(50,50)
 t.down()
 t.color('green')
 for i in range(4):
-   print t.heading()
-   t.forward(100)
-   t.right(90)
-print t.heading()
+  t.forward(100)
+  t.right(90)
+
 t.up()
-t.goto(300,500)
+t.goto(500,300)
 t.down()
 t.fillcolor('red')
 t.begin_fill()
