@@ -157,6 +157,7 @@ if ( ! TurtleGraphics ) {
 		log += 'Home();\n';
 	    }
 	    position = home;
+	    context.moveTo(home[x],home[y]);
 	    heading = [1.0, 0.0, 0.0]; // to the right; in turtle space x+ direction
 	    normal = [0.0, 0.0, 1.0]; // in z+ direction
 	}
@@ -231,6 +232,7 @@ if ( ! TurtleGraphics ) {
 	    else {
 		Clear(canvasID);
 	    }
+	    Init();
 	}
     }
 
@@ -259,6 +261,10 @@ if ( ! TurtleGraphics ) {
 	    }
 	    pen = false;
 	}
+    }
+
+    Turtle.prototype.GetPen = function () {
+	return this.pen;
     }
 
     Turtle.prototype.SetPenWidth = function (w) {
@@ -369,14 +375,20 @@ if ( ! TurtleGraphics ) {
     }
 
     Turtle.prototype.GetPosition = function () {
-	return this.position[x], this.position[y];
+	return this.position;
+    }
+
+    Turtle.prototype.GetX = function () {
+	return this.position[x];
+    }
+
+    Turtle.prototype.GetY = function () {
+	return this.position[y];
     }
 
     Turtle.prototype.SetHeading = function(newhead) {
 	if ((typeof(newhead)).toLowerCase() === 'number') {
-	    console.log("newhead = " + newhead);
 	    this.heading = angle2vec(newhead);
-	    console.log("vector of newhead = " + this.heading);
 	} else {
 	    this.heading = newhead;
 	}
@@ -389,11 +401,17 @@ if ( ! TurtleGraphics ) {
 	res[y] = to[y] - this.position[y];
 	res[z] = to[z] - this.position[z];
 	res = normalize(res);
-	console.log("vector towards " + to + " is " + res);
 	if (top(defaults)['degrees'])
 	    return vec2angle(res);
 	else
 	    return res;
+    }
+
+    Turtle.prototype.Distance = function(to) {
+	var xdiff = to[x] - this.position[x];
+	var ydiff = to[y] - this.position[y];
+	var zdiff = to[z] - this.position[z];
+	return Math.sqrt(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff);
     }
 
     Turtle.prototype.Dot = function() {
@@ -408,6 +426,10 @@ if ( ! TurtleGraphics ) {
 	    }
 	}
 	    
+    }
+
+    Turtle.prototype.Write = function(theText, move, align, font) {
+	this.context.fillText(theText,this.position[x], this.position[y]);
     }
 
     Turtle.prototype.DrawTurtle = function (c) {
@@ -656,28 +678,60 @@ var $builtinmodule = function(name)
 	    self.theTurtle = new TurtleGraphics.Turtle();
 	});
 
+//
+// Turtle Motion
+//
+	//
+	// Move and Draw
+	//
 	$loc.forward = new Sk.builtin.func(function(self, dist) {
 	    self.theTurtle.Move(dist);
 	});
 
-	$loc.back = new Sk.builtin.func(function(self, dist) {
+	$loc.fd = $loc.forward;
+
+	$loc.backward = new Sk.builtin.func(function(self, dist) {
 	    self.theTurtle.Move(-dist);
 	});
+
+	$loc.back = $loc.backward;
+	$loc.bk = $loc.backward;
 
 	$loc.right = new Sk.builtin.func(function(self, angle) {
 	    self.theTurtle.Turn(angle);
 	});
 
+	$loc.rt = $loc.right;
+
 	$loc.left = new Sk.builtin.func(function(self, angle) {
 	    self.theTurtle.Turn(-angle);
 	});
+	
+	$loc.lt = $loc.left;
 
-	$loc.up = new Sk.builtin.func(function(self) {
-	    self.theTurtle.PenUp();
+	$loc.goto = new Sk.builtin.func(function(self,nx,ny) {
+	    self.theTurtle.Goto(nx,ny);
 	});
 
-	$loc.down = new Sk.builtin.func(function(self) {
-	    self.theTurtle.PenDown();
+	$loc.setpos = $loc.goto;
+	$loc.setposition = $loc.goto;
+
+	$loc.setx = new Sk.builtin.func(function(self,nx) {
+	    self.theTurtle.Goto(nx,self.theTurtle.GetY());
+	});
+
+	$loc.sety = new Sk.builtin.func(function(self,ny) {
+	    self.theTurtle.Goto(self.theTurtle.GetX(),ny);
+	});
+
+	$loc.setheading = new Sk.builtin.func(function(self,newhead) {
+	    return self.theTurtle.SetHeading(newhead);
+	});
+
+	$loc.seth = $loc.setheading;
+
+	$loc.home = new Sk.builtin.func(function(self) {
+	    self.theTurtle.Home();
 	});
 
 	$loc.dot = new Sk.builtin.func(function(self, /*opt*/ size, color) {
@@ -687,17 +741,90 @@ var $builtinmodule = function(name)
 	    self.theTurtle.Dot(size,color);
 	});
 
-	$loc.goto = new Sk.builtin.func(function(self,nx,ny) {
-	    self.theTurtle.Goto(nx,ny);
+	// todo:  stamp, clearstamp, clearstamps, undo, speed
+
+	//
+	// Tell Turtle's state
+	//
+	$loc.heading = new Sk.builtin.func(function(self) {
+	    return self.theTurtle.GetHeading();
 	});
 
-	$loc.begin_fill = new Sk.builtin.func(function(self) {
-	    self.theTurtle.BeginFill();
+	$loc.position = new Sk.builtin.func(function(self) {
+	    var res = self.theTurtle.GetPosition();
+	    var x = new Sk.builtin.tuple(res);
+	    return x;
 	});
 
-	$loc.end_fill = new Sk.builtin.func(function(self) {
-	    self.theTurtle.EndFill();
+	$loc.pos = $loc.position;
+
+	$loc.xcor = new Sk.builtin.func(function(self) {
+	    var res = self.theTurtle.GetX();
+	    return res;
 	});
+
+	$loc.ycor = new Sk.builtin.func(function(self) {
+	    var res = self.theTurtle.GetY();
+	    return res;
+	});
+
+	$loc.towards = new Sk.builtin.func(function(self,tx,ty) {
+	    if ((typeof(tx)).toLowerCase() === 'number')
+		tx = [tx, ty, 0];
+	    return self.theTurtle.Towards(tx);
+	});
+
+	// tx can be either a number or a vector position.
+	// tx can not be a turtle at this time as multiple turtles have not been implemented yet.
+	$loc.distance = new Sk.builtin.func(function(self,tx,ty) {
+	    if ((typeof(tx)).toLowerCase() === 'number')
+		tx = [tx, ty, 0];
+	    return self.theTurtle.Distance(tx);
+	});
+
+	//
+	// Setting and Measurement
+	//
+
+	// todo:  degrees and radians...
+
+//
+// Pen Control
+//
+
+	//
+	// Drawing State
+	//
+
+	$loc.up = new Sk.builtin.func(function(self) {
+	    self.theTurtle.PenUp();
+	});
+	
+	$loc.penup = $loc.up;
+	$loc.pu = $loc.up;
+
+	$loc.down = new Sk.builtin.func(function(self) {
+	    self.theTurtle.PenDown();
+	});
+
+	$loc.pendown = $loc.down;
+	$loc.pd = $loc.down;
+
+	$loc.width = new Sk.builtin.func(function(self,w) {
+	    self.theTurtle.SetPenWidth(w);
+	});
+	
+	$loc.pensize = $loc.width;
+
+	$loc.isdown = new Sk.builtin.func(function(self) {
+	    return self.theTurtle.GetPen();
+	});
+
+	// todo:  pen  -- return a dictionary full of pen stuff
+
+	//
+	// Color Control
+	//
 
 	$loc.fillcolor = new Sk.builtin.func(function(self, color) {
 	    if (color) {
@@ -715,25 +842,41 @@ var $builtinmodule = function(name)
 		return self.theTurtle.penStyle;
 	});
 
-	$loc.heading = new Sk.builtin.func(function(self) {
-	    return self.theTurtle.GetHeading();
+	$loc.pencolor = $loc.color;
+
+	//
+	//  Filling
+	//
+
+	$loc.begin_fill = new Sk.builtin.func(function(self) {
+	    self.theTurtle.BeginFill();
 	});
 
-	$loc.position = new Sk.builtin.func(function(self) {
-	    return self.theTurtle.GetPosition();
+	$loc.end_fill = new Sk.builtin.func(function(self) {
+	    self.theTurtle.EndFill();
 	});
 
-	$loc.setheading = new Sk.builtin.func(function(self,newhead) {
-	    return self.theTurtle.SetHeading(newhead);
+	$loc.fill = new Sk.builtin.func(function(self,fillt) {
+	    if (fillt)
+		self.theTurtle.BeginFill();
+	    else
+		self.theTurtle.EndFill();
 	});
 
-	$loc.towards = new Sk.builtin.func(function(self,tx,ty) {
-	    if ((typeof(tx)).toLowerCase() === 'number')
-		tx = [tx, ty, 0];
-	    console.log("going towards " + tx);
-	    return self.theTurtle.Towards(tx);
+	//
+	// More drawing control
+	//
+
+	$loc.reset = new Sk.builtin.func(function(self) {
+	    self.theTurtle.Clean();
 	});
 
+	$loc.write = new Sk.builtin.func(function(self,mystr) {
+	    self.theTurtle.Write(mystr.v);
+	});
+
+	// todo clean  -- again multiple turtles
+	
     }
     
     mod.Turtle = Sk.misceval.buildClass(mod, turtle, 'Turtle', []);
