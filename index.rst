@@ -1,8 +1,8 @@
 How to Think Like a Computer Scientist
 ======================================
 
-.. image:: _static/gasp_lessons.png
-    :alt: GASP Logo
+.. image:: _static/thinkcspy.png
+    :alt: ThinkCSPy Logo
 
 Learning with Python
 --------------------
