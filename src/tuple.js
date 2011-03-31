@@ -148,3 +148,5 @@ Sk.builtin.tuple.prototype.sq$concat = function(other)
 };
 
 Sk.builtin.tuple.prototype.sq$length = function() { return this.v.length; };
+
+goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
