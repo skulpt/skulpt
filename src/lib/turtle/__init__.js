@@ -44,7 +44,7 @@ if ( ! TurtleGraphics ) {
 
     // Define private variables
 
-    var defaults = [ { canvasID: 'TGspace', unit: 30 } ]; // organized as stack
+    var defaults = [ { canvasID: 'TGspace', unit: 30, degrees: true } ]; // organized as stack
 
     // Define private functions
 
@@ -96,6 +96,34 @@ if ( ! TurtleGraphics ) {
 	return linear(Math.cos(alpha), u, Math.sin(alpha), v);
     }
 
+    function normalize(u) {
+	var res = []
+	var n = Math.sqrt(u[x]*u[x] + u[y]*u[y]);
+	res[x] = u[x]/n;
+	res[y] = u[y]/n;
+	res[z] = 0.0;
+	return res;
+    }
+
+    function vec2angle(heading) {
+        // workaround for values getting set to +/i xxx e -16 fooling the +/- checks below
+	if (Math.abs(heading[y]) < 0.00001) heading[y] = 0.0;
+	if (Math.abs(heading[x]) < 0.00001) heading[x] = 0.0;
+	var rads = Math.atan(Math.abs(heading[y]) / Math.abs(heading[x]));
+	var deg = rads * 180.0 / Math.PI;
+	if (heading[x] < 0 && heading[y] < 0) deg = 180 - deg;
+	else if (heading[x] < 0 && heading[y] >= 0) deg = 180.0 + deg;
+        else if (heading[x] >= 0 && heading[y] > 0) deg = 360 - deg;
+	return deg;
+    }
+
+    function angle2vec(phi) {
+	var res = [0.0,0.0,0.0];
+	phi = phi * Degree;
+	res[x] = Math.cos(phi);
+	res[y] = Math.sin(phi)*-1.0;  // compensate for upside down y coordinates on canvas
+	return normalize(res);
+    }
 
     // Define functions to be made public
 
@@ -334,22 +362,39 @@ if ( ! TurtleGraphics ) {
     }
 
     Turtle.prototype.GetHeading = function () {
-	with ( this ) {
-            // workaround for values getting set to +/i xxx e -16 fooling the +/- checks below
-	    if (Math.abs(heading[y]) < 0.00001) heading[y] = 0.0;
-	    if (Math.abs(heading[x]) < 0.00001) heading[x] = 0.0;
-	    var rads = Math.atan(Math.abs(heading[y]) / Math.abs(heading[x]));
-	    var deg = rads * 180.0 / Math.PI;
-//	    alert("raw deg = " + deg);
-	    if (heading[x] < 0 && heading[y] < 0) deg = 180 - deg;
-	    else if (heading[x] < 0 && heading[y] >= 0) deg = 180.0 + deg;
-            else if (heading[x] >= 0 && heading[y] > 0) deg = 360 - deg;
-	}
-//	alert(this.heading + " = " + deg);
-	return deg;
+	if (top(defaults)['degrees'])
+	    return vec2angle(this.heading)
+	else
+	    return this.heading
     }
 
+    Turtle.prototype.GetPosition = function () {
+	return this.position[x], this.position[y];
+    }
 
+    Turtle.prototype.SetHeading = function(newhead) {
+	if ((typeof(newhead)).toLowerCase() === 'number') {
+	    console.log("newhead = " + newhead);
+	    this.heading = angle2vec(newhead);
+	    console.log("vector of newhead = " + this.heading);
+	} else {
+	    this.heading = newhead;
+	}
+    }
+
+    Turtle.prototype.Towards = function(to) {
+	// set heading vector to point towards another point.
+	var res = [];
+	res[x] = to[x] - this.position[x];
+	res[y] = to[y] - this.position[y];
+	res[z] = to[z] - this.position[z];
+	res = normalize(res);
+	console.log("vector towards " + to + " is " + res);
+	if (top(defaults)['degrees'])
+	    return vec2angle(res);
+	else
+	    return res;
+    }
 
     Turtle.prototype.Dot = function() {
 	var size = 2;
@@ -672,6 +717,21 @@ var $builtinmodule = function(name)
 
 	$loc.heading = new Sk.builtin.func(function(self) {
 	    return self.theTurtle.GetHeading();
+	});
+
+	$loc.position = new Sk.builtin.func(function(self) {
+	    return self.theTurtle.GetPosition();
+	});
+
+	$loc.setheading = new Sk.builtin.func(function(self,newhead) {
+	    return self.theTurtle.SetHeading(newhead);
+	});
+
+	$loc.towards = new Sk.builtin.func(function(self,tx,ty) {
+	    if ((typeof(tx)).toLowerCase() === 'number')
+		tx = [tx, ty, 0];
+	    console.log("going towards " + tx);
+	    return self.theTurtle.Towards(tx);
 	});
 
     }

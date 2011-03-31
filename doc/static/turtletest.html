@@ -85,6 +85,10 @@ t.goto(10,10)
 for i in range(0,400,10):
    t.goto(i,20)
    t.dot(2,'violet')
+t.goto(300,300)
+t.down()
+t.setheading(t.towards(0,0))
+t.forward(200)
 </textarea>
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
