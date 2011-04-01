@@ -428,7 +428,25 @@ if ( ! TurtleGraphics ) {
 	    
     }
 
+    // Todo:  fix up the turtle position and heading for a partial circle....
+    //        this may be just as easy to do using my own circle drawing
+    //        function rather than the builtin arc...
+    Turtle.prototype.Circle = function(radius, extent) {
+	var cx = this.position[x] - Math.abs(radius);
+	var cy = this.position[y];
+	var endAngle;
+	if (extent)
+            endAngle = extent * Degree;
+	else
+	    endAngle = 360 * Degree;
+	
+	this.context.arc(cx, cy, Math.abs(radius), 0, endAngle, (radius > 0));
+	this.context.stroke();
+    }
+
     Turtle.prototype.Write = function(theText, move, align, font) {
+	if (font)
+	    this.context.font = font.v;
 	this.context.fillText(theText,this.position[x], this.position[y]);
     }
 
@@ -741,6 +759,10 @@ var $builtinmodule = function(name)
 	    self.theTurtle.Dot(size,color);
 	});
 
+	$loc.circle = new Sk.builtin.func(function(self, radius, extent) {
+	    self.theTurtle.Circle(radius, extent);
+	});
+
 	// todo:  stamp, clearstamp, clearstamps, undo, speed
 
 	//
@@ -871,8 +893,9 @@ var $builtinmodule = function(name)
 	    self.theTurtle.Clean();
 	});
 
-	$loc.write = new Sk.builtin.func(function(self,mystr) {
-	    self.theTurtle.Write(mystr.v);
+	// todo the move, align, and font parameters should be kwargs...
+	$loc.write = new Sk.builtin.func(function(self,mystr,move,align,font) {
+	    self.theTurtle.Write(mystr.v,move,align,font);
 	});
 
 	// todo clean  -- again multiple turtles

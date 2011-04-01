@@ -90,8 +90,12 @@ t.down()
 t.setheading(t.towards(0,0))
 t.forward(200)
 print "turtle position is: ", t.position()
-t.write("Hello world")
-
+t.fillcolor("black")
+t.write("Hello world",None,None,"bold 30px sans-serif")
+t.up()
+t.goto(500,100)
+t.down()
+t.circle(20)
 </textarea>
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
