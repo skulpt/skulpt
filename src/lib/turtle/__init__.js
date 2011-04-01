@@ -314,6 +314,19 @@ if ( ! TurtleGraphics ) {
 	}
     }
 
+    Turtle.prototype. drawLine = function(newposition) {
+	with (this ) {
+	    with ( context ) {
+		lineCap = 'round';
+		lineJoin = 'round';
+		lineWidth = penWidth;
+		strokeStyle = penStyle;
+		lineTo(newposition[x], newposition[y]);
+		stroke();
+	    }
+	}
+
+    }
 
     Turtle.prototype.Move = function (d) {
 	with ( this ) {
@@ -322,15 +335,8 @@ if ( ! TurtleGraphics ) {
 	    }
 	    var newposition = linear(1, position, d * unit, heading);
 	    if ( pen ) {
-		with ( context ) {
-		    lineCap = 'round';
-		    lineJoin = 'round';
-		    lineWidth = penWidth;
-		    strokeStyle = penStyle;
-		    lineTo(newposition[x], newposition[y]);
-		    stroke();
+		drawLine(newposition);
 		}
-	    }
 	    position = newposition;
 	}
     }
@@ -339,14 +345,7 @@ if ( ! TurtleGraphics ) {
 	var newposition = [nx,ny,0];
 	with (this) {
 	    if (pen) {
-		with ( context ) {
-		    lineCap = 'round';
-		    lineJoin = 'round';
-		    lineWidth = penWidth;
-		    strokeStyle = penStyle;
-		    lineTo(newposition[x], newposition[y]);
-		    stroke();
-		}
+		drawLine(newposition);
 	    } else {
 		context.moveTo(newposition[x], newposition[y]);
 	    }
