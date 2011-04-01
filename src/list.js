@@ -322,3 +322,4 @@ Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key,
     return null;
 });
 
+goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);

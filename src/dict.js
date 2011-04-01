@@ -162,6 +162,9 @@ Sk.builtin.dict.prototype['values'] = new Sk.builtin.func(function(self)
     return new Sk.builtin.list(ret);
 });
 
+
+goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
+
 /*
 
 $.prototype.clear = function() { throw "todo; dict.clear"; };
