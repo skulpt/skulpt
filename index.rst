@@ -11,6 +11,8 @@ Learning with Python
 
 by Jeffrey Elkner, Peter Wentworth, Allen B. Downey, and Chris Meyers
 
+illustrated by Dario Mitchell
+
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__
 * `Preface <preface.html>`__
