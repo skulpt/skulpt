@@ -72,7 +72,7 @@ for i in range(4):
   t.right(90)
 
 t.up()
-t.goto(500,300)
+t.goto(-300,200)
 t.down()
 t.fillcolor('red')
 t.begin_fill()
@@ -81,11 +81,11 @@ for i in range(4):
    t.right(90)
 t.end_fill()
 t.up();
-t.goto(10,10)
+t.goto(10,-200)
 for i in range(0,400,10):
-   t.goto(i,20)
+   t.goto(i,-200)
    t.dot(2,'violet')
-t.goto(300,300)
+t.goto(400,250)
 t.down()
 t.setheading(t.towards(0,0))
 t.forward(200)
@@ -93,9 +93,20 @@ print "turtle position is: ", t.position()
 t.fillcolor("black")
 t.write("Hello world",None,None,"bold 30px sans-serif")
 t.up()
-t.goto(500,100)
+t.goto(300,-100)
 t.down()
 t.circle(20)
+t.up()
+t.goto(-200,-200)
+t.setheading(0)
+t.color('orange')
+t.width(8)
+for i in range(20):
+   if i % 2 == 0:
+      t.down()
+   else:
+      t.up()
+   t.forward(10)
 </textarea>
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
