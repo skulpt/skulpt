@@ -6,22 +6,15 @@
 //
 //
 //
-//
-// ----------------------------------------------------------------------
-// The skulpt module wraps an extended version of the TurtleGraphics
-// module written by Tom Verhoeff, although I've pretty much modified it
-// beyond all recognition, so any problems with it are likely mine and
-// not Tom's
-// http://www.win.tue.nl/~wstomv/edu/javascript/tg-commands.html
-// Author: Tom Verhoeff (Eindhoven University of Techology, Netherlands)
-// Contact information: <T.Verhoeff@tue.nl>
-// License: GPL version 3
 
-
-// In the first part of the file I have extended/implemented a turtle graphics 
-// module natively in Javascript.  In the second half of the file there is a 
-// skulpt wrapper around the first.
 //
+//
+// Turtle Graphics Module for Skulpt
+//
+// Brad Miller
+//
+//
+
 var TurtleGraphics; // the single identifier needed in the global scope
 
 if ( ! TurtleGraphics ) {
@@ -34,386 +27,247 @@ if ( ! TurtleGraphics ) {
 
     // Define private constants
 
-    // A vector in 3D space is stored as a 3-element array.
-    // The following constants are to index a vector.
-    var /* const */ x = 0;
-    var /* const */ y = 1;
-    var /* const */ z = 2;
+    var Degree2Rad = Math.PI / 180.0; // conversion factor for degrees to radians
+    var Rad2Degree = 180.0 / Math.PI
 
-    var /* const */ Degree = Math.PI / 180.0; // conversion factor for degrees to radians
-
-    // Define private variables
-
-    var defaults = [ { canvasID: 'TGspace', unit: 30, degrees: true } ]; // organized as stack
-
-    // Define private functions
-
-    function cloneObject(source) {
-	for (i in source) {
-	    if (typeof source[i] == 'object') {
-		this[i] = new cloneObject(source[i]);
-	    }
-	    else {
-		this[i] = source[i];
-	    }
-	}
-    }
-
-    function top(a) {
-	// Return what is on top of stack a
-	// Requires: a is a non-empty array
-	// Ensures: result = last (topmost) element
-	return a[a.length - 1];
-    }
-
-    function linear(a, u, b, v) {
-	// Return linear combination of u and v
-	// Requires: u, v are vectors, a is a number
-	// Ensures: result = a * u + b * v
-	var result = [ ];
-	for (var c = x; c <= z; ++c) {
-	    result[c] = a * u[c] + b * v[c];
-	}
-	return result;
-    }
-
-    function cross(u, v) {
-	// Return cross product of u and v
-	// Requires: u, v are vectors
-	// Ensures: result = cross product of u and v
-	var result = [ ];
-	for (var c = x; c <= z; ++c) {
-	    result[c] = u[(c+1)%3] * v[(c+2)%3] - u[(c+2)%3] * v[(c+1)%3];
-	}
-	return result;
-    }
-
-    function rotateNormal(u, v, w, alpha) {
-	// Return rotation of u in direction of v about w over alpha
-	// Requires: u, v, w are vectors; alpha is angle in radians
-	//   u, v, w are orthonormal
-	// Ensures: result = u rotated in direction of v about w over alpha
-	return linear(Math.cos(alpha), u, Math.sin(alpha), v);
-    }
-
-    function normalize(u) {
-	var res = []
-	var n = Math.sqrt(u[x]*u[x] + u[y]*u[y]);
-	res[x] = u[x]/n;
-	res[y] = u[y]/n;
-	res[z] = 0.0;
-	return res;
-    }
-
-    function vec2angle(heading) {
-        // workaround for values getting set to +/i xxx e -16 fooling the +/- checks below
-	if (Math.abs(heading[y]) < 0.00001) heading[y] = 0.0;
-	if (Math.abs(heading[x]) < 0.00001) heading[x] = 0.0;
-	var rads = Math.atan(Math.abs(heading[y]) / Math.abs(heading[x]));
-	var deg = rads * 180.0 / Math.PI;
-	if (heading[x] < 0 && heading[y] < 0) deg = 180 - deg;
-	else if (heading[x] < 0 && heading[y] >= 0) deg = 180.0 + deg;
-        else if (heading[x] >= 0 && heading[y] > 0) deg = 360 - deg;
-	return deg;
-    }
-
-    function angle2vec(phi) {
-	var res = [0.0,0.0,0.0];
-	phi = phi * Degree;
-	res[x] = Math.cos(phi);
-	res[y] = Math.sin(phi)*-1.0;  // compensate for upside down y coordinates on canvas
-	return normalize(res);
-    }
-
-    // Define functions to be made public
 
     // Constructor for Turtle objects
     function Turtle() {
-	// Construct new turtle.
-	// Optional argument is passed to Init()
-	// Define public properties
-	this.log = '';
-	this.logging = false;
-	
-	// Initialize (define and initialize remaining public properties
 	if ( arguments.length >= 1 ) {
-	    this.Init(arguments[0]);
+	    this.initialize(arguments[0]);
 	}
 	else {
-	    this.Init();
+	    this.initialize();
 	}
+	TurtleGraphics.turtleList.push(this);
     }
 
-    // Define shared properties of all Turtle objects
-    Turtle.prototype.Degree = Degree;
 
-
-    // Define public methods of Turtle objects
-
-    Turtle.prototype.Home = function () {
+    Turtle.prototype.go_home = function () {
 	// Put turtle in initial state
+        // turtle is headed to the right
+        // with location 0,0,0 in the middle of the canvas.
+        // x grows to the right
+        // y grows towards the top of the canvas
 	with ( this ) {
-	    if ( logging ) {
-		log += 'Home();\n';
-	    }
 	    position = home;
-	    context.moveTo(home[x],home[y]);
-	    heading = [1.0, 0.0, 0.0]; // to the right; in turtle space x+ direction
-	    normal = [0.0, 0.0, 1.0]; // in z+ direction
+	    context.moveTo(home[0],home[1]);
+	    heading = new Vector([1.0, 0.0, 0.0]); // to the right; in turtle space x+ direction
+	    normal = new Vector([0.0, 0.0, -1.0]); // in z- direction
 	}
     };
 
-    Turtle.prototype.Init = function () {
+    Turtle.prototype.initialize = function () {
 	// Initialize the turtle.
-	// Optional argument is object with some initial values:
-	//   options.origin = string of the form /(t|m|b)(l|c|r)/
-	//     t = top, m = middle, b = bottom, l = left, c = center, r = right
-	//   options.unit = unit length in pixels
-	//   options.canvasID = id of canvas element for drawing
 	var options = { };
+
 	if ( arguments.length >= 1 ) {
 	    options = arguments[0];
 	}
-	//writeObject('option = ', option);
-	this.unit = top(defaults).unit; // position scaling to define the unit length
+	this.unit = TurtleGraphics.defaults.unit; // position scaling to define the unit length
 	if ( options.unit ) {
 	    this.unit = options.unit;
 	}
-	this.canvasID = top(defaults).canvasID;
+
+	this.canvasID = TurtleGraphics.defaults.canvasID;
 	if ( options.canvasID ) {
 	    this.canvasID = options.canvasID;
 	}
 	this.context = document.getElementById(this.canvasID).getContext('2d');
-	//writeObject(this.context.canvas, 'canvas'); // test
-	//writeObject(this.context, 'context'); // test
+
+	this.animate = TurtleGraphics.defaults.animate;
+
 	with ( this.context ) {
-	    var x0 = canvas.width / 2;
-	    var y0 = canvas.height / 2;
-	    if ( options.origin ) {
-		for (var i = 0; i != options.origin.length; ++i) {
-		    switch ( options.origin.charAt(i) ) {
-		    case 't': x0 = 0.0; break;
-		    case 'm': x0 = canvas.width / 2; break;
-		    case 'b': x0 = canvas.width; break;
-		    case 'l': y0 = 0.0; break;
-		    case 'c': y0 = canvas.height / 2; break;
-		    case 'r': y0 = canvas.height; break;
-		    }
-		}
-	    }
-	    this.home = [x0, y0, 0.0]; // its origin
-	    this.position = [ ]; // set by Home()
-	    this.heading = [ ]; // set by Home()
-	    this.normal = [ ]; // set by Home()
-	    this.pen = true; // active
+	    translate(canvas.width/2, canvas.height/2); // move 0,0 to center.
+	    scale(1,-1); // scaling like this flips the y axis the right way.
+	    this.home = new Vector([0.0, 0.0, 0.0]); 
+	    this.position = [ ]; 
+	    this.heading = [ ]; 
+	    this.normal = [ ]; 
+	    this.drawingEvents = [];
+	    this.eventLoop = false;
+	    this.pen = true; 
 	    this.penStyle = 'black';
 	    this.penWidth = 2;
 	    this.fillStyle = 'white';
-	    this.Home();
-	    this.logging = true;
-	    //writeObject(this, 'this');
+	    this.go_home();
+	    this.intervalId = 0;
+	    this.aCount = 1;
 	}
     }
 
-    Turtle.prototype.Clean = function () {
+    Turtle.prototype.clean = function () {
 	// Clean the canvas
 	// Optional second argument is color
 	with ( this ) {
-	    if ( logging ) {
-		var arg = '';
-		if ( arguments.length >= 1 ) {
-		    arg = '\'' + arguments[0] + '\'';
-		}
-		log += 'Clean(' + arg + ');\n';
-	    }
 	    if ( arguments.length >= 1 ) {
-		Clear(canvasID, arguments[0]);
+		clear(canvasID, arguments[0]);
 	    }
 	    else {
-		Clear(canvasID);
+		clear(canvasID);
 	    }
-	    Init();
+	    initialize();
 	}
     }
 
-    Turtle.prototype.PenActive = function (b) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'PenActive(' + b + ');\n';
-	    }
-	    pen = b;
-	}
-    }
+//  
+//  Drawing Functions
+//
 
-    Turtle.prototype.PenDown = function () {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'PenDown();\n';
-	    }
-	    pen = true;
-	}
-    }
-
-    Turtle.prototype.PenUp = function () {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'PenUp();\n';
-	    }
-	    pen = false;
-	}
-    }
-
-    Turtle.prototype.GetPen = function () {
-	return this.pen;
-    }
-
-    Turtle.prototype.SetPenWidth = function (w) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'SetPenWidth(' + w + ');\n';
-	    }
-	    penWidth = w;
-	}
-    }
-
-    Turtle.prototype.SetPenStyle = function (c) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'SetPenStyle(\'' + c + '\');\n';
-	    }
-	    penStyle = c;
-	}
-    }
-
-    Turtle.prototype.SetFillStyle = function (c) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'SetPenStyle(\'' + c + '\');\n';
-	    }
-	    fillStyle = c;
-	    context.fillStyle = c;
-	}
-    }
-
-    Turtle.prototype.BeginFill = function () {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'BeginFill();\n';
-	    }
-	    context.beginPath();
-	}
-    }
-
-    Turtle.prototype.EndFill = function () {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'EndFill();\n';
-	    }
-	    context.closePath();
-	    context.fill();
-	}
-    }
-
-    Turtle.prototype. drawLine = function(newposition) {
+    Turtle.prototype.draw_line = function(newposition) {
 	with (this ) {
 	    with ( context ) {
-		lineCap = 'round';
-		lineJoin = 'round';
-		lineWidth = penWidth;
-		strokeStyle = penStyle;
-		lineTo(newposition[x], newposition[y]);
-		stroke();
+		if (! animate ) {
+		    lineCap = 'round';
+		    lineJoin = 'round';
+		    lineWidth = penWidth;
+		    strokeStyle = penStyle;
+		    lineTo(newposition[0], newposition[1]);
+		    stroke();
+		} else {
+		    //drawingEvents.push("lineTo("+newposition[0]+","+newposition[1]+")");
+		    drawingEvents.push(["LT", newposition[0], newposition[1]].join(" "));
+		    if (! eventLoop) {
+			this.intervalId = setInterval(processDrawEvents,500);
+			eventLoop = true;
+		    }
+		}
 	    }
 	}
 
     }
 
-    Turtle.prototype.Move = function (d) {
+
+    Turtle.prototype.forward = function (d) {
 	with ( this ) {
-	    if ( logging ) {
-		log += 'Move(' + d + ');\n';
-	    }
-	    var newposition = linear(1, position, d * unit, heading);
+	    var newposition = position.linear(1, d * unit, heading);
 	    if ( pen ) {
-		drawLine(newposition);
-		}
+		draw_line(newposition);
+                }
+	    else {
+		if (animate) {
+		    drawingEvents.push(["MT",newposition[0],newposition[1]].join(" "));
+		} else
+		    this.context.moveTo(newposition[0],newposition[1]);
+	    }
 	    position = newposition;
 	}
     }
 
-    Turtle.prototype.Goto = function(nx,ny) {
-	var newposition = [nx,ny,0];
+    Turtle.prototype.goto = function(nx,ny) {
+	var newposition = new Vector([nx,ny,0]);
 	with (this) {
 	    if (pen) {
-		drawLine(newposition);
+		draw_line(newposition);
 	    } else {
-		context.moveTo(newposition[x], newposition[y]);
+		if (! animate) {
+		    context.moveTo(newposition[0], newposition[1]);
+		} else {
+		    //drawingEvents.push("moveTo("+newposition[0]+","+newposition[1]+")");
+		    drawingEvents.push(["MT",newposition[0],newposition[1]].join(" "));
+		    if (! eventLoop) {
+			this.intervalId = setInterval(processDrawEvents,500);
+			eventLoop = true;
+		    }
+		}
 	    }
 	    position = newposition;
 	    
 	}
     }
 
-    Turtle.prototype.Turn = function (phi) {
-	with ( this ) {
-	    if ( logging ) {
-		log += 'Turn(' + phi + ');\n';
+    Turtle.prototype.speed = function(s) {
+	if (s > 0)
+	    this.animate = true;
+	else
+	    this.animate = false;
+    }
+
+    processDrawEvents = function () {
+	var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
+	with ( context ) {
+	    for (var i in TurtleGraphics.turtleList) {
+		var t = TurtleGraphics.turtleList[i]
+		clearRect(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
+		moveTo(0,0);
+		for (var i = 0; i < t.aCount; i++ ) {
+		    var oper = t.drawingEvents[i].split(" ");
+		    if (oper[0] == "LT") {
+			lineTo(oper[1],oper[2]);
+			stroke();
+		    }
+		    if (oper[0] == "MT")
+			moveTo(oper[1],oper[2]);
+		}
+		t.aCount++;
+		if (t.aCount > t.drawingEvents.length) {
+		    t.eventLoop = false;
+		    clearInterval(t.intervalId);
+		}
 	    }
-	    var alpha = phi * Degree;
-	    var left = cross(normal, heading);
-	    var newheading = rotateNormal(heading, left, normal, alpha);
+	}
+    }
+
+
+    Turtle.prototype.turn = function (phi) {
+	with ( this ) {
+	    var alpha = phi * Degree2Rad;
+	    var left = normal.cross(heading);
+	    var newheading = heading.rotateNormal(left, normal, alpha);
 	    heading = newheading;
 	}
     }
 
-    Turtle.prototype.GetHeading = function () {
-	if (top(defaults)['degrees'])
-	    return vec2angle(this.heading)
+    Turtle.prototype.get_heading = function () {
+	if (TurtleGraphics.defaults.degrees)
+	    return this.heading.toAngle()
 	else
 	    return this.heading
     }
 
-    Turtle.prototype.GetPosition = function () {
+    Turtle.prototype.get_position = function () {
 	return this.position;
     }
 
-    Turtle.prototype.GetX = function () {
-	return this.position[x];
+    Turtle.prototype.getx = function () {
+	return this.position[0];
     }
 
-    Turtle.prototype.GetY = function () {
-	return this.position[y];
+    Turtle.prototype.gety = function () {
+	return this.position[1];
     }
 
-    Turtle.prototype.SetHeading = function(newhead) {
+    Turtle.prototype.set_heading = function(newhead) {
 	if ((typeof(newhead)).toLowerCase() === 'number') {
-	    this.heading = angle2vec(newhead);
+	    this.heading = Vector.angle2vec(newhead);
 	} else {
 	    this.heading = newhead;
 	}
     }
 
-    Turtle.prototype.Towards = function(to) {
+    Turtle.prototype.towards = function(to,y) {
 	// set heading vector to point towards another point.
-	var res = [];
-	res[x] = to[x] - this.position[x];
-	res[y] = to[y] - this.position[y];
-	res[z] = to[z] - this.position[z];
-	res = normalize(res);
-	if (top(defaults)['degrees'])
-	    return vec2angle(res);
+	if ((typeof(to)).toLowerCase() === 'number')
+	    to = new Vector(to,y,0);
+	else if (! (to instanceof Vector)) {
+	    to = new Vector(to);
+	}
+	console.log("here: " + to);
+	var res = to.sub(this.position);
+	res = res.normalize();
+	if (TurtleGraphics.defaults.degrees)
+	    return res.toAngle();
 	else
 	    return res;
     }
 
-    Turtle.prototype.Distance = function(to) {
-	var xdiff = to[x] - this.position[x];
-	var ydiff = to[y] - this.position[y];
-	var zdiff = to[z] - this.position[z];
-	return Math.sqrt(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff);
+    Turtle.prototype.distance = function(to,y) {
+	if ((typeof(to)).toLowerCase() === 'number')
+	    to = new Vector(to,y,0);
+	return this.position.sub(new Vector(to)).len();
     }
 
-    Turtle.prototype.Dot = function() {
+    Turtle.prototype.dot = function() {
 	var size = 2;
 	if (arguments.length >= 1) size = arguments[0];
 	with (this) {
@@ -421,7 +275,7 @@ if ( ! TurtleGraphics ) {
 		if (arguments.length >= 2) {
 		    fillStyle = arguments[1];
 		}
-		fillRect(position[x]-size/2, position[y]-size/2, size, size);
+		fillRect(position[0]-size/2, position[1]-size/2, size, size);
 	    }
 	}
 	    
@@ -430,197 +284,72 @@ if ( ! TurtleGraphics ) {
     // Todo:  fix up the turtle position and heading for a partial circle....
     //        this may be just as easy to do using my own circle drawing
     //        function rather than the builtin arc...
-    Turtle.prototype.Circle = function(radius, extent) {
-	var cx = this.position[x] - Math.abs(radius);
-	var cy = this.position[y];
+    Turtle.prototype.circle = function(radius, extent) {
+	var cx = this.position[0] - Math.abs(radius);
+	var cy = this.position[1];
 	var endAngle;
 	if (extent)
-            endAngle = extent * Degree;
+            endAngle = extent * Degree2Rad;
 	else
-	    endAngle = 360 * Degree;
+	    endAngle = 360 * Degree2Rad;
 	
 	this.context.arc(cx, cy, Math.abs(radius), 0, endAngle, (radius > 0));
 	this.context.stroke();
     }
 
-    Turtle.prototype.Write = function(theText, move, align, font) {
+    Turtle.prototype.write = function(theText, move, align, font) {
 	if (font)
 	    this.context.font = font.v;
-	this.context.fillText(theText,this.position[x], this.position[y]);
+        this.context.scale(1,-1);
+	this.context.fillText(theText,this.position[0], -this.position[1]);
+        this.context.scale(1,-1);
     }
 
-    Turtle.prototype.DrawTurtle = function (c) {
-	// Draw turle (as triangle with fin tail; right wing filled with c)
-	with ( this ) {
-	    if ( logging ) {
-		log += 'DrawTurtle(\'' + c + '\');\n';
-	    }
-	    turtle = this;
-	    var left = cross(normal, heading);
-	    var alpha = 30 * Degree; // half nose angle
-	    var ca = Math.cos(alpha);
-	    var sa = Math.sin(alpha);
-	    var h = unit; // hypothenuse
-	    var a = 2/3 * h * ca; // distance from center to tip of nose
-	    
-	    var nose = linear(1, position, a, heading);
-	    var back = linear(1, nose, -h * ca, heading);
-	    var port = linear(1, back,  h * sa, left); // port-side tip
-	    var star = linear(1, back, -h * sa, left); // starboard-side tip
-	    var fin  = linear(1, back,  h * sa, normal); // fin tip
 
-	    function drawWings() {
-		with ( turtle ) with ( context ) {
-		    // starboard wing
-		    beginPath();
-		    moveTo(nose[y], nose[x]);
-		    lineTo(back[y], back[x]);
-		    lineTo(star[y], star[x]);
-		    closePath();
-		    fillStyle = c;
-		    fill();
-		    
-		    // port wing
-		    beginPath();
-		    moveTo(nose[y], nose[x]);
-		    lineTo(back[y], back[x]);
-		    lineTo(port[y], port[x]);
-		    closePath();
-		    fillStyle = 'white';
-		    fill();
-		    
-		    // wing decorations
-		    if ( normal[z] >= 0 ) { // eyes on top
-			save();
-			lineWidth = 2;
-			beginPath ();
-			moveTo(position[y] + a/2 * heading[y] + (star[y] - back[y]) / 7,
-			       position[x] + a/2 * heading[x] + (star[x] - back[x]) / 7);
-			lineTo(position[y] + a/2 * heading[y] + (star[y] - back[y]) / 7,
-			       position[x] + a/2 * heading[x] + (star[x] - back[x]) / 7);
-			strokeStyle = 'white';
-			stroke()
-			beginPath ();
-			moveTo(position[y] + a/2 * heading[y] + (port[y] - back[y]) / 7,
-			       position[x] + a/2 * heading[x] + (port[x] - back[x]) / 7);
-			lineTo(position[y] + a/2 * heading[y] + (port[y] - back[y]) / 7,
-			       position[x] + a/2 * heading[x] + (port[x] - back[x]) / 7);
-			strokeStyle = c;
-			stroke()
-			restore();
-		    }
-		    else { // arrow head on the bottom
-			// fin is down, draw cross hair
-			beginPath();
-			moveTo(position[y], position[x]);
-			//lineTo(position[y] + unit/6 * left[y],
-			//  position[x] + unit/6 * left[x]);
-			lineTo(position[y] + (port[y] - nose[y]) / 5,
-			       position[x] + (port[x] - nose[x]) / 5);
-			strokeStyle = c;
-			stroke();
-			beginPath();
-			moveTo(position[y], position[x]);
-			//lineTo(position[y] - unit/6 * left[y],
-			//  position[x] - unit/6 * left[x]);
-			lineTo(position[y] + (star[y] - nose[y]) / 5,
-			       position[x] + (star[x] - nose[x]) / 5);
-			strokeStyle = 'white';
-			stroke();
-		    }
-		    
-		    // startboard wing's edge
-		    beginPath();
-		    moveTo(nose[y], nose[x]);
-		    lineTo(star[y], star[x]);
-		    lineTo(back[y], back[x]);
-		    strokeStyle = 'white';
-		    stroke();
-		    
-		    // port wing's edge
-		    beginPath();
-		    moveTo(nose[y], nose[x]);
-		    lineTo(port[y], port[x]);
-		    lineTo(back[y], back[x]);
-		    strokeStyle = c;
-		    stroke();
-		}
-	    }
-	    
-	    function drawFinFace(fc) {
-		with ( turtle ) with ( context ) {
-		    beginPath();
-		    moveTo(position[y], position[x]);
-		    lineTo(fin [y], fin [x]);
-		    lineTo(back[y], back[x]);
-		    closePath();
-		    fillStyle = fc;
-		    fill();
-		}
-	    }
-	    
-	    function drawFinEdge(fc) {
-		with ( turtle ) with ( context ) {
-		    beginPath();
-		    moveTo(position[y], position[x]);
-		    lineTo(fin [y], fin [x]);
-		    lineTo(back[y], back[x]);
-		    closePath();
-		    strokeStyle = fc;
-		    stroke();
-		}
-	    }
-	    
-	    function drawFin() {
-		with ( turtle ) with ( context ) {
-		    if ( left[z] >= 0 ) {
-			drawFinFace('white');
-			drawFinEdge(c);
-		    }
-		    else {
-			drawFinEdge('white');
-			drawFinFace(c);
-		    }
-		}
-	    }
-	    
-	    with ( context ) {
-		save();
-		lineWidth = 1;
-		lineCap = 'round';
-		lineJoin = 'round';
-		
-		if ( normal[z] >= 0 ) {
-		    // fin is up, draw it last
-		    drawWings();
-		    drawFin();
-		}
-		else {
-		    // fin is down, draw it first
-		    drawFin();
-		    drawWings();
-		}
-		
-		restore();
-	    }
-	}
+//
+// Pen and Style functions
+//
+    Turtle.prototype.pen_down = function () {
+	this.pen = true;
     }
 
-    // Define abbreviated public methods for Turtle objects
-    Turtle.prototype.PA = Turtle.prototype.PenActive;
-    Turtle.prototype.PD = Turtle.prototype.PenDown;
-    Turtle.prototype.PU = Turtle.prototype.PenUp;
-    Turtle.prototype.M = Turtle.prototype.Move;
-    Turtle.prototype.T = Turtle.prototype.Turn;
-    Turtle.prototype.DT = Turtle.prototype.DrawTurtle;
+    Turtle.prototype.pen_up = function () {
+	this.pen = false;
+    }
+
+    Turtle.prototype.get_pen = function () {
+	return this.pen;
+    }
+
+    Turtle.prototype.set_pen_width = function (w) {
+	this.penWidth = w;
+    }
+
+    Turtle.prototype.set_pen_style = function (c) {
+	this.penStyle = c;
+    }
+
+    Turtle.prototype.set_fill_style = function (c) {
+	    this.fillStyle = c;
+	    this.context.fillStyle = c;
+    }
+
+    Turtle.prototype.begin_fill = function () {
+	    this.context.beginPath();
+    }
+
+    Turtle.prototype.end_fill = function () {
+	    this.context.closePath();
+	    this.context.fill();
+    }
 
 
     // Define functions to be made public (continued)
 
-    function Clear(sp) {
+    function clear_canvas(canId) {
 	// Clear canvas with ID sp.
 	// Optional second argument is color.
-	with ( document.getElementById(sp).getContext('2d') ) {
+	with ( document.getElementById(canId).getContext('2d') ) {
 	    canvas.width = canvas.width; // clear the canvas
 	    if ( arguments.length >= 2 ) {
 		fillStyle = arguments[1];
@@ -629,56 +358,115 @@ if ( ! TurtleGraphics ) {
 	}
     }
 
-    function SetDefaults(def) {
-	// Set defaults in def (other defaults are unaffected)
-	for (var p in def) {
-	    top(defaults)[p] = def[p];
+
+    // Create a 3d Vector class for manipulating turtle heading, and position.
+
+    function Vector(x,y,z) {
+	if ((typeof(x)).toLowerCase() === 'number') {
+	    Array.prototype.push.call(this,x);
+	    Array.prototype.push.call(this,y);
+	    Array.prototype.push.call(this,z);
+	}
+	else {
+	    for (var i in x) {
+		Array.prototype.push.call(this,x[i]);
+	    }
 	}
     }
 
-    function GetDefaults() {
-	// Return current defaults
-	return top(defaults);
+
+    // Create a vector object given a direction as an angle.
+    Vector.angle2vec = function(phi) {
+	var res = new Vector([0.0,0.0,0.0]);
+	phi = phi * Degree2Rad;
+	res[0] = Math.cos(phi);
+	res[1] = Math.sin(phi); 
+	return res.normalize();
     }
 
-    function PushDefaults(def) {
-	// Push new defaults def, making them active
-	// Requires: def = object with properties canvasID and unit
-	defaults.push(new cloneObject(top(defaults))); // first, copy top
-	SetDefaults(def); // then update with values from parameter
+    // This trick allows you to access a Vector object like an array
+    // myVec[0] == x
+    // myVec[1] == y
+    // myVec[2] == z
+    // we really only need the z for the convenience of rotating
+    Vector.prototype.addItem = function(item){
+	Array.prototype.push.call(this,item);
     }
 
-    function PopDefaults() {
-	// Pop defaults, making the underlying defaults active again
-	// Requires: defaults.length > 1
-	if ( defaults.length > 1 ) {
-	    defaults.pop();
+    Vector.prototype.linear =  function(a, b, v) {
+	var result = [ ];
+	for (var c = 0; c <= 2; ++c) {
+	    result[c] = a * this[c] + b * v[c];
 	}
+	return new Vector(result);
     }
 
-    function Test() {
-	var result = '';
-	result += cross([0, 0, 1], [1, 0, 0]) + '\n';
-	result += obj2Str('defaults = ', top(defaults)) + '\n';
-	SetDefaults({ canvasID: 'TGexample1' });
-	result += obj2Str('defaults = ', top(defaults)) + '\n';
-	PushDefaults({ canvasID: 'TGexample2' });
-	result += obj2Str('defaults = ', top(defaults)) + '\n';
-	PopDefaults();
-	result += obj2Str('defaults = ', top(defaults)) + '\n';
-	return result;
+    Vector.prototype.cross = function(v) {
+	// Return cross product of this and v 
+	var result = [ ];
+	for (var c = 0; c <= 2; ++c) {
+	    result[c] = this[(c+1)%3] * v[(c+2)%3] - this[(c+2)%3] * v[(c+1)%3];
+	}
+	return new Vector(result);
     }
 
-    // Export public functions
+    Vector.prototype.rotateNormal = function( v, w, alpha) {
+	// Return rotation of u in direction of v about w over alpha
+	// Requires: u, v, w are vectors; alpha is angle in radians
+	//   u, v, w are orthonormal
+	// Ensures: result = u rotated in direction of v about w over alpha
+	return this.linear(Math.cos(alpha), Math.sin(alpha), v);
+    }
+
+    Vector.prototype.normalize = function() {
+	var n = this.len();
+	var res = this.div(n);
+	return res;
+    }
+
+    Vector.prototype.toAngle = function() {
+        // workaround for values getting set to +/i xxx e -16 fooling the +/- checks below
+	if (Math.abs(this[1]) < 0.00001) this[1] = 0.0;
+	if (Math.abs(this[0]) < 0.00001) this[0] = 0.0;
+	var rads = Math.atan(Math.abs(this[1]) / Math.abs(this[0]));
+	var deg = rads * Rad2Degree;
+	if (this[0] < 0 && this[1] > 0) deg = 180 - deg;
+	else if (this[0] < 0 && this[1] <= 0) deg = 180.0 + deg;
+        else if (this[0] >= 0 && this[1] < 0) deg = 360 - deg;
+	return deg;
+    }
+
+    // divide all vector components by the same value
+    Vector.prototype.div = function(n) {
+	res = []
+	res[0] = this[0]/n;
+	res[1] = this[1]/n;
+	res[2] = this[2]/n;
+	return new Vector(res);
+    }
+
+    // subtract one vector from another
+    Vector.prototype.sub = function(v) {
+	res = new Vector(0,0,0);
+	res[0] = this[0] - v[0];
+	res[1] = this[1] - v[1];
+	res[2] = this[2] - v[2];
+	return res;
+    }
+
+    Vector.prototype.len = function() {
+	return Math.sqrt(this[0]*this[0] + this[1]*this[1] + this[2]*this[2]);
+    }
+
+
+    TurtleGraphics.defaults = { canvasID: 'mycanvas', unit: 1, degrees: true, animate: false }
+    TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
-    TurtleGraphics.Clear = Clear;
-    TurtleGraphics.SetDefaults = SetDefaults;
-    TurtleGraphics.GetDefaults = GetDefaults;
-    TurtleGraphics.PushDefaults = PushDefaults;
-    TurtleGraphics.PopDefaults = PopDefaults;
-    TurtleGraphics.Test = Test;
+    TurtleGraphics.clear_canvas = clear_canvas;
+    TurtleGraphics.Vector = Vector;
 
 })();
+
 
 //
 // Wrapper around the Turtle Module starts here.
@@ -691,7 +479,7 @@ var $builtinmodule = function(name)
     // class
     var turtle = function($gbl, $loc) {
 	$loc.__init__ = new Sk.builtin.func(function(self) {
-	    TurtleGraphics.SetDefaults({canvasID: Sk.canvas, unit:1, origin: "mc"});
+	    TurtleGraphics.defaults = {canvasID: Sk.canvas, unit:1, animation: false, degrees: true};
 	    self.theTurtle = new TurtleGraphics.Turtle();
 	});
 
@@ -702,64 +490,64 @@ var $builtinmodule = function(name)
 	// Move and Draw
 	//
 	$loc.forward = new Sk.builtin.func(function(self, dist) {
-	    self.theTurtle.Move(dist);
+	    self.theTurtle.forward(dist);
 	});
 
 	$loc.fd = $loc.forward;
 
 	$loc.backward = new Sk.builtin.func(function(self, dist) {
-	    self.theTurtle.Move(-dist);
+	    self.theTurtle.forward(-dist);
 	});
 
 	$loc.back = $loc.backward;
 	$loc.bk = $loc.backward;
 
 	$loc.right = new Sk.builtin.func(function(self, angle) {
-	    self.theTurtle.Turn(angle);
+	    self.theTurtle.turn(angle);
 	});
 
 	$loc.rt = $loc.right;
 
 	$loc.left = new Sk.builtin.func(function(self, angle) {
-	    self.theTurtle.Turn(-angle);
+	    self.theTurtle.turn(-angle);
 	});
 	
 	$loc.lt = $loc.left;
 
 	$loc.goto = new Sk.builtin.func(function(self,nx,ny) {
-	    self.theTurtle.Goto(nx,ny);
+	    self.theTurtle.goto(nx,ny);
 	});
 
 	$loc.setpos = $loc.goto;
 	$loc.setposition = $loc.goto;
 
 	$loc.setx = new Sk.builtin.func(function(self,nx) {
-	    self.theTurtle.Goto(nx,self.theTurtle.GetY());
+	    self.theTurtle.goto(nx,self.theTurtle.GetY());
 	});
 
 	$loc.sety = new Sk.builtin.func(function(self,ny) {
-	    self.theTurtle.Goto(self.theTurtle.GetX(),ny);
+	    self.theTurtle.goto(self.theTurtle.GetX(),ny);
 	});
 
 	$loc.setheading = new Sk.builtin.func(function(self,newhead) {
-	    return self.theTurtle.SetHeading(newhead);
+	    return self.theTurtle.set_heading(newhead);
 	});
 
 	$loc.seth = $loc.setheading;
 
 	$loc.home = new Sk.builtin.func(function(self) {
-	    self.theTurtle.Home();
+	    self.theTurtle.go_home();
 	});
 
 	$loc.dot = new Sk.builtin.func(function(self, /*opt*/ size, color) {
 	    size = size || 1;
 	    if (color)
 		color = color.v || self.theTurtle.context.fillStyle;
-	    self.theTurtle.Dot(size,color);
+	    self.theTurtle.dot(size,color);
 	});
 
 	$loc.circle = new Sk.builtin.func(function(self, radius, extent) {
-	    self.theTurtle.Circle(radius, extent);
+	    self.theTurtle.circle(radius, extent);
 	});
 
 	// todo:  stamp, clearstamp, clearstamps, undo, speed
@@ -768,31 +556,32 @@ var $builtinmodule = function(name)
 	// Tell Turtle's state
 	//
 	$loc.heading = new Sk.builtin.func(function(self) {
-	    return self.theTurtle.GetHeading();
+	    return self.theTurtle.get_heading();
 	});
 
 	$loc.position = new Sk.builtin.func(function(self) {
-	    var res = self.theTurtle.GetPosition();
-	    var x = new Sk.builtin.tuple(res);
+	    var res = self.theTurtle.get_position();
+	    var x = new Sk.builtin.tuple([res[0],res[1]]);
+	    console.log("after to tuple: " + x);
 	    return x;
 	});
 
 	$loc.pos = $loc.position;
 
 	$loc.xcor = new Sk.builtin.func(function(self) {
-	    var res = self.theTurtle.GetX();
+	    var res = self.theTurtle.getx();
 	    return res;
 	});
 
 	$loc.ycor = new Sk.builtin.func(function(self) {
-	    var res = self.theTurtle.GetY();
+	    var res = self.theTurtle.gety();
 	    return res;
 	});
 
 	$loc.towards = new Sk.builtin.func(function(self,tx,ty) {
 	    if ((typeof(tx)).toLowerCase() === 'number')
 		tx = [tx, ty, 0];
-	    return self.theTurtle.Towards(tx);
+	    return self.theTurtle.towards(tx);
 	});
 
 	// tx can be either a number or a vector position.
@@ -800,7 +589,7 @@ var $builtinmodule = function(name)
 	$loc.distance = new Sk.builtin.func(function(self,tx,ty) {
 	    if ((typeof(tx)).toLowerCase() === 'number')
 		tx = [tx, ty, 0];
-	    return self.theTurtle.Distance(tx);
+	    return self.theTurtle.distance(tx);
 	});
 
 	//
@@ -818,27 +607,27 @@ var $builtinmodule = function(name)
 	//
 
 	$loc.up = new Sk.builtin.func(function(self) {
-	    self.theTurtle.PenUp();
+	    self.theTurtle.pen_up();
 	});
 	
 	$loc.penup = $loc.up;
 	$loc.pu = $loc.up;
 
 	$loc.down = new Sk.builtin.func(function(self) {
-	    self.theTurtle.PenDown();
+	    self.theTurtle.pen_down();
 	});
 
 	$loc.pendown = $loc.down;
 	$loc.pd = $loc.down;
 
 	$loc.width = new Sk.builtin.func(function(self,w) {
-	    self.theTurtle.SetPenWidth(w);
+	    self.theTurtle.set_pen_width(w);
 	});
 	
 	$loc.pensize = $loc.width;
 
 	$loc.isdown = new Sk.builtin.func(function(self) {
-	    return self.theTurtle.GetPen();
+	    return self.theTurtle.get_pen();
 	});
 
 	// todo:  pen  -- return a dictionary full of pen stuff
@@ -850,7 +639,7 @@ var $builtinmodule = function(name)
 	$loc.fillcolor = new Sk.builtin.func(function(self, color) {
 	    if (color) {
 		color = color.v || self.theTurtle.context.fillStyle;
-		self.theTurtle.SetFillStyle(color);
+		self.theTurtle.set_fill_style(color);
 	    } else
 		return self.theTurtle.fillStyle;
 	});
@@ -858,7 +647,7 @@ var $builtinmodule = function(name)
 	$loc.color = new Sk.builtin.func(function(self, color) {
 	    if (color) {
 		color = color.v || self.theTurtle.context.fillStyle;
-		self.theTurtle.SetPenStyle(color);
+		self.theTurtle.set_pen_style(color);
 	    } else
 		return self.theTurtle.penStyle;
 	});
@@ -870,18 +659,18 @@ var $builtinmodule = function(name)
 	//
 
 	$loc.begin_fill = new Sk.builtin.func(function(self) {
-	    self.theTurtle.BeginFill();
+	    self.theTurtle.begin_fill();
 	});
 
 	$loc.end_fill = new Sk.builtin.func(function(self) {
-	    self.theTurtle.EndFill();
+	    self.theTurtle.end_fill();
 	});
 
 	$loc.fill = new Sk.builtin.func(function(self,fillt) {
 	    if (fillt)
-		self.theTurtle.BeginFill();
+		self.theTurtle.begin_fill();
 	    else
-		self.theTurtle.EndFill();
+		self.theTurtle.end_fill();
 	});
 
 	//
@@ -889,12 +678,12 @@ var $builtinmodule = function(name)
 	//
 
 	$loc.reset = new Sk.builtin.func(function(self) {
-	    self.theTurtle.Clean();
+	    self.theTurtle.clean();
 	});
 
 	// todo the move, align, and font parameters should be kwargs...
 	$loc.write = new Sk.builtin.func(function(self,mystr,move,align,font) {
-	    self.theTurtle.Write(mystr.v,move,align,font);
+	    self.theTurtle.write(mystr.v,move,align,font);
 	});
 
 	// todo clean  -- again multiple turtles
