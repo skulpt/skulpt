@@ -81,15 +81,16 @@ if ( ! TurtleGraphics ) {
 	    translate(canvas.width/2, canvas.height/2); // move 0,0 to center.
 	    scale(1,-1); // scaling like this flips the y axis the right way.
 	    this.home = new Vector([0.0, 0.0, 0.0]); 
-	    this.position = [ ]; 
-	    this.heading = [ ]; 
-	    this.normal = [ ]; 
 	    this.drawingEvents = [];
 	    this.eventLoop = false;
+	    this.filling = false;
 	    this.pen = true; 
 	    this.penStyle = 'black';
 	    this.penWidth = 2;
 	    this.fillStyle = 'white';
+	    this.position = [ ]; 
+	    this.heading = [ ]; 
+	    this.normal = [ ]; 
 	    this.go_home();
 	    this.intervalId = 0;
 	    this.aCount = 1;
@@ -118,12 +119,18 @@ if ( ! TurtleGraphics ) {
 	with (this ) {
 	    with ( context ) {
 		if (! animate ) {
+		    if (! filling) {
+			beginPath();
+			moveTo(position[0],position[1]);
+		    }
 		    lineCap = 'round';
 		    lineJoin = 'round';
 		    lineWidth = penWidth;
 		    strokeStyle = penStyle;
 		    lineTo(newposition[0], newposition[1]);
 		    stroke();
+		    if (! filling)
+			closePath();
 		} else {
 		    //drawingEvents.push("lineTo("+newposition[0]+","+newposition[1]+")");
 		    drawingEvents.push(["LT", newposition[0], newposition[1]].join(" "));
@@ -141,21 +148,15 @@ if ( ! TurtleGraphics ) {
     Turtle.prototype.forward = function (d) {
 	with ( this ) {
 	    var newposition = position.linear(1, d * unit, heading);
-	    if ( pen ) {
-		draw_line(newposition);
-                }
-	    else {
-		if (animate) {
-		    drawingEvents.push(["MT",newposition[0],newposition[1]].join(" "));
-		} else
-		    this.context.moveTo(newposition[0],newposition[1]);
-	    }
-	    position = newposition;
+	    goto(newposition);
 	}
     }
 
     Turtle.prototype.goto = function(nx,ny) {
-	var newposition = new Vector([nx,ny,0]);
+	if (nx instanceof Vector)
+	    var newposition = nx;
+	else
+	    var newposition = new Vector([nx,ny,0]);
 	with (this) {
 	    if (pen) {
 		draw_line(newposition);
@@ -325,22 +326,26 @@ if ( ! TurtleGraphics ) {
 	this.penWidth = w;
     }
 
-    Turtle.prototype.set_pen_style = function (c) {
+    Turtle.prototype.set_pen_color = function (c) {
 	this.penStyle = c;
+	this.context.strokeStyle = c;
     }
 
-    Turtle.prototype.set_fill_style = function (c) {
+    Turtle.prototype.set_fill_color = function (c) {
 	    this.fillStyle = c;
 	    this.context.fillStyle = c;
     }
 
     Turtle.prototype.begin_fill = function () {
-	    this.context.beginPath();
+	this.filling = true;
+	this.context.beginPath();
     }
 
     Turtle.prototype.end_fill = function () {
-	    this.context.closePath();
-	    this.context.fill();
+	this.context.stroke();
+	this.context.fill();
+	this.context.closePath();
+	this.filling = false;
     }
 
 
@@ -639,7 +644,7 @@ var $builtinmodule = function(name)
 	$loc.fillcolor = new Sk.builtin.func(function(self, color) {
 	    if (color) {
 		color = color.v || self.theTurtle.context.fillStyle;
-		self.theTurtle.set_fill_style(color);
+		self.theTurtle.set_fill_color(color);
 	    } else
 		return self.theTurtle.fillStyle;
 	});
@@ -647,7 +652,7 @@ var $builtinmodule = function(name)
 	$loc.color = new Sk.builtin.func(function(self, color) {
 	    if (color) {
 		color = color.v || self.theTurtle.context.fillStyle;
-		self.theTurtle.set_pen_style(color);
+		self.theTurtle.set_pen_color(color);
 	    } else
 		return self.theTurtle.penStyle;
 	});
