@@ -339,6 +339,7 @@ if ( ! TurtleGraphics ) {
     Turtle.prototype.begin_fill = function () {
 	this.filling = true;
 	this.context.beginPath();
+	this.context.moveTo(this.position[0],this.position[1]);
     }
 
     Turtle.prototype.end_fill = function () {
