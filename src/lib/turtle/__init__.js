@@ -92,6 +92,7 @@ if ( ! TurtleGraphics ) {
 	    this.heading = [ ]; 
 	    this.normal = [ ]; 
 	    this.go_home();
+	    this.delay = 60;
 	    this.intervalId = 0;
 	    this.aCount = 1;
 	}
@@ -157,7 +158,7 @@ if ( ! TurtleGraphics ) {
 			drawingEvents.push(r[s]);
 //		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]]);
 		    if (! eventLoop) {
-			this.intervalId = setInterval(render,100);
+			this.intervalId = setInterval(render,this.delay);
 			eventLoop = true;
 		    }
 		}
@@ -189,7 +190,7 @@ if ( ! TurtleGraphics ) {
 		    //drawingEvents.push("moveTo("+newposition[0]+","+newposition[1]+")");
 		    drawingEvents.push(["MT",newposition[0],newposition[1]]);
 		    if (! eventLoop) {
-			this.intervalId = setInterval(render,100);
+			this.intervalId = setInterval(render,this.delay);
 			eventLoop = true;
 		    }
 		}
@@ -200,8 +201,11 @@ if ( ! TurtleGraphics ) {
     }
 
     Turtle.prototype.speed = function(s) {
-	if (s > 0)
+	if (s > 0) {
 	    this.animate = true;
+	    var df = 10 - s + 1;
+	    this.delay = df * 10;
+	}
 	else
 	    this.animate = false;
     }
