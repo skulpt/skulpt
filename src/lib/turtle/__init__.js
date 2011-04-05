@@ -133,9 +133,9 @@ if ( ! TurtleGraphics ) {
 			closePath();
 		} else {
 		    //drawingEvents.push("lineTo("+newposition[0]+","+newposition[1]+")");
-		    drawingEvents.push(["LT", newposition[0], newposition[1]].join(" "));
+		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]].join(" "));
 		    if (! eventLoop) {
-			this.intervalId = setInterval(processDrawEvents,500);
+			this.intervalId = setInterval(render,100);
 			eventLoop = true;
 		    }
 		}
@@ -167,7 +167,7 @@ if ( ! TurtleGraphics ) {
 		    //drawingEvents.push("moveTo("+newposition[0]+","+newposition[1]+")");
 		    drawingEvents.push(["MT",newposition[0],newposition[1]].join(" "));
 		    if (! eventLoop) {
-			this.intervalId = setInterval(processDrawEvents,500);
+			this.intervalId = setInterval(render,100);
 			eventLoop = true;
 		    }
 		}
@@ -184,21 +184,68 @@ if ( ! TurtleGraphics ) {
 	    this.animate = false;
     }
 
-    processDrawEvents = function () {
+
+    //
+    //  This is the function that provides the animation
+    //
+    render = function () {
 	var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
 	with ( context ) {
 	    for (var i in TurtleGraphics.turtleList) {
 		var t = TurtleGraphics.turtleList[i]
 		clearRect(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
 		moveTo(0,0);
+		lineWidth = 2;
+		lineCap = 'round';
+		lineJoin = 'round';
+		var filling = false;
 		for (var i = 0; i < t.aCount; i++ ) {
 		    var oper = t.drawingEvents[i].split(" ");
+		    // this seems so redundant...
+		    // Could I use another turtle in some way to accomplish this stuff??
 		    if (oper[0] == "LT") {
-			lineTo(oper[1],oper[2]);
+			if (! filling ) {
+			    beginPath();
+			    moveTo(oper[1],oper[2]);
+			}
+			lineTo(oper[3],oper[4]);
 			stroke();
+			if (! filling )
+			    closePath();
 		    }
 		    if (oper[0] == "MT")
 			moveTo(oper[1],oper[2]);
+		    if (oper[0] == "BF") {
+			beginPath();
+			moveTo(oper[1], oper[2]);
+			filling = true;
+		    }
+		    if (oper[0] == "EF") {
+			stroke();
+			fill();
+			closePath();
+			filling = false;
+		    }
+		    if (oper[0] == "FC") {
+			fillStyle = oper[1];
+		    }
+		    if (oper[0] == "TC") {
+			strokeStyle = oper[1]
+		    }
+		    if (oper[0] == "PW") {
+			lineWidth = oper[1]
+		    }
+		    if (oper[0] == "DT") {
+			var col = fillStyle;
+			fillStyle = oper[2];
+			var size = oper[1];
+			fillRect(oper[3]-size/2, oper[4]-size/2, size, size);
+			fillStyle = col;
+		    }
+		    if (oper[0] == "CI") {
+		    }
+		    if (oper[0] == "WT") {
+		    }
 		}
 		t.aCount++;
 		if (t.aCount > t.drawingEvents.length) {
@@ -273,10 +320,15 @@ if ( ! TurtleGraphics ) {
 	if (arguments.length >= 1) size = arguments[0];
 	with (this) {
 	    with ( context ) {
-		if (arguments.length >= 2) {
-		    fillStyle = arguments[1];
+		var color = fillStyle;
+		var nc =  arguments[1] || color;
+		if (! animate) {
+		    fillStyle = nc;
+		    fillRect(position[0]-size/2, position[1]-size/2, size, size);
+		    fillStyle = color;
+		} else {
+		    drawingEvents.push(["DT", size, nc, position[0], position[1]].join(" "));
 		}
-		fillRect(position[0]-size/2, position[1]-size/2, size, size);
 	    }
 	}
 	    
@@ -323,30 +375,46 @@ if ( ! TurtleGraphics ) {
     }
 
     Turtle.prototype.set_pen_width = function (w) {
-	this.penWidth = w;
+	if (this.animate)
+	    this.drawingEvents.push(["PW", w].join(" "));
+	else
+	    this.penWidth = w;
     }
 
     Turtle.prototype.set_pen_color = function (c) {
-	this.penStyle = c;
-	this.context.strokeStyle = c;
+	if (! this.animate ) {
+	    this.penStyle = c;
+	    this.context.strokeStyle = c;
+	} else
+	    this.drawingEvents.push(["TC", c].join(" "));
     }
 
     Turtle.prototype.set_fill_color = function (c) {
+	if (! this.animate ) {
 	    this.fillStyle = c;
 	    this.context.fillStyle = c;
+	} else
+	    this.drawingEvents.push(["FC", c].join(" "));
     }
 
     Turtle.prototype.begin_fill = function () {
-	this.filling = true;
-	this.context.beginPath();
-	this.context.moveTo(this.position[0],this.position[1]);
+	if (! this.animate) {
+	    this.filling = true;
+	    this.context.beginPath();
+	    this.context.moveTo(this.position[0],this.position[1]);
+	} else
+	    this.drawingEvents.push(["BF", this.position[0], this.position[1]].join(" "));
+	    
     }
 
     Turtle.prototype.end_fill = function () {
-	this.context.stroke();
-	this.context.fill();
-	this.context.closePath();
-	this.filling = false;
+	if (! this.animate) {
+	    this.context.stroke();
+	    this.context.fill();
+	    this.context.closePath();
+	    this.filling = false;
+	} else
+	    this.drawingEvents.push(["EF", this.position[0], this.position[1]].join(" "));
     }
 
 
@@ -554,6 +622,10 @@ var $builtinmodule = function(name)
 
 	$loc.circle = new Sk.builtin.func(function(self, radius, extent) {
 	    self.theTurtle.circle(radius, extent);
+	});
+
+	$loc.speed = new Sk.builtin.func(function(self, s) {
+	    self.theTurtle.speed(s);
 	});
 
 	// todo:  stamp, clearstamp, clearstamps, undo, speed
