@@ -133,7 +133,7 @@ if ( ! TurtleGraphics ) {
 			closePath();
 		} else {
 		    //drawingEvents.push("lineTo("+newposition[0]+","+newposition[1]+")");
-		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]].join(" "));
+		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]]);
 		    if (! eventLoop) {
 			this.intervalId = setInterval(render,100);
 			eventLoop = true;
@@ -165,7 +165,7 @@ if ( ! TurtleGraphics ) {
 		    context.moveTo(newposition[0], newposition[1]);
 		} else {
 		    //drawingEvents.push("moveTo("+newposition[0]+","+newposition[1]+")");
-		    drawingEvents.push(["MT",newposition[0],newposition[1]].join(" "));
+		    drawingEvents.push(["MT",newposition[0],newposition[1]]);
 		    if (! eventLoop) {
 			this.intervalId = setInterval(render,100);
 			eventLoop = true;
@@ -200,7 +200,7 @@ if ( ! TurtleGraphics ) {
 		lineJoin = 'round';
 		var filling = false;
 		for (var i = 0; i < t.aCount; i++ ) {
-		    var oper = t.drawingEvents[i].split(" ");
+		    var oper = t.drawingEvents[i];
 		    // this seems so redundant...
 		    // Could I use another turtle in some way to accomplish this stuff??
 		    if (oper[0] == "LT") {
@@ -245,6 +245,11 @@ if ( ! TurtleGraphics ) {
 		    if (oper[0] == "CI") {
 		    }
 		    if (oper[0] == "WT") {
+			if (font)
+			    font = oper[2];
+			scale(1,-1);
+			fillText(oper[1],oper[3], -oper[4]);
+			scale(1,-1);
 		    }
 		}
 		t.aCount++;
@@ -327,7 +332,7 @@ if ( ! TurtleGraphics ) {
 		    fillRect(position[0]-size/2, position[1]-size/2, size, size);
 		    fillStyle = color;
 		} else {
-		    drawingEvents.push(["DT", size, nc, position[0], position[1]].join(" "));
+		    drawingEvents.push(["DT", size, nc, position[0], position[1]]);
 		}
 	    }
 	}
@@ -351,11 +356,15 @@ if ( ! TurtleGraphics ) {
     }
 
     Turtle.prototype.write = function(theText, move, align, font) {
-	if (font)
-	    this.context.font = font.v;
-        this.context.scale(1,-1);
-	this.context.fillText(theText,this.position[0], -this.position[1]);
-        this.context.scale(1,-1);
+	if (! this.animate) {
+	    if (font)
+		this.context.font = font.v;
+            this.context.scale(1,-1);
+	    this.context.fillText(theText,this.position[0], -this.position[1]);
+            this.context.scale(1,-1);
+	} else {
+	    this.drawingEvents.push(["WT", theText, font.v, this.position[0], this.position[1]]);
+	}
     }
 
 
@@ -376,7 +385,7 @@ if ( ! TurtleGraphics ) {
 
     Turtle.prototype.set_pen_width = function (w) {
 	if (this.animate)
-	    this.drawingEvents.push(["PW", w].join(" "));
+	    this.drawingEvents.push(["PW", w]);
 	else
 	    this.penWidth = w;
     }
@@ -386,7 +395,7 @@ if ( ! TurtleGraphics ) {
 	    this.penStyle = c;
 	    this.context.strokeStyle = c;
 	} else
-	    this.drawingEvents.push(["TC", c].join(" "));
+	    this.drawingEvents.push(["TC", c]);
     }
 
     Turtle.prototype.set_fill_color = function (c) {
@@ -394,7 +403,7 @@ if ( ! TurtleGraphics ) {
 	    this.fillStyle = c;
 	    this.context.fillStyle = c;
 	} else
-	    this.drawingEvents.push(["FC", c].join(" "));
+	    this.drawingEvents.push(["FC", c]);
     }
 
     Turtle.prototype.begin_fill = function () {
@@ -403,7 +412,7 @@ if ( ! TurtleGraphics ) {
 	    this.context.beginPath();
 	    this.context.moveTo(this.position[0],this.position[1]);
 	} else
-	    this.drawingEvents.push(["BF", this.position[0], this.position[1]].join(" "));
+	    this.drawingEvents.push(["BF", this.position[0], this.position[1]]);
 	    
     }
 
@@ -414,7 +423,7 @@ if ( ! TurtleGraphics ) {
 	    this.context.closePath();
 	    this.filling = false;
 	} else
-	    this.drawingEvents.push(["EF", this.position[0], this.position[1]].join(" "));
+	    this.drawingEvents.push(["EF", this.position[0], this.position[1]]);
     }
 
 
