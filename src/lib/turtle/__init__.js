@@ -115,6 +115,25 @@ if ( ! TurtleGraphics ) {
 //  Drawing Functions
 //
 
+    // break a line into segments
+    // sp:  Vector of starting position
+    // ep:  Vector of ending position
+    // sl:  int length of segments
+    segmentLine = function(sp, ep, sL) {
+	var head = ep.sub(sp).normalize();
+	var numSegs = Math.floor(ep.sub(sp).len()/sL);
+	var res = [];
+	var oldp = sp;
+	var newp;
+	for(var i=0; i < numSegs; i++) {
+	    newp = oldp.linear(1,sL,head);
+	    res.push(["LT",oldp[0],oldp[1],newp[0],newp[1]]);
+	    oldp = newp;
+	}
+	res.push(["LT", oldp[0], oldp[1], ep[0], ep[1]]);
+	return res;
+    }
+
     Turtle.prototype.draw_line = function(newposition) {
 	with (this ) {
 	    with ( context ) {
@@ -132,8 +151,11 @@ if ( ! TurtleGraphics ) {
 		    if (! filling)
 			closePath();
 		} else {
-		    //drawingEvents.push("lineTo("+newposition[0]+","+newposition[1]+")");
-		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]]);
+		    // todo:  break this up into segments
+		    var r = segmentLine(position,newposition,10);
+		    for(s in r)
+			drawingEvents.push(r[s]);
+//		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]]);
 		    if (! eventLoop) {
 			this.intervalId = setInterval(render,100);
 			eventLoop = true;
@@ -368,7 +390,10 @@ if ( ! TurtleGraphics ) {
 	    this.context.fillText(theText,this.position[0], -this.position[1]);
             this.context.scale(1,-1);
 	} else {
-	    this.drawingEvents.push(["WT", theText, font.v, this.position[0], this.position[1]]);
+	    var fontspec;
+	    if (font)
+		fontspec = font.v
+	    this.drawingEvents.push(["WT", theText, fontspec, this.position[0], this.position[1]]);
 	}
     }
 
