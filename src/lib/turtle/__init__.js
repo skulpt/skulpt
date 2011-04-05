@@ -243,6 +243,8 @@ if ( ! TurtleGraphics ) {
 			fillStyle = col;
 		    }
 		    if (oper[0] == "CI") {
+			arc(oper[1], oper[2], Math.abs(oper[3]), 0, oper[4], (oper[3] > 0));
+			stroke();
 		    }
 		    if (oper[0] == "WT") {
 			if (font)
@@ -350,9 +352,12 @@ if ( ! TurtleGraphics ) {
             endAngle = extent * Degree2Rad;
 	else
 	    endAngle = 360 * Degree2Rad;
-	
-	this.context.arc(cx, cy, Math.abs(radius), 0, endAngle, (radius > 0));
-	this.context.stroke();
+	if (! this.animate) {
+	    this.context.arc(cx, cy, Math.abs(radius), 0, endAngle, (radius > 0));
+	    this.context.stroke();
+	} else {
+	    this.drawingEvents.push(["CI", cx, cy, radius, endAngle]);
+	}
     }
 
     Turtle.prototype.write = function(theText, move, align, font) {
