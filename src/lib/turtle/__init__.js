@@ -78,8 +78,18 @@ if ( ! TurtleGraphics ) {
 	this.animate = TurtleGraphics.defaults.animate;
 
 	with ( this.context ) {
-	    translate(canvas.width/2, canvas.height/2); // move 0,0 to center.
-	    scale(1,-1); // scaling like this flips the y axis the right way.
+	    if (TurtleGraphics.canvasInit == false) {   // This is a workaround until I understand skulpt re-running better
+		                                        // the downside is that this limits us to a single turtle...
+		translate(canvas.width/2, canvas.height/2); // move 0,0 to center.
+		scale(1,-1); // scaling like this flips the y axis the right way.
+		save();
+		TurtleGraphics.canvasInit = true;
+	    } else {
+		console.log("not first load");
+		clear_canvas(this.canvasID);
+		TurtleGraphics.turtleList = [];
+	    }
+
 	    this.home = new Vector([0.0, 0.0, 0.0]); 
 	    this.drawingEvents = [];
 	    this.eventLoop = false;
@@ -103,10 +113,10 @@ if ( ! TurtleGraphics ) {
 	// Optional second argument is color
 	with ( this ) {
 	    if ( arguments.length >= 1 ) {
-		clear(canvasID, arguments[0]);
+		clear_canvas(canvasID, arguments[0]);
 	    }
 	    else {
-		clear(canvasID);
+		clear_canvas(canvasID);
 	    }
 	    initialize();
 	}
@@ -227,8 +237,6 @@ if ( ! TurtleGraphics ) {
 		var filling = false;
 		for (var i = 0; i < t.aCount; i++ ) {
 		    var oper = t.drawingEvents[i];
-		    // this seems so redundant...
-		    // Could I use another turtle in some way to accomplish this stuff??
 		    if (oper[0] == "LT") {
 			if (! filling ) {
 			    beginPath();
@@ -333,7 +341,6 @@ if ( ! TurtleGraphics ) {
 	else if (! (to instanceof Vector)) {
 	    to = new Vector(to);
 	}
-	console.log("here: " + to);
 	var res = to.sub(this.position);
 	res = res.normalize();
 	if (TurtleGraphics.defaults.degrees)
@@ -461,17 +468,13 @@ if ( ! TurtleGraphics ) {
     }
 
 
-    // Define functions to be made public (continued)
-
     function clear_canvas(canId) {
-	// Clear canvas with ID sp.
-	// Optional second argument is color.
 	with ( document.getElementById(canId).getContext('2d') ) {
-	    canvas.width = canvas.width; // clear the canvas
 	    if ( arguments.length >= 2 ) {
-		fillStyle = arguments[1];
-		fillRect(0, 0, canvas.width, canvas.height);
+//		fillStyle = arguments[1];
+//		fillRect(0, 0, canvas.width, canvas.height);
 	    }
+	    clearRect(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
 	}
     }
 
@@ -581,6 +584,7 @@ if ( ! TurtleGraphics ) {
     TurtleGraphics.Turtle = Turtle;
     TurtleGraphics.clear_canvas = clear_canvas;
     TurtleGraphics.Vector = Vector;
+    TurtleGraphics.canvasInit = false;
 
 })();
 
@@ -683,7 +687,6 @@ var $builtinmodule = function(name)
 	$loc.position = new Sk.builtin.func(function(self) {
 	    var res = self.theTurtle.get_position();
 	    var x = new Sk.builtin.tuple([res[0],res[1]]);
-	    console.log("after to tuple: " + x);
 	    return x;
 	});
 
