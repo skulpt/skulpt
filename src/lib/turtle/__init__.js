@@ -833,6 +833,21 @@ var $builtinmodule = function(name)
 	    self.theTurtle.clean();
 	});
 
+	$loc.showturtle = new Sk.builtin.func(function(self) {
+	    self.theTurtle.showturtle();
+	});
+	$loc.st = $loc.showturtle;
+
+	$loc.hideturtle = new Sk.builtin.func(function(self) {
+	    self.theTurtle.hideturtle();
+	});
+	$loc.ht = $loc.hideturtle;
+
+	$loc.isvisible = new Sk.builtin.func(function(self) {
+	    self.theTurtle.isvisible()
+	});
+
+
 	// todo the move, align, and font parameters should be kwargs...
 	$loc.write = new Sk.builtin.func(function(self,mystr,move,align,font) {
 	    self.theTurtle.write(mystr.v,move,align,font);
