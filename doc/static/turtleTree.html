@@ -57,17 +57,20 @@ function runit(myDiv) {
 <form>
 <textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
 import turtle
+import random
 
 def tree(trunkLength,t):
     if trunkLength < 5:
         return
     else:
         t.forward(trunkLength)
-        t.right(20)
-        tree(trunkLength-15,t)
-        t.left(40)
-        tree(trunkLength-15,t)
-        t.right(20)
+        tAmount = random.randint(10,30)
+        t.right(tAmount)
+        dsub = random.randint(5,15)
+        tree(trunkLength-dsub,t)
+        t.left(2*tAmount)
+        tree(trunkLength-dsub,t)
+        t.right(tAmount)
         t.backward(trunkLength)
 
 t = turtle.Turtle()
@@ -78,7 +81,7 @@ t.up()
 t.backward(300)
 t.down()
 t.color('brown')
-tree(110,t) 
+tree(85,t) 
 </textarea>
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
