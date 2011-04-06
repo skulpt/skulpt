@@ -64,10 +64,6 @@ if ( ! TurtleGraphics ) {
 	if ( arguments.length >= 1 ) {
 	    options = arguments[0];
 	}
-	this.unit = TurtleGraphics.defaults.unit; // position scaling to define the unit length
-	if ( options.unit ) {
-	    this.unit = options.unit;
-	}
 
 	this.canvasID = TurtleGraphics.defaults.canvasID;
 	if ( options.canvasID ) {
@@ -89,7 +85,8 @@ if ( ! TurtleGraphics ) {
 		TurtleGraphics.turtleList = [];
 	    }
 
-	    this.home = new Vector([0.0, 0.0, 0.0]); 
+	    this.home = new Vector([0.0, 0.0, 0.0]);
+	    this.visible = true;
 	    this.drawingEvents = [];
 	    this.eventLoop = false;
 	    this.filling = false;
@@ -140,7 +137,8 @@ if ( ! TurtleGraphics ) {
 	    res.push(["LT",oldp[0],oldp[1],newp[0],newp[1]]);
 	    oldp = newp;
 	}
-	res.push(["LT", oldp[0], oldp[1], ep[0], ep[1]]);
+	if (! ((oldp[0] == ep[0]) && (oldp[1] == ep[1])))
+	    res.push(["LT", oldp[0], oldp[1], ep[0], ep[1]]);
 	return res;
     }
 
@@ -161,11 +159,9 @@ if ( ! TurtleGraphics ) {
 		    if (! filling)
 			closePath();
 		} else {
-		    // todo:  break this up into segments
 		    var r = segmentLine(position,newposition,10);
 		    for(s in r)
 			drawingEvents.push(r[s]);
-//		    drawingEvents.push(["LT", position[0], position[1], newposition[0], newposition[1]]);
 		    if (! eventLoop) {
 			this.intervalId = setInterval(render,this.delay);
 			eventLoop = true;
@@ -179,7 +175,7 @@ if ( ! TurtleGraphics ) {
 
     Turtle.prototype.forward = function (d) {
 	with ( this ) {
-	    var newposition = position.linear(1, d * unit, heading);
+	    var newposition = position.linear(1, d, heading);
 	    goto(newposition);
 	}
     }
@@ -197,7 +193,7 @@ if ( ! TurtleGraphics ) {
 		    context.moveTo(newposition[0], newposition[1]);
 		} else {
 		    //drawingEvents.push("moveTo("+newposition[0]+","+newposition[1]+")");
-		    drawingEvents.push(["MT",newposition[0],newposition[1]]);
+		    drawingEvents.push(["MT",position[0], position[1],newposition[0],newposition[1]]);
 		    if (! eventLoop) {
 			this.intervalId = setInterval(render,this.delay);
 			eventLoop = true;
@@ -225,6 +221,7 @@ if ( ! TurtleGraphics ) {
     //
     render = function () {
 	var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
+	var currentHeadInfo;
 	with ( context ) {
 	    for (var i in TurtleGraphics.turtleList) {
 		var t = TurtleGraphics.turtleList[i]
@@ -243,11 +240,14 @@ if ( ! TurtleGraphics ) {
 			}
 			lineTo(oper[3],oper[4]);
 			stroke();
+			currentHeadInfo = oper;
 			if (! filling )
 			    closePath();
 		    }
-		    if (oper[0] == "MT")
-			moveTo(oper[1],oper[2]);
+		    if (oper[0] == "MT") {
+			moveTo(oper[3],oper[4]);
+			currentHeadInfo = oper;
+		    }
 		    if (oper[0] == "BF") {
 			beginPath();
 			moveTo(oper[1], oper[2]);
@@ -288,6 +288,23 @@ if ( ! TurtleGraphics ) {
 		    }
 		}
 		t.aCount++;
+		if (t.visible) {
+		    // draw the turtle
+		    var oldp = new Vector(currentHeadInfo[1], currentHeadInfo[2], 0);
+		    var newp = new Vector(currentHeadInfo[3], currentHeadInfo[4], 0);
+		    var head = oldp.sub(newp).normalize();
+		    // draw line to 30 degrees left and 5 units long
+		    // draw line to 30 degrees right and 5 units long
+		    var portWing = head.rotateNormal(t.normal.cross(head),t.normal,-30*Degree2Rad);
+		    var endPt = newp.linear(1,5,portWing);
+		    moveTo(newp[0],newp[1]);
+		    lineTo(endPt[0],endPt[1]);
+		    var starWing = head.rotateNormal(t.normal.cross(head),t.normal,30*Degree2Rad);		    
+		    endPt = newp.linear(1,5,starWing);
+		    moveTo(newp[0],newp[1]);
+		    lineTo(endPt[0],endPt[1]);
+		    stroke();
+		}
 		if (t.aCount > t.drawingEvents.length) {
 		    t.eventLoop = false;
 		    clearInterval(t.intervalId);
@@ -467,6 +484,18 @@ if ( ! TurtleGraphics ) {
     }
 
 
+    Turtle.prototype.showturtle = function() {
+	this.visible = true;
+    }
+
+    Turtle.prototype.hideturtle = function() {
+	this.visible = false;
+    }
+
+    Turtle.prototype.isvisible = function() {
+	return this.visible;
+    }
+
     function clear_canvas(canId) {
 	with ( document.getElementById(canId).getContext('2d') ) {
 	    if ( arguments.length >= 2 ) {
@@ -578,7 +607,7 @@ if ( ! TurtleGraphics ) {
     }
 
 
-    TurtleGraphics.defaults = { canvasID: 'mycanvas', unit: 1, degrees: true, animate: false }
+    TurtleGraphics.defaults = { canvasID: 'mycanvas', degrees: true, animate: false }
     TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
     TurtleGraphics.clear_canvas = clear_canvas;
@@ -599,7 +628,7 @@ var $builtinmodule = function(name)
     // class
     var turtle = function($gbl, $loc) {
 	$loc.__init__ = new Sk.builtin.func(function(self) {
-	    TurtleGraphics.defaults = {canvasID: Sk.canvas, unit:1, animation: false, degrees: true};
+	    TurtleGraphics.defaults = {canvasID: Sk.canvas, animation: false, degrees: true};
 	    self.theTurtle = new TurtleGraphics.Turtle();
 	});
 
