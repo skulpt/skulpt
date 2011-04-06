@@ -7,13 +7,6 @@
 //
 //
 
-//
-//
-// Turtle Graphics Module for Skulpt
-//
-// Brad Miller
-//
-//
 
 var TurtleGraphics; // the single identifier needed in the global scope
 
@@ -21,8 +14,6 @@ if ( ! TurtleGraphics ) {
   TurtleGraphics = { };
 }
 
-// Define private constants, variables, and functions via a closure, and
-// export public entities to global variable TurtleGraphics.
 (function () {
 
     // Define private constants
