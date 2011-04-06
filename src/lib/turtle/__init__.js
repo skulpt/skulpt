@@ -85,7 +85,6 @@ if ( ! TurtleGraphics ) {
 		save();
 		TurtleGraphics.canvasInit = true;
 	    } else {
-		console.log("not first load");
 		clear_canvas(this.canvasID);
 		TurtleGraphics.turtleList = [];
 	    }
