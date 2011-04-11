@@ -91,7 +91,7 @@ if ( ! TurtleGraphics ) {
 	    this.go_home();
 	    this.delay = 60;
 	    this.intervalId = 0;
-	    this.aCount = 1;
+	    this.aCount = 0;
 	}
     }
 
@@ -279,7 +279,7 @@ if ( ! TurtleGraphics ) {
 		    }
 		}
 		t.aCount++;
-		if (t.visible) {
+		if (t.visible && currentHeadInfo) {
 		    // draw the turtle
 		    var oldp = new Vector(currentHeadInfo[1], currentHeadInfo[2], 0);
 		    var newp = new Vector(currentHeadInfo[3], currentHeadInfo[4], 0);
@@ -296,7 +296,7 @@ if ( ! TurtleGraphics ) {
 		    lineTo(endPt[0],endPt[1]);
 		    stroke();
 		}
-		if (t.aCount > t.drawingEvents.length) {
+		if (t.aCount >= t.drawingEvents.length) {
 		    t.eventLoop = false;
 		    clearInterval(t.intervalId);
 		}
