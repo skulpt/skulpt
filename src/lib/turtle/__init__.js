@@ -67,9 +67,10 @@ if ( ! TurtleGraphics ) {
 	with ( this.context ) {
 	    if (TurtleGraphics.canvasInit == false) {   // This is a workaround until I understand skulpt re-running better
 		                                        // the downside is that this limits us to a single turtle...
+		save();
 		translate(canvas.width/2, canvas.height/2); // move 0,0 to center.
 		scale(1,-1); // scaling like this flips the y axis the right way.
-		save();
+//		save();
 		TurtleGraphics.canvasInit = true;
 	    } else {
 		clear_canvas(this.canvasID);
@@ -78,6 +79,7 @@ if ( ! TurtleGraphics ) {
 
 	    this.home = new Vector([0.0, 0.0, 0.0]);
 	    this.visible = true;
+	    this.lineScale = 1.0;
 	    this.drawingEvents = [];
 	    this.eventLoop = false;
 	    this.filling = false;
@@ -226,7 +228,7 @@ if ( ! TurtleGraphics ) {
 		var t = TurtleGraphics.turtleList[i]
 		clearRect(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
 		moveTo(0,0);
-		lineWidth = 2;
+		lineWidth = 5 * t.lineScale;
 		lineCap = 'round';
 		lineJoin = 'round';
 		var filling = false;
@@ -373,6 +375,7 @@ if ( ! TurtleGraphics ) {
     Turtle.prototype.dot = function() {
 	var size = 2;
 	if (arguments.length >= 1) size = arguments[0];
+	size = size * this.lineScale;
 	with (this) {
 	    with ( context ) {
 		var color = fillStyle;
@@ -423,6 +426,20 @@ if ( ! TurtleGraphics ) {
 	}
     }
 
+    Turtle.prototype.setworldcoordinates = function(llx,lly,urx,ury) {
+	this.context.restore();
+	this.context.scale(this.context.canvas.width/(urx-llx),-this.context.canvas.height/(ury-lly));
+	if (lly == 0)
+	    this.context.translate(-llx,lly-(ury-lly));
+	else if (lly > 0)
+	    this.context.translate(-llx,(ury-lly)-lly);
+	else
+	    this.context.translate(-llx,lly);
+	this.lineScale = (urx-llx)/this.context.canvas.width;
+	console.log(this.lineScale);
+	this.penWidth = this.penWidth * this.lineScale;
+	this.context.save();
+    }
 
 //
 // Pen and Style functions
@@ -440,6 +457,7 @@ if ( ! TurtleGraphics ) {
     }
 
     Turtle.prototype.set_pen_width = function (w) {
+	w = w * this.lineScale;
 	if (this.animate)
 	    this.drawingEvents.push(["PW", w]);
 	else
