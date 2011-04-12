@@ -117,19 +117,24 @@ if ( ! TurtleGraphics ) {
     // sp:  Vector of starting position
     // ep:  Vector of ending position
     // sl:  int length of segments
-    segmentLine = function(sp, ep, sL) {
+    segmentLine = function(sp, ep, sL,pen) {
 	var head = ep.sub(sp).normalize();
 	var numSegs = Math.floor(ep.sub(sp).len()/sL);
 	var res = [];
 	var oldp = sp;
 	var newp;
+	var op = ""
+	if (pen)
+	    op = "LT"
+	else
+	    op = "MT"
 	for(var i=0; i < numSegs; i++) {
 	    newp = oldp.linear(1,sL,head);
-	    res.push(["LT",oldp[0],oldp[1],newp[0],newp[1]]);
+	    res.push([op,oldp[0],oldp[1],newp[0],newp[1]]);
 	    oldp = newp;
 	}
 	if (! ((oldp[0] == ep[0]) && (oldp[1] == ep[1])))
-	    res.push(["LT", oldp[0], oldp[1], ep[0], ep[1]]);
+	    res.push([op, oldp[0], oldp[1], ep[0], ep[1]]);
 	return res;
     }
 
@@ -150,7 +155,7 @@ if ( ! TurtleGraphics ) {
 		    if (! filling)
 			closePath();
 		} else {
-		    var r = segmentLine(position,newposition,10);
+		    var r = segmentLine(position,newposition,10,pen);
 		    for(s in r)
 			drawingEvents.push(r[s]);
 		    if (! eventLoop) {
@@ -184,7 +189,10 @@ if ( ! TurtleGraphics ) {
 		    context.moveTo(newposition[0], newposition[1]);
 		} else {
 		    //drawingEvents.push("moveTo("+newposition[0]+","+newposition[1]+")");
-		    drawingEvents.push(["MT",position[0], position[1],newposition[0],newposition[1]]);
+		    var r = segmentLine(position,newposition,10,pen);
+		    for(s in r)
+			drawingEvents.push(r[s]);
+		    //drawingEvents.push(["MT",position[0], position[1],newposition[0],newposition[1]]);
 		    if (! eventLoop) {
 			this.intervalId = setInterval(render,this.delay);
 			eventLoop = true;
