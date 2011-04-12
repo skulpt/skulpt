@@ -351,7 +351,7 @@ we know that ``a`` and ``b`` will refer to a string with the letters
 
 There are two possible ways the Python interpreter could arrange its internal states:
 
-.. image:: illustrations/list1.png
+.. image:: illustrations/ch09/list1.png
    :alt: List illustration 
 
 In one case, ``a`` and ``b`` refer to two different things that have the same
@@ -386,7 +386,7 @@ This is not the case with lists:
 
 The state snapshot here looks like this:
 
-.. image:: illustrations/mult_references2.png
+.. image:: illustrations/ch09/mult_references2.png
    :alt: State snapshot for equal different lists 
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
@@ -408,7 +408,7 @@ variables refer to the same object:
     
 In this case, the state snapshot looks like this:
 
-.. image:: illustrations/mult_references3.png
+.. image:: illustrations/ch09/mult_references3.png
    :alt: State snapshot for multiple references (aliases) to a list 
 
 Because the same list has two different names, ``a`` and ``b``, we say that it
@@ -570,7 +570,7 @@ When we run it we'll get::
 The parameter ``a_list`` and the variable ``things`` are aliases for the
 same object.  
 
-.. image:: illustrations/mult_references4.png
+.. image:: illustrations/ch09/mult_references4.png
    :alt: State snapshot for multiple references to a list as a parameter
    
 Since the list object is shared by two frames, we drew it between them.

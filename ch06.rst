@@ -149,7 +149,7 @@ As an example, suppose you want to find the distance between two points, given
 by the coordinates (x\ :sub:`1`\ , y\ :sub:`1`\ ) and
 (x\ :sub:`2`\ , y\ :sub:`2`\ ).  By the Pythagorean theorem, the distance is:
 
-.. image:: illustrations/distance_formula.png
+.. image:: illustrations/ch06/distance_formula.png
    :alt: Distance formula 
 
 The first step is to consider what a ``distance`` function should look like in

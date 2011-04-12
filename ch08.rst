@@ -58,13 +58,13 @@ When you type the period to select one of the methods of `ss`, PyScripter will p
 selection window showing all the methods (there are around 70 of them --- thank goodness we'll only
 use a few of those!) that could be used on your string. 
 
-.. image::  illustrations/string_methods.png
+.. image::  illustrations/ch08/string_methods.png
  
 When you type the name of the method, some further help about it's parameter and return
 type, and its docstring, will be displayed.  This is a good example of a tool --- PyScripter ---
 using the meta-information --- the docstrings --- provided by the module programmers. 
 
-.. image::  illustrations/swapcase.png
+.. image::  illustrations/ch08/swapcase.png
 
 Working with the parts of a string
 ----------------------------------
@@ -255,7 +255,7 @@ to the m'th character, including the first but excluding the last. This
 behavior is counter-intuitive; it makes more sense if you imagine the indices
 pointing *between* the characters, as in the following diagram:
 
-.. image:: illustrations/banana.png
+.. image:: illustrations/ch08//banana.png
    :alt: 'banana' string
 
 If you omit the first index (before the colon), the slice starts at the
@@ -574,7 +574,7 @@ the methods that are attached to each string instance.
     
 Pops up these hints:
 
-.. image:: illustrations/string_members.png
+.. image:: illustrations/ch08/string_members.png
 
 You will notice that there are different icons next to some items
 in the list.  Recall that objects can have *attributes* (e.g. the

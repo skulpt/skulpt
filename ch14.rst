@@ -61,7 +61,7 @@ that object and select its attribute named ``x``.
 
 The figure shows the state of this object:
 
-.. image:: illustrations/rectangle.png
+.. image:: illustrations/ch14//rectangle.png
    
 .. index:: mutable data type
 
@@ -240,7 +240,7 @@ new one refer to a single ``Point``.
 If we create a box, ``b1``, in the usual way and then make a copy, ``b2``,
 using ``copy``, the resulting state diagram looks like this:
 
-.. image:: illustrations/rectangle2.png
+.. image:: illustrations/ch14/rectangle2.png
 
 This is almost certainly not what we want. In this case, invoking
 ``grow`` on one of the ``Rectangles`` would not affect the other, but

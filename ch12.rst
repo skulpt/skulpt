@@ -263,7 +263,7 @@ We previously used a list of lists to represent a matrix. That is a good choice
 for a matrix with mostly nonzero values, but consider a `sparse matrix
 <http://en.wikipedia.org/wiki/Sparse_matrix>`__ like this one:
 
-.. image:: illustrations/sparse.png
+.. image:: illustrations/ch12/sparse.png
    :alt: sparse matrix 
 
 The list representation contains a lot of zeroes:
@@ -338,7 +338,7 @@ about a second, and ``fibonacci(40)`` takes roughly forever.
 To understand why, consider this **call graph** for ``fibonacci`` with
 ``n = 4``:
 
-.. image:: illustrations/fibonacci.png
+.. image:: illustrations/ch12/fibonacci.png
    :alt: fibonacci tree 
 
 A call graph shows some function frames (instances when the function has

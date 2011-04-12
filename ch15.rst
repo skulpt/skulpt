@@ -37,7 +37,7 @@ We can instantiate a new ``MyTime`` object:
 
 The state diagram for the object looks like this:
 
-.. image:: illustrations/time.png 
+.. image:: illustrations/ch15/time.png 
 
 We'll leave it as an exercise for the readers to add a ``__str__``
 method so that MyTime objects can print themselves decently.

@@ -53,7 +53,7 @@ printed, its value is 5, and the second time, its value is 7.
 
 Here is what **reassignment** looks like in a state snapshot:
 
-.. image:: illustrations/mult_assign.png
+.. image:: illustrations/ch07/mult_assign.png
    :alt: reassignment 
 
 With reassignment it is especially important to distinguish between an
@@ -516,7 +516,7 @@ Different systems have different ways of accessing this help.  In PyScripter, cl
 *Help* menu item, and select *Python Manuals*.  Then search for help on the built-in function
 **range**.   You'll get something like this...
 
-.. image:: illustrations/help_range.png  
+.. image:: illustrations/ch07/help_range.png  
 
 Notice the square brackets in the description of the arguments. 
 These are examples of **meta-notation** --- notation that describes Python syntax, but is not part of it.
@@ -755,7 +755,7 @@ The stack diagram for this program shows that the two variables named ``i`` are
 not the same variable. They can refer to different values, and changing one
 does not affect the other.
 
-.. image:: illustrations/stack2.png
+.. image:: illustrations/ch07/stack2.png
    :alt: Stack 2 diagram 
 
 The value of ``i`` in ``print_mult_table`` goes from 1 to 6. In the diagram it
@@ -784,7 +784,7 @@ The ``break`` statement, and flavours of loops
 
 .. sidebar::  A pre-test loop
 
-    .. image:: illustrations/pre_test_loop.png  
+    .. image:: illustrations/ch07/pre_test_loop.png  
 
 The **break** statement is used to immediately leave the body of its loop.  The next
 statement to be executed is the first one after the body::
@@ -810,7 +810,7 @@ happens before (pre) the body.)
    
 .. sidebar::  A middle-test loop
 
-    .. image:: illustrations/mid_test_loop.png  
+    .. image:: illustrations/ch07/mid_test_loop.png  
     
 Sometimes we'd like to have the **middle-test** loop with the exit test in the middle 
 of the body, rather than at the beginning.  Or a **post-test** loop that
@@ -844,7 +844,7 @@ interactive game against the user::
     
 .. sidebar::  A post-test loop
 
-    .. image:: illustrations/post_test_loop.png        
+    .. image:: illustrations/ch07/post_test_loop.png        
     
 The ``while True:`` in these cases is *idiomatic* --- a convention that
 most programmers will recognize immediately. The test in the ``while`` loop must
@@ -890,7 +890,7 @@ Also notice the use of the ``msg`` variable, initially an empty string, on lines
 Each time through the loop we extend the message being displayed: this allows us to 
 display the program's feedback right at the same place as we're asking for the next guess. 
 
-.. image:: illustrations/python_input.png
+.. image:: illustrations/ch07/python_input.png
 
 .. index:: continue statement,  statement; continue
 

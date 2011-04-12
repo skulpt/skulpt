@@ -161,7 +161,7 @@ is a data item from an instance.
 
 The following state diagram shows the result of these assignments:
 
-.. image:: illustrations/point.png
+.. image:: illustrations/ch13/point.png
    :alt: Point state diagram 
 
 The variable ``p`` refers to a Point object, which contains two attributes.
@@ -245,7 +245,7 @@ in action:
    So we're writing the docstring so that it makes the most sense when it pops up to 
    help the programmer who is using our ``Point`` class:
    
-   .. image:: illustrations/tooltip_init.png
+   .. image:: illustrations/ch13/tooltip_init.png
    
        
 Adding other methods to our class

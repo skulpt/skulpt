@@ -164,21 +164,21 @@ where it can be defined in terms of itself.
 Let us start by looking at the famous Koch fractal.  An order 0 Koch fractal is simply
 a straight line of a given size.
 
-.. image:: illustrations/koch_0.png
+.. image:: illustrations/ch11/koch_0.png
 
 An order 1 Koch fractal is obtained like this: instead of drawing just one line,
 draw instead four smaller segments, in the pattern shown here:
 
-.. image:: illustrations/koch_1.png
+.. image:: illustrations/ch11/koch_1.png
 
 Now what would happen if we repeated this Koch pattern again on each of the order 1 segments?  
 We'd get this order 2 Koch fractal:
 
-.. image:: illustrations/koch_2.png
+.. image:: illustrations/ch11/koch_2.png
 
 Repeating our pattern again gets us an order 3 Koch fractal:
 
-.. image:: illustrations/koch_3.png
+.. image:: illustrations/ch11/koch_3.png
 
 Now let us think about it the other way around.  To draw a Koch fractal
 of order 3, we can simply draw four order 2 Koch fractals.  But each of these
@@ -843,7 +843,7 @@ Exercises
    
 #. Modify the Koch fractal program so that it draws a Koch snowflake, like this:
 
-   .. image:: illustrations/koch_snowflake.png
+   .. image:: illustrations/ch11/koch_snowflake.png
    
    
 .. index:: fractal; Cesaro torn square
@@ -854,7 +854,7 @@ Exercises
    Varying the angle gives interesting effects --- experiment a bit, 
    or perhaps let the user input the angle of the tear. 
 
-   .. image:: illustrations/cesaro_torn_square.png
+   .. image:: illustrations/ch11/cesaro_torn_square.png
    
 .. index:: fractal; Sierpinski triangle
    
@@ -865,12 +865,12 @@ Exercises
    Adapt the Koch snowflake program to draw Sierpinski triangles of any order 
    input by the user.   
    
-   .. image:: illustrations/sierpinski.png
+   .. image:: illustrations/ch11/sierpinski.png
   
 #. Adapt the above program to draw its three major sub-triangles in different colours, 
    as shown here in this order 4 case:
 
-   .. image:: illustrations/sierpinski_colour.png
+   .. image:: illustrations/ch11/sierpinski_colour.png
    
 #. Create a module named ``seqtools.py``. Add the functions ``encapsulate`` and 
    ``insert_in_middle`` from the chapter. Add tests which test that these

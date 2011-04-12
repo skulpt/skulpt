@@ -166,7 +166,7 @@ indented under the `else` clause get executed.
 
 .. sidebar::  Flowchart of a **if** statement with an **else** 
 
-   .. image:: illustrations/flowchart_if_else.png  
+   .. image:: illustrations/ch05/flowchart_if_else.png  
 
 The syntax for an ``if`` statement looks like this:
 
@@ -211,7 +211,7 @@ Omitting the `else` clause
 
 .. sidebar::  Flowchart of an **if** with no **else** 
 
-   .. image:: illustrations/flowchart_if_only.png
+   .. image:: illustrations/ch05/flowchart_if_only.png
 
 Another form of the ``if`` statement is one in which the ``else`` clause is omitted entirely.  
 In this case, when the condition evaluates to ``True``, the statements are
@@ -256,7 +256,7 @@ conditional**:
 
 Flowchart of this chained conditional 
 
-.. image:: illustrations/flowchart_chained_conditional.png        
+.. image:: illustrations/ch05/flowchart_chained_conditional.png        
         
 ``elif`` is an abbreviation of ``else if``. Again, exactly one branch will be
 executed. There is no limit of the number of ``elif`` statements but only a
@@ -293,7 +293,7 @@ the previous example as follows:
 
 .. sidebar:: Flowchart of this nested conditional
 
-   .. image:: illustrations/flowchart_nested_conditional.png
+   .. image:: illustrations/ch05/flowchart_nested_conditional.png
 
 .. sourcecode:: python
     
@@ -475,7 +475,7 @@ Corresponding to each data measurement, we'll draw a simple rectangle of that he
     for v in xs:                 # assume xs and tess are ready 
         draw_bar(tess, v)    
 
-.. image:: illustrations/tess_bar_1.png
+.. image:: illustrations/ch05/tess_bar_1.png
 
 Ok, not fantasically impressive, but it is a nice start!  The important thing here
 was the mental chunking, or how we broke the problem into smaller pieces. Our chunk
@@ -490,7 +490,7 @@ number into a string.  Without this extra space we tend
 to cramp our text awkwardly against the bar to the left.   
 The result looks a lot better now:
 
-.. image:: illustrations/tess_bar_2.png
+.. image:: illustrations/ch05/tess_bar_2.png
 
 And now we'll add two lines to fill each bar.  Our final program now looks like this:
 
@@ -527,7 +527,7 @@ And now we'll add two lines to fill each bar.  Our final program now looks like 
 
 It produces the following, which is more satisfying:
 
-.. image:: illustrations/tess_bar_3.png
+.. image:: illustrations/ch05/tess_bar_3.png
 
 
 Glossary
