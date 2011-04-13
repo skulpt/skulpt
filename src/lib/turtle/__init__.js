@@ -432,7 +432,7 @@ if ( ! TurtleGraphics ) {
 	if (lly == 0)
 	    this.context.translate(-llx,lly-(ury-lly));
 	else if (lly > 0)
-	    this.context.translate(-llx,(ury-lly)-lly);
+	    this.context.translate(-llx,-lly*2);
 	else
 	    this.context.translate(-llx,lly);
 	this.lineScale = (urx-llx)/this.context.canvas.width;
