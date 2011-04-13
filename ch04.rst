@@ -81,7 +81,7 @@ of this "building block":
     wn.exitonclick()
 
         
-.. image:: illustrations/alex04.png 
+.. image:: illustrations/ch04/alex04.png 
 
         
 This function is named ``draw_square``.  It has two parameters --- one to tell 
@@ -146,7 +146,7 @@ function a little, and we get tess to draw 15 squares, with some variations.
 
     wn.exitonclick()
 
-.. image:: illustrations/tess05.png 
+.. image:: illustrations/ch04/tess05.png 
 
 Functions can call other functions
 ----------------------------------
@@ -286,7 +286,7 @@ top to bottom. Instead, follow the flow of execution.
    program up to, but not including, the line where you have the cursor.   Your program 
    will "break" now, and provide a highlight on the next line to be executed, something like this:
 
-   .. image:: illustrations/breakpoint.png
+   .. image:: illustrations/ch04/breakpoint.png
  
    At this point you can press the *F7* key (*step into*) repeatedly to single step through
    the code.  Observe as you execute lines 10, 11, 12, ... how the turtle window gets 
@@ -376,7 +376,7 @@ to stress it, a *non-fruitful* function.  (Would the term *barren function* be e
 How do we write our own fruitful function?  In the exercises at the end of chapter 2 we saw
 the standard formula for compound interest, which we'll now write as a fruitful function:   
 
-.. image:: illustrations/compoundInterest.png
+.. image:: illustrations/ch04/compoundInterest.png
 
 .. sourcecode:: python
 
@@ -646,26 +646,26 @@ Exercises
     (Hint: notice that the turtle has already moved away from the ending point of the last 
     square when the program ends.)
     
-    .. image:: illustrations/five_squares.png
+    .. image:: illustrations/ch04/five_squares.png
     
 #.  Write a program to draw this. Assume the innermost square is 20 units per side,
     and each successive square is 20 units bigger, per side, than the one inside it.   
     
-    .. image:: illustrations/nested_squares.png
+    .. image:: illustrations/ch04/nested_squares.png
 
 #.  Write a non-fruitful function `draw_poly(t, n, sz)` which makes a turtle 
     draw a regular polygon. 
     When called with `draw_poly(tess, 8, 50)`, it will draw a shape like this:
     
-    .. image:: illustrations/regularpolygon.png
+    .. image:: illustrations/ch04/regularpolygon.png
 
 #. Draw this pretty pattern.
 
-   .. image:: illustrations/tess08.png    
+   .. image:: illustrations/ch04/tess08.png    
    
 #.  The two spirals in this picture differ only by the turn angle.  Draw both.
 
-    .. image:: illustrations/tess_spirals.png
+    .. image:: illustrations/ch04/tess_spirals.png
        :height: 240
        
 #.  Write a non-fruitful function `draw_equitriangle(t, sz)` which calls `draw_poly` from the 
@@ -679,13 +679,13 @@ Exercises
 #.  Write a non-fruitful function to draw a star, where the length of each side is 100 units.
     (Hint: You should turn the turtle by 144 degrees at each point.)  
     
-     .. image:: illustrations/star.png
+     .. image:: illustrations/ch04/star.png
      
 #.  Extend your program above.  Draw five stars, but between each, pick up the pen, 
     move forward by 350 units, turn right by 144, put the pen down, and draw the next star.
     You'll get something like this:
     
-    .. image:: illustrations/five_stars.png
+    .. image:: illustrations/ch04/five_stars.png
     
     What would it look like if you didn't pick up the pen?
 

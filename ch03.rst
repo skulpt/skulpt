@@ -185,7 +185,7 @@ completes her triangle:
 
     wn.exitonclick()
 
-.. image:: illustrations/tess03.png  
+.. image:: illustrations/ch03/tess03.png  
   
 Here are some *How to think like a computer scientist* observations:
 
@@ -238,7 +238,7 @@ message for each friend:
 
 When we run this, the output looks like this:
 
-.. image:: illustrations/partyInvite.png  
+.. image:: illustrations/ch03/partyInvite.png  
 
 * **f** in this ``for`` statement is called the **loop variable**.  
 * Lines 2 and 3 are the **loop body**.  The loop body is always
@@ -263,7 +263,7 @@ Flow of Execution of the for loop
 
 .. sidebar:: Flowchart of a **for** loop
 
-   .. image:: illustrations/flowchart_for.png  
+   .. image:: illustrations/ch03/flowchart_for.png  
  
 As a program executes, the interpreter always keeps track of which statement is
 about to be executed.  We call this the **control flow**, of the **flow of
@@ -393,7 +393,7 @@ A few more turtle methods and tricks
      alex.shape("turtle")           
      ...                 
 
-  .. image:: illustrations/alex06.png
+  .. image:: illustrations/ch03/alex06.png
 
 * You can speed up or slow down the turtle's animation speed. (Animation
   controls how quickly the turtle turns and moves forward).  Speed settings can
@@ -430,7 +430,7 @@ Let's do an example that shows off some of these new features:
 
    wn.exitonclick()
    
-.. image:: illustrations/tess07.png   
+.. image:: illustrations/ch03/tess07.png   
 
 Be careful now: all except one of the shapes you see on the screen here are
 footprints created by ``stamp``.  But the program still only has *one* turtle
@@ -570,7 +570,7 @@ Exercises
    
 #. Write a program to draw a shape like this:
 
-   .. image:: illustrations/star.png
+   .. image:: illustrations/ch03/star.png
    
    Hints: 
    
@@ -587,7 +587,7 @@ Exercises
      
 #. Write a program to draw a face of a clock that looks something like this:
     
-   .. image:: illustrations/tess_clock1.png
+   .. image:: illustrations/ch03/tess_clock1.png
       
    
 #. Create a turtle, and assign it to a variable.  When you ask for its type,

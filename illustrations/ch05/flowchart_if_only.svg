@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 43363)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="226px"
+   height="343px"
+   viewBox="0 0 226 343"
+   enable-background="new 0 0 226 343"
+   xml:space="preserve"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="flowchart_if_only.svg"
+   inkscape:export-filename="/home/dmitchell/thinkcspy/source/illustrations/ch05/flowchart_if_only.png"
+   inkscape:export-xdpi="57.599998"
+   inkscape:export-ydpi="57.599998"><metadata
+   id="metadata37"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs35" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1280"
+   inkscape:window-height="947"
+   id="namedview33"
+   showgrid="false"
+   inkscape:zoom="1"
+   inkscape:cx="113"
+   inkscape:cy="186.7039"
+   inkscape:window-x="0"
+   inkscape:window-y="24"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<rect
+   x="35.619"
+   y="69.766"
+   width="89.305"
+   height="37.143"
+   id="rect3"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+<text
+   transform="matrix(1 0 0 1 54.0762 91.5493)"
+   font-size="12"
+   id="text5">condition</text>
+
+<g
+   id="g7"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0">
+	<path
+   d="M207.997,187.585c0,6.627-5.878,12-13.129,12h-60.07c-7.251,0-13.129-5.373-13.129-12   v-18.188c0-6.627,5.878-12,13.129-12h60.07c7.251,0,13.129,5.373,13.129,12V187.585z"
+   id="path9"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+	<text
+   font-size="12"
+   id="text11"
+   x="132.4346"
+   y="181.83501"
+   style="font-size:12px;font-family:MyriadPro-Regular;fill:#000000;fill-opacity:1.0;stroke:none;stroke-opacity:1">statements</text>
+
+</g>
+<line
+   x1="78.154"
+   y1="27.959"
+   x2="78.154"
+   y2="69.766"
+   id="line13"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<path
+   d="M139.593,88.143C148,88,156,88,164,88c0,23,0,46,0.299,69.397"
+   id="path15"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="78.154,121.909 78.154,262.143 164.299,262.143 164.299,214.585 "
+   id="polyline17"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<line
+   x1="78.154"
+   y1="309.592"
+   x2="78.154"
+   y2="247.143"
+   id="line19"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<path
+   d="M80.029,121.909c0,1.036-0.839,1.875-1.875,1.875l0,0c-1.036,0-1.875-0.839-1.875-1.875l0,0  c0-1.036,0.839-1.875,1.875-1.875l0,0C79.189,120.034,80.029,120.873,80.029,121.909L80.029,121.909z"
+   id="path21" />
+<path
+   d="M166.174,214.585c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C165.334,212.71,166.174,213.549,166.174,214.585L166.174,214.585z"
+   id="path23" />
+<path
+   d="M80.029,27.959c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C79.189,26.084,80.029,26.923,80.029,27.959L80.029,27.959z"
+   id="path25" />
+<polygon
+   points="78.203,314.591 82.904,309.592 73.404,309.592 "
+   id="polygon27" />
+<text
+   transform="matrix(1 0 0 1 133.0684 78.0933)"
+   font-size="11"
+   id="text29"
+   style="-inkscape-font-specification:Sans;font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal"><tspan
+     style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+     id="tspan3014">True</tspan></text>
+
+<rect
+   x="137.841"
+   y="86.315"
+   width="3.504"
+   height="3.657"
+   id="rect31" />
+</svg>

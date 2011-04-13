@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 43363)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="225px"
+   height="300px"
+   viewBox="0 0 225 300"
+   enable-background="new 0 0 225 300"
+   xml:space="preserve"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="flowchart_for.svg"
+   inkscape:export-filename="/home/dmitchell/thinkcspy/source/illustrations/ch03/flowchart_for.png"
+   inkscape:export-xdpi="57.599998"
+   inkscape:export-ydpi="57.599998"><metadata
+   id="metadata61"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs59" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1280"
+   inkscape:window-height="947"
+   id="namedview57"
+   showgrid="false"
+   inkscape:zoom="2"
+   inkscape:cx="126.25209"
+   inkscape:cy="157.65712"
+   inkscape:window-x="0"
+   inkscape:window-y="24"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<rect
+   x="64.287"
+   y="56.389"
+   width="97.857"
+   height="37.143"
+   id="rect3"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+<text
+   id="text5"
+   x="71.121101"
+   y="71.282204"
+   style="font-size:11px"><tspan
+     x="71.121101"
+     y="71.282204"
+     font-size="12"
+     id="tspan7"
+     style="font-size:11px;font-family:MyriadPro-Regular">Have all items </tspan><tspan
+     x="69.927101"
+     y="85.682198"
+     font-size="12"
+     id="tspan9"
+     style="font-size:11px;font-family:MyriadPro-Regular">been handled?</tspan></text>
+
+<path
+   d="M161.144,145.904c0,6.01-7.628,10.881-17.036,10.881H80.323  c-9.409,0-17.036-4.871-17.036-10.881v-16.451c0-6.01,7.627-10.881,17.036-10.881h63.785c9.408,0,17.036,4.872,17.036,10.881  V145.904z"
+   id="path11"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+<text
+   id="text13"
+   x="66.310097"
+   y="133.9292"
+   style="font-size:11px"><tspan
+     x="66.310097"
+     y="133.9292"
+     font-size="12"
+     id="tspan15"
+     style="font-size:11px;font-family:MyriadPro-Regular">Assign next item </tspan><tspan
+     x="68.782097"
+     y="148.32919"
+     font-size="12"
+     id="tspan17"
+     style="font-size:11px;font-family:MyriadPro-Regular">to loop variable.</tspan></text>
+
+<path
+   d="M161.061,216.222c0,7.964-7.629,14.422-17.037,14.422H80.24  c-9.409,0-17.036-6.458-17.036-14.422v-21.801c0-7.965,7.627-14.421,17.036-14.421h63.784c9.408,0,17.037,6.456,17.037,14.421  V216.222z"
+   id="path19"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+<text
+   id="text21"
+   x="79.679703"
+   y="194.0703"
+   style="font-size:11px"><tspan
+     x="79.679703"
+     y="194.0703"
+     font-size="12"
+     id="tspan23"
+     style="font-size:11px;font-family:MyriadPro-Regular">Execute all </tspan><tspan
+     x="72.443703"
+     y="208.47031"
+     font-size="12"
+     id="tspan25"
+     style="font-size:11px;font-family:MyriadPro-Regular">statements in </tspan><tspan
+     x="80.819702"
+     y="222.87131"
+     font-size="12"
+     id="tspan27"
+     style="font-size:11px;font-family:MyriadPro-Regular">loop body.</tspan></text>
+
+<line
+   x1="112.132"
+   y1="96.929"
+   x2="112"
+   y2="118.571"
+   id="line29"
+   style="stroke:#000000;stroke-opacity:1;fill:none" />
+<line
+   x1="112.132"
+   y1="160.5"
+   x2="112"
+   y2="180"
+   id="line31"
+   style="stroke:#000000;stroke-opacity:1;fill:none" />
+<polyline
+   points="112.132,235.857 112.132,253.357 33.571,253.357   33.571,30.143 102.857,30.143 "
+   id="polyline33"
+   style="stroke:#000000;stroke-opacity:1;fill:none" />
+<line
+   x1="112"
+   y1="56.389"
+   x2="112.132"
+   y2="8.715"
+   id="line35"
+   style="stroke:#000000;stroke-opacity:1;fill:none" />
+<path
+   d="M172.146,74.985C178,75,184,75,190,75c-1,66,2,132-1,198  c-26,0-71.66,0-77,0c0,5.833-0.007,11.668,0.132,17.5"
+   id="path37"
+   style="fill:none;stroke:#000000;stroke-opacity:1" />
+<text
+   transform="matrix(1 0 0 1 117.8545 108.252)"
+   font-size="11"
+   id="text39"
+   style="-inkscape-font-specification:Sans Bold;font-family:Sans;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal">No</text>
+
+<text
+   transform="matrix(1 0 0 1 171.501 67.0376)"
+   font-size="11"
+   id="text41"
+   style="-inkscape-font-specification:Sans Bold;font-family:Sans;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal">Yes</text>
+
+<path
+   d="M114.007,8.715c0,1.036-0.839,1.875-1.875,1.875l0,0c-1.036,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.839-1.875,1.875-1.875  l0,0C113.168,6.84,114.007,7.679,114.007,8.715L114.007,8.715z"
+   id="path43" />
+<path
+   d="M114.007,161.5c0,1.035-0.839,1.875-1.875,1.875l0,0c-1.036,0-1.875-0.84-1.875-1.875l0,0c0-1.035,0.839-1.875,1.875-1.875  l0,0C113.168,159.625,114.007,160.465,114.007,161.5L114.007,161.5z"
+   id="path45" />
+<path
+   d="M114.007,235.857c0,1.035-0.839,1.875-1.875,1.875l0,0c-1.036,0-1.875-0.84-1.875-1.875l0,0  c0-1.035,0.839-1.875,1.875-1.875l0,0C113.168,233.982,114.007,234.822,114.007,235.857L114.007,235.857z"
+   id="path47" />
+<rect
+   x="110.38"
+   y="96.101"
+   width="3.504"
+   height="3.656"
+   id="rect49" />
+<rect
+   x="170.394"
+   y="73.157"
+   width="3.504"
+   height="3.656"
+   id="rect51" />
+<polygon
+   points="112.132,291.5 116.833,286.501 107.333,286.501 "
+   id="polygon53" />
+<polygon
+   points="106.333,30.137 101.375,25.394 101.294,34.893 "
+   id="polygon55" />
+</svg>

@@ -779,7 +779,7 @@ Exercises
 #. The formula for computing the final amount if one is earning
    compound interest is given on Wikipedia as
 
-   .. image:: illustrations/compoundInterest.png
+   .. image:: illustrations/ch02/compoundInterest.png
       :alt: formula for compound interest
 
    Write a Python program that assigns the principal amount of R10000 to

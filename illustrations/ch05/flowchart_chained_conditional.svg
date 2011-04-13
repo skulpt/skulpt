@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 43363)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="346px"
+   height="340px"
+   viewBox="0 0 346 340"
+   enable-background="new 0 0 346 340"
+   xml:space="preserve"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="flowchart_chained_conditional.svg"
+   inkscape:export-filename="/home/dmitchell/thinkcspy/source/illustrations/ch05/flowchart_chained_conditional.png"
+   inkscape:export-xdpi="57.599998"
+   inkscape:export-ydpi="57.599998"><metadata
+   id="metadata81"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs79" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1280"
+   inkscape:window-height="947"
+   id="namedview77"
+   showgrid="false"
+   inkscape:zoom="1.4142136"
+   inkscape:cx="187.35177"
+   inkscape:cy="170.99127"
+   inkscape:window-x="0"
+   inkscape:window-y="24"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<g
+   id="g3"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0">
+	<rect
+   x="35.885"
+   y="48.625"
+   width="89.305"
+   height="37.142"
+   id="rect5"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+	<text
+   font-size="12"
+   id="text7"
+   x="64.360397"
+   y="69.425301"
+   style="font-size:12px;font-family:MyriadPro-Regular;fill:#000000;fill-opacity:1.0;stroke:none;stroke-opacity:1">x &lt; y</text>
+
+</g>
+<g
+   id="g9"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0">
+	<rect
+   x="35.885"
+   y="125.098"
+   width="89.305"
+   height="37.142"
+   id="rect11"
+   style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1.0" />
+	<text
+   font-size="12"
+   id="text13"
+   x="64.360397"
+   y="147.3037"
+   style="font-size:12px;font-family:MyriadPro-Regular;fill:#000000;fill-opacity:1.0;stroke:none;stroke-opacity:1">x &gt; y</text>
+
+</g>
+<g
+   id="g15">
+	<path
+   d="m 317.88839,121.398 c 0,6.627 -7.19667,12 -16.07709,12 h -73.5586 c -8.87797,0 -16.07709,-5.373 -16.07709,-12 V 103.21 c 0,-6.627 7.19912,-12 16.07709,-12 h 73.5586 c 8.88042,0 16.07709,5.373 16.07709,12 v 18.188 z"
+   id="path17"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#000000;stroke-width:1.10659289" />
+	<text
+   font-size="12"
+   id="text19"
+   x="224.6348"
+   y="115.6479"
+   style="font-size:12px;font-family:MyriadPro-Regular">statements_a</text>
+
+</g>
+<g
+   id="g21">
+	<path
+   d="m 247.42537,198.447 c 0,6.627 -6.89876,12 -15.41157,12 h -70.5136 c -8.51046,0 -15.41157,-5.373 -15.41157,-12 V 180.26 c 0,-6.627 6.90111,-12 15.41157,-12 h 70.5136 c 8.51281,0 15.41157,5.373 15.41157,12 v 18.187 z"
+   id="path23"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#000000;stroke-width:1.08344686" />
+	<text
+   font-size="12"
+   id="text25"
+   x="156.3589"
+   y="192.6973"
+   style="font-size:12px;font-family:MyriadPro-Regular">statements_b</text>
+
+</g>
+<g
+   id="g27">
+	<path
+   d="m 131.52617,235.01 c 0,6.627 -7.00411,12 -15.64693,12 H 44.288761 c -8.640436,0 -15.646936,-5.373 -15.646936,-12 v -18.188 c 0,-6.627 7.0065,-12 15.646936,-12 h 71.590479 c 8.64282,0 15.64693,5.373 15.64693,12 v 18.188 z"
+   id="path29"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#000000;stroke-width:1.09168875" />
+	<text
+   font-size="12"
+   id="text31"
+   x="39.686001"
+   y="229.2598"
+   style="font-size:12px;font-family:MyriadPro-Regular">statements_c</text>
+
+</g>
+<line
+   x1="80.537"
+   y1="15.101"
+   x2="80.537"
+   y2="48.625"
+   id="line33"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<path
+   d="M125.189,65.903"
+   id="path35" />
+<polyline
+   points="135.834,67.196 264.391,67.196 264.391,91.21 "
+   id="polyline37"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<line
+   x1="80.537"
+   y1="95.263"
+   x2="80.537"
+   y2="125.098"
+   id="line39"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<line
+   x1="80.537"
+   y1="172.187"
+   x2="80.537"
+   y2="204.822"
+   id="line41"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="264.391,146.275 264.391,275.021 196.758,275.021 196.637,223.198 "
+   id="polyline43"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<line
+   x1="80.537"
+   y1="255.01"
+   x2="80.537"
+   y2="316.102"
+   id="line45"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<line
+   x1="196.758"
+   y1="275.021"
+   x2="80.537"
+   y2="275.021"
+   id="line47"
+   style="stroke:#000000;stroke-opacity:1;fill:none" />
+<path
+   d="M82.413,15.101c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.036,0-1.875-0.838-1.875-1.875l0,0c0-1.036,0.839-1.875,1.875-1.875  l0,0C81.573,13.226,82.413,14.065,82.413,15.101L82.413,15.101z"
+   id="path49" />
+<path
+   d="M266.266,146.275c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.838-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C265.426,144.4,266.266,145.239,266.266,146.275L266.266,146.275z"
+   id="path51" />
+<path
+   d="M82.412,256.885c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C81.572,255.01,82.412,255.849,82.412,256.885L82.412,256.885z"
+   id="path53" />
+<path
+   d="M198.512,224.041c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C197.672,222.166,198.512,223.005,198.512,224.041L198.512,224.041z"
+   id="path55" />
+<rect
+   x="134.082"
+   y="65.368"
+   width="3.504"
+   height="3.657"
+   id="rect57" />
+<rect
+   x="78.785"
+   y="93.435"
+   width="3.504"
+   height="3.657"
+   id="rect59" />
+<rect
+   x="78.785"
+   y="170.359"
+   width="3.504"
+   height="3.657"
+   id="rect61" />
+<rect
+   x="134.082"
+   y="141.953"
+   width="3.504"
+   height="3.657"
+   id="rect63" />
+<polyline
+   points="135.834,143.782 196.758,143.782 196.758,168.26 "
+   id="polyline65"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polygon
+   points="80.585,321.102 85.287,316.102 75.787,316.102 "
+   id="polygon67" />
+<text
+   font-size="11"
+   id="text69"
+   style="font-size:11px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Sans;-inkscape-font-specification:Sans Bold"
+   x="142.61571"
+   y="59.381302">True</text>
+
+<text
+   font-size="11"
+   id="text71"
+   style="font-size:11px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Sans;-inkscape-font-specification:Sans Bold"
+   x="142.61571"
+   y="137.2598">True</text>
+
+<text
+   font-size="11"
+   id="text73"
+   style="font-size:11px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Sans;-inkscape-font-specification:Sans Bold"
+   x="41.686001"
+   y="103.2192">False</text>
+
+<text
+   font-size="11"
+   id="text75"
+   style="font-size:11px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Sans;-inkscape-font-specification:Sans Bold"
+   x="41.686001"
+   y="180.54691">False</text>
+
+</svg>
