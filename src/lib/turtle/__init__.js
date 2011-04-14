@@ -367,6 +367,10 @@ if ( ! TurtleGraphics ) {
 	    goto(newposition);
 	}
     }
+    
+    Turtle.prototype.backward = function(d) {
+	this.forward(-d);
+    }
 
     Turtle.prototype.goto = function(nx,ny) {
 	if (nx instanceof Vector)
@@ -415,6 +419,12 @@ if ( ! TurtleGraphics ) {
 	    var newheading = heading.rotateNormal(left, normal, alpha);
 	    heading = newheading;
 	}
+    }
+
+    Turtle.prototype.right = Turtle.prototype.turn;
+
+    Turtle.prototype.left = function(phi) {
+	this.turn(-phi);
     }
 
     Turtle.prototype.get_heading = function () {
@@ -529,10 +539,14 @@ if ( ! TurtleGraphics ) {
     Turtle.prototype.pen_down = function () {
 	this.pen = true;
     }
+    
+    Turtle.prototype.down = Turtle.prototype.pen_down;
 
     Turtle.prototype.pen_up = function () {
 	this.pen = false;
     }
+
+    Turtle.prototype.up = Turtle.prototype.pen_up;
 
     Turtle.prototype.get_pen = function () {
 	return this.pen;
