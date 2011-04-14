@@ -43,6 +43,8 @@ if ( ! TurtleGraphics ) {
         this.ury = this.canvas.height/2;
 
 	this.tlist = []
+	
+	this.delay = 50;
     }
 
     TurtleCanvas.prototype.addToCanvas = function(t) {
@@ -58,7 +60,7 @@ if ( ! TurtleGraphics ) {
     }
 
     TurtleCanvas.prototype.startAnimating = function(t) {
-	this.intervalId = setInterval(render,t.delay);
+	this.intervalId = setInterval(render,this.delay);
 	this.addToCanvas(t);
     }
 
@@ -69,6 +71,12 @@ if ( ! TurtleGraphics ) {
 	if (this.tlist.length == 0) {
 	    clearInterval(this.intervalId);
 	}
+
+    }
+
+    TurtleCanvas.prototype.setDelay = function(s) {
+	    var df = 10 - (s % 11) + 1;
+	    this.delay = df * 10;
     }
 
     TurtleCanvas.prototype.setworldcoordinates = function(llx,lly,urx,ury) {
@@ -271,8 +279,6 @@ if ( ! TurtleGraphics ) {
 	    this.heading = [ ]; 
 	    this.normal = [ ]; 
 	    this.go_home();
-	    this.delay = 60;
-	    this.intervalId = 0;
 	    this.aCount = 0;
 	}
     }
@@ -393,8 +399,7 @@ if ( ! TurtleGraphics ) {
     Turtle.prototype.speed = function(s) {
 	if (s > 0) {
 	    this.animate = true;
-	    var df = 10 - s + 1;
-	    this.delay = df * 10;
+	    this.turtleCanvas.setDelay(s);
 	}
 	else
 	    this.animate = false;
@@ -702,7 +707,7 @@ if ( ! TurtleGraphics ) {
     }
 
 
-    TurtleGraphics.defaults = { canvasID: 'mycanvas', degrees: true, animate: false }
+    TurtleGraphics.defaults = { canvasID: 'mycanvas', degrees: true, animate: true }
     TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
     TurtleGraphics.clear_canvas = clear_canvas;
