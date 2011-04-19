@@ -34,19 +34,29 @@ function builtinRead(x)
 }
 
 function runit(myDiv) {
-   var prog = document.getElementById(myDiv+"_code").value;
-   var mypre = document.getElementById(myDiv+"_pre");
-   mypre.innerHTML = '';
-   Sk.canvas = myDiv+"_canvas";
-   Sk.pre = myDiv+"_pre";
-   Sk.configure({output:outf,
-  	        read: builtinRead
-              });
-   try {
-      Sk.importMainWithBody("<stdin>",false,prog);
-   } catch (e) {
-      alert(e);
-   }
+    var prog = document.getElementById(myDiv + "_code").value;
+    var mypre = document.getElementById(myDiv + "_pre");
+    mypre.innerHTML = '';
+    Sk.canvas = myDiv + "_canvas";
+    Sk.pre = myDiv + "_pre";
+    // The following lines reset the canvas so that each time the run button
+    // is pressed the turtle(s) get a clean canvas.
+    var can = document.getElementById(Sk.canvas);
+    can.width = can.width;
+    if (Sk.tg) {
+        Sk.tg.canvasInit = false;
+        Sk.tg.turtleList = [];
+    }
+    // configure Skulpt output function, and module reader
+
+    Sk.configure({output:outf,
+                read: builtinRead
+            });
+    try {
+        Sk.importMainWithBody("<stdin>", false, prog);
+    } catch (e) {
+        alert(e);
+    }
 }
 </script>
 <h3>Try This</h3>

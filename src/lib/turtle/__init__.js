@@ -14,6 +14,7 @@ if ( ! TurtleGraphics ) {
   TurtleGraphics = { };
 }
 
+
 (function () {
 
     // Define private constants
@@ -72,6 +73,17 @@ if ( ! TurtleGraphics ) {
 	    clearInterval(this.intervalId);
 	}
 
+    }
+
+    TurtleCanvas.prototype.cancelAnimation = function() {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+        }
+
+        for (var t in this.tlist) {
+            this.tlist[t].aCount = this.tlist[t].drawingEvents.length -1;
+        }
+        render();
     }
 
     TurtleCanvas.prototype.setDelay = function(s) {
@@ -407,6 +419,7 @@ if ( ! TurtleGraphics ) {
 	}
 	else
 	    this.animate = false;
+        this.turtleCanvas.cancelAnimation();
     }
 
 
@@ -740,9 +753,11 @@ var $builtinmodule = function(name)
     var mod = {};
     // First we create an object, this will end up being the class
     // class
+    Sk.tg = TurtleGraphics;
+    
     var turtle = function($gbl, $loc) {
 	$loc.__init__ = new Sk.builtin.func(function(self) {
-	    TurtleGraphics.defaults = {canvasID: Sk.canvas, animation: false, degrees: true};
+	    TurtleGraphics.defaults = {canvasID: Sk.canvas, animate: true, degrees: true};
 	    self.theTurtle = new TurtleGraphics.Turtle();
 	});
 
