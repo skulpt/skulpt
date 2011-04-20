@@ -83,8 +83,8 @@ a **virtual machine**. Python uses both processes, but because of the way
 programmers interact with it, it is usually considered an interpreted language.
 
 There are two ways to use the Python interpreter: *shell mode* and *script
-mode*. In immediate mode, you type Python expressions into the **Python
-shell**, and the interpreter immediately shows the result:
+mode*. In shell mode, you type Python expressions into the **Python shell**,
+and the interpreter immediately shows the result:
 
 .. sourcecode:: python
 
@@ -113,7 +113,8 @@ the following contents:
 
 
 By convention, files that contain Python programs have names that end with
-``.py``
+``.py`` .  Following this convention will help your operating system and other
+programs identify a file as containing python code.
 
 .. sourcecode:: python
     
@@ -155,8 +156,9 @@ input
 output
     Display data on the screen or send data to a file or other device.
 
-math
-    Perform basic mathematical operations like addition and multiplication.
+math and logic
+    Perform basic mathematical operations like addition, and multiplication,
+    and logical operations like ``and``, ``or``, and ``not``.
 
 conditional execution
     Check for certain conditions and execute the appropriate sequence of
@@ -597,7 +599,7 @@ Exercises
    messages when you enter them at the Python prompt. Write down what you enter
    at the prompt and the last line of the error message that Python reports
    back to you. 
-#. Type `print('hello')`. Python executes this, which has the effect
+#. Type ``print("hello")``. Python executes this, which has the effect
    of printing the letters h-e-l-l-o. Notice that the quotation marks that you
    used to enclose the string are not part of the output.  Now type ``"hello"``
    and describe your result.  Make notes of when you see the quotation marks
