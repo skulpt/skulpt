@@ -129,8 +129,9 @@ if ( ! TurtleGraphics ) {
 		lineWidth = t.get_pen_width();
 		lineCap = 'round';
 		lineJoin = 'round';
+        strokeStyle = 'black';
 		var filling = false;
-		for (var i = 0; i < t.aCount; i++ ) {
+		for (var i = 0; i <= t.aCount; i++ ) {
 		    var oper = t.drawingEvents[i];
 		    if (oper[0] == "LT") {
 			if (! filling ) {
@@ -576,8 +577,20 @@ if ( ! TurtleGraphics ) {
 	return this.penWidth * this.turtleCanvas.lineScale;
     }
 
-    Turtle.prototype.set_pen_color = function (c) {
-	this.penStyle = c;
+    Turtle.prototype.set_pen_color = function (c,g,b) {
+    if (typeof(c) == "string") {
+        this.penStyle = c;
+    } else {
+        var rs = c.toString(16);
+        var gs = g.toString(16);
+        var bs = b.toString(16);
+        while (rs.length < 2) rs = "0" + rs;
+        while (gs.length < 2) gs = "0" + gs;
+        while (bs.length < 2) bs = "0" + bs;
+
+        this.penStyle = "#"+rs+gs+bs;
+    }
+
 	this.context.strokeStyle = c;
 	if ( this.animate )
 	    this.drawingEvents.push(["TC", c]);
@@ -925,10 +938,14 @@ var $builtinmodule = function(name)
 		return self.theTurtle.fillStyle;
 	});
 
-	$loc.color = new Sk.builtin.func(function(self, color) {
+	$loc.color = new Sk.builtin.func(function(self, color, green, blue) {
 	    if (color) {
-		color = color.v || self.theTurtle.context.fillStyle;
-		self.theTurtle.set_pen_color(color);
+            if (blue) {
+                self.theTurtle.set_pen_color(color,green,blue);
+            } else {
+                color = color.v || self.theTurtle.context.fillStyle;
+                self.theTurtle.set_pen_color(color);
+            }
 	    } else
 		return self.theTurtle.penStyle;
 	});
