@@ -149,7 +149,7 @@ Variables
 One of the most powerful features of a programming language is the ability to
 manipulate **variables**. A variable is a name that refers to a value.
 
-The **assignment statement** creates new variables and gives them values:
+**Assignment statements** create new variables and give them values:
 
 .. sourcecode:: python
     
