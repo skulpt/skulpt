@@ -57,9 +57,9 @@ illustrated by Dario Mitchell
     contrib.rst
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
     :numbered:
-    :hidden:
+
 
     ch01.rst
     ch02.rst

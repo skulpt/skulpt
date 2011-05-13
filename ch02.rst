@@ -146,6 +146,13 @@ change might mean something quite different from what you intended.
 Variables
 ---------
 
+.. video:: assignvid
+    :controls:
+    :thumb: _images/assignment.png
+
+    http://knuth.luther.edu/~bmiller/assignment.mov
+    http://knuth.luther.edu/~bmiller/assignment.webm
+
 One of the most powerful features of a programming language is the ability to
 manipulate **variables**. A variable is a name that refers to a value.
 
