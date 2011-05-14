@@ -67,16 +67,14 @@ They're strings!
 Strings in Python can be enclosed in either single quotes (``'``) or double
 quotes (``"``), or three of each (``'''`` or ``"""``)
 
-.. sourcecode:: python
-    
-    >>> type('This is a string.')
-    <class 'str'>
-    >>> type("And so is this.")
-    <class 'str'>
-    >>> type("""and this.""")
-    <class 'str'>
-    >>> type('''and even this...''')
-    <class 'str'>
+.. activecode:: ch02_1
+    :nocanvas:
+
+    print ( type('This is a string.') )
+    print ( type("And so is this.") )
+    print ( type("""and this.""") )
+    print ( type('''and even this...''') )
+
     
 Double quoted strings can contain single quotes inside them, as in ``"Bruce's
 beard"``, and single quoted strings can have double quotes inside them, as in
