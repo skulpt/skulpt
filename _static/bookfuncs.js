@@ -25,6 +25,7 @@ cm_editors = {}
 
 function outf(text) {
     var mypre = document.getElementById(Sk.pre);
+    text = text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>");
     mypre.innerHTML = mypre.innerHTML + text;
 }
 
