@@ -146,7 +146,7 @@ Variables
 
 .. video:: assignvid
     :controls:
-    :thumb: _images/assignment.png
+    :thumb: _static/assignment.png
 
     http://knuth.luther.edu/~bmiller/assignment.mov
     http://knuth.luther.edu/~bmiller/assignment.webm
