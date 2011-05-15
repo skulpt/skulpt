@@ -495,7 +495,7 @@ if ( ! TurtleGraphics ) {
 	size = size * this.turtleCanvas.lineScale;
 	with (this) {
 	    with ( context ) {
-		var color = fillStyle;
+		var color = penStyle;
 		var nc =  arguments[1] || color;
 		if (! animate) {
 		    fillStyle = nc;
@@ -832,8 +832,9 @@ var $builtinmodule = function(name)
 
 	$loc.dot = new Sk.builtin.func(function(self, /*opt*/ size, color) {
 	    size = size || 1;
-	    if (color)
-		color = color.v || self.theTurtle.context.fillStyle;
+        if (color) {
+            color = color.v || self.theTurtle.penStyle;
+        }
 	    self.theTurtle.dot(size,color);
 	});
 
