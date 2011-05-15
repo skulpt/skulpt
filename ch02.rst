@@ -622,7 +622,8 @@ circle, and then computes the area of the circle from the formula
  
 Firstly, we'll do the four steps one at a time: 
 
-.. sourcecode:: python
+.. activecode:: pyinput1
+   :nocanvas:
    
    response = input("What is your radius? ")
    r = float(response)
