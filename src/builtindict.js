@@ -33,6 +33,7 @@ Sk.builtins = {
 'str': Sk.builtin.str,
 'set': Sk.builtin.set,
 'tuple': Sk.builtin.tuple,
-'type': Sk.builtin.type
+'type': Sk.builtin.type,
+'input': Sk.builtin.input
 };
 goog.exportSymbol("Sk.builtins", Sk.builtins);
