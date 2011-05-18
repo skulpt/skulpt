@@ -32,7 +32,7 @@ if ( ! TurtleGraphics ) {
 	if ( options.canvasID ) {
 	    this.canvasID = options.canvasID;
 	}
-
+	console.log(this.canvasID);
 	this.canvas = document.getElementById(this.canvasID);
 	this.context = this.canvas.getContext('2d');
 
@@ -111,6 +111,11 @@ if ( ! TurtleGraphics ) {
 
     }
 
+    TurtleCanvas.prototype.bgcolor = function(c) {
+	this.background_color = c;
+	this.canvas.style.setProperty("background-color",c.v);
+    }
+
     //
     //  This is the function that provides the animation
     //
@@ -120,6 +125,8 @@ if ( ! TurtleGraphics ) {
 	with ( context ) {
 	    with (TurtleGraphics.turtleCanvas) {
    		clearRect(llx,lly,(urx-llx),(ury-lly));
+		console.log(TurtleGraphics.turtleCanvas.bgcolor.v)
+		//canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
 	    }
 	    for (var tix in TurtleGraphics.turtleList) {
 		var t = TurtleGraphics.turtleList[tix]
@@ -271,7 +278,8 @@ if ( ! TurtleGraphics ) {
 		save();
 		translate(canvas.width/2, canvas.height/2); // move 0,0 to center.
 		scale(1,-1); // scaling like this flips the y axis the right way.
-		TurtleGraphics.turtleCanvas = new TurtleCanvas(options);
+		if (! TurtleGraphics.turtleCanvas )
+		    TurtleGraphics.turtleCanvas = new TurtleCanvas(options);
 		TurtleGraphics.canvasInit = true;
 	    } else {
 		clear_canvas(this.canvasID);
@@ -280,7 +288,8 @@ if ( ! TurtleGraphics ) {
 	    this.turtleCanvas = TurtleGraphics.turtleCanvas;
 	    this.home = new Vector([0.0, 0.0, 0.0]);
 	    this.visible = true;
-
+	    this.shapeStore = {};
+	    this.shapeStore['turtle'] = turtleShapePoints();
 	    this.drawingEvents = [];
 
 	    this.filling = false;
@@ -294,6 +303,18 @@ if ( ! TurtleGraphics ) {
 	    this.go_home();
 	    this.aCount = 0;
 	}
+    }
+    function turtleShapePoints() {
+	var pl = [[0,16], [-2,14], [-1,10], [-4,7],
+                  [-7,9], [-9,8], [-6,5], [-7,1], [-5,-3], [-8,-6],
+                  [-6,-8], [-4,-5], [0,-7], [4,-5], [6,-8], [8,-6],
+                  [5,-3], [7,1], [6,5], [9,8], [7,9], [4,7], [1,10],
+	          [2,14]];
+	res = [];
+	for (p in pl) {
+	    res.push(new Vector(pl[p]));
+	}
+	return res;
     }
 
     Turtle.prototype.clean = function () {
@@ -636,6 +657,37 @@ if ( ! TurtleGraphics ) {
 	return this.visible;
     }
 
+    // 
+    // Appearance
+    //
+
+    Turtle.prototype.shape = function(s) {
+	if (this.shapeStore[s])
+	    this.currentShape = s;
+	else {
+	}
+    }
+    Turtle.prototype.drawturtle = function() {
+	var rtPoints = [];
+	var plist = this.shapeStore[this.currentShape];
+	var head = this.heading.toAngle() -90.0;
+	for (p in plist) {
+	    rtPoints.push(plist[p].rotate(head).add(this.position));
+	}
+	this.context.beginPath();
+	this.context.moveTo(rtPoints[0][0],rtPoints[0][1]);
+	for (var i = 1; i<rtPoints.length; i++) {
+	    console.log(rtPoints[i][0] + "," + rtPoints[i][1]);
+	    this.context.lineTo(rtPoints[i][0],rtPoints[i][1]);
+	}
+	this.context.closePath();
+	this.context.stroke();
+    }
+
+    Turtle.prototype.stamp = function() {
+	// either call drawTurtle or just add a DT with current position and heading to the drawingEvents list.
+    }
+
     function clear_canvas(canId) {
 	with ( document.getElementById(canId).getContext('2d') ) {
 	    if ( arguments.length >= 2 ) {
@@ -698,11 +750,19 @@ if ( ! TurtleGraphics ) {
 	return new Vector(result);
     }
 
+    Vector.prototype.rotate = function(angle) {
+	// Rotate this counter clockwise by angle.
+	var perp = new Vector(-this[1], this[0], 0);
+	angle = angle * Degree2Rad;
+	var c = Math.cos(angle);
+        var s = Math.sin(angle);
+	return new Vector(this[0]*c+perp[0]*s, this[1]*c+perp[1]*s, 0);
+    }
+
     Vector.prototype.rotateNormal = function( v, w, alpha) {
-	// Return rotation of u in direction of v about w over alpha
-	// Requires: u, v, w are vectors; alpha is angle in radians
-	//   u, v, w are orthonormal
-	// Ensures: result = u rotated in direction of v about w over alpha
+	// Return rotation of this in direction of v about w over alpha
+	// Requires: v, w are vectors; alpha is angle in radians
+	//   this, v, w are orthonormal
 	return this.linear(Math.cos(alpha), Math.sin(alpha), v);
     }
 
@@ -742,6 +802,14 @@ if ( ! TurtleGraphics ) {
 	return res;
     }
 
+    Vector.prototype.add = function(v) {
+	res = new Vector(0,0,0);
+	res[0] = this[0] + v[0];
+	res[1] = this[1] + v[1];
+	res[2] = this[2] + v[2];
+	return res;
+    }
+
     Vector.prototype.len = function() {
 	return Math.sqrt(this[0]*this[0] + this[1]*this[1] + this[2]*this[2]);
     }
@@ -750,6 +818,7 @@ if ( ! TurtleGraphics ) {
     TurtleGraphics.defaults = { canvasID: 'mycanvas', degrees: true, animate: true }
     TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
+    TurtleGraphics.TurtleCanvas = TurtleCanvas;
     TurtleGraphics.clear_canvas = clear_canvas;
     TurtleGraphics.Vector = Vector;
     TurtleGraphics.canvasInit = false;
@@ -1009,6 +1078,26 @@ var $builtinmodule = function(name)
     }
     
     mod.Turtle = Sk.misceval.buildClass(mod, turtle, 'Turtle', []);
+
+    var screen = function($gbl, $loc) {
+	$loc.__init__ = new Sk.builtin.func(function(self) {
+	    TurtleGraphics.defaults = {canvasID: Sk.canvas, animate: true, degrees: true};
+	    if (! TurtleGraphics.turtleCanvas) {
+		self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
+	    } else {
+		self.theScreen = TurtleGraphics.turtleCanvas;
+	    }
+	    TurtleGraphics.turtleCanvas = self.theScreen;
+	});
+
+	$loc.bgcolor = new Sk.builtin.func(function(self,c) {
+	    self.theScreen.bgcolor(c);
+	});
+    }
+
+    mod.Screen = Sk.misceval.buildClass(mod, screen, 'Screen', []);
+
+    
 
     return mod
 }
