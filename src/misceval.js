@@ -282,8 +282,11 @@ Sk.misceval.print_ = function(x)   // this was function print(x)   not sure why.
     if (x.charAt(0) == '(') {
         x = x.slice(1,-1);
 	x = '['+x+']'
-        var xl = eval(x);
-        x = xl.join(' ');
+	try {
+            var xl = eval(x);
+            x = xl.join(' ');
+	} catch(err) {
+	}
     }
     var s = new Sk.builtin.str(x);
     Sk.output(s.v);
