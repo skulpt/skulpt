@@ -32,7 +32,6 @@ if ( ! TurtleGraphics ) {
 	if ( options.canvasID ) {
 	    this.canvasID = options.canvasID;
 	}
-	console.log(this.canvasID);
 	this.canvas = document.getElementById(this.canvasID);
 	this.context = this.canvas.getContext('2d');
 
@@ -125,7 +124,6 @@ if ( ! TurtleGraphics ) {
 	with ( context ) {
 	    with (TurtleGraphics.turtleCanvas) {
    		clearRect(llx,lly,(urx-llx),(ury-lly));
-		console.log(TurtleGraphics.turtleCanvas.bgcolor.v)
 		//canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
 	    }
 	    for (var tix in TurtleGraphics.turtleList) {
@@ -194,6 +192,8 @@ if ( ! TurtleGraphics ) {
 			scale(1,-1);
 			fillText(oper[1],oper[3], -oper[4]);
 			scale(1,-1);
+		    } else if (oper[0] == "ST") {  // stamp
+                t.drawturtle(oper[3],new Vector(oper[1],oper[2],0));
 		    }
 		    else {
 			console.log("unknown op");
@@ -205,7 +205,18 @@ if ( ! TurtleGraphics ) {
 		    var tsize = 5 * t.turtleCanvas.lineScale;
 		    var oldp = new Vector(currentHeadInfo[1], currentHeadInfo[2], 0);
 		    var newp = new Vector(currentHeadInfo[3], currentHeadInfo[4], 0);
-		    var head = oldp.sub(newp).normalize();
+		    var head = newp.sub(oldp).normalize();
+		    t.drawturtle(head.toAngle(),newp);
+		}
+		if (t.aCount >= t.drawingEvents.length) {
+		    t.turtleCanvas.doneAnimating(t);
+		}
+	    }
+	}
+    }
+
+
+    function drawSimpleTurtle(newp, endPt,head) {
 		    // draw line to 30 degrees left and 5 units long
 		    // draw line to 30 degrees right and 5 units long
 		    var portWing = head.rotateNormal(t.normal.cross(head),t.normal,-30*Degree2Rad);
@@ -219,16 +230,7 @@ if ( ! TurtleGraphics ) {
 		    lineTo(endPt[0],endPt[1]);
 		    closePath();
 		    stroke();
-		}
-		if (t.aCount >= t.drawingEvents.length) {
-		    t.turtleCanvas.doneAnimating(t);
-		}
-	    }
-	}
     }
-
-
-
 
     // Constructor for Turtle objects
     function Turtle() {
@@ -290,6 +292,9 @@ if ( ! TurtleGraphics ) {
 	    this.visible = true;
 	    this.shapeStore = {};
 	    this.shapeStore['turtle'] = turtleShapePoints();
+        this.shapeStore['arrow'] = defaultShapePoints();
+        this.shapeStore['circle'] = circleShapePoints();
+        this.currentShape = 'arrow';
 	    this.drawingEvents = [];
 
 	    this.filling = false;
@@ -315,6 +320,29 @@ if ( ! TurtleGraphics ) {
 	    res.push(new Vector(pl[p]));
 	}
 	return res;
+    }
+
+    function defaultShapePoints() {
+        var pl = [[-10,0], [10,0], [0,10]];
+        res = [];
+        for (p in pl) {
+            res.push(new Vector(pl[p]));
+        }
+        return res;
+    }
+
+    function circleShapePoints() {
+        var pl = [[10,0], [9.51,3.09], [8.09,5.88],
+                              [5.88,8.09], [3.09,9.51], [0,10], [-3.09,9.51],
+                              [-5.88,8.09], [-8.09,5.88], [-9.51,3.09], [-10,0],
+                              [-9.51,-3.09], [-8.09,-5.88], [-5.88,-8.09],
+                              [-3.09,-9.51], [-0.00,-10.00], [3.09,-9.51],
+                              [5.88,-8.09], [8.09,-5.88], [9.51,-3.09]];
+        res = [];
+        for (p in pl) {
+            res.push(new Vector(pl[p]));
+        }
+        return res;
     }
 
     Turtle.prototype.clean = function () {
@@ -662,30 +690,40 @@ if ( ! TurtleGraphics ) {
     //
 
     Turtle.prototype.shape = function(s) {
-	if (this.shapeStore[s])
-	    this.currentShape = s;
-	else {
-	}
+        if (this.shapeStore[s])
+            this.currentShape = s;
+        else {
+        }
     }
-    Turtle.prototype.drawturtle = function() {
-	var rtPoints = [];
-	var plist = this.shapeStore[this.currentShape];
-	var head = this.heading.toAngle() -90.0;
-	for (p in plist) {
-	    rtPoints.push(plist[p].rotate(head).add(this.position));
-	}
-	this.context.beginPath();
-	this.context.moveTo(rtPoints[0][0],rtPoints[0][1]);
-	for (var i = 1; i<rtPoints.length; i++) {
-	    console.log(rtPoints[i][0] + "," + rtPoints[i][1]);
-	    this.context.lineTo(rtPoints[i][0],rtPoints[i][1]);
-	}
-	this.context.closePath();
-	this.context.stroke();
+
+    Turtle.prototype.drawturtle = function(heading,position) {
+        var rtPoints = [];
+        var plist = this.shapeStore[this.currentShape];
+        var head;
+        if (! (heading === undefined))
+            head = heading -90.0;
+        else
+            head = this.heading.toAngle() - 90.0;
+        if (! position)
+            position = this.position
+        for (p in plist) {
+            rtPoints.push(plist[p].rotate(head).add(position));
+        }
+        this.context.beginPath();
+        this.context.moveTo(rtPoints[0][0],rtPoints[0][1]);
+        for (var i = 1; i<rtPoints.length; i++) {
+            this.context.lineTo(rtPoints[i][0],rtPoints[i][1]);
+        }
+        this.context.closePath();
+        this.context.stroke();
     }
 
     Turtle.prototype.stamp = function() {
 	// either call drawTurtle or just add a DT with current position and heading to the drawingEvents list.
+        if (this.animate) {
+            this.drawingEvents.push(["ST",this.position[0],this.position[1],this.heading.toAngle()]);
+        } else
+            t.drawturtle();
     }
 
     function clear_canvas(canId) {
@@ -1062,6 +1100,14 @@ var $builtinmodule = function(name)
 	$loc.isvisible = new Sk.builtin.func(function(self) {
 	    self.theTurtle.isvisible()
 	});
+
+    $loc.stamp = new Sk.builtin.func(function(self) {
+            self.theTurtle.stamp();
+        });
+
+    $loc.shape = new Sk.builtin.func(function(self,s) {
+        self.theTurtle.shape(s.v);
+    });
 
 
 	// todo the move, align, and font parameters should be kwargs...
