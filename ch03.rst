@@ -38,22 +38,20 @@ start drawing a rectangle. (We'll call the variable that refers to our first
 turtle `alex`, but you can choose another name if you follow the naming rules
 from the previous chapter).
 
-.. sourcecode:: python
-    :linenos:
+.. activecode:: ch03_1
+    :nopre:
 
-    >>> import turtle            # allows us to use the turtles library
-    >>> wn = turtle.Screen()     # creates a graphics window (a playground for turtles)
-    >>> alex = turtle.Turtle()   # create a turtle named alex
-    >>> alex.forward(350)        # tell alex to move forward by 350 units
-    >>> alex.left(90)            # turn by 90 degrees
-    >>> alex.forward(300)        # complete the second side of a rectangle
+    import turtle            # allows us to use the turtles library
+    alex = turtle.Turtle()   # create a turtle named alex
+    alex.forward(350)        # tell alex to move forward by 350 units
+    alex.left(90)            # turn by 90 degrees
+    alex.forward(300)        # complete the second side of a rectangle
 
     
 After line 2 a new window pops up.  After line 6, you will have a window with a
-turtle and a half drawn rectangle that looks like this:
+turtle and a half drawn rectangle.  Press the run button to try it and see.
 
-.. image:: illustrations/ch03/alex.png  
-    
+
 Here are a couple of things you'll need to understand about this program. 
   
 The first line tells Python to load a module named ``turtle``.  That module
@@ -93,13 +91,12 @@ variable name for this turtle).  Also, we'll put this example in a script
 named ``tess1.py``, since it is getting a bit too long to type over and over
 into the Python shell:
     
-.. sourcecode:: python
+.. activecode:: ch03_2
     
     import turtle
 
     wn = turtle.Screen()
     wn.bgcolor("lightgreen")         # set the window background color
-    wn.title("Hello, Tess!")         # set the window title
 
     tess = turtle.Turtle()
     tess.color("blue")               # make tess blue
@@ -109,18 +106,7 @@ into the Python shell:
     tess.left(120)
     tess.forward(50)
 
-    wn.exitonclick()
 
-The last line plays a part too: the `wn` variable refers to the window shown
-above. When we invoke its `exitonclick` method, it pauses the execution of the
-program, and waits for the user to click the mouse in somewhere the window.
-When this click event occurs, the response is to close the turtle window and
-exit (stop execution of) the Python program.   
-  
-When we run this program, this new window pops up, and will remain on the 
-screen until we click on it.
-
-.. image:: illustrations/ch03/tess.png 
 
 .. admonition:: Extend this program ...
     
@@ -150,43 +136,40 @@ some position, while tess might be going in her own direction with a fat pink
 pen.  So here is what happens when alex completes his rectangle, and tess
 completes her triangle:
 
-.. sourcecode:: python
-   :linenos:
+.. activecode:: ch03_3
+   :nopre:
 
-    import turtle
-    wn = turtle.Screen()             # Set up the window and its attributes
-    wn.bgcolor("lightgreen")
-    wn.title("Tess & Alex")
+   import turtle
+   wn = turtle.Screen()             # Set up the window and its attributes
+   wn.bgcolor("lightgreen")
 
-    tess = turtle.Turtle()           # create tess and set some attributes
-    tess.color("hotpink")
-    tess.pensize(5)
 
-    alex = turtle.Turtle()           # create alex
+   tess = turtle.Turtle()           # create tess and set some attributes
+   tess.color("hotpink")
+   tess.pensize(5)
 
-    tess.forward(80)                 # Let tess draw an equilateral triangle
-    tess.left(120)
-    tess.forward(80)
-    tess.left(120)
-    tess.forward(80)
-    tess.left(120)                   # complete the triangle
+   alex = turtle.Turtle()           # create alex
 
-    tess.right(180)                  # turn tess around
-    tess.forward(80)                 # and move her away from the origin
+   tess.forward(80)                 # Let tess draw an equilateral triangle
+   tess.left(120)
+   tess.forward(80)
+   tess.left(120)
+   tess.forward(80)
+   tess.left(120)                   # complete the triangle
+
+   tess.right(180)                  # turn tess around
+   tess.forward(80)                 # and move her away from the origin
  
-    alex.forward(50)                 # make alex draw a square
-    alex.left(90)
-    alex.forward(50)
-    alex.left(90)
-    alex.forward(50)
-    alex.left(90)
-    alex.forward(50)
-    alex.left(90)
+   alex.forward(50)                 # make alex draw a square
+   alex.left(90)
+   alex.forward(50)
+   alex.left(90)
+   alex.forward(50)
+   alex.left(90)
+   alex.forward(50)
+   alex.left(90)
 
-    wn.exitonclick()
 
-.. image:: illustrations/ch03/tess03.png  
-  
 Here are some *How to think like a computer scientist* observations:
 
 * There are 360 degrees in a full circle.  If you add up all the turns that a
@@ -228,8 +211,8 @@ we'd like to send them each an email inviting them to our party.  We'll we
 don't quite know how to send email yet, so for the moment we'll just print a
 message for each friend:
 
-.. sourcecode:: python
-    :linenos:
+.. activecode:: ch03_4
+    :nocanvas:
 
     for f in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
         invitation = "Hi " + f + ".  Please come to my party on Saturday!"
@@ -238,7 +221,6 @@ message for each friend:
 
 When we run this, the output looks like this:
 
-.. image:: illustrations/ch03/partyInvite.png  
 
 * **f** in this ``for`` statement is called the **loop variable**.  
 * Lines 2 and 3 are the **loop body**.  The loop body is always
@@ -266,7 +248,7 @@ Flow of Execution of the for loop
    .. image:: illustrations/ch03/flowchart_for.png  
  
 As a program executes, the interpreter always keeps track of which statement is
-about to be executed.  We call this the **control flow**, of the **flow of
+about to be executed.  We call this the **control flow**, or the **flow of
 execution** of the program.  When humans execute programs, they often use their
 finger to point to each statement in turn.  So you could think of control flow
 as "Python's moving finger". 
@@ -410,28 +392,25 @@ A few more turtle methods and tricks
     
 Let's do an example that shows off some of these new features:
 
-.. sourcecode:: python
-   :linenos:
-   
+.. activecode:: ch03_5
+
    import turtle
    wn = turtle.Screen()             
    wn.bgcolor("lightgreen")
    tess = turtle.Turtle()            
-   tess.shape("turtle")
    tess.color("blue")
+   tess.shape("turtle")
 
    tess.penup()                    # this is new
-   size = 20
+   size = 5
    for i in range(30):
        tess.stamp()                # leave an impression on the canvas
-       size = size + 3             # increase the size on every iteration
+       size = size + 2             # increase the size on every iteration
        tess.forward(size)          # move tess along  
        tess.right(24)              # and turn her
 
-   wn.exitonclick()
-   
-.. image:: illustrations/ch03/tess07.png   
 
+   
 Be careful now: all except one of the shapes you see on the screen here are
 footprints created by ``stamp``.  But the program still only has *one* turtle
 instance --- can you figure out which one is the real tess?  (Hint: if you're
