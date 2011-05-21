@@ -1139,19 +1139,15 @@ var $builtinmodule = function(name)
     mod.Turtle = Sk.misceval.buildClass(mod, turtle, 'Turtle', []);
 
     var screen = function($gbl, $loc) {
-	$loc.__init__ = new Sk.builtin.func(function(self) {
-	    TurtleGraphics.defaults = {canvasID: Sk.canvas, animate: true, degrees: true};
-	    if (! TurtleGraphics.turtleCanvas) {
-		self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
-	    } else {
-		self.theScreen = TurtleGraphics.turtleCanvas;
-	    }
-	    TurtleGraphics.turtleCanvas = self.theScreen;
-	});
+        $loc.__init__ = new Sk.builtin.func(function(self) {
+            TurtleGraphics.defaults = {canvasID: Sk.canvas, animate: true, degrees: true};
+            self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
+            TurtleGraphics.turtleCanvas = self.theScreen;
+        });
 
-	$loc.bgcolor = new Sk.builtin.func(function(self,c) {
-	    self.theScreen.bgcolor(c);
-	});
+        $loc.bgcolor = new Sk.builtin.func(function(self, c) {
+            self.theScreen.bgcolor(c);
+        });
     }
 
     mod.Screen = Sk.misceval.buildClass(mod, screen, 'Screen', []);
