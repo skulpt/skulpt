@@ -62,7 +62,7 @@ function runit(myDiv) {
     var editor = cm_editors[myDiv+"_code"];
     var prog = editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
-    mypre.innerHTML = '';
+    if (mypre) mypre.innerHTML = '';
     Sk.canvas = myDiv + "_canvas";
     Sk.pre = myDiv + "_pre";
     var can = document.getElementById(Sk.canvas);
