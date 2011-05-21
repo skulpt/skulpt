@@ -44,6 +44,7 @@ if (! TurtleGraphics) {
         this.tlist = []
 
         this.delay = 50;
+        TurtleGraphics.canvasLib[this.canvasID] = this;
     }
 
     TurtleCanvas.prototype.addToCanvas = function(t) {
@@ -121,7 +122,7 @@ if (! TurtleGraphics) {
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
         var currentHeadInfo;
         with (context) {
-            with (TurtleGraphics.turtleCanvas) {
+            with (TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID]) {
                 clearRect(llx, lly, (urx - llx), (ury - lly));
                 //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
             }
@@ -279,14 +280,15 @@ if (! TurtleGraphics) {
                 save();
                 translate(canvas.width / 2, canvas.height / 2); // move 0,0 to center.
                 scale(1, -1); // scaling like this flips the y axis the right way.
-                if (! TurtleGraphics.turtleCanvas)
-                    TurtleGraphics.turtleCanvas = new TurtleCanvas(options);
+                if (! TurtleGraphics.canvasLib[this.canvasID]) {
+                    TurtleGraphics.canvasLib[this.canvasID] = new TurtleCanvas(options);
+                }
                 TurtleGraphics.canvasInit = true;
             } else {
                 clear_canvas(this.canvasID);
             }
 
-            this.turtleCanvas = TurtleGraphics.turtleCanvas;
+            this.turtleCanvas = TurtleGraphics.canvasLib[this.canvasID];
             this.home = new Vector([0.0, 0.0, 0.0]);
             this.visible = true;
             this.shapeStore = {};
@@ -923,6 +925,7 @@ if (! TurtleGraphics) {
     TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
     TurtleGraphics.TurtleCanvas = TurtleCanvas;
+    TurtleGraphics.canvasLib = {}
     TurtleGraphics.clear_canvas = clear_canvas;
     TurtleGraphics.Vector = Vector;
     TurtleGraphics.canvasInit = false;
@@ -1193,8 +1196,12 @@ var $builtinmodule = function(name) {
     var screen = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self) {
             TurtleGraphics.defaults = {canvasID: Sk.canvas, animate: true, degrees: true};
-            self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
-            TurtleGraphics.turtleCanvas = self.theScreen;
+            var currentCanvas = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
+            if (currentCanvas === undefined) {
+                self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
+            } else {
+                self.theScreen = currentCanvas;
+            }
         });
 
         $loc.bgcolor = new Sk.builtin.func(function(self, c) {
