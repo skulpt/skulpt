@@ -22,7 +22,6 @@ if ( ! TurtleGraphics ) {
     var Degree2Rad = Math.PI / 180.0; // conversion factor for degrees to radians
     var Rad2Degree = 180.0 / Math.PI
 
-
     //
     // Define TurtleCanvas
     // 
@@ -294,14 +293,15 @@ if ( ! TurtleGraphics ) {
 	    this.shapeStore['turtle'] = turtleShapePoints();
         this.shapeStore['arrow'] = defaultShapePoints();
         this.shapeStore['circle'] = circleShapePoints();
-        this.currentShape = 'arrow';
+        this.shapeStore['classic'] = classicShapePoints();
+        this.currentShape = 'classic';
 	    this.drawingEvents = [];
 
 	    this.filling = false;
 	    this.pen = true; 
 	    this.penStyle = 'black';
 	    this.penWidth = 2;
-	    this.fillStyle = 'white';
+	    this.fillStyle = 'black';
 	    this.position = [ ]; 
 	    this.heading = [ ]; 
 	    this.normal = [ ]; 
@@ -345,6 +345,16 @@ if ( ! TurtleGraphics ) {
         return res;
     }
 
+    function classicShapePoints() {
+        var pl = [[0,0],[-5,-9],[0,-7],[5,-9]];
+
+        res = [];
+        for (p in pl) {
+            res.push(new Vector(pl[p]));
+        }
+        return res;
+
+    }
     Turtle.prototype.clean = function () {
 	// Clean the canvas
 	// Optional second argument is color
@@ -716,6 +726,9 @@ if ( ! TurtleGraphics ) {
         }
         this.context.closePath();
         this.context.stroke();
+        if (this.fillStyle) {
+            this.context.fill();
+        }
     }
 
     Turtle.prototype.stamp = function() {
