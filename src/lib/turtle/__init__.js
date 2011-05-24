@@ -33,7 +33,8 @@ if (! TurtleGraphics) {
         }
         this.canvas = document.getElementById(this.canvasID);
         this.context = this.canvas.getContext('2d');
-
+        this.canvas.style.display = 'block';
+        
         this.lineScale = 1.0;
 
         this.llx = -this.canvas.width / 2;
