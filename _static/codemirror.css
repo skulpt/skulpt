@@ -5,7 +5,10 @@
   width: 650px;
   line-height: 1em;
   font-family: monospace;
-  border-right: 1px solid #eee;
+  border-right: 2px solid #aaa;
+  border-top: 2px solid #aaa;
+  border-bottom: 2px solid #aaa;
+  border-left: 2px solid #aaa;
 }
 
 .CodeMirror-gutter {
