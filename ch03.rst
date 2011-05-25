@@ -17,10 +17,24 @@ Hello, little turtles!
     single: definition; function
     single: turtle module
 
+.. video:: assignvid
+    :controls:
+    :thumb: _static/turtleintro.png
+
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.mov
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.webm
+
 There are many *modules* in Python that provide very powerful features that we
 can use in our own programs.  Some of these can send email, or fetch web pages.
 The one we'll look at in this chapter allows us to create turtles and get them
-to draw shapes and patterns.
+turn left, etc.  Your turtle's tail is also endowed with the ability to leave
+to draw shapes and patterns.  Turtle graphics is based on a very simple
+metaphore. Imagine that you have a turtle that undestands english.  You can
+tell your turtle to do simple commands such as go forward, turn right,
+a trail behind it.  If the tail is down, and is touching the ground it will
+draw a line as it moves.  If you tell your turtle to lift up its tail it can
+still move around but will not leave a trail.  As you will see you can make
+some pretty amazing drawings with this simple capability.
 
 The turtles are fun, but the real purpose of the chapter is to teach ourselves
 a little more Python, and to develop our theme of *computational thinking*,
@@ -33,7 +47,7 @@ be explored in more depth later.
 Our first turtle program
 ------------------------
 
-Let's try a couple of lines in the Python shell to create a new turtle and
+Let's try a couple of lines of Python code to create a new turtle and
 start drawing a rectangle. (We'll call the variable that refers to our first
 turtle `alex`, but you can choose another name if you follow the naming rules
 from the previous chapter).
@@ -42,28 +56,30 @@ from the previous chapter).
     :nopre:
 
     import turtle            # allows us to use the turtles library
+    wn = turtle.Screen()     # creates a graphics window
     alex = turtle.Turtle()   # create a turtle named alex
-    alex.forward(350)        # tell alex to move forward by 350 units
+    alex.forward(150)        # tell alex to move forward by 150 units
     alex.left(90)            # turn by 90 degrees
-    alex.forward(300)        # complete the second side of a rectangle
+    alex.forward(75)         # complete the second side of a rectangle
 
     
-After line 2 a new window pops up.  After line 6, you will have a window with a
+After line 3 you will have a straight line going from the center of the
+canvas below towards the right.  After line 6, you will have a canvas with a
 turtle and a half drawn rectangle.  Press the run button to try it and see.
-
 
 Here are a couple of things you'll need to understand about this program. 
   
-The first line tells Python to load a module named ``turtle``.  That module
+The first line tells Python to load a **module** named ``turtle``.  That module
 brings us two new types that we can use: the ``Turtle`` type, and the
 ``Screen`` type.  The dot notation ``turtle.Turtle`` means *"The Turtle type
 that is defined within the turtle module"*.   (Remember that Python is case
 sensitive, so the module name, with a lowercase `t`, is different from the type
 Turtle.)
  
-We then create and open what it calls a screen (we would perfer to call it a
-window), which we assign to variable `wn`. Every window contains a **canvas**,
-which is the area inside the window on which we can draw. 
+We then create and open what the turtle module calls a screen (we would
+perfer to call it a window, or in the case of this web version of Python
+simply a canvas), which we assign to variable `wn`. Every window
+contains a **canvas**, which is the area inside the window on which we can draw.
 
 In line 3 we create a turtle. The variable `alex` is made to refer to this
 turtle.   These first three lines set us up, ready for doing some useful
@@ -80,16 +96,13 @@ will make alex red, and drawing will be red too.
 
 The color of the turtle, the width of its pen, the position of the turtle
 within the window, which way it is facing, and so on are all part of its
-current **state**.   Similarly, the window object has a background color, and
-some text in the title bar, and a size and position on the screen.  These are
-all part of the state of the window object. 
+current **state**.   Similarly, the window object has a background color.
+These are all part of the state of the window object.
 
 Quite a number of methods exist that allow us to modify the turtle and the
 window objects.  We'll just show a couple. We've only commented those
 lines that are different from the previous example (and we've used a different
-variable name for this turtle).  Also, we'll put this example in a script
-named ``tess1.py``, since it is getting a bit too long to type over and over
-into the Python shell:
+variable name for this turtle).
     
 .. activecode:: ch03_2
     
@@ -106,7 +119,18 @@ into the Python shell:
     tess.left(120)
     tess.forward(50)
 
+    wn.exitonclick()
 
+
+
+The last line plays a part too: the wn variable refers to the window shown
+above. When we invoke its exitonclick method, it pauses the execution of the
+program, and waits for the user to click the mouse in somewhere the window.
+When this click event occurs, the response is to close the turtle window and
+exit (stop execution of) the Python program.
+
+When we run this program, this new window pops up, and will remain on the
+screen until we click on it. 
 
 .. admonition:: Extend this program ...
     
@@ -169,6 +193,8 @@ completes her triangle:
    alex.forward(50)
    alex.left(90)
 
+   wn.exitonclick()
+
 
 Here are some *How to think like a computer scientist* observations:
 
@@ -198,6 +224,14 @@ Here are some *How to think like a computer scientist* observations:
   
 The **for** loop
 ----------------
+
+.. video:: forloopvid
+   :controls:
+   :thumb: _static/for_loop.png
+
+   http://knuth.luther.edu/~bmiller/thinkcsVideos/for_loop.mov
+   http://knuth.luther.edu/~bmiller/thinkcsVideos/for_loop.webm
+
 
 When we drew the square, it was quite tedious.  We had to move then turn, move
 then turn, etc. etc. four times.  If we were drawing a hexagon, or an octogon,
@@ -245,7 +279,8 @@ Flow of Execution of the for loop
 
 .. sidebar:: Flowchart of a **for** loop
 
-   .. image:: illustrations/ch03/flowchart_for.png  
+   .. image:: illustrations/ch03/new_flowchart_for.png
+      :width: 300px
  
 As a program executes, the interpreter always keeps track of which statement is
 about to be executed.  We call this the **control flow**, or the **flow of
@@ -269,8 +304,13 @@ To draw a square we'd like to do the same thing four times --- move the turtle,
 and turn.  We previously used 8 lines to have alex draw the four sides of a
 square.  This does exactly the same, but using just three lines:
 
-.. sourcecode:: python
+.. activecode:: ch03_for1
+   :nopre:
 
+   import turtle
+   wn = turtle.Screen()
+   alex = turtle.Turtle()
+   
    for i in [0,1,2,3]:
        alex.forward(50)
        alex.left(90) 
@@ -375,7 +415,6 @@ A few more turtle methods and tricks
      alex.shape("turtle")           
      ...                 
 
-  .. image:: illustrations/ch03/alex06.png
 
 * You can speed up or slow down the turtle's animation speed. (Animation
   controls how quickly the turtle turns and moves forward).  Speed settings can
@@ -416,7 +455,37 @@ footprints created by ``stamp``.  But the program still only has *one* turtle
 instance --- can you figure out which one is the real tess?  (Hint: if you're
 not sure, write a new line of code after the ``for`` loop to change tess'
 color, or to put her pen down and draw a line, or to change her shape, etc.)
-   
+
+
+Summary of Turtle Methods
+-------------------------
+
+==========  ==========  =========================
+Method      Parameters  Description
+==========  ==========  =========================
+Turtle      None          Creates and returns a new turtle object
+forward     distance      Moves the turtle forward
+backward    distance      Moves the turle backward
+right       angle         Turns the turtle clockwise
+left        angle         Turns the turtle counter clockwise
+up          None          Picks up the turtles tail
+down        None          Puts down the turtles tail
+color       color name    Changes the color of the turtle's tail
+fillcolor   color name    Changes the color of the turtle will use to fill a polygon
+heading     None          Returns the current heading
+position    None          Returns the current position
+goto        x,y           Move the turtle to position x,y
+begin_fill  None          Remember the starting point for a filled polygon
+end_fill    None          Close the polygon and fill with the current fill color
+dot         None          Leave a dot at the current position
+stamp       None          Leaves an impression of a turtle shape at the current location
+shape       shapename     Should be 'arrow', 'classic', 'turtle', or 'circle'
+==========  ==========  =========================
+
+Once you are comfortable with the basics of turtle graphics you can read about even
+more options on the `Python Docs Website <http://docs.python.org/dev/py3k/library/turtle.html>`_.
+
+
 
 Glossary
 --------
