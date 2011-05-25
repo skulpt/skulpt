@@ -33,12 +33,12 @@ because they are enclosed in quotation marks.
 If you are not sure what class a value falls into, Python has a function called
 **type** which can tell you.
 
-.. sourcecode:: python
-    
-    >>> type("Hello, World!")
-    <class 'str'>
-    >>> type(17)
-    <class 'int'>
+.. activecode:: ch02_1
+    :nocanvas:
+
+    print(type("Hello, World!"))
+    print(type(17))
+
 
 Not surprisingly, strings belong to the class **str** and integers belong to the
 class **int**. Less obviously, numbers with a decimal point belong to a class
@@ -47,33 +47,33 @@ called **float**, because these numbers are represented in a format called
 interchangeably.  We'll come back to a deeper understanding of what a class 
 is in later chapters. 
 
-.. sourcecode:: python
-    
-    >>> type(3.2)
-    <class 'float'>
+.. activecode:: ch02_2
+    :nocanvas:
+
+    print(type(3.2))
+
 
 What about values like ``"17"`` and ``"3.2"``? They look like numbers, but they
 are in quotation marks like strings.
 
-.. sourcecode:: python
-    
-    >>> type("17")
-    <class 'str'>
-    >>> type("3.2")
-    <class 'str'>
-    
+.. activecode:: ch02_3
+    :nocanvas:
+
+    print(type("17"))
+    print(type("3.2"))
+
 They're strings!
 
 Strings in Python can be enclosed in either single quotes (``'``) or double
 quotes (``"``), or three of each (``'''`` or ``"""``)
 
-.. activecode:: ch02_1
+.. activecode:: ch02_4
     :nocanvas:
 
-    print ( type('This is a string.') )
-    print ( type("And so is this.") )
-    print ( type("""and this.""") )
-    print ( type('''and even this...''') )
+    print(type('This is a string.') )
+    print(type("And so is this.") )
+    print(type("""and this.""") )
+    print(type('''and even this...''') )
 
     
 Double quoted strings can contain single quotes inside them, as in ``"Bruce's
@@ -83,24 +83,22 @@ beard"``, and single quoted strings can have double quotes inside them, as in
 Strings enclosed with three occurrences of either quote symbol are called
 triple quoted strings.  They can contain either single or double quotes: 
 
-.. sourcecode:: python
-    
-    >>> print('''"Oh no", she exclaimed, "Ben's bike is broken!"''')
-    "Oh no", she exclaimed, "Ben's bike is broken!"
-    >>>
+.. activecode:: ch02_5
+    :nocanvas:
+
+    print('''"Oh no", she exclaimed, "Ben's bike is broken!"''')
+
+
 
 Triple quoted strings can even span multiple lines:
 
-.. sourcecode:: python
-    
-    >>> message = """This message will
-    ... span several
-    ... lines."""
-    >>> print(message)
-    This message will
+.. activecode:: ch02_6
+    :nocanvas:
+
+    message = """This message will
     span several
-    lines.
-    >>>
+    lines."""
+    print(message)
 
 Python doesn't care whether you use single or double quotes or the
 three-of-a-kind quotes to surround your strings: once it has parsed the text of
@@ -109,12 +107,11 @@ and the surrounding quotes are not part of the value. But when the interpreter
 wants to display a string, it has to decide which quotes to use to make it look
 like a string. 
 
-.. sourcecode:: python
+.. activecode:: ch02_7
+    :nocanvas:
 
-    >>> 'This is a string.'
-    'This is a string.'
-    >>> """And so is this."""
-    'And so is this.'
+    print('This is a string.')
+    print("""And so is this.""")
 
 So the Python language designers usually chose to surround their strings by
 single quotes.  What do think would happen if the string already contained
@@ -124,12 +121,12 @@ When you type a large integer, you might be tempted to use commas between
 groups of three digits, as in ``42,000``. This is not a legal integer in
 Python, but it does mean something else, which is legal:
 
-.. sourcecode:: python
-    
-    >>> 42000
-    42000
-    >>> 42,000
-    (42, 0)
+.. activecode:: ch02_8
+    :nocanvas:
+
+    print(42000)
+    print(42,000)
+
 
 Well, that's not what we expected at all! Because of the comma, Python chose to
 treat this as a *pair* of values.  We'll come back to learn about pairs later.   
@@ -148,8 +145,8 @@ Variables
     :controls:
     :thumb: _static/assignment.png
 
-    http://knuth.luther.edu/~bmiller/assignment.mov
-    http://knuth.luther.edu/~bmiller/assignment.webm
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/assignment.mov
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/assignment.webm
 
 One of the most powerful features of a programming language is the ability to
 manipulate **variables**. A variable is a name that refers to a value.
@@ -158,9 +155,9 @@ manipulate **variables**. A variable is a name that refers to a value.
 
 .. sourcecode:: python
     
-    >>> message = "What's up, Doc?"
-    >>> n = 17
-    >>> pi = 3.14159
+    message = "What's up, Doc?"
+    n = 17
+    pi = 3.14159
 
 This example makes three assignments. The first assigns the string value
 ``"What's up, Doc?"`` to a new variable named ``message``. The second gives the
@@ -174,7 +171,7 @@ will get an error if you enter:
 
 .. sourcecode:: python
     
-    >>> 17 = n
+    17 = n
     
 .. tip::
 
@@ -193,26 +190,29 @@ This diagram shows the result of executing the assignment statements:
 If you ask the interpreter to evaluate a variable, it will produce the value
 that is currently linked to the variable:
 
-.. sourcecode:: python
-    
-    >>> message
-    'What's up, Doc?'
-    >>> n
-    17
-    >>> pi
-    3.14159
+.. activecode:: ch02_9
+    :nocanvas:
+
+    message = "What's up, Doc?"
+    n = 17
+    pi = 3.14159
+    print(message)
+    print(n)
+    print(pi)
 
 In each case the result is the value of the variable. Variables also have
 types; again, we can ask the interpreter what they are.
 
-.. sourcecode:: python
-    
-    >>> type(message)
-    <class 'str'>
-    >>> type(n)
-    <class 'int'>
-    >>> type(pi)
-    <class 'float'>
+.. activecode:: ch02_10
+    :nocanvas:
+
+    message = "What's up, Doc?"
+    n = 17
+    pi = 3.14159
+    print(type(message))
+    print(type(n))
+    print(type(pi))
+
 
 The type of a variable is the type of the value it currently refers to.
 
@@ -227,17 +227,16 @@ to a variable, and later assign a different value to the same variable.
     cannot change to link to a different value half-way through your
     calculations!
 
-.. sourcecode:: python
-    
-    >>> day = "Thursday"
-    >>> day
-    'Thursday'
-    >>> day = "Friday"
-    >>> day
-    'Friday'
-    >>> day = 21
-    >>> day
-    21
+.. activecode:: ch02_11
+    :nocanvas:
+
+    day = "Thursday"
+    print(day)
+    day = "Friday"
+    print(day)
+    day = 21
+    print(day)
+
 
 You'll notice we changed the value of `day` three times, and on the third
 assignment we even gave it a value that was of a different type.   
@@ -266,14 +265,13 @@ letter.
  
 If you give a variable an illegal name, you get a syntax error:
 
-.. sourcecode:: python
-    
-    >>> 76trombones = "big parade"
-    SyntaxError: invalid syntax
-    >>> more$ = 1000000
-    SyntaxError: invalid syntax
-    >>> class = "Computer Science 101"
-    SyntaxError: invalid syntax
+.. activecode:: ch02_12
+    :nocanvas:
+
+    76trombones = "big parade"
+    more$ = 1000000
+    class = "Computer Science 101"
+
 
 ``76trombones`` is illegal because it does not begin with a letter.  ``more$``
 is illegal because it contains an illegal character, the dollar sign. But
@@ -342,12 +340,12 @@ An **expression** is a combination of values, variables, operators, and calls
 to functions. If you type an expression at the Python prompt, the interpreter
 **evaluates** it and displays the result:
 
-.. sourcecode:: python
-    
-    >>> 1 + 1
-    2
-    >>> len("hello")
-    5
+.. activecode:: ch02_13
+    :nocanvas:
+
+    print(1 + 1)
+    print(len("hello"))
+
     
 In this example ``len`` is a built-in Python function that returns the number
 of characters in a string.  We've previously seen the ``print`` and the
@@ -357,16 +355,14 @@ The *evaluation of an expression* produces a value, which is why expressions
 can appear on the right hand side of assignment statements. A value all by
 itself is a simple expression, and so is a variable.
 
-.. sourcecode:: python
-    
-    >>> 17
+.. activecode:: ch02_14
+    :nocanvas:
+
     17
-    >>> y = 3.14
-    >>> x = len("hello")
-    >>> x
-    5
-    >>> y
-    3.14
+    y = 3.14
+    x = len("hello")
+    print(x)
+    print(y)
 
 
 .. index:: operator, operand, expression, integer division
@@ -388,13 +384,12 @@ The tokens ``+``, ``-``, and ``*``, and the use of parenthesis for grouping,
 mean in Python what they mean in mathematics. The asterisk (``*``) is the
 token for multiplication, and ``**`` is the token for exponentiation.
 
-.. sourcecode:: python
-    
-    >>> 2 ** 3
-    8
-    >>> 3 ** 2
-    9
-    
+.. activecode:: ch02_15
+    :nocanvas:
+
+    print(2 ** 3)
+    print(3 ** 2)
+
 When a variable name appears in the place of an operand, it is replaced with
 its value before the operation is performed.
 
@@ -403,12 +398,13 @@ expect.
 
 Example: so let us convert 645 minutes into hours:
 
-.. sourcecode:: python
-    
-    >>> minutes = 645
-    >>> hours = minutes / 60
-    >>> hours
-    10.75
+.. activecode:: ch02_16
+    :nocanvas:
+
+    minutes = 645
+    hours = minutes / 60
+    print(hours)
+
 
 Oops! In Python 3, the division operator `/` always yields a floating point
 result.  What we might have wanted to know was how many *whole* hours there
@@ -417,20 +413,61 @@ the division operator.  The second, called **integer division** uses the token
 `//`.  It always *truncates* its result down to the next smallest integer (to
 the left on the number line).  
 
-.. sourcecode:: python
+.. activecode:: ch02_17
+    :nocanvas:
+
+    print(7 / 4)
+    print(7 // 4)
+    minutes = 645
+    hours = minutes // 60
+    print(hours)
+
     
-    >>> 7 / 4
-    1.75
-    >>> 7 // 4
-    1
-    >>> minutes = 645
-    >>> hours = minutes // 60
-    >>> hours
-    10
-    
-Take care that you choose the correct falvour of the division operator.  If
+Take care that you choose the correct flavour of the division operator.  If
 you're working with expressions where you need floating point values, use the
 division operator that does the division accurately.
+
+.. index:: modulus
+
+The **modulus operator** works on integers (and integer expressions) and yields
+the remainder when the first operand is divided by the second. In Python, the
+modulus operator is a percent sign (``%``). The syntax is the same as for other
+operators:
+
+.. activecode:: ch02_18
+    :nocanvas:
+
+    quotient = 7 // 3     # This is the integer division operator
+    print(quotient)
+    remainder = 7 % 3
+    print(remainder)
+
+
+So 7 divided by 3 is 2 with 1 left over.
+
+The modulus operator turns out to be surprisingly useful. For example, you can
+check whether one number is divisible by another---if ``x % y`` is zero, then
+``x`` is divisible by ``y``.
+
+Also, you can extract the right-most digit or digits from a number.  For
+example, ``x % 10`` yields the right-most digit of ``x`` (in base 10).
+Similarly ``x % 100`` yields the last two digits.
+
+It is also extremely useful for doing conversions, say from seconds,
+to hours, minutes and seconds. So let's write a program to ask the user to enter
+some seconds, and we'll convert them into hours, minutes, and remaining seconds.
+
+.. activecode:: ch02_19
+    :nocanvas:
+
+    total_secs = 7322
+    hours = total_secs // 3600
+    secs_still_remaining = total_secs % 3600
+    minutes =  secs_still_remaining // 60
+    secs_finally_remaining = secs_still_remaining  % 60
+
+    print("Hrs=", hours, "  mins=", minutes,  "secs=", secs_finally_remaining)
+
 
 
 .. index:: type converter functions, int, float, str, truncation
@@ -447,26 +484,19 @@ into an int. For floating point numbers, it *discards* the decimal portion of
 the number - a process we call *truncation towards zero* on the number line.
 Let us see this in action:
 
-.. sourcecode:: python
-    
-    >>> int(3.14)
-    3
-    >>> int(3.9999)        # This doesn't round to the closest int! 
-    3
-    >>> int(3.0)
-    3
-    >>> int(-3.999)        # Note that the result is closer to zero
-    -3
-    >>> int(minutes/60)
-    10
-    >>> int("2345")        # parse a string to produce an int
-    2345
-    >>> int(17)            # int even works if its argument is already an int
-    17
-    >>> int("23 bottles")     
-    Traceback (most recent call last):
-    File "<interactive input>", line 1, in <module>
-    ValueError: invalid literal for int() with base 10: '23 bottles'
+.. activecode:: ch02_20
+    :nocanvas:
+
+    print(3.14, int(3.14))
+    print(3.9999, int(3.9999))       # This doesn't round to the closest int!
+    print(3.0,int(3.0))
+    print(-3.999,int(-3.999))        # Note that the result is closer to zero
+    minutes = 600.0
+    print(int(minutes/60))
+    print("2345",int("2345"))        # parse a string to produce an int
+    print(17,int(17))                # int even works on integers
+    print(int("23bottles"))
+
 
 The last case shows that a string has to be a syntactically legal number,
 otherwise you'll get one of those pesky runtime errors.
@@ -474,19 +504,20 @@ otherwise you'll get one of those pesky runtime errors.
 The type converter `float` can turn an integer, a float, or a syntactically
 legal string into a float.
 
-.. sourcecode:: python
-    
-    >>> float(17)
-    17.0
-    >>> float("123.45")
-    123.45
+.. activecode:: ch02_21
+    :nocanvas:
+
+    print(float(17))
+    print(float("123.45"))
+
 
 The type converter `str` turns its argument into a string:
-    
-    >>> str(17)
-    '17'
-    >>> str(123.45)
-    '123.45'
+
+.. activecode:: ch02_22
+    :nocanvas:
+
+    print(str(17))
+    print(str(123.45))
 
 
 .. index:: order of operations, rules of precedence
@@ -526,12 +557,11 @@ is a useful way to remember the order of operations:
     is to always use parentheses to force exactly the order you want when
     exponentiation is involved:
    
-    .. sourcecode:: python
-    
-        >>> 2 ** 3 ** 2     # the right-most ** operator gets done first!
-        512
-        >>> (2 ** 3) ** 2   # use parentheses to force the order you want!
-        64
+    .. activecode:: ch02_23
+        :nocanvas:
+
+        print(2 ** 3 ** 2)     # the right-most ** operator gets done first!
+        print((2 ** 3) ** 2)   # use parentheses to force the order you want!
 
 The immediate mode command prompt of Python is great for exploring and
 experimenting with expressions like this.       
@@ -553,15 +583,16 @@ Interestingly, the ``+`` operator does work with strings, but for strings, the
 ``+`` operator represents **concatenation**, not addition.  Concatenation means
 joining the two operands by linking them end-to-end. For example:
 
-.. sourcecode:: python
-    
+.. activecode:: ch02_24
+    :nocanvas:
+
     fruit = "banana"
     baked_good = " nut bread"
     print(fruit + baked_good)
 
 The output of this program is ``banana nut bread``. The space before the word
 ``nut`` is part of the string, and is necessary to produce the space between
-the concatenated strings. 
+the concatenated strings.  Take out the space and run it again.
 
 The ``*`` operator also works on strings; it performs repetition. For example,
 ``'Fun'*3`` is ``'FunFunFun'``. One of the operands has to be a string; the
@@ -622,7 +653,7 @@ circle, and then computes the area of the circle from the formula
  
 Firstly, we'll do the four steps one at a time: 
 
-.. activecode:: pyinput1
+.. activecode:: ch02_25
    :nocanvas:
    
    response = input("What is your radius? ")
@@ -633,15 +664,17 @@ Firstly, we'll do the four steps one at a time:
 Now let's compose the first two lines into a single line of code, and compose
 the second two lines into another line of code.
     
-.. sourcecode:: python
-   
+.. activecode:: ch02_26
+    :nocanvas:
+
    r = float(input("What is your radius? "))
    print("The area is ", 3.14159 * r**2)
    
 If we really wanted to be tricky, we could write it all in one statement:
 
-.. sourcecode:: python
-   
+.. activecode:: ch02_27
+    :nocanvas:
+
    print("The area is ", 3.14159*float(input("What is your radius?"))**2)
 
 Such compact code may not be most understandable for humans, but it does
@@ -650,6 +683,19 @@ illustrate how we can compose bigger chunks from our building blocks.
 If you're ever in doubt about whether to compose code or fragment it into
 smaller steps, try to make it as simple as you can for the human to follow.  My
 choice would be the first case above, with four separate steps.  
+
+.. admonition:: Advanced Topics
+
+   * `Topic 1: <at_1_1.html>`_ Python Beyond the Browser.  This is a gentle
+     introduction to using Python from the command line.  We'll cover this
+     later, but if you are curious about what Python looks like outside of this
+     eBook, you can have a look here.  There are also instructions for
+     installing Python on your computer here.
+
+   * `Topic 2: <http://diveintopython3.org>`_ Dive Into Python 3,
+     this is another oline textbook by Mark Pilgrim.  If you've had some
+     programming experience already this book takes you off the deep end with
+     both feet.
 
 
 Glossary
