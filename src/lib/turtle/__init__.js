@@ -48,6 +48,29 @@ if (! TurtleGraphics) {
         TurtleGraphics.canvasLib[this.canvasID] = this;
     }
 
+    TurtleCanvas.prototype.setup = function(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.lineScale = 1.0;
+
+        this.llx = -this.canvas.width / 2;
+        this.lly = -this.canvas.height / 2;
+        this.urx = this.canvas.width / 2;
+        this.ury = this.canvas.height / 2;
+
+        if (TurtleGraphics.canvasInit == false) {
+            this.context.save();
+            this.context.translate(this.canvas.width / 2, this.canvas.height / 2); // move 0,0 to center.
+            this.context.scale(1, -1); // scaling like this flips the y axis the right way.
+            TurtleGraphics.canvasInit = true;
+        } else {
+            this.context.restore();
+            this.context.translate(this.canvas.width / 2, this.canvas.height / 2); // move 0,0 to center.
+            this.context.scale(1, -1); // scaling like this flips the y axis the right way.
+            this.context.clearRect(-this.canvas.width / 2, -this.canvas.height / 2,
+                                    this.canvas.width, this.canvas.height);
+        }
+    }
     TurtleCanvas.prototype.addToCanvas = function(t) {
         this.tlist.push(t);
     }
@@ -116,6 +139,18 @@ if (! TurtleGraphics) {
         this.canvas.style.setProperty("background-color", c.v);
     }
 
+    // todo: if animating, this should be deferred until the proper time
+    TurtleCanvas.prototype.exitonclick = function () {
+        var canvas_id = this.canvasID;
+        this.canvas.onclick = function() {
+            document.getElementById(canvas_id).style.display = 'none';
+            document.getElementById(canvas_id).onclick = null;
+        }
+    }
+
+    TurtleCanvas.prototype.turtles = function() {
+        return TurtleGraphics.turtleList;
+    }
     //
     //  This is the function that provides the animation
     //
@@ -1212,7 +1247,27 @@ var $builtinmodule = function(name) {
         $loc.setworldcoordinates = new Sk.builtin.func(function(self, llx,lly,urx,ury) {
             self.theScreen.setworldcoordinates(llx,lly,urx,ury);
         });
-        
+
+        $loc.exitonclick = new Sk.builtin.func(function(self) {
+            self.theScreen.exitonclick();
+        });
+
+        $loc.title = new Sk.builtin.func(function(self,titlestring) {
+            // no op....
+        });
+
+        $loc.turtles = new Sk.builtin.func(function(self) {
+            self.theScreen.turtles();
+        });
+
+        var myfunc = function(self, width, height, startx, starty) {
+            console.log("width = " + width);
+            self.theScreen.setup(width,height);
+        }
+        // this should allow for named parameters
+        myfunc.co_varnames = ['self','width','height','startx','starty'];
+        myfunc.$defaults = [null,500,500,0,0];
+        $loc.setup = new Sk.builtin.func(myfunc);
     }
 
     mod.Screen = Sk.misceval.buildClass(mod, screen, 'Screen', []);
