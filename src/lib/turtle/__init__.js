@@ -145,6 +145,8 @@ if (! TurtleGraphics) {
         this.canvas.onclick = function() {
             document.getElementById(canvas_id).style.display = 'none';
             document.getElementById(canvas_id).onclick = null;
+            Sk.tg.canvasInit = false;
+            delete Sk.tg.canvasLib[canvas_id];
         }
     }
 
