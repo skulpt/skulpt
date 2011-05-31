@@ -232,9 +232,13 @@ if (! TurtleGraphics) {
                         scale(1, -1);
                     } else if (oper[0] == "ST") {  // stamp
                         t.drawturtle(oper[3], new Vector(oper[1], oper[2], 0));
+                    } else if (oper[0] == "HT") {
+                        t.visible = false;
+                    } else if (oper[0] == "SH") {
+                        t.visible = true;
                     }
                     else {
-                        console.log("unknown op");
+                        console.log("unknown op: " + oper[0]);
                     }
                 }
                 t.aCount++;
@@ -769,10 +773,16 @@ if (! TurtleGraphics) {
 
 
     Turtle.prototype.showturtle = function() {
+        if (this.animate) {
+            this.drawingEvents.push(["SH"]);
+        }
         this.visible = true;
     }
 
     Turtle.prototype.hideturtle = function() {
+        if (this.animate) {
+            this.drawingEvents.push(["HT"]);
+        }
         this.visible = false;
     }
 
