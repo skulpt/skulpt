@@ -63,6 +63,8 @@ if (! TurtleGraphics) {
             this.context.translate(this.canvas.width / 2, this.canvas.height / 2); // move 0,0 to center.
             this.context.scale(1, -1); // scaling like this flips the y axis the right way.
             TurtleGraphics.canvasInit = true;
+            TurtleGraphics.eventCount = 0;
+            TurtleGraphics.renderClock = 0;
         } else {
             this.context.restore();
             this.context.translate(this.canvas.width / 2, this.canvas.height / 2); // move 0,0 to center.
@@ -157,8 +159,10 @@ if (! TurtleGraphics) {
     //  This is the function that provides the animation
     //
     render = function () {
+        console.log('starting render' + TurtleGraphics.eventCount);
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
         var currentHeadInfo;
+        TurtleGraphics.renderClock += 1;
         with (context) {
             with (TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID]) {
                 clearRect(llx, lly, (urx - llx), (ury - lly));
@@ -176,69 +180,72 @@ if (! TurtleGraphics) {
                 var filling = false;
                 for (var i = 0; i <= t.aCount; i++) {
                     var oper = t.drawingEvents[i];
-                    if (oper[0] == "LT") {
-                        if (! filling) {
+                    var ts = oper[oper.length-1];
+                    if (ts <= TurtleGraphics.renderClock) {
+                        if (oper[0] == "LT") {  //  line to
+                            if (! filling) {
+                                beginPath();
+                                moveTo(oper[1], oper[2]);
+                            }
+                            lineTo(oper[3], oper[4]);
+                            strokeStyle = oper[5];
+                            stroke();
+                            currentHeadInfo = oper;
+                            if (! filling)
+                                closePath();
+                        }
+                        else if (oper[0] == "MT") {  // move to
+                            moveTo(oper[3], oper[4]);
+                            currentHeadInfo = oper;
+                        }
+                        else if (oper[0] == "BF") {  // begin fill
                             beginPath();
                             moveTo(oper[1], oper[2]);
+                            filling = true;
                         }
-                        lineTo(oper[3], oper[4]);
-                        strokeStyle = oper[5];
-                        stroke();
-                        currentHeadInfo = oper;
-                        if (! filling)
+                        else if (oper[0] == "EF") {  // end fill
+                            fillStyle = oper[3];
+                            stroke();
+                            fill();
                             closePath();
-                    }
-                    else if (oper[0] == "MT") {
-                        moveTo(oper[3], oper[4]);
-                        currentHeadInfo = oper;
-                    }
-                    else if (oper[0] == "BF") {
-                        beginPath();
-                        moveTo(oper[1], oper[2]);
-                        filling = true;
-                    }
-                    else if (oper[0] == "EF") {
-                        fillStyle = oper[3];
-                        stroke();
-                        fill();
-                        closePath();
-                        filling = false;
-                    }
-                    else if (oper[0] == "FC") {
-                        fillStyle = oper[1];
-                    }
-                    else if (oper[0] == "TC") {
-                        strokeStyle = oper[1];
-                    }
-                    else if (oper[0] == "PW") {
-                        lineWidth = oper[1];
-                    }
-                    else if (oper[0] == "DT") {
-                        var col = fillStyle;
-                        fillStyle = oper[2];
-                        var size = oper[1];
-                        fillRect(oper[3] - size / 2, oper[4] - size / 2, size, size);
-                        fillStyle = col;
-                    }
-                    else if (oper[0] == "CI") {
-                        arc(oper[1], oper[2], Math.abs(oper[3]), 0, oper[4], (oper[3] > 0));
-                        stroke();
-                    }
-                    else if (oper[0] == "WT") {
-                        if (font)
-                            font = oper[2];
-                        scale(1, -1);
-                        fillText(oper[1], oper[3], -oper[4]);
-                        scale(1, -1);
-                    } else if (oper[0] == "ST") {  // stamp
-                        t.drawturtle(oper[3], new Vector(oper[1], oper[2], 0));
-                    } else if (oper[0] == "HT") {
-                        t.visible = false;
-                    } else if (oper[0] == "SH") {
-                        t.visible = true;
-                    }
-                    else {
-                        console.log("unknown op: " + oper[0]);
+                            filling = false;
+                        }
+                        else if (oper[0] == "FC") {  // fill color
+                            fillStyle = oper[1];
+                        }
+                        else if (oper[0] == "TC") {  // turtle color
+                            strokeStyle = oper[1];
+                        }
+                        else if (oper[0] == "PW") {  // Pen width
+                            lineWidth = oper[1];
+                        }
+                        else if (oper[0] == "DT") {  // Dot
+                            var col = fillStyle;
+                            fillStyle = oper[2];
+                            var size = oper[1];
+                            fillRect(oper[3] - size / 2, oper[4] - size / 2, size, size);
+                            fillStyle = col;
+                        }
+                        else if (oper[0] == "CI") {  // Circle
+                            arc(oper[1], oper[2], Math.abs(oper[3]), 0, oper[4], (oper[3] > 0));
+                            stroke();
+                        }
+                        else if (oper[0] == "WT") { // write
+                            if (font)
+                                font = oper[2];
+                            scale(1, -1);
+                            fillText(oper[1], oper[3], -oper[4]);
+                            scale(1, -1);
+                        } else if (oper[0] == "ST") {  // stamp
+                            t.drawturtle(oper[3], new Vector(oper[1], oper[2], 0));
+                        } else if (oper[0] == "HT") { // hide turtle
+                            t.visible = false;
+                        } else if (oper[0] == "SH") { // show turtle
+                            t.visible = true;
+                        }
+                        else {
+                            console.log("unknown op: " + oper[0]);
+                        }
                     }
                 }
                 t.aCount++;
@@ -250,7 +257,8 @@ if (! TurtleGraphics) {
                     var head = newp.sub(oldp).normalize();
                     t.drawturtle(head.toAngle(), newp);
                 }
-                if (t.aCount >= t.drawingEvents.length) {
+                //if (t.aCount >= t.drawingEvents.length) {
+                if (TurtleGraphics.renderClock > TurtleGraphics.eventCount) {
                     t.turtleCanvas.doneAnimating(t);
                 }
             }
@@ -460,6 +468,11 @@ if (! TurtleGraphics) {
         }
     }
 
+    Turtle.prototype.addDrawingEvent = function(eventList) {
+        TurtleGraphics.eventCount += 1;
+        eventList.push(TurtleGraphics.eventCount);
+        this.drawingEvents.push(eventList);
+    }
 //  
 //  Drawing Functions
 //
@@ -509,7 +522,7 @@ if (! TurtleGraphics) {
                     var r = segmentLine(position, newposition, 10, pen);
                     for (var s in r) {
                         r[s].push(penStyle);
-                        drawingEvents.push(r[s]);
+                        addDrawingEvent(r[s]);
                     }
                     if (! turtleCanvas.isAnimating()) {
                         turtleCanvas.startAnimating(this);
@@ -549,7 +562,7 @@ if (! TurtleGraphics) {
                 } else {
                     var r = segmentLine(position, newposition, 10, pen);
                     for (var s in r)
-                        drawingEvents.push(r[s]);
+                        addDrawingEvent(r[s]);
                     if (! turtleCanvas.isAnimating()) {
                         turtleCanvas.startAnimating(this);
                     } else {
@@ -568,9 +581,10 @@ if (! TurtleGraphics) {
             this.animate = true;
             this.turtleCanvas.setDelay(s);
         }
-        else
+        else {
             this.animate = false;
-        this.turtleCanvas.cancelAnimation();
+            this.turtleCanvas.cancelAnimation();
+        }
     }
 
 
@@ -650,7 +664,7 @@ if (! TurtleGraphics) {
                     fillRect(position[0] - size / 2, position[1] - size / 2, size, size);
                     fillStyle = color;
                 } else {
-                    drawingEvents.push(["DT", size, nc, position[0], position[1]]);
+                    addDrawingEvent(["DT", size, nc, position[0], position[1]]);
                 }
             }
         }
@@ -672,7 +686,7 @@ if (! TurtleGraphics) {
             this.context.arc(cx, cy, Math.abs(radius), 0, endAngle, (radius > 0));
             this.context.stroke();
         } else {
-            this.drawingEvents.push(["CI", cx, cy, radius, endAngle]);
+            this.addDrawingEvent(["CI", cx, cy, radius, endAngle]);
         }
     }
 
@@ -687,7 +701,7 @@ if (! TurtleGraphics) {
             var fontspec;
             if (font)
                 fontspec = font.v
-            this.drawingEvents.push(["WT", theText, fontspec, this.position[0], this.position[1]]);
+            this.addDrawingEvent(["WT", theText, fontspec, this.position[0], this.position[1]]);
         }
     }
 
@@ -716,7 +730,7 @@ if (! TurtleGraphics) {
 
     Turtle.prototype.set_pen_width = function (w) {
         if (this.animate)
-            this.drawingEvents.push(["PW", w * this.turtleCanvas.lineScale]);
+            this.addDrawingEvent(["PW", w * this.turtleCanvas.lineScale]);
         else
             this.penWidth = w;
     }
@@ -741,14 +755,14 @@ if (! TurtleGraphics) {
 
         this.context.strokeStyle = c;
         if (this.animate)
-            this.drawingEvents.push(["TC", c]);
+            this.addDrawingEvent(["TC", c]);
     }
 
     Turtle.prototype.set_fill_color = function (c) {
         this.fillStyle = c;
         this.context.fillStyle = c;
         if (this.animate)
-            this.drawingEvents.push(["FC", c]);
+            this.addDrawingEvent(["FC", c]);
     }
 
     Turtle.prototype.begin_fill = function () {
@@ -757,7 +771,7 @@ if (! TurtleGraphics) {
             this.context.beginPath();
             this.context.moveTo(this.position[0], this.position[1]);
         } else
-            this.drawingEvents.push(["BF", this.position[0], this.position[1]]);
+            this.addDrawingEvent(["BF", this.position[0], this.position[1]]);
 
     }
 
@@ -768,20 +782,20 @@ if (! TurtleGraphics) {
             this.context.closePath();
             this.filling = false;
         } else
-            this.drawingEvents.push(["EF", this.position[0], this.position[1], this.fillStyle]);
+            this.addDrawingEvent(["EF", this.position[0], this.position[1], this.fillStyle]);
     }
 
 
     Turtle.prototype.showturtle = function() {
         if (this.animate) {
-            this.drawingEvents.push(["SH"]);
+            this.addDrawingEvent(["SH"]);
         }
         this.visible = true;
     }
 
     Turtle.prototype.hideturtle = function() {
         if (this.animate) {
-            this.drawingEvents.push(["HT"]);
+            this.addDrawingEvent(["HT"]);
         }
         this.visible = false;
     }
@@ -829,7 +843,7 @@ if (! TurtleGraphics) {
     Turtle.prototype.stamp = function() {
         // either call drawTurtle or just add a DT with current position and heading to the drawingEvents list.
         if (this.animate) {
-            this.drawingEvents.push(["ST",this.position[0],this.position[1],this.heading.toAngle()]);
+            this.addDrawingEvent(["ST",this.position[0],this.position[1],this.heading.toAngle()]);
         } else
             t.drawturtle();
     }
@@ -977,6 +991,8 @@ if (! TurtleGraphics) {
     TurtleGraphics.clear_canvas = clear_canvas;
     TurtleGraphics.Vector = Vector;
     TurtleGraphics.canvasInit = false;
+    TurtleGraphics.eventCount = 0;
+    TurtleGraphics.renderClock = 0;
 
 })();
 
