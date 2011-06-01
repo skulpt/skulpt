@@ -45,6 +45,7 @@ if (! TurtleGraphics) {
         this.tlist = []
 
         this.delay = 50;
+        this.segmentLength = 10;
         TurtleGraphics.canvasLib[this.canvasID] = this;
     }
 
@@ -141,6 +142,14 @@ if (! TurtleGraphics) {
         this.canvas.style.setProperty("background-color", c.v);
     }
 
+    TurtleCanvas.prototype.setSegmentLength = function(s) {
+        this.segmentLength = s;
+    }
+
+    TurtleCanvas.prototype.getSegmentLength = function() {
+        return this.segmentLength;
+    }
+    
     // todo: if animating, this should be deferred until the proper time
     TurtleCanvas.prototype.exitonclick = function () {
         var canvas_id = this.canvasID;
@@ -162,6 +171,7 @@ if (! TurtleGraphics) {
         console.log('starting render' + TurtleGraphics.eventCount);
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
         var currentHeadInfo;
+        var currentHead = new Vector(1,0,0);
         TurtleGraphics.renderClock += 1;
         with (context) {
             with (TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID]) {
@@ -242,6 +252,8 @@ if (! TurtleGraphics) {
                             t.visible = false;
                         } else if (oper[0] == "SH") { // show turtle
                             t.visible = true;
+                        } else if (oper[0] == "TT") {
+                            currentHead = oper[1];
                         }
                         else {
                             console.log("unknown op: " + oper[0]);
@@ -252,10 +264,8 @@ if (! TurtleGraphics) {
                 if (t.visible && currentHeadInfo) {
                     // draw the turtle
                     var tsize = 5 * t.turtleCanvas.lineScale;
-                    var oldp = new Vector(currentHeadInfo[1], currentHeadInfo[2], 0);
                     var newp = new Vector(currentHeadInfo[3], currentHeadInfo[4], 0);
-                    var head = newp.sub(oldp).normalize();
-                    t.drawturtle(head.toAngle(), newp);
+                    t.drawturtle(currentHead.toAngle(), newp); // just use currentHead
                 }
                 //if (t.aCount >= t.drawingEvents.length) {
                 if (TurtleGraphics.renderClock > TurtleGraphics.eventCount) {
@@ -519,7 +529,7 @@ if (! TurtleGraphics) {
                     if (! filling)
                         closePath();
                 } else {
-                    var r = segmentLine(position, newposition, 10, pen);
+                    var r = segmentLine(position, newposition, turtleCanvas.getSegmentLength(), pen);
                     for (var s in r) {
                         r[s].push(penStyle);
                         addDrawingEvent(r[s]);
@@ -560,7 +570,7 @@ if (! TurtleGraphics) {
                 if (! animate) {
                     context.moveTo(newposition[0], newposition[1]);
                 } else {
-                    var r = segmentLine(position, newposition, 10, pen);
+                    var r = segmentLine(position, newposition, turtleCanvas.getSegmentLength(), pen);
                     for (var s in r)
                         addDrawingEvent(r[s]);
                     if (! turtleCanvas.isAnimating()) {
@@ -576,7 +586,7 @@ if (! TurtleGraphics) {
         }
     }
 
-    Turtle.prototype.speed = function(s) {
+    Turtle.prototype.speed = function(s,t) {
         if (s > 0) {
             this.animate = true;
             this.turtleCanvas.setDelay(s);
@@ -584,6 +594,12 @@ if (! TurtleGraphics) {
         else {
             this.animate = false;
             this.turtleCanvas.cancelAnimation();
+        }
+        if (t) {
+            this.turtleCanvas.setSegmentLength(t);
+            // set the number of units to divide a segment into
+        } else {
+            this.turtleCanvas.setSegmentLength(10);
         }
     }
 
@@ -594,6 +610,10 @@ if (! TurtleGraphics) {
             var left = normal.cross(heading);
             var newheading = heading.rotateNormal(left, normal, alpha);
             heading = newheading;
+
+            if (animate) {
+                addDrawingEvent(["TT",heading]);
+            }
         }
     }
 
@@ -1081,8 +1101,8 @@ var $builtinmodule = function(name) {
             self.theTurtle.circle(radius, extent);
         });
 
-        $loc.speed = new Sk.builtin.func(function(self, s) {
-            self.theTurtle.speed(s);
+        $loc.speed = new Sk.builtin.func(function(self, s, t) {
+            self.theTurtle.speed(s,t);
         });
 
         // todo:  stamp, clearstamp, clearstamps, undo, speed
