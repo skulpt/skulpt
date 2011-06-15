@@ -7,9 +7,10 @@ How to Think Like a Computer Scientist
 Learning with Python
 --------------------
 
-3rd Edition (Using Python 3.x)
+Interactive Edition (Using Python 3.x)
 
-by Jeffrey Elkner, Peter Wentworth, Allen B. Downey, and Chris Meyers
+by Jeffrey Elkner, Peter Wentworth, Allen B. Downey,
+Chris Meyers, and Brad Miller
 
 illustrated by Dario Mitchell
 

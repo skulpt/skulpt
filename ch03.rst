@@ -24,6 +24,7 @@ Hello, little turtles!
     http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.mov
     http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.webm
 
+
 There are many *modules* in Python that provide very powerful features that we
 can use in our own programs.  Some of these can send email, or fetch web pages.
 The one we'll look at in this chapter allows us to create turtles and get them
@@ -376,6 +377,63 @@ tess can also use a ``for`` loop to draw her equilateral triangle.
           alex.left(90)
  
 
+More on the range Function
+--------------------------
+.. video:: advrange
+   :controls:
+   :thumb: _static/advrange.png
+
+   http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.mov
+   http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.webm
+
+The `range <http://docs.python.org/py3k/library/functions
+.html?highlight=range#range>`_ function is actually a very powerful function
+when it comes to
+creating sequences.  It can take one, two, or three parameters.  We have seen
+the simplest case of one parameter in which ``range(4)`` creates ``[0, 1, 2, 3]``.
+But what if we really want to have the sequence ``[1, 2, 3, 4]``?
+We can do this by using a second parameter as follows ``range(1,5)``
+In this case we interpret the parameters of the range function to mean
+range(start,stop+1).
+
+
+.. note::
+
+    why in the world would range not just work like range(start,
+    stop)?  Think about it like this.  Because computer scientists like to
+    start counting at 0 instead of 1, ``range(N)`` produces a sequence of
+    things that is N long, but the consequence of this is that the final
+    number of the sequence is N-1.  In the case of start,
+    stop it helps to simply think that the sequence begins with start and
+    continues as long as the number is less than stop.
+
+Here are a two examples, add another line below to create a sequence starting
+at 10 and going up to 20.
+
+
+.. activecode:: ch03_5
+    :nocanvas:
+
+    print(range(4))
+    print(range(1,5))
+
+
+Finally, lets suppose we want to have a sequence of even numbers,
+how would we do that?  Easy, we add another parameter, step,
+that tells range what to count by.  For even numbers we want to start at 0
+and count by 2's.  So if we wanted the first 10 even numbers we would use
+``range(0,19,2)``.  So the most general form of the range is
+``range(start, stop, step)``.  You can also create a sequence of numbers that
+starts big and gets smaller by using a negative value for the step parameter.
+
+.. activecode:: ch03_6
+    :nocanvas:
+
+    print(range(0,19,2))
+    print(range(0,20,2))
+    print(range(10,0,-1))
+
+
 A few more turtle methods and tricks
 ------------------------------------
 
@@ -431,7 +489,7 @@ A few more turtle methods and tricks
     
 Let's do an example that shows off some of these new features:
 
-.. activecode:: ch03_5
+.. activecode:: ch03_7
 
    import turtle
    wn = turtle.Screen()             
@@ -440,12 +498,11 @@ Let's do an example that shows off some of these new features:
    tess.color("blue")
    tess.shape("turtle")
 
+   print(range(5,60,2))
    tess.penup()                    # this is new
-   size = 5
-   for i in range(30):
+   for size in range(5,60,2):      # start with size = 5 and grow by 2
        tess.stamp()                # leave an impression on the canvas
-       size = size + 2             # increase the size on every iteration
-       tess.forward(size)          # move tess along  
+       tess.forward(size)          # move tess along
        tess.right(24)              # and turn her
 
 
@@ -456,6 +513,14 @@ instance --- can you figure out which one is the real tess?  (Hint: if you're
 not sure, write a new line of code after the ``for`` loop to change tess'
 color, or to put her pen down and draw a line, or to change her shape, etc.)
 
+.. admonition:: Lab
+
+    * `Turtle Race <lab03_01.html>`_ In this guided lab exercise we will work
+      through a simple problem solving exercise related to having some turtles
+      race.
+
+
+.. _turtle_methods:
 
 Summary of Turtle Methods
 -------------------------
@@ -603,24 +668,28 @@ Exercises
 #. At the interactive prompt, anticipate what each of the following lines will
    do, and then record what happens. Score yourself, giving yourself one point
    for each one you anticipate correctly::
-   
-        >>> import turtle
-        >>> wn = turtle.Screen()
-        >>> tess = turtle.Turtle()
-        >>> tess.right(90)
-        >>> tess.left(3600)
-        >>> tess.right(-90)
-        >>> tess.speed(10)
-        >>> tess.left(3600)
-        >>> tess.speed(0)
-        >>> tess.left(3645)
-        >>> tess.forward(-100)
-   
-#. Write a program to draw a shape like this:
+
+.. activecode:: exercise_1
+   :nopre:
+
+   import turtle
+   wn = turtle.Screen()
+   tess = turtle.Turtle()
+   tess.right(90)
+   tess.left(3600)
+   tess.right(-90)
+   tess.speed(10)
+   tess.left(3600)
+   tess.speed(0)
+   tess.left(3645)
+   tess.forward(-100)
+
+
+10. Write a program to draw a shape like this:
 
    .. image:: illustrations/ch03/star.png
    
-   Hints: 
+   Hints:
    
    * Try this on a piece of paper, moving and turning your cellphone as if it
      was a turtle.  Watch how many complete rotations your cellphone makes
@@ -633,15 +702,17 @@ Exercises
      invoked as ``tess.hideturtle()``.  ``tess.showturtle()`` makes the turtle
      visible again.
      
-#. Write a program to draw a face of a clock that looks something like this:
+11. Write a program to draw a face of a clock that looks something like this:
     
    .. image:: illustrations/ch03/tess_clock1.png
       
-   
-#. Create a turtle, and assign it to a variable.  When you ask for its type,
-   what do you get?
+12. Write a program to draw some kind of picture.  Be creative and experiment
+    with the turtle methods provided in turtle_methods_.
 
-#. What is the collective noun for turtles?  (Hint: they don't come in *herds*.)
+13. Create a turtle, and assign it to a variable.  When you print its type,
+    what do you get?
 
-#. What the collective noun for pythons?  Is a python a viper?  Is a python
-   venomous?  
+14. What is the collective noun for turtles?  (Hint: they don't come in *herds*.)
+
+15. What the collective noun for pythons?  Is a python a viper?  Is a python
+    venomous?
