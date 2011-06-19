@@ -4,20 +4,27 @@ How to Think Like a Computer Scientist
 .. image:: _static/thinkcspy.png
     :alt: ThinkCSPy Logo
 
-Learning with Python
---------------------
+Learning with Python: Interactive Edition (Using Python 3.x)
+------------------------------------------------------------
 
-Interactive Edition (Using Python 3.x)
+by Brad Miller and David Ranum
 
-by Jeffrey Elkner, Peter Wentworth, Allen B. Downey,
-Chris Meyers, and Brad Miller
+   Luther College
 
-illustrated by Dario Mitchell
+Based on the original book
+
+   How to Think Like a Computer Scientist
+
+   by Jeffrey Elkner, Peter Wentworth, Allen B. Downey,
+   Chris Meyers
+
+   illustrated by Dario Mitchell
 
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__
 * `Preface <preface.html>`__
 * `Preface to the 2nd Edition <preface2e.html>`__
+* `Preface to the Interactive Edition <prefaceinteractive.html>`__
 * `Contributor List <contrib.html>`__
 * `Chapter 1 <ch01.html>`__ *The way of the program*
 * `Chapter 2 <ch02.html>`__ *Variables, expressions, and statements*
@@ -33,13 +40,13 @@ illustrated by Dario Mitchell
 * `Chapter 12 <ch12.html>`__ *Dictionaries*
 * `Chapter 13 <ch13.html>`__ *Classes and Objects - the Basics*
 * `Chapter 14 <ch14.html>`__ *Classes and Objects - Digging a little deeper*
-* `Chapter 15 <ch15.html>`__ *Even more OOP*
-* `Chapter 16 <ch16.html>`__ *Sets of Objects*
-* `Chapter 17 <ch17.html>`__ *Inheritance*
-* `Chapter 18 <ch18.html>`__ *Linked Lists*
-* `Chapter 19 <ch19.html>`__ *Stacks*
-* `Chapter 20 <ch20.html>`__ *Queues*
-* `Chapter 21 <ch21.html>`__ *Trees*
+.. `Chapter 15 <ch15.html>`__ *Even more OOP*
+.. `Chapter 16 <ch16.html>`__ *Sets of Objects*
+.. `Chapter 17 <ch17.html>`__ *Inheritance*
+.. `Chapter 18 <ch18.html>`__ *Linked Lists*
+.. `Chapter 19 <ch19.html>`__ *Stacks*
+.. `Chapter 20 <ch20.html>`__ *Queues*
+.. `Chapter 21 <ch21.html>`__ *Trees*
 * `Appendix A <app_a.html>`__ *Debugging*
 * `Appendix B <app_b.html>`__ *An odds-and-ends Workbook*
 * `Appendix C <app_c.html>`__ *Configuring Ubuntu for Python Development*
@@ -55,6 +62,7 @@ illustrated by Dario Mitchell
     foreword.rst
     preface.rst
     preface2e.rst
+    prefaceinteractive.rst
     contrib.rst
 
 .. toctree::
@@ -77,12 +85,12 @@ illustrated by Dario Mitchell
     ch13.rst
     ch14.rst
     ch15.rst
-    ch16.rst
-    ch17.rst
-    ch18.rst
-    ch19.rst
-    ch20.rst
-    ch21.rst
+..    ch16.rst
+..    ch17.rst
+..    ch18.rst
+..    ch19.rst
+..    ch20.rst
+..    ch21.rst
 
 .. toctree::
     :maxdepth: 1
