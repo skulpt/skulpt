@@ -22,10 +22,13 @@ Values and data types
 ---------------------
 
 A **value** is one of the fundamental things --- like a letter or a number ---
-that a program manipulates. The values we have seen so far are ``4`` (the
-result when we added ``2 + 2``), and ``"Hello, World!"``.
+that a program manipulates. The values we have seen so far are ``5`` (the
+result when we added ``2 + 3``), and ``"Hello, World!"``.  We often refer to these values as **objects** and we will use the words value and object interchangeably.
 
-These values are classified into different **classes**, or **data types**: ``4`` 
+.. note::
+	Actually, the 2 and the 3 that are part of the addition above are values(objects) as well.
+
+These objects are classified into different **classes**, or **data types**: ``4`` 
 is an *integer*, and ``"Hello, World!"`` is a *string*, so-called because it
 contains a string of letters. You (and the interpreter) can identify strings
 because they are enclosed in quotation marks.
@@ -100,6 +103,10 @@ Triple quoted strings can even span multiple lines:
     lines."""
     print(message)
 
+    print("""This message will span
+    several lines
+    of the text.""")
+
 Python doesn't care whether you use single or double quotes or the
 three-of-a-kind quotes to surround your strings: once it has parsed the text of
 your program or command, the way it stores the value is identical in all cases,
@@ -129,8 +136,8 @@ Python, but it does mean something else, which is legal:
 
 
 Well, that's not what we expected at all! Because of the comma, Python chose to
-treat this as a *pair* of values.  We'll come back to learn about pairs later.   
-But, for the moment, remember not to put commas or spaces in your integers, no
+treat this as a *pair* of values.   
+Remember not to put commas or spaces in your integers, no
 matter how big they are. Also revisit what we said in the previous chapter:
 formal languages are strict, the notation is concise, and even the smallest
 change might mean something quite different from what you intended. 
@@ -151,7 +158,7 @@ Variables
 One of the most powerful features of a programming language is the ability to
 manipulate **variables**. A variable is a name that refers to a value.
 
-**Assignment statements** create new variables and give them values:
+**Assignment statements** create new variables and also give them values to refer to:
 
 .. sourcecode:: python
     
@@ -176,10 +183,10 @@ will get an error if you enter:
 .. tip::
 
    When reading or writing code, say to yourself "n is assigned 17" or "n gets
-   the value 17".  Don't say "n equals 17".
+   the value 17" or "n is a reference to the object 17" or "n refers to the object 17".  Don't say "n equals 17".
       
 A common way to represent variables on paper is to write the name with an arrow
-pointing to the variable's value. This kind of figure is called a **state
+pointing to the variable's value. This kind of figure, known as a **reference diagram**, is often called a **state
 snapshot** because it shows what state each of the variables is in at a
 particular instant in time.  (Think of it as the variable's state of mind).
 This diagram shows the result of executing the assignment statements:
@@ -188,7 +195,8 @@ This diagram shows the result of executing the assignment statements:
    :alt: State snapshot
 
 If you ask the interpreter to evaluate a variable, it will produce the value
-that is currently linked to the variable:
+that is currently linked to the variable.  In other words, evaluating a variable will give you the value that is referred to
+by the variable.
 
 .. activecode:: ch02_9
     :nocanvas:
@@ -214,7 +222,7 @@ types; again, we can ask the interpreter what they are.
     print(type(pi))
 
 
-The type of a variable is the type of the value it currently refers to.
+The type of a variable is the type of the object it currently refers to.
 
 We use variables in a program to "remember" things, like the current score at
 the football game.  But variables are *variable*. This means they can change
@@ -224,7 +232,7 @@ to a variable, and later assign a different value to the same variable.
 .. note::
 
     This is different from math. In math, if you give `x` the value 3, it
-    cannot change to link to a different value half-way through your
+    cannot change to refer to a different value half-way through your
     calculations!
 
 .. activecode:: ch02_11
@@ -337,8 +345,8 @@ Evaluating expressions
 ----------------------
 
 An **expression** is a combination of values, variables, operators, and calls
-to functions. If you type an expression at the Python prompt, the interpreter
-**evaluates** it and displays the result:
+to functions. If you ask Python to ``print`` an expression, the interpreter
+**evaluates** the expression and displays the result:
 
 .. activecode:: ch02_13
     :nocanvas:
@@ -353,7 +361,7 @@ of characters in a string.  We've previously seen the ``print`` and the
 
 The *evaluation of an expression* produces a value, which is why expressions
 can appear on the right hand side of assignment statements. A value all by
-itself is a simple expression, and so is a variable.
+itself is a simple expression, and so is a variable.  Evaluating a variable gives the value that the variable refers to.
 
 .. activecode:: ch02_14
     :nocanvas:
@@ -777,6 +785,9 @@ Glossary
         A special symbol that represents a simple computation like addition,
         multiplication, or string concatenation.
 
+    reference diagram
+        A picture showing a variable with an arrow pointing to the value (object) that the variable refers to.
+        
     rules of precedence
         The set of rules governing the order in which expressions involving
         multiple operators and operands are evaluated.

@@ -92,13 +92,13 @@ and the interpreter immediately shows the result:
     Python 3.2 (r32:88445, Mar 25 2011, 19:28:28) 
     [GCC 4.5.2] on linux2
     Type "help", "copyright", "credits" or "license" for more information.
-    >>> 2 + 2
-    4
+    >>> 2 + 3
+    5
     >>>
 
 The ``>>>`` is called the **Python prompt**. The interpreter uses the prompt to
-indicate that it is ready for instructions. We typed ``2 + 2``, and the
-interpreter evaluated our expression, and replied ``4``, and on the next line
+indicate that it is ready for instructions. We typed ``2 + 3``, and the
+interpreter evaluated our expression, and replied ``5``, and on the next line
 it gave a new prompt, indicating that it is ready for more input.
 
 Working directly in the interpreter is convenient for testing short bits of
