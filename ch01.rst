@@ -101,6 +101,11 @@ indicate that it is ready for instructions. We typed ``2 + 2``, and the
 interpreter evaluated our expression, and replied ``4``, and on the next line
 it gave a new prompt, indicating that it is ready for more input.
 
+Working directly in the interpreter is convenient for testing short bits of
+code because you get immediate feedback. Think of it as scratch paper used to
+help you work out problems. Anything longer than a few lines should be put into
+a script.
+
 Alternatively, you can write a program in a file and use the interpreter to
 execute the contents of the file. Such a file is called a **script**.  For
 example, we used a text editor to create a file named ``firstprogram.py`` with
@@ -126,14 +131,25 @@ These examples show Python being run from a Unix command line. In other
 development environments, the details of executing programs may differ. Also,
 most programs are more interesting than this one.
 
-The examples in this book use both the Python interpreter and scripts.  You
-will be able to tell which is intended since shell mode examples will always
-start with the Python prompt.
+In this book, it is also possible to write a program and use a unique **active code** interpreter that allows you to execute Python code right
+in the text itself.  Although this is certainly not the way real programs are written, it provides an excellent
+environment for learning a programming language like Python.
 
-Working directly in the interpreter is convenient for testing short bits of
-code because you get immediate feedback. Think of it as scratch paper used to
-help you work out problems. Anything longer than a few lines should be put into
-a script.
+For example, if we take the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.  You can also make changes and save them for reloading later.  Try pressing the *run* button below to see the active code interpreter in action.  
+
+.. activecode:: ch01_1
+    :nopre:
+
+   print("My first program adds two numbers, 2 and 3:")
+   print(2 + 3)
+
+
+Now try modifying the active code program shown above, either by changing something about the first sentence, or by changing the addition in the second statement.  You should be able to press *run* immediately to see the new results.
+
+The examples in this book use a mixture of the standard Python  interpreter, scripts, and active code.  You
+will be able to tell which is which by looking for either the Python prompt in the case of a shell mode program or the *run* button for the active code.
+
+
 
 
 .. index:: program, algorithm
@@ -144,7 +160,7 @@ What is a program?
 A **program** is a sequence of instructions that specifies how to perform a
 computation. The computation might be something mathematical, such as solving a
 system of equations or finding the roots of a polynomial, but it can also be a
-symbolic computation, such as searching and replacing text in a document or
+symbolic computation, such as searching for and replacing text in a document or
 (strangely enough) compiling a program.
 
 The details look different in different languages, but a few basic instructions
@@ -188,7 +204,7 @@ often leads to errors. Programming errors are called **bugs** and the process
 of tracking them down and correcting them is called **debugging**.  Some claim
 that in 1945, a dead moth caused a problem on relay number 70, panel F, of one
 of the first computers at Harvard, and the term **bug** has remained in use
-since. 
+since. For more about this historic event, see `first bug <http://en.wikipedia.org/wiki/File:H96566k.jpg>`__.
 
 Three kinds of errors can occur in a program: `syntax errors
 <http://en.wikipedia.org/wiki/Syntax_error>`__, `runtime errors
@@ -409,6 +425,13 @@ result is the words
     
     Hello, World!
 
+Here is the same code in the active code interpreter.  Give it a try!
+
+.. activecode:: ch01_2
+    :nopre:
+
+   print("Hello, World!")
+
 The quotation marks in the program mark the beginning and end of the value;
 they don't appear in the result.
 
@@ -435,8 +458,8 @@ reader - it is completely ignored by the interpreter.
 In Python, the `#` token starts a comment.  The rest of the line is ignored.
 Here is a new version of *Hello, World!*.
 
-.. sourcecode:: python
-    
+.. activecode:: ch01_3
+
     #---------------------------------------------------
     # This demo program shows off how elegant Python is!
     # Written by Joe Soap, December 2010.
@@ -445,6 +468,7 @@ Here is a new version of *Hello, World!*.
     
     print("Hello, World!")     # Isn't this easy! 
       
+Notice that when you run this program, it still only prints the phrase Hello, World!  None of the comments appear.
 You'll also notice that we've left a blank line in the program.  Blank lines
 are also ignored by the interpreter, but comments and blank lines can make your
 programs much easier for humans to parse.  Use them liberally! 
