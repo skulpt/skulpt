@@ -28,6 +28,53 @@ single thing, or we may want to access its parts. This ambiguity is useful.
 Working with strings as single things
 -------------------------------------
 
+.. index:: string operations, concatenation
+
+Operations on strings
+---------------------
+
+In general, you cannot perform mathematical operations on strings, even if the
+strings look like numbers. The following are illegal (assuming that ``message``
+has type string):
+
+.. sourcecode:: python
+    
+    message - 1   
+    "Hello" / 123   
+    message * "Hello"   
+    "15" + 2
+
+Interestingly, the ``+`` operator does work with strings, but for strings, the
+``+`` operator represents **concatenation**, not addition.  Concatenation means
+joining the two operands by linking them end-to-end. For example:
+
+.. activecode:: ch02_24
+    :nocanvas:
+
+    fruit = "banana"
+    baked_good = " nut bread"
+    print(fruit + baked_good)
+
+The output of this program is ``banana nut bread``. The space before the word
+``nut`` is part of the string, and is necessary to produce the space between
+the concatenated strings.  Take out the space and run it again.
+
+The ``*`` operator also works on strings; it performs repetition. For example,
+``'Fun'*3`` is ``'FunFunFun'``. One of the operands has to be a string; the
+other has to be an integer.
+
+On one hand, this interpretation of ``+`` and ``*`` makes sense by analogy with
+addition and multiplication. Just as ``4*3`` is equivalent to ``4+4+4``, we
+expect ``"Fun"*3`` to be the same as ``"Fun"+"Fun"+"Fun"``, and it is. On the
+other hand, there is a significant way in which string concatenation and
+repetition are different from integer addition and multiplication. Can you
+think of a property that addition and multiplication have that string
+concatenation and repetition do not?
+
+
+String Methods
+--------------
+
 We previously saw that each turtle instance has its own attributes and 
 a number of methods that can be applied to the instance.  For example,
 we wrote ``tess.turn(90)``.  

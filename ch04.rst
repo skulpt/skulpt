@@ -34,7 +34,7 @@ The syntax for a **function definition** is:
 You can make up any names you want for the functions you create, except that
 you can't use a name that is a Python keyword, and the names must follow the rules
 for legal identifiers. The parameters specifies
-what information, if any, you have to provide in order to use the new function.
+what information, if any, you have to provide in order to use the new function.  Another way to say this is that the parameters specify what the function needs to do it's work.
 
 There can be any number of statements inside the function, but they have to be
 indented from the ``def``. In the examples in this book, we will use the
@@ -54,18 +54,15 @@ followed by the name of the function and some *parameters* enclosed in
 parentheses. The parameter list may be empty, or it may contain any number of
 parameters separated from one another by commas. In either case, the parentheses are required.
 
-Suppose we're working with turtles, and a common operation we need is to draw
-squares.   "Draw a square* is an *abstraction*, or a mental
-chunk, of a number of smaller steps.  So let's write a function to capture the pattern
-of this "building block": 
+Suppose we're working with turtles and a common operation we need is to draw
+squares.  It would make sense if we did not have to duplicate all the steps each time we want to make a square.   "Draw a square" can be thought of as an *abstraction* of a number of smaller steps.  We will need to provide two pieces of information for the function to do its work: a turtle to do the drawing and a size for the side of the square.  So here is a function to capture this idea.  Give it a try.
 
-.. sourcecode:: python
-   :linenos:
+.. activecode:: ch04_1
     
     import turtle 
 
-    def draw_square(t, sz):
-        """Make turtle t draw a square of sz."""    
+    def drawSquare(t, sz):
+        """Make turtle t draw a square of with side sz."""    
         
         for i in range(4):
             t.forward(sz)             
@@ -74,20 +71,18 @@ of this "building block":
       
     wn = turtle.Screen()              # Set up the window and its attributes
     wn.bgcolor("lightgreen")
-    wn.title("Alex meets a function")
 
     alex = turtle.Turtle()            # create alex
-    draw_square(alex, 50)             # Call the function to draw the square
+    drawSquare(alex, 50)             # Call the function to draw the square
+
     wn.exitonclick()
 
-        
-.. image:: illustrations/ch04/alex04.png 
 
         
-This function is named ``draw_square``.  It has two parameters --- one to tell 
-the function which turtle to move around, and the other to tell it the size
-of the square we want drawn.   Make sure you know where the body of the function
-ends --- it depends on the indentation, and the blank lines don't count for
+This function is named ``drawSquare``.  It has two parameters --- one to tell 
+the function which turtle to move around and the other to tell it the size
+of the square we want drawn.  In the function definition they are called ``t`` and ``sz`` respectively.   Make sure you know where the body of the function
+ends --- it depends on the indentation and the blank lines don't count for
 this purpose!   
 
 .. admonition::  docstrings 
@@ -108,23 +103,23 @@ this purpose!
     their functions.    
 
 Defining a new function does not make the function run. To do that we need a
-**function call**. We've already seen how to call some built-in functions like
+**function call**.  This is also known as a **function invocation**. We've already seen how to call some built-in functions like
 **print**, **range** and **int**. Function calls contain the name of the function being
 executed followed by a list of values, called *arguments*, which are assigned
-to the parameters in the function definition.  So in the second last line of
+to the parameters in the function definition.  So in the second to the last line of
 the program, we call the function, and pass alex as the turtle to be manipulated,
 and 50 as the size of the square we want. 
 
-Once we've defined a function, we can call it as often as we like, and its 
-statements will be executed each time we call it.  And we could use it to get
-any of our turtles to draw a square.   In the next example, we've changed the ``draw_square``
-function a little, and we get tess to draw 15 squares, with some variations.
+Once we've defined a function, we can call it as often as we like and its 
+statements will be executed each time we call it.  In this case, we could use it to get
+any of our turtles to draw a square.   In the next example, we've changed the ``drawSquare``
+function a little and we get tess to draw 15 squares with some variations.
 
-.. sourcecode:: python
+.. activecode:: ch04_2
 
     import turtle
 
-    def draw_multicolour_square(t, sz):  
+    def drawMulticolorSquare(t, sz):  
         """Make turtle t draw a multi-colour square of sz."""
         for i in ['red','purple','hotpink','blue']:
             t.color(i)
@@ -139,27 +134,25 @@ function a little, and we get tess to draw 15 squares, with some variations.
 
     size = 20                        # size of the smallest square
     for i in range(15):
-        draw_multicolour_square(tess, size)
+        drawMulticolorSquare(tess, size)
         size = size + 10             # increase the size for next time
         tess.forward(10)             # move tess along a little
         tess.right(18)               # and give her some extra turn
 
     wn.exitonclick()
 
-.. image:: illustrations/ch04/tess05.png 
 
 Functions can call other functions
 ----------------------------------
 
-Let's assume now we want a function to draw a rectangle.  We need to be able to call
-the function with different arguments for width and height.  And, unlike the case of the
-square, we cannot repeat the same thing 4 times, because the four sides are not equal.
-
-So we eventually come up with this rather nice code that can draw a rectangle.
+Let's assume now we want to write a function to draw a rectangle.  We need to be able to call
+the function with different arguments for width and height.  Unlike the case of the
+square, we cannot repeat the same thing 4 times, because the four sides are not equal.  However, it
+is the case that drawing the bottom and right sides are the same sequence as drawing the top and left sides.  So we eventually come up with this rather nice code that can draw a rectangle.
 
 .. sourcecode:: python
 
-    def draw_rectangle(t, w, h):
+    def drawRectangle(t, w, h):
         """Get turtle t to draw a rectangle of width w and height h."""
         for i in range(2):
             t.forward(w)             
@@ -169,13 +162,13 @@ So we eventually come up with this rather nice code that can draw a rectangle.
             
 The parameter names are deliberately chosen as single letters to ensure they're not misunderstood.
 In real programs, once you've had more experience, we will insist on better variable names than this.
-But the point is that the program doesn't "understand" that you're drawing a rectangle, or that the
+The point is that the program doesn't "understand" that you're drawing a rectangle or that the
 parameters represent the width and the height.  Concepts like rectangle, width, and height are 
 the meaning we humans have, not concepts that the program or the computer understands.    
 
-*Thinking like a scientist* involves looking for patterns and 
+*Thinking like a computer scientist* involves looking for patterns and 
 relationships.  In the code above, we've done that to some extent.  We did not just draw four sides.
-Instead, we spotted that we could draw the rectangle as two halves, and used a loop to
+Instead, we spotted that we could draw the rectangle as two halves and used a loop to
 repeat that pattern twice.
 
 But now we might spot that a square is a special kind of rectangle.
@@ -184,21 +177,49 @@ our square.
 
 .. sourcecode:: python
 
-    def draw_square(tx, sz):        # a new version of draw_square
-        draw_rectangle(tx, sz, sz)
+    def drawSquare(tx, sz):        # a new version of drawSquare
+        drawRectangle(tx, sz, sz)
+
+Here is the entire example with the necessary set up code.
+
+.. activecode:: ch04_3
+
+    import turtle
+
+    def drawRectangle(t, w, h):
+        """Get turtle t to draw a rectangle of width w and height h."""
+        for i in range(2):
+            t.forward(w)             
+            t.left(90)
+            t.forward(h)
+            t.left(90)
+
+    def drawSquare(tx, sz):        # a new version of drawSquare
+        drawRectangle(tx, sz, sz)
+
+    wn = turtle.Screen()             # Set up the window
+    wn.bgcolor("lightgreen")
+
+    tess = turtle.Turtle()           # create tess
+
+    drawSquare(tess, 50)
+
+    wn.exitonclick()
+
+
 
 There are some points worth noting here:
 
 * Functions can call other functions.
-* Rewriting `draw_square` like this captures the relationship
+* Rewriting `drawSquare` like this captures the relationship
   that we've spotted.  
-* A caller of this function might say `draw_square(tess, 50)`.  The parameters
+* A caller of this function might say `drawSquare(tess, 50)`.  The parameters
   of this function, ``tx`` and ``sz``, are assigned the values of the tess object, and
   the int 50 respectively.
 * In the body of the function they are just like any other variable. 
-* When the call is made to `draw_rectangle`, the values in variables `tx` and `sz`
+* When the call is made to `drawRectangle`, the values in variables `tx` and `sz`
   are fetched first, then the call happens.  So as we enter the top of
-  function `draw_rectangle`, its variable `t` is assigned the tess object, and `w` and
+  function `drawRectangle`, its variable `t` is assigned the tess object, and `w` and
   `h` in that function are both given the value 50.
 
 So far, it may not be clear why it is worth the trouble to create all of these
@@ -222,11 +243,11 @@ Flow of execution
 -----------------
 
 In order to ensure that a function is defined before its first use, you have to
-know the order in which statements are executed, which is called the **flow of
-execution**.   We've already talked about this a little in the previous chapter.
+know the order in which statements are executed. This is called the **flow of
+execution** and we've already talked about it a little in the previous chapter.
 
 Execution always begins at the first statement of the program.  Statements are
-executed one at a time, in order from top to bottom.
+executed one at a time, in order, from top to bottom.
 
 Function definitions do not alter the flow of execution of the program, but
 remember that statements inside the function are not executed until the
@@ -251,59 +272,6 @@ called it. When it gets to the end of the program, it terminates.
 What's the moral of this sordid tale? When you read a program, don't read from
 top to bottom. Instead, follow the flow of execution.
 
-.. index:: PyScripter; single stepping
-
-.. admonition:: Watch the flow of execution in action
-
-   In PyScripter, you can watch the flow of execution by "single-stepping" through
-   any program.  PyScripter will highlight each line of code just before it is about to
-   be executed.  
-   
-   PyScripter also lets you hover the mouse over any
-   variable in the program, and it will pop up the current value of that variable. 
-   So this makes it easy to inspect the "state snapshot" of the program --- the
-   current values that are assigned to the program's variables.
-   
-   This is a powerful mechanism for building a deep and thorough understanding of
-   what is happening at each step of the way.  Learn to use the single-stepping 
-   feature well, and be mentally proactive:  as you work through the code,
-   challenge yourself before each step: *"What changes will this line make to 
-   any variables in the program?"* and *"Where will flow of execution go next?"* 
-
-   Let us go back and see how this works with the program above that draws 15 
-   multicolour squares.  First, we're going to add one line of magic below
-   the import statement --- not strictly necessary, but it will make our lives
-   much simpler, because it prevents stepping into the module containing 
-   the turtle code.   
-   
-   .. sourcecode:: python
-
-       import turtle
-       __import__('turtle').__traceable__ = False
-
-   Now we're ready to begin.  Put the mouse cursor on the line of the program
-   where we create the turtle screen, and press the *F4* key.  This will run the Python
-   program up to, but not including, the line where you have the cursor.   Your program 
-   will "break" now, and provide a highlight on the next line to be executed, something like this:
-
-   .. image:: illustrations/ch04/breakpoint.png
- 
-   At this point you can press the *F7* key (*step into*) repeatedly to single step through
-   the code.  Observe as you execute lines 10, 11, 12, ... how the turtle window gets 
-   created, how its canvas colour is changed, how the title
-   gets changed, how the turtle is created on the canvas, and then how the flow of execution gets into the loop, and from there into the function, 
-   and into the function's loop, and then repeatedly through the body of that loop.
-   
-   While you do this, also hover your mouse over some of the variables in the program, and confirm that
-   their values match your conceptual model of what is happening.
-   
-   After a few loops, when you're about to execute line 20 and you're starting to get bored, you can use the key *F8*
-   to "step over" the function you are calling.  This executes all the statements in the function, but without
-   having to step through each one.   You always have the choice to either 
-   "go for the detail", or to "take the high-level view" and execute the function as a single chunk.
-   
-   There are some other options, including one that allow you to *resume* execution without further stepping.
-   Find them under the *Run* menu of PyScripter.
 
 .. index::
     single: parameter
@@ -323,37 +291,43 @@ job. For example, if you want to find the absolute value of a number, you have
 to indicate what the number is. Python has a built-in function for computing
 the absolute value:
 
-.. sourcecode:: python
-    
-    >>> abs(5)
-    5
-    >>> abs(-5)
-    5
+.. activecode:: ch04_4
+    :nocanvas:
+
+    print(abs(5))
+
+    print(abs(-5))
 
 In this example, the arguments to the ``abs`` function are 5 and -5.
 
        
-Some functions take more than one argument. For example the built-in function
-``pow`` takes two arguments, the base and the exponent. Inside the function,
-the values that are passed get assigned to variables called **parameters**.
+Some functions take more than one argument. For example the math module contains a function
+called
+``pow`` which takes two arguments, the base and the exponent. 
 
-.. sourcecode:: python
-    
-    >>> pow(2, 3)
-    8
-    >>> pow(7, 4)
-    2401
+.. Inside the function,
+.. the values that are passed get assigned to variables called **parameters**.
+
+.. activecode:: ch04_5
+    :nocanvas:
+
+    import math
+    print(math.pow(2, 3))
+
+    print(math.pow(7, 4))
+
+.. note::
+
+     Of course, we have already seen that raising a base to an exponent can be done with the ** operator.
 
 Another built-in function that takes more than one argument is ``max``.
 
-.. sourcecode:: python
-    
-    >>> max(7, 11)
-    11
-    >>> max(4, 1, 17, 2, 12)
-    17
-    >>> max(3 * 11, 5**3, 512 - 9, 1024**0)
-    503
+.. activecode:: ch04_6
+    :nocanvas:
+
+    print(max(7, 11))
+    print(max(4, 1, 17, 2, 12))
+    print(max(3 * 11, 5**3, 512 - 9, 1024**0))
 
 ``max`` can be sent any number of arguments, separated by commas, and will
 return the maximum value sent. The arguments can be either simple values or
@@ -363,36 +337,36 @@ expressions. In the last example, 503 is returned, since it is larger than 33,
 Furthermore, functions like ``range``, ``int``, ``abs`` all return values that
 can be used to build more complex expressions.  
 
-So an important difference between these functions and one like ``draw_square`` is that
-``draw_square`` was not executed because we wanted it to compute a value --- on the contrary,
-we wrote ``draw_square`` because we wanted it to execute a sequence of steps that caused
-the turtle to draw.  
+So an important difference between these functions and one like ``drawSquare`` is that
+``drawSquare`` was not executed because we wanted it to compute a value --- on the contrary,
+we wrote ``drawSquare`` because we wanted it to execute a sequence of steps that caused
+the turtle to draw a specific shape.  
 
-Functions that return values are called **fruitful functions** in this course.
+Functions that return values are sometimes called **fruitful functions**.
 In many other languages, a chunk that doesn't return a value is called a **procedure**,
 but we will stick here with the Python way of also calling it a function, or if we want
-to stress it, a *non-fruitful* function.  (Would the term *barren function* be easier?)  
+to stress it, a *non-fruitful* function.
 
-How do we write our own fruitful function?  In the exercises at the end of chapter 2 we saw
-the standard formula for compound interest, which we'll now write as a fruitful function:   
+How do we write our own fruitful function?  In the exercises at the end of Chapter 2 we saw
+the standard formula for compound interest (shown again below).  We'll now implement this as a fruitful function.
 
 .. image:: illustrations/ch04/compoundInterest.png
 
-.. sourcecode:: python
+.. activecode:: ch_04_7
+    :nocanvas:
 
-   def final_amt(p, r, n, t):
-       """
-         Apply the compound interest formula to p
-          to produce the final amount.
-       """
+    def finalAmt(p, r, n, t):
+        """Apply the compound interest formula"""
        
-       a = p * (1 + r/n) ** (n*t)
-       return a           # This is new, and makes the function fruitful.
+        a = p * (1 + r/n) ** (n*t)
+        return a                     # This is new
+                                     # It makes the function fruitful.
                      
-   # now that we have the function above, let us call it.  
-   toInvest = float(input("How much do you want to invest?"))
-   fnl = final_amt(toInvest, 0.08, 12, 5)
-   print("At the end of the period you'll have R", fnl)
+    # now that we have the function above, let us call it.  
+
+    toInvest = float(input("How much do you want to invest?"))
+    fnl = finalAmt(toInvest, 0.08, 12, 5)
+    print("At the end of the period you will have", fnl)
 
 * The **return** statement is followed an expression which is evaluated.  Its
   result is returned to the caller as the "fruit" of calling this function.
@@ -402,7 +376,7 @@ the standard formula for compound interest, which we'll now write as a fruitful 
 * Notice how we entered the arguments for 8% interest, compounded 12 times per year, for 5 years.
 * When we run this, we get the output 
 
-      *At the end of the period you'll have R 14898.457083*
+      *At the end of the period you will have 1.4898457083016061*
  
   This is a bit messy with all these decimal places, but remember that
   Python doesn't understand that you're working with money: it just does the calculation to
@@ -415,20 +389,20 @@ the standard formula for compound interest, which we'll now write as a fruitful 
   
 Notice something else very important here. The name of the variable we pass as an
 argument --- `toInvest` --- has nothing to do with the name of the parameter
---- `p`.  It is as if  `p = toInvest` is executed when `final_amt` is called. 
+--- `p`.  It is as if  `p = toInvest` is executed when `finalAmt` is called. 
 It doesn't matter what the value was named in 
-the caller, in `final_amt` it's name is `p`.  
+the caller, in `finalAmt` it's name is `p`.  
          
 These short variable names are getting quite tricky, so perhaps you'd prefer one of these
 versions instead:       
 
 .. sourcecode:: python
  
-   def final_amt_v2(principalAmount, nominalPercentageRate, numTimesPerYear, years):
+   def finalAmtV2(principalAmount, nominalPercentageRate, numTimesPerYear, years):
        a = principalAmount * (1 + nominalPercentageRate/numTimesPerYear) ** (numTimesPerYear*years)
        return a
        
-   def final_amt_v3(amt, rate, compounded, years):
+   def finalAmtV3(amt, rate, compounded, years):
        a = amt * (1 + rate/compounded) ** (componded*years)
        return a                  
 
@@ -456,19 +430,16 @@ the function, and you cannot use it outside. For example, consider again this fu
 
 .. sourcecode:: python
 
-   def final_amt(p, r, n, t):
+   def finalAmt(p, r, n, t):
        a = p * (1 + r/n) ** (n*t)
        return a           
  
-If we try to use `a`, outside the function, we'll get an error:
+..If we try to use `a`, outside the function, we'll get an error:
 
-.. sourcecode:: python
-    
-    >>> a
-    NameError: name 'a' is not defined
+
     
  
-The variable `a` is local to `final_amt`, and is not visible
+The variable `a` is local to `finalAmt`, and is not visible
 outside the function.
 
 Additionally, ``a`` only exists while the function is being executed --- 
@@ -477,7 +448,7 @@ When the execution of the function terminates,
 the local variables  are destroyed. 
 
 Parameters are also local, and act like local variables. 
-For example, the lifetimes of `p`, `r`, `n`, `t` begin when `final_amt` is called, 
+For example, the lifetimes of `p`, `r`, `n`, `t` begin when `finalAmt` is called, 
 and the lifetime ends when the function completes its execution.   
 
 So it is not possible for a function to set some local variable to a 
@@ -499,16 +470,17 @@ Two things we're always going to want to do when working with turtles
 is to create the window for the turtle, and to create one or more turtles.
 We could write some functions to make these tasks easier in future:
 
-.. sourcecode:: python
+.. activecode:: ch04_8
 
-   def make_window(colr, ttle):   
+   import turtle
+
+   def make_window(colr):   
        """
-         Set up the window with the given background colour and title. 
+         Set up the window with the given background color. 
          Returns the new window.
        """
        w = turtle.Screen()             
        w.bgcolor(colr)
-       w.title(ttle)
        return w
        
        
@@ -523,11 +495,17 @@ We could write some functions to make these tasks easier in future:
        return t
 
        
-   wn = make_window("lightgreen", "Tess and Alex dancing")
+   wn = make_window("lightgreen")
    tess = make_turtle("hotpink", 5)
    alex = make_turtle("black", 1)
    dave = make_turtle("yellow", 2)  
+   wn.exitonclick()
    
+.. admonition:: Extend this program ...
+
+    How about adding a drawTriangle function and having each turtle draw a different size
+    triangle?
+
 The trick about refactoring code is to see which things you are likely to want to change
 each time you call the function: these should become the parameters, or changeable bits,
 of the functions you write.
@@ -568,8 +546,7 @@ Glossary
                                                
     docstring
         If the first thing in a function body is a string (or, we'll see later, in other situations
-        too) that is attached to the function as its ``__doc__`` attribute,
-        and can be used by tools like PyScripter.
+        too) that is attached to the function as its ``__doc__`` attribute.
 
     flow of execution
         The order in which statements are executed during a program run.
@@ -631,7 +608,7 @@ Glossary
 
     traceback
         A list of the functions that are executing, printed when a runtime
-        error occurs. A traceback is also commonly refered to as a
+        error occurs. A traceback is also commonly referred to as a
         *stack trace*, since it lists the functions in the order in which they
         are stored in the
         `runtime stack <http://en.wikipedia.org/wiki/Runtime_stack>`__.
@@ -653,9 +630,9 @@ Exercises
     
     .. image:: illustrations/ch04/nested_squares.png
 
-#.  Write a non-fruitful function `draw_poly(t, n, sz)` which makes a turtle 
+#.  Write a non-fruitful function `drawPoly(t, n, sz)` which makes a turtle 
     draw a regular polygon. 
-    When called with `draw_poly(tess, 8, 50)`, it will draw a shape like this:
+    When called with `drawPoly(tess, 8, 50)`, it will draw a shape like this:
     
     .. image:: illustrations/ch04/regularpolygon.png
 
@@ -668,15 +645,15 @@ Exercises
     .. image:: illustrations/ch04/tess_spirals.png
        :height: 240
        
-#.  Write a non-fruitful function `draw_equitriangle(t, sz)` which calls `draw_poly` from the 
+#.  Write a non-fruitful function `drawEquitriangle(t, sz)` which calls `drawPoly` from the 
     previous question to have its turtle draw a equilateral triangle. 
     
-#.  Write a fruitful function `sum_to(n)` that returns the sum of all integer numbers up to and 
-    including `n`.   So `sum_to(10)` would be `1+2+3...+10` which would return the value 55.
+#.  Write a fruitful function `sumTo(n)` that returns the sum of all integer numbers up to and 
+    including `n`.   So `sumTo(10)` would be `1+2+3...+10` which would return the value 55.
     
-#.  Write a function `area_of_circle(r)` which returns the area of a circle of radius `r`.
+#.  Write a function `areaOfCircle(r)` which returns the area of a circle of radius `r`.
 
-#.  Write a non-fruitful function to draw a star, where the length of each side is 100 units.
+#.  Write a non-fruitful function to draw a five pointed star, where the length of each side is 100 units.
     (Hint: You should turn the turtle by 144 degrees at each point.)  
     
      .. image:: illustrations/ch04/star.png
@@ -689,4 +666,5 @@ Exercises
     
     What would it look like if you didn't pick up the pen?
 
-    
+#.  Extend the star function to draw an n pointed star.  (Hint: n must be an odd number greater or
+    equal to 3).

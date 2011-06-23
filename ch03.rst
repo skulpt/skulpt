@@ -26,21 +26,27 @@ Hello, little turtles!
 
 
 There are many *modules* in Python that provide very powerful features that we
-can use in our own programs.  Some of these can send email, or fetch web pages.
-The one we'll look at in this chapter allows us to create turtles and get them
-turn left, etc.  Your turtle's tail is also endowed with the ability to leave
-to draw shapes and patterns.  Turtle graphics is based on a very simple
-metaphore. Imagine that you have a turtle that undestands english.  You can
-tell your turtle to do simple commands such as go forward, turn right,
-a trail behind it.  If the tail is down, and is touching the ground it will
-draw a line as it moves.  If you tell your turtle to lift up its tail it can
-still move around but will not leave a trail.  As you will see you can make
+can use in our own programs.  Some of these can send email or fetch web pages. Others allow us to perform complex mathematical calculations.
+In this chapter we will introduce a module that allows us to create a data object called a **turtle** that can be used to draw pictures.
+
+.. turtles and get them
+.. turn left, etc.  Your turtle's tail is also endowed with the ability to leave
+.. to draw shapes and patterns.  
+
+Turtle graphics, as it is known, is based on a very simple
+metaphor. Imagine that you have a turtle that understands English.  You can
+tell your turtle to do simple commands such as go forward and turn right.  As the turtle
+moves around, if the tail is down touching the ground, it will
+draw a line (leave a trail behind) as it moves.  If you tell your turtle to lift up its tail it can
+still move around but will not leave a trail.  As you will see, you can make
 some pretty amazing drawings with this simple capability.
 
-The turtles are fun, but the real purpose of the chapter is to teach ourselves
-a little more Python, and to develop our theme of *computational thinking*,
-or *thinking like a computer scientist*.  Most of the Python covered here will
-be explored in more depth later.
+.. note:: 
+
+	The turtles are fun, but the real purpose of the chapter is to teach ourselves
+	a little more Python and to develop our theme of *computational thinking*,
+	or *thinking like a computer scientist*.  Most of the Python covered here will
+	be explored in more depth later.
 
 
 .. index:: object, invoke, method, attribute, state, canvas
@@ -49,9 +55,14 @@ Our first turtle program
 ------------------------
 
 Let's try a couple of lines of Python code to create a new turtle and
-start drawing a rectangle. (We'll call the variable that refers to our first
+start drawing a simple figure like a rectangle. We'll call the variable that refers to our first
 turtle `alex`, but you can choose another name if you follow the naming rules
-from the previous chapter).
+from the previous chapter.  
+
+The program as shown will only draw the first two sides of the rectangle.  
+After line 3 you will have a straight line going from the center of the
+canvas below towards the right.  After line 6, you will have a canvas with a
+turtle and a half drawn rectangle.  Press the run button to try it and see.
 
 .. activecode:: ch03_1
     :nopre:
@@ -64,9 +75,7 @@ from the previous chapter).
     alex.forward(75)         # complete the second side of a rectangle
 
     
-After line 3 you will have a straight line going from the center of the
-canvas below towards the right.  After line 6, you will have a canvas with a
-turtle and a half drawn rectangle.  Press the run button to try it and see.
+
 
 Here are a couple of things you'll need to understand about this program. 
   
@@ -78,32 +87,39 @@ sensitive, so the module name, with a lowercase `t`, is different from the type
 Turtle.)
  
 We then create and open what the turtle module calls a screen (we would
-perfer to call it a window, or in the case of this web version of Python
+prefer to call it a window, or in the case of this web version of Python
 simply a canvas), which we assign to variable `wn`. Every window
 contains a **canvas**, which is the area inside the window on which we can draw.
 
 In line 3 we create a turtle. The variable `alex` is made to refer to this
-turtle.   These first three lines set us up, ready for doing some useful
-things.
+turtle.   These first three lines set us up so that we are ready to do some drawing.
     
-In lines 5-6, we instruct the **object** alex to move, and to turn. We do this
-by **invoking**, or activating, alex's **methods** --- these are the
+In lines 4-6, we instruct the **object** alex to move and to turn. We do this
+by **invoking** or activating, alex's **methods** --- these are the
 instructions that all turtles know how to respond to.
     
+
+.. admonition:: Complete the rectangle ...
+    
+    #. Modify the program by adding the commands necessary to have *alex* complete the
+       rectangle.
+ 
+
+
+
 An object can have various methods --- things it can do --- and it can also
 have **attributes** --- (sometimes called *properties*).  For example, each
 turtle has a *color* attribute.  The method invocation  `alex.color("red")`
-will make alex red, and drawing will be red too.
+will make alex red, and the line that it draws will be red too.
 
-The color of the turtle, the width of its pen, the position of the turtle
+The color of the turtle, the width of its pen(tail), the position of the turtle
 within the window, which way it is facing, and so on are all part of its
 current **state**.   Similarly, the window object has a background color.
 These are all part of the state of the window object.
 
 Quite a number of methods exist that allow us to modify the turtle and the
 window objects.  We'll just show a couple. We've only commented those
-lines that are different from the previous example (and we've used a different
-variable name for this turtle).
+lines that are different from the previous example.  Note also that we've now called our turtle object *tess*.
     
 .. activecode:: ch03_2
     
@@ -124,13 +140,13 @@ variable name for this turtle).
 
 
 
-The last line plays a part too: the wn variable refers to the window shown
+The last line plays a very important role. The wn variable refers to the window shown
 above. When we invoke its exitonclick method, it pauses the execution of the
-program, and waits for the user to click the mouse in somewhere the window.
+program, and waits for the user to click the mouse somewhere in the window.
 When this click event occurs, the response is to close the turtle window and
 exit (stop execution of) the Python program.
 
-When we run this program, this new window pops up, and will remain on the
+Each time we run this program, a new drawing window pops up, and will remain on the
 screen until we click on it. 
 
 .. admonition:: Extend this program ...
@@ -155,10 +171,10 @@ Instances --- a herd of turtles
 -------------------------------
 
 Just like we can have many different integers in a program, we can have many
-turtles.  Each of them is called an **instance**.  Each instance has its own
+turtles.  Each of them is an independent object and we call each one an **instance** of the Turtle type.  Each instance has its own
 attributes and methods --- so alex might draw with a thin black pen and be at
 some position, while tess might be going in her own direction with a fat pink
-pen.  So here is what happens when alex completes his rectangle, and tess
+pen.  So here is what happens when alex completes a square and tess
 completes her triangle:
 
 .. activecode:: ch03_3
@@ -183,7 +199,7 @@ completes her triangle:
    tess.left(120)                   # complete the triangle
 
    tess.right(180)                  # turn tess around
-   tess.forward(80)                 # and move her away from the origin
+   tess.forward(80)                 # move her away from the origin
  
    alex.forward(50)                 # make alex draw a square
    alex.left(90)
@@ -236,12 +252,12 @@ The **for** loop
 
 When we drew the square, it was quite tedious.  We had to move then turn, move
 then turn, etc. etc. four times.  If we were drawing a hexagon, or an octogon,
-or a polygon with 42 sides, it would have been a nightmare.
+or a polygon with 42 sides, it would have been a nightmare to duplicate all that code.
 
-So a basic building block of all programs is to be able to repeat some code,
+So a basic building block of all programs is to be able to repeat some code
 over and over again.  
 
-Python's **for** loop solves this for us.   Let's say we have some friends, and
+Python's **for** statement solves this for us.   Let's say we have some friends, and
 we'd like to send them each an email inviting them to our party.  We'll we
 don't quite know how to send email yet, so for the moment we'll just print a
 message for each friend:
@@ -254,13 +270,13 @@ message for each friend:
         print(invitation) 
       
 
-When we run this, the output looks like this:
+Take a look at the output produced when you press the ``run`` button.  There is one line printed for each friend.  Here's how it works:
 
 
 * **f** in this ``for`` statement is called the **loop variable**.  
 * Lines 2 and 3 are the **loop body**.  The loop body is always
   indented. The indentation determines exactly what statements are "in the
-  loop".
+  loop".  The loop body is performed one time for each name in the list.
 * On each *iteration* or *pass* of the loop, first a check is done to see if
   there are still more items to be processed.  If there are none left (this is
   called the **terminating condition** of the loop), the loop has finished.
@@ -290,10 +306,10 @@ finger to point to each statement in turn.  So you could think of control flow
 as "Python's moving finger". 
 
 Control flow until now has been strictly top to bottom, one statement at a
-time.  The ``for`` loop changes this. 
+time.  We call this type of control **sequential**.  Sequential flow of control is always assumed to be the default behavior for a computer program.  The ``for`` statement changes this. 
 
 Control flow is often easy to visualize and understand if we draw a flowchart.
-This shows the exact steps and logic of how the ``for`` statement executes.
+This flowchart shows the exact steps and logic of how the ``for`` statement executes.
 
 
 .. index:: range function, chunking
@@ -301,18 +317,17 @@ This shows the exact steps and logic of how the ``for`` statement executes.
 The loop simplifies our turtle program
 --------------------------------------
 
-To draw a square we'd like to do the same thing four times --- move the turtle,
-and turn.  We previously used 8 lines to have alex draw the four sides of a
-square.  This does exactly the same, but using just three lines:
+To draw a square we'd like to do the same thing four times --- move the turtle forward some distance and turn 90 degrees.  We previously used 8 lines to have alex draw the four sides of a
+square.  This next program does exactly the same thing but, with the help of the for statement, uses just three lines (not including the setup code).  Remember that the for statement will repeat
 
 .. activecode:: ch03_for1
    :nopre:
 
-   import turtle
+   import turtle            #set up alex
    wn = turtle.Screen()
    alex = turtle.Turtle()
    
-   for i in [0,1,2,3]:
+   for i in [0,1,2,3]:      #use a for statement to make the four sides
        alex.forward(50)
        alex.left(90) 
 
@@ -389,17 +404,17 @@ More on the range Function
 The `range <http://docs.python.org/py3k/library/functions
 .html?highlight=range#range>`_ function is actually a very powerful function
 when it comes to
-creating sequences.  It can take one, two, or three parameters.  We have seen
-the simplest case of one parameter in which ``range(4)`` creates ``[0, 1, 2, 3]``.
+creating sequences of integers.  It can take one, two, or three parameters.  We have seen
+the simplest case of one parameter such as ``range(4)`` which creates ``[0, 1, 2, 3]``.
 But what if we really want to have the sequence ``[1, 2, 3, 4]``?
-We can do this by using a second parameter as follows ``range(1,5)``
+We can do this by using a two parameter version of ``range`` where the first parameter is the starting point and the second parameter is the ending point.  The evaluation of ``range(1,5)`` produces the desired sequence.  What happened to the 5?
 In this case we interpret the parameters of the range function to mean
 range(start,stop+1).
 
 
 .. note::
 
-    why in the world would range not just work like range(start,
+    Why in the world would range not just work like range(start,
     stop)?  Think about it like this.  Because computer scientists like to
     start counting at 0 instead of 1, ``range(N)`` produces a sequence of
     things that is N long, but the consequence of this is that the final
@@ -407,8 +422,8 @@ range(start,stop+1).
     stop it helps to simply think that the sequence begins with start and
     continues as long as the number is less than stop.
 
-Here are a two examples, add another line below to create a sequence starting
-at 10 and going up to 20.
+Here are a two examples for you to run.  Add another line below to create a sequence starting
+at 10 and going up to 20 (including 20).
 
 
 .. activecode:: ch03_5
@@ -419,7 +434,7 @@ at 10 and going up to 20.
 
 
 Finally, lets suppose we want to have a sequence of even numbers,
-how would we do that?  Easy, we add another parameter, step,
+how would we do that?  Easy, we add another parameter, a step,
 that tells range what to count by.  For even numbers we want to start at 0
 and count by 2's.  So if we wanted the first 10 even numbers we would use
 ``range(0,19,2)``.  So the most general form of the range is
@@ -451,7 +466,7 @@ A few more turtle methods and tricks
 
   Part of *thinking like a scientist* is to understand more of the structure
   and rich relationships in your field.  So revising a few basic facts about
-  geometry and number lines, like we're done here is a good start if we're
+  geometry and number lines, like we've done here is a good start if we're
   going to play with turtles. 
 
 * A turtle's pen can be picked up or put down.  This allows us to move a turtle
