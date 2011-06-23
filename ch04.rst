@@ -15,6 +15,12 @@ Functions
     single: function definition
     single: definition; function
 
+.. toctree::
+    :hidden:
+
+    lab04_01
+    lab04_01a
+
 Functions
 ---------
       
@@ -58,7 +64,7 @@ Suppose we're working with turtles and a common operation we need is to draw
 squares.  It would make sense if we did not have to duplicate all the steps each time we want to make a square.   "Draw a square" can be thought of as an *abstraction* of a number of smaller steps.  We will need to provide two pieces of information for the function to do its work: a turtle to do the drawing and a size for the side of the square.  So here is a function to capture this idea.  Give it a try.
 
 .. activecode:: ch04_1
-    
+
     import turtle 
 
     def drawSquare(t, sz):
@@ -77,13 +83,11 @@ squares.  It would make sense if we did not have to duplicate all the steps each
 
     wn.exitonclick()
 
-
-        
-This function is named ``drawSquare``.  It has two parameters --- one to tell 
+This function is named ``drawSquare``.  It has two parameters --- one to tell
 the function which turtle to move around and the other to tell it the size
 of the square we want drawn.  In the function definition they are called ``t`` and ``sz`` respectively.   Make sure you know where the body of the function
 ends --- it depends on the indentation and the blank lines don't count for
-this purpose!   
+this purpose!
 
 .. admonition::  docstrings 
 
@@ -272,6 +276,11 @@ called it. When it gets to the end of the program, it terminates.
 What's the moral of this sordid tale? When you read a program, don't read from
 top to bottom. Instead, follow the flow of execution.
 
+
+.. admonition:: Lab
+
+    * `Drawing a Circle <lab04_01.html>`_ In this guided lab exercise we will work
+      through a simple problem solving exercise related to drawing a circle with the turtle.
 
 .. index::
     single: parameter

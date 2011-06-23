@@ -96,7 +96,14 @@ to see the different kinds of behavior.
   number as the parameter to forward.
 
 
-So, which of these programs is better?
+So, which of these programs is better?  Which of these programs is most
+correct?  These are excellent questions program 1 is certainly the simplest,
+but it isn't very satisfying as far as a race is concerned.  Each turtle
+simply moves their distance on their turn.  That is not very satisfying as far
+as a simulated race goes.  Program 2 ends up looking a lot like Program 1
+when you run it.  Program 3 is probably the most 'realistic' assuming realism
+is very important when we're talking about a simulated race of virtual
+turtles.
 
 You may be thinking why can't each turtle just move forward until they cross
 some artificial finish line?  Good question!  We'll get to the answer to

@@ -104,6 +104,8 @@ Here's the final solution:
 
     drawCircle(wheel,20)
 
+    wn.exitonclick()
+
 One annoying limitation of this ``drawCircle`` function is that it draws the
 circle to the right of the turtle's current position and heading.  As a short
 aside, how could you change one line of the code to draw the circle to the
