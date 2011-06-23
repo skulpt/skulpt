@@ -5,11 +5,14 @@
   border-top: 2px solid #aaa;
   border-bottom: 2px solid #aaa;
   border-left: 2px solid #aaa;
+  height: auto;
+  max-height: 300px;
 }
 
 .CodeMirror-scroll {
   overflow: auto;
-  height: 300px;
+  height: auto;
+  max-height: 300px;
   /* This is needed to prevent an IE[67] bug where the scrolled content
      is visible outside of the scrolling box. */
   position: relative;
