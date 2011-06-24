@@ -669,6 +669,36 @@ Glossary
 Exercises
 ---------
 
+#. Evaluate the following numerical expressions in your head, then use
+   the active code window to check your results:
+
+    #. ``5 % 2``
+    #. ``9 % 5``
+    #. ``15 % 12``
+    #. ``12 % 15``
+    #. ``6 % 6``
+    #. ``0 % 7``
+    #. ``7 % 0``
+
+
+.. activecode:: ch02_ex1
+
+    print(5%2)
+
+#. You look at the clock and it is exactly 2pm.  You set an alarm to go off
+   in 51 hours.  At what time does the alarm go off?  
+
+#. Write a Python program to solve the general version of the above problem.
+   Ask the user for the time now (in hours), and ask for the number of hours to wait.  
+   Your program should output what the time will be on the clock when the alarm goes off.
+
+#. Assume the days of the week are numbered 0,1,2,3,4,5,6 from Sunday to Saturday.
+   Write a function which is given the day number, and it returns the day name (a string).
+
+#. You go on a wonderful holiday (perhaps to jail, if you don't like happy exercises)
+   leaving on day number 3 (a Wednesday).  You return home after 137 sleeps. 
+   Write a general version of the program which asks for the starting day number, and
+   the length of your stay, and it will tell you the name of day of the week you will return on.
 
 #. Take the sentence: *All work and no play makes Jack a dull boy.*
    Store each word in a separate variable, then print out the sentence on

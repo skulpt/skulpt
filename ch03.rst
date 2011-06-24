@@ -255,12 +255,12 @@ then turn, etc. etc. four times.  If we were drawing a hexagon, or an octogon,
 or a polygon with 42 sides, it would have been a nightmare to duplicate all that code.
 
 So a basic building block of all programs is to be able to repeat some code
-over and over again.  
+over and over again.  In computer science, we refer to this repetitive idea as **iteration**.  In this chapter, we will explore some mechanisms for basic iteration.
 
-Python's **for** statement solves this for us.   Let's say we have some friends, and
-we'd like to send them each an email inviting them to our party.  We'll we
+In Python, the **for** statement allows us to write programs that implement iteration.   As a simple example, let's say we have some friends, and
+we'd like to send them each an email inviting them to our party.  We
 don't quite know how to send email yet, so for the moment we'll just print a
-message for each friend:
+message for each friend.
 
 .. activecode:: ch03_4
     :nocanvas:

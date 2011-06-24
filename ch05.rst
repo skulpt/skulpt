@@ -35,27 +35,28 @@ algebra*, which is the basis of all modern computer arithmetic.
 There are only two **boolean values**: ``True`` and ``False``.  Capitalization
 is important, since ``true`` and ``false`` are not boolean values.
 
-.. sourcecode:: python
+.. activecode:: ch05_1
     
-    >>> type(True)
-    <class 'bool'> 
-    >>> type(true)
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    NameError: name 'true' is not defined
+    print(True)
+    print(type(True))
+    print(type(False))
+
+.. note:: Boolean values are not strings!
+
+    It is extremely important to realize that True and False are not strings.   They are not
+    surrounded by quotes.  They are the only two values in the data type ``bool``.
+
 
 A **boolean expression** is an expression that evaluates to a boolean value.
 The operator ``==`` compares two values and produces a boolean value:
 
-.. sourcecode:: python
+.. activecode:: ch05_2
     
-    >>> 5 == 5
-    True
-    >>> 5 == 6
-    False
+    print(5 == 5)
+    print(5 == 6)
 
 In the first statement, the two operands are equal, so the expression evaluates
-to ``True``; in the second statement, 5 is not equal to 6, so we get ``False``.
+to ``True``.  In the second statement, 5 is not equal to 6, so we get ``False``.
 
 The ``==`` operator is one of six common **comparison operators**; the others are:
 
@@ -92,6 +93,14 @@ Finally, the ``not`` operator negates a boolean expression, so ``not(x > y)``
 is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
 ``y``.
 
+.. activecode:: chp05_3
+
+    x = 5
+    print(x>0 and x<10)
+ 
+    n = 25
+    print(n%2 == 0 or n%3 == 0)
+
 
 .. index:: conditional branching, conditional execution, if, elif, else,
            if statement, compound statement, statement block, block, body,
@@ -108,16 +117,28 @@ Conditional execution
 ---------------------
 
 In order to write useful programs, we almost always need the ability to check
-conditions and change the behavior of the program accordingly. **Conditional
-statements** give us this ability. The simplest form is the **if**
-statement:
+conditions and change the behavior of the program accordingly. **Selection statements**, sometimes
+also referred to as **conditional statements** give us this ability. The simplest form of selection is the **if**
+statement.  This is sometimes referred to as **binary selection** since there are two possible paths of execution.
+
+.. activecode:: ch05_4
+    
+    x = 15
+
+    if x % 2 == 0:
+        print(x, "is even")
+    else:
+        print(x, "is odd")    
+
+
+The syntax for an ``if`` statement looks like this:
 
 .. sourcecode:: python
-    
-    if x % 2 == 0:
-        print(x, " is even")
+
+    if BOOLEAN EXPRESSION:
+        STATEMENTS_1        # executed if condition evaluates to True
     else:
-        print(x, " is odd")    
+        STATEMENTS_2        # executed if condition evaluates to False
 
 The boolean expression after the ``if`` statement is called the **condition**.
 If it is true, then the indented statements get executed. If not, then the statements
@@ -127,14 +148,7 @@ indented under the `else` clause get executed.
 
    .. image:: illustrations/ch05/flowchart_if_else.png  
 
-The syntax for an ``if`` statement looks like this:
 
-.. sourcecode:: python
-    
-    if BOOLEAN EXPRESSION:
-        STATEMENTS_1        # executed if condition evaluates to True
-    else:
-        STATEMENTS_2        # executed if condition evaluates to False
 
 As with the function definition from the last chapter and other compound
 statements like ``for``, the ``if`` statement consists of a header line and a body. The header
@@ -144,7 +158,7 @@ a colon (:).
 The indented statements that follow are called a **block**. The first
 unindented statement marks the end of the block. 
 
-Each of the statements inside the first block of statements are executed in order if the boolean
+Each of the statements inside the first block of statements is executed in order if the boolean
 expression evaluates to ``True``. The entire first block of statements 
 is skipped if the boolean expression evaluates to ``False``, and instead
 all the statements under the ``else`` clause are executed. 
@@ -173,15 +187,17 @@ Omitting the `else` clause
    .. image:: illustrations/ch05/flowchart_if_only.png
 
 Another form of the ``if`` statement is one in which the ``else`` clause is omitted entirely.  
+This creates what is sometimes called **unary selection**.
 In this case, when the condition evaluates to ``True``, the statements are
 executed, otherwise the flow of execution continues to the statement after the ``if``.
 
       
-.. sourcecode:: python
+.. activecode:: ch05_unaryselection
     
+    x = 10
     if x < 0:
         print("The negative number ",  x, " is not valid here.")
-        
+    print("This is always printed")   
 
 .. admonition:: Python terminology
     
@@ -269,128 +285,8 @@ The second branch contains another ``if`` statement, which
 has two branches of its own. Those two branches could contain
 conditional statements as well.
 
-Although the indentation of the statements makes the structure apparent, nested
-conditionals very quickly become difficult to read.  In general, it is a good
-idea to avoid them when you can.
-
-Logical operators often provide a way to simplify nested conditional
-statements. For example, we can rewrite the following code using a single
-conditional:
-
-.. sourcecode:: python
-    
-    if 0 < x:            # assume x is an int here
-        if x < 10:
-            print("x is a positive single digit.")
-
-The ``print`` function is called only if we make it past both the
-conditionals, so we can use the ``and`` operator:
-
-.. sourcecode:: python
-    
-    if 0 < x and x < 10:
-        print("x is a positive single digit.")
 
 
-.. index::
-    single: return statement
-    single: statement; return
-
-The ``return`` statement
-------------------------
-
-The ``return`` statement, with or without a value, depending on whether the 
-function is fruitful or not, allows you to terminate the execution of a function
-before you reach the end. One reason to use it is if you detect an error
-condition:
-
-.. sourcecode:: python
-    
-    def print_square_root(x):
-        if x <= 0:
-            print("Positive numbers only, please.")
-            return
-    
-        result = x**0.5
-        print("The square root of", x, "is", result)
-
-The function ``print_square_root`` has a parameter named ``x``. The first thing
-it does is check whether ``x`` is less than or equal to 0, in which case it
-displays an error message and then uses ``return`` to exit the function. The
-flow of execution immediately returns to the caller, and the remaining lines of
-the function are not executed.
-
-
-.. index::
-    single: type conversion
-    single: type; conversion
-
-Type conversion
----------------
-
-We've had a first look at this in an earlier chapter.  Seeing it again won't hurt! 
-
-Many Python types comes with a built-in function that attempts to convert values
-of another type into its own type. The ``int(ARGUMENT)`` function, for example,
-takes any value and converts it to an integer, if possible, or complains
-otherwise:
-
-.. sourcecode:: python
-    
-    >>> int("32")
-    32
-    >>> int("Hello")
-    ValueError: invalid literal for int() with base 10: 'Hello'
-
-``int`` can also convert floating-point values to integers, but remember
-that it truncates the fractional part:
-
-.. sourcecode:: python
-    
-    >>> int(-2.3)
-    -2
-    >>> int(3.99999)
-    3
-    >>> int("42")
-    42
-    >>> int(1.0)
-    1
-
-The ``float(ARGUMENT)`` function converts integers and strings to floating-point
-numbers:
-
-.. sourcecode:: python
-    
-    >>> float(32)
-    32.0
-    >>> float("3.14159")
-    3.14159
-    >>> float(1)
-    1.0
-
-It may seem odd that Python distinguishes the integer value ``1`` from the
-floating-point value ``1.0``. They may represent the same number, but they
-belong to different types. The reason is that they are represented differently
-inside the computer.
-
-The ``str(ARGUMENT)`` function converts any argument given to it to type
-``string``:
-
-.. sourcecode:: python
-    
-    >>> str(32)
-    '32'
-    >>> str(3.14149)
-    '3.14149'
-    >>> str(True)
-    'True'
-    >>> str(true)
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    NameError: name 'true' is not defined
-
-``str(ARGUMENT)`` will work with any value and convert it into a string.  As
-mentioned earlier, ``True`` is boolean value; ``true`` is not.
 
 .. index:: bar chart
 
@@ -398,17 +294,16 @@ A Turtle Bar Chart
 ------------------
 
 The turtle has a lot more power than we've seen so far.  If you want to see the full documentation,
-look at http://docs.python.org/library/turtle.html, or within PyScripter, use *Help* and search for the
-turtle module.
+look at http://docs.python.org/library/turtle.html.
 
 Here are a couple of new tricks for our turtles: 
 
-* We can get a turtle to display text on the canvas at the turtle's current position.  The method is
-  ``alex.write("Hello")``.
-* One can fill a shape (circle, semicircle, triangle, etc.) with a fill colour.  It is a two-step process.
-  First you call the method ``alex.begin_fill()``, then you draw the shape, then call ``alex.end_fill()``. 
-* We've previously set the color of our turtle - we can now also set it's fill-colour, which need not
-  be the same as the turtle and the pen colour.  We use ``alex.color("blue","red")`` to set the turtle
+* We can get a turtle to display text on the canvas at the turtle's current position.  The method is called `write`.  For example,   ``alex.write("Hello")`` would write the string `hello` at the current position.
+* One can fill a shape (circle, semicircle, triangle, etc.) with a fill color.  It is a two-step process.
+  First you call the method `begin_fill`, for example ``alex.begin_fill()``.  Then you draw the shape.
+  Finally, you call `end_fill` ( ``alex.end_fill()``). 
+* We've previously set the color of our turtle - we can now also set it's fill-color, which need not
+  be the same as the turtle and the pen color.  We use a second parameter to the `color` method, such as ``alex.color("blue","red")``, to set the turtle
   to draw in blue, and fill in red. 
   
   
@@ -420,7 +315,7 @@ Corresponding to each data measurement, we'll draw a simple rectangle of that he
 
 .. sourcecode:: python
 
-    def draw_bar(t, height):
+    def drawBar(t, height):
         """ Get turtle t to draw one bar, of height. """
         t.left(90)           
         t.forward(height)        # Draw up the left side
@@ -432,34 +327,34 @@ Corresponding to each data measurement, we'll draw a simple rectangle of that he
         
     ...    
     for v in xs:                 # assume xs and tess are ready 
-        draw_bar(tess, v)    
+        drawBar(tess, v)    
 
 .. image:: illustrations/ch05/tess_bar_1.png
 
 Ok, not fantasically impressive, but it is a nice start!  The important thing here
-was the mental chunking, or how we broke the problem into smaller pieces. Our chunk
-is to draw one bar, and we wrote a function to do that. Then, for the whole
+was the mental chunking.  To solve the problem we first broke it into smaller pieces.  In particular,
+our chunk 
+is to draw one bar.  We then implemented that chunk with a function. Then, for the whole
 chart, we repeatedly called our function.
 
 Next, at the top of each bar, we'll print the value of the data.
-We'll do this in the body of ``draw_bar``, by adding   ``t.write('  ' + str(height))`` 
+We'll do this in the body of ``drawBar``, by adding   ``t.write('  ' + str(height))`` 
 as the new third line of the body.
 We've put a little space in front of the number, and turned the 
 number into a string.  Without this extra space we tend
 to cramp our text awkwardly against the bar to the left.   
-The result looks a lot better now:
 
-.. image:: illustrations/ch05/tess_bar_2.png
+Finally, we'll add the two methods needed  to fill each bar.  One thing to note is that we moved
+tess down and to the left in our window to make room for all the bars.  Had we not done this, the
+turtle would have drawn off the window.  Our final program now looks like this.
 
-And now we'll add two lines to fill each bar.  Our final program now looks like this:
-
-.. sourcecode:: python
+.. activecode:: ch05_barchart
 
     import turtle
 
-    def draw_bar(t, height):
+    def drawBar(t, height):
         """ Get turtle t to draw one bar, of height. """
-        t.begin_fill()               # added this line
+        t.begin_fill()               # start filling this shape
         t.left(90)
         t.forward(height)
         t.write('  '+ str(height))
@@ -468,7 +363,7 @@ And now we'll add two lines to fill each bar.  Our final program now looks like 
         t.right(90)
         t.forward(height)
         t.left(90)
-        t.end_fill()                 # added this line
+        t.end_fill()                 # stop filling this shape
 
     wn = turtle.Screen()             # Set up the window and its attributes
     wn.bgcolor("lightgreen")
@@ -477,16 +372,17 @@ And now we'll add two lines to fill each bar.  Our final program now looks like 
     tess.color("blue", "red")
     tess.pensize(3)
 
-    xs = [48,117,200,240,160,260,220]
+    tess.penup()                     # move tess to a better starting spot
+    tess.goto(-180,-180)
+    tess.pendown()
+
+    xs = [48,117,200,240,160,260,220]  # here is the data
 
     for a in xs:
-         draw_bar(tess, a)
+         drawBar(tess, a)
 
     wn.exitonclick()
 
-It produces the following, which is more satisfying:
-
-.. image:: illustrations/ch05/tess_bar_3.png
 
 
 Glossary
@@ -563,36 +459,7 @@ Glossary
 Exercises
 ---------
 
-#. Evaluate the following numerical expressions in your head, then use
-   the Python interpreter to check your results:
 
-    #. ``>>> 5 % 2``
-    #. ``>>> 9 % 5``
-    #. ``>>> 15 % 12``
-    #. ``>>> 12 % 15``
-    #. ``>>> 6 % 6``
-    #. ``>>> 0 % 7``
-    #. ``>>> 7 % 0``
-
-   What happened with the last example? Why? If you were able to correctly
-   anticipate the computer's response in all but the last one, it is time to
-   move on. If not, take time now to make up examples of your own. Explore the
-   modulus operator until you are confident you understand how it works.
-   
-#. You look at the clock and it is exactly 2pm.  You set an alarm to go off
-   in 51 hours.  At what time does the alarm go off?  
-   
-#. Write a Python program to solve the general version of the above problem.
-   Ask the user for the time now (in hours), and ask for the number of hours to wait.  
-   Your program should output what the time will be on the clock when the alarm goes off.
-   
-#. Assume the days of the week are numbered 0,1,2,3,4,5,6 from Sunday to Saturday.
-   Write a function which is given the day number, and it returns the day name (a string).
- 
-#. You go on a wonderful holiday (perhaps to jail, if you don't like happy exercises)
-   leaving on day number 3 (a Wednesday).  You return home after 137 sleeps. 
-   Write a general version of the program which asks for the starting day number, and
-   the length of your stay, and it will tell you the name of day of the week you will return on.   
    
 #. Give the logical opposites of these conditions
     
@@ -643,7 +510,7 @@ Exercises
     program so that when it prints the text value for the negative bars, it puts
     the text below the bottom of the bar. 
   
-#.  Write a function ``find_hypot`` which, given the length of two sides of a right-angled triangle, returns
+#.  Write a function ``findHypot`` which, given the length of two sides of a right-angled triangle, returns
     the length of the hypotenuse.  (Hint:  ``x ** 0.5`` will return the square root.)
     
 #.  Write a function ``is_rightangled`` which, given the length of three sides of a triangle, 

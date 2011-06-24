@@ -7,8 +7,8 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
 
-Iteration
-=========
+Iteration Revisited
+===================
 
 .. index:: iteration, assignment, assignment statement, reassignment
 
@@ -22,12 +22,12 @@ people do poorly.
 
 Repeated execution of a set of statements is called **iteration**.  Because
 iteration is so common, Python provides several language features to make it
-easier. We've already seen the ``for`` statement in chapter 3.  This the 
-the form of iteration you'll likely be using most often.  But in this chapter
-we've going to look at the ``while`` statement --- another way to have your
-program do iteration, useful in slightly different circumstances.
+easier. We've already seen the ``for`` statement in chapter 3.  This is a very common 
+form of iteration in Python. In this chapter
+we are also going to look at the ``while`` statement --- another way to have your
+program do iteration.
 
-Before we do that, let's just review a few ideas...
+Before we do that, let's just review a few ideas related to variables and assignment.
 
 Reassignment
 ------------ 
@@ -36,20 +36,17 @@ As we have mentioned previously, it is legal to make more than one assignment to
 same variable. A new assignment makes an existing variable refer to a new value
 (and stop referring to the old value).
 
-.. sourcecode:: python
+.. activecode:: ch07_reassign1
     
     bruce = 5
     print(bruce)
     bruce = 7
     print(bruce)
 
-The output of this program is::
 
-    5
-    7
-
-because the first time ``bruce`` is
-printed, its value is 5, and the second time, its value is 7.  
+The first time ``bruce`` is
+printed, its value is 5, and the second time, its value is 7.  The assignment statement changes
+the value that ``bruce`` refers to.
 
 Here is what **reassignment** looks like in a state snapshot:
 
@@ -65,20 +62,22 @@ for the equality operator is ``==``.
 
 Note too that an equality test is symmetric, but assignment is not. For example, 
 if ``a == 7`` then ``7 == a``. But in Python, the statement ``a = 7``
-is legal and ``7 = a`` is not.
+is legal and ``7 = a`` is not. (Can you explain why?)
 
 Furthermore, in mathematics, a statement of equality is always true.  If ``a == b``
 now, then ``a`` will always equal ``b``. In Python, an assignment statement can make
 two variables equal, but because of the possibility of reassignment, 
 they don't have to stay that way:
 
-.. sourcecode:: python
+.. activecode:: ch07_reassign2
     
     a = 5
     b = a    # after executing this line, a and b are now equal
+    print(a,b)
     a = 3    # after executing this line, a and b are no longer equal
+    print(a,b)
 
-The third line changes the value of ``a`` but does not change the value of
+Line 4 changes the value of ``a`` but does not change the value of
 ``b``, so they are no longer equal. (In some programming languages, a different
 symbol is used for assignment, such as ``<-`` or ``:=``, to avoid confusion.  Python
 chose to use the tokens ``=`` for assignment, and ``==`` for equality.  This is a popular
@@ -96,27 +95,21 @@ value of the variable depends on the old.
     x = x + 1
 
 This means get the current value of x, add one, and then update x with the new
-value.
+value.  The new value of x is the old value of x plus 1.
+
+.. activecode:: ch07_update1
+
+    x = 6        # initialize x
+    print(x)
+    x = x + 1    # update x
+    print(x)
+
 
 If you try to update a variable that doesn't exist, you get an error, because
 Python evaluates the expression on the right side of the assignment operator
-before it assigns the resulting value to the name on the left:
-
-.. sourcecode:: python
-    
-    >>> x = x + 1
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in 
-    NameError: name 'x' is not defined
-
+before it assigns the resulting value to the name on the left.
 Before you can update a variable, you have to **initialize** it, usually with a
-simple assignment:
-
-.. sourcecode:: python
-    
-    >>> x = 0
-    >>> x = x + 1
-    >>>
+simple assignment.
 
 Updating a variable by adding 1 is called an **increment**; subtracting 1 is
 called a **decrement**.  Sometimes programmers also talk about **bumping**
@@ -129,55 +122,60 @@ The ``for`` loop revisited
 
 Recall that the ``for`` loop processes each item in a list.  Each item in
 turn is (re-)assigned to the loop variable, and the body of the loop is executed.
-We saw this example in an earlier chapter:
+We saw this example in an earlier chapter.
 
-.. sourcecode:: python
+.. activecode:: ch07_for1
 
     for f in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
         invitation = "Hi " + f + ".  Please come to my party on Saturday!"
         print(invitation) 
         
-Running through all the items in a list is called **traversing** the list,
-or **traversal**.      
+Running through all the items in a list is called **traversing** the list
+or sometimes just **traversal**.      
 
 Let us write a function now to sum up all the elements in a list of numbers.
-Do this by hand first, and try to isolate exactly what steps you take.  You'll
+Do this by hand first and try to isolate exactly what steps you take.  You'll
 find you need to keep some "running total" of the sum so far, either on a piece 
 of paper, or in your head.  Remembering things from one step to the next is
-precisely why we have variables in a program: so we'll need some variable
+precisely why we have variables in a program.  This means that we will need some variable
 to remember the "running total".  It should be initialized with a value of zero,
 and then we need to traverse the items in the list.  For each item, we'll want
 to update the running total by adding the next number to it.
 
-.. sourcecode::  python
+.. activecode::  ch07_accumulator1
 
     def mysum(xs):
         """ Sum all the numbers in the list xs, and return the total. """
-        running_total = 0
+       
+        runningTotal = 0
         for x in xs:
-            running_total = running_total + x
-        return running_total
+            runningTotal = runningTotal + x
+        return runningTotal
 
-    #add tests like these to your test suite ...
-    test(mysum([1, 2, 3, 4]), 10)
-    test(mysum([1.25, 2.5, 1.75]), 5.5)
-    test(mysum([1, -2, 3]), 2)
-    test(mysum([ ]), 0)
-    test(mysum(range(11)), 55)    # Remember that 11 is not in the list that range generates.
-      
-        
+    print(mysum([1,2,3,4]))
+    print(mysum([1,3,5,7,9]))
+    print(mysum(range(11)))
+
 .. index:: while statement, while loop, iteration, loop, loop body,
            infinite loop, condition
 
-The ``while`` statement
+This pattern of iterating through a collection of values and updating a variable as you go is commonly
+referred to as the **accumulator pattern**.  We refer to the variable as the **accumulator**.  This pattern will come up over and over again.  Remember that the key
+to making it work successfully is to be sure to initialize the variable before you start the iteration.
+Once inside the iteration, it is required that you update the accumulator.
+
+
+
+The ``while`` Statement
 -----------------------
 
 Here is a fragment of code that demonstrates the use of the ``while`` statement:
 
-.. sourcecode:: python
+.. activecode:: ch07_while1
     
-    def sum_to(n):
+    def sumTo(n):
         """ Return the sum of 1+2+3 ... n """
+        
         ss  = 0
         v = 1
         while v <= n:
@@ -185,31 +183,32 @@ Here is a fragment of code that demonstrates the use of the ``while`` statement:
             v = v + 1
         return ss
         
-    # for your test suite
-    test(sum_to(4), 10) 
-    test(sum_to(1000), 500500)     
+    print(sumTo(4))
+    print(sumTo(1000))
+
+
 
 You can almost read the ``while`` statement as if it were English. It means,
-While ``v`` is less than or equal to ``n``, continue executing the body of the loop. Within
+while ``v`` is less than or equal to ``n``, continue executing the body of the loop. Within
 the body, each time, increment ``v``. When ``v`` passes ``n``, return your accumulated sum.
 
 More formally, here is the flow of execution for a ``while`` statement:
 
 #. Evaluate the condition, yielding ``False`` or ``True``.
-#. If the condition is false, exit the ``while`` statement and continue
+#. If the condition is ``False``, exit the ``while`` statement and continue
    execution at the next statement.
-#. If the condition is true, execute each of the statements in the body and
+#. If the condition is ``True``, execute each of the statements in the body and
    then go back to step 1.
 
 The body consists of all of the statements below the header with the same
 indentation.
 
 This type of flow is called a **loop** because the third step loops back around
-to the top. Notice that if the condition is false the first time through the
+to the top. Notice that if the condition is ``False`` the first time through the
 loop, the statements inside the loop are never executed.
 
 The body of the loop should change the value of one or more variables so that
-eventually the condition becomes false and the loop terminates. Otherwise the
+eventually the condition becomes ``False`` and the loop terminates. Otherwise the
 loop will repeat forever, which is called an **infinite loop**. An endless
 source of amusement for computer scientists is the observation that the
 directions on shampoo, lather, rinse, repeat, are an infinite loop.
@@ -219,27 +218,37 @@ know that the value of ``n`` is finite, and we can see that the value of ``v``
 increments each time through the loop, so eventually it will have to exceed ``n``. In
 other cases, it is not so easy to tell.  
 
+.. note::
+
+	Introduction of the while statement causes us to think about the types of iteration we have seen.  The ``for`` statement will always iterate through a sequence of values.  Since we know that it will iterate once for each value in the collection, it is often said that a ``for`` loop creates a
+	**definite iteration** because we definitely know how many times we are going to iterate.  On the other
+	hand, the ``while`` statement is dependent on a condition that needs to evaluate to ``False`` in order 
+	for the loop to terminate.  Since we do not necessarily know when this will happen, it creates what we
+	call **indefinite iteration**.  Indefinite iteration simply means that we don't know how many times we will repeat but eventually the condition controlling the iteration will fail and it will stop. (Unless we have an infinite loop which is of course a problem)
+
 What you will notice here is that the ``while`` loop is more work for
 you --- the programmer --- than the equivalent ``for`` loop.  When using a ``while``
-loop one has to control the loop variable yourself: give it an initial value, test
+loop one has to control the loop variable yourself.  You give it an initial value, test
 for completion, and then make sure you change something in the body so that the loop
 terminates.  By comparison, here is an alternative function that uses ``for`` instead: 
 
-.. sourcecode:: python
+.. activecode:: ch07_altsum
 
-    def sum_to(n):
+    def sumTo(n):
         """ Return the sum of 1+2+3 ... n """
         ss  = 0
         for v in range(n+1):
             ss = ss + v
         return ss
 
-Notice the slightly tricky call to the ``range`` function --- we had to add one onto ``n``, 
+    print(sumTo(10))
+
+
+Notice the slightly tricky call to the ``range`` function --- we had to add one onto ``n``
 because ``range`` generates its list up to but not including the value you give it.  
-It would be easy to make a programming mistake and overlook this, but because we've
-made the investment of writing some unit tests, our test suite would have caught our error.        
+It would be easy to make a programming mistake and overlook this. 
         
-So why have two kinds of loop if ``for`` looks easier?  This next example shows a case where
+So why have two kinds of loop if ``for`` looks easier?  This next example shows an indefinite iteration where
 we need the extra power that we get from the ``while`` loop.        
         
 .. index:: 3n + 1 sequence        
@@ -250,33 +259,30 @@ The 3n + 1 sequence
 Let's look at a simple sequence that has fascinated and foxed mathematicians for many years.
 They still cannot answer even quite simple questions about this.  
 
-The rule is to atart from
+The rule is to start from
 some given ``n``, and to generate
 the next term of the sequence from ``n``, either by halving ``n``, 
-(whenever ``n`` is even), or else by multiplying it by three and adding 1.  The sequence
+whenever ``n`` is even, or else by multiplying it by three and adding 1 .  The sequence
 terminates when ``n`` reaches 1. 
 
-This Python function captures that algorithm:
+This Python function captures that algorithm.
 
-.. sourcecode:: python
+.. activecode:: ch07_indef1
     
     def seq3np1(n):
         """ Print the 3n+1 sequence from n, terminating when it reaches 1."""
         while n != 1:
-            print(n, end=', ')
+            print(n)
             if n % 2 == 0:        # n is even
                 n = n // 2
             else:                 # n is odd
                 n = n * 3 + 1
-        print(n, end='.\n')     
+        print(n)                  # the last print is 1
 
-Notice first that the print function has an extra argument ``end=', '``.  This 
-tells the ``print`` function to follow the printed string with whatever the programmer
-chooses (in this case, a comma followed by a space), instead of ending the line. So
-each time something is printed in the loop, it is printed on the same line, with
-the output separated by commas.  The call to ``print(n, end='.\n')`` when the loop terminates
-will then print the final value of ``n`` followed by a period and a newline character. 
-(You'll cover the ``\n`` (newline character) in the next chapter).             
+    seq3np1(3)
+
+
+    
                 
 The condition for this loop is ``n != 1``, so the loop will continue running until
 ``n`` is ``1``, which will make the condition false.
@@ -284,24 +290,13 @@ The condition for this loop is ``n != 1``, so the loop will continue running unt
 Each time through the loop, the program outputs the value of ``n`` and then
 checks whether it is even or odd. If it is even, the value of ``n`` is divided
 by 2 using integer division. If it is odd, the value is replaced by ``n * 3 + 1``.  
-Here are some examples::
-
-    >>> seq3np1(3)
-    3, 10, 5, 16, 8, 4, 2, 1.
-    >>> seq3np1(19)
-    19, 58, 29, 88, 44, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1.
-    >>> seq3np1(21)
-    21, 64, 32, 16, 8, 4, 2, 1.
-    >>> seq3np1(16)
-    16, 8, 4, 2, 1.
-    >>> 
+Try some other examples.
     
 Since ``n`` sometimes increases and sometimes decreases, there is no obvious
 proof that ``n`` will ever reach 1, or that the program terminates. For some
 particular values of ``n``, we can prove termination. For example, if the
 starting value is a power of two, then the value of ``n`` will be even each
-time through the loop until it reaches 1. The previous example ends with such a
-sequence, starting with 16.
+time through the loop until it reaches 1. 
 
 You might like to have some fun and see if you can find a small starting 
 number that needs more than a hundred steps before it terminates. 
@@ -317,7 +312,7 @@ eventually end up at 1.  But this doesn't mean that there might not be some
 as-yet untested number which does not reduce to 1.   
 
 You'll notice that if you don't stop when you reach one the sequence gets into
-its own loop:  1, 4, 2, 1, 4, 2, 1, 4 ...   So one possibility is that there might
+its own loop:  1, 4, 2, 1, 4, 2, 1, 4, and so on.  One possibility is that there might
 be other cycles that we just haven't found.  
 
 .. admonition:: Choosing between ``for`` and ``while``
@@ -332,7 +327,7 @@ be other cycles that we just haven't found.
    By contrast, if you are required to repeat some computation until some condition is 
    met, as we did in this 3n + 1 problem, you'll need a ``while`` loop. 
 
-   We call the first case **definite iteration** --- we have some definite bounds for 
+   As we noted before, the first case is called **definite iteration** --- we have some definite bounds for 
    what is needed.   The latter case is called **indefinite iteration** --- we're not sure
    how many iterations we'll need --- we cannot even establish an upper bound!    
 
@@ -401,35 +396,33 @@ There are also some great visualization tools becoming available to help you
 trace and understand small fragments of Python code.  The one we recommend is at 
 http://netserv.ict.ru.ac.za/python3_viz 
 
-We've cautioned
-against chatterbox functions, but used them here.  As we learn a bit more Python, we'll
-be able to show you how to generate a list of values to hold the sequence, rather than having
-the function print them. Doing this would remove the need to have all these pesky ``print`` functions
-in the middle of our logic, and will make the function more useful.
 
 
 .. _counting:
 
-Counting digits
+Counting Digits
 ---------------
 
 The following function counts the number of decimal digits in a positive
 integer:
 
-.. sourcecode:: python
+.. activecode:: ch07_digits1
 
-    def num_digits(n):
+    def numDigits(n):
         count = 0
         while n > 0:
             count = count + 1
             n = n // 10
         return count
-    
-A call to ``print(num_digits(710))`` will display ``3``. Trace the execution of this
-function call (perhaps using the single step function in PyScripter, or the
-Python visualizer, or on some paper) to convince yourself that it works.
 
-This function demonstrates an important pattern of computation called a **counter**.
+    print(numDigits(710))
+
+    
+As you can see, a call to ``print(num_digits(710))`` will display ``3``. Trace the execution of this
+function call on a piece of paper to convince yourself that it works.
+
+This function demonstrates an important pattern of computation called a **counter** (note that it is
+a type of accumulator).
 The variable ``count`` is initialized to 0 and then incremented each time the
 loop body is executed. When the loop exits, ``count`` contains the result ---
 the total number of times the loop body was executed, which is the same as the
@@ -438,9 +431,9 @@ number of digits.
 If we wanted to only count digits that are either 0 or 5, adding a conditional
 before incrementing the counter will do the trick:
 
-.. sourcecode:: python
+.. activecode:: ch07_digits2
     
-    def num_zero_and_five_digits(n):
+    def numZeroAndFiveDigits(n):
         count = 0
         while n > 0:
             digit = n % 10
@@ -449,104 +442,11 @@ before incrementing the counter will do the trick:
             n = n // 10
         return count
 
-Confirm that ``test(num_zero_and_five_digits(1055030250), 7)`` passes.
-
-Notice, however, that some of the tests below fail. Explain why.  Do you think this is a bug in
-the code, or a bug in the specifications, our expectations, or the tests? ::
-
-    test(num_digits(1055030250), 10)
-    test(num_digits(0050), 4)
-    test(num_digits(0), 1)
+    print(numZeroAndFiveDigits(1055030250))
 
 .. index:: abbreviated assignment    
     
-Abbreviated assignment
-----------------------
 
-Incrementing a variable is so common that Python provides an abbreviated syntax
-for it:
-
-.. sourcecode:: python
-    
-    >>> count = 0
-    >>> count += 1
-    >>> count
-    1
-    >>> count += 1
-    >>> count
-    2
-    >>>
-
-``count += 1`` is an abreviation for ``count = count + 1`` . We pronouce the operator
-as *"plus-equals"*.  The increment value does not have to be 1:
-
-.. sourcecode:: python
-    
-    >>> n = 2
-    >>> n += 5
-    >>> n
-    7
-    >>>
-
-There are similar abbreviations for ``-=``, ``*=``, ``/=``, ``//=`` and ``%=``:
-
-.. sourcecode:: python
-    
-    >>> n = 2
-    >>> n *= 5
-    >>> n
-    10
-    >>> n -= 4
-    >>> n
-    6
-    >>> n //= 2
-    >>> n
-    3
-    >>> n %= 2
-    >>> n
-    1
-
-.. index:: help, meta-notation   
-    
-Help and meta-notation
-----------------------
-
-Python comes with extensive documentation for all its built-in functions, and its libraries.
-Different systems have different ways of accessing this help.  In PyScripter, click on the
-*Help* menu item, and select *Python Manuals*.  Then search for help on the built-in function
-**range**.   You'll get something like this...
-
-.. image:: illustrations/ch07/help_range.png  
-
-Notice the square brackets in the description of the arguments. 
-These are examples of **meta-notation** --- notation that describes Python syntax, but is not part of it.
-The square brackets in this documentation mean that the argument is *optional* --- the programmer can
-omit it.  So what this first line of help tells us is that ``range`` must always have a ``stop`` argument,
-but it may have an optional ``start`` argument (which must be followed by a comma if it is present),
-and it can also have an optional ``step`` argument, preceded by a comma if it is present.
-
-The examples from help show that ``range`` can have either 1, 2 or 3 arguments.  The list can
-start at any starting value, and go up or down in increments other than 1.  The documentation
-here also says that the arguments must be integers.
-
-Other meta-notation you'll frequently encounter is the use of bold and italics.  The bold
-means that these are tokens --- keywords or symbols --- typed into your Python code exactly as
-they are, whereas the
-italic terms stand for "something of this type".  So the syntax description
-
-    **for** *variable* **in** *list* **:** 
-    
-means you can substitute any legal 
-variable and any legal list when you write your Python code.  
-
-This (simplified) description of the ``print`` function, shows another example
-of meta-notation in which the ellipses (``...``) mean that you can have as many
-objects as you like (even zero), separated by commas:
-   
-   **print( [**\ *object,* ... **] )**
-   
-Meta-notation gives us a concise and powerful way to describe the *pattern* of some syntax
-or feature.  
 
 
 .. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
@@ -575,7 +475,7 @@ Although a log table is not as useful as it once was, it still makes a good
 example of iteration. The following program outputs a sequence of values in the
 left column and 2 raised to the power of that value in the right column:
 
-.. sourcecode:: python
+.. activecode:: ch07_table1
     
     for x in range(13):   # generate numbers 0 to 12
         print(x, '\t', 2**x)
@@ -585,7 +485,7 @@ The string ``'\t'`` represents a **tab character**. The backslash character in
 are used to represent invisible characters like tabs and newlines. The sequence
 ``\n`` represents a **newline**.
 
-An escape sequence can appear anywhere in a string; in this example, the tab
+An escape sequence can appear anywhere in a string.  In this example, the tab
 escape sequence is the only thing in the string. How do you think you represent
 a backslash in a string?
 
@@ -596,22 +496,7 @@ line.
 
 The tab character shifts the cursor to the right until it reaches one of the
 tab stops. Tabs are useful for making columns of text line up, as in the output
-of the previous program::
-    
-    0       1
-    1       2
-    2       4
-    3       8
-    4       16
-    5       32
-    6       64
-    7       128
-    8       256
-    9       512
-    10      1024
-    11      2048
-    12      4096
-
+of the previous program.
 Because of the tab characters between the columns, the position of the second
 column does not depend on the number of digits in the first column.
 

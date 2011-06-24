@@ -31,7 +31,7 @@ Based on the original book
 * `Chapter 3 <ch03.html>`__ *Hello, little turtles!*  
 * `Chapter 4 <ch04.html>`__ *Functions*
 * `Chapter 5 <ch05.html>`__ *Conditionals*
-* `Chapter 6 <ch06.html>`__ *Fruitful functions*
+* `Chapter 6 <ch06.html>`__ *Functions Revisited*
 * `Chapter 7 <ch07.html>`__ *Iteration*
 * `Chapter 8 <ch08.html>`__ *Strings*
 * `Chapter 9 <ch09.html>`__ *Lists*
