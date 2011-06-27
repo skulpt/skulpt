@@ -33,6 +33,18 @@ that end will become clearer.
 .. index:: programming language, portable, high-level language,
            low-level language, compile, interpret
 
+Algorithms
+----------
+
+If problem-solving is a central part of computer science, then the solutions that you create through
+the problem-solving process are also important.  In computer science, we refer to these solutions
+as **algorithms**.  An algorithm is a step by step list of instructions that is followed exactly will solve the problem under consideration.  
+
+Our goal in computer science is to take a problem and develop an algorithm that can serve as a general solution.  Once we have such a solution, we can use our computer to automate the execution.  As noted
+above, programming is a skill which allows a computer scientist to take an algorithm and represent it in
+a notation (a program) that can be followed by a computer.  These programs are written in **programming languages**.
+
+
 The Python programming language
 -------------------------------
 

@@ -12,21 +12,30 @@ Strings
 
 .. index:: compound data type, character, subscript operator, index
 
-A compound data type
---------------------
+Strings Revisited
+-----------------
+
+Throughout the first chapters of this book we have used strings to represent words or phrases that we
+wanted to print out.  Our definition was simple.  A string is some characters inside quotes.  In this chapter we explore strings in much more detail.
+
+A collection data type
+----------------------
 
 So far we have seen built-in types like: ``int``, ``float``, 
 ``bool``, ``str`` and we've seen lists. 
-Strings and lists are qualitatively different from the others because they
+``int``, ``float``, and
+``bool`` are considered to be simple or primitive data types because their values are not composed
+of any smaller parts.  They cannot be broken down.
+On the other hand, strings and lists are qualitatively different from the others because they
 are made up of smaller pieces.  In the case of strings, they're made up of smaller
 strings each containing one **character**.  
 
-Types that comprise smaller pieces are called **compound data types**.
-Depending on what we are doing, we may want to treat a compound data type as a
-single thing, or we may want to access its parts. This ambiguity is useful.
+Types that are comprised of smaller pieces are called **collection data types**.
+Depending on what we are doing, we may want to treat a collection data type as a
+single entity (the whole), or we may want to access its parts. This ambiguity is useful.
 
-Working with strings as single things
--------------------------------------
+Strings can be defined as sequential collections of characters.  This means that the individual characters
+that make up the string are assumed to be in a particular order from left to right.
 
 .. index:: string operations, concatenation
 
@@ -48,12 +57,12 @@ Interestingly, the ``+`` operator does work with strings, but for strings, the
 ``+`` operator represents **concatenation**, not addition.  Concatenation means
 joining the two operands by linking them end-to-end. For example:
 
-.. activecode:: ch02_24
+.. activecode:: ch08_add
     :nocanvas:
 
     fruit = "banana"
-    baked_good = " nut bread"
-    print(fruit + baked_good)
+    bakedGood = " nut bread"
+    print(fruit + bakedGood)
 
 The output of this program is ``banana nut bread``. The space before the word
 ``nut`` is part of the string, and is necessary to produce the space between
@@ -63,13 +72,24 @@ The ``*`` operator also works on strings; it performs repetition. For example,
 ``'Fun'*3`` is ``'FunFunFun'``. One of the operands has to be a string; the
 other has to be an integer.
 
-On one hand, this interpretation of ``+`` and ``*`` makes sense by analogy with
+.. activecode:: ch08_mult
+    :nocanvas:
+
+    print("Go"*6)
+
+    name = "Packers"
+    print(name * 3)
+
+    print(name + "Go" * 3)
+
+    print((name + "Go") * 3)
+
+This interpretation of ``+`` and ``*`` makes sense by analogy with
 addition and multiplication. Just as ``4*3`` is equivalent to ``4+4+4``, we
-expect ``"Fun"*3`` to be the same as ``"Fun"+"Fun"+"Fun"``, and it is. On the
-other hand, there is a significant way in which string concatenation and
-repetition are different from integer addition and multiplication. Can you
-think of a property that addition and multiplication have that string
-concatenation and repetition do not?
+expect ``"Go"*3`` to be the same as ``"Go"+"Go"+"Go"``, and it is.  Note also in the last
+example that the order of operations for ``*`` and ``+`` is the same as it was for arithmetic.
+The repetition is done before the concatenation.  If you want to cause the concatenation to be
+done first, you will need to use parenthesis.
 
 
 String Methods
@@ -81,86 +101,52 @@ we wrote ``tess.turn(90)``.
 
 Strings are also objects.  Each string instance has its own attributes and methods.  
 
-For example::
+.. activecode:: chp08_upper
 
-    >>> ss = "Hello, World!"
-    >>> tt = ss.upper()
-    >>> tt
-    'HELLO, WORLD'
-    
+    ss = "Hello, World"
+    print(ss.upper())
+
+    tt = ss.lower()
+    print(tt)
+
+
 `upper` is a method that can be invoked on any string object 
 to create a new string, in which all the 
-characters are in uppercase.  (The original string `ss` remains unchanged.)
+characters are in uppercase.  `lower` works in a similar fashion changing all characters in the string
+to lowercase.  (The original string `ss` remains unchanged.  A new string `tt` is created.)
 
-There are also methods like `lower`, `capitalize`, and `swapcase` that do other interesting stuff.
 
-To learn what methods are available, you can consult the Help documentation, look for 
-the ``string`` module, and read the documentation.  Or, if you're a bit lazier, 
-simply type the following into a PyScripter script::
 
-    ss = "Hello, World!"
-    tt = ss.
-    
-When you type the period to select one of the methods of `ss`, PyScripter will pop up a 
-selection window showing all the methods (there are around 70 of them --- thank goodness we'll only
-use a few of those!) that could be used on your string. 
-
-.. image::  illustrations/ch08/string_methods.png
- 
-When you type the name of the method, some further help about it's parameter and return
-type, and its docstring, will be displayed.  This is a good example of a tool --- PyScripter ---
-using the meta-information --- the docstrings --- provided by the module programmers. 
-
-.. image::  illustrations/ch08/swapcase.png
-
-Working with the parts of a string
-----------------------------------
+More Operators: Working with the parts of a string
+--------------------------------------------------
 
 The **indexing operator** (Python uses square brackets to enclose the index) 
-selects a single character substring from a string:
+selects a single character substring from a string.  The characters are named by their position or 
+index value.
 
-.. sourcecode:: python
+.. activecode:: chp08_index1
     
-    >>> fruit = "banana"
-    >>> m = fruit[1]
-    >>> print(m)
+    fruit = "banana"
+    m = fruit[1]
+    print(m)
 
 The expression ``fruit[1]`` selects character number 1 from ``fruit``, and creates a new
 string containing just this one character. The variable ``m`` refers to the result. 
-When we display ``m``, we could get a surprise::
 
-    a
-
-For perverse reasons, computer scientists always start counting
+Remember that computer scientists always start counting
 from zero. The letter at subscript position zero of ``"banana"`` is ``b``.  So at
 position ``[1]`` we have the letter ``a``.
 
 If you want the zero-eth letter of a string, you just put 0, or any expression
-with the value 0, in the brackets:
-
-.. sourcecode:: python
-    
-    >>> m = fruit[0]
-    >>> print(m)
-    b
+with the value 0, in the brackets.  Give it a try.
 
 The expression in brackets is called an **index**. An index specifies a member
-of an ordered collection, in this case the collection of characters in the string. The index
-*indicates* which one you want, hence the name. It can be any integer
-expression.
+of an ordered collection.  In this case the collection of characters in the string. The index
+*indicates* which character you want. It can be any integer
+expression so long as it evaluates to a valid index value.
 
 Note that indexing returns a *string* --- Python has no special type for a single character.
 It is just a string of length 1.
-
-We've also seen lists previously.  The same indexing notation works to extract elements from
-a list::
-
-    >>> prime_nums = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]
-    >>> prime_nums[4]
-    11
-    >>> friends = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]
-    >>> friends[3]
-    'Angelina'
 
 
 .. index::
@@ -175,26 +161,28 @@ Length
 
 The ``len`` function, when applied to a string, returns the number of characters in a string:
 
-.. sourcecode:: python
+.. activecode:: chp08_len1
     
-    >>> fruit = "banana"
-    >>> len(fruit)
-    6
+    fruit = "banana"
+    print(len(fruit))
+    
 
 To get the last letter of a string, you might be tempted to try something like
 this:
 
-.. sourcecode:: python
+.. activecode:: chp08_len2
     
+    fruit = "banana"
     sz = len(fruit)
     last = fruit[sz]       # ERROR!
+    print(last)
 
 That won't work. It causes the runtime error
 ``IndexError: string index out of range``. The reason is that there is no
 letter at index position 6 in ``"banana"``. 
 Since we started counting at zero, the six indexes are
 numbered 0 to 5. To get the last character, we have to subtract 1 from
-``length``:
+``length``.  Give it a try in the example above.
 
 .. sourcecode:: python
     
@@ -203,121 +191,40 @@ numbered 0 to 5. To get the last character, we have to subtract 1 from
 
 Alternatively, we can use **negative indices**, which count backward from the
 end of the string. The expression ``fruit[-1]`` yields the last letter,
-``fruit[-2]`` yields the second to last, and so on.
+``fruit[-2]`` yields the second to last, and so on.  Try it!
 
-As you might have guessed, indexing with a negative index also works like this for lists. 
+The Slice Operator
+------------------
 
-.. index:: traversal, for loop, concatenation, abecedarian series
-
-.. index::
-    single: McCloskey, Robert
-    single: Make Way for Ducklings    
-
-Traversal and the ``for`` loop
-------------------------------
-
-A lot of computations involve processing a string one character at a time.
-Often they start at the beginning, select each character in turn, do something
-to it, and continue until the end. This pattern of processing is called a
-**traversal**. One way to encode a traversal is with a ``while`` statement:
-
-.. sourcecode:: python
-    
-    ix = 0
-    while ix < len(fruit):
-        letter = fruit[ix]
-        print(letter)
-        ix += 1
-
-This loop traverses the string and displays each letter on a line by itself.
-The loop condition is ``ix < len(fruit)``, so when ``ix`` is equal to the
-length of the string, the condition is false, and the body of the loop is not
-executed. The last character accessed is the one with the index
-``len(fruit)-1``, which is the last character in the string.
-
-But we've previously seen how the ``for`` loop can easily iterate over lists: ``for``
-also works for strings:
-
-.. sourcecode:: python
-    
-    for c in fruit:
-        print(c)
-
-Each time through the loop, the next character in the string is assigned to the
-variable ``c``. The loop continues until no characters are left.
-
-The following example shows how to use concatenation and a ``for`` loop to
-generate an abecedarian series. Abecedarian refers to a series or list in which
-the elements appear in alphabetical order. For example, in Robert McCloskey's
-book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
-Mack, Nack, Ouack, Pack, and Quack.  This loop outputs these names in order:
-
-.. sourcecode:: python
-    
-    prefixes = "JKLMNOPQ"
-    suffix = "ack"
-       
-    for p in prefixes:
-        print(p + suffix)
-
-The output of this program is::
-    
-    Jack
-    Kack
-    Lack
-    Mack
-    Nack
-    Oack
-    Pack
-    Qack
-
-
-Of course, that's not quite right because Ouack and Quack are misspelled.
-You'll fix this as an exercise below.
-
-
-.. index:: slice, string slice
-
-Slices
-------
-
-A substring of a string (or a list) is called a **slice**. Selecting a slice is similar to
+A substring of a string is called a **slice**. Selecting a slice is similar to
 selecting a character:
 
-.. sourcecode:: python
+.. activecode:: chp08_slice1
     
-    >>> s = "Peter, Paul, and Mary"
-    >>> print(s[0:5])
-    Peter
-    >>> print(s[7:11])
-    Paul
-    >>> print(s[17:21])
-    Mary
-    >>> friends = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]
-    >>> print(friends[2:4])
-    ['Brad', 'Angelina']
+    singers = "Peter, Paul, and Mary"
+    print(singers[0:5])
+    print(singers[7:11])
+    print(singers[17:21])
+    
 
-The operator ``[n:m]`` returns the part of the string from the n'th character
-to the m'th character, including the first but excluding the last. This
-behavior is counter-intuitive; it makes more sense if you imagine the indices
-pointing *between* the characters, as in the following diagram:
-
-.. image:: illustrations/ch08//banana.png
-   :alt: 'banana' string
+The `slice` operator ``[n:m]`` returns the part of the string from the n'th character
+to the m'th character, including the first but excluding the last. In other words,  start at n and
+go up to but not including m.
+This
+behavior may seem counter-intuitive but if you recall the ``range`` function, it did not include its end
+point either.
 
 If you omit the first index (before the colon), the slice starts at the
 beginning of the string. If you omit the second index, the slice goes to the
-end of the string. Thus:
+end of the string.
 
-.. sourcecode:: python
+.. activecode:: chp08_slice2
     
-    >>> fruit = "banana"
-    >>> fruit[:3]
-    'ban'
-    >>> fruit[3:]
-    'ana'
+    fruit = "banana"
+    print(fruit[:3])
+    print(fruit[3:])
 
-What do you think ``s[:]`` means?   What about ``friends[4:]``? 
+What do you think ``fruit[:]`` means?
 
 
 .. index:: string comparison, comparison of strings
@@ -325,17 +232,23 @@ What do you think ``s[:]`` means?   What about ``friends[4:]``?
 String comparison
 -----------------
 
-The comparison operators work on strings. To see if two strings are equal:
+The comparison operators work on strings. To see if two strings are equal you simply write a boolean
+expression using the equality operator.
 
-.. sourcecode:: python
+.. activecode:: ch08_comp1
     
+    word = "banana"
     if word == "banana":
         print("Yes, we have no bananas!")
 
 Other comparison operations are useful for putting words in
-`lexigraphical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__:
+`lexigraphical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__.
+This is similar to the alphabetical order you would use with a dictionary,
+except that all the uppercase letters come before all the lowercase letters.
 
-.. sourcecode:: python
+.. activecode:: ch08_comp2
+
+    word = "zebra"
     
     if word < "banana":
         print("Your word, " + word + ", comes before banana.")
@@ -344,17 +257,51 @@ Other comparison operations are useful for putting words in
     else:
         print("Yes, we have no bananas!")
 
-This is similar to the alphabetical order you would use with a dictionary,
-except that all the uppercase letters come before all the lowercase letters. As
-a result:
 
-.. sourcecode:: python
-    
-    Your word, Zebra, comes before banana.
+It is probably clear to you that the word `apple` would be less than (come before) the word ``banana``.
+After all, `a` is before `b` in the alphabet.  But what if we consider the words ``apple`` and ``Apple``?
+Are they the same?  
+
+.. activecode:: chp08_ord1
+
+    print("apple" < "banana")
+
+    print("apple" == "Apple")
+    print("apple" < "Apple")
+
+It turns out, as you recall from our discussion of variable names, that uppercase and lowercase letters are considered to be different from one another.  The way the computer knows they are different is that
+each character is assigned a unique integer value.  "A" is 65, "B" is 66, and "5" is 53.  The way you can
+find out the so called **ordinal value** for a given character is to use a character function called ``ord``.
+
+.. activecode:: ch08_ord2
+
+    print(ord("A"))
+    print(ord("B"))
+    print(ord("5"))
+
+    print(ord("a"))
+    print("apple" > "Apple")
+
+When you compare characters or strings to one another, Python converts the characters into their equivalent ordinal values and compares the integers.  As you can see from the example above, "a" is greater than "A" so "apple" is greater than "Apple".
 
 A common way to address this problem is to convert strings to a standard
 format, such as all lowercase, before performing the comparison. A more
 difficult problem is making the program realize that zebras are not fruit.
+
+There is also a similar function called ``chr`` that converts integers into their character equivalent.
+
+.. activecode:: ch08_ord3
+
+    print(chr(65))
+    print(chr(66))
+
+    print(chr(49))
+    print(chr(53))
+
+    print("The character for 32 is",chr(32),"????")
+    print(ord(" "))
+
+One thing to note in the last two examples is the fact that the space character has an ordinal value (32).  Even though you don't see it, it is an actual character.  We sometimes call it a *nonprinting* character.
 
 
 .. index:: mutable, immutable, runtime error
@@ -362,10 +309,11 @@ difficult problem is making the program realize that zebras are not fruit.
 Strings are immutable
 ---------------------
 
-It is tempting to use the ``[]`` operator on the left side of an assignment,
-with the intention of changing a character in a string.  For example:
+One final thing that makes strings different from some other types of collections in Python is that
+you are not allowed to modify the individual characters in the collection.  It is tempting to use the ``[]`` operator on the left side of an assignment,
+with the intention of changing a character in a string.  For example, in the following code, we would like to change the first letter of greeting.
 
-.. sourcecode:: python
+.. activecode:: cg08_imm1
     
     greeting = "Hello, world!"
     greeting[0] = 'J'            # ERROR!
@@ -377,14 +325,157 @@ runtime error ``TypeError: 'str' object does not support item assignment``.
 Strings are **immutable**, which means you can't change an existing string. The
 best you can do is create a new string that is a variation on the original:
 
-.. sourcecode:: python
+.. activecode:: ch08_imm2
     
     greeting = "Hello, world!"
     newGreeting = 'J' + greeting[1:]
     print(newGreeting)
+    print(greeting)            # same as it was
 
 The solution here is to concatenate a new first letter onto a slice of
 ``greeting``. This operation has no effect on the original string.
+
+
+
+
+.. index:: traversal, for loop, concatenation, abecedarian series
+
+.. index::
+    single: McCloskey, Robert
+    single: Make Way for Ducklings    
+
+Traversal and the ``for`` loop: By Item
+---------------------------------------
+
+A lot of computations involve processing a collection one item at a time.  For strings this means
+that we would like to process one character at a time.
+Often we start at the beginning, select each character in turn, do something
+to it, and continue until the end. This pattern of processing is called a
+**traversal**.
+
+We have previously seen that the for statement can iterate over the items of a sequence.
+
+.. activecode:: ch08_4
+    :nocanvas:
+
+    for aname in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
+        invitation = "Hi " + aname + ".  Please come to my party on Saturday!"
+        print(invitation) 
+      
+Recall that the loop variable takes on each value in the sequence of names.  The body is performed once for each name.  The same was true for the sequence of integers created by the ``range`` function.
+
+.. activecode:: ch08_5
+    :nocanvas:
+
+    for avalue in range(10);
+        print(avalue)
+
+
+Since a string is simply a sequence of characters, the ``for`` loop can automatically process each character.
+
+.. activecode:: ch08_6
+    :nocanvas:
+
+    for achar in "Apple":
+        print(achar)
+
+The loop variable ``achar`` is automatically reassigned each character in the string "Apple".
+We will refer to this type of sequence iteration as **iteration by item**.  
+Note that it is only possible to process the characters one at a time from left to right.
+
+Traversal and the ``for`` loop: By Position
+-------------------------------------------
+
+It is also possible to use the ``for`` loop to systematically generate the indices or positions of the characters for 
+iteration.  These positions can be used together with the indexing operator to access the individual
+characters in the string.
+
+.. activecode:: ch08_7
+    :nocanvas:
+
+
+    fruit = "apple"
+    for position in range(5):
+        print(fruit[position])
+
+The index positions in "apple" are 0,1,2,3 and 4.  This is exactly the same sequence of integers returned by ``range(5)``.  The first time through the for loop, ``position`` will be 0 and the "a" will be printed.  Then, position will be reassigned to 1 and "p" will be displayed.  This will repeat for all the range values up to but not including 5.  Since "e" has position 4, this will be exactly right to show all 
+of the characters.
+
+In order to make the iteration more general, we can use the ``len`` function to provide the bound for ``range``.  This is a very common pattern for traversing any sequence by position.	
+
+.. activecode:: ch08_7b
+    :nocanvas:
+
+
+    fruit = "apple"
+    for position in range(len(fruit)):
+        print(fruit[position])
+
+
+You may also note that iteration by position allows the programming to control the direction of the
+traversal by changing the sequence of index values.  Recall that we can create ranges that count down as 
+well as up so the following code will print the characters from right to left.
+
+.. activecode:: ch08_8
+    :nocanvas:
+
+
+    fruit = "apple"
+    for position in range(len(fruit)-1, -1, -1):
+        print(fruit[position])
+
+Trace the values of position and satisfy yourself that they are correct.  In particular, note the start and end of the range.
+
+Traversal and the ``while`` loop: By Position
+---------------------------------------------
+
+The ``while`` loop can also control the
+generation of the index values.  Remember that the programmer is responsible for setting up the initial
+condition, making sure that the condition is correct, and making sure that something changes inside the
+body to guarantee that the condition will eventually fail.
+
+
+.. activecode:: ch08_7c
+    :nocanvas:
+
+
+    fruit = "apple"
+
+    position = 0
+    while position < len(fruit):
+        print(fruit[position])
+        position = position + 1
+
+
+The loop condition is ``position < len(fruit)``, so when ``position`` is equal to the
+length of the string, the condition is false, and the body of the loop is not
+executed. The last character accessed is the one with the index
+``len(fruit)-1``, which is the last character in the string.
+
+
+The following example shows how to use concatenation and a ``for`` loop to
+generate an abecedarian series. Abecedarian refers to a series or list in which
+the elements appear in alphabetical order. For example, in Robert McCloskey's
+book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
+Mack, Nack, Ouack, Pack, and Quack.  This loop outputs these names in order:
+
+.. activecode:: ch08_ducks
+    
+    prefixes = "JKLMNOPQ"
+    suffix = "ack"
+       
+    for p in prefixes:
+        print(p + suffix)
+
+
+
+
+Of course, that's not quite right because Ouack and Quack are misspelled.
+Can you fix it?
+
+
+.. index:: slice, string slice
+
 
 
 .. index::
@@ -396,53 +487,68 @@ The ``in`` and ``not in`` operators
 
 The ``in`` operator tests if one string is a substring of another:
 
-.. sourcecode:: python
+.. activecode:: chp8_in1
     
-    >>> 'p' in 'apple'
-    True
-    >>> 'i' in 'apple'
-    False
-    >>> 'ap' in 'apple'
-    True
-    >>> 'pa' in 'apple'
-    False
+    print('p' in 'apple')
+    print('i' in 'apple')
+    print('ap' in 'apple')
+    print('pa' in 'apple')
 
 Note that a string is a substring of itself, and the empty string is a 
 substring of any other string. (Also note that computer scientists 
 like to think about these edge cases quite carefully!) 
 
-.. sourcecode:: python
+.. activecode:: chp8_in2
     
-    >>> 'a' in 'a'
-    True
-    >>> 'apple' in 'apple'
-    True
-    >>> '' in 'a'
-    True
-    >>> '' in 'apple'
-    True
+    print('a' in 'a')
+    print('apple' in 'apple')
+    print('' in 'a')
+    print('' in 'apple')
     
-The ``not in`` operator returns the logical opposite results of ``in``::
+The ``not in`` operator returns the logical opposite results of ``in``.
 
-    >>> 'x' not in 'apple'
-    True
+.. activecode:: chp8_in3
+
+    print('x' not in 'apple')
+
 
 Combining the ``in`` operator with string concatenation using ``+``, we can
 write a function that removes all the vowels from a string:
 
-.. sourcecode:: python
+.. activecode:: ch08_fun1
     
-    def remove_vowels(s):
+    def removeVowels(s):
         vowels = "aeiouAEIOU"
-        s_without_vowels = ""
+        sWithoutVowels = ""
         for x in s:
             if x not in vowels:
-                s_without_vowels += x
-        return s_without_vowels 
+                sWithoutVowels = sWithoutVowels + x
+        return sWithoutVowels 
        
-    test(remove_vowels("compsci"), "cmpsc")
-    test(remove_vowels("aAbEefIijOopUus"), "bfjps")
+    print(removeVowels("compsci"))
+    print(removeVowels("aAbEefIijOopUus"))
 
+
+
+.. index:: counting pattern
+
+Looping and counting
+--------------------
+
+The following program counts the number of times the letter ``a`` appears in a
+string.  It is another example of the counter pattern introduced in
+:ref:`counting`:
+
+.. activecode:: chp08_fun2
+
+    def countA(text): 
+        count = 0
+        for c in text:
+            if c == 'a':
+                count = count + 1
+        return(count)
+
+    print(countA("banana"))    
 
 
 .. index:: traversal, eureka traversal, pattern of computation,
@@ -453,24 +559,29 @@ A ``find`` function
 
 What does the following function do?
 
-.. sourcecode:: python
+.. activecode:: ch08_run3
     
-    def find(strng, ch):
+    def find(astring, achar):
         """
-          Find and return the index of ch in strng.  
-          Return -1 if ch does not occur in strng.
+          Find and return the index of achar in astring.  
+          Return -1 if achar does not occur in astring.
         """
         ix = 0
-        while ix < len(strng):
-            if strng[ix] == ch:
-                return ix
-            ix += 1
-        return -1
+        found = False
+        while ix < len(astring) and not found:
+            if astring[ix] == achar:
+                found = True
+            else:
+                ix = ix + 1
+        if found:
+            return ix
+        else:
+            return -1
         
-    test(find("Compsci", "p"), 3)
-    test(find("Compsci", "C"), 0)
-    test(find("Compsci", "i"), 6)
-    test(find("Compsci", "x"), -1)
+    print(find("Compsci", "p"))
+    print(find("Compsci", "C"))
+    print(find("Compsci", "i"))
+    print(find("Compsci", "x"))
     
 
 In a sense, ``find`` is the opposite of the indexing operator. Instead of taking
@@ -478,36 +589,26 @@ an index and extracting the corresponding character, it takes a character and
 finds the index where that character appears. If the character is not found,
 the function returns ``-1``.
 
-This is another example where we see a ``return`` statement inside a loop.
-If ``strng[ix] == ch``, the function returns immediately, breaking out of
-the loop prematurely.
+The ``while`` loop in this example uses a slightly more complex condition than we have seen
+in previous programs.  Here there are two parts to the condition.  We want to keep going if there
+are more characters to look through and we want to keep going if we have not found what we are 
+looking for.  The variable ``found`` is a boolean variable that keeps track of whether we have found
+the character we are searching for.  It is initialized to *False*.  If we find the character, we
+reassign ``found`` to *True*.
 
-If the character doesn't appear in the string, then the program exits the loop
-normally and returns ``-1``.
+The other part of the condition is the same as we used previously to traverse the characters of the
+string.  Since we have now combined these two parts with a logical ``and``, it is necessary for them
+both to be *True* to continue iterating.  If one part fails, the condition fails and the iteration stops.
 
-This pattern of computation is sometimes called a eureka traversal because as
-soon as we find what we are looking for, we can cry Eureka!  and stop looking.
+When the iteration stops, we simply ask a question to find out why and then return the proper value.
+
+.. note::
+
+	This pattern of computation is sometimes called a eureka traversal because as
+	soon as we find what we are looking for, we can cry Eureka!  and stop looking.  The way
+	we stop looking is by setting ``found`` to True which causes the condition to fail.
 
 
-.. index:: counting pattern
-
-Looping and counting
---------------------
-
-The following program counts the number of times the letter ``a`` appears in a
-string, and is another example of the counter pattern introduced in
-:ref:`counting`:
-
-.. sourcecode:: python
-    
-    def count_a(text): 
-        count = 0
-        for c in text:
-            if c == 'a':
-                count += 1
-        return(count)
-
-    test(count_a("banana"), 3)    
 
 .. index:: optional parameter, default value, parameter; optional
 
@@ -516,75 +617,108 @@ string, and is another example of the counter pattern introduced in
 Optional parameters
 -------------------
 
-To find the locations of the second or third occurence of a character in a
+To find the locations of the second or third occurrence of a character in a
 string, we can modify the ``find`` function, adding a third parameter for the
-starting postion in the search string:
+starting position in the search string:
 
-.. sourcecode:: python
+.. activecode:: ch08_fun4
     
-    def find2(strng, ch, start):
-        ix = start 
-        while ix < len(strng):
-            if strng[ix] == ch:
-                return ix
-            ix += 1
-        return -1
+    def find2(astring, achar, start):
+        """
+          Find and return the index of achar in astring.  
+          Return -1 if achar does not occur in astring.
+        """
+        ix = start
+        found = False
+        while ix < len(astring) and not found:
+            if astring[ix] == achar:
+                found = True
+            else:
+                ix = ix + 1
+        if found:
+            return ix
+        else:
+            return -1
         
-    test(find2('banana', 'a', 2), 3)
+    print(find2('banana', 'a', 2))
+
 
 The call ``find2('banana', 'a', 2)`` now returns ``3``, the index of the first
 occurrence of 'a' in 'banana' after index 2. What does
 ``find2('banana', 'n', 3)`` return? If you said, 4, there is a good chance you
-understand how ``find2`` works.
+understand how ``find2`` works.  Try it.
 
 Better still, we can combine ``find`` and ``find2`` using an
 **optional parameter**:
 
-.. sourcecode:: python
+.. activecode:: chp08_fun5
     
-    def find(strng, ch, start=0):
-        ix = start 
-        while ix < len(strng):
-            if strng[ix] == ch:
-                return ix
-            ix += 1
-        return -1
+	def find3(astring, achar, start=0):
+	    """
+	      Find and return the index of achar in astring.  
+	      Return -1 if achar does not occur in astring.
+	    """
+	    ix = start
+	    found = False
+	    while ix < len(astring) and not found:
+	        if astring[ix] == achar:
+	            found = True
+	        else:
+	            ix = ix + 1
+	    if found:
+	        return ix
+	    else:
+	        return -1
+	
+	print(find3('banana', 'a', 2))
 
-The call ``find('banana', 'a', 2)`` to this version of ``find`` behaves just
-like ``find2``, while in the call ``find('banana', 'a')``, ``start`` will be
+The call ``find3('banana', 'a', 2)`` to this version of ``find`` behaves just
+like ``find2``, while in the call ``find3('banana', 'a')``, ``start`` will be
 set to the **default value** of ``0``.
 
 Adding another optional parameter to ``find`` makes it search from a starting
 position, up to but not including the end position:
 
-.. sourcecode:: python
+.. activecode:: chp08_fun6
     
-    def find(strng, ch, start=0, end=None):
-        ix = start 
-        if end == None:
-           end = len(strng)
-        while ix < end:
-            if strng[ix] == ch:
-                return ix
-            ix += 1 
-        return -1
+    def find4(astring, achar, start=0, end=None):
+	    """
+	      Find and return the index of achar in astring.  
+	      Return -1 if achar does not occur in astring.
+	    """
+	    ix = start
+	    if end == None:
+	       end = len(astring)
 
-The optional value for ``end`` is interesting: we give it a default value ``None`` if the
-caller does not supply any argument.  In the body of the function we test what ``end`` is,
+	    found = False
+	    while ix < end and not found:
+	        if astring[ix] == achar:
+	            found = True
+	        else:
+	            ix = ix + 1
+	    if found:
+	        return ix
+	    else:
+	        return -1
+
+    ss = "Python strings have some interesting methods."
+ 
+    print(find4(ss, 's'))
+    print(find4(ss, 's', 7))
+    print(find4(ss, 's', 8))
+    print(find4(ss, 's', 8, 13))
+    print(find4(ss, '.'))
+
+
+The optional value for ``end`` is interesting.  We give it a default value ``None`` if the
+caller does not supply any argument.  In the body of the function we test what ``end`` is
 and if the caller did not supply any argument, we reassign ``end`` to be the length of the string.
 If the caller has supplied an argument for ``end``, however, the caller's value will be used in the loop.
 
 The semantics of ``start`` and ``end`` in this function are precisely the same as they are in
 the ``range`` function.
 
-Here are some test cases that should pass:: 
 
-    ss = "Python strings have some interesting methods."
-    test(find(ss, 's'), 7)
-    test(find(ss, 's', 7), 7)
-    test(find(ss, 's', 8), 13)
-    test(find(ss, 's', 8, 13), -1)
-    test(find(ss, '.'), len(ss)-1)
 
 .. index:: module, string module, dir function, dot notation, function type,
            docstring
@@ -594,62 +728,11 @@ More ``string`` methods
  
 Now that we've done all this work to write a powerful ``find`` function, we can let on that
 there is already a ``find`` method that works on strings, with precisely these same semantics::
-
-    test(ss.find('s'), 7)
-    test(ss.find('s', 7), 7)
-    test(ss.find('s', 8), 13)
-    test(ss.find('s', 8, 13), -1)
-    test(ss.find('.'), len(ss)-1)
-    
 Usually we'd prefer to use the methods that Python provides rather than reinvent
 our own equivalents. But many of the available built-in functions and methods make good
 teaching exercises, and the underlying techniques you learn are your building blocks
 to becoming a proficient programmer.
 
-The ``string`` module contains useful functions that manipulate strings.  As
-usual, we have to import the module before we can use it.  We
-can use the same trick as before: as we type the period, PyScripter will pop
-up a selection list of the available attributes that can be accessed directly
-through the module name (``string``).  Notice that these are different from
-the methods that are attached to each string instance.
-
-.. sourcecode:: python
-    
-    import string
-    ...
-    string.
-    
-Pops up these hints:
-
-.. image:: illustrations/ch08/string_members.png
-
-You will notice that there are different icons next to some items
-in the list.  Recall that objects can have *attributes* (e.g. the
-colour of a turtle's pen), and *methods* (functions that can be called
-on the object).  The icon alongside  ``capwords`` indicates that this
-is a method that can be called.  The icon alongside ``digits`` indicate
-that this is an attribute.  It's value can be used directly::
-
-    >>> string.digits
-    '0123456789'
-    >>> string.hexdigits
-    '0123456789abcdefABCDEF'
-    >>> string.capwords('the cat in the hat')
-    'The Cat In The Hat'
-    
-Actually, the built-in ``find`` method is more general than our version. It can find
-substrings, not just characters:
-
-.. sourcecode:: python
-    
-    >>> "banana".find("na")
-    2
-    >>> "banana".find("na", 3)
-    4
-
-
-.. index:: character classification, uppercase, lowercase,  
-           whitespace, string module, Python Library Reference
 
 Character classification
 ------------------------
@@ -657,12 +740,13 @@ Character classification
 It is often helpful to examine a character and test whether it is upper- or
 lowercase, or whether it is a character or a digit. The ``string`` module
 provides several constants that are useful for these purposes. One of these,
-``string.digits``, we have already seen.
+``string.digits`` is equivalent to "0123456789".  It can be used to check if a character
+is a digit using the ``in`` operator.
 
 The string ``string.ascii_lowercase`` contains all of the ascii letters that the system
 considers to be lowercase. Similarly, ``string.ascii_uppercase`` contains all of the
 uppercase letters. ``string.punctuation`` comprises all the characters considered
-to be punctuation. Try the following and see what you get:
+to be punctuation. Try the following and see what you get.
 
 .. sourcecode:: python
     
@@ -671,223 +755,7 @@ to be punctuation. Try the following and see what you get:
     print(string.digits)
     print(string.punctuation)
 
-We can use these constants and their ``find`` methods to classify characters. For example, if
-``string.ascii_lowercase.find(ch)`` returns a value other than ``-1``, then ``ch`` must be
-lowercase:
-
-Another constant defined in the ``string`` module may surprise you when you
-print it:
-
-.. sourcecode:: python
     
-    >>> print(string.whitespace)
-    
-**Whitespace** characters move the cursor without printing anything.  They
-create the white space between visible characters (at least on white paper).
-The constant ``string.whitespace`` contains all the whitespace characters,
-including space, tab (``\t``), and newline (``\n``).
-
-While we could use ``find`` and these constants, there are also string methods 
-that are much more convenient for classifing the string, for example::
-    
-    >>> "2".isdigit()
-    True
-    >>> "x".isprintable()
-    True
-    >>> "?".ispunctuation()
-    Traceback (most recent call last):
-    File "<interactive input>", line 1, in <module>
-    AttributeError: 'str' object has no attribute 'ispunctuation'
-
-Oops!  It seems they forgot to create a method for the last one.  We'll need to do this one the long way.  
-So let's use these to remove all punction from a string, similar to our
-previous example where we removed all vowels::
-
-    import string
-        
-    def remove_punctuation(s):
-        s_without_punct = ""
-        for letter in s:
-            if letter not in string.punctuation:
-                s_without_punct += letter
-        return s_without_punct
-
-    test(remove_punctuation('"Well, I never did!", said Alice.'),
-                                "Well I never did said Alice")
-    test(remove_punctuation("Are you very, very, sure?"),
-                                 "Are you very very sure")
-                                 
-One of the most useful methods on strings is the ``split`` method:
-it splits a single multi-word string into a list of individual words, removing
-all the whitespace between them.  
-    
-    >>> ss = remove_punctuation('"Well, I never did!", said Alice.')
-    >>> wds = ss.split()
-    >>> wds
-    ['Well', 'I', 'never', 'did', 'said', 'Alice']
-
-There are other useful functions in the ``string`` module, and other
-methods on string instances, but this book isn't
-intended to be a reference manual. On the other hand, the *Python Library
-Reference* is. Along with a wealth of other documentation, it's available from
-the Python website, `http://www.python.org <http://www.python.org>`__.
-
-
-.. index:: string formatting, operations on strings, formatting; strings, justification, field width
-
-The format method for strings
------------------------------
- 
-The easiest and most powerful way to format a string in Python 3 is to use the
-*format* method.  To see how this works, let's start with a few examples:
-
-.. sourcecode:: python
-    :linenos:
-    
-    s1 = "His name is {0}!".format("Arthur")
-    print(s1)
-
-    name = "Alice"
-    age = 10
-    s2 = "I am {0} and I am {1} years old.".format(name, age)
-    print(s2)
-
-    n1 = 4
-    n2 = 5
-    s3 = "2**10 = {0} and {1} * {2} = {3:f}".format(2**10, n1, n2, n1 * n2)
-    print(s3)
-    
-Running the script produces::
-
-    His name is Arthur!
-    I am Alice and I am 10 years old.
-    2**10 = 1024 and 4 * 5 = 20.000000
-
-The key idea is that one provides a *formatter string* which
-contains embedded *placeholder fields*, ``... {0} ... {1} ... {2} ...`` etc.
-The **format method** of a string uses the numbers as indexes into
-its arguments, and substitutes the appropriate argument into each
-placeholder fields.  
-
-Each of the placeholders can optionally contain an additional **format specification** ---
-it is always introduced by the ``:`` symbol.  This can control things like
-
-* whether the field is aligned left ``<``, centered ``^``, or right ``>``
-* the width allocated to the field within the result string (a number like ``10``)
-* the type of conversion (we'll initially only force conversion to float, ``f``, as we did in
-  line 11 of the code above, or perhaps we'll ask integer numbers to be converted to hexadecimal using ``x``)
-* if the type conversion is a float, you can also specify how many decimal places are wanted 
-  (typically, ``.2f`` is useful for working with currencies to two decimal places.)
-
-Let's do a few simple and common examples that should be enough for most needs.  If you need to
-do anything more esoteric, use *help* and read all the gory details.
-
-.. sourcecode:: python
-
-    n1 = "Paris"
-    n2 = "Whitney"
-    n3 = "Hilton"
-
-    print("The value of pi to three decimal places is {0:.3f}".format(3.1415926))
-    print("123456789 123456789 123456789 123456789 123456789 123456789")
-    print("|||{0:<15}|||{1:^15}|||{2:>15}|||Born in {3}|||".format(n1,n2,n3,1981))
-    print("The decimal value {0} converts to hex value {0:x}".format(123456))
-
-This script produces the output::
-
-    The value of pi to three decimal places is 3.142
-    123456789 123456789 123456789 123456789 123456789 123456789
-    |||Paris          |||    Whitney    |||         Hilton|||Born in 1981|||
-    The decimal value 123456 converts to hex value 1e240
-    
-You can have multiple placeholders indexing the
-same argument, or perhaps even have extra arguments that are not referenced
-at all:
-
-.. sourcecode:: python
-
-    letter = """
-    Dear {0} {2}.
-     {0}, I have an interesting money-making proposition for you!
-     If you deposit $10 million into my bank account I can double your money ...
-    """
-
-    print(letter.format("Paris", "Whitney", "Hilton"))
-    print(letter.format("Bill", "Henry", "Gates"))
-    
-This produces the following::
-
-    Dear Paris Hilton.
-         Paris, I have an interesting money-making proposition for you!
-         If you deposit $10 million into my bank account I can double your money ...
-
-    Dear Bill Gates.
-         Bill, I have an interesting money-making proposition for you!
-         If you deposit $10 million into my bank account I can double your money ...
-
-As you might expect, you'll get an index error if 
-your placeholders refer to arguments that you do not provide::
-
-    >>> "hello {3}".format("Dave")
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    IndexError: tuple index out of range
-    
-The following example illustrates the real utility of string formatting:
-
-.. sourcecode:: python
-    
-    print("i\ti**2\ti**3\ti**5\ti**10\ti**20")
-    for i in range(1, 11):
-        print(i, '\t', i**2, '\t', i**3, '\t', i**5, '\t', i**10, '\t', i**20)
-
-This program prints out a table of various powers of the numbers from 1 to 10.
-(This assumes that the tab width is 8.  You might see
-something even worse than this if you tab width is set to 4.)
-In its current form it relies on the tab character ( ``\t``) to align the
-columns of values, but this breaks down when the values in the table get larger
-than the tab width::
-    
-    i       i**2    i**3    i**5    i**10   i**20
-    1       1       1       1       1       1
-    2       4       8       32      1024    1048576
-    3       9       27      243     59049   3486784401
-    4       16      64      1024    1048576         1099511627776
-    5       25      125     3125    9765625         95367431640625
-    6       36      216     7776    60466176        3656158440062976
-    7       49      343     16807   282475249       79792266297612001
-    8       64      512     32768   1073741824      1152921504606846976
-    9       81      729     59049   3486784401      12157665459056928801
-    10      100     1000    100000  10000000000     100000000000000000000
-
-One possible solution would be to change the tab width, but the first column
-already has more space than it needs. The best solution would be to set the
-width of each column independently. As you may have guessed by now, string
-formatting provides the solution.  We can also right-justify each field:
-
-.. sourcecode:: python
-        
-    layout = "{0:>4}{1:>6}{2:>6}{3:>8}{4:>13}{5:>24}"
-
-    print(layout.format('i', 'i**2', 'i**3', 'i**5', 'i**10', 'i**20'))
-    for i in range(1, 11):
-        print(layout.format(i, i**2, i**3, i**5, i**10, i**20))
- 
-
-Running this version produces the following output::
-    
-   i  i**2  i**3    i**5        i**10                   i**20
-   1     1     1       1            1                       1
-   2     4     8      32         1024                 1048576
-   3     9    27     243        59049              3486784401
-   4    16    64    1024      1048576           1099511627776
-   5    25   125    3125      9765625          95367431640625
-   6    36   216    7776     60466176        3656158440062976
-   7    49   343   16807    282475249       79792266297612001
-   8    64   512   32768   1073741824     1152921504606846976
-   9    81   729   59049   3486784401    12157665459056928801
-  10   100  1000  100000  10000000000   100000000000000000000
-
 
 Summary 
 ------- 

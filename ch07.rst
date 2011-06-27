@@ -27,7 +27,7 @@ form of iteration in Python. In this chapter
 we are also going to look at the ``while`` statement --- another way to have your
 program do iteration.
 
-Before we do that, let's just review a few ideas related to variables and assignment.
+Before we do that, let's review a few ideas related to variables and assignment.
 
 Reassignment
 ------------ 
@@ -46,7 +46,7 @@ same variable. A new assignment makes an existing variable refer to a new value
 
 The first time ``bruce`` is
 printed, its value is 5, and the second time, its value is 7.  The assignment statement changes
-the value that ``bruce`` refers to.
+the value (the object) that ``bruce`` refers to.
 
 Here is what **reassignment** looks like in a state snapshot:
 
@@ -78,24 +78,32 @@ they don't have to stay that way:
     print(a,b)
 
 Line 4 changes the value of ``a`` but does not change the value of
-``b``, so they are no longer equal. (In some programming languages, a different
-symbol is used for assignment, such as ``<-`` or ``:=``, to avoid confusion.  Python
-chose to use the tokens ``=`` for assignment, and ``==`` for equality.  This is a popular
-choice also found in languages like C, C++, Java, and C#.)
+``b``, so they are no longer equal. 
+
+.. note::
+
+	In some programming languages, a different
+	symbol is used for assignment, such as ``<-`` or ``:=`.  The intent is
+	that this will help to avoid confusion.  Python
+	chose to use the tokens ``=`` for assignment, and ``==`` for equality.  This is a popular
+	choice also found in languages like C, C++, Java, and C#.
 
 
 Updating variables
 ------------------
 
-One of the most common forms of reassignment is an update, where the new
-value of the variable depends on the old.
+One of the most common forms of reassignment is an **update** where the new
+value of the variable depends on the old.  For example,
 
 .. sourcecode:: python
     
     x = x + 1
 
 This means get the current value of x, add one, and then update x with the new
-value.  The new value of x is the old value of x plus 1.
+value.  The new value of x is the old value of x plus 1.  Although this assignment statement may
+look a bit strange, remember that executing assignment is a two-step process.  First, evaluate the
+right-hand side expression.  Second, let the variable name on the left-hand side refer to this new
+resulting object.  The fact that ``x`` appears on both sides does not matter.
 
 .. activecode:: ch07_update1
 
@@ -109,7 +117,7 @@ If you try to update a variable that doesn't exist, you get an error, because
 Python evaluates the expression on the right side of the assignment operator
 before it assigns the resulting value to the name on the left.
 Before you can update a variable, you have to **initialize** it, usually with a
-simple assignment.
+simple assignment.  In the above example, ``x`` was initialized to 6.
 
 Updating a variable by adding 1 is called an **increment**; subtracting 1 is
 called a **decrement**.  Sometimes programmers also talk about **bumping**
@@ -149,7 +157,7 @@ to update the running total by adding the next number to it.
        
         runningTotal = 0
         for x in xs:
-            runningTotal = runningTotal + x
+            runningTotal = runningTotal + x   # accumulate the running total
         return runningTotal
 
     print(mysum([1,2,3,4]))
@@ -188,7 +196,7 @@ Here is a fragment of code that demonstrates the use of the ``while`` statement:
 
 
 
-You can almost read the ``while`` statement as if it were English. It means,
+You can almost read the ``while`` statement as if it were in natural language. It means,
 while ``v`` is less than or equal to ``n``, continue executing the body of the loop. Within
 the body, each time, increment ``v``. When ``v`` passes ``n``, return your accumulated sum.
 
@@ -209,26 +217,27 @@ loop, the statements inside the loop are never executed.
 
 The body of the loop should change the value of one or more variables so that
 eventually the condition becomes ``False`` and the loop terminates. Otherwise the
-loop will repeat forever, which is called an **infinite loop**. An endless
+loop will repeat forever. This is called an **infinite loop**. 
+An endless
 source of amusement for computer scientists is the observation that the
 directions on shampoo, lather, rinse, repeat, are an infinite loop.
 
-In the case here, we can prove that the loop terminates because we
+In the case shown above, we can prove that the loop terminates because we
 know that the value of ``n`` is finite, and we can see that the value of ``v``
 increments each time through the loop, so eventually it will have to exceed ``n``. In
 other cases, it is not so easy to tell.  
 
 .. note::
 
-	Introduction of the while statement causes us to think about the types of iteration we have seen.  The ``for`` statement will always iterate through a sequence of values.  Since we know that it will iterate once for each value in the collection, it is often said that a ``for`` loop creates a
+	Introduction of the while statement causes us to think about the types of iteration we have seen.  The ``for`` statement will always iterate through a sequence of values like the list of names for the party or the list of numbers created by ``range``.  Since we know that it will iterate once for each value in the collection, it is often said that a ``for`` loop creates a
 	**definite iteration** because we definitely know how many times we are going to iterate.  On the other
 	hand, the ``while`` statement is dependent on a condition that needs to evaluate to ``False`` in order 
 	for the loop to terminate.  Since we do not necessarily know when this will happen, it creates what we
-	call **indefinite iteration**.  Indefinite iteration simply means that we don't know how many times we will repeat but eventually the condition controlling the iteration will fail and it will stop. (Unless we have an infinite loop which is of course a problem)
+	call **indefinite iteration**.  Indefinite iteration simply means that we don't know how many times we will repeat but eventually the condition controlling the iteration will fail and the iteration will stop. (Unless we have an infinite loop which is of course a problem)
 
 What you will notice here is that the ``while`` loop is more work for
 you --- the programmer --- than the equivalent ``for`` loop.  When using a ``while``
-loop one has to control the loop variable yourself.  You give it an initial value, test
+loop you have to control the loop variable yourself.  You give it an initial value, test
 for completion, and then make sure you change something in the body so that the loop
 terminates.  By comparison, here is an alternative function that uses ``for`` instead: 
 
@@ -256,8 +265,8 @@ we need the extra power that we get from the ``while`` loop.
 The 3n + 1 sequence
 -------------------
 
-Let's look at a simple sequence that has fascinated and foxed mathematicians for many years.
-They still cannot answer even quite simple questions about this.  
+Let's look at a simple sequence that has fascinated mathematicians for many years.
+They still cannot answer even quite simple questions about it.  
 
 The rule is to start from
 some given ``n``, and to generate
@@ -284,8 +293,8 @@ This Python function captures that algorithm.
 
     
                 
-The condition for this loop is ``n != 1``, so the loop will continue running until
-``n`` is ``1``, which will make the condition false.
+The condition for this loop is ``n != 1``.  The loop will continue running until
+``n`` is ``1`` (which will make the condition false).
 
 Each time through the loop, the program outputs the value of ``n`` and then
 checks whether it is even or odd. If it is even, the value of ``n`` is divided
@@ -322,13 +331,13 @@ be other cycles that we just haven't found.
    or can formulate a suitable call to ``range``, then choose the ``for`` loop.
 
    So any problem like "iterate this weather model run for 1000 cycles", or "search this
-   list of words", "find all prime numbers up to 10000" suggest that a ``for`` loop is best.
+   list of words", "check all integers up to 10000 to see which are prime" suggest that a ``for`` loop is best.
 
    By contrast, if you are required to repeat some computation until some condition is 
    met, as we did in this 3n + 1 problem, you'll need a ``while`` loop. 
 
    As we noted before, the first case is called **definite iteration** --- we have some definite bounds for 
-   what is needed.   The latter case is called **indefinite iteration** --- we're not sure
+   what is needed.   The latter case is called **indefinite iteration** --- we are not sure
    how many iterations we'll need --- we cannot even establish an upper bound!    
 
 
@@ -338,7 +347,7 @@ Tracing a program
 -----------------
 
 To write effective computer programs a programmer needs to develop the ability
-to **trace** the execution of a computer program. Tracing involves becoming the
+to **trace** the execution of a computer program as it is being executed. Tracing involves becoming the
 computer and following the flow of execution through a sample program run,
 recording the state of all variables and any output the program generates after
 each instruction is executed.
@@ -382,15 +391,7 @@ will require log\ :sub:`2`\ (n) executions of the loop body to complete. We can
 also see that the final 1 will not be printed as output within the body of the loop,
 which is why we put the special ``print`` function at the end. 
 
-Tracing a program is, of course, related to single-stepping through your code
-and being able to inspect the variables. Using the computer to **single-step** for you is
-less error prone and more convenient. 
-Also, as your ptograms get more complex, they might execute many millions of 
-steps before they get to the code that you're really interested in, so manual tracing 
-becomes impossible.  Being able to set a **breakpoint** where you need
-one is far more powerful. So we strongly encourage you to invest time in
-learning using to use your programming environment (PyScripter, in these notes) to full
-effect. 
+
 
 There are also some great visualization tools becoming available to help you 
 trace and understand small fragments of Python code.  The one we recommend is at 
@@ -404,7 +405,9 @@ Counting Digits
 ---------------
 
 The following function counts the number of decimal digits in a positive
-integer:
+integer.  The function works by continually dividing the number by 10 until it is not
+possible to do so any longer.  This is another example of indefinite iteration since we
+do not know how many divisions will be necessary ahead of time.
 
 .. activecode:: ch07_digits1
 
@@ -421,7 +424,7 @@ integer:
 As you can see, a call to ``print(num_digits(710))`` will display ``3``. Trace the execution of this
 function call on a piece of paper to convince yourself that it works.
 
-This function demonstrates an important pattern of computation called a **counter** (note that it is
+This function also demonstrates an important pattern of computation called a **counter** (note that it is
 a type of accumulator).
 The variable ``count`` is initialized to 0 and then incremented each time the
 loop body is executed. When the loop exits, ``count`` contains the result ---
@@ -501,121 +504,6 @@ Because of the tab characters between the columns, the position of the second
 column does not depend on the number of digits in the first column.
 
 
-.. index:: two-dimensional table
-
-Two-dimensional tables
-----------------------
-
-A two-dimensional table is a table where you read the value at the intersection
-of a row and a column. A multiplication table is a good example. Let's say you
-want to print a multiplication table for the values from 1 to 6.
-
-A good way to start is to write a loop that prints the multiples of 2, all on
-one line:
-
-.. sourcecode:: python
-    
-    for i in range(1, 7):
-        print(2 * i, end='   ')
-    print()
-
-Here we've used the ``range`` function, but made it start its sequence at 1. 
-As the loop executes, the value of ``i`` changes from 1 to
-6. When all the elements of the range have been assigned to ``i``, the loop terminates. 
-Each time through the loop, it
-displays the value of ``2 * i``, followed by three spaces.
-
-Again, the extra ``end='   '`` argument in the ``print`` function suppresses the newline, and
-uses three spaces instead.  After the
-loop completes, the second call to ``print`` finishes the current line, and starts a new line.
-
-The output of the program is::
-    
-    2      4      6      8      10     12
-
-So far, so good. The next step is to **encapsulate** and **generalize**.
-
-
-.. index:: encapsulation, generalization, program development
-
-Encapsulation and generalization
---------------------------------
-
-Encapsulation is the process of wrapping a piece of code in a function,
-allowing you to take advantage of all the things functions are good for. You
-have already seen some examples of encapsulation, including ``is_divisible`` in a previous chapter.
-
-Generalization means taking something specific, such as printing the multiples
-of 2, and making it more general, such as printing the multiples of any
-integer.
-
-This function encapsulates the previous loop and generalizes it to print
-multiples of ``n``:
-
-.. sourcecode:: python
-    
-    def print_multiples(n):
-        for i in range(1, 7):
-            print(n * i, end='   ')
-        print()
-
-To encapsulate, all we had to do was add the first line, which declares the
-name of the function and the parameter list. To generalize, all we had to do
-was replace the value 2 with the parameter ``n``.
-
-If we call this function with the argument 2, we get the same output as before.
-With the argument 3, the output is::
-
-    3      6      9      12     15     18
-
-With the argument 4, the output is::
-
-    4      8      12     16     20     24
-
-By now you can probably guess how to print a multiplication table --- by
-calling ``print_multiples`` repeatedly with different arguments. In fact, we
-can use another loop:
-
-.. sourcecode:: python
-    
-    for i in range(1, 7):
-        print_multiples(i)
-
-Notice how similar this loop is to the one inside ``print_multiples``.  All we
-did was replace the ``print`` function with a function call.
-
-The output of this program is a multiplication table::
-
-    1      2      3      4      5      6
-    2      4      6      8      10     12
-    3      6      9      12     15     18
-    4      8      12     16     20     24
-    5      10     15     20     25     30
-    6      12     18     24     30     36
-
-
-.. index:: development plan
-
-More encapsulation
-------------------
-
-To demonstrate encapsulation again, let's take the code from the last section
-and wrap it up in a function:
-
-.. sourcecode:: python
-    
-    def print_mult_table():
-        for i in range(1, 7):
-            print_multiples(i)
-
-This process is a common **development plan**. We develop code by writing lines
-of code outside any function, or typing them in to the interpreter. When we get
-the code working, we extract it and wrap it up in a function.
-
-This development plan is particularly useful if you don't know how to divide
-the program into functions when you start writing. This approach lets you
-design as you go along.
-
 
 .. index::
     single: local variable
@@ -662,245 +550,6 @@ two variables ``i`` are distinct variables, and how they have independent values
 (The visualizer has a limit of showing 100 steps, though --- not quite enough
 to run this particular example all the way to the end.)
 
-.. index:: break statement,  statement: break
-
-The ``break`` statement, and flavours of loops
-----------------------------------------------
-
-.. sidebar::  A pre-test loop
-
-    .. image:: illustrations/ch07/pre_test_loop.png  
-
-The **break** statement is used to immediately leave the body of its loop.  The next
-statement to be executed is the first one after the body::
-
-    for i in [12, 16, 17, 24, 29]: 
-        if i % 2 == 1:  # if the number is odd
-           break        # immediately exit the loop
-        print(i)
-    print("done")
-    
-This prints::
-
-    12
-    16
-    done
-    
-
-    
-``for`` and ``while`` loops do their tests at the start, before executing
-any part of the body.  (They're called **pre-test** loops, because the test
-happens before (pre) the body.)  
-
-   
-.. sidebar::  A middle-test loop
-
-    .. image:: illustrations/ch07/mid_test_loop.png  
-    
-Sometimes we'd like to have the **middle-test** loop with the exit test in the middle 
-of the body, rather than at the beginning.  Or a **post-test** loop that
-puts its exit test after the body.   Python doesn't provide different
-loops for these cases: but a combination of ``while`` and ``break`` are sufficient
-to get the job done.    
-
-A typical example is a problem where the user has to input numbers to be summed.  
-To indicate that there are no more inputs, the user enters a special value, often
-the value -1, or the empty string.  This needs a middle-exit loop pattern: 
-input the next number, then test whether to exit, or else process the number::
-
-    total = 0
-    while True:
-        response = input("Enter the next number. (Leave blank to end)")
-        if response == "":
-            break 
-        total += int(response)
-    print("The total of the numbers you entered is ", total)
-
-    
-A post-test loop would be useful,for example, if you were playing an
-interactive game against the user::
-
-    while True:
-        play_the_game()
-        response = input("Play again? (yes or no)")
-        if response != "yes":
-            break 
-    print("Goodbye!")
-    
-.. sidebar::  A post-test loop
-
-    .. image:: illustrations/ch07/post_test_loop.png        
-    
-The ``while True:`` in these cases is *idiomatic* --- a convention that
-most programmers will recognize immediately. The test in the ``while`` loop must
-always succeed. A clever compiler or interpreter will understand that
-and won't generate any unnecessary work!   
-    
-    
-The following program implements a simple guessing game:
-
-
-.. sourcecode:: python
-    :linenos:
-    
-    import random                     # We cover random numbers in chapter 10
-    rng = random.Random()             # so you can peek ahead.
-    number = rng.randrange(1, 1000)   # Get a random number between [1 and 1000).
-
-    guesses = 0
-    msg = ""
-
-    while True:
-        guess = int(input(msg + "\nGuess my number between 1 and 1000: "))
-        guesses += 1
-        if guess > number:
-            msg += str(guess) + " is too high.\n"  
-        elif guess < number:
-            msg += str(guess) + " is too low.\n"  
-        else:
-            break
-
-    input("\n\nCongratulations, you got it in {0} guesses!\n\n" .format(guesses))
-    
-This program makes use of the mathematical law of **trichotomy** (given real
-numbers a and b, exactly one of these three must be true:  a > b, a < b, or a == b). 
-
-At line 18 there is a call to the input function, but we don't do 
-anything with the result, not even assign it to a variable.  This is legal in Python.
-Here it has the effect of popping up the input dialog window and waiting for the
-user to respond before the program terminates.  Programmers often use the trick 
-of doing some extra input at the end of a script, just to keep the windows open.
-
-Also notice the use of the ``msg`` variable, initially an empty string, on lines 6, 12 and 14.
-Each time through the loop we extend the message being displayed: this allows us to 
-display the program's feedback right at the same place as we're asking for the next guess. 
-
-.. image:: illustrations/ch07/python_input.png
-
-.. index:: continue statement,  statement; continue
-
-The ``continue`` statement
---------------------------
-
-This is a control flow statement that causes the program to immediately skip the
-processing of the rest of the body of the loop, *for the current iteration*.  But
-the loop still carries on running for its remaining iterations::
-
-    for i in [12, 16, 17, 24, 29, 30]: 
-        if i % 2 == 1:      # if the number is odd
-           continue         # don't process it
-        print(i)
-    print("done")
-
-This prints::
-
-    12
-    16
-    24
-    30
-    done    
-    
-More generalization
--------------------
-
-As another example of generalization, imagine you wanted a program that would
-print a multiplication table of any size, not just the six-by-six table. You
-could add a parameter to ``print_mult_table``:
-
-.. sourcecode:: python
-    
-    def print_mult_table(high):
-        for i in range(1, high+1):
-            print_multiples(i)
-
-We replaced the value 1 with the expression ``high+1``. If we call
-``print_mult_table`` with the argument 7, it displays::
-    
-    1      2      3      4      5      6
-    2      4      6      8      10     12
-    3      6      9      12     15     18
-    4      8      12     16     20     24
-    5      10     15     20     25     30
-    6      12     18     24     30     36
-    7      14     21     28     35     42
-
-This is fine, except that we probably want the table to be square --- with the
-same number of rows and columns. To do that, we add another parameter to
-``print_multiples`` to specify how many columns the table should have.
-
-Just to be annoying, we call this parameter ``high``, demonstrating that
-different functions can have parameters with the same name (just like local
-variables). Here's the whole program:
-
-.. sourcecode:: python
-    
-    def print_multiples(n, high):
-        for i in range(1, high+1):
-            print(n * i, end='   ')
-        print()
-       
-    def print_mult_table(high):
-        for i in range(1, high+1):
-            print_multiples(i, high)
-
-Notice that when we added a new parameter, we had to change the first line of
-the function (the function heading), and we also had to change the place where
-the function is called in ``print_mult_table``.
-
-Now, when we call ``print_mult_table(7)``::
-
-    1      2      3      4      5      6      7
-    2      4      6      8      10     12     14
-    3      6      9      12     15     18     21
-    4      8      12     16     20     24     28
-    5      10     15     20     25     30     35
-    6      12     18     24     30     36     42
-    7      14     21     28     35     42     49
-
-When you generalize a function appropriately, you often get a program with
-capabilities you didn't plan. For example, you might notice that, because ab =
-ba, all the entries in the table appear twice. You could save ink by printing
-only half the table. To do that, you only have to change one line of
-``print_mult_table``. Change
-
-.. sourcecode:: python
-    
-            print_multiples(i, high+1)
-
-to
-
-.. sourcecode:: python
-    
-            print_multiples(i, i+1)
-
-and you get::
-    
-    1
-    2      4
-    3      6      9
-    4      8      12     16
-    5      10     15     20     25
-    6      12     18     24     30     36
-    7      14     21     28     35     42     49
-
-
-.. index:: function
-
-Functions
----------
-
-A few times now, we have mentioned all the things functions are good for. By
-now, you might be wondering what exactly those things are.  Here are some of
-them:
-
-#. Giving a name to a sequence of statements makes your program easier to read
-   and debug.
-#. Dividing a long program into functions allows you to separate parts of the
-   program, debug them in isolation, and then compose them into a whole.
-#. Functions facilitate the use of iteration.
-#. Well-designed functions are often useful for many programs. Once you write
-   and debug one, you can reuse it.
-
 
 .. index::
     single: Newton's method
@@ -918,35 +567,60 @@ formula:
 
 .. sourcecode:: python
     
-    better =  (approx + n/approx)/2
+    better =  1/2 * (approx + n/approx)
     
 Execute this algorithm a few times using your calculator.  Can you
 see why each iteration brings your estimate a little closer?  One of the amazing
 properties of this particular algorithm is how quickly it converges to an accurate
 answer.    
 
-By repeatedly applying this formula until the better approximation gets close
-enough to the previous one, we can write a function for computing the square root.
+The following implementation of Newton's method requires two parameters.  The first is the
+value whose square root will be approximated.  The second is the number of times to iterate the
+calculation yielding a better result.
 
-.. sourcecode:: python
+.. activecode:: chp07_newtonsdef
     
-    def sqrt(n):
-        approx = n/2.0
-        better = (approx + n/approx)/2.0
-        while  better !=  approx):
+    def newtonSqrt(n, howmany):
+        approx = n/2
+        for i in range(howmany):
+            betterapprox = 1/2 * (approx + n/approx)
+            approx = betterapprox
+        return betterapprox
+
+    print(newtonSqrt(10,3))
+    print(newtonSqrt(10,5))
+    print(newtonSqrt(10,10))
+
+
+
+By repeatedly applying this formula until the better approximation gets close
+enough to the previous one, we can write a function for computing the square root.  This implementation
+uses a ``while`` to execute until the approximation is no longer changing.
+
+.. activecode:: chp07_newtonswhile
+    
+    def newtonSqrt(n):
+        approx = n/2
+        better = 1/2 * (approx + n/approx)
+        while  better !=  approx:
             approx = better
-            better = (approx + n/approx)/2.0
+            better = 1/2 * (approx + n/approx)
         return approx
-        
-    # test cases
-    test(sqrt(25.0), 5.0)
-    test(sqrt(49.0), 7.0)
-    test(sqrt(81.0), 9.0)
+
+    print(newtonSqrt(10))
+    print(newtonSqrt(100))
+    print(newtonSqrt(46))
+
+
+.. note::
+
+	The ``while`` statement shown above uses comparison of two floating point numbers in the condition.  Since floating point numbers are themselves approximation of real numbers in mathematics, it is often
+	better to compare for a result that is within some small threshold of the value you are looking for.
 
 .. index:: algorithm 
 
-Algorithms
-----------
+Algorithms Revisited
+--------------------
 
 Newton's method is an example of an **algorithm**: it is a mechanical process
 for solving a category of problems (in this case, computing square roots).
@@ -967,14 +641,11 @@ characteristics of algorithms is that they do not require any intelligence to
 carry out. They are mechanical processes in which each step follows from the
 last according to a simple set of rules.
 
-In our opinion, it is embarrassing that humans spend so much time in school
-learning to execute algorithms that, quite literally, require no intelligence.
-
 On the other hand, understanding that hard problems can be solved by step-by-step
 algorithmic processess is one of the major simplifying breakthroughs that has 
 had enormous benefits.  So while the execution of the algorithm
 may be boring and may require no intelligence, algorithmic or computational 
-thinking is having a vast impact.  And the process of designing algorithms is interesting,
+thinking is having a vast impact.  It is the process of designing algorithms that is interesting,
 intellectually challenging, and a central part of what we call programming.
 
 Some of the things that people do naturally, without difficulty or conscious

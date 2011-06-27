@@ -30,7 +30,7 @@ result when we added ``2 + 3``), and ``"Hello, World!"``.  We often refer to the
 
 These objects are classified into different **classes**, or **data types**: ``4`` 
 is an *integer*, and ``"Hello, World!"`` is a *string*, so-called because it
-contains a string of letters. You (and the interpreter) can identify strings
+contains a string or sequence of letters. You (and the interpreter) can identify strings
 because they are enclosed in quotation marks.
 
 If you are not sure what class a value falls into, Python has a function called
@@ -41,10 +41,17 @@ If you are not sure what class a value falls into, Python has a function called
 
     print(type("Hello, World!"))
     print(type(17))
-
+    print("Hello, World")
 
 Not surprisingly, strings belong to the class **str** and integers belong to the
-class **int**. Less obviously, numbers with a decimal point belong to a class
+class **int**. 
+
+.. note::
+
+	When we show the value of a string using the ``print`` function, the quotes are no longer present.  The
+	value of the string is the sequence of characters inside the quotes.  The quotes are only necessary to help Python know what the value is.
+
+Less obviously, numbers with a decimal point belong to a class
 called **float**, because these numbers are represented in a format called
 *floating-point*.  At this stage, you can treat the words *class* and *type*
 interchangeably.  We'll come back to a deeper understanding of what a class 
@@ -142,6 +149,60 @@ matter how big they are. Also revisit what we said in the previous chapter:
 formal languages are strict, the notation is concise, and even the smallest
 change might mean something quite different from what you intended. 
     
+
+.. index:: type converter functions, int, float, str, truncation
+
+Type conversion functions
+------------------------
+    
+Sometimes it is necessary to convert values from one type to another.  Python provides
+a few simple functions that will allow us to do that.  The functions `int`, `float` and `str`
+will (attempt to) convert their arguments into types `int`, `float` and `str`
+respectively.  We call these **type conversion** functions.  
+
+The `int` function can take a floating point number or a string, and turn it
+into an int. For floating point numbers, it *discards* the decimal portion of
+the number - a process we call *truncation towards zero* on the number line.
+Let us see this in action:
+
+.. activecode:: ch02_20
+    :nocanvas:
+
+    print(3.14, int(3.14))
+    print(3.9999, int(3.9999))       # This doesn't round to the closest int!
+    print(3.0,int(3.0))
+    print(-3.999,int(-3.999))        # Note that the result is closer to zero
+    minutes = 600.0
+    print(int(minutes/60))
+    print("2345",int("2345"))        # parse a string to produce an int
+    print(17,int(17))                # int even works on integers
+    print(int("23bottles"))
+
+
+The last case shows that a string has to be a syntactically legal number,
+otherwise you'll get one of those pesky runtime errors.
+
+The type converter `float` can turn an integer, a float, or a syntactically
+legal string into a float.
+
+.. activecode:: ch02_21
+    :nocanvas:
+
+    print(float("123.45"))
+    print(type(float("123.45")))
+
+
+The type converter `str` turns its argument into a string.  Remember that when we print a string, the
+quotes are removed.  However, if we print the type, we can see that it is definitely `str`.
+
+.. activecode:: ch02_22
+    :nocanvas:
+
+    print(str(17))
+    print(str(123.45))
+    print(type(str(123.45)))
+
+
 
 .. index:: variable, assignment, assignment statement, state snapshot
 

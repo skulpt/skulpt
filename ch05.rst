@@ -303,8 +303,7 @@ Here are a couple of new tricks for our turtles:
   First you call the method `begin_fill`, for example ``alex.begin_fill()``.  Then you draw the shape.
   Finally, you call `end_fill` ( ``alex.end_fill()``). 
 * We've previously set the color of our turtle - we can now also set it's fill-color, which need not
-  be the same as the turtle and the pen color.  We use a second parameter to the `color` method, such as ``alex.color("blue","red")``, to set the turtle
-  to draw in blue, and fill in red. 
+  be the same as the turtle and the pen color.  To do this, we use a method called `fillcolor`, for example, ``alex.fillcolor("red")``.   
   
   
 Ok, so can we get tess to draw a bar chart?  Let us start with some data to be charted,
@@ -369,7 +368,8 @@ turtle would have drawn off the window.  Our final program now looks like this.
     wn.bgcolor("lightgreen")
 
     tess = turtle.Turtle()           # create tess and set some attributes
-    tess.color("blue", "red")
+    tess.color("blue")
+    tess.fillcolor("red")
     tess.pensize(3)
 
     tess.penup()                     # move tess to a better starting spot
