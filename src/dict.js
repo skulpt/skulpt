@@ -107,6 +107,10 @@ Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAtt
 
 Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 {
+    if (! d) {
+        //d = new Sk.builtin.NoneObj();
+        d = null;
+    }
     var ret = self.mp$subscript(k);
     if (ret !== undefined) return ret;
     return d;
