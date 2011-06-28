@@ -257,7 +257,12 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
-    var res = self.v.split(new Sk.builtin.str(on).v, howmany);
+    var res;
+    if (! on) {
+        res = self.v.split(/[\s]+/, howmany);
+    } else {
+        res = self.v.split(new Sk.builtin.str(on).v, howmany);
+    }
     var tmp = [];
     for (var i = 0; i < res.length; ++i)
     {
