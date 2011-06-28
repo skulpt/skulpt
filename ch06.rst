@@ -32,7 +32,7 @@ we usually assign to a variable or use as part of an expression.
 In a previous chapter, we also wrote our own function to return the final amount for a compound interest calculation.
 
 In this chapter, we are going to write more functions that return values and discuss a few more details related to functions and their development.  The first example
-is ``area``, which returns the area of a circle with the given radius:
+is ``area``, which returns the area of a circle with a given radius.
 
 .. activecode:: ch06_area
     
@@ -57,15 +57,17 @@ easier.  These temporary variables are referred to as **local variables**.
 
 Sometimes it is useful to have multiple return statements, one in each branch
 of a conditional. We have already seen the built-in ``abs``, now we see how to
-write our own: 
+write our own.
 
-.. sourcecode:: python
+.. activecode:: ch06_abs1
     
     def absoluteValue(x):
         if x < 0:
             return -x
         else:
             return x
+
+    print(absoluteValue(-16))
 
 Since the if statement guarantees that one or the other of the ``return`` statements will be executed,
 the function will work correctly.  Remember that the ``return`` causes the function to terminate at that point and no other processing will occur.
@@ -91,7 +93,8 @@ execution can never reach, is called **dead code**, or **unreachable code**.
 
 In a fruitful function, it is a good idea to ensure that every possible path
 through the program hits a ``return`` statement. The following version of
-``absolute_value`` fails to do this:
+``absolute_value`` fails to do this.  Can you find the value(s) that are not covered by the
+flow of execution?
 
 .. activecode:: ch06_badabs
     
@@ -139,7 +142,7 @@ Python. In other words, what are the inputs (parameters) and what is the output
 In this case, the two points are the inputs, which we can represent using four
 parameters. The return value is the distance, which is a floating-point value.
 
-Already we can write an outline of the function that captures our thinking so far:
+Already we can write an outline of the function that captures our thinking so far.
 
 .. sourcecode:: python
     
@@ -150,7 +153,7 @@ Obviously, this version of the function doesn't compute distances; it always
 returns zero. But it is syntactically correct, and it will run, which means
 that we can test it before we make it more complicated.
 
-To test the new function, we call it with sample values:
+To test the new function, we call it with sample values.
 
 
 .. activecode:: ch06_distance1
@@ -182,7 +185,7 @@ those values in temporary variables named ``dx`` and ``dy``.
         return 0.0
 
 
-Next we compute the sum of squares of ``dx`` and ``dy``:
+Next we compute the sum of squares of ``dx`` and ``dy``.
 
 .. sourcecode:: python
     
@@ -196,7 +199,7 @@ Again, we could run the program at this stage and check the value of ``dsquared`
 should be 25).
 
 Finally, using the fractional exponent ``0.5`` to find the square root,
-we compute and return the result:
+we compute and return the result.
 
 .. activecode:: ch06_distancefinal
     
@@ -288,10 +291,7 @@ We called this function ``area2`` to distinguish it from the ``area`` function
 defined earlier. There can only be one function with a given name within a
 module.
 
-The temporary variables ``radius`` and ``result`` are useful for development,
-debugging, and single-stepping through the code to inspect what is happening,
-but once the program is working, we can make it more concise by
-composing the function calls:
+Note that we could have written the composition without storing the intermediate results.
 
 .. sourcecode:: python
     

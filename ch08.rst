@@ -115,6 +115,39 @@ to create a new string, in which all the
 characters are in uppercase.  `lower` works in a similar fashion changing all characters in the string
 to lowercase.  (The original string `ss` remains unchanged.  A new string `tt` is created.)
 
+The following table provides a summary of some useful string methods. 
+
+==========  ==============      ======================================================
+Method      Parameters          Description
+==========  ==============      ======================================================
+upper       none                Returns the string in all uppercase
+lower       none                Returns the string in all lowercase
+count       item                Returns the number of occurrences of item
+ljust       width               Returns the string left justified in a field of width
+rjust       width               Returns the string right justified in a field of width
+center      width               Returns the string centered in a field of width
+replace     old, new            Replaces all occurrences of old substring with new
+==========  ==============      ======================================================
+
+You should experiment with these
+methods so that you understand what they do.  Note once again that returned strings do not
+change the original.
+
+.. activecode:: ch08_methods1
+
+    ss = "Hello, World"
+
+    els = ss.count("l")
+    print(els)
+
+    print(ss.ljust(20))
+    print(ss.rjust(20))
+    print(ss.center(20))
+
+    news = ss.replace("o", "***")
+    print(news)
+
+
 
 
 More Operators: Working with the parts of a string

@@ -456,7 +456,8 @@ List methods
 
 The dot operator can also be used to access built-in methods of list objects.  
 ``append`` is a list method which adds the argument passed to it to the end of
-the list. Continuing with this example, we show several other list methods.
+the list. Continuing with this example, we show several other list methods.  Many of them are
+easy to understand.
 
 .. activecode:: chp09_meth1
     
@@ -483,7 +484,39 @@ the list. Continuing with this example, we show several other list methods.
     mylist.remove(5)
     print(mylist)
 
-Experiment with the list methods shown here.  It is important to note that ``append`` and ``sort`` return ``None``.  This means that re-assigning ``mylist`` to the result of sorting ``mylist`` will result in losing the entire list.
+    lastitem = mylist.pop()
+    print(lastitem)
+    print(mylist)
+
+There are two ways to use the ``pop`` method.  The first, with no parameter, will remove and return the
+last item of the list.  If you provide a parameter for the position, ``pop`` will remove and return the
+item at that position.  Either way the list is changed.
+
+The following table provides a summary of the list methods shown above.  Be sure
+to experiment with these methods to gain a better understanding of what they do.
+
+
+
+
+==========  ==============      ================================================
+Method      Parameters          Description
+==========  ==============      ================================================
+append      item                Adds a new item to the end of a list
+insert      position, item      Inserts a new item at the position given
+pop         none                Removes and returns the last item
+pop         position            Removes and returns the item at position
+sort        none                Modifies a list to be sorted
+reverse     none                Modifies a list to be in reverse order
+index       item                Returns the position of first occurrence of item
+count       item                Returns the number of occurrences of item
+remove      item                Removes the first occurrence of item
+==========  ==============      ================================================
+
+
+
+
+It is important to note that ``append``, ``sort``, 
+and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to the result of sorting ``mylist`` will result in losing the entire list.
 
 .. activecode:: chp09_meth2
     
@@ -496,6 +529,9 @@ Experiment with the list methods shown here.  It is important to note that ``app
 
     mylist = mylist.sort()
     print(mylist)
+
+
+
 
 .. index:: side effect, modifier
 
@@ -707,8 +743,150 @@ into a list.
     print(xs)
 
     
+Tuples and mutability
+---------------------
 
+So far you have seen two types of sequential collections: strings, which are made up of
+characters; and lists, which are made up of elements of any type.  One of the
+differences we noted is that the elements of a list can be modified, but the
+characters in a string cannot. In other words, strings are **immutable** and
+lists are **mutable**.
+
+A **tuple**, like a list, is a sequence of items of any type. Unlike lists,
+however, tuples are immutable. Syntactically, a tuple is a comma-separated
+sequence of values.  Although it is not necessary, it is conventional to 
+enclose tuples in parentheses:
+
+.. sourcecode:: python
+
+    julia = ("Julia", "Roberts", 1967, "Duplicity", 2009, "Actress", "Atlanta, Georgia")
+
+Tuples are useful for representing what other languages often call *records* ---
+some related information that belongs together, like your student record.  There is
+no description of what each of these *fields* means, but we can guess.  A tuple
+lets us "chunk" together related information and use it as a single thing.
+
+Tuples support the same sequence operations as strings and
+lists. 
+For example, the index operator selects an element from a tuple.
+
+As with strings, if we try to use item assignment to modify one of the elements of the
+tuple, we get an error.
+
+.. sourcecode:: python
+
+    julia[0] = 'X'
+    TypeError: 'tuple' object does not support item assignment
+
+Of course, even if we can't modify the elements of a tuple, we can make a variable
+reference a new tuple holding different information.  To construct the new tuple,
+it is convenient that we can slice parts of the old tuple and join up the
+bits to make the new tuple.  So ``julia`` has a new recent film, and we might want
+to change her tuple.  We can easily slice off the parts we want and concatenate them with
+the new tuple.
+
+.. activecode:: ch09_tuple1
+
+
+    julia = ("Julia", "Roberts", 1967, "Duplicity", 2009, "Actress", "Atlanta, Georgia")
+    print(julia[2])
+    print(julia[2:6])
+
+    print(len(julia))
+
+    julia = julia[:3] + ("Eat Pray Love", 2010) + julia[5:]
+    print(julia)
+
+
+To create a tuple with a single element (but you're probably not likely
+to do that too often), we have to include the final comma, because without
+the final comma, Python treats the ``(5)`` below as an integer in parentheses:
+
+.. activecode:: chp09_tuple2
+
+    tup = (5,)
+    print(type(tup))
+
+    x = (5)
+    print(type(x))
  
+
+.. index::
+    single: assignment; tuple 
+    single: tuple; assignment  
+
+Tuple assignment
+----------------
+
+Python has a very powerful **tuple assignment** feature that allows a tuple of variables 
+on the left of an assignment to be assigned values from a tuple
+on the right of the assignment.
+
+.. sourcecode:: python
+
+    (name, surname, birth_year, movie, movie_year, profession, birth_place) = julia
+
+This does the equivalent of seven assignment statements, all on one easy line.  
+One requirement is that the number of variables on the left must match the number
+of elements in the tuple. 
+
+Once in a while, it is useful to swap the values of two variables.  With
+conventional assignment statements, we have to use a temporary variable. For
+example, to swap ``a`` and ``b``:
+
+.. sourcecode:: python
+
+    temp = a
+    a = b
+    b = temp
+
+Tuple assignment solves this problem neatly:
+
+.. sourcecode:: python
+
+    (a, b) = (b, a)
+
+The left side is a tuple of variables; the right side is a tuple of values.
+Each value is assigned to its respective variable. All the expressions on the
+right side are evaluated before any of the assignments. This feature makes
+tuple assignment quite versatile.
+
+Naturally, the number of variables on the left and the number of values on the
+right have to be the same.
+
+.. sourcecode:: python
+
+    >>> (a, b, c, d) = (1, 2, 3)
+    ValueError: need more than 3 values to unpack 
+
+.. index::
+    single: tuple; return value 
+
+Tuples as return values
+-----------------------
+
+Functions can return tuples as return values. This is very useful --- we often want to
+know some batsman's highest and lowest score, or we want to find the mean and the standard 
+deviation, or we want to know the year, the month, and the day, or if we're doing some
+some ecological modeling we may want to know the number of rabbits and the number
+of wolves on an island at a given time.  In each case, a function (which 
+can only return a single value), can create a single tuple holding multiple elements. 
+
+For example, we could write a function that returns both the area and the circumference
+of a circle of radius r.
+
+.. activecode:: chp09_tuple3
+
+    
+    def circleInfo(r):
+        """ Return (circumference, area) of a circle of radius r """
+        c = 2 * 3.14159 * r
+        a = 3.14159 * r * r
+        return (c, a)
+
+    print(circleInfo(10))
+
+
 
 Glossary
 --------

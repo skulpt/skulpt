@@ -470,7 +470,7 @@ A few more turtle methods and tricks
   going to play with turtles. 
 
 * A turtle's pen can be picked up or put down.  This allows us to move a turtle
-  to a different place without drawing a line.   The methods are 
+  to a different place without drawing a line.   The methods are ``penup`` and ``pendown``.
 
   .. sourcecode:: python
 
@@ -502,7 +502,7 @@ A few more turtle methods and tricks
   after the turtle has moved somewhere else.  Stamping works, even when the pen
   is up. 
     
-Let's do an example that shows off some of these new features:
+Let's do an example that shows off some of these new features.
 
 .. activecode:: ch03_7
 
@@ -520,9 +520,11 @@ Let's do an example that shows off some of these new features:
        tess.forward(size)          # move tess along
        tess.right(24)              # and turn her
 
-
+The list of integers shown above is created by printing the ``range(5,60,2)`` result.  It is only
+done to show you the distances being used to move the turtle forward.  The actual use appears
+as part of the ``for`` loop.
    
-Be careful now: all except one of the shapes you see on the screen here are
+One more thing to be careful about.  All except one of the shapes you see on the screen here are
 footprints created by ``stamp``.  But the program still only has *one* turtle
 instance --- can you figure out which one is the real tess?  (Hint: if you're
 not sure, write a new line of code after the ``for`` loop to change tess'
@@ -682,22 +684,22 @@ Exercises
    
 #. At the interactive prompt, anticipate what each of the following lines will
    do, and then record what happens. Score yourself, giving yourself one point
-   for each one you anticipate correctly::
+   for each one you anticipate correctly.
 
 .. activecode:: exercise_1
    :nopre:
 
-   import turtle
-   wn = turtle.Screen()
-   tess = turtle.Turtle()
-   tess.right(90)
-   tess.left(3600)
-   tess.right(-90)
-   tess.speed(10)
-   tess.left(3600)
-   tess.speed(0)
-   tess.left(3645)
-   tess.forward(-100)
+    import turtle
+    wn = turtle.Screen()
+    tess = turtle.Turtle()
+    tess.right(90)
+    tess.left(3600)
+    tess.right(-90)
+    tess.speed(10)
+    tess.left(3600)
+    tess.speed(0)
+    tess.left(3645)
+    tess.forward(-100)
 
 
 10. Write a program to draw a shape like this:
