@@ -12,18 +12,17 @@
 Lists
 =====
 
-A **list** is an ordered set of values, where each value is identified by an
+A **list** is a sequential collection of Python data values, where each value is identified by an
 index. The values that make up a list are called its **elements**. Lists are
 similar to strings, which are ordered collections of characters, except that the
-elements of a list can have any type.  Lists and strings --- and other things
-that behave like ordered sets --- are called **sequences**.
+elements of a list can have any type and for any one list, the items can be of different types.
 
 .. index:: nested list, list; nested
 
 List values
 -----------
 
-There are several ways to create a new list; the simplest is to enclose the
+There are several ways to create a new list.  The simplest is to enclose the
 elements in square brackets ( ``[`` and ``]``):
 
 .. sourcecode:: python
@@ -32,275 +31,161 @@ elements in square brackets ( ``[`` and ``]``):
     ["spam", "bungee", "swallow"]
 
 The first example is a list of four integers. The second is a list of three
-strings. The elements of a list don't have to be the same type.  The following
+strings. As we said above, the elements of a list don't have to be the same type.  The following
 list contains a string, a float, an integer, and
-(amazingly) another list:
+another list:
 
 .. sourcecode:: python
     
     ["hello", 2.0, 5, [10, 20]]
 
 A list within another list is said to be **nested**.
-
 Finally, there is a special list that contains no elements. It is called the
 empty list, and is denoted ``[]``.
 
-With all these ways to create lists, it would be disappointing if we couldn't
-assign list values to variables or pass lists as parameters to functions. We
-have already seen that we can:
+As you would expect, we can also assign list values to variables and pass lists as parameters to functions.  
 
-.. sourcecode:: python
+.. activecode:: chp09_01
     
-    >>> vocabulary = ["ameliorate", "castigate", "defenestrate"]
-    >>> numbers = [17, 123]
-    >>> empty = []
-    >>> print(vocabulary, numbers, empty)
-    ['ameliorate', 'castigate', 'defenestrate'] [17, 123] []
+    vocabulary = ["ameliorate", "castigate", "defenestrate"]
+    numbers = [17, 123]
+    empty = []
+    print(vocabulary, numbers, empty)
+
 
 .. _accessing-elements:
 
 .. index:: list index, index, list traversal
 
+List length
+-----------
+
+As with strings, the function ``len`` returns the length of a list (the number
+of items in the list).  However, since lists can have items which are themselves lists, it important to note
+that ``len`` only returns the top-most length.  In other words, sublists are considered to be a single
+item when counting the length of the list.
+
+.. activecode:: chp09_01a
+
+    alist =  ["hello", 2.0, 5, [10, 20]]
+    print(len(alist))
+    print(len(['spam!', 1, ['Brie', 'Roquefort', 'Pol le Veq'], [1, 2, 3]]))
+
+
+
 Accessing elements
 ------------------
 
 The syntax for accessing the elements of a list is the same as the syntax for
-accessing the characters of a string---the index operator ( ``[]`` -- not to
+accessing the characters of a string.  We use the index operator ( ``[]`` -- not to
 be confused with an empty list). The expression inside the brackets specifies
-the index. Remember that the indices start at 0:
+the index. Remember that the indices start at 0.  Any integer expression can be used
+as an index and as with strings, negative index values will locate items from the right instead
+of from the left.
 
-.. sourcecode:: python
+.. activecode:: chp09_02
     
-    >>> numbers[0]
-    17
+    numbers = [17, 123, 87, 34, 66, 8398, 44]
+    print(numbers[2])
+    print(numbers[9-8])
+    print(numbers[-2])
+ 
 
-Any integer expression can be used as an index:
 
-.. sourcecode:: python
 
-    >>> numbers[9-8]
-    5
-    >>> numbers[1.0]
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    TypeError: list indices must be integers, not float
-
-If you try to access or assign to an element that does not exist, you get a runtime
-error:
-
-.. sourcecode:: python
-
-    >>> numbers[2]
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    IndexError: list index out of range
-
-If an index has a negative value, it counts backward from the end of
-the list:
-
-.. sourcecode:: python
-
-    
-    >>> numbers[-1]
-    5
-    >>> numbers[-2]
-    17
-    >>> numbers[-3]
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    IndexError: list index out of range
-
-``numbers[-1]`` is the last element of the list, ``numbers[-2]`` is the second
-to last, and ``numbers[-3]`` doesn't exist.
-
-It is common to use a loop variable as a list index.
-
-.. sourcecode:: python
-    
-    horsemen = ["war", "famine", "pestilence", "death"]
-
-    for i in range(4):
-        print(horsemen[i])
-
-Each time through the loop, the variable ``i`` is used as an index into the
-list, printing the ``i``-eth element. This pattern of computation is called a
-**list traversal**.
-
-The above sample doesn't need or use the index ``i`` for anything, so this  
-even simpler version might be preferred:
-
-.. sourcecode:: python
-    
-    horsemen = ["war", "famine", "pestilence", "death"]
-
-    for h in horsemen:
-        print(h)
-
-        
-
-List length
------------
-
-The function ``len`` returns the length of a list, which is equal to the number
-of its elements. It is a good idea to use this value as the upper bound of a
-loop instead of a constant. That way, if the size of the list changes, you
-won't have to go through the program changing all the loops; they will work
-correctly for any size list:
-
-.. sourcecode:: python
-    
-    horsemen = ["war", "famine", "pestilence", "death"]
-       
-    for i in range(len(horsemen)):
-        print(horsemen[i])
-
-    
-The last time the body of the loop is executed, ``i`` is ``len(horsemen) - 1``, 
-which is the index of the last element. Of course, the version in the previous
-section that didn't use any index looks even more attractive now: it doesn't need
-any adjustments if extra elements are added to the list.
-
-Although a list can contain another list, the nested list still counts as a
-single element in its parent list. The length of this list is 4:
-
-.. sourcecode:: python
-    
-    ['spam!', 1, ['Brie', 'Roquefort', 'Pol le Veq'], [1, 2, 3]]
 
 
 List membership
 ---------------
 
-``in`` and ``not in`` are boolean operators that tests membership in a sequence. We
-used them previously with strings, but they also work with lists and
-other sequences:
+``in`` and ``not in`` are boolean operators that test membership in a sequence. We
+used them previously with strings and they also work here.
 
-.. sourcecode:: python
+.. activecode:: chp09_4
     
-    >>> horsemen = ['war', 'famine', 'pestilence', 'death']
-    >>> 'pestilence' in horsemen
-    True
-    >>> 'debauchery' in horsemen
-    False
-   >>> 'debauchery' not in horsemen
-    True
+    fruit = ["apple","orange","banana","cherry"]
+
+    print("apple" in fruit)
+    print("pear" in fruit)
 
 
-List operations
----------------
+Concatenation and Repetition
+----------------------------
 
-The ``+`` operator concatenates lists:
-
-.. sourcecode:: python
-    
-    >>> a = [1, 2, 3]
-    >>> b = [4, 5, 6]
-    >>> c = a + b
-    >>> c
-    [1, 2, 3, 4, 5, 6]
-
+Again, as with strings, the ``+`` operator concatenates lists.  
 Similarly, the ``*`` operator repeats a list a given number of times:
 
-.. sourcecode:: python
-    
-    >>> [0] * 4
-    [0, 0, 0, 0]
-    >>> [1, 2, 3] * 3
-    [1, 2, 3, 1, 2, 3, 1, 2, 3]
+.. activecode:: chp09_5
 
-The first example repeats ``[0]`` four times. The second example repeats the
-list ``[1, 2, 3]`` three times.
+    fruit = ["apple","orange","banana","cherry"]
+    print([1,2] + [3,4])
+    print(fruit+[6,7,8,9])
+
+    print([0] * 4)
+    print([1,2,["hello","goodbye"]]*2)
 
 
 List slices
 -----------
 
-The slice operations we saw with strings also work on lists:
+The slice operations we saw with strings also work on lists.
 
-.. sourcecode:: python
+.. activecode:: chp09_6
     
-    >>> a_list = ['a', 'b', 'c', 'd', 'e', 'f']
-    >>> a_list[1:3]
-    ['b', 'c']
-    >>> a_list[:4]
-    ['a', 'b', 'c', 'd']
-    >>> a_list[3:]
-    ['d', 'e', 'f']
-    >>> a_list[:]
-    ['a', 'b', 'c', 'd', 'e', 'f']
+    a_list = ['a', 'b', 'c', 'd', 'e', 'f']
+    print(a_list[1:3])
+    print(a_list[:4])
+    print(a_list[3:])
+    print(a_list[:])
 
 .. index:: mutable, item assignment, immutable
     
 Lists are mutable
 -----------------
 
-Unlike strings, lists are **mutable**, which means we can change their
-elements. Using the bracket operator on the left side of an assignment, we can
-update one of the elements:
+Unlike strings, lists are **mutable**.  This means we can change an item in a list by accessing
+it directly as part of the assignment statement. Using the bracket operator on the left side of an assignment, we can
+update one of the list items.
 
-.. sourcecode:: python
+.. activecode:: ch09_7
     
-    >>> fruit = ["banana", "apple", "quince"]
-    >>> fruit[0] = "pear"
-    >>> fruit[-1] = "orange"
-    >>> fruit
-    ['pear', 'apple', 'orange']
+    fruit = ["banana", "apple", "cherry"]
+    fruit[0] = "pear"
+    fruit[-1] = "orange"
+    print(fruit)
 
-The bracket operator applied to a list can appear anywhere in an expression.
-When it appears on the left side of an assignment, it changes one of the
-elements in the list, so the first element of ``fruit`` has been changed from
-``'banana'`` to ``'pear'``, and the last from ``'quince'`` to ``'orange'``. An
+
+An
 assignment to an element of a list is called **item assignment**. Item
-assignment does not work for strings:
+assignment does not work for strings.  Recall that strings are immutable.
 
-.. sourcecode:: python
+By combining assignment with the slice operator we can update several elements at once.
+
+.. activecode:: ch09_8
     
-    >>> my_string = 'TEST'
-    >>> my_string[2] = 'X'
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    TypeError: 'str' object does not support item assignment
+    alist = ['a', 'b', 'c', 'd', 'e', 'f']
+    alist[1:3] = ['x', 'y']
+    print(alist)
 
-but it does for lists:
+We can also remove elements from a list by assigning the empty list to them.
 
-.. sourcecode:: python
+.. activecode:: ch09_9
     
-    >>> my_list = ['T', 'E', 'S', 'T']
-    >>> my_list[2] = 'X'
-    >>> my_list
-    ['T', 'E', 'X', 'T']
+    alist = ['a', 'b', 'c', 'd', 'e', 'f']
+    alist[1:3] = []
+    print(alist)
 
+We can even insert elements into a list by squeezing them into an empty slice at the
+desired location.
 
-With the slice operator we can update several elements at once:
-
-.. sourcecode:: python
+.. activecode:: ch09_10
     
-    >>> a_list = ['a', 'b', 'c', 'd', 'e', 'f']
-    >>> a_list[1:3] = ['x', 'y']
-    >>> a_list
-    ['a', 'x', 'y', 'd', 'e', 'f']
+    alist = ['a', 'd', 'f']
+    alist[1:1] = ['b', 'c']
+    print(alist)
+    alist[4:4] = ['e']
+    print(alist)
 
-We can also remove elements from a list by assigning the empty list to them:
-
-.. sourcecode:: python
-    
-    >>> a_list = ['a', 'b', 'c', 'd', 'e', 'f']
-    >>> a_list[1:3] = []
-    >>> a_list
-    ['a', 'd', 'e', 'f']
-
-And we can add elements to a list by squeezing them into an empty slice at the
-desired location:
-
-.. sourcecode:: python
-    
-    >>> a_list = ['a', 'd', 'f']
-    >>> a_list[1:1] = ['b', 'c']
-    >>> a_list
-    ['a', 'b', 'c', 'd', 'f']
-    >>> a_list[4:4] = ['e']
-    >>> a_list
-    ['a', 'b', 'c', 'd', 'e', 'f']
 
 .. index:: del statement, statement; del
 
@@ -309,28 +194,21 @@ List deletion
 
 Using slices to delete list elements can be awkward, and therefore error-prone.
 Python provides an alternative that is more readable.
+The ``del`` statement removes an element from a list by using its position.
 
-The ``del`` statement removes an element from a list:
-
-.. sourcecode:: python
+.. activecode:: ch09_11
     
-    >>> a = ['one', 'two', 'three']
-    >>> del a[1]
-    >>> a
-    ['one', 'three']
+    a = ['one', 'two', 'three']
+    del a[1]
+    print(a)
+
+    alist = ['a', 'b', 'c', 'd', 'e', 'f']
+    del alist[1:5]
+    print(alist)
 
 As you might expect, ``del`` handles negative indices and causes a runtime
 error if the index is out of range.
-
-You can use a slice as an index for ``del``:
-
-.. sourcecode:: python
-    
-    >>> a_list = ['a', 'b', 'c', 'd', 'e', 'f']
-    >>> del a_list[1:5]
-    >>> a_list
-    ['a', 'f']
-
+In addition, you can use a slice as an index for ``del``.
 As usual, slices select all the elements up to, but not including, the second
 index.
 
@@ -362,27 +240,26 @@ refer to.
 We can test whether two names refer to the same object using the *is*
 operator: 
 
-.. sourcecode:: python
+.. activecode:: chp09_is1
 
-    >>> a is b
-    True
+    a = "banana"
+    b = "banana"
+    print(a is b)
 
 This tells us that both ``a`` and ``b`` refer to the same object, and that it
 is the second of the two state snapshots that describes the relationship. 
-
 Since strings are *immutable*, Python optimizes resources by making two names
 that refer to the same string value refer to the same object.
 
-This is not the case with lists:
+This is not the case with lists.
 
-.. sourcecode:: python
+.. activecode:: chp09_is2
     
-    >>> a = [1, 2, 3]
-    >>> b = [1, 2, 3]
-    >>> a == b
-    True
-    >>> a is b
-    False   
+    a = [1,2,3]
+    b = [1,2,3]
+    print(a is b)
+
+    print(a == b)  
 
 The state snapshot here looks like this:
 
@@ -414,11 +291,21 @@ In this case, the state snapshot looks like this:
 Because the same list has two different names, ``a`` and ``b``, we say that it
 is **aliased**. Changes made with one alias affect the other:
 
-.. sourcecode:: python
+.. activecode:: chp09_is3
+
+    a = [1,2,3]
+    b = [1,2,3]
+
+    print(a == b)
+    print(a is b)
+
+    b = a
+    print(a == b)
+    print(a is b)
+
+    b[0] = 5
+    print(a)
     
-    >>> b[0] = 5
-    >>> a
-    [5, 2, 3]
 
 Although this behavior can be useful, it is sometimes unexpected or
 undesirable. In general, it is safer to avoid aliasing when you are working
@@ -435,25 +322,30 @@ If we want to modify a list and also keep a copy of the original, we need to be
 able to make a copy of the list itself, not just the reference. This process is
 sometimes called **cloning**, to avoid the ambiguity of the word copy.
 
-The easiest way to clone a list is to use the slice operator:
-
-.. sourcecode:: python
-    
-    >>> a = [1, 2, 3]
-    >>> b = a[:]
-    >>> b
-    [1, 2, 3]
+The easiest way to clone a list is to use the slice operator.
 
 Taking any slice of ``a`` creates a new list. In this case the slice happens to
 consist of the whole list.
 
+.. activecode:: chp09_is4
+
+    a = [1,2,3]
+    b = [1,2,3]
+
+    print(a == b)
+    print(a is b)
+
+    b = a[:]       # make a clone using slice
+    print(a == b)
+    print(a is b)
+
+    b[0] = 5
+
+    print(a)
+    print(b)
+
 Now we are free to make changes to ``b`` without worrying about ``a``:
 
-.. sourcecode:: python
-    
-    >>> b[0] = 5
-    >>> a
-    [1, 2, 3]
 
 .. index:: for loop, enumerate
 
@@ -462,78 +354,65 @@ Now we are free to make changes to ``b`` without worrying about ``a``:
 Lists and ``for`` loops
 -----------------------
 
-The ``for`` loop also works with lists, as we've already seen. The generalized syntax of a ``for``
-loop is:
+It is also possible to perform **list traversal** using iteration by item as well as iteration by position.
 
-.. sourcecode:: python
-    
-    for VARIABLE in LIST:
-        BODY
 
-So, as we've seen
-        
-.. sourcecode:: python
+.. activecode:: chp09_03a
 
-    friends = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]
-    for friend in friends:
-        print(friend)
+    fruits = ["apple","orange","banana","cherry"]
 
-It almost reads like English: For (every) friend in (the list of) friends,
-print (the name of the) friend.
+    for fruit in fruits:     # by item
+        print(afruit)
+
+It almost reads like natural language: For (every) fruit in (the list of) fruits,
+print (the name of the) fruit.
+
+We can also use the indices to access the items in an iterative fashion.
+
+.. activecode:: chp09_03b
+
+    fruits = ["apple","orange","banana","cherry"]
+
+    for position in range(len(fruits)):     # by position
+        print(fruits[position])
+
+
+In this example, each time through the loop, the variable ``position`` is used as an index into the
+list, printing the ``position``-eth element. Note that we used ``len`` as the upper bound on the range
+so that we can iterate correctly no matter how many items are in the list.
+
+
+
 
 Any list expression can be used in a ``for`` loop:
 
-.. sourcecode:: python
+.. activecode:: chp09_for3
     
     for number in range(20):
         if number % 3 == 0:
             print(number)
-       
-    for fruit in ["banana", "apple", "quince"]:
-        print("I like to eat " + fruit + "s!")
 
 
-The first example prints all the multiples of 3 between 0 and 19. The second
-example expresses enthusiasm for various fruits.
+This example prints all the multiples of 3 between 0 and 19.
 
 Since lists are mutable, it is often desirable to traverse a list, modifying
-each of its elements. The following squares all the numbers from ``1`` to
-``5``:
+each of its elements as you go. The following code squares all the numbers from ``1`` to
+``5`` using iteration by position.
 
-.. sourcecode:: python
+.. activecode:: chp09_for4
 
     numbers = [1, 2, 3, 4, 5]
-    
+    print(numbers)
+
     for i in range(len(numbers)):
         numbers[i] = numbers[i]**2
+
+    print(numbers)
 
 Take a moment to think about ``range(len(numbers))`` until you understand how
 it works. We are interested here in both the *value* and its *index* within the
 list, so that we can assign a new value to it.
 
-This pattern is common enough that Python provides a nicer way to implement it:
-
-.. sourcecode:: python
-    
-    numbers = [1, 2, 3, 4, 5]
-    
-    for i, value in enumerate(numbers):
-        numbers[i] = value**2
-
-``enumerate`` generates both the index and the value associated with it during
-the list traversal. Try this next example to see more clearly how ``enumerate``
-works:
-
-.. sourcecode:: python
-    
-    >>> for i, value in enumerate(['banana', 'apple', 'pear', 'quince']):
-    ...    print(i, value)
-    ...
-    0 banana
-    1 apple
-    2 pear
-    3 quince
-    >>>
 
 .. index:: parameter
 
@@ -547,24 +426,18 @@ the same list that the argument is referencing.
 For example, the function below takes a list as an
 argument and multiplies each element in the list by 2:
 
-.. sourcecode:: python
+.. activecode:: chp09_parm1
     
-    def double_stuff(a_list):
+    def doubleStuff(a_list):
         """ Overwrite each element in a_list with double its value. """
-        for index, value in enumerate(a_list):
-            a_list[index] = 2 * value
-
-If we add the following onto our script:
-
-.. sourcecode:: python
+        for position in range(len(a_list)):
+            a_list[position] = 2 * a_list[position]
 
     things = [2, 5, 9]
-    double_stuff(things)
+    print(things)
+    doubleStuff(things)
     print(things)
     
-When we run it we'll get::
-
-    [4, 10, 18]
 
 
 The parameter ``a_list`` and the variable ``things`` are aliases for the
@@ -574,14 +447,7 @@ same object.
    :alt: State snapshot for multiple references to a list as a parameter
    
 Since the list object is shared by two frames, we drew it between them.
-
 If a function modifies the elements of a list parameter, the caller sees the change.
-
-.. admonition::  Use the Python visualizer!
-
-    We've earlier mentioned the Python visualizer at http://netserv.ict.ru.ac.za/python3_viz.
-    It is a very useful tool for building a good understanding of aliases, assignments,
-    and passing arguments to functions.  
 
 .. index:: list; append
     
@@ -589,48 +455,47 @@ List methods
 ------------
 
 The dot operator can also be used to access built-in methods of list objects.  
-
-.. sourcecode:: python
-    
-    >>> mylist = []
-    >>> mylist.append(5)
-    >>> mylist.append(27)
-    >>> mylist.append(3)
-    >>> mylist.append(12)
-    >>> mylist
-    [5, 27, 3, 12]
-    >>>
-
 ``append`` is a list method which adds the argument passed to it to the end of
-the list. Continuing with this example, we show several other list methods:
+the list. Continuing with this example, we show several other list methods.
 
-.. sourcecode:: python
+.. activecode:: chp09_meth1
     
-    >>> mylist.insert(1, 12)
-    >>> mylist
-    [5, 12, 27, 3, 12]
-    >>> mylist.count(12)
-    2
-    >>> mylist.extend([5, 9, 5, 11])
-    >>> mylist
-    [5, 12, 27, 3, 12, 5, 9, 5, 11])
-    >>> mylist.index(9)
-    6
-    >>> mylist.count(5)
-    3
-    >>> mylist.reverse()
-    >>> mylist
-    [11, 5, 9, 5, 12, 3, 27, 12, 5]
-    >>> mylist.sort()
-    >>> mylist
-    [3, 5, 5, 5, 9, 11, 12, 12, 27]
-    >>> mylist.remove(12)
-    >>> mylist
-    [3, 5, 5, 5, 9, 11, 12, 27]
-    >>>
+    mylist = []
+    mylist.append(5)
+    mylist.append(27)
+    mylist.append(3)
+    mylist.append(12)
+    print(mylist)
 
-Experiment with the list methods shown here, and read their documentation until you feel confident that
-you understand how they work.
+    mylist.insert(1, 12)
+    print(mylist)
+    print(mylist.count(12))
+
+    print(mylist.index(3))
+    print(mylist.count(5))
+
+    mylist.reverse()
+    print(mylist)
+
+    mylist.sort()
+    print(mylist)
+
+    mylist.remove(5)
+    print(mylist)
+
+Experiment with the list methods shown here.  It is important to note that ``append`` and ``sort`` return ``None``.  This means that re-assigning ``mylist`` to the result of sorting ``mylist`` will result in losing the entire list.
+
+.. activecode:: chp09_meth2
+    
+    mylist = []
+    mylist.append(5)
+    mylist.append(27)
+    mylist.append(3)
+    mylist.append(12)
+    print(mylist)
+
+    mylist = mylist.sort()
+    print(mylist)
 
 .. index:: side effect, modifier
 
@@ -641,43 +506,43 @@ Pure functions and modifiers
 
 Functions which take lists as arguments and change them during execution are
 called **modifiers** and the changes they make are called **side effects**.
-
 A **pure function** does not produce side effects. It communicates with the
 calling program only through parameters, which it does not modify, and a return
-value. Here is ``double_stuff`` written as a pure function:
+value. Here is ``doubleStuff`` written as a pure function.
 
-.. sourcecode:: python
+.. activecode:: ch09_mod1
     
-    def double_stuff(a_list):
+    def doubleStuff(a_list):
         """ Return a new list in which contains doubles of the elements in a_list. """
         new_list = []
         for value in a_list:
             new_elem = 2 * value
             new_list.append(new_elem)
         return new_list
-
-This version of ``double_stuff`` does not change its arguments:
-
-.. sourcecode:: python
     
-    >>> from ch09 import double_stuff
-    >>> things = [2, 5, 9]
-    >>> double_stuff(things)
-    [4, 10, 18]
-    >>> things
-    [2, 5, 18]
-    >>>
+    things = [2, 5, 9]
+    print(doubleStuff(things))
+    print(things)
 
 To use the pure function version of ``double_stuff`` to modify ``things``,
 you would assign the return value back to ``things``:
 
-.. sourcecode:: python
+
+.. activecode:: ch09_mod2
     
-    >>> things = double_stuff(things)
-    >>> things
-    [4, 10, 'SpamSpam', 19.0]
-    >>>        
-        
+    def doubleStuff(a_list):
+        """ Return a new list in which contains doubles of the elements in a_list. """
+        new_list = []
+        for value in a_list:
+            new_elem = 2 * value
+            new_list.append(new_elem)
+        return new_list
+    
+    things = [2, 5, 9]
+    print(things)
+    things = doubleStuff(things)
+    print(things)
+
 
 Which is better?
 ----------------
@@ -695,7 +560,7 @@ advantage. This approach might be called a *functional programming style*.
 Functions that produce lists
 ----------------------------
 
-The pure version of ``double_stuff`` above made use of an 
+The pure version of ``doubleStuff`` above made use of an 
 important **pattern** for your toolbox. Whenever you need to
 write a function that creates and returns a list, the pattern is
 usually::
@@ -724,201 +589,62 @@ Nested lists
 ------------
 
 A nested list is a list that appears as an element in another list. In this
-list, the element with index 3 is a nested list:
-
-.. sourcecode:: python
-    
-    >>> nested = ["hello", 2.0, 5, [10, 20]]
-
+list, the element with index 3 is a nested list.  
 If we print(``nested[3]``), we get ``[10, 20]``. To extract an element from the
-nested list, we can proceed in two steps:
+nested list, we can proceed in two steps.  First, extract the nested list, then extract the item
+of interest.  It is also possible to combine those steps using bracket operators that evaluate from
+left to right.
 
-.. sourcecode:: python
+.. activecode:: chp09_nest
     
-    >>> elem = nested[3]
-    >>> elem[0]
-    10
+    nested = ["hello", 2.0, 5, [10, 20]]
+    innerlist = nested[3]
+    print(innerlist)
+    item = innerlist[1]
+    print(item)
 
-Or we can combine them:
+    print(nested[3][1])
 
-.. sourcecode:: python
-    
-    >>> nested[3][1]
-    20
-
-Bracket operators evaluate from left to right, so this expression gets the
-three-eth element of ``nested`` and extracts the one-eth element from it.
 
 .. index:: matrix
 
 Matrices
 --------
 
-Nested lists are often used to represent matrices. For example, the matrix:
+Nested lists are often used to represent matrices. For example, the matrix::
+
+       1  2  3
+       4  5  6
+       7  8  9
 
 might be represented as:
 
 .. sourcecode:: python
     
-    >>> matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
 ``matrix`` is a list with three elements, where each element is a row of the
-matrix. We can select an entire row from the matrix in the usual way:
+matrix. We can select an entire row from the matrix in the usual way.
+Or, we can extract a single element from the matrix using the double-index form where the first
+index is the row and the second index is the column.
 
-.. sourcecode:: python
-    
-    >>> matrix[1]
-    [4, 5, 6]
+.. activecode:: ch09_matrix
 
-Or we can extract a single element from the matrix using the double-index form:
+    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+   
+    row = matrix[1]
+    item = row[2]
+    print(item)
 
-.. sourcecode:: python
-    
-    >>> matrix[1][1]
-    5
+    print(matrix[1][2])
 
 The first index selects the row, and the second index selects the column.
 Although this way of representing matrices is common, it is not the only
 possibility. A small variation is to use a list of columns instead of a list of
-rows. Later we will see a more radical alternative using a dictionary.
+rows.
 
 .. index:: Test-driven development, scaffolding
 
-Test-driven development (TDD)
------------------------------
-
-**Test-driven development (TDD)** is a software development practice which
-arrives at a desired feature through a series of small, iterative steps
-motivated by automated tests which are *written first* that express increasing
-refinements of the desired feature.
-
-Unit tests enable us to easily demonstrate TDD. Let's say we want a function
-which creates a ``rows`` by ``columns`` matrix given arguments for ``rows`` and
-``columns``.
-
-We first setup a skeleton for this function, and add some test cases.  We assume
-the test scaffolding from the earlier chapters is also included:
-
-.. sourcecode:: python
-    
-    def make_matrix(rows, columns):
-        """ 
-          Create an empty matrix, all elements 0, of rows 
-          where each row has columns elements. 
-        """
-        return []  # dummy return value...
-    
-    test(make_matrix(3,5), [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]])
-
-Running this fails, of course::
-
-    >>> 
-    Test on line 20 failed. Expected '[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]', but got '[]'.
-    >>> 
-
-We could make the test pass by just returning what the test wants.  But a bit of forethought
-suggests we need a few more tests first::
-
-    test(make_matrix(4, 2), [[0, 0], [0, 0], [0, 0], [0, 0]])
-    test(make_matrix(1, 1), [[0]])
-    test(make_matrix(0, 7), [])
-    test(make_matrix(7, 0), [[], [], [], [], [], [], []])
-
-Notice how thinking about the test cases *first*, especially those
-tough edge condition cases, helps us create a clearer specification
-of what we need our function to do.  
-
-This technique is called *test-driven* because code should only be written when
-there is a failing test to make pass. Motivated by the failing tests, we can now
-produce a more general solution:
-
-.. sourcecode:: python
-
-    def make_matrix(rows, columns):
-        """ 
-          Create an empty matrix, all elements 0, of rows 
-          where each row has columns elements. 
-        """
-        return [[0] * columns] * rows 
-
-Running this produces the much more agreeable::
-
-    Test on line 20 passed.
-    Test on line 21 passed.
-    Test on line 22 passed.
-    Test on line 23 passed.
-    Test on line 24 passed.
-
-We may think we are finished, but when we use the new function later we discover a bug:
-
-.. sourcecode:: python
-
-    >>> m = make_matrix(4, 3)
-    >>> m
-    [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    >>> m[1][2] = 7
-    >>> m
-    [[0, 0, 7], [0, 0, 7], [0, 0, 7], [0, 0, 7]]
-    >>>
-
-We wanted to assign the element in the second row and the third column the
-value 7, instead, *all* elements in the third column are 7!
-
-Upon reflection, we realize that in our current solution, each row is an
-*alias* of the other rows. This is definitely not what we intended, so we set
-about fixing the problem, *first by writing a failing test*:
-
-.. sourcecode:: python
-    
-    m = make_matrix(4, 2)
-    m[2][1] = 7
-    test(m, [[0, 0], [0, 0], [0, 7], [0, 0]])
-
-When run, we get::
-
-    Test on line 20 passed.
-    Test on line 21 passed.
-    Test on line 22 passed.
-    Test on line 23 passed.
-    Test on line 24 passed.
-    Test on line 28 failed. Expected '[[0, 0], [0, 0], [0, 7], [0, 0]]', but got '[[0, 7], [0, 7], [0, 7], [0, 7]]'.
- 
-This test is not a "one-liner" like most of our other tests have been.  It illustrates that tests can
-be arbitrarily complex, and may require some setup before we can test what we wish to.  
-
-Software development teams generally have people whose sole job is to 
-construct devious and complex test cases for a product.
-Being a software tester is certainly not a "secondary" role ranked 
-behind programmers, either --- development
-managers often report that the brightest and most capable programmers 
-often move into testing roles because
-they find it very challenging work, and it requires more 
-"thinking out of the box" to be able to anticipate
-situations in which some code could fail.  
-
-With a failing test to fix, we are now driven to a better solution:
-
-.. sourcecode:: python
-    
-    def make_matrix(rows, columns):
-        """ 
-          Create an empty matrix, all elements 0, of rows
-          where each row has columns elements 
-        """
-        matrix = []
-        for r in range(rows):
-            this_row = [0] * columns
-            matrix.append(this_row)
-        return matrix
-
-Using TDD has several benefits to our software development process.  It:
-
-* helps us think concretely about the problem we are trying solve *before* we
-  attempt to solve it.
-* encourages breaking down complex problems into smaller, simpler problems and
-  working our way toward a solution of the larger problem step-by-step.
-* assures that we have a well developed automated test suite for our software,
-  facilitating later additions and improvements.
 
 .. index:: strings and lists, split, join
 
@@ -926,103 +652,62 @@ Strings and lists
 -----------------
 
 Two of the most useful methods on strings involve lists of
-strings. The ``split`` method (which we've already seen)
+strings. The ``split`` method
 breaks a string into a list of words.  By
-default, any number of whitespace characters is considered a word boundary:
+default, any number of whitespace characters is considered a word boundary.
 
-.. sourcecode:: python
+.. activecode:: ch09_split1
     
-    >>> song = "The rain in Spain..."
-    >>> wds = song.split()
-    >>> wds
-    ['The', 'rain', 'in', 'Spain...']
+    song = "The rain in Spain..."
+    wds = song.split()
+    print(wds)
 
 An optional argument called a **delimiter** can be used to specify which
 characters to use as word boundaries. The following example uses the string
 ``ai`` as the delimiter:
 
-.. sourcecode:: python
+.. activecode:: ch09_split2
     
-    >>> song.split('ai')
-    ['The r', 'n in Sp', 'n...']
+    song = "The rain in Spain..."
+    wds = song.split('ai')
+    print(wds)
 
 Notice that the delimiter doesn't appear in the result.
 
 The inverse of the ``split`` method is ``join``.  You choose a
 desired **separator** string, (often called the *glue*) 
-and join the list with the glue between each of the elements::
+and join the list with the glue between each of the elements.
 
-    >>> glue = ';'
-    >>> s = glue.join(wds)
-    >>> s
-    'The;rain;in;Spain...'
+.. activecode:: ch09_join
 
-The list that you glue together (``wds`` in this example) is not modified.  Also, as these
-next examples show, you can use empty glue or multi-character strings as glue::
+    wds = ["red", "blue", "green"]
+    glue = ';'
+    s = glue.join(wds)
+    print(s)
+    print(wds)
 
-    >>> ' --- ' . join(wds)
-    'The --- rain --- in --- Spain...'
-    >>> '' . join(wds)
-    'TheraininSpain...'
+    print("***".join(wds))
+    print("".join(wds))
 
-.. index:: promise, range function
+
+The list that you glue together (``wds`` in this example) is not modified.  Also, 
+you can use empty glue or multi-character strings as glue.
+
     
-``list`` and ``range``
-----------------------   
+``list``
+--------
     
 Python has a built-in type conversion function called 
 ``list`` that tries to turn whatever you give it
 into a list.  
 
-.. sourcecode:: python
+.. activecode:: ch09_list1
     
-    >>> xs = list("Crunchy Frog")
-    >>> xs
-    ['C', 'r', 'u', 'n', 'c', 'h', 'y', ' ', 'F', 'r', 'o', 'g']
-    >>> ''.join(xs)
-    'Crunchy Frog'
+    xs = list("Crunchy Frog")
+    print(xs)
+
     
-One particular feature of ``range`` is that it 
-doesn't instantly compute all its values: it "puts off" the computation,
-and does it on demand, or "lazily".  We'll say that it gives a **promise**
-to produce the values when they are needed.   This is very convenient if your
-computation is abandoned early, as in this case::
 
-    def f(n):
-    """ Find the first positive integer between 101 and n that is divisible by 21 """
-        for i in range(101, n):
-           if (i % 21 == 0):
-                return i
-                
-                
-    test(f(110), 105)
-    test(f(1000000000), 105)
-
-
-.. sidebar:: Your Mileage May Vary
-
-    The acronym YMMV stands for *your mileage may vary*.  American car advertisements
-    often quoted fuel consumption figures for cars, that they would get 28 miles per
-    gallon, etc.  But this always had to be accompanied by legal small-print
-    telling you that your mileage may vary.  The term YMMV is now used
-    idiomatically to mean "your results may differ", 
-    e.g. *The battery life on this phone is 3 days, but YMMV.*     
-    
-In the second test, if range were to eagerly go about building a list 
-with all those elements, you would soon exhaust your computer's available
-memory and crash the program.  But it is cleverer than that!  This computation works
-just fine, because the ``range`` object is just a promise to produce the elements
-if and when they are needed.  Once the condition in the `if` becomes true, no
-further elements are generated, and the function returns.  (Note: Before Python 3,
-``range`` was not lazy. If you use an earlier versions of Python, YMMV!)
-
-You'll sometimes find the lazy ``range`` wrapped in a call to ``list``.  This forces
-Python to turn the lazy promise into an actual list::
-
-    >>> range(10)           # create a lazy promise 
-    range(0, 10)
-    >>> list(range(10))     # Call in the promise, to produce a list.
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
  
 
 Glossary
