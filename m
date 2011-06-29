@@ -312,7 +312,7 @@ def dist():
     os.system("rm -rf dist/")
     if not os.path.exists("dist"): os.mkdir("dist")
 
-    """
+
     print ". Writing combined version..."
     combined = ''
     linemap = open("dist/linemap.txt", "w")
@@ -323,14 +323,14 @@ def dist():
         print >>linemap, "%d:%s" % (curline, file)
         curline += len(curfiledata.split("\n")) - 1
     linemap.close()
-    """
+
 
     # make combined version
-    #uncompfn = "dist/skulpt-uncomp.js"
+    uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
     builtinfn = "dist/builtin.js"
-    #open(uncompfn, "w").write(combined)
-    #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
+    open(uncompfn, "w").write(combined)
+    os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
     #buildBrowserTests()
 
@@ -643,6 +643,12 @@ def host():
     print "serving at port", PORT
     httpd.serve_forever()
 
+def installNew():
+    dest = "../thinkcs/source/_static"
+    print "copying built files to %s" % dest
+    ret = os.system("cp doc/static/skulpt.js %s" % dest)
+    ret |= os.system("cp doc/static/builtin.js %s" % dest)
+
 if __name__ == "__main__":
     if sys.platform == 'win32':
         os.system("cls")
@@ -697,5 +703,7 @@ if __name__ == "__main__":
         host()
     elif cmd == "shell":
         shell(sys.argv[2]);
+    elif cmd == "copy":
+        installNew()
     else:
         usage()

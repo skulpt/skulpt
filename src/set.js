@@ -286,3 +286,6 @@ Sk.builtin.set.prototype['remove'] = new Sk.builtin.func(function(self, item)
     }
     return null;
 });
+
+
+goog.exportSymbol("Sk.builtin.set", Sk.builtin.set);

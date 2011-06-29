@@ -4,6 +4,9 @@
  */
 Sk.builtin.tuple = function(L)
 {
+    if (arguments.length > 1) {
+	throw new TypeError("tuple must be created from a sequence");
+    }
     if (L instanceof Sk.builtin.tuple) return;
     if (!(this instanceof Sk.builtin.tuple)) return new Sk.builtin.tuple(L);
     if (Object.prototype.toString.apply(L) === '[object Array]')
@@ -148,3 +151,5 @@ Sk.builtin.tuple.prototype.sq$concat = function(other)
 };
 
 Sk.builtin.tuple.prototype.sq$length = function() { return this.v.length; };
+
+goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);

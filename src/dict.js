@@ -107,6 +107,10 @@ Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAtt
 
 Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 {
+    if (! d) {
+        //d = new Sk.builtin.NoneObj();
+        d = null;
+    }
     var ret = self.mp$subscript(k);
     if (ret !== undefined) return ret;
     return d;
@@ -161,6 +165,9 @@ Sk.builtin.dict.prototype['values'] = new Sk.builtin.func(function(self)
     }
     return new Sk.builtin.list(ret);
 });
+
+
+goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /*
 

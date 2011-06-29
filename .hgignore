@@ -10,3 +10,6 @@ tmp/*
 dist/*
 support/selenium
 .svn
+builtin.js
+skulpt.js
+.idea/*

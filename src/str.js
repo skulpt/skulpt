@@ -88,7 +88,18 @@ Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
     return new Sk.builtin.str(this.v.substr(i1, i2 - i1));
 };
-// Sk.builtin.str.prototype.sq$contains // iter version is fine
+
+Sk.builtin.str.prototype.sq$contains = function(ob) {
+    if (! ob.v || ob.v.constructor != String) {
+        throw new TypeError("TypeError: 'In <string> requires string as left operand");
+    }
+    if (this.v.indexOf(ob.v) != -1) {
+        return true;
+    } else {
+        return false;
+    }
+
+}
 
 Sk.builtin.str.prototype.tp$name = "str";
 Sk.builtin.str.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
@@ -246,7 +257,12 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
-    var res = self.v.split(new Sk.builtin.str(on).v, howmany);
+    var res;
+    if (! on) {
+        res = self.v.split(/[\s]+/, howmany);
+    } else {
+        res = self.v.split(new Sk.builtin.str(on).v, howmany);
+    }
     var tmp = [];
     for (var i = 0; i < res.length; ++i)
     {

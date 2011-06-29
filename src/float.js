@@ -4,7 +4,11 @@ Sk.builtin.float_ = function(x)
     {
         if (x.v === "inf") return Infinity;
         if (x.v === "-inf") return -Infinity;
-        return parseFloat(x.v);
+        if (!isNaN(x.v))
+            return parseFloat(x.v);
+        else {
+            throw new Sk.builtin.ValueError("float: Argument: " + x.v + " is not number");
+        }
     }
     return x;
 };
