@@ -643,11 +643,6 @@ def host():
     print "serving at port", PORT
     httpd.serve_forever()
 
-def installNew():
-    dest = "../thinkcs/source/_static"
-    print "copying built files to %s" % dest
-    ret = os.system("cp doc/static/skulpt.js %s" % dest)
-    ret |= os.system("cp doc/static/builtin.js %s" % dest)
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
@@ -703,7 +698,5 @@ if __name__ == "__main__":
         host()
     elif cmd == "shell":
         shell(sys.argv[2]);
-    elif cmd == "copy":
-        installNew()
     else:
         usage()
