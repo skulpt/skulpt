@@ -313,24 +313,24 @@ def dist():
     if not os.path.exists("dist"): os.mkdir("dist")
 
 
-    print ". Writing combined version..."
-    combined = ''
-    linemap = open("dist/linemap.txt", "w")
-    curline = 1
-    for file in getFileList('dist'):
-        curfiledata = open(file).read()
-        combined += curfiledata
-        print >>linemap, "%d:%s" % (curline, file)
-        curline += len(curfiledata.split("\n")) - 1
-    linemap.close()
+    # print ". Writing combined version..."
+    # combined = ''
+    # linemap = open("dist/linemap.txt", "w")
+    # curline = 1
+    # for file in getFileList('dist'):
+    #     curfiledata = open(file).read()
+    #     combined += curfiledata
+    #     print >>linemap, "%d:%s" % (curline, file)
+    #     curline += len(curfiledata.split("\n")) - 1
+    # linemap.close()
 
 
     # make combined version
-    uncompfn = "dist/skulpt-uncomp.js"
+    #uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
     builtinfn = "dist/builtin.js"
-    open(uncompfn, "w").write(combined)
-    os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
+    #open(uncompfn, "w").write(combined)
+    #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
     #buildBrowserTests()
 
