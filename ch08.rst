@@ -570,7 +570,7 @@ Looping and counting
 
 The following program counts the number of times the letter ``a`` appears in a
 string.  It is another example of the counter pattern introduced in
-:ref:`counting`:
+:ref:`counting`.
 
 .. activecode:: chp08_fun2
 
@@ -579,10 +579,13 @@ string.  It is another example of the counter pattern introduced in
         for c in text:
             if c == 'a':
                 count = count + 1
-        return(count)
+        return count
 
     print(countA("banana"))    
 
+The function ``countA`` takes a string as its parameter.  The ``for`` statement iterates through each character in
+the string and checks to see if the character is an "a".  If so, the counting variable, ``count``, is incremented by one.
+When all characters have been processed, the ``count`` is returned.
 
 .. index:: traversal, eureka traversal, pattern of computation,
            computation pattern
@@ -760,7 +763,7 @@ More ``string`` methods
 -----------------------
  
 Now that we've done all this work to write a powerful ``find`` function, we can let on that
-there is already a ``find`` method that works on strings, with precisely these same semantics::
+there is already a ``find`` method that works on strings, with precisely these same semantics.
 Usually we'd prefer to use the methods that Python provides rather than reinvent
 our own equivalents. But many of the available built-in functions and methods make good
 teaching exercises, and the underlying techniques you learn are your building blocks

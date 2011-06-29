@@ -38,7 +38,7 @@ Algorithms
 
 If problem-solving is a central part of computer science, then the solutions that you create through
 the problem-solving process are also important.  In computer science, we refer to these solutions
-as **algorithms**.  An algorithm is a step by step list of instructions that is followed exactly will solve the problem under consideration.  
+as **algorithms**.  An algorithm is a step by step list of instructions that if followed exactly will solve the problem under consideration.  
 
 Our goal in computer science is to take a problem and develop an algorithm that can serve as a general solution.  Once we have such a solution, we can use our computer to automate the execution.  As noted
 above, programming is a skill which allows a computer scientist to take an algorithm and represent it in
@@ -143,11 +143,11 @@ These examples show Python being run from a Unix command line. In other
 development environments, the details of executing programs may differ. Also,
 most programs are more interesting than this one.
 
-In this book, it is also possible to write a program and use a unique **active code** interpreter that allows you to execute Python code right
-in the text itself.  Although this is certainly not the way real programs are written, it provides an excellent
+In this book you can write a program using a unique **active code** interpreter that allows you to execute Python code right
+in the text itself (right from the web browser).  Although this is certainly not the way real programs are written, it provides an excellent
 environment for learning a programming language like Python.
 
-For example, if we take the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.  You can also make changes and save them for reloading later.  Try pressing the *run* button below to see the active code interpreter in action.  
+Take a look at the active code interpreter in action.  If we take the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.  You can also make changes and save them for reloading later.  Try pressing the *run* button below. 
 
 .. activecode:: ch01_1
     :nopre:
@@ -444,8 +444,8 @@ Here is the same code in the active code interpreter.  Give it a try!
 
    print("Hello, World!")
 
-The quotation marks in the program mark the beginning and end of the value;
-they don't appear in the result.
+The quotation marks in the program mark the beginning and end of the value.
+They don't appear in the result.
 
 Some people judge the quality of a programming language by the simplicity of
 the Hello, World! program. By this standard, Python does about as well as

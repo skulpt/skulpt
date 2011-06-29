@@ -35,11 +35,13 @@ Based on the original book
 * `Chapter 7 <ch07.html>`__ *Iteration*
 * `Chapter 8 <ch08.html>`__ *Strings*
 * `Chapter 9 <ch09.html>`__ *Lists*
-* `Chapter 10 <ch10.html>`__ *Modules and Files*
-* `Chapter 11 <ch11.html>`__ *Recursion and Exceptions*
-* `Chapter 12 <ch12.html>`__ *Dictionaries*
+* `Chapter 10 <ch12.html>`__ *Dictionaries*
+* `Chapter 11 <ch10.html>`__ *Modules and Files*
+* `Chapter 12 <ch11.html>`__ *Recursion and Exceptions*
+
 * `Chapter 13 <ch13.html>`__ *Classes and Objects - the Basics*
 * `Chapter 14 <ch14.html>`__ *Classes and Objects - Digging a little deeper*
+
 .. `Chapter 15 <ch15.html>`__ *Even more OOP*
 .. `Chapter 16 <ch16.html>`__ *Sets of Objects*
 .. `Chapter 17 <ch17.html>`__ *Inheritance*
@@ -47,6 +49,7 @@ Based on the original book
 .. `Chapter 19 <ch19.html>`__ *Stacks*
 .. `Chapter 20 <ch20.html>`__ *Queues*
 .. `Chapter 21 <ch21.html>`__ *Trees*
+
 * `Appendix A <app_a.html>`__ *Debugging*
 * `Appendix B <app_b.html>`__ *An odds-and-ends Workbook*
 * `Appendix C <app_c.html>`__ *Configuring Ubuntu for Python Development*
@@ -73,18 +76,24 @@ Based on the original book
     ch01.rst
     ch02.rst
     ch03.rst
+
+    modules.rst
+
     ch04.rst
     ch05.rst
     ch06.rst
     ch07.rst
     ch08.rst
     ch09.rst
-    ch10.rst
-    ch11.rst
+
     ch12.rst
+
+..    ch10.rst
+    ch11.rst
+
     ch13.rst
     ch14.rst
-    ch15.rst
+..    ch15.rst
 ..    ch16.rst
 ..    ch17.rst
 ..    ch18.rst
