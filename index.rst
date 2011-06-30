@@ -91,6 +91,7 @@ Based on the original book
     ch12.rst
     ch11.rst
     ch13.rst
+    astronomylab.rst
     ch14.rst
 
 

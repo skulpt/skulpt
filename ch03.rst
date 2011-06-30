@@ -327,7 +327,7 @@ square.  This next program does exactly the same thing but, with the help of the
    wn = turtle.Screen()
    alex = turtle.Turtle()
    
-   for i in [0,1,2,3]:      #use a for statement to make the four sides
+   for i in [0,1,2,3]:      #repeat four times
        alex.forward(50)
        alex.left(90) 
 

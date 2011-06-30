@@ -153,7 +153,7 @@ change might mean something quite different from what you intended.
 .. index:: type converter functions, int, float, str, truncation
 
 Type conversion functions
-------------------------
+-------------------------
     
 Sometimes it is necessary to convert values from one type to another.  Python provides
 a few simple functions that will allow us to do that.  The functions `int`, `float` and `str`
@@ -250,12 +250,12 @@ A common way to represent variables on paper is to write the name with an arrow
 pointing to the variable's value. This kind of figure, known as a **reference diagram**, is often called a **state
 snapshot** because it shows what state each of the variables is in at a
 particular instant in time.  (Think of it as the variable's state of mind).
-This diagram shows the result of executing the assignment statements:
+This diagram shows the result of executing the assignment statements.
 
-.. image:: illustrations/ch02/state.png
-   :alt: State snapshot
+.. image:: illustrations/ch02/refdiagram1.png
+   :alt: Reference Diagram
 
-If you ask the interpreter to evaluate a variable, it will produce the value
+If you ask the Python to evaluate a variable, it will produce the value
 that is currently linked to the variable.  In other words, evaluating a variable will give you the value that is referred to
 by the variable.
 
@@ -265,6 +265,7 @@ by the variable.
     message = "What's up, Doc?"
     n = 17
     pi = 3.14159
+
     print(message)
     print(n)
     print(pi)
@@ -278,6 +279,7 @@ types; again, we can ask the interpreter what they are.
     message = "What's up, Doc?"
     n = 17
     pi = 3.14159
+
     print(type(message))
     print(type(n))
     print(type(pi))
@@ -332,10 +334,10 @@ There are some situations in which names beginning with an underscore have
 special meaning, so a safe rule for beginners is to start all names with a
 letter.
  
-If you give a variable an illegal name, you get a syntax error:
+If you give a variable an illegal name, you get a syntax error.  In the example below, each
+of the variable names is illegal.
 
-.. activecode:: ch02_12
-    :nocanvas:
+.. sourcecode:: python
 
     76trombones = "big parade"
     more$ = 1000000
@@ -407,7 +409,7 @@ Evaluating expressions
 
 An **expression** is a combination of values, variables, operators, and calls
 to functions. If you ask Python to ``print`` an expression, the interpreter
-**evaluates** the expression and displays the result:
+**evaluates** the expression and displays the result.
 
 .. activecode:: ch02_13
     :nocanvas:
@@ -427,7 +429,6 @@ itself is a simple expression, and so is a variable.  Evaluating a variable give
 .. activecode:: ch02_14
     :nocanvas:
 
-    17
     y = 3.14
     x = len("hello")
     print(x)
@@ -496,13 +497,13 @@ the left on the number line).
     print(hours)
 
     
-Take care that you choose the correct flavour of the division operator.  If
+Take care that you choose the correct flavor of the division operator.  If
 you're working with expressions where you need floating point values, use the
 division operator that does the division accurately.
 
 .. index:: modulus
 
-The **modulus operator**, sometimes also called the **remainder oprator** or **integer remainder operator** works on integers (and integer expressions) and yields
+The **modulus operator**, sometimes also called the **remainder operator** or **integer remainder operator** works on integers (and integer expressions) and yields
 the remainder when the first operand is divided by the second. In Python, the
 modulus operator is a percent sign (``%``). The syntax is the same as for other
 operators:

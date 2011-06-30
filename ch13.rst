@@ -16,6 +16,7 @@ Classes and Objects - the Basics
 Object-oriented programming
 ---------------------------
 
+
 Python is an **object-oriented programming language**, which means that it
 provides features that support `object-oriented programming
 <http://en.wikipedia.org/wiki/Object-oriented_programming>`__ (**OOP**).
