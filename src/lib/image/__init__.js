@@ -13,6 +13,9 @@ var $builtinmodule = function(name) {
     var image = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self,imageId) {
             self.image = document.getElementById(imageId.v);
+            if (self.image == null) {
+                throw "There is no image on this page named: " + imageId.v;
+            }
             self.width = self.image.width;
             self.height = self.image.height;
             self.canvas = document.createElement("canvas");
@@ -59,6 +62,8 @@ var $builtinmodule = function(name) {
             ctx.putImageData(self.imagedata,ulx,uly);
         });
 
+        // toList
+
     }
 
     mod.Image = Sk.misceval.buildClass(mod, image, 'Image', []);
@@ -78,7 +83,9 @@ var $builtinmodule = function(name) {
 
     mod.EmptyImage = Sk.misceval.buildClass(mod, eImage, 'EmptyImage', [mod.Image]);
 
+    // create a ListImage object
 
+    
     var pixel = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self,r,g,b) {
             self.red = r;
@@ -110,6 +117,30 @@ var $builtinmodule = function(name) {
            self.blue = b;
         });
 
+        $loc.__getitem__ = new Sk.builtin.func(function(self,k) {
+           if(k == 0) {
+               return self.red;
+           } else if (k == 1) {
+               return self.green;
+           } else if (k == 2) {
+               return self.blue;
+           }
+        });
+
+        $loc.__str__ = new Sk.builtin.func(function(self) {
+            console.log("in __str__")
+            return "[" + self.red + "," + self.green + "," + self.blue + "]"
+        });
+        
+        //getColorTuple
+        $loc.getColorTuple = new Sk.builtin.func(function(self,x,y) {
+
+        });
+
+        //setRange -- change from 0..255 to 0.0 .. 1.0
+        $loc.setRange = new Sk.builtin.func(function(self,mx) {
+            self.max = mx;
+        });
 
     }
     mod.Pixel = Sk.misceval.buildClass(mod, pixel, 'Pixel', []);
@@ -127,11 +158,24 @@ var $builtinmodule = function(name) {
                 self.theScreen = currentCanvas;
                 self.theScreen.height = self.theScreen.height;
             }
+            self.theScreen.style.display = "block";
         });
 
         $loc.getWin = new Sk.builtin.func(function(self) {
            return self.theScreen;
         });
+
+        // exitonclick
+        $loc.exitonclick = new Sk.builtin.func(function(self) {
+            var canvas_id = self.theScreen.id;
+            self.theScreen.onclick = function() {
+                document.getElementById(canvas_id).style.display = 'none';
+                document.getElementById(canvas_id).onclick = null;
+                delete ImageMod.canvasLib[canvas_id];
+            }
+
+        });
+        //getMouse
     }
 
     mod.ImageWin = Sk.misceval.buildClass(mod, screen, 'ImageWin', []);
