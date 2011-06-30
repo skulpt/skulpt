@@ -1581,4 +1581,360 @@ can use in our own programs.  Some of these can send email or fetch web pages. O
 Once you are comfortable with the basics of turtle graphics you can read about even
 more options on the `Python Docs Website <http://docs.python.org/dev/py3k/library/turtle.html>`_.
 
+.. admonition:: Recursion, the low-level operational view
+
+    Another way of trying to understand recursion is to get rid of it! If we
+    had separate functions to draw a level 3 fractal, a level 2 fractal, a level 1
+    fractal and a level 0 fractal, we could simplify the above code, quite mechanically,
+    to code where there was no longer any recursion, like this:
+    
+    .. sourcecode:: python
+        :linenos:
+        
+        def koch_0(t, size):
+            t.forward(size)
+
+        def koch_1(t, size):
+            for angle in [60, -120, 60, 0]:
+               koch_0(t,  size/3)
+               t.left(angle)
+
+        def koch_2(t, size):
+            for angle in [60, -120, 60, 0]:
+               koch_1(t,  size/3)
+               t.left(angle)
+
+        def koch_3(t, size):
+            for angle in [60, -120, 60, 0]:
+               koch_2(t,  size/3)
+               t.left(angle)
+    
+    This trick of "unrolling" the recursion gives us an operational view
+    of what happens.  You can trace the program into ``koch_3``, and from
+    there, into ``koch_2``, and then into ``koch_1``, etc., all the way down
+    the different layers of the recursion.  
+    
+    This might be a useful hint to build your understanding.  The mental goal
+    is, however, to be able to do the abstraction!
+
+
+	.. index:: exception, handling an exception, exception; handling, try ... except 
+
+	Exceptions
+	----------
+
+	Whenever a runtime error occurs, it creates an **exception**. The program stops
+	running at this point and Python prints out the traceback, which ends with the
+	exception that occured.
+
+	For example, dividing by zero creates an exception:
+
+	.. sourcecode:: python
+
+	    >>> print 55/0
+	    Traceback (most recent call last):
+	      File "<interactive input>", line 1, in <module>
+	    ZeroDivisionError: integer division or modulo by zero
+	    >>>
+
+	So does accessing a non-existent list item:
+
+	.. sourcecode:: python
+
+	    >>> a = []
+	    >>> print a[5]
+	    Traceback (most recent call last):
+	      File "<interactive input>", line 1, in <module>
+	    IndexError: list index out of range
+	    >>>
+
+	Or trying to make an item assignment on a tuple:
+
+	.. sourcecode:: python
+
+	    >>> tup = ('a', 'b', 'd', 'd')
+	    >>> tup[2] = 'c' 
+	    Traceback (most recent call last):
+	      File "<interactive input>", line 1, in <module>
+	    TypeError: 'tuple' object does not support item assignment
+	    >>>
+
+	In each case, the error message on the last line has two parts: the type of
+	error before the colon, and specifics about the error after the colon.
+
+	Sometimes we want to execute an operation that might cause an exception, but we
+	don't want the program to stop. We can **handle the exception** using the
+	``try`` statement to "wrap" a region of code.  
+
+	For example, we might prompt the user for the name of a file and then try to
+	open it. If the file doesn't exist, we don't want the program to crash; we want
+	to handle the exception:
+
+	.. sourcecode:: python
+
+	    filename = input('Enter a file name: ')
+	    try:
+	        f = open (filename, "r")
+	    except:
+	        print('There is no file named', filename)
+
+	The ``try`` statement has three separate clauses, or parts, 
+	introduced by the keywords ``try`` ... ``except`` ... ``finally``.
+	The ``finally`` clause can be omitted, so we'll consider the two-clause version
+	of the ``try`` statement first.        
+
+	The ``try`` statement executes and monitors the statements in the first block. If no
+	exceptions occur, it skips the block under the ``except`` clause. If any exception occurs,
+	it executes the statements in the ``except`` clause and then continues.
+
+	We can encapsulate this capability in a function: ``exists`` takes a filename
+	and returns true if the file exists, false if it doesn't:
+
+	.. sourcecode:: python
+
+	    def exists(filename):
+	        try:
+	            f = open(filename)
+	            f.close()
+	            return True 
+	        except:
+	            return False 
+
+	.. sidebar:: How to test if a file exists, without using exceptions
+
+	    The function we've just shown is not one we'd recommend. It opens
+	    and closes the file, which is semantically different from asking "does
+	    it exist?". How?  Firstly, it might update some timestamps on the file.  
+	    Secondly, it might tell you that there is no such file if some other 
+	    program already happens to have the file open, or if your permissions 
+	    settings don't allow you to access the file.
+
+	    Python provides a module called ``os.path`` (this is the first
+	    time we've seen a module name with two namespace components). It
+	    provides a number of useful functions to work with paths, files and directories,
+	    so you should check out the help.  
+
+	    .. sourcecode:: python
+
+	        import os.path
+
+	        # This is the preferred way to check if a file exists.
+	        if os.path.isfile("c:/temp/testdata.txt"):
+	           ...
+
+
+
+	You can use multiple ``except`` clauses to handle different kinds of exceptions
+	(see the `Errors and Exceptions <http://docs.python.org/tut/node10.html>`__
+	lesson from Python creator Guido van Rossum's `Python Tutorial
+	<http://docs.python.org/tut/tut.html>`__ for a more complete discussion of
+	exceptions).
+
+	If your program detects an error condition, you can make it **raise** an
+	exception. Here is an example that gets input from the user and checks that the
+	number is non-negative.
+
+	.. sourcecode:: python
+
+	    def get_age():
+	        age = int(input('Please enter your age: '))
+	        if age < 0:
+	            raise ValueError('{0} is not a valid age'.format(age))
+	        return age
+
+	The ``raise`` statement creates an exception object, in this case, a ValueError 
+	object, which encapsulates your specific information about the error.   
+	``ValueError`` is one of the built-in exception types which
+	most closely matches the kind of error we want to raise. The complete listing
+	of built-in exceptions is found in  the `Built-in Exceptions
+	<http://docs.python.org/lib/module-exceptions.html>`__ section of the `Python 
+	Library Reference <http://docs.python.org/lib/>`__, again by Python's creator, 
+	Guido van Rossum.
+
+	If the function that called ``get_age`` handles the error, then the program can
+	continue; otherwise, Python prints the traceback and exits:
+
+	.. sourcecode:: python
+
+	    >>> get_age()
+	    Please enter your age: 42
+	    42 
+	    >>> get_age()
+	    Please enter your age: -2
+	    Traceback (most recent call last):
+	      File "<interactive input>", line 1, in <module>
+	      File "learn_exceptions.py", line 4, in get_age
+	        raise ValueError, '{0} is not a valid age'.format(age)
+	    ValueError: -2 is not a valid age
+	    >>>
+
+	The error message includes the exception type and the additional information
+	you provided.
+
+	Using exception handling, we can now modify our infinite recursion function
+	so that it stops when it reaches the maximum recursion depth allowed:
+
+	.. sourcecode:: python
+
+	    def recursion_depth(number):
+	        print("Recursion depth number", number)
+	        try:
+	            recursion_depth(number + 1)
+	        except:
+	            print("Maximum recursion depth exceeded.")
+
+	    recursion_depth(0)
+
+	Run this version and observe the results.
+
+	.. index:: try ... except ... finally
+
+	The ``finally`` clause of the ``try`` statement
+	-----------------------------------------------
+
+	A common programming pattern is to grab a resource of some kind --- e.g. 
+	we create a window for turtles to draw on, or dial up a connection to our
+	internet service provider, or we may open a file for writing.   
+	Then we perform some computation which may raise exceptions, 
+	or may work without any problems.
+
+	In either case, we want to "clean up" the resources we grabbed --- e.g. close
+	the window, disconnect our dial-up connection, or close the file.  The ``finally``
+	clause of the ``try`` statement is the mechanism for doing just this.  Consider
+	this (somewhat contrived) example:
+
+	.. sourcecode:: python
+	   :linenos:
+
+	    import turtle, time
+
+	    def show_poly():
+	        try:
+	            win = turtle.Screen()   # Grab or create some resource - a window...
+	            tess = turtle.Turtle()
+	                # This dialog could be cancelled, or the conversion to int might fail.
+	            n = int(input("How many sides do you want in your polygon?"))
+	            angle = 360 / n
+	            for i in range(n):      # Draw the polygon 
+	                tess.forward(10)
+	                tess.left(angle)
+	            time.sleep(3)           # make program wait for a few seconds
+	        finally:         
+	            win.bye()               # close the turtle's window.
+
+
+	    show_poly()
+	    show_poly()
+	    show_poly()
+
+	In lines 18-20, ``show_poly`` is called three times.  Each one creates a new
+	window for its turtle, and draws a polygon with the number of sides
+	input by the user.  But what if the user enters a string that cannot be
+	converted to an int?  What if they close the dialog?  We'll get an exception, 
+	*but even though we've had an exception, we still want to close the turtle's window*.  
+	Lines 14-15 does this for us.  Whether we complete the statements in the ``try`` 
+	clause successfully or not, the ``finally`` block will always be executed.
+
+	Notice that the exception is still unhandled --- only an ``except`` clause can
+	handle an exception, so your program will still crash.  But it's turtle window
+	will be closed when it crashes! 
+
+
+	.. index:: fibonacci numbers
+
+	Case study: Fibonacci numbers  
+	----------------------------- 
+
+	The famous **Fibonacci sequence** 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 134, ... was devised by 
+	Fibonacci (1170-1250), who used this to model the breeding of (pairs) of rabbits.   
+	If, in generation 7 you had 21 pairs in total, of which 13 were adults, 
+	then next generation the adults will all have bred new children, 
+	and the previous children will have grown up to become adults.  
+	So in generation 8 you'll have 13+21=34, of which 21 are adults.
+
+	This *model* to explain rabbit breeding made the simplifying assumption that rabbits never died. 
+	Scientists often make (unrealistic) simplifying assumptions and restrictions 
+	to make some headway with the problem.
+
+	If we number the terms of the sequence from 0, we can describe each term recursively
+	as the sum of the previous two terms::
+
+	    fib(0) = 0
+	    fib(1) = 1
+	    fib(n) = fib(n-1) + fib(n-2)  for n >= 2
+
+	This translates very directly into some Python: 
+
+	.. sourcecode:: python
+
+	    def fib(n):
+	        if n <= 1:
+	            return n
+	        t = fib(n-1) + fib(n-2)
+	        return t
+
+	This is a particularly inefficient algorithm, and we'll show one way of fixing it in the next chapter::
+
+	    t0 = time.time()
+	    n = 35
+	    result = fib(n)
+	    t1 = time.time()
+
+	    print('fib({0}) = {1}, ({2:.2f} secs)'.format(n, result, t1-t0))
+
+
+	We get the correct result, but an exploding amount of work! ::
+
+	     fib(35) = 9227465, (10.54 secs)
+
+
+	Example with recursive directories and files
+	--------------------------------------------
+
+	The following program lists the contents of a directory and all its subdirectories.
+
+	.. sourcecode:: python
+
+	    import os
+
+	    def get_dirlist(path):
+	        """ 
+	          Return a sorted list of all entries in path.
+	          This returns just the names, not the full path to the names.
+	        """
+	        dirlist = os.listdir(path)
+	        dirlist.sort()
+	        return dirlist
+
+	    def print_files(path, prefix = ""):
+	        """ Print recursive listing of contents of path """
+	        if prefix == "":  # detect outermost call, print a heading
+	            print('Folder listing for', path)
+	            prefix = "| "
+
+	        dirlist = get_dirlist(path)
+	        for f in dirlist:
+	            print(prefix+f)                 # print the line 
+	            fullE = os.path.join(path, f)   # turn the name into a full path
+	            if os.path.isdir(fullE):        # if it is a directory, recurse. 
+	                print_files(fullE, prefix + "| ")
+
+	Calling the function ``print_files`` with some folder name will produce output similar to this::       
+
+	    Folder listing for c:\python31\Lib\site-packages\pygame\examples
+	    | __init__.py
+	    | aacircle.py
+	    | aliens.py
+	    | arraydemo.py
+	    | blend_fill.py
+	    | blit_blends.py
+	    | camera.py
+	    | chimp.py
+	    | cursors.py
+	    | data
+	    | | alien1.png
+	    | | alien2.png
+	    | | alien3.png
+	    ...    
+
 

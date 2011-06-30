@@ -7,8 +7,8 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
 
-Recursion and Exceptions
-========================
+Recursion
+=========
 
 .. index:: mutable, immutable, tuple
 
@@ -49,11 +49,12 @@ Now let us think about it the other way around.  To draw a Koch fractal
 of order 3, we can simply draw four order 2 Koch fractals.  But each of these
 in turn needs four order 1 Koch fractals, and each of those in turn needs four
 order 0 fractals.  Ultimately, the only drawing that will take place is 
-at order 0. This is very simple to code up in Python:
+at order 0. This is very simple to code up in Python.
 
-.. sourcecode:: python
-   :linenos: 
+.. activecode:: chp12_koch
    
+    import turtle
+
     def koch(t, order, size):
         """
            Make turtle t draw a Koch fractal of 'order' and 'size'.
@@ -70,28 +71,25 @@ at order 0. This is very simple to code up in Python:
             koch(t, order-1, size/3)
             t.left(60)
             koch(t, order-1, size/3) 
+
+    fred = turtle.Turtle()
+    wn = turtle.Screen()
+  
+    fred.color("blue")
+    wn.bgcolor("green")
+    fred.penup()
+    fred.backward(150)
+    fred.pendown()
+
+    koch(fred, 3, 300)
+
+    wn.exitonclick()
+
+Try running this program with different values for the order.  For example, try order 0, then 1, then 2, and so on.
             
 The key thing that is new here is that if order is not zero,
-``koch`` calls itself recursively to get its job done.
+``koch`` calls itself four times to get the job done.  This self-reference is the recursion.
 
-Let's make a simple observation and tighten up this code.  Remember that
-turning right by 120 is the same as turning left by -120.  So with a 
-bit of clever rearrangement, we can use a loop instead of lines 10-16:
-
-.. sourcecode:: python
-   :linenos:
-
-    def koch(t, order, size):
-        if order == 0:                  
-            t.forward(size)
-        else:
-            for angle in [60, -120, 60, 0]:
-               koch(t, order-1, size/3)   
-               t.left(angle)
-               
-The final turn is 0 degrees --- so it has no effect.  But it has allowed us to
-find a pattern and reduce seven lines of code to three, which will make  
-things easier for our next observations.
 
 .. admonition:: Recursion, the high-level view
 
@@ -99,7 +97,7 @@ things easier for our next observations.
     works correctly when you call it for an order 0 fractal.  Then do
     a mental *leap of faith*, saying *"the fairy godmother* (or Python, if
     you can think of Python as your fairy godmother) *knows how to 
-    handle the recursive level 0 calls for me on lines 11, 13, 15, and 17, so
+    handle the recursive level 0 calls for me on lines 12, 14, 16, and 18, so
     I don't need to think about that detail!"*  All I need to focus on
     is how to draw an order 1 fractal *if I can assume the order 0 one is
     already working.*
@@ -117,41 +115,7 @@ things easier for our next observations.
     Students of mathematics who have played with proofs of induction should
     see some very strong similarities here.  
 
-.. admonition:: Recursion, the low-level operational view
 
-    Another way of trying to understand recursion is to get rid of it! If we
-    had separate functions to draw a level 3 fractal, a level 2 fractal, a level 1
-    fractal and a level 0 fractal, we could simplify the above code, quite mechanically,
-    to code where there was no longer any recursion, like this:
-    
-    .. sourcecode:: python
-        :linenos:
-        
-        def koch_0(t, size):
-            t.forward(size)
-
-        def koch_1(t, size):
-            for angle in [60, -120, 60, 0]:
-               koch_0(t,  size/3)
-               t.left(angle)
-
-        def koch_2(t, size):
-            for angle in [60, -120, 60, 0]:
-               koch_1(t,  size/3)
-               t.left(angle)
-
-        def koch_3(t, size):
-            for angle in [60, -120, 60, 0]:
-               koch_2(t,  size/3)
-               t.left(angle)
-    
-    This trick of "unrolling" the recursion gives us an operational view
-    of what happens.  You can trace the program into ``koch_3``, and from
-    there, into ``koch_2``, and then into ``koch_1``, etc., all the way down
-    the different layers of the recursion.  
-    
-    This might be a useful hint to build your understanding.  The mental goal
-    is, however, to be able to do the abstraction!
 
 .. index::
     single: data structure
@@ -160,8 +124,8 @@ things easier for our next observations.
     single: definition; recursive
     single: recursive data structure
        
-Recursive data structures
--------------------------
+Recursive Data
+--------------
 
 All of the Python data types we have seen can be grouped inside lists and
 tuples in a variety of ways. Lists and tuples can also be nested, providing a
@@ -187,443 +151,59 @@ simpler instances of themselves. The definition is not circular, since at some
 point we will reach a list that does not have any lists as elements.
 
 Now suppose our job is to write a function that will sum all of the values in a
-nested number list. Python has a built-in function which finds the sum of a
-sequence of numbers:
+nested number list. We would want to call such a function on a list where some of the
+items might be numbers and some of them might be lists of numbers.
 
-.. sourcecode:: python
-    
-    >>> sum([1, 2, 8])
-    11
+Since the problem involves processing something that is recursively defined, it is likely that
+a recursive function might easily do the trick.  But how do we design such a function?
 
-For our *nested number list*, however, ``sum`` will not work:
+The first thing you must do to write a recursive function is define the cases where you already know the
+answer. In the Koch fractal example, the order 0 case is easy.  Just draw a straight line.  We call
+such a case the **base case**.  It is entirely possible that there can be many base cases in a recursive
+solution.  However, in each case, we know what to do.
 
-.. sourcecode:: python
-    
-    >>> sum([1, 2, [11, 13], 8])
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    TypeError: unsupported operand type(s) for +: 'int' and 'list'
-    >>> 
+For this problem, the base case is also very simple.  If the list has nothing in it, the sum of all the values
+must be 0.  But what if the list is not empty?  Then there must be a first item and if we take away the first item
+the rest must be a list with one fewer item than before.
 
-The problem is that the third element of this list, ``[11, 13]``, is itself a
-list, which can not be added to ``1``, ``2``, and ``8``.
+If we already have a function that knows how to compute the sum of a list, we can use it to compute the sum of
+the rest of the list.  The only problem we need to address is how to deal with the first item.
+
+There are two possibilities.  The first item would be a simple integer.  If that is the case, we simply add it to the
+sum returned for the rest of the list.  However, if the first item is itself a list, we will need to compute its sum (good news...we already have a function that knows how to do that) and then add that to the sum returned for the rest of
+the list.
+
+Either case will call the function of a smaller part of the original list.  This is known as the **recursive call** and must
+be made with a parameter value that is moving toward becoming the base case.  The complete function is shown below. 
 
 .. index:: recursion, recursive call, base case, infinite recursion, recursion; infinite
 
-Recursion
----------
 
-To sum all the numbers in our recursive nested number list we need to traverse
-the list, visiting each of the elements within its nested structure, adding any
-numeric elements to our sum, and *repeating this process* with any elements
-which are lists.
-
-Modern programming languages generally support **recursion**, which means that
-functions can *call themselves* within their definitions.  Thanks to recursion,
-the Python code needed to sum the values of a nested number list is
-surprisingly short:
-
-.. sourcecode:: python
+.. activecode:: chp11_recursivesum
     
-    def r_sum(nested_num_list):
-        sum = 0
-        for element in nested_num_list:
-            if type(element) == type([]):
-                sum += r_sum(element)
+    def rSum(nestedNumList):
+        if nestedNumList == []:
+            return 0
+        else:
+            firstitem = nestedNumList[0]
+            if type(firstitem) == type(87):
+                return firstitem + rSum(nestedNumList[1:])
             else:
-                sum += element
-        return sum
-
-The body of ``r_sum`` consists mainly of a ``for`` loop that traverses
-``nested_num_list``. If ``element`` is a numerical value (the ``else`` branch),
-it is simply added to ``sum``. If ``element`` is a list, then ``recursive_sum``
-is called again, with the element as an argument.  The statement inside the
-function definition in which the function calls itself is known as the
-**recursive call**.
-
-Recursion is truly one of the most beautiful and elegant tools in computer
-science.
-
-A slightly more complicated problem is finding the largest value in our nested
-number list:
-
-.. sourcecode:: python
-    
-    def r_max(nxs):
-        """ 
-          Find the maximum in a recursive structure of lists inside other lists.
-          Pre: No lists or sublists are empty. 
-        """
-        largest = None 
-        first_time = True
-        for e in nxs:
-            if type(e) == type([]):
-                val = r_max(e)
-            else:
-                val = e
-            if first_time or val > largest:
-                largest = val
-                first_time = False
-
-    return largest
-        
-    test(r_max([2, 9, [1, 13], 8, 6]), 13)
-    test(r_max([2, [[100, 7], 90], [1, 13], 8, 6]), 100)
-    test(r_max([[[13, 7], 90], 2, [1, 100], 8, 6]), 100)
-    test(r_max(["joe", ["sam", "ben"]]), "sam")
-
-Tests are included to provide examples of ``r_max`` at work. 
-
-The added twist to this problem is finding a value for initializing
-``largest``. We can't just use ``nxs[0]``, since that may be either
-a element or a list. To solve this problem (at every recursive call)
-we initialize a boolean flag.  When we've found the value of interest,
-we check to see whether this is the initializing (first) value for
-``largest``, or a value that could potentially change ``largest``.
-
-The two examples above each have a **base case** which does not lead to a
-recursive call: the case where the element is a number and not a list. Without
-a base case, you have **infinite recursion**, and your program will not work.
-Python stops after reaching a maximum recursion depth and returns a runtime
-error.
-
-Run this little script:
-
-.. sourcecode:: python
-    
-    def recursion_depth(number):
-        print("{0}, ".format(number), end="")
-        recursion_depth(number + 1)
-    
-    recursion_depth(0)
-
-After watching the messages flash by, you will be presented with the end of a
-long traceback that ends with a message like the following::
-
-    RuntimeError: maximum recursion depth exceeded
-
-We would certainly never want something like this to happen to a user of one of
-our programs, so before finishing the recursion discussion, let's see how
-errors like this are handled in Python.
-
-.. index:: exception, handling an exception, exception; handling, try ... except 
-
-Exceptions
-----------
-
-Whenever a runtime error occurs, it creates an **exception**. The program stops
-running at this point and Python prints out the traceback, which ends with the
-exception that occured.
-
-For example, dividing by zero creates an exception:
-
-.. sourcecode:: python
-    
-    >>> print 55/0
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    ZeroDivisionError: integer division or modulo by zero
-    >>>
-
-So does accessing a non-existent list item:
-
-.. sourcecode:: python
-    
-    >>> a = []
-    >>> print a[5]
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    IndexError: list index out of range
-    >>>
-
-Or trying to make an item assignment on a tuple:
-
-.. sourcecode:: python
-    
-    >>> tup = ('a', 'b', 'd', 'd')
-    >>> tup[2] = 'c' 
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-    TypeError: 'tuple' object does not support item assignment
-    >>>
-
-In each case, the error message on the last line has two parts: the type of
-error before the colon, and specifics about the error after the colon.
-
-Sometimes we want to execute an operation that might cause an exception, but we
-don't want the program to stop. We can **handle the exception** using the
-``try`` statement to "wrap" a region of code.  
-
-For example, we might prompt the user for the name of a file and then try to
-open it. If the file doesn't exist, we don't want the program to crash; we want
-to handle the exception:
-
-.. sourcecode:: python
-    
-    filename = input('Enter a file name: ')
-    try:
-        f = open (filename, "r")
-    except:
-        print('There is no file named', filename)
-
-The ``try`` statement has three separate clauses, or parts, 
-introduced by the keywords ``try`` ... ``except`` ... ``finally``.
-The ``finally`` clause can be omitted, so we'll consider the two-clause version
-of the ``try`` statement first.        
-        
-The ``try`` statement executes and monitors the statements in the first block. If no
-exceptions occur, it skips the block under the ``except`` clause. If any exception occurs,
-it executes the statements in the ``except`` clause and then continues.
-
-We can encapsulate this capability in a function: ``exists`` takes a filename
-and returns true if the file exists, false if it doesn't:
-
-.. sourcecode:: python
-    
-    def exists(filename):
-        try:
-            f = open(filename)
-            f.close()
-            return True 
-        except:
-            return False 
-
-.. sidebar:: How to test if a file exists, without using exceptions
-
-    The function we've just shown is not one we'd recommend. It opens
-    and closes the file, which is semantically different from asking "does
-    it exist?". How?  Firstly, it might update some timestamps on the file.  
-    Secondly, it might tell you that there is no such file if some other 
-    program already happens to have the file open, or if your permissions 
-    settings don't allow you to access the file.
-
-    Python provides a module called ``os.path`` (this is the first
-    time we've seen a module name with two namespace components). It
-    provides a number of useful functions to work with paths, files and directories,
-    so you should check out the help.  
-    
-    .. sourcecode:: python
-    
-        import os.path
-        
-        # This is the preferred way to check if a file exists.
-        if os.path.isfile("c:/temp/testdata.txt"):
-           ...
-           
-   
-            
-You can use multiple ``except`` clauses to handle different kinds of exceptions
-(see the `Errors and Exceptions <http://docs.python.org/tut/node10.html>`__
-lesson from Python creator Guido van Rossum's `Python Tutorial
-<http://docs.python.org/tut/tut.html>`__ for a more complete discussion of
-exceptions).
-
-If your program detects an error condition, you can make it **raise** an
-exception. Here is an example that gets input from the user and checks that the
-number is non-negative.
-
-.. sourcecode:: python
-    
-    def get_age():
-        age = int(input('Please enter your age: '))
-        if age < 0:
-            raise ValueError('{0} is not a valid age'.format(age))
-        return age
-
-The ``raise`` statement creates an exception object, in this case, a ValueError 
-object, which encapsulates your specific information about the error.   
-``ValueError`` is one of the built-in exception types which
-most closely matches the kind of error we want to raise. The complete listing
-of built-in exceptions is found in  the `Built-in Exceptions
-<http://docs.python.org/lib/module-exceptions.html>`__ section of the `Python 
-Library Reference <http://docs.python.org/lib/>`__, again by Python's creator, 
-Guido van Rossum.
-
-If the function that called ``get_age`` handles the error, then the program can
-continue; otherwise, Python prints the traceback and exits:
-
-.. sourcecode:: python
-    
-    >>> get_age()
-    Please enter your age: 42
-    42 
-    >>> get_age()
-    Please enter your age: -2
-    Traceback (most recent call last):
-      File "<interactive input>", line 1, in <module>
-      File "learn_exceptions.py", line 4, in get_age
-        raise ValueError, '{0} is not a valid age'.format(age)
-    ValueError: -2 is not a valid age
-    >>>
-
-The error message includes the exception type and the additional information
-you provided.
-
-Using exception handling, we can now modify our infinite recursion function
-so that it stops when it reaches the maximum recursion depth allowed:
-
-.. sourcecode:: python
-    
-    def recursion_depth(number):
-        print("Recursion depth number", number)
-        try:
-            recursion_depth(number + 1)
-        except:
-            print("Maximum recursion depth exceeded.")
-    
-    recursion_depth(0)
-
-Run this version and observe the results.
-
-.. index:: try ... except ... finally
-
-The ``finally`` clause of the ``try`` statement
------------------------------------------------
-
-A common programming pattern is to grab a resource of some kind --- e.g. 
-we create a window for turtles to draw on, or dial up a connection to our
-internet service provider, or we may open a file for writing.   
-Then we perform some computation which may raise exceptions, 
-or may work without any problems.
-
-In either case, we want to "clean up" the resources we grabbed --- e.g. close
-the window, disconnect our dial-up connection, or close the file.  The ``finally``
-clause of the ``try`` statement is the mechanism for doing just this.  Consider
-this (somewhat contrived) example:
-
-.. sourcecode:: python
-   :linenos:
-
-    import turtle, time
-
-    def show_poly():
-        try:
-            win = turtle.Screen()   # Grab or create some resource - a window...
-            tess = turtle.Turtle()
-                # This dialog could be cancelled, or the conversion to int might fail.
-            n = int(input("How many sides do you want in your polygon?"))
-            angle = 360 / n
-            for i in range(n):      # Draw the polygon 
-                tess.forward(10)
-                tess.left(angle)
-            time.sleep(3)           # make program wait for a few seconds
-        finally:         
-            win.bye()               # close the turtle's window.
+                return rSum(firstitem) + rSum(nestedNumList[1:])
 
 
-    show_poly()
-    show_poly()
-    show_poly()
+    print(rSum([]))
+    print(rSum([1,2,3,4]))
+    print(rSum([1,2,[4,5,6],7,8]))
 
-In lines 18-20, ``show_poly`` is called three times.  Each one creates a new
-window for its turtle, and draws a polygon with the number of sides
-input by the user.  But what if the user enters a string that cannot be
-converted to an int?  What if they close the dialog?  We'll get an exception, 
-*but even though we've had an exception, we still want to close the turtle's window*.  
-Lines 14-15 does this for us.  Whether we complete the statements in the ``try`` 
-clause successfully or not, the ``finally`` block will always be executed.
-
-Notice that the exception is still unhandled --- only an ``except`` clause can
-handle an exception, so your program will still crash.  But it's turtle window
-will be closed when it crashes! 
-
-
-.. index:: fibonacci numbers
-
-Case study: Fibonacci numbers  
------------------------------ 
-
-The famous **Fibonacci sequence** 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 134, ... was devised by 
-Fibonacci (1170-1250), who used this to model the breeding of (pairs) of rabbits.   
-If, in generation 7 you had 21 pairs in total, of which 13 were adults, 
-then next generation the adults will all have bred new children, 
-and the previous children will have grown up to become adults.  
-So in generation 8 you'll have 13+21=34, of which 21 are adults.
-
-This *model* to explain rabbit breeding made the simplifying assumption that rabbits never died. 
-Scientists often make (unrealistic) simplifying assumptions and restrictions 
-to make some headway with the problem.
-
-If we number the terms of the sequence from 0, we can describe each term recursively
-as the sum of the previous two terms::
- 
-    fib(0) = 0
-    fib(1) = 1
-    fib(n) = fib(n-1) + fib(n-2)  for n >= 2
-
-This translates very directly into some Python: 
+Note that three different calls are made to test the function.  In the first, list is empty.  This will test the base
+case.  In the second, the list has no nesting.  The third requires that all parts of the recursion are working.  Try them
+and then make modifications to the lists to add deeper nesting.  You might even want to try:
 
 .. sourcecode:: python
 
-    def fib(n):
-        if n <= 1:
-            return n
-        t = fib(n-1) + fib(n-2)
-        return t
+    print(rSum([[[[[[[[[[]]]]]]]]]]))
 
-This is a particularly inefficient algorithm, and we'll show one way of fixing it in the next chapter::
-
-    t0 = time.time()
-    n = 35
-    result = fib(n)
-    t1 = time.time()
-    
-    print('fib({0}) = {1}, ({2:.2f} secs)'.format(n, result, t1-t0))
-    
-    
-We get the correct result, but an exploding amount of work! ::
-
-     fib(35) = 9227465, (10.54 secs)
-    
-
-Example with recursive directories and files
---------------------------------------------
-
-The following program lists the contents of a directory and all its subdirectories.
-
-.. sourcecode:: python
-    
-    import os
-
-    def get_dirlist(path):
-        """ 
-          Return a sorted list of all entries in path.
-          This returns just the names, not the full path to the names.
-        """
-        dirlist = os.listdir(path)
-        dirlist.sort()
-        return dirlist
-
-    def print_files(path, prefix = ""):
-        """ Print recursive listing of contents of path """
-        if prefix == "":  # detect outermost call, print a heading
-            print('Folder listing for', path)
-            prefix = "| "
-
-        dirlist = get_dirlist(path)
-        for f in dirlist:
-            print(prefix+f)                 # print the line 
-            fullE = os.path.join(path, f)   # turn the name into a full path
-            if os.path.isdir(fullE):        # if it is a directory, recurse. 
-                print_files(fullE, prefix + "| ")
-
-Calling the function ``print_files`` with some folder name will produce output similar to this::       
- 
-    Folder listing for c:\python31\Lib\site-packages\pygame\examples
-    | __init__.py
-    | aacircle.py
-    | aliens.py
-    | arraydemo.py
-    | blend_fill.py
-    | blit_blends.py
-    | camera.py
-    | chimp.py
-    | cursors.py
-    | data
-    | | alien1.png
-    | | alien2.png
-    | | alien3.png
-    ...    
 
 
 Glossary

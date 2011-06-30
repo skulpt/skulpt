@@ -104,7 +104,7 @@ for the math module.
 The `random` module
 -----------------------------------
 
-We often want to use **random numbers** in programs: here are a few typical uses:
+We often want to use **random numbers** in programs.  Here are a few typical uses:
 
 * To play a game of chance where the computer needs to throw some dice, pick a number, or flip a coin,
 * To shuffle a deck of playing cards randomly,
@@ -128,12 +128,12 @@ take a look at it in the documentation.  Here are the key things we can do with 
 
 Press the run button a number of times.  Note that the values change each time.  These are random numbers.
     
-The ``randrange`` method call generates an integer between its lower and upper
+The ``randrange`` function generates an integer between its lower and upper
 argument, using the same semantics as ``range`` --- so the lower bound is included, but
 the upper bound is excluded.   All the values have an equal probability of occurring  
 (i.e. the results are *uniformly* distributed). 
 
-The ``random()`` method returns a floating point number in the range [0.0, 1.0) --- the
+The ``random()`` function returns a floating point number in the range [0.0, 1.0) --- the
 square bracket means "closed interval on the left" and the round parenthesis means
 "open interval on the right".  In other words, 0.0 is possible, but all returned
 numbers will be strictly less than 1.0.  It is usual to *scale* the results after
