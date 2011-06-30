@@ -56,5 +56,13 @@ var $builtinmodule = function(name)
 	return Math.pow(x,y);
     });
 
+    mod.radians = new Sk.builtin.func(function(deg) {
+	return Math.PI / 180.0 * deg;
+    });
+
+    mod.degrees = new Sk.builtin.func(function(rad) {
+	return 180.0 / Math.PI * rad;
+    });
+
     return mod;
 }
