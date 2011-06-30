@@ -550,6 +550,36 @@ two variables ``i`` are distinct variables, and how they have independent values
 (The visualizer has a limit of showing 100 steps, though --- not quite enough
 to run this particular example all the way to the end.)
 
+2-Dimensional Tables
+--------------------
+
+Two dimensional tables have both rows and columns.  You have probably seen many tables like this if you have used a
+spreadsheet program.  Another object that is organized in rows and columns is a digital image.
+
+.. raw:: html
+
+    <img src="_static/norse-logo.png" id="norse.png">
+
+
+.. activecode::  acimg_1
+
+    import image
+    img = image.Image("norse.png")
+
+    win = image.ImageWin()
+    newimg = image.EmptyImage(img.getHeight(),img.getWidth())
+
+    for col in range(img.getWidth()):
+        for row in range(img.getHeight()):
+           p = img.getPixel(col,row)
+           p.setRed(255-p.getRed())
+           p.setGreen(255-p.getGreen())
+           p.setBlue(255-p.getBlue())
+           newimg.setPixel(col,row,p)
+
+    newimg.draw(win,100,20)
+
+
 
 .. index::
     single: Newton's method
