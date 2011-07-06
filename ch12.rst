@@ -18,7 +18,7 @@ ordered from left to right and they use integers as indices to access
 the values they contain.
 
 **Dictionaries** are a different kind of collection. They are Python's
-built-in **mapping type**. A map is an unordered, associate collection.  The association, or mapping,
+built-in **mapping type**. A map is an unordered, associative collection.  The association, or mapping,
 is from a **key**, which can be any immutable type,
 to a **value**, which can be any Python data object.
 
@@ -64,7 +64,7 @@ It doesn't matter what order we write the pairs. The values in a dictionary are
 accessed with keys, not with indices, so there is no need to care about
 ordering.
 
-Here is how we use a key to look up the corresponding value:
+Here is how we use a key to look up the corresponding value.
 
 .. activecode:: chp12_dict3
     
@@ -94,8 +94,20 @@ each fruit in stock.  If someone buys all of the pears, we can remove the entry 
     print(inventory)
 
 Dictionaries are also mutable.  As we've seen before with lists, this means that the dictionary can
-be modified by referencing an association on the left hand side of the assignment statement.
-A new shipment of 200 bananas arriving could be handled like this.
+be modified by referencing an association on the left hand side of the assignment statement.  In the previous
+example, instead of deleting the entry for ``pears``, we could have set the inventory to ``0``.
+
+.. activecode:: ch12_dict4a
+    
+    inventory = {'apples': 430, 'bananas': 312, 'oranges': 525, 'pears': 217}
+    print(inventory)
+    
+    inventory['pears'] = 0
+    print(inventory)
+
+
+Similarily,
+a new shipment of 200 bananas arriving could be handled like this.
 
 .. activecode:: ch12_dict5
 
@@ -113,7 +125,8 @@ Dictionary methods
 ------------------
 
 Dictionaries have a number of useful built-in methods.
-The following table provides a summary. 
+The following table provides a summary and more details can be found in the 
+`Python Documentation <http://docs.python.org/py3k/library/stdtypes.html#mapping-types-dict>`_.
 
 ==========  ==============      =======================================================
 Method      Parameters          Description
@@ -171,9 +184,12 @@ into lists or iterated over directly.  Note that the items are shown as tuples c
 
     for (k,v) in inventory.items():
         print("Got",k,"that maps to",v)
+
+    for k in inventory:
+        print("Got",k,"that maps to",inventory[k])
     
 Note that tuples are often useful for getting both the key and the value at the same
-time while you are looping.
+time while you are looping.  The two loops do the same thing.
 
     
 The ``in`` and ``not in`` operators can test if a key is in the dictionary:
@@ -190,7 +206,7 @@ The ``in`` and ``not in`` operators can test if a key is in the dictionary:
         print("We have no bananas")
      
 
-This method can be very useful since looking up a non-existent key in a
+This operator can be very useful since looking up a non-existent key in a
 dictionary causes a runtime error.
 
 The ``get`` method allows us to access the value associated with a key, similar to the ``[ ]`` operator.

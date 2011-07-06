@@ -7,7 +7,7 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
 
-The way of the program
+The Way of the Program
 ======================
 
 The goal of this book is to teach you to think like a computer scientist. This
@@ -58,8 +58,9 @@ languages. Loosely speaking, computers can only execute programs written in
 low-level languages. Thus, programs written in a high-level language have to be
 processed before they can run. This extra processing takes some time, which is
 a small disadvantage of high-level languages.
+However, the advantages to high-level languages are enormous. 
 
-But the advantages are enormous. First, it is much easier to program in a
+First, it is much easier to program in a
 high-level language. Programs written in a high-level language take less time
 to write, they are shorter and easier to read, and they are more likely to be
 correct. Second, high-level languages are **portable**, meaning that they can
@@ -96,7 +97,7 @@ programmers interact with it, it is usually considered an interpreted language.
 
 There are two ways to use the Python interpreter: *shell mode* and *script
 mode*. In shell mode, you type Python expressions into the **Python shell**,
-and the interpreter immediately shows the result:
+and the interpreter immediately shows the result.  The example below shows the Python shell at work.
 
 .. sourcecode:: python
 
@@ -118,8 +119,8 @@ code because you get immediate feedback. Think of it as scratch paper used to
 help you work out problems. Anything longer than a few lines should be put into
 a script.
 
-Alternatively, you can write a program in a file and use the interpreter to
-execute the contents of the file. Such a file is called a **script**.  For
+Alternatively, you can write an entire program in a file and use the interpreter to
+execute the contents of the file as a whole. Such a file is called a **script**.  For
 example, we used a text editor to create a file named ``firstprogram.py`` with
 the following contents:
 
@@ -143,11 +144,11 @@ These examples show Python being run from a Unix command line. In other
 development environments, the details of executing programs may differ. Also,
 most programs are more interesting than this one.
 
-In this book you can write a program using a unique **active code** interpreter that allows you to execute Python code right
+In this book you can also write programs using a unique **activecode** interpreter that allows you to execute Python code right
 in the text itself (right from the web browser).  Although this is certainly not the way real programs are written, it provides an excellent
-environment for learning a programming language like Python.
+environment for learning a programming language like Python since you can experiment with the language as you are reading.
 
-Take a look at the active code interpreter in action.  If we take the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.  You can also make changes and save them for reloading later.  Try pressing the *run* button below. 
+Take a look at the activecode interpreter in action.  If we use the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.  You can also make changes and save them for reloading later.  Try pressing the *run* button below. 
 
 .. activecode:: ch01_1
     :nopre:
@@ -158,7 +159,7 @@ Take a look at the active code interpreter in action.  If we take the Python cod
 
 Now try modifying the active code program shown above, either by changing something about the first sentence, or by changing the addition in the second statement.  You should be able to press *run* immediately to see the new results.
 
-The examples in this book use a mixture of the standard Python  interpreter, scripts, and active code.  You
+The examples in this book use a mixture of the standard Python  interpreter, scripts, and activecode.  You
 will be able to tell which is which by looking for either the Python prompt in the case of a shell mode program or the *run* button for the active code.
 
 
@@ -202,8 +203,8 @@ breaking a large, complex task into smaller and smaller subtasks until the
 subtasks are simple enough to be performed with sequences of these basic
 instructions.
 
-That may be a little vague, but we will come back to this topic later when we
-talk about **algorithms**.
+.. That may be a little vague, but we will come back to this topic later when we
+.. talk about **algorithms**.
 
 
 .. index:: debugging, bug
@@ -431,13 +432,13 @@ looks like this:
 
 This is an example of using the **print function**, which doesn't actually
 print anything on paper. It displays a value on the screen. In this case, the
-result is the words
+result is the words:
 
 .. sourcecode:: python
     
     Hello, World!
 
-Here is the same code in the active code interpreter.  Give it a try!
+Here is the same code in the activecode interpreter.  Give it a try!
 
 .. activecode:: ch01_2
     :nopre:

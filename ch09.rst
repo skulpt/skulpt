@@ -19,11 +19,11 @@ elements of a list can have any type and for any one list, the items can be of d
 
 .. index:: nested list, list; nested
 
-List values
+List Values
 -----------
 
 There are several ways to create a new list.  The simplest is to enclose the
-elements in square brackets ( ``[`` and ``]``):
+elements in square brackets ( ``[`` and ``]``).
 
 .. sourcecode:: python
     
@@ -33,7 +33,7 @@ elements in square brackets ( ``[`` and ``]``):
 The first example is a list of four integers. The second is a list of three
 strings. As we said above, the elements of a list don't have to be the same type.  The following
 list contains a string, a float, an integer, and
-another list:
+another list.
 
 .. sourcecode:: python
     
@@ -57,7 +57,7 @@ As you would expect, we can also assign list values to variables and pass lists 
 
 .. index:: list index, index, list traversal
 
-List length
+List Length
 -----------
 
 As with strings, the function ``len`` returns the length of a list (the number
@@ -73,7 +73,7 @@ item when counting the length of the list.
 
 
 
-Accessing elements
+Accessing Elements
 ------------------
 
 The syntax for accessing the elements of a list is the same as the syntax for
@@ -95,7 +95,7 @@ of from the left.
 
 
 
-List membership
+List Membership
 ---------------
 
 ``in`` and ``not in`` are boolean operators that test membership in a sequence. We
@@ -113,7 +113,7 @@ Concatenation and Repetition
 ----------------------------
 
 Again, as with strings, the ``+`` operator concatenates lists.  
-Similarly, the ``*`` operator repeats a list a given number of times:
+Similarly, the ``*`` operator repeats the items in a list a given number of times.
 
 .. activecode:: chp09_5
 
@@ -125,7 +125,7 @@ Similarly, the ``*`` operator repeats a list a given number of times:
     print([1,2,["hello","goodbye"]]*2)
 
 
-List slices
+List Slices
 -----------
 
 The slice operations we saw with strings also work on lists.
@@ -140,7 +140,7 @@ The slice operations we saw with strings also work on lists.
 
 .. index:: mutable, item assignment, immutable
     
-Lists are mutable
+Lists are Mutable
 -----------------
 
 Unlike strings, lists are **mutable**.  This means we can change an item in a list by accessing
@@ -189,7 +189,7 @@ desired location.
 
 .. index:: del statement, statement; del
 
-List deletion
+List Deletion
 -------------
 
 Using slices to delete list elements can be awkward, and therefore error-prone.
@@ -214,7 +214,7 @@ index.
 
 .. index:: is operator, objects and values
 
-Objects and values
+Objects and Values
 ------------------
 
 If we execute these assignment statements,
@@ -315,7 +315,7 @@ economize.
 
 .. index:: clone
 
-Cloning lists
+Cloning Lists
 -------------
 
 If we want to modify a list and also keep a copy of the original, we need to be
@@ -361,7 +361,7 @@ It is also possible to perform **list traversal** using iteration by item as wel
 
     fruits = ["apple","orange","banana","cherry"]
 
-    for fruit in fruits:     # by item
+    for afruit in fruits:     # by item
         print(afruit)
 
 It almost reads like natural language: For (every) fruit in (the list of) fruits,
@@ -416,7 +416,7 @@ list, so that we can assign a new value to it.
 
 .. index:: parameter
 
-List parameters
+List Parameters
 ---------------
 
 Passing a list as an argument actually passes a reference to the list, not a
@@ -428,10 +428,10 @@ argument and multiplies each element in the list by 2:
 
 .. activecode:: chp09_parm1
     
-    def doubleStuff(a_list):
-        """ Overwrite each element in a_list with double its value. """
-        for position in range(len(a_list)):
-            a_list[position] = 2 * a_list[position]
+    def doubleStuff(aList):
+        """ Overwrite each element in aList with double its value. """
+        for position in range(len(aList)):
+            aList[position] = 2 * aList[position]
 
     things = [2, 5, 9]
     print(things)
@@ -440,24 +440,25 @@ argument and multiplies each element in the list by 2:
     
 
 
-The parameter ``a_list`` and the variable ``things`` are aliases for the
+The parameter ``aList`` and the variable ``things`` are aliases for the
 same object.  
 
-.. image:: illustrations/ch09/mult_references4.png
+.. image:: illustrations/ch09/references4.png
    :alt: State snapshot for multiple references to a list as a parameter
    
-Since the list object is shared by two frames, we drew it between them.
-If a function modifies the elements of a list parameter, the caller sees the change.
+Since the list object is shared by two references, there is only one copy.
+If a function modifies the elements of a list parameter, the caller sees the change since the change
+is occurring to the original.
 
 .. index:: list; append
     
-List methods
+List Methods
 ------------
 
 The dot operator can also be used to access built-in methods of list objects.  
 ``append`` is a list method which adds the argument passed to it to the end of
 the list. Continuing with this example, we show several other list methods.  Many of them are
-easy to understand.
+easy to understand.  
 
 .. activecode:: chp09_meth1
     
@@ -513,7 +514,8 @@ remove      item                Removes the first occurrence of item
 ==========  ==============      ================================================
 
 
-
+Details for these and others
+can be found in the `Python Documentation <http://docs.python.org/py3k/library/stdtypes.html#sequence-types-str-bytes-bytearray-list-tuple-range>`_.
 
 It is important to note that ``append``, ``sort``, 
 and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to the result of sorting ``mylist`` will result in losing the entire list.
@@ -607,8 +609,8 @@ usually::
        append it to result
     return the result
 
-Let us show another use of this pattern.  Assuming you already have a function
-``is_prime(x)`` that can test if x is prime.  Write a function
+Let us show another use of this pattern.  Assume you already have a function
+``is_prime(x)`` that can test if x is prime.  Now, write a function
 to return a list of all prime numbers less than n::
 
    def primes_upto(n):

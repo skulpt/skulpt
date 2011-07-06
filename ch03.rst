@@ -7,7 +7,7 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
  
-Hello, little turtles!
+Hello, Little Turtles!
 ======================
 
 .. index::  
@@ -171,7 +171,7 @@ Instances --- a herd of turtles
 -------------------------------
 
 Just like we can have many different integers in a program, we can have many
-turtles.  Each of them is an independent object and we call each one an **instance** of the Turtle type.  Each instance has its own
+turtles.  Each of them is an independent object and we call each one an **instance** of the Turtle type (class).  Each instance has its own
 attributes and methods --- so alex might draw with a thin black pen and be at
 some position, while tess might be going in her own direction with a fat pink
 pen.  So here is what happens when alex completes a square and tess
@@ -265,15 +265,15 @@ message for each friend.
 .. activecode:: ch03_4
     :nocanvas:
 
-    for f in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
-        invitation = "Hi " + f + ".  Please come to my party on Saturday!"
+    for friendName in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
+        invitation = "Hi " + friendName + ".  Please come to my party on Saturday!"
         print(invitation) 
       
 
 Take a look at the output produced when you press the ``run`` button.  There is one line printed for each friend.  Here's how it works:
 
 
-* **f** in this ``for`` statement is called the **loop variable**.  
+* **friendName** in this ``for`` statement is called the **loop variable**.  
 * Lines 2 and 3 are the **loop body**.  The loop body is always
   indented. The indentation determines exactly what statements are "in the
   loop".  The loop body is performed one time for each name in the list.
@@ -283,7 +283,7 @@ Take a look at the output produced when you press the ``run`` button.  There is 
   Program execution continues at the next statement after the loop body. 
 * If there are items still to be processed, the loop variable is updated to
   refer to the next item in the list.  This means, in this case, that the loop
-  body is executed here 7 times, and each time `f` will refer to a different
+  body is executed here 7 times, and each time `friendName` will refer to a different
   friend. 
 * At the end of each execution of the body of the loop, Python returns 
   to the ``for`` statement, to see if there are more items to be handled.
@@ -318,7 +318,8 @@ The loop simplifies our turtle program
 --------------------------------------
 
 To draw a square we'd like to do the same thing four times --- move the turtle forward some distance and turn 90 degrees.  We previously used 8 lines to have alex draw the four sides of a
-square.  This next program does exactly the same thing but, with the help of the for statement, uses just three lines (not including the setup code).  Remember that the for statement will repeat
+square.  This next program does exactly the same thing but, with the help of the for statement, uses just three lines (not including the setup code).  Remember that the for statement will repeat the `forward` and `left` four times, one time for
+each value in the list.
 
 .. activecode:: ch03_for1
    :nopre:
@@ -379,18 +380,31 @@ tess can also use a ``for`` loop to draw her equilateral triangle.
           alex.forward(50)
           alex.left(90)
  
-   A variable can also be assigned a value that is a list.  So lists can also
-   be used in situations other than the ``for`` loop.  The code above could be
-   rewritten like this:
- 
-   .. sourcecode:: python
+A variable can also be assigned a value that is a list.  So lists can also
+be used in situations other than the ``for`` loop.  The code above could be
+rewritten like this:
 
-      clrs = ["yellow", "red", "purple", "blue"]   # make the variable refer to this list
-      for c in clrs:
-          alex.color(c)
-          alex.forward(50)
-          alex.left(90)
- 
+.. sourcecode:: python
+
+   clrs = ["yellow", "red", "purple", "blue"]   # make the variable refer to this list
+   for c in clrs:
+       alex.color(c)
+       alex.forward(50)
+       alex.left(90)
+
+After you think about the code above, give it a try.
+
+.. activecode:: chp03_tryfor
+
+	import turtle            #set up alex
+	wn = turtle.Screen()
+	alex = turtle.Turtle()
+	
+	for c in ["yellow", "red", "purple", "blue"]:
+	    alex.color(c)
+	    alex.forward(50)
+	    alex.left(90)
+
 
 More on the range Function
 --------------------------
@@ -433,11 +447,11 @@ at 10 and going up to 20 (including 20).
     print(range(1,5))
 
 
-Finally, lets suppose we want to have a sequence of even numbers,
-how would we do that?  Easy, we add another parameter, a step,
+Finally, suppose we want to have a sequence of even numbers.
+How would we do that?  Easy, we add another parameter, a step,
 that tells range what to count by.  For even numbers we want to start at 0
 and count by 2's.  So if we wanted the first 10 even numbers we would use
-``range(0,19,2)``.  So the most general form of the range is
+``range(0,19,2)``.  The most general form of the range is
 ``range(start, stop, step)``.  You can also create a sequence of numbers that
 starts big and gets smaller by using a negative value for the step parameter.
 
@@ -455,7 +469,7 @@ A few more turtle methods and tricks
 * Turtle methods can use negative angles or distances.  So ``tess.foward(-100)``
   will move tess backwards, and ``tess.left(-30)`` turns her to the right.
   Additionally, because there are 360 degrees in a circle, turning 30 to the
-  left will get you facing in the same direction as turning 330 to the right!
+  left will leave you facing in the same direction as turning 330 to the right!
   (The on-screen animation will differ, though --- you will be able to tell if
   tess is turning clockwise or counter-clockwise!)
 
@@ -565,7 +579,8 @@ shape       shapename     Should be 'arrow', 'classic', 'turtle', or 'circle'
 ==========  ==========  =========================
 
 Once you are comfortable with the basics of turtle graphics you can read about even
-more options on the `Python Docs Website <http://docs.python.org/dev/py3k/library/turtle.html>`_.
+more options on the `Python Docs Website <http://docs.python.org/dev/py3k/library/turtle.html>`_.  Note that we
+will describe Python Docs in more detail in the next chapter.
 
 
 

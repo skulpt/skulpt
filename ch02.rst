@@ -7,7 +7,7 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
 
-Variables, expressions and statements
+Variables, Expressions and Statements
 =====================================
 
 
@@ -18,10 +18,10 @@ Variables, expressions and statements
 
 .. _values_n_types:
 
-Values and data types
+Values and Data Types
 ---------------------
 
-A **value** is one of the fundamental things --- like a letter or a number ---
+A **value** is one of the fundamental things --- like a word or a number ---
 that a program manipulates. The values we have seen so far are ``5`` (the
 result when we added ``2 + 3``), and ``"Hello, World!"``.  We often refer to these values as **objects** and we will use the words value and object interchangeably.
 
@@ -48,7 +48,7 @@ class **int**.
 
 .. note::
 
-	When we show the value of a string using the ``print`` function, the quotes are no longer present.  The
+	When we show the value of a string using the ``print`` function, such as in the third example above, the quotes are no longer present.  The
 	value of the string is the sequence of characters inside the quotes.  The quotes are only necessary to help Python know what the value is.
 
 Less obviously, numbers with a decimal point belong to a class
@@ -143,7 +143,15 @@ Python, but it does mean something else, which is legal:
 
 
 Well, that's not what we expected at all! Because of the comma, Python chose to
-treat this as a *pair* of values.   
+treat this as a *pair* of values.     In fact, the print function can print any number of values as long
+as you separate them by commas.  Notice that the values are separated by spaces when they are displayed.
+
+.. activecode:: ch02_8a
+    :nocanvas:
+
+    print(42, 17, 56, 34, 11, 4.35, 32)
+    print(3.4, "hello", 45)
+
 Remember not to put commas or spaces in your integers, no
 matter how big they are. Also revisit what we said in the previous chapter:
 formal languages are strict, the notation is concise, and even the smallest
@@ -180,7 +188,8 @@ Let us see this in action:
 
 
 The last case shows that a string has to be a syntactically legal number,
-otherwise you'll get one of those pesky runtime errors.
+otherwise you'll get one of those pesky runtime errors.  Modify the example by deleting the
+``bottles`` and rerun the program.  You should see the integer ``23``.
 
 The type converter `float` can turn an integer, a float, or a syntactically
 legal string into a float.
@@ -219,7 +228,7 @@ Variables
 One of the most powerful features of a programming language is the ability to
 manipulate **variables**. A variable is a name that refers to a value.
 
-**Assignment statements** create new variables and also give them values to refer to:
+**Assignment statements** create new variables and also give them values to refer to.
 
 .. sourcecode:: python
     
@@ -255,7 +264,7 @@ This diagram shows the result of executing the assignment statements.
 .. image:: illustrations/ch02/refdiagram1.png
    :alt: Reference Diagram
 
-If you ask the Python to evaluate a variable, it will produce the value
+If you ask Python to evaluate a variable, it will produce the value
 that is currently linked to the variable.  In other words, evaluating a variable will give you the value that is referred to
 by the variable.
 
@@ -298,6 +307,9 @@ to a variable, and later assign a different value to the same variable.
     cannot change to refer to a different value half-way through your
     calculations!
 
+To see this, read and then run the following program.
+
+
 .. activecode:: ch02_11
     :nocanvas:
 
@@ -319,7 +331,7 @@ or change the variable when you miss another call.
 
 .. index:: keyword, underscore character
 
-Variable names and keywords
+Variable Names and Keywords
 ---------------------------
 
 **Variable names** can be arbitrarily long. They can contain both letters and
@@ -404,7 +416,7 @@ don't produce any result.
 
 .. index:: expression
 
-Evaluating expressions
+Evaluating Expressions
 ----------------------
 
 An **expression** is a combination of values, variables, operators, and calls
@@ -437,7 +449,7 @@ itself is a simple expression, and so is a variable.  Evaluating a variable give
 
 .. index:: operator, operand, expression, integer division
 
-Operators and operands
+Operators and Operands
 ----------------------
 
 **Operators** are special tokens that represent computations like addition,
@@ -470,7 +482,7 @@ the value that it refers to before the operation is performed.
 Addition, subtraction, multiplication, and exponentiation all do what you
 expect.
 
-Example: so let us convert 645 minutes into hours:
+For example, what if we wanted to convert 645 minutes into hours.
 
 .. activecode:: ch02_16
     :nocanvas:
@@ -483,7 +495,7 @@ Example: so let us convert 645 minutes into hours:
 In Python 3, the division operator `/` always gives a floating point
 result.  What we might have wanted to know was how many *whole* hours there
 are, and how many minutes remain.  Python gives us two different flavors of
-the division operator.  The second, called **integer division** uses the token
+the division operator.  The second, called **integer division**, uses the token
 `//`.  It always *truncates* its result down to the next smallest integer (to
 the left on the number line).  
 

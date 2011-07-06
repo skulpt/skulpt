@@ -17,7 +17,7 @@ Functions Revisited
     single: value 
     single: variable; temporary 
 
-Return values
+Return Values
 -------------
 
 The built-in functions we have used, such as ``abs``, ``pow``, ``int``, ``max``, and ``range``,
@@ -35,9 +35,11 @@ In this chapter, we are going to write more functions that return values and dis
 is ``area``, which returns the area of a circle with a given radius.
 
 .. activecode:: ch06_area
-    
+
+    import math
+
     def area(radius):
-        b = 3.14159 * radius**2
+        b = math.pi * radius**2
         return b
 
     print(area(10))
@@ -49,10 +51,12 @@ so we could have written this function more concisely:
 
 .. sourcecode:: python
     
-    def area(radius):
-        return 3.14159 * radius**2
+    import math
 
-On the other hand, **temporary variables** like ``b`` above often make debugging
+    def area(radius):
+        return math.pi * radius**2
+
+On the other hand, using **temporary variables** like ``b`` above often make debugging
 easier.  These temporary variables are referred to as **local variables**.
 
 Sometimes it is useful to have multiple return statements, one in each branch
@@ -115,7 +119,7 @@ All Python functions return ``None`` whenever they do not return another value.
 
 .. index:: scaffolding, incremental development
 
-Program development
+Program Development
 -------------------
 
 At this point, you should be able to look at complete functions and tell what
@@ -301,7 +305,7 @@ Note that we could have written the composition without storing the intermediate
 
 .. index:: boolean function
 
-Boolean functions
+Boolean Functions
 -----------------
 
 Functions can return boolean values, which is often convenient for hiding
@@ -363,15 +367,20 @@ but the extra comparison is unnecessary.
     else:
         print("Those values are no good")
 
+
+Try a few other pairs of values to see the results.
+
 .. index:: style
 
-Programming with style
+Programming With Style
 ----------------------
 
 Readability is very important to programmers, since in practice programs are
-read and modified far more often then they are written.  All the code examples
-in this book will be consistent with the *Python Enhancement Proposal 8*
-(`PEP 8 <http://www.python.org/dev/peps/pep-0008/>`__), a style guide developed by the Python community.
+read and modified far more often then they are written.  
+
+.. All the code examples
+.. in this book will be consistent with the *Python Enhancement Proposal 8*
+.. (`PEP 8 <http://www.python.org/dev/peps/pep-0008/>`__), a style guide developed by the Python community.
 
 We'll have more to say about style as our programs become more complex, but a
 few pointers will be helpful already:
@@ -382,8 +391,6 @@ few pointers will be helpful already:
 * keep function definitions together
 * keep top level statements, including function calls, together at the
   bottom of the program
-
-
 
 
 Glossary
@@ -446,7 +453,7 @@ After completing each exercise, confirm that all the tests pass.
    a total number of seconds.  
        
 #. Extend ``to_secs`` so that it can cope with real values as inputs.  It
-   should always return an integer number of seconds (truncated towards zero):: 
+   should always return an integer number of seconds (truncated towards zero):
 
        
 #. Write three functions that are the "inverses" of ``to_secs``:
@@ -465,7 +472,7 @@ After completing each exercise, confirm that all the tests pass.
        
        
 #. Write a ``compare`` function that returns ``1`` if ``a > b``, ``0`` if
-   ``a == b``, and ``-1`` if ``a < b`` ::
+   ``a == b``, and ``-1`` if ``a < b``.
 
 
 #. Write a function called ``hypotenuse`` that
@@ -502,6 +509,6 @@ After completing each exercise, confirm that all the tests pass.
     
 
 
-#. Now do the opposite: write the function ``c2f`` which converts Celcius to Fahrenheit:: 
+#. Now do the opposite: write the function ``c2f`` which converts Celcius to Fahrenheit.
 
 

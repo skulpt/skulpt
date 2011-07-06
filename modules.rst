@@ -97,7 +97,12 @@ a turtle is a data object (recall ``alex`` and ``tess``).  We need to create one
 
 Mathematical functions, on the other hand, are not objects.  They do not remember anything about themselves.  They simply
 perform a task.
-They are all housed together in a module called `math`.  If you have not done so already, take a look at the documentation
+They are all housed together in a module called `math`.  Once we have imported the math module, anything defined there
+can be used in our program.  Notice that we always use the name of the module followed by a `dot` followed by the
+specific item form the module (``math.sqrt``).  You can think of this as lastname.firstname where the lastname is the module
+family and the firstname is the individual entry in the module.
+
+If you have not done so already, take a look at the documentation
 for the math module.  
 
 
@@ -139,6 +144,12 @@ square bracket means "closed interval on the left" and the round parenthesis mea
 numbers will be strictly less than 1.0.  It is usual to *scale* the results after
 calling this method, to get them into a range suitable for your application.  
 
+In the
+case shown here, we've converted the result of the method call to a number in
+the range [0.0, 5.0).  Once more, these are uniformly distributed numbers --- numbers
+close to 0 are just as likely to occur as numbers close to 0.5, or numbers close to 1.0.
+If you continue to press the run button you will see random values between 0.0 and up to but not including 5.0.
+
 .. activecode:: chmodule_rand2
 
     import random
@@ -149,11 +160,7 @@ calling this method, to get them into a range suitable for your application.
 
 
 
-In the
-case shown here, we've converted the result of the method call to a number in
-the range [0.0, 5.0).  Once more, these are uniformly distributed numbers --- numbers
-close to 0 are just as likely to occur as numbers close to 0.5, or numbers close to 1.0.
-If you continue to press the run button you will see random values between 0.0 and up to but not including 5.0.
+
 
 
 .. index:: deterministic algorithm,  algorithm; deterministic, unit tests   

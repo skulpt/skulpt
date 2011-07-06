@@ -23,8 +23,8 @@ Drawing Fractals
 smaller scale, perhaps multiple times, to achieve your objective.  
 For example, we might say "A human being is someone whose mother is a human being."   
 
-For our purposes, a **fractal** is drawing which also has *self-similar* structure,
-where it can be defined in terms of itself.
+For our purposes, a **fractal** is drawing which also has *self-similar* structure.
+Its structure can be defined in terms of itself.
 
 Let us start by looking at the famous Koch fractal.  An order 0 Koch fractal is simply
 a straight line of a given size.
@@ -169,7 +169,7 @@ the rest must be a list with one fewer item than before.
 If we already have a function that knows how to compute the sum of a list, we can use it to compute the sum of
 the rest of the list.  The only problem we need to address is how to deal with the first item.
 
-There are two possibilities.  The first item would be a simple integer.  If that is the case, we simply add it to the
+There are two possibilities.  The first item could be a simple integer.  If that is the case, we simply add it to the
 sum returned for the rest of the list.  However, if the first item is itself a list, we will need to compute its sum (good news...we already have a function that knows how to do that) and then add that to the sum returned for the rest of
 the list.
 

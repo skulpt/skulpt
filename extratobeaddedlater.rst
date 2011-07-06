@@ -1938,3 +1938,98 @@ more options on the `Python Docs Website <http://docs.python.org/dev/py3k/librar
 	    ...    
 
 
+.. From functions chapter
+
+Turtles Revisited
+-----------------
+
+Now that we have fruitful functions, we can focus our attention on 
+reorganizing our code so that it fits more nicely into our mental chunks.  
+This process of rearrangement is called **refactoring** the code.  
+ 
+Two things we're always going to want to do when working with turtles
+is to create the window for the turtle, and to create one or more turtles.
+We could write some functions to make these tasks easier in future:
+
+.. activecode:: ch04_8
+
+   import turtle
+
+   def make_window(colr):   
+       """
+         Set up the window with the given background color. 
+         Returns the new window.
+       """
+       w = turtle.Screen()             
+       w.bgcolor(colr)
+       return w
+       
+       
+   def make_turtle(colr, sz):      
+       """
+         Set up a turtle with the given colour and pensize.
+         Returns the new turtle.
+       """
+       t = turtle.Turtle()
+       t.color(colr)
+       t.pensize(sz)
+       return t
+
+       
+   wn = make_window("lightgreen")
+   tess = make_turtle("hotpink", 5)
+   alex = make_turtle("black", 1)
+   dave = make_turtle("yellow", 2)  
+   wn.exitonclick()
+   
+.. admonition:: Extend this program ...
+
+    How about adding a drawTriangle function and having each turtle draw a different size
+    triangle?
+
+The trick about refactoring code is to see which things you are likely to want to change
+each time you call the function: these should become the parameters, or changeable bits,
+of the functions you write.
+
+
+
+Local variables
+---------------
+
+You might be wondering how we can use the same variable, ``i``, in both
+``print_multiples`` and ``print_mult_table``. Doesn't it cause problems when
+one of the functions changes the value of the variable?
+
+The answer is no, because the ``i`` in ``print_multiples`` and the ``i`` in
+``print_mult_table`` are *not* the same variable.
+
+Variables created inside a function definition are local; you can't access a
+local variable from outside its home function. That means you are free to have
+multiple variables with the same name as long as they are not in the same
+function.
+
+The stack diagram for this program shows that the two variables named ``i`` are
+not the same variable. They can refer to different values, and changing one
+does not affect the other.
+
+.. image:: illustrations/ch07/stack2.png
+   :alt: Stack 2 diagram 
+
+The value of ``i`` in ``print_mult_table`` goes from 1 to 6. In the diagram it
+happens to be 3. The next time through the loop it will be 4. Each time through
+the loop, ``print_mult_table`` calls ``print_multiples`` with the current value
+of ``i`` as an argument. That value gets assigned to the parameter ``n``.
+
+Inside ``print_multiples``, the value of ``i`` goes from 1 to 6. In the
+diagram, it happens to be 2. Changing this variable has no effect on the value
+of ``i`` in ``print_mult_table``.
+
+It is common and perfectly legal to have different local variables with the
+same name. In particular, names like ``i`` and ``j`` are used frequently as
+loop variables. If you avoid using them in one function just because you used
+them somewhere else, you will probably make the program harder to read.
+
+The visualizer at http://netserv.ict.ru.ac.za/python3_viz/ shows very clearly how the 
+two variables ``i`` are distinct variables, and how they have independent values.
+(The visualizer has a limit of showing 100 steps, though --- not quite enough
+to run this particular example all the way to the end.)

@@ -30,10 +30,11 @@ Boolean values and expressions
 
 The Python type for storing true and false values is called ``bool``, named
 after the British mathematician, George Boole. George Boole created *Boolean
-algebra*, which is the basis of all modern computer arithmetic.
+Algebra*, which is the basis of all modern computer arithmetic.
 
 There are only two **boolean values**: ``True`` and ``False``.  Capitalization
-is important, since ``true`` and ``false`` are not boolean values.
+is important, since ``true`` and ``false`` are not boolean values (remember Python is case
+sensitive).
 
 .. activecode:: ch05_1
     
@@ -44,11 +45,18 @@ is important, since ``true`` and ``false`` are not boolean values.
 .. note:: Boolean values are not strings!
 
     It is extremely important to realize that True and False are not strings.   They are not
-    surrounded by quotes.  They are the only two values in the data type ``bool``.
+    surrounded by quotes.  They are the only two values in the data type ``bool``.  Take a close look at the
+    types shown below.
 
+
+.. activecode:: ch05_1a
+
+    print(type(True))
+    print(type("True"))
 
 A **boolean expression** is an expression that evaluates to a boolean value.
-The operator ``==`` compares two values and produces a boolean value:
+The equality operator, ``==``, compares two values and produces a boolean value related to whether the
+two values are equal to one another.
 
 .. activecode:: ch05_2
     
@@ -84,10 +92,12 @@ Logical operators
 There are three **logical operators**: ``and``, ``or``, and ``not``. The
 semantics (meaning) of these operators is similar to their meaning in English.
 For example, ``x > 0 and x < 10`` is true only if ``x`` is greater than 0 *and*
-at the same time, x is less than 10.
+at the same time, x is less than 10.  How would you describe this in words?  You would say that
+x is between 0 and 10, not including the endpoints.
 
 ``n % 2 == 0 or n % 3 == 0`` is true if *either* of the conditions is true,
-that is, if the number is divisible by 2 *or* divisible by 3.
+that is, if the number is divisible by 2 *or* divisible by 3.  In this case, one, or the other, or
+both of the parts has to be true for the result to be true.
 
 Finally, the ``not`` operator negates a boolean expression, so ``not(x > y)``
 is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
@@ -288,101 +298,7 @@ conditional statements as well.
 
 
 
-.. index:: bar chart
-
-A Turtle Bar Chart
-------------------
-
-The turtle has a lot more power than we've seen so far.  If you want to see the full documentation,
-look at http://docs.python.org/library/turtle.html.
-
-Here are a couple of new tricks for our turtles: 
-
-* We can get a turtle to display text on the canvas at the turtle's current position.  The method is called `write`.  For example,   ``alex.write("Hello")`` would write the string `hello` at the current position.
-* One can fill a shape (circle, semicircle, triangle, etc.) with a fill color.  It is a two-step process.
-  First you call the method `begin_fill`, for example ``alex.begin_fill()``.  Then you draw the shape.
-  Finally, you call `end_fill` ( ``alex.end_fill()``). 
-* We've previously set the color of our turtle - we can now also set it's fill-color, which need not
-  be the same as the turtle and the pen color.  To do this, we use a method called `fillcolor`, for example, ``alex.fillcolor("red")``.   
-  
-  
-Ok, so can we get tess to draw a bar chart?  Let us start with some data to be charted,
-
-``xs = [48, 117, 200, 240, 160, 260, 220]``
-
-Corresponding to each data measurement, we'll draw a simple rectangle of that height, with a fixed width.
-
-.. sourcecode:: python
-
-    def drawBar(t, height):
-        """ Get turtle t to draw one bar, of height. """
-        t.left(90)           
-        t.forward(height)        # Draw up the left side
-        t.right(90)
-        t.forward(40)            # width of bar, along the top
-        t.right(90)
-        t.forward(height)        # And down again!
-        t.left(90)               # put the turtle facing the way we found it.
-        
-    ...    
-    for v in xs:                 # assume xs and tess are ready 
-        drawBar(tess, v)    
-
-.. image:: illustrations/ch05/tess_bar_1.png
-
-Ok, not fantasically impressive, but it is a nice start!  The important thing here
-was the mental chunking.  To solve the problem we first broke it into smaller pieces.  In particular,
-our chunk 
-is to draw one bar.  We then implemented that chunk with a function. Then, for the whole
-chart, we repeatedly called our function.
-
-Next, at the top of each bar, we'll print the value of the data.
-We'll do this in the body of ``drawBar``, by adding   ``t.write('  ' + str(height))`` 
-as the new third line of the body.
-We've put a little space in front of the number, and turned the 
-number into a string.  Without this extra space we tend
-to cramp our text awkwardly against the bar to the left.   
-
-Finally, we'll add the two methods needed  to fill each bar.  One thing to note is that we moved
-tess down and to the left in our window to make room for all the bars.  Had we not done this, the
-turtle would have drawn off the window.  Our final program now looks like this.
-
-.. activecode:: ch05_barchart
-
-    import turtle
-
-    def drawBar(t, height):
-        """ Get turtle t to draw one bar, of height. """
-        t.begin_fill()               # start filling this shape
-        t.left(90)
-        t.forward(height)
-        t.write('  '+ str(height))
-        t.right(90)
-        t.forward(40)
-        t.right(90)
-        t.forward(height)
-        t.left(90)
-        t.end_fill()                 # stop filling this shape
-
-    wn = turtle.Screen()             # Set up the window and its attributes
-    wn.bgcolor("lightgreen")
-
-    tess = turtle.Turtle()           # create tess and set some attributes
-    tess.color("blue")
-    tess.fillcolor("red")
-    tess.pensize(3)
-
-    tess.penup()                     # move tess to a better starting spot
-    tess.goto(-180,-180)
-    tess.pendown()
-
-    xs = [48,117,200,240,160,260,220]  # here is the data
-
-    for a in xs:
-         drawBar(tess, a)
-
-    wn.exitonclick()
-
+.. MONTE CARLO PI SIMULATION could go here USE distance method to compute whether within 1 unit.
 
 
 Glossary

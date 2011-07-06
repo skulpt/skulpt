@@ -16,9 +16,9 @@ Strings Revisited
 -----------------
 
 Throughout the first chapters of this book we have used strings to represent words or phrases that we
-wanted to print out.  Our definition was simple.  A string is some characters inside quotes.  In this chapter we explore strings in much more detail.
+wanted to print out.  Our definition was simple.  A string is simply some characters inside quotes.  In this chapter we explore strings in much more detail.
 
-A collection data type
+A Collection Data Type
 ----------------------
 
 So far we have seen built-in types like: ``int``, ``float``, 
@@ -39,7 +39,7 @@ that make up the string are assumed to be in a particular order from left to rig
 
 .. index:: string operations, concatenation
 
-Operations on strings
+Operations on Strings
 ---------------------
 
 In general, you cannot perform mathematical operations on strings, even if the
@@ -131,7 +131,7 @@ replace     old, new            Replaces all occurrences of old substring with n
 
 You should experiment with these
 methods so that you understand what they do.  Note once again that returned strings do not
-change the original.
+change the original.  You can also consult the `Python documentation for strings <http://docs.python.org/py3k/library/stdtypes.html#index-21>`_.
 
 .. activecode:: ch08_methods1
 
@@ -150,25 +150,36 @@ change the original.
 
 
 
-More Operators: Working with the parts of a string
+More Operators: Working with the Parts of a String
 --------------------------------------------------
 
 The **indexing operator** (Python uses square brackets to enclose the index) 
 selects a single character substring from a string.  The characters are named by their position or 
-index value.
+index value.  For example, in the string shown below, the 10 characters are indexed left to right from postion 0 to position 5.
+
+
+.. image:: illustrations/ch08/indexvalues.png
+   :alt: index values
+
+It is also the case that the positions can be named from right to left using negative numbers where -1 is the rightmost
+character and so on.
+
 
 .. activecode:: chp08_index1
     
-    fruit = "banana"
-    m = fruit[1]
+    fruit = "Banana"
+    m = fruit[2]
     print(m)
+    
+    lastchar = fruit[-1]
+    print(lastchar)
 
-The expression ``fruit[1]`` selects character number 1 from ``fruit``, and creates a new
+The expression ``fruit[2]`` selects character number 2 from ``fruit``, and creates a new
 string containing just this one character. The variable ``m`` refers to the result. 
 
 Remember that computer scientists always start counting
-from zero. The letter at subscript position zero of ``"banana"`` is ``b``.  So at
-position ``[1]`` we have the letter ``a``.
+from zero. The letter at subscript position zero of ``"Banana"`` is ``B``.  So at
+position ``[2]`` we have the letter ``n``.
 
 If you want the zero-eth letter of a string, you just put 0, or any expression
 with the value 0, in the brackets.  Give it a try.
@@ -196,7 +207,7 @@ The ``len`` function, when applied to a string, returns the number of characters
 
 .. activecode:: chp08_len1
     
-    fruit = "banana"
+    fruit = "Banana"
     print(len(fruit))
     
 
@@ -205,14 +216,14 @@ this:
 
 .. activecode:: chp08_len2
     
-    fruit = "banana"
+    fruit = "Banana"
     sz = len(fruit)
     last = fruit[sz]       # ERROR!
     print(last)
 
 That won't work. It causes the runtime error
 ``IndexError: string index out of range``. The reason is that there is no
-letter at index position 6 in ``"banana"``. 
+letter at index position 6 in ``"Banana"``. 
 Since we started counting at zero, the six indexes are
 numbered 0 to 5. To get the last character, we have to subtract 1 from
 ``length``.  Give it a try in the example above.
@@ -222,9 +233,9 @@ numbered 0 to 5. To get the last character, we have to subtract 1 from
     sz = len(fruit)
     last = fruit[sz-1]
 
-Alternatively, we can use **negative indices**, which count backward from the
-end of the string. The expression ``fruit[-1]`` yields the last letter,
-``fruit[-2]`` yields the second to last, and so on.  Try it!
+.. Alternatively, we can use **negative indices**, which count backward from the
+.. end of the string. The expression ``fruit[-1]`` yields the last letter,
+.. ``fruit[-2]`` yields the second to last, and so on.  Try it!
 
 The Slice Operator
 ------------------
@@ -355,8 +366,8 @@ with the intention of changing a character in a string.  For example, in the fol
 Instead of producing the output ``Jello, world!``, this code produces the
 runtime error ``TypeError: 'str' object does not support item assignment``.
 
-Strings are **immutable**, which means you can't change an existing string. The
-best you can do is create a new string that is a variation on the original:
+Strings are **immutable**, which means you cannot change an existing string. The
+best you can do is create a new string that is a variation on the original.
 
 .. activecode:: ch08_imm2
     
@@ -377,7 +388,7 @@ The solution here is to concatenate a new first letter onto a slice of
     single: McCloskey, Robert
     single: Make Way for Ducklings    
 
-Traversal and the ``for`` loop: By Item
+Traversal and the ``for`` Loop: By Item
 ---------------------------------------
 
 A lot of computations involve processing a collection one item at a time.  For strings this means
@@ -386,7 +397,7 @@ Often we start at the beginning, select each character in turn, do something
 to it, and continue until the end. This pattern of processing is called a
 **traversal**.
 
-We have previously seen that the for statement can iterate over the items of a sequence.
+We have previously seen that the ``for`` statement can iterate over the items of a sequence.
 
 .. activecode:: ch08_4
     :nocanvas:
@@ -400,7 +411,7 @@ Recall that the loop variable takes on each value in the sequence of names.  The
 .. activecode:: ch08_5
     :nocanvas:
 
-    for avalue in range(10);
+    for avalue in range(10):
         print(avalue)
 
 
@@ -416,7 +427,7 @@ The loop variable ``achar`` is automatically reassigned each character in the st
 We will refer to this type of sequence iteration as **iteration by item**.  
 Note that it is only possible to process the characters one at a time from left to right.
 
-Traversal and the ``for`` loop: By Position
+Traversal and the ``for`` Loop: By Position
 -------------------------------------------
 
 It is also possible to use the ``for`` loop to systematically generate the indices or positions of the characters for 
@@ -434,7 +445,8 @@ characters in the string.
 The index positions in "apple" are 0,1,2,3 and 4.  This is exactly the same sequence of integers returned by ``range(5)``.  The first time through the for loop, ``position`` will be 0 and the "a" will be printed.  Then, position will be reassigned to 1 and "p" will be displayed.  This will repeat for all the range values up to but not including 5.  Since "e" has position 4, this will be exactly right to show all 
 of the characters.
 
-In order to make the iteration more general, we can use the ``len`` function to provide the bound for ``range``.  This is a very common pattern for traversing any sequence by position.	
+In order to make the iteration more general, we can use the ``len`` function to provide the bound for ``range``.  This is a very common pattern for traversing any sequence by position.	Make sure you understand why the range function behaves
+correctly when using ``len`` of the string as its parameter value.
 
 .. activecode:: ch08_7b
     :nocanvas:
@@ -459,7 +471,7 @@ well as up so the following code will print the characters from right to left.
 
 Trace the values of position and satisfy yourself that they are correct.  In particular, note the start and end of the range.
 
-Traversal and the ``while`` loop: By Position
+Traversal and the ``while`` Loop: By Position
 ---------------------------------------------
 
 The ``while`` loop can also control the
@@ -506,6 +518,12 @@ Mack, Nack, Ouack, Pack, and Quack.  This loop outputs these names in order:
 Of course, that's not quite right because Ouack and Quack are misspelled.
 Can you fix it?
 
+.. admonition:: Hint...
+
+    If the name starts with an O or with a Q, then you need to add an extra U
+
+
+
 
 .. index:: slice, string slice
 
@@ -538,7 +556,7 @@ like to think about these edge cases quite carefully!)
     print('' in 'a')
     print('' in 'apple')
     
-The ``not in`` operator returns the logical opposite results of ``in``.
+The ``not in`` operator returns the logical opposite result of ``in``.
 
 .. activecode:: chp8_in3
 
@@ -553,15 +571,21 @@ write a function that removes all the vowels from a string:
     def removeVowels(s):
         vowels = "aeiouAEIOU"
         sWithoutVowels = ""
-        for x in s:
-            if x not in vowels:
-                sWithoutVowels = sWithoutVowels + x
+        for eachChar in s:
+            if eachChar not in vowels:
+                sWithoutVowels = sWithoutVowels + eachChar
         return sWithoutVowels 
        
     print(removeVowels("compsci"))
     print(removeVowels("aAbEefIijOopUus"))
 
+Look very carefully at line 6 in the above program (`sWithoutVowels = sWithoutVowels + x`).  This should look
+very familiar.  It is an example of the accumulator pattern, this time using a string to "accumulate" the end result.
+In words it says that the new value of ``sWithoutVowels`` will be the old value of ``sWithoutVowels`` concatenated with
+the value of ``eachChar``.  We are building the result string character by character. 
 
+Take a close look also at the initialization of ``sWithoutVowels``.  We start with an empty string and then begin adding
+new characters to the end.
 
 .. index:: counting pattern
 
@@ -685,7 +709,7 @@ occurrence of 'a' in 'banana' after index 2. What does
 understand how ``find2`` works.  Try it.
 
 Better still, we can combine ``find`` and ``find2`` using an
-**optional parameter**:
+**optional parameter**.
 
 .. activecode:: chp08_fun5
     
@@ -713,7 +737,7 @@ like ``find2``, while in the call ``find3('banana', 'a')``, ``start`` will be
 set to the **default value** of ``0``.
 
 Adding another optional parameter to ``find`` makes it search from a starting
-position, up to but not including the end position:
+position, up to but not including the end position.
 
 .. activecode:: chp08_fun6
     
@@ -763,7 +787,8 @@ More ``string`` methods
 -----------------------
  
 Now that we've done all this work to write a powerful ``find`` function, we can let on that
-there is already a ``find`` method that works on strings, with precisely these same semantics.
+there is already a ``find`` method that works on strings, with precisely these same semantics (see
+`Python documentation for strings <http://docs.python.org/py3k/library/stdtypes.html#index-21>`_).
 Usually we'd prefer to use the methods that Python provides rather than reinvent
 our own equivalents. But many of the available built-in functions and methods make good
 teaching exercises, and the underlying techniques you learn are your building blocks
@@ -792,6 +817,8 @@ to be punctuation. Try the following and see what you get.
     print(string.punctuation)
 
     
+
+For more information consult the ``string`` module documentaiton (see `Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).
 
 Summary 
 ------- 

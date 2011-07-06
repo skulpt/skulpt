@@ -20,14 +20,14 @@ Computers are often used to automate repetitive tasks. Repeating identical or
 similar tasks without making errors is something that computers do well and
 people do poorly.
 
-Repeated execution of a set of statements is called **iteration**.  Because
+Repeated execution of a sequence of statements is called **iteration**.  Because
 iteration is so common, Python provides several language features to make it
 easier. We've already seen the ``for`` statement in chapter 3.  This is a very common 
 form of iteration in Python. In this chapter
 we are also going to look at the ``while`` statement --- another way to have your
 program do iteration.
 
-Before we do that, let's review a few ideas related to variables and assignment.
+Before we do that, we will review (reiterate) few ideas related to variables and assignment.
 
 Reassignment
 ------------ 
@@ -50,7 +50,7 @@ the value (the object) that ``bruce`` refers to.
 
 Here is what **reassignment** looks like in a state snapshot:
 
-.. image:: illustrations/ch07/mult_assign.png
+.. image:: illustrations/ch07/reassign1.png
    :alt: reassignment 
 
 With reassignment it is especially important to distinguish between an
@@ -89,7 +89,7 @@ Line 4 changes the value of ``a`` but does not change the value of
 	choice also found in languages like C, C++, Java, and C#.
 
 
-Updating variables
+Updating Variables
 ------------------
 
 One of the most common forms of reassignment is an **update** where the new
@@ -103,7 +103,8 @@ This means get the current value of x, add one, and then update x with the new
 value.  The new value of x is the old value of x plus 1.  Although this assignment statement may
 look a bit strange, remember that executing assignment is a two-step process.  First, evaluate the
 right-hand side expression.  Second, let the variable name on the left-hand side refer to this new
-resulting object.  The fact that ``x`` appears on both sides does not matter.
+resulting object.  The fact that ``x`` appears on both sides does not matter.  The semantics of the assignment
+statement makes sure that there is no confusion as to the result.
 
 .. activecode:: ch07_update1
 
@@ -113,7 +114,7 @@ resulting object.  The fact that ``x`` appears on both sides does not matter.
     print(x)
 
 
-If you try to update a variable that doesn't exist, you get an error, because
+If you try to update a variable that doesn't exist, you get an error because
 Python evaluates the expression on the right side of the assignment operator
 before it assigns the resulting value to the name on the left.
 Before you can update a variable, you have to **initialize** it, usually with a
@@ -167,6 +168,11 @@ to update the running total by adding the next number to it.
 .. index:: while statement, while loop, iteration, loop, loop body,
            infinite loop, condition
 
+.. note::
+
+    What would happen if we put the assignment ``runningTotal = 0`` inside the for statement?  Not sure, try it and find
+    out.
+
 This pattern of iterating through a collection of values and updating a variable as you go is commonly
 referred to as the **accumulator pattern**.  We refer to the variable as the **accumulator**.  This pattern will come up over and over again.  Remember that the key
 to making it work successfully is to be sure to initialize the variable before you start the iteration.
@@ -177,19 +183,19 @@ Once inside the iteration, it is required that you update the accumulator.
 The ``while`` Statement
 -----------------------
 
-Here is a fragment of code that demonstrates the use of the ``while`` statement:
+Here is a program that demonstrates the use of the ``while`` statement:
 
 .. activecode:: ch07_while1
     
-    def sumTo(n):
+    def sumTo(aBound):
         """ Return the sum of 1+2+3 ... n """
         
-        ss  = 0
-        v = 1
-        while v <= n:
-            ss = ss + v
-            v = v + 1
-        return ss
+        theSum  = 0
+        aNumber = 1
+        while aNumber <= aBound:
+            theSum = theSum + aNumber
+            aNumber = aNumber = 1
+        return theSum
         
     print(sumTo(4))
     print(sumTo(1000))
@@ -197,8 +203,10 @@ Here is a fragment of code that demonstrates the use of the ``while`` statement:
 
 
 You can almost read the ``while`` statement as if it were in natural language. It means,
-while ``v`` is less than or equal to ``n``, continue executing the body of the loop. Within
-the body, each time, increment ``v``. When ``v`` passes ``n``, return your accumulated sum.
+while ``aNumber`` is less than or equal to ``aBound``, continue executing the body of the loop. Within
+the body, each time, increment ``aNumber``. When ``aNumber`` passes ``aBound``, return your accumulated sum.
+
+.. note:: The names of the variables have been chosen to help readability.  
 
 More formally, here is the flow of execution for a ``while`` statement:
 
@@ -243,12 +251,12 @@ terminates.  By comparison, here is an alternative function that uses ``for`` in
 
 .. activecode:: ch07_altsum
 
-    def sumTo(n):
+    def sumTo(aBound):
         """ Return the sum of 1+2+3 ... n """
-        ss  = 0
-        for v in range(n+1):
-            ss = ss + v
-        return ss
+        theSum  = 0
+        for aNumber in range(aBound + 1):
+            theSum = theSum + aNumber
+        return theSum
 
     print(sumTo(10))
 
@@ -262,7 +270,7 @@ we need the extra power that we get from the ``while`` loop.
         
 .. index:: 3n + 1 sequence        
         
-The 3n + 1 sequence
+The 3n + 1 Sequence
 -------------------
 
 Let's look at a simple sequence that has fascinated mathematicians for many years.
@@ -320,7 +328,7 @@ been able to test every integer up to very large values, and so far, they all
 eventually end up at 1.  But this doesn't mean that there might not be some
 as-yet untested number which does not reduce to 1.   
 
-You'll notice that if you don't stop when you reach one the sequence gets into
+You'll notice that if you don't stop when you reach one, the sequence gets into
 its own loop:  1, 4, 2, 1, 4, 2, 1, 4, and so on.  One possibility is that there might
 be other cycles that we just haven't found.  
 
@@ -450,137 +458,6 @@ before incrementing the counter will do the trick:
 .. index:: abbreviated assignment    
     
 
-
-
-.. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
-           cursor
-
-Tables
-------
-
-One of the things loops are good for is generating tabular data.  Before
-computers were readily available, people had to calculate logarithms, sines and
-cosines, and other mathematical functions by hand. To make that easier,
-mathematics books contained long tables listing the values of these functions.
-Creating the tables was slow and boring, and they tended to be full of errors.
-
-When computers appeared on the scene, one of the initial reactions was, *"This is
-great! We can use the computers to generate the tables, so there will be no
-errors."* That turned out to be true (mostly) but shortsighted. Soon thereafter,
-computers and calculators were so pervasive that the tables became obsolete.
-
-Well, almost. For some operations, computers use tables of values to get an
-approximate answer and then perform computations to improve the approximation.
-In some cases, there have been errors in the underlying tables, most famously
-in the table the Intel Pentium processor chip used to perform floating-point division.
-
-Although a log table is not as useful as it once was, it still makes a good
-example of iteration. The following program outputs a sequence of values in the
-left column and 2 raised to the power of that value in the right column:
-
-.. activecode:: ch07_table1
-    
-    for x in range(13):   # generate numbers 0 to 12
-        print(x, '\t', 2**x)
-
-The string ``'\t'`` represents a **tab character**. The backslash character in
-``'\t'`` indicates the beginning of an **escape sequence**.  Escape sequences
-are used to represent invisible characters like tabs and newlines. The sequence
-``\n`` represents a **newline**.
-
-An escape sequence can appear anywhere in a string.  In this example, the tab
-escape sequence is the only thing in the string. How do you think you represent
-a backslash in a string?
-
-As characters and strings are displayed on the screen, an invisible marker
-called the **cursor** keeps track of where the next character will go. After a
-``print`` function, the cursor normally goes to the beginning of the next
-line.
-
-The tab character shifts the cursor to the right until it reaches one of the
-tab stops. Tabs are useful for making columns of text line up, as in the output
-of the previous program.
-Because of the tab characters between the columns, the position of the second
-column does not depend on the number of digits in the first column.
-
-
-
-.. index::
-    single: local variable
-    single: variable; local
-
-Local variables
----------------
-
-You might be wondering how we can use the same variable, ``i``, in both
-``print_multiples`` and ``print_mult_table``. Doesn't it cause problems when
-one of the functions changes the value of the variable?
-
-The answer is no, because the ``i`` in ``print_multiples`` and the ``i`` in
-``print_mult_table`` are *not* the same variable.
-
-Variables created inside a function definition are local; you can't access a
-local variable from outside its home function. That means you are free to have
-multiple variables with the same name as long as they are not in the same
-function.
-
-The stack diagram for this program shows that the two variables named ``i`` are
-not the same variable. They can refer to different values, and changing one
-does not affect the other.
-
-.. image:: illustrations/ch07/stack2.png
-   :alt: Stack 2 diagram 
-
-The value of ``i`` in ``print_mult_table`` goes from 1 to 6. In the diagram it
-happens to be 3. The next time through the loop it will be 4. Each time through
-the loop, ``print_mult_table`` calls ``print_multiples`` with the current value
-of ``i`` as an argument. That value gets assigned to the parameter ``n``.
-
-Inside ``print_multiples``, the value of ``i`` goes from 1 to 6. In the
-diagram, it happens to be 2. Changing this variable has no effect on the value
-of ``i`` in ``print_mult_table``.
-
-It is common and perfectly legal to have different local variables with the
-same name. In particular, names like ``i`` and ``j`` are used frequently as
-loop variables. If you avoid using them in one function just because you used
-them somewhere else, you will probably make the program harder to read.
-
-The visualizer at http://netserv.ict.ru.ac.za/python3_viz/ shows very clearly how the 
-two variables ``i`` are distinct variables, and how they have independent values.
-(The visualizer has a limit of showing 100 steps, though --- not quite enough
-to run this particular example all the way to the end.)
-
-2-Dimensional Tables
---------------------
-
-Two dimensional tables have both rows and columns.  You have probably seen many tables like this if you have used a
-spreadsheet program.  Another object that is organized in rows and columns is a digital image.
-
-.. raw:: html
-
-    <img src="_static/norse-logo.png" id="norse.png">
-
-
-.. activecode::  acimg_1
-
-    import image
-    img = image.Image("norse.png")
-
-    win = image.ImageWin()
-    newimg = image.EmptyImage(img.getHeight(),img.getWidth())
-
-    for col in range(img.getWidth()):
-        for row in range(img.getHeight()):
-           p = img.getPixel(col,row)
-           p.setRed(255-p.getRed())
-           p.setGreen(255-p.getGreen())
-           p.setBlue(255-p.getBlue())
-           newimg.setPixel(col,row,p)
-
-    newimg.draw(win,100,20)
-
-
-
 .. index::
     single: Newton's method
 
@@ -683,6 +560,104 @@ thought, are the hardest to express algorithmically.  Understanding natural
 language is a good example. We all do it, but so far no one has been able to
 explain *how* we do it, at least not in the form of a step-by-step mechanical 
 algorithm.
+
+
+
+
+.. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
+           cursor
+
+Tables
+------
+
+One of the things loops are good for is generating tabular data.  Before
+computers were readily available, people had to calculate logarithms, sines and
+cosines, and other mathematical functions by hand. To make that easier,
+mathematics books contained long tables listing the values of these functions.
+Creating the tables was slow and boring, and they tended to be full of errors.
+
+When computers appeared on the scene, one of the initial reactions was, *"This is
+great! We can use the computers to generate the tables, so there will be no
+errors."* That turned out to be true (mostly) but shortsighted. Soon thereafter,
+computers and calculators were so pervasive that the tables became obsolete.
+
+Well, almost. For some operations, computers use tables of values to get an
+approximate answer and then perform computations to improve the approximation.
+In some cases, there have been errors in the underlying tables, most famously
+in the table the Intel Pentium processor chip used to perform floating-point division.
+
+Although a log table is not as useful as it once was, it still makes a good
+example of iteration. The following program outputs a sequence of values in the
+left column and 2 raised to the power of that value in the right column:
+
+.. activecode:: ch07_table1
+
+    print("n",'\t',"2**n")     #table column headings
+    print("---",'\t',"-----")   
+ 
+    for x in range(13):        # generate values for columns
+        print(x, '\t', 2**x)
+
+The string ``'\t'`` represents a **tab character**. The backslash character in
+``'\t'`` indicates the beginning of an **escape sequence**.  Escape sequences
+are used to represent invisible characters like tabs and newlines. The sequence
+``\n`` represents a **newline**.
+
+An escape sequence can appear anywhere in a string.  In this example, the tab
+escape sequence is the only thing in the string. How do you think you represent
+a backslash in a string?
+
+As characters and strings are displayed on the screen, an invisible marker
+called the **cursor** keeps track of where the next character will go. After a
+``print`` function, the cursor normally goes to the beginning of the next
+line.
+
+The tab character shifts the cursor to the right until it reaches one of the
+tab stops. Tabs are useful for making columns of text line up, as in the output
+of the previous program.
+Because of the tab characters between the columns, the position of the second
+column does not depend on the number of digits in the first column.
+
+
+
+.. index::
+    single: local variable
+    single: variable; local
+
+
+
+2-Dimensional Tables
+--------------------
+
+Two dimensional tables have both rows and columns.  You have probably seen many tables like this if you have used a
+spreadsheet program.  Another object that is organized in rows and columns is a digital image.
+
+.. raw:: html
+
+    <img src="/Users/davidranum/Desktop/cy.png" id="cy.png">
+
+
+.. activecode::  acimg_1
+
+    import image
+    img = image.Image("cy.png")
+
+    win = image.ImageWin()
+    newimg = image.EmptyImage(img.getHeight(),img.getWidth())
+
+    for col in range(img.getWidth()):
+        for row in range(img.getHeight()):
+           p = img.getPixel(col,row)
+           p.setRed(255-p.getRed())
+           p.setGreen(255-p.getGreen())
+           p.setBlue(255-p.getBlue())
+           newimg.setPixel(col,row,p)
+
+    newimg.draw(win,100,20)
+
+
+
+
 
 
 Glossary

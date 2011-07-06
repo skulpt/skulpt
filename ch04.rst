@@ -60,6 +60,10 @@ followed by the name of the function and some *parameters* enclosed in
 parentheses. The parameter list may be empty, or it may contain any number of
 parameters separated from one another by commas. In either case, the parentheses are required.
 
+We need to say a bit more about the parameters.  In the definition, the parameter list is more specifically known
+as the **formal parameters**.  This list of names describes those things that the function will
+need to receive from the user of the function.  When you use a function, you provide values to the formal parameters.
+
 Suppose we're working with turtles and a common operation we need is to draw
 squares.  It would make sense if we did not have to duplicate all the steps each time we want to make a square.   "Draw a square" can be thought of as an *abstraction* of a number of smaller steps.  We will need to provide two pieces of information for the function to do its work: a turtle to do the drawing and a size for the side of the square.  So here is a function to capture this idea.  Give it a try.
 
@@ -114,10 +118,44 @@ to the parameters in the function definition.  So in the second to the last line
 the program, we call the function, and pass alex as the turtle to be manipulated,
 and 50 as the size of the square we want. 
 
+The parameters being sent to the function, sometimes referred to as the **actual parameters** or **arguments**,
+represent the specific data items that the function will use when it is executing.
+
 Once we've defined a function, we can call it as often as we like and its 
 statements will be executed each time we call it.  In this case, we could use it to get
-any of our turtles to draw a square.   In the next example, we've changed the ``drawSquare``
-function a little and we get tess to draw 15 squares with some variations.
+one of our turtles to draw a square and then we can move the turtle and have it draw a different square in a 
+different location.  Note that we lift the tail so that when ``alex`` moves there is no trace.  We put the tail
+back down before drawing the next square.
+
+.. activecode:: ch04_1a
+
+    import turtle 
+
+    def drawSquare(t, sz):
+        """Make turtle t draw a square of with side sz."""    
+        
+        for i in range(4):
+            t.forward(sz)             
+            t.left(90)
+      
+      
+    wn = turtle.Screen()          # Set up the window and its attributes
+    wn.bgcolor("lightgreen")
+
+    alex = turtle.Turtle()        # create alex
+    drawSquare(alex, 50)          # Call the function to draw the square
+
+    alex.penup()
+    alex.goto(100,100)
+    alex.pendown()
+
+    drawSquare(alex,75)           # Draw another square
+
+    wn.exitonclick()
+
+In the next example, we've changed the ``drawSquare``
+function a little and we get tess to draw 15 squares with some variations.  Once the function has
+been defined, we can call it as many times as we like with whatever actual parameters we like.
 
 .. activecode:: ch04_2
 
@@ -175,7 +213,8 @@ relationships.  In the code above, we've done that to some extent.  We did not j
 Instead, we spotted that we could draw the rectangle as two halves and used a loop to
 repeat that pattern twice.
 
-But now we might spot that a square is a special kind of rectangle.
+But now we might spot that a square is a special kind of rectangle.  A square simply uses the same value for both
+the height and the width.
 We already have a function that draws a rectangle, so we can use that to draw
 our square. 
 
@@ -252,12 +291,13 @@ execution** and we've already talked about it a little in the previous chapter.
 
 Execution always begins at the first statement of the program.  Statements are
 executed one at a time, in order, from top to bottom.
-
 Function definitions do not alter the flow of execution of the program, but
 remember that statements inside the function are not executed until the
-function is called. Although it is not common, you can define one function
-inside another. In this case, the inner definition isn't executed until the
-outer function is called.
+function is called. 
+
+.. Although it is not common, you can define one function
+.. inside another. In this case, the inner definition isn't executed until the
+.. outer function is called.
 
 Function calls are like a detour in the flow of execution. Instead of going to
 the next statement, the flow jumps to the first line of the called function,
@@ -373,15 +413,18 @@ the standard formula for compound interest (shown again below).  We'll now imple
                      
     # now that we have the function above, let us call it.  
 
-    toInvest = float(input("How much do you want to invest?"))
-    fnl = finalAmt(toInvest, 0.08, 12, 5)
+    toInvest = 100                           #invest 100 dollars
+    fnl = finalAmt(toInvest, 0.08, 12, 5)     # compute interest
     print("At the end of the period you will have", fnl)
+
+
+.. toInvest = float(input("How much do you want to invest?"))
 
 * The **return** statement is followed an expression which is evaluated.  Its
   result is returned to the caller as the "fruit" of calling this function.
-* We prompted the user for the principal amount.  The type of ``toInvest`` is a string, but
-  we need a number before we can work with it.  Because it is money, and could have decimal places,
-  we've used the ``float`` type converter function to parse the string and return a float.
+.. We prompted the user for the principal amount.  The type of ``toInvest`` is a string, but
+..  we need a number before we can work with it.  Because it is money, and could have decimal places,
+..  we've used the ``float`` type converter function to parse the string and return a float.
 * Notice how we entered the arguments for 8% interest, compounded 12 times per year, for 5 years.
 * When we run this, we get the output 
 
@@ -391,10 +434,11 @@ the standard formula for compound interest (shown again below).  We'll now imple
   Python doesn't understand that you're working with money: it just does the calculation to
   the best of its ability, without rounding.  Later we'll show you how to format the string that
   is printed in such a way that it does get nicely rounded to two decimal places before printing. 
-* The line `toInvest = float(input("How much do you want to invest?"))` 
-  also shows yet another example
-  of *composition* --- we can call a function like `float`, and its arguments 
-  can be the results of other function calls (like `input`) that we've called along the way.
+
+.. The line `toInvest = float(input("How much do you want to invest?"))` 
+..  also shows yet another example
+..  of *composition* --- we can call a function like `float`, and its arguments 
+ .. can be the results of other function calls (like `input`) that we've called along the way.
   
 Notice something else very important here. The name of the variable we pass as an
 argument --- `toInvest` --- has nothing to do with the name of the parameter
@@ -443,7 +487,7 @@ the function, and you cannot use it outside. For example, consider again this fu
        a = p * (1 + r/n) ** (n*t)
        return a           
  
-..If we try to use `a`, outside the function, we'll get an error:
+.. If we try to use `a`, outside the function, we'll get an error:
 
 
     
@@ -456,7 +500,7 @@ we call this its **lifetime**.
 When the execution of the function terminates, 
 the local variables  are destroyed. 
 
-Parameters are also local, and act like local variables. 
+Parameters are also local and act like local variables. 
 For example, the lifetimes of `p`, `r`, `n`, `t` begin when `finalAmt` is called, 
 and the lifetime ends when the function completes its execution.   
 
@@ -466,58 +510,104 @@ time, recover the local variable.  Each call of the function creates
 new local variables, and their lifetimes expire when the function returns
 to the caller. 
     
-.. index:: refactoring code, chunking    
 
-Turtles Revisited
------------------
+.. index:: bar chart
 
-Now that we have fruitful functions, we can focus our attention on 
-reorganizing our code so that it fits more nicely into our mental chunks.  
-This process of rearrangement is called **refactoring** the code.  
- 
-Two things we're always going to want to do when working with turtles
-is to create the window for the turtle, and to create one or more turtles.
-We could write some functions to make these tasks easier in future:
+A Turtle Bar Chart
+------------------
 
-.. activecode:: ch04_8
+Recall from our discussion of modules that there were a number of things that turtles can do.
+Here are a couple more tricks (remember that they are all described in the module documentation).
 
-   import turtle
+* We can get a turtle to display text on the canvas at the turtle's current position.  The method is called `write`.  
+  For example,   ``alex.write("Hello")`` would write the string `hello` at the current position.
+* One can fill a shape (circle, semicircle, triangle, etc.) with a fill color.  It is a two-step process.
+  First you call the method `begin_fill`, for example ``alex.begin_fill()``.  Then you draw the shape.
+  Finally, you call `end_fill` ( ``alex.end_fill()``). 
+* We've previously set the color of our turtle - we can now also set it's fill-color, which need not
+  be the same as the turtle and the pen color.  To do this, we use a method called `fillcolor`, 
+  for example, ``alex.fillcolor("red")``.   
+  
+  
+Ok, so can we get tess to draw a bar chart?  Let us start with some data to be charted,
 
-   def make_window(colr):   
-       """
-         Set up the window with the given background color. 
-         Returns the new window.
-       """
-       w = turtle.Screen()             
-       w.bgcolor(colr)
-       return w
-       
-       
-   def make_turtle(colr, sz):      
-       """
-         Set up a turtle with the given colour and pensize.
-         Returns the new turtle.
-       """
-       t = turtle.Turtle()
-       t.color(colr)
-       t.pensize(sz)
-       return t
+``xs = [48, 117, 200, 240, 160, 260, 220]``
 
-       
-   wn = make_window("lightgreen")
-   tess = make_turtle("hotpink", 5)
-   alex = make_turtle("black", 1)
-   dave = make_turtle("yellow", 2)  
-   wn.exitonclick()
-   
-.. admonition:: Extend this program ...
+Corresponding to each data measurement, we'll draw a simple rectangle of that height, with a fixed width.
 
-    How about adding a drawTriangle function and having each turtle draw a different size
-    triangle?
+.. sourcecode:: python
 
-The trick about refactoring code is to see which things you are likely to want to change
-each time you call the function: these should become the parameters, or changeable bits,
-of the functions you write.
+    def drawBar(t, height):
+        """ Get turtle t to draw one bar, of height. """
+        t.left(90)           
+        t.forward(height)        # Draw up the left side
+        t.right(90)
+        t.forward(40)            # width of bar, along the top
+        t.right(90)
+        t.forward(height)        # And down again!
+        t.left(90)               # put the turtle facing the way we found it.
+        
+    ...    
+    for v in xs:                 # assume xs and tess are ready 
+        drawBar(tess, v)    
+
+.. image:: illustrations/ch05/tess_bar_1.png
+
+It is a nice start!  The important thing here
+was the mental chunking.  To solve the problem we first broke it into smaller pieces.  In particular,
+our chunk 
+is to draw one bar.  We then implemented that chunk with a function. Then, for the whole
+chart, we repeatedly called our function.
+
+Next, at the top of each bar, we'll print the value of the data.
+We'll do this in the body of ``drawBar``, by adding   ``t.write('  ' + str(height))`` 
+as the new third line of the body.
+We've put a little space in front of the number, and turned the 
+number into a string.  Without this extra space we tend
+to cramp our text awkwardly against the bar to the left.   
+
+Finally, we'll add the two methods needed  to fill each bar.  One thing to note is that we moved
+tess down and to the left in our window to make room for all the bars.  Had we not done this, the
+turtle would have drawn off the window.  Our final program now looks like this.
+
+.. activecode:: ch05_barchart
+
+    import turtle
+
+    def drawBar(t, height):
+        """ Get turtle t to draw one bar, of height. """
+        t.begin_fill()               # start filling this shape
+        t.left(90)
+        t.forward(height)
+        t.write('  '+ str(height))
+        t.right(90)
+        t.forward(40)
+        t.right(90)
+        t.forward(height)
+        t.left(90)
+        t.end_fill()                 # stop filling this shape
+
+    wn = turtle.Screen()             # Set up the window and its attributes
+    wn.bgcolor("lightgreen")
+
+    tess = turtle.Turtle()           # create tess and set some attributes
+    tess.color("blue")
+    tess.fillcolor("red")
+    tess.pensize(3)
+
+    tess.penup()                     # move tess to a better starting spot
+    tess.goto(-180,-180)
+    tess.pendown()
+
+    xs = [48,117,200,240,160,260,220]  # here is the data
+
+    for a in xs:
+         drawBar(tess, a)
+
+    wn.exitonclick()
+
+
+
 
 Glossary
 --------
