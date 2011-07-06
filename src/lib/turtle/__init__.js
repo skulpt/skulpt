@@ -33,8 +33,9 @@ if (! TurtleGraphics) {
         }
         this.canvas = document.getElementById(this.canvasID);
         this.context = this.canvas.getContext('2d');
-        this.canvas.style.display = 'block';
-        
+        //this.canvas.style.display = 'block';
+        $(this.canvas).fadeIn();
+
         this.lineScale = 1.0;
 
         this.llx = -this.canvas.width / 2;
@@ -46,6 +47,7 @@ if (! TurtleGraphics) {
 
         this.delay = 50;
         this.segmentLength = 10;
+        this.renderCounter = 1;
         TurtleGraphics.canvasLib[this.canvasID] = this;
     }
 
@@ -58,6 +60,7 @@ if (! TurtleGraphics) {
         this.lly = -this.canvas.height / 2;
         this.urx = this.canvas.width / 2;
         this.ury = this.canvas.height / 2;
+        this.renderCounter = 1;
 
         if (TurtleGraphics.canvasInit == false) {
             this.context.save();
@@ -117,6 +120,14 @@ if (! TurtleGraphics) {
         this.delay = df * 10;
     }
 
+    TurtleCanvas.prototype.setCounter = function(s) {
+        this.renderCounter = s;
+    }
+
+    TurtleCanvas.prototype.getCounter = function() {
+        return this.renderCounter;
+    }
+
     TurtleCanvas.prototype.setworldcoordinates = function(llx, lly, urx, ury) {
         this.context.restore();
         this.context.scale(this.canvas.width / (urx - llx), -this.canvas.height / (ury - lly));
@@ -139,7 +150,8 @@ if (! TurtleGraphics) {
 
     TurtleCanvas.prototype.bgcolor = function(c) {
         this.background_color = c;
-        this.canvas.style.setProperty("background-color", c.v);
+        //this.canvas.style.setProperty("background-color", c.v);
+        $(this.canvas).css("background-color",c.v);
     }
 
     TurtleCanvas.prototype.setSegmentLength = function(s) {
@@ -153,12 +165,12 @@ if (! TurtleGraphics) {
     // todo: if animating, this should be deferred until the proper time
     TurtleCanvas.prototype.exitonclick = function () {
         var canvas_id = this.canvasID;
-        this.canvas.onclick = function() {
-            document.getElementById(canvas_id).style.display = 'none';
-            document.getElementById(canvas_id).onclick = null;
+        $(this.canvas).click(function() {
+            $("#"+canvas_id).fadeOut();
+            $("#"+canvas_id).click(null);
             Sk.tg.canvasInit = false;
             delete Sk.tg.canvasLib[canvas_id];
-        }
+        });
     }
 
     TurtleCanvas.prototype.turtles = function() {
@@ -172,7 +184,6 @@ if (! TurtleGraphics) {
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
         var currentHeadInfo;
         var currentHead = new Vector(1,0,0);
-        TurtleGraphics.renderClock += 1;
         with (context) {
             with (TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID]) {
                 clearRect(llx, lly, (urx - llx), (ury - lly));
@@ -180,6 +191,9 @@ if (! TurtleGraphics) {
             }
             for (var tix in TurtleGraphics.turtleList) {
                 var t = TurtleGraphics.turtleList[tix]
+                var incr = t.getRenderCounter();
+                console.log("incr = " + incr);
+                TurtleGraphics.renderClock += incr;
                 if (t.aCount >= t.drawingEvents.length)
                     t.aCount = t.drawingEvents.length - 1;
                 moveTo(0, 0);
@@ -260,7 +274,7 @@ if (! TurtleGraphics) {
                         }
                     }
                 }
-                t.aCount++;
+                t.aCount += incr;
                 if (t.visible && currentHeadInfo) {
                     // draw the turtle
                     var tsize = 5 * t.turtleCanvas.lineScale;
@@ -603,6 +617,13 @@ if (! TurtleGraphics) {
         }
     }
 
+    Turtle.prototype.tracer = function(t) {
+        this.turtleCanvas.setCounter(t);
+    }
+
+    Turtle.prototype.getRenderCounter = function() {
+        return this.turtleCanvas.getCounter();
+    }
 
     Turtle.prototype.turn = function (phi) {
         with (this) {
@@ -1103,6 +1124,10 @@ var $builtinmodule = function(name) {
 
         $loc.speed = new Sk.builtin.func(function(self, s, t) {
             self.theTurtle.speed(s,t);
+        });
+
+        $loc.tracer = new Sk.builtin.func(function(self, t) {
+            self.theTurtle.tracer(t);
         });
 
         // todo:  stamp, clearstamp, clearstamps, undo, speed
