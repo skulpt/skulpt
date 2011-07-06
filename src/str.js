@@ -90,7 +90,7 @@ Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 };
 
 Sk.builtin.str.prototype.sq$contains = function(ob) {
-    if (! ob.v || ob.v.constructor != String) {
+    if ( ob.v === undefined || ob.v.constructor != String) {
         throw new TypeError("TypeError: 'In <string> requires string as left operand");
     }
     if (this.v.indexOf(ob.v) != -1) {

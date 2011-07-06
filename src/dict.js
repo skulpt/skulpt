@@ -107,7 +107,7 @@ Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAtt
 
 Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 {
-    if (! d) {
+    if (d === undefined) {
         //d = new Sk.builtin.NoneObj();
         d = null;
     }
