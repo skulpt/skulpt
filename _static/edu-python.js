@@ -121,10 +121,10 @@ function highlightCodeLine(curLine, visitedLinesSet, hasError) {
     lineBgCol = errorColor;
   }
 
-  tbl.find('td.cod').css('border-top', '1px solid #ffffff');
+  tbl.find('td.cod').css('border-bottom', '1px solid #ffffff');
 
   if (!hasError) {
-    tbl.find('td.cod:eq(' + (curLine - 1) + ')').css('border-top', '1px solid #F87D76')
+    tbl.find('td.cod:eq(' + (curLine - 1) + ')').css('border-bottom', '1px solid #F87D76')
   }
 
   tbl.find('td.cod').css('background-color', '');
@@ -580,7 +580,6 @@ $(document).ready(function() {
   // disable autogrow for simplicity
   //$("#pyInput").autogrow();
 
-  $("#executeBtn").click(function() {
     if (localTesting) {
       renderPyCodeOutput($("#pyInput").val());
 
@@ -589,27 +588,6 @@ $(document).ready(function() {
       $("#pyInputPane").hide();
       $("#pyOutputPane").show();
     }
-    else {
-      $('#executeBtn').html("Please wait ... processing your code");
-      $('#executeBtn').attr('disabled', true);
-      $("#pyOutputPane").hide();
-
-      $.post("cgi-bin/web_exec.py",
-             {user_script : $("#pyInput").val()},
-             function(traceData) {
-               renderPyCodeOutput($("#pyInput").val());
-               processTrace(traceData);
-
-              $("#pyInputPane").hide();
-              $("#pyOutputPane").show();
-
-              $('#executeBtn').html("Visualize execution");
-              $('#executeBtn').attr('disabled', false);
-             },
-             "json");
-    }
-  });
-
 
   $("#editCodeLink").click(function() {
     $("#pyInputPane").show();

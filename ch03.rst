@@ -311,11 +311,19 @@ time.  We call this type of control **sequential**.  Sequential flow of control 
 Control flow is often easy to visualize and understand if we draw a flowchart.
 This flowchart shows the exact steps and logic of how the ``for`` statement executes.
 
+Visualizing the for loop
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This demonstration is a good way to help you visualize exactly how the flow of control
+works with the for loop.  You can step forward and backward through the program by pressing
+the buttons.  In addition you can see the value of each variable in the program in the
+table.
+
 .. visualizer:: vtest
 
-    friendList = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]
+    friendList = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi"]
     for friendName in friendList:
-        invitation = "Hi " + friendName + ".  Please come to my party on Saturday!"
+        invitation = "Hi " + friendName + ".  Please come to my party!"
         print(invitation)
 
 .. index:: range function, chunking

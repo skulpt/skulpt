@@ -59,30 +59,9 @@ Complementary Color:
 */
 
 
-body {
-  background-color: white;
-  font-family: verdana, arial, helvetica, sans-serif;
-  font-size: 10pt;
-}
-
-a {
-  color: #3D58A2;
-}
-
-a:visited {
-  color: #3D58A2;
-}
-
-a:hover {
-  color: #3D58A2;
-}
-
-span {
-  padding: 0px;
-}
 
 #pyInput {
-  font-size: 12pt;
+  font-size: 10pt;
   font-family: Andale mono, monospace;
   /*font-weight: bold;*/
   padding: 8px;
@@ -105,7 +84,7 @@ table#pyOutputPane {
 
 table.frameDataViz {
   border-spacing: 0px;
-  font-size: 12pt;
+  font-size: 10pt;
   margin-top: 5px;
   margin-left: 15px;
   background-color: #dddddd;
@@ -136,7 +115,7 @@ div#pyCodeOutputDiv {
 
 table#pyCodeOutput {
   font-family: Andale mono, monospace;
-  font-size:12pt;
+  font-size:10pt;
   line-height:1.1em;
   border-spacing: 0px;
   border-top: 1px solid #999999;
@@ -210,7 +189,7 @@ button.bigBtn {
 
 #pyStdout {
   border: 1px solid #999999;
-  font-size: 12pt;
+  font-size: 10pt;
   padding: 4px;
   font-family: Andale mono, monospace;
 }
