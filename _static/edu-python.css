@@ -110,6 +110,7 @@ div#pyCodeOutputDiv {
   max-width: 550px;
   max-height: 620px;
   overflow: auto;
+  margin-left: 30px;
   /*margin-bottom: 4px;*/
 }
 
@@ -132,10 +133,10 @@ table#pyCodeOutput .lineNo {
   background-color:#FFFFFF;
   color:#AAAAAA;
   margin:0;
-  padding:0.2em;
+/*  padding:0.2em; */
   padding-right:0.5em;
   text-align:right;
-  width:2.1em;
+  width:3.1em;
 }
 
 table#pyCodeOutput .cod {
