@@ -294,10 +294,7 @@ Take a look at the output produced when you press the ``run`` button.  There is 
 Flow of Execution of the for loop
 ---------------------------------
 
-.. sidebar:: Flowchart of a **for** loop
 
-   .. image:: illustrations/ch03/new_flowchart_for.png
-      :width: 300px
  
 As a program executes, the interpreter always keeps track of which statement is
 about to be executed.  We call this the **control flow**, or the **flow of
@@ -310,6 +307,10 @@ time.  We call this type of control **sequential**.  Sequential flow of control 
 
 Control flow is often easy to visualize and understand if we draw a flowchart.
 This flowchart shows the exact steps and logic of how the ``for`` statement executes.
+
+
+.. image:: illustrations/ch03/new_flowchart_for.png
+      :width: 300px
 
 Visualizing the for loop
 ~~~~~~~~~~~~~~~~~~~~~~~~

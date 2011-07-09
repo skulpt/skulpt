@@ -422,9 +422,11 @@ the standard formula for compound interest (shown again below).  We'll now imple
 
 * The **return** statement is followed an expression which is evaluated.  Its
   result is returned to the caller as the "fruit" of calling this function.
+
 .. We prompted the user for the principal amount.  The type of ``toInvest`` is a string, but
 ..  we need a number before we can work with it.  Because it is money, and could have decimal places,
 ..  we've used the ``float`` type converter function to parse the string and return a float.
+
 * Notice how we entered the arguments for 8% interest, compounded 12 times per year, for 5 years.
 * When we run this, we get the output 
 

@@ -144,7 +144,13 @@ These examples show Python being run from a Unix command line. In other
 development environments, the details of executing programs may differ. Also,
 most programs are more interesting than this one.
 
-In this book you can also write programs using a unique **activecode** interpreter that allows you to execute Python code right
+Special Ways to Execute Python in this Book
+-------------------------------------------
+
+This book provides two additional ways to execute Python programs.  Both techniques are designed to assist you in learning and understanding the Python and programs work.  
+
+
+First, you can write, modify, and execute programs using a unique **activecode** interpreter that allows you to execute Python code right
 in the text itself (right from the web browser).  Although this is certainly not the way real programs are written, it provides an excellent
 environment for learning a programming language like Python since you can experiment with the language as you are reading.
 
@@ -159,8 +165,17 @@ Take a look at the activecode interpreter in action.  If we use the Python code 
 
 Now try modifying the active code program shown above, either by changing something about the first sentence, or by changing the addition in the second statement.  You should be able to press *run* immediately to see the new results.
 
-The examples in this book use a mixture of the standard Python  interpreter, scripts, and activecode.  You
-will be able to tell which is which by looking for either the Python prompt in the case of a shell mode program or the *run* button for the active code.
+
+In addition to activecode, you can also execute Python code with the assistance of a unique visualization tool.  This tool, known as **visualcode**, allows you to control the step by step execution of a program.  It also lets you see the values of
+all variables as they are created and modified.  The following example shows visualcode in action on the same program as we saw above.  Note that in active code, the entire execution occurs and you can see the result.  In visualcode you see the step by step progress.
+
+The examples in this book use a mixture of the standard Python  interpreter, scripts, activecode, and visualcode.  You
+will be able to tell which is which by looking for either the Python prompt in the case of a shell mode program, the *run* button for the active code, or the *forward/backward* button for visualcode.
+
+.. visualizer:: firstexample
+
+    print("My first program adds two numbers, 2 and 3:")
+    print(2 + 3)
 
 
 
