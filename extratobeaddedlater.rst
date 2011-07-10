@@ -2033,3 +2033,63 @@ The visualizer at http://netserv.ict.ru.ac.za/python3_viz/ shows very clearly ho
 two variables ``i`` are distinct variables, and how they have independent values.
 (The visualizer has a limit of showing 100 steps, though --- not quite enough
 to run this particular example all the way to the end.)
+
+
+..index:: copy, copy; deep, copy; shallow 
+
+Copying
+-------
+
+Aliasing can make a program difficult to read because changes made in
+one place might have unexpected effects in another place. It is hard
+to keep track of all the variables that might refer to a given object.
+
+Copying an object is often an alternative to aliasing. The ``copy``
+module contains a function called ``copy`` that can duplicate any
+object:
+
+.. sourcecode:: python
+
+    
+    >>> import copy
+    >>> p1 = Point(3, 4)
+    >>> p2 = copy.copy(p1)   # ugly!  <module_name>.<function_name> are identical! 
+    >>> p1 is p2
+    False
+    >>> same_coordinates(p1, p2)
+    True
+
+Once we import the ``copy`` module, we can use the ``copy`` function to make
+a new ``Point``. ``p1`` and ``p2`` are not the same point, but they contain
+the same data.
+
+To copy a simple object like a ``Point``, which doesn't contain any
+embedded objects, ``copy`` is sufficient. This is called **shallow
+copying**.
+
+For something like a ``Rectangle``, which contains a reference to a
+``Point``, ``copy`` doesn't do quite the right thing. It copies the
+reference to the ``Point`` object, so both the old ``Rectangle`` and the
+new one refer to a single ``Point``.
+
+If we create a box, ``b1``, in the usual way and then make a copy, ``b2``,
+using ``copy``, the resulting state diagram looks like this:
+
+.. image:: illustrations/ch14/rectangle2.png
+
+This is almost certainly not what we want. In this case, invoking
+``grow`` on one of the ``Rectangles`` would not affect the other, but
+invoking ``move`` on either would affect both! This behavior is
+confusing and error-prone. The shallow copy has created an alias to the
+Point that represents the corner. 
+
+Fortunately, the ``copy`` module contains a function named ``deepcopy`` that
+copies not only the object but also any embedded objects. You will not
+be surprised to learn that this operation is called a **deep copy**.
+
+.. sourcecode:: python
+
+    >>> b2 = copy.deepcopy(b1)
+
+Now ``b1`` and ``b2`` are completely separate objects.
+

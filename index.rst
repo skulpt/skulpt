@@ -39,7 +39,7 @@ Based on the original book
 * `Chapter 11 <ch12.html>`__ *Dictionaries*
 * `Chapter 12 <ch11.html>`__ *Recursion*
 * `Chapter 13 <ch13.html>`__ *Classes and Objects - the Basics*
-* `Chapter 14 <ch14.html>`__ *Classes and Objects - Digging a Little Deeper*
+* `Chapter 14 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
 
 
 .. `Chapter 11 <ch10.html>`__ *Modules and Files*
@@ -91,8 +91,10 @@ Based on the original book
     ch12.rst
     ch11.rst
     ch13.rst
+
+    fractions.rst
+
     astronomylab.rst
-    ch14.rst
 
 
 
