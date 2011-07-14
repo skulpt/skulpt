@@ -7,8 +7,8 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
 
-Conditionals
-============
+Decisions and Selection
+=======================
 
 .. index::
     single: modulus operator
