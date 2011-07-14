@@ -285,6 +285,7 @@ to multiply the two individual denominators together.  Anything we do to the den
 
      a/b + c/d = (ad + cb)/bd
 
+
 Our ``add`` method will take a ``Fraction`` as a parameter.  It will return a new ``Fraction`` representing the sum.  We
 will use the equation shown above to compute the new numerator and the new denominator.  Since this equation will not
 give us lowest terms, we will utilize a similar technique as was used in the ``simplify`` method to find the 
