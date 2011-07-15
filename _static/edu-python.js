@@ -37,6 +37,17 @@ var visitedLineColor = '#3D58A2';
 var curTrace = null;
 var curInstr = 0;
 
+// all of these should be stored somewhere so that they can be customized for
+// each use of the visualizer on a page.
+var stdOutElement = "#pyStdout";
+var warnOutElement = "#warningOutput";
+var errorOutputElement = "#errorOutput";
+var inputPaneElement = "#pyInputPane";
+var inputTextArea = "#pyInput";
+var vcrControlsDiv = "#vcrControls";
+var dataVisElement = "#dataViz";
+var outputPaneTable = "#pyOutputPane";
+
 function assert(cond) {
   if (!cond) {
     alert("Error: ASSERTION FAILED");
@@ -66,8 +77,8 @@ function processTrace(traceData) {
   curInstr = 0;
 
   // delete all stale output
-  $("#warningOutput").html('');
-  $("#pyStdout").val('');
+  $(warnOutElement).html('');
+  $(stdOutElement).val('');
 
   if (curTrace.length > 0) {
     var lastEntry = curTrace[curTrace.length - 1];
@@ -91,7 +102,7 @@ function processTrace(traceData) {
     if (lastEntry.event == 'instruction_limit_reached') {
       curTrace.pop() // kill last entry
       var warningMsg = lastEntry.exception_msg;
-      $("#warningOutput").html(htmlspecialchars(warningMsg));
+      $(warnOutElement).html(htmlspecialchars(warningMsg));
     }
     // as imran suggests, for a (non-error) one-liner, SNIP off the
     // first instruction so that we start after the FIRST instruction
@@ -137,22 +148,23 @@ function updateOutput() {
   var hasError = false;
 
   // render VCR controls:
-  var totalInstrs = curTrace.length;
-  $("#vcrControls #curInstr").html(curInstr + 1);
-  $("#vcrControls #totalInstrs").html(totalInstrs);
+  var totalInstrs = curTrace.length
+  var vcr = $(vcrControlsDiv);
+  vcr.find("#curInstr").html(curInstr + 1);
+  vcr.find("#totalInstrs").html(totalInstrs);
 
-  $("#vcrControls #jmpFirstInstr").attr("disabled", false);
-  $("#vcrControls #jmpStepBack").attr("disabled", false);
-  $("#vcrControls #jmpStepFwd").attr("disabled", false);
-  $("#vcrControls #jmpLastInstr").attr("disabled", false);
+  vcr.find("#jmpFirstInstr").attr("disabled", false);
+  vcr.find("#jmpStepBack").attr("disabled", false);
+  vcr.find("#jmpStepFwd").attr("disabled", false);
+  vcr.find("#jmpLastInstr").attr("disabled", false);
 
   if (curInstr == 0) {
-    $("#vcrControls #jmpFirstInstr").attr("disabled", true);
-    $("#vcrControls #jmpStepBack").attr("disabled", true);
+    vcr.find("#jmpFirstInstr").attr("disabled", true);
+    vcr.find("#jmpStepBack").attr("disabled", true);
   }
   if (curInstr == (totalInstrs - 1)) {
-    $("#vcrControls #jmpLastInstr").attr("disabled", true);
-    $("#vcrControls #jmpStepFwd").attr("disabled", true);
+    vcr.find("#jmpLastInstr").attr("disabled", true);
+    vcr.find("#jmpStepFwd").attr("disabled", true);
   }
 
 
@@ -162,24 +174,24 @@ function updateOutput() {
     assert(curEntry.exception_msg);
 
     if (curEntry.exception_msg == "Unknown error") {
-      $("#errorOutput").html('Unknown error: <a id="editCodeLinkOnError" href="#">view code</a> and please<br/>email as a bug report to philip@pgbovine.net');
+      $(errorOutputElement).html('Unknown error: <a id="editCodeLinkOnError" href="#">view code</a> and please<br/>email as a bug report to philip@pgbovine.net');
     }
     else {
-      $("#errorOutput").html(htmlspecialchars(curEntry.exception_msg));
+      $(errorOutputElement).html(htmlspecialchars(curEntry.exception_msg));
     }
 
     $("#editCodeLinkOnError").click(function() {
-      $("#pyInputPane").show();
-      $("#pyInputPane").css('border-bottom', '2px dashed #bbbbbb');
+      $(inputPaneElement).show();
+      $(inputPaneElement).css('border-bottom', '2px dashed #bbbbbb');
       return false; // to prevent page reload
     });
 
-    $("#errorOutput").show();
+    $(errorOutputElement).show();
 
     hasError = true;
   }
   else {
-    $("#errorOutput").hide();
+    $(errorOutputElement).hide();
   }
 
 
@@ -200,16 +212,16 @@ function updateOutput() {
   // render stdout:
 
   // keep original horizontal scroll level:
-  var oldLeft = $("#pyStdout").scrollLeft();
-  $("#pyStdout").val(curEntry.stdout);
+  var oldLeft = $(stdOutElement).scrollLeft();
+  $(stdOutElement).val(curEntry.stdout);
 
-  $("#pyStdout").scrollLeft(oldLeft);
+  $(stdOutElement).scrollLeft(oldLeft);
   // scroll to bottom, tho:
-  $("#pyStdout").scrollTop($("#pyStdout").attr('scrollHeight'));
+  $(stdOutElement).scrollTop($(stdOutElement).attr('scrollHeight'));
 
 
   // render data structures:
-  $("#dataViz").html(''); // CLEAR IT!
+  $(dataVisElement).html(''); // CLEAR IT!
 
 
   // render locals on stack:
@@ -218,7 +230,7 @@ function updateOutput() {
       var funcName = htmlspecialchars(frame[0]); // might contain '<' or '>' for weird names like <genexpr>
       var localVars = frame[1];
 
-      $("#dataViz").append('<div class="vizFrame">Local variables for <span style="font-family: Andale mono, monospace;">' + funcName + '</span>:</div>');
+      $(dataVisElement).append('<div class="vizFrame">Local variables for <span style="font-family: Andale mono, monospace;">' + funcName + '</span>:</div>');
 
       // render locals in alphabetical order for tidiness:
       var orderedVarnames = [];
@@ -228,8 +240,8 @@ function updateOutput() {
       orderedVarnames.sort();
 
       if (orderedVarnames.length > 0) {
-        $("#dataViz .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
-        var tbl = $("#pyOutputPane table:last");
+        $(dataVisElement +" .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
+        var tbl = $(outputPaneTable + " table:last");
         $.each(orderedVarnames, function(i, varname) {
           var val = localVars[varname];
           tbl.append('<tr><td class="varname"></td><td class="val"></td></tr>');
@@ -247,7 +259,7 @@ function updateOutput() {
         tbl.find("tr:last").find("td.val").css('border-bottom', '0px');
       }
       else {
-        $("#dataViz .vizFrame:last").append(' <i>none</i>');
+        $(dataVisElement+" .vizFrame:last").append(' <i>none</i>');
       }
     });
   }
@@ -255,7 +267,7 @@ function updateOutput() {
 
   // render globals LAST:
 
-  $("#dataViz").append('<div class="vizFrame">Global variables:</div>');
+  $(dataVisElement).append('<div class="vizFrame">Global variables:</div>');
 
   var nonEmptyGlobals = false;
   var curGlobalFields = {};
@@ -267,7 +279,7 @@ function updateOutput() {
   }
 
   if (nonEmptyGlobals) {
-    $("#dataViz .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
+    $(dataVisElement + " .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
 
     // render all global variables IN THE ORDER they were created by the program,
     // in order to ensure continuity:
@@ -300,7 +312,7 @@ function updateOutput() {
       }
     }
 
-    var tbl = $("#pyOutputPane table:last");
+    var tbl = $(outputPaneTable + " table:last");
 
     // iterate IN ORDER (it's possible that not all vars are in curEntry.globals)
     $.each(orderedGlobals, function(i, varname) {
@@ -317,7 +329,7 @@ function updateOutput() {
     tbl.find("tr:last").find("td.val").css('border-bottom', '0px');
   }
   else {
-    $("#dataViz .vizFrame:last").append(' <i>none</i>');
+    $(dataVisElement + " .vizFrame:last").append(' <i>none</i>');
   }
 
 }
@@ -571,27 +583,23 @@ function renderPyCodeOutput(codeStr) {
 
 $(document).ready(function() {
 
-  $("#pyOutputPane").hide();
-
-  $("#executeBtn").attr('disabled', false);
-
-  $("#pyInput").tabby(); // recognize TAB and SHIFT-TAB
+  $(inputTextArea).tabby(); // recognize TAB and SHIFT-TAB
 
   // disable autogrow for simplicity
   //$("#pyInput").autogrow();
 
     if (localTesting) {
-      renderPyCodeOutput($("#pyInput").val());
+      renderPyCodeOutput($(inputTextArea).val());
 
       processTrace(vis_trace_data);
 
-      $("#pyInputPane").hide();
-      $("#pyOutputPane").show();
+      $(inputPaneElement).hide();
+      $(outputPaneTable).show();
     }
 
   $("#editCodeLink").click(function() {
-    $("#pyInputPane").show();
-    $("#pyInputPane").css('border-bottom', '2px dashed #bbbbbb');
+    $(inputPaneElement).show();
+    $(inputPaneElement).css('border-bottom', '2px dashed #bbbbbb');
     return false; // to prevent page reload
   });
 
