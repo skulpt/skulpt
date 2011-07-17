@@ -31,17 +31,46 @@ if (! PythonTutor) {
 
 (function ()  {
 
-    function Visualizer(options) {
+    function Visualizer(source_code, trace_data, divid) {
         this.stdOutElement = "#pyStdout";
         this.warnOutElement = "#warningOutput";
         this.errorOutputElement = "#errorOutput";
-        this.inputPaneElement = "#pyInputPane";
-        this.inputTextArea = "#pyInput";
         this.vcrControlsDiv = "#vcrControls";
         this.dataVisElement = "#dataViz";
         this.outputPaneTable = "#pyOutputPane";
         this.curTrace = null;
         this.curInstr = 0;
+
+        this.renderPyCodeOutput(source_code);
+
+        this.processTrace(trace_data);
+
+        $(this.outputPaneTable).show();
+
+        var myvis = this;
+        $("#jmpFirstInstr").click(function() {
+            myvis.curInstr = 0;
+            myvis.updateOutput();
+        });
+
+        $("#jmpLastInstr").click(function() {
+            myvis.curInstr = myvis.curTrace.length - 1;
+            myvis.updateOutput();
+        });
+
+        $("#jmpStepBack").click(function() {
+            if (myvis.curInstr > 0) {
+                myvis.curInstr -= 1;
+                myvis.updateOutput();
+            }
+        });
+
+        $("#jmpStepFwd").click(function() {
+            if (myvis.curInstr < myvis.curTrace.length - 1) {
+                myvis.curInstr += 1;
+                myvis.updateOutput();
+            }
+        });
 
     }
 
@@ -160,11 +189,6 @@ if (! PythonTutor) {
                 $(this.errorOutputElement).html(htmlspecialchars(curEntry.exception_msg));
             }
 
-            $("#editCodeLinkOnError").click(function() {
-                $(this.inputPaneElement).show();
-                $(this.inputPaneElement).css('border-bottom', '2px dashed #bbbbbb');
-                return false; // to prevent page reload
-            });
 
             $(this.errorOutputElement).show();
 
@@ -593,41 +617,4 @@ function htmlspecialchars(str) {
   return str;
 }
 
-$(document).ready(function() {
-
-    myvis = new PythonTutor.Visualizer();
-
-    myvis.renderPyCodeOutput($(myvis.inputTextArea).val());
-
-    myvis.processTrace(vis_trace_data);
-
-    $(myvis.inputPaneElement).hide();
-    $(myvis.outputPaneTable).show();
-
-
-  $("#jmpFirstInstr").click(function() {
-    myvis.curInstr = 0;
-    myvis.updateOutput();
-  });
-
-  $("#jmpLastInstr").click(function() {
-    myvis.curInstr = myvis.curTrace.length - 1;
-    myvis.updateOutput();
-  });
-
-  $("#jmpStepBack").click(function() {
-    if (myvis.curInstr > 0) {
-      myvis.curInstr -= 1;
-      myvis.updateOutput();
-    }
-  });
-
-  $("#jmpStepFwd").click(function() {
-    if (myvis.curInstr < myvis.curTrace.length - 1) {
-      myvis.curInstr += 1;
-      myvis.updateOutput();
-    }
-  });
-
-});
 
