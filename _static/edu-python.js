@@ -23,30 +23,551 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // back-end with a string representing the user's script POST['user_script']
 // and receives a complete execution trace, which it parses and displays to HTML.
 
+var PythonTutor;
 
-var localTesting = true; // if this is true, mock-data.js had also better be included
+if (! PythonTutor) {
+    PythonTutor = {};
+}
+
+(function ()  {
+
+    function Visualizer(options) {
+        this.stdOutElement = "#pyStdout";
+        this.warnOutElement = "#warningOutput";
+        this.errorOutputElement = "#errorOutput";
+        this.inputPaneElement = "#pyInputPane";
+        this.inputTextArea = "#pyInput";
+        this.vcrControlsDiv = "#vcrControls";
+        this.dataVisElement = "#dataViz";
+        this.outputPaneTable = "#pyOutputPane";
+        this.curTrace = null;
+        this.curInstr = 0;
+
+    }
 
 
-/* colors - see edu-python.css */
-var lightYellow = '#F5F798';
-var lightLineColor = '#FFFFCC';
-var errorColor = '#F87D76';
-var visitedLineColor = '#3D58A2';
 
-// ugh globals!
-var curTrace = null;
-var curInstr = 0;
+    Visualizer.prototype.processTrace = function(traceData) {
+        this.curTrace = traceData;
+        this.curInstr = 0;
 
-// all of these should be stored somewhere so that they can be customized for
-// each use of the visualizer on a page.
-var stdOutElement = "#pyStdout";
-var warnOutElement = "#warningOutput";
-var errorOutputElement = "#errorOutput";
-var inputPaneElement = "#pyInputPane";
-var inputTextArea = "#pyInput";
-var vcrControlsDiv = "#vcrControls";
-var dataVisElement = "#dataViz";
-var outputPaneTable = "#pyOutputPane";
+        // delete all stale output
+        $(this.warnOutElement).html('');
+        $(this.stdOutElement).val('');
+
+        if (this.curTrace.length > 0) {
+            var lastEntry = this.curTrace[this.curTrace.length - 1];
+
+            // if there is some sort of error, then JUMP to it so that we can
+            // immediately alert the user:
+            // (cgi-bin/pg_logger.py ensures that if there is an uncaught
+            //  exception, then that exception event will be the FINAL
+            //  entry in this.curTrace.  a caught exception will appear somewhere in
+            //  the MIDDLE of this.curTrace)
+            //
+            // on second thought, let's hold off on that for now
+
+            /*
+             if (lastEntry.event == 'exception' ||
+             lastEntry.event == 'uncaught_exception') {
+             // updateOutput should take care of the rest ...
+             curInstr = this.curTrace.length - 1;
+             }
+             */
+            if (lastEntry.event == 'instruction_limit_reached') {
+                this.curTrace.pop() // kill last entry
+                var warningMsg = lastEntry.exception_msg;
+                $(this.warnOutElement).html(htmlspecialchars(warningMsg));
+            }
+            // as imran suggests, for a (non-error) one-liner, SNIP off the
+            // first instruction so that we start after the FIRST instruction
+            // has been executed ...
+            else if (this.curTrace.length == 2) {
+                this.curTrace.shift();
+            }
+        }
+
+        this.updateOutput();
+    }
+
+    Visualizer.prototype.highlightCodeLine = function(curLine, visitedLinesSet, hasError) {
+        var tbl = $("table#pyCodeOutput");
+        /* colors - see edu-python.css */
+        var lightYellow = '#F5F798';
+        var lightLineColor = '#FFFFCC';
+        var errorColor = '#F87D76';
+        var visitedLineColor = '#3D58A2';
+
+        // reset then set:
+        tbl.find('td.lineNo').css('color', '');
+        tbl.find('td.lineNo').css('font-weight', '');
+
+        $.each(visitedLinesSet, function(k, v) {
+            tbl.find('td.lineNo:eq(' + (k - 1) + ')').css('color', visitedLineColor);
+            tbl.find('td.lineNo:eq(' + (k - 1) + ')').css('font-weight', 'bold');
+        });
+
+        var lineBgCol = lightLineColor;
+        if (hasError) {
+            lineBgCol = errorColor;
+        }
+
+        tbl.find('td.cod').css('border-bottom', '1px solid #ffffff');
+
+        if (!hasError) {
+            tbl.find('td.cod:eq(' + (curLine - 1) + ')').css('border-bottom', '1px solid #F87D76')
+        }
+
+        tbl.find('td.cod').css('background-color', '');
+        tbl.find('td.cod:eq(' + (curLine - 1) + ')').css('background-color', lineBgCol);
+    }
+
+// relies on this.curTrace and curInstr globals
+    Visualizer.prototype.updateOutput = function() {
+        var curEntry = this.curTrace[this.curInstr];
+        var hasError = false;
+
+        // render VCR controls:
+        var totalInstrs = this.curTrace.length
+        var vcr = $(this.vcrControlsDiv);
+        vcr.find("#curInstr").html(this.curInstr + 1);
+        vcr.find("#totalInstrs").html(totalInstrs);
+
+        vcr.find("#jmpFirstInstr").attr("disabled", false);
+        vcr.find("#jmpStepBack").attr("disabled", false);
+        vcr.find("#jmpStepFwd").attr("disabled", false);
+        vcr.find("#jmpLastInstr").attr("disabled", false);
+
+        if (this.curInstr == 0) {
+            vcr.find("#jmpFirstInstr").attr("disabled", true);
+            vcr.find("#jmpStepBack").attr("disabled", true);
+        }
+        if (this.curInstr == (totalInstrs - 1)) {
+            vcr.find("#jmpLastInstr").attr("disabled", true);
+            vcr.find("#jmpStepFwd").attr("disabled", true);
+        }
+
+
+        // render error (if applicable):
+        if (curEntry.event == 'exception' ||
+            curEntry.event == 'uncaught_exception') {
+            assert(curEntry.exception_msg);
+
+            if (curEntry.exception_msg == "Unknown error") {
+                $(this.errorOutputElement).html('Unknown error: <a id="editCodeLinkOnError" href="#">view code</a> and please<br/>email as a bug report to philip@pgbovine.net');
+            }
+            else {
+                $(this.errorOutputElement).html(htmlspecialchars(curEntry.exception_msg));
+            }
+
+            $("#editCodeLinkOnError").click(function() {
+                $(this.inputPaneElement).show();
+                $(this.inputPaneElement).css('border-bottom', '2px dashed #bbbbbb');
+                return false; // to prevent page reload
+            });
+
+            $(this.errorOutputElement).show();
+
+            hasError = true;
+        }
+        else {
+            $(this.errorOutputElement).hide();
+        }
+
+
+        // render code output:
+        if (curEntry.line) {
+            // calculate all lines that have been 'visited'
+            // by execution up to (but NOT INCLUDING) curInstr:
+            var visitedLinesSet = {}
+            for (var i = 0; i < this.curInstr; i++) {
+                if (this.curTrace[i].line) {
+                    visitedLinesSet[this.curTrace[i].line] = true;
+                }
+            }
+            this.highlightCodeLine(curEntry.line, visitedLinesSet, hasError);
+        }
+
+
+        // render stdout:
+
+        // keep original horizontal scroll level:
+        var oldLeft = $(this.stdOutElement).scrollLeft();
+        $(this.stdOutElement).val(curEntry.stdout);
+
+        $(this.stdOutElement).scrollLeft(oldLeft);
+        // scroll to bottom, tho:
+        $(this.stdOutElement).scrollTop($(this.stdOutElement).attr('scrollHeight'));
+
+
+        // render data structures:
+        $(this.dataVisElement).html(''); // CLEAR IT!
+
+
+        // render locals on stack:
+        if (curEntry.stack_locals != undefined) {
+            $.each(curEntry.stack_locals, function (i, frame) {
+                var funcName = htmlspecialchars(frame[0]); // might contain '<' or '>' for weird names like <genexpr>
+                var localVars = frame[1];
+
+                $(this.dataVisElement).append('<div class="vizFrame">Local variables for <span style="font-family: Andale mono, monospace;">' + funcName + '</span>:</div>');
+
+                // render locals in alphabetical order for tidiness:
+                var orderedVarnames = [];
+                $.each(localVars, function(varname, val) {
+                    orderedVarnames.push(varname);
+                });
+                orderedVarnames.sort();
+
+                if (orderedVarnames.length > 0) {
+                    $(this.dataVisElement + " .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
+                    var tbl = $(this.outputPaneTable + " table:last");
+                    $.each(orderedVarnames, function(i, varname) {
+                        var val = localVars[varname];
+                        tbl.append('<tr><td class="varname"></td><td class="val"></td></tr>');
+                        var curTr = tbl.find('tr:last');
+                        if (varname == '__return__') {
+                            curTr.find("td.varname").html('<span style="font-size: 10pt; font-style: italic;">return value</span>');
+                        }
+                        else {
+                            curTr.find("td.varname").html(varname);
+                        }
+                        this.renderData(val, curTr.find("td.val"));
+                    });
+
+                    tbl.find("tr:last").find("td.varname").css('border-bottom', '0px');
+                    tbl.find("tr:last").find("td.val").css('border-bottom', '0px');
+                }
+                else {
+                    $(this.dataVisElement + " .vizFrame:last").append(' <i>none</i>');
+                }
+            });
+        }
+
+
+        // render globals LAST:
+
+        $(this.dataVisElement).append('<div class="vizFrame">Global variables:</div>');
+
+        var nonEmptyGlobals = false;
+        var curGlobalFields = {};
+        if (curEntry.globals != undefined) {
+            $.each(curEntry.globals, function(varname, val) {
+                curGlobalFields[varname] = true;
+                nonEmptyGlobals = true;
+            });
+        }
+
+        if (nonEmptyGlobals) {
+            $(this.dataVisElement + " .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
+
+            // render all global variables IN THE ORDER they were created by the program,
+            // in order to ensure continuity:
+            var orderedGlobals = []
+
+            // iterating over ALL instructions (could be SLOW if not for our optimization below)
+            for (var i = 0; i <= this.curInstr; i++) {
+                // some entries (like for exceptions) don't have GLOBALS
+                if (this.curTrace[i].globals == undefined) continue;
+
+                $.each(this.curTrace[i].globals, function(varname, val) {
+                    // eliminate duplicates (act as an ordered set)
+                    if ($.inArray(varname, orderedGlobals) == -1) {
+                        orderedGlobals.push(varname);
+                        curGlobalFields[varname] = undefined; // 'unset it'
+                    }
+                });
+
+                var earlyStop = true;
+                // as an optimization, STOP as soon as you've found everything in curGlobalFields:
+                for (o in curGlobalFields) {
+                    if (curGlobalFields[o] != undefined) {
+                        earlyStop = false;
+                        break;
+                    }
+                }
+
+                if (earlyStop) {
+                    break;
+                }
+            }
+
+            var tbl = $(this.outputPaneTable + " table:last");
+            var self = this;
+            // iterate IN ORDER (it's possible that not all vars are in curEntry.globals)
+            $.each(orderedGlobals, function(i, varname) {
+                var val = curEntry.globals[varname];
+                if (val != undefined) { // might not be defined at this line, which is OKAY!
+                    tbl.append('<tr><td class="varname"></td><td class="val"></td></tr>');
+                    var curTr = tbl.find('tr:last');
+                    curTr.find("td.varname").html(varname);
+                    self.renderData(val, curTr.find("td.val"));
+                }
+            });
+
+            tbl.find("tr:last").find("td.varname").css('border-bottom', '0px');
+            tbl.find("tr:last").find("td.val").css('border-bottom', '0px');
+        }
+        else {
+            $(this.dataVisElement + " .vizFrame:last").append(' <i>none</i>');
+        }
+
+    }
+
+// render the JS data object obj inside of jDomElt,
+// which is a jQuery wrapped DOM object
+// (obj is in a format encoded by cgi-bin/pg_encoder.py)
+    Visualizer.prototype.renderData = function(obj, jDomElt) {
+        // dispatch on types:
+        var typ = typeof obj;
+
+        if (obj == null) {
+            jDomElt.append('<span class="nullObj">None</span>');
+        }
+        else if (typ == "number") {
+            jDomElt.append('<span class="numberObj">' + obj + '</span>');
+        }
+        else if (typ == "boolean") {
+            if (obj) {
+                jDomElt.append('<span class="boolObj">True</span>');
+            }
+            else {
+                jDomElt.append('<span class="boolObj">False</span>');
+            }
+        }
+        else if (typ == "string") {
+            // escape using htmlspecialchars to prevent HTML/script injection
+            // print as a JSON literal
+            var literalStr = htmlspecialchars(obj);
+            literalStr = literalStr.replace('\"', '\\"');
+            literalStr = '"' + literalStr + '"';
+            jDomElt.append('<span class="stringObj">' + literalStr + '</span>');
+        }
+        else if (typ == "object") {
+            assert($.isArray(obj));
+
+            if (obj[0] == 'LIST') {
+                assert(obj.length >= 2);
+                if (obj.length == 2) {
+                    jDomElt.append('<div class="typeLabel">empty list (id=' + obj[1] + ')</div>');
+                }
+                else {
+                    jDomElt.append('<div class="typeLabel">list (id=' + obj[1] + '):</div>');
+                    jDomElt.append('<table class="listTbl"><tr></tr><tr></tr></table>');
+                    var tbl = jDomElt.children('table');
+                    var headerTr = tbl.find('tr:first');
+                    var contentTr = tbl.find('tr:last');
+                    var self = this;
+                    jQuery.each(obj, function(ind, val) {
+                        if (ind < 2) return; // skip 'LIST' tag and ID entry
+
+                        // add a new column and then pass in that newly-added column
+                        // as jDomElt to the recursive call to child:
+                        headerTr.append('<td class="listHeader"></td>');
+                        headerTr.find('td:last').append(ind - 2);
+
+                        contentTr.append('<td class="listElt"></td>');
+                        self.renderData(val, contentTr.find('td:last'));
+                    });
+                }
+            }
+            else if (obj[0] == 'TUPLE') {
+                assert(obj.length >= 2);
+                if (obj.length == 2) {
+                    jDomElt.append('<div class="typeLabel">empty tuple (id=' + obj[1] + ')</div>');
+                }
+                else {
+                    jDomElt.append('<div class="typeLabel">tuple (id=' + obj[1] + '):</div>');
+                    jDomElt.append('<table class="tupleTbl"><tr></tr><tr></tr></table>');
+                    var tbl = jDomElt.children('table');
+                    var headerTr = tbl.find('tr:first');
+                    var contentTr = tbl.find('tr:last');
+                    var self = this;
+                    jQuery.each(obj, function(ind, val) {
+                        if (ind < 2) return; // skip 'TUPLE' tag and ID entry
+
+                        // add a new column and then pass in that newly-added column
+                        // as jDomElt to the recursive call to child:
+                        headerTr.append('<td class="tupleHeader"></td>');
+                        headerTr.find('td:last').append(ind - 2);
+
+                        contentTr.append('<td class="tupleElt"></td>');
+                        self.renderData(val, contentTr.find('td:last'));
+                    });
+                }
+            }
+            else if (obj[0] == 'SET') {
+                assert(obj.length >= 2);
+                if (obj.length == 2) {
+                    jDomElt.append('<div class="typeLabel">empty set (id=' + obj[1] + ')</div>');
+                }
+                else {
+                    jDomElt.append('<div class="typeLabel">set (id=' + obj[1] + '):</div>');
+                    jDomElt.append('<table class="setTbl"></table>');
+                    var tbl = jDomElt.children('table');
+                    // create an R x C matrix:
+                    var numElts = obj.length - 2;
+                    // gives roughly a 3x5 rectangular ratio, square is too, err,
+                    // 'square' and boring
+                    var numRows = Math.round(Math.sqrt(numElts));
+                    if (numRows > 3) {
+                        numRows -= 1;
+                    }
+
+                    var numCols = Math.round(numElts / numRows);
+                    // round up if not a perfect multiple:
+                    if (numElts % numRows) {
+                        numCols += 1;
+                    }
+                    var self = this;
+                    jQuery.each(obj, function(ind, val) {
+                        if (ind < 2) return; // skip 'SET' tag and ID entry
+
+                        if (((ind - 2) % numCols) == 0) {
+                            tbl.append('<tr></tr>');
+                        }
+
+                        var curTr = tbl.find('tr:last');
+                        curTr.append('<td class="setElt"></td>');
+                        self.renderData(val, curTr.find('td:last'));
+                    });
+                }
+            }
+            else if (obj[0] == 'DICT') {
+                assert(obj.length >= 2);
+                if (obj.length == 2) {
+                    jDomElt.append('<div class="typeLabel">empty dict (id=' + obj[1] + ')</div>');
+                }
+                else {
+                    jDomElt.append('<div class="typeLabel">dict (id=' + obj[1] + '):</div>');
+                    jDomElt.append('<table class="dictTbl"></table>');
+                    var tbl = jDomElt.children('table');
+                    var self = this;
+                    $.each(obj, function(ind, kvPair) {
+                        if (ind < 2) return; // skip 'DICT' tag and ID entry
+
+                        tbl.append('<tr class="dictEntry"><td class="dictKey"></td><td class="dictVal"></td></tr>');
+                        var newRow = tbl.find('tr:last');
+                        var keyTd = newRow.find('td:first');
+                        var valTd = newRow.find('td:last');
+                        self.renderData(kvPair[0], keyTd);
+                        self.renderData(kvPair[1], valTd);
+                    });
+                }
+            }
+            else if (obj[0] == 'INSTANCE') {
+                assert(obj.length >= 3);
+                jDomElt.append('<div class="typeLabel">' + obj[1] + ' instance (id=' + obj[2] + ')</div>');
+
+                if (obj.length > 3) {
+                    jDomElt.append('<table class="instTbl"></table>');
+                    var tbl = jDomElt.children('table');
+                    var self = this;
+                    $.each(obj, function(ind, kvPair) {
+                        if (ind < 3) return; // skip type tag, class name, and ID entry
+
+                        tbl.append('<tr class="instEntry"><td class="instKey"></td><td class="instVal"></td></tr>');
+                        var newRow = tbl.find('tr:last');
+                        var keyTd = newRow.find('td:first');
+                        var valTd = newRow.find('td:last');
+
+                        // the keys should always be strings, so render them directly (and without quotes):
+                        assert(typeof kvPair[0] == "string");
+                        var attrnameStr = htmlspecialchars(kvPair[0]);
+                        keyTd.append('<span class="stringObj">' + attrnameStr + '</span>');
+
+                        // values can be arbitrary objects, so recurse:
+                        self.renderData(kvPair[1], valTd);
+                    });
+                }
+            }
+            else if (obj[0] == 'CLASS') {
+                assert(obj.length >= 4);
+                var superclassStr = '';
+                if (obj[3].length > 0) {
+                    superclassStr += ('[extends ' + obj[3].join(',') + '] ');
+                }
+
+                jDomElt.append('<div class="typeLabel">' + obj[1] + ' class ' + superclassStr + '(id=' + obj[2] + ')</div>');
+
+                if (obj.length > 4) {
+                    jDomElt.append('<table class="classTbl"></table>');
+                    var tbl = jDomElt.children('table');
+                    var self = this;
+                    $.each(obj, function(ind, kvPair) {
+                        if (ind < 4) return; // skip type tag, class name, ID, and superclasses entries
+
+                        tbl.append('<tr class="classEntry"><td class="classKey"></td><td class="classVal"></td></tr>');
+                        var newRow = tbl.find('tr:last');
+                        var keyTd = newRow.find('td:first');
+                        var valTd = newRow.find('td:last');
+
+                        // the keys should always be strings, so render them directly (and without quotes):
+                        assert(typeof kvPair[0] == "string");
+                        var attrnameStr = htmlspecialchars(kvPair[0]);
+                        keyTd.append('<span class="stringObj">' + attrnameStr + '</span>');
+
+                        // values can be arbitrary objects, so recurse:
+                        self.renderData(kvPair[1], valTd);
+                    });
+                }
+            }
+
+            else if (obj[0] == 'CIRCULAR_REF') {
+                assert(obj.length == 2);
+                jDomElt.append('<div class="circRefLabel">circular reference to id=' + obj[1] + '</div>');
+            }
+            else {
+                // render custom data type
+                assert(obj.length == 3);
+                typeName = obj[0];
+                id = obj[1];
+                strRepr = obj[2];
+
+                // if obj[2] is like '<generator object <genexpr> at 0x84760>',
+                // then display an abbreviated version rather than the gory details
+                noStrReprRE = /<.* at 0x.*>/;
+                if (noStrReprRE.test(strRepr)) {
+                    jDomElt.append('<span class="customObj">' + typeName + ' (id=' + id + ')</span>');
+                }
+                else {
+                    strRepr = htmlspecialchars(strRepr); // escape strings!
+
+                    // warning: we're overloading tuple elts for custom data types
+                    jDomElt.append('<div class="typeLabel">' + typeName + ' (id=' + id + '):</div>');
+                    jDomElt.append('<table class="tupleTbl"><tr><td class="tupleElt">' + strRepr + '</td></tr></table>');
+                }
+            }
+        }
+        else {
+            alert("Error: renderData FAIL!");
+        }
+    }
+
+
+    Visualizer.prototype.renderPyCodeOutput = function(codeStr) {
+        var tbl = $("#pyCodeOutput");
+        tbl.html('');
+        var lines = codeStr.rtrim().split('\n');
+
+        $.each(lines, function(i, cod) {
+            var lineNo = i + 1;
+            var htmlCod = htmlspecialchars(cod);
+
+            tbl.append('<tr><td class="lineNo"></td><td class="cod"></td></tr>');
+            var curRow = tbl.find('tr:last');
+            curRow.find('td.lineNo').html(lineNo);
+            curRow.find('td.cod').html(htmlCod);
+        });
+
+    }
+
+    PythonTutor.Visualizer = Visualizer;
+})();
+
+String.prototype.rtrim = function() {
+  return this.replace(/\s*$/g, "");
+}
 
 function assert(cond) {
   if (!cond) {
@@ -72,559 +593,39 @@ function htmlspecialchars(str) {
   return str;
 }
 
-function processTrace(traceData) {
-  curTrace = traceData;
-  curInstr = 0;
-
-  // delete all stale output
-  $(warnOutElement).html('');
-  $(stdOutElement).val('');
-
-  if (curTrace.length > 0) {
-    var lastEntry = curTrace[curTrace.length - 1];
-
-    // if there is some sort of error, then JUMP to it so that we can
-    // immediately alert the user:
-    // (cgi-bin/pg_logger.py ensures that if there is an uncaught
-    //  exception, then that exception event will be the FINAL
-    //  entry in curTrace.  a caught exception will appear somewhere in
-    //  the MIDDLE of curTrace)
-    //
-    // on second thought, let's hold off on that for now
-
-    /*
-    if (lastEntry.event == 'exception' ||
-        lastEntry.event == 'uncaught_exception') {
-      // updateOutput should take care of the rest ...
-      curInstr = curTrace.length - 1;
-    }
-    */
-    if (lastEntry.event == 'instruction_limit_reached') {
-      curTrace.pop() // kill last entry
-      var warningMsg = lastEntry.exception_msg;
-      $(warnOutElement).html(htmlspecialchars(warningMsg));
-    }
-    // as imran suggests, for a (non-error) one-liner, SNIP off the
-    // first instruction so that we start after the FIRST instruction
-    // has been executed ...
-    else if (curTrace.length == 2) {
-      curTrace.shift();
-    }
-  }
-
-  updateOutput();
-}
-
-function highlightCodeLine(curLine, visitedLinesSet, hasError) {
-  var tbl = $("table#pyCodeOutput");
-
-  // reset then set:
-  tbl.find('td.lineNo').css('color', '');
-  tbl.find('td.lineNo').css('font-weight', '');
-
-  $.each(visitedLinesSet, function(k, v) {
-    tbl.find('td.lineNo:eq(' + (k - 1) + ')').css('color', visitedLineColor);
-    tbl.find('td.lineNo:eq(' + (k - 1) + ')').css('font-weight', 'bold');
-  });
-
-  var lineBgCol = lightLineColor;
-  if (hasError) {
-    lineBgCol = errorColor;
-  }
-
-  tbl.find('td.cod').css('border-bottom', '1px solid #ffffff');
-
-  if (!hasError) {
-    tbl.find('td.cod:eq(' + (curLine - 1) + ')').css('border-bottom', '1px solid #F87D76')
-  }
-
-  tbl.find('td.cod').css('background-color', '');
-  tbl.find('td.cod:eq(' + (curLine - 1) + ')').css('background-color', lineBgCol);
-}
-
-// relies on curTrace and curInstr globals
-function updateOutput() {
-  var curEntry = curTrace[curInstr];
-  var hasError = false;
-
-  // render VCR controls:
-  var totalInstrs = curTrace.length
-  var vcr = $(vcrControlsDiv);
-  vcr.find("#curInstr").html(curInstr + 1);
-  vcr.find("#totalInstrs").html(totalInstrs);
-
-  vcr.find("#jmpFirstInstr").attr("disabled", false);
-  vcr.find("#jmpStepBack").attr("disabled", false);
-  vcr.find("#jmpStepFwd").attr("disabled", false);
-  vcr.find("#jmpLastInstr").attr("disabled", false);
-
-  if (curInstr == 0) {
-    vcr.find("#jmpFirstInstr").attr("disabled", true);
-    vcr.find("#jmpStepBack").attr("disabled", true);
-  }
-  if (curInstr == (totalInstrs - 1)) {
-    vcr.find("#jmpLastInstr").attr("disabled", true);
-    vcr.find("#jmpStepFwd").attr("disabled", true);
-  }
-
-
-  // render error (if applicable):
-  if (curEntry.event == 'exception' ||
-      curEntry.event == 'uncaught_exception') {
-    assert(curEntry.exception_msg);
-
-    if (curEntry.exception_msg == "Unknown error") {
-      $(errorOutputElement).html('Unknown error: <a id="editCodeLinkOnError" href="#">view code</a> and please<br/>email as a bug report to philip@pgbovine.net');
-    }
-    else {
-      $(errorOutputElement).html(htmlspecialchars(curEntry.exception_msg));
-    }
-
-    $("#editCodeLinkOnError").click(function() {
-      $(inputPaneElement).show();
-      $(inputPaneElement).css('border-bottom', '2px dashed #bbbbbb');
-      return false; // to prevent page reload
-    });
-
-    $(errorOutputElement).show();
-
-    hasError = true;
-  }
-  else {
-    $(errorOutputElement).hide();
-  }
-
-
-  // render code output:
-  if (curEntry.line) {
-    // calculate all lines that have been 'visited' 
-    // by execution up to (but NOT INCLUDING) curInstr:
-    var visitedLinesSet = {}
-    for (var i = 0; i < curInstr; i++) {
-      if (curTrace[i].line) {
-        visitedLinesSet[curTrace[i].line] = true;
-      }
-    }
-    highlightCodeLine(curEntry.line, visitedLinesSet, hasError);
-  }
-
-
-  // render stdout:
-
-  // keep original horizontal scroll level:
-  var oldLeft = $(stdOutElement).scrollLeft();
-  $(stdOutElement).val(curEntry.stdout);
-
-  $(stdOutElement).scrollLeft(oldLeft);
-  // scroll to bottom, tho:
-  $(stdOutElement).scrollTop($(stdOutElement).attr('scrollHeight'));
-
-
-  // render data structures:
-  $(dataVisElement).html(''); // CLEAR IT!
-
-
-  // render locals on stack:
-  if (curEntry.stack_locals != undefined) {
-    $.each(curEntry.stack_locals, function (i, frame) {
-      var funcName = htmlspecialchars(frame[0]); // might contain '<' or '>' for weird names like <genexpr>
-      var localVars = frame[1];
-
-      $(dataVisElement).append('<div class="vizFrame">Local variables for <span style="font-family: Andale mono, monospace;">' + funcName + '</span>:</div>');
-
-      // render locals in alphabetical order for tidiness:
-      var orderedVarnames = [];
-      $.each(localVars, function(varname, val) {
-        orderedVarnames.push(varname);
-      });
-      orderedVarnames.sort();
-
-      if (orderedVarnames.length > 0) {
-        $(dataVisElement +" .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
-        var tbl = $(outputPaneTable + " table:last");
-        $.each(orderedVarnames, function(i, varname) {
-          var val = localVars[varname];
-          tbl.append('<tr><td class="varname"></td><td class="val"></td></tr>');
-          var curTr = tbl.find('tr:last');
-          if (varname == '__return__') {
-            curTr.find("td.varname").html('<span style="font-size: 10pt; font-style: italic;">return value</span>');
-          }
-          else {
-            curTr.find("td.varname").html(varname);
-          }
-          renderData(val, curTr.find("td.val"));
-        });
-
-        tbl.find("tr:last").find("td.varname").css('border-bottom', '0px');
-        tbl.find("tr:last").find("td.val").css('border-bottom', '0px');
-      }
-      else {
-        $(dataVisElement+" .vizFrame:last").append(' <i>none</i>');
-      }
-    });
-  }
-
-
-  // render globals LAST:
-
-  $(dataVisElement).append('<div class="vizFrame">Global variables:</div>');
-
-  var nonEmptyGlobals = false;
-  var curGlobalFields = {};
-  if (curEntry.globals != undefined) {
-    $.each(curEntry.globals, function(varname, val) {
-      curGlobalFields[varname] = true;
-      nonEmptyGlobals = true;
-    });
-  }
-
-  if (nonEmptyGlobals) {
-    $(dataVisElement + " .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
-
-    // render all global variables IN THE ORDER they were created by the program,
-    // in order to ensure continuity:
-    var orderedGlobals = []
-
-    // iterating over ALL instructions (could be SLOW if not for our optimization below)
-    for (var i = 0; i <= curInstr; i++) {
-      // some entries (like for exceptions) don't have GLOBALS
-      if (curTrace[i].globals == undefined) continue;
-
-      $.each(curTrace[i].globals, function(varname, val) {
-        // eliminate duplicates (act as an ordered set)
-        if ($.inArray(varname, orderedGlobals) == -1) {
-          orderedGlobals.push(varname);
-          curGlobalFields[varname] = undefined; // 'unset it'
-        }
-      });
-
-      var earlyStop = true;
-      // as an optimization, STOP as soon as you've found everything in curGlobalFields:
-      for (o in curGlobalFields) {
-        if (curGlobalFields[o] != undefined) {
-          earlyStop = false;
-          break;
-        }
-      }
-
-      if (earlyStop) {
-        break;
-      }
-    }
-
-    var tbl = $(outputPaneTable + " table:last");
-
-    // iterate IN ORDER (it's possible that not all vars are in curEntry.globals)
-    $.each(orderedGlobals, function(i, varname) {
-      var val = curEntry.globals[varname];
-      if (val != undefined) { // might not be defined at this line, which is OKAY!
-        tbl.append('<tr><td class="varname"></td><td class="val"></td></tr>');
-        var curTr = tbl.find('tr:last');
-        curTr.find("td.varname").html(varname);
-        renderData(val, curTr.find("td.val"));
-      }
-    });
-
-    tbl.find("tr:last").find("td.varname").css('border-bottom', '0px');
-    tbl.find("tr:last").find("td.val").css('border-bottom', '0px');
-  }
-  else {
-    $(dataVisElement + " .vizFrame:last").append(' <i>none</i>');
-  }
-
-}
-
-// render the JS data object obj inside of jDomElt,
-// which is a jQuery wrapped DOM object
-// (obj is in a format encoded by cgi-bin/pg_encoder.py)
-function renderData(obj, jDomElt) {
-  // dispatch on types:
-  var typ = typeof obj;
-
-  if (obj == null) {
-    jDomElt.append('<span class="nullObj">None</span>');
-  }
-  else if (typ == "number") {
-    jDomElt.append('<span class="numberObj">' + obj + '</span>');
-  }
-  else if (typ == "boolean") {
-    if (obj) {
-      jDomElt.append('<span class="boolObj">True</span>');
-    }
-    else {
-      jDomElt.append('<span class="boolObj">False</span>');
-    }
-  }
-  else if (typ == "string") {
-    // escape using htmlspecialchars to prevent HTML/script injection
-    // print as a JSON literal
-    var literalStr = htmlspecialchars(obj);
-    literalStr = literalStr.replace('\"', '\\"');
-    literalStr = '"' + literalStr + '"';
-    jDomElt.append('<span class="stringObj">' + literalStr + '</span>');
-  }
-  else if (typ == "object") {
-    assert($.isArray(obj));
-
-    if (obj[0] == 'LIST') {
-      assert(obj.length >= 2);
-      if (obj.length == 2) {
-        jDomElt.append('<div class="typeLabel">empty list (id=' + obj[1] + ')</div>');
-      }
-      else {
-        jDomElt.append('<div class="typeLabel">list (id=' + obj[1] + '):</div>');
-        jDomElt.append('<table class="listTbl"><tr></tr><tr></tr></table>');
-        var tbl = jDomElt.children('table');
-        var headerTr = tbl.find('tr:first');
-        var contentTr = tbl.find('tr:last');
-        jQuery.each(obj, function(ind, val) {
-          if (ind < 2) return; // skip 'LIST' tag and ID entry
-
-          // add a new column and then pass in that newly-added column
-          // as jDomElt to the recursive call to child:
-          headerTr.append('<td class="listHeader"></td>');
-          headerTr.find('td:last').append(ind - 2);
-
-          contentTr.append('<td class="listElt"></td>');
-          renderData(val, contentTr.find('td:last'));
-        });
-      }
-    }
-    else if (obj[0] == 'TUPLE') {
-      assert(obj.length >= 2);
-      if (obj.length == 2) {
-        jDomElt.append('<div class="typeLabel">empty tuple (id=' + obj[1] + ')</div>');
-      }
-      else {
-        jDomElt.append('<div class="typeLabel">tuple (id=' + obj[1] + '):</div>');
-        jDomElt.append('<table class="tupleTbl"><tr></tr><tr></tr></table>');
-        var tbl = jDomElt.children('table');
-        var headerTr = tbl.find('tr:first');
-        var contentTr = tbl.find('tr:last');
-        jQuery.each(obj, function(ind, val) {
-          if (ind < 2) return; // skip 'TUPLE' tag and ID entry
-
-          // add a new column and then pass in that newly-added column
-          // as jDomElt to the recursive call to child:
-          headerTr.append('<td class="tupleHeader"></td>');
-          headerTr.find('td:last').append(ind - 2);
-
-          contentTr.append('<td class="tupleElt"></td>');
-          renderData(val, contentTr.find('td:last'));
-        });
-      }
-    }
-    else if (obj[0] == 'SET') {
-      assert(obj.length >= 2);
-      if (obj.length == 2) {
-        jDomElt.append('<div class="typeLabel">empty set (id=' + obj[1] + ')</div>');
-      }
-      else {
-        jDomElt.append('<div class="typeLabel">set (id=' + obj[1] + '):</div>');
-        jDomElt.append('<table class="setTbl"></table>');
-        var tbl = jDomElt.children('table');
-        // create an R x C matrix:
-        var numElts = obj.length - 2;
-        // gives roughly a 3x5 rectangular ratio, square is too, err,
-        // 'square' and boring
-        var numRows = Math.round(Math.sqrt(numElts));
-        if (numRows > 3) {
-          numRows -= 1;
-        }
-
-        var numCols = Math.round(numElts / numRows);
-        // round up if not a perfect multiple:
-        if (numElts % numRows) {
-          numCols += 1;
-        }
-
-        jQuery.each(obj, function(ind, val) {
-          if (ind < 2) return; // skip 'SET' tag and ID entry
-
-          if (((ind - 2) % numCols) == 0) {
-            tbl.append('<tr></tr>');
-          }
-
-          var curTr = tbl.find('tr:last');
-          curTr.append('<td class="setElt"></td>');
-          renderData(val, curTr.find('td:last'));
-        });
-      }
-    }
-    else if (obj[0] == 'DICT') {
-      assert(obj.length >= 2);
-      if (obj.length == 2) {
-        jDomElt.append('<div class="typeLabel">empty dict (id=' + obj[1] + ')</div>');
-      }
-      else {
-        jDomElt.append('<div class="typeLabel">dict (id=' + obj[1] + '):</div>');
-        jDomElt.append('<table class="dictTbl"></table>');
-        var tbl = jDomElt.children('table');
-        $.each(obj, function(ind, kvPair) {
-          if (ind < 2) return; // skip 'DICT' tag and ID entry
-
-          tbl.append('<tr class="dictEntry"><td class="dictKey"></td><td class="dictVal"></td></tr>');
-          var newRow = tbl.find('tr:last');
-          var keyTd = newRow.find('td:first');
-          var valTd = newRow.find('td:last');
-          renderData(kvPair[0], keyTd);
-          renderData(kvPair[1], valTd);
-        });
-      }
-    }
-    else if (obj[0] == 'INSTANCE') {
-      assert(obj.length >= 3);
-      jDomElt.append('<div class="typeLabel">' + obj[1] + ' instance (id=' + obj[2] + ')</div>');
-
-      if (obj.length > 3) {
-        jDomElt.append('<table class="instTbl"></table>');
-        var tbl = jDomElt.children('table');
-        $.each(obj, function(ind, kvPair) {
-          if (ind < 3) return; // skip type tag, class name, and ID entry
-
-          tbl.append('<tr class="instEntry"><td class="instKey"></td><td class="instVal"></td></tr>');
-          var newRow = tbl.find('tr:last');
-          var keyTd = newRow.find('td:first');
-          var valTd = newRow.find('td:last');
-
-          // the keys should always be strings, so render them directly (and without quotes):
-          assert(typeof kvPair[0] == "string");
-          var attrnameStr = htmlspecialchars(kvPair[0]);
-          keyTd.append('<span class="stringObj">' + attrnameStr + '</span>');
-
-          // values can be arbitrary objects, so recurse:
-          renderData(kvPair[1], valTd);
-        });
-      }
-    }
-    else if (obj[0] == 'CLASS') {
-      assert(obj.length >= 4);
-      var superclassStr = '';
-      if (obj[3].length > 0) {
-        superclassStr += ('[extends ' + obj[3].join(',') + '] ');
-      }
-
-      jDomElt.append('<div class="typeLabel">' + obj[1] + ' class ' + superclassStr + '(id=' + obj[2] + ')</div>');
-
-      if (obj.length > 4) {
-        jDomElt.append('<table class="classTbl"></table>');
-        var tbl = jDomElt.children('table');
-        $.each(obj, function(ind, kvPair) {
-          if (ind < 4) return; // skip type tag, class name, ID, and superclasses entries
-
-          tbl.append('<tr class="classEntry"><td class="classKey"></td><td class="classVal"></td></tr>');
-          var newRow = tbl.find('tr:last');
-          var keyTd = newRow.find('td:first');
-          var valTd = newRow.find('td:last');
-
-          // the keys should always be strings, so render them directly (and without quotes):
-          assert(typeof kvPair[0] == "string");
-          var attrnameStr = htmlspecialchars(kvPair[0]);
-          keyTd.append('<span class="stringObj">' + attrnameStr + '</span>');
-
-          // values can be arbitrary objects, so recurse:
-          renderData(kvPair[1], valTd);
-        });
-      }
-    }
-
-    else if (obj[0] == 'CIRCULAR_REF') {
-      assert(obj.length == 2);
-      jDomElt.append('<div class="circRefLabel">circular reference to id=' + obj[1] + '</div>');
-    }
-    else {
-      // render custom data type
-      assert(obj.length == 3);
-      typeName = obj[0];
-      id = obj[1];
-      strRepr = obj[2];
-
-      // if obj[2] is like '<generator object <genexpr> at 0x84760>',
-      // then display an abbreviated version rather than the gory details
-      noStrReprRE = /<.* at 0x.*>/;
-      if (noStrReprRE.test(strRepr)) {
-        jDomElt.append('<span class="customObj">' + typeName + ' (id=' + id + ')</span>');
-      }
-      else {
-        strRepr = htmlspecialchars(strRepr); // escape strings!
-
-        // warning: we're overloading tuple elts for custom data types
-        jDomElt.append('<div class="typeLabel">' + typeName + ' (id=' + id + '):</div>');
-        jDomElt.append('<table class="tupleTbl"><tr><td class="tupleElt">' + strRepr + '</td></tr></table>');
-      }
-    }
-  }
-  else {
-    alert("Error: renderData FAIL!");
-  }
-}
-
-
-String.prototype.rtrim = function() {
-  return this.replace(/\s*$/g, "");
-}
-
-function renderPyCodeOutput(codeStr) {
-  var tbl = $("#pyCodeOutput");
-  tbl.html('');
-  var lines = codeStr.rtrim().split('\n');
-
-  $.each(lines, function(i, cod) {
-    var lineNo = i + 1;
-    var htmlCod = htmlspecialchars(cod);
-
-    tbl.append('<tr><td class="lineNo"></td><td class="cod"></td></tr>');
-    var curRow = tbl.find('tr:last');
-    curRow.find('td.lineNo').html(lineNo);
-    curRow.find('td.cod').html(htmlCod);
-  });
-
-}
-
 $(document).ready(function() {
 
-  $(inputTextArea).tabby(); // recognize TAB and SHIFT-TAB
+    myvis = new PythonTutor.Visualizer();
 
-  // disable autogrow for simplicity
-  //$("#pyInput").autogrow();
+    myvis.renderPyCodeOutput($(myvis.inputTextArea).val());
 
-    if (localTesting) {
-      renderPyCodeOutput($(inputTextArea).val());
+    myvis.processTrace(vis_trace_data);
 
-      processTrace(vis_trace_data);
-
-      $(inputPaneElement).hide();
-      $(outputPaneTable).show();
-    }
-
-  $("#editCodeLink").click(function() {
-    $(inputPaneElement).show();
-    $(inputPaneElement).css('border-bottom', '2px dashed #bbbbbb');
-    return false; // to prevent page reload
-  });
+    $(myvis.inputPaneElement).hide();
+    $(myvis.outputPaneTable).show();
 
 
   $("#jmpFirstInstr").click(function() {
-    curInstr = 0;
-    updateOutput();
+    myvis.curInstr = 0;
+    myvis.updateOutput();
   });
 
   $("#jmpLastInstr").click(function() {
-    curInstr = curTrace.length - 1;
-    updateOutput();
+    myvis.curInstr = myvis.curTrace.length - 1;
+    myvis.updateOutput();
   });
 
   $("#jmpStepBack").click(function() {
-    if (curInstr > 0) {
-      curInstr -= 1;
-      updateOutput();
+    if (myvis.curInstr > 0) {
+      myvis.curInstr -= 1;
+      myvis.updateOutput();
     }
   });
 
   $("#jmpStepFwd").click(function() {
-    if (curInstr < curTrace.length - 1) {
-      curInstr += 1;
-      updateOutput();
+    if (myvis.curInstr < myvis.curTrace.length - 1) {
+      myvis.curInstr += 1;
+      myvis.updateOutput();
     }
   });
 
