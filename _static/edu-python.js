@@ -32,14 +32,20 @@ if (! PythonTutor) {
 (function ()  {
 
     function Visualizer(source_code, trace_data, divid) {
-        this.stdOutElement = "#pyStdout";
-        this.warnOutElement = "#warningOutput";
-        this.errorOutputElement = "#errorOutput";
-        this.vcrControlsDiv = "#vcrControls";
-        this.dataVisElement = "#dataViz";
-        this.outputPaneTable = "#pyOutputPane";
+        this.stdOutElement = "#pyStdout_" + divid;
+        this.warnOutElement = "#warningOutput_" + divid;
+        this.errorOutputElement = "#errorOutput_" + divid;
+        this.vcrControlsDiv = "#vcrControls_" + divid;
+        this.dataVisElement = "#dataViz_" + divid;
+        this.outputPaneTable = "#pyOutputPane_" + divid;
+        this.codeOutputTable = "#pyCodeOutput_" + divid;
         this.curTrace = null;
         this.curInstr = 0;
+        this.divid = divid;
+        this.jmpFirstInstr = $("#jmpFirstInstr_"+divid);
+        this.jmpLastInstr = $("#jmpLastInstr_"+divid);
+        this.jmpStepBack = $("#jmpStepBack_"+divid);
+        this.jmpStepFwd = $("#jmpStepFwd_"+divid);
 
         this.renderPyCodeOutput(source_code);
 
@@ -48,24 +54,24 @@ if (! PythonTutor) {
         $(this.outputPaneTable).show();
 
         var myvis = this;
-        $("#jmpFirstInstr").click(function() {
+        this.jmpFirstInstr.click(function() {
             myvis.curInstr = 0;
             myvis.updateOutput();
         });
 
-        $("#jmpLastInstr").click(function() {
+        this.jmpLastInstr.click(function() {
             myvis.curInstr = myvis.curTrace.length - 1;
             myvis.updateOutput();
         });
 
-        $("#jmpStepBack").click(function() {
+        this.jmpStepBack.click(function() {
             if (myvis.curInstr > 0) {
                 myvis.curInstr -= 1;
                 myvis.updateOutput();
             }
         });
 
-        $("#jmpStepFwd").click(function() {
+        this.jmpStepFwd.click(function() {
             if (myvis.curInstr < myvis.curTrace.length - 1) {
                 myvis.curInstr += 1;
                 myvis.updateOutput();
@@ -120,7 +126,7 @@ if (! PythonTutor) {
     }
 
     Visualizer.prototype.highlightCodeLine = function(curLine, visitedLinesSet, hasError) {
-        var tbl = $("table#pyCodeOutput");
+        var tbl = $(this.codeOutputTable);
         /* colors - see edu-python.css */
         var lightYellow = '#F5F798';
         var lightLineColor = '#FFFFCC';
@@ -159,21 +165,21 @@ if (! PythonTutor) {
         // render VCR controls:
         var totalInstrs = this.curTrace.length
         var vcr = $(this.vcrControlsDiv);
-        vcr.find("#curInstr").html(this.curInstr + 1);
-        vcr.find("#totalInstrs").html(totalInstrs);
+        vcr.find("#curInstr_"+this.divid).html(this.curInstr + 1);
+        vcr.find("#totalInstrs_"+this.divid).html(totalInstrs);
 
-        vcr.find("#jmpFirstInstr").attr("disabled", false);
-        vcr.find("#jmpStepBack").attr("disabled", false);
-        vcr.find("#jmpStepFwd").attr("disabled", false);
-        vcr.find("#jmpLastInstr").attr("disabled", false);
+        this.jmpFirstInstr.attr("disabled", false);
+        this.jmpStepBack.attr("disabled", false);
+        this.jmpStepFwd.attr("disabled", false);
+        this.jmpLastInstr.attr("disabled", false);
 
         if (this.curInstr == 0) {
-            vcr.find("#jmpFirstInstr").attr("disabled", true);
-            vcr.find("#jmpStepBack").attr("disabled", true);
+            this.jmpFirstInstr.attr("disabled", true);
+            this.jmpStepBack.attr("disabled", true);
         }
         if (this.curInstr == (totalInstrs - 1)) {
-            vcr.find("#jmpLastInstr").attr("disabled", true);
-            vcr.find("#jmpStepFwd").attr("disabled", true);
+            this.jmpLastInstr.attr("disabled", true);
+            this.jmpStepFwd.attr("disabled", true);
         }
 
 
@@ -570,7 +576,7 @@ if (! PythonTutor) {
 
 
     Visualizer.prototype.renderPyCodeOutput = function(codeStr) {
-        var tbl = $("#pyCodeOutput");
+        var tbl = $(this.codeOutputTable);
         tbl.html('');
         var lines = codeStr.rtrim().split('\n');
 
