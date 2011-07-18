@@ -26,19 +26,19 @@ Based on the original book
 * `Preface to the 2nd Edition <preface2e.html>`__
 * `Preface to the Interactive Edition <prefaceinteractive.html>`__
 * `Contributor List <contrib.html>`__
-* `Chapter 1 <ch01.html>`__ *The Way of the Program*
-* `Chapter 2 <ch02.html>`__ *Variables, Expressions, and Statements*
-* `Chapter 3 <ch03.html>`__ *Hello, Little Turtles!*  
+* `Chapter 1 <introduction.html>`__ *The Way of the Program*
+* `Chapter 2 <simpledata.html>`__ *Variables, Expressions, and Statements*
+* `Chapter 3 <helloturtle.html>`__ *Hello, Little Turtles!*  
 * `Chapter 4 <modules.html>`__ *Modules and Getting Help*
-* `Chapter 5 <ch04.html>`__ *Functions*
-* `Chapter 6 <ch05.html>`__ *Conditionals*
-* `Chapter 7 <ch06.html>`__ *Functions Revisited*
-* `Chapter 8 <ch07.html>`__ *Iteration*
-* `Chapter 9 <ch08.html>`__ *Strings*
-* `Chapter 10 <ch09.html>`__ *Lists*
-* `Chapter 11 <ch12.html>`__ *Dictionaries*
-* `Chapter 12 <ch11.html>`__ *Recursion*
-* `Chapter 13 <ch13.html>`__ *Classes and Objects - the Basics*
+* `Chapter 5 <functions.html>`__ *Functions*
+* `Chapter 6 <selection.html>`__ *Decisions and Selection*
+* `Chapter 7 <morefunctions.html>`__ *Functions Revisited*
+* `Chapter 8 <moreiteration.html>`__ *Iteration*
+* `Chapter 9 <strings.html>`__ *Strings*
+* `Chapter 10 <lists.html>`__ *Lists*
+* `Chapter 11 <dictionaries.html>`__ *Dictionaries*
+* `Chapter 12 <recursion.html>`__ *Recursion*
+* `Chapter 13 <classesintro.html>`__ *Classes and Objects - the Basics*
 * `Chapter 14 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
 
 
@@ -76,21 +76,21 @@ Based on the original book
     :numbered:
 
 
-    ch01.rst
-    ch02.rst
-    ch03.rst
+    introduction.rst
+    simpledata.rst
+    helloturtle.rst
 
     modules.rst
 
-    ch04.rst
-    ch05.rst
-    ch06.rst
-    ch07.rst
-    ch08.rst
-    ch09.rst
-    ch12.rst
-    ch11.rst
-    ch13.rst
+    functions.rst
+    selection.rst
+    morefunctions.rst
+    moreiteration.rst
+    strings.rst
+    lists.rst
+    dictionaries.rst
+    recursion.rst
+    classesintro.rst
 
     fractions.rst
 
