@@ -74,7 +74,7 @@ Complementary Color:
 }
 
 
-table#pyOutputPane {
+table.pyOutputPane {
   padding: 15px;
 }
 
@@ -106,7 +106,7 @@ table.frameDataViz td.val {
   padding-bottom: 8px;
 }
 
-div#pyCodeOutputDiv {
+div.pyCodeOutputDiv {
   max-width: 550px;
   max-height: 620px;
   overflow: auto;
@@ -114,22 +114,24 @@ div#pyCodeOutputDiv {
   /*margin-bottom: 4px;*/
 }
 
-table#pyCodeOutput {
+table.pyCodeOutput {
   font-family: Andale mono, monospace;
   font-size:10pt;
   line-height:1.1em;
   border-spacing: 0px;
   border-top: 1px solid #999999;
   padding-top: 3px;
-  border-bottom: 1px solid #999999;
+  border-bottom: 1px solid #999999;p
+  margin-bottom: 20px;
+  padding-bottom: 20px;
 }
 
 /* don't wrap lines within code output ... FORCE scrollbars to appear */
-table#pyCodeOutput td {
+table.pyCodeOutput td {
   white-space: nowrap;
 }
 
-table#pyCodeOutput .lineNo {
+table.pyCodeOutput .lineNo {
   background-color:#FFFFFF;
   color:#AAAAAA;
   margin:0;
@@ -139,7 +141,7 @@ table#pyCodeOutput .lineNo {
   width:3.1em;
 }
 
-table#pyCodeOutput .cod {
+tabl.#pyCodeOutput .cod {
   /*font-weight: bold;*/
   margin-left: 3px;
   padding-left: 7px;
@@ -156,7 +158,7 @@ div#editCodeLinkDiv {
 }
 
 
-#errorOutput {
+.errorOutput {
   background-color: #F87D76;
   font-size: 12pt;
   padding: 2px;
@@ -164,7 +166,7 @@ div#editCodeLinkDiv {
   margin-bottom: 4px;
 }
 
-#warningOutput {
+.warningOutput {
   font-size: 9pt;
   color: #666666;
 }
@@ -178,12 +180,12 @@ button.bigBtn {
 
 /* VCR control buttons for stepping through execution */
 
-#vcrControls {
+.vcrControls {
   margin-top: 10px;
   margin-bottom: 20px;
 }
 
-#vcrControls button {
+.vcrControls button {
   margin-left: 5px;
   margin-right: 5px;
 }
@@ -198,8 +200,8 @@ button.bigBtn {
 
 .vizFrame {
   margin-bottom: 20px;
-  padding-left: 8px;
-  border-left: 2px solid #cccccc;
+/*  padding-left: 8px;
+/*  border-left: 2px solid #cccccc; */
 }
 
 

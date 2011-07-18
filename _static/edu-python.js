@@ -222,13 +222,13 @@ if (! PythonTutor) {
         // render stdout:
 
         // keep original horizontal scroll level:
-        var oldLeft = $(this.stdOutElement).scrollLeft();
-        $(this.stdOutElement).val(curEntry.stdout);
+//        var oldLeft = $(this.stdOutElement).scrollLeft();
+//        $(this.stdOutElement).val(curEntry.stdout);
 
-        $(this.stdOutElement).scrollLeft(oldLeft);
-        // scroll to bottom, tho:
-        $(this.stdOutElement).scrollTop($(this.stdOutElement).attr('scrollHeight'));
-
+//        $(this.stdOutElement).scrollLeft(oldLeft);
+//        // scroll to bottom, tho:
+//        $(this.stdOutElement).scrollTop($(this.stdOutElement).attr('scrollHeight'));
+        $(this.stdOutElement).text(curEntry.stdout);
 
         // render data structures:
         $(this.dataVisElement).html(''); // CLEAR IT!
