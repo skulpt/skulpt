@@ -318,16 +318,17 @@ Visualizing the for loop
 This demonstration is a good way to help you visualize exactly how the flow of control
 works with the for loop.  You can step forward and backward through the program by pressing
 the buttons.  In addition you can see the value of each variable in the program in the
-table.
+table below the code.  
 
 .. visualizer:: vtest
 
     friendList = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi"]
     for friendName in friendList:
-        invitation = "Hi " + friendName + ".  Please come to my party!"
+        invitation = "Hi " + friendName + ". Please come to my party!"
         print(invitation)
 
 .. index:: range function, chunking
+
 
 The loop simplifies our turtle program
 --------------------------------------
@@ -450,6 +451,14 @@ range(start,stop+1).
     number of the sequence is N-1.  In the case of start,
     stop it helps to simply think that the sequence begins with start and
     continues as long as the number is less than stop.
+
+Here's a simple animation to demonstrate the way range works:
+
+.. visualizer:: rangeme
+
+    for i in range(10):
+       print(i)
+       
 
 Here are a two examples for you to run.  Add another line below to create a sequence starting
 at 10 and going up to 20 (including 20).
