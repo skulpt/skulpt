@@ -449,7 +449,7 @@ is required that the ``__str__`` method create and *return* a string.
             return ((self.x ** 2) + (self.y ** 2)) ** 0.5
           
         def __str__(self):
-            return str("x=",self.x, ",","y=", self.y)
+            return "x=" + str(self.x) + ", y=" + str(self.y)
 
     p = Point(7,6)
     print(p)
