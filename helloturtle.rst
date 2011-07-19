@@ -321,7 +321,7 @@ works with the for loop.  You can step forward and backward through the program 
 the buttons.  In addition you can see the value of each variable in the program in the
 table below the code.  
 
-.. visualizer:: vtest
+.. codelens:: vtest
 
     friendList = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi"]
     for friendName in friendList:
@@ -455,7 +455,7 @@ range(start,stop+1).
 
 Here's a simple animation to demonstrate the way range works:
 
-.. visualizer:: rangeme
+.. codelens:: rangeme
 
     for i in range(10):
        print(i)

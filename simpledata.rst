@@ -307,7 +307,7 @@ by the variable.
 In each case the result is the value of the variable. 
 To see this in even more detail, we can run the program using codelens.  
 
-.. visualizer:: ch02_9_codelens
+.. codelens:: ch02_9_codelens
 
 
     message = "What's up, Doc?"
@@ -359,7 +359,7 @@ You'll notice we change the value of `day` three times, and on the third
 assignment we even give it a value that is of a different type.
 
 
-.. visualizer:: ch02_11
+.. codelens:: ch02_11
 
 
     day = "Thursday"
@@ -605,7 +605,7 @@ to hours, minutes and seconds.
 If we start with a number of seconds, say 7684, the following program uses integer division and remainder to convert to an easier form.  Step through it to be sure you understand how the division and remainder operators are being used to
 compute the correct values.
 
-.. visualizer:: ch02_19_codelens
+.. codelens:: ch02_19_codelens
 
     total_secs = 7684
     hours = total_secs // 3600
