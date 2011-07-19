@@ -18,6 +18,13 @@ Variables, Expressions and Statements
 
 .. _values_n_types:
 
+
+In order to get started learning any programming language there are a number of
+concepts and ideas that are necessary.  
+The goal of this chapter is to introduce you to the basic vocabulary of programming and some of the fundamental
+building blocks of Python.
+
+
 Values and Data Types
 ---------------------
 
@@ -51,7 +58,27 @@ class **int**.
 	When we show the value of a string using the ``print`` function, such as in the third example above, the quotes are no longer present.  The
 	value of the string is the sequence of characters inside the quotes.  The quotes are only necessary to help Python know what the value is.
 
-Less obviously, numbers with a decimal point belong to a class
+
+In the Python shell, it is not necessary to use the ``print`` function to see the values shown above.  The shell evaluates the Python function and automatically prints the result.  For example, consider the shell session shown below.  When
+we ask the shell to evaluate ``type("Hello, World!")``, it responds with the appropriate answer and then goes on to
+display the prompt for the next use.
+
+.. sourcecode:: python
+
+	Python 3.1.2 (r312:79360M, Mar 24 2010, 01:33:18) 
+	[GCC 4.0.1 (Apple Inc. build 5493)] on darwin
+	Type "help", "copyright", "credits" or "license" for more information.
+	>>> type("Hello, World!")
+	<class 'str'>
+	>>> type(17)
+	<class 'int'>
+	>>> "Hello, World"
+	'Hello, World'
+	>>> 
+
+Note that in the last example, we simply ask the shell to evaluate the string "Hello, World".  The result is as you might expect, the string itself.
+
+Continuing with our discussion of data types, numbers with a decimal point belong to a class
 called **float**, because these numbers are represented in a format called
 *floating-point*.  At this stage, you can treat the words *class* and *type*
 interchangeably.  We'll come back to a deeper understanding of what a class 
@@ -89,7 +116,6 @@ quotes (``"``), or three of each (``'''`` or ``"""``)
 Double quoted strings can contain single quotes inside them, as in ``"Bruce's
 beard"``, and single quoted strings can have double quotes inside them, as in
 ``'The knights who say "Ni!"'``. 
-
 Strings enclosed with three occurrences of either quote symbol are called
 triple quoted strings.  They can contain either single or double quotes: 
 
@@ -115,7 +141,7 @@ Triple quoted strings can even span multiple lines:
     of the text.""")
 
 Python doesn't care whether you use single or double quotes or the
-three-of-a-kind quotes to surround your strings: once it has parsed the text of
+three-of-a-kind quotes to surround your strings.  Once it has parsed the text of
 your program or command, the way it stores the value is identical in all cases,
 and the surrounding quotes are not part of the value. But when the interpreter
 wants to display a string, it has to decide which quotes to use to make it look
@@ -181,7 +207,6 @@ Let us see this in action:
     print(3.0,int(3.0))
     print(-3.999,int(-3.999))        # Note that the result is closer to zero
     minutes = 600.0
-    print(int(minutes/60))
     print("2345",int("2345"))        # parse a string to produce an int
     print(17,int(17))                # int even works on integers
     print(int("23bottles"))
@@ -279,7 +304,28 @@ by the variable.
     print(n)
     print(pi)
 
-In each case the result is the value of the variable. Variables also have
+In each case the result is the value of the variable. 
+To see this in even more detail, we can run the program using codelens.  
+
+.. visualizer:: ch02_9_codelens
+
+
+    message = "What's up, Doc?"
+    n = 17
+    pi = 3.14159
+
+    print(message)
+    print(n)
+    print(pi)
+
+Now, as you step thru the statements, you can see
+the variables and the values they reference as those references are
+created.
+
+
+
+
+Variables also have
 types; again, we can ask the interpreter what they are.
 
 .. activecode:: ch02_10
@@ -296,6 +342,7 @@ types; again, we can ask the interpreter what they are.
 
 The type of a variable is the type of the object it currently refers to.
 
+
 We use variables in a program to "remember" things, like the current score at
 the football game.  But variables are *variable*. This means they can change
 over time, just like the scoreboard at a football game.  You can assign a value
@@ -308,10 +355,12 @@ to a variable, and later assign a different value to the same variable.
     calculations!
 
 To see this, read and then run the following program.
+You'll notice we change the value of `day` three times, and on the third
+assignment we even give it a value that is of a different type.
 
 
-.. activecode:: ch02_11
-    :nocanvas:
+.. visualizer:: ch02_11
+
 
     day = "Thursday"
     print(day)
@@ -321,8 +370,7 @@ To see this, read and then run the following program.
     print(day)
 
 
-You'll notice we changed the value of `day` three times, and on the third
-assignment we even gave it a value that was of a different type.   
+
 
 A great deal of programming is about having the computer remember things,
 e.g.  *The number of missed calls on your phone*, and then arranging to update
@@ -341,7 +389,6 @@ that case matters. ``Bruce`` and ``bruce`` are different variables.
 
 The underscore character ( ``_``) can appear in a name. It is often used in
 names with multiple words, such as ``my_name`` or ``price_of_tea_in_china``.
-
 There are some situations in which names beginning with an underscore have
 special meaning, so a safe rule for beginners is to start all names with a
 letter.
@@ -363,7 +410,6 @@ what's wrong with ``class``?
 It turns out that ``class`` is one of the Python **keywords**. Keywords define
 the language's syntax rules and structure, and they cannot be used as variable
 names.
-
 Python has thirty-something keywords (and every now and again improvements to
 Python introduce or eliminate one or two):
 
@@ -402,25 +448,19 @@ remember, what the variable is used for.
 
 .. index:: statement
 
-Statements
-----------
+Statements and Expressions
+--------------------------
 
 A **statement** is an instruction that the Python interpreter can execute. We
 have only seen the assignment statement so far.  Some other kinds of statements
 that we'll see shortly are ``while`` statements, ``for`` statements, ``if``
 statements,  and ``import`` statements.  (There are other kinds too!)
 
-When you type a statement on the command line, Python executes it.  Statements
-don't produce any result. 
-
 
 .. index:: expression
 
-Evaluating Expressions
-----------------------
-
 An **expression** is a combination of values, variables, operators, and calls
-to functions. If you ask Python to ``print`` an expression, the interpreter
+to functions. Expressions need to be evaluated.  If you ask Python to ``print`` an expression, the interpreter
 **evaluates** the expression and displays the result.
 
 .. activecode:: ch02_13
@@ -446,6 +486,25 @@ itself is a simple expression, and so is a variable.  Evaluating a variable give
     print(x)
     print(y)
 
+If we take a look at this same example in the Python shell, we will see one of the distinct differences between statements and expressions.
+
+.. sourcecode:: python
+
+	>>> y = 3.14
+	>>> x = len("hello")
+	>>> print(x)
+	5
+	>>> print(y)
+	3.14
+	>>> y
+	3.14
+	>>> 
+	
+Note that when we enter the assignment statement, ``y = 3.14``, only the prompt is returned.  There is no value.  This
+is due to the fact that statements, such as the assignment statement, do not return a value.  They are simply executed.
+
+On the other hand, the result of executing the assignment statement is the creation of a reference from a variable, ``y``, to a value, ``3.14``.  When we execute the print function working on ``y``, we see the value that y is referring to.  In fact, evaluating ``y`` by itself results in the same response.
+
 
 .. index:: operator, operand, expression, integer division
 
@@ -469,19 +528,20 @@ clear::
 The tokens ``+``, ``-``, and ``*``, and the use of parenthesis for grouping,
 mean in Python what they mean in mathematics. The asterisk (``*``) is the
 token for multiplication, and ``**`` is the token for exponentiation.
+Addition, subtraction, multiplication, and exponentiation all do what you
+expect.
 
 .. activecode:: ch02_15
     :nocanvas:
 
+    print(2 + 3)
+    print(2 - 3)
+    print(2 * 3)
     print(2 ** 3)
     print(3 ** 2)
 
 When a variable name appears in the place of an operand, it is replaced with
 the value that it refers to before the operation is performed.
-
-Addition, subtraction, multiplication, and exponentiation all do what you
-expect.
-
 For example, what if we wanted to convert 645 minutes into hours.
 
 .. activecode:: ch02_16
@@ -492,8 +552,10 @@ For example, what if we wanted to convert 645 minutes into hours.
     print(hours)
 
 
-In Python 3, the division operator `/` always gives a floating point
-result.  What we might have wanted to know was how many *whole* hours there
+In Python 3, the division operator uses the token `/` which always evaluates to a floating point
+result.  
+
+In the previous example, what we might have wanted to know was how many *whole* hours there
 are, and how many minutes remain.  Python gives us two different flavors of
 the division operator.  The second, called **integer division**, uses the token
 `//`.  It always *truncates* its result down to the next smallest integer (to
@@ -511,7 +573,7 @@ the left on the number line).
     
 Take care that you choose the correct flavor of the division operator.  If
 you're working with expressions where you need floating point values, use the
-division operator that does the division accurately.
+division operator `/`.  If you want an integer result, use `//`.
 
 .. index:: modulus
 
@@ -529,24 +591,23 @@ operators:
     print(remainder)
 
 
-So 7 divided by 3 is 2 with 1 left over.
+So 7 divided by 3 is 2 with a remainder of 1.
 
 The modulus operator turns out to be surprisingly useful. For example, you can
 check whether one number is divisible by another---if ``x % y`` is zero, then
 ``x`` is divisible by ``y``.
-
 Also, you can extract the right-most digit or digits from a number.  For
 example, ``x % 10`` yields the right-most digit of ``x`` (in base 10).
 Similarly ``x % 100`` yields the last two digits.
 
 Finally, returning to our time example, the remainder operator is extremely useful for doing conversions, say from seconds,
 to hours, minutes and seconds. 
-If we start with a number of seconds, say 7322, the following program uses integer division and remainder to convert to an easier form.
+If we start with a number of seconds, say 7684, the following program uses integer division and remainder to convert to an easier form.  Step through it to be sure you understand how the division and remainder operators are being used to
+compute the correct values.
 
-.. activecode:: ch02_19
-    :nocanvas:
+.. visualizer:: ch02_19_codelens
 
-    total_secs = 7322
+    total_secs = 7684
     hours = total_secs // 3600
     secs_still_remaining = total_secs % 3600
     minutes =  secs_still_remaining // 60
@@ -555,11 +616,64 @@ If we start with a number of seconds, say 7322, the following program uses integ
     print("Hrs=", hours, "mins=", minutes, "secs=", secs_finally_remaining)
 
 
+.. index:: input, input dialog
+
+.. _input:
+
+Input
+-----
+
+The program in the previous section works fine but is very limited in that it only works with one value for ``total_secs``.  What if we wanted to rewrite the program so that it was more general.  One thing we could
+do is allow the use to enter any value they wish for the number of seconds.  The program would then print the
+proper result for that starting value.
+
+In order to do this, we need a way to get **input** from the user.  Luckily, in Python
+there is a built-in function to accomplish this task.  As you might expect, it is called ``input``.
+
+.. sourcecode:: python
+
+    n = input("Please enter your name: ")
+
+The input function allows the user to provide a **prompt string**.  When the function is evaluated, the prompt is
+shown.
+The user of the program can enter the name and press `return`. When this
+happens the text that has been entered is returned from the `input` function,
+and in this case assigned to the variable `n`.
+
+.. activecode:: inputfun
+
+    n = input("Please enter your name: ")
+    print("Hello", n)
+
+Even if you asked the user to enter their age, you would get back a string like
+``"17"``.  It would be your job, as the programmer, to convert that string into
+a int or a float, using the `int` or `float` converter functions we saw
+earlier.
+
+To modify our previous program, we will add an input statement to allow the user to enter the number of seconds.  Then
+we will convert that string to an integer.  From there the process is the same as before.
+
+.. activecode:: int_secs
+
+    str_seconds = input("Please enter the number of seconds you wish to convert")
+    total_secs = int(str_seconds)
+    
+    hours = total_secs // 3600
+    secs_still_remaining = total_secs % 3600
+    minutes =  secs_still_remaining // 60
+    secs_finally_remaining = secs_still_remaining  % 60
+
+    print("Hrs=", hours, "mins=", minutes, "secs=", secs_finally_remaining)
+
+
+The variable ``str_seconds`` will refer to the string that is entered by the user. As we said above, even though this string may be ``7684``, it is still a string and not a number.  To convert it to an integer, we use the ``int`` function.
+The result is referred to by ``total_secs``.  Now, each time you run the program, you can enter a new value for the number of seconds to be converted.
+
 
 
 .. index:: order of operations, rules of precedence
 
-Order of operations
+Order of Operations
 -------------------
 
 When more than one operator appears in an expression, the order of evaluation
@@ -569,15 +683,15 @@ rules for its mathematical operators that mathematics does.
 .. The acronym PEMDAS
 .. is a useful way to remember the order of operations:
 
-#. **P**\ arentheses have the highest precedence and can be used to force an
+#. Parentheses have the highest precedence and can be used to force an
    expression to evaluate in the order you want. Since expressions in
    parentheses are evaluated first, ``2 * (3-1)`` is 4, and ``(1+1)**(5-2)`` is
    8. You can also use parentheses to make an expression easier to read, as in
    ``(minute * 100) / 60``, even though it doesn't change the result.
-#. **E**\ xponentiation has the next highest precedence, so ``2**1+1`` is 3 and
+#. Exponentiation has the next highest precedence, so ``2**1+1`` is 3 and
    not 4, and ``3*1**3`` is 3 and not 27.  Can you explain why?
-#. **M**\ ultiplication and both **D**\ ivision operators have the same
-   precedence, which is higher than **A**\ ddition and **S**\ ubtraction, which
+#. Multiplication and both division operators have the same
+   precedence, which is higher than addition and subtraction, which
    also have the same precedence. So ``2*3-1`` yields 5 rather than 4, and
    ``5-2*2`` is 1, not 6.  
 #. Operators with the *same* precedence are
@@ -595,7 +709,7 @@ rules for its mathematical operators that mathematics does.
 .. note::
 
     Due to some historical quirk, an exception to the left-to-right
-    left-associative rule is the exponentiation operator `**`, so a useful hint
+    left-associative rule is the exponentiation operator `**`. A useful hint
     is to always use parentheses to force exactly the order you want when
     exponentiation is involved:
    
@@ -743,60 +857,55 @@ Glossary
 Exercises
 ---------
 
-#. Evaluate the following numerical expressions in your head, then use
+1. Evaluate the following numerical expressions in your head, then use
    the active code window to check your results:
 
+    #. ``5 ** 2``
+    #. ``9 * 5``
+    #. ``15 / 12``
+    #. ``12 / 15``
+    #. ``15 // 12``
+    #. ``12 // 15``
     #. ``5 % 2``
     #. ``9 % 5``
     #. ``15 % 12``
     #. ``12 % 15``
     #. ``6 % 6``
     #. ``0 % 7``
-    #. ``7 % 0``
+
 
 
 .. activecode:: ch02_ex1
 
     print(5%2)
 
-#. You look at the clock and it is exactly 2pm.  You set an alarm to go off
+2. You look at the clock and it is exactly 2pm.  You set an alarm to go off
    in 51 hours.  At what time does the alarm go off?  
 
 #. Write a Python program to solve the general version of the above problem.
    Ask the user for the time now (in hours), and ask for the number of hours to wait.  
    Your program should output what the time will be on the clock when the alarm goes off.
 
-#. Assume the days of the week are numbered 0,1,2,3,4,5,6 from Sunday to Saturday.
-   Write a function which is given the day number, and it returns the day name (a string).
-
-#. You go on a wonderful holiday (perhaps to jail, if you don't like happy exercises)
-   leaving on day number 3 (a Wednesday).  You return home after 137 sleeps. 
+#. You go on a wonderful holiday
+   leaving on day number 3 (a Wednesday).  You return home after 137 nights. 
    Write a general version of the program which asks for the starting day number, and
-   the length of your stay, and it will tell you the name of day of the week you will return on.
+   the length of your stay, and it will tell you the number of day of the week you will return on.
 
 #. Take the sentence: *All work and no play makes Jack a dull boy.*
    Store each word in a separate variable, then print out the sentence on
    one line using ``print``.
 #. Add parenthesis to the expression ``6 * 1 - 2`` to change its value
    from 4 to -6.
-#. Place a comment before a line of code that previously worked, and
-   record what happens when you rerun the program.
-#. Start the Python interpreter and enter ``bruce + 4`` at the prompt.
-   This will give you an error:
 
-   .. sourcecode:: python
-    
-        NameError: name 'bruce' is not defined
 
-   Assign a value to ``bruce`` so that ``bruce + 4`` evaluates to ``10``.
 #. The formula for computing the final amount if one is earning
    compound interest is given on Wikipedia as
 
    .. image:: illustrations/ch02/compoundInterest.png
       :alt: formula for compound interest
 
-   Write a Python program that assigns the principal amount of R10000 to
-   variable `a`, assign to `n` the value 12, and assign to `r` the interest
-   rate of 8%.  Then have the program prompt the user for the number of months
-   `t` that the money will be compounded for.  Calculate and print the final
-   amount after `t` months.      
+   Write a Python program that assigns the principal amount of 10000 to
+   variable `P`, assign to `n` the value 12, and assign to `r` the interest
+   rate of 8% (0.08).  Then have the program prompt the user for the number of years,
+   `t`, that the money will be compounded for.  Calculate and print the final
+   amount after `t` years.      

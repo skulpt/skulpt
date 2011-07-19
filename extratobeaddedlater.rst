@@ -49,27 +49,6 @@ The type converter `str` turns its argument into a string:
 
 
 
-	.. index:: input, input dialog
-
-	.. _input:
-
-	Input
-	-----
-
-	There is a built-in function in Python for getting input from the user:
-
-	.. sourcecode:: python
-
-	    n = input("Please enter your name: ")
-
-	The user of the program can enter the name and press `return`. When this
-	happens the text that has been entered is returned from the `input` function,
-	and in this case assigned to the variable `n`.
-
-	Even if you asked the user to enter their age, you would get back a string like
-	``"17"``.  It would be your job, as the programmer, to convert that string into
-	a int or a float, using the `int` or `float` converter functions we saw
-	earlier.
 
 
 	.. index:: composition of functions
