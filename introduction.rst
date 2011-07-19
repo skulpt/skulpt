@@ -22,8 +22,8 @@ The single most important skill for a computer scientist is **problem
 solving**. Problem solving means the ability to formulate problems, think
 creatively about solutions, and express a solution clearly and accurately. As
 it turns out, the process of learning to program is an excellent opportunity to
-practice problem-solving skills. That's why this chapter is called, The way of
-the program.
+practice problem solving skills. That's why this chapter is called, *The Way of
+the Program*.
 
 On one level, you will be learning to program, a useful skill by itself. On
 another level, you will use programming as a means to an end. As we go along,
@@ -36,8 +36,8 @@ that end will become clearer.
 Algorithms
 ----------
 
-If problem-solving is a central part of computer science, then the solutions that you create through
-the problem-solving process are also important.  In computer science, we refer to these solutions
+If problem solving is a central part of computer science, then the solutions that you create through
+the problem solving process are also important.  In computer science, we refer to these solutions
 as **algorithms**.  An algorithm is a step by step list of instructions that if followed exactly will solve the problem under consideration.  
 
 Our goal in computer science is to take a problem and develop an algorithm that can serve as a general solution.  Once we have such a solution, we can use our computer to automate the execution.  As noted
@@ -45,7 +45,7 @@ above, programming is a skill which allows a computer scientist to take an algor
 a notation (a program) that can be followed by a computer.  These programs are written in **programming languages**.
 
 
-The Python programming language
+The Python Programming Language
 -------------------------------
 
 The programming language you will be learning is Python. Python is an example
@@ -95,7 +95,7 @@ level language, called **byte code**, and then interpreted by a program called
 a **virtual machine**. Python uses both processes, but because of the way
 programmers interact with it, it is usually considered an interpreted language.
 
-There are two ways to use the Python interpreter: *shell mode* and *script
+There are two ways to use the Python interpreter: *shell mode* and *program
 mode*. In shell mode, you type Python expressions into the **Python shell**,
 and the interpreter immediately shows the result.  The example below shows the Python shell at work.
 
@@ -120,8 +120,8 @@ help you work out problems. Anything longer than a few lines should be put into
 a script.
 
 Alternatively, you can write an entire program in a file and use the interpreter to
-execute the contents of the file as a whole. Such a file is called a **script**.  For
-example, we used a text editor to create a file named ``firstprogram.py`` with
+execute the contents of the file as a whole. Such a file is often referred to as **source code**.  For
+example, we used a text editor to create a source code file named ``firstprogram.py`` with
 the following contents:
 
 .. sourcecode:: python
@@ -144,17 +144,28 @@ These examples show Python being run from a Unix command line. In other
 development environments, the details of executing programs may differ. Also,
 most programs are more interesting than this one.
 
+.. admonition:: Want to learn more about Python?
+
+	If you would like to learn more about installing and using Python, here are some video links.
+	`Installing Python for Windows <http://youtu.be/9EfGpN1Pnsg>`__ shows you how to install the Python environment under
+	Windows Vista, 
+	`Installing Python for Mac <http://youtu.be/MEmEJCLLI2k>`__ shows you how to install under Mac OS/X, and 
+	`Installing Python for Linux <http://youtu.be/RLPYBxfAud4>`__ shows you how to install from the Linux
+	command line.
+	`Using Python <http://youtu.be/kXbpB5_ywDw>`__ shows you some details about the Python shell and source code.
+
 Special Ways to Execute Python in this Book
 -------------------------------------------
 
-This book provides two additional ways to execute Python programs.  Both techniques are designed to assist you in learning and understanding the Python and programs work.  
+This book provides two additional ways to execute Python programs.  Both techniques are designed to assist you as you
+learn the Python programming language.  They will help you increase your understanding of how Python programs work.  
 
 
 First, you can write, modify, and execute programs using a unique **activecode** interpreter that allows you to execute Python code right
 in the text itself (right from the web browser).  Although this is certainly not the way real programs are written, it provides an excellent
 environment for learning a programming language like Python since you can experiment with the language as you are reading.
 
-Take a look at the activecode interpreter in action.  If we use the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.  You can also make changes and save them for reloading later.  Try pressing the *run* button below. 
+Take a look at the activecode interpreter in action.  If we use the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.   Try pressing the *run* button below. 
 
 .. activecode:: ch01_1
     :nopre:
@@ -163,14 +174,19 @@ Take a look at the activecode interpreter in action.  If we use the Python code 
    print(2 + 3)
 
 
-Now try modifying the active code program shown above, either by changing something about the first sentence, or by changing the addition in the second statement.  You should be able to press *run* immediately to see the new results.
+Now try modifying the activecode program shown above.  First, modify the string in the first print statement 
+by changing the word *adds* to the word *multiplies*.  Now press *run*.  You can see that the result of the program
+has changed.  However, it still prints "5" as the answer.  Modify the second print statement by changing the
+addition symbol, the "+", to the multiplication symbol, "*".  Press *run* to see the new results.
 
+You can also make changes and save them for reloading later. *Save* and *Load* allow you to keep one copy of the program you are working on.  For example, press the *Save* button now.  You have just saved the current contents of the activecode window.  Now make a few changes and press the *Run* button.  You have changed the current program.
+Press *Load* to return your program to its previously saved state.
 
-In addition to activecode, you can also execute Python code with the assistance of a unique visualization tool.  This tool, known as **visualcode**, allows you to control the step by step execution of a program.  It also lets you see the values of
-all variables as they are created and modified.  The following example shows visualcode in action on the same program as we saw above.  Note that in active code, the entire execution occurs and you can see the result.  In visualcode you see the step by step progress.
+In addition to activecode, you can also execute Python code with the assistance of a unique visualization tool.  This tool, known as **codelens**, allows you to control the step by step execution of a program.  It also lets you see the values of
+all variables as they are created and modified.  The following example shows codelens in action on the same program as we saw above.  Note that in activecode, the source code executes from beginning to end and you can see the final result.  In codelens you can see and control the step by step progress.
 
-The examples in this book use a mixture of the standard Python  interpreter, scripts, activecode, and visualcode.  You
-will be able to tell which is which by looking for either the Python prompt in the case of a shell mode program, the *run* button for the active code, or the *forward/backward* button for visualcode.
+The examples in this book use a mixture of the standard Python  interpreter, source code, activecode, and codelens.  You
+will be able to tell which is which by looking for either the Python prompt in the case of a shell mode program, the *run* button for the activecode, or the *forward/backward* buttons for codelens.
 
 .. visualizer:: firstexample
 
@@ -182,17 +198,17 @@ will be able to tell which is which by looking for either the Python prompt in t
 
 .. index:: program, algorithm
 
-What is a program?
-------------------
+More About Programs
+-------------------
 
 A **program** is a sequence of instructions that specifies how to perform a
-computation. The computation might be something mathematical, such as solving a
-system of equations or finding the roots of a polynomial, but it can also be a
+computation. The computation might be something as complex as rendering an html page in a web browser
+or encoding a video and streaming it across the network.  It can also be a
 symbolic computation, such as searching for and replacing text in a document or
 (strangely enough) compiling a program.
 
 The details look different in different languages, but a few basic instructions
-appear in just about every language:
+appear in just about every language.
 
 input
     Get data from the keyboard, a file, or some other device.
@@ -224,7 +240,7 @@ instructions.
 
 .. index:: debugging, bug
 
-What is debugging?
+What is Debugging?
 ------------------
 
 Programming is a complex process, and because it is done by human beings, it
@@ -263,7 +279,7 @@ experience, though, you will make fewer errors and find them faster.
 
 .. index:: runtime error, exception, safe language
 
-Runtime errors
+Runtime Errors
 --------------
 
 The second type of error is a runtime error, so called because the error does
@@ -277,7 +293,7 @@ chapters, so it might be a while before you encounter one.
 
 .. index:: semantics, semantic error
 
-Semantic errors
+Semantic Errors
 ---------------
 
 The third type of error is the **semantic error**. If there is a semantic error
@@ -296,7 +312,7 @@ looking at the output of the program and trying to figure out what it is doing.
     single: Doyle, Arthur Conan 
     single: Linux
 
-Experimental debugging
+Experimental Debugging
 ----------------------
 
 One of the most important skills you will acquire is debugging.  Although it
@@ -332,7 +348,7 @@ practices.
 
 .. index:: formal language, natural language, parse, token
 
-Formal and natural languages
+Formal and Natural Languages
 ----------------------------
 
 **Natural languages** are the languages that people speak, such as English,
@@ -434,12 +450,12 @@ like spelling errors and bad punctuation, which you can get away with in
 natural languages, can make a big difference in a formal language.
 
 
-The first program
------------------
+A Typical First Program
+-----------------------
 
 Traditionally, the first program written in a new language is called *Hello,
-World!* because all it does is display the words, Hello, World!  In Python, the script
-looks like this:
+World!* because all it does is display the words, Hello, World!  In Python, the source code
+looks like this.
 
 .. sourcecode:: python
     
@@ -453,7 +469,7 @@ result is the words:
     
     Hello, World!
 
-Here is the same code in the activecode interpreter.  Give it a try!
+Here is the example in activecode.  Give it a try!
 
 .. activecode:: ch01_2
     :nopre:
@@ -476,13 +492,11 @@ Comments
 As programs get bigger and more complicated, they get more difficult to read.
 Formal languages are dense, and it is often difficult to look at a piece of
 code and figure out what it is doing, or why.
-
 For this reason, it is a good idea to add notes to your programs to explain in
-natural language what the program is doing.  
+natural language what the program is doing.  These notes are called comments.
 
 A **comment** in a computer program is text that is intended only for the human
 reader - it is completely ignored by the interpreter.
-
 In Python, the `#` token starts a comment.  The rest of the line is ignored.
 Here is a new version of *Hello, World!*.
 
@@ -588,8 +602,7 @@ Glossary
         An error that does not occur until the program has started to execute
         but that prevents the program from continuing.
 
-    script
-        A program stored in a file (usually one that will be interpreted).
+
 
     semantic error
         An error in a program that makes it do something other than what the
@@ -601,10 +614,10 @@ Glossary
     shell mode
         A style of using Python where we type expressions at the command
         prompt, and the results are shown immediately.  Contrast with
-        **script**, and see the entry under **Python shell**.
+        **source code**, and see the entry under **Python shell**.
 
     source code
-        A program in a high-level language before being compiled.
+        A program, stored in a file, in a high-level language before being compiled or interpreted.
 
     syntax
         The structure of a program.
@@ -618,77 +631,3 @@ Glossary
         analogous to a word in a natural language.
 
 
-Exercises
----------
-
-#. Write an English sentence with understandable semantics but incorrect
-   syntax. Write another English sentence which has correct syntax but has 
-   semantic errors.
-#. Using the Python interpreter, type ``1 + 2`` and then hit return.
-   Python *evaluates* this *expression*, displays the result, and then shows
-   another prompt. ``*`` is the *multiplication operator*, and ``**`` is
-   the *exponentiation operator*. Experiment by entering different expressions
-   and recording what is displayed by the Python interpreter. 
-#. Type ``1 2`` and then hit return. Python tries to evaluate the expression,
-   but it can't because the expression is not syntactically legal. Instead, it
-   shows the error message::
-
-          File "<interactive input>", line 1
-            1 2
-              ^
-        SyntaxError: invalid syntax
-
-   In many cases, Python indicates where the syntax error occurred, but it is
-   not always right, and it doesn't give you much information about what is
-   wrong.
-   
-   So, for the most part, the burden is on you to learn the syntax rules.
-   
-   In this case, Python is complaining because there is no operator between the
-   numbers.
-   
-   See if you can find a few more examples of things that will produce error
-   messages when you enter them at the Python prompt. Write down what you enter
-   at the prompt and the last line of the error message that Python reports
-   back to you. 
-#. Type ``print("hello")``. Python executes this, which has the effect
-   of printing the letters h-e-l-l-o. Notice that the quotation marks that you
-   used to enclose the string are not part of the output.  Now type ``"hello"``
-   and describe your result.  Make notes of when you see the quotation marks
-   and when you don't.
-#. Type ``cheese`` without the quotation marks. The output will look
-   something like this::
-
-        Traceback (most recent call last):
-          File "<interactive input>", line 1, in ?
-        NameError: name 'cheese' is not defined
-
-   This is a run-time error; specifically, it is a NameError, and even more
-   specifically, it is an error because the name `cheese` is not defined. If
-   you don't know what that means yet, you will soon.
-#. Type ``6 + 4 * 9`` at the Python prompt and hit enter.  Record what
-   happens.
-   
-   Now create a python script named ``test1.py`` with the following contents:
-
-   .. sourcecode:: python
-    
-       6 + 4 * 9
-
-   What happens when you run this script? Now change the contents to:
-
-   .. sourcecode:: python
-    
-       print(6 + 4 * 9)
-
-   and run it again.  What happened this time?
-   
-   Whenever an *expression* is typed at the Python prompt, it is evaluated and
-   the result is *automatically* shown on the line below.  (Like on your
-   calculator, if you type this expression you'll get the result 42.)   
-   
-   A script is different, however.  Evaluations of expressions are not
-   automatically displayed, so it is necessary to use the **print** function to
-   make the answer show up.  
-   
-   It is hardly ever necessary to use the print function in shell mode.  

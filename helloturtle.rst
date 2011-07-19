@@ -25,6 +25,7 @@ Hello, Little Turtles!
     http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.webm
 
 
+
 There are many *modules* in Python that provide very powerful features that we
 can use in our own programs.  Some of these can send email or fetch web pages. Others allow us to perform complex mathematical calculations.
 In this chapter we will introduce a module that allows us to create a data object called a **turtle** that can be used to draw pictures.
