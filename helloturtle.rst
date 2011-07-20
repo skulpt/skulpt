@@ -37,7 +37,7 @@ In this chapter we will introduce a module that allows us to create a data objec
 Turtle graphics, as it is known, is based on a very simple
 metaphor. Imagine that you have a turtle that understands English.  You can
 tell your turtle to do simple commands such as go forward and turn right.  As the turtle
-moves around, if the tail is down touching the ground, it will
+moves around, if its tail is down touching the ground, it will
 draw a line (leave a trail behind) as it moves.  If you tell your turtle to lift up its tail it can
 still move around but will not leave a trail.  As you will see, you can make
 some pretty amazing drawings with this simple capability.
@@ -52,7 +52,7 @@ some pretty amazing drawings with this simple capability.
 
 .. index:: object, invoke, method, attribute, state, canvas
 
-Our first turtle program
+Our First Turtle Program
 ------------------------
 
 Let's try a couple of lines of Python code to create a new turtle and
@@ -102,7 +102,7 @@ instructions that all turtles know how to respond to.
 
 .. admonition:: Complete the rectangle ...
     
-    #. Modify the program by adding the commands necessary to have *alex* complete the
+    Modify the program by adding the commands necessary to have *alex* complete the
        rectangle.
  
 
@@ -168,7 +168,7 @@ screen until we click on it.
 
 .. index:: instance
   
-Instances --- a herd of turtles
+Instances --- A Herd of Turtles
 -------------------------------
 
 Just like we can have many different integers in a program, we can have many
@@ -240,7 +240,7 @@ Here are some *How to think like a computer scientist* observations:
 
 .. index:: for loop
   
-The **for** loop
+The **for** Loop
 ----------------
 
 .. video:: forloopvid
@@ -255,7 +255,7 @@ When we drew the square, it was quite tedious.  We had to move then turn, move
 then turn, etc. etc. four times.  If we were drawing a hexagon, or an octogon,
 or a polygon with 42 sides, it would have been a nightmare to duplicate all that code.
 
-So a basic building block of all programs is to be able to repeat some code
+A basic building block of all programs is to be able to repeat some code
 over and over again.  In computer science, we refer to this repetitive idea as **iteration**.  In this chapter, we will explore some mechanisms for basic iteration.
 
 In Python, the **for** statement allows us to write programs that implement iteration.   As a simple example, let's say we have some friends, and
@@ -275,6 +275,8 @@ Take a look at the output produced when you press the ``run`` button.  There is 
 
 
 * **friendName** in this ``for`` statement is called the **loop variable**.  
+* The list of names in the square brackets is called a Python **list**.  Lists are very useful.  We will have much
+  more to say about them later.
 * Lines 2 and 3 are the **loop body**.  The loop body is always
   indented. The indentation determines exactly what statements are "in the
   loop".  The loop body is performed one time for each name in the list.
@@ -292,7 +294,7 @@ Take a look at the output produced when you press the ``run`` button.  There is 
 
 .. index:: control flow, flow of execution
   
-Flow of Execution of the for loop
+Flow of Execution of the for Loop
 ---------------------------------
 
 
@@ -306,20 +308,18 @@ as "Python's moving finger".
 Control flow until now has been strictly top to bottom, one statement at a
 time.  We call this type of control **sequential**.  Sequential flow of control is always assumed to be the default behavior for a computer program.  The ``for`` statement changes this. 
 
-Control flow is often easy to visualize and understand if we draw a flowchart.
+Flow of control is often easy to visualize and understand if we draw a flowchart.
 This flowchart shows the exact steps and logic of how the ``for`` statement executes.
 
 
 .. image:: illustrations/ch03/new_flowchart_for.png
       :width: 300px
 
-Visualizing the for loop
-~~~~~~~~~~~~~~~~~~~~~~~~
 
-This demonstration is a good way to help you visualize exactly how the flow of control
-works with the for loop.  You can step forward and backward through the program by pressing
-the buttons.  In addition you can see the value of each variable in the program in the
-table below the code.  
+
+A codelens demonstration is a good way to help you visualize exactly how the flow of control
+works with the for loop.  Try stepping forward and backward through the program by pressing
+the buttons.  You can see the value of ``friendName`` change as the loop iterates thru the list of friends.  
 
 .. codelens:: vtest
 
@@ -331,10 +331,10 @@ table below the code.
 .. index:: range function, chunking
 
 
-The loop simplifies our turtle program
+Iteration Simplifies our Turtle Program
 --------------------------------------
 
-To draw a square we'd like to do the same thing four times --- move the turtle forward some distance and turn 90 degrees.  We previously used 8 lines to have alex draw the four sides of a
+To draw a square we'd like to do the same thing four times --- move the turtle forward some distance and turn 90 degrees.  We previously used 8 lines of Python code to have alex draw the four sides of a
 square.  This next program does exactly the same thing but, with the help of the for statement, uses just three lines (not including the setup code).  Remember that the for statement will repeat the `forward` and `left` four times, one time for
 each value in the list.
 
@@ -349,15 +349,85 @@ each value in the list.
        alex.forward(50)
        alex.left(90) 
 
-* While "saving some lines of code" might be convenient, it is not the big
-  deal here.  What is much more important is that we've found a "repeating
-  pattern" of statements, and reorganized our program to repeat the pattern.
-  Finding the chunks and somehow getting our programs arranged around those
-  chunks is a vital  skill in *How to think like a computer scientist*.  
-* The values [0,1,2,3] were provided to make the loop body execute 4 times. 
-  We could have used any four values, but these are the conventional ones to
-  use.  In fact, they are so popular that Python gives us special built-in
-  ``range`` objects:
+   wn.exitonclick()
+
+
+
+While "saving some lines of code" might be convenient, it is not the big
+deal here.  What is much more important is that we've found a "repeating
+pattern" of statements, and we reorganized our program to repeat the pattern.
+Finding the chunks and somehow getting our programs arranged around those
+chunks is a vital  skill when learning *How to think like a computer scientist*.  
+
+The values [0,1,2,3] were provided to make the loop body execute 4 times. 
+We could have used any four values.  For example, consider the following program.
+
+
+.. activecode:: ch03_forcolor
+   :nopre:
+
+   import turtle            #set up alex
+   wn = turtle.Screen()
+   alex = turtle.Turtle()
+   
+   for aColor in ["yellow", "red", "purple", "blue"]:      #repeat four times
+       alex.forward(50)
+       alex.left(90) 
+
+   wn.exitonclick()
+
+Since there are still four items in the list, the iteration will still occur four times.  ``aColor`` will
+take on each color in the list.  We can even take this one step further and use the value of ``aColor`` as part
+of the computation.
+
+.. activecode:: colorlist
+
+    import turtle            #set up alex
+    wn = turtle.Screen()
+    alex = turtle.Turtle()
+
+    for aColor in ["yellow", "red", "purple", "blue"]:
+       alex.color(aColor)
+       alex.forward(50)
+       alex.left(90)
+
+    wn.exitonclick()
+
+In this case, the value of ``aColor`` is used to change the color attribute of ``alex``.  Each iteration causes ``aColor`` to change to the next value in the list.
+
+
+The range Function
+------------------
+
+.. video:: advrange
+   :controls:
+   :thumb: _static/advrange.png
+
+   http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.mov
+   http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.webm
+
+In our simple example from the last section (shown again below), we used a list of four integers to cause the iteration
+to happen four times.  We said that we could have used any four values.  In fact, we even used four colors.
+
+.. sourcecode:: python
+
+   import turtle            #set up alex
+   wn = turtle.Screen()
+   alex = turtle.Turtle()
+
+   for i in [0,1,2,3]:      #repeat four times
+       alex.forward(50)
+       alex.left(90) 
+
+   wn.exitonclick()
+
+It turns out that generating lists with a specific number of integers is a very common thing to do, especially when you
+want to write simple ``for loop`` controlled iteration.  Even though you can use any four items, or any four integers for that matter, the conventional thing to do is to use a list of integers starting with 0.  
+In fact, these lists are so popular that Python gives us special built-in
+``range`` objects
+that can deliver a sequence of values to
+the ``for`` loop.  They start at 0, and in the  cases shown below do not include the 4
+or the 10.
 
   .. sourcecode:: python
 
@@ -365,18 +435,12 @@ each value in the list.
           # Executes the body with i = 0, then 1, then 2, then 3
       for x in range(10):
           # sets x to each of ... [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-   
-* Computer scientists like to count from 0!
-* ``range`` creates an object that can deliver a sequence of values to
-  the ``for`` loop.  They start at 0, and in these cases do not include the 4
-  or the 10. 
-* Our little trick earlier to make sure that alex did the final turn to
-  complete 360 degrees has paid off: if we had not done that, then we would not
-  have been able to use a loop for the fourth side of the square.  It would
-  have become a "special case", different from the other sides.  When possible,
-  we'd much prefer to make our code fit a general pattern, rather than have to
-  create a special case.
-  
+
+.. note::
+
+    Computer scientists like to count from 0!
+
+
 So to repeat something four times, a good Python programmer would do this:
 
 .. sourcecode:: python
@@ -385,52 +449,6 @@ So to repeat something four times, a good Python programmer would do this:
         alex.forward(50)
         alex.left(90)
 
-By now you should be able to see how to change our previous program so that
-tess can also use a ``for`` loop to draw her equilateral triangle.
-
-.. admonition:: What would happen if we made this change ...
-    
-   .. sourcecode:: python
-
-      for c in ["yellow", "red", "purple", "blue"]:
-          alex.color(c)
-          alex.forward(50)
-          alex.left(90)
- 
-A variable can also be assigned a value that is a list.  So lists can also
-be used in situations other than the ``for`` loop.  The code above could be
-rewritten like this:
-
-.. sourcecode:: python
-
-   clrs = ["yellow", "red", "purple", "blue"]   # make the variable refer to this list
-   for c in clrs:
-       alex.color(c)
-       alex.forward(50)
-       alex.left(90)
-
-After you think about the code above, give it a try.
-
-.. activecode:: chp03_tryfor
-
-	import turtle            #set up alex
-	wn = turtle.Screen()
-	alex = turtle.Turtle()
-	
-	for c in ["yellow", "red", "purple", "blue"]:
-	    alex.color(c)
-	    alex.forward(50)
-	    alex.left(90)
-
-
-More on the range Function
---------------------------
-.. video:: advrange
-   :controls:
-   :thumb: _static/advrange.png
-
-   http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.mov
-   http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.webm
 
 The `range <http://docs.python.org/py3k/library/functions
 .html?highlight=range#range>`_ function is actually a very powerful function
@@ -453,14 +471,6 @@ range(start,stop+1).
     stop it helps to simply think that the sequence begins with start and
     continues as long as the number is less than stop.
 
-Here's a simple animation to demonstrate the way range works:
-
-.. codelens:: rangeme
-
-    for i in range(10):
-       print(i)
-       
-
 Here are a two examples for you to run.  Add another line below to create a sequence starting
 at 10 and going up to 20 (including 20).
 
@@ -470,6 +480,18 @@ at 10 and going up to 20 (including 20).
 
     print(range(4))
     print(range(1,5))
+
+
+Codelens will help us to further understand the way range works.  In this case, the variable ``i`` will take on values
+produced by the ``range`` function.
+
+.. codelens:: rangeme
+
+    for i in range(10):
+       print(i)
+       
+
+
 
 
 Finally, suppose we want to have a sequence of even numbers.
@@ -487,9 +509,18 @@ starts big and gets smaller by using a negative value for the step parameter.
     print(range(0,20,2))
     print(range(10,0,-1))
 
+Try it in codelens.
 
-A few more turtle methods and tricks
-------------------------------------
+.. codelens:: rangeme2
+
+    for i in range(0,20,2):
+       print(i)
+
+
+A Few More turtle Methods and Observations
+------------------------------------------
+
+Here are a few more things that you might find useful as you use the turtle.
 
 * Turtle methods can use negative angles or distances.  So ``tess.foward(-100)``
   will move tess backwards, and ``tess.left(-30)`` turns her to the right.
@@ -558,6 +589,8 @@ Let's do an example that shows off some of these new features.
        tess.stamp()                # leave an impression on the canvas
        tess.forward(size)          # move tess along
        tess.right(24)              # and turn her
+
+   wn.exitonclick()
 
 The list of integers shown above is created by printing the ``range(5,60,2)`` result.  It is only
 done to show you the distances being used to move the turtle forward.  The actual use appears
@@ -685,18 +718,14 @@ Exercises
 #. Write a program that uses a for loop to print
      |  ``One of the months of the year is January``
      |  ``One of the months of the year is February``
-     |  ... etc
+     |  ``One of the months of the year is March``
+     |  etc ...
      
 #. Assume you have the assignment ``xs = [12, 10, 32, 3, 66, 17, 42, 99, 20]``
     
    a. Write a loop that prints each of the numbers on a new line.
    b. Write a loop that prints each number and its square on a new line.
-   c. Write a loop that adds all the numbers from the list into a variable
-      called `total`.  You should set the `total` variable to have the value 0
-      before you start adding them up, and print the value in ``total`` after
-      the loop has completed.  
-   d. Print the product of all the numbers in the list.  (product means all
-      multiplied together)   
+
       
 #. Use ``for`` loops to make a turtle draw these regular polygons 
    (regular means all sides the same lengths, all angles the same):  
@@ -708,7 +737,7 @@ Exercises
       
 #. .. _drunk_student_problem:
 
-   A drunk student makes a random turn and then takes 100 steps forward, makes
+   A drunk pirate makes a random turn and then takes 100 steps forward, makes
    another random turn, takes another 100 steps, turns another random amount,
    etc.  A social science student records the angle of each turn
    before the next 100 steps are taken. Her experimental data
@@ -716,18 +745,15 @@ Exercises
    counter-clockwise.)  Use a turtle to draw the path taken by our drunk
    friend.   
    
-#. Enhance your program above to also tell us what the drunk student's heading
-   is after he has finished stumbling around.  (Assume he begins at heading 0).   
+#. Enhance your program above to also tell us what the drunk pirate's heading
+   is after he has finished stumbling around.
  
-#. If you were going to draw a regular polygon with 18 sides, what angle would
-   you need to turn the turtle at each corner?
    
-#. At the interactive prompt, anticipate what each of the following lines will
-   do, and then record what happens. Score yourself, giving yourself one point
-   for each one you anticipate correctly.
+#. On a piece of scratch paper, trace the following program and show the drawing.  When you are done, press ``run`` 
+   and check your answer.
 
 .. activecode:: exercise_1
-   :nopre:
+    :nopre:
 
     import turtle
     wn = turtle.Screen()
@@ -735,9 +761,7 @@ Exercises
     tess.right(90)
     tess.left(3600)
     tess.right(-90)
-    tess.speed(10)
     tess.left(3600)
-    tess.speed(0)
     tess.left(3645)
     tess.forward(-100)
 
@@ -746,18 +770,6 @@ Exercises
 
    .. image:: illustrations/ch03/star.png
    
-   Hints:
-   
-   * Try this on a piece of paper, moving and turning your cellphone as if it
-     was a turtle.  Watch how many complete rotations your cellphone makes
-     before you complete the star.  Since each full rotation is 360 degrees,
-     you can figure out the total number of degrees that your phone was rotated
-     through.  If you divide that by 5, because there are five points to the
-     star, you'll know how many degrees to turn the turtle at each point.
-   * You can hide a turtle behind its invisibility cloak if you don't want it
-     shown.  It will still draw its lines if its pen is down.  The method is
-     invoked as ``tess.hideturtle()``.  ``tess.showturtle()`` makes the turtle
-     visible again.
      
 11. Write a program to draw a face of a clock that looks something like this:
     
@@ -769,7 +781,3 @@ Exercises
 13. Create a turtle, and assign it to a variable.  When you print its type,
     what do you get?
 
-14. What is the collective noun for turtles?  (Hint: they don't come in *herds*.)
-
-15. What the collective noun for pythons?  Is a python a viper?  Is a python
-    venomous?

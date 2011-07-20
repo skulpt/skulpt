@@ -40,7 +40,7 @@ method which will allow the user to provide a numerator and a denominator for th
             self.num = top        #the numerator is on top
             self.den = bottom     #the denominator is on the bottom
 
-        def str(self):
+        def __str__(self):
             return str(self.num) + "/" + str(self.den)
 
         def getNum(self):
@@ -122,7 +122,7 @@ greatest common divisor.  It will then modify itself by dividing its ``num`` and
             self.num = top        #the numerator is on top
             self.den = bottom     #the denominator is on the bottom
 
-        def str(self):
+        def __str__(self):
             return str(self.num) + "/" + str(self.den)
 
         def simplify(self):
@@ -177,7 +177,7 @@ It allows us to find out if two references refer to the same object.
             self.num = top        #the numerator is on top
             self.den = bottom     #the denominator is on the bottom
 
-        def str(self):
+        def __str__(self):
             return str(self.num) + "/" + str(self.den)
 
 
@@ -227,7 +227,7 @@ This type of equality is known as **deep equality** since it compares the values
             self.num = top        #the numerator is on top
             self.den = bottom     #the denominator is on the bottom
 
-        def str(self):
+        def __str__(self):
             return str(self.num) + "/" + str(self.den)
 
         def getNum(self):
@@ -324,7 +324,7 @@ You can try the addition method and then modify the fractions and retry.
             self.num = top        #the numerator is on top
             self.den = bottom     #the denominator is on the bottom
 
-        def str(self):
+        def __str__(self):
             return str(self.num) + "/" + str(self.den)
 
         def simplify(self):

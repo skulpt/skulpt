@@ -771,11 +771,6 @@ Glossary
         reading the source code) and has no effect on the execution of the
         program.
 
-    composition
-        The ability to combine simple expressions and statements into compound
-        statements and expressions in order to represent complex computations
-        concisely.
-
     concatenate
         To join two strings end-to-end.
 
