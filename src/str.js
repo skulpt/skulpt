@@ -30,7 +30,10 @@ Sk.builtin.str = function(x)
         if (!(ret instanceof Sk.builtin.str)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
     }
-    else
+    else if (x.__str__ !== undefined) {
+        return Sk.misceval.callsim(x.__str__,x);
+    }
+    else 
         return Sk.misceval.objectRepr(x);
 
     // interning required for strings in py
