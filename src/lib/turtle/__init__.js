@@ -167,7 +167,7 @@ if (! TurtleGraphics) {
         var canvas_id = this.canvasID;
         $(this.canvas).click(function() {
             $("#"+canvas_id).fadeOut();
-            $("#"+canvas_id).click(null);
+            $("#"+canvas_id).unbind('click');
             Sk.tg.canvasInit = false;
             delete Sk.tg.canvasLib[canvas_id];
         });
@@ -180,7 +180,6 @@ if (! TurtleGraphics) {
     //  This is the function that provides the animation
     //
     render = function () {
-        console.log('starting render' + TurtleGraphics.eventCount);
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
         var currentHeadInfo;
         var currentHead = new Vector(1,0,0);
