@@ -187,6 +187,43 @@ been defined, we can call it as many times as we like with whatever actual param
 Functions can call other functions
 ----------------------------------
 
+Its important to understand that each of the functions we write can be used
+and called from other functions we write.  This is one of the most important
+ways that computer scientists take a large problem and break it down into a
+group of smaller problems.  Here's an example of two functions the first
+called ``square`` simply computes the square of a given number.  The function
+sum_of_squares makes use of square to compute the sum of three numbers that
+have been squared.
+
+.. codelens:: sumofsquares
+
+    def square(x):
+        y = x * x
+        return y
+
+    def sum_of_squares(x,y,z):
+        a = square(x)
+        b = square(y)
+        c = square(z)
+
+        return a+b+c
+
+    a = -5
+    b = 2
+    c = 10
+    print(square(-5))
+    print(sum_of_squares(a,b,c))
+
+
+
+Even though this is a pretty simple idea, in practice this example
+illustrates many very important Python concepts.
+
+* local variables
+* global variables
+* parameter passing
+
+
 Let's assume now we want to write a function to draw a rectangle.  We need to be able to call
 the function with different arguments for width and height.  Unlike the case of the
 square, we cannot repeat the same thing 4 times, because the four sides are not equal.  However, it
