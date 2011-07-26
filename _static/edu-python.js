@@ -236,11 +236,12 @@ if (! PythonTutor) {
 
         // render locals on stack:
         if (curEntry.stack_locals != undefined) {
+            var self = this;
             $.each(curEntry.stack_locals, function (i, frame) {
                 var funcName = htmlspecialchars(frame[0]); // might contain '<' or '>' for weird names like <genexpr>
                 var localVars = frame[1];
 
-                $(this.dataVisElement).append('<div class="vizFrame">Local variables for <span style="font-family: Andale mono, monospace;">' + funcName + '</span>:</div>');
+                $(self.dataVisElement).append('<div class="vizFrame">Local variables for <span style="font-family: Andale mono, monospace;">' + funcName + '</span>:</div>');
 
                 // render locals in alphabetical order for tidiness:
                 var orderedVarnames = [];
@@ -250,8 +251,8 @@ if (! PythonTutor) {
                 orderedVarnames.sort();
 
                 if (orderedVarnames.length > 0) {
-                    $(this.dataVisElement + " .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
-                    var tbl = $(this.outputPaneTable + " table:last");
+                    $(self.dataVisElement + " .vizFrame:last").append('<br/><table class="frameDataViz"></table>');
+                    var tbl = $(self.outputPaneTable + " table:last");
                     $.each(orderedVarnames, function(i, varname) {
                         var val = localVars[varname];
                         tbl.append('<tr><td class="varname"></td><td class="val"></td></tr>');
@@ -262,7 +263,7 @@ if (! PythonTutor) {
                         else {
                             curTr.find("td.varname").html(varname);
                         }
-                        this.renderData(val, curTr.find("td.val"));
+                        self.renderData(val, curTr.find("td.val"));
                     });
 
                     tbl.find("tr:last").find("td.varname").css('border-bottom', '0px');
