@@ -46,8 +46,8 @@ for all aspects of Python.
 The site contains 
 a listing of all the standard modules that are available with Python 
 (see `Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).  
-You will also see that there is a `Language Reference <http://docs.python.org/py3k/reference/index.html>`_, 
-a `Tutorial <http://docs.python.org/py3k/tutorial/index.html>`_, as well as 
+You will also see that there is a `Language Reference <http://docs.python.org/py3k/reference/index.html>`_
+and a `Tutorial <http://docs.python.org/py3k/tutorial/index.html>`_, as well as 
 installation instructions, how-tos, and frequently asked questions.  We encourage you to become familiar with this site
 and to use it often.
 
@@ -55,7 +55,7 @@ and to use it often.
 
 .. image:: illustrations/chmodules/pythondocmedium.png
 
-If you have not done so already, take a look at the Module Index.  Here you will see an alphabetical listing of all
+If you have not done so already, take a look at the Global Module Index.  Here you will see an alphabetical listing of all
 the modules that are available as part of the standard library.  Find the turtle module.
 
 .. image:: illustrations/chmodules/moduleindexmedium.png
@@ -65,6 +65,19 @@ the modules that are available as part of the standard library.  Find the turtle
 You can see that all the turtle functionality that we have talked about is there.  However, there is so much more.  Take some time to read through and familiarize yourself with some of the other things that turtles can do.
 
 We will now turn our attention to a few other modules that you might find useful.
+
+.. admonition:: Note: Python modules and limitations with activecode
+
+	Throughout the chapters of this book, activecode windows allow you to practice the Python that you are learning.  
+	We mentioned in the first chapter that programming is normally done using some type of development 
+	environment and that the
+	activecode used here was strictly to help us learn.  It is not the way we write production programs.
+
+	To that end, it is necessary to mention that many of the  modules available in standard Python 
+	will **not** work in the activecode environment.  In fact, only turtle, math, and random have been 
+	ported at this point.  If you wish to explore any
+	additional modules, you will need to also explore using a more robust development environment.
+
 
 
 The `math` module
@@ -83,7 +96,7 @@ like `pi` and `e`.
 
     print(math.sqrt(2.0))
 
-    print(math.sin(math.pi/2))   # sin of 90 degrees (pi/2 radians)
+    print(math.sin(math.radians(90)))   # sin of 90 degrees
     
  
 ..  Like almost all other programming languages, angles are expressed in *radians*
@@ -175,7 +188,9 @@ is likely different meaning that even though the random numbers are being create
 get random behavior each time you execute.
 
 
+.. admonition:: Lab
 
+    * `Sine Wave <sinlab.html>`_ In this guided lab exercise we will have the turtle plot a sine wave.
 
 Glossary
 --------

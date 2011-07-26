@@ -39,10 +39,14 @@ farthest is the winner.
 There are several different, and equally plausible, solutions to this problem.
 Lets look at what needs to be done, and then look at some of the options for
 the solution.  To start, lets think about a solution to the simplest form
-of the problem.  A race between two turtles, we'll look at more complex races
-later.  When you are faced with a problem like this in computer science it is
+of the problem, a race between two turtles. We'll look at more complex races
+later.  
+
+When you are faced with a problem like this in computer science it is
 often a good idea to find a solution to a simple problem first and then
-figure out how to make the solution more general later.
+figure out how to make the solution more general.
+
+Here is a possible sequence of steps that we will need to accomplish:
 
 #. Import the modules we need
 
@@ -97,7 +101,7 @@ to see the different kinds of behavior.
 
 
 So, which of these programs is better?  Which of these programs is most
-correct?  These are excellent questions program 1 is certainly the simplest,
+correct?  These are excellent questions. Program 1 is certainly the simplest,
 but it isn't very satisfying as far as a race is concerned.  Each turtle
 simply moves their distance on their turn.  That is not very satisfying as far
 as a simulated race goes.  Program 2 ends up looking a lot like Program 1

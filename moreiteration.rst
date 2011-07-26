@@ -567,8 +567,8 @@ algorithm.
 .. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
            cursor
 
-Tables
-------
+Simple Tables
+-------------
 
 One of the things loops are good for is generating tabular data.  Before
 computers were readily available, people had to calculate logarithms, sines and
@@ -630,11 +630,128 @@ column does not depend on the number of digits in the first column.
 --------------------
 
 Two dimensional tables have both rows and columns.  You have probably seen many tables like this if you have used a
-spreadsheet program.  Another object that is organized in rows and columns is a digital image.
+spreadsheet program.  Another object that is organized in rows and columns is a digital image.  In this section we will
+explore how iteration allows us to manipulate these images.
+
+A **digital image** is a finite collection of small, discrete picture elements called **pixels**.  These pixels are organized in a two-dimensional grid.  Each pixel represents the smallest amount of picture information that is
+available.  Sometimes these pixels appear as small "dots".
+
+Each image (grid of pixels) has its own width and its own height.  The width is the number of columns and the height is the number of rows.  We can name the pixels in the grid by using the column number and row number.  However, it is very important to remember
+that computer scientists like to start counting with 0!  This means that if there are 20 rows, they will be named 0,1,2, and so on thru 19.  This will be very useful later when we iterate using range.
+
+
+In the figure below, the pixel of interest is found at column **c** and row **r**.
+
+.. image:: illustrations/imageprocessing/image.png
+
+
+Each pixel of the image will represent a single color.  The specific color depends on a formula that mixes various amounts
+of three basic colors: red, green, and blue.  This technique for creating color is known as the **RGB Color Model**.
+The amount of each color, sometimes called the **intensity** of the color, allows us to have very fine control over the
+resulting color.
+
+The minimum intensity value for a basic color is 0.  For example if the red intensity is 0, then there is no red in the pixel.  The maximum
+intensity is 255.  This means that there are actually 256 different amounts of intensity for each basic color.  Since there
+are three basic colors, that means that you can create 256\ :sup:`3` distinct colors using the RGB Color Model.
+
+
+Here are the red, green and blue intensities for some common colors.  Note that "Black" is represented by a pixel having
+no basic color.  On the other hand, "White" has maximum values for all three basic color components.
+
+	=======  =======  =======  =======
+	Color    Red      Green    Blue
+	=======  =======  =======  =======
+	Red      255      0        0
+	Green    0        255      0
+	Blue     0        0        255
+	White    255      255      255
+	Black    0        0        0
+	Yellow   255      255      0
+	Magenta  255      0        255
+	=======  =======  =======  =======
+
+In order to manipulate an image, we need to be able to access individual pixels.  This capability is provided by
+a module called **image**.  The image module defines two classes: ``Image`` and ``Pixel``.
+
+Each Pixel object has three attributes: the red intensity, the green intensity, and the blue intensity.  A pixel provides methods
+that allow us to ask for the intensity values, ``getRed``, ``getGreen``, and ``getBlue``.  In addition, we can ask a
+pixel to change its intensity value using the ``setRed``, ``setGreen``, and ``setBlue`` methods. 
+
+
+    ============  ================            ===============================================
+    Method Name   Example                     Explanation
+    ============  ================            ===============================================
+    Pixel(r,g,b)  Pixel(20,100,50)            Create a new pixel with 20 red, 100 green, and 50 blue.
+    getRed()      r = p.getRed()              Return the red component intensity.
+    getGreen()    r = p.getGreen()            Return the green component intensity.
+    getBlue()     r = p.getBlue()             Return the blue component intensity.
+    setRed()      p.setRed(100)               Set the red component intensity to 100.
+    setGreen()    p.setGreen(45)              Set the green component intensity to 45.
+    setBlue()     p.setBlue(156)              Set the blue component intensity to 156.
+    ============  ================            ===============================================
+
+In the example below, we first create a pixel with 45 units of red, 76 units of green, and 200 units of blue.
+We then print the current amount of red, change the amount of red, and finally, set the amount of blue to be
+the same as the current amount of green.
+
+.. activecode::  pixelex1a
+    
+    import image
+
+    p = image.Pixel(45,76,200)
+    print(p.getRed())
+    p.setRed(66)
+    print(p.getRed())
+    p.setBlue(p.getGreen())
+    print(p.getGreen(), p.getBlue())
+
+
+To access the pixels in a real image, we need to create an ``Image`` object.  Image objects are created by
+using files that store digital images.  The image has an attribute corresponding to the width, the height, and to the
+collection of pixels in the image.  We can ask an image object to return its size using the ``getWidth`` and ``getHeight`` methods.  We can also get a pixel from a particular location in the image using ``getPixel`` and change the pixel at
+a particular location using ``setPixel``. 
+
+
+The Image class
+
+    =================== =========================== ===============================================
+    Method Name         Example                     Explanation
+    =================== =========================== ===============================================
+    Image(filename)     img = image.Image("cy.png") Create an Image object from the file cy.png.
+    getWidth()          w = img.getWidth()          Return the width of the image in pixels.
+    getHeight()         h = img.getHeight()         Return the height of the image in pixels.
+    getPixel(col,row)   p = img.getPixel(35,86)     Return the pixel at column 35, row 86d.
+    setPixel(col,row,p) img.setPixel(100,50,mp)     Set the pixel at column 100, row 50 to be mp.
+    =================== =========================== ===============================================
+
+Consider the image shown below.  Assume that the image is stored in a file called "cy.png".  Line 2 opens the
+file and uses the contents to create an image object that is referred to by ``img``.  Once we have an image object,
+we can use the methods described above to access information about the image or to get a specific pixel and check
+on its basic color intensities.
+
+
+
+
 
 .. raw:: html
 
     <img src="/Users/davidranum/Desktop/cy.png" id="cy.png">
+
+
+
+.. activecode::  pixelex1
+
+    import image
+    img = image.Image("cy.png")
+
+    print(img.getWidth())
+    print(img.getHeight())
+
+    p = img.getPixel(45,55)
+    print(p.getRed(), p.getGreen(), p.getBlue())
+
+
+When you run the program you can see that the pixel at column 45, row 55, has a red, green and blue intensity
 
 
 .. activecode::  acimg_1
@@ -654,9 +771,6 @@ spreadsheet program.  Another object that is organized in rows and columns is a 
            newimg.setPixel(col,row,p)
 
     newimg.draw(win,100,20)
-
-
-
 
 
 
