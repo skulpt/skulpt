@@ -64,7 +64,7 @@ the modules that are available as part of the standard library.  Find the turtle
 
 You can see that all the turtle functionality that we have talked about is there.  However, there is so much more.  Take some time to read through and familiarize yourself with some of the other things that turtles can do.
 
-We will now turn our attention to a few other modules that you might find useful.
+
 
 .. admonition:: Note: Python modules and limitations with activecode
 
@@ -79,6 +79,25 @@ We will now turn our attention to a few other modules that you might find useful
 	additional modules, you will need to also explore using a more robust development environment.
 
 
+More About Using Modules
+------------------------
+
+Before we move on to exploring other modules, we should say a bit more about what modules are and how we
+typically use them.  One of the most important things to realize about modules is the fact that they are data objects, just
+like any other data in Python.  Module objects simply contain other Python elements.
+
+
+The first thing we need to do when we wish to use a module is perform an ``import``.  In the example above, the statement
+``import turtle`` creates a new name, ``turtle`` and makes it refer to a `module object`.  This looks very much like
+the reference diagrams we saw earlier for simple variables.
+
+
+.. image:: illustrations/chmodules/modreference.png
+
+In order to use something contained in a module, we use the `dot` notation, providing the module name and the specific item joined together with a "dot".  For example, to use the ``Turtle`` class, we say ``turtle.Turtle``.  You should read
+this as: "In the module turtle, access the Python element called Turtle".  
+
+We will now turn our attention to a few other modules that you might find useful.
 
 The `math` module
 -----------------
@@ -86,6 +105,12 @@ The `math` module
 The ``math`` module contains the kinds of mathematical functions you'd typically find on your
 calculator and some mathematical constants
 like `pi` and `e`.
+As we noted above, when we ``import math``, we create a reference to a module object that contains these elements.
+
+.. image:: illustrations/chmodules/mathmod.png
+
+Here are some items from the math module in action.  If you want more information, you can check out the 
+`Math Module <http://docs.python.org/py3k/library/math.html#module-math>`_ Python Documentation.
 
 .. activecode:: chmodule_02
 
@@ -99,16 +124,18 @@ like `pi` and `e`.
     print(math.sin(math.radians(90)))   # sin of 90 degrees
     
  
+
 ..  Like almost all other programming languages, angles are expressed in *radians*
 .. rather than degrees.  There are two functions ``radians`` and ``degrees`` to
 .. convert between the two popular ways of measuring angles.
 
 Notice another difference between this module and our use of ``turtle``.
 In  ``turtle`` we create objects (either ``Turtle`` or ``Screen``) and call methods on those objects.  Remember that
-a turtle is a data object (recall ``alex`` and ``tess``).  We need to create one in order to use it.
+a turtle is a data object (recall ``alex`` and ``tess``).  We need to create one in order to use it.  When we say
+``alex = turtle.Turtle()``, we are calling the constructor for the Turtle class which returns a single turtle object.
  
 
-Mathematical functions, on the other hand, are not objects.  They do not remember anything about themselves.  They simply
+Mathematical functions do not need to be constructed.  They simply
 perform a task.
 They are all housed together in a module called `math`.  Once we have imported the math module, anything defined there
 can be used in our program.  Notice that we always use the name of the module followed by a `dot` followed by the

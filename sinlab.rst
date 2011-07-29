@@ -2,13 +2,13 @@
    Attribution, Share Alike
 
 Plotting a sine Wave
-===================
+====================
 
 Have you ever used a graphing calculator?  You can enter an equation, push a few buttons, and the calculator will draw a line.  In this exercise, we will use our turtle to plot a simple math function, the sine wave.
 
 
 What is the sine function?
--------------------------
+--------------------------
 
 The sine function, sometimes called the sine wave, is a smooth, repetitive oscillation that occurs often in many fields including mathematics, physics, and engineering.  For this lab, we will use the math library to generate the values that
 we need.

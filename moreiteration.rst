@@ -626,8 +626,8 @@ column does not depend on the number of digits in the first column.
 
 
 
-2-Dimensional Tables
---------------------
+2-Dimensional Iteration
+-----------------------
 
 Two dimensional tables have both rows and columns.  You have probably seen many tables like this if you have used a
 spreadsheet program.  Another object that is organized in rows and columns is a digital image.  In this section we will
@@ -735,14 +735,14 @@ on its basic color intensities.
 
 .. raw:: html
 
-    <img src="/Users/davidranum/Desktop/cy.png" id="cy.png">
+    <img src="_static/LutherBellPic.jpg" id="luther.jpg">
 
 
 
 .. activecode::  pixelex1
 
     import image
-    img = image.Image("cy.png")
+    img = image.Image("luther.jpg")
 
     print(img.getWidth())
     print(img.getHeight())
@@ -751,13 +751,82 @@ on its basic color intensities.
     print(p.getRed(), p.getGreen(), p.getBlue())
 
 
-When you run the program you can see that the pixel at column 45, row 55, has a red, green and blue intensity
+When you run the program you can see that the image has a width of 400 pixels and a height of 244 pixels.  Also, the
+pixel at column 45, row 55, has RGB values of 165, 161, and 158.  Try a few other pixel locations by changing the ``getPixel`` arguments and rerunning the program. 
+
+
+Image processing refers to the ability to manipulate the individual pixels in a digital image.  In order to process
+all of the pixels, we need to be able to systematically visit all of the rows and columns in the image.  The best way
+to do this is to used **nested iteration**.  
+
+Nested iteration simply means that we will place one iteration construct inside of another.  We will call these two
+iterations the **outer iteration** and the **inner iteration**.  
+
+Consider the simple iteration below.
+
+.. sourcecode:: python
+
+    for i in range(5):
+       print(i)
+
+We have seen this enough times to know that the value of ``i`` will be 0, then 1, then 2, and so on up to 4.
+
+However, the ``print`` function can be any statement including another iteration.  For example,
+
+.. sourcecode:: python
+
+    for i in range(5):
+       for j in range(3):
+            print(i,j)
+
+The ``for i`` iteration is the `outer iteration` and the ``for j`` iteration is the `inner iteration`.  Each pass thru
+the outer iteration will result in the complete processing of the inner iteration from beginning to end.  This means that
+the output from this nested iteration will show that for each value of ``i``, all values of ``j`` will occur.
+
+Here is the same example in activecode.  Try it.  Note that the value of ``i`` stays the same while the value of ``j`` changes.  The inner iteration is moving faster than the outer iteration.
+
+.. activecode:: nested1
+
+    for i in range(5):
+       for j in range(3):
+            print(i,j)
+
+Another way to see this in more detail is to examine the behavior with codelens.  Step thru the iterations to see the
+flow of control as it occurs with the nested iteration.
+
+.. codelens:: nested2
+
+    for i in range(5):
+       for j in range(3):
+            print(i,j)
+
+Our goal with image processing is to visit each pixel.  We will use an iteration to process each `row`.  Within that iteration, we will use a nested iteration to process each `column`.  The result is a nested iteration, similar to the one
+seen above, where the outer ``for`` loop processes the rows, from 0 up to but not including the height of the image.
+The inner ``for`` loop will process each column, again from 0 up to but not including the width of the image.
+
+The resulting code will look like the following:
+
+.. sourcecode:: python
+
+	for col in range(img.getWidth()):
+	    for row in range(img.getHeight()):
+	        #do something with the pixel at position (col,row)
+	
+One of the easiest image processing algorithms will create a **negative** image.  A negative image simply means that
+each pixel will be the `opposite` of what it was originally.  But what does opposite mean?
+
+In the RGB color model, we can consider the opposite of the red component as the difference between the original red
+and 256.  For example, if the original red component was 50, then the opposite, or negative red value would be
+``256-50`` or 206.  In other words, pixels with alot of red will have negatives with little red and pixels with little red will have negatives with alot.  We do the same for the blue and green as well.
+
+The program below implements this algorithm using the previous image.  
+
 
 
 .. activecode::  acimg_1
 
     import image
-    img = image.Image("cy.png")
+    img = image.Image("luther.jpg")
 
     win = image.ImageWin()
     newimg = image.EmptyImage(img.getHeight(),img.getWidth())
@@ -770,7 +839,7 @@ When you run the program you can see that the pixel at column 45, row 55, has a 
            p.setBlue(255-p.getBlue())
            newimg.setPixel(col,row,p)
 
-    newimg.draw(win,100,20)
+    newimg.draw(win)
 
 
 
