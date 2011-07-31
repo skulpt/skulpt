@@ -398,9 +398,6 @@ Glossary
 
 .. glossary::
 
-    boolean function
-        A function that returns a boolean value.  The only possible
-        values of the ``bool`` type are ``False`` and ``True``.
 
     chatterbox function
         A function which interacts with the user (using ``input`` or ``print``) when
@@ -444,10 +441,6 @@ Glossary
 Exercises
 ---------
 
-All of the exercises below should be added to a single file.  In that file, you should
-also add the ``test`` and ``test_suite`` scaffolding functions shown above, and then, as you work through the exercises, add the new tests to your test suite. 
-
-After completing each exercise, confirm that all the tests pass.
 
 #. Write a function ``to_secs`` that converts hours, minutes and seconds to 
    a total number of seconds.  
@@ -488,19 +481,7 @@ After completing each exercise, confirm that all the tests pass.
    ``intercept(x1, y1, x2, y2)`` that returns the y-intercept of the line
    through the points ``(x1, y1)`` and ``(x2, y2)``.
 
-#. Write a function called ``is_even(n)`` that takes an integer as an argument
-   and returns ``True`` if the argument is an **even number** and ``False`` if
-   it is **odd**.
-   
 
-   
-#. Now write the function ``is_odd(n)`` that returns ``True`` when ``n`` is odd
-   and ``False`` otherwise.
-
-   Finally, modify it so that it uses a call to ``is_even`` to determine if its 
-   argument is an odd integer.
-   
-#. Write a function ``is_factor(f, n)``.
  
 
 #. Write the function ``f2c(t)`` designed to return the
