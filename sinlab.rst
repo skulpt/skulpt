@@ -88,18 +88,21 @@ Now we can put the two previous programs together to complete our plot.  Here is
 
 .. activecode:: sinlab2
 
-    import math
-    import turtle              
+	import math
+	import turtle
 
-    wn = turtle.Screen()      
-    wn.bgcolor('lightblue')
+	wn = turtle.Screen()
+	wn.bgcolor('lightblue')
 
-    fred = turtle.Turtle()  
+	fred = turtle.Turtle()
+	fred.setworldcoordinates(0,-5,361,5)
 
-    #your code here
+	for angle in range(361):
+	    fred.goto(angle,math.sin(math.radians(angle)))
 
-    wn.exitonclick()
+	#your code here
 
+	wn.exitonclick()
 
 Making the Plot Better
 ----------------------
