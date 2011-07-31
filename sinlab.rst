@@ -18,7 +18,7 @@ For this lab, we will use the math library to generate the values that
 we need.
 To help you understand the sine function, consider the following Python program.  
 As you can see, the ``sin`` function from the math library takes a single parameter.  This parameter must be a value
-in what we call "radians" (you may remember this from trigonometry class).  Since most of us are used to stating the size of an angle in "degrees", the math module provides a function, ``radians`` that will convert from degrees to radians.
+in "radians" (you may remember this from trigonometry class).  Since most of us are used to stating the size of an angle in "degrees", the math module provides a function, ``radians`` that will convert from degrees to radians for us.
 
 .. activecode:: sin1
 
@@ -27,10 +27,10 @@ in what we call "radians" (you may remember this from trigonometry class).  Sinc
     y = math.sin(math.radians(90))
     print(y)
 
-The program above shows us that the sine of 90 degrees is 1.  Try a few other values, like 0 degrees, 180 degrees, 38 degrees, and so on.  You should be able to match the results up with the picture shown above.
+The program above shows us that the sine of 90 degrees is 1.  Note that the figure above agrees with that.  Try a few other values, like 0 degrees, 180 degrees, 38 degrees, and so on.  You should be able to match the results up with the picture shown above.
 
-It might be even more interesting to iterate through a sequence of angle values and see the value of the sine function
-change.  Try it for angles between 0 and 90 degrees.  What do you notice about the values?
+It might be even more interesting to iterate through a sequence of angles and see the value of the sine function
+change.  Try it for angles between 0 and 180 degrees.  What do you notice about the results?
 
 .. activecode:: sin2
 
@@ -40,7 +40,7 @@ change.  Try it for angles between 0 and 90 degrees.  What do you notice about t
         y = math.sin(math.radians(angle))
         print(y)
 
-Now try it for some other boundary values, like 180 or 360.
+Now try it for some other boundary values, like 270 or 360.
 
 
 Doing the Plot
@@ -58,7 +58,11 @@ location.
 
 
 
-Recall that the default turtle screen starts the turtle in the middle at position **(0,0)**.  You can think of the screen as a piece of graph paper.  Let's try the ``goto`` method.  Experiment with the method to make sure you understand the coordinate system of the screen.
+Recall that the default turtle screen starts with the turtle in the middle at position (0,0).  You can think of the screen as a piece of graph paper.  The x axis runs horizontally and the y axis runs vertically.  The point where they meet in the middle is (0,0).  Positions to the left of the center have an x value that is negative.  Positions that are below the center have a y value that is negative.
+
+.. image:: illustrations/sinlab/graphpaper.jpg
+
+Let's try the ``goto`` method.  Experiment with the method to make sure you understand the coordinate system of the screen.  Try both positive and negative numbers.
 
 
 
@@ -80,11 +84,16 @@ Recall that the default turtle screen starts the turtle in the middle at positio
 
 Now we can put the two previous programs together to complete our plot.  Here is our sequence of steps.
 
+#. Create and set up the turtle and the screen.
+
 #. Iterate the angle from 0 to 360.
 
-#. Generate the sine value for that angle.  
+	- Generate the sine value for that angle.  
 
-#. Move the turtle to that position (leave a line behind).
+	- Move the turtle to that position (leave a line behind).
+
+
+Here is a partial program for you to complete.
 
 .. activecode:: sinlab2
 
@@ -112,4 +121,4 @@ You probably think that the program has errors since it does not draw the pictur
 Now can you see the problem?  The value of ``sin`` always stays between -1 and 1.  This does not give our turtle much room to run.
 
 In order to fix this problem, we need to redesign our "graph paper" so that the coordinates give us more room to plot the values of the sine function.  To do this, we will use a method of the ``Screen`` class called ``setworldcoordinates``.
-This method allows us to change the range of values on the x and y coordinate system for our turtle.  Take a look at the documentation for the turtle module to see how to use this method (`Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).
+This method allows us to change the range of values on the x and y coordinate system for our turtle.  Take a look at the documentation for the turtle module to see how to use this method (`Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).  Once you have an understanding of the parameters required to use the method, choose an appropriate coordinate system and retry your solution.
