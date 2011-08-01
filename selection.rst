@@ -25,8 +25,8 @@ Decisions and Selection
     single: operator; comparison
     single: comparison operator
 
-Boolean values and expressions
-------------------------------
+Boolean Values and Boolean Expressions
+--------------------------------------
 
 The Python type for storing true and false values is called ``bool``, named
 after the British mathematician, George Boole. George Boole created *Boolean

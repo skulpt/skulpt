@@ -401,9 +401,9 @@ which is why we put the special ``print`` function at the end.
 
 
 
-There are also some great visualization tools becoming available to help you 
-trace and understand small fragments of Python code.  The one we recommend is at 
-http://netserv.ict.ru.ac.za/python3_viz 
+.. There are also some great visualization tools becoming available to help you 
+.. trace and understand small fragments of Python code.  The one we recommend is at 
+.. http://netserv.ict.ru.ac.za/python3_viz 
 
 
 
@@ -626,8 +626,8 @@ column does not depend on the number of digits in the first column.
 
 
 
-2-Dimensional Iteration
------------------------
+2-Dimensional Iteration: Image Processing
+-----------------------------------------
 
 Two dimensional tables have both rows and columns.  You have probably seen many tables like this if you have used a
 spreadsheet program.  Another object that is organized in rows and columns is a digital image.  In this section we will
@@ -644,6 +644,8 @@ In the figure below, the pixel of interest is found at column **c** and row **r*
 
 .. image:: illustrations/imageprocessing/image.png
 
+The RGB Color Model
+^^^^^^^^^^^^^^^^^^^
 
 Each pixel of the image will represent a single color.  The specific color depends on a formula that mixes various amounts
 of three basic colors: red, green, and blue.  This technique for creating color is known as the **RGB Color Model**.
@@ -673,9 +675,9 @@ no basic color.  On the other hand, "White" has maximum values for all three bas
 In order to manipulate an image, we need to be able to access individual pixels.  This capability is provided by
 a module called **image**.  The image module defines two classes: ``Image`` and ``Pixel``.
 
-Each Pixel object has three attributes: the red intensity, the green intensity, and the blue intensity.  A pixel provides methods
-that allow us to ask for the intensity values, ``getRed``, ``getGreen``, and ``getBlue``.  In addition, we can ask a
-pixel to change its intensity value using the ``setRed``, ``setGreen``, and ``setBlue`` methods. 
+Each Pixel object has three attributes: the red intensity, the green intensity, and the blue intensity.  A pixel provides three methods
+that allow us to ask for the intensity values.  They are called ``getRed``, ``getGreen``, and ``getBlue``.  In addition, we can ask a
+pixel to change an intensity value using its ``setRed``, ``setGreen``, and ``setBlue`` methods. 
 
 
     ============  ================            ===============================================
@@ -706,23 +708,35 @@ the same as the current amount of green.
     print(p.getGreen(), p.getBlue())
 
 
-To access the pixels in a real image, we need to create an ``Image`` object.  Image objects are created by
-using files that store digital images.  The image has an attribute corresponding to the width, the height, and to the
-collection of pixels in the image.  We can ask an image object to return its size using the ``getWidth`` and ``getHeight`` methods.  We can also get a pixel from a particular location in the image using ``getPixel`` and change the pixel at
+Image Objects
+^^^^^^^^^^^^^
+
+
+To access the pixels in a real image, we need to first create an ``Image`` object.  Image objects can be created in two
+ways.  First, an Image object can be made from the
+files that store digital images.  The image object has an attribute corresponding to the width, the height, and the
+collection of pixels in the image.  
+
+It is also possible to create an Image object that is "empty".  An ``EmptyImage`` has a width and a height.  However, the
+pixel collection consists of only "White" pixels.
+
+We can ask an image object to return its size using the ``getWidth`` and ``getHeight`` methods.  We can also get a pixel from a particular location in the image using ``getPixel`` and change the pixel at
 a particular location using ``setPixel``. 
 
 
-The Image class
+The Image class is shown below.  Note that the first two entries show how to create image objects.  The parameters are 
+different depending on whether you are using an image file or creating an empty image.
 
-    =================== =========================== ===============================================
-    Method Name         Example                     Explanation
-    =================== =========================== ===============================================
-    Image(filename)     img = image.Image("cy.png") Create an Image object from the file cy.png.
-    getWidth()          w = img.getWidth()          Return the width of the image in pixels.
-    getHeight()         h = img.getHeight()         Return the height of the image in pixels.
-    getPixel(col,row)   p = img.getPixel(35,86)     Return the pixel at column 35, row 86d.
-    setPixel(col,row,p) img.setPixel(100,50,mp)     Set the pixel at column 100, row 50 to be mp.
-    =================== =========================== ===============================================
+    =================== =============================== ==================================================
+    Method Name         Example                         Explanation
+    =================== =============================== ==================================================
+    Image(filename)     img = image.Image("cy.png")     Create an Image object from the file cy.png.
+    EmptyImage()        img = image.EmptyImage(100,200) Create an Image object that has all "White" pixels
+    getWidth()          w = img.getWidth()              Return the width of the image in pixels.
+    getHeight()         h = img.getHeight()             Return the height of the image in pixels.
+    getPixel(col,row)   p = img.getPixel(35,86)         Return the pixel at column 35, row 86d.
+    setPixel(col,row,p) img.setPixel(100,50,mp)         Set the pixel at column 100, row 50 to be mp.
+    =================== =============================== ==================================================
 
 Consider the image shown below.  Assume that the image is stored in a file called "cy.png".  Line 2 opens the
 file and uses the contents to create an image object that is referred to by ``img``.  Once we have an image object,
@@ -754,15 +768,16 @@ on its basic color intensities.
 When you run the program you can see that the image has a width of 400 pixels and a height of 244 pixels.  Also, the
 pixel at column 45, row 55, has RGB values of 165, 161, and 158.  Try a few other pixel locations by changing the ``getPixel`` arguments and rerunning the program. 
 
+Image Processing and Nested Iteration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Image processing refers to the ability to manipulate the individual pixels in a digital image.  In order to process
+**Image processing** refers to the ability to manipulate the individual pixels in a digital image.  In order to process
 all of the pixels, we need to be able to systematically visit all of the rows and columns in the image.  The best way
-to do this is to used **nested iteration**.  
+to do this is to use **nested iteration**.  
 
 Nested iteration simply means that we will place one iteration construct inside of another.  We will call these two
 iterations the **outer iteration** and the **inner iteration**.  
-
-Consider the simple iteration below.
+To see how this works, consider the simple iteration below.
 
 .. sourcecode:: python
 
@@ -770,8 +785,8 @@ Consider the simple iteration below.
        print(i)
 
 We have seen this enough times to know that the value of ``i`` will be 0, then 1, then 2, and so on up to 4.
-
-However, the ``print`` function can be any statement including another iteration.  For example,
+The ``print`` will be performed once for each pass.
+However, the ``print`` function can be any statement including another iteration (another ``for`` statement).  For example,
 
 .. sourcecode:: python
 
@@ -783,7 +798,7 @@ The ``for i`` iteration is the `outer iteration` and the ``for j`` iteration is 
 the outer iteration will result in the complete processing of the inner iteration from beginning to end.  This means that
 the output from this nested iteration will show that for each value of ``i``, all values of ``j`` will occur.
 
-Here is the same example in activecode.  Try it.  Note that the value of ``i`` stays the same while the value of ``j`` changes.  The inner iteration is moving faster than the outer iteration.
+Here is the same example in activecode.  Try it.  Note that the value of ``i`` stays the same while the value of ``j`` changes.  The inner iteration, in effect, is moving faster than the outer iteration.
 
 .. activecode:: nested1
 
@@ -792,7 +807,7 @@ Here is the same example in activecode.  Try it.  Note that the value of ``i`` s
             print(i,j)
 
 Another way to see this in more detail is to examine the behavior with codelens.  Step thru the iterations to see the
-flow of control as it occurs with the nested iteration.
+flow of control as it occurs with the nested iteration.  Again, for every value of ``i``, all of the values of ``j`` will occur.  You can see that the inner iteration completes before going on to the next pass of the outer iteration.
 
 .. codelens:: nested2
 
@@ -802,9 +817,9 @@ flow of control as it occurs with the nested iteration.
 
 Our goal with image processing is to visit each pixel.  We will use an iteration to process each `row`.  Within that iteration, we will use a nested iteration to process each `column`.  The result is a nested iteration, similar to the one
 seen above, where the outer ``for`` loop processes the rows, from 0 up to but not including the height of the image.
-The inner ``for`` loop will process each column, again from 0 up to but not including the width of the image.
+The inner ``for`` loop will process each column of a row, again from 0 up to but not including the width of the image.
 
-The resulting code will look like the following:
+The resulting code will look like the following.  We are now free to do anything we wish to each pixel in the image.
 
 .. sourcecode:: python
 
@@ -812,20 +827,21 @@ The resulting code will look like the following:
 	    for row in range(img.getHeight()):
 	        #do something with the pixel at position (col,row)
 	
-One of the easiest image processing algorithms will create a **negative** image.  A negative image simply means that
+One of the easiest image processing algorithms will create what is known as a **negative** image.  A negative image simply means that
 each pixel will be the `opposite` of what it was originally.  But what does opposite mean?
 
 In the RGB color model, we can consider the opposite of the red component as the difference between the original red
-and 256.  For example, if the original red component was 50, then the opposite, or negative red value would be
-``256-50`` or 206.  In other words, pixels with alot of red will have negatives with little red and pixels with little red will have negatives with alot.  We do the same for the blue and green as well.
+and 255.  For example, if the original red component was 50, then the opposite, or negative red value would be
+``255-50`` or 205.  In other words, pixels with alot of red will have negatives with little red and pixels with little red will have negatives with alot.  We do the same for the blue and green as well.
 
-The program below implements this algorithm using the previous image.  
+The program below implements this algorithm using the previous image.  Run it to see the resulting negative image.
 
 
 
 .. activecode::  acimg_1
 
     import image
+
     img = image.Image("luther.jpg")
 
     win = image.ImageWin()
@@ -833,14 +849,39 @@ The program below implements this algorithm using the previous image.
 
     for col in range(img.getWidth()):
         for row in range(img.getHeight()):
-           p = img.getPixel(col,row)
-           p.setRed(255-p.getRed())
-           p.setGreen(255-p.getGreen())
-           p.setBlue(255-p.getBlue())
-           newimg.setPixel(col,row,p)
+           p = img.getPixel(col,row)    
+
+           newred = 255-p.getRed()    
+           newgreen = 255-p.getGreen()
+           newblue = 255-p.getBlue()
+
+           newpixel = image.Pixel(newred,newgreen,newblue)
+
+           newimg.setPixel(col,row,newpixel)
 
     newimg.draw(win)
 
+After importing the image module, we create two image objects.  The first, ``img``, represents a typical digital photo.  The second, ``newimg``, is an empty image that will be "filled in" as we process the original pixel by pixel.  Note that the width and height of the empty image is set to be the same as the width and height of the original.
+
+Lines 8 and 9 create the nested iteration that we discussed earlier.  This allows us to process each pixel in the image.
+Line 10 gets an individual pixel.
+
+Lines 12-14 create the negative intensity values by extracting the original intensity from the pixel and subtracting it
+from 255.  Once we have the ``newred``, ``newgreen``, and ``newblue`` values, we can create a new pixel (Line 16).
+
+Finally, we need to insert the new pixel into the empty image in the same location as the original pixel that it came from in the digital photo.
+
+
+.. admonition:: Other pixel manipulation
+
+	There are a number of different image processing algorithms that follow the same pattern as shown above.  Namely, take the original pixel, extract the red, green, and blue intensities, and then create a new pixel from them.  The new pixel is inserted into an empty image at the same location as the original.
+
+	For example, you can create a **gray scale** pixel by averaging the red, green and blue intensities and then using that value for all intensities.
+
+	From the gray scale you can create **black white** by setting a threshold and selecting to either insert a white pixel or a black pixel into the empty image.
+
+	You can also do some complex arithmetic and create interesting effects, such as 
+	`Sepia Tone <http://en.wikipedia.org/wiki/Sepia_tone#Sepia_toning>`_
 
 
 Glossary
