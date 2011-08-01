@@ -43,8 +43,8 @@ change.  Try it for angles between 0 and 180 degrees.  What do you notice about 
 Now try it for some other boundary values, like 270 or 360.
 
 
-Doing the Plot
---------------
+Making the Plot
+---------------
 
 
 
@@ -88,7 +88,7 @@ Now we can put the two previous programs together to complete our plot.  Here is
 
 #. Iterate the angle from 0 to 360.
 
-	- Generate the sine value for that angle.  
+	- Generate the sine value for each angle.  
 
 	- Move the turtle to that position (leave a line behind).
 
@@ -122,3 +122,9 @@ Now can you see the problem?  The value of ``sin`` always stays between -1 and 1
 
 In order to fix this problem, we need to redesign our "graph paper" so that the coordinates give us more room to plot the values of the sine function.  To do this, we will use a method of the ``Screen`` class called ``setworldcoordinates``.
 This method allows us to change the range of values on the x and y coordinate system for our turtle.  Take a look at the documentation for the turtle module to see how to use this method (`Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).  Once you have an understanding of the parameters required to use the method, choose an appropriate coordinate system and retry your solution.
+
+.. admonition:: Now try this...
+
+	Now that you can plot a sine function, how about trying a different function, such as cosine or log?
+	
+	

@@ -766,6 +766,9 @@ Glossary
         ``=`` is Python's assignment token, which should not be confused
         with the mathematical comparison operator using the same symbol.    
 
+    class
+		see **data type** below
+
     comment
         Information in a program that is meant for other programmers (or anyone
         reading the source code) and has no effect on the execution of the
@@ -784,8 +787,8 @@ Glossary
         yield a single value.
 
     expression
-        A combination of variables, operators, and values that represents a
-        single result value.
+        A combination of operators and operands (variables and values) that represents a
+        single result value.  Expressions are evaluated to give that result.
 
     float
         A Python data type which stores *floating-point* numbers.
@@ -795,7 +798,7 @@ Glossary
         and remember that they are only approximate values.
 
     int
-        A Python data type that holds positive and negative whole numbers.
+        A Python data type that holds positive and negative **whole** numbers.
 
     integer division
         An operation that divides one integer by another and yields an integer.
@@ -807,6 +810,13 @@ Glossary
         cannot use keywords like ``if``, ``def``, and ``while`` as variable
         names.
 
+    modulus operator
+		Also called remainder operator or integer remainder operator.  Gives the remainder after performing integer division.
+
+    object
+		Also known as a data object (or data value).  The fundamental things that programs are designed to
+		manipulate (or that programmers ask to do things for them).
+
     operand
         One of the values on which an operator operates.
 
@@ -814,8 +824,11 @@ Glossary
         A special symbol that represents a simple computation like addition,
         multiplication, or string concatenation.
 
+    prompt string
+		Used during interactive input to provide the use with hints as to what type of value to enter.
+
     reference diagram
-        A picture showing a variable with an arrow pointing to the value (object) that the variable refers to.
+        A picture showing a variable with an arrow pointing to the value (object) that the variable refers to. See also **state snapshot**.
         
     rules of precedence
         The set of rules governing the order in which expressions involving
@@ -833,6 +846,9 @@ Glossary
 
     str
         A Python data type that holds a string of characters.
+
+    type conversion function
+		A function that can convert a data value from one type to another.
 
     value
         A number or string (or other things to be named later) that can be

@@ -32,7 +32,7 @@ Based on the original book
 * `Chapter 4 <modules.html>`__ *Modules and Getting Help*
 * `Chapter 5 <functions.html>`__ *Functions*
 * `Chapter 6 <selection.html>`__ *Decisions and Selection*
-* `Chapter 7 <morefunctions.html>`__ *Functions Revisited*
+
 * `Chapter 8 <moreiteration.html>`__ *Iteration*
 * `Chapter 9 <strings.html>`__ *Strings*
 * `Chapter 10 <lists.html>`__ *Lists*
@@ -41,7 +41,7 @@ Based on the original book
 * `Chapter 13 <classesintro.html>`__ *Classes and Objects - the Basics*
 * `Chapter 14 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
 
-
+.. `Chapter 7 <morefunctions.html>`__ *Functions Revisited*
 .. `Chapter 11 <ch10.html>`__ *Modules and Files*
 .. `Chapter 15 <ch15.html>`__ *Even more OOP*
 .. `Chapter 16 <ch16.html>`__ *Sets of Objects*
@@ -84,7 +84,7 @@ Based on the original book
 
     functions.rst
     selection.rst
-    morefunctions.rst
+
     moreiteration.rst
     strings.rst
     lists.rst
@@ -111,6 +111,7 @@ Based on the original book
 * :ref:`search`
 
 
+..     morefunctions.rst
 ..    ch10.rst
 
 

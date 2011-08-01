@@ -521,8 +521,11 @@ Glossary
 
 .. glossary::
 
+    activecode
+        A unique interpreter environment that allows Python to be executed from within a web browser.
+
     algorithm
-        A general process for solving a category of problems.
+        A general step by step process for solving a problem.
 
     bug
         An error in a program.
@@ -531,6 +534,9 @@ Glossary
         An intermediate language between source code and object code. Many
         modern languages first compile source code into byte code and then
         interpret the byte code with a program called a *virtual machine*.
+
+    codelens
+        An interactive environment that allows the user to control the step by step execution of a Python program
 
     comment
         Information in a program that is meant for other programmers (or anyone
@@ -589,8 +595,11 @@ Glossary
         expressing the solution.
 
     program
-        a sequence of instructions that specifies to a computer actions and
+        A sequence of instructions that specifies to a computer actions and
         computations to be performed.
+
+    programming language
+		A formal notation for representing solutions.
 
     Python shell
         An interactive user interface to the Python interpreter. The user of a
