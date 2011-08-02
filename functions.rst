@@ -23,7 +23,7 @@ Functions
 In Python, a **function** is a named sequence of statements
 that belong together.  Their primary purpose is to help us
 organize programs into chunks that match how we think about
-the problem. 
+the solution to the problem.
  
 The syntax for a **function definition** is:
 
@@ -241,7 +241,7 @@ but we will stick here with the Python way of also calling it a function, or if 
 to stress it, a *non-fruitful* function.
 
 How do we write our own fruitful function?  Lets start with a very simple
-mathematical function ``square``.  the square function will take one number
+mathematical function ``square``.  The square function will take one number
 as a parameter and return the result of squaring that number.  Here is the
 function:
 
@@ -260,7 +260,7 @@ Because the return statement can contain any Python expression we could have
 avoided creating the **temporary variable** ``y`` and simply used
 ``return x*x``.
 Try modifying the square function above to see that this works just the same.
-On the other hand, using **temporary variables** like ``y`` above often make
+On the other hand, using **temporary variables** like ``y`` in the program above makes
 debugging
 easier.  These temporary variables are referred to as **local variables**.
 
@@ -270,12 +270,16 @@ easier.  These temporary variables are referred to as **local variables**.
  .. can be the results of other function calls (like `input`) that we've called along the way.
 
 Notice something important here. The name of the variable we pass as an
-argument --- `toSquare` --- has nothing to do with the name of the parameter
---- `x`.  It is as if  `x = toSquare` is executed when `square` is called.
+argument --- ``toSquare`` --- has nothing to do with the name of the formal parameter
+--- ``x``.  It is as if  ``x = toSquare`` is executed when ``square`` is called.
 It doesn't matter what the value was named in
-the caller, in `square` it's name is `x`.  You can see this very clearly in
+the caller, in ``square`` it's name is ``x``.  You can see this very clearly in
 codelens, where the global variables, and the local variables for the square
 function are in separate boxes.
+
+As you step through the example in codelens notice that the **return** statement not only causes the
+function to return a value, but it also returns the flow of control back to the place in the program
+where the function call was made.
 
 Here's another important thing to notice as you step through this codelens
 demonstration.  Codelens boldfaces the line numbers that it has executed.
@@ -292,7 +296,8 @@ and 3 will not be bolded until the function is called on line 6.
         return y
 
     toSquare = 10
-    print("The result of ", toSquare, " squared is ", square(toSquare))
+    squareResult = square(toSquare)
+    print("The result of ", toSquare, " squared is ", squareResult)
 
 Short variable names are more economical and sometimes make
 code easier to read:
@@ -302,12 +307,12 @@ make sure you also have some comments to enlighten the reader
 about what the variables are used for.
 
 
-All Python functions return ``None`` whenever they do not return another
-value.  Consider the following common mistake made by beginning Python
+All Python functions return ``None`` unless there is an explicit return statement with
+a value other than ``None.``
+Consider the following common mistake made by beginning Python
 programmers.  As you step through this pay very close attention to the return
-value in the local variables listing.  Then Look at what is printed when the
-function
-returns.
+value in the local variables listing.  Then look at what is printed when the
+function returns.
 
 
 .. codelens:: ch04_clsquare_bad
@@ -317,7 +322,8 @@ returns.
         print(y)   # Bad! should use return instead!
 
     toSquare = 10
-    print("The result of ", toSquare, " squared is ", square(toSquare))
+    squareResult = square(toSquare)
+    print("The result of ", toSquare, " squared is ", squareResult)
 
 
 
@@ -329,10 +335,11 @@ returns.
 Variables and parameters are local
 ----------------------------------
 
-When you create a **local variable** inside a function, it only exists inside
-the function, and you cannot use it outside. For example, consider again this function:
+An assignment statement in a function creates a **local variable** for the variable on the left hand
+side of the assignment operator. This variable only exists inside
+the function, and you cannot use it outside. For example, consider again the ``square`` function:
 
-.. activecode:: bad_local
+.. codelens:: bad_local
 
     def square(x):
         y = x * x
@@ -343,18 +350,18 @@ the function, and you cannot use it outside. For example, consider again this fu
 
 
 If you pressed the run button you should have seen an error dialog pop up.
-Because when we try to use ``y`` outside the function,
-we'll get an error: ``Name Error: y is not defined.``
+When we try to use ``y`` on line 6 (outside the function) Python looks for a global
+variable named ``y`` but does not find one.  This results in the
+error: ``Name Error: y is not defined.``
 
-The variable, ``y`` only exists while the function is being executed ---
+The variable ``y`` only exists while the function is being executed ---
 we call this its **lifetime**.
-When the execution of the function terminates,
-the local variables  are destroyed.  If it helps you visualize this think
-about how the local variables in codelens disappear after the function is
-done. 
+When the execution of the function terminates (returns),
+the local variables  are destroyed.  Codelens helps you  visualize this
+because the local variables disappear after the function returns.
 
-Parameters are also local and act like local variables.
-For example, the lifetime of `x` begins when `square` is
+Formal parameters are also local and act like local variables.
+For example, the lifetime of ``x`` begins when ``square`` is
 called,
 and the lifetime ends when the function completes its execution.
 
@@ -368,7 +375,7 @@ Conversely, a function may access a global variable.  But this is considered
 **bad form** by nearly all programmers.  Look at the following,
 nonsensical variation of the square function.
 
-.. sourcecode:: python
+.. activecode:: badsquare_1
 
     def badsquare(x):
         y = x ** power
@@ -383,11 +390,14 @@ Although the ``badsquare`` function works, it is silly and poorly written.  But
 it illustrates an important rule about how variables are looked up in Python.
 First, Python looks at the variables that are defined as local variables in
 the function.  We call this the **local scope**.  If the variable name is not
-found in the local scope then Python looks at the global variables,
-or **global scope**.  This is exactly the case described above.
+found in the local scope, then Python looks at the global variables,
+or **global scope**.  This is exactly the case illustrated in the code above.
+``power`` is not found locally in ``badsquare`` but it does exist globally.
+The appropriate way to write this function would be to pass power as a parameter.
+For practice, you should rewrite bad square to have a second parameter called power.
 
-But wait, Didn't we say earlier that variables in the local function could
-not change variables defined outside the function?  Consider the following
+Assignment statements in the local function can
+not change variables defined outside the function.  Consider the following
 codelens example:
 
 .. codelens::  cl_powerof_bad
@@ -407,9 +417,10 @@ in the local scope compared to the global scope?
 The value of power in the local scope was different than the global scope.
 That is because in this example power was used on the left hand side of the
 assignment statement ``power = p``.  When a variable name is used on the
-left hand side of of an assignment statement Python creates a local variable.
-when a local variable has the same name as a global variable we say that the
-local shadows the global.  This is another good reason not to use global
+left hand side of an assignment statement Python creates a local variable.
+When a local variable has the same name as a global variable we say that the
+local shadows the global.  A **shadow** means that the global variable cannot accessed
+by Python because the local variable will be found first. This is another good reason not to use global
 variables. As you can see, it makes your code confusing and difficult to
 understand.
 
@@ -861,3 +872,10 @@ Exercises
 
 #.  Extend the star function to draw an n pointed star.  (Hint: n must be an odd number greater or
     equal to 3).
+
+
+.. toctree::
+    :hidden:
+
+    lab04_01
+    lab04_01a
