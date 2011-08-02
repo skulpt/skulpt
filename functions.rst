@@ -15,11 +15,6 @@ Functions
     single: function definition
     single: definition; function
 
-.. toctree::
-    :hidden:
-
-    lab04_01
-    lab04_01a
 
 Functions
 ---------

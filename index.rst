@@ -75,25 +75,30 @@ Based on the original book
     :maxdepth: 3
     :numbered:
 
-
     introduction.rst
     simpledata.rst
     helloturtle.rst
-
     modules.rst
-
     functions.rst
-    selection.rst
 
+.. toctree::
+    :hidden:
+
+    lab04_01
+    lab04_01a
+
+.. toctree::
+    :maxdepth: 3
+    :numbered:
+
+    selection.rst
     moreiteration.rst
     strings.rst
     lists.rst
     dictionaries.rst
     recursion.rst
     classesintro.rst
-
     fractions.rst
-
     astronomylab.rst
 
 
@@ -107,6 +112,15 @@ Based on the original book
     app_c.rst
     app_d.rst
     fdl-1.3.rst
+
+.. toctree::
+    :hidden:
+
+    at_1_1
+    lab03_01
+    sinlab
+    lab12_01
+    lab12_02
 
 * :ref:`search`
 
