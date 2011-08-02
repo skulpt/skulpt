@@ -98,8 +98,6 @@ this purpose!
     If the first thing after the function header is a string (some tools insist that
     it must be a triple-quoted string), it is called a **docstring** 
     and gets special treatment in Python and in some of the programming tools.  
-    For example, when using PyScripter, when you type a function name it will pop up a 
-    tooltip showing the parameters of the function, and the text from the docstring.
 
     Another way to retrieve this information is to use the interactive
     interpreter, and enter the expression ``<function_name>.__doc__``, which will retrieve the
@@ -183,6 +181,243 @@ been defined, we can call it as many times as we like with whatever actual param
 
     wn.exitonclick()
 
+Functions that return values
+----------------------------
+
+Most functions require arguments, values that control how the function does its
+job. For example, if you want to find the absolute value of a number, you have
+to indicate what the number is. Python has a built-in function for computing
+the absolute value:
+
+.. activecode:: ch04_4
+    :nocanvas:
+
+    print(abs(5))
+
+    print(abs(-5))
+
+In this example, the arguments to the ``abs`` function are 5 and -5.
+
+
+Some functions take more than one argument. For example the math module contains a function
+called
+``pow`` which takes two arguments, the base and the exponent.
+
+.. Inside the function,
+.. the values that are passed get assigned to variables called **parameters**.
+
+.. activecode:: ch04_5
+    :nocanvas:
+
+    import math
+    print(math.pow(2, 3))
+
+    print(math.pow(7, 4))
+
+.. note::
+
+     Of course, we have already seen that raising a base to an exponent can be done with the ** operator.
+
+Another built-in function that takes more than one argument is ``max``.
+
+.. activecode:: ch04_6
+    :nocanvas:
+
+    print(max(7, 11))
+    print(max(4, 1, 17, 2, 12))
+    print(max(3 * 11, 5**3, 512 - 9, 1024**0))
+
+``max`` can be sent any number of arguments, separated by commas, and will
+return the maximum value sent. The arguments can be either simple values or
+expressions. In the last example, 503 is returned, since it is larger than 33,
+125, and 1.
+
+Furthermore, functions like ``range``, ``int``, ``abs`` all return values that
+can be used to build more complex expressions.
+
+So an important difference between these functions and one like ``drawSquare`` is that
+``drawSquare`` was not executed because we wanted it to compute a value --- on the contrary,
+we wrote ``drawSquare`` because we wanted it to execute a sequence of steps that caused
+the turtle to draw a specific shape.
+
+Functions that return values are sometimes called **fruitful functions**.
+In many other languages, a chunk that doesn't return a value is called a **procedure**,
+but we will stick here with the Python way of also calling it a function, or if we want
+to stress it, a *non-fruitful* function.
+
+How do we write our own fruitful function?  Lets start with a very simple
+mathematical function ``square``.  the square function will take one number
+as a parameter and return the result of squaring that number.  Here is the
+function:
+
+.. activecode:: ch04_square
+
+    def square(x):
+        y = x * x
+        return y
+
+    toSquare = 10
+    print("The result of ", toSquare, " squared is ", square(toSquare))
+
+The **return** statement is followed an expression which is evaluated.  Its
+result is returned to the caller as the "fruit" of calling this function.
+Because the return statement can contain any Python expression we could have
+avoided creating the **temporary variable** ``y`` and simply used
+``return x*x``.
+Try modifying the square function above to see that this works just the same.
+On the other hand, using **temporary variables** like ``y`` above often make
+debugging
+easier.  These temporary variables are referred to as **local variables**.
+
+.. The line `toInvest = float(input("How much do you want to invest?"))`
+..  also shows yet another example
+..  of *composition* --- we can call a function like `float`, and its arguments
+ .. can be the results of other function calls (like `input`) that we've called along the way.
+
+Notice something important here. The name of the variable we pass as an
+argument --- `toSquare` --- has nothing to do with the name of the parameter
+--- `x`.  It is as if  `x = toSquare` is executed when `square` is called.
+It doesn't matter what the value was named in
+the caller, in `square` it's name is `x`.  You can see this very clearly in
+codelens, where the global variables, and the local variables for the square
+function are in separate boxes.
+
+Here's another important thing to notice as you step through this codelens
+demonstration.  Codelens boldfaces the line numbers that it has executed.
+When you first start running this codelens demonstration you will notice that
+line 1 is bolded.  The next line to be bolded is line 5.  Why is this?
+Because function definition is not the same as function execution.  Lines 2
+and 3 will not be bolded until the function is called on line 6.
+
+
+.. codelens:: ch04_clsquare
+
+    def square(x):
+        y = x * x
+        return y
+
+    toSquare = 10
+    print("The result of ", toSquare, " squared is ", square(toSquare))
+
+Short variable names are more economical and sometimes make
+code easier to read:
+E = mc\ :sup:`2` would not be nearly so memorable if Einstein had
+used longer variable names!  If you do prefer short names,
+make sure you also have some comments to enlighten the reader
+about what the variables are used for.
+
+
+All Python functions return ``None`` whenever they do not return another
+value.  Consider the following common mistake made by beginning Python
+programmers.  As you step through this pay very close attention to the return
+value in the local variables listing.  Then Look at what is printed when the
+function
+returns.
+
+
+.. codelens:: ch04_clsquare_bad
+
+    def square(x):
+        y = x * x
+        print(y)   # Bad! should use return instead!
+
+    toSquare = 10
+    print("The result of ", toSquare, " squared is ", square(toSquare))
+
+
+
+.. index::
+    single: local variable
+    single: variable; local
+    single: lifetime
+
+Variables and parameters are local
+----------------------------------
+
+When you create a **local variable** inside a function, it only exists inside
+the function, and you cannot use it outside. For example, consider again this function:
+
+.. activecode:: bad_local
+
+    def square(x):
+        y = x * x
+        return y
+
+    z = square(10)
+    print(y)
+
+
+If you pressed the run button you should have seen an error dialog pop up.
+Because when we try to use ``y`` outside the function,
+we'll get an error: ``Name Error: y is not defined.``
+
+The variable, ``y`` only exists while the function is being executed ---
+we call this its **lifetime**.
+When the execution of the function terminates,
+the local variables  are destroyed.  If it helps you visualize this think
+about how the local variables in codelens disappear after the function is
+done. 
+
+Parameters are also local and act like local variables.
+For example, the lifetime of `x` begins when `square` is
+called,
+and the lifetime ends when the function completes its execution.
+
+So it is not possible for a function to set some local variable to a
+value, complete its execution, and then when it is called again next
+time, recover the local variable.  Each call of the function creates
+new local variables, and their lifetimes expire when the function returns
+to the caller.
+
+Conversely, a function may access a global variable.  But this is considered
+**bad form** by nearly all programmers.  Look at the following,
+nonsensical variation of the square function.
+
+.. sourcecode:: python
+
+    def badsquare(x):
+        y = x ** power
+        return y
+
+    power = 2
+    result = badsquare(10)
+    print(result)
+
+
+Although the ``badsquare`` function works, it is silly and poorly written.  But
+it illustrates an important rule about how variables are looked up in Python.
+First, Python looks at the variables that are defined as local variables in
+the function.  We call this the **local scope**.  If the variable name is not
+found in the local scope then Python looks at the global variables,
+or **global scope**.  This is exactly the case described above.
+
+But wait, Didn't we say earlier that variables in the local function could
+not change variables defined outside the function?  Consider the following
+codelens example:
+
+.. codelens::  cl_powerof_bad
+
+    def powerof(x,p):
+        power = p   # Another dumb mistake
+        y = x ** power
+        return y
+
+    power = 3
+    result = powerof(10,2)
+    print(result)
+
+Now step through the code.  What do you notice about the values of ``power``
+in the local scope compared to the global scope?
+
+The value of power in the local scope was different than the global scope.
+That is because in this example power was used on the left hand side of the
+assignment statement ``power = p``.  When a variable name is used on the
+left hand side of of an assignment statement Python creates a local variable.
+when a local variable has the same name as a global variable we say that the
+local shadows the global.  This is another good reason not to use global
+variables. As you can see, it makes your code confusing and difficult to
+understand.
+
 
 Functions can call other functions
 ----------------------------------
@@ -208,6 +443,10 @@ have been squared.
 
         return a+b+c
 
+    def test(a):
+        x = a*2
+
+    print(test(10))
     a = -5
     b = 2
     c = 10
@@ -302,6 +541,7 @@ There are some points worth noting here:
   function `drawRectangle`, its variable `t` is assigned the tess object, and `w` and
   `h` in that function are both given the value 50.
 
+
 So far, it may not be clear why it is worth the trouble to create all of these
 new functions. Actually, there are a lot of reasons, but this example
 demonstrates two:
@@ -368,186 +608,6 @@ top to bottom. Instead, follow the flow of execution.
     single: statement; import
     single: composition
     single: function; composition
-    
-Functions that return values
-----------------------------
-
-Most functions require arguments, values that control how the function does its
-job. For example, if you want to find the absolute value of a number, you have
-to indicate what the number is. Python has a built-in function for computing
-the absolute value:
-
-.. activecode:: ch04_4
-    :nocanvas:
-
-    print(abs(5))
-
-    print(abs(-5))
-
-In this example, the arguments to the ``abs`` function are 5 and -5.
-
-       
-Some functions take more than one argument. For example the math module contains a function
-called
-``pow`` which takes two arguments, the base and the exponent. 
-
-.. Inside the function,
-.. the values that are passed get assigned to variables called **parameters**.
-
-.. activecode:: ch04_5
-    :nocanvas:
-
-    import math
-    print(math.pow(2, 3))
-
-    print(math.pow(7, 4))
-
-.. note::
-
-     Of course, we have already seen that raising a base to an exponent can be done with the ** operator.
-
-Another built-in function that takes more than one argument is ``max``.
-
-.. activecode:: ch04_6
-    :nocanvas:
-
-    print(max(7, 11))
-    print(max(4, 1, 17, 2, 12))
-    print(max(3 * 11, 5**3, 512 - 9, 1024**0))
-
-``max`` can be sent any number of arguments, separated by commas, and will
-return the maximum value sent. The arguments can be either simple values or
-expressions. In the last example, 503 is returned, since it is larger than 33,
-125, and 1.
-
-Furthermore, functions like ``range``, ``int``, ``abs`` all return values that
-can be used to build more complex expressions.  
-
-So an important difference between these functions and one like ``drawSquare`` is that
-``drawSquare`` was not executed because we wanted it to compute a value --- on the contrary,
-we wrote ``drawSquare`` because we wanted it to execute a sequence of steps that caused
-the turtle to draw a specific shape.  
-
-Functions that return values are sometimes called **fruitful functions**.
-In many other languages, a chunk that doesn't return a value is called a **procedure**,
-but we will stick here with the Python way of also calling it a function, or if we want
-to stress it, a *non-fruitful* function.
-
-How do we write our own fruitful function?  In the exercises at the end of Chapter 2 we saw
-the standard formula for compound interest (shown again below).  We'll now implement this as a fruitful function.
-
-.. image:: illustrations/ch04/compoundInterest.png
-
-.. activecode:: ch_04_7
-    :nocanvas:
-
-    def finalAmt(p, r, n, t):
-        """Apply the compound interest formula"""
-       
-        a = p * (1 + r/n) ** (n*t)
-        return a                     # This is new
-                                     # It makes the function fruitful.
-                     
-    # now that we have the function above, let us call it.  
-
-    toInvest = 100                           #invest 100 dollars
-    fnl = finalAmt(toInvest, 0.08, 12, 5)     # compute interest
-    print("At the end of the period you will have", fnl)
-
-
-.. toInvest = float(input("How much do you want to invest?"))
-
-* The **return** statement is followed an expression which is evaluated.  Its
-  result is returned to the caller as the "fruit" of calling this function.
-
-.. We prompted the user for the principal amount.  The type of ``toInvest`` is a string, but
-..  we need a number before we can work with it.  Because it is money, and could have decimal places,
-..  we've used the ``float`` type converter function to parse the string and return a float.
-
-* Notice how we entered the arguments for 8% interest, compounded 12 times per year, for 5 years.
-* When we run this, we get the output 
-
-      *At the end of the period you will have 1.4898457083016061*
- 
-  This is a bit messy with all these decimal places, but remember that
-  Python doesn't understand that you're working with money: it just does the calculation to
-  the best of its ability, without rounding.  Later we'll show you how to format the string that
-  is printed in such a way that it does get nicely rounded to two decimal places before printing. 
-
-.. The line `toInvest = float(input("How much do you want to invest?"))` 
-..  also shows yet another example
-..  of *composition* --- we can call a function like `float`, and its arguments 
- .. can be the results of other function calls (like `input`) that we've called along the way.
-  
-Notice something else very important here. The name of the variable we pass as an
-argument --- `toInvest` --- has nothing to do with the name of the parameter
---- `p`.  It is as if  `p = toInvest` is executed when `finalAmt` is called. 
-It doesn't matter what the value was named in 
-the caller, in `finalAmt` it's name is `p`.  
-         
-These short variable names are getting quite tricky, so perhaps you'd prefer one of these
-versions instead:       
-
-.. sourcecode:: python
- 
-   def finalAmtV2(principalAmount, nominalPercentageRate, numTimesPerYear, years):
-       a = principalAmount * (1 + nominalPercentageRate/numTimesPerYear) ** (numTimesPerYear*years)
-       return a
-       
-   def finalAmtV3(amt, rate, compounded, years):
-       a = amt * (1 + rate/compounded) ** (componded*years)
-       return a                  
-
-They all do the same thing.   Use your judgement to write code that can be best 
-understood by other humans!  
-Short variable names are more economical and sometimes make 
-code easier to read: 
-E = mc\ :sup:`2` would not be nearly so memorable if Einstein had
-used longer variable names!  If you do prefer short names, 
-make sure you also have some comments to enlighten the reader 
-about what the variables are used for.
-  
-
-
-.. index::
-    single: local variable
-    single: variable; local
-    single: lifetime
-    
-Variables and parameters are local
-----------------------------------
-
-When you create a **local variable** inside a function, it only exists inside
-the function, and you cannot use it outside. For example, consider again this function:
-
-.. sourcecode:: python
-
-   def finalAmt(p, r, n, t):
-       a = p * (1 + r/n) ** (n*t)
-       return a           
- 
-.. If we try to use `a`, outside the function, we'll get an error:
-
-
-    
- 
-The variable `a` is local to `finalAmt`, and is not visible
-outside the function.
-
-Additionally, ``a`` only exists while the function is being executed --- 
-we call this its **lifetime**. 
-When the execution of the function terminates, 
-the local variables  are destroyed. 
-
-Parameters are also local and act like local variables. 
-For example, the lifetimes of `p`, `r`, `n`, `t` begin when `finalAmt` is called, 
-and the lifetime ends when the function completes its execution.   
-
-So it is not possible for a function to set some local variable to a 
-value, complete its execution, and then when it is called again next
-time, recover the local variable.  Each call of the function creates
-new local variables, and their lifetimes expire when the function returns
-to the caller. 
     
 
 .. index:: bar chart
