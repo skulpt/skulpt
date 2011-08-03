@@ -83,9 +83,6 @@ Based on the original book
 
 
 
-.. toctree::
-    :maxdepth: 3
-    :numbered:
 
     selection.rst
     moreiteration.rst
