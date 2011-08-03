@@ -81,11 +81,7 @@ Based on the original book
     modules.rst
     functions.rst
 
-.. toctree::
-    :hidden:
 
-    lab04_01
-    lab04_01a
 
 .. toctree::
     :maxdepth: 3

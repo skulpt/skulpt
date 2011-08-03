@@ -871,6 +871,7 @@ Exercises
     
     What would it look like if you didn't pick up the pen?
 
+
 #.  Extend the star function to draw an n pointed star.  (Hint: n must be an odd number greater or
     equal to 3).
 
