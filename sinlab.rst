@@ -104,10 +104,6 @@ Here is a partial program for you to complete.
 	wn.bgcolor('lightblue')
 
 	fred = turtle.Turtle()
-	fred.setworldcoordinates(0,-5,361,5)
-
-	for angle in range(361):
-	    fred.goto(angle,math.sin(math.radians(angle)))
 
 	#your code here
 

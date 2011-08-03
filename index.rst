@@ -33,13 +33,13 @@ Based on the original book
 * `Chapter 5 <functions.html>`__ *Functions*
 * `Chapter 6 <selection.html>`__ *Decisions and Selection*
 
-* `Chapter 8 <moreiteration.html>`__ *Iteration*
-* `Chapter 9 <strings.html>`__ *Strings*
-* `Chapter 10 <lists.html>`__ *Lists*
-* `Chapter 11 <dictionaries.html>`__ *Dictionaries*
-* `Chapter 12 <recursion.html>`__ *Recursion*
-* `Chapter 13 <classesintro.html>`__ *Classes and Objects - the Basics*
-* `Chapter 14 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
+* `Chapter 7 <moreiteration.html>`__ *Iteration*
+* `Chapter 8 <strings.html>`__ *Strings*
+* `Chapter 9 <lists.html>`__ *Lists*
+* `Chapter 10 <dictionaries.html>`__ *Dictionaries*
+* `Chapter 11 <recursion.html>`__ *Recursion*
+* `Chapter 12 <classesintro.html>`__ *Classes and Objects - the Basics*
+* `Chapter 13 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
 
 .. `Chapter 7 <morefunctions.html>`__ *Functions Revisited*
 .. `Chapter 11 <ch10.html>`__ *Modules and Files*

@@ -157,6 +157,13 @@ most programs are more interesting than this one.
 Special Ways to Execute Python in this Book
 -------------------------------------------
 
+.. video:: codelensvid
+    :controls:
+    :thumb: _static/activecodethumb.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/activecodelenssmall.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/activecodelenssmall.webm
+
 This book provides two additional ways to execute Python programs.  Both techniques are designed to assist you as you
 learn the Python programming language.  They will help you increase your understanding of how Python programs work.  
 

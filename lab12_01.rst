@@ -32,6 +32,7 @@ Of course, we could also solve this problem by using the ``count`` method provid
 
 
 
+
 General Solution: Counting All Letters
 --------------------------------------
 

@@ -95,7 +95,7 @@ to see the different kinds of behavior.
   range function.  Inside the for loop move one of the turtles forward by
   some number of units.
 
-* Create a single for loop using something like 150 or 200 as the range
+* Create a single for loop using something like 150 or 200 as the range 
   parameter. Then inside the for loop move each turtle forward using a random
   number as the parameter to forward.
 
