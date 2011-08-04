@@ -336,9 +336,10 @@ function returns.
 Variables and parameters are local
 ----------------------------------
 
-An assignment statement in a function creates a **local variable** for the variable on the left hand
-side of the assignment operator. This variable only exists inside
-the function, and you cannot use it outside. For example, consider again the ``square`` function:
+An assignment statement in a function creates a **local variable** for the
+variable on the left hand side of the assignment operator. This variable only
+exists inside the function, and you cannot use it outside. For example,
+consider again the ``square`` function:
 
 .. codelens:: bad_local
 
@@ -350,10 +351,10 @@ the function, and you cannot use it outside. For example, consider again the ``s
     print(y)
 
 
-If you pressed the run button you should have seen an error dialog pop up.
+If you press the 'last >>' button you will see an error message.
 When we try to use ``y`` on line 6 (outside the function) Python looks for a global
 variable named ``y`` but does not find one.  This results in the
-error: ``Name Error: y is not defined.``
+error: ``Name Error: 'y' is not defined.``
 
 The variable ``y`` only exists while the function is being executed ---
 we call this its **lifetime**.
@@ -420,22 +421,30 @@ That is because in this example power was used on the left hand side of the
 assignment statement ``power = p``.  When a variable name is used on the
 left hand side of an assignment statement Python creates a local variable.
 When a local variable has the same name as a global variable we say that the
-local shadows the global.  A **shadow** means that the global variable cannot accessed
-by Python because the local variable will be found first. This is another good reason not to use global
-variables. As you can see, it makes your code confusing and difficult to
+local shadows the global.  A **shadow** means that the global variable cannot
+be accessed by Python because the local variable will be found first. This is
+another good reason not to use global variables. As you can see,
+it makes your code confusing and difficult to
 understand.
 
+.. index::
+    functional decomposition
+    generalization
+    abstraction
 
 Functions can call other functions
 ----------------------------------
 
-Its important to understand that each of the functions we write can be used
+It is important to understand that each of the functions we write can be used
 and called from other functions we write.  This is one of the most important
 ways that computer scientists take a large problem and break it down into a
-group of smaller problems.  Here's an example of two functions the first
-called ``square`` simply computes the square of a given number.  The function
-sum_of_squares makes use of square to compute the sum of three numbers that
-have been squared.
+group of smaller problems. This process of breaking a problem into smaller
+subproblems is called **functional decomposition**.
+
+Here's a simple example of functional decomposition using two functions. The
+first function called ``square`` simply computes the square of a given number.
+The second function called ``sum_of_squares`` makes use of square to compute
+the sum of three numbers that have been squared.
 
 .. codelens:: sumofsquares
 
@@ -450,30 +459,37 @@ have been squared.
 
         return a+b+c
 
-    def test(a):
-        x = a*2
-
-    print(test(10))
     a = -5
     b = 2
     c = 10
-    print(square(-5))
-    print(sum_of_squares(a,b,c))
-
+    result = sum_of_squares(a,b,c)
+    print(result)
 
 
 Even though this is a pretty simple idea, in practice this example
-illustrates many very important Python concepts.
+illustrates many very important Python concepts, including local and global
+variables along with parameter passing.  Note that when you step through this
+example, codelens bolds line 1 and line 5 as the functions are defined.  The
+body of square is not executed until it is called from the ``sum_of_squares``
+function for the first time on line 6.  Also notice that when ``square`` is
+called there are two groups of local variables, one for ``square`` and one
+for ``sum_of_squares``.  As you step through you will notice that ``x,
+`` and ``y`` are local variables in both functions and may even have
+different values.  This illustrates that even though they are named the same
+they are very different.
 
-* local variables
-* global variables
-* parameter passing
+Lets look at another example that uses two functions, but illustrates another
+important computer science problem solving technique called
+**generalization**.  Let's assume now we want to write a
+function to draw a square.  The generalization step is to realize that a
+square is just a special kind of rectangle.
 
-
-Let's assume now we want to write a function to draw a rectangle.  We need to be able to call
-the function with different arguments for width and height.  Unlike the case of the
-square, we cannot repeat the same thing 4 times, because the four sides are not equal.  However, it
-is the case that drawing the bottom and right sides are the same sequence as drawing the top and left sides.  So we eventually come up with this rather nice code that can draw a rectangle.
+To draw a rectangle We need to be able to call the function with different
+arguments for width and height.  Unlike the case of the square,
+we cannot repeat the same thing 4 times, because the four sides are not equal.
+However, it is the case that drawing the bottom and right sides are the
+same sequence as drawing the top and left sides.  So we eventually come up with
+this rather nice code that can draw a rectangle.
 
 .. sourcecode:: python
 
@@ -492,12 +508,12 @@ parameters represent the width and the height.  Concepts like rectangle, width, 
 the meaning we humans have, not concepts that the program or the computer understands.    
 
 *Thinking like a computer scientist* involves looking for patterns and 
-relationships.  In the code above, we've done that to some extent.  We did not just draw four sides.
-Instead, we spotted that we could draw the rectangle as two halves and used a loop to
-repeat that pattern twice.
+relationships.  In the code above, we've done that to some extent.  We did
+not just draw four sides. Instead, we spotted that we could draw the
+rectangle as two halves and used a loop to repeat that pattern twice.
 
-But now we might spot that a square is a special kind of rectangle.  A square simply uses the same value for both
-the height and the width.
+But now we might spot that a square is a special kind of rectangle.  A square
+simply uses the same value for both the height and the width.
 We already have a function that draws a rectangle, so we can use that to draw
 our square. 
 
@@ -559,19 +575,24 @@ demonstrates two:
    mental chunking, or *abstraction*, of the problem.  
 #. Creating a new function can make a program smaller by eliminating repetitive 
    code.  
+#. Sometimes you can write functions that allow you to solve a specific
+   problem using a more general solution.
 
-As you might expect, you have to create a function before you can execute it.
-In other words, the function definition has to be executed before the first
-time it is called.
+
+.. admonition:: Lab
+
+    * `Drawing a Circle <lab04_01.html>`_ In this guided lab exercise we will work
+      through a simple problem solving exercise related to drawing a circle with the turtle.
 
 .. index:: flow of execution
 
-Flow of execution
------------------
+Flow of execution summary
+-------------------------
 
-In order to ensure that a function is defined before its first use, you have to
-know the order in which statements are executed. This is called the **flow of
-execution** and we've already talked about it a little in the previous chapter.
+When you are working with functions it is really important to know the order
+in which statements are executed. This is called the **flow of
+execution** and we've already talked about it a number of times in this
+chapter.
 
 Execution always begins at the first statement of the program.  Statements are
 executed one at a time, in order, from top to bottom.
@@ -598,13 +619,11 @@ function completes, the program picks up where it left off in the function that
 called it. When it gets to the end of the program, it terminates.
 
 What's the moral of this sordid tale? When you read a program, don't read from
-top to bottom. Instead, follow the flow of execution.
+top to bottom. Instead, follow the flow of execution.  At this risk of
+sounding repetitive this means that you will read the def statements as you
+are scanning from top to bottom, but you should skip the body of the function
+until you reach a point where that function is called.
 
-
-.. admonition:: Lab
-
-    * `Drawing a Circle <lab04_01.html>`_ In this guided lab exercise we will work
-      through a simple problem solving exercise related to drawing a circle with the turtle.
 
 .. index::
     single: parameter
@@ -756,10 +775,6 @@ Glossary
     flow of execution
         The order in which statements are executed during a program run.
 
-    frame
-        A box in a stack diagram that represents a function call. It contains
-        the local variables and parameters of the function.
-
     function
         A named sequence of statements that performs some useful operation.
         Functions may or may not take parameters and may or may not produce a
@@ -806,24 +821,14 @@ Glossary
         it more understandable.  Typically, we have a program that is already working,
         then we go back to "tidy it up".  It often involves choosing better variable
         names, or spotting repeated patterns and moving that code into a function.    
-        
-    stack diagram
-        A graphical representation of a stack of functions, their variables,
-        and the values to which they refer.
-
-    traceback
-        A list of the functions that are executing, printed when a runtime
-        error occurs. A traceback is also commonly referred to as a
-        *stack trace*, since it lists the functions in the order in which they
-        are stored in the
-        `runtime stack <http://en.wikipedia.org/wiki/Runtime_stack>`__.
 
 
 
 Exercises
 ---------
 
-#.  Write a non-fruitful function to draw a square.  Use it in a program to draw the image shown below. 
+#.  Use the drawsquare function we wrote in this chapter in a program to draw
+    the image shown below.
     Assume each side is 20 units.
     (Hint: notice that the turtle has already moved away from the ending point of the last 
     square when the program ends.)
@@ -835,10 +840,10 @@ Exercises
     
     .. image:: illustrations/ch04/nested_squares.png
 
-#.  Write a non-fruitful function `drawPoly(t, n, sz)` which makes a turtle 
-    draw a regular polygon. 
+#.  Write a non-fruitful function `drawPoly(t, n, sz)` which makes a turtle
+    draw a regular polygon.
     When called with `drawPoly(tess, 8, 50)`, it will draw a shape like this:
-    
+
     .. image:: illustrations/ch04/regularpolygon.png
 
 #. Draw this pretty pattern.
@@ -859,8 +864,7 @@ Exercises
 #.  Write a function `areaOfCircle(r)` which returns the area of a circle of radius `r`.
 
 #.  Write a non-fruitful function to draw a five pointed star, where the length of each side is 100 units.
-    (Hint: You should turn the turtle by 144 degrees at each point.)  
-    
+
      .. image:: illustrations/ch04/star.png
      
 #.  Extend your program above.  Draw five stars, but between each, pick up the pen, 

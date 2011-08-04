@@ -81,9 +81,6 @@ Based on the original book
     modules.rst
     functions.rst
 
-
-
-
     selection.rst
     moreiteration.rst
     strings.rst
