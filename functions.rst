@@ -60,8 +60,18 @@ We need to say a bit more about the parameters.  In the definition, the paramete
 as the **formal parameters**.  This list of names describes those things that the function will
 need to receive from the user of the function.  When you use a function, you provide values to the formal parameters.
 
+The figure below shows this relationship.  A function needs certain information to do its work.  These values, often called **arguments** or **actual parameters**, are passed to the function by the user.
+
+.. image:: illustrations/functions/blackboxproc.png    
+
+This type of diagram is often called a **black-box diagram** because it only states the requirements from the perspective of the user.  The user must know the name of the function and what arguments need to be passed.  The details of how the function works are hidden inside the "black-box".
+
 Suppose we're working with turtles and a common operation we need is to draw
-squares.  It would make sense if we did not have to duplicate all the steps each time we want to make a square.   "Draw a square" can be thought of as an *abstraction* of a number of smaller steps.  We will need to provide two pieces of information for the function to do its work: a turtle to do the drawing and a size for the side of the square.  So here is a function to capture this idea.  Give it a try.
+squares.  It would make sense if we did not have to duplicate all the steps each time we want to make a square.   "Draw a square" can be thought of as an *abstraction* of a number of smaller steps.  We will need to provide two pieces of information for the function to do its work: a turtle to do the drawing and a size for the side of the square.  We could represent this using the following black-box diagram.
+
+.. image:: illustrations/functions/turtleproc.png    
+
+Here is a function to capture this idea.  Give it a try.
 
 .. activecode:: ch04_1
 
@@ -109,11 +119,15 @@ Defining a new function does not make the function run. To do that we need a
 **print**, **range** and **int**. Function calls contain the name of the function being
 executed followed by a list of values, called *arguments*, which are assigned
 to the parameters in the function definition.  So in the second to the last line of
-the program, we call the function, and pass alex as the turtle to be manipulated,
+the program, we call the function, and pass ``alex`` as the turtle to be manipulated,
 and 50 as the size of the square we want. 
 
-The parameters being sent to the function, sometimes referred to as the **actual parameters** or **arguments**,
-represent the specific data items that the function will use when it is executing.
+.. The parameters being sent to the function, sometimes referred to as the **actual parameters** or **arguments**,
+.. represent the specific data items that the function will use when it is executing.
+
+
+
+
 
 Once we've defined a function, we can call it as often as we like and its 
 statements will be executed each time we call it.  In this case, we could use it to get
@@ -148,7 +162,7 @@ back down before drawing the next square.
     wn.exitonclick()
 
 In the next example, we've changed the ``drawSquare``
-function a little and we get tess to draw 15 squares with some variations.  Once the function has
+function a little and we get ``tess`` to draw 15 squares with some variations.  Once the function has
 been defined, we can call it as many times as we like with whatever actual parameters we like.
 
 .. activecode:: ch04_2
@@ -226,7 +240,7 @@ Another built-in function that takes more than one argument is ``max``.
 ``max`` can be sent any number of arguments, separated by commas, and will
 return the maximum value sent. The arguments can be either simple values or
 expressions. In the last example, 503 is returned, since it is larger than 33,
-125, and 1.
+125, and 1.  Note that ``max`` also works on lists of values.
 
 Furthermore, functions like ``range``, ``int``, ``abs`` all return values that
 can be used to build more complex expressions.
@@ -241,10 +255,20 @@ In many other languages, a chunk that doesn't return a value is called a **proce
 but we will stick here with the Python way of also calling it a function, or if we want
 to stress it, a *non-fruitful* function.
 
+
+Fruitful functions still allow the user to provide information (arguments).  However there is now an additional
+piece of data that is returned from the function.  
+
+.. image:: illustrations/functions/blackboxfun.png    
+
+
 How do we write our own fruitful function?  Lets start with a very simple
 mathematical function ``square``.  The square function will take one number
 as a parameter and return the result of squaring that number.  Here is the
-function:
+black-box diagram with the Python code following.
+
+
+.. image:: illustrations/functions/squarefun.png    
 
 .. activecode:: ch04_square
 
@@ -253,7 +277,8 @@ function:
         return y
 
     toSquare = 10
-    print("The result of ", toSquare, " squared is ", square(toSquare))
+    result = square(toSquare)
+    print("The result of ", toSquare, " squared is ", result)
 
 The **return** statement is followed an expression which is evaluated.  Its
 result is returned to the caller as the "fruit" of calling this function.
@@ -274,20 +299,14 @@ Notice something important here. The name of the variable we pass as an
 argument --- ``toSquare`` --- has nothing to do with the name of the formal parameter
 --- ``x``.  It is as if  ``x = toSquare`` is executed when ``square`` is called.
 It doesn't matter what the value was named in
-the caller, in ``square`` it's name is ``x``.  You can see this very clearly in
-codelens, where the global variables, and the local variables for the square
+the caller. In ``square``, it's name is ``x``.  You can see this very clearly in
+codelens, where the global variables and the local variables for the square
 function are in separate boxes.
 
 As you step through the example in codelens notice that the **return** statement not only causes the
 function to return a value, but it also returns the flow of control back to the place in the program
 where the function call was made.
 
-Here's another important thing to notice as you step through this codelens
-demonstration.  Codelens boldfaces the line numbers that it has executed.
-When you first start running this codelens demonstration you will notice that
-line 1 is bolded.  The next line to be bolded is line 5.  Why is this?
-Because function definition is not the same as function execution.  Lines 2
-and 3 will not be bolded until the function is called on line 6.
 
 
 .. codelens:: ch04_clsquare
@@ -299,6 +318,14 @@ and 3 will not be bolded until the function is called on line 6.
     toSquare = 10
     squareResult = square(toSquare)
     print("The result of ", toSquare, " squared is ", squareResult)
+
+Another important thing to notice as you step through this codelens
+demonstration is the highlighting of line numbers.  Codelens boldfaces the line numbers that it has executed.
+When you first start running this codelens demonstration you will notice that
+line 1 is bolded.  The next line to be bolded is line 5.  Why is this?
+Because function definition is not the same as function execution.  Lines 2
+and 3 will not be bolded until the function is called on line 6.
+
 
 Short variable names are more economical and sometimes make
 code easier to read:
@@ -417,7 +444,7 @@ Now step through the code.  What do you notice about the values of ``power``
 in the local scope compared to the global scope?
 
 The value of power in the local scope was different than the global scope.
-That is because in this example power was used on the left hand side of the
+That is because in this example ``power`` was used on the left hand side of the
 assignment statement ``power = p``.  When a variable name is used on the
 left hand side of an assignment statement Python creates a local variable.
 When a local variable has the same name as a global variable we say that the
@@ -484,7 +511,7 @@ important computer science problem solving technique called
 function to draw a square.  The generalization step is to realize that a
 square is just a special kind of rectangle.
 
-To draw a rectangle We need to be able to call the function with different
+To draw a rectangle we need to be able to call the function with different
 arguments for width and height.  Unlike the case of the square,
 we cannot repeat the same thing 4 times, because the four sides are not equal.
 However, it is the case that drawing the bottom and right sides are the

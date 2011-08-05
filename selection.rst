@@ -82,6 +82,18 @@ equal sign (``=``) instead of a double equal sign (``==``). Remember that ``=``
 is an assignment operator and ``==`` is a comparison operator. Also, there is
 no such thing as ``=<`` or ``=>``.
 
+..With reassignment it is especially important to distinguish between an
+..assignment statement and a boolean expression that tests for equality. 
+..Because Python uses the equal token (``=``) for assignment, 
+..it is tempting to interpret a statement like
+..``a = b`` as a boolean test.  Unlike mathematics, it is not!  Remember that the Python token
+..for the equality operator is ``==``.
+
+Note too that an equality test is symmetric, but assignment is not. For example, 
+if ``a == 7`` then ``7 == a``. But in Python, the statement ``a = 7``
+is legal and ``7 = a`` is not. (Can you explain why?)
+
+
 .. index::
     single: logical operator
     single: operator; logical 

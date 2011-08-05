@@ -723,6 +723,92 @@ rules for its mathematical operators that mathematics does.
 .. experimenting with expressions like this.       
 
 
+Reassignment
+------------ 
+
+As we have mentioned previously, it is legal to make more than one assignment to the
+same variable. A new assignment makes an existing variable refer to a new value
+(and stop referring to the old value).
+
+.. activecode:: ch07_reassign1
+    
+    bruce = 5
+    print(bruce)
+    bruce = 7
+    print(bruce)
+
+
+The first time ``bruce`` is
+printed, its value is 5, and the second time, its value is 7.  The assignment statement changes
+the value (the object) that ``bruce`` refers to.
+
+Here is what **reassignment** looks like in a reference diagram:
+
+.. image:: illustrations/ch07/reassign1.png
+   :alt: reassignment 
+
+
+
+It is important to note that in mathematics, a statement of equality is always true.  If ``a is equal to b``
+now, then ``a will always equal to b``. In Python, an assignment statement can make
+two variables equal, but because of the possibility of reassignment, 
+they don't have to stay that way:
+
+.. activecode:: ch07_reassign2
+    
+    a = 5
+    b = a    # after executing this line, a and b are now equal
+    print(a,b)
+    a = 3    # after executing this line, a and b are no longer equal
+    print(a,b)
+
+Line 4 changes the value of ``a`` but does not change the value of
+``b``, so they are no longer equal. We will have much more to say about equality in a later chapter.
+
+.. note::
+
+	In some programming languages, a different
+	symbol is used for assignment, such as ``<-`` or ``:=``.  The intent is
+	that this will help to avoid confusion.  Python
+	chose to use the tokens ``=`` for assignment, and ``==`` for equality.  This is a popular
+	choice also found in languages like C, C++, Java, and C#.
+
+
+Updating Variables
+------------------
+
+One of the most common forms of reassignment is an **update** where the new
+value of the variable depends on the old.  For example,
+
+.. sourcecode:: python
+    
+    x = x + 1
+
+This means get the current value of x, add one, and then update x with the new
+value.  The new value of x is the old value of x plus 1.  Although this assignment statement may
+look a bit strange, remember that executing assignment is a two-step process.  First, evaluate the
+right-hand side expression.  Second, let the variable name on the left-hand side refer to this new
+resulting object.  The fact that ``x`` appears on both sides does not matter.  The semantics of the assignment
+statement makes sure that there is no confusion as to the result.
+
+.. activecode:: ch07_update1
+
+    x = 6        # initialize x
+    print(x)
+    x = x + 1    # update x
+    print(x)
+
+
+If you try to update a variable that doesn't exist, you get an error because
+Python evaluates the expression on the right side of the assignment operator
+before it assigns the resulting value to the name on the left.
+Before you can update a variable, you have to **initialize** it, usually with a
+simple assignment.  In the above example, ``x`` was initialized to 6.
+
+Updating a variable by adding 1 is called an **increment**; subtracting 1 is
+called a **decrement**.  Sometimes programmers also talk about **bumping**
+a variable, which means the same as incrementing it by 1.
+
 
 
 
@@ -782,6 +868,10 @@ Glossary
         expressions. So far, the types you have seen are integers (``int``), 
         floating-point numbers (``float``), and strings (``str``).
 
+    decrement
+        Decrease by 1.
+
+
     evaluate
         To simplify an expression by performing the operations in order to
         yield a single value.
@@ -796,6 +886,17 @@ Glossary
         an *exponent*. When printed in the standard format, they look like
         decimal numbers. Beware of rounding errors when you use ``float``\ s,
         and remember that they are only approximate values.
+
+    increment
+        Both as a noun and as a verb, increment means to increase by 1.
+
+    initialization (of a variable)
+        To initialize a variable is to give it an initial value.  
+        Since in Python variables don't exist
+        until they are assigned values, they are initialized when they are
+        created.  In other programming languages this is not the case, and
+        variables can be created without being initialized, in which case they
+        have either default or *garbage* values.
 
     int
         A Python data type that holds positive and negative **whole** numbers.
