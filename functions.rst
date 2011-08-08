@@ -443,7 +443,7 @@ codelens example:
 Now step through the code.  What do you notice about the values of ``power``
 in the local scope compared to the global scope?
 
-The value of power in the local scope was different than the global scope.
+The value of ``power`` in the local scope was different than the global scope.
 That is because in this example ``power`` was used on the left hand side of the
 assignment statement ``power = p``.  When a variable name is used on the
 left hand side of an assignment statement Python creates a local variable.
@@ -453,6 +453,29 @@ be accessed by Python because the local variable will be found first. This is
 another good reason not to use global variables. As you can see,
 it makes your code confusing and difficult to
 understand.
+
+To cement all of these ideas even further lets look at one final example.
+Inside the ``square`` function we are going to make an assignment to the
+parameter ``x``  There's no good reason to do this other than to emphasize
+the fact that the parameter ``x`` is a local variable.  If you step through
+the example in codelens you will see that although ``x`` is 0 in the local
+variables for ``square`` x remains 2 in the global scope.  This is confusing
+to many beginning programmers who think that an assignment to a
+formal parameter will cause a change to the value of the variable that was
+used as the actual parameter; especially when the two share the same name.
+But this example demonstrates that that is clearly not how Python operates.
+
+.. codelens:: cl_change_parm
+
+    def square(x):
+        y = x * x
+        x = 0       # assign a new value to the parameter x
+        return y
+
+    x = 2
+    z = square(x)
+    print(z)
+
 
 .. index::
     functional decomposition
