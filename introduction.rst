@@ -175,7 +175,6 @@ environment for learning a programming language like Python since you can experi
 Take a look at the activecode interpreter in action.  If we use the Python code from the previous example and make it active, you will see that it can be executed directly by pressing the *run* button.   Try pressing the *run* button below. 
 
 .. activecode:: ch01_1
-    :nopre:
 
    print("My first program adds two numbers, 2 and 3:")
    print(2 + 3)

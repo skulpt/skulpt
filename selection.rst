@@ -370,9 +370,11 @@ but the extra comparison is unnecessary.
         print("Those values are no good")
 
 
+.. admonition:: Lab
 
+    * `Approximating Pi with Simulation <montepi.html>`_ In this guided lab exercise we will work
+      through a problem solving exercise related to approximating the value of pi using random numbers.
 
-.. MONTE CARLO PI SIMULATION could go here USE distance method to compute whether within 1 unit.
 
 
 Glossary
@@ -542,3 +544,10 @@ Exercises
           ...    
    
 #.  Extend the above program so that the sides can be given to the function in any order.
+
+
+.. toctree::
+    :hidden:
+
+    montepi
+

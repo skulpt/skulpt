@@ -89,7 +89,6 @@ Based on the original book
     recursion.rst
     classesintro.rst
     fractions.rst
-    astronomylab.rst
 
 
 
@@ -108,7 +107,6 @@ Based on the original book
 
     at_1_1
     lab03_01
-    sinlab
     lab12_01
     lab12_02
 

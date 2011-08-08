@@ -253,3 +253,10 @@ Glossary
 
 Exercises
 ---------
+
+
+.. toctree::
+    :hidden:
+
+    sinlab
+
