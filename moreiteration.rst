@@ -46,6 +46,25 @@ We saw this example in an earlier chapter.
 Running through all the items in a list is called **traversing** the list
 or sometimes just **traversal**.      
 
+We have also seen iteration paired with the update idea to form the accumulator pattern.  For example, to compute
+the sum of the first ``n`` integers, we could create a for loop using a range that produces the numbers 1 thru ``n``.
+Using the accumulator pattern, we can start with a running total and on each iteration, add the current value of the loop
+variable.  A function to compute this sum is shown below.
+
+.. activecode:: ch07_summation
+
+    def sumTo(aBound):
+        theSum = 0
+        for aNumber in range(1, aBound+1):
+            theSum = theSum + aNumber
+
+        return theSum
+
+    print(sumTo(4))
+
+    print(sumTo(1000))
+
+
 
 The ``while`` Statement
 -----------------------
@@ -65,6 +84,7 @@ Here is a program that demonstrates the use of the ``while`` statement:
         return theSum
         
     print(sumTo(4))
+
     print(sumTo(1000))
 
 

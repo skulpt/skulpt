@@ -773,7 +773,7 @@ Here are a couple more tricks (remember that they are all described in the modul
 * One can fill a shape (circle, semicircle, triangle, etc.) with a fill color.  It is a two-step process.
   First you call the method `begin_fill`, for example ``alex.begin_fill()``.  Then you draw the shape.
   Finally, you call `end_fill` ( ``alex.end_fill()``). 
-* We've previously set the color of our turtle - we can now also set it's fill-color, which need not
+* We've previously set the color of our turtle - we can now also set it's fill color, which need not
   be the same as the turtle and the pen color.  To do this, we use a method called `fillcolor`, 
   for example, ``alex.fillcolor("red")``.   
   
@@ -783,12 +783,18 @@ Ok, so can we get tess to draw a bar chart?  Let us start with some data to be c
 ``xs = [48, 117, 200, 240, 160, 260, 220]``
 
 Corresponding to each data measurement, we'll draw a simple rectangle of that height, with a fixed width.
+Here is what we would like to create.
+
+.. image:: illustrations/ch05/tess_bar_1.png
+
+We can quickly see that drawing a bar will be similar to drawing a rectangle or a square.  Since we will need to do it
+a number of times, it makes sense to create a function, ``drawBar``, that will need a turtle and the height of the bar.  We will assume that the width of the bar will be 40 units.  Once we have the function, we can use a simple for loop to process the list of data values.
 
 .. sourcecode:: python
 
     def drawBar(t, height):
         """ Get turtle t to draw one bar, of height. """
-        t.left(90)           
+        t.left(90)               # Point up
         t.forward(height)        # Draw up the left side
         t.right(90)
         t.forward(40)            # width of bar, along the top
@@ -800,7 +806,7 @@ Corresponding to each data measurement, we'll draw a simple rectangle of that he
     for v in xs:                 # assume xs and tess are ready 
         drawBar(tess, v)    
 
-.. image:: illustrations/ch05/tess_bar_1.png
+
 
 It is a nice start!  The important thing here
 was the mental chunking.  To solve the problem we first broke it into smaller pieces.  In particular,
@@ -814,10 +820,12 @@ as the new third line of the body.
 We've put a little space in front of the number, and turned the 
 number into a string.  Without this extra space we tend
 to cramp our text awkwardly against the bar to the left.   
+Finally, we'll add the two methods needed  to fill each bar.  
 
-Finally, we'll add the two methods needed  to fill each bar.  One thing to note is that we moved
-tess down and to the left in our window to make room for all the bars.  Had we not done this, the
-turtle would have drawn off the window.  Our final program now looks like this.
+The one remaining problem is related the fact that our turtle lives in a world where the center is at position (0,0).  In this problem, it would help if (0,0) were in the lower left hand corner.  To solve this we can use our ``setworldcoordinates`` method to rescale the window.  While we are at it, we should make the window fit the data.  The tallest bar will correspond to the maximum data value.  The width of the window will need to be proportional to the number of bars (the number of data values) where each has a width of 40.  Using this information, we can compute the coordinate
+system that makes sense for the data set.  To make it look nice, we'll add a bit of space at the bottom and at the left as a border.
+
+Here is the complete program.  Try it and then change the data to see that it can adapt to the new values.
 
 .. activecode:: ch05_barchart
 
@@ -850,7 +858,7 @@ turtle would have drawn off the window.  Our final program now looks like this.
 
 	wn = turtle.Screen()             # Set up the window and its attributes
 	wn.bgcolor("lightgreen")
-	wn.setworldcoordinates(0,0,40*numbars+border,maxheight+border)
+	wn.setworldcoordinates(0-border,0-border,40*numbars+border,maxheight+border)
 
 
 	for a in xs:
