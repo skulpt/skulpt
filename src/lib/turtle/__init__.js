@@ -31,12 +31,15 @@ if (! TurtleGraphics) {
         if (options.canvasID) {
             this.canvasID = options.canvasID;
         }
+        TurtleGraphics.canvasInit = true;
         this.canvas = document.getElementById(this.canvasID);
         this.context = this.canvas.getContext('2d');
         //this.canvas.style.display = 'block';
         $(this.canvas).fadeIn();
 
         this.lineScale = 1.0;
+        this.xptscale = 1.0;
+        this.yptscale = 1.0
 
         this.llx = -this.canvas.width / 2;
         this.lly = -this.canvas.height / 2;
@@ -55,6 +58,8 @@ if (! TurtleGraphics) {
         this.canvas.width = width;
         this.canvas.height = height;
         this.lineScale = 1.0;
+        this.xptscale = 1.0;
+        this.yptscale = 1.0;
 
         this.llx = -this.canvas.width / 2;
         this.lly = -this.canvas.height / 2;
@@ -136,9 +141,13 @@ if (! TurtleGraphics) {
         else if (lly > 0)
             this.context.translate(-llx, -lly * 2);
         else
-            this.context.translate(-llx, lly);
+            this.context.translate(-llx, -ury);
 
-        this.lineScale = (urx - llx) / this.canvas.width;
+        var xlinescale = (urx - llx) / this.canvas.width;
+        var ylinescale = (ury - lly) / this.canvas.height;
+        this.xptscale = xlinescale;
+        this.yptscale = ylinescale;
+        this.lineScale = Math.min(xlinescale,ylinescale)
         this.context.save();
 
         this.llx = llx;
@@ -866,7 +875,7 @@ if (! TurtleGraphics) {
         if (! position)
             position = this.position
         for (p in plist) {
-            rtPoints.push(plist[p].smul(this.turtleCanvas.lineScale).rotate(head).add(position));
+            rtPoints.push(plist[p].scale(this.turtleCanvas.xptscale,this.turtleCanvas.yptscale).rotate(head).add(position));
         }
         this.context.beginPath();
         this.context.moveTo(rtPoints[0][0], rtPoints[0][1]);
@@ -1010,11 +1019,19 @@ if (! TurtleGraphics) {
         return res;
     }
 
-    Vector.prototype.smul = function(k) {  // scalar multiplacation
+    Vector.prototype.smul = function(k) {  // scalar multiplication
         res = new Vector(0, 0, 0);
         res[0] = this[0] * k;
         res[1] = this[1] * k;
         res[2] = this[2] * k;
+        return res;
+    }
+
+    Vector.prototype.scale = function(xs,ys) {
+        res = new Vector(0,0,0);
+        res[0] =  this[0] * ys;
+        res[1] =  this[1] * xs;
+        res[2] = 1.0;
         return res;
     }
 
