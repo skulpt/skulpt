@@ -153,8 +153,27 @@ because ``range`` generates its list up to but not including the value you give 
 It would be easy to make a programming mistake and overlook this. 
         
 So why have two kinds of loop if ``for`` looks easier?  This next example shows an indefinite iteration where
-we need the extra power that we get from the ``while`` loop.        
-        
+we need the extra power that we get from the ``while`` loop.
+
+Randomly Walking Turtles
+------------------------
+
+Suppose we want to entertain ourselves by watching a turtle wander around
+randomly inside the screen.  When we run the program we want the turtle and
+program to behave in the following way:
+
+#. The turtle begins in the center of the screen.
+
+#. Flip a coin, if its heads the turn to the left 90 degrees if its tails
+then turn to the right 90 degrees
+
+#. Take 50 steps forward
+
+#. If the turtle has moved outside the screen then stop otherwise go back to
+step 2 and repeat.
+
+
+
 .. index:: 3n + 1 sequence        
         
 The 3n + 1 Sequence

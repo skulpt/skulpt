@@ -521,8 +521,8 @@ is the details of how the squaring is done.  This is a great example of "black b
 
 .. note::
 
-    What would happen if we put the assignment ``runningTotal = 0`` inside the for statement?  Not sure, try it and find
-    out.
+    What would happen if we put the assignment ``runningTotal = 0`` inside
+    the for statement?  Not sure? Try it and find out.
 
 
 In the program above, notice that the variable ``runningtotal`` starts out with a value of 0.  Next, the iteration is performed ``x`` times.  Inside the for loop, the update occurs. ``runningtotal`` is reassigned a new value which is the old value plus the value of ``x``.
@@ -541,7 +541,7 @@ Here is the same program in codelens.  Step thru the function and watch the "run
         for counter in range(x):
             runningtotal = runningtotal + x
 
-        return total
+        return runningtotal
 
     toSquare = 10
     squareResult = square(toSquare)
