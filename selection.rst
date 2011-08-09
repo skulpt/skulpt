@@ -32,7 +32,7 @@ The Python type for storing true and false values is called ``bool``, named
 after the British mathematician, George Boole. George Boole created *Boolean
 Algebra*, which is the basis of all modern computer arithmetic.
 
-There are only two **boolean values**: ``True`` and ``False``.  Capitalization
+There are only two **boolean values**.  They are ``True`` and ``False``.  Capitalization
 is important, since ``true`` and ``false`` are not boolean values (remember Python is case
 sensitive).
 
@@ -82,12 +82,12 @@ equal sign (``=``) instead of a double equal sign (``==``). Remember that ``=``
 is an assignment operator and ``==`` is a comparison operator. Also, there is
 no such thing as ``=<`` or ``=>``.
 
-..With reassignment it is especially important to distinguish between an
-..assignment statement and a boolean expression that tests for equality. 
-..Because Python uses the equal token (``=``) for assignment, 
-..it is tempting to interpret a statement like
-..``a = b`` as a boolean test.  Unlike mathematics, it is not!  Remember that the Python token
-..for the equality operator is ``==``.
+.. With reassignment it is especially important to distinguish between an
+.. assignment statement and a boolean expression that tests for equality. 
+.. Because Python uses the equal token (``=``) for assignment, 
+.. it is tempting to interpret a statement like
+.. ``a = b`` as a boolean test.  Unlike mathematics, it is not!  Remember that the Python token
+.. for the equality operator is ``==``.
 
 Note too that an equality test is symmetric, but assignment is not. For example, 
 if ``a == 7`` then ``7 == a``. But in Python, the statement ``a = 7``
@@ -111,8 +111,8 @@ x is between 0 and 10, not including the endpoints.
 that is, if the number is divisible by 2 *or* divisible by 3.  In this case, one, or the other, or
 both of the parts has to be true for the result to be true.
 
-Finally, the ``not`` operator negates a boolean expression, so ``not(x > y)``
-is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
+Finally, the ``not`` operator negates a boolean expression, so ``not  x > y``
+is true if ``x > y`` is false, that is, if ``x`` is less than or equal to
 ``y``.
 
 .. activecode:: chp05_3
@@ -122,6 +122,34 @@ is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
  
     n = 25
     print(n%2 == 0 or n%3 == 0)
+
+
+.. admonition:: Common Mistake!
+
+	There is a very common mistake that occurs when programmers try to write boolean expressions.  For example, what if we have a variable ``number`` and we want to check to see if its value is 5,6, or 7.  In words we might say: "number equal to 5 or 6 or 7".  However, if we translate this into Python, ``number == 5 or 6 or 7``, it will not be correct.  The ``or`` operator must join the results of three equality checks.  The correct way to write this is ``number == 5 or number == 6 or number == 7``.  This may seem like a lot of typing but it is absolutely necessary.  You cannot take a shortcut.
+
+
+Precedence of Operators
+-----------------------
+
+We have now added a number of additional operators to those we learned in the previous chapters.  It is important to understand how these operators relate to the others with respect to operator precedence.  Python will always evaluate the arithmetic operators first (** is highest, then multiplication/division, then addition/subtraction).  Next comes the relational operators.  Finally, the logical operators are done last.  This means that the expression ``x*5 >= 10 and y-6 <= 20`` will be evaluated so as to first perform the arithmetic and then check the relationships.  The ``and`` will be done last.  Although many programmers might place parenthesis around the two relational expressions, it is not necessary. 
+
+The following table summarizes the operator precedence from highest to lowest.  A complete table for the entire language can be found in the `Python Documentation <http://docs.python.org/py3k/reference/expressions.html#expression-lists>`_.
+
+=======   ==============  ===============
+Level     Category        Operators
+=======   ==============  ===============
+7(high)   exponent        \**
+6         multiplication  \*,/,//,%
+5         addition        +,-
+4         relational      ==,!=,<=,>=,>,<
+3         logical         not
+2         logical         and
+1(low)    logical         or
+=======   ==============  ===============
+
+
+
 
 
 .. index:: conditional branching, conditional execution, if, elif, else,
@@ -135,8 +163,8 @@ is true if ``(x > y)`` is false, that is, if ``x`` is less than or equal to
     single: conditional statement
     single: statement; pass
 
-Conditional execution
----------------------
+Conditional Execution: Binary Selection
+---------------------------------------
 
 In order to write useful programs, we almost always need the ability to check
 conditions and change the behavior of the program accordingly. **Selection statements**, sometimes
@@ -186,23 +214,19 @@ is skipped if the boolean expression evaluates to ``False``, and instead
 all the statements under the ``else`` clause are executed. 
 
 There is no limit on the number of statements that can appear under the two clauses of an
-``if`` statement, but there has to be at least one statement in each block.  Occasionally, it is useful
-to have a section with no statements (usually as a place keeper, or scaffolding, 
-for code you haven't written yet). In that case, you can use the ``pass`` statement, which
-does nothing except act as a placeholder.
+``if`` statement, but there has to be at least one statement in each block.  
 
-.. sourcecode:: python
-    
-    if True:          # This is always true
-        pass          # so this is always executed, but it does nothing
-    else:
-        pass 
+
+.. admonition:: Lab
+
+    * `Approximating Pi with Simulation <montepi.html>`_ In this guided lab exercise we will work
+      through a problem solving exercise related to approximating the value of pi using random numbers.
 
 
 .. index:: alternative execution, branch, wrapping code in a function
 
-Omitting the `else` clause
---------------------------
+Omitting the `else` Clause: Unary Selection
+-------------------------------------------
 
 .. sidebar::  Flowchart of an **if** with no **else** 
 
@@ -221,60 +245,8 @@ executed, otherwise the flow of execution continues to the statement after the `
         print("The negative number ",  x, " is not valid here.")
     print("This is always printed")   
 
-.. admonition:: Python terminology
-    
-    Python documentation sometimes uses the term **suite** of statements to mean what we
-    have called a *block* here. They mean the same thing, and since most other languages and
-    computer scientists use the word *block*, we'll stick with that.
-    
-    Notice too that ``else`` is not a statement.  The ``if`` statement has 
-    two *clauses*, one of which is the (optional) ``else`` clause.
-      
-        
-.. index::
-    single: chained conditional 
-    single: conditional; chained
 
-Chained conditionals
---------------------
-
-Sometimes there are more than two possibilities and we need more than two
-branches. One way to express a computation like that is a **chained
-conditional**:
-   
-.. sourcecode:: python
-    
-    if x < y:
-        STATEMENTS_A
-    elif x > y:
-        STATEMENTS_B
-    else:
-        STATEMENTS_C
-
-Flowchart of this chained conditional 
-
-.. image:: illustrations/ch05/flowchart_chained_conditional.png        
-        
-``elif`` is an abbreviation of ``else if``. Again, exactly one branch will be
-executed. There is no limit of the number of ``elif`` statements but only a
-single (and optional) final ``else`` statement is allowed and it must be the last
-branch in the statement:
-
-.. sourcecode:: python
-    
-    if choice == 'a':
-        function_a()
-    elif choice == 'b':
-        function_b()
-    elif choice == 'c':
-        function_c()
-    else:
-        print("Invalid choice.")
-
-Each condition is checked in order. If the first is false, the next is checked,
-and so on. If one of them is true, the corresponding branch executes, and the
-statement ends. Even if more than one condition is true, only the first true
-branch executes.
+What would be printed if the value of `` x`` is negative?  Try it.
 
 
 .. index::
@@ -284,28 +256,116 @@ branch executes.
 Nested conditionals
 -------------------
 
-One conditional can also be **nested** within another. (It is the same theme of
-composibility, again!)  We could have written
-the previous example as follows:
+One conditional can also be **nested** within another. For example, assume we have two integer variables, ``x`` and ``y``.
+The following pattern of selection shows how we might decide how they are related to each other.
 
-.. sidebar:: Flowchart of this nested conditional
+.. sourcecode:: python
 
-   .. image:: illustrations/ch05/flowchart_nested_conditional.png
+    if x < y:
+        print("x is less than y")
+    else:
+        if x > y:
+            print("x is greater than y")
+        else:
+            print("x and y must be equal")
 
+The outer conditional contains two branches. 
+The second branch (the else from the outer) contains another ``if`` statement, which
+has two branches of its own. Those two branches could contain
+conditional statements as well.  
+
+The flow of control can be seen in this flowchart illustration.
+
+.. image:: illustrations/ch05/flowchart_nested_conditional.png
+
+
+
+
+Here is a complete program that defines values for ``x`` and ``y``.  Run the program and see the result.  Then change the values of the variables to change the flow of control.
+
+.. activecode:: sel2
+
+    x = 10
+    y = 10
+
+    if x < y:
+        print("x is less than y")
+    else:
+        if x > y:
+            print("x is greater than y")
+        else:
+            print("x and y must be equal")
+
+.. note::
+
+	In some programming languages, matching the if and the else is a problem.  However, in Python this is not the case.
+	The indentation pattern tells us exactly which else
+	belongs to which if.
+        
+If you are still a bit unsure, here is the same selection as part of a codelens example.  Step through it to see how the correct ``print`` is chosen.
+
+.. codelens:: sel1
+
+    x = 10
+    y = 10
+
+    if x < y:
+        print("x is less than y")
+    else:
+        if x > y:
+            print("x is greater than y")
+        else:
+            print("x and y must be equal")
+
+
+.. index::
+    single: chained conditional 
+    single: conditional; chained
+
+Chained conditionals
+--------------------
+
+Python provides an alternative way to write nested selection such as the one shown in the previous section.
+This is sometimes referred to as a **chained
+conditional**
+   
 .. sourcecode:: python
     
     if x < y:
-        STATEMENTS_A
+        print("x is less than y")
+    elif x > y:
+        print("x is greater than y")
     else:
-        if x > y:
-            STATEMENTS_B
-        else:
-            STATEMENTS_C
+        print("x and y must be equal")
 
-The outer conditional contains two branches. 
-The second branch contains another ``if`` statement, which
-has two branches of its own. Those two branches could contain
-conditional statements as well.
+The flow of control can be drawn in a different orientation but the resulting pattern is identical to the one shown above.
+
+.. image:: illustrations/ch05/flowchart_chained_conditional.png        
+        
+``elif`` is an abbreviation of ``else if``. Again, exactly one branch will be
+executed. There is no limit of the number of ``elif`` statements but only a
+single (and optional) final ``else`` statement is allowed and it must be the last
+branch in the statement.
+
+Each condition is checked in order. If the first is false, the next is checked,
+and so on. If one of them is true, the corresponding branch executes, and the
+statement ends. Even if more than one condition is true, only the first true
+branch executes.
+
+Here is the same program using ``elif``.
+
+.. activecode:: sel4
+
+    x = 10
+    y = 10
+
+    if x < y:
+        print("x is less than y")
+    elif x > y:
+        print("x is greater than y")
+    else:
+        print("x and y must be equal")
+
 
 Boolean Functions
 -----------------
@@ -317,9 +377,11 @@ complicated tests inside functions. For example:
     
     def isDivisible(x, y):
         if x % y == 0:
-            return True 
+            result = True 
         else:
-            return False 
+            result = False
+
+        return result 
 
     print(isDivisible(10,5))
 
@@ -347,22 +409,37 @@ Boolean functions are often used in conditional statements:
     else:
         ... # do something else ...
 
-It might be tempting to write something like:
-
-.. sourcecode:: python
-    
-    if isDivisible(x, y) == True:
-
-
-but the extra comparison is unnecessary.
+It might be tempting to write something like
+``if isDivisible(x, y) == True:``
+but the extra comparison is  not necessary.  The following example shows the ``isDivisible`` function at work.  Try it
+with a few other actual parameters to see what is printed.
 
 .. activecode:: ch06_boolfun2
     
     def isDivisible(x, y):
         if x % y == 0:
-            return True 
+            result = True 
         else:
-            return False 
+            result = False 
+
+        return result
+
+    if isDivisible(10,5):
+        print("That works")
+    else:
+        print("Those values are no good")
+
+Here is the same program in codelens.
+
+.. codelens:: ch06_boolcodelens
+
+    def isDivisible(x, y):
+        if x % y == 0:
+            result = True 
+        else:
+            result = False 
+
+        return result
 
     if isDivisible(10,5):
         print("That works")
@@ -370,10 +447,7 @@ but the extra comparison is unnecessary.
         print("Those values are no good")
 
 
-.. admonition:: Lab
 
-    * `Approximating Pi with Simulation <montepi.html>`_ In this guided lab exercise we will work
-      through a problem solving exercise related to approximating the value of pi using random numbers.
 
 
 
@@ -437,40 +511,28 @@ Glossary
         One program structure within another, such as a conditional statement
         inside a branch of another conditional statement.
 
-    prompt
-        A visual cue that tells the user to input data.
-
-    type conversion
-        An explicit function call that takes a value of one type and computes a
-        corresponding value of another type.
-
-    wrapping code in a function
-        The process of adding a function header and parameters to a sequence
-        of program statements is often refered to as "wrapping the code in
-        a function".  This process is very useful whenever the program
-        statements in question are going to be used multiple times.  It is
-        even more useful when it allows the programmer to express their mental
-        chunking, and how they've broken a complex problem into pieces.
 
 
 Exercises
 ---------
 
-
-   
-#. Give the logical opposites of these conditions
-    
-    #.  ``a > b`` 
-    #.  ``a >= b``
-    #.  ``a >= 18  and  day == 3``
-    #.  ``a >= 18  and  day != 3``
-    
 #.  What do these expressions evaluate to?
 
     #.  ``3 == 3``
     #.  ``3 != 3``
     #.  ``3 >= 4``
     #.  ``not (3 < 4)``
+
+
+   
+#. Give the **logical opposites** of these conditions.  You are not allowed to use the ``not`` operator.
+    
+    #.  ``a > b`` 
+    #.  ``a >= b``
+    #.  ``a >= 18  and  day == 3``
+    #.  ``a >= 18  and  day != 3``
+    
+
     
 #.  Write a function which is given an exam mark, and it returns a string --- the grade for that mark --- according to this 
     scheme:   
@@ -480,23 +542,20 @@ Exercises
        =======   =====
        Mark      Grade
        =======   =====
-       >= 75     First   
-       [70-75)   Upper Second   
-       [60-70)   Second   
-       [50-60)   Third 
-       [45-50)   F1 Supp   
-       [40-45)   F2   
-       < 40      F3   
+       >= 90     A  
+       [80-90)   B   
+       [70-80)   C   
+       [60-70)   D 
+       < 60      F   
        =======   =====    
     
     The square and round brackets denote closed and open intervals. 
-    A closed interval includes the number, and open interval excludes it.   So 39.99999 gets grade F3, but 40 gets grade F2.
+    A closed interval includes the number, and open interval excludes it.   So 79.99999 gets grade C , but 80 gets grade B.
     
     Let ``xs = [83, 75, 74.9, 70, 69.9, 65, 60, 59.9, 55, 50, 49.9, 45, 44.9, 40, 39.9, 2, 0]`` 
     
     Test your function by printing the mark and the grade for all the elements in this list.
     
-#.  Modify the turtle bar chart program so that it leaves small gaps between each bar.
 
 #.  Modify the turtle bar chart program so that the bar for any value 
     of 200 or more is filled with red, values between [100 and 200) are filled yellow,
@@ -508,7 +567,7 @@ Exercises
     the text below the bottom of the bar. 
   
 #.  Write a function ``findHypot`` which, given the length of two sides of a right-angled triangle, returns
-    the length of the hypotenuse.  (Hint:  ``x ** 0.5`` will return the square root.)
+    the length of the hypotenuse.  (Hint:  ``x ** 0.5`` will return the square root, or use ``sqrt`` from the math module)
     
 
 #. Write a function called ``is_even(n)`` that takes an integer as an argument
@@ -522,8 +581,6 @@ Exercises
 
 #. Modify ``is_odd`` so that it uses a call to ``is_even`` to determine if its 
    argument is an odd integer.
-
-#. Write a function ``is_factor(n, f)`` that returns ``True`` if ``f`` is a factor of ``n``, ``False`` otherwise.
 
 
 
@@ -544,6 +601,10 @@ Exercises
           ...    
    
 #.  Extend the above program so that the sides can be given to the function in any order.
+
+#.  A year is a **leap year** if it is divisible by 4 unless it is a century that is not divisible by 400.
+    Write a function that takes a year as a parameter and returns ``True`` if the year is a leap year, ``False`` otherwise.
+
 
 
 .. toctree::

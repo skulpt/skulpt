@@ -46,43 +46,6 @@ We saw this example in an earlier chapter.
 Running through all the items in a list is called **traversing** the list
 or sometimes just **traversal**.      
 
-Let us write a function now to sum up all the elements in a list of numbers.
-Do this by hand first and try to isolate exactly what steps you take.  You'll
-find you need to keep some "running total" of the sum so far, either on a piece 
-of paper, or in your head.  Remembering things from one step to the next is
-precisely why we have variables in a program.  This means that we will need some variable
-to remember the "running total".  It should be initialized with a value of zero,
-and then we need to traverse the items in the list.  For each item, we'll want
-to update the running total by adding the next number to it.
-
-.. activecode::  ch07_accumulator1
-
-    def mysum(xs):
-        """ Sum all the numbers in the list xs, and return the total. """
-       
-        runningTotal = 0
-        for x in xs:
-            runningTotal = runningTotal + x   # accumulate the running total
-        return runningTotal
-
-    print(mysum([1,2,3,4]))
-    print(mysum([1,3,5,7,9]))
-    print(mysum(range(11)))
-
-.. index:: while statement, while loop, iteration, loop, loop body,
-           infinite loop, condition
-
-.. note::
-
-    What would happen if we put the assignment ``runningTotal = 0`` inside the for statement?  Not sure, try it and find
-    out.
-
-This pattern of iterating through a collection of values and updating a variable as you go is commonly
-referred to as the **accumulator pattern**.  We refer to the variable as the **accumulator**.  This pattern will come up over and over again.  Remember that the key
-to making it work successfully is to be sure to initialize the variable before you start the iteration.
-Once inside the iteration, it is required that you update the accumulator.
-
-
 
 The ``while`` Statement
 -----------------------
@@ -98,7 +61,7 @@ Here is a program that demonstrates the use of the ``while`` statement:
         aNumber = 1
         while aNumber <= aBound:
             theSum = theSum + aNumber
-            aNumber = aNumber = 1
+            aNumber = aNumber + 1
         return theSum
         
     print(sumTo(4))
