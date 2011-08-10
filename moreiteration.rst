@@ -22,7 +22,7 @@ people do poorly.
 
 Repeated execution of a sequence of statements is called **iteration**.  Because
 iteration is so common, Python provides several language features to make it
-easier. We've already seen the ``for`` statement in chapter 3.  This is a very common 
+easier. We've already seen the ``for`` statement in Chapter 3.  This is a very common 
 form of iteration in Python. In this chapter
 we are also going to look at the ``while`` statement --- another way to have your
 program do iteration.
@@ -43,11 +43,9 @@ We saw this example in an earlier chapter.
         invitation = "Hi " + f + ".  Please come to my party on Saturday!"
         print(invitation) 
         
-Running through all the items in a list is called **traversing** the list
-or sometimes just **traversal**.      
 
 We have also seen iteration paired with the update idea to form the accumulator pattern.  For example, to compute
-the sum of the first ``n`` integers, we could create a for loop using a range that produces the numbers 1 thru ``n``.
+the sum of the first n integers, we could create a for loop using the ``range`` to produce the numbers 1 thru n.
 Using the accumulator pattern, we can start with a running total and on each iteration, add the current value of the loop
 variable.  A function to compute this sum is shown below.
 
@@ -64,12 +62,28 @@ variable.  A function to compute this sum is shown below.
 
     print(sumTo(1000))
 
+To review, the variable ``theSum`` is called the accumulator.  It is initialized to zero before we start the loop.  The loop variable, ``aNumber`` will take on the values produced by the ``range(1,aBound+1)`` function call.  Note that this produces all the integers starting from 1 up to the value of ``aBound``.  If we had not added 1 to ``aBound``, the range would have stopped one value short since ``range`` does not include the upper bound.
 
+The assignment statement, ``theSum = theSum + aNumber``, updates ``theSum`` each time thru the loop.  This accumulates the running total.  Finally, we return the value of the accumulator.
 
 The ``while`` Statement
 -----------------------
 
-Here is a program that demonstrates the use of the ``while`` statement:
+There is another Python statement that can also be used to build an iteration.  It is called the ``while`` statement.
+The ``while`` statement provides a much more general mechanism for iterating.  Similar to the ``if`` statement, it uses 
+a boolean expression to control the flow of execution.  The body of while will be repeated as long as the controlling boolean expression evaluates to ``True``.
+
+The following figure shows the flow of control.
+
+.. image:: illustrations/while_flow.png
+
+We can use the ``while`` loop to create any type of iteration we wish, including anything that we have previously done with a ``for`` loop.  For example, the program in the previous section could be rewritten using ``while``.  
+Instead of relying on the ``range`` function to produce the numbers for our summation, we will need to produce them ourselves.  To to this, we will create a variable called ``aNumber`` and initialize it to 1, the first number in the summation.  Every iteration will add ``aNumber`` to the running total until all the values have been used.
+In order to control the iteration, we must create a boolean expression that evaluates to ``True`` as long as we want to keep adding values to our running total.  In this case, as long as ``aNumber`` is less than or equal to the bound, we should keep going.
+
+
+
+Here is a new version of the summation program that uses a while statement.
 
 .. activecode:: ch07_while1
     
@@ -91,7 +105,25 @@ Here is a program that demonstrates the use of the ``while`` statement:
 
 You can almost read the ``while`` statement as if it were in natural language. It means,
 while ``aNumber`` is less than or equal to ``aBound``, continue executing the body of the loop. Within
-the body, each time, increment ``aNumber``. When ``aNumber`` passes ``aBound``, return your accumulated sum.
+the body, each time, update ``theSum`` using the accumulator pattern and increment ``aNumber``. After the body of the loop, we go back up to the condition of the ``while`` and reevaluate it.  When ``aNumber`` becomes greater than ``aBound``, the condition fails and flow of control continues to the ``return`` statement.  
+
+The same program in codelens will allow you to observe the flow of execution.
+
+.. codelens:: ch07_while2
+    
+    def sumTo(aBound):
+        """ Return the sum of 1+2+3 ... n """
+        
+        theSum  = 0
+        aNumber = 1
+        while aNumber <= aBound:
+            theSum = theSum + aNumber
+            aNumber = aNumber + 1
+        return theSum
+        
+    print(sumTo(4))
+
+
 
 .. note:: The names of the variables have been chosen to help readability.  
 
@@ -134,23 +166,7 @@ What you will notice here is that the ``while`` loop is more work for
 you --- the programmer --- than the equivalent ``for`` loop.  When using a ``while``
 loop you have to control the loop variable yourself.  You give it an initial value, test
 for completion, and then make sure you change something in the body so that the loop
-terminates.  By comparison, here is an alternative function that uses ``for`` instead: 
-
-.. activecode:: ch07_altsum
-
-    def sumTo(aBound):
-        """ Return the sum of 1+2+3 ... n """
-        theSum  = 0
-        for aNumber in range(aBound + 1):
-            theSum = theSum + aNumber
-        return theSum
-
-    print(sumTo(10))
-
-
-Notice the slightly tricky call to the ``range`` function --- we had to add one onto ``n``
-because ``range`` generates its list up to but not including the value you give it.  
-It would be easy to make a programming mistake and overlook this. 
+terminates.   
         
 So why have two kinds of loop if ``for`` looks easier?  This next example shows an indefinite iteration where
 we need the extra power that we get from the ``while`` loop.
@@ -164,13 +180,11 @@ program to behave in the following way:
 
 #. The turtle begins in the center of the screen.
 
-#. Flip a coin, if its heads the turn to the left 90 degrees if its tails
-then turn to the right 90 degrees
+#. Flip a coin, if its heads the turn to the left 90 degrees if its tails then turn to the right 90 degrees
 
 #. Take 50 steps forward
 
-#. If the turtle has moved outside the screen then stop otherwise go back to
-step 2 and repeat.
+#. If the turtle has moved outside the screen then stop otherwise go back to step 2 and repeat.
 
 
 
@@ -179,16 +193,14 @@ step 2 and repeat.
 The 3n + 1 Sequence
 -------------------
 
-Let's look at a simple sequence that has fascinated mathematicians for many years.
-They still cannot answer even quite simple questions about it.  
-
-The rule is to start from
+As another example of indefinite iteration, let's look at a sequence that has fascinated mathematicians for many years.
+The rule  for creating the sequence is to start from
 some given ``n``, and to generate
 the next term of the sequence from ``n``, either by halving ``n``, 
-whenever ``n`` is even, or else by multiplying it by three and adding 1 .  The sequence
+whenever ``n`` is even, or else by multiplying it by three and adding 1 when it is odd.  The sequence
 terminates when ``n`` reaches 1. 
 
-This Python function captures that algorithm.
+This Python function captures that algorithm.  Try running this program several times supplying different values for n.
 
 .. activecode:: ch07_indef1
     
@@ -208,10 +220,10 @@ This Python function captures that algorithm.
     
                 
 The condition for this loop is ``n != 1``.  The loop will continue running until
-``n`` is ``1`` (which will make the condition false).
+``n == 1`` (which will make the condition false).
 
-Each time through the loop, the program outputs the value of ``n`` and then
-checks whether it is even or odd. If it is even, the value of ``n`` is divided
+Each time through the loop, the program prints the value of ``n`` and then
+checks whether it is even or odd using the remainder operator. If it is even, the value of ``n`` is divided
 by 2 using integer division. If it is odd, the value is replaced by ``n * 3 + 1``.  
 Try some other examples.
     
@@ -223,6 +235,12 @@ time through the loop until it reaches 1.
 
 You might like to have some fun and see if you can find a small starting 
 number that needs more than a hundred steps before it terminates. 
+
+
+.. admonition:: Lab
+
+    * `Experimenting with the 3n+1 Sequence <sequencelab.html>`_ In this guided lab exercise we will try to learn more about this sequence.
+
 
 Particular values aside, the interesting question is whether we can prove that
 this sequence terminates for *all* values of ``n``. So far, no one has been able
@@ -255,57 +273,6 @@ be other cycles that we just haven't found.
    how many iterations we'll need --- we cannot even establish an upper bound!    
 
 
-.. index:: program tracing, hand trace, tracing a program
-
-Tracing a program
------------------
-
-To write effective computer programs a programmer needs to develop the ability
-to **trace** the execution of a computer program as it is being executed. Tracing involves becoming the
-computer and following the flow of execution through a sample program run,
-recording the state of all variables and any output the program generates after
-each instruction is executed.
-
-To understand this process, let's trace the call to ``seq3np1(3)`` from the
-previous section. At the start of the trace, we have a local variable, ``n``
-(the parameter), with an initial value of 3. Since 3 is not equal to 1, the
-``while`` loop body is executed. 3 is printed and ``3 % 2 == 0`` is evaluated.
-Since it evaluates to ``False``, the ``else`` branch is executed and
-``3 * 3 + 1`` is evaluated and assigned to ``n``.
-
-To keep track of all this as you hand trace a program, make a column heading on
-a piece of paper for each variable created as the program runs and another one
-for output. Our trace so far would look something like this::
-    
-    n               output printed so far
-    --              ---------------------
-    3               3, 
-    10
-
-Since ``10 != 1`` evaluates to ``True``, the loop body is again executed,
-and 10 is printed. ``10 % 2 == 0`` is true, so the ``if`` branch is
-executed and ``n`` becomes 5. By the end of the trace we have::
-
-      n               output printed so far
-      --              ---------------------
-      3               3,
-      10              3, 10,
-      5               3, 10, 5,
-      16              3, 10, 5, 16,
-      8               3, 10, 5, 16, 8,
-      4               3, 10, 5, 16, 8, 4,
-      2               3, 10, 5, 16, 8, 4, 2,
-      1               3, 10, 5, 16, 8, 4, 2, 1.
-
-Tracing can be a bit tedious and error prone (that's why we get computers to do
-this stuff in the first place!), but it is an essential skill for a programmer
-to have. From this trace we can learn a lot about the way our code works. We
-can observe that as soon as n becomes a power of 2, for example, the program
-will require log\ :sub:`2`\ (n) executions of the loop body to complete. We can
-also see that the final 1 will not be printed as output within the body of the loop,
-which is why we put the special ``print`` function at the end. 
-
-
 
 .. There are also some great visualization tools becoming available to help you 
 .. trace and understand small fragments of Python code.  The one we recommend is at 
@@ -313,56 +280,6 @@ which is why we put the special ``print`` function at the end.
 
 
 
-.. _counting:
-
-Counting Digits
----------------
-
-The following function counts the number of decimal digits in a positive
-integer.  The function works by continually dividing the number by 10 until it is not
-possible to do so any longer.  This is another example of indefinite iteration since we
-do not know how many divisions will be necessary ahead of time.
-
-.. activecode:: ch07_digits1
-
-    def numDigits(n):
-        count = 0
-        while n > 0:
-            count = count + 1
-            n = n // 10
-        return count
-
-    print(numDigits(710))
-
-    
-As you can see, a call to ``print(num_digits(710))`` will display ``3``. Trace the execution of this
-function call on a piece of paper to convince yourself that it works.
-
-This function also demonstrates an important pattern of computation called a **counter** (note that it is
-a type of accumulator).
-The variable ``count`` is initialized to 0 and then incremented each time the
-loop body is executed. When the loop exits, ``count`` contains the result ---
-the total number of times the loop body was executed, which is the same as the
-number of digits.
-
-If we wanted to only count digits that are either 0 or 5, adding a conditional
-before incrementing the counter will do the trick:
-
-.. activecode:: ch07_digits2
-    
-    def numZeroAndFiveDigits(n):
-        count = 0
-        while n > 0:
-            digit = n % 10
-            if digit == 0 or digit == 5:
-                count = count + 1
-            n = n // 10
-        return count
-
-    print(numZeroAndFiveDigits(1055030250))
-
-.. index:: abbreviated assignment    
-    
 
 .. index::
     single: Newton's method
@@ -394,9 +311,9 @@ calculation yielding a better result.
 .. activecode:: chp07_newtonsdef
     
     def newtonSqrt(n, howmany):
-        approx = n/2
+        approx = 0.5 * n
         for i in range(howmany):
-            betterapprox = 1/2 * (approx + n/approx)
+            betterapprox = 0.5 * (approx + n/approx)
             approx = betterapprox
         return betterapprox
 
@@ -405,25 +322,24 @@ calculation yielding a better result.
     print(newtonSqrt(10,10))
 
 
+You may have noticed that the second and third calls to ``newtonSqrt`` in the previous example both returned the same value for the square root of 10.  Using 10 iterations instead of 5 did not improve the the value.  In general, Newton's algorithm will eventually reach a point where the new approximation is no better than the previous.  At that point, we could simply stop.
+In other words, by repeatedly applying this formula until the better approximation gets close
+enough to the previous one, we can write a function for computing the square root that uses the number of iterations necessary and no more.  
 
-By repeatedly applying this formula until the better approximation gets close
-enough to the previous one, we can write a function for computing the square root.  This implementation
-uses a ``while`` to execute until the approximation is no longer changing.
+This implementation, shown in codelens,
+uses a ``while`` condition to execute until the approximation is no longer changing.  Each time thru the loop we compute a "better" approximation using the formula described earlier.  As long as the "better" is different, we try again.  Step thru the program and watch the approximations get closer and closer.
 
-.. activecode:: chp07_newtonswhile
+.. codelens:: chp07_newtonswhile
     
     def newtonSqrt(n):
-        approx = n/2
-        better = 1/2 * (approx + n/approx)
+        approx = 0.5 * n
+        better = 0.5 * (approx + n/approx)
         while  better !=  approx:
             approx = better
-            better = 1/2 * (approx + n/approx)
+            better = 0.5 * (approx + n/approx)
         return approx
 
     print(newtonSqrt(10))
-    print(newtonSqrt(100))
-    print(newtonSqrt(46))
-
 
 .. note::
 
@@ -492,7 +408,7 @@ approximate answer and then perform computations to improve the approximation.
 In some cases, there have been errors in the underlying tables, most famously
 in the table the Intel Pentium processor chip used to perform floating-point division.
 
-Although a log table is not as useful as it once was, it still makes a good
+Although a power of 2 table is not as useful as it once was, it still makes a good
 example of iteration. The following program outputs a sequence of values in the
 left column and 2 raised to the power of that value in the right column:
 
@@ -644,7 +560,7 @@ different depending on whether you are using an image file or creating an empty 
     setPixel(col,row,p) img.setPixel(100,50,mp)         Set the pixel at column 100, row 50 to be mp.
     =================== =============================== ==================================================
 
-Consider the image shown below.  Assume that the image is stored in a file called "cy.png".  Line 2 opens the
+Consider the image shown below.  Assume that the image is stored in a file called "luther.jpg".  Line 2 opens the
 file and uses the contents to create an image object that is referred to by ``img``.  Once we have an image object,
 we can use the methods described above to access information about the image or to get a specific pixel and check
 on its basic color intensities.
@@ -692,7 +608,7 @@ To see how this works, consider the simple iteration below.
 
 We have seen this enough times to know that the value of ``i`` will be 0, then 1, then 2, and so on up to 4.
 The ``print`` will be performed once for each pass.
-However, the ``print`` function can be any statement including another iteration (another ``for`` statement).  For example,
+However, the body of the loop can contain any statements including another iteration (another ``for`` statement).  For example,
 
 .. sourcecode:: python
 
@@ -740,7 +656,17 @@ In the RGB color model, we can consider the opposite of the red component as the
 and 255.  For example, if the original red component was 50, then the opposite, or negative red value would be
 ``255-50`` or 205.  In other words, pixels with alot of red will have negatives with little red and pixels with little red will have negatives with alot.  We do the same for the blue and green as well.
 
-The program below implements this algorithm using the previous image.  Run it to see the resulting negative image.
+The program below implements this algorithm using the previous image.  Run it to see the resulting negative image.  Note that there is alot of processing taking place and this may take a few seconds to complete.  In addition, here are two other images that you can use.  Change the name of the file in the ``image.Image()`` call to see how these images look as negatives.  Also, note that there is an ``exitonclick`` method call at the very end which will close the window when you click on it.  This will allow you to "clear the screen" before drawing the next negative.
+
+.. raw:: html
+
+    <img src="_static/cy.png" id="cy.png">
+    cy.png
+
+.. raw:: html
+
+    <img src="_static/goldygopher.png" id="goldygopher.png">
+    goldygopher.png
 
 
 
@@ -790,6 +716,10 @@ Finally, we need to insert the new pixel into the empty image in the same locati
 	`Sepia Tone <http://en.wikipedia.org/wiki/Sepia_tone#Sepia_toning>`_
 
 
+
+You have just passed a very important point in your study of Python programming.  Even though there is much more that we will do, you have learned all of the basic building blocks that are necessary to solve many interesting problems.  From and algorithm point of view, you can now implement selection and iteration.  You can also solve problems by breaking them down into smaller parts, writing functions for those parts, and then calling the functions to complete the implementation.
+What remains is to focus on ways that we can better represent our problems in terms of the data that we manipulate.  We will now turn our attention to studying the main data collections provided by Python.
+
 Glossary
 --------
 
@@ -802,13 +732,6 @@ Glossary
     body
         The statements inside a loop.
         
-    breakpoint
-        A place in your program code where program execution will pause (or break),
-        allowing you to inspect the state of the program's variables, or single-step
-        through individual statements, executing them one at a time. 
-        
-    bump
-        Programmer slang. Synonym for increment.
 
     counter
         A variable used to count something, usually initialized to zero and
@@ -824,15 +747,7 @@ Glossary
         body will be executed.  Definite iteration is usually best coded
         as a ``for`` loop.    
         
-    development plan
-        A process for developing a program. In this chapter, we demonstrated a
-        style of development based on developing code to do simple, specific
-        things and then encapsulating and generalizing.
 
-    encapsulate
-        To divide a large complex program into components (like functions) and
-        isolate the components from each other (by using local variables, for
-        example).
 
     escape sequence
         An escape character, \\, followed by one or more printable characters
@@ -865,16 +780,7 @@ Glossary
     loop variable
         A variable used as part of the terminating condition of a loop.
      
-    meta-notation
-        Extra symbols or notation that helps describe other notation. Here we introduced
-        square brackets, ellipses, italics, and bold as meta-notation to help 
-        describe optional, repeatable, substitutable and fixed parts of the Python syntax.
-     
-    middle-test loop
-        A loop that executes some of the body, then tests for the exit condition, 
-        and then may execute some more of the body.  We don't have a special 
-        Python construct for this case, but can 
-        use ``while`` and ``break`` together.
+
     
     nested loop
         A loop inside the body of another loop.
@@ -882,38 +788,18 @@ Glossary
     newline
         A special character that causes the cursor to move to the beginning of
         the next line.
-
-    post-test loop
-        A loop that executes the body, then tests for the exit condition.  We don't have a special
-        Python construct for this, but can use ``while`` and ``break`` together.
         
-    pre-test loop
-        A loop that tests before deciding whether the execute its body.  ``for`` and ``while``
-        are both pre-test loops.    
         
     reassignment
         Making more than one assignment to the same variable during the
         execution of a program.
     
-    single-step
-        A mode of interpreter execution where you are able to execute your 
-        program one step at a time, and inspect the consequences of that step. 
-        Useful for debugging and building your internal mental model of what is
-        going on.
+
      
     tab
         A special character that causes the cursor to move to the next tab stop
         on the current line.
         
-    trichotomy
-        Given any real numbers *a* and *b*, exactly one of the following
-        relations holds: *a < b*, *a > b*, or *a == b*. Thus when you can
-        establish that two of the relations are false, you can assume the
-        remaining one is true.
-
-    trace
-        To follow the flow of execution of a program by hand, recording the
-        change of state of the variables and any output produced.
 
         
 Exercises
@@ -939,16 +825,12 @@ these building blocks.
 #. Sum up all the negative numbers in a list.
 #. Count how many words in a list have length 5.
 #. Sum all the elements in a list up to but not including the first even number.
-   (Write your unit tests.  What if there is no even number?)
 #. Count how many words occur in a list up to and including the first occurrence of the word "sam".
-   (Write your unit tests for this case too.  What if "sam" does not occur?)
    
 #. Add a print function to Newton's ``sqrt`` function that
    prints out ``better`` each time it is calculated. Call your modified
    function with 25 as an argument and record the results.
-   
-#. Trace the execution of the last version of ``print_mult_table`` and figure
-   out how it works.
+
    
 #. Write a function ``print_triangular_numbers(n)`` that prints out the first
    n triangular numbers. A call to ``print_triangular_numbers(5)`` would
@@ -965,82 +847,23 @@ these building blocks.
    
 #. Write a function, ``is_prime``, which takes a single integer argument
    and returns ``True`` when the argument is a *prime number* and ``False``
-   otherwise. Add tests for cases like this::
+   otherwise.
    
-       test(is_prime(11), True)
-       test(is_prime(35), False)
-       test(is_prime(19911129), True)
-   
-   The last case could represent your birth date.  Were you born on a prime day?
-   In a class of 100 students, how many do you think would have prime birth dates?
-   
-#. Revisit the drunk student problem from the exercises in chapter 3. 
-   Now write a function that gets the student to make 50 random turns and moves.
-   Each random turn should be an angle between 0 and 360, and each move should be
-   a random move forward between 0 and 100 steps.  Use the turtle module to 
-   plot these.   Peek ahead to the 
-   section on random numbers (look it up in the index)
-   to see how to make the computer generate random numbers for you.   
+
       
-#. What will ``num_digits(0)`` return? Modify it to return ``1`` for this
-   case. Why does a call to ``num_digits(-24)`` result in an infinite loop?
-   (*hint: -1//10 evaluates to -1*)  Modify ``num_digits`` so that it works
-   correctly with any integer value. Add these tests::
+#. Write a function that will return the number of digits in an integer.
 
-       test(num_digits(0), 1)
-       test(num_digits(-12345), 5)
 
-#. Write a function ``num_even_digits(n)`` that counts the number
-   of even digits in ``n``.  These tests should pass::
-
-       test(num_even_digits(123456), 3)
-       test(num_even_digits(2468), 4)
-       test(num_even_digits(1357), 0)
-       test(num_even_digits(0), 1)
 
 #. Write a function ``sum_of_squares(xs)`` that computes the sum
    of the squares of the numbers in the list ``xs``.  For example,
    ``sum_of_squares([2, 3, 4])`` should return 4+9+16 which is 29::
     
-       test(sum_of_squares([2, 3, 4]), 29) 
-       test(sum_of_squares([ ]), 0)
-       test(sum_of_squares([2, -3, 4]), 29)
        
-#. You and your friend are in a team to write a two-player game, 
-   human against computer, such as Tic-Tac-Toe / Noughts and Crosses.  
-   Your friend will write the logic to play one round of the game, while you will
-   write the logic to allow many rounds of play, keep score, decide who
-   plays, first, etc.  The two of you negotiate on how the two parts of the 
-   program will interact with each other, and you come up with this simple 
-   scaffolding (which your friend will improve later):
-   
-   .. sourcecode:: python
-   
-       def play_once(human_plays_first):
-           """ 
-              Must play one round of the game. If the parameter is True, the
-              human gets to play first, else the computer gets to play first.   
-              When the round ends, the return value of the function is one of 
-              -1 (human wins),  0 (game drawn),   1 (computer wins).
-           """
-           # This is all dummy code right at the moment...
-           import random                # see ch 10 for details 
-           rng = random.Random()
-           result = rnd.randrange(-1,2) # pick a random result.
-           print("Human plays first={0},  winner={1} ".format(human_plays_first, result))
-           return result
-           
-   a. Write the main program which repeatedly calls the function to play 
-      the game, and announces the outcome as "I win". "You win", or "Game drawn!".
-      It then asks the player "Do you want to play again?" and either plays again,
-      or says "Goodbye", and terminates.
-   b. Keep score of how many wins each player has had, and how many draws there have been.
-      After each round of play, announce the scores.
-   c. Add logic to ensure that the player who gets to play first alternates on every round.
-   d. Change the logic from part (c.) so that the player who won the previous round gets to
-      play first. 
-   e. Compute the percentage of wins for the human, out of all games played.  Announce this
-      at the end of each round. 
-   f. Draw a flowchart of your logic.  
-   
-           
+
+.. toctree::
+    :hidden:
+
+    sequencelab
+
+
