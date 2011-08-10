@@ -1012,7 +1012,33 @@ these building blocks.
    of the squares of the numbers in the list ``xs``.  For example,
    ``sum_of_squares([2, 3, 4])`` should return 4+9+16 which is 29::
     
-       
+#. Write a function to remove all the red from an image.
+
+#. Write a function to convert the image to grayscale.
+
+#. Write a function to convert an image to black and white.
+
+#. Sepia Tone images are those brownish colored images that may remind you of
+   times past.  The formula for creating a sepia tone is as follows:
+
+   .. sourcecode:: python
+   
+        newR = (R × 0.393 + G × 0.769 + B × 0.189)
+        newG = (R × 0.349 + G × 0.686 + B × 0.168)
+        newB = (R × 0.272 + G × 0.534 + B × 0.131)
+
+   Write a function to convert an image to sepia tone. *Hint:*
+   Remember that rgb values must be integers between 0 and 255.
+
+#. Write a function to uniformly shrink or enlarge an image.  Your function
+   should take an image along with a scaling factor.  To shrink the image the
+   scale factor should be between 0 and 1 to enlarge the image the scaling
+   factor should be greater than 1.
+
+#. Write a function to rotate an image.  Your function should take an image
+   object along with the number of degrees to rotate.  The rotational degrees
+   can be positive or negative, and should be multiples of 90.
+
 
 .. toctree::
     :hidden:
