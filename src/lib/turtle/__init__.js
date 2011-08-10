@@ -157,6 +157,14 @@ if (! TurtleGraphics) {
 
     }
 
+    TurtleCanvas.prototype.window_width = function() {
+        return this.canvas.width;
+    }
+
+    TurtleCanvas.prototype.window_height = function() {
+        return this.canvas.height;
+    }
+
     TurtleCanvas.prototype.bgcolor = function(c) {
         this.background_color = c;
         //this.canvas.style.setProperty("background-color", c.v);
@@ -174,11 +182,14 @@ if (! TurtleGraphics) {
     // todo: if animating, this should be deferred until the proper time
     TurtleCanvas.prototype.exitonclick = function () {
         var canvas_id = this.canvasID;
+        var theCanvas = this;
         $(this.canvas).click(function() {
-            $("#"+canvas_id).fadeOut();
-            $("#"+canvas_id).unbind('click');
-            Sk.tg.canvasInit = false;
-            delete Sk.tg.canvasLib[canvas_id];
+            if (! theCanvas.isAnimating()) {
+                $("#"+canvas_id).fadeOut();
+                $("#"+canvas_id).unbind('click');
+                Sk.tg.canvasInit = false;
+                delete Sk.tg.canvasLib[canvas_id];
+            }
         });
     }
 
@@ -1345,8 +1356,16 @@ var $builtinmodule = function(name) {
             // no op....
         });
 
+        $loc.window_width = new Sk.builtin.func(function(self) {
+            return self.theScreen.window_width();
+        });
+
+        $loc.window_height = new Sk.builtin.func(function(self) {
+            return self.theScreen.window_height();
+        });
+
         $loc.turtles = new Sk.builtin.func(function(self) {
-            self.theScreen.turtles();
+            return self.theScreen.turtles();
         });
 
         var myfunc = function(self, width, height, startx, starty) {
