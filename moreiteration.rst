@@ -675,9 +675,8 @@ The program below implements this algorithm using the previous image.  Run it to
     import image
 
     img = image.Image("luther.jpg")
-
-    win = image.ImageWin()
     newimg = image.EmptyImage(img.getHeight(),img.getWidth())
+    win = image.ImageWin()
 
     for col in range(img.getWidth()):
         for row in range(img.getHeight()):
@@ -692,8 +691,9 @@ The program below implements this algorithm using the previous image.  Run it to
            newimg.setPixel(col,row,newpixel)
 
     newimg.draw(win)
+    win.exitonclick()
 
-After importing the image module, we create two image objects.  The first, ``img``, represents a typical digital photo.  The second, ``newimg``, is an empty image that will be "filled in" as we process the original pixel by pixel.  Note that the width and height of the empty image is set to be the same as the width and height of the original.
+Lets take a closer look at the code.  After importing the image module, we create two image objects.  The first, ``img``, represents a typical digital photo.  The second, ``newimg``, is an empty image that will be "filled in" as we process the original pixel by pixel.  Note that the width and height of the empty image is set to be the same as the width and height of the original.
 
 Lines 8 and 9 create the nested iteration that we discussed earlier.  This allows us to process each pixel in the image.
 Line 10 gets an individual pixel.
