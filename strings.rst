@@ -117,17 +117,17 @@ to lowercase.  (The original string `ss` remains unchanged.  A new string `tt` i
 
 The following table provides a summary of some useful string methods. 
 
-==========  ==============      ======================================================
+==========  ==============      ==================================================================
 Method      Parameters          Description
-==========  ==============      ======================================================
-upper       none                Returns the string in all uppercase
-lower       none                Returns the string in all lowercase
+==========  ==============      ==================================================================
+upper       none                Returns a string in all uppercase
+lower       none                Returns a string in all lowercase
+strip       none                Returns a string with the leading and trailing whitespace removed
+lstrip      none                Returns a string with the leading whitespace removed
+rstrip      none                Returns a string with the trailing whitespace removed
 count       item                Returns the number of occurrences of item
-ljust       width               Returns the string left justified in a field of width
-rjust       width               Returns the string right justified in a field of width
-center      width               Returns the string centered in a field of width
 replace     old, new            Replaces all occurrences of old substring with new
-==========  ==============      ======================================================
+==========  ==============      ==================================================================
 
 You should experiment with these
 methods so that you understand what they do.  Note once again that returned strings do not
@@ -135,14 +135,14 @@ change the original.  You can also consult the `Python documentation for strings
 
 .. activecode:: ch08_methods1
 
-    ss = "Hello, World"
+    ss = "    Hello, World    "
 
     els = ss.count("l")
     print(els)
 
-    print(ss.ljust(20))
-    print(ss.rjust(20))
-    print(ss.center(20))
+    print("***"+ss.strip()+"***")
+    print("***"+ss.lstrip()+"***")
+    print("***"+ss.rstrip()+"***")
 
     news = ss.replace("o", "***")
     print(news)
@@ -150,19 +150,19 @@ change the original.  You can also consult the `Python documentation for strings
 
 
 
-More Operators: Working with the Parts of a String
---------------------------------------------------
+Index Operator: Working with the Characters of a String
+-------------------------------------------------------
 
 The **indexing operator** (Python uses square brackets to enclose the index) 
-selects a single character substring from a string.  The characters are named by their position or 
-index value.  For example, in the string shown below, the 10 characters are indexed left to right from postion 0 to position 5.
+selects a single character from a string.  The characters are accessed by their position or 
+index value.  For example, in the string shown below, the 6 characters are indexed left to right from postion 0 to position 5.
 
 
 .. image:: illustrations/ch08/indexvalues.png
    :alt: index values
 
-It is also the case that the positions can be named from right to left using negative numbers where -1 is the rightmost
-character and so on.
+It is also the case that the positions are named from right to left using negative numbers where -1 is the rightmost
+index and so on.
 
 
 .. activecode:: chp08_index1
@@ -174,11 +174,11 @@ character and so on.
     lastchar = fruit[-1]
     print(lastchar)
 
-The expression ``fruit[2]`` selects character number 2 from ``fruit``, and creates a new
+The expression ``fruit[2]`` selects the character at index 2 from ``fruit``, and creates a new
 string containing just this one character. The variable ``m`` refers to the result. 
 
 Remember that computer scientists always start counting
-from zero. The letter at subscript position zero of ``"Banana"`` is ``B``.  So at
+from zero. The letter at index zero of ``"Banana"`` is ``B``.  So at
 position ``[2]`` we have the letter ``n``.
 
 If you want the zero-eth letter of a string, you just put 0, or any expression
@@ -203,7 +203,7 @@ It is just a string of length 1.
 Length
 ------
 
-The ``len`` function, when applied to a string, returns the number of characters in a string:
+The ``len`` function, when applied to a string, returns the number of characters in a string.
 
 .. activecode:: chp08_len1
     
@@ -252,8 +252,8 @@ selecting a character:
     
 
 The `slice` operator ``[n:m]`` returns the part of the string from the n'th character
-to the m'th character, including the first but excluding the last. In other words,  start at n and
-go up to but not including m.
+to the m'th character, including the first but excluding the last. In other words,  start with the character at index n and
+go up to but do not include the character at index m.
 This
 behavior may seem counter-intuitive but if you recall the ``range`` function, it did not include its end
 point either.
@@ -273,10 +273,10 @@ What do you think ``fruit[:]`` means?
 
 .. index:: string comparison, comparison of strings
 
-String comparison
+String Comparison
 -----------------
 
-The comparison operators work on strings. To see if two strings are equal you simply write a boolean
+The comparison operators also work on strings. To see if two strings are equal you simply write a boolean
 expression using the equality operator.
 
 .. activecode:: ch08_comp1
@@ -286,7 +286,7 @@ expression using the equality operator.
         print("Yes, we have no bananas!")
 
 Other comparison operations are useful for putting words in
-`lexigraphical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__.
+`lexicographical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__.
 This is similar to the alphabetical order you would use with a dictionary,
 except that all the uppercase letters come before all the lowercase letters.
 
@@ -326,11 +326,10 @@ find out the so called **ordinal value** for a given character is to use a chara
     print(ord("a"))
     print("apple" > "Apple")
 
-When you compare characters or strings to one another, Python converts the characters into their equivalent ordinal values and compares the integers.  As you can see from the example above, "a" is greater than "A" so "apple" is greater than "Apple".
+When you compare characters or strings to one another, Python converts the characters into their equivalent ordinal values and compares the integers from left to right.  As you can see from the example above, "a" is greater than "A" so "apple" is greater than "Apple".
 
-A common way to address this problem is to convert strings to a standard
-format, such as all lowercase, before performing the comparison. A more
-difficult problem is making the program realize that zebras are not fruit.
+Humans commonly ignore capitalization when comparing two words.  However, computers do not.  A common way to address this issue is to convert strings to a standard
+format, such as all lowercase, before performing the comparison. 
 
 There is also a similar function called ``chr`` that converts integers into their character equivalent.
 
@@ -342,7 +341,7 @@ There is also a similar function called ``chr`` that converts integers into thei
     print(chr(49))
     print(chr(53))
 
-    print("The character for 32 is",chr(32),"????")
+    print("The character for 32 is",chr(32),"!!!")
     print(ord(" "))
 
 One thing to note in the last two examples is the fact that the space character has an ordinal value (32).  Even though you don't see it, it is an actual character.  We sometimes call it a *nonprinting* character.
@@ -350,12 +349,12 @@ One thing to note in the last two examples is the fact that the space character 
 
 .. index:: mutable, immutable, runtime error
 
-Strings are immutable
+Strings are Immutable
 ---------------------
 
-One final thing that makes strings different from some other types of collections in Python is that
+One final thing that makes strings different from some other Python collection types is that
 you are not allowed to modify the individual characters in the collection.  It is tempting to use the ``[]`` operator on the left side of an assignment,
-with the intention of changing a character in a string.  For example, in the following code, we would like to change the first letter of greeting.
+with the intention of changing a character in a string.  For example, in the following code, we would like to change the first letter of ``greeting``.
 
 .. activecode:: cg08_imm1
     
@@ -415,34 +414,35 @@ Recall that the loop variable takes on each value in the sequence of names.  The
         print(avalue)
 
 
-Since a string is simply a sequence of characters, the ``for`` loop can automatically process each character.
+Since a string is simply a sequence of characters, the ``for`` loop iterates over each character automatically.
 
 .. activecode:: ch08_6
     :nocanvas:
 
-    for achar in "Apple":
+    for achar in "Go Spot Go":
         print(achar)
 
-The loop variable ``achar`` is automatically reassigned each character in the string "Apple".
+The loop variable ``achar`` is automatically reassigned each character in the string "Go Spot Go".
 We will refer to this type of sequence iteration as **iteration by item**.  
 Note that it is only possible to process the characters one at a time from left to right.
 
-Traversal and the ``for`` Loop: By Position
--------------------------------------------
+Traversal and the ``for`` Loop: By Index
+----------------------------------------
 
-It is also possible to use the ``for`` loop to systematically generate the indices or positions of the characters for 
-iteration.  These positions can be used together with the indexing operator to access the individual
+It is also possible to use the ``range`` function to systematically generate the indices of the characters.  The for loop can then be used to iterate over these positions. 
+These positions can be used together with the indexing operator to access the individual
 characters in the string.
 
-.. activecode:: ch08_7
-    :nocanvas:
+Consider the following codelens example.
 
+.. codelens:: ch08_7
 
     fruit = "apple"
-    for position in range(5):
-        print(fruit[position])
+    for idx in range(5):
+        currentChar = fruit[idx]
+        print(currentChar)
 
-The index positions in "apple" are 0,1,2,3 and 4.  This is exactly the same sequence of integers returned by ``range(5)``.  The first time through the for loop, ``position`` will be 0 and the "a" will be printed.  Then, position will be reassigned to 1 and "p" will be displayed.  This will repeat for all the range values up to but not including 5.  Since "e" has position 4, this will be exactly right to show all 
+The index positions in "apple" are 0,1,2,3 and 4.  This is exactly the same sequence of integers returned by ``range(5)``.  The first time through the for loop, ``idx`` will be 0 and the "a" will be printed.  Then, ``idx`` will be reassigned to 1 and "p" will be displayed.  This will repeat for all the range values up to but not including 5.  Since "e" has index 4, this will be exactly right to show all 
 of the characters.
 
 In order to make the iteration more general, we can use the ``len`` function to provide the bound for ``range``.  This is a very common pattern for traversing any sequence by position.	Make sure you understand why the range function behaves
@@ -453,23 +453,21 @@ correctly when using ``len`` of the string as its parameter value.
 
 
     fruit = "apple"
-    for position in range(len(fruit)):
-        print(fruit[position])
+    for idx in range(len(fruit)):
+        print(fruit[idx])
 
 
-You may also note that iteration by position allows the programming to control the direction of the
+You may also note that iteration by position allows the programmer to control the direction of the
 traversal by changing the sequence of index values.  Recall that we can create ranges that count down as 
 well as up so the following code will print the characters from right to left.
 
-.. activecode:: ch08_8
-    :nocanvas:
-
+.. codelens:: ch08_8
 
     fruit = "apple"
-    for position in range(len(fruit)-1, -1, -1):
-        print(fruit[position])
+    for idx in range(len(fruit)-1, -1, -1):
+        print(fruit[idx])
 
-Trace the values of position and satisfy yourself that they are correct.  In particular, note the start and end of the range.
+Trace the values of ``idx`` and satisfy yourself that they are correct.  In particular, note the start and end of the range.
 
 Traversal and the ``while`` Loop: By Position
 ---------------------------------------------
