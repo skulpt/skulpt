@@ -593,8 +593,7 @@ Looping and counting
 --------------------
 
 The following program counts the number of times the letter ``a`` appears in a
-string.  It is another example of the counter pattern introduced in
-:ref:`counting`.
+string.  It is another example of the accumulator pattern that we have seen in previous chapters.
 
 .. activecode:: chp08_fun2
 
