@@ -68,11 +68,13 @@ TestFiles = [
         ]
 
 def isClean():
-    out, err = Popen("hg status", shell=True, stdout=PIPE).communicate()
+    out, err = Popen("/usr/local/bin/hg status", shell=True,
+    stdout=PIPE).communicate()
     return out == ""
 
 def getTip():
-    out, err = Popen("hg tip", shell=True, stdout=PIPE).communicate()
+    out, err = Popen("/usr/local/bin/hg tip", shell=True,
+    stdout=PIPE).communicate()
     return out.split("\n")[0].split(":")[2].strip()
 
 def getFileList(type):
