@@ -286,9 +286,10 @@ turtle and then use conditionals to decide.  Here is one implementation:
         return stillIn
 
 There are lots of ways that the conditional could be written.  In this case
-we have given stillIn the default value of ``True`` and use two if statements
+we have given ``stillIn`` the default value of ``True`` and use two ``if``
+statements
 to set the value to ``False``.  You could rewrite this to use nested
-conditionals or elif statements and set ``stillIn`` to ``True`` in an else
+conditionals or ``elif`` statements and set ``stillIn`` to ``True`` in an else
 clause.
 
 Here is the full version of our random walk program.
@@ -807,13 +808,9 @@ each pixel will be the `opposite` of what it was originally.  But what does oppo
 
 In the RGB color model, we can consider the opposite of the red component as the difference between the original red
 and 255.  For example, if the original red component was 50, then the opposite, or negative red value would be
-``255-50`` or 205.  In other words, pixels with a lot of red will have negatives with little red and pixels with little red will have negatives with a lot.  We do the same for the blue and green as well.
+``255-50`` or 205.  In other words, pixels with alot of red will have negatives with little red and pixels with little red will have negatives with alot.  We do the same for the blue and green as well.
 
-The program below implements this algorithm using the first image shown, ``lutherlogo.jpg``.  Run it to see the resulting negative image.  Note that there is quite a bit of processing taking place and this may take a few seconds to complete.  In addition, there are two other images that you can use, ``cy.png`` and ``goldygopher.png``.  Change the name of the file in the ``image.Image()`` call on line 3 to see how these images look as negatives.  Also, note that there is an ``exitonclick`` method call at the very end (line 20) which will close the window when you click on it.  This will allow you to "clear the screen" before drawing the next negative. If you wish to use the Luther Bell image from earlier in this section, the file name is ``luther.jpg``.
-
-.. raw:: html
-
-    <img src="_static/lutherlogo.jpg" id="lutherlogo.jpg">
+The program below implements this algorithm using the previous image.  Run it to see the resulting negative image.  Note that there is alot of processing taking place and this may take a few seconds to complete.  In addition, here are two other images that you can use.  Change the name of the file in the ``image.Image()`` call to see how these images look as negatives.  Also, note that there is an ``exitonclick`` method call at the very end which will close the window when you click on it.  This will allow you to "clear the screen" before drawing the next negative.
 
 .. raw:: html
 
@@ -827,12 +824,11 @@ The program below implements this algorithm using the first image shown, ``luthe
 
 
 
-
 .. activecode::  acimg_1
 
     import image
 
-    img = image.Image("lutherlogo.jpg")
+    img = image.Image("luther.jpg")
     newimg = image.EmptyImage(img.getHeight(),img.getWidth())
     win = image.ImageWin()
 
@@ -875,7 +871,7 @@ Finally, we need to insert the new pixel into the empty image in the same locati
 
 
 
-You have just passed a very important point in your study of Python programming.  Even though there is much more that we will do, you have learned all of the basic building blocks that are necessary to solve many interesting problems.  From an algorithm point of view, you can now implement selection and iteration.  You can also solve problems by breaking them down into smaller parts, writing functions for those parts, and then calling the functions to complete the implementation.
+You have just passed a very important point in your study of Python programming.  Even though there is much more that we will do, you have learned all of the basic building blocks that are necessary to solve many interesting problems.  From and algorithm point of view, you can now implement selection and iteration.  You can also solve problems by breaking them down into smaller parts, writing functions for those parts, and then calling the functions to complete the implementation.
 What remains is to focus on ways that we can better represent our problems in terms of the data that we manipulate.  We will now turn our attention to studying the main data collections provided by Python.
 
 Glossary
@@ -962,6 +958,21 @@ Glossary
         
 Exercises
 ---------
+
+This chapter showed us how to sum a list of items, 
+and how to count items.  The counting example also had an ``if`` statement
+that let us only count some selected items.  In the previous
+chapter we also showed a function ``find_first_2_letter_word`` that allowed
+us an "early exit" from inside a loop by using ``return`` when some condition occurred.  
+We now also have ``break`` to exit a loop (but not the enclosing function, and 
+``continue`` to abandon the current iteration of the loop without ending the loop.
+
+Composition of list traversal, summing, counting, testing conditions
+and early exit is a rich collection of building blocks that can be combined
+in powerful ways to create many functions that are all slightly different.  
+
+The first six questions are typical functions you should be able to write using only
+these building blocks.
    
 #. Write a function to count how many odd numbers are in a list.
 #. Sum up all the even numbers in a list.
@@ -1000,8 +1011,21 @@ Exercises
 
 #. Write a function ``sum_of_squares(xs)`` that computes the sum
    of the squares of the numbers in the list ``xs``.  For example,
-   ``sum_of_squares([2, 3, 4])`` should return 4+9+16 which is 29.
-    
+   ``sum_of_squares([2, 3, 4])`` should return 4+9+16 which is 29:
+
+
+#. Modify the the Random turtle walk program so that the turtle turns around
+   when it hits the wall and goes the other direction.  This bouncing off the
+   walls should continue until the turtle has hit the wall 4 times.
+
+#. Modify the previous program so that you have two turtles each with a
+   random starting location.  Keep the turtles moving and bouncing off the
+   walls until they collide with each other.
+
+#. Modify the previous program so that rather than a left or right turn the
+   angle of the turn is determined randomly at each step.  When the turtle
+   hits the wall you must calculate the correct angle for the bounce.
+
 #. Write a function to remove all the red from an image.
 
 #. Write a function to convert the image to grayscale.
@@ -1029,6 +1053,19 @@ Exercises
    object along with the number of degrees to rotate.  The rotational degrees
    can be positive or negative, and should be multiples of 90.
 
+#. After you have scaled an image too much it looks blocky.  One way of
+   reducing the blockiness of the image is to replace each pixel with the
+   average values of the pixels around it.  This has the effect of smoothing
+   out the changes in color.  Write a function that takes an image as a
+   parameter and smooths the image.  Your function should return a new image
+   that is the same as the old but smoothed.
+
+#. When you scan in images using a scanner they may have lots of noise due to
+   dust particles on the image itself or the scanner itself,
+   or the images may even be damaged.  One way of eliminating this noise is
+   to replace each pixel by the median value of the pixels surrounding it.
+
+#. Research the Sobel edge detection algorithm and implement it.
 
 .. toctree::
     :hidden:
