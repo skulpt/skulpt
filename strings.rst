@@ -817,6 +817,17 @@ to be punctuation. Try the following and see what you get.
 
 For more information consult the ``string`` module documentaiton (see `Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).
 
+Turtles and Strings and L-Systems
+---------------------------------
+
+In 1968 Astrid Lindenmayer, a biologist, invented a formal system that
+provides a mathematical description of plant growth known as an
+**L-system**.  L-systems were designed to model the growth of biological
+systems.  You can think of L-systems as containing the instructions for how
+a simple cell can grow into a complex organism.  L-systems can be used to
+specify the rules for all kinds of fractals.
+
+
 Summary 
 ------- 
 
