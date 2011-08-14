@@ -155,7 +155,7 @@ Index Operator: Working with the Characters of a String
 
 The **indexing operator** (Python uses square brackets to enclose the index) 
 selects a single character from a string.  The characters are accessed by their position or 
-index value.  For example, in the string shown below, the 6 characters are indexed left to right from postion 0 to position 5.
+index value.  For example, in the string shown below, the 14 characters are indexed left to right from postion 0 to position 13.  
 
 
 .. image:: illustrations/ch08/indexvalues.png
@@ -163,23 +163,24 @@ index value.  For example, in the string shown below, the 6 characters are index
 
 It is also the case that the positions are named from right to left using negative numbers where -1 is the rightmost
 index and so on.
+Note that the character at index 6 (or -8) is the blank character.
 
 
 .. activecode:: chp08_index1
     
-    fruit = "Banana"
-    m = fruit[2]
+    school = "Luther College"
+    m = school[2]
     print(m)
     
-    lastchar = fruit[-1]
+    lastchar = school[-1]
     print(lastchar)
 
-The expression ``fruit[2]`` selects the character at index 2 from ``fruit``, and creates a new
+The expression ``school[2]`` selects the character at index 2 from ``school``, and creates a new
 string containing just this one character. The variable ``m`` refers to the result. 
 
-Remember that computer scientists always start counting
-from zero. The letter at index zero of ``"Banana"`` is ``B``.  So at
-position ``[2]`` we have the letter ``n``.
+Remember that computer scientists often start counting
+from zero. The letter at index zero of ``"Luther College"`` is ``L``.  So at
+position ``[2]`` we have the letter ``t``.
 
 If you want the zero-eth letter of a string, you just put 0, or any expression
 with the value 0, in the brackets.  Give it a try.
@@ -237,6 +238,14 @@ numbered 0 to 5. To get the last character, we have to subtract 1 from
 .. end of the string. The expression ``fruit[-1]`` yields the last letter,
 .. ``fruit[-2]`` yields the second to last, and so on.  Try it!
 
+Typically, a Python programmer will access the last character by combining the
+two lines of code from above.
+
+
+.. sourcecode:: python
+    
+    lastch = fruit[len(fruit)-1]
+
 The Slice Operator
 ------------------
 
@@ -283,7 +292,9 @@ expression using the equality operator.
     
     word = "banana"
     if word == "banana":
-        print("Yes, we have no bananas!")
+        print("Yes, we have bananas!")
+    else:
+        print(Yes, we have NO bananas!")
 
 Other comparison operations are useful for putting words in
 `lexicographical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__.
@@ -396,7 +407,7 @@ Often we start at the beginning, select each character in turn, do something
 to it, and continue until the end. This pattern of processing is called a
 **traversal**.
 
-We have previously seen that the ``for`` statement can iterate over the items of a sequence.
+We have previously seen that the ``for`` statement can iterate over the items of a sequence (a list of names in the case below).
 
 .. activecode:: ch08_4
     :nocanvas:
@@ -469,8 +480,8 @@ well as up so the following code will print the characters from right to left.
 
 Trace the values of ``idx`` and satisfy yourself that they are correct.  In particular, note the start and end of the range.
 
-Traversal and the ``while`` Loop: By Position
----------------------------------------------
+Traversal and the ``while`` Loop
+--------------------------------
 
 The ``while`` loop can also control the
 generation of the index values.  Remember that the programmer is responsible for setting up the initial
@@ -496,11 +507,27 @@ executed. The last character accessed is the one with the index
 ``len(fruit)-1``, which is the last character in the string.
 
 
+Here is the same example in codelens so that you can trace the values of the variables.
+
+.. codelens:: ch08_7c1
+    
+    fruit = "apple"
+
+    position = 0
+    while position < len(fruit):
+        print(fruit[position])
+        position = position + 1
+
+
+Iteration and Concatenation
+---------------------------
+
+
 The following example shows how to use concatenation and a ``for`` loop to
 generate an abecedarian series. Abecedarian refers to a series or list in which
 the elements appear in alphabetical order. For example, in Robert McCloskey's
 book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
-Mack, Nack, Ouack, Pack, and Quack.  This loop outputs these names in order:
+Mack, Nack, Ouack, Pack, and Quack.  This loop tries to output these names in order.
 
 .. activecode:: ch08_ducks
     
@@ -518,7 +545,7 @@ Can you fix it?
 
 .. admonition:: Hint...
 
-    If the name starts with an O or with a Q, then you need to add an extra U
+    If the name starts with an O or with a Q, then you need to add an extra u
 
 
 
@@ -560,9 +587,14 @@ The ``not in`` operator returns the logical opposite result of ``in``.
 
     print('x' not in 'apple')
 
+The Accumulator Pattern with Strings
+------------------------------------
 
-Combining the ``in`` operator with string concatenation using ``+``, we can
-write a function that removes all the vowels from a string:
+
+Combining the ``in`` operator with string concatenation using ``+`` and the accumulator pattern, we can
+write a function that removes all the vowels from a string.  The idea is to start with a string and iterate over each character, checking to see if the character is a vowel.  As we process the characters, we will build up a new string consisting of only the nonvowel characters.  To do this, we use the accumulator pattern.
+
+Remember that the accumulator pattern allows us to keep a "running total".  With strings, we are not accumulating a numeric total.  Instead we are accumulating characters onto a string.
 
 .. activecode:: ch08_fun1
     
@@ -577,8 +609,8 @@ write a function that removes all the vowels from a string:
     print(removeVowels("compsci"))
     print(removeVowels("aAbEefIijOopUus"))
 
-Look very carefully at line 6 in the above program (`sWithoutVowels = sWithoutVowels + x`).  This should look
-very familiar.  It is an example of the accumulator pattern, this time using a string to "accumulate" the end result.
+Look very carefully at line 6 in the above program (``sWithoutVowels = sWithoutVowels + x``).  This should look
+very familiar.  As we were describing earlier, it is an example of the accumulator pattern, this time using a string to "accumulate" the final result.
 In words it says that the new value of ``sWithoutVowels`` will be the old value of ``sWithoutVowels`` concatenated with
 the value of ``eachChar``.  We are building the result string character by character. 
 
