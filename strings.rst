@@ -92,64 +92,6 @@ The repetition is done before the concatenation.  If you want to cause the conca
 done first, you will need to use parenthesis.
 
 
-String Methods
---------------
-
-We previously saw that each turtle instance has its own attributes and 
-a number of methods that can be applied to the instance.  For example,
-we wrote ``tess.turn(90)``.  
-
-Strings are also objects.  Each string instance has its own attributes and methods.  
-
-.. activecode:: chp08_upper
-
-    ss = "Hello, World"
-    print(ss.upper())
-
-    tt = ss.lower()
-    print(tt)
-
-
-`upper` is a method that can be invoked on any string object 
-to create a new string, in which all the 
-characters are in uppercase.  `lower` works in a similar fashion changing all characters in the string
-to lowercase.  (The original string `ss` remains unchanged.  A new string `tt` is created.)
-
-The following table provides a summary of some useful string methods. 
-
-==========  ==============      ==================================================================
-Method      Parameters          Description
-==========  ==============      ==================================================================
-upper       none                Returns a string in all uppercase
-lower       none                Returns a string in all lowercase
-strip       none                Returns a string with the leading and trailing whitespace removed
-lstrip      none                Returns a string with the leading whitespace removed
-rstrip      none                Returns a string with the trailing whitespace removed
-count       item                Returns the number of occurrences of item
-replace     old, new            Replaces all occurrences of old substring with new
-==========  ==============      ==================================================================
-
-You should experiment with these
-methods so that you understand what they do.  Note once again that returned strings do not
-change the original.  You can also consult the `Python documentation for strings <http://docs.python.org/py3k/library/stdtypes.html#index-21>`_.
-
-.. activecode:: ch08_methods1
-
-    ss = "    Hello, World    "
-
-    els = ss.count("l")
-    print(els)
-
-    print("***"+ss.strip()+"***")
-    print("***"+ss.lstrip()+"***")
-    print("***"+ss.rstrip()+"***")
-
-    news = ss.replace("o", "***")
-    print(news)
-
-
-
-
 Index Operator: Working with the Characters of a String
 -------------------------------------------------------
 
@@ -194,6 +136,102 @@ Note that indexing returns a *string* --- Python has no special type for a singl
 It is just a string of length 1.
 
 
+
+String Methods
+--------------
+
+We previously saw that each turtle instance has its own attributes and 
+a number of methods that can be applied to the instance.  For example,
+we wrote ``tess.right(90)`` when we wanted the turtle object ``tess`` to perform the ``right`` method to turn
+to the right 90 degrees.  The "dot notation" is the way we connect the name of an object to the name of a method
+it can perform.  
+
+Strings are also objects.  Each string instance has its own attributes and methods.  The most important attribute of the string is the collection of characters.  There are a wide variety of methods.  Try the following program.
+
+.. activecode:: chp08_upper
+
+    ss = "Hello, World"
+    print(ss.upper())
+
+    tt = ss.lower()
+    print(tt)
+
+
+In this example, ``upper`` is a method that can be invoked on any string object 
+to create a new string in which all the 
+characters are in uppercase.  ``lower`` works in a similar fashion changing all characters in the string
+to lowercase.  (The original string ``ss`` remains unchanged.  A new string ``tt`` is created.)
+
+In addition to ``upper`` and ``lower``, the following table provides a summary of some other useful string methods.  There are a few activecode examples that follow so that you can try them out.
+
+==========  ==============      ==================================================================
+Method      Parameters          Description
+==========  ==============      ==================================================================
+upper       none                Returns a string in all uppercase
+lower       none                Returns a string in all lowercase
+capitalize  none                Returns a string with first character capitalized, the rest lower
+
+strip       none                Returns a string with the leading and trailing whitespace removed
+lstrip      none                Returns a string with the leading whitespace removed
+rstrip      none                Returns a string with the trailing whitespace removed
+count       item                Returns the number of occurrences of item
+replace     old, new            Replaces all occurrences of old substring with new
+
+center      width               Returns a string centered in a field of width spaces
+ljust       width               Returns a string left justified in a field of width spaces
+rjust       width               Returns a string right justified in a field of width spaces
+
+find        item                Returns the leftmost index where the substring item is found
+rfind       item                Returns the rightmost index where the substring item is found
+index       item                Like find except causes a runtime error if item is not found
+rindex      item                Like rfind except causes a runtime error if item is not found
+==========  ==============      ==================================================================
+
+You should experiment with these
+methods so that you understand what they do.  Note once again that the methods that return strings do not
+change the original.  You can also consult the `Python documentation for strings <http://docs.python.org/py3k/library/stdtypes.html#index-21>`_.
+
+.. activecode:: ch08_methods1
+
+    ss = "    Hello, World    "
+
+    els = ss.count("l")
+    print(els)
+
+    print("***"+ss.strip()+"***")
+    print("***"+ss.lstrip()+"***")
+    print("***"+ss.rstrip()+"***")
+
+    news = ss.replace("o", "***")
+    print(news)
+
+
+.. activecode:: ch08_methods2
+
+
+    food = "banana bread"
+    print(food.capitalize())
+
+    print("*"+food.center(25)+"*")
+    print("*"+food.ljust(25)+"*")     #stars added to show bounds
+    print("*" +food.rjust(25)+"*")
+
+    print(food.find("e"))
+    print(food.find("na"))
+    print(food.find("b"))
+
+    print(food.rfind("e"))
+    print(food.rfind("na"))
+    print(food.rfind("b"))
+
+    print(food.index("e"))
+
+
+
+
+
+
+
 .. index::
     single: len function
     single: function; len
@@ -229,10 +267,12 @@ Since we started counting at zero, the six indexes are
 numbered 0 to 5. To get the last character, we have to subtract 1 from
 ``length``.  Give it a try in the example above.
 
-.. sourcecode:: python
+.. activecode:: ch08_len3
     
+    fruit = "Banana"
     sz = len(fruit)
-    last = fruit[sz-1]
+    lastch = fruit[sz-1]
+    print(lastch)
 
 .. Alternatively, we can use **negative indices**, which count backward from the
 .. end of the string. The expression ``fruit[-1]`` yields the last letter,
@@ -294,7 +334,7 @@ expression using the equality operator.
     if word == "banana":
         print("Yes, we have bananas!")
     else:
-        print(Yes, we have NO bananas!")
+        print("Yes, we have NO bananas!")
 
 Other comparison operations are useful for putting words in
 `lexicographical order <http://en.wikipedia.org/wiki/Lexicographic_order>`__.
@@ -519,39 +559,6 @@ Here is the same example in codelens so that you can trace the values of the var
         position = position + 1
 
 
-Iteration and Concatenation
----------------------------
-
-
-The following example shows how to use concatenation and a ``for`` loop to
-generate an abecedarian series. Abecedarian refers to a series or list in which
-the elements appear in alphabetical order. For example, in Robert McCloskey's
-book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
-Mack, Nack, Ouack, Pack, and Quack.  This loop tries to output these names in order.
-
-.. activecode:: ch08_ducks
-    
-    prefixes = "JKLMNOPQ"
-    suffix = "ack"
-       
-    for p in prefixes:
-        print(p + suffix)
-
-
-
-
-Of course, that's not quite right because Ouack and Quack are misspelled.
-Can you fix it?
-
-.. admonition:: Hint...
-
-    If the name starts with an O or with a Q, then you need to add an extra u
-
-
-
-
-.. index:: slice, string slice
-
 
 
 .. index::
@@ -596,7 +603,7 @@ write a function that removes all the vowels from a string.  The idea is to star
 
 Remember that the accumulator pattern allows us to keep a "running total".  With strings, we are not accumulating a numeric total.  Instead we are accumulating characters onto a string.
 
-.. activecode:: ch08_fun1
+.. activecode:: ch08_acc1
     
     def removeVowels(s):
         vowels = "aeiouAEIOU"
@@ -609,13 +616,33 @@ Remember that the accumulator pattern allows us to keep a "running total".  With
     print(removeVowels("compsci"))
     print(removeVowels("aAbEefIijOopUus"))
 
-Look very carefully at line 6 in the above program (``sWithoutVowels = sWithoutVowels + x``).  This should look
+Look very carefully at line 6 in the above program (``sWithoutVowels = sWithoutVowels + eachChar``).  This should look
 very familiar.  As we were describing earlier, it is an example of the accumulator pattern, this time using a string to "accumulate" the final result.
 In words it says that the new value of ``sWithoutVowels`` will be the old value of ``sWithoutVowels`` concatenated with
 the value of ``eachChar``.  We are building the result string character by character. 
 
 Take a close look also at the initialization of ``sWithoutVowels``.  We start with an empty string and then begin adding
 new characters to the end.
+
+Step thru the function using codelens to see the accumulator variable grow.
+
+.. codelens:: ch08_acc2
+    
+    def removeVowels(s):
+        vowels = "aeiouAEIOU"
+        sWithoutVowels = ""
+        for eachChar in s:
+            if eachChar not in vowels:
+                sWithoutVowels = sWithoutVowels + eachChar
+        return sWithoutVowels 
+       
+    print(removeVowels("compsci"))
+
+
+
+.. L systems could go here?
+
+
 
 .. index:: counting pattern
 
@@ -976,17 +1003,23 @@ and put all functions that require tests into that file.
     >>> 'apple' > 'pinapple'
     >>> 'pinapple' < 'Peach'
     
-#. Modify:
+#. 	In Robert McCloskey's
+	book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
+	Mack, Nack, Ouack, Pack, and Quack.  This loop tries to output these names in order.
 
-   .. sourcecode:: python
-    
-       prefixes = "JKLMNOPQ"
-       suffix = "ack"
-       
-       for letter in prefixes:
-           print(letter + suffix)
+	.. sourcecode:: python
 
-   so that ``Ouack`` and ``Quack`` are spelled correctly.
+	    prefixes = "JKLMNOPQ"
+	    suffix = "ack"
+
+	    for p in prefixes:
+	        print(p + suffix)
+
+
+
+
+	Of course, that's not quite right because Ouack and Quack are misspelled.
+	Can you fix it?
    
 #. Encapsulate
 

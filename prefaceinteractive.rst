@@ -13,3 +13,11 @@ Preface to the Interactive Edition
 by Brad Miller and David Ranum
 
 
+There are many books available if you want to learn to program in Python.  In fact, we have written a few of them ourselves.  However, none of the books are like this one.
+
+Programming is not a "spectator sport".  It is something you do, something you participate in.
+It would make sense, then, that the book you use to learn programming should allow you to be active.  That is our goal.
+
+This book is meant to provide you with an interactive experience as you learn to program in Python.  You can read the text, watch videos, and write and execute Python code.  In addition to simply executing code, there is a unique feature called 'codelens' that allows you to control the flow of execution in order to gain a better understanding of how the program works..
+
+We have tried to use these different presentation techniques where they are most appropriate.  In other words, sometimes it might be best to read a description of some aspect of Python.  On a different occasion, is might be best to execute a small example program.  Often we give you many different options for covering the material.  Our hope is that you will find that your understanding will be enhanced because you are able to experience it in more than just one way.
