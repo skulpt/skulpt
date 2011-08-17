@@ -639,8 +639,219 @@ Step thru the function using codelens to see the accumulator variable grow.
     print(removeVowels("compsci"))
 
 
+Turtles and Strings and L-Systems
+---------------------------------
 
-.. L systems could go here?
+In 1968 Astrid Lindenmayer, a biologist, invented a formal system that
+provides a mathematical description of plant growth known as an
+**L-system**.  L-systems were designed to model the growth of biological
+systems.  You can think of L-systems as containing the instructions for how
+a simple cell can grow into a complex organism.  L-systems can be used to
+specify the **rules** for all kinds of interesting pictures.
+
+The rules of an L-system are really a set of instructions for transforming
+one string into a new string.  After a number of these string transformations
+are complete the string contains a set of instructions for a turtle to follow
+as it draws a picture.
+
+Lets look at an example set of rules:
+
+========  =====================
+A         Axiom
+A -> B    Rule 1 Change A to B
+B -> AB   Rule 2 Change B to AB
+========  =====================
+
+Now Lets look at these simple rules in action, starting with the string A::
+
+    A
+    B      Apply Rule 1
+    AB     Apply Rule 2
+    BAB    Apply Rule 1 to A then Rule 2 to B
+    ABBAB  Apply Rule 2 to B, Rule 1 to A, and Rule 2 to B
+
+
+So how would we encode these rules in a Python program?  There are a couple
+of very important things to note here:
+
+#. Rules are very much like if then statements.
+#. We are going to start with a string and iterate over each character in the
+   string.
+#. As we apply the rules to one string we leave that string alone and create
+   a brand new string.  When we are all done with the original we replace it
+   with the new string.
+
+Lets look at a simple Python program that implements the two rules described
+above.
+
+.. activecode::  string_lsys1
+
+    def applyRules(ch):
+        newstr = ""
+        if ch == 'A':
+            newstr = 'B'   # Rule 1
+        elif ch == 'B':
+            newstr = 'AB'  # Rule 2
+        else:
+            newstr = ch    # no rules apply so keep the character
+
+        return newstr
+
+
+    def processString(oldStr):
+        newstr = ""
+        for ch in oldStr:
+            newstr = newstr + applyRules(ch)
+
+        return newstr
+
+
+    def createLSystem(numIters,axiom):
+        startString = axiom
+        endString = ""
+        for i in range(numIters):
+            endString = processString(startString)
+            startString = endString
+
+        return endString
+
+    print(createLSystem(4,"A"))
+
+Try running the example above with different values for the ``numIters``
+parameter you should see that for values 1-4 the strings generated follow the
+example above exactly.
+
+One of the nice things about the program above is that if you want to
+implemente a different set of rules, you don't need to re-write the entire
+program all you need to do is re-write the applyRules function.
+
+Suppose you had the following rules:
+
+========  =====================
+A         Axiom
+A -> BAB    Rule 1 Change A to B
+========  =====================
+
+What kind of a string would these rules create?  Modify the program above to
+implement the rule.
+
+Now lets look at another L-system that implements a famous drawing.  This
+L-system has just two rules:
+
+=============  =====================
+F              Axiom
+F -> F-F++F-F  Rule 1
+=============  =====================
+
+The L-systems we will use with turtle graphics contain a few symbols
+
+====  ===================================
+F     Go forward by some number of units
+B     Go backward by some number of units
+-     Turn left by some degrees
++     Turn right by some degrees
+====  ===================================
+
+Lets look at the ``applyRules`` function for this L-system
+
+.. sourcecode:: python
+
+    def applyRules(ch):
+        newstr = ""
+        if ch == 'F':
+            newstr = 'F-F++F-F'   # Rule 1
+        else:
+            newstr = ch    # no rules apply so keep the character
+
+        return newstr
+
+Pretty simple so far.  As you can imagine this string will get pretty long
+with a few applications of the rules.  You might try to expand the string a
+couple of times on your own just to see.
+
+The last step is to take the final string and turn it into a picture.  Lets
+assume that we are always going to go forward or backward by 50 units.  In
+addition we will also assume that when the turtle turns left or right we'll
+turn by 60 degrees.  Now look at the string ``F-F++F-F`` you might try to
+draw this simple string by hand.  At this point its not a very exciting
+drawing, but once we expand it a few times it will get a lot more interesting.
+
+To create a Python function to draw a string we will write a function called
+``drawLsystem``  The function will take four parameters:
+
+* A turtle to do the drawing
+* An expanded string that contains the results of expanding the rules above.
+* An angle to turn
+* A distance to move forward or backward
+
+.. sourcecode:: python
+
+    def drawLsystem(aTurtle,instructions,angle,distance):
+        for cmd in instructions:
+            if cmd == 'F':
+                aTurtle.forward(distance)
+            elif cmd == 'B':
+                aTurtle.backward(distance)
+            elif cmd == '+':
+                aTurtle.right(angle)
+            elif cmd == '-':
+                aTurtle.left(angle)
+            else:
+                print('Error: %s is an unknown command',cmd)
+
+Finally, lets put everything together and see what the drawing looks like:
+
+.. activecode:: strings_lys2
+
+    def createLSystem(numIters,axiom):
+        startString = axiom
+        endString = ""
+        for i in range(numIters):
+            endString = processString(startString)
+            startString = endString
+
+        return endString
+
+    def processString(oldStr):
+        newstr = ""
+        for ch in oldStr:
+            newstr = newstr + applyRules(ch)
+
+        return newstr
+
+    def applyRules(ch):
+        newstr = ""
+        if ch == 'F':
+            newstr = 'F-F++F-F'   # Rule 1
+        else:
+            newstr = ch    # no rules apply so keep the character
+
+        return newstr
+
+    def drawLsystem(aTurtle,instructions,angle,distance):
+        for cmd in instructions:
+            if cmd == 'F':
+                aTurtle.forward(distance)
+            elif cmd == 'B':
+                aTurtle.backward(distance)
+            elif cmd == '+':
+                aTurtle.right(angle)
+            elif cmd == '-':
+                aTurtle.left(angle)
+            else:
+                print 'Error: %s is an unknown command',cmd
+
+    import turtle
+
+    inst = createLSystem(6,"F")
+    print(inst)
+    t = turtle.Turtle()
+    t.up()
+    t.back(200)
+    t.down()
+    t.speed(9)
+    drawLsystem(t,inst,60,5)
+
 
 
 
@@ -876,15 +1087,6 @@ to be punctuation. Try the following and see what you get.
 
 For more information consult the ``string`` module documentaiton (see `Global Module Index <http://docs.python.org/py3k/py-modindex.html>`_).
 
-Turtles and Strings and L-Systems
----------------------------------
-
-In 1968 Astrid Lindenmayer, a biologist, invented a formal system that
-provides a mathematical description of plant growth known as an
-**L-system**.  L-systems were designed to model the growth of biological
-systems.  You can think of L-systems as containing the instructions for how
-a simple cell can grow into a complex organism.  L-systems can be used to
-specify the rules for all kinds of fractals.
 
 
 Summary 
