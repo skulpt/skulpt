@@ -37,6 +37,8 @@ single entity (the whole), or we may want to access its parts. This ambiguity is
 Strings can be defined as sequential collections of characters.  This means that the individual characters
 that make up the string are assumed to be in a particular order from left to right.
 
+A string that contains no characters, often referred to as the **empty string**, is still considered to be a string.  It is simply a sequence of zero characters and is represented by '' or "" (two quotes with nothing in between).
+
 .. index:: string operations, concatenation
 
 Operations on Strings
@@ -616,7 +618,21 @@ Remember that the accumulator pattern allows us to keep a "running total".  With
     print(removeVowels("compsci"))
     print(removeVowels("aAbEefIijOopUus"))
 
-Look very carefully at line 6 in the above program (``sWithoutVowels = sWithoutVowels + eachChar``).  This should look
+Line 5 uses the ``not in`` operator to check whether the current character is not in the string ``vowels``. The alternative to using this operator would be to write a very large ``if`` statement that checks each of the individual vowel characters.  Note we would need to use logical ``and`` to be sure that the character is not any of the vowels.
+
+.. sourcecode:: python
+
+    if eachChar != 'a'  and eachChar != 'e'  and eachChar != 'i'  and
+       eachChar != 'o'  and eachChar != 'u'  and eachChar != 'A'  and
+       eachChar != 'E'  and eachChar != 'I'  and eachChar != 'O'  and
+       eachChar != 'U':      
+       
+         sWithoutVowels = sWithoutVowels + eachChar
+
+                  
+      
+
+Look carefully at line 6 in the above program (``sWithoutVowels = sWithoutVowels + eachChar``).  We will do this for every character that is not a vowel.  This should look
 very familiar.  As we were describing earlier, it is an example of the accumulator pattern, this time using a string to "accumulate" the final result.
 In words it says that the new value of ``sWithoutVowels`` will be the old value of ``sWithoutVowels`` concatenated with
 the value of ``eachChar``.  We are building the result string character by character. 
@@ -642,19 +658,21 @@ Step thru the function using codelens to see the accumulator variable grow.
 Turtles and Strings and L-Systems
 ---------------------------------
 
+This section describes a much more interested example of string iteration and the accumulator pattern.  Even though it seems like we are doing something that is much more complex, the basic processing is the same as was shown in the previous sections.
+
 In 1968 Astrid Lindenmayer, a biologist, invented a formal system that
 provides a mathematical description of plant growth known as an
 **L-system**.  L-systems were designed to model the growth of biological
 systems.  You can think of L-systems as containing the instructions for how
-a simple cell can grow into a complex organism.  L-systems can be used to
-specify the **rules** for all kinds of interesting pictures.
+a single cell can grow into a complex organism.  L-systems can be used to
+specify the **rules** for all kinds of interesting patterns.  In our case, we are going to use them to specify the rules for drawing pictures.
 
 The rules of an L-system are really a set of instructions for transforming
 one string into a new string.  After a number of these string transformations
-are complete the string contains a set of instructions for a turtle to follow
+are complete, the string contains a set of instructions.  Our plan is to let these instructions direct a turtle
 as it draws a picture.
 
-Lets look at an example set of rules:
+To begin, we will look at an example set of rules:
 
 ========  =====================
 A         Axiom
@@ -662,26 +680,34 @@ A -> B    Rule 1 Change A to B
 B -> AB   Rule 2 Change B to AB
 ========  =====================
 
-Now Lets look at these simple rules in action, starting with the string A::
+Each rule set contains an axiom which represents the starting point in the transformations that will follow.  The rules are of the form::
+
+        left hand side -> right hand side
+        
+where the left and side is a single symbol and the right had side is a sequence of symbols.  You can think of both sides as being simple strings.
+The way the rules are used is to replace occurrences of the left hand side with the corresponding right hand side.
+
+Now lets look at these simple rules in action, starting with the string A::
 
     A
-    B      Apply Rule 1
-    AB     Apply Rule 2
+    B      Apply Rule 1  (A is replaced by B)
+    AB     Apply Rule 2  (B is replaced by AB)
     BAB    Apply Rule 1 to A then Rule 2 to B
     ABBAB  Apply Rule 2 to B, Rule 1 to A, and Rule 2 to B
 
+Notice that each line represents a new transformation for entire string.  Each character that matches a left-hand side of a rule in the original has been replaced by the corresponding right-hand side of that same rule.  After doing the replacement for
+each character in the original, we have one transformation.
 
 So how would we encode these rules in a Python program?  There are a couple
 of very important things to note here:
 
-#. Rules are very much like if then statements.
-#. We are going to start with a string and iterate over each character in the
-   string.
+#. Rules are very much like if statements.
+#. We are going to start with a string and iterate over each of its characters.
 #. As we apply the rules to one string we leave that string alone and create
-   a brand new string.  When we are all done with the original we replace it
+   a brand new string using the accumulator pattern.  When we are all done with the original we replace it
    with the new string.
 
-Lets look at a simple Python program that implements the two rules described
+Lets look at a simple Python program that implements the example set of rules described
 above.
 
 .. activecode::  string_lsys1
@@ -718,24 +744,24 @@ above.
     print(createLSystem(4,"A"))
 
 Try running the example above with different values for the ``numIters``
-parameter you should see that for values 1-4 the strings generated follow the
+parameter.  You should see that for values 1, 2, 3, and 4, the strings generated follow the
 example above exactly.
 
 One of the nice things about the program above is that if you want to
-implemente a different set of rules, you don't need to re-write the entire
-program all you need to do is re-write the applyRules function.
+implement a different set of rules, you don't need to re-write the entire
+program. All you need to do is re-write the applyRules function.
 
 Suppose you had the following rules:
 
 ========  =====================
 A         Axiom
-A -> BAB    Rule 1 Change A to B
+A -> BAB    Rule 1 Change A to BAB
 ========  =====================
 
 What kind of a string would these rules create?  Modify the program above to
 implement the rule.
 
-Now lets look at another L-system that implements a famous drawing.  This
+Now lets look at a real L-system that implements a famous drawing.  This
 L-system has just two rules:
 
 =============  =====================
@@ -743,16 +769,16 @@ F              Axiom
 F -> F-F++F-F  Rule 1
 =============  =====================
 
-The L-systems we will use with turtle graphics contain a few symbols
+This L-system uses symbols that will have special meaning when we use them later with the turtle to draw a picture.
 
 ====  ===================================
 F     Go forward by some number of units
 B     Go backward by some number of units
--     Turn left by some degrees
-+     Turn right by some degrees
+\-    Turn left by some degrees
+\+    Turn right by some degrees
 ====  ===================================
 
-Lets look at the ``applyRules`` function for this L-system
+Here is the ``applyRules`` function for this L-system.
 
 .. sourcecode:: python
 
@@ -770,10 +796,10 @@ with a few applications of the rules.  You might try to expand the string a
 couple of times on your own just to see.
 
 The last step is to take the final string and turn it into a picture.  Lets
-assume that we are always going to go forward or backward by 50 units.  In
+assume that we are always going to go forward or backward by 5 units.  In
 addition we will also assume that when the turtle turns left or right we'll
-turn by 60 degrees.  Now look at the string ``F-F++F-F`` you might try to
-draw this simple string by hand.  At this point its not a very exciting
+turn by 60 degrees.  Now look at the string ``F-F++F-F``.  You might try to
+us the explanation above to show the resulting picture that this simple string represents.  At this point its not a very exciting
 drawing, but once we expand it a few times it will get a lot more interesting.
 
 To create a Python function to draw a string we will write a function called
@@ -797,12 +823,15 @@ To create a Python function to draw a string we will write a function called
             elif cmd == '-':
                 aTurtle.left(angle)
             else:
-                print('Error: %s is an unknown command',cmd)
+                print('Error:', cmd, 'is an unknown command')
 
-Finally, lets put everything together and see what the drawing looks like:
+Here is the complete program in activecode.  The ``main`` function first creates the
+L-system string and then it creates a turtle and passes it and the string to the drawing function.
 
 .. activecode:: strings_lys2
 
+    import turtle
+    
     def createLSystem(numIters,axiom):
         startString = axiom
         endString = ""
@@ -839,44 +868,51 @@ Finally, lets put everything together and see what the drawing looks like:
             elif cmd == '-':
                 aTurtle.left(angle)
             else:
-                print 'Error: %s is an unknown command',cmd
+                print('Error:', cmd, 'is an unknown command')
 
-    import turtle
+    def main():
+        inst = createLSystem(4,"F")   #create the string
+        print(inst)
+        t = turtle.Turtle()           #create the turtle
+        wn = turtle.Screen()
+        
+        t.up()
+        t.back(200)
+        t.down()
+        t.speed(9)
+        drawLsystem(t,inst,60,5)      #draw the picture
+                                      #angle 60, segment length 5
+        wn.exitonclick()
 
-    inst = createLSystem(6,"F")
-    print(inst)
-    t = turtle.Turtle()
-    t.up()
-    t.back(200)
-    t.down()
-    t.speed(9)
-    drawLsystem(t,inst,60,5)
+    main()
 
-
-
+Feel free to try some different angles and segment lengths to see how the drawing changes.
 
 .. index:: counting pattern
 
 Looping and counting
 --------------------
 
-The following program counts the number of times the letter ``a`` appears in a
+We will finish this chapter with a few more examples that show variations on the theme of iteration through the characters of the string.  We will implement a few of the methods that we described earlier to show how they can be come.
+
+
+The following program counts the number of times a particular letter, `` aChar``, appears in a
 string.  It is another example of the accumulator pattern that we have seen in previous chapters.
 
 .. activecode:: chp08_fun2
 
-    def countA(text): 
-        count = 0
+    def count(text, aChar): 
+        lettercount = 0
         for c in text:
-            if c == 'a':
-                count = count + 1
-        return count
+            if c == aChar:
+                lettercount = lettercount + 1
+        return lettercount
 
-    print(countA("banana"))    
+    print(count("banana","a"))    
 
-The function ``countA`` takes a string as its parameter.  The ``for`` statement iterates through each character in
-the string and checks to see if the character is an "a".  If so, the counting variable, ``count``, is incremented by one.
-When all characters have been processed, the ``count`` is returned.
+The function ``count`` takes a string as its parameter.  The ``for`` statement iterates through each character in
+the string and checks to see if the character is equal to the value of ``aChar``.  If so, the counting variable, ``lettercount``, is incremented by one.
+When all characters have been processed, the ``lettercount`` is returned.
 
 .. index:: traversal, eureka traversal, pattern of computation,
            computation pattern
@@ -884,7 +920,7 @@ When all characters have been processed, the ``count`` is returned.
 A ``find`` function
 -------------------
 
-What does the following function do?
+Here is an implementation for the ``find`` method.
 
 .. activecode:: ch08_run3
     
@@ -913,7 +949,7 @@ What does the following function do?
 
 In a sense, ``find`` is the opposite of the indexing operator. Instead of taking
 an index and extracting the corresponding character, it takes a character and
-finds the index where that character appears. If the character is not found,
+finds the index where that character appears for the first time. If the character is not found,
 the function returns ``-1``.
 
 The ``while`` loop in this example uses a slightly more complex condition than we have seen
@@ -1050,16 +1086,6 @@ the ``range`` function.
 .. index:: module, string module, dir function, dot notation, function type,
            docstring
 
-More ``string`` methods
------------------------
- 
-Now that we've done all this work to write a powerful ``find`` function, we can let on that
-there is already a ``find`` method that works on strings, with precisely these same semantics (see
-`Python documentation for strings <http://docs.python.org/py3k/library/stdtypes.html#index-21>`_).
-Usually we'd prefer to use the methods that Python provides rather than reinvent
-our own equivalents. But many of the available built-in functions and methods make good
-teaching exercises, and the underlying techniques you learn are your building blocks
-to becoming a proficient programmer.
 
 
 Character classification
@@ -1141,7 +1167,7 @@ Glossary
 
 .. glossary::
 
-    compound data type
+    collection data type
         A data type in which the values are made up of components, or elements,
         that are themselves values.
 
@@ -1149,12 +1175,6 @@ Glossary
         The value given to an optional parameter if no argument for it is
         provided in the function call.
 
-    docstring
-        A string constant on the first line of a function or module definition
-        (and as we will see later, in class and method definitions as well).
-        Docstrings provide a convinient way to associate documentation with
-        code. Docstrings are also used by the ``doctest`` module for automated
-        testing.
 
     dot notation
         Use of the **dot operator**, ``.``, to access functions inside a
@@ -1190,20 +1210,18 @@ Glossary
 Exercises
 ---------
 
-We suggest you create a single file containing the test scaffolding from our previous chapters,
-and put all functions that require tests into that file. 
 
-#. What is the result of each of the following::
+#. What is the result of each of the following:
 
-    >>> 'Python'[1]
-    >>> "Strings are sequences of characters."[5]
-    >>> len("wonderful")
-    >>> 'Mystery'[:4]
-    >>> 'p' in 'Pinapple'
-    >>> 'apple' in 'Pinapple'
-    >>> 'pear' not in 'Pinapple'
-    >>> 'apple' > 'pinapple'
-    >>> 'pinapple' < 'Peach'
+    a. 'Python'[1]
+    #. "Strings are sequences of characters."[5]
+    #. len("wonderful")
+    #. 'Mystery'[:4]
+    #. 'p' in 'Pineapple'
+    #. 'apple' in 'Pineapple'
+    #. 'pear' not in 'Pineapple'
+    #. 'apple' > 'pineapple'
+    #. 'pineapple' < 'Peach'
     
 #. 	In Robert McCloskey's
 	book *Make Way for Ducklings*, the names of the ducklings are Jack, Kack, Lack,
@@ -1223,91 +1241,68 @@ and put all functions that require tests into that file.
 	Of course, that's not quite right because Ouack and Quack are misspelled.
 	Can you fix it?
    
-#. Encapsulate
-
-   .. sourcecode:: python
-    
-       fruit = "banana"
-       count = 0
-       for char in fruit:
-           if char == 'a':
-               count += 1
-       print(count)
-
-   in a function named ``count_letters``, and generalize it so that it accepts
-   the string and the letter as arguments.  Make the function return the number
-   of characters, rather than print the answer.  The caller should do the printing.
      
-#. Now rewrite the ``count_letters`` function so that instead of traversing the 
-   string, it repeatedly calls the ``find`` method, with the optional third parameter 
-   to locate new occurences of the letter being counted.
    
 #. Assign to a variable in your program a triple-quoted string that contains 
    your favourite paragraph of text - perhaps a poem, a speech, instructions
    to bake a cake, some inspirational verses, etc.
 
-   Write a function which removes all punctuation from string, breaks the string
-   into a list of words, and counts the number of words in your text that contain
+   Write a function which removes all punctuation from string and counts the number of words in your text that contain
    the letter 'e'.  Your program should print an analysis of the text like this::
 
        Your text contains 243 words, of which 109 (44.8%) contain an 'e'.      
 
 #. Print out a neatly formatted multiplication table, up to 12 x 12.
 
-#. Write a function that reverses its string argument, and satisfies these tests::
+#. Write a function that reverses its string argument.  For example::
 
-      test(reverse('happy'), 'yppah')
-      test(reverse('Python'), 'nohtyP')
-      test(reverse(''), '')
-      test(reverse('a'), 'a')
+      reverse('happy') should return 'yppah'
+      reverse('Python') should return 'nohtyP'
+      reverse('') should return ''
    
-#. Write a function that mirrors its argument:: 
+#. Write a function that mirrors its argument.  For example:: 
 
-       test(mirror('good'), 'gooddoog')
-       test(mirror('Python'), 'PythonnohtyP')
-       test(mirror(''), '')
-       test(mirror('a'), 'aa')
+       mirror('good') should return  'gooddoog'
+       mirror('Python') should return 'PythonnohtyP'
+       mirror('') should return ''
+       mirror('a') should return 'aa'
 
-#. Write a function that removes all occurrences of a given letter from a string::
+#. Write a function that removes all occurrences of a given letter from a string.  For example::
     
-        test(remove_letter('a', 'apple'), 'pple')
-        test(remove_letter('a', 'banana'), 'bnn')
-        test(remove_letter('z', 'banana'), 'banana')
-        test(remove_letter('i', 'Mississippi'), 'Msssspp')
-        test(remove_letter('b', ''), '')
-        test(remove_letter('b', 'c'), '')
+        remove_letter('a', 'apple') should return 'pple'
+        remove_letter('a', 'banana') should return 'bnn'
+        remove_letter('z', 'banana') should return 'banana'
 
-#. Write a function that recognizes palindromes. (Hint: use your ``reverse`` function to make this easy!)::
 
-       test(is_palindrome('abba'), True)
-       test(is_palindrome('abab'), False)
-       test(is_palindrome('tenet'), True)
-       test(is_palindrome('banana'), False)
-       test(is_palindrome('straw warts'), True)
-       test(is_palindrome('a'), True)
-       test(is_palindrome(''), ??)    # Is an empty string a palindrome?
+#. Write a function that recognizes palindromes. (Hint: use your ``reverse`` function to make this easy!).  For example::
 
-#. Write a function that counts how many times a substring occurs in a string::  
+       is_palindrome('abba') should return True
+       is_palindrome('abab') should return False
+       is_palindrome('straw warts') should return True
+       is_palindrome('a') should return True
+       is_palindrome('') should return True
+
+#. Write a function that counts how many times a substring occurs in a string. For example::  
    
-       test(count('is', 'Mississippi'), 2)
-       test(count('an', 'banana'), 2)
-       test(count('ana', 'banana'), 2)
-       test(count('nana', 'banana'), 1)
-       test(count('nanan', 'banana'), 0)
-       test(count('aaa', 'aaaaaa'), 4)
+       count('is', 'Mississippi') should return 2
+       count('an', 'banana') should return 2
+       count('ana', 'banana') should return 2
+       count('nana', 'banana') should return 1
+       count('nanan', 'banana') should return 0
+       count('aaa', 'aaaaaa') should return 4
    
 #. Write a function that removes the first occurrence of a string from another string::
 
-        test(remove('an', 'banana'), 'bana')
-        test(remove('cyc', 'bicycle'), 'bile')
-        test(remove('iss', 'Mississippi'), 'Missippi')
-        test(remove('egg', 'bicycle'), 'bicycle')
+        remove('an', 'banana') should return 'bana'
+        remove('cyc', 'bicycle') should return 'bile'
+        remove('iss', 'Mississippi') should return 'Missippi'
+        remove('egg', 'bicycle') should return 'bicycle'
  
 #. Write a function that removes all occurrences of a string from another string::
  
-        test(remove_all('an', 'banana'), 'ba')
-        test(remove_all('cyc', 'bicycle'), 'bile')
-        test(remove_all('iss', 'Mississippi'), 'Mippi')
-        test(remove_all('eggs', 'bicycle'), 'bicycle')
+        remove_all('an', 'banana') should return 'ba'
+        remove_all('cyc', 'bicycle') should return 'bile'
+        remove_all('iss', 'Mississippi') should return 'Mippi'
+        remove_all('eggs', 'bicycle') should return 'bicycle'
 
   
