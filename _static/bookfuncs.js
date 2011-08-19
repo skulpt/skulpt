@@ -6,6 +6,24 @@
  * To change this template use File | Settings | File Templates.
  */
 
+/*
+
+Copyright (C) 2011  Brad Miller  bonelake@gmail.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
 
 function handleEdKeys(ed, e) {
     if (e.keyCode === 13) {
@@ -59,6 +77,7 @@ function builtinRead(x) {
 
 function runit(myDiv) {
     //var prog = document.getElementById(myDiv + "_code").value;
+    jQuery.get("/eventlog",{'event':'activecode: run: '+myDiv}); // Log the run event
     var editor = cm_editors[myDiv+"_code"];
     var prog = editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
@@ -91,6 +110,7 @@ function saveEditor(divName) {
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
     jQuery.post("/saveprog",data);
+    jQuery.get("/eventlog",{'event':'activecode: save: '+divName}); // Log the run event
 
 }
 
@@ -98,6 +118,7 @@ function requestCode(divName) {
     var editor = cm_editors[divName+"_code"];
     var url = "/getprog"
     var data = {acid: divName}
+    jQuery.get("/eventlog",{'event':'activecode: save: '+divName}); // Log the run event
     jQuery.get(url,data, loadEditor);
 }
 
