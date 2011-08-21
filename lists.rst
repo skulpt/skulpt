@@ -147,7 +147,7 @@ Unlike strings, lists are **mutable**.  This means we can change an item in a li
 it directly as part of the assignment statement. Using the bracket operator on the left side of an assignment, we can
 update one of the list items.
 
-.. activecode:: ch09_7
+.. codelens:: ch09_7
     
     fruit = ["banana", "apple", "cherry"]
     fruit[0] = "pear"
@@ -161,7 +161,7 @@ assignment does not work for strings.  Recall that strings are immutable.
 
 By combining assignment with the slice operator we can update several elements at once.
 
-.. activecode:: ch09_8
+.. codelens:: ch09_8
     
     alist = ['a', 'b', 'c', 'd', 'e', 'f']
     alist[1:3] = ['x', 'y']
@@ -291,7 +291,7 @@ In this case, the state snapshot looks like this:
 Because the same list has two different names, ``a`` and ``b``, we say that it
 is **aliased**. Changes made with one alias affect the other:
 
-.. activecode:: chp09_is3
+.. codelens:: chp09_is3
 
     a = [1,2,3]
     b = [1,2,3]
