@@ -38,8 +38,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'How to Think Like a Computer Scientist: Learning with Python'
-copyright = u'2011, Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers'
+project = u'How to Think Like a Computer Scientist: Learning with Python: Interactive Edition (Using Python 3.x)'
+copyright = u'2011, Brad Miller, David Ranum, Peter Wentworth, Jeffrey Elkner, Allen B. Downey and Chris Meyers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -106,10 +106,10 @@ html_style = "style.css"
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "How to Think Like a Computer Scientist: Learning with Python"
+html_title = "How to Think Like a Computer Scientist: Learning with Python: Interactive Edition"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = "How to Think Like a Computer Scientist: Learning with Python"
+html_short_title = "How to Think Like a Computer Scientist: Learning with Python: Interactive Edition (Using Python 3.x)"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
