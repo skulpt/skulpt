@@ -153,7 +153,7 @@ Unlike strings, lists are **mutable**.  This means we can change an item in a li
 it directly as part of the assignment statement. Using the indexing operator (square brackets) on the left side of an assignment, we can
 update one of the list items.
 
-.. codelens:: ch09_7
+.. activecode:: ch09_7
     
     fruit = ["banana", "apple", "cherry"]
     print(fruit)
@@ -169,7 +169,7 @@ assignment does not work for strings.  Recall that strings are immutable.
 
 By combining assignment with the slice operator we can update several elements at once.
 
-.. codelens:: ch09_8
+.. activecode:: ch09_8
     
     alist = ['a', 'b', 'c', 'd', 'e', 'f']
     alist[1:3] = ['x', 'y']
@@ -303,7 +303,7 @@ In this case, the reference diagram looks like this:
 Because the same list has two different names, ``a`` and ``b``, we say that it
 is **aliased**. Changes made with one alias affect the other:
 
-.. codelens:: chp09_is3
+.. activecode:: chp09_is3
 
     a = [1,2,3]
     b = [1,2,3]
@@ -362,7 +362,7 @@ Now we are free to make changes to ``b`` without worrying about ``a``:
 Lists and ``for`` loops
 -----------------------
 
-It is also possible to perform **list traversal** using iteration by item as well as iteration by position.
+It is also possible to perform **list traversal** using iteration by item as well as iteration by index.
 
 
 .. activecode:: chp09_03a
@@ -381,7 +381,7 @@ We can also use the indices to access the items in an iterative fashion.
 
     fruits = ["apple","orange","banana","cherry"]
 
-    for position in range(len(fruits)):     # by position
+    for position in range(len(fruits)):     # by index
         print(fruits[position])
 
 
@@ -392,7 +392,7 @@ so that we can iterate correctly no matter how many items are in the list.
 
 
 
-Any list expression can be used in a ``for`` loop:
+Any sequence expression can be used in a ``for`` loop.  For example, the ``range`` function returns a sequence of integers.
 
 .. activecode:: chp09_for3
     
