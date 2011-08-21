@@ -11,6 +11,8 @@ by Brad Miller and David Ranum
 
    Luther College
 
+-----------------------------------------------------------
+
 Based on the original book
 
    How to Think Like a Computer Scientist
@@ -19,6 +21,8 @@ Based on the original book
    Chris Meyers
 
    illustrated by Dario Mitchell
+
+------------------------------------------------------------
 
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__

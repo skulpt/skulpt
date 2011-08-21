@@ -39,7 +39,7 @@ another list.
     
     ["hello", 2.0, 5, [10, 20]]
 
-A list within another list is said to be **nested**.
+A list within another list is said to be **nested** and the inner list is often called a **sublist**.
 Finally, there is a special list that contains no elements. It is called the
 empty list, and is denoted ``[]``.
 
@@ -47,11 +47,15 @@ As you would expect, we can also assign list values to variables and pass lists 
 
 .. activecode:: chp09_01
     
-    vocabulary = ["ameliorate", "castigate", "defenestrate"]
+    vocabulary = ["iteration", "selection", "control"]
     numbers = [17, 123]
     empty = []
-    print(vocabulary, numbers, empty)
+    mixedlist = ["hello", 2.0, 5, [10, 20]]
 
+    print(numbers)
+    print(mixedlist)
+    newlist = [ numbers, vocabulary ]
+    print(newlist)
 
 .. _accessing-elements:
 
@@ -125,10 +129,12 @@ Similarly, the ``*`` operator repeats the items in a list a given number of time
     print([1,2,["hello","goodbye"]]*2)
 
 
+It is important to see that these operators create new lists from the elements of the operand lists.  If you concatenate a list with 2 items and a list with 4 items, you will get a new list with 6 items (not a list with two sublists).  Similarly, repetition of a list of 2 items 4 times will give a list with 8 items.
+
 List Slices
 -----------
 
-The slice operations we saw with strings also work on lists.
+The slice operation we saw with strings also work on lists.  Remember that the first index is the starting point for the slice and the second number is one index past the end of the slice (up to but not including that element).
 
 .. activecode:: chp09_6
     
@@ -144,12 +150,14 @@ Lists are Mutable
 -----------------
 
 Unlike strings, lists are **mutable**.  This means we can change an item in a list by accessing
-it directly as part of the assignment statement. Using the bracket operator on the left side of an assignment, we can
+it directly as part of the assignment statement. Using the indexing operator (square brackets) on the left side of an assignment, we can
 update one of the list items.
 
 .. activecode:: ch09_7
     
     fruit = ["banana", "apple", "cherry"]
+    print(fruit)
+
     fruit[0] = "pear"
     fruit[-1] = "orange"
     print(fruit)
@@ -229,16 +237,21 @@ we know that ``a`` and ``b`` will refer to a string with the letters
 
 There are two possible ways the Python interpreter could arrange its internal states:
 
-.. image:: illustrations/ch09/list1.png
+.. image:: illustrations/lists/refdiag1.png
    :alt: List illustration 
 
-In one case, ``a`` and ``b`` refer to two different things that have the same
-value. In the second case, they refer to the same thing. These things have
-names --- they are called **objects**. An object is something a variable can
+or
+
+
+.. image:: illustrations/lists/refdiag2.png
+   :alt: List illustration
+
+In one case, ``a`` and ``b`` refer to two different string objects that have the same
+value. In the second case, they refer to the same object. Remember that an object is something a variable can
 refer to.
 
 We can test whether two names refer to the same object using the *is*
-operator: 
+operator.  The *is* operator will return true if the two references are to the same object.  In other words, the references are the same.  Try our example from above.
 
 .. activecode:: chp09_is1
 
@@ -247,7 +260,7 @@ operator:
     print(a is b)
 
 This tells us that both ``a`` and ``b`` refer to the same object, and that it
-is the second of the two state snapshots that describes the relationship. 
+is the second of the two reference diagrams that describes the relationship. 
 Since strings are *immutable*, Python optimizes resources by making two names
 that refer to the same string value refer to the same object.
 
@@ -261,9 +274,9 @@ This is not the case with lists.
 
     print(a == b)  
 
-The state snapshot here looks like this:
+The reference diagram here looks like this:
 
-.. image:: illustrations/ch09/mult_references2.png
+.. image:: illustrations/lists/refdiag3.png
    :alt: State snapshot for equal different lists 
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
@@ -276,16 +289,15 @@ Aliasing
 Since variables refer to objects, if we assign one variable to another, both
 variables refer to the same object:
 
-.. sourcecode:: python
+.. activecode:: listalias1
     
-    >>> a = [1, 2, 3]
-    >>> b = a
-    >>> id(a) == id(b)
-    True
+    a = [1, 2, 3]
+    b = a
+    print(a is b)
     
-In this case, the state snapshot looks like this:
+In this case, the reference diagram looks like this:
 
-.. image:: illustrations/ch09/mult_references3.png
+.. image:: illustrations/lists/refdiag4.png
    :alt: State snapshot for multiple references (aliases) to a list 
 
 Because the same list has two different names, ``a`` and ``b``, we say that it
@@ -330,10 +342,6 @@ consist of the whole list.
 .. activecode:: chp09_is4
 
     a = [1,2,3]
-    b = [1,2,3]
-
-    print(a == b)
-    print(a is b)
 
     b = a[:]       # make a clone using slice
     print(a == b)
