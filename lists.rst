@@ -289,7 +289,7 @@ This is not the case with lists.  Consider the following example.  Here, ``a`` a
 The reference diagram here looks like this:
 
 .. image:: illustrations/lists/refdiag3.png
-   :alt: State snapshot for equal different lists 
+   :alt: Reference diagram for equal different lists 
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
 
@@ -368,6 +368,75 @@ consist of the whole list.
 
 Now we are free to make changes to ``b`` without worrying about ``a``:
 
+
+Repetition and References
+-------------------------
+
+We have already seen the repetition operator working on strings as well as lists.  For example, 
+
+.. activecode:: repref1
+
+    origlist = [45, 76, 34, 55]
+    print(origlist*3)
+
+With a list, the repetition operator creates copies of the references.  Although this may seem simple enough, when we allow a list to refer to another list, a subtle problem can arise.
+
+Consider the following extension on the previous example.
+
+.. activecode:: repref2
+
+    origlist = [45, 76, 34, 55]
+    print(origlist*3)
+
+    newlist = [origlist] * 3
+
+    print(newlist)
+
+``newlist`` is a list of three references to ``origlist`` that were created by the repetition operator.  The reference diagram is shown below.
+
+
+
+.. image:: illustrations/lists/refrep1.png
+   :alt: Repetition of a nested list
+
+
+
+
+Now, what happens if we modify a value in ``origlist``.
+
+
+.. activecode:: repref3
+
+    origlist = [45, 76, 34, 55]
+    print(origlist*3)
+
+    newlist = [origlist] * 3
+
+    print(newlist)
+
+    origlist[1] = 99
+
+    print(newlist)
+
+``newlist`` shows the change in three places.  This can easily be seen by noting that in the reference diagram, there is only one ``origlist``, so any changes to it appear in all three references from ``newlist``.
+
+.. image:: illustrations/lists/refrep2.png
+   :alt: Same reference
+
+Here is the same example in codelens.  Step through the code until paying particular attention to the result of executing the assignment statement ``origlist[1] = 99``.
+
+.. codelens:: reprefstep
+
+    origlist = [45, 76, 34, 55]
+    print(origlist*3)
+
+    newlist = [origlist] * 3
+
+    print(newlist)
+
+    origlist[1] = 99
+
+    print(newlist)
 
 .. index:: for loop, enumerate
 
@@ -551,7 +620,7 @@ and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to
     mylist.append(12)
     print(mylist)
 
-    mylist = mylist.sort()
+    mylist = mylist.sort()   #probably an error
     print(mylist)
 
 
@@ -561,7 +630,7 @@ and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to
 
 .. _pure-func-mod:
 
-Pure functions and modifiers
+Pure Functions and Modifiers
 ----------------------------
 
 Functions which take lists as arguments and change them during execution are
@@ -604,7 +673,7 @@ you would assign the return value back to ``things``:
     print(things)
 
 
-Which is better?
+Which is Better?
 ----------------
 
 Anything that can be done with modifiers can also be done with pure functions.
@@ -617,7 +686,7 @@ In general, we recommend that you write pure functions whenever it is
 reasonable to do so and resort to modifiers only if there is a compelling
 advantage. This approach might be called a *functional programming style*.
 
-Functions that produce lists
+Functions that Produce Lists
 ----------------------------
 
 The pure version of ``doubleStuff`` above made use of an 
@@ -645,7 +714,7 @@ to return a list of all prime numbers less than n::
 
 .. index:: nested list, list; nested
        
-Nested lists
+Nested Lists
 ------------
 
 A nested list is a list that appears as an element in another list. In this
@@ -708,7 +777,7 @@ rows.
 
 .. index:: strings and lists, split, join
 
-Strings and lists
+Strings and Lists
 -----------------
 
 Two of the most useful methods on strings involve lists of
@@ -754,8 +823,8 @@ The list that you glue together (``wds`` in this example) is not modified.  Also
 you can use empty glue or multi-character strings as glue.
 
     
-``list``
---------
+``list`` Type Conversion Function
+---------------------------------
     
 Python has a built-in type conversion function called 
 ``list`` that tries to turn whatever you give it
@@ -767,7 +836,7 @@ into a list.
     print(xs)
 
     
-Tuples and mutability
+Tuples and Mutability
 ---------------------
 
 So far you have seen two types of sequential collections: strings, which are made up of
@@ -839,7 +908,7 @@ the final comma, Python treats the ``(5)`` below as an integer in parentheses:
     single: assignment; tuple 
     single: tuple; assignment  
 
-Tuple assignment
+Tuple Assignment
 ----------------
 
 Python has a very powerful **tuple assignment** feature that allows a tuple of variables 
@@ -886,7 +955,7 @@ right have to be the same.
 .. index::
     single: tuple; return value 
 
-Tuples as return values
+Tuples as Return Values
 -----------------------
 
 Functions can return tuples as return values. This is very useful --- we often want to
