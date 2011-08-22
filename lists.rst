@@ -50,7 +50,7 @@ As you would expect, we can also assign list values to variables and pass lists 
     vocabulary = ["iteration", "selection", "control"]
     numbers = [17, 123]
     empty = []
-    mixedlist = ["hello", 2.0, 5, [10, 20]]
+    mixedlist = ["hello", 2.0, 5*2, [10, 20]]
 
     print(numbers)
     print(mixedlist)
@@ -93,6 +93,8 @@ of from the left.
     print(numbers[2])
     print(numbers[9-8])
     print(numbers[-2])
+    print(numbers[len(numbers)-1]
+    
  
 
 
@@ -130,6 +132,8 @@ Similarly, the ``*`` operator repeats the items in a list a given number of time
 
 
 It is important to see that these operators create new lists from the elements of the operand lists.  If you concatenate a list with 2 items and a list with 4 items, you will get a new list with 6 items (not a list with two sublists).  Similarly, repetition of a list of 2 items 4 times will give a list with 8 items.
+
+.. add codelens example  talk about id
 
 List Slices
 -----------
@@ -408,7 +412,6 @@ Now, what happens if we modify a value in ``origlist``.
 .. activecode:: repref3
 
     origlist = [45, 76, 34, 55]
-    print(origlist*3)
 
     newlist = [origlist] * 3
 
@@ -428,7 +431,6 @@ Here is the same example in codelens.  Step through the code until paying partic
 .. codelens:: reprefstep
 
     origlist = [45, 76, 34, 55]
-    print(origlist*3)
 
     newlist = [origlist] * 3
 
@@ -507,8 +509,8 @@ list, so that we can assign a new value to it.
 
 .. index:: parameter
 
-List Parameters
----------------
+Using Lists as Parameters
+-------------------------
 
 Passing a list as an argument actually passes a reference to the list, not a
 copy of the list. Since lists are mutable changes made to the 
@@ -737,42 +739,6 @@ left to right.
 
 .. index:: matrix
 
-Matrices
---------
-
-Nested lists are often used to represent matrices. For example, the matrix::
-
-       1  2  3
-       4  5  6
-       7  8  9
-
-might be represented as:
-
-.. sourcecode:: python
-    
-    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-
-``matrix`` is a list with three elements, where each element is a row of the
-matrix. We can select an entire row from the matrix in the usual way.
-Or, we can extract a single element from the matrix using the double-index form where the first
-index is the row and the second index is the column.
-
-.. activecode:: ch09_matrix
-
-    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-   
-    row = matrix[1]
-    item = row[2]
-    print(item)
-
-    print(matrix[1][2])
-
-The first index selects the row, and the second index selects the column.
-Although this way of representing matrices is common, it is not the only
-possibility. A small variation is to use a list of columns instead of a list of
-rows.
-
-.. index:: Test-driven development, scaffolding
 
 
 .. index:: strings and lists, split, join
