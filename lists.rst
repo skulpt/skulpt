@@ -167,6 +167,18 @@ An
 assignment to an element of a list is called **item assignment**. Item
 assignment does not work for strings.  Recall that strings are immutable.
 
+Here is the same example in codelens so that you can step thru the statements and see the changes to the list elements.
+
+.. codelens:: item_assign
+    
+    fruit = ["banana", "apple", "cherry"]
+    print(fruit)
+
+    fruit[0] = "pear"
+    fruit[-1] = "orange"
+    print(fruit)
+
+
 By combining assignment with the slice operator we can update several elements at once.
 
 .. activecode:: ch09_8
@@ -222,8 +234,8 @@ index.
 
 .. index:: is operator, objects and values
 
-Objects and Values
-------------------
+Objects and References
+----------------------
 
 If we execute these assignment statements,
 
@@ -264,12 +276,12 @@ is the second of the two reference diagrams that describes the relationship.
 Since strings are *immutable*, Python optimizes resources by making two names
 that refer to the same string value refer to the same object.
 
-This is not the case with lists.
+This is not the case with lists.  Consider the following example.  Here, ``a`` and ``b`` refer to two different lists, each of which happens to have the same element values.
 
 .. activecode:: chp09_is2
     
-    a = [1,2,3]
-    b = [1,2,3]
+    a = [81,82,83]
+    b = [81,82,83]
     print(a is b)
 
     print(a == b)  
@@ -281,6 +293,8 @@ The reference diagram here looks like this:
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
 
+There is one other important thing to notice about this reference diagram.  The variable ``a`` is a reference to a **collection of references**.  Those references actually refer to the integer values in the list.  In other words, a list is a collection of references to objects.
+
 .. index:: aliases
 
 Aliasing
@@ -291,7 +305,7 @@ variables refer to the same object:
 
 .. activecode:: listalias1
     
-    a = [1, 2, 3]
+    a = [81, 82, 83]
     b = a
     print(a is b)
     
@@ -303,10 +317,10 @@ In this case, the reference diagram looks like this:
 Because the same list has two different names, ``a`` and ``b``, we say that it
 is **aliased**. Changes made with one alias affect the other:
 
-.. activecode:: chp09_is3
+.. codelens:: chp09_is3
 
-    a = [1,2,3]
-    b = [1,2,3]
+    a = [81,82,83]
+    b = [81,82,83]
 
     print(a == b)
     print(a is b)
@@ -339,9 +353,9 @@ The easiest way to clone a list is to use the slice operator.
 Taking any slice of ``a`` creates a new list. In this case the slice happens to
 consist of the whole list.
 
-.. activecode:: chp09_is4
+.. codelens:: chp09_is4
 
-    a = [1,2,3]
+    a = [81,82,83]
 
     b = a[:]       # make a clone using slice
     print(a == b)
