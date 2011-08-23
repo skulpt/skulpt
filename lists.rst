@@ -1159,7 +1159,22 @@ Exercises
        b = a[:]
        b[0] = 5
 
-#. Write a Python function that will take a list of integers and return the maximum value.  (Note: there is a builtin function named ``max`` but pretend you cannot use it.)
+#.  Create a list called ``myList`` with the following six items: 76, 92.3, "hello", True, 4, 76.
+
+#.  Write Python statements to do the following:
+
+    a. Append "apple" and 76 to the list.
+    #. Insert the value "cat" at position 3.
+    #. Insert the value 99 at the start of the list.
+    #. Find the index of "hello".
+    #. Count the number of 76s in the list.
+    #. Remove the first occurrence of 76 from the list.
+    #. Remove True from the list using ``pop`` and ``index``.
+
+
+#.  Create a list containing 100 random integers between 0 and 1000 (use iteration, append, and the random module).  Write a function called ``average`` that will take the list as a parameter and return the average.
+
+#. Write a Python function that will take a the list of integers from the previous problem and return the maximum value.  (Note: there is a builtin function named ``max`` but pretend you cannot use it.)
 
 #. Although Python provides us with many list methods, it is good practice and very instructive to think about how they are implemented.  Implement a Python function that works like the following:
 

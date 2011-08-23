@@ -24,6 +24,10 @@ Based on the original book
 
 ------------------------------------------------------------
 
+
+Table of Contents
+-----------------
+
 * `Copyright Notice <copyright.html>`__ 
 * `Foreword <foreword.html>`__
 * `Preface <preface.html>`__
@@ -45,6 +49,11 @@ Based on the original book
 * `Chapter 12 <classesintro.html>`__ *Classes and Objects - the Basics*
 * `Chapter 13 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
 
+* `Appendix A <app_a.html>`__ *Debugging*
+
+* `GNU Free Document License <fdl-1.3.html>`__ 
+
+
 .. `Chapter 7 <morefunctions.html>`__ *Functions Revisited*
 .. `Chapter 11 <ch10.html>`__ *Modules and Files*
 .. `Chapter 15 <ch15.html>`__ *Even more OOP*
@@ -54,15 +63,12 @@ Based on the original book
 .. `Chapter 19 <ch19.html>`__ *Stacks*
 .. `Chapter 20 <ch20.html>`__ *Queues*
 .. `Chapter 21 <ch21.html>`__ *Trees*
-
-* `Appendix A <app_a.html>`__ *Debugging*
-
 .. `Appendix B <app_b.html>`__ *An odds-and-ends Workbook*
 .. `Appendix C <app_c.html>`__ *Configuring Ubuntu for Python Development*
 .. `Appendix D <app_d.html>`__ *Customizing and Contributing to the Book*
 
-* `GNU Free Document License <fdl-1.3.html>`__ 
-
+Table of Contents by Section
+----------------------------
 
 .. toctree::
     :maxdepth: 1
