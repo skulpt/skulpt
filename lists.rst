@@ -133,7 +133,31 @@ Similarly, the ``*`` operator repeats the items in a list a given number of time
 
 It is important to see that these operators create new lists from the elements of the operand lists.  If you concatenate a list with 2 items and a list with 4 items, you will get a new list with 6 items (not a list with two sublists).  Similarly, repetition of a list of 2 items 4 times will give a list with 8 items.
 
-.. add codelens example  talk about id
+One way for us to make this more clear is to run a part of this example in codelens.  As you step thru the code, you will see the variables being created and the lists that they refer to.  Pay particular attention to the `id` tag that is shown after the data type descriptor (``list (id = 12)``).  The **id** in Python corresponds to a unique identifier for that particular object.  You can tell if you have different objects by comparing the ids.
+
+.. codelens:: chp09_concatid
+
+    fruit = ["apple","orange","banana","cherry"]
+    numlist = [6,7]
+    newlist = fruit + numlist
+    print(newlist)
+
+    zeros = [0] * 4
+    print(zeros)
+
+
+The statement ``newlist = fruit + numlist`` creates a new list object with the contents of the list ``fruit`` followed by the contents of the list ``numlist``. We can see it is a new list by looking at the ids.  The id of ``newlist`` is not the same as the others.  It is extremely important to know whether you are creating a new list or just modifying an existing list.  Again, the ids can help.
+
+In Python, there is a built-in function that can be called on any object to return its unique id.  The function is appropriately called ``id`` and takes a single parameter, the object that you are interested in knowing about.  You can see in the example below that a real id is usually a very large integer value (corresponding to an address in memory).
+
+.. sourcecode:: python
+
+    >>> alist = [4,5,6]
+    >>> id(alist)
+    4300840544
+    >>> 
+
+
 
 List Slices
 -----------
@@ -266,16 +290,17 @@ In one case, ``a`` and ``b`` refer to two different string objects that have the
 value. In the second case, they refer to the same object. Remember that an object is something a variable can
 refer to.
 
-We can test whether two names refer to the same object using the *is*
+We already know that objects can be identified using their unique identifier.  We can also test whether two names refer to the same object using the *is*
 operator.  The *is* operator will return true if the two references are to the same object.  In other words, the references are the same.  Try our example from above.
 
 .. activecode:: chp09_is1
 
     a = "banana"
     b = "banana"
+
     print(a is b)
 
-This tells us that both ``a`` and ``b`` refer to the same object, and that it
+The answer is ``True``.  This tells us that both ``a`` and ``b`` refer to the same object, and that it
 is the second of the two reference diagrams that describes the relationship. 
 Since strings are *immutable*, Python optimizes resources by making two names
 that refer to the same string value refer to the same object.
@@ -286,18 +311,30 @@ This is not the case with lists.  Consider the following example.  Here, ``a`` a
     
     a = [81,82,83]
     b = [81,82,83]
+
     print(a is b)
 
     print(a == b)  
 
-The reference diagram here looks like this:
+The reference diagram for this example looks like this:
 
 .. image:: illustrations/lists/refdiag3.png
    :alt: Reference diagram for equal different lists 
 
 ``a`` and ``b`` have the same value but do not refer to the same object.
 
-There is one other important thing to notice about this reference diagram.  The variable ``a`` is a reference to a **collection of references**.  Those references actually refer to the integer values in the list.  In other words, a list is a collection of references to objects.
+There is one other important thing to notice about this reference diagram.  The variable ``a`` is a reference to a **collection of references**.  Those references actually refer to the integer values in the list.  In other words, a list is a collection of references to objects.  Interestingly, even though ``a`` and ``b`` are two different lists (two different collections of references), the integer object ``81`` is shared by both.  Like strings, integers are also immutable so Python optimizes and lets everyone share the same object.
+
+Here is the example in codelens.  Pay particular attention to the `id` values.
+
+.. codelens:: chp09_istrace
+    
+    a = [81,82,83]
+    b = [81,82,83]
+
+    print(a is b)
+
+    print(a == b)
 
 .. index:: aliases
 
@@ -319,7 +356,7 @@ In this case, the reference diagram looks like this:
    :alt: State snapshot for multiple references (aliases) to a list 
 
 Because the same list has two different names, ``a`` and ``b``, we say that it
-is **aliased**. Changes made with one alias affect the other:
+is **aliased**. Changes made with one alias affect the other.  In the codelens example below, the `ids` of ``a`` and ``b`` become the same after executing the assignment statement ``b = a``.
 
 .. codelens:: chp09_is3
 
@@ -337,10 +374,11 @@ is **aliased**. Changes made with one alias affect the other:
     print(a)
     
 
+
 Although this behavior can be useful, it is sometimes unexpected or
 undesirable. In general, it is safer to avoid aliasing when you are working
 with mutable objects. Of course, for immutable objects, there's no problem.
-That's why Python is free to alias strings when it sees an opportunity to
+That's why Python is free to alias strings and integers when it sees an opportunity to
 economize.
 
 .. index:: clone
@@ -370,7 +408,7 @@ consist of the whole list.
     print(a)
     print(b)
 
-Now we are free to make changes to ``b`` without worrying about ``a``:
+Now we are free to make changes to ``b`` without worrying about ``a``.  Note also that the `id` of b is different from the ``id`` of a.  It is an entirely different list.
 
 
 Repetition and References
@@ -439,6 +477,126 @@ Here is the same example in codelens.  Step through the code until paying partic
     origlist[1] = 99
 
     print(newlist)
+
+
+
+.. index:: list; append
+
+List Methods
+------------
+
+The dot operator can also be used to access built-in methods of list objects.  
+``append`` is a list method which adds the argument passed to it to the end of
+the list. Continuing with this example, we show several other list methods.  Many of them are
+easy to understand.  
+
+.. activecode:: chp09_meth1
+
+    mylist = []
+    mylist.append(5)
+    mylist.append(27)
+    mylist.append(3)
+    mylist.append(12)
+    print(mylist)
+
+    mylist.insert(1, 12)
+    print(mylist)
+    print(mylist.count(12))
+
+    print(mylist.index(3))
+    print(mylist.count(5))
+
+    mylist.reverse()
+    print(mylist)
+
+    mylist.sort()
+    print(mylist)
+
+    mylist.remove(5)
+    print(mylist)
+
+    lastitem = mylist.pop()
+    print(lastitem)
+    print(mylist)
+
+There are two ways to use the ``pop`` method.  The first, with no parameter, will remove and return the
+last item of the list.  If you provide a parameter for the position, ``pop`` will remove and return the
+item at that position.  Either way the list is changed.
+
+The following table provides a summary of the list methods shown above.  Be sure
+to experiment with these methods to gain a better understanding of what they do.
+
+
+
+
+==========  ==============      ================================================
+Method      Parameters          Description
+==========  ==============      ================================================
+append      item                Adds a new item to the end of a list
+insert      position, item      Inserts a new item at the position given
+pop         none                Removes and returns the last item
+pop         position            Removes and returns the item at position
+sort        none                Modifies a list to be sorted
+reverse     none                Modifies a list to be in reverse order
+index       item                Returns the position of first occurrence of item
+count       item                Returns the number of occurrences of item
+remove      item                Removes the first occurrence of item
+==========  ==============      ================================================
+
+
+Details for these and others
+can be found in the `Python Documentation <http://docs.python.org/py3k/library/stdtypes.html#sequence-types-str-bytes-bytearray-list-tuple-range>`_.
+
+It is important to note that ``append``, ``sort``, 
+and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to the result of sorting ``mylist`` will result in losing the entire list.
+
+.. activecode:: chp09_meth2
+
+    mylist = []
+    mylist.append(5)
+    mylist.append(27)
+    mylist.append(3)
+    mylist.append(12)
+    print(mylist)
+
+    mylist = mylist.sort()   #probably an error
+    print(mylist)
+
+
+
+Append versus Concatenate
+-------------------------
+
+The ``append`` method adds a new item to the end of a list.  It is also possible to add a new item to the end of a list by using the concatenation operator.  However, you need to be careful.
+
+Consider the following example.  The original list has 3 integers.  We want to add the word "cat" to the end of the list.
+
+.. codelens:: appcon1
+
+    origlist = [45,32,88]
+
+    origlist.append("cat")
+
+    print(origlist)
+
+Here we have used ``append`` which simply modifies the list.  In order to use concatenation, we need to write an assignment statement that uses the accumulator pattern::
+
+    origlist = origlist + ["cat"]
+
+Note that the word "cat" needs to be placed in a list since the concatenation operator needs two lists to do its work.
+
+.. codelens:: appcon2
+
+    origlist = [45,32,88]
+
+    origlist = origlist + ["cat"]
+
+    print(origlist)
+
+It is also important to see that with append, the original list is simply modified.  You can see this by watching the `id` of ``origlist``.  It stays the same before and after the append.
+
+On the other hand, with concatenation, you will see that the `id` of the original list is not the same as the `id` of the result after the assignment statement. Step through both examples very slowly to see this important difference.
+
 
 .. index:: for loop, enumerate
 
@@ -512,6 +670,8 @@ list, so that we can assign a new value to it.
 Using Lists as Parameters
 -------------------------
 
+Functions which take lists as arguments and change them during execution are
+called **modifiers** and the changes they make are called **side effects**.
 Passing a list as an argument actually passes a reference to the list, not a
 copy of the list. Since lists are mutable changes made to the 
 elements referenced by the parameter change
@@ -543,120 +703,35 @@ Since the list object is shared by two references, there is only one copy.
 If a function modifies the elements of a list parameter, the caller sees the change since the change
 is occurring to the original.
 
-.. index:: list; append
+This can be easily seen in codelens.  Note that after the call to ``doubleStuff``, the `id` of the formal parameter ``aList`` is the same as the `id` of ``things``.
+
+
+.. codelens:: chp09_parm1_trace
     
-List Methods
-------------
+    def doubleStuff(aList):
+        """ Overwrite each element in aList with double its value. """
+        for position in range(len(aList)):
+            aList[position] = 2 * aList[position]
 
-The dot operator can also be used to access built-in methods of list objects.  
-``append`` is a list method which adds the argument passed to it to the end of
-the list. Continuing with this example, we show several other list methods.  Many of them are
-easy to understand.  
-
-.. activecode:: chp09_meth1
-    
-    mylist = []
-    mylist.append(5)
-    mylist.append(27)
-    mylist.append(3)
-    mylist.append(12)
-    print(mylist)
-
-    mylist.insert(1, 12)
-    print(mylist)
-    print(mylist.count(12))
-
-    print(mylist.index(3))
-    print(mylist.count(5))
-
-    mylist.reverse()
-    print(mylist)
-
-    mylist.sort()
-    print(mylist)
-
-    mylist.remove(5)
-    print(mylist)
-
-    lastitem = mylist.pop()
-    print(lastitem)
-    print(mylist)
-
-There are two ways to use the ``pop`` method.  The first, with no parameter, will remove and return the
-last item of the list.  If you provide a parameter for the position, ``pop`` will remove and return the
-item at that position.  Either way the list is changed.
-
-The following table provides a summary of the list methods shown above.  Be sure
-to experiment with these methods to gain a better understanding of what they do.
-
-
-
-
-==========  ==============      ================================================
-Method      Parameters          Description
-==========  ==============      ================================================
-append      item                Adds a new item to the end of a list
-insert      position, item      Inserts a new item at the position given
-pop         none                Removes and returns the last item
-pop         position            Removes and returns the item at position
-sort        none                Modifies a list to be sorted
-reverse     none                Modifies a list to be in reverse order
-index       item                Returns the position of first occurrence of item
-count       item                Returns the number of occurrences of item
-remove      item                Removes the first occurrence of item
-==========  ==============      ================================================
-
-
-Details for these and others
-can be found in the `Python Documentation <http://docs.python.org/py3k/library/stdtypes.html#sequence-types-str-bytes-bytearray-list-tuple-range>`_.
-
-It is important to note that ``append``, ``sort``, 
-and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to the result of sorting ``mylist`` will result in losing the entire list.
-
-.. activecode:: chp09_meth2
-    
-    mylist = []
-    mylist.append(5)
-    mylist.append(27)
-    mylist.append(3)
-    mylist.append(12)
-    print(mylist)
-
-    mylist = mylist.sort()   #probably an error
-    print(mylist)
-
-
+    things = [2, 5, 9]
+    print(things)
+    doubleStuff(things)
+    print(things)
 
 
 .. index:: side effect, modifier
 
 .. _pure-func-mod:
 
-Pure Functions and Modifiers
-----------------------------
+Pure Functions
+--------------
 
-Functions which take lists as arguments and change them during execution are
-called **modifiers** and the changes they make are called **side effects**.
+
 A **pure function** does not produce side effects. It communicates with the
 calling program only through parameters, which it does not modify, and a return
-value. Here is ``doubleStuff`` written as a pure function.
-
-.. activecode:: ch09_mod1
-    
-    def doubleStuff(a_list):
-        """ Return a new list in which contains doubles of the elements in a_list. """
-        new_list = []
-        for value in a_list:
-            new_elem = 2 * value
-            new_list.append(new_elem)
-        return new_list
-    
-    things = [2, 5, 9]
-    print(doubleStuff(things))
-    print(things)
-
+value. Here is the ``doubleStuff`` function from the previous section written as a pure function.
 To use the pure function version of ``double_stuff`` to modify ``things``,
-you would assign the return value back to ``things``:
+you would assign the return value back to ``things``.
 
 
 .. activecode:: ch09_mod2
@@ -669,6 +744,23 @@ you would assign the return value back to ``things``:
             new_list.append(new_elem)
         return new_list
     
+    things = [2, 5, 9]
+    print(things)
+    things = doubleStuff(things)
+    print(things)
+
+Once again, codelens helps us to see the actual references and objects as they are passed and returned.
+
+.. codelens:: ch09_mod3
+
+    def doubleStuff(a_list):
+        """ Return a new list in which contains doubles of the elements in a_list. """
+        new_list = []
+        for value in a_list:
+            new_elem = 2 * value
+            new_list.append(new_elem)
+        return new_list
+
     things = [2, 5, 9]
     print(things)
     things = doubleStuff(things)
@@ -713,6 +805,39 @@ to return a list of all prime numbers less than n::
            if is_prime(i):
                result.append(i)
        return result
+
+
+List Comprehensions
+-------------------
+
+The previous example creates a list from a sequence of values based on some selection criteria.  An easy way to do this type of processing in Python is to use a **list comprehension**.  List comprehensions are concise ways to create lists.  The general syntax is::
+
+   [<expression> for <item> in <sequence> if  <condition>]
+
+where the if clause is optional.  For example,
+
+.. activecode:: listcomp1
+
+    mylist = [1,2,3,4,5]
+
+    yourlist = [item ** 2 for item in mylist]
+
+    print(yourlist)
+
+
+
+The expression describes each element of the list that is being built.  The ``for`` clause iterates thru each item in a sequence.  The items are filtered by the ``if`` clause if there is one.  In the example above, the ``for`` statement lets ``item`` take on all the values in the list ``mylist``.  Each item is then squared before it is added to the list that is being built.  The result is a list of squares of the values in ``mylist``.
+
+To write the ``primes_upto`` function we will use the ``is_prime`` function to filter the sequence of integers coming from the ``range`` function.  In other words, for every integer from 2 up to but not including ``n``, if the integer is prime, keep it in the list.
+
+.. sourcecode:: python
+
+	def primes_upto(n):
+	    """ Return a list of all prime numbers less than n using a list comprehension. """
+
+	    result = [num for num in range(2,n) if is_prime(num)]
+	    return result
+
 
 .. index:: nested list, list; nested
        
@@ -794,13 +919,17 @@ you can use empty glue or multi-character strings as glue.
     
 Python has a built-in type conversion function called 
 ``list`` that tries to turn whatever you give it
-into a list.  
+into a list.  For example, try the following:
 
 .. activecode:: ch09_list1
     
     xs = list("Crunchy Frog")
     print(xs)
 
+
+The string "Crunchy Frog" is turned into a list by taking each character in the string and placing it in a list.  In general, any sequence can be turned into a list using this function.  The result will be a list containing the elements in the original sequence.  It is not legal to use the ``list`` conversion function on any argument that is not a sequence.
+
+It is also important to point out that the ``list`` conversion function will place each element of the original sequence in the new list.  When working with strings, this is very different than the result of the ``split`` method.  Whereas ``split`` will break a string into a list of "words", ``list`` will always break it into a list of characters.
     
 Tuples and Mutability
 ---------------------
@@ -1001,10 +1130,6 @@ Glossary
         patterns and algorithms that form your toolkit.  Patterns often 
         correspond to your "mental chunking".   
 
-    promise
-        An object that promises to do some work or deliver some values if
-        they're eventually needed, but it lazily puts off doing the work immediately.
-        Calling ``range`` produces a promise.         
 
     pure function
         A function which has no side effects. Pure functions only make changes
@@ -1019,46 +1144,13 @@ Glossary
         not a result of reading the return value from the function. Side
         effects can only be produced by modifiers.
 
-    step size
-        The interval between successive elements of a linear sequence. The
-        third (and optional argument) to the ``range`` function is called the
-        step size.  If not specified, it defaults to 1.
 
-    test-driven development (TDD)
-        A software development practice which arrives at a desired feature
-        through a series of small, iterative steps motivated by automated tests
-        which are *written first* that express increasing refinements of the
-        desired feature.  (see the Wikipedia article on `Test-driven
-        development <http://en.wikipedia.org/wiki/Test_driven_development>`__
-        for more information.)
 
 Exercises
 ---------
 
-
-#. What is the Python interpreter's response to the following?
-
-   .. sourcecode:: python
-    
-       >>> list(range(10, 0, -2))
-
-   The three arguments to the *range* function are *start*, *stop*, and *step*, 
-   respectively. In this example, ``start`` is greater than ``stop``.  What
-   happens if ``start < stop`` and ``step < 0``? Write a rule for the
-   relationships among ``start``, ``stop``, and ``step``.
    
-#. Consider this fragment of code::
-
-        import turtle
-        
-        tess = turtle.Turtle()
-        alex = tess
-        alex.color("hotpink")
-   
-   Does this fragment create one or two turtle instances?  Does setting
-   the colour of ``alex`` also change the colour of ``tess``?  Explain in detail.
-   
-#. Draw a state snapshot for ``a`` and ``b`` before and after the third line of
+#. Draw a reference diagram for ``a`` and ``b`` before and after the third line of
    the following python code is executed:
 
    .. sourcecode:: python
@@ -1067,165 +1159,16 @@ Exercises
        b = a[:]
        b[0] = 5
 
-#. What will be the output of the following program?
+#. Write a Python function that will take a list of integers and return the maximum value.  (Note: there is a builtin function named ``max`` but pretend you cannot use it.)
 
-   .. sourcecode:: python
-    
-       this = ['I', 'am', 'not', 'a', 'crook']
-       that = ['I', 'am', 'not', 'a', 'crook']
-       print("Test 1: {0}".format(this is that))
-       that = this
-       print("Test 2: {0}".format(this == that))
+#. Although Python provides us with many list methods, it is good practice and very instructive to think about how they are implemented.  Implement a Python function that works like the following:
 
-   Provide a *detailed* explaination of the results.
-     
-#. Lists can be used to represent mathematical *vectors*.  In this exercise
-   and several that follow you will write functions to perform standard
-   operations on vectors.  Create a script named ``vectors.py`` and 
-   write Python code to pass the tests in each case.
+    a. count
+    #. in
+    #. reverse
+    #. index
+    #. insert
 
-   Write a function ``add_vectors(u, v)`` that takes two lists of numbers of
-   the same length, and returns a new list containing the sums of the
-   corresponding elements of each::
-   
-       test(add_vectors([1, 1], [1, 1]), [2, 2])
-       test(add_vectors([1, 2], [1, 4]), [2, 6])
-       test(add_vectors([1, 2, 1], [1, 4, 3]), [2, 6, 4])
- 
-#. Write a function ``scalar_mult(s, v)`` that takes a number, ``s``, and a
-   list, ``v`` and returns the `scalar multiple
-   <http://en.wikipedia.org/wiki/Scalar_multiple>`__ of ``v`` by ``s``. ::
-
-        test(scalar_mult(5, [1, 2]), [5, 10])
-        test(scalar_mult(3, [1, 0, -1]), [3, 0, -3])
-        test(scalar_mult(7, [3, 0, 5, 11, 2]), [21, 0, 35, 77, 14])
-
-#. Write a function ``dot_product(u, v)`` that takes two lists of numbers of
-   the same length, and returns the sum of the products of the corresponding
-   elements of each (the `dot_product
-   <http://en.wikipedia.org/wiki/Dot_product>`__).
-
-   .. sourcecode:: python
-    
-      test(dot_product([1, 1], [1, 1]),  2)
-      test(dot_product([1, 2], [1, 4]),  9)
-      test(dot_product([1, 2, 1], [1, 4, 3]), 12)
-      
-#. *Extra challenge for the mathematically inclined*: Write a function
-   ``cross_product(u, v)`` that takes two lists of numbers of length 3 and
-   returns their
-   `cross product <http://en.wikipedia.org/wiki/Cross_product>`__.  You should
-   write your own tests and use the test driven development process
-   described in the chapter.      
-
-#. Create a new module named ``matrices.py`` and add the following two
-   functions introduced in the section on test-driven development:
-  
-   .. sourcecode:: python
-       
-        m = [[0, 0], [0, 0]]
-        q = add_row(m)
-        test(q, [[0, 0], [0, 0], [0, 0]])
-        n = [[3, 2, 5], [1, 4, 7]]
-        w = add_row(n)
-        test(w, [[3, 2, 5], [1, 4, 7], [0, 0, 0]])
-        test(n, [[3, 2, 5], [1, 4, 7]])
-        n[0][0] = 42
-        test(w, [[3, 2, 5], [1, 4, 7], [0, 0, 0]])
-    
-        m = [[0, 0], [0, 0]]
-        q = add_column(m)
-        test(q, [[0, 0, 0], [0, 0, 0]])
-        n = [[3, 2], [5, 1], [4, 7]]
-        w = add_column(n)
-        test(w, [[3, 2, 0], [5, 1, 0], [4, 7, 0]])
-        test( n, [[3, 2], [5, 1], [4, 7]])
-
-
-   Your new functions should pass the tests. Note that the last test in
-   each case assures that ``add_row`` and ``add_column`` are pure
-   functions. ( *hint:* Python has a ``copy`` module with a function named
-   ``deepcopy`` that could make your task easier here. We will talk more about
-   ``deepcopy`` in chapter 13, but google python copy module if you would like
-   to try it now.)
-   
-#. Write a function ``add_matrices(m1, m2)`` that adds ``m1`` and ``m2`` and
-   returns a new matrix containing their sum. You can assume that ``m1`` and
-   ``m2`` are the same size. You add two matrices by adding their corresponding 
-   values::
-
-     a = [[1, 2], [3, 4]]
-     b = [[2, 2], [2, 2]]
-     x = add_matrices(a, b)
-     test(x, [[3, 4], [5, 6]])
-     c = [[8, 2], [3, 4], [5, 7]]
-     d = [[3, 2], [9, 2], [10, 12]]
-     y = add_matrices(c, d)
-     test(y, [[11, 4], [12, 6], [15, 19]])
-     test(c, [[8, 2], [3, 4], [5, 7]])
-     test(d, [[3, 2], [9, 2], [10, 12]])
-          
-   The last two tests confirm that ``add_matrices`` is a pure
-   function.
-   
-#. Write a pure function ``scalar_mult(s, m)`` that multiplies a matrix, ``m``, by a 
-   scalar, ``s``::
-
-        a = [[1, 2], [3, 4]]
-        x = scalar_mult(3, a)
-        test(x, [[3, 6], [9, 12]])
-        b = [[3, 5, 7], [1, 1, 1], [0, 2, 0], [2, 2, 3]]
-        y = scalar_mult(10, b)
-        test(y, [[30, 50, 70], [10, 10, 10], [0, 20, 0], [20, 20, 30]])
-        test(b, [[3, 5, 7], [1, 1, 1], [0, 2, 0], [2, 2, 3]])
-
-#.  Let's create functions to make these tests pass::
-
-       test(row_times_column([[1, 2], [3, 4]], 0, [[5, 6], [7, 8]], 0), 19)
-       test(row_times_column([[1, 2], [3, 4]], 0, [[5, 6], [7, 8]], 1), 22)
-       test(row_times_column([[1, 2], [3, 4]], 1, [[5, 6], [7, 8]], 0), 43)
-       test(row_times_column([[1, 2], [3, 4]], 1, [[5, 6], [7, 8]], 1), 50)
-
-       test(matrix_mult([[1, 2], [3,  4]], [[5, 6], [7, 8]]), [[19, 22], [43, 50]])
-       test(matrix_mult([[1, 2, 3], [4,  5, 6]], [[7, 8], [9, 1], [2, 3]]), 
-                     [[31, 19], [85, 55]])
-       test(matrix_mult([[7, 8], [9, 1], [2, 3]], [[1, 2, 3], [4, 5, 6]]),
-             [[39, 54, 69], [13, 23, 33], [14, 19, 24]])
-
-#. Write functions to pass these tests: 
-
-   .. sourcecode:: python
-
-        test(only_evens([1, 3, 4, 6, 7, 8]), [4, 6, 8])
-        test(only_evens([2, 4, 6, 8, 10, 11, 0]), [2, 4, 6, 8, 10, 0])
-        test(only_evens([1, 3, 5, 7, 9, 11]), [])
-        test(only_evens([4, 0, -1, 2, 6, 7, -4]), [4, 0, 2, 6, -4])
-        nums = [1, 2, 3, 4]
-        test(only_evens(nums), [2, 4])
-        test(nums, [1, 2, 3, 4])
-
-        test(only_odds([1, 3, 4, 6, 7, 8]), [1, 3, 7])
-        test(only_odds([2, 4, 6, 8, 10, 11, 0]), [11])
-        test(only_odds([1, 3, 5, 7, 9, 11]), [1, 3, 5, 7, 9, 11])
-        test(only_odds([4, 0, -1, 2, 6, 7, -4]), [-1, 7])
-        nums = [1, 2, 3, 4]
-        test(only_odds(nums), [1, 3])
-        test(nums, [1, 2, 3, 4])
-   
-#. Add a function ``multiples_of(num, numlist)`` to ``numberlists.py`` that
-   takes an integer (``num``), and a list of integers (``numlist``) as
-   arguments and returns a list of those integers in ``numlist`` that are
-   multiples of ``num``.  Add your own tests and use TDD to develope this
-   function.             
-             
-             
-             
-#. Describe the relationship between ``' '.join(song.split())`` and
-   ``song`` in the fragment of code below. 
-   Are they the same for all strings assigned to ``song``? 
-   When would they be different? ::
-   
-        song = "The rain in Spain..."
    
 #. Write a function ``replace(s, old, new)`` that replaces all occurences of
    ``old`` with ``new`` in a string ``s``::
