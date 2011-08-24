@@ -1305,7 +1305,13 @@ Exercises
         remove_all('iss', 'Mississippi') should return 'Mippi'
         remove_all('eggs', 'bicycle') should return 'bicycle'
 
-  
+#. Here is another interesting L-System called a Hilbert curve.::
+
+       A
+       A --> - B F + A F A + F B -
+       B --> + A F - B F B - F A +
+
+
 #. Write a function that implements a substitution cipher.  In a substitution
    cipher one letter is substituted for another to garble the message.  For
    example A -> Q, B -> T, C -> G etc.  your function should take two
