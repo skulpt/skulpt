@@ -25,33 +25,30 @@ Based on the original book
 ------------------------------------------------------------
 
 
-Table of Contents
------------------
+.. * `Copyright Notice <copyright.html>`__ 
+.. * `Foreword <foreword.html>`__
+.. * `Preface <preface.html>`__
+.. * `Preface to the 2nd Edition <preface2e.html>`__
+.. * `Preface to the Interactive Edition <prefaceinteractive.html>`__
+.. * `Contributor List <contrib.html>`__
+.. * `Chapter 1 <introduction.html>`__ *The Way of the Program*
+.. * `Chapter 2 <simpledata.html>`__ *Variables, Expressions, and Statements*
+.. * `Chapter 3 <helloturtle.html>`__ *Hello, Little Turtles!*  
+.. * `Chapter 4 <modules.html>`__ *Modules and Getting Help*
+.. * `Chapter 5 <functions.html>`__ *Functions*
+.. * `Chapter 6 <selection.html>`__ *Decisions and Selection*
 
-* `Copyright Notice <copyright.html>`__ 
-* `Foreword <foreword.html>`__
-* `Preface <preface.html>`__
-* `Preface to the 2nd Edition <preface2e.html>`__
-* `Preface to the Interactive Edition <prefaceinteractive.html>`__
-* `Contributor List <contrib.html>`__
-* `Chapter 1 <introduction.html>`__ *The Way of the Program*
-* `Chapter 2 <simpledata.html>`__ *Variables, Expressions, and Statements*
-* `Chapter 3 <helloturtle.html>`__ *Hello, Little Turtles!*  
-* `Chapter 4 <modules.html>`__ *Modules and Getting Help*
-* `Chapter 5 <functions.html>`__ *Functions*
-* `Chapter 6 <selection.html>`__ *Decisions and Selection*
+.. * `Chapter 7 <moreiteration.html>`__ *Iteration*
+.. * `Chapter 8 <strings.html>`__ *Strings*
+.. * `Chapter 9 <lists.html>`__ *Lists*
+.. * `Chapter 10 <dictionaries.html>`__ *Dictionaries*
+.. * `Chapter 11 <recursion.html>`__ *Recursion*
+.. * `Chapter 12 <classesintro.html>`__ *Classes and Objects - the Basics*
+.. * `Chapter 13 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
 
-* `Chapter 7 <moreiteration.html>`__ *Iteration*
-* `Chapter 8 <strings.html>`__ *Strings*
-* `Chapter 9 <lists.html>`__ *Lists*
-* `Chapter 10 <dictionaries.html>`__ *Dictionaries*
-* `Chapter 11 <recursion.html>`__ *Recursion*
-* `Chapter 12 <classesintro.html>`__ *Classes and Objects - the Basics*
-* `Chapter 13 <fractions.html>`__ *Classes and Objects - Digging a Little Deeper*
+.. * `Appendix A <app_a.html>`__ *Debugging*
 
-* `Appendix A <app_a.html>`__ *Debugging*
-
-* `GNU Free Document License <fdl-1.3.html>`__ 
+.. * `GNU Free Document License <fdl-1.3.html>`__ 
 
 
 .. `Chapter 7 <morefunctions.html>`__ *Functions Revisited*
@@ -67,12 +64,11 @@ Table of Contents
 .. `Appendix C <app_c.html>`__ *Configuring Ubuntu for Python Development*
 .. `Appendix D <app_d.html>`__ *Customizing and Contributing to the Book*
 
-Table of Contents by Section
-----------------------------
+Table of Contents
+-----------------
 
 .. toctree::
     :maxdepth: 1
-    :hidden:
 
     copyright.rst
     foreword.rst
