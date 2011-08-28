@@ -265,4 +265,9 @@ function checkBool(exp,selId,feedback,summary) {
     }
 }
 
+function sendGrade(grade,sid,acid) {
+    data = {'sid':sid, 'acid':acid, 'grade':grade};
+    jQuery.get('/savegrade',data);
+}
+
 $(document).ready(createEditors);
