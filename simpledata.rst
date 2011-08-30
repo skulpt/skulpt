@@ -690,7 +690,7 @@ The result is referred to by ``total_secs``.  Now, each time you run the program
 Order of Operations
 -------------------
 
-.. video:: codelensvid
+.. video:: precedencevid
     :controls:
     :thumb: _static/precedencethumb.png
 
@@ -698,7 +698,7 @@ Order of Operations
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/precedence.webm
 
 
-.. video:: codelensvid
+.. video:: associativityvid
     :controls:
     :thumb: _static/associativitythumb.png
 
