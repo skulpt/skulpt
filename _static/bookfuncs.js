@@ -179,12 +179,13 @@ function createActiveCode(divid) {
     newCanvas.height = 400;
     newCanvas.width = 400;
     newCanvas.style.border = '2px solid black';
+    newCanvas.style.display = 'none';
     var newPre = edNode.appendChild(document.createElement("pre"));
     newPre.id = divid + "_pre";
     newPre.className = "active_out";
 
     myLoad();
-    $('#'+divid).modal({minHeight:700, minWidth: 410, maxWidth:450, containerCss:{width:420, height:750}});
+   // $('#'+divid).modal({minHeight:700, minWidth: 410, maxWidth:450, containerCss:{width:420, height:750}});
 }
 
 function whilestep() {

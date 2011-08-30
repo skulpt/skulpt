@@ -1029,16 +1029,22 @@ Exercises
     print(5%2)
 
 2. You look at the clock and it is exactly 2pm.  You set an alarm to go off
-   in 51 hours.  At what time does the alarm go off?  
+   in 51 hours.  At what time does the alarm go off?
+   
+   .. actex:: ex_2_2
 
 #. Write a Python program to solve the general version of the above problem.
    Ask the user for the time now (in hours), and ask for the number of hours to wait.  
    Your program should output what the time will be on the clock when the alarm goes off.
 
+   .. actex:: ex_2_3
+
 #. You go on a wonderful holiday
    leaving on day number 3 (a Wednesday).  You return home after 137 nights. 
    Write a general version of the program which asks for the starting day number, and
    the length of your stay, and it will tell you the number of day of the week you will return on.
+
+   .. actex:: ex_2_4
 
 #. Take the sentence: *All work and no play makes Jack a dull boy.*
    Store each word in a separate variable, then print out the sentence on
