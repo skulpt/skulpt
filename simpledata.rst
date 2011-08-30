@@ -18,6 +18,12 @@ Variables, Expressions and Statements
 
 .. _values_n_types:
 
+.. video:: typesnconvert
+    :controls:
+    :thumb: _static/valuesNtypes.png
+
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/TypesNTypeConversion.mov
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/TypesNTypeConversion.webm
 
 In order to get started learning any programming language there are a number of
 concepts and ideas that are necessary.  
@@ -247,8 +253,8 @@ Variables
     :controls:
     :thumb: _static/assignment.png
 
-    http://knuth.luther.edu/~bmiller/thinkcsVideos/assignment.mov
-    http://knuth.luther.edu/~bmiller/thinkcsVideos/assignment.webm
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/Variables.mov
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/Variables.webm
 
 One of the most powerful features of a programming language is the ability to
 manipulate **variables**. A variable is a name that refers to a value.
@@ -450,6 +456,13 @@ remember, what the variable is used for.
 
 Statements and Expressions
 --------------------------
+
+.. video:: expression_vid
+    :controls:
+    :thumb: _static/expressions.png
+
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/Expressions.mov
+    http://knuth.luther.edu/~bmiller/thinkcsVideos/Expressions.webm
 
 A **statement** is an instruction that the Python interpreter can execute. We
 have only seen the assignment statement so far.  Some other kinds of statements
