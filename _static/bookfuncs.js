@@ -77,7 +77,7 @@ function builtinRead(x) {
 
 function runit(myDiv) {
     //var prog = document.getElementById(myDiv + "_code").value;
-    jQuery.get("/hsblog",{'event':'activecode: run: '+myDiv}); // Log the run event
+    jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
     var editor = cm_editors[myDiv+"_code"];
     var prog = editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
@@ -110,7 +110,7 @@ function saveEditor(divName) {
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
     jQuery.post("/saveprog",data);
-    jQuery.get("/hsblog",{'event':'activecode: save: '+divName}); // Log the run event
+    jQuery.get("/hsblog",{'event':'activecode' ,'act':'save', 'div_id':divName}); // Log the run event
 
 }
 
@@ -118,7 +118,7 @@ function requestCode(divName) {
     var editor = cm_editors[divName+"_code"];
     var url = "/getprog"
     var data = {acid: divName}
-    jQuery.get("/hsblog",{'event':'activecode: save: '+divName}); // Log the run event
+    jQuery.get("/hsblog",{'event':'activecode', 'act':'save', 'div_id':divName}); // Log the run event
     jQuery.get(url,data, loadEditor);
 }
 
