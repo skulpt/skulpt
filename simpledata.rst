@@ -671,14 +671,35 @@ The result is referred to by ``total_secs``.  Now, each time you run the program
 
 
 
+
 .. index:: order of operations, rules of precedence
 
 Order of Operations
 -------------------
 
+.. video:: codelensvid
+    :controls:
+    :thumb: _static/precedencethumb.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/precedence.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/precedence.webm
+
+
+.. video:: codelensvid
+    :controls:
+    :thumb: _static/associativitythumb.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/associativity.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/associativity.webm
+
+
+
 When more than one operator appears in an expression, the order of evaluation
 depends on the **rules of precedence**. Python follows the same precedence
 rules for its mathematical operators that mathematics does. 
+
+
+
 
 .. The acronym PEMDAS
 .. is a useful way to remember the order of operations:
@@ -705,14 +726,14 @@ rules for its mathematical operators that mathematics does.
 ..   precedence than multiplication, and addition is done ahead of subtraction -
 ..   don't be misled.  Subtraction and addition are at the same precedence, and
 ..   the left-to-right rule applies.)
-   
+
 .. note::
 
     Due to some historical quirk, an exception to the left-to-right
     left-associative rule is the exponentiation operator `**`. A useful hint
     is to always use parentheses to force exactly the order you want when
     exponentiation is involved:
-   
+
     .. activecode:: ch02_23
         :nocanvas:
 
@@ -721,6 +742,9 @@ rules for its mathematical operators that mathematics does.
 
 .. The immediate mode command prompt of Python is great for exploring and
 .. experimenting with expressions like this.       
+
+
+
 
 
 Reassignment
