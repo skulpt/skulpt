@@ -132,7 +132,7 @@ function loadEditor(data, status, whatever) {
     // need to get the divId back with the result...
 }
 
-function createActiveCode(divid) {
+function createActiveCode(divid,suppliedSource) {
     var edNode = document.getElementById(divid);
     //edNode.style.display = 'none';
     edNode.style.backgroundColor = "white";
@@ -185,6 +185,9 @@ function createActiveCode(divid) {
     newPre.className = "active_out";
 
     myLoad();
+    if (! editor.getValue()) {
+        editor.setValue(suppliedSource);
+    }
    // $('#'+divid).modal({minHeight:700, minWidth: 410, maxWidth:450, containerCss:{width:420, height:750}});
 }
 
