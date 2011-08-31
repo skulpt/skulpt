@@ -636,6 +636,14 @@ compute the correct values.
 Input
 -----
 
+.. video:: inputvid
+    :controls:
+    :thumb: _static/inputthumb.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/input.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/input.webm
+
+
 The program in the previous section works fine but is very limited in that it only works with one value for ``total_secs``.  What if we wanted to rewrite the program so that it was more general.  One thing we could
 do is allow the use to enter any value they wish for the number of seconds.  The program would then print the
 proper result for that starting value.
@@ -763,6 +771,14 @@ rules for its mathematical operators that mathematics does.
 Reassignment
 ------------ 
 
+.. video:: reassignmentvid
+    :controls:
+    :thumb: _static/reassignmentthumb.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/reassignment.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/reassignment.webm
+
+
 As we have mentioned previously, it is legal to make more than one assignment to the
 same variable. A new assignment makes an existing variable refer to a new value
 (and stop referring to the old value).
@@ -813,6 +829,13 @@ Line 4 changes the value of ``a`` but does not change the value of
 
 Updating Variables
 ------------------
+
+.. video:: updatevid
+    :controls:
+    :thumb: _static/updatethumb.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/update.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/update.webm
 
 One of the most common forms of reassignment is an **update** where the new
 value of the variable depends on the old.  For example,
@@ -1022,11 +1045,9 @@ Exercises
     #. ``6 % 6``
     #. ``0 % 7``
 
+  .. activecode:: ch02_ex1
 
-
-.. activecode:: ch02_ex1
-
-    print(5%2)
+      print(5**2)
 
 2. You look at the clock and it is exactly 2pm.  You set an alarm to go off
    in 51 hours.  At what time does the alarm go off?
@@ -1052,9 +1073,14 @@ Exercises
 #. Take the sentence: *All work and no play makes Jack a dull boy.*
    Store each word in a separate variable, then print out the sentence on
    one line using ``print``.
+
+   .. actex:: ex_2_5
+
+
 #. Add parenthesis to the expression ``6 * 1 - 2`` to change its value
    from 4 to -6.
 
+   .. actex:: ex_2_6
 
 #. The formula for computing the final amount if one is earning
    compound interest is given on Wikipedia as
@@ -1067,3 +1093,30 @@ Exercises
    rate of 8% (0.08).  Then have the program prompt the user for the number of years,
    `t`, that the money will be compounded for.  Calculate and print the final
    amount after `t` years.      
+
+   .. actex:: ex_2_7
+
+
+#. Write a program that will compute the area of a circle.  Prompt the user to enter the radius and print a nice message 
+   back to the user with the answer.
+
+   .. actex:: ex_2_8
+
+#. Write a program that will compute the area of a rectangle.  Prompt the user to enter the width and height of the rectangle.
+   Print a nice message with the answer.
+
+   .. actex:: ex_2_9
+
+#. Write a program that will compute MPG for a car.  Prompt the user to enter the number of miles driven and the number of 
+   gallons used.  Print a nice message with the answer.
+
+   .. actex:: ex_2_10
+
+#. Write a program that will convert degrees celsius to degrees fahrenheit.
+
+   .. actex:: ex_2_11
+
+#. Write a program that will convert degrees fahrenheit to degrees celsius.
+
+   .. actex:: ex_2_12
+
