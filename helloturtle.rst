@@ -728,21 +728,28 @@ Exercises
 ---------
 #. Write a program that prints ``We like Python's turtles!`` 1000 times. 
 
+   .. actex:: ex_3_1
+
 #. Give three attributes of your cellphone object.  Give three methods of your
    cellphone.  
+
+   .. actex:: ex_3_2
 
 #. Write a program that uses a for loop to print
      |  ``One of the months of the year is January``
      |  ``One of the months of the year is February``
      |  ``One of the months of the year is March``
      |  etc ...
-     
+
+   .. actex:: ex_3_3
+
 #. Assume you have the assignment ``xs = [12, 10, 32, 3, 66, 17, 42, 99, 20]``
     
    a. Write a loop that prints each of the numbers on a new line.
    b. Write a loop that prints each number and its square on a new line.
 
-      
+   .. actex:: ex_3_4
+
 #. Use ``for`` loops to make a turtle draw these regular polygons 
    (regular means all sides the same lengths, all angles the same):  
   
@@ -750,7 +757,9 @@ Exercises
    * A square    
    * A hexagon (six sides)    
    * An octagon (eight sides)
-      
+
+   .. actex:: ex_3_5
+
 #. .. _drunk_student_problem:
 
    A drunk pirate makes a random turn and then takes 100 steps forward, makes
@@ -760,40 +769,48 @@ Exercises
    is ``[160, -43, 270, -97, -43, 200, -940, 17, -86]``.  (Positive angles are
    counter-clockwise.)  Use a turtle to draw the path taken by our drunk
    friend.   
-   
+
+   .. actex:: ex_3_6
+
 #. Enhance your program above to also tell us what the drunk pirate's heading
    is after he has finished stumbling around.
  
-   
+   .. actex:: ex_3_7
+
 #. On a piece of scratch paper, trace the following program and show the drawing.  When you are done, press ``run`` 
    and check your answer.
 
-.. activecode:: exercise_1
-    :nopre:
+   .. actex:: ex_3_8
 
-    import turtle
-    wn = turtle.Screen()
-    tess = turtle.Turtle()
-    tess.right(90)
-    tess.left(3600)
-    tess.right(-90)
-    tess.left(3600)
-    tess.left(3645)
-    tess.forward(-100)
+       import turtle
+       wn = turtle.Screen()
+       tess = turtle.Turtle()
+       tess.right(90)
+       tess.left(3600)
+       tess.right(-90)
+       tess.left(3600)
+       tess.left(3645)
+       tess.forward(-100)
 
 
-10. Write a program to draw a shape like this:
+#. Write a program to draw a shape like this:
 
    .. image:: illustrations/ch03/star.png
    
-     
-11. Write a program to draw a face of a clock that looks something like this:
+   .. actex:: ex_3_9
+
+#. Write a program to draw a face of a clock that looks something like this:
     
    .. image:: illustrations/ch03/tess_clock1.png
-      
-12. Write a program to draw some kind of picture.  Be creative and experiment
+
+   .. actex:: ex_3_10
+
+#. Write a program to draw some kind of picture.  Be creative and experiment
     with the turtle methods provided in turtle_methods_.
 
-13. Create a turtle, and assign it to a variable.  When you print its type,
+   .. actex:: ex_3_11
+
+#. Create a turtle, and assign it to a variable.  When you print its type,
     what do you get?
 
+   .. actex:: ex_3_12
