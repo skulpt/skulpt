@@ -114,26 +114,41 @@ function saveEditor(divName) {
 
 }
 
-function requestCode(divName) {
+function requestCode(divName,sid) {
     var editor = cm_editors[divName+"_code"];
     var url = "/getprog"
     var data = {acid: divName}
-    jQuery.get("/hsblog",{'event':'activecode', 'act':'save', 'div_id':divName}); // Log the run event
+    if (sid !== undefined) {
+        data['sid'] = sid;
+    }
+    jQuery.get("/hsblog",{'event':'activecode', 'act':'load', 'div_id':divName}); // Log the run event
     jQuery.get(url,data, loadEditor);
 }
 
 function loadEditor(data, status, whatever) {
     // function called when contents of database are returned successfully
     var res = eval(data)[0];
-    var editor = cm_editors[res.acid+"_code"];
+    var editor;
+    if (res.sid) {
+        editor = cm_editors[res.acid+"_"+res.sid+"_code"];
+    } else {
+        editor = cm_editors[res.acid+"_code"];
+    }
+
     if (res.source) {
         editor.setValue(res.source);
     }
     // need to get the divId back with the result...
 }
 
-function createActiveCode(divid,suppliedSource) {
-    var edNode = document.getElementById(divid);
+function createActiveCode(divid,suppliedSource,sid) {
+    var eNode;
+    if (sid !== undefined) {
+        edNode = document.getElementById(divid+"_"+sid);
+    } else {
+        edNode = document.getElementById(divid);
+    }
+
     //edNode.style.display = 'none';
     edNode.style.backgroundColor = "white";
     var editor;
@@ -147,16 +162,24 @@ function createActiveCode(divid,suppliedSource) {
                 matchBrackets: true,
                 onKeyEvent:handleEdKeys
             });
+
+    var acblockid;
+    if (sid !== undefined) {
+        acblockid = divid + "_" + sid;
+    } else {
+        acblockid = divid;
+    }
+
     var myRun = function() {
-        runit(divid);
+        runit(acblockid);
     }
     var mySave = function() {
         saveEditor(divid);
     }
     var myLoad = function() {
-        requestCode(divid);
+        requestCode(divid,sid);
     }
-    cm_editors[divid+"_code"] = editor;
+    cm_editors[acblockid+"_code"] = editor;
     var runButton = document.createElement("input");
     runButton.setAttribute('type','button');
     runButton.setAttribute('value','run');
@@ -175,13 +198,13 @@ function createActiveCode(divid,suppliedSource) {
     edNode.appendChild(loadButton);
     edNode.appendChild(document.createElement('br'));
     var newCanvas = edNode.appendChild(document.createElement("canvas"));
-    newCanvas.id = divid+"_canvas";
+    newCanvas.id = acblockid+"_canvas";
     newCanvas.height = 400;
     newCanvas.width = 400;
     newCanvas.style.border = '2px solid black';
     newCanvas.style.display = 'none';
     var newPre = edNode.appendChild(document.createElement("pre"));
-    newPre.id = divid + "_pre";
+    newPre.id = acblockid + "_pre";
     newPre.className = "active_out";
 
     myLoad();
