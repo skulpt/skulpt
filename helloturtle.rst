@@ -157,8 +157,8 @@ screen until we click on it.
        user's responses in a variable, and modify the color of the window
        according to the user's wishes.
        (Hint: you can find a list of permitted color names at 
-       http://www.tcl.tk/man/tcl8.4/TkCmd/colors.htm.  It includes some quite
-       unusual ones, like "peach puff"  and "HotPink".)    
+       http://www.w3schools.com/html/html_colornames.asp.  It includes some quite
+       unusual ones, like "PeachPuff"  and "HotPink".)
     #. Do similar changes to allow the user, at runtime, to set tess' color.
     #. Do the same for the width of tess' pen.  *Hint:* your dialog with the 
        user will return a string, but tess' ``pensize`` method 
