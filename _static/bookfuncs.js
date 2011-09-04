@@ -208,6 +208,9 @@ function createActiveCode(divid,suppliedSource,sid) {
     newPre.className = "active_out";
 
     myLoad();
+    if (! suppliedSource ) {
+        suppliedSource = '\n\n\n\n\n';
+    }
     if (! editor.getValue()) {
         editor.setValue(suppliedSource);
     }
