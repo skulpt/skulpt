@@ -143,11 +143,14 @@ function loadEditor(data, status, whatever) {
 
 function createActiveCode(divid,suppliedSource,sid) {
     var eNode;
+    var acblockid;
     if (sid !== undefined) {
-        edNode = document.getElementById(divid+"_"+sid);
+        acblockid = divid + "_" + sid;
     } else {
-        edNode = document.getElementById(divid);
+        acblockid = divid;
     }
+
+    edNode = document.getElementById(acblockid);
 
     //edNode.style.display = 'none';
     edNode.style.backgroundColor = "white";
@@ -163,12 +166,6 @@ function createActiveCode(divid,suppliedSource,sid) {
                 onKeyEvent:handleEdKeys
             });
 
-    var acblockid;
-    if (sid !== undefined) {
-        acblockid = divid + "_" + sid;
-    } else {
-        acblockid = divid;
-    }
 
     var myRun = function() {
         runit(acblockid);
@@ -185,17 +182,19 @@ function createActiveCode(divid,suppliedSource,sid) {
     runButton.setAttribute('value','run');
     runButton.onclick = myRun;
     edNode.appendChild(runButton);
-    var saveButton = document.createElement("input");
-    saveButton.setAttribute('type','button');
-    saveButton.setAttribute('value','save');
-    saveButton.onclick = mySave;
-    edNode.appendChild(saveButton);
+    if (sid === undefined) { // We don't need load and save buttons for grading
+        var saveButton = document.createElement("input");
+        saveButton.setAttribute('type','button');
+        saveButton.setAttribute('value','save');
+        saveButton.onclick = mySave;
+        edNode.appendChild(saveButton);
 
-    var loadButton = document.createElement("input");
-    loadButton.setAttribute('type','button');
-    loadButton.setAttribute('value','load');
-    loadButton.onclick = myLoad;
-    edNode.appendChild(loadButton);
+        var loadButton = document.createElement("input");
+        loadButton.setAttribute('type','button');
+        loadButton.setAttribute('value','load');
+        loadButton.onclick = myLoad;
+        edNode.appendChild(loadButton);
+    }
     edNode.appendChild(document.createElement('br'));
     var newCanvas = edNode.appendChild(document.createElement("canvas"));
     newCanvas.id = acblockid+"_canvas";
