@@ -196,6 +196,16 @@ if (! TurtleGraphics) {
     TurtleCanvas.prototype.turtles = function() {
         return TurtleGraphics.turtleList;
     }
+
+    // check if all turtles are done
+    allDone = function() {
+        var allDone = true;
+        for (var tix in TurtleGraphics.turtleList) {
+            var theT = TurtleGraphics.turtleList[tix];
+            allDone = allDone && (theT.aCount >= theT.drawingEvents.length);
+        }
+        return allDone;
+    }
     //
     //  This is the function that provides the animation
     //
@@ -301,7 +311,7 @@ if (! TurtleGraphics) {
                     t.drawturtle(currentHead.toAngle(), newp); // just use currentHead
                 }
                 //if (t.aCount >= t.drawingEvents.length) {
-                if (TurtleGraphics.renderClock > TurtleGraphics.eventCount) {
+                if (TurtleGraphics.renderClock > TurtleGraphics.eventCount && allDone() ){
                     t.turtleCanvas.doneAnimating(t);
                 }
             }
@@ -1116,8 +1126,12 @@ var $builtinmodule = function(name) {
             self.theTurtle.goto(nx, ny);
         });
 
-        $loc.setpos = $loc.goto;
-        $loc.setposition = $loc.goto;
+        $loc.setposition = new Sk.builtin.func(function(self,nx,ny) {
+            self.theTurtle.up();
+            self.theTurtle.goto(nx,ny);
+            self.theTurtle.down();
+        });
+        $loc.setpos = $loc.setposition;
 
         $loc.setx = new Sk.builtin.func(function(self, nx) {
             self.theTurtle.goto(nx, self.theTurtle.GetY());
