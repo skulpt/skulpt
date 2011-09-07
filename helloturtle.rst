@@ -267,7 +267,7 @@ message for each friend.
     :nocanvas:
 
     for friendName in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
-        print("Hi " + friendName + ".  Please come to my party on Saturday!")
+        print("Hi ", friendName, "  Please come to my party on Saturday!")
       
 
 Take a look at the output produced when you press the ``run`` button.  There is one line printed for each friend.  Here's how it works:
@@ -276,7 +276,7 @@ Take a look at the output produced when you press the ``run`` button.  There is 
 * **friendName** in this ``for`` statement is called the **loop variable**.  
 * The list of names in the square brackets is called a Python **list**.  Lists are very useful.  We will have much
   more to say about them later.
-* Lines 2 and 3 are the **loop body**.  The loop body is always
+* Line 2  is the **loop body**.  The loop body is always
   indented. The indentation determines exactly what statements are "in the
   loop".  The loop body is performed one time for each name in the list.
 * On each *iteration* or *pass* of the loop, first a check is done to see if
@@ -323,7 +323,7 @@ the buttons.  You can see the value of ``friendName`` change as the loop iterate
 .. codelens:: vtest
 
     for friendName in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
-        print("Hi " + friendName + ". Please come to my party!")
+        print("Hi " + friendName + "  Please come to my party!")
 
 .. index:: range function, chunking
 
