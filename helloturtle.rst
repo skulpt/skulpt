@@ -267,8 +267,7 @@ message for each friend.
     :nocanvas:
 
     for friendName in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
-        invitation = "Hi " + friendName + ".  Please come to my party on Saturday!"
-        print(invitation) 
+        print("Hi " + friendName + ".  Please come to my party on Saturday!")
       
 
 Take a look at the output produced when you press the ``run`` button.  There is one line printed for each friend.  Here's how it works:
@@ -323,10 +322,8 @@ the buttons.  You can see the value of ``friendName`` change as the loop iterate
 
 .. codelens:: vtest
 
-    friendList = ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi"]
-    for friendName in friendList:
-        invitation = "Hi " + friendName + ". Please come to my party!"
-        print(invitation)
+    for friendName in ["Joe", "Amy", "Brad", "Angelina", "Zuki", "Thandi", "Paris"]:
+        print("Hi " + friendName + ". Please come to my party!")
 
 .. index:: range function, chunking
 
