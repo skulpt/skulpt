@@ -45,7 +45,7 @@ if (! TurtleGraphics) {
         this.lly = -this.canvas.height / 2;
         this.urx = this.canvas.width / 2;
         this.ury = this.canvas.height / 2;
-
+        this.setup(this.canvas.width,this.canvas.height);
         this.tlist = []
 
         this.delay = 50;
@@ -218,11 +218,12 @@ if (! TurtleGraphics) {
                 clearRect(llx, lly, (urx - llx), (ury - lly));
                 //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
             }
+            var incr = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID].getCounter();
+            console.log("incr = " + incr);
+            TurtleGraphics.renderClock += incr;
+
             for (var tix in TurtleGraphics.turtleList) {
                 var t = TurtleGraphics.turtleList[tix]
-                var incr = t.getRenderCounter();
-                console.log("incr = " + incr);
-                TurtleGraphics.renderClock += incr;
                 if (t.aCount >= t.drawingEvents.length)
                     t.aCount = t.drawingEvents.length - 1;
                 moveTo(0, 0);
@@ -311,7 +312,7 @@ if (! TurtleGraphics) {
                     t.drawturtle(currentHead.toAngle(), newp); // just use currentHead
                 }
                 //if (t.aCount >= t.drawingEvents.length) {
-                if (TurtleGraphics.renderClock > TurtleGraphics.eventCount && allDone() ){
+                if (TurtleGraphics.renderClock > TurtleGraphics.eventCount ){ // && allDone() ){
                     t.turtleCanvas.doneAnimating(t);
                 }
             }
