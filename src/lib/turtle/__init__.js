@@ -281,7 +281,11 @@ if (! TurtleGraphics) {
                             fillStyle = col;
                         }
                         else if (oper[0] == "CI") {  // Circle
+                            beginPath();
                             arc(oper[1], oper[2], Math.abs(oper[3]), 0, oper[4], (oper[3] > 0));
+                            if (! filling) {
+                                closePath();
+                            }
                             stroke();
                         }
                         else if (oper[0] == "WT") { // write
