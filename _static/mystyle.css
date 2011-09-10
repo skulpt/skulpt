@@ -24,25 +24,30 @@ img.bookfig {
 }
 .ac_caption {
     text-align: center;
+    font-weight: bold;
 }
 
+.ac_caption_text {
+    font-weight: normal;
+}
+
+.cl_caption {
+    font-weight: bold;
+}
 
 .ac_caption:before {
     content: "ActiveCode: " counter(activecode) " ";
     counter-increment: activecode;
 }
-.cl_caption:after {
-    content: " " counter(codelens);
+.cl_caption:before {
+    content: "CodeLens: " counter(codelens) " ";
     counter-increment: codelens;
 }
 
 body {
-    counter-reset: activecode;
+    counter-reset: activecode codelens;
 }
 
-h1 {
-    counter-reset: codelens;
-}
 #simplemodal-overlay {background-color:#000; cursor:wait;}
 
 /* Container */
