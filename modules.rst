@@ -13,6 +13,13 @@ Modules and Getting Help
 Modules
 -------
 
+.. video:: inputvid
+    :controls:
+    :thumb: _static/modules.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/modules.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/modules.webm
+
 A **module** is a file containing Python definitions and statements intended
 for use in other Python programs. There are many Python modules that come with
 Python as part of the **standard library**. We have already used one of these quite extensively,
@@ -98,6 +105,15 @@ In order to use something contained in a module, we use the `dot` notation, prov
 this as: "In the module turtle, access the Python element called Turtle".  
 
 We will now turn our attention to a few other modules that you might find useful.
+
+
+.. video:: inputvid
+    :controls:
+    :thumb: _static/mathrandommodule.png
+
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/mathrandommodule.mov
+    http://knuth.luther.edu/~pythonworks/thinkcsVideos/mathrandommodule.webm
+
 
 The `math` module
 -----------------
