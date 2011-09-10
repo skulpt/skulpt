@@ -22,7 +22,27 @@ img.bookfig {
 .video_popup {
     display: none;
 }
+.ac_caption {
+    text-align: center;
+}
 
+
+.ac_caption:before {
+    content: "ActiveCode: " counter(activecode) " ";
+    counter-increment: activecode;
+}
+.cl_caption:after {
+    content: " " counter(codelens);
+    counter-increment: codelens;
+}
+
+body {
+    counter-reset: activecode;
+}
+
+h1 {
+    counter-reset: codelens;
+}
 #simplemodal-overlay {background-color:#000; cursor:wait;}
 
 /* Container */
