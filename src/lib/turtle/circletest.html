@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <script type="text/javascript" src="__init__.js"> </script>
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+  </head>
+
+  <body>
+    <canvas id="mycanvas"  height="500" width="800"
+	style="border-style: solid;"></canvas>
+
+    <script>
+      var t = new TurtleGraphics.Turtle();
+      var colors = ["yellow","red","purple","blue"];
+      for (var i =0; i<4;i++) {
+          t.set_pen_color(colors[i]);
+          t.circle(100);
+          t.pen_up();
+          t.forward(100);
+          t.pen_down();
+      }
+    </script>
+  </body>
+</html>

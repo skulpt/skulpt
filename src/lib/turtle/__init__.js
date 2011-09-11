@@ -31,7 +31,7 @@ if (! TurtleGraphics) {
         if (options.canvasID) {
             this.canvasID = options.canvasID;
         }
-        TurtleGraphics.canvasInit = true;
+
         this.canvas = document.getElementById(this.canvasID);
         this.context = this.canvas.getContext('2d');
         //this.canvas.style.display = 'block';
@@ -46,6 +46,7 @@ if (! TurtleGraphics) {
         this.urx = this.canvas.width / 2;
         this.ury = this.canvas.height / 2;
         this.setup(this.canvas.width,this.canvas.height);
+        TurtleGraphics.canvasInit = true;
         this.tlist = []
 
         this.delay = 50;
@@ -211,8 +212,6 @@ if (! TurtleGraphics) {
     //
     render = function () {
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d');
-        var currentHeadInfo;
-        var currentHead = new Vector(1,0,0);
         with (context) {
             with (TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID]) {
                 clearRect(llx, lly, (urx - llx), (ury - lly));
@@ -227,6 +226,8 @@ if (! TurtleGraphics) {
                 if (t.aCount >= t.drawingEvents.length)
                     t.aCount = t.drawingEvents.length - 1;
                 moveTo(0, 0);
+                var currentPos = new Vector(0,0,0);
+                var currentHead = new Vector(1,0,0);
                 lineWidth = t.get_pen_width();
                 lineCap = 'round';
                 lineJoin = 'round';
@@ -244,13 +245,13 @@ if (! TurtleGraphics) {
                             lineTo(oper[3], oper[4]);
                             strokeStyle = oper[5];
                             stroke();
-                            currentHeadInfo = oper;
+                            currentPos = new Vector(oper[3],oper[4],0);
                             if (! filling)
                                 closePath();
                         }
                         else if (oper[0] == "MT") {  // move to
                             moveTo(oper[3], oper[4]);
-                            currentHeadInfo = oper;
+                            currentPos = new Vector(oper[3],oper[4],0);
                         }
                         else if (oper[0] == "BF") {  // begin fill
                             beginPath();
@@ -309,11 +310,9 @@ if (! TurtleGraphics) {
                     }
                 }
                 t.aCount += incr;
-                if (t.visible && currentHeadInfo) {
+                if (t.visible) {
                     // draw the turtle
-                    var tsize = 5 * t.turtleCanvas.lineScale;
-                    var newp = new Vector(currentHeadInfo[3], currentHeadInfo[4], 0);
-                    t.drawturtle(currentHead.toAngle(), newp); // just use currentHead
+                    t.drawturtle(currentHead.toAngle(), currentPos); // just use currentHead
                 }
                 //if (t.aCount >= t.drawingEvents.length) {
                 if (TurtleGraphics.renderClock > TurtleGraphics.eventCount ){ // && allDone() ){
@@ -324,21 +323,6 @@ if (! TurtleGraphics) {
     }
 
 
-    function drawSimpleTurtle(newp, endPt, head) {
-        // draw line to 30 degrees left and 5 units long
-        // draw line to 30 degrees right and 5 units long
-        var portWing = head.rotateNormal(t.normal.cross(head), t.normal, -30 * Degree2Rad);
-        var endPt = newp.linear(1, tsize, portWing);
-        beginPath();
-        moveTo(newp[0], newp[1]);
-        lineTo(endPt[0], endPt[1]);
-        var starWing = head.rotateNormal(t.normal.cross(head), t.normal, 30 * Degree2Rad);
-        endPt = newp.linear(1, tsize, starWing);
-        moveTo(newp[0], newp[1]);
-        lineTo(endPt[0], endPt[1]);
-        closePath();
-        stroke();
-    }
 
     // Constructor for Turtle objects
     function Turtle() {
@@ -920,7 +904,7 @@ if (! TurtleGraphics) {
         if (this.animate) {
             this.addDrawingEvent(["ST",this.position[0],this.position[1],this.heading.toAngle()]);
         } else
-            t.drawturtle();
+            this.drawturtle();
     }
 
     function clear_canvas(canId) {
@@ -1090,6 +1074,13 @@ var $builtinmodule = function(name) {
     // class
     Sk.tg = TurtleGraphics;
 
+    var checkArgs = function(expected, actual, func) {
+        if (actual != expected ) {
+            throw new Sk.builtin.TypeError(func + " takes exactly " + expected +
+                    " positional argument (" + actual + " given)")
+        }
+    }
+
     var turtle = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self) {
             TurtleGraphics.defaults = {canvasID: Sk.canvas, animate: true, degrees: true};
@@ -1103,12 +1094,14 @@ var $builtinmodule = function(name) {
         // Move and Draw
         //
         $loc.forward = new Sk.builtin.func(function(self, dist) {
+            checkArgs(2,arguments.length,"forward()");
             self.theTurtle.forward(dist);
         });
 
         $loc.fd = $loc.forward;
 
         $loc.backward = new Sk.builtin.func(function(self, dist) {
+            checkArgs(2,arguments.length,"backward()");
             self.theTurtle.forward(-dist);
         });
 
@@ -1116,22 +1109,26 @@ var $builtinmodule = function(name) {
         $loc.bk = $loc.backward;
 
         $loc.right = new Sk.builtin.func(function(self, angle) {
+            checkArgs(2,arguments.length,"right()");
             self.theTurtle.turn(angle);
         });
 
         $loc.rt = $loc.right;
 
         $loc.left = new Sk.builtin.func(function(self, angle) {
+            checkArgs(2,arguments.length,"left()");
             self.theTurtle.turn(-angle);
         });
 
         $loc.lt = $loc.left;
 
         $loc.goto = new Sk.builtin.func(function(self, nx, ny) {
+            checkArgs(3,arguments.length,"goto()");
             self.theTurtle.goto(nx, ny);
         });
 
         $loc.setposition = new Sk.builtin.func(function(self,nx,ny) {
+            checkArgs(3,arguments.length,"setposition()");
             self.theTurtle.up();
             self.theTurtle.goto(nx,ny);
             self.theTurtle.down();
@@ -1139,14 +1136,17 @@ var $builtinmodule = function(name) {
         $loc.setpos = $loc.setposition;
 
         $loc.setx = new Sk.builtin.func(function(self, nx) {
+            checkArgs(2,arguments.length,"setx()");
             self.theTurtle.goto(nx, self.theTurtle.GetY());
         });
 
         $loc.sety = new Sk.builtin.func(function(self, ny) {
+            checkArgs(2,arguments.length,"sety()");
             self.theTurtle.goto(self.theTurtle.GetX(), ny);
         });
 
         $loc.setheading = new Sk.builtin.func(function(self, newhead) {
+            checkArgs(2,arguments.length,"setheading()");
             return self.theTurtle.set_heading(newhead);
         });
 
@@ -1182,10 +1182,12 @@ var $builtinmodule = function(name) {
         // Tell Turtle's state
         //
         $loc.heading = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"heading()");
             return self.theTurtle.get_heading();
         });
 
         $loc.position = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"position()");
             var res = self.theTurtle.get_position();
             var x = new Sk.builtin.tuple([res[0],res[1]]);
             return x;
@@ -1194,11 +1196,13 @@ var $builtinmodule = function(name) {
         $loc.pos = $loc.position;
 
         $loc.xcor = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"xcor()");
             var res = self.theTurtle.getx();
             return res;
         });
 
         $loc.ycor = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"ycor()");
             var res = self.theTurtle.gety();
             return res;
         });
@@ -1232,6 +1236,7 @@ var $builtinmodule = function(name) {
         //
 
         $loc.up = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"up()");
             self.theTurtle.pen_up();
         });
 
@@ -1239,6 +1244,7 @@ var $builtinmodule = function(name) {
         $loc.pu = $loc.up;
 
         $loc.down = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"down()");
             self.theTurtle.pen_down();
         });
 
@@ -1246,12 +1252,14 @@ var $builtinmodule = function(name) {
         $loc.pd = $loc.down;
 
         $loc.width = new Sk.builtin.func(function(self, w) {
+            checkArgs(2,arguments.length,"width()");
             self.theTurtle.set_pen_width(w);
         });
 
         $loc.pensize = $loc.width;
 
         $loc.isdown = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"isdown()");
             return self.theTurtle.get_pen();
         });
 
@@ -1262,6 +1270,7 @@ var $builtinmodule = function(name) {
         //
 
         $loc.fillcolor = new Sk.builtin.func(function(self, color) {
+            checkArgs(2,arguments.length,"fillcolor()");
             if (color) {
                 color = color.v || self.theTurtle.context.fillStyle;
                 self.theTurtle.set_fill_color(color);
@@ -1288,10 +1297,12 @@ var $builtinmodule = function(name) {
         //
 
         $loc.begin_fill = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"begin_fill()");
             self.theTurtle.begin_fill();
         });
 
         $loc.end_fill = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"end_fill()");
             self.theTurtle.end_fill();
         });
 
@@ -1311,24 +1322,29 @@ var $builtinmodule = function(name) {
         });
 
         $loc.showturtle = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"showturtle()");
             self.theTurtle.showturtle();
         });
         $loc.st = $loc.showturtle;
 
         $loc.hideturtle = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"hideturtle()");
             self.theTurtle.hideturtle();
         });
         $loc.ht = $loc.hideturtle;
 
         $loc.isvisible = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"isvisible()");
             self.theTurtle.isvisible()
         });
 
         $loc.stamp = new Sk.builtin.func(function(self) {
+            checkArgs(1,arguments.length,"stamp()");
             self.theTurtle.stamp();
         });
 
         $loc.shape = new Sk.builtin.func(function(self, s) {
+            checkArgs(2,arguments.length,"shape()");
             self.theTurtle.shape(s.v);
         });
 
