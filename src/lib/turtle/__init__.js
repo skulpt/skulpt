@@ -98,6 +98,7 @@ if (! TurtleGraphics) {
     TurtleCanvas.prototype.startAnimating = function(t) {
         this.intervalId = setInterval(render, this.delay);
         this.addToCanvas(t);
+        Sk.isTurtleProgram = true;
     }
 
     TurtleCanvas.prototype.doneAnimating = function(t) {
@@ -106,6 +107,7 @@ if (! TurtleGraphics) {
             this.tlist.splice(idx, 1);
         if (this.tlist.length == 0) {
             clearInterval(this.intervalId);
+            $(Sk.runButton).removeAttr('disabled');
         }
 
     }
@@ -218,7 +220,7 @@ if (! TurtleGraphics) {
                 //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
             }
             var incr = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID].getCounter();
-            console.log("incr = " + incr);
+
             TurtleGraphics.renderClock += incr;
 
             for (var tix in TurtleGraphics.turtleList) {
@@ -1404,7 +1406,6 @@ var $builtinmodule = function(name) {
         });
 
         var myfunc = function(self, width, height, startx, starty) {
-            console.log("width = " + width);
             self.theScreen.setup(width,height);
         }
         // this should allow for named parameters
