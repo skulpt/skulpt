@@ -75,9 +75,10 @@ function builtinRead(x) {
     return Sk.builtinFiles["files"][x];
 }
 
-function runit(myDiv) {
+function runit(myDiv,theButton) {
     //var prog = document.getElementById(myDiv + "_code").value;
     jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
+    $(theButton).attr('disabled','disabled');
     var editor = cm_editors[myDiv+"_code"];
     var prog = editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
@@ -103,6 +104,7 @@ function runit(myDiv) {
     } catch (e) {
         alert(e);
     }
+    $(theButton).removeAttr('disabled');
 }
 
 function saveEditor(divName) {
@@ -211,6 +213,8 @@ function createActiveCode(divid,suppliedSource,sid) {
         suppliedSource = '\n\n\n\n\n';
     }
     if (! editor.getValue()) {
+        suppliedSource = suppliedSource.replace(new RegExp('%22','g'),'"');
+        suppliedSource = suppliedSource.replace(new RegExp('%27','g'),"'");
         editor.setValue(suppliedSource);
     }
    // $('#'+divid).modal({minHeight:700, minWidth: 410, maxWidth:450, containerCss:{width:420, height:750}});
