@@ -79,6 +79,10 @@ function runit(myDiv,theButton) {
     //var prog = document.getElementById(myDiv + "_code").value;
     jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
     $(theButton).attr('disabled','disabled');
+    Sk.isTurtleProgram = false;
+    if (theButton !== undefined) {
+        Sk.runButton = theButton;
+    }
     var editor = cm_editors[myDiv+"_code"];
     var prog = editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
@@ -104,7 +108,9 @@ function runit(myDiv,theButton) {
     } catch (e) {
         alert(e);
     }
-    $(theButton).removeAttr('disabled');
+    if (! Sk.isTurtleProgram ) {
+        $(theButton).removeAttr('disabled');
+    }
 }
 
 function saveEditor(divName) {
