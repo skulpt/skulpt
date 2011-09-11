@@ -974,39 +974,84 @@ Exercises
     square when the program ends.)
     
     .. image:: illustrations/ch04/five_squares.png
+
+    .. actex:: ex_5_1
+
+        import turtle
+
+        def drawSquare(t, sz):
+            """Get turtle t to draw a square of sz side"""
+
+            for i in range(4):
+                t.forward(sz)             
+                t.left(90)
+            
+        wn = turtle.Screen()
+        wn.bgcolor("lightgreen")
+
+        alex = turtle.Turtle()
+        alex.color("pink")
+
+        drawSquare(alex,20)
+
+        wn.exitonclick()
+
     
 #.  Write a program to draw this. Assume the innermost square is 20 units per side,
     and each successive square is 20 units bigger, per side, than the one inside it.   
     
     .. image:: illustrations/ch04/nested_squares.png
 
-#.  Write a non-fruitful function `drawPoly(t, n, sz)` which makes a turtle
+
+    .. actex:: ex_5_2
+
+
+#.  Write a non-fruitful function `drawPoly(someturtle, somesides, somesize)` which makes a turtle
     draw a regular polygon.
     When called with `drawPoly(tess, 8, 50)`, it will draw a shape like this:
 
     .. image:: illustrations/ch04/regularpolygon.png
 
+    .. actex:: ex_5_3
+
+
 #. Draw this pretty pattern.
 
-   .. image:: illustrations/ch04/tess08.png    
+    .. image:: illustrations/ch04/tess08.png    
    
+    .. actex:: ex_5_4
+
 #.  The two spirals in this picture differ only by the turn angle.  Draw both.
 
     .. image:: illustrations/ch04/tess_spirals.png
        :height: 240
        
-#.  Write a non-fruitful function `drawEquitriangle(t, sz)` which calls `drawPoly` from the 
+    .. actex:: ex_5_5
+
+#.  Write a non-fruitful function `drawEquitriangle(someturtle, somesize)` which calls `drawPoly` from the 
     previous question to have its turtle draw a equilateral triangle. 
     
+    .. actex:: ex_5_6
+
+
+
 #.  Write a fruitful function `sumTo(n)` that returns the sum of all integer numbers up to and 
     including `n`.   So `sumTo(10)` would be `1+2+3...+10` which would return the value 55.
+
+    .. actex:: ex_5_7
+
     
 #.  Write a function `areaOfCircle(r)` which returns the area of a circle of radius `r`.
 
+    .. actex:: ex_5_8
+
+
 #.  Write a non-fruitful function to draw a five pointed star, where the length of each side is 100 units.
 
-     .. image:: illustrations/ch04/star.png
+    .. image:: illustrations/ch04/star.png
      
+    .. actex:: ex_5_9
+
 #.  Extend your program above.  Draw five stars, but between each, pick up the pen, 
     move forward by 350 units, turn right by 144, put the pen down, and draw the next star.
     You'll get something like this:
@@ -1015,9 +1060,13 @@ Exercises
     
     What would it look like if you didn't pick up the pen?
 
+    .. actex:: ex_5_10
+
 
 #.  Extend the star function to draw an n pointed star.  (Hint: n must be an odd number greater or
     equal to 3).
+
+    .. actex:: ex_5_11
 
 
 .. toctree::
