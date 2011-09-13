@@ -811,3 +811,7 @@ Exercises
     what do you get?
 
    .. actex:: ex_3_12
+
+#. Write a program to draw a Sprite where the number of legs is provided by the user.
+
+   .. actex:: ex_3_13
