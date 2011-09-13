@@ -1040,7 +1040,17 @@ Exercises
 
     .. actex:: ex_5_7
 
-    
+        from test import testEqual
+
+        def sumTo(n):
+            # your code here
+
+        # Now lets see how well this works
+        t = sumTo(0)
+        testEqual(t,0)
+        testEqual(sumTo(10),55)
+        testEqual(sumTo(1),1)
+
 #.  Write a function `areaOfCircle(r)` which returns the area of a circle of radius `r`.
 
     .. actex:: ex_5_8
