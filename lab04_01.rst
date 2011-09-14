@@ -34,12 +34,12 @@ here is the code for the ``drawSquare`` function.
 
 .. activecode:: l0401
 
-    def draw_square(t, sz):
-     """Make turtle t draw a square of sz."""
+    def drawSquare(t, sz):
+        """Make turtle t draw a square of sz."""
 
-     for i in range(4):
-         t.forward(sz)
-         t.left(90)
+        for i in range(4):
+            t.forward(sz)
+            t.left(90)
 
 
 Although this isn't going to do anything if you click on the run button,
