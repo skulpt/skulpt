@@ -810,8 +810,8 @@ if (! TurtleGraphics) {
             while (rs.length < 2) rs = "0" + rs;
             while (gs.length < 2) gs = "0" + gs;
             while (bs.length < 2) bs = "0" + bs;
-
-            this.penStyle = "#" + rs + gs + bs;
+            c = "#" + rs + gs + bs;
+            this.penStyle = c;
         }
 
         this.context.strokeStyle = c;
@@ -819,8 +819,20 @@ if (! TurtleGraphics) {
             this.addDrawingEvent(["TC", c]);
     }
 
-    Turtle.prototype.set_fill_color = function (c) {
-        this.fillStyle = c;
+    Turtle.prototype.set_fill_color = function (c, g, b) {
+        if (typeof(c) == "string") {
+            this.fillStyle = c;
+        } else {
+            var rs = c.toString(16);
+            var gs = g.toString(16);
+            var bs = b.toString(16);
+            while (rs.length < 2) rs = "0" + rs;
+            while (gs.length < 2) gs = "0" + gs;
+            while (bs.length < 2) bs = "0" + bs;
+            c = "#" + rs + gs + bs;
+            this.fillStyle = c;
+        }
+
         this.context.fillStyle = c;
         if (this.animate)
             this.addDrawingEvent(["FC", c]);
