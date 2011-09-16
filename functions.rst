@@ -1047,13 +1047,27 @@ Exercises
 
         # Now lets see how well this works
         t = sumTo(0)
-        testEqual(t,0)
-        testEqual(sumTo(10),55)
-        testEqual(sumTo(1),1)
+        testEqual(t, 0)
+        t = sumTo(10)
+        testEqual(t, 55)
+        t = sumTo(1)
+        testEqual(t,1)
 
-#.  Write a function `areaOfCircle(r)` which returns the area of a circle of radius `r`.
+#.  Write a function `areaOfCircle(r)` which returns the area of a circle of radius `r`.  Make sure you use the math module in your solution.
 
     .. actex:: ex_5_8
+
+        from test import testEqual
+
+        def areaOfCircle(r):
+            # your code here
+
+        t = areaOfCircle(0)
+        testEqual(t,0)
+        t = areaOfCircle(1)
+        testEqual(t,math.pi)
+        t = areaOfCircle(100)
+        testEqual(t,31415.926535897932)
 
 
 #.  Write a non-fruitful function to draw a five pointed star, where the length of each side is 100 units.
