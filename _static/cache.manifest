@@ -1,6 +1,6 @@
 CACHE MANIFEST
-# rev 2
-CACHE
+# rev 4
+CACHE:
 /build/app_a.html
 /build/app_b.html
 /build/app_c.html
@@ -55,33 +55,33 @@ CACHE
 /build/_static/codemirror.css
 /build/_static/theme/default.css
 /build/_static/edu-python.css
-/build/_staticactivecodethumb.png
-/build/_staticadvrange.png
-/build/_staticassignment.png
-/build/_staticassociativitythumb.png
-/build/_staticcontents.png
-/build/_staticcy.png
-/build/_staticexpressions.png
-/build/_staticfile.png
-/build/_staticfor_loop.png
-/build/_staticfunction_intro.png
-/build/_staticgoldygopher.png
-/build/_staticinputthumb.png
-/build/_staticmathrandommodule.png
-/build/_staticminus.png
-/build/_staticmodules.png
-/build/_staticnavigation.png
-/build/_staticnorse-logo.png
-/build/_staticplus.png
-/build/_staticprecedencethumb.png
-/build/_staticreassignmentthumb.png
-/build/_staticthinkcspy.png
-/build/_staticturtleintro.png
-/build/_staticupdatethumb.png
-/build/_staticvaluesNtypes.png
-/build/_staticx.png
-/build/_staticLutherBellPic.jpg
-/build/_staticlutherlogo.jpg
+/build/_static/activecodethumb.png
+/build/_static/advrange.png
+/build/_static/assignment.png
+/build/_static/associativitythumb.png
+/build/_static/contents.png
+/build/_static/cy.png
+/build/_static/expressions.png
+/build/_static/file.png
+/build/_static/for_loop.png
+/build/_static/function_intro.png
+/build/_static/goldygopher.png
+/build/_static/inputthumb.png
+/build/_static/mathrandommodule.png
+/build/_static/minus.png
+/build/_static/modules.png
+/build/_static/navigation.png
+/build/_static/norse-logo.png
+/build/_static/plus.png
+/build/_static/precedencethumb.png
+/build/_static/reassignmentthumb.png
+/build/_static/thinkcspy.png
+/build/_static/turtleintro.png
+/build/_static/updatethumb.png
+/build/_static/valuesNtypes.png
+/build/_static/x.png
+/build/_static/LutherBellPic.jpg
+/build/_static/lutherlogo.jpg
 /build/_images/blackboxfun.png
 /build/_images/blackboxfun1.png
 /build/_images/blackboxfun10.png
@@ -1228,5 +1228,5 @@ CACHE
 /build/_images/while_flow8.png
 /build/_images/while_flow9.png
 # todo explicitly add all of the dynamic calls to network
-NETWORK
+NETWORK:
 *
