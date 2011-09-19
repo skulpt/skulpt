@@ -487,6 +487,13 @@ But this example demonstrates that that is clearly not how Python operates.
 The Accumulator Pattern
 -----------------------
 
+.. video:: function_accumulator_pattern
+   :controls:
+   :thumb: _static/accumulatorpattern.png
+
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/accumulatorpattern.mov
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/accumulatorpattern.webm
+
 In the previous example, we wrote a function that computes the square of a number.  The algorithm we used
 in the function was simple: multiply the number by itself.
 In this section we will reimplement the square function and use a different algorithm, one that relies on addition instead
@@ -1036,7 +1043,8 @@ Exercises
 
 
 #.  Write a fruitful function `sumTo(n)` that returns the sum of all integer numbers up to and 
-    including `n`.   So `sumTo(10)` would be `1+2+3...+10` which would return the value 55.
+    including `n`.   So `sumTo(10)` would be `1+2+3...+10` which would return the value 55.  Use the
+    equation  (n * (n + 1)) / 2.
 
     .. actex:: ex_5_7
 
@@ -1086,6 +1094,35 @@ Exercises
     .. actex:: ex_5_12
 
 
+#.  Rewrite the function `sumTo(n)` that returns the sum of all integer numbers up to and 
+    including `n`.   This time use the accumulator pattern.
+
+    .. actex:: ex_5_13
+
+        from test import testEqual
+
+        def sumTo(n):
+            # your code here
+
+        # Now lets see how well this works
+        t = sumTo(0)
+        testEqual(t,0)
+        testEqual(sumTo(10),55)
+        testEqual(sumTo(1),1)
+
+
+#.  Write a function called `mySqrt` that will approximate the square root of a number, call it n, by using 
+    Newton's algorithm.
+    Newton's approach is an iterative guessing algorithm where the initial guess is n/2 and each subsequent guess
+    is computed using   the formula:  newguess = (1/2) * (oldguess + (n/oldguess)).
+
+    .. actex:: ex_5_14
+
+
+#.  Write a function called `myPi` that will return an approximation of PI (3.14159...).  Use the Madhava approximation
+    as described in class.
+
+    .. actex:: ex_5_15
 
 .. toctree::
     :hidden:
