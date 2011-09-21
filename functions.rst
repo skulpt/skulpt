@@ -197,6 +197,10 @@ been defined, we can call it as many times as we like with whatever actual param
 
     wn.exitonclick()
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_1
+
 Functions that return values
 ----------------------------
 
@@ -366,6 +370,11 @@ function returns.
     single: variable; local
     single: lifetime
 
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_2
+
 Variables and parameters are local
 ----------------------------------
 
@@ -483,6 +492,9 @@ But this example demonstrates that that is clearly not how Python operates.
     print(z)
 
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_3
 
 The Accumulator Pattern
 -----------------------
@@ -568,6 +580,10 @@ Here is the same program in codelens.  Step thru the function and watch the "run
     functional decomposition
     generalization
     abstraction
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_4
 
 Functions can call other functions
 ----------------------------------
@@ -723,6 +739,10 @@ demonstrates two:
 
 .. index:: flow of execution
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_5
+
 Flow of execution summary
 -------------------------
 
@@ -774,6 +794,10 @@ until you reach a point where that function is called.
     
 
 .. index:: bar chart
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6
 
 A Turtle Bar Chart
 ------------------
@@ -880,6 +904,10 @@ Here is the complete program.  Try it and then change the data to see that it ca
 	wn.exitonclick()
 
 
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7
 
 Glossary
 --------
