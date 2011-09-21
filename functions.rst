@@ -1178,6 +1178,11 @@ Exercises
 
     .. actex:: ex_5_17
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_9
+
+
 .. toctree::
     :hidden:
 
