@@ -1133,10 +1133,22 @@ Exercises
     .. actex:: ex_5_14
 
 
-#.  Write a function called `myPi` that will return an approximation of PI (3.14159...).  Use the Madhava approximation
+#.  Write a function called `myPi` that will return an approximation of PI (3.14159...).  Use the Liebniz approximation
     as described in class.
 
     .. actex:: ex_5_15
+
+
+#.  Write a function called `myPi` that will return an approximation of PI (3.14159...).  Use the Madhava approximation
+    as described in class.
+
+    .. actex:: ex_5_16
+
+#.  Write a function called `fancySquare` that will draw a square with fancy corners (spites on the corners).  You should
+    implement and use the `drawSprite` function from above.  For an even more interesting look, how about adding small
+    triangles to the ends of the sprite legs.
+
+    .. actex:: ex_5_17
 
 .. toctree::
     :hidden:
