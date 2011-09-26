@@ -94,6 +94,10 @@ if ``a == 7`` then ``7 == a``. But in Python, the statement ``a = 7``
 is legal and ``7 = a`` is not. (Can you explain why?)
 
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_1
+
 .. index::
     single: logical operator
     single: operator; logical 
@@ -128,6 +132,9 @@ is true if ``x > y`` is false, that is, if ``x`` is less than or equal to
 
 	There is a very common mistake that occurs when programmers try to write boolean expressions.  For example, what if we have a variable ``number`` and we want to check to see if its value is 5,6, or 7.  In words we might say: "number equal to 5 or 6 or 7".  However, if we translate this into Python, ``number == 5 or 6 or 7``, it will not be correct.  The ``or`` operator must join the results of three equality checks.  The correct way to write this is ``number == 5 or number == 6 or number == 7``.  This may seem like a lot of typing but it is absolutely necessary.  You cannot take a shortcut.
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_2
 
 Precedence of Operators
 -----------------------
@@ -149,7 +156,9 @@ Level     Category        Operators
 =======   ==============  ===============
 
 
+.. admonition:: Scratch Editor
 
+    .. actex:: scratch_6_3
 
 
 .. index:: conditional branching, conditional execution, if, elif, else,
@@ -222,6 +231,10 @@ There is no limit on the number of statements that can appear under the two clau
     * `Approximating Pi with Simulation <montepi.html>`_ In this guided lab exercise we will work
       through a problem solving exercise related to approximating the value of pi using random numbers.
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_4
+
 
 .. index:: alternative execution, branch, wrapping code in a function
 
@@ -248,6 +261,10 @@ executed, otherwise the flow of execution continues to the statement after the `
 
 What would be printed if the value of `` x`` is negative?  Try it.
 
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_5
 
 .. index::
     single: nested conditionals
@@ -318,6 +335,10 @@ If you are still a bit unsure, here is the same selection as part of a codelens 
             print("x and y must be equal")
 
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_6
+
 .. index::
     single: chained conditional 
     single: conditional; chained
@@ -366,6 +387,10 @@ Here is the same program using ``elif``.
     else:
         print("x and y must be equal")
 
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_7
 
 Boolean Functions
 -----------------
@@ -447,7 +472,9 @@ Here is the same program in codelens.
         print("Those values are no good")
 
 
+.. admonition:: Scratch Editor
 
+    .. actex:: scratch_6_8
 
 
 
@@ -523,16 +550,17 @@ Exercises
     #.  ``3 >= 4``
     #.  ``not (3 < 4)``
 
+        .. actex:: ex_6_1
 
    
-#. Give the **logical opposites** of these conditions.  You are not allowed to use the ``not`` operator.
+#.  Give the **logical opposites** of these conditions.  You are not allowed to use the ``not`` operator.
     
     #.  ``a > b`` 
     #.  ``a >= b``
     #.  ``a >= 18  and  day == 3``
     #.  ``a >= 18  and  day != 3``
     
-
+        .. actex:: ex_6_2
     
 #.  Write a function which is given an exam mark, and it returns a string --- the grade for that mark --- according to this 
     scheme:   
@@ -556,33 +584,42 @@ Exercises
     
     Test your function by printing the mark and the grade for all the elements in this list.
     
+    .. actex:: ex_6_3
 
 #.  Modify the turtle bar chart program so that the bar for any value 
     of 200 or more is filled with red, values between [100 and 200) are filled yellow,
     and bars representing values less than 100 are filled green.    
   
+    .. actex:: ex_6_4
+
 #.  In the turtle bar chart program, what do you expect to happen if one or more 
     of the data values in the list is negative?   Try it out.  Change the
     program so that when it prints the text value for the negative bars, it puts
     the text below the bottom of the bar. 
   
+    .. actex:: ex_6_5
+
 #.  Write a function ``findHypot`` which, given the length of two sides of a right-angled triangle, returns
     the length of the hypotenuse.  (Hint:  ``x ** 0.5`` will return the square root, or use ``sqrt`` from the math module)
     
+    .. actex:: ex_6_6
 
 #. Write a function called ``is_even(n)`` that takes an integer as an argument
    and returns ``True`` if the argument is an **even number** and ``False`` if
    it is **odd**.
 
-
+    
+   .. actex:: ex_6_7
 
 #. Now write the function ``is_odd(n)`` that returns ``True`` when ``n`` is odd
    and ``False`` otherwise.
 
+   .. actex:: ex_6_8
+
 #. Modify ``is_odd`` so that it uses a call to ``is_even`` to determine if its 
    argument is an odd integer.
 
-
+   .. actex:: ex_6_9
 
 
 #.  Write a function ``is_rightangled`` which, given the length of three sides of a triangle, 
@@ -600,12 +637,22 @@ Exercises
       if  abs(x-y) < 0.000001:      # if x is approximately equal to y
           ...    
    
+
+    .. actex:: ex_6_10
+
 #.  Extend the above program so that the sides can be given to the function in any order.
+
+    .. actex:: ex_6_11
 
 #.  A year is a **leap year** if it is divisible by 4 unless it is a century that is not divisible by 400.
     Write a function that takes a year as a parameter and returns ``True`` if the year is a leap year, ``False`` otherwise.
 
+    .. actex:: ex_6_12
 
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_6_9
 
 .. toctree::
     :hidden:
