@@ -185,6 +185,7 @@ function createActiveCode(divid,suppliedSource,sid) {
         requestCode(divid,sid);
     }
     cm_editors[acblockid+"_code"] = editor;
+    editor.parentDiv = acblockid;
     var runButton = document.createElement("input");
     runButton.setAttribute('type','button');
     runButton.setAttribute('value','run');
