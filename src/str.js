@@ -30,7 +30,10 @@ Sk.builtin.str = function(x)
         if (!(ret instanceof Sk.builtin.str)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
     }
-    else
+    else if (x.__str__ !== undefined) {
+        return Sk.misceval.callsim(x.__str__,x);
+    }
+    else 
         return Sk.misceval.objectRepr(x);
 
     // interning required for strings in py
@@ -90,7 +93,7 @@ Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 };
 
 Sk.builtin.str.prototype.sq$contains = function(ob) {
-    if (! ob.v || ob.v.constructor != String) {
+    if ( ob.v === undefined || ob.v.constructor != String) {
         throw new TypeError("TypeError: 'In <string> requires string as left operand");
     }
     if (this.v.indexOf(ob.v) != -1) {
@@ -244,6 +247,11 @@ Sk.builtin.str.prototype['upper'] = new Sk.builtin.func(function(self)
     return new Sk.builtin.str(self.v.toUpperCase());
 });
 
+Sk.builtin.str.prototype['capitalize'] = new Sk.builtin.func(function(self)
+{
+    return new Sk.builtin.str(self.v.charAt(0).toUpperCase()+self.v.substring(1));
+});
+
 Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 {
     var arrOfStrs = [];
@@ -317,6 +325,66 @@ Sk.builtin.str.prototype['rpartition'] = new Sk.builtin.func(function(self, sep)
         new Sk.builtin.str(self.v.substring(0, pos)),
         sepStr,
         new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
+});
+
+Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
+    var m = new RegExp(pat.v,'g');
+    var ctl = self.v.match(m)
+    if (! ctl) {
+        return 0;
+    } else {
+        return ctl.length;
+    }
+    
+});
+
+Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
+    if (self.v.length >= len) {
+        return self;
+    } else {
+        var newstr = Array.prototype.join.call({length:Math.floor(len-self.v.length)+1}," ");
+        return new Sk.builtin.str(self.v+newstr);
+    }
+});
+
+Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
+    if (self.v.length >= len) {
+        return self;
+    } else {
+        var newstr = Array.prototype.join.call({length:Math.floor(len-self.v.length)+1}," ");
+        return new Sk.builtin.str(newstr+self.v);
+    }
+
+});
+
+Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
+    if (self.v.length >= len) {
+        return self;
+    } else {
+        var newstr1 = Array.prototype.join.call({length:Math.floor((len-self.v.length)/2)+1}," ");
+        var newstr = newstr1+self.v+newstr1;
+        if (newstr.length < len ) {
+            newstr = newstr + " "
+        }
+        return new Sk.builtin.str(newstr);
+    }
+
+});
+
+Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start) {
+   return self.v.indexOf(tgt.v,start);
+});
+
+Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start) {
+   return self.v.indexOf(tgt.v,start);
+});
+
+Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, start) {
+   return self.v.lastIndexOf(tgt.v,start);
+});
+
+Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start) {
+   return self.v.lastIndexOf(tgt.v,start);
 });
 
 Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, newS, count)

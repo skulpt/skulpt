@@ -45,6 +45,7 @@ Sk.builtin.Exception.prototype.toString = function()
 Sk.builtin.AssertionError = function(args) { Sk.builtin.Exception.apply(this, arguments); };
 goog.inherits(Sk.builtin.AssertionError, Sk.builtin.Exception);
 Sk.builtin.AssertionError.prototype.tp$name = "AssertionError";
+goog.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
 
 /**
  * @constructor
@@ -135,7 +136,7 @@ Sk.builtin.TokenError.prototype.tp$name = "TokenError";
 Sk.builtin.TypeError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.TypeError, Sk.builtin.Exception);
 Sk.builtin.TypeError.prototype.tp$name = "TypeError";
-
+goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
 /**
  * @constructor
  * @extends Sk.builtin.Exception
