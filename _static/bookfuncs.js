@@ -42,9 +42,29 @@ function handleEdKeys(ed, e) {
 
 cm_editors = {}
 
+function pyStr(x) {
+    if (x instanceof Array ) {
+        return '[' + x.join(", ") + ']';
+    } else {
+        return x
+    }
+}
 
 function outf(text) {
     var mypre = document.getElementById(Sk.pre);
+    // bnm python 3
+    x = text;
+    if (x.charAt(0) == '(') {
+        x = x.slice(1,-1);
+	x = '['+x+']'
+	try {
+        var xl = eval(x);
+        xl = xl.map(pyStr);
+        x = xl.join(' ');
+	} catch(err) {
+	    }
+    }
+    text = x;
     text = text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>");
     mypre.innerHTML = mypre.innerHTML + text;
 }
