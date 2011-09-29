@@ -278,16 +278,6 @@ Sk.misceval.print_ = function(x)   // this was function print(x)   not sure why.
         if (x !== "\n") Sk.output(' ');
         Sk.misceval.softspace_ = false;
     }
-    // bnm -- Make this version of print act like Python3.x print function.
-    if (x.charAt(0) == '(') {
-        x = x.slice(1,-1);
-	x = '['+x+']'
-	try {
-            var xl = eval(x);
-            x = xl.join(' ');
-	} catch(err) {
-	}
-    }
     var s = new Sk.builtin.str(x);
     Sk.output(s.v);
     var isspace = function(c)
