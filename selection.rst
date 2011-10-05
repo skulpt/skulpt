@@ -28,6 +28,13 @@ Decisions and Selection
 Boolean Values and Boolean Expressions
 --------------------------------------
 
+.. video:: booleanexpressions
+   :controls:
+   :thumb: _static/booleanexpressions.png
+
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/booleanexpressions.mov
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/booleanexpressions.webm
+
 The Python type for storing true and false values is called ``bool``, named
 after the British mathematician, George Boole. George Boole created *Boolean
 Algebra*, which is the basis of all modern computer arithmetic.
