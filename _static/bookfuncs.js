@@ -35,14 +35,36 @@ function handleEdKeys(ed, e) {
             e.stop();
             eval(Sk.importMainWithBody("<stdin>", false, ed.selection()));
         }
+    } else {
+        ed.acEditEvent = true;
     }
 }
 
 cm_editors = {}
 
+function pyStr(x) {
+    if (x instanceof Array ) {
+        return '[' + x.join(", ") + ']';
+    } else {
+        return x
+    }
+}
 
 function outf(text) {
     var mypre = document.getElementById(Sk.pre);
+    // bnm python 3
+    x = text;
+    if (x.charAt(0) == '(') {
+        x = x.slice(1,-1);
+	x = '['+x+']'
+	try {
+        var xl = eval(x);
+        xl = xl.map(pyStr);
+        x = xl.join(' ');
+	} catch(err) {
+	    }
+    }
+    text = x;
     text = text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>");
     mypre.innerHTML = mypre.innerHTML + text;
 }
@@ -77,13 +99,18 @@ function builtinRead(x) {
 
 function runit(myDiv,theButton) {
     //var prog = document.getElementById(myDiv + "_code").value;
-    jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
+
     $(theButton).attr('disabled','disabled');
     Sk.isTurtleProgram = false;
     if (theButton !== undefined) {
         Sk.runButton = theButton;
     }
     var editor = cm_editors[myDiv+"_code"];
+    if (editor.acEditEvent) {
+        jQuery.get("/hsblog",{'event':'activecode','act': 'edit', 'div_id':myDiv}); // Log the run event
+        editor.acEditEvent = false;
+    }
+    jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
     var prog = editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
     if (mypre) mypre.innerHTML = '';
@@ -118,6 +145,10 @@ function saveEditor(divName) {
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
     jQuery.post("/saveprog",data);
+    if (editor.acEditEvent) {
+        jQuery.get("/hsblog",{'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
+        editor.acEditEvent = false;
+    }
     jQuery.get("/hsblog",{'event':'activecode' ,'act':'save', 'div_id':divName}); // Log the run event
 
 }
@@ -185,6 +216,7 @@ function createActiveCode(divid,suppliedSource,sid) {
         requestCode(divid,sid);
     }
     cm_editors[acblockid+"_code"] = editor;
+    editor.parentDiv = acblockid;
     var runButton = document.createElement("input");
     runButton.setAttribute('type','button');
     runButton.setAttribute('value','run');
