@@ -655,6 +655,10 @@ Exercises
     Write a function that takes a year as a parameter and returns ``True`` if the year is a leap year, ``False`` otherwise.
 
     .. actex:: ex_6_12
+    
+#.  Implement the Date of Easter program as described in class.
+
+    .. actex:: ex_6_13
 
 
 .. admonition:: Scratch Editor
