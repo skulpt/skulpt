@@ -655,7 +655,20 @@ Exercises
     Write a function that takes a year as a parameter and returns ``True`` if the year is a leap year, ``False`` otherwise.
 
     .. actex:: ex_6_12
-    
+
+        from test import testEqual
+
+        def isLeap(year):
+            # your code here
+
+        testEqual(isLeap(1944), True)
+        testEqual(isLeap(2011), False)
+        testEqual(isLeap(1986), False)
+        testEqual(isLeap(1800), False)
+        testEqual(isLeap(1900), False)
+        testEqual(isLeap(2000), True)
+        testEqual(isLeap(2056), True)
+
 #.  Implement the Date of Easter program as described in class.
 
     .. actex:: ex_6_13
