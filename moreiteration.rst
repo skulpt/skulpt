@@ -975,15 +975,35 @@ The first six questions are typical functions you should be able to write using 
 these building blocks.
    
 #. Write a function to count how many odd numbers are in a list.
+
+    .. actex:: ex_7_1
+
 #. Sum up all the even numbers in a list.
+
+    .. actex:: ex_7_2
+
 #. Sum up all the negative numbers in a list.
+
+    .. actex:: ex_7_3
+
 #. Count how many words in a list have length 5.
+
+    .. actex:: ex_7_4
+
 #. Sum all the elements in a list up to but not including the first even number.
+
+    .. actex:: ex_7_5
+
 #. Count how many words occur in a list up to and including the first occurrence of the word "sam".
+
+    .. actex:: ex_7_6
+
    
 #. Add a print function to Newton's ``sqrt`` function that
    prints out ``better`` each time it is calculated. Call your modified
    function with 25 as an argument and record the results.
+
+    .. actex:: ex_7_7
 
    
 #. Write a function ``print_triangular_numbers(n)`` that prints out the first
@@ -997,40 +1017,57 @@ these building blocks.
        5       15
 
    (*hint: use a web search to find out what a triangular number is.*)
-   
+
+   .. actex:: ex_7_8
+
    
 #. Write a function, ``is_prime``, which takes a single integer argument
    and returns ``True`` when the argument is a *prime number* and ``False``
    otherwise.
    
+    .. actex:: ex_7_9
 
       
 #. Write a function that will return the number of digits in an integer.
 
+    .. actex:: ex_7_10
 
 
 #. Write a function ``sum_of_squares(xs)`` that computes the sum
    of the squares of the numbers in the list ``xs``.  For example,
    ``sum_of_squares([2, 3, 4])`` should return 4+9+16 which is 29:
 
+    .. actex:: ex_7_11
 
 #. Modify the the Random turtle walk program so that the turtle turns around
    when it hits the wall and goes the other direction.  This bouncing off the
    walls should continue until the turtle has hit the wall 4 times.
 
+    .. actex:: ex_7_12
+
 #. Modify the previous program so that you have two turtles each with a
    random starting location.  Keep the turtles moving and bouncing off the
    walls until they collide with each other.
+
+    .. actex:: ex_7_13
 
 #. Modify the previous program so that rather than a left or right turn the
    angle of the turn is determined randomly at each step.  When the turtle
    hits the wall you must calculate the correct angle for the bounce.
 
+    .. actex:: ex_7_14
+
 #. Write a function to remove all the red from an image.
+
+    .. actex:: ex_7_15
 
 #. Write a function to convert the image to grayscale.
 
+    .. actex:: ex_7_16
+
 #. Write a function to convert an image to black and white.
+
+    .. actex:: ex_7_17
 
 #. Sepia Tone images are those brownish colored images that may remind you of
    times past.  The formula for creating a sepia tone is as follows:
@@ -1044,14 +1081,21 @@ these building blocks.
    Write a function to convert an image to sepia tone. *Hint:*
    Remember that rgb values must be integers between 0 and 255.
 
+    .. actex:: ex_7_18
+
 #. Write a function to uniformly shrink or enlarge an image.  Your function
    should take an image along with a scaling factor.  To shrink the image the
    scale factor should be between 0 and 1 to enlarge the image the scaling
    factor should be greater than 1.
 
+
+    .. actex:: ex_7_19
+
 #. Write a function to rotate an image.  Your function should take an image
    object along with the number of degrees to rotate.  The rotational degrees
    can be positive or negative, and should be multiples of 90.
+
+    .. actex:: ex_7_20
 
 #. After you have scaled an image too much it looks blocky.  One way of
    reducing the blockiness of the image is to replace each pixel with the
@@ -1060,12 +1104,18 @@ these building blocks.
    parameter and smooths the image.  Your function should return a new image
    that is the same as the old but smoothed.
 
+    .. actex:: ex_7_21
+
 #. When you scan in images using a scanner they may have lots of noise due to
    dust particles on the image itself or the scanner itself,
    or the images may even be damaged.  One way of eliminating this noise is
    to replace each pixel by the median value of the pixels surrounding it.
 
+    .. actex:: ex_7_22
+
 #. Research the Sobel edge detection algorithm and implement it.
+
+    .. actex:: ex_7_23
 
 .. toctree::
     :hidden:
