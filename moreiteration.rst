@@ -27,6 +27,10 @@ form of iteration in Python. In this chapter
 we are also going to look at the ``while`` statement --- another way to have your
 program do iteration.
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_1
+
 
 .. index:: for loop
 
@@ -65,6 +69,11 @@ variable.  A function to compute this sum is shown below.
 To review, the variable ``theSum`` is called the accumulator.  It is initialized to zero before we start the loop.  The loop variable, ``aNumber`` will take on the values produced by the ``range(1,aBound+1)`` function call.  Note that this produces all the integers starting from 1 up to the value of ``aBound``.  If we had not added 1 to ``aBound``, the range would have stopped one value short since ``range`` does not include the upper bound.
 
 The assignment statement, ``theSum = theSum + aNumber``, updates ``theSum`` each time thru the loop.  This accumulates the running total.  Finally, we return the value of the accumulator.
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_2
+
 
 The ``while`` Statement
 -----------------------
@@ -170,6 +179,12 @@ terminates.
         
 So why have two kinds of loop if ``for`` looks easier?  This next example shows an indefinite iteration where
 we need the extra power that we get from the ``while`` loop.
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_3
+
+
 
 Randomly Walking Turtles
 ------------------------
@@ -341,6 +356,11 @@ that if you ever need to write a similar program, you can reuse this function
 with confidence the next time you need it.  Breaking up this
 program into a couple of parts is another example of functional decomposition.
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_4
+
+
 
 .. index:: 3n + 1 sequence        
         
@@ -432,6 +452,10 @@ be other cycles that we just haven't found.
 .. trace and understand small fragments of Python code.  The one we recommend is at 
 .. http://netserv.ict.ru.ac.za/python3_viz 
 
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_5
+
 
 
 
@@ -502,6 +526,12 @@ uses a ``while`` condition to execute until the approximation is no longer chang
 
 .. index:: algorithm 
 
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_6
+
+
 Algorithms Revisited
 --------------------
 
@@ -542,6 +572,12 @@ algorithm.
 
 .. index:: table, logarithm, Intel, Pentium, escape sequence, tab, newline,
            cursor
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_7
+
+
 
 Simple Tables
 -------------
@@ -593,6 +629,10 @@ tab stops. Tabs are useful for making columns of text line up, as in the output
 of the previous program.
 Because of the tab characters between the columns, the position of the second
 column does not depend on the number of digits in the first column.
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_8
 
 
 
@@ -868,6 +908,10 @@ Finally, we need to insert the new pixel into the empty image in the same locati
 
 	You can also do some complex arithmetic and create interesting effects, such as 
 	`Sepia Tone <http://en.wikipedia.org/wiki/Sepia_tone#Sepia_toning>`_
+
+.. admonition:: Scratch Editor
+
+    .. actex:: scratch_7_9
 
 
 
