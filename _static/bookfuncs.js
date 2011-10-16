@@ -36,6 +36,10 @@ function handleEdKeys(ed, e) {
             eval(Sk.importMainWithBody("<stdin>", false, ed.selection()));
         }
     } else {
+        if (ed.acEditEvent == false || ed.acEditEvent === undefined) {
+            $('#'+ed.parentDiv+' .CodeMirror').css('border-top', '2px solid #b43232');
+            $('#'+ed.parentDiv+' .CodeMirror').css('border-bottom', '2px solid #b43232');
+        }
         ed.acEditEvent = true;
     }
 }
@@ -139,12 +143,22 @@ function runit(myDiv,theButton) {
         $(theButton).removeAttr('disabled');
     }
 }
+function saveSuccess(data,status,whatever) {
+    if (data == "") {
+        alert("Error:  Program not saved");
+    } else {
+        var acid = eval(data)[0];
+        $('#'+acid+' .CodeMirror').css('border-top', '2px solid #aaa');
+        $('#'+acid+' .CodeMirror').css('border-bottom', '2px solid #aaa');
+    }
+}
 
 function saveEditor(divName) {
     // get editor from div name
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
-    jQuery.post("/saveprog",data);
+    $(document).ajaxError(function(e,jqhxr,settings,exception){alert("Request Failed for"+settings.url)});
+    jQuery.post("/saveprog",data,saveSuccess);
     if (editor.acEditEvent) {
         jQuery.get("/hsblog",{'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
         editor.acEditEvent = false;
@@ -155,6 +169,7 @@ function saveEditor(divName) {
 
 function requestCode(divName,sid) {
     var editor = cm_editors[divName+"_code"];
+    
     var url = "/getprog"
     var data = {acid: divName}
     if (sid !== undefined) {
