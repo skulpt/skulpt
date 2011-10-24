@@ -1255,6 +1255,8 @@ Glossary
 Exercises
 ---------
 
+
+
    
 #. Draw a reference diagram for ``a`` and ``b`` before and after the third line of
    the following python code is executed:
@@ -1278,9 +1280,42 @@ Exercises
     #. Remove True from the list using ``pop`` and ``index``.
 
 
+    .. actex:: ex_8_3
+
 #.  Create a list containing 100 random integers between 0 and 1000 (use iteration, append, and the random module).  Write a function called ``average`` that will take the list as a parameter and return the average.
 
+    .. actex:: ex_8_4
+
 #. Write a Python function that will take a the list of integers from the previous problem and return the maximum value.  (Note: there is a builtin function named ``max`` but pretend you cannot use it.)
+
+    .. actex:: ex_8_5
+
+
+#. Write a function to count how many odd numbers are in a list.
+
+    .. actex:: ex_8_6
+
+#. Sum up all the even numbers in a list.
+
+    .. actex:: ex_8_7
+
+#. Sum up all the negative numbers in a list.
+
+    .. actex:: ex_8_8
+
+#. Count how many words in a list have length 5.
+
+    .. actex:: ex_8_9
+
+#. Sum all the elements in a list up to but not including the first even number.
+
+    .. actex:: ex_8_10
+
+#. Count how many words occur in a list up to and including the first occurrence of the word "sam".
+
+    .. actex:: ex_8_11
+
+
 
 #. Although Python provides us with many list methods, it is good practice and very instructive to think about how they are implemented.  Implement a Python function that works like the following:
 
@@ -1291,6 +1326,8 @@ Exercises
     #. insert
 
    
+    .. actex:: ex_8_12
+
 #. Write a function ``replace(s, old, new)`` that replaces all occurences of
    ``old`` with ``new`` in a string ``s``::
 
@@ -1305,6 +1342,8 @@ Exercises
 
    *Hint*: use the ``split`` and ``join`` methods.
 
+    .. actex:: ex_8_13
+
 
 #. Here are the rules for an L-system that creates something that resembles
    a common garden herb.  Implement the following rules and try it.  Use an
@@ -1314,10 +1353,13 @@ Exercises
        H --> HFX[+H][-H]
        X --> X[-FFF][+FFF]FX
 
+   
+   .. actex:: ex_8_14
+
 #. Here is another L-System.  Use an Angle of 25::
 
        F
        F --> F[-F]F[+F]F
 
-
+   .. actex:: ex_8_15
 

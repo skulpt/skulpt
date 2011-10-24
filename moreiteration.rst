@@ -1025,29 +1025,6 @@ in powerful ways to create many functions that are all slightly different.
 The first six questions are typical functions you should be able to write using only
 these building blocks.
    
-#. Write a function to count how many odd numbers are in a list.
-
-    .. actex:: ex_7_1
-
-#. Sum up all the even numbers in a list.
-
-    .. actex:: ex_7_2
-
-#. Sum up all the negative numbers in a list.
-
-    .. actex:: ex_7_3
-
-#. Count how many words in a list have length 5.
-
-    .. actex:: ex_7_4
-
-#. Sum all the elements in a list up to but not including the first even number.
-
-    .. actex:: ex_7_5
-
-#. Count how many words occur in a list up to and including the first occurrence of the word "sam".
-
-    .. actex:: ex_7_6
 
    
 #. Add a print function to Newton's ``sqrt`` function that
