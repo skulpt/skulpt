@@ -182,6 +182,14 @@ Level     Category        Operators
 Conditional Execution: Binary Selection
 ---------------------------------------
 
+.. video:: binaryselection
+   :controls:
+   :thumb: _static/binaryselection.png
+
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/binaryselection.mov
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/binaryselection.webm
+
+
 In order to write useful programs, we almost always need the ability to check
 conditions and change the behavior of the program accordingly. **Selection statements**, sometimes
 also referred to as **conditional statements** give us this ability. The simplest form of selection is the **if**
@@ -247,6 +255,16 @@ There is no limit on the number of statements that can appear under the two clau
 
 Omitting the `else` Clause: Unary Selection
 -------------------------------------------
+
+.. video:: unaryselection
+   :controls:
+   :thumb: _static/unaryselection.png
+
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/unaryselection.mov
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/unaryselection.webm
+
+
+
 
 .. sidebar::  Flowchart of an **if** with no **else** 
 

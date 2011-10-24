@@ -78,6 +78,13 @@ The assignment statement, ``theSum = theSum + aNumber``, updates ``theSum`` each
 The ``while`` Statement
 -----------------------
 
+.. video:: whileloop
+   :controls:
+   :thumb: _static/whileloop.png
+
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/whileloop.mov
+   http://knuth.luther.edu/~pythonworks/thinkcsVideos/whileloop.webm
+
 There is another Python statement that can also be used to build an iteration.  It is called the ``while`` statement.
 The ``while`` statement provides a much more general mechanism for iterating.  Similar to the ``if`` statement, it uses 
 a boolean expression to control the flow of execution.  The body of while will be repeated as long as the controlling boolean expression evaluates to ``True``.
