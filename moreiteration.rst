@@ -876,7 +876,7 @@ The program below implements this algorithm using the previous image.  Run it to
     import image
 
     img = image.Image("luther.jpg")
-    newimg = image.EmptyImage(img.getHeight(),img.getWidth())
+    newimg = image.EmptyImage(img.getWidth(),img.getHeight())
     win = image.ImageWin()
 
     for col in range(img.getWidth()):

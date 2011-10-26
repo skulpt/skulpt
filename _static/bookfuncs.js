@@ -144,9 +144,12 @@ function runit(myDiv,theButton) {
     }
 }
 function saveSuccess(data,status,whatever) {
-    if (data == "") {
+    if (data.redirect) {
+        alert("Did not save!  It appears you are not logged in properly")
+    } else if (data == "") {
         alert("Error:  Program not saved");
-    } else {
+    }
+    else {
         var acid = eval(data)[0];
         $('#'+acid+' .CodeMirror').css('border-top', '2px solid #aaa');
         $('#'+acid+' .CodeMirror').css('border-bottom', '2px solid #aaa');
@@ -356,4 +359,24 @@ function sendGrade(grade,sid,acid) {
     jQuery.get('/savegrade',data);
 }
 
+function gotUser(data, status, whatever) {
+    var mess;
+    if (data.redirect) {
+        mess = "Not logged in";
+    } else if (data == "") {
+        mess = "Not logged in";
+    } else {
+        var d = eval(data)[0];
+        mess = d.email;
+    }
+    x = $(".footer").text();
+    $(".footer").text(x + mess);
+}
+
+function addUserToFooter() {
+    // test to see if online before doing this.
+    jQuery.get("/getuser",null,gotUser)
+
+}
 $(document).ready(createEditors);
+$(document).ready(addUserToFooter)
