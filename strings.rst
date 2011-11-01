@@ -1241,7 +1241,7 @@ Exercises
 	Of course, that's not quite right because Ouack and Quack are misspelled.
 	Can you fix it?
    
-     
+    .. actex:: ex_8_2
    
 #. Assign to a variable in your program a triple-quoted string that contains 
    your favourite paragraph of text - perhaps a poem, a speech, instructions
@@ -1252,58 +1252,120 @@ Exercises
 
        Your text contains 243 words, of which 109 (44.8%) contain an 'e'.      
 
+   .. actex:: ex_8_3
+
 #. Print out a neatly formatted multiplication table, up to 12 x 12.
 
-#. Write a function that reverses its string argument.  For example::
+   .. actex:: ex_8_4
 
-      reverse('happy') should return 'yppah'
-      reverse('Python') should return 'nohtyP'
-      reverse('') should return ''
-   
-#. Write a function that mirrors its argument.  For example:: 
+#. Write a function that reverses its string argument.
 
-       mirror('good') should return  'gooddoog'
-       mirror('Python') should return 'PythonnohtyP'
-       mirror('') should return ''
-       mirror('a') should return 'aa'
+   .. actex:: ex_8_5
 
-#. Write a function that removes all occurrences of a given letter from a string.  For example::
-    
-        remove_letter('a', 'apple') should return 'pple'
-        remove_letter('a', 'banana') should return 'bnn'
-        remove_letter('z', 'banana') should return 'banana'
+      from test import testEqual
+
+      def reverse(astring):
+          # your code here
+
+      testEqual(reverse("happy"), "yppah")
+      testEqual(reverse("Python"), "nohtyP")
+      testEqual(reverse(""),"")
+
+#. Write a function that mirrors its argument.
+
+   .. actex:: ex_8_6
+
+      from test import testEqual
+
+      def mirror(mystr):
+          # your code here
+
+      testEqual(mirror('good'),'gooddoog')
+      testEqual(mirror('Python'),'PythonnohtyP')
+      testEqual(mirror(''), '')
+      testEqual(mirror('a'),'aa')
 
 
-#. Write a function that recognizes palindromes. (Hint: use your ``reverse`` function to make this easy!).  For example::
 
-       is_palindrome('abba') should return True
-       is_palindrome('abab') should return False
-       is_palindrome('straw warts') should return True
-       is_palindrome('a') should return True
-       is_palindrome('') should return True
+#. Write a function that removes all occurrences of a given letter from a string.
+
+   .. actex:: ex_8_7
+
+      from test import testEqual
+
+      def remove_letter(theLetter, theString):
+          # your code here
+
+      testEqual(remove_letter('a', 'apple'),'pple')
+      testEqual(remove_letter('a', 'banana'),'bnn')
+      testEqual(remove_letter('z', 'banana'),'banana')
+
+
+
+#. Write a function that recognizes palindromes. (Hint: use your ``reverse`` function to make this easy!).
+
+   .. actex:: ex_8_8
+
+      from test import testEqual
+
+      def is_palindrome(myStr):
+          # your code here
+
+      testEqual(is_palindrome('abba'),True)
+      testEqual(is_palindrome('abab'),False)
+      testEqual(is_palindrome('straw warts'),True)
+      testEqual(is_palindrome('a'), True)
+      testEqual(is_palindrome(''),True)
+
 
 #. Write a function that counts how many times a substring occurs in a string. For example::  
-   
-       count('is', 'Mississippi') should return 2
-       count('an', 'banana') should return 2
-       count('ana', 'banana') should return 2
-       count('nana', 'banana') should return 1
-       count('nanan', 'banana') should return 0
-       count('aaa', 'aaaaaa') should return 4
-   
-#. Write a function that removes the first occurrence of a string from another string::
 
-        remove('an', 'banana') should return 'bana'
-        remove('cyc', 'bicycle') should return 'bile'
-        remove('iss', 'Mississippi') should return 'Missippi'
-        remove('egg', 'bicycle') should return 'bicycle'
- 
+   .. actex:: ex_8_9
+
+      from test import testEqual
+
+      def count(substr,theStr):
+          # your code here
+
+      testEqual(count('is', 'Mississippi'), 2)
+      testEqual(count('an', 'banana'), 2)
+      testEqual(count('ana', 'banana'), 2)
+      testEqual(count('nana', 'banana'),  1)
+      testEqual(count('nanan', 'banana'),  0)
+      testEqual(count('aaa', 'aaaaaa'),  4)
+
+
+#. Write a function that removes the first occurrence of a string from another string.
+
+   .. actex:: ex_8_10
+
+      from test import testEqual
+
+      def remove(substr,theStr):
+          # your code here
+
+      testEqual(remove('an', 'banana'),'bana')
+      testEqual(remove('cyc', 'bicycle'), 'bile')
+      testEqual(remove('iss', 'Mississippi'), 'Missippi')
+      testEqual(remove('egg', 'bicycle'), 'bicycle')
+
+
+
 #. Write a function that removes all occurrences of a string from another string::
  
-        remove_all('an', 'banana') should return 'ba'
-        remove_all('cyc', 'bicycle') should return 'bile'
-        remove_all('iss', 'Mississippi') should return 'Mippi'
-        remove_all('eggs', 'bicycle') should return 'bicycle'
+   .. actex:: ex_8_10
+
+      from test import testEqual
+
+      def remove_all(substr,theStr):
+          # your code here
+
+      testEqual(remove_all('an', 'banana'), 'ba')
+      testEqual(remove_all('cyc', 'bicycle'), 'bile')
+      testEqual(remove_all('iss', 'Mississippi'), 'Mippi')
+      testEqual(remove_all('eggs', 'bicycle'), 'bicycle')
+
+
 
 #. Here is another interesting L-System called a Hilbert curve.::
 
@@ -1319,8 +1381,42 @@ Exercises
    the mapping of the 26 letters in the alphabet.  Your function should
    return a string that is the encrypted version of the message.
 
+   .. actex:: ex_8_11
+
 #. Write a function that decrypts the message from the previous exercise.  It
    should also take two parameters.  The encrypted message,
    and the mixed up alphabet.  The function should return a string that is
    the same as the original unencrypted message.
+
+   .. actex:: ex_8_12
+
+#. Write a function ``descramble`` that takes a message that is scrambled
+   using the picket fence algorithm as discussed in class.  Try exchanging messages
+   with a friend and the secret message provided below:
+
+   .. actex:: ex_8_13
+
+      def descramble(secret):
+          # your code here
+
+      testmess = "ogauain o aescesul erpe hssce esg ueyyudsrea  o hsasgmncnrtltosyuhv ucsflydcytdti ertmsaesrl o eev nafrti sinet"
+      print(descramble(testmess))
+
+
+#. Write a function called ``rot13`` that uses the Caesar cipher to encrypt a message.
+   The Caesar cipher works like a substitution cipher but each character is replaced
+   by the character 13 characters to 'its right' in the alphabet.  So for example
+   the letter a becomes the letter n.  If a letter is past the middle of the alphabet
+   then the counting wraps around to the letter a again, so n becomes a, o becomes b
+   and so on.  *Hint:* Whenever you talk about things wrapping around its a good idea
+   to think of modulo arithmetic.
+
+   .. actex:: ex_8_14
+
+      def rot13(mess):
+          # Your code here
+
+      print(rot13('abcde'))
+      print(rot13('nopqr'))
+      print(rot13(rot13('Since rot13 is symmetric you should see this message')))
 
