@@ -1318,7 +1318,7 @@ Exercises
       testEqual(is_palindrome(''),True)
 
 
-#. Write a function that counts how many times a substring occurs in a string. For example::  
+#. Write a function that counts how many times a substring occurs in a string.
 
    .. actex:: ex_8_9
 
@@ -1351,7 +1351,7 @@ Exercises
 
 
 
-#. Write a function that removes all occurrences of a string from another string::
+#. Write a function that removes all occurrences of a string from another string.
  
    .. actex:: ex_8_10
 
