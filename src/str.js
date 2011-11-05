@@ -209,20 +209,16 @@ Sk.builtin.str.prototype['$r'] = function()
     return new Sk.builtin.str(ret);
 };
 
-Sk.builtin.str.alphanum_ = {};
-(function() {
- var i;
- for (i = 'a'; i <= 'z'; ++i) Sk.builtin.str.alphanum_[i] = 1;
- for (i = 'A'; i <= 'Z'; ++i) Sk.builtin.str.alphanum_[i] = 1;
- for (i = '0'; i <= '9'; ++i) Sk.builtin.str.alphanum_[i] = 1;
-}());
+
 Sk.builtin.str.re_escape_ = function(s)
 {
     var ret = [];
+	var re = /^[A-Za-z0-9]+$/;
     for (var i = 0; i < s.length; ++i)
     {
         var c = s.charAt(i);
-        if (Sk.builtin.str.alphanum_[c])
+
+        if (re.test(c))
         {
             ret.push(c);
         }
@@ -391,7 +387,7 @@ Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, n
 {
     if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)
         throw new Sk.builtin.TypeError("expecting a string");
-    goog.asserts.assert(count === undefined, "todo; replace() with could not implemented");
+    goog.asserts.assert(count === undefined, "todo; replace() with count not implemented");
     var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
     return new Sk.builtin.str(self.v.replace(patt, newS.v));
 });
