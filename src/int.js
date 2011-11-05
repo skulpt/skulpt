@@ -4,7 +4,19 @@ Sk.builtin.int_ = function(x, base)
     {
         // todo; this should handle longs too
         if (base === undefined) base = 10; // default radix is 10, not dwim
-        if (!isNaN(x.v) && base <= 10)
+		if ( x.v.substring(0,2).toLowerCase() == '0x' && base != 16 && base != 0) {
+			throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not a valid literal");
+		}
+		if ( x.v.substring(0,2).toLowerCase() == '0b' ) { 
+			if (base != 2 && base != 0) {
+				throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not a valid literal");
+			} else {
+				x.v = x.v.substring(2);
+				base = 2;
+			}
+		}
+
+        if (!isNaN(x.v))
             return parseInt(x.v, base);
         else {
             throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not number");
