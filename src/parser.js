@@ -137,7 +137,8 @@ OUTERWHILE:
         else
         {
             // no transition
-            throw new Sk.builtin.ParseError("bad input");
+            var errline = context[0][0];
+            throw new Sk.builtin.ParseError("bad input on line" + errline.toString());
         }
     }
 };
