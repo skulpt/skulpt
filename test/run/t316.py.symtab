@@ -4,7 +4,7 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
-name: range
+name: list
   is_referenced: True
   is_imported: False
   is_parameter: False
