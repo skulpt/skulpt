@@ -184,7 +184,12 @@ function requestCode(divName,sid) {
 
 function loadEditor(data, status, whatever) {
     // function called when contents of database are returned successfully
-    var res = eval(data)[0];
+	try {
+    	var res = eval(data)[0];
+	} catch(err) {
+		alert("error unable to load data: ", data)
+	}
+	
     var editor;
     if (res.sid) {
         editor = cm_editors[res.acid+"_"+res.sid+"_code"];

@@ -1366,7 +1366,7 @@ Exercises
       testEqual(remove_all('eggs', 'bicycle'), 'bicycle')
 
 
-#. Here is another interesting L-System called a Hilbert curve.::
+#. Here is another interesting L-System called a Hilbert curve.  Use 90 degrees::
 
        L
        L -> +RF-LFL-FR+
