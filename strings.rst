@@ -1151,7 +1151,7 @@ may prove helpful in remembering what you learned.
         The six common comparision operators work with strings, evaluating according to
         `lexigraphical order
         <http://en.wikipedia.org/wiki/Lexicographic_order>`__.  Examples:
-        ``'apple' < 'banana'`` evaluates to ``True``.  ``'Zeta' < 'Appricot'
+        ``'apple' < 'banana'`` evaluates to ``True``.  ``'Zeta' < 'Appricot'``
         evaluates to ``False``.  ``'Zebra' <= 'aardvark'`` evaluates to
         ``True`` because all upper case letters precede lower case letters.
 
@@ -1353,7 +1353,7 @@ Exercises
 
 #. Write a function that removes all occurrences of a string from another string.
  
-   .. actex:: ex_8_10
+   .. actex:: ex_8_11
 
       from test import testEqual
 
@@ -1366,13 +1366,45 @@ Exercises
       testEqual(remove_all('eggs', 'bicycle'), 'bicycle')
 
 
-
 #. Here is another interesting L-System called a Hilbert curve.::
 
-       A
-       A --> - B F + A F A + F B -
-       B --> + A F - B F B - F A +
+       L
+       L -> +RF-LFL-FR+
+       R -> -LF+RFR+FL-
 
+   .. actex:: ex_8_12
+
+#. Here is a dragon curve.  Use 90 degrees.::
+
+       X
+       X -> X+YF+
+       Y -> -FX-Y
+
+   .. actex:: ex_8_13
+
+#. Here is something called an arrowhead curve.  Use 60 degrees.::
+
+       X
+       X -> YF+XF+Y
+       Y -> XF-YF-X
+
+   .. actex:: ex_8_14
+
+#. Try the Peano-Gosper curve.  Use 60 degrees.::
+
+       X
+       X -> X+YF++YF-FX--FXFX-YF+
+       Y -> -FX+YFYF++YF+FX--FX-Y
+
+   .. actex:: ex_8_15
+
+#. The Sierpinski Triangle.  Use 60 degrees.::
+
+       F
+       F -> FF
+       X -> --FXF++FXF++FXF--
+
+   .. actex:: ex_8_16
 
 #. Write a function that implements a substitution cipher.  In a substitution
    cipher one letter is substituted for another to garble the message.  For
@@ -1381,20 +1413,20 @@ Exercises
    the mapping of the 26 letters in the alphabet.  Your function should
    return a string that is the encrypted version of the message.
 
-   .. actex:: ex_8_11
+   .. actex:: ex_8_17
 
 #. Write a function that decrypts the message from the previous exercise.  It
    should also take two parameters.  The encrypted message,
    and the mixed up alphabet.  The function should return a string that is
    the same as the original unencrypted message.
 
-   .. actex:: ex_8_12
+   .. actex:: ex_8_18
 
 #. Write a function ``descramble`` that takes a message that is scrambled
    using the picket fence algorithm as discussed in class.  Try exchanging messages
    with a friend and the secret message provided below:
 
-   .. actex:: ex_8_13
+   .. actex:: ex_8_19
 
       def descramble(secret):
           # your code here
@@ -1411,7 +1443,7 @@ Exercises
    and so on.  *Hint:* Whenever you talk about things wrapping around its a good idea
    to think of modulo arithmetic.
 
-   .. actex:: ex_8_14
+   .. actex:: ex_8_20
 
       def rot13(mess):
           # Your code here

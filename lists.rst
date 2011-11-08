@@ -1269,6 +1269,9 @@ Exercises
 
 #.  Create a list called ``myList`` with the following six items: 76, 92.3, "hello", True, 4, 76.
 
+    .. actex:: ex_9_2
+
+ 
 #.  Write Python statements to do the following:
 
     a. Append "apple" and 76 to the list.
@@ -1280,40 +1283,40 @@ Exercises
     #. Remove True from the list using ``pop`` and ``index``.
 
 
-    .. actex:: ex_8_3
+    .. actex:: ex_9_3
 
 #.  Create a list containing 100 random integers between 0 and 1000 (use iteration, append, and the random module).  Write a function called ``average`` that will take the list as a parameter and return the average.
 
-    .. actex:: ex_8_4
+    .. actex:: ex_9_4
 
 #. Write a Python function that will take a the list of integers from the previous problem and return the maximum value.  (Note: there is a builtin function named ``max`` but pretend you cannot use it.)
 
-    .. actex:: ex_8_5
+    .. actex:: ex_9_5
 
 
 #. Write a function to count how many odd numbers are in a list.
 
-    .. actex:: ex_8_6
+    .. actex:: ex_9_6
 
 #. Sum up all the even numbers in a list.
 
-    .. actex:: ex_8_7
+    .. actex:: ex_9_7
 
 #. Sum up all the negative numbers in a list.
 
-    .. actex:: ex_8_8
+    .. actex:: ex_9_8
 
 #. Count how many words in a list have length 5.
 
-    .. actex:: ex_8_9
+    .. actex:: ex_9_9
 
 #. Sum all the elements in a list up to but not including the first even number.
 
-    .. actex:: ex_8_10
+    .. actex:: ex_9_10
 
 #. Count how many words occur in a list up to and including the first occurrence of the word "sam".
 
-    .. actex:: ex_8_11
+    .. actex:: ex_9_11
 
 
 
@@ -1326,7 +1329,7 @@ Exercises
     #. insert
 
    
-    .. actex:: ex_8_12
+    .. actex:: ex_9_12
 
 #. Write a function ``replace(s, old, new)`` that replaces all occurences of
    ``old`` with ``new`` in a string ``s``::
@@ -1342,7 +1345,7 @@ Exercises
 
    *Hint*: use the ``split`` and ``join`` methods.
 
-    .. actex:: ex_8_13
+    .. actex:: ex_9_13
 
 
 #. Here are the rules for an L-system that creates something that resembles
@@ -1353,13 +1356,13 @@ Exercises
        H --> HFX[+H][-H]
        X --> X[-FFF][+FFF]FX
 
-   
-   .. actex:: ex_8_14
+ex_9_   
+   .. actex:: ex_9_14
 
 #. Here is another L-System.  Use an Angle of 25::
 
        F
        F --> F[-F]F[+F]F
 
-   .. actex:: ex_8_15
+   .. actex:: ex_9_15
 
