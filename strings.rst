@@ -1376,7 +1376,7 @@ Exercises
 
 #. Here is a dragon curve.  Use 90 degrees.::
 
-       X
+       FX
        X -> X+YF+
        Y -> -FX-Y
 
@@ -1384,7 +1384,7 @@ Exercises
 
 #. Here is something called an arrowhead curve.  Use 60 degrees.::
 
-       X
+       YF
        X -> YF+XF+Y
        Y -> XF-YF-X
 
@@ -1392,7 +1392,7 @@ Exercises
 
 #. Try the Peano-Gosper curve.  Use 60 degrees.::
 
-       X
+       FX
        X -> X+YF++YF-FX--FXFX-YF+
        Y -> -FX+YFYF++YF+FX--FX-Y
 
@@ -1400,7 +1400,7 @@ Exercises
 
 #. The Sierpinski Triangle.  Use 60 degrees.::
 
-       F
+       FXF--FF--FF
        F -> FF
        X -> --FXF++FXF++FXF--
 
