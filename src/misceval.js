@@ -143,8 +143,13 @@ Sk.misceval.richCompareBool = function(v, w, op)
     }
     else
     {
+        
         if (op === "In") return Sk.abstr.sequenceContains(w, v);
         if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
+
+        if (typeof v !== typeof w) {
+            return false;
+        }
 
         var res;
         //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
@@ -405,6 +410,7 @@ goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  */
 Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
 {
+
     if (typeof func === "function")
     {
         // todo; i believe the only time this happens is the wrapper
