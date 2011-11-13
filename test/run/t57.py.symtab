@@ -21,7 +21,7 @@ name: test
     Sym_nested: False
     Sym_haschildren: False
     Func_params: []
-    Func_locals: ['x']
+    Func_locals: []
     Func_globals: ['x']
     Func_frees: []
     -- Identifiers --
