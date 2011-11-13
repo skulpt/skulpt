@@ -77,7 +77,7 @@ name: h
     Sym_nested: False
     Sym_haschildren: False
     Func_params: []
-    Func_locals: ['retval']
+    Func_locals: []
     Func_globals: ['retval']
     Func_frees: []
     -- Identifiers --
