@@ -16,10 +16,10 @@ Sk.builtin.int_ = function(x, base)
 			}
 		}
 
-        if (!isNaN(x.v))
+        if (!isNaN(x.v) && x.v.indexOf(".") < 0)
             return parseInt(x.v, base);
         else {
-            throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not number");
+            throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not a valid literal");
         }
 
     }
