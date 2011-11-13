@@ -17,17 +17,19 @@ Sk.abstr.binop_type_error = function(v, w, name)
 };
 
 // this can't be a table for closure
+// bnm -- this seems like the most logical place to add support for user defined
+//        operators. (__xxx__ that I've defined in my own class)
 Sk.abstr.boNameToSlotFunc_ = function(obj, name)
 {
     switch (name)
     {
-        case "Add": return obj.nb$add;
-        case "Sub": return obj.nb$subtract;
-        case "Mult": return obj.nb$multiply;
-        //case "Div": return obj.nb$divide;
-        //case "FloorDiv": return obj.nb$floor_divide;
-        case "Mod": return obj.nb$remainder;
-        case "Pow": return obj.nb$power;
+        case "Add": return obj.nb$add ? obj.nb$add : obj.__add__;
+        case "Sub": return obj.nb$subtract ? obj.nb$subtract : obj.__sub__;
+        case "Mult": return obj.nb$multiply ? obj.nb$multiply : obj.__mul__;
+        case "Div": return obj.nb$divide ? obj.nb$divide : obj.__div__;
+        case "FloorDiv": return obj.nb$floor_divide ? obj.nb$floor_divide : obj.__floordiv__;
+        case "Mod": return obj.nb$remainder ? obj.nb$remainder : obj.__mod__;
+        case "Pow": return obj.nb$power ? obj.nb$power : obj.__pow__;
         //case "LShift": return obj.nb$lshift;
         //case "RShift": return obj.nb$rshift;
         //case "BitAnd": return obj.nb$and;
