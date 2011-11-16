@@ -7,7 +7,7 @@ For our purposes, we will assume that our data files are text files--that is, fi
 
 In Python, we must **open** files before we can use them and **close** them when we are done with them. As you might expect, once a file is opened it becomes a Python object just like all other data. :ref:`Table 1<filemethods1a>` shows the methods that can be used to open and close files.
 
-.. _filethods1a:
+.. _filemethods1a:
 
 ================ ======================== =====================================================
 **Method Name**   **Use**                  **Explanation**
@@ -25,6 +25,7 @@ you can imagine that it would be time-consuming and error-prone to do this. In
 addition, it is likely that there could be data from more quarterbacks and
 other years. The format of the data file is as follows
 ::
+
     First Name, Last Name, Position, Team, Completions, Attempts, Yards, TDs Ints, Comp%, Rating
 
 ::
@@ -112,7 +113,7 @@ To process all of our quarterback data, we will use a *for* loop to iterate over
 the ``split`` method, we can break each line into a list containing all the fields of interest about the
 quarterback. We can then take the values corresponding to first name, lastname, and passer rating to
 construct a simple sentence as shown in :ref:`Listing 1 <readingfile1>`. The output from the program is shown
-in Session {simpleoutput}.
+in `Session 1 <simpleoutput>`.
 
 .. _readingfile1:
 
@@ -126,6 +127,8 @@ in Session {simpleoutput}.
 
     qbfile.close()
 
+
+.. _simpleoutput:
 
 ::
 
@@ -175,8 +178,8 @@ newline character at the end. This method returns the empty string when it
 reaches the end of the file. The ``readlines`` method returns the contents of
 the entire file as a list of strings, where each item in the list represents
 one line of the file. It is also possible to read the entire file into a
-single string with ``read``. Table {filemethods2a} summarizes these methods
-and Session {filesession} shows them in action.
+single string with ``read``. :ref:`Table 2 <filemethods2a>` summarizes these methods
+and :ref:`Session 2 <filesession>` shows them in action.
 
 Note that we need to reopen the file before each read so that we start from
 the beginning. Each file has a marker that denotes the current read position
@@ -217,6 +220,8 @@ the end of the file.
     Philip Rivers QB, SD	357	541	4710	30	13	66.0%	101.8
     Matt Ha
     >>>
+
+.. _filemethods2a:
 
 ======================== =========================== ===================================== 
 **Method Name**           **Use**                     **Explanation**
