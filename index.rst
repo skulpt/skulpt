@@ -91,6 +91,7 @@ Table of Contents
     moreiteration.rst
     strings.rst
     lists.rst
+    files.rst
     dictionaries.rst
     recursion.rst
     classesintro.rst
