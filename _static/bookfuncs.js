@@ -101,7 +101,7 @@ function builtinRead(x) {
     return Sk.builtinFiles["files"][x];
 }
 
-function runit(myDiv,theButton) {
+function runit(myDiv,theButton,includes) {
     //var prog = document.getElementById(myDiv + "_code").value;
 
     $(theButton).attr('disabled','disabled');
@@ -115,7 +115,16 @@ function runit(myDiv,theButton) {
         editor.acEditEvent = false;
     }
     jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
-    var prog = editor.getValue();
+    var prog = "";
+    var text = "";
+    if (includes !== undefined ) {
+        // iterate over the includes, in-order prepending to prog
+		for (var x in includes) {
+			text = cm_editors[includes[x] + "_code"].getValue();
+			prog = prog + text + "\n"
+		}
+    }
+    prog = prog + editor.getValue();
     var mypre = document.getElementById(myDiv + "_pre");
     if (mypre) mypre.innerHTML = '';
     Sk.canvas = myDiv + "_canvas";
@@ -143,6 +152,7 @@ function runit(myDiv,theButton) {
         $(theButton).removeAttr('disabled');
     }
 }
+
 function saveSuccess(data,status,whatever) {
     if (data.redirect) {
         alert("Did not save!  It appears you are not logged in properly")
@@ -184,12 +194,7 @@ function requestCode(divName,sid) {
 
 function loadEditor(data, status, whatever) {
     // function called when contents of database are returned successfully
-	try {
-    	var res = eval(data)[0];
-	} catch(err) {
-		alert("error unable to load data: ", data)
-	}
-	
+    var res = eval(data)[0];
     var editor;
     if (res.sid) {
         editor = cm_editors[res.acid+"_"+res.sid+"_code"];
@@ -281,55 +286,6 @@ function createActiveCode(divid,suppliedSource,sid) {
    // $('#'+divid).modal({minHeight:700, minWidth: 410, maxWidth:450, containerCss:{width:420, height:750}});
 }
 
-function whilestep() {
-    whileanimid = setInterval(animateWhile,500)
-}
-
-function animateWhile() {
-    var lineEl = document.getElementById('linenum');
-    line = lineEl.innerText;
-    lnum = Number(line[line.length-1]);
-    var prev = 'line'+(lnum-1);
-    var ycond = document.getElementById('whilecond');
-    if (ycond.innerText == 'false' && lnum == 1) {
-        document.getElementById('line1').style.backgroundColor = '#d00';
-        document.getElementById('whilecond').style.backgroundColor = '#d00';
-        document.getElementById('line4').style.backgroundColor = '#fff';
-        lineEl.innerText = 'line2'
-        return;
-    } else if  (ycond.innerText == 'false' && lnum == 2) {
-        document.getElementById('line1').style.backgroundColor = "#fff";
-        document.getElementById('line5').style.backgroundColor = "#ddd";
-        clearInterval(whileanimid);
-        return;
-    }
-    var pline;
-    if (lnum-1 < 1) {
-        pline = document.getElementById('line4');
-    } else {
-        pline = document.getElementById(prev)
-    }
-    if (pline) {
-        pline.style.backgroundColor = '#fff';
-    }
-    document.getElementById(line).style.backgroundColor = '#ddd';
-    if (Number(lnum)+1 > 4) {
-        line = 'line1';
-    } else
-        line = 'line'+(lnum+1);
-    lineEl.innerText = line;
-    if (lnum == 2) {
-        var xpos = document.getElementById('xcorval');
-        var xposn = Number(xpos.innerText) + 10;
-        xpos.innerHTML = xposn;
-        if (xposn >=100) {
-            ycond.innerHTML = 'false';
-        }
-    }
-
-    
-}
-
 
 function comment(blockid) {
     $.modal('<iframe width="600" height="400" src="/getcomment?id='+blockid+'" style="background-color: white">', {
@@ -342,21 +298,6 @@ function comment(blockid) {
         backgroundColor: "#fff"
     }
             });
-}
-
-function checkBool(exp,selId,feedback,summary) {
-    var res = eval(exp);
-    var ans = eval(document.getElementById(selId).value);
-    var sumEl = document.getElementById(summary);
-    var sumTot = Number(sumEl.innerText);
-    if (ans == res) {
-        document.getElementById(feedback).innerHTML = 'correct';
-        $("#"+feedback).html('correct');
-        sumTot = sumTot + 1;
-        sumEl.innerText = sumTot;
-    } else {
-        document.getElementById(feedback).innerHTML = 'incorrect';
-    }
 }
 
 function sendGrade(grade,sid,acid) {
