@@ -529,19 +529,19 @@ to experiment with these methods to gain a better understanding of what they do.
 
 
 
-==========  ==============      ================================================
-Method      Parameters          Description
-==========  ==============      ================================================
-append      item                Adds a new item to the end of a list
-insert      position, item      Inserts a new item at the position given
-pop         none                Removes and returns the last item
-pop         position            Removes and returns the item at position
-sort        none                Modifies a list to be sorted
-reverse     none                Modifies a list to be in reverse order
-index       item                Returns the position of first occurrence of item
-count       item                Returns the number of occurrences of item
-remove      item                Removes the first occurrence of item
-==========  ==============      ================================================
+==========  ==============  ============  ================================================
+Method      Parameters       Result       Description
+==========  ==============  ============  ================================================
+append      item            mutator       Adds a new item to the end of a list
+insert      position, item  mutator       Inserts a new item at the position given
+pop         none            hybrid        Removes and returns the last item
+pop         position        hybrid        Removes and returns the item at position
+sort        none            mutator       Modifies a list to be sorted
+reverse     none            mutator       Modifies a list to be in reverse order
+index       item            return idx    Returns the position of first occurrence of item
+count       item            return ct     Returns the number of occurrences of item
+remove      item            mutator       Removes the first occurrence of item
+==========  ==============  ============  ================================================
 
 
 Details for these and others
