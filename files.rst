@@ -17,6 +17,17 @@ In Python, we must **open** files before we can use them and **close** them when
 ``close``        ``filevariable.close()``   File use is complete. 
 ================ ======================== =====================================================
 
+Finding a File on your Disk
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Opening a file requires that you, as a programmer, and Python agree about the location of the file on your disk.  The way that files are located on disk is by their **path**  You can think of the filename as the short name for a file, and the path as the full name.  For example on a Mac if you save the file ``hello.txt`` in your home directory the path to that file is ``/Users/yourname/hello.txt``  On a Windows machine the path looks a bit different but the same principles are in use.  For example on windows the path might be ``C:\Users\yourname\My Documents\hello.txt``
+
+You can access files in folders, also called directories, under your home directory by adding a slash and the name of the folder.  For example we have been storing files to use with PyCharm in the CS150 folder inside the PyCharmProjects folder under your home directory.  The full name for ``hello.py`` stored in the CS150 folder would be ``/Users/yourname/PyCharmProjects/CS150/hello.py``
+
+Here's the important rule to remember:  If your file and your Python program are in the same directory you can simply use the filename. ``open('myfile.txt','r')`` If your file and your Python program are in different directories then you should use the path to the file ``open(/Users/joebob01/myfile.txt)``.
+
+Reading a File
+~~~~~~~~~~~~~~
 
 As an example, suppose we have a text file called ``qbdata.txt`` that contains
 the following data representing statistics about NFL quarterbacks. Although it
