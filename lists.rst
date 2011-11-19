@@ -562,6 +562,9 @@ and ``reverse`` all return ``None``.  This means that re-assigning ``mylist`` to
     mylist = mylist.sort()   #probably an error
     print(mylist)
 
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_1
 
 The Return of L-Systems
 -----------------------
@@ -670,6 +673,10 @@ This example only uses 6 expansions.  Try it out with a larger number of
 expansions.  You may also want to try this example with different values for
 the angle and distance parameters.
 
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_2
+
 Append versus Concatenate
 -------------------------
 
@@ -769,6 +776,10 @@ each of its elements as you go. The following code squares all the numbers from 
 Take a moment to think about ``range(len(numbers))`` until you understand how
 it works. We are interested here in both the *value* and its *index* within the
 list, so that we can assign a new value to it.
+
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_3
 
 
 .. index:: parameter
@@ -873,6 +884,10 @@ Once again, codelens helps us to see the actual references and objects as they a
     print(things)
 
 
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_4
+
 Which is Better?
 ----------------
 
@@ -943,6 +958,11 @@ To write the ``primes_upto`` function we will use the ``is_prime`` function to f
 
 	    result = [num for num in range(2,n) if is_prime(num)]
 	    return result
+
+
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_5
 
 
 .. index:: nested list, list; nested
@@ -1018,6 +1038,10 @@ and join the list with the glue between each of the elements.
 
 The list that you glue together (``wds`` in this example) is not modified.  Also, 
 you can use empty glue or multi-character strings as glue.
+
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_6
 
     
 ``list`` Type Conversion Function
@@ -1181,6 +1205,9 @@ of a circle of radius r.
     print(circleInfo(10))
 
 
+.. admonition:: Scratch Editor
+
+	.. actex:: scratch_9_7
 
 Glossary
 --------
@@ -1356,7 +1383,7 @@ Exercises
        H --> HFX[+H][-H]
        X --> X[-FFF][+FFF]FX
 
-ex_9_   
+
    .. actex:: ex_9_14
 
 #. Here is another L-System.  Use an Angle of 25::
