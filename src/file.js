@@ -16,6 +16,9 @@ Sk.builtin.file = function(name, mode, buffering)
 	}
 	this.lineList = this.data$.split("\n");
 	this.lineList = this.lineList.slice(0,-1);
+	for(var i in this.lineList) {
+		this.lineList[i] = this.lineList[i]+'\n';
+	}
 	this.currentLine = 0;
     this.pos$ = 0;
 
