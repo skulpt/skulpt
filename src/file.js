@@ -9,10 +9,25 @@ Sk.builtin.file = function(name, mode, buffering)
     this.mode = mode;
     this.name = name;
     this.closed = false;
-    this.data$ = Sk.read(name.v);
+	if ( Sk.inBrowser ) {  // todo:  Maybe provide a replaceable function for non-import files
+		this.data$ = document.getElementById(name.v).innerText;
+	} else {
+  		this.data$ = Sk.read(name.v);
+	}
+	this.lineList = this.data$.split("\n");
+	this.lineList = this.lineList.slice(0,-1);
+	this.currentLine = 0;
     this.pos$ = 0;
+
+	this.__class__ = Sk.builtin.file;
+	
     return this;
 };
+
+Sk.builtin.file.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('file', Sk.builtin.file);
+
+Sk.builtin.file.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
 Sk.builtin.file.prototype['$r'] = function()
 {
     return new Sk.builtin.str("<"
@@ -24,17 +39,38 @@ Sk.builtin.file.prototype['$r'] = function()
         + "'>");
 };
 
-Sk.builtin.file.close = function(self)
+Sk.builtin.file.prototype.tp$iter = function()
 {
-    self.closed = true;
+    var allLines = this.lineList;
+
+    var ret =
+    {
+        tp$iter: function() { return ret; },
+        $obj: this,
+        $index: 0,
+        $lines: allLines,
+        tp$iternext: function()
+        {
+            if (ret.$index >= ret.$lines.length) return undefined;
+            return new Sk.builtin.str(ret.$lines[ret.$index++]);
+        }
+    };
+    return ret;
 };
 
-Sk.builtin.file.flush = function(self) {};
 
-Sk.builtin.file.fileno = function(self) { return 10; }; // > 0, not 1/2/3
-Sk.builtin.file.isatty = function(self) { return false; };
-Sk.builtin.file.next = function(self) { throw "todo; file.next"; };
-Sk.builtin.file.read = function(self, size)
+Sk.builtin.file.prototype['close'] = new Sk.builtin.func(function(self)
+{
+    self.closed = true;
+});
+
+
+Sk.builtin.file.prototype['flush'] = new Sk.builtin.func(function(self) {});
+Sk.builtin.file.prototype['fileno'] = new Sk.builtin.func(function(self) { return 10; }); // > 0, not 1/2/3
+Sk.builtin.file.prototype['isatty'] = new Sk.builtin.func(function(self) { return false; });
+
+
+Sk.builtin.file.prototype['read'] = new Sk.builtin.func(function(self, size)
 {
     if (self.closed) throw new Sk.builtin.ValueError("I/O operation on closed file");
     var len = self.data$.length;
@@ -43,34 +79,52 @@ Sk.builtin.file.read = function(self, size)
     self.pos$ += size;
     if (self.pos$ >= len) self.pos$ = len;
     return ret;
-};
+});
 
-Sk.builtin.file.readline = function(self, size)
+Sk.builtin.file.prototype['readline'] = new Sk.builtin.func(function(self, size)
 {
-    goog.asserts.fail();
-};
-Sk.builtin.file.readlines = function(self, sizehint)
-{
-    goog.asserts.fail();
-};
-Sk.builtin.file.seek = function(self, offset, whence)
-{
-    goog.asserts.fail();
-};
-Sk.builtin.file.tell = function(self)
-{
-    goog.asserts.fail();
-};
-Sk.builtin.file.truncate = function(self, size)
-{
-    goog.asserts.fail();
-};
-Sk.builtin.file.write = function(self, str)
-{
-    goog.asserts.fail();
-};
-Sk.builtin.file.writelines = function(self, sequence)
-{
-    goog.asserts.fail();
-};
+	var line = "";
+	if (self.currentLine < self.lineList.length) {
+		line = self.lineList[self.currentLine];
+    	self.currentLine++;
+	}
+	return new Sk.builtin.str(line);
+});
 
+Sk.builtin.file.prototype['readlines'] = new Sk.builtin.func(function(self, sizehint)
+{
+    var arr = [];
+    for(var i = self.currentLine; i < self.lineList.length; i++) {
+		arr.push(new Sk.builtin.str(self.lineList[i]));
+    }
+	return new Sk.builtin.list(arr);
+});
+
+Sk.builtin.file.prototype['seek'] = new Sk.builtin.func(function(self, offset, whence)
+{
+    if (whence === undefined ) whence = 1;
+    if (whence == 1) {
+		self.pos$ = offset;
+	} else {
+		self.pos$ = self.data$ + offset;
+	}
+});
+
+Sk.builtin.file.prototype['tell'] =  new Sk.builtin.func(function(self)
+{
+    return self.pos$;
+});
+
+
+Sk.builtin.file.prototype['truncate'] = new Sk.builtin.func(function(self, size)
+{
+    goog.asserts.fail();
+});
+
+Sk.builtin.file.prototype['write'] = new Sk.builtin.func(function(self, str)
+{
+    goog.asserts.fail();
+});
+
+
+goog.exportSymbol("Sk.builtin.file", Sk.builtin.file);
