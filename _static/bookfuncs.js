@@ -105,7 +105,7 @@ function runit(myDiv,theButton,includes) {
     //var prog = document.getElementById(myDiv + "_code").value;
 
     $(theButton).attr('disabled','disabled');
-    sK.isTurtleProgram = false;
+    Sk.isTurtleProgram = false;
     if (theButton !== undefined) {
         Sk.runButton = theButton;
     }
