@@ -141,8 +141,9 @@ in `Session 1 <simpleoutput>`.
 
 .. _simpleoutput:
 
-::
+.. raw:: html
 
+    <pre id="qbdata.txt">
 	QB  Colt McCoy had a rating of  74.5
 	QB  Josh Freeman had a rating of  95.9
 	QB  Michael Vick had a rating of  100.2
@@ -177,6 +178,7 @@ in `Session 1 <simpleoutput>`.
 	QB  Aaron Rodgers had a rating of  101.2
 	QB  Sam Bradford had a rating of  76.5
 	QB  Shaun Hill had a rating of  81.3
+    </pre>
 
 Alternative File Reading Methods
 --------------------------------
@@ -257,7 +259,7 @@ the end of the file.
 
 Now lets look at another method of reading our file using a ``while`` loop.  This important because many other programming languages do not support the ``for`` loop style for reading file but they do support the pattern we'll show you here.
 
-::
+.. activecode:: acfiletest
 
     infile = open("qbdata.txt","r")
     line = infile.readline()
