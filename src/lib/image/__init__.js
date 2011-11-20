@@ -69,7 +69,7 @@ var $builtinmodule = function(name) {
     mod.Image = Sk.misceval.buildClass(mod, image, 'Image', []);
 
     var eImage = function($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function(self,height,width) {
+        $loc.__init__ = new Sk.builtin.func(function(self,width,height) {
             self.width = width;
             self.height = height;
             self.canvas = document.createElement("canvas");
@@ -148,10 +148,15 @@ var $builtinmodule = function(name) {
 
 
     var screen = function($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function(self) {
+        $loc.__init__ = new Sk.builtin.func(function(self,width,height) {
             var currentCanvas = ImageMod.canvasLib[Sk.canvas];
             if (currentCanvas === undefined) {
                 self.theScreen = document.getElementById(Sk.canvas);
+                if (width !== undefined) {
+                    self.theScreen.height = height;
+                    self.theScreen.width = width;
+                }
+
                 ImageMod.canvasLib[Sk.canvas] = self.theScreen;
             } else {
                 console.log("canvas is already in place");
