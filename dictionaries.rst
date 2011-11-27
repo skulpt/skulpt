@@ -386,6 +386,8 @@ Exercises
        w  2
        $
 
+   .. actex:: ex_11_01
+
 #. Give the Python interpreter's response to each of the following from a
    continuous interpreter session:
 
@@ -451,20 +453,56 @@ Exercises
    number of times each occurs, in the text version of `Alice's Adventures in Wonderland`.  
    (You can obtain a free plain text version of the book, along with many others, from 
    http://www.gutenberg.org.) The first 10 lines of your output file should look
-   something like this::
+   something like this
 
-        Word              Count
-        =======================
-        a                 631
-        a-piece           1
-        abide             1
-        able              1
-        about             94
-        above             3
-        absence           1
-        absurd            2
+    =========== ===========
+    Word              Count
+    =========== ===========
+    a                 631
+    a-piece           1
+    abide             1
+    able              1
+    about             94
+    above             3
+    absence           1
+    absurd            2
+    =========== ===========
 
-   How many times does the word, ``alice``, occur in the book?
+   How many times does the word, ``alice``, occur in the book?  If you are writing this 
+   in the activecode window simply print out the results rather than write them to a file.
+   
+   .. actex:: ex_11_02
    
 #. What is the longest word in Alice in Wonderland? How many characters does it have?
 
+   .. actex:: ex_11_03
+   
+#. Here's a table of English to Pirate translations
+
+    ==========  ==============
+    English     Pirate
+    ==========  ==============
+    sir	        matey
+    hotel	    fleabag inn
+    student	    swabbie
+    boy	        matey
+    madam	    proud beauty
+    professor	foul blaggart
+    restaurant	galley
+    your	    yer
+    excuse	    arr
+    students	swabbies
+    are	        be
+    lawyer	    foul blaggart
+    the	        th'
+    restroom	head
+    my	        me
+    hello	    avast
+    is	        be
+    man	        matey
+    ==========  ==============
+    
+    Write a program that asks the user for a sentence in English and then translates that 
+    sentence to Pirate.
+    
+    
