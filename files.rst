@@ -135,7 +135,7 @@ construct a simple sentence as shown in :ref:`Listing 1 <readingfile1>`.
 
     for aline in qbfile:
         values = aline.split()
-        print('QB ', values[0], values[1], 'had a rating of ', values[-1] )
+        print('QB ', values[0], values[1], 'had a rating of ', values[10] )
 
     qbfile.close()
 
@@ -226,7 +226,7 @@ Now lets look at another method of reading our file using a ``while`` loop.  Thi
     line = infile.readline()
     while line:
         values = line.split()
-        print('QB ', values[0], values[1], 'had a rating of ', values[-1] )
+        print('QB ', values[0], values[1], 'had a rating of ', values[10] )
         line = infile.readline()
 
     infile.close()
