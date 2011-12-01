@@ -505,4 +505,7 @@ Exercises
     Write a program that asks the user for a sentence in English and then translates that 
     sentence to Pirate.
     
+    .. actex:: ex_11_04
+    
+
     
