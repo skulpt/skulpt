@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+var logged_in;
 
 function handleEdKeys(ed, e) {
     if (e.keyCode === 13) {
@@ -170,7 +171,7 @@ function saveEditor(divName) {
     // get editor from div name
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
-    $(document).ajaxError(function(e,jqhxr,settings,exception){alert("Request Failed for"+settings.url)});
+    //$(document).ajaxError(function(e,jqhxr,settings,exception){alert("Request Failed for"+settings.url)});
     jQuery.post("/saveprog",data,saveSuccess);
     if (editor.acEditEvent) {
         jQuery.get("/hsblog",{'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
@@ -194,6 +195,7 @@ function requestCode(divName,sid) {
 
 function loadEditor(data, status, whatever) {
     // function called when contents of database are returned successfully
+    if(data[0] == '<') return;
     var res = eval(data)[0];
     var editor;
     if (res.sid) {
@@ -250,7 +252,7 @@ function createActiveCode(divid,suppliedSource,sid) {
     runButton.setAttribute('value','run');
     runButton.onclick = myRun;
     edNode.appendChild(runButton);
-    if (sid === undefined) { // We don't need load and save buttons for grading
+    if (sid === undefined && logged_in == true) { // We don't need load and save buttons for grading
         var saveButton = document.createElement("input");
         saveButton.setAttribute('type','button');
         saveButton.setAttribute('value','save');
@@ -311,9 +313,14 @@ function gotUser(data, status, whatever) {
         mess = "Not logged in";
     } else if (data == "") {
         mess = "Not logged in";
+        // hide all save and load buttons
+        $('button.ac_opt').hide();
+        $('span.loginout').html('<a href="/_ah/login?continue=' + document.URL + '">login</a>')
+        logged_in = false;
     } else {
         var d = eval(data)[0];
         mess = d.email;
+        logged_in = true;        
     }
     x = $(".footer").text();
     $(".footer").text(x + mess);
