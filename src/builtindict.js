@@ -6,6 +6,7 @@ Sk.builtins = {
 'len': Sk.builtin.len,
 'min': Sk.builtin.min,
 'max': Sk.builtin.max,
+'sum': Sk.builtin.sum,
 'abs': Sk.builtin.abs,
 'ord': Sk.builtin.ord,
 'chr': Sk.builtin.chr,

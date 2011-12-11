@@ -263,7 +263,7 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
 {
     var res;
     if (! on) {
-        res = self.v.split(/[\s]+/, howmany);
+        res = self.v.trim().split(/[\s]+/, howmany);
     } else {
         res = self.v.split(new Sk.builtin.str(on).v, howmany);
     }

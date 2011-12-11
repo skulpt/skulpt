@@ -50,6 +50,27 @@ Sk.builtin.max = function max()
     return highest;
 };
 
+Sk.builtin.sum = function sum(iter,start)
+{
+    var tot = 0;
+    if (iter instanceof Sk.builtin.list) {
+        iter = iter.v;
+    } else {
+        throw "TypeError: an iterable is required";   
+    }
+    if (start === undefined ) {
+        start = 0;
+    }
+    for (var i = start; i < iter.length; ++i) {
+        if (typeof iter[i] !== "number")
+        {
+            throw "TypeError: an number is required";
+        }
+        tot = tot + iter[i];
+    }
+    return tot;
+};
+
 Sk.builtin.abs = function abs(x)
 {
     return Math.abs(x);
@@ -104,7 +125,7 @@ Sk.builtin.repr = function repr(x)
 Sk.builtin.open = function open(filename, mode, bufsize)
 {
     if (mode === undefined) mode = "r";
-    if (mode !== "r" && mode !== "rb") throw "todo; haven't implemented non-read opens";
+    if (mode.v !== "r" && mode.v !== "rb") throw "todo; haven't implemented non-read opens";
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
