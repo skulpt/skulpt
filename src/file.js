@@ -10,7 +10,11 @@ Sk.builtin.file = function(name, mode, buffering)
     this.name = name;
     this.closed = false;
 	if ( Sk.inBrowser ) {  // todo:  Maybe provide a replaceable function for non-import files
-		this.data$ = document.getElementById(name.v).innerText;
+	    if (document.all) {
+		    this.data$ = document.getElementById(name.v).innerText;
+	    } else { // stupid Firefox
+	        this.data$ = document.getElementById(name.v).textContent;
+	    }
 	} else {
   		this.data$ = Sk.read(name.v);
 	}
