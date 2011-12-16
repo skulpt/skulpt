@@ -315,7 +315,7 @@ function gotUser(data, status, whatever) {
         mess = "Not logged in";
         // hide all save and load buttons
         $('button.ac_opt').hide();
-        $('span.loginout').html('<a href="/_ah/login?continue=' + document.URL + '">login</a>')
+        $('span.loginout').html('<a href="/genlogin">login</a>')
         logged_in = false;
     } else {
         var d = eval(data)[0];
