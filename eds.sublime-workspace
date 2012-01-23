@@ -1,0 +1,507 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"lat",
+				"latex_escape"
+			],
+			[
+				"g",
+				"get"
+			],
+			[
+				"path",
+				"path"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "Packages/LaTeXTools/LaTeX.sublime-build",
+	"command_palette":
+	{
+		"height": 127.0,
+		"selected_items":
+		[
+			[
+				"upper",
+				"Convert Case: Upper Case"
+			],
+			[
+				"pack",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"package",
+				"Package Control: Discover Packages"
+			],
+			[
+				"title case",
+				"Convert Case: Title Case"
+			],
+			[
+				"title",
+				"Convert Case: Title Case"
+			],
+			[
+				"emp",
+				"Snippet: Emphasize text"
+			],
+			[
+				"bold",
+				"Snippet: Boldface text"
+			],
+			[
+				"discover",
+				"Package Control: Discover Packages"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"sublime lin",
+				"SublimeLinter: Reset"
+			],
+			[
+				"hg",
+				"SublimeHg: Hg"
+			],
+			[
+				"sub",
+				"SublimeHg: Open Hg Command Prompt"
+			],
+			[
+				"sublimehg",
+				"SublimeHg: Hg"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 122.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": true,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/bmiller/src/eds/applications/eds/static/_static/websupport.js",
+		"/Users/bmiller/src/myenv/myrpoj/myrpoj/views.py",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/generated_schedule.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/committee.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/awards.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/makeSchedule.py",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/sagtable_alone.tex",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/thursday.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/saturday.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/friday.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/generated_schedule.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/wednesday.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/notes.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/makeSAG.py",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/sag.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/program.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/sagtable.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/sag.txt",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/pre_events.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/stats.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/evals.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/makeProcOrder.py",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/upcoming.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/schedule.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/scheduletest.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/sheridanID2Title.csv",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/bofs_posters_workshops.txt",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/tsched.tex",
+		"/Users/bmiller/Library/Application Support/sublime text 2/Packages/LaTeXTools/LaTeX.sublime-build",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/Program/fm01spc-sc-message.tex",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/proceedings_order.txt",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/compByid.py",
+		"/Users/bmiller/Dropbox/Projects/SIGCSE2012/project/sigcse2012/titlediffs.txt",
+		"/usr/local/texlive/2011/texmf-dist/tex/latex/fontspec/fontspec.sty",
+		"/Users/bmiller/Dropbox/Projects/thinkcs/thinkcs.sublime-project",
+		"/Users/bmiller/Dropbox/Projects/thinkcs/logdata.txt",
+		"/Users/bmiller/Documents/TextmateHG.log",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/SublimeLinter/Base File.sublime-settings",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/User/User.sublime-commands",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/Default/Global.sublime-settings",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/User/hello.py",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/User/filter_region.py",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/Default/Default.sublime-commands",
+		"/Users/bmiller/src/LutherDeployed/thinkcs/Evaluation/useinfo_fall2011.dat",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/User/Base File.sublime-settings",
+		"/Library/Python/2.7/site-packages/Sphinx-1.0.7-py2.7.egg/sphinx/themes/basic/layout.html",
+		"/Users/bmiller/Dropbox/Projects/RecipeText/src/test.yml",
+		"/Users/bmiller/Dropbox/Projects/thinkcs/source/_static/builtin.js",
+		"/Users/bmiller/src/LutherDeployed/thinkcs/app.yaml",
+		"/Users/bmiller/Dropbox/Projects/IntroCoil/trunk/Fractals/fractals.tex",
+		"/Users/bmiller/tmp/pycomplete.py",
+		"/Users/bmiller/Dropbox/Millers/Recipes/Roesti Potatoes.txt",
+		"/Users/bmiller/Dropbox/Projects/RecipeText/src/allrecs.yml",
+		"/Users/bmiller/src/EditorClient/EditorClientWorker.py",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/EmacsKillRing/EmacsKillRing.py",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/EmacsKillRing/Default.sublime-keymap",
+		"/Users/bmiller/src/EmacsKillRing/EmacsKillRing.py",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/Default/Base File.sublime-settings",
+		"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/User/Python.sublime-settings",
+		"/Applications/QuickCursor.app/Contents/Info.plist",
+		"/Users/bmiller/src/OnlinePythonTutor/mock-data.js"
+	],
+	"find":
+	{
+		"height": 33.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			"*.tex",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"computing en",
+			"has-comm",
+			"has-commhas-comm",
+			"has-comm",
+			"transforming the cs classroom",
+			"role of",
+			"department",
+			"consultant",
+			"indepndant",
+			"indepndent",
+			"10:10",
+			"exhibit hall",
+			"pi",
+			"dan gar",
+			"Garcia",
+			"mart",
+			"martha",
+			"lester",
+			"poster",
+			"alice",
+			"greenfoot",
+			"break",
+			"Ballroom AB",
+			"many majors",
+			"databases for",
+			"supporter",
+			"13:45",
+			"10:45",
+			"intel",
+			"puzzle",
+			"evidence-based",
+			"program by de",
+			"Laptop optional",
+			"Laptop required",
+			"cloud-",
+			"supporter sess",
+			"de pas",
+			"(\\w)(,|\\.)(\\w)",
+			"(\\w+)(\\s+\\\\emph)",
+			"(\\w+)(\\s+\\\\textit)",
+			"(\\w+)(\\s+\\\\emp)",
+			"(\\w+)(\\s+\\\\emph)",
+			"(\\w+)(\\s+\\\\textit)",
+			"(\\w+\\s+)\\\\textit",
+			"Castaneda",
+			"castaneda",
+			"Paper &",
+			"mult",
+			"array",
+			"\\&",
+			"\\&\\#",
+			"&#",
+			"\\\\newpage",
+			"Chair: & \n\\s+(.*)\\\\.*\n%.*\n\\s+Participants: & \n(\\s+\\\\multicolumn\\{2\\}\\{@\\{\\}l\\}\\{\\\\parbox\\{3.75in\\}\\{)",
+			"Chair: & \n\\s+(.*)\\\\.*\n%.*\n%.*",
+			"N/A",
+			"knitting",
+			"Peterson",
+			"Sara Peterson",
+			"PAPERS",
+			"xcolor",
+			"\\rowcolor[gray]{0.9}[0pt][0pt] ",
+			"poster",
+			"student research",
+			"supporter",
+			"exhibit",
+			"\\\\subsubsection\\*\\{(.*?)\\}",
+			"\\\\large (\\d+:\\d+)",
+			"\\multicolumn{3}{@{}l}{\\parbox{5in}",
+			"concurrency &",
+			"#",
+			"SupporterSession",
+			"SpecialSession",
+			"<.*?>",
+			"print()",
+			"p: ",
+			"<.*?>",
+			"printsumm",
+			"printsum",
+			"printsumm",
+			"papers",
+			"k-12",
+			"\\\\ \\\\",
+			"supporter",
+			"TBA",
+			"tbd",
+			"intel",
+			"\"",
+			"expanding the",
+			"expanding  the",
+			"workshop",
+			"BOF",
+			"luncheon",
+			"@{}p{5in}",
+			"showcase",
+			"@{}p{5in}",
+			"showcase",
+			"@{}p{5in}",
+			"@{}",
+			"Student rese",
+			"SRC",
+			"supporter",
+			"showcase",
+			"showca",
+			"showcase",
+			"'(.*?)'",
+			"\"(.*?)\"",
+			"keynote",
+			"abel",
+			"Poster",
+			"^Session\\s+\\d+\\n",
+			"teaching parallel",
+			"XXXX",
+			"higher level",
+			"higher-level",
+			"compelling ex",
+			"compelling",
+			"teaching parallel computing",
+			"parallel computing with",
+			"parallel computing  with",
+			"communication ",
+			"ap cs",
+			"teaching with",
+			"killing 3",
+			"challen",
+			"}",
+			"\\textit{",
+			"}"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"Ballroom BC",
+			"Laptop Optional",
+			"Laptop Required",
+			"$1$2 $3",
+			"$1,$2",
+			"$1,\\\\textit",
+			"Casta\\~neda",
+			"Papers &",
+			"    & $2 $1",
+			"",
+			"\\{\\\\sffamily\\\\bfseries $1\\}\\\\newline\\\\noindent",
+			"\\{\\\\sffamily\\\\large\\\\bfseries $1\\}",
+			"$1",
+			"& \\multicolumn{2}{@{}l}{\\parbox{4.75in}",
+			"Supporter",
+			"SS",
+			"",
+			"p & ",
+			"",
+			"\\\\[0.5em]",
+			"@{\\hspace*{0.25in}}p{4.75in}",
+			"@{\\hspace*{0.25in}",
+			"``$1''",
+			"",
+			" ",
+			"",
+			"\\|",
+			"$1,",
+			"",
+			"$1,",
+			"$1|",
+			"",
+			"\\.\\. _fig_\\1:",
+			"\\.\\. _fig_$1:"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 32.0
+	},
+	"input":
+	{
+		"height": 28.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 136.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"sagtable_",
+				"Program/sagtable_alone.tex"
+			],
+			[
+				"satur",
+				"Program/saturday.tex"
+			],
+			[
+				"friday",
+				"Program/friday.tex"
+			],
+			[
+				"thurs",
+				"Program/thursday.tex"
+			],
+			[
+				"wedne",
+				"Program/wednesday.tex"
+			],
+			[
+				"satu",
+				"Program/saturday.tex"
+			],
+			[
+				"wed",
+				"Program/wednesday.tex"
+			],
+			[
+				"notes",
+				"Program/notes.tex"
+			],
+			[
+				"sagt",
+				"Program/sagtable_alone.tex"
+			],
+			[
+				"comm",
+				"Program/committee.tex"
+			],
+			[
+				"awa",
+				"Program/awards.tex"
+			],
+			[
+				"thur",
+				"Program/thursday.tex"
+			],
+			[
+				"note",
+				"Program/notes.tex"
+			],
+			[
+				"committ",
+				"Program/committee.tex"
+			],
+			[
+				"sat",
+				"Program/saturday.tex"
+			],
+			[
+				"bofs",
+				"bofs_posters_workshops.txt"
+			],
+			[
+				"default(",
+				"/Users/bmiller/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap"
+			],
+			[
+				"graph",
+				"source/graphs.rst"
+			],
+			[
+				"edi",
+				"/Users/bmiller/src/EditorClient/EditorClientWorker.py"
+			],
+			[
+				"sis",
+				"/Users/bmiller/Dropbox/Papers/SIS/sis.tex"
+			],
+			[
+				"editor",
+				"/Users/bmiller/src/EditorClient/EditorClientWorker.py"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 232.0,
+	"status_bar_visible": true
+}
