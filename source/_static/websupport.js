@@ -662,11 +662,11 @@
   };
 
   var opts = {
-    processVoteURL: '/_process_vote',
-    addCommentURL: '/_add_comment',
-    getCommentsURL: '/_get_comments',
-    acceptCommentURL: '/_accept_comment',
-    deleteCommentURL: '/_delete_comment',
+    processVoteURL: '/eds/ajax/process_vote',
+    addCommentURL: '/eds/ajax/add_comment.json',
+    getCommentsURL: '/eds/ajax/get_comments.json',
+    acceptCommentURL: '/eds/ajax/accept_comment',
+    deleteCommentURL: '/eds/ajax/delete_comment',
     commentImage: '/eds/static/_static/comment.png',
     closeCommentImage: '/eds/static/_static/comment-close.png',
     loadingImage: '/eds/static/_static/ajax-loader.gif',

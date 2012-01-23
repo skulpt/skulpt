@@ -17,5 +17,7 @@ def chapter():
         elif l not in newl:
             newl.append(l)
     contents['script'] = "\n".join(newl).replace('/static/','/eds/static/')
+    contents['script'] = contents['script'].replace('/eds/view/_get_comments','/eds/ajax/get_comments.json')
+    contents['script'] = contents['script'].replace('/eds/view/_add_comment','/eds/ajax/add_comment.json')    
     contents['body'] = contents['body'].replace('/static/','/eds/static/')
     return contents
