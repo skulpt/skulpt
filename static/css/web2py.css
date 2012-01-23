@@ -1,0 +1,350 @@
+/** these MUST stay **/
+body { margin: 0; padding:0; border: 0; }
+a { text-decoration:none}
+a:hover {text-decoration: underline}
+a.button {text-decoration: none}
+h1,h2,h3,h4,h5,h6 {margin: 0.5em 0 0.25em 0; display: block; font-family: Helvetica}
+        h1 { font-size: 4.00em;}
+        h2 { font-size: 3.00em;}
+        h3 { font-size: 2.00em;}
+        h4 { font-size: 1.50em;}
+        h5 { font-size: 1.25em;}
+        h6 { font-size: 1.12em;}
+right { float:right; text-align: right; }
+left { float:left; text-align: left; }
+center { width:100; text-align: center; vertical-align:middle;}
+label { white-space: nowrap; }
+th, label { font-weight: bold; }
+th, td { text-align: left; vertical-align: top; padding: 2px 5px 2px 5px;}
+form table tr td label { text-align: left; }
+p, table, ol, ul { padding: 0.5em 0 0.5em 0 }
+p {text-align: justify }
+ol, ul { padding-left: 30px }
+li { margin-bottom: 0.5em; }
+span, input, select, textarea, button, label, a { display: inline }
+img { border: 0; }
+blockquote, blockquote p, p blockquote { font-style: italic; margin: 0.5em 30px 0.5em 30px; font-size: 0.9em}
+i, em { font-style: italic; }
+strong { font-weight: bold; }
+small { font-size: 0.8em; }
+textarea { width: 600px; }
+code { font-family: Courier;}
+input[type=text], input[type=password], select { width: 300px; }
+/** end **/
+
+/* Sticky footer begin */
+html, body {
+  height: 100%;
+}
+
+.wrapper {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -8em; /* set last value to footer height plus footer vertical padding */
+}
+
+.main {
+  padding: 20px 0 50px 0;
+}
+
+.footer, .push {
+  height: 6em;
+  padding: 1em 0;
+  clear: both;
+}
+
+.footer-content {position: relative; bottom: -4em; width: 100%;}
+
+.auth_navbar {
+    white-space: nowrap;
+}
+
+/* Sticky footer end */
+
+body {
+    background-color: #FFFFFF;
+}
+.footer {
+    background-color: #ECECEC;
+}
+.header {
+	// background: <fill here for header image>;
+}
+
+
+fieldset { padding: 16px; border-top: 1px #DEDEDE solid;}
+fieldset legend {text-transform:uppercase; font-weight: bold; padding: 4px 16px 4px 16px; background: #f1f1f1;}
+
+/* fix ie problem with menu */
+.ie-lte7 .topbar .container {z-index: 2; }
+
+td.w2p_fw {padding-bottom: 1em;}
+td.w2p_fl, td.w2p_fw, td.w2p_fc { vertical-align:top; }
+td.w2p_fl { text-align:right; }
+td.w2p_fl,  td.w2p_fw {padding-right: 7px;}
+td.w2p_fl, td.w2p_fc { padding-top: 4px; }
+
+/* tr#submit_record__row {border-top: 1px solid #E5E5E5;} */
+#submit_record__row td {padding-top: .5em;}
+
+/* Fix */
+#auth_user_remember__row label {display: inline;}
+#web2py_user_form td { vertical-align:top; }
+
+a, a:visited, a:hover { color:#0069D6}
+
+/*********** web2py specific ***********/
+div.flash {
+    font-weight: bold;
+    display: none;
+    position: fixed;
+    padding: 10px;
+    top: 48px;
+    right: 50px;
+    min-width: 280px;
+    opacity: 0.85;
+    margin: 0px 0px 10px 10px;
+    color: #fff;
+    vertical-align: middle;
+    cursor: pointer;
+    background: #000;
+    border: 2px solid #fff;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    z-index: 2;
+}
+div.error {
+    background-color: red;
+    color: white;
+    padding: 3px;
+}
+
+.topbar {
+    width:100%;
+    color: #959595; vertical-align:middle;
+    padding: 0;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#333333), to(#222222));
+    background-image: -moz-linear-gradient(top, #333333, #222222);
+    background-image: -ms-linear-gradient(top, #333333, #222222);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #333333), color-stop(100%, #222222));
+    background-image: -webkit-linear-gradient(top, #333333, #222222);
+    background-image: -o-linear-gradient(top, #333333, #222222);
+    background-image: linear-gradient(top, #333333, #222222);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#222222', GradientType=0);
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.topbar a {
+    color: #e1e1e1;
+}
+
+#navbar {float: right; padding: .4em 0;}
+
+#menu {padding-top: .2em;}
+
+.right {
+       width:100%;
+       text-align: right;
+       float: right;
+}
+
+.statusbar {
+    background-color: #F5F5F5;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding: .5em 1em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.breadcrumbs { float: left; }
+
+.copyright {float: left;}
+
+/* #MEDIA QUERIES SECTION */
+
+    /* All Mobile Sizes (devices and browser) */
+    @media only screen and (max-width: 767px) {
+
+        .topbar {text-align: center;}
+        #navbar, #menu {float: none;}
+        #navbar {font-size: 1.2em; padding: .6em 0 1.2em;}
+        #menu  {padding: 0 0 1.5em;}
+        #menu select {font-size: 1.2em; margin: 0; padding: 0;}
+
+        div.flash {top: 110px; right: 10px;}
+
+    }
+
+/*
+*Grid
+*
+* The default style for SQLFORM.grid even using jquery-iu or another ui framework
+* will look better with the declarations below
+* if needed to remove base.css consider keeping these following lines in some css file.
+*/
+.web2py_table { border: 1px solid #ccc; }
+.web2py_paginator { border-left: 1px solid #ccc; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc; }
+.web2py_grid a { text-decoration:none;}
+.web2py_grid table { width: 100% }
+.web2py_grid td { white-space:nowrap; }
+.web2py_grid tbody td {
+    padding: 2px 5px 2px 5px;
+    line-height: 13.5px;
+    vertical-align: middle;
+}
+.web2py_grid input:focus,
+.web2py_grid textarea:focus,
+.web2py_grid select:focus {
+        border: 1px solid #ffffff;
+        -webkit-box-shadow: 0px 0px 6px #007eff;
+        -moz-box-shadow: 0px 0px 5px #007eff;
+        box-shadow: 0px 0px 5px #007eff;
+    }
+
+.web2py_grid thead th {
+    background-color:#EAEAEA;
+    padding: 10px 5px 10px 5px;
+    line-height: 13.5px;
+    vertical-align: middle;
+    font-weight: bold;
+    border-bottom: 1px solid #DDD;
+    border-right: 1px solid #DDD;
+}
+.web2py_grid tr.odd {background-color: #F9F9F9;}
+.web2py_grid tr:hover {background-color: #F5F5F5; }
+
+/*
+.web2py_breadcrumbs a {
+    line-height: 20px; margin-right: 5px; display: inline-block;
+    padding: 3px 5px 3px 5px;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    color: #3C3C3D;
+    text-shadow: 1px 1px 0 #FFFFFF;
+    white-space: nowrap; overflow: visible; cursor: pointer;
+    background:#ECECEC;
+    text-decoration: none; border: 1px solid #CACACA;
+    -webkit-border-radius: 2px; -moz-border-radius: 2px;
+    -webkit-background-clip: padding-box; border-radius: 2px;
+    outline: none; position: relative; zoom: 1; *display: inline;
+}
+*/
+
+.web2py_console {
+    min-height: 60px;
+    text-align: left;
+}
+
+
+.web2py_search_actions{
+    width:40%;
+    float:left;
+    text-align:left;
+
+}
+.web2py_grid .row_buttons {
+    min-height:25px;
+    vertical-align: middle;
+}
+.web2py_grid .row_buttons a {
+    margin: 3px;
+}
+
+.web2py_grid .row_buttons a,
+.web2py_paginator ul li a,
+.web2py_search_actions a,
+.web2py_console input[type=submit],
+.web2py_console input[type=button],
+.web2py_console button {
+    line-height: 20px;
+    margin-right: 5px; display: inline-block;
+    padding: 3px 5px 3px 5px;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-size: 1em;
+    color: #3C3C3D;
+    text-shadow: 1px 1px 0 #FFFFFF;
+    background:#ECECEC;
+    white-space: nowrap; overflow: visible;
+    cursor: pointer; text-decoration: none;
+    border: 1px solid #CACACA;
+    -webkit-border-radius: 2px; -moz-border-radius: 2px;
+    -webkit-background-clip: padding-box; border-radius: 2px;
+    outline: none; position: relative; zoom: 1; *display: inline;
+}
+
+.web2py_grid .row_buttons a:hover,
+.web2py_search_actions a:hover,
+.web2py_console input[type=submit]:hover,
+.web2py_console input[type=button]:hover,
+.web2py_paginator ul li a:hover {
+color: #222;
+                background: #ddd; /* Old browsers */
+                background: #ddd -moz-linear-gradient(top, rgba(255,255,255,.3) 0%, rgba(0,0,0,.3) 100%); /* FF3.6+ */
+			    background: #ddd -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,.3)), color-stop(100%,rgba(0,0,\
+0,.3))); /* Chrome,Safari4+ */
+                background: #ddd -webkit-linear-gradient(top, rgba(255,255,255,.3) 0%,rgba(0,0,0,.3) 100%); /* Chrome10+,Safari5.1+ */
+                background: #ddd -o-linear-gradient(top, rgba(255,255,255,.3) 0%,rgba(0,0,0,.3) 100%); /* Opera11.10+ */
+                background: #ddd -ms-linear-gradient(top, rgba(255,255,255,.3) 0%,rgba(0,0,0,.3) 100%); /* IE10+ */
+                background: #ddd linear-gradient(top, rgba(255,255,255,.3) 0%,rgba(0,0,0,.3) 100%); /* W3C */
+          border: 1px solid #888;
+          border-top: 1px solid #aaa;
+          border-left: 1px solid #aaa;
+/*
+    color: #FFFFFF; border-color: #388AD4; text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    background-position: 0 -40px; background-color: #2D7DC5;
+*/
+}
+
+.web2py_counter {
+    margin-top: 5px;
+    margin-right:5px;
+    width:35%;
+    float:right;
+    text-align:right;
+}
+
+/*Fix firefox problem*/
+.web2py_table {clear: both; display: block;}
+
+.web2py_paginator {
+    padding: 5px;
+    color: #333;
+    text-align:right;
+    background-color: #f2f2f2; padding: 5px; border-bottom: 1px solid #DDD;
+
+}
+.web2py_paginator ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+}
+.web2py_paginator ul li {
+    display: inline;
+}
+.web2py_paginator .current {
+    font-weight: bold;
+}
+#w2p_query_trigger {
+        margin-left: 0;
+}
+#w2p_query_panel {
+        // float:left;
+	background:#e0e0e0;
+        border:1px solid #CFCFCF;
+	// bottom:3px;
+        // left:187px;
+        // margin-top: 30px;
+        min-width:550px;
+	min-height:16px;
+        padding: 3px 3px;
+	border-radius:2px;
+}
+.ie9 #query_panel {padding-bottom:2px;}
+

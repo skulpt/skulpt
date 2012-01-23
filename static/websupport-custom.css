@@ -1,0 +1,180 @@
+div.popup_error {
+    background: #FFF;
+    display: none;
+    position: fixed;
+    padding-bottom: .2em;
+    margin: 0;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 32;
+    border-bottom: 1px solid #CCC;
+}
+
+a.sphinx_comment img {
+    margin-left: .25em;
+}
+
+/** Popup window styling */
+div.popup_comment {
+    display: none;
+    width: 800px;
+    border: 1px solid #555555;
+    z-index: 16;
+    padding: 6px 18px;
+    background: #FFF;
+    text-align: left;
+}
+
+div.popup_comment h1 {
+    border-bottom: 1px dotted #777;
+}
+
+div.popup_comment h3 {
+    text-align: center;
+    color: #11557C;
+}
+
+div.popup_comment textarea {
+    display: block;
+    line-height: 1.5em;
+    margin: 6px 0 0 0;
+}
+
+p.propose_button {
+    margin: 0;
+}
+
+form#comment_form input {
+    margin-top: .5em;
+}
+
+a.hide_propose_change {
+    display: none;
+}
+
+a.show_propose_change, a.hide_propose_change {
+    font-size: smaller;
+}
+
+p.sort_options {
+    float: right;
+    margin: 0 2em;
+}
+
+a.sort_option {
+    margin-left: .5em;
+}
+
+a.sel {
+    color: #2491cf;
+    text-decoration: underline;
+}
+
+div.popup_comment ul {
+    list-style: none;
+    padding: 0 0 0 10px;
+}
+
+div.popup_comment ul li {
+    margin-top: .5em;
+}
+
+div#focuser {
+    background: #000;
+    display: none;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 8;
+    opacity: 0.75;
+}
+
+a#comment_close {
+    float: right;
+}
+
+div.vote {
+    padding-top: 3px;
+    float: left;
+}
+
+div.arrow {
+    width: 16px;
+    height: 16px;
+    margin-bottom: 10px;
+}
+
+div.comment_content p, pre.proposal {
+    line-height: 1.5em;
+    margin: 0 0 0 25px;
+}
+
+pre.proposal {
+    color: #555;
+    display: none;
+    margin: .5em 0 .5em 25px;
+}
+
+a.hide_proposal, a.show_proposal {
+    display: none;
+}
+
+pre.proposal .prop_added {
+    background-color: #CFC;
+}
+
+pre.proposal .prop_removed {
+    background-color: #FCC;
+}
+
+pre.proposal ins {
+    text-decoration: none;
+    background-color: #8F8;
+}
+
+pre.proposal del {
+    text-decoration: none;
+    background-color: #F88;
+}
+
+.rating, .delta {
+    font-size: .9em;
+}
+
+a.un {
+    display: none;
+}
+
+.user_id {
+    color: #EE9816;
+}
+
+p.tagline span {
+    margin-right: .25em;
+}
+
+p.comment_opts a {
+    color: #666;
+    font-size: .9em;
+    margin-right: 1em;
+}
+
+ul.children {
+    margin-left: 22px;
+    border-left: 1px solid #DDD;
+}
+
+a.close_reply {
+    display: none;
+}
+
+div.clearleft {
+    clear: left;
+}
+
+.hidden {
+    display: none;
+}
