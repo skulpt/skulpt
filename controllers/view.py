@@ -1,8 +1,9 @@
 from sphinx.websupport import WebSupport
 import json
 
-
+@auth.requires_login()
 def chapter():
+
     web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',staticdir='/Users/bmiller/src/eds/applications/eds/static',docroot='/eds/view')
     doc = request.args[0]
     contents = web_support.get_document(doc)
