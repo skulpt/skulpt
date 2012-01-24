@@ -115,6 +115,21 @@ use_janrain(auth,filename='private/janrain.key')
 ## >>> for row in rows: print row.id, row.myfield
 #########################################################################
 
+db.define_table('useinfo',
+  Field('timestamp','datetime'),
+  Field('sid','string'),
+  Field('event','string'),
+  Field('act','string'),
+  Field('div_id','string')
+)
+
+db.define_table('code',
+  Field('acid','string'),
+  Field('code','text'),
+  Field('class_group','string'),
+  Field('grade','double'),
+  Field('sid','string')
+)
 
 mail.settings.server = settings.email_server
 mail.settings.sender = settings.email_sender

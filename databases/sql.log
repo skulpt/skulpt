@@ -56,3 +56,32 @@ CREATE TABLE auth_cas(
     renew CHAR(1)
 );
 success!
+timestamp: 2012-01-24T10:58:54.190527
+CREATE TABLE useinfo(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TIMESTAMP,
+    sid CHAR(512),
+    event CHAR(512),
+    act CHAR(512),
+    div_id CHAR(512)
+);
+success!
+timestamp: 2012-01-24T12:56:54.017814
+CREATE TABLE code(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    acid CHAR(512),
+    code TEXT,
+    group CHAR(512),
+    grade DOUBLE,
+    sid CHAR(512)
+);
+timestamp: 2012-01-24T12:57:40.863145
+CREATE TABLE code(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    acid CHAR(512),
+    code TEXT,
+    class_group CHAR(512),
+    grade DOUBLE,
+    sid CHAR(512)
+);
+success!

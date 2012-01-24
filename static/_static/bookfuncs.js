@@ -111,10 +111,10 @@ function runit(myDiv,theButton,includes) {
     }
     var editor = cm_editors[myDiv+"_code"];
     if (editor.acEditEvent) {
-        jQuery.get("/hsblog",{'event':'activecode','act': 'edit', 'div_id':myDiv}); // Log the run event
+        jQuery.get("/eds/ajax/hsblog",{'event':'activecode','act': 'edit', 'div_id':myDiv}); // Log the run event
         editor.acEditEvent = false;
     }
-    jQuery.get("/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
+    jQuery.get("/eds/ajax/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
     var prog = "";
     var text = "";
     if (includes !== undefined ) {
@@ -171,24 +171,24 @@ function saveEditor(divName) {
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
     $(document).ajaxError(function(e,jqhxr,settings,exception){alert("Request Failed for"+settings.url)});
-    jQuery.post("/saveprog",data,saveSuccess);
+    jQuery.post("/eds/ajax/saveprog",data,saveSuccess);
     if (editor.acEditEvent) {
-        jQuery.get("/hsblog",{'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
+        jQuery.get("/eds/ajax/hsblog",{'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
         editor.acEditEvent = false;
     }
-    jQuery.get("/hsblog",{'event':'activecode' ,'act':'save', 'div_id':divName}); // Log the run event
+    jQuery.get("/eds/ajax/hsblog",{'event':'activecode' ,'act':'save', 'div_id':divName}); // Log the run event
 
 }
 
 function requestCode(divName,sid) {
     var editor = cm_editors[divName+"_code"];
     
-    var url = "/getprog"
+    var url = "/eds/ajax/getprog"
     var data = {acid: divName}
     if (sid !== undefined) {
         data['sid'] = sid;
     }
-    jQuery.get("/hsblog",{'event':'activecode', 'act':'load', 'div_id':divName}); // Log the run event
+    jQuery.get("/eds/ajax/hsblog",{'event':'activecode', 'act':'load', 'div_id':divName}); // Log the run event
     jQuery.get(url,data, loadEditor);
 }
 
@@ -302,7 +302,7 @@ function comment(blockid) {
 
 function sendGrade(grade,sid,acid) {
     data = {'sid':sid, 'acid':acid, 'grade':grade};
-    jQuery.get('/savegrade',data);
+    jQuery.get('/eds/ajax/savegrade',data);
 }
 
 function gotUser(data, status, whatever) {
@@ -321,7 +321,7 @@ function gotUser(data, status, whatever) {
 
 function addUserToFooter() {
     // test to see if online before doing this.
-    jQuery.get("/getuser",null,gotUser)
+    jQuery.get("/eds/ajax/getuser",null,gotUser)
 
 }
 $(document).ready(createEditors);
