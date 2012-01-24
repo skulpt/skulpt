@@ -1,3 +1,37 @@
-{{extend 'layout.html'}}
+<html>
+<head>
 
-<h1>Welcome to my new app</h1>
+   <title> {{=XML(title)}} </title>
+
+
+    {{=XML(css)}}
+    <link rel="stylesheet" href="/eds/static/websupport-custom.css" type="text/css">
+
+    {{=XML(script)}}
+
+</head>
+<body>
+    <h1>Brad Miller</h1>
+
+	<div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    		{{=XML(sidebar)}}
+    	</div>
+	</div>
+
+    <div class="document">
+        <div class="documentwrapper">
+            <div class="bodywrapper">
+                <div class="body">
+
+                {{=XML(body)}}
+
+                </div>
+            </div>
+        </div>  
+    </div>
+
+</body>
+
+</html>
