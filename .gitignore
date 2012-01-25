@@ -1,0 +1,10 @@
+127.0.0.1.2012*
+errors/*
+sessions/*
+127.0.0.1-*
+databases/*
+
+databases/storage.sqlite
+data/*
+*.doctree
+static/environment.pickle
