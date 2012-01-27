@@ -9,7 +9,7 @@ def builddoc():
                          datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',
                          staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',
                          docroot='/eds/view',
-                         storage='postgresql://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds')
+                         storage='postgres://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds')
 
     support.build()
     return 'Success'
