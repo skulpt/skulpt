@@ -9,7 +9,7 @@ def download(): return response.download(request,db)
 def call(): return service()
 ### end requires
 def index():
-    web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',staticdir='/Users/bmiller/src/eds/applications/eds/static',docroot='/eds/view')
+    web_support = WebSupport(datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',docroot='/eds/view')
     doc = 'index'
     contents = web_support.get_document(doc)
     # build seems to create a script entry with duplicates due to different extensions.

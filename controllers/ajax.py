@@ -2,11 +2,11 @@ from sphinx.websupport import WebSupport
 import json
 import datetime
 
-#web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',staticdir='/Users/bmiller/src/eds/applications/eds/static',docroot='/eds/view')
-web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',
-                        staticdir='/Users/bmiller/src/eds/applications/eds/static',
+#web_support = WebSupport(datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',docroot='/eds/view')
+web_support = WebSupport(datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',
+                        staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',
                         docroot='/eds/view',
-                        storage='postgresql://bmiller:grouplens@localhost/eds')
+                        storage='postgresql://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds')
 
 @auth.requires_login()
 def get_comments():

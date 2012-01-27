@@ -3,13 +3,13 @@ import json
 
 
 def builddoc():
-#    support = WebSupport(srcdir='/Users/bmiller/src/eds/applications/eds/source',builddir='/Users/bmiller/src/eds/applications/eds/',docroot='/eds/view')
-    support = WebSupport(srcdir='/Users/bmiller/src/eds/applications/eds/source',
-                         builddir='/Users/bmiller/src/eds/applications/eds/',
-                         datadir='/Users/bmiller/src/eds/applications/eds/data',
-                         staticdir='/Users/bmiller/src/eds/applications/eds/static',
+#    support = WebSupport(srcdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/source',builddir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/',docroot='/eds/view')
+    support = WebSupport(srcdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/source',
+                         builddir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/',
+                         datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',
+                         staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',
                          docroot='/eds/view',
-                         storage='postgresql://bmiller:grouplens@localhost/eds')
+                         storage='postgresql://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds')
 
     support.build()
     return 'Success'
