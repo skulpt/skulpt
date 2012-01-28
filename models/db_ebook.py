@@ -5,7 +5,8 @@ db.define_table('useinfo',
   Field('sid','string'),
   Field('event','string'),
   Field('act','string'),
-  Field('div_id','string')
+  Field('div_id','string'),
+  migrate=settings.migrate
 )
 
 db.define_table('code',
@@ -13,5 +14,6 @@ db.define_table('code',
   Field('code','text'),
   Field('class_group','string'),
   Field('grade','double'),
-  Field('sid','string')
+  Field('sid','string'),
+  migrate=settings.migrate
 )

@@ -3,13 +3,12 @@ import json
 
 
 def builddoc():
-#    support = WebSupport(srcdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/source',builddir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/',docroot='/eds/view')
-    support = WebSupport(srcdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/source',
-                         builddir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/',
-                         datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',
-                         staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',
-                         docroot='/eds/view',
-                         storage='postgres://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds')
+    support = WebSupport(srcdir=settings.sphinx_sourcedir,
+                         builddir=settings.sphinx_builddir,
+                         datadir=settings.sphinx_datadir,
+                         staticdir=settings.sphinx_staticdir,
+                         docroot=settings.sphinx_docroot,
+                         storage=settings.database_uri)
 
     support.build()
     return 'Success'
