@@ -31,7 +31,7 @@ def add_comment():
                                   parent_id=parent_id,
                                   username=username, proposal=proposal)
 
-    return comment
+    return {'comment':comment}
 
 
 @auth.requires_login()
