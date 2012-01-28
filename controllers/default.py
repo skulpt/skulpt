@@ -9,7 +9,9 @@ def download(): return response.download(request,db)
 def call(): return service()
 ### end requires
 def index():
-    web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',staticdir='/Users/bmiller/src/eds/applications/eds/static',docroot='/eds/view')
+    web_support = WebSupport(datadir=settings.sphinx_datadir,
+                    staticdir=settings.sphinx_staticdir,
+                    docroot=settings.sphinx_docroot)
     doc = 'index'
     contents = web_support.get_document(doc)
     # build seems to create a script entry with duplicates due to different extensions.

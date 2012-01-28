@@ -2,15 +2,13 @@ from sphinx.websupport import WebSupport
 import json
 import datetime
 
-#web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',staticdir='/Users/bmiller/src/eds/applications/eds/static',docroot='/eds/view')
-web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',
-                        staticdir='/Users/bmiller/src/eds/applications/eds/static',
-                        docroot='/eds/view',
-                        storage='postgresql://bmiller:grouplens@localhost/eds')
+web_support = WebSupport(datadir=settings.sphinx_datadir,
+                staticdir=settings.sphinx_staticdir,
+                docroot=settings.sphinx_docroot,
+                storage=settings.database_uri)
 
 @auth.requires_login()
 def get_comments():
-    #username = g.user.name if g.user else None
     #moderator = g.user.moderator if g.user else False
     username = auth.user.username
     moderator = None

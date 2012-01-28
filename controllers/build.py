@@ -3,13 +3,12 @@ import json
 
 
 def builddoc():
-#    support = WebSupport(srcdir='/Users/bmiller/src/eds/applications/eds/source',builddir='/Users/bmiller/src/eds/applications/eds/',docroot='/eds/view')
-    support = WebSupport(srcdir='/Users/bmiller/src/eds/applications/eds/source',
-                         builddir='/Users/bmiller/src/eds/applications/eds/',
-                         datadir='/Users/bmiller/src/eds/applications/eds/data',
-                         staticdir='/Users/bmiller/src/eds/applications/eds/static',
-                         docroot='/eds/view',
-                         storage='postgresql://bmiller:grouplens@localhost/eds')
+    support = WebSupport(srcdir=settings.sphinx_sourcedir,
+                         builddir=settings.sphinx_builddir,
+                         datadir=settings.sphinx_datadir,
+                         staticdir=settings.sphinx_staticdir,
+                         docroot=settings.sphinx_docroot,
+                         storage=settings.database_uri)
 
     support.build()
     return 'Success'

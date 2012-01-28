@@ -1,10 +1,13 @@
 from sphinx.websupport import WebSupport
 import json
 
+web_support = WebSupport(datadir=settings.sphinx_datadir,
+                staticdir=settings.sphinx_staticdir,
+                docroot=settings.sphinx_docroot)
+
 @auth.requires_login()
 def chapter():
 
-    web_support = WebSupport(datadir='/Users/bmiller/src/eds/applications/eds/data',staticdir='/Users/bmiller/src/eds/applications/eds/static',docroot='/eds/view')
     doc = request.args[0]
     contents = web_support.get_document(doc)
     # build seems to create a script entry with duplicates due to different extensions.
@@ -22,3 +25,6 @@ def chapter():
     contents['script'] = contents['script'].replace('/eds/view/_add_comment','/eds/ajax/add_comment.json')    
     contents['body'] = contents['body'].replace('/static/','/eds/static/')
     return contents
+
+def index():
+    redirect(URL(r=request,f='index',c='default'))
