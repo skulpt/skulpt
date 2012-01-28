@@ -2,18 +2,10 @@ from sphinx.websupport import WebSupport
 import json
 import datetime
 
-<<<<<<< HEAD
-#web_support = WebSupport(datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',docroot='/eds/view')
-web_support = WebSupport(datadir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/data',
-                        staticdir='/home/bnmnetp/webapps/web2py/web2py/applications/eds/static',
-                        docroot='/eds/view',
-                        storage='postgres://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds')
-=======
 web_support = WebSupport(datadir=settings.sphinx_datadir,
                 staticdir=settings.sphinx_staticdir,
                 docroot=settings.sphinx_docroot,
                 storage=settings.database_uri)
->>>>>>> refs/heads/master
 
 @auth.requires_login()
 def get_comments():
