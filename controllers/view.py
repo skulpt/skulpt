@@ -3,7 +3,8 @@ import json
 
 web_support = WebSupport(datadir=settings.sphinx_datadir,
                 staticdir=settings.sphinx_staticdir,
-                docroot=settings.sphinx_docroot)
+                docroot=settings.sphinx_docroot,
+                storage=settings.database_uri)
 
 @auth.requires_login()
 def chapter():

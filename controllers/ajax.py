@@ -11,7 +11,7 @@ web_support = WebSupport(datadir=settings.sphinx_datadir,
 def get_comments():
     #moderator = g.user.moderator if g.user else False
     username = auth.user.username
-    moderator = None
+    moderator = False
     node_id = request.vars.node
     try:
         data = web_support.get_data(node_id, username, moderator)
