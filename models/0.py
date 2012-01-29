@@ -25,7 +25,7 @@ if 'local' in uname()[1]:
 	settings.sphinx_sourcedir = '/Users/bmiller/src/eds/applications/eds/source'
 	settings.sphinx_builddir = '/Users/bmiller/src/eds/applications/eds/'
 elif 'webfaction' in uname()[1]:
-	settings.database_uri = 'postgresql://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds'
+	settings.database_uri = 'postgres://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds'
 	settings.sphinx_datadir = '/home/bnmnetp/webapps/web2py/web2py/applications/eds/data'
 	settings.sphinx_staticdir = '/home/bnmnetp/webapps/web2py/web2py/applications/eds/static'
 	settings.sphinx_docroot = '/eds/view'
