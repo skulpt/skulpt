@@ -349,31 +349,20 @@ operations are the remainder (modulo) operator, %, and integer division,
 point. The integer division operator returns the integer portion of the
 quotient by truncating any fractional part.
 
-::
+.. activecode:: intro_1
 
-    >>> 2+3*4
-    14
-    >>> (2+3)*4
-    20
-    >>> 2**10
-    1024
-    >>> 6/3
-    2.0
-    >>> 7/3
-    2.3333333333333335
-    >>> 7//3
-    2
-    >>> 7%3
-    1
-    >>> 3/6
-    0.5
-    >>> 3//6
-    0
-    >>> 3%6
-    3
-    >>> 2**100
-    1267650600228229401496703205376
-    >>> 
+    print 2+3*4
+    print (2+3)*4
+    print 2**10
+    print 6/3
+    print 7/3
+    print 7//3
+    print 7%3
+    print 3/6
+    print 3//6
+    print 3%6
+    print 2**100
+
 
 The boolean data type, implemented as the Python ``bool`` class, will be
 quite useful for representing truth values. The possible state values
@@ -417,14 +406,11 @@ and logical operators with examples shown in the session that follows.
 
     Relational and Logical Operators
 
-::
+.. activecode:: intro_2
 
-    >>> 5==10
-    False
-    >>> 10 > 5
-    True
-    >>> (5 >= 1) and (5 <= 10)
-    True
+    print(5==10)
+    print(10 > 5)
+    print((5 >= 1) and (5 <= 10))
 
 Identifiers are used in programming languages as names. In Python,
 identifiers start with a letter or an underscore (_), are case
@@ -542,16 +528,14 @@ One very important aside relating to the repetition operator is that the
 result is a repetition of references to the data objects in the
 sequence. This can best be seen by considering the following session:
 
-::
+.. activecode:: intro_3
 
-    >>> myList = [1,2,3,4]
-    >>> A = [myList]*3
-    >>> A
-    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]]
-    >>> myList[2]=45
-    >>> A
-    [[1, 2, 45, 4], [1, 2, 45, 4], [1, 2, 45, 4]]
-    >>> 
+    myList = [1,2,3,4]
+    A = [myList]*3
+    print(A)
+    myList[2]=45
+    print(A)
+
 
 The variable ``A`` holds a collection of three references to the
 original list called ``myList``. Note that a change to one element of
@@ -580,44 +564,30 @@ use follow.
 
     Methods Provided by Lists in Python
 
-::
+.. activecode:: intro_5
 
-    >>> myList
-    [1024, 3, True, 6.5]
-    >>> myList.append(False)
-    >>> myList
-    [1024, 3, True, 6.5, False]
-    >>> myList.insert(2,4.5)
-    >>> myList
-    [1024, 3, 4.5, True, 6.5, False]
-    >>> myList.pop()
-    False
-    >>> myList
-    [1024, 3, 4.5, True, 6.5]
-    >>> myList.pop(1)
-    3
-    >>> myList
-    [1024, 4.5, True, 6.5]
-    >>> myList.pop(2)
-    True
-    >>> myList
-    [1024, 4.5, 6.5]
-    >>> myList.sort()
-    >>> myList
-    [4.5, 6.5, 1024]
-    >>> myList.reverse()
-    >>> myList
-    [1024, 6.5, 4.5]
-    >>> myList.count(6.5)
-    1
-    >>> myList.index(4.5)
-    2
-    >>> myList.remove(6.5)
-    >>> myList
-    [1024, 4.5]
-    >>> del myList[0]
-    >>> myList
-    [4.5]
+    myList = [1024, 3, True, 6.5]
+    myList.append(False)
+    print(myList)
+    myList.insert(2,4.5)
+    print(myList)
+    print(myList.pop())
+    print(myList)
+    print(myList.pop(1))
+    print(myList)
+    myList.pop(2)
+    print(myList)
+    myList.sort()
+    print(myList)
+    myList.reverse()
+    print(myList)
+    print(myList.count(6.5))
+    print(myList.index(4.5))
+    myList.remove(6.5)
+    print(myList)
+    del myList[0]
+    print(myList)
+
 
 You can see that some of the methods, such as ``pop``, return a value
 and also modify the list. Others, such as ``reverse``, simply modify the
@@ -911,21 +881,16 @@ adding another key-value pair. The syntax for access looks much like a
 sequence access except that instead of using the index of the item we
 use the key value. To add a new value is similar.
 
-::
+.. activecode:: intro_7
 
-    >>> capitals['Iowa']
-    'DesMoines'
-    >>> capitals['Utah']='SaltLakeCity'
-    >>> capitals
-    {'Utah': 'SaltLakeCity', 'Wisconsin': 'Madison', 
-             'Iowa': 'DesMoines'}
-    >>> capitals['California']='Sacramento'
-    >>> capitals
-    {'Utah': 'SaltLakeCity', 'Wisconsin': 'Madison', 
-             'Iowa': 'DesMoines', 'California': 'Sacramento'}
-    >>> len(capitals)
-    4
-    >>>
+    capitals = {'Iowa':'DesMoines','Wisconsin':'Madison'}
+    print(capitals['Iowa'])
+    capitals['Utah']='SaltLakeCity'
+    print(capitals)
+    capitals['California']='Sacramento'
+    print(len(capitals))
+    for k in capitals:
+       print(capitals[k]," is the capital of ", k)
 
 It is important to note that the dictionary is maintained in no
 particular order with respect to the keys. The first pair added
@@ -1266,17 +1231,15 @@ over a list of strings and for each string processes each character by
 appending it to a list. The result is a list of all the letters in all
 of the words.
 
-::
+.. activecode:: intro_8
 
-    >>> wordlist = ['cat','dog','rabbit']
-    >>> letterlist = [ ]
-    >>> for aword in wordlist:
-    ...    for aletter in aword:
-    ...       letterlist.append(aletter)
-    ... 
-    >>> letterlist
-    ['c', 'a', 't', 'd', 'o', 'g', 'r', 'a', 'b', 'b', 'i', 't']
-    >>> 
+    wordlist = ['cat','dog','rabbit']
+    letterlist = [ ]
+    for aword in wordlist:
+        for aletter in aword:
+            letterlist.append(aletter)
+    print(letterlist)
+
 
 Selection statements allow programmers to ask questions and then, based
 on the result, perform different actions. Most programming languages
@@ -1358,6 +1321,18 @@ Regardless, the next action is to compute the square root.
     if n<0:
        n = abs(n)
     print(math.sqrt(n))
+
+
+.. Test your understanding of what we have covered so far by trying the following
+.. exercise.  Modify the code from activecode_8 so that the final list only contains 
+.. a single copy of each letter.
+
+.. .. activecode:: self_check_1
+
+..     # the answer is: 
+
+    
+
 
 Returning to lists, there is an alternative method for creating a list
 that uses iteration and selection constructs. The is known as a **list
