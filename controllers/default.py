@@ -9,7 +9,7 @@ def download(): return response.download(request,db)
 def call(): return service()
 ### end requires
 def index():
-    redirect('/eds/static/index.html')
+    redirect('/eds/view/private/index.html')
     # web_support = WebSupport(datadir=settings.sphinx_datadir,
     #                 staticdir=settings.sphinx_staticdir,
     #                 docroot=settings.sphinx_docroot)
