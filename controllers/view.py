@@ -28,4 +28,5 @@ def chapter():
     return contents
 
 def index():
-    redirect(URL(r=request,f='index',c='default'))
+    redirect('/eds/static/index.html')
+#    redirect(URL(r=request,f='index',c='default'))
