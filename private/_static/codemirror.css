@@ -47,6 +47,20 @@
   word-wrap: normal;
 }
 
+.admonition .CodeMirror pre {
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  border-width: 0; margin: 0; padding: 0; background: transparent;
+  font-family:  Monaco;
+  font-size: inherit;
+  padding: 0; margin: 0;
+  white-space: pre;
+  word-wrap: normal;
+}
+
+
 .CodeMirror textarea {
   font-family: inherit !important;
   font-size: inherit !important;
