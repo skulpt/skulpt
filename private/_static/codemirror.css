@@ -53,7 +53,7 @@
   -o-border-radius: 0;
   border-radius: 0;
   border-width: 0; margin: 0; padding: 0; background: transparent;
-  font-family:  Monaco;
+  font-family:  Monaco, Courier New, monospace;
   font-size: inherit;
   padding: 0; margin: 0;
   white-space: pre;
