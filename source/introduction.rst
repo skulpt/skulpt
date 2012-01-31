@@ -1336,6 +1336,13 @@ Regardless, the next action is to compute the square root.
     
 
 
+.. video:: list_unique
+   :controls:
+   :thumb: _static/videothumb.png
+
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/list_unique.mov
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/list_unique.webm
+
 Returning to lists, there is an alternative method for creating a list
 that uses iteration and selection constructs. The is known as a **list
 comprehension**. A list comprehension allows you to easily create a list
@@ -1392,10 +1399,17 @@ a new list.
     using list comprehensions.  For extra bonus points see if you can figure out 
     how to remove the duplicates using comprehensions too.
   
-    .. activecode:: self_check_1
+    .. activecode:: self_check_2
   
        # the answer is: ['c', 'a', 't', 'd', 'o', 'g', 'r', 'a', 'b', 'b', 'i', 't']
 
+
+.. video:: listcomp
+   :controls:
+   :thumb: _static/videothumb.png
+
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/listcomp.mov
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/listcomp.webm
 
 
 Exception Handling

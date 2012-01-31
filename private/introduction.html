@@ -1919,6 +1919,24 @@ a single copy of each letter.</p>
 </div>
 
 </div></div>
+<a id="list_unique_thumb" > <img src="_static/videothumb.png" /></a>
+<div id="list_unique" class="video_popup" >
+<video controls  >
+    <source src="http://knuth.luther.edu/~pythonworks/pythondsVideos/list_unique.mov" type="video/mp4"></source>
+    <source src="http://knuth.luther.edu/~pythonworks/pythondsVideos/list_unique.webm" type="video/webm"></source>
+    No supported video types
+</video>
+</div>
+<script>
+   jQuery(function($) {
+      $('#list_unique_thumb').click(function(e) {
+         $('#list_unique').show();
+         $('#list_unique_thumb').hide();
+         jQuery.get("/hsblog",{'event':'video','act':'play','div_id': 'list_unique'});
+         // Log the run event
+      });
+   });
+</script>
 <p>Returning to lists, there is an alternative method for creating a list
 that uses iteration and selection constructs. The is known as a <strong>list
 comprehension</strong>. A list comprehension allows you to easily create a list
@@ -1973,26 +1991,44 @@ a new list.</p>
 using list comprehensions.  For extra bonus points see if you can figure out
 how to remove the duplicates using comprehensions too.</p>
 <div class="last">
-<div id="self_check_1" >
-<textarea cols="50" rows="12" id="self_check_1_code" class="active_code">
+<div id="self_check_2" >
+<textarea cols="50" rows="12" id="self_check_2_code" class="active_code">
 # the answer is: ['c', 'a', 't', 'd', 'o', 'g', 'r', 'a', 'b', 'b', 'i', 't']
 
 </textarea>
-<p class="ac_caption"><span class="ac_caption_text"> (self_check_1)</span> </p>
-<button onclick="runit('self_check_1',this, undefined);">Run</button>
-<button class="ac_opt" onclick="saveEditor('self_check_1');">Save</button>
-<button class="ac_opt" onclick="requestCode('self_check_1');">Load</button>
+<p class="ac_caption"><span class="ac_caption_text"> (self_check_2)</span> </p>
+<button onclick="runit('self_check_2',this, undefined);">Run</button>
+<button class="ac_opt" onclick="saveEditor('self_check_2');">Save</button>
+<button class="ac_opt" onclick="requestCode('self_check_2');">Load</button>
 <br />
 
-<canvas id="self_check_1_canvas" height="400" width="400" style="border-style: solid; display: none"></canvas>
+<canvas id="self_check_2_canvas" height="400" width="400" style="border-style: solid; display: none"></canvas>
 
-<pre id="self_check_1_pre" class="active_out">
+<pre id="self_check_2_pre" class="active_out">
 
 </pre>
 
 </div>
 
 </div></div>
+<a id="listcomp_thumb" > <img src="_static/videothumb.png" /></a>
+<div id="listcomp" class="video_popup" >
+<video controls  >
+    <source src="http://knuth.luther.edu/~pythonworks/pythondsVideos/listcomp.mov" type="video/mp4"></source>
+    <source src="http://knuth.luther.edu/~pythonworks/pythondsVideos/listcomp.webm" type="video/webm"></source>
+    No supported video types
+</video>
+</div>
+<script>
+   jQuery(function($) {
+      $('#listcomp_thumb').click(function(e) {
+         $('#listcomp').show();
+         $('#listcomp_thumb').hide();
+         jQuery.get("/hsblog",{'event':'video','act':'play','div_id': 'listcomp'});
+         // Log the run event
+      });
+   });
+</script>
 </div>
 <div class="section" id="exception-handling">
 <h3>Exception Handling<a class="headerlink" href="#exception-handling" title="Permalink to this headline">¶</a></h3>
@@ -2189,7 +2225,7 @@ marker. Any characters that follow the # on a line are ignored.</p>
 <p class="first admonition-title">Self Check</p>
 <p>Here&#8217;s a self check that really covers everything so far.  You may have
 heard of the infinite monkey theorem?  The theorem states that a monkey hitting keys at random on a typewriter keyboard for an infinite amount of time will almost surely type a given text, such as the complete works of William Shakespeare.  Well, suppose we replace a monkey with a Python function.  How long do you think it would take for a Python function to generate just one sentence of Shakespeare?  The sentence we&#8217;ll shoot for is:  &#8220;methinks it is like a weasel&#8221;</p>
-<p>You&#8217;re not going to want to run this on in the browser, so fire up your favorite Python IDE.  the way we&#8217;ll simulate this is to write a function that generates a string that is 27 characters long by choosing random letters from the 26 letters in the alphabet plus the space.  We&#8217;ll write another function that will score each generated string by comparing the randomly generated string to the goal.</p>
+<p>You&#8217;re not going to want to run this one in the browser, so fire up your favorite Python IDE.  The way we&#8217;ll simulate this is to write a function that generates a string that is 27 characters long by choosing random letters from the 26 letters in the alphabet plus the space.  We&#8217;ll write another function that will score each generated string by comparing the randomly generated string to the goal.</p>
 <p class="last">A third function will repeatedly call generate and score, then if 100% of the letters are correct we are done.  If the letters are not correct then we will generate a whole new string.To make it easier to follow your program&#8217;s progress this third function should print out the best string generated so far and its score every 1000 tries.</p>
 </div>
 <div class="admonition-self-check-challenge admonition">
