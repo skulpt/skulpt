@@ -1,5 +1,6 @@
 from sphinx.websupport import WebSupport
 import json
+import datetime
 
 web_support = WebSupport(datadir=settings.sphinx_datadir,
                 staticdir=settings.sphinx_staticdir,
@@ -42,4 +43,9 @@ def private():
         response.headers['Content-Type'] = 'text/css'
     elif file[-3:].lower() == 'png':
         response.headers['Content-Type'] = 'image/png'
+    elif file[-4:].lower() == 'html':
+        sid = auth.user.username
+        ts = datetime.datetime.now()
+        db.useinfo.insert(sid=sid,act='load',div_id=request.args(0),event='getpage',timestamp=ts)
+
     return response.stream(open(file,'rb'))
