@@ -71,10 +71,10 @@ Table of Contents
     :maxdepth: 1
 
     copyright.rst
+    prefaceinteractive.rst
     foreword.rst
     preface.rst
     preface2e.rst
-    prefaceinteractive.rst
     contrib.rst
 
 .. toctree::

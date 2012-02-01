@@ -37,6 +37,16 @@ different options for covering the material.  Our hope is that you will find
 that your understanding will be enhanced because you are able to experience
 it in more than just one way.
 
+Whats the deal with Logging in?
+===============================
+
+This edition of the book is hosted as a Google App Engine App. The reason is that for teaching
+purposes we want our students to be able to save their work in a browser in the lab and get
+back to it when they are in their room or in a different lab. We also wanted them to be able to
+turn in homework assignments so that we can grade them. If you are a teacher and want to get
+access to the grading interface contact Brad Miller. You don't need to login to use the
+features of the book, but if you choose to login with any old gmail account you will be able to
+save your work.
 
 Acknowledgements
 ================
