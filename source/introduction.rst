@@ -1599,6 +1599,12 @@ marker. Any characters that follow the # on a line are ignored.
 
     See if you can improve upon the program in the self check by keeping letters that are correct and only modifying one character in the best string so far.  This is a type of algorithm in the class of 'hill climbing' algorithms, that is we only keep the result if it is better than the previous one.
 
+.. video:: monkeyvid
+   :controls:
+   :thumb: _static/videothumb.png
+
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/monkeys.mov
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/monkeys.webm
 
 
 Object-Oriented Programming in Python: Defining Classes
