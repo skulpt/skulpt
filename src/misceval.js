@@ -166,36 +166,42 @@ Sk.misceval.richCompareBool = function(v, w, op)
             // depending on the op, try left:op:right, and if not, then
             // right:reversed-top:left
             // yeah, a macro or 3 would be nice...
-            if (op === 'Eq')
-                if (v && v['__eq__'])
+            if (op === 'Eq') {
+                if (v && v['__eq__']) 
                     return Sk.misceval.callsim(v['__eq__'], v, w);
                 else if (w && w['__ne__'])
                     return Sk.misceval.callsim(w['__ne__'], w, v);
-            else if (op === 'NotEq')
+                }
+            else if (op === 'NotEq') {
                 if (v && v['__ne__'])
                     return Sk.misceval.callsim(v['__ne__'], v, w);
                 else if (w && w['__eq__'])
                     return Sk.misceval.callsim(w['__eq__'], w, v);
-            else if (op === 'Gt')
+                }
+            else if (op === 'Gt') {
                 if (v && v['__gt__'])
                     return Sk.misceval.callsim(v['__gt__'], v, w);
                 else if (w && w['__lt__'])
                     return Sk.misceval.callsim(w['__lt__'], w, v);
-            else if (op === 'Lt')
+                }
+            else if (op === 'Lt') {
                 if (v && v['__lt__'])
                     return Sk.misceval.callsim(v['__lt__'], v, w);
                 else if (w && w['__gt__'])
                     return Sk.misceval.callsim(w['__gt__'], w, v);
-            else if (op === 'GtE')
+                }
+            else if (op === 'GtE') {
                 if (v && v['__ge__'])
                     return Sk.misceval.callsim(v['__ge__'], v, w);
                 else if (w && w['__le__'])
                     return Sk.misceval.callsim(w['__le__'], w, v);
-            else if (op === 'LtE')
+                }
+            else if (op === 'LtE') {
                 if (v && v['__le__'])
                     return Sk.misceval.callsim(v['__le__'], v, w);
                 else if (w && w['__ge__'])
                     return Sk.misceval.callsim(w['__ge__'], w, v);
+                }
 
             // if those aren't defined, fallback on the __cmp__ method if it
             // exists
