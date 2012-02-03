@@ -2016,6 +2016,12 @@ methods as exercises.
    print(x+y)
    print(x == y)
 
+.. admonition:: Self  Check
+
+   To Make sure you understand how operators are implemented in Python classes, and how to properly write methods, write some methods to implement *, /, and - .  Also implement comparison operators > and <
+
+   .. actex:: self_check_4
+
 
 Inheritance: Logic Gates and Circuits
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

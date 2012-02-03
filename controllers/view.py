@@ -35,7 +35,6 @@ def index():
 @auth.requires_login()
 def private():
     import os
-    print request.args
     file = os.path.join(request.folder, 'private', "/".join(request.args))
     if file[-2:].lower() == 'js':
         response.headers['Content-Type'] = 'application/javascript'
