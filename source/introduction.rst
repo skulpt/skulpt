@@ -2427,18 +2427,25 @@ circuit. For example:
 A complete listing of the circuit simulation classes is available on the
 companion website for this book ``http://www.pythonworks.org``.
 
+.. admonition:: Self Check
 
-.. admonition:: Self  Check
+   Create a two new gate clasess  one called NorGate the other called NandGate.  NandGates work like AndGates that have a Not attached to the output.  NorGates work lake OrGates that have a Not attached to the output.
 
-   One of the fundamental building blocks of a computer is somethnig called a flip flop.  Its not something that computer science professors wear on their feet, but rather a kind of circut that is stable and stores the last piece of data that was put on it.  A simple flip-flop can be made from two NOR gates that are tied together as in the following diagram.
-
-   .. image:: Introduction/Figures/flipflop.png
-
-   Create a new gate class called NorGate.  Make sure it is part of the inheritance heirarchy.  Then use these two gates to construct and simulate the flip-flop shown in the diagram.
-
-   Note if the initial inputs to Reset and Set are both 0 then the output of the flip-flop is 0.  But if the Set input is toggled to 1 then the output becomes 1.  The great thing is that when the set input goes to 0 the output stays 1, until the reset input is toggled to 1 which resets the output of the circuit back to zero.
+   Create a series of gates that prove the following equality NOT ( A and B) or (C and D) is that same as NOT( A and B ) and NOT (C and D).
 
    .. actex:: self_check_5
+
+
+.. .. admonition:: Self  Check Challenge
+
+..    One of the fundamental building blocks of a computer is somethnig called a flip flop.  Its not something that computer science professors wear on their feet, but rather a kind of circut that is stable and stores the last piece of data that was put on it.  A simple flip-flop can be made from two NOR gates that are tied together as in the following diagram.
+
+..    .. image:: Introduction/Figures/flipflop.png
+
+..    This is a challenge problem because the entire 
+..    Note if the initial inputs to Reset and Set are both 0 then the output of the flip-flop is 0.  But if the Set input is toggled to 1 then the output becomes 1.  The great thing is that when the set input goes to 0 the output stays 1, until the reset input is toggled to 1 which resets the output of the circuit back to zero.
+
+
 
 
 --------------
