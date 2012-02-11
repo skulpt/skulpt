@@ -1,8 +1,6 @@
 Algorithm Analysis
 ==================
 
-{chap:anal}
-
 Objectives
 ----------
 
@@ -18,7 +16,6 @@ Objectives
 
 -  To understand how to benchmark simple Python programs.
 
-{escapeinside={#//}{^^M}}
 
 What Is Algorithm Analysis?
 ---------------------------
@@ -131,14 +128,14 @@ and then computing the difference, we can get an exact number of seconds
 
        return theSum,end-start
 
-Listing {sum11} shows the original ``sumOfN`` function with the timing
+:ref:`Listing x <lst_sum11>` shows the original ``sumOfN`` function with the timing
 calls embedded before and after the summation. The function returns a
 tuple consisting of the result and the amount of time (in seconds)
 required for the calculation. If we perform 5 invocations of the
 function, each computing the sum of the first 10,000 integers, we get
 the following:
 
-{}
+
 
 ::
 
@@ -183,7 +180,7 @@ consistent, averaging about 10 times more seconds. For ``n`` equal to
 In this case, the average again turns out to be about 10 times the
 previous.
 
-{} Now consider Listing {sum3}, which shows a different means of solving
+ Now consider Listing {sum3}, which shows a different means of solving
 the summation problem. This function, ``sumOfN3``, takes advantage of a
 closed equation :math:`$\sum_{i=1}^{n} i = \frac {(n)(n+1)}{2}$` to
 compute the sum of the first ``n`` integers without iterating.
@@ -325,17 +322,22 @@ A number of very common order of magnitude functions will come up over
 and over as you study algorithms. These are shown in Table {fntable}. In
 order to decide which of these functions is the dominant part of any
 :math:`T(n)` function, we must see how they compare with one another
-as *n* gets large. Figure {graphfigure} shows graphs of the common
+as *n* gets large. :ref:`Figure x <fig_graphfigure>` shows graphs of the common
 functions from Table {fntable}. Notice that when *n* is small, the
 functions are not very well defined with respect to one another. It is
 hard to tell which is dominant. However, as *n* grows, there is a
 definite relationship and it is easy to see how they compare with one
 another.
 
-    |image| {Plot of Common Big-O Functions} {graphfigure}
+.. _fig_graphfigure
+
+.. figure:: AlgorithmAnalysis/Figures/newplot.png
+
+   Plot of Common Big-O Functions
+
 
 As a final example, suppose that we have the fragment of Python code
-shown in Listing {dummycode}. Although this program does not really do
+shown in :ref:`Listing x <lst_dummycode>`. Although this program does not really do
 anything, it is instructive to see how we can take actual code and
 analyze performance.
 
@@ -368,10 +370,14 @@ therefore this fragment of code is :math:`O(n^{2})`. Note that all of
 the other terms as well as the coefficient on the dominant term can be
 ignored as *n* grows larger.
 
-    |image1| {Comparing :math:`T(n)` with Common Big-O Functions}
-    {graphfigure2}
+.. _fig_graphfigure2
 
-Figure {graphfigure2} shows a few of the common Big-O functions as they
+.. figure:: AlgorithmAnalysis/Figures/newplot2.png
+
+   Comparing :math:`T(n)` with Common Big-O Functions
+
+
+:ref:`Figure x <fig_graphfigure2>` shows a few of the common Big-O functions as they
 compare with the :math:`T(n)` function discussed above. Note that
 :math:`T(n)` is initially larger than the cubic function. However, as
 n grows, the cubic function quickly overtakes :math:`T(n)`. It is easy
@@ -543,7 +549,7 @@ anagrams. Listing {ana4} shows this solution.
 
         return stillOK
 
-{}
+
 
 Again, the solution has a number of iterations. However, unlike the
 first solution, none of them are nested. The first two iterations used
@@ -570,7 +576,7 @@ problem.
 Performance of Python Data Structures
 -------------------------------------
 
-{sec:perf-pyth-data} Now that you have a general idea of Big-O notation
+Now that you have a general idea of Big-O notation
 and the differences in between the different functions, our goal in this
 section is to tell you about the Big-O performance for the operations on
 Python lists and dictionaries. We will then show you some timing
@@ -586,7 +592,7 @@ performance depends on the implementation.
 Lists
 ~~~~~
 
-{sec:lists}
+
 
 The designers of Python had many choices to make when they implemented
 the list data structure. Each of these choices could have an impact on
@@ -729,16 +735,16 @@ from the numbers above.
     {Big-O Efficiency of Python List Operations} {tab:listbigo}
 
 Now that we have seen how performance can be measured concretely you can
-look at Table {tab:listbigo} to see the Big-O efficiency of all the
+look at :ref:`Table x <tbl_listbigo>` to see the Big-O efficiency of all the
 basic list operations. After thinking carefully about
-Table {tab:listbigo}, you may be wondering about the two different times
+:ref:`Table x <tbl_listbigo>`, you may be wondering about the two different times
 for ``pop``. When ``pop`` is called on the end of the list it takes
 :math:`O(1)` but when pop is called on the first element in the list
 or anywhere in the middle it is :math:`O(n)`. The reason for this lies
 in how Python chooses to implement lists. When an item is taken from the
 front of the list, in Python’s implementation, all the other elements in
 the list are shifted one position closer to the beginning. This may seem
-silly to you now, but if you look at Table {tab:listbigo} you will see
+silly to you now, but if you look at :ref:`Table x <tbl_listbigo>` you will see
 that this implementation also allows the index operation to be
 :math:`O(1)`. This is a tradeoff that the Python implementors thought
 was a good one.
@@ -809,7 +815,7 @@ sizes. Listing {lst:poplists} implements this test.
         pz = popzero.timeit(number=1000)
         print("%15.5f, %15.5f" %(pz,pt))
 
-Figure {fig:poptest} shows the results of our experiment. You can see
+:ref:`Figure x <fig_fig:poptest>` shows the results of our experiment. You can see
 that as the list gets longer and longer the time it takes to ``pop(0)``
 also increases while the time for ``pop`` stays very flat. This is
 exactly what we would expect to see for a :math:`O(n)` and
@@ -823,13 +829,16 @@ That is why the loop runs the test one thousand times in the first place
 to statistically gather enough information to make the measurement
 reliable.
 
-    |image2| {Comparing the Performance of ``pop`` and ``pop(0)``}
-    {fig:poptest}
+.. _fig_poptest
+
+.. figure:: AlgorithmAnalysis/Figures/poptime.png
+
+   Comparing the Performance of ``pop`` and ``pop(0)``
 
 Dictionaries
 ~~~~~~~~~~~~
 
-{sec:dictionaries}
+
 
 The second major Python data structure is the dictionary. As you
 probably recall, dictionaries differ from lists in that you can access
@@ -840,7 +849,7 @@ item and set item operations on a dictionary are :math:`O(1)`. Another
 important dictionary operation is the contains operation. Checking to
 see whether a key is in the dictionary or not is also :math:`O(1)`.
 The efficiency of all dictionary operations is summarized in
-Table {tab:dictbigo}. One important side note on dictionary performance
+:ref:`Table x <tbl_dictbigo>`. One important side note on dictionary performance
 is that the efficiencies we provide in the table are for average
 performance. In some rare cases the contains, get item, and set item
 operations can degenerate into :math:`O(n)` performance but we will
@@ -897,7 +906,7 @@ dictionary.
         d_time = t.timeit(number=1000)
         print("%d,%10.3f,%10.3f" % (i, lst_time, d_time))
 
-Figure {fig:listvdict} summarizes the results of running
+:ref:`Figure x <fig_fig:listvdict>` summarizes the results of running
 Listing {lst:listvdict}. You can see that the dictionary is consistently
 faster. For the smallest list size of 10,000 elements a dictionary is
 89.4 times faster than a list. For the largest list size of 990,000
@@ -910,8 +919,11 @@ dictionary size grows. In fact for a dictionary size of 10,000 the
 contains operation took 0.004 milliseconds and for the dictionary size
 of 990,000 it also took 0.004 milliseconds.
 
-    |image3| {Comparing the ``in`` Operator for Python Lists and
-    Dictionaries} {fig:listvdict}
+.. _fig_listvdict
+
+.. figure:: AlgorithmAnalysis/Figures/listvdict.png
+
+    Comparing the ``in`` Operator for Python Lists and Dictionaries
 
 Since Python is an evolving language, there are always changes going on
 behind the scenes. The latest information on the performance of Python
@@ -997,7 +1009,7 @@ Discussion Questions
 Programming Exercises
 ---------------------
 
-{sec:exercises}
+
 
 #. Devise an experiment to verify that the list index operator is
    :math:`O(1)`
@@ -1015,7 +1027,5 @@ Programming Exercises
 #. Can you improve the algorithm from the previous problem to be
    :math:`On\log(n)`?
 
-.. |image| image:: AlgorithmAnalysis/Figures/newplot.png
-.. |image1| image:: AlgorithmAnalysis/Figures/newplot2.png
-.. |image2| image:: AlgorithmAnalysis/Figures/poptime.png
-.. |image3| image:: AlgorithmAnalysis/Figures/listvdict.png
+
+
