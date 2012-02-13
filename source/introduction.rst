@@ -2018,7 +2018,7 @@ methods as exercises.
 
 .. admonition:: Self  Check
 
-   To Make sure you understand how operators are implemented in Python classes, and how to properly write methods, write some methods to implement *, /, and - .  Also implement comparison operators > and <
+   To make sure you understand how operators are implemented in Python classes, and how to properly write methods, write some methods to implement ``*, /,`` and ``-`` .  Also implement comparison operators > and <
 
    .. actex:: self_check_4
 
@@ -2431,7 +2431,7 @@ companion website for this book ``http://www.pythonworks.org``.
 
    Create a two new gate clasess  one called NorGate the other called NandGate.  NandGates work like AndGates that have a Not attached to the output.  NorGates work lake OrGates that have a Not attached to the output.
 
-   Create a series of gates that prove the following equality NOT ( A and B) or (C and D) is that same as NOT( A and B ) and NOT (C and D).
+   Create a series of gates that prove the following equality NOT (( A and B) or (C and D)) is that same as NOT( A and B ) and NOT (C and D).  Make sure to use some of your new gates in the simulation.
 
    .. actex:: self_check_5
 
