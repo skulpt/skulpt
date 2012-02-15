@@ -84,9 +84,21 @@ stack, we need to remove the ones that are sitting on top of them.
 Figure {objectstack:fig} shows another stack. This one contains a number
 of primitive Python data objects.
 
-    |image| {A Stack of Books} {bookstack:fig}
+.. _fig_bookstack:
 
-    |image1| {A Stack of Primitive Python Objects} {objectstack:fig}
+.. figure:: BasicDS/Pictures/bookstack2.png
+   :align: center
+   :scale: 50 %
+
+   A Stack of Books
+
+.. _fig_objectstack:
+
+.. figure:: BasicDS/Pictures/primitive.png
+   :align: center
+   :scale: 50 %
+
+   A Stack of Primitive Python Objects
 
 One of the most useful ideas related to stacks comes from the simple
 observation of items as they are added and then removed. Assume you
@@ -100,7 +112,14 @@ Figure {reversal:fig} shows the Python data object stack as it was
 created and then again as items are removed. Note the order of the
 objects.
 
-    |image2| {The Reversal Property of Stacks} {reversal:fig}
+.. _fig_reversalproperty:
+
+.. figure:: BasicDS/Pictures/simplereversal.png
+   :align: center
+   :scale: 50 %
+
+   The Reversal Property of Stacks
+
 
 Considering this reversal property, you can perhaps think of examples of
 stacks that occur as you use your computer. For example, every web
@@ -138,9 +157,11 @@ given below.
    parameters and returns an integer.
 
 For example, if ``s`` is a stack that has been created and starts out
-empty, then Table {stackoperations} shows the results of a sequence of
+empty, then :ref:`Table 3--1 <tab_stackops>` shows the results of a sequence of
 stack operations. Under stack contents, the top item is listed at the
 far right.
+
+.. _tab_stackops:
 
 ============================ ======================== ================== 
          **Stack Operation**       **Stack Contents**   **Return Value** 
@@ -158,7 +179,7 @@ far right.
                 ``s.size()``            ``[4,'dog']``              ``2`` 
 ============================ ======================== ================== 
 
-    {Sample Stack Operations} {stackoperations}
+    Sample Stack Operations
 
 Implementing a Stack in Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -226,7 +247,7 @@ Table {stackoperations}.
    print(s.size())
    print(s.isEmpty())
    s.push(8.4)
-   print(s.popped())
+   print(s.pop())
    print(s.pop())
    print(s.size())
     
@@ -285,8 +306,7 @@ Simple Balanced Parentheses
 We now turn our attention to using stacks to solve real computer science
 problems. You have no doubt written arithmetic expressions such as
 
-:math:`$(5+6)*(7+8)/(4+3)
-$`
+:math:`(5+6)*(7+8)/(4+3)`
 
 where parentheses are used to order the performance of operations. You
 may also have some experience programming in a language such as Lisp
