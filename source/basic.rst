@@ -360,7 +360,11 @@ opening symbols in the reverse order of their appearance; they match
 from the inside out. This is a clue that stacks can be used to solve the
 problem.
 
-    |image3| {Matching Parentheses} {parmatch}
+.. _fig_parmatch:
+
+.. figure:: BasicDS/Pictures/simpleparcheck.png    
+
+   Matching Parentheses
 
 Once you agree that a stack is the appropriate data structure for
 keeping the parentheses, the statement of the algorithm is
@@ -2789,10 +2793,11 @@ Programming Exercises
 #. Create an implementation of a queue that would have an average
    performance of O(1) for enqueue and dequeue operations.
 
+
 .. |image| image:: BasicDS/Pictures/bookstack2.png
 .. |image1| image:: BasicDS/Pictures/primitive.png
 .. |image2| image:: BasicDS/Pictures/simplereversal2.png
-.. |image3| image:: BasicDS/Pictures/simpleparcheck.png
+
 .. |image4| image:: BasicDS/Pictures/dectobin.png
 .. |image5| image:: BasicDS/Pictures/moveright.png
 .. |image6| image:: BasicDS/Pictures/moveleft.png
