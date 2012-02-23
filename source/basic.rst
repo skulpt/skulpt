@@ -78,10 +78,10 @@ items are near the base.
 Many examples of stacks occur in everyday situations. Almost any
 cafeteria has a stack of trays or plates where you take the one at the
 top, uncovering a new tray or plate for the next customer in line.
-Imagine a stack of books on a desk (Figure {bookstack:fig}). The only
+Imagine a stack of books on a desk (:ref:`Figure 1 <fig_bookstack>`). The only
 book whose cover is visible is the one on top. To access others in the
 stack, we need to remove the ones that are sitting on top of them.
-Figure {objectstack:fig} shows another stack. This one contains a number
+:ref:`Figure 2 <fig_objectstack>` shows another stack. This one contains a number
 of primitive Python data objects.
 
 .. _fig_bookstack:
@@ -108,7 +108,7 @@ begin removing books. The order that they are removed is exactly the
 reverse of the order that they were placed. Stacks are fundamentally
 important, as they can be used to reverse the order of items. The order
 of insertion is the reverse of the order of removal.
-Figure {reversal:fig} shows the Python data object stack as it was
+:ref:`Figure x <fig_reversal>` shows the Python data object stack as it was
 created and then again as items are removed. Note the order of the
 objects.
 
@@ -157,7 +157,7 @@ given below.
    parameters and returns an integer.
 
 For example, if ``s`` is a stack that has been created and starts out
-empty, then :ref:`Table 3--1 <tab_stackops>` shows the results of a sequence of
+empty, then :ref:`Table 3--1 <tab_stackops>` shows the results of a sequence of
 stack operations. Under stack contents, the top item is listed at the
 far right.
 
@@ -204,7 +204,7 @@ considered the top of the stack and which will be the base. Once that
 decision is made, the operations can be implemented using the list
 methods such as ``append`` and ``pop``.
 
-The following stack implementation (Listing {stackcode1}) assumes that
+The following stack implementation (Listing {stackcode1}) assumes that
 the end of the list will hold the top element of the stack. As the stack
 grows (as ``push`` operations occur), new items will be added on the end
 of the list. ``pop`` operations will manipulate that same end.
@@ -212,7 +212,7 @@ of the list. ``pop`` operations will manipulate that same end.
 
 .. activecode:: stack_1
 
-    class Stack:
+   class Stack:
         def __init__(self):
             self.items = []
 
@@ -233,7 +233,7 @@ of the list. ``pop`` operations will manipulate that same end.
 
 The following interactive Python session shows the ``Stack`` class in
 action as we perform the sequence of operations from
-Table {stackoperations}.
+Table {stackoperations}.
 
 .. activecode:: stack_ex_1
    :include:  stack_1
@@ -258,7 +258,7 @@ using a list where the top is at the beginning instead of at the end. In
 this case, the previous ``pop`` and ``append`` methods would no longer
 work and we would have to index position 0 (the first item in the list)
 explicitly using ``pop`` and ``insert``. The implementation is shown in
-Listing {stackcode2}.
+Listing {stackcode2}.
 
 .. codelens:: stack_cl_1
 
@@ -354,7 +354,7 @@ parentheses from left to right and decide whether the symbols are
 balanced. To solve this problem we need to make an important
 observation. As you process symbols from left to right, the most recent
 opening parenthesis must match the next closing symbol (see
-Figure {parmatch}). Also, the first opening symbol processed may have to
+Figure {parmatch}). Also, the first opening symbol processed may have to
 wait until the very last symbol for its match. Closing symbols match
 opening symbols in the reverse order of their appearance; they match
 from the inside out. This is a clue that stacks can be used to solve the
@@ -377,7 +377,7 @@ closing symbol, the parentheses remain balanced. If at any time there is
 no opening symbol on the stack to match a closing symbol, the string is
 not balanced properly. At the end of the string, when all symbols have
 been processed, the stack should be empty. The Python code to implement
-this algorithm is shown in Listing {parcheck1}.
+this algorithm is shown in Listing {parcheck1}.
 
 .. _lst_parcheck1:
 
@@ -465,46 +465,40 @@ the two symbols do not match, the string is not balanced. Once again, if
 the entire string is processed and nothing is left on the stack, the
 string is correctly balanced.
 
-The Python program to implement this is shown in Listing {parcheck2}.
+The Python program to implement this is shown in Listing {parcheck2}.
 The only change appears in line 17 where we call a helper function to
 assist with symbol-matching. Each symbol that is removed from the stack
 must be checked to see that it matches the current closing symbol. If a
 mismatch occurs, the boolean variable ``balanced`` is set to ``False``.
 
-::
+.. activecode :: parcheck2
 
-    [caption={Balanced Symbols--A General Case},label=parcheck2,index={parChecker},float=htb]
-    from pythonds.basic import Stack
-    def parChecker(symbolString):
-        s = Stack()
+   from pythonds.basic import Stack
+   def parChecker(symbolString):
+       s = Stack()
+       balanced = True
+       index = 0
+       while index < len(symbolString) and balanced:
+           symbol = symbolString[index]
+           if symbol in "([{":
+               s.push(symbol)
+           else:
+               if s.isEmpty():
+                   balanced = False
+               else:
+                   top = s.pop()
+                   if not matches(top,symbol):
+                          balanced = False
+           index = index + 1
+       if balanced and s.isEmpty():
+           return True
+       else:
+           return False
 
-        balanced = True
-        index = 0
-
-        while index < len(symbolString) and balanced:
-            symbol = symbolString[index]
-            if symbol in "([{":
-                s.push(symbol)
-            else:
-                if s.isEmpty():
-                    balanced = False
-                else:
-                    top = s.pop()
-                    if not matches(top,symbol):
-                           balanced = False
-
-            index = index + 1
-
-        if balanced and s.isEmpty():
-            return True
-        else:
-            return False
-
-    def matches(open,close):
-        opens = "([{"
-        closers = ")]}"
-
-        return opens.index(open) == closers.index(close)
+   def matches(open,close):
+       opens = "([{"
+       closers = ")]}"
+       return opens.index(open) == closers.index(close)
 
 These two examples show that stacks are very important data structures
 for the processing of language constructs in computer science. Almost
@@ -534,7 +528,7 @@ equivalent :math:`11101001_{2}` are interpreted respectively as
 
 and
 
-:math:`1\times2^{7} + 1\times2^{6} + 1\times2^{5} + 0\times2^{4} + 1\times2^{3} + 0\times2^{2} + 0\times2^{1} + 1\times2^{0} `
+:math:`1\times2^{7} + 1\times2^{6} + 1\times2^{5} + 0\times2^{4} + 1\times2^{3} + 0\times2^{2} + 0\times2^{1} + 1\times2^{0}`
 
 But how can we easily convert integer values into binary numbers? The
 answer is an algorithm called “Divide by 2” that uses a stack to keep
@@ -548,13 +542,19 @@ have a remainder of 0. It will have the digit 0 in the ones place. An
 odd value will have a remainder of 1 and will have the digit 1 in the
 ones place. We think about building our binary number as a sequence of
 digits; the first remainder we compute will actually be the last digit
-in the sequence. As shown in Figure {decbinfig}, we again see the
+in the sequence. As shown in :ref:`Figure x <fig_decbin>`, we again see the
 reversal property that signals that a stack is likely to be the
 appropriate data structure for solving the problem.
 
-    |image4| {Decimal-to-Binary Conversion} {decbinfig}
+.. _fig_decbin:
 
-The Python code in Listing {binconverter} implements the Divide by 2
+.. figure:: BasicDS/Pictures/dectobin.png
+   :align: center
+
+   Decimal-to-Binary Conversion
+
+
+The Python code in Listing {binconverter} implements the Divide by 2
 algorithm. The function ``divideBy2`` takes an argument that is a
 decimal number and repeatedly divides it by 2. Line 6 uses the built-in
 modulo operator, %, to extract the remainder and line 7 then pushes it
@@ -600,7 +600,7 @@ and
 The function ``divideBy2`` can be modified to accept not only a decimal
 value but also a base for the intended conversion. The “Divide by 2”
 idea is simply replaced with a more general “Divide by base.” A new
-function called ``baseConverter``, shown in Listing {baseconverter},
+function called ``baseConverter``, shown in Listing {baseconverter},
 takes a decimal number and any base between 2 and 16 as parameters. The
 remainders are still pushed onto the stack until the value being
 converted becomes 0. The same left-to-right string construction
@@ -636,7 +636,7 @@ A solution to this problem is to extend the digit set to include some
 alphabet characters. For example, hexadecimal uses the ten decimal
 digits along with the first six alphabet characters for the 16 digits.
 To implement this, a digit string is created (line 3 in
-Listing {baseconverter}) that stores the digits in their corresponding
+Listing {baseconverter}) that stores the digits in their corresponding
 positions. 0 is at position 0, 1 is at position 1, A is at position 10,
 B is at position 11, and so on. When a remainder is removed from the
 stack, it can be used to index into the digit string and the correct
@@ -685,9 +685,9 @@ parentheses for each operator. The parentheses dictate the order of
 operations; there is no ambiguity. There is also no need to remember any
 precedence rules.
 
-The expression A + B \* C + D can be rewritten as ((A + (B \* C)) + D)
+The expression A + B \* C + D can be rewritten as ((A + (B \* C)) + D)
 to show that the multiplication happens first, followed by the leftmost
-addition. A + B + C + D can be written as (((A + B) + C) + D) since the
+addition. A + B + C + D can be written as (((A + B) + C) + D) since the
 addition operations associate from left to right.
 
 There are two other very important expression formats that may not seem
@@ -701,7 +701,7 @@ operands create two new expression formats, **prefix** and **postfix**.
 Prefix expression notation requires that all operators precede the two
 operands that they work on. Postfix, on the other hand, requires that
 its operators come after the corresponding operands. A few more examples
-should help to make this a bit clearer (see Table {example1}).
+should help to make this a bit clearer (see :ref:`Table 2 <tab_example1>`).
 
 A + B \* C would be written as + A \* B C in prefix. The multiplication
 operator comes immediately before the operands B and C, denoting that \*
@@ -715,6 +715,8 @@ the operators moved and now appear either before or after their
 respective operands, the order of the operands stayed exactly the same
 relative to one another.
 
+.. _tab_example1:
+
 ============================ ======================= ======================== 
         **Infix Expression**   **Prefix Expression**   **Postfix Expression** 
 ============================ ======================= ======================== 
@@ -722,7 +724,7 @@ relative to one another.
                   A + B \* C              + A \* B C               A B C \* + 
 ============================ ======================= ======================== 
 
-    {Examples of Infix, Prefix, and Postfix} {example1}
+     Examples of Infix, Prefix, and Postfix
 
 Now consider the infix expression (A + B) \* C. Recall that in this
 case, infix requires the parentheses to force the performance of the
@@ -730,12 +732,12 @@ addition before the multiplication. However, when A + B was written in
 prefix, the addition operator was simply moved before the operands, + A
 B. The result of this operation becomes the first operand for the
 multiplication. The multiplication operator is moved in front of the
-entire expression, giving us \* + A B C. Likewise, in postfix A B +
+entire expression, giving us \* + A B C. Likewise, in postfix A B +
 forces the addition to happen first. The multiplication can be done to
 that result and the remaining operand C. The proper postfix expression
 is then A B + C \*.
 
-Consider these three expressions again (see Table {parexample}).
+Consider these three expressions again (see :ref:`Table 3 <tab_parexample>`).
 Something very important has happened. Where did the parentheses go? Why
 don’t we need them in prefix and postfix? The answer is that the
 operators are no longer ambiguous with respect to the operands that they
@@ -744,18 +746,22 @@ of operations within prefix and postfix expressions is completely
 determined by the position of the operator and nothing else. In many
 ways, this makes infix the least desirable notation to use.
 
+.. _tab_parexample:
+
 ============================ ======================= ======================== 
         **Infix Expression**   **Prefix Expression**   **Postfix Expression** 
 ============================ ======================= ======================== 
                 (A + B) \* C              \* + A B C               A B + C \* 
 ============================ ======================= ======================== 
 
-    {An Expression with Parentheses} {parexample}
+    An Expression with Parentheses
 
-Table {example3} shows some additional examples of infix expressions and
+:ref:`Table 4 <tab_example3>` shows some additional examples of infix expressions and
 the equivalent prefix and postfix expressions. Be sure that you
 understand how they are equivalent in terms of the order of the
 operations being performed.
+
+.. _tab_example3:
 
 ============================ ======================= ======================== 
         **Infix Expression**   **Prefix Expression**   **Postfix Expression** 
@@ -766,7 +772,7 @@ operations being performed.
                A + B + C + D           + + + A B C D            A B + C + D + 
 ============================ ======================= ======================== 
 
-    {Additional Examples of Infix, Prefix, and Postfix} {example3}
+    Additional Examples of Infix, Prefix, and Postfix
 
 Conversion of Infix Expressions to Prefix and Postfix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -790,18 +796,23 @@ matching left parenthesis, giving us B C \*, we would in effect have
 converted the subexpression to postfix notation. If the addition
 operator were also moved to its corresponding right parenthesis position
 and the matching left parenthesis were removed, the complete postfix
-expression would result (see Figure {moveright:fig}).
+expression would result (see :ref:`Figure x <fig_moveright>`).
 
     |image5| {Moving Operators to the Right for Postfix Notation}
-    {moveright:fig}
+    {fig_moveright}
 
 If we do the same thing but instead of moving the symbol to the position
 of the right parenthesis, we move it to the left, we get prefix notation
-(see Figure {moveleft:fig}). The position of the parenthesis pair is
+(see :ref:`Figure x <fig_moveleft>`). The position of the parenthesis pair is
 actually a clue to the final position of the enclosed operator.
 
-    |image6| {Moving Operators to the Left for Prefix Notation}
-    {moveleft:fig}
+.. _fig_moveleft:
+
+.. figure:: BasicDS/Pictures/moveleft.png
+   :align: center
+
+   Moving Operators to the Left for Prefix Notation
+
 
 So in order to convert an expression, no matter how complex, to either
 prefix or postfix notation, fully parenthesize the expression using the
@@ -810,11 +821,15 @@ either the left or the right parenthesis depending on whether you want
 prefix or postfix notation.
 
 Here is a more complex expression: (A + B) \* C - (D - E) \* (F + G).
-Figure {complexmove:fig} shows the conversion to postfix and prefix
+:ref:`Figure x <fig_complexmove>` shows the conversion to postfix and prefix
 notations.
 
-    |image7| {Converting a Complex Expression to Prefix and Postfix
-    Notations} {complexmove:fig}
+.. _fig_complexmove:
+
+.. figure:: BasicDS/Pictures/complexmove.png
+   :align: center
+
+   Converting a Complex Expression to Prefix and Postfix Notations
 
 General Infix-to-Postfix Conversion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -824,7 +839,7 @@ postfix expression. To do this we will look closer at the conversion
 process.
 
 Consider once again the expression A + B \* C. As shown above,
-A B C \* + is the postfix equivalent. We have already noted that the
+A B C \* + is the postfix equivalent. We have already noted that the
 operands A, B, and C stay in their relative positions. It is only the
 operators that change position. Let’s look again at the operators in the
 infix expression. The first operator that appears from left to right is
@@ -894,15 +909,19 @@ string of tokens in postfix order.
    ``opstack``. Any operators still on the stack can be removed and
    appended to the end of the output list.
 
-Figure {intopost:fig} shows the conversion algorithm working on the
+:ref:`Figure x <fig_intopost>` shows the conversion algorithm working on the
 expression A \* B + C \* D. Note that the first \* operator is removed
 upon seeing the + operator. Also, + stays on the stack when the second
 \* occurs, since multiplication has precedence over addition. At the end
 of the infix expression the stack is popped twice, removing both
 operators and placing + as the last operator in the postfix expression.
 
-    |image8| {Converting A \* B + C \* D to Postfix Notation}
-    {intopost:fig}
+.. _fig_intopost:
+
+.. figure:: BasicDS/Pictures/intopost.png
+   :align: center
+
+   Converting A \* B + C \* D to Postfix Notation
 
 In order to code the algorithm in Python, we will use a dictionary
 called ``prec`` to hold the precedence values for the operators. This
@@ -915,47 +934,44 @@ we have also imported the string module which contains a number of
 predefined variables. In this case we are using a string containing all
 possible upper-case alphabet characters ({string.ascii\_uppercase}) to
 represent all possible operands. The complete conversion function is
-shown in Listing {intopost}.
+shown in Listing {intopost}.
 
-::
+.. activecode::intopost
+   :caption: Converting Infix Expressions to Postfix Expressions
 
-    [caption={Converting Infix Expressions to Postfix Expressions},label=intopost,index={infixToPostfix},float=htb]
-    from pythonds.basic import Stack
-    import string
+   from pythonds.basic import Stack
+   import string
 
-    def infixToPostfix(infixexpr):
-        prec = {}
-        prec["*"] = 3
-        prec["/"] = 3
-        prec["+"] = 2
-        prec["-"] = 2
-        prec["("] = 1
+   def infixToPostfix(infixexpr):
+       prec = {}
+       prec["*"] = 3
+       prec["/"] = 3
+       prec["+"] = 2
+       prec["-"] = 2
+       prec["("] = 1
+       opStack = Stack()
+       postfixList = []
+       tokenList = infixexpr.split()
 
-        opStack = Stack()
-        postfixList = []
+       for token in tokenList:
+           if token in string.ascii_uppercase:
+               postfixList.append(token)
+           elif token == '(':
+               opStack.push(token)
+           elif token == ')':
+               topToken = opStack.pop()
+               while topToken != '(':
+                   postfixList.append(topToken)
+                   topToken = opStack.pop()
+           else:
+               while (not opStack.isEmpty()) and \
+                  (prec[opStack.peek()] >= prec[token]):
+                     postfixList.append(opStack.pop())
+               opStack.push(token)
 
-        tokenList = infixexpr.split()
-
-        for token in tokenList:
-            if token in string.ascii_uppercase:
-                postfixList.append(token)
-            elif token == '(':
-                opStack.push(token)
-            elif token == ')':
-                topToken = opStack.pop()
-                while topToken != '(':
-                    postfixList.append(topToken)
-                    topToken = opStack.pop()
-            else:
-                while (not opStack.isEmpty()) and \
-                   (prec[opStack.peek()] >= prec[token]):
-                      postfixList.append(opStack.pop())
-                opStack.push(token)
-
-        while not opStack.isEmpty():
-            postfixList.append(opStack.pop())
-
-        return " ".join(postfixList)
+       while not opStack.isEmpty():
+           postfixList.append(opStack.pop())
+       return " ".join(postfixList)
 
 --------------
 
@@ -1000,12 +1016,18 @@ We can now handle this result by placing it back on the stack so that it
 can be used as an operand for the later operators in the expression.
 When the final operator is processed, there will be only one value left
 on the stack. Pop and return it as the result of the expression.
-Figure {evalpost1:fig} shows the stack contents as this entire example
+:ref:`Figure x <fig_evalpost1>` shows the stack contents as this entire example
 expression is being processed.
 
-    |image9| {Stack Contents During Evaluation} {evalpost1:fig}
+.. _fig_evalpost1:
 
-Figure {evalpost2:fig} shows a slightly more complex example, 7 8 + 3 2
+.. figure:: BasicDS/Pictures/evalpostfix1.png
+   :align: center
+
+   Stack Contents During Evaluation
+
+
+:ref:`Figure x <fig_evalpost2>` shows a slightly more complex example, 7 8 + 3 2
 + /. There are two things to note in this example. First, the stack size
 grows, shrinks, and then grows again as the subexpressions are
 evaluated. Second, the division operation needs to be handled carefully.
@@ -1016,7 +1038,13 @@ Since division is *not* a commutative operator, in other words
 :math:`15/5` is not the same as :math:`5/15`, we must be sure that
 the order of the operands is not switched.
 
-    |image10| {A More Complex Example of Evaluation} {evalpost2:fig}
+.. _fig_evalpost2:
+
+.. figure:: BasicDS/Pictures/evalpostfix2.png
+   :align: center
+
+   A More Complex Example of Evaluation
+
 
 Assume the postfix expression is a string of tokens delimited by spaces.
 The operators are \*, /, +, and - and the operands are assumed to be
@@ -1041,39 +1069,40 @@ single-digit integer values. The output will be an integer result.
    is on the stack. Pop the ``operandStack`` and return the value.
 
 The complete function for the evaluation of postfix expressions is shown
-in Listing {postfixeval}. To assist with the arithmetic, a helper
+in Listing {postfixeval}. To assist with the arithmetic, a helper
 function ``doMath`` is defined that will take two operands and an
 operator and then perform the proper arithmetic operation.
 
-::
+.. _postfixeval:
 
-    [caption={Postfix Evaluation},label=postfixeval,index={postfixEval,doMath},float=htb]
-    from pythonds.basic import Stack
-    def postfixEval(postfixExpr):
-        operandStack = Stack()
+.. activecode:: postfixeval
+   :caption: Postfix Evaluation
 
-        tokenList = postfixExpr.split()
+   from pythonds.basic import Stack
 
-        for token in tokenList:
-            if token in "0123456789":
-                operandStack.push(int(token))
-            else:
-                operand2 = operandStack.pop()
-                operand1 = operandStack.pop()
-                result = doMath(token,operand1,operand2)
-                operandStack.push(result)
+   def postfixEval(postfixExpr):
+       operandStack = Stack()
+       tokenList = postfixExpr.split()
 
-        return operandStack.pop()
+       for token in tokenList:
+           if token in "0123456789":
+               operandStack.push(int(token))
+           else:
+               operand2 = operandStack.pop()
+               operand1 = operandStack.pop()
+               result = doMath(token,operand1,operand2)
+               operandStack.push(result)
+       return operandStack.pop()
 
-    def doMath(op, op1, op2):
-        if op == "*":
-            return op1 * op2
-        elif op == "/":
-            return op1 / op2
-        elif op == "+":
-            return op1 + op2
-        else:
-            return op1 - op2
+   def doMath(op, op1, op2):
+       if op == "*":
+           return op1 * op2
+       elif op == "/":
+           return op1 / op2
+       elif op == "+":
+           return op1 + op2
+       else:
+           return op1 - op2
 
 It is important to note that in both the postfix conversion and the
 postfix evaluation programs we assumed that there were no errors in the
@@ -1110,9 +1139,15 @@ line (so that we can pop the tray stack). Well-behaved lines, or queues,
 are very restrictive in that they have only one way in and only one way
 out. There is no jumping in the middle and no leaving before you have
 waited the necessary amount of time to get to the front.
-Figure {qu:basicqueue:fig} shows a simple queue of Python data objects.
+:ref:`Figure x <fig_qubasicqueue>` shows a simple queue of Python data objects.
 
-    |image11| {A Queue of Python Data Objects} {qu:basicqueue:fig}
+.. _fig_qubasicqueue:
+
+.. figure:: BasicDS/Pictures/basicqueue.png
+   :align: center
+
+   A Queue of Python Data Objects
+
 
 Computer science also has common examples of queues. Our computer
 laboratory has 30 computers networked with a single printer. When
@@ -1157,10 +1192,12 @@ ordering property. The queue operations are given below.
    parameters and returns an integer.
 
 As an example, if we assume that ``q`` is a queue that has been created
-and is currently empty, then Table {qu:queueoperations} shows the
+and is currently empty, then :ref:`Table x <ququeueoperations>` shows the
 results of a sequence of queue operations. The queue contents are shown
 such that the front is on the right. 4 was the first item enqueued so it
 is the first item returned by dequeue.
+
+.. _ququeueoperations:
 
 ============================ ======================== ================== 
          **Queue Operation**       **Queue Contents**   **Return Value** 
@@ -1177,7 +1214,7 @@ is the first item returned by dequeue.
                 ``q.size()``           ``[8.4,True]``              ``2`` 
 ============================ ======================== ================== 
 
-    {Example Queue Operations} {qu:queueoperations}
+    Example Queue Operations
 
 Implementing a Queue in Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1188,16 +1225,17 @@ simplicity of the list collection to build the internal representation
 of the queue.
 
 We need to decide which end of the list to use as the rear and which to
-use as the front. The implementation shown in Listing {qu:queuecode}
+use as the front. The implementation shown in Listing {ququeuecode}
 assumes that the rear is at position 0 in the list. This allows us to
 use the ``insert`` function on lists to add new elements to the rear of
 the queue. The ``pop`` operation can be used to remove the front element
 (the last element of the list). Recall that this also means that enqueue
 will be O(n) and dequeue will be O(1). {escapeinside={#//}{^^M}}
 
+.. _ququeuecode:
+
 ::
 
-    [caption={Queue Implementation in Python},label=qu:queuecode,index={isEmpty,enqueue,dequeue,size},float=htb]
     class Queue:
         def __init__(self):
             self.items = []
@@ -1216,21 +1254,37 @@ will be O(n) and dequeue will be O(1). {escapeinside={#//}{^^M}}
 
 The following interactive Python session shows the ``Queue`` class in
 action as we perform the sequence of operations from
-Table {qu:queueoperations}.
+:ref:`Table x <ququeueoperations>`.
 
-::
+.. codelens:: ququeuetest
 
-    >>> q=Queue()
-    >>> q.isEmpty()
-    True
-    >>> q.enqueue('dog')
-    >>> q.enqueue(4)
-    >>> q=Queue()
-    >>> q.isEmpty()
-    True
-    >>> q.enqueue(4)
-    >>> q.enqueue('dog')
-    >>> q.enqueue(True)
+   class Queue:
+       def __init__(self):
+           self.items = []
+
+       def isEmpty(self):
+           return self.items == []
+
+       def enqueue(self, item):
+           self.items.insert(0,item)
+
+       def dequeue(self):
+           return self.items.pop()
+
+       def size(self):
+           return len(self.items)
+
+   q=Queue()
+   q.isEmpty()
+   
+   q.enqueue('dog')
+   q.enqueue(4)
+   q=Queue()
+   q.isEmpty()
+   
+   q.enqueue(4)
+   q.enqueue('dog')
+   q.enqueue(True)
 
 ::
 
@@ -1252,13 +1306,19 @@ Simulation: Hot Potato
 One of the typical applications for showing a queue in action is to
 simulate a real situation that requires data to be managed in a FIFO
 manner. To begin, let’s consider the children’s game Hot Potato. In this
-game (see Figure {qu:hotpotato:fig}) children line up in a circle and
+game (see :ref:`Figure x <fig_quhotpotato>`) children line up in a circle and
 pass an item from neighbor to neighbor as fast as they can. At a certain
 point in the game, the action is stopped and the child who has the item
 (the potato) is removed from the circle. Play continues until only one
 child is left.
 
-    |image12| {A Six Person Game of Hot Potato} {qu:hotpotato:fig}
+.. _fig_quhotpotato:
+
+.. figure:: BasicDS/Pictures/hotpotato.png
+   :align: center
+
+   A Six Person Game of Hot Potato
+
 
 This game is a modern-day equivalent of the famous Josephus problem.
 Based on a legend about the famous first-century historian Flavius
@@ -1280,7 +1340,7 @@ counting. It will return the name of the last person remaining after
 repetitive counting by ``num``. What happens at that point is up to you.
 
 To simulate the circle, we will use a queue (see
-Figure {qu:potatoqueue}). Assume that the child holding the potato will
+Figure {qupotatoqueue}). Assume that the child holding the potato will
 be at the front of the queue. Upon passing the potato, the simulation
 will simply dequeue and then immediately enqueue that child, putting her
 at the end of the line. She will then wait until all the others have
@@ -1289,32 +1349,37 @@ dequeue/enqueue operations, the child at the front will be removed
 permanently and another cycle will begin. This process will continue
 until only one name remains (the size of the queue is 1).
 
-    |image13| {A Queue Implementation of Hot Potato} {qu:potatoqueue}
+.. _fig_qupotatoqueue:
 
-::
+.. figure:: BasicDS/Pictures/namequeue.png
+   :align: center
 
-    [caption={Hot Potato Simulation},label=qu:josephussim,index={hotPotato},float=htb]
-    from pythonds.basic import Queue
-    def hotPotato(namelist, num):
-        simqueue = Queue()
-        for name in namelist:
-            simqueue.enqueue(name)
+   A Queue Implementation of Hot Potato
 
-        while simqueue.size() > 1:
-            for i in range(num):
-                simqueue.enqueue(simqueue.dequeue())
-
-            simqueue.dequeue()
-
-        return simqueue.dequeue()
-
-The program is shown in Listing {qu:josephussim}. A call to the
+The program is shown in Listing {qujosephussim}. A call to the
 ``hotPotato`` function using 7 as the counting constant returns:
 
-::
+.. _qujosephussim:
 
-    >>> hotPotato(["Bill","David","Susan","Jane","Kent","Brad"],7)
-    'Susan'
+.. activecode:: qujosephussim
+   :caption: Hot Potato Simulation
+
+   from pythonds.basic import Queue
+   def hotPotato(namelist, num):
+       simqueue = Queue()
+       for name in namelist:
+           simqueue.enqueue(name)
+
+       while simqueue.size() > 1:
+           for i in range(num):
+               simqueue.enqueue(simqueue.dequeue())
+
+           simqueue.dequeue()
+
+       return simqueue.dequeue()
+
+   print(hotPotato(["Bill","David","Susan","Jane","Kent","Brad"],7))
+
 
 Note that in this example the value of the counting constant is greater
 than the number of names in the list. This is not a problem since the
@@ -1348,7 +1413,7 @@ could make students wait too long. What page rate should be used?
 
 We could decide by building a simulation that models the laboratory. We
 will need to construct representations for students, printing tasks, and
-the printer (Figure {qu:labsim:fig}). As students submit printing tasks,
+the printer (:ref:`Figure x <fig_qulabsim>`). As students submit printing tasks,
 we will add them to a waiting list, a queue of print tasks attached to
 the printer. When the printer completes a task, it will look at the
 queue to see if there are any remaining tasks to process. Of interest
@@ -1357,7 +1422,7 @@ to be printed. This is equal to the average amount of time a task waits
 in the queue.
 
     |image14| {Computer Science Laboratory Printing Queue}
-    {qu:labsim:fig}
+    {fig_qulabsim}
 
 To model this situation we need to use some probabilities. For example,
 students may print a paper from 1 to 20 pages in length. If each length
@@ -1432,40 +1497,41 @@ To design this simulation we will create classes for the three
 real-world objects described above: ``Printer``, ``Task``, and
 ``PrintQueue``.
 
-The ``Printer`` class (Listing {qu:printer}) will need to track whether
+The ``Printer`` class (Listing {quprinter}) will need to track whether
 it has a current task. If it does, then it is busy (lines 13–17) and the
 amount of time needed can be computed from the number of pages in the
 task. The constructor will also allow the pages-per-minute setting to be
 initialized. The ``tick`` method decrements the internal timer and sets
 the printer to idle (line 11) if the task is completed.
 
-::
+.. _quprinter:
 
-    [caption={Printer Queue Simulation--The Printer Class},label=qu:printer,float=htb]
-    class Printer:
-        def __init__(self, ppm):
-            self.pagerate = ppm
-            self.currentTask = None
-            self.timeRemaining = 0
+.. activecode:: printerdef
 
-        def tick(self):
-            if self.currentTask != None:
-                self.timeRemaining = self.timeRemaining - 1
-                if self.timeRemaining <= 0:
-                    self.currentTask = None
+   class Printer:
+       def __init__(self, ppm):
+           self.pagerate = ppm
+           self.currentTask = None
+           self.timeRemaining = 0
 
-        def busy(self):
-            if self.currentTask != None:
-                return True
-            else:
-                return False
+       def tick(self):
+           if self.currentTask != None:
+               self.timeRemaining = self.timeRemaining - 1
+               if self.timeRemaining <= 0:
+                   self.currentTask = None
 
-        def startNext(self,newtask):
-            self.currentTask = newtask
-            self.timeRemaining = newtask.getPages() \
-                                 * 60/self.pagerate
+       def busy(self):
+           if self.currentTask != None:
+               return True
+           else:
+               return False
 
-The Task class (Listing {qu:task}) will represent a single printing
+       def startNext(self,newtask):
+           self.currentTask = newtask
+           self.timeRemaining = newtask.getPages() \
+                                * 60/self.pagerate
+
+The Task class (Listing {qutask}) will represent a single printing
 task. When the task is created, a random number generator will provide a
 length from 1 to 20 pages. We have chosen to use the ``randrange``
 function from the ``random`` module.
@@ -1485,25 +1551,26 @@ created and placed in the printer queue. The ``waitTime`` method can
 then be used to retrieve the amount of time spent in the queue before
 printing begins.
 
-::
+.. _qutask:
 
-    [caption={Printer Queue Simulation--The Task Class},label=qu:task,float=htb]
-    import random
-    class Task:
-        def __init__(self,time):
-            self.timestamp = time
-            self.pages = random.randrange(1,21)
+.. activecode:: taskdef
 
-        def getStamp(self):
-            return self.timestamp
+   import random
+   class Task:
+       def __init__(self,time):
+           self.timestamp = time
+           self.pages = random.randrange(1,21)
 
-        def getPages(self):
-            return self.pages
+       def getStamp(self):
+           return self.timestamp
 
-        def waitTime(self, currenttime):
-            return currenttime - self.timestamp
+       def getPages(self):
+           return self.pages
 
-The main simulation (Listing {qu:mainsim}) implements the algorithm
+       def waitTime(self, currenttime):
+           return currenttime - self.timestamp
+
+The main simulation (Listing {qumainsim}) implements the algorithm
 described above. The ``printQueue`` object is an instance of our
 existing queue ADT. A boolean helper function, ``newPrintTask``, decides
 whether a new printing task has been created. We have again chosen to
@@ -1514,48 +1581,52 @@ seconds. By arbitrarily choosing 180 from the range of random integers
 allows us to set the total time and the pages per minute for the
 printer.
 
-::
+.. _qumainsim:
 
-    [caption={Printer Queue Simulation--The Main Simulation},label=qu:mainsim,float=htbp]
-    from pythonds.basic import Queue
+.. activecode:: qumainsim
+   :include: printerdef, taskdef
+   :caption: Printer Queue Simulation--The Main Simulation
 
-    import random
+   from pythonds.basic.queue import Queue
 
-    def simulation(numSeconds, pagesPerMinute):
+   import random
 
-        labprinter = Printer(pagesPerMinute)
-        printQueue = Queue()
-        waitingtimes = []
+   def simulation(numSeconds, pagesPerMinute):
 
-        for currentSecond in range(numSeconds):
+       labprinter = Printer(pagesPerMinute)
+       printQueue = Queue()
+       waitingtimes = []
 
-          if newPrintTask():
-             task = Task(currentSecond)
-             printQueue.enqueue(task)
+       for currentSecond in range(numSeconds):
 
-          if (not labprinter.busy()) and \
-                    (not printQueue.isEmpty()):
-            nexttask = printQueue.dequeue()
-            waitingtimes.append( \
-                nexttask.waitTime(currentSecond))
-            labprinter.startNext(nexttask)
+         if newPrintTask():
+            task = Task(currentSecond)
+            printQueue.enqueue(task)
 
-          labprinter.tick()
+         if (not labprinter.busy()) and \
+                   (not printQueue.isEmpty()):
+           nexttask = printQueue.dequeue()
+           waitingtimes.append( \
+               nexttask.waitTime(currentSecond))
+           labprinter.startNext(nexttask)
 
-        averageWait=sum(waitingtimes)/len(waitingtimes)
-        print("Average Wait %6.2f secs %3d tasks remaining."\
-                        %(averageWait,printQueue.size()))
+         labprinter.tick()
 
+       averageWait=sum(waitingtimes)/len(waitingtimes)
+       print("Average Wait %6.2f secs %3d tasks remaining."\
+                       %(averageWait,printQueue.size()))
 
+   def newPrintTask():
+       num = random.randrange(1,181)
+       if num == 180:
+           return True
+       else:
+           return False
 
-    def newPrintTask():
-        num = random.randrange(1,181)
-        if num == 180:
-            return True
-        else:
-            return False
+   for i in range(10):
+       simulation(3600,5)
 
-{} When we run the simulation, we should not be concerned that the
+When we run the simulation, we should not be concerned that the
 results are different each time. This is due to the probabilistic nature
 of the random numbers. We are interested in the trends that may be
 occurring as the parameters to the simulation are adjusted. Here are
@@ -1594,7 +1665,6 @@ would be completed in the one hour time frame.
 
 ::
 
-    [samepage=true]
     >>>for i in range(10):
           simulation(3600,10)
 
@@ -1669,7 +1739,7 @@ deque different is the unrestrictive nature of adding and removing
 items. New items can be added at either the front or the rear. Likewise,
 existing items can be removed from either end. In a sense, this hybrid
 linear structure provides all the capabilities of stacks and queues in a
-single data structure. Figure {basicdeque:fig} shows a deque of Python
+single data structure. :ref:`Figure x <fig_basicdeque>` shows a deque of Python
 data objects.
 
 It is important to note that even though the deque can assume many of
@@ -1677,7 +1747,13 @@ the characteristics of stacks and queues, it does not require the LIFO
 and FIFO orderings that are enforced by those data structures. It is up
 to you to make consistent use of the addition and removal operations.
 
-    |image15| {A Deque of Python Data Objects} {basicdeque:fig}
+.. _fig_basicdeque:
+
+.. figure:: BasicDS/Pictures/basicdeque.png
+   :align: center
+
+   A Deque of Python Data Objects
+
 
 The Deque Abstract Data Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1709,7 +1785,7 @@ either front or rear. The deque operations are given below.
    parameters and returns an integer.
 
 As an example, if we assume that ``d`` is a deque that has been created
-and is currently empty, then Table {dequeoperations} shows the results
+and is currently empty, then Table {dequeoperations} shows the results
 of a sequence of deque operations. Note that the contents in front are
 listed on the right. It is very important to keep track of the front and
 the rear as you move items in and out of the collection as things can
@@ -1738,7 +1814,7 @@ Implementing a Deque in Python
 As we have done in previous sections, we will create a new class for the
 implementation of the abstract data type deque. Again, the Python list
 will provide a very nice set of methods upon which to build the details
-of the deque. Our implementation (Listing {dequecode}) will assume that
+of the deque. Our implementation (Listing {dequecode}) will assume that
 the rear of the deque is at position 0 in the list.
 
 {escapeinside={#//}{^^M}}
@@ -1776,7 +1852,7 @@ assumes the addition of a new element to the end of the list.
 
 The following interactive Python session shows the ``Deque`` class in
 action as we perform the sequence of operations from
-Table {dequeoperations}.
+Table {dequeoperations}.
 
 ::
 
@@ -1820,9 +1896,15 @@ character to the rear of the deque. At this point, the deque will be
 acting very much like an ordinary queue. However, we can now make use of
 the dual functionality of the deque. The front of the deque will hold
 the first character of the string and the rear of the deque will hold
-the last character (see Figure {palindrome:fig}).
+the last character (see :ref:`Figure x <fig_palindrome>`).
 
-    |image16| {A Deque} {palindrome:fig}
+.. _fig_palindrome:
+
+.. figure:: BasicDS/Pictures/palindromesetup.png
+   :align: center
+
+   A Deque
+
 
 Since we can remove both of them directly, we can compare them and
 continue only if they match. If we can keep matching first and the last
@@ -1830,7 +1912,7 @@ items, we will eventually either run out of characters or be left with a
 deque of size 1 depending on whether the length of the original string
 was even or odd. In either case, the string must be a palindrome. The
 complete function for palindrome-checking appears in
-Listing {palchecker}.
+Listing {palchecker}.
 
 ::
 
@@ -1936,17 +2018,17 @@ commonly known as a **linked list**. Recall that we need to be sure that
 we can maintain the relative positioning of the items. However, there is
 no requirement that we maintain that positioning in contiguous memory.
 For example, consider the collection of items shown in
-Figure {adv:idea}. It appears that these values have been placed
+Figure {idea}. It appears that these values have been placed
 randomly. If we can maintain some explicit information in each item,
-namely the location of the next item (see Figure {adv:idea2}), then the
+namely the location of the next item (see Figure {idea2}), then the
 relative position of each item can be expressed by simply following the
 link from one item to the next.
 
     |image17| {Items Not Constrained in Their Physical Placement}
-    {adv:idea}
+    {idea}
 
     |image18| {Relative Positions Maintained by Explicit Links.}
-    {adv:idea2}
+    {idea2}
 
 It is important to note that the location of the first item of the list
 must be explicitly specified. Once we know where the first item is, the
@@ -1961,12 +2043,12 @@ The basic building block for the linked list implementation is the
 **node**. Each node object must hold at least two pieces of information.
 First, the node must contain the list item itself. We will call this the
 **data field** of the node. In addition, each node must hold a reference
-to the next node. Listing {adv:nodeclass} shows the Python
+to the next node. Listing {nodeclass} shows the Python
 implementation. To construct a node, you need to supply the initial data
 value for the node. Evaluating the assignment statement below will yield
-a node object containing the value 93 (see Figure {adv:node}). You
+a node object containing the value 93 (see Figure {node}). You
 should note that we will typically represent a node object as shown in
-Figure {adv:node2}. The ``Node`` class also includes the usual methods
+Figure {node2}. The ``Node`` class also includes the usual methods
 to access and modify the data and the next reference.
 
 ::
@@ -1986,7 +2068,7 @@ referring to ``None``. It is always a good idea to explicitly assign
 
 ::
 
-    [caption={A \texttt{Node} Class},label=adv:nodeclass,index={getData,getNext,setData,setNext},float=htb]
+    [caption={A \texttt{Node} Class},label=nodeclass,index={getData,getNext,setData,setNext},float=htb]
     class Node:
         def __init__(self,initdata):
             self.data = initdata
@@ -2005,9 +2087,15 @@ referring to ``None``. It is always a good idea to explicitly assign
             self.next = newnext
 
     |image19| {A Node Object Contains the Item and a Reference to the
-    Next Node} {adv:node}
+    Next Node} {node}
 
-    |image20| {A Typical Representation for a Node} {adv:node2}
+.. _fig_node2:
+
+.. figure:: BasicDS/Pictures/node2.png
+   :align: center
+
+   A Typical Representation for a Node
+
 
 The ``Unordered List`` Class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2017,7 +2105,7 @@ collection of nodes, each linked to the next by explicit references. As
 long as we know where to find the first node (containing the first
 item), each item after that can be found by successively following the
 next links. With this in mind, the ``UnorderedList`` class must maintain
-a reference to the first node. Listing {adv:listclass} shows the
+a reference to the first node. Listing {listclass} shows the
 constructor. Note that each list object will maintain a single reference
 to the head of the list.
 
@@ -2029,29 +2117,41 @@ statement
     >>> mylist = UnorderedList()
 
 creates the linked list representation shown in
-Figure {adv:initlinkedlist}. As we discussed in the ``Node`` class, the
+Figure {initlinkedlist}. As we discussed in the ``Node`` class, the
 special reference ``None`` will again be used to state that the head of
 the list does not refer to anything. Eventually, the example list given
 earlier will be represented by a linked list as shown in
-Figure {adv:linkedlist}. The head of the list refers to the first node
+Figure {linkedlist}. The head of the list refers to the first node
 which contains the first item of the list. In turn, that node holds a
 reference to the next node (the next item) and so on. It is very
 important to note that the list class itself does not contain any node
 objects. Instead it contains a single reference to only the first node
 in the linked structure.
 
-    |image21| {An Empty List} {adv:initlinkedlist}
+.. _fig_initlinkedlist:
 
-    |image22| {A Linked List of Integers} {adv:linkedlist}
+.. figure:: BasicDS/Pictures/initlinkedlist.png
+   :align: center
+
+   An Empty List
+
+
+.. _fig_linkedlist:
+
+.. figure:: BasicDS/Pictures/linkedlist.png
+   :align: center
+
+   A Linked List of Integers
+
 
 ::
 
-    [caption={The \texttt{UnorderedList} Class Constructor},label=adv:listclass,float=htb]
+    [caption={The \texttt{UnorderedList} Class Constructor},label=listclass,float=htb]
     class UnorderedList:
         def __init__(self):
             self.head = None
 
-The ``isEmpty`` method, shown in Listing {adv:isempty}, simply checks to
+The ``isEmpty`` method, shown in Listing {isempty}, simply checks to
 see if the head of the list is a reference to ``None``. The result of
 the boolean expression ``self.head==None`` will only be true if there
 are no nodes in the linked list. Since a new list is empty, the
@@ -2063,7 +2163,7 @@ object. We will use this often in our remaining methods.
 
 ::
 
-    [caption={The \texttt{isEmpty} Method},label=adv:isempty,index={isEmpty},float=htb]
+    [caption={The \texttt{isEmpty} Method},label=isempty,index={isEmpty},float=htb]
     def isEmpty(self):
         return self.head == None
 
@@ -2083,7 +2183,7 @@ or beginning, of the list. In other words, we will make the new item the
 first item of the list and the existing items will need to be linked to
 this new first item so that they follow.
 
-The linked list shown in Figure {adv:linkedlist} was built by calling
+The linked list shown in Figure {linkedlist} was built by calling
 the ``add`` method a number of times.
 
 ::
@@ -2100,11 +2200,11 @@ eventually be the last node on the linked list as every other item is
 added ahead of it. Also, since 54 is the last item added, it will become
 the data value in the first node of the linked list.
 
-The ``add`` method is shown in Listing {adv:add}. Each item of the list
+The ``add`` method is shown in Listing {add}. Each item of the list
 must reside in a node object. Line 2 creates a new node and places the
 item as its data. Now we must complete the process by linking the new
 node into the existing structure. This requires two steps as shown in
-Figure {adv:addtohead}. Step 1 (line 3) changes the ``next`` reference
+Figure {addtohead}. Step 1 (line 3) changes the ``next`` reference
 of the new node to refer to the old first node of the list. Now that the
 rest of the list has been properly attached to the new node, we can
 modify the head of the list to refer to the new node. The assignment
@@ -2113,22 +2213,28 @@ statement in line 4 sets the head of the list.
 The order of the two steps described above is very important. What
 happens if the order of line 3 and line 4 is reversed? If the
 modification of the head of the list happens first, the result can be
-seen in Figure {adv:wrongorder}. Since the head was the only external
+seen in Figure {wrongorder}. Since the head was the only external
 reference to the list nodes, all of the original nodes are lost and can
 no longer be accessed.
 
 ::
 
-    [caption={The \texttt{add} Method},label=adv:add,index={add},float=htb]
+    [caption={The \texttt{add} Method},label=add,index={add},float=htb]
     def add(self,item):
         temp = Node(item)
         temp.setNext(self.head)
         self.head = temp
 
-    |image23| {Adding a New Node is a Two-Step Process} {adv:addtohead}
+.. _fig_addtohead:
+
+.. figure:: BasicDS/Pictures/addtohead.png
+   :align: center
+
+   Adding a New Node is a Two-Step Process
+
 
     |image24| {Result of Reversing the Order of the Two Steps}
-    {adv:wrongorder}
+    {wrongorder}
 
 The next methods that we will implement–``length``, ``search``, and
 ``remove``–are all based on a technique known as **linked list
@@ -2139,9 +2245,9 @@ the next node by “traversing” the next reference.
 
 To implement the ``length`` method, we need to traverse the linked list
 and keep a count of the number of nodes that occurred.
-Listing {adv:length} shows the Python code for counting the number of
+Listing {length} shows the Python code for counting the number of
 nodes in the list. The external reference is called ``current`` and is
-initialized to the head of the list in line 2. At the start of the
+initialized to the head of the list in line 2. At the start of the
 process we have not seen any nodes so the count is set to :math:`0`.
 Lines 4–6 actually implement the traversal. As long as the current
 reference has not seen the end of the list (``None``), we move current
@@ -2149,11 +2255,11 @@ along to the next node via the assignment statement in line 6. Again,
 the ability to compare a reference to ``None`` is very useful. Every
 time current moves to a new node, we add :math:`1` to ``count``.
 Finally, ``count`` gets returned after the iteration stops.
-Figure {adv:traversal} shows this process as it proceeds down the list.
+Figure {traversal} shows this process as it proceeds down the list.
 
 ::
 
-    [caption={The \texttt{length} Method},label=adv:length,index={length},float=htb]
+    [caption={The \texttt{length} Method},label=length,index={length},float=htb]
     def length(self):
         current = self.head
         count = 0
@@ -2164,7 +2270,7 @@ Figure {adv:traversal} shows this process as it proceeds down the list.
         return count
 
     |image25| {Traversing the Linked List from the Head to the End}
-    {adv:traversal}
+    {traversal}
 
 {} Searching for a value in a linked list implementation of an unordered
 list also uses the traversal technique. As we visit each node in the
@@ -2174,7 +2280,7 @@ all the way to the end of the list. In fact, if we do get to the end of
 the list, that means that the item we are looking for must not be
 present. Also, if we do find the item, there is no need to continue.
 
-Listing {adv:search} shows the implementation for the ``search`` method.
+Listing {search} shows the implementation for the ``search`` method.
 As in the ``length`` method, the traversal is initialized to start at
 the head of the list (line 2). We also use a boolean variable called
 ``found`` to remember whether we have located the item we are searching
@@ -2188,7 +2294,7 @@ set to ``True``.
 
 ::
 
-    [caption={The \texttt{search} Method},label=adv:search,index={search},float=htb]
+    [caption={The \texttt{search} Method},label=search,index={search},float=htb]
     def search(self,item):
         current = self.head
         found = False
@@ -2211,9 +2317,15 @@ item 17.
 Since 17 is in the list, the traversal process needs to move only to the
 node containing 17. At that point, the variable ``found`` is set to
 ``True`` and the ``while`` condition will fail, leading to the return
-value seen above. This process can be seen in Figure {adv:searchpic}.
+value seen above. This process can be seen in Figure {searchpic}.
 
-    |image26| {Successful Search for the Value 17} {adv:searchpic}
+.. _fig_searchpic:
+
+.. figure:: BasicDS/Pictures/search.png
+   :align: center
+
+   Successful Search for the Value 17
+
 
 The ``remove`` method requires two logical steps. First, we need to
 traverse the list looking for the item we want to remove. Once we find
@@ -2248,13 +2360,13 @@ which we will call ``previous``, will always travel one node behind
 ``previous`` will be referring to the proper place in the linked list
 for the modification.
 
-{} Listing {adv:remove} shows the complete ``remove`` method. Lines 2–3
+{} Listing {remove} shows the complete ``remove`` method. Lines 2–3
 assign initial values to the two references. Note that ``current``
 starts out at the list head as in the other traversal examples.
 ``previous``, however, is assumed to always travel one node behind
 current. For this reason, ``previous`` starts out with a value of
 ``None`` since there is no node before the head (see
-Figure {adv:removeinit}). The boolean variable ``found`` will again be
+Figure {removeinit}). The boolean variable ``found`` will again be
 used to control the iteration.
 
 In lines 6–7 we ask whether the item stored in the current node is the
@@ -2264,13 +2376,13 @@ one node ahead. Again, the order of these two statements is crucial.
 ``previous`` must first be moved one node ahead to the location of
 ``current``. At that point, ``current`` can be moved. This process is
 often referred to as “inch-worming” as ``previous`` must catch up to
-``current`` before ``current`` moves ahead. Figure {adv:prevcurr} shows
+``current`` before ``current`` moves ahead. Figure {prevcurr} shows
 the movement of ``previous`` and ``current`` as they progress down the
 list looking for the node containing the value 17.
 
 ::
 
-    [caption={The \texttt{remove} Method},label=adv:remove,index={remove},float=htb]
+    [caption={The \texttt{remove} Method},label=remove,index={remove},float=htb]
     def remove(self,item):
         current = self.head
         previous = None
@@ -2288,13 +2400,13 @@ list looking for the node containing the value 17.
             previous.setNext(current.getNext())
 
     |image27| {Initial Values for the ``previous`` and ``current``
-    References} {adv:removeinit}
+    References} {removeinit}
 
     |image28| {``previous`` and ``current`` Move Down the List}
-    {adv:prevcurr}
+    {prevcurr}
 
 Once the searching step of the ``remove`` has been completed, we need to
-remove the node from the linked list. Figure {adv:removepic1} shows the
+remove the node from the linked list. Figure {removepic1} shows the
 link that must be modified. However, there is a special case that needs
 to be addressed. If the item to be removed happens to be the first item
 in the list, then ``current`` will reference the first node in the
@@ -2302,12 +2414,18 @@ linked list. This also means that ``previous`` will be ``None``. We said
 earlier that ``previous`` would be referring to the node whose next
 reference needs to be modified in order to complete the remove. In this
 case, it is not ``previous`` but rather the head of the list that needs
-to be changed (see Figure {adv:removehead}).
+to be changed (see Figure {removehead}).
 
     |image29| {Removing an Item from the Middle of the List}
-    {adv:removepic1}
+    {removepic1}
 
-    |image30| {Removing the First Node from the List} {adv:removehead}
+.. _fig_removehead:
+
+.. figure:: BasicDS/Pictures/remove2.png
+   :align: center
+
+   Removing the First Node from the List
+
 
 Line 12 allows us to check whether we are dealing with the special case
 described above. If ``previous`` did not move, it will still have the
@@ -2382,19 +2500,25 @@ In order to implement the ordered list, we must remember that the
 relative positions of the items are based on some underlying
 characteristic. The ordered list of integers given above (17, 26, 31,
 54, 77, and 93) can be represented by a linked structure as shown in
-Figure {adv:orderlinked}. Again, the node and link structure is ideal
+Figure {orderlinked}. Again, the node and link structure is ideal
 for representing the relative positioning of the items.
 
-    |image31| {An Ordered Linked List} {adv:orderlinked}
+.. _fig_orderlinked:
+
+.. figure:: BasicDS/Pictures/orderlinkedlist.png
+   :align: center
+
+   An Ordered Linked List
+
 
 To implement the ``OrderedList`` class, we will use the same technique
 as seen previously with unordered lists. Once again, an empty list will
 be denoted by a ``head`` reference to ``None`` (see
-Listing {{adv:orderlist}).
+Listing {{orderlist}).
 
 ::
 
-    [caption={\texttt{OrderedList} Class Constructor},label=adv:orderlist,float=htb]
+    [caption={\texttt{OrderedList} Class Constructor},label=orderlist,float=htb]
     class OrderedList:
         def __init__(self):
             self.head = None
@@ -2415,7 +2539,7 @@ find the item it is exactly what we need. However, in the case where the
 item is not in the list, we can take advantage of the ordering to stop
 the search as soon as possible.
 
-For example, Figure {adv:stopearly} shows the ordered linked list as a
+For example, Figure {stopearly} shows the ordered linked list as a
 search is looking for the value 45. As we traverse, starting at the head
 of the list, we first compare against 17. Since 17 is not the item we
 are looking for, we move to the next node, in this case 26. Again, this
@@ -2427,9 +2551,15 @@ value in the node becomes greater than the item we are searching for,
 the search can stop and return ``False``. There is no way the item could
 exist further out in the linked list.
 
-    |image32| {Searching an Ordered Linked List} {adv:stopearly}
+.. _fig_stopearly:
 
-Listing {adv:ordersearch} shows the complete ``search`` method. It is
+.. figure:: BasicDS/Pictures/orderedsearch.png
+   :align: center
+
+   Searching an Ordered Linked List
+
+
+Listing {ordersearch} shows the complete ``search`` method. It is
 easy to incorporate the new condition discussed above by adding another
 boolean variable, ``stop``, and initializing it to ``False`` (line 4).
 While ``stop`` is ``False`` (not ``stop``) we can continue to look
@@ -2440,7 +2570,7 @@ the unordered list search.
 
 ::
 
-    [caption={The Modified \texttt{search} Method for the Ordered List},label=adv:ordersearch,index={search},float=htb]
+    [caption={The Modified \texttt{search} Method for the Ordered List},label=ordersearch,index={search},float=htb]
     def search(self,item):
         current = self.head
         found = False
@@ -2465,7 +2595,7 @@ in the existing ordered list.
 
 Assume we have the ordered list consisting of 17, 26, 54, 77, and 93 and
 we want to add the value 31. The ``add`` method must decide that the new
-item belongs between 26 and 54. Figure {adv:orderinsert} shows the setup
+item belongs between 26 and 54. Figure {orderinsert} shows the setup
 that we need. As we explained earlier, we need to traverse the linked
 list looking for the place where the new node will be added. We know we
 have found that place when either we run out of nodes (``current``
@@ -2474,11 +2604,11 @@ the item we wish to add. In our example, seeing the value 54 causes us
 to stop.
 
     |image33| {Adding an Item to an Ordered Linked List}
-    {adv:orderinsert}
+    {orderinsert}
 
 As we saw with unordered lists, it is necessary to have an additional
 reference, again called ``previous``, since ``current`` will not provide
-access to the node that must be modified. Listing {adv:orderadd} shows
+access to the node that must be modified. Listing {orderadd} shows
 the complete ``add`` method. Lines 2–3 set up the two external
 references and lines 9–10 again allow ``previous`` to follow one node
 behind ``current`` every time through the iteration. The condition (line
@@ -2488,14 +2618,14 @@ case, when the iteration fails, we have found the location for the new
 node.
 
 The remainder of the method completes the two-step process shown in
-Figure {adv:orderinsert}. Once a new node has been created for the item,
+Figure {orderinsert}. Once a new node has been created for the item,
 the only remaining question is whether the new node will be added at the
 beginning of the linked list or some place in the middle. Again,
 ``previous == None`` (line 13) can be used to provide the answer.
 
 ::
 
-    [caption={The Modified \texttt{add} Method for the Ordered List},label=adv:orderadd,index={add},float=htb]
+    [caption={The Modified \texttt{add} Method for the Ordered List},label=orderadd,index={add},float=htb]
     def add(self,item):
         current = self.head
         previous = None
@@ -2828,3 +2958,4 @@ Programming Exercises
 .. |image31| image:: BasicDS/Pictures/orderlinkedlist.png
 .. |image32| image:: BasicDS/Pictures/orderedsearch.png
 .. |image33| image:: BasicDS/Pictures/linkedlistinsert.png
+
