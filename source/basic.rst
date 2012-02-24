@@ -720,8 +720,8 @@ relative to one another.
 ============================ ======================= ======================== 
         **Infix Expression**   **Prefix Expression**   **Postfix Expression** 
 ============================ ======================= ======================== 
-                       A + B                   + A B                    A B + 
-                  A + B \* C              + A \* B C               A B C \* + 
+                       A + B                  \+ A B                    A B + 
+                  A + B \* C             \+ A \* B C               A B C \* + 
 ============================ ======================= ======================== 
 
      Examples of Infix, Prefix, and Postfix
@@ -766,10 +766,10 @@ operations being performed.
 ============================ ======================= ======================== 
         **Infix Expression**   **Prefix Expression**   **Postfix Expression** 
 ============================ ======================= ======================== 
-              A + B \* C + D          + + A \* B C D           A B C \* + D + 
+              A + B \* C + D        \+ \+ A \* B C D           A B C \* + D + 
           (A + B) \* (C + D)          \* + A B + C D           A B + C D + \* 
-             A \* B + C \* D         + \* A B \* C D          A B \* C D \* + 
-               A + B + C + D           + + + A B C D            A B + C + D + 
+             A \* B + C \* D        \+ \* A B \* C D          A B \* C D \* + 
+               A + B + C + D          \+ + + A B C D            A B + C + D + 
 ============================ ======================= ======================== 
 
     Additional Examples of Infix, Prefix, and Postfix
