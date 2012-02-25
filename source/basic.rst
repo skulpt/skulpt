@@ -300,6 +300,43 @@ stack of size n. Clearly, even though the implementations are logically
 equivalent, they would have very different timings when performing
 benchmark testing.
 
+.. admonition:: Self Check
+
+   .. multiplechoice:: stack_1
+      :iscode:
+      :answer_a: 'x' 
+      :answer_b: 'y'
+      :answer_c: 'z'
+      :answer_d: The stack is empty
+      :correct: c
+      :feedback: Remember that a stack is built from the bottom up.
+
+       Given the following sequence of stack operations what is the top item on the stack?
+       m = Stack()
+       m.push('x')
+       m.push('y')
+       m.pop():
+       m.push('z')
+       m.peek()
+
+   .. multiplechoice:: stack_2
+      :iscode:
+      :answer_a: 'x'
+      :answer_b: the stack is empty
+      :answer_c: an error will occur
+      :answer_d: 'z'
+      :correct: c
+      :feedback: none
+	  
+	  Given the following sequence of stack operations, what is the top item on the stack?
+	  m = Stack()
+	  m.push('x')
+	  m.push('y')
+	  m.push('z')
+	  while not m.isEmpty():
+	     m.pop()
+         m.pop()
+
 Simple Balanced Parentheses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
