@@ -669,6 +669,7 @@ beyond 9.
         return newString
 
     print(baseConverter(25))
+
 A solution to this problem is to extend the digit set to include some
 alphabet characters. For example, hexadecimal uses the ten decimal
 digits along with the first six alphabet characters for the 16 digits.
@@ -2959,40 +2960,4 @@ Programming Exercises
 
 #. Create an implementation of a queue that would have an average
    performance of O(1) for enqueue and dequeue operations.
-
-
-.. |image| image:: BasicDS/Pictures/bookstack2.png
-.. |image1| image:: BasicDS/Pictures/primitive.png
-.. |image2| image:: BasicDS/Pictures/simplereversal2.png
-
-.. |image4| image:: BasicDS/Pictures/dectobin.png
-.. |image5| image:: BasicDS/Pictures/moveright.png
-.. |image6| image:: BasicDS/Pictures/moveleft.png
-.. |image7| image:: BasicDS/Pictures/complexmove.png
-.. |image8| image:: BasicDS/Pictures/intopost.png
-.. |image9| image:: BasicDS/Pictures/evalpostfix1.png
-.. |image10| image:: BasicDS/Pictures/evalpostfix2.png
-.. |image11| image:: BasicDS/Pictures/basicqueue.png
-.. |image12| image:: BasicDS/Pictures/hotpotato.png
-.. |image13| image:: BasicDS/Pictures/namequeue.png
-.. |image14| image:: BasicDS/Pictures/simulationsetup.png
-.. |image15| image:: BasicDS/Pictures/basicdeque.png
-.. |image16| image:: BasicDS/Pictures/palindromesetup.png
-.. |image17| image:: BasicDS/Pictures/idea.png
-.. |image18| image:: BasicDS/Pictures/idea2.png
-.. |image19| image:: BasicDS/Pictures/node.png
-.. |image20| image:: BasicDS/Pictures/node2.png
-.. |image21| image:: BasicDS/Pictures/initlinkedlist.png
-.. |image22| image:: BasicDS/Pictures/linkedlist.png
-.. |image23| image:: BasicDS/Pictures/addtohead.png
-.. |image24| image:: BasicDS/Pictures/wrongorder.png
-.. |image25| image:: BasicDS/Pictures/traversal.png
-.. |image26| image:: BasicDS/Pictures/search.png
-.. |image27| image:: BasicDS/Pictures/removeinit.png
-.. |image28| image:: BasicDS/Pictures/prevcurr.png
-.. |image29| image:: BasicDS/Pictures/remove.png
-.. |image30| image:: BasicDS/Pictures/remove2.png
-.. |image31| image:: BasicDS/Pictures/orderlinkedlist.png
-.. |image32| image:: BasicDS/Pictures/orderedsearch.png
-.. |image33| image:: BasicDS/Pictures/linkedlistinsert.png
 
