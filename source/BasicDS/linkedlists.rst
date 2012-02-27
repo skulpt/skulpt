@@ -78,11 +78,20 @@ namely the location of the next item (see Figure {idea2}), then the
 relative position of each item can be expressed by simply following the
 link from one item to the next.
 
-    |image17| {Items Not Constrained in Their Physical Placement}
-    {idea}
+.. _fig_idea:
 
-    |image18| {Relative Positions Maintained by Explicit Links.}
-    {idea2}
+.. figure:: Pictures/idea.png
+   :align: center
+
+   Items Not Constrained in Their Physical Placement
+
+.. _fig_idea2:
+
+.. figure:: Pictures/idea2.png
+   :align: center
+
+   Relative Positions Maintained by Explicit Links.
+
 
 It is important to note that the location of the first item of the list
 must be explicitly specified. Once we know where the first item is, the
@@ -140,8 +149,12 @@ referring to ``None``. It is always a good idea to explicitly assign
         def setNext(self,newnext):
             self.next = newnext
 
-    |image19| {A Node Object Contains the Item and a Reference to the
-    Next Node} {node}
+.. _fig_node:
+
+.. figure:: Pictures/node.png
+   :align: center
+
+   A Node Object Contains the Item and a Reference to the Next Node
 
 .. _fig_node2:
 
@@ -286,9 +299,13 @@ no longer be accessed.
 
    Adding a New Node is a Two-Step Process
 
+.. _fig_wrongorder:
 
-    |image24| {Result of Reversing the Order of the Two Steps}
-    {wrongorder}
+.. figure:: Pictures/wrongorder.png
+   :align: center
+
+   Result of Reversing the Order of the Two Steps
+
 
 The next methods that we will implement–``length``, ``search``, and
 ``remove``–are all based on a technique known as **linked list
@@ -323,10 +340,15 @@ Figure {traversal} shows this process as it proceeds down the list.
 
         return count
 
-    |image25| {Traversing the Linked List from the Head to the End}
-    {traversal}
+.. _fig_traversal:
 
-{} Searching for a value in a linked list implementation of an unordered
+.. figure:: Pictures/traversal.png
+   :align: center
+
+   Traversing the Linked List from the Head to the End
+
+
+Searching for a value in a linked list implementation of an unordered
 list also uses the traversal technique. As we visit each node in the
 linked list we will ask whether the data stored there matches the item
 we are looking for. In this case, however, we may not have to traverse
@@ -453,11 +475,21 @@ list looking for the node containing the value 17.
         else:
             previous.setNext(current.getNext())
 
-    |image27| {Initial Values for the ``previous`` and ``current``
-    References} {removeinit}
+.. _fig_removeinit:
 
-    |image28| {``previous`` and ``current`` Move Down the List}
-    {prevcurr}
+.. figure:: Pictures/removeinit.png
+   :align: center
+
+   Initial Values for the ``previous`` and ``current`` References
+
+
+.. _fig_prevcurr:
+
+.. figure:: Pictures/prevcurr.png
+   :align: center
+
+   ``previous`` and ``current`` Move Down the List
+
 
 Once the searching step of the ``remove`` has been completed, we need to
 remove the node from the linked list. Figure {removepic1} shows the
@@ -470,8 +502,13 @@ reference needs to be modified in order to complete the remove. In this
 case, it is not ``previous`` but rather the head of the list that needs
 to be changed (see Figure {removehead}).
 
-    |image29| {Removing an Item from the Middle of the List}
-    {removepic1}
+.. _fig_removepic1:
+
+.. figure:: Pictures/remove.png
+   :align: center
+
+   Removing an Item from the Middle of the List
+
 
 .. _fig_removehead:
 
@@ -657,8 +694,13 @@ becomes ``None``) or the value of the current node becomes greater than
 the item we wish to add. In our example, seeing the value 54 causes us
 to stop.
 
-    |image33| {Adding an Item to an Ordered Linked List}
-    {orderinsert}
+.. _fig_orderinsert:
+
+.. figure:: Pictures/linkedlistinsert.png
+   :align: center
+
+   Adding an Item to an Ordered Linked List
+
 
 As we saw with unordered lists, it is necessary to have an additional
 reference, again called ``previous``, since ``current`` will not provide
