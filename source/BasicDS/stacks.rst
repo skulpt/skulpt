@@ -931,11 +931,10 @@ shown in :ref:`Listing 7 <lst_intopost>`.
 
 .. _lst_intopost:
 
-.. activecode::intopost
+.. activecode:: intopost
    :caption: Converting Infix Expressions to Postfix Expressions
 
-   from pythonds.basic import Stack
-   import string
+   from pythonds.basic.stack import Stack
 
    def infixToPostfix(infixexpr):
        prec = {}
@@ -949,7 +948,7 @@ shown in :ref:`Listing 7 <lst_intopost>`.
        tokenList = infixexpr.split()
 
        for token in tokenList:
-           if token in string.ascii_uppercase:
+           if token in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" or token in "0123456789":
                postfixList.append(token)
            elif token == '(':
                opStack.push(token)
@@ -967,6 +966,9 @@ shown in :ref:`Listing 7 <lst_intopost>`.
        while not opStack.isEmpty():
            postfixList.append(opStack.pop())
        return " ".join(postfixList)
+
+   print(infixToPostfix("A * B + C * D"))
+   print(infixToPostfix("( A + B ) * C - ( D - E ) * ( F + G )"))
 
 --------------
 
