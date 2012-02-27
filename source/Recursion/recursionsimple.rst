@@ -37,9 +37,11 @@ We will begin our investigation with a simple problem that you already
 know how to solve without using recursion. Suppose that you want to
 calculate the sum of a list of numbers such as:
 :math:`[1, 3, 5, 7, 9]`. An iterative function that computes the sum
-is shown in :ref:`Listing x <lst_itsum>`. The function uses an accumulator variable
+is shown in :ref:`Listing 1 <lst_itsum>`. The function uses an accumulator variable
 (``theSum``) to compute a running total of all the numbers in the list
 by starting with :math:`0` and adding each number in the list.
+
+.. _lst_itsum:
 
 ::
 
@@ -87,9 +89,9 @@ list (``numList[1:]``). To state it in a functional form:
 In this equation :math:`first(numList)` returns the first element of
 the list and :math:`rest(numList)` returns a list of everything but
 the first element. This is easily expressed in Python as shown in
-:ref:`Listing x <lst_recsum>`.
+:ref:`Listing 2 <lst_recsum>`.
 
-
+.. _lst_recsum:
 
 ::
 
@@ -108,11 +110,13 @@ Second, on line {lst_recsum:rec} our function calls itself! This is the
 reason that we call the ``listsum`` algorithm recursive. A recursive
 function is a function that calls itself.
 
-:ref:`Figure x <fig_recsumin>` shows the series of **recursive calls** that are
+:ref:`Figure 1 <fig_recsumin>` shows the series of **recursive calls** that are
 needed to sum the list :math:`[1, 3, 5, 7, 9]`. You should think of
 this series of calls as a series of simplifications. Each time we make a
 recursive call we are solving a smaller problem, until we reach the
 point where the problem cannot get any smaller.
+
+.. _fig_recsumin:
 
         .. figure:: sumlistIn.png
            :align: center
@@ -124,10 +128,12 @@ point where the problem cannot get any smaller.
 
 When we reach the point where the problem is as simple as it can get, we
 begin to piece together the solutions of each of the small problems
-until the initial problem is solved. :ref:`Figure x <fig_recsumout>` shows the
+until the initial problem is solved. :ref:`Figure 2 <fig_recsumout>` shows the
 additions that are performed as ``listsum`` works its way backward
 through the series of calls. When ``listsum`` returns from the topmost
 problem, we have the solution to the whole problem.
+
+.. _fig_recsumout:
 
         .. figure:: sumlistOut.png
            :align: center
@@ -135,8 +141,7 @@ problem, we have the solution to the whole problem.
 
            image
 
-    {Series of Recursive Returns from Adding a List of Numbers}
-    {fig_recsumout}
+    {Series of Recursive Returns from Adding a List of Numbers} {fig_recsumout}
 
 The Three Laws of Recursion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,7 +169,7 @@ represents our problem gets smaller in some way. In the ``listsum``
 algorithm our primary data structure is a list, so we must focus our
 state-changing efforts on the list. Since the base case is a list of
 length 1, a natural progression toward the base case is to shorten the
-list. This is exactly what happens on line {lst_recsum:rec} of :ref:`Listing x <lst_recsum>` when we call ``listsum`` with a shorter list.
+list. This is exactly what happens on line {lst_recsum:rec} of :ref:`Listing 2 <lst_recsum>` when we call ``listsum`` with a shorter list.
 
 The final law is that the algorithm must call itself. This is the very
 definition of recursion. Recursion is a confusing concept to many
@@ -230,9 +235,11 @@ we will use integer division plus remainder to get results of 7 and 6
 respectively. Finally, we have reduced the problem to converting 7,
 which we can do easily since it satisfies the base case condition of
 :math:`n < base`, where :math:`base = 10`. The series of operations
-we have just performed is illustrated in :ref:`Figure x <fig_tostr>`. Notice that
+we have just performed is illustrated in :ref:`Figure 3 <fig_tostr>`. Notice that
 the numbers we want to remember are in the remainder boxes along the
 right side of the diagram.
+
+.. _fig_tostr:
 
         .. figure:: toStr.png
            :align: center
@@ -242,8 +249,10 @@ right side of the diagram.
 
     {Converting an Integer to a String in Base 10} {fig_tostr}
 
-:ref:`Listing x <lst_rectostr>` shows the Python code that implements the algorithm
+:ref:`Listing 3 <lst_rectostr>` shows the Python code that implements the algorithm
 outlined above for any base between 2 and 16.
+
+.. _lst_rectostr:
 
 ::
 
@@ -266,16 +275,17 @@ problem size–using division.
 Let’s trace the algorithm again; this time we will convert the number 10
 to its base 2 string representation (``"1010"``).
 
+.. _fig_tostr2:
+
         .. figure:: toStrBase2.png
            :align: center
            :alt: image
 
            image
 
-    {Converting the Number 10 to its Base 2 String Representation}
-    {fig_tostr2}
+    {Converting the Number 10 to its Base 2 String Representation} {fig_tostr2}
 
-:ref:`Figure x <fig_tostr2>` shows that we get the results we are looking for,
+:ref:`Figure 4 <fig_tostr2>` shows that we get the results we are looking for,
 but it looks like the digits are in the wrong order. The algorithm works
 correctly because we make the recursive call first on line
 {lst_rectostr:rec}, then we add the string representation of the remainder.
@@ -292,7 +302,9 @@ Suppose that instead of concatenating the result of the recursive call
 to ``toStr`` with the string from ``convertString``, we modified our
 algorithm to push the strings onto a stack prior to making the recursive
 call. The code for this modified algorithm is shown in
-:ref:`Listing x <lst_recstack>`.
+:ref:`Listing 4 <lst_recstack>`.
+
+.. _lst_recstack:
 
 ::
 
@@ -309,13 +321,13 @@ call. The code for this modified algorithm is shown in
 
 Each time we make a call to ``toStr``, we push a character on the stack.
 Returning to the previous example we can see that after the fourth call
-to ``toStr`` the stack would look like :ref:`Figure x <fig_recstack>`. Notice
+to ``toStr`` the stack would look like :ref:`Figure 5 <fig_recstack>`. Notice
 that now we can simply pop the characters off the stack and concatenate
 them into the final result, ``"1010"``.
 
 .. _fig_recstack:
 
-.. figure:: Recursion/recstack.png
+.. figure:: recstack.png
    :align: center
 
    Strings Placed on the Stack During Conversion
@@ -325,12 +337,12 @@ The previous example gives us some insight into how Python implements a
 recursive function call. When a function is called in Python, a **stack
 frame** is allocated to handle the local variables of the function. When
 the function returns, the return value is left on top of the stack for
-the calling function to access. :ref:`Figure x <fig_callstack>` illustrates the
+the calling function to access. :ref:`Figure 6 <fig_callstack>` illustrates the
 call stack after the return statement on line {lst_rectostr:bc}.
 
 .. _fig_callstack:
 
-.. figure:: Recursion/callstack.png
+.. figure:: callstack.png
    :align: center
 
    Call Stack Generated from ``toStr(10,2)``
@@ -341,7 +353,7 @@ Notice that the call to ``toStr(2//2,2)`` leaves a return value of
 function call (``toStr(1,2)``) in the expression {"1" +
 convertString[2%2]}, which will leave the string ``"10"`` on the top of
 the stack. In this way, the Python call stack takes the place of the
-stack we used explicitly in :ref:`Listing x <lst_recstack>`. In our list summing
+stack we used explicitly in :ref:`Listing 4 <lst_recstack>`. In our list summing
 example, you can think of the return value on the stack taking the place
 of an accumulator variable.
 
@@ -353,5 +365,5 @@ function.
 If you keep this idea of the stack in your head, you will find it much
 easier to write a proper recursive function.
 
-.. |image3| image:: Recursion/recstack.png
-.. |image1| image:: Recursion/callstack.png
+.. |image3| image:: recstack.png
+.. |image1| image:: callstack.png

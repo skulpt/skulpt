@@ -31,19 +31,21 @@ tower of 64 disks is :math:`2^{64}-1 = 18,446,744,073,709,551,615`. At
 a rate of one move per second, that is 584,942,417,355 years! Clearly
 there is more to this puzzle than meets the eye.
 
-Figure {fig_hanoi} shows an example of a configuration of disks in the
+:ref:`Figure 1 <fig_hanoi>` shows an example of a configuration of disks in the
 middle of a move from the first peg to the third. Notice that, as the
 rules specify, the disks on each peg are stacked so that smaller disks
 are always on top of the larger disks. If you have not tried to solve
 this puzzle before, you should try it now. You do not need fancy disks
 and poles–a pile of books or pieces of paper will work.
 
-    .. figure:: hanoi.png
-       :align: center
-       :alt: image
+.. _fig_hanoi:
 
-       image
-       {An Example Arrangement of Disks for the Tower of Hanoi} {fig_hanoi}
+.. figure:: hanoi.png
+   :align: center
+   :alt: image
+
+   image
+   {An Example Arrangement of Disks for the Tower of Hanoi} {fig_hanoi}
 
 How do we go about solving this problem recursively? How would you go
 about solving this problem at all? What is our base case? Let’s think
@@ -80,8 +82,10 @@ case. The simplest Tower of Hanoi problem is a tower of one disk. In
 this case, we need move only a single disk to its final destination. A
 tower of one disk will be our base case. In addition, the steps outlined
 above move us toward the base case by reducing the height of the tower
-in steps 1 and 3. Listing {lst_hanoi} shows the Python code to solve the
+in steps 1 and 3. :ref:`Listing 1 <lst_hanoi>` shows the Python code to solve the
 Tower of Hanoi puzzle.
+
+.. _lst_hanoi:
 
 ::
 
@@ -92,7 +96,7 @@ Tower of Hanoi puzzle.
             moveDisk(fromPole,toPole)
             moveTower(height-1,withPole,toPole,fromPole)  #// \label{lst_hanoi:r2}
 
-Notice that the code in Listing {lst_hanoi} is almost identical to the
+Notice that the code in :ref:`Listing 1 <lst_hanoi>` is almost identical to the
 English description. The key to the simplicity of the algorithm is that
 we make two different recursive calls, one on line {lst_hanoi:r1} and a
 second on line {lst_hanoi:r2}. On line {lst_hanoi:r1} we move all but the bottom
@@ -105,10 +109,12 @@ simply returns. The important thing to remember about handling the base
 case this way is that simply returning from ``moveTower`` is what
 finally allows the ``moveDisk`` function to be called.
 
-The function ``moveDisk``, shown in Listing {lst_movedisk}, is very
+The function ``moveDisk``, shown in :ref:`Listing 2 <lst_movedisk>`, is very
 simple. All it does is print out that it is moving a disk from one pole
 to another. If you type in and run the ``moveTower`` program you can see
 that it gives you a very efficient solution to the puzzle.
+
+.. _lst_movedisk:
 
 ::
 
@@ -137,10 +143,18 @@ Greek myth about Theseus who was sent into a maze to kill the minotaur.
 Theseus used a ball of thread to help him find his way back out again
 once he had finished off the beast. In our problem we will assume that
 our turtle is dropped down somewhere into the middle of the maze and
-must find its way out. Look at Figure {fig_mazescreen} to get an idea of
+must find its way out. Look at :ref:`Figure 3 <fig_mazescreen>` to get an idea of
 where we are going in this section.
 
-    |image2| {The Finished Maze Search Program} {fig_mazescreen}
+.. _fig_mazescreen:
+
+.. _fig_mazescreen:
+
+.. figure:: Figures/maze.png
+   :align: center
+
+   The Finished Maze Search Program
+
 
 To make it easier for us we will assume that our maze is divided up into
 “squares.” Each square of the maze is either open or occupied by a
@@ -220,10 +234,12 @@ The ``Maze`` class also overloads the index operator ``[]`` so that our
 algorithm can easily access the status of any particular square.
 
 Let’s examine the code for the search function which we call
-``searchFrom``. The code is shown in Listing {lst_mazesearch}. Notice
+``searchFrom``. The code is shown in :ref:`Listing 3 <lst_mazesearch>`. Notice
 that this function takes three parameters: a maze object, the starting
 row, and the starting column. This is important because as a recursive
 function the search logically starts again with each recursive call.
+
+.. _lst_mazesearch:
 
 ::
 
@@ -281,11 +297,11 @@ The code for the ``Maze`` class is shown in Listings {lst_maze} –
 {lst_maze2}. The ``__init__`` method takes the name of a file as its
 only parameter. This file is a text file that represents a maze by using
 “+” characters for walls, spaces for open squares, and the letter “S” to
-indicate the starting position. Figure {fig_exmaze} is an example of a
+indicate the starting position. :ref:`Figure 4 <fig_exmaze>` is an example of a
 maze data file. The internal representation of the maze is a list of
 lists. Each row of the ``mazelist`` instance variable is also a list.
 This secondary list contains one character per square using the
-characters described above. For the data file in Figure {fig_exmaze} the
+characters described above. For the data file in :ref:`Figure 4 <fig_exmaze>` the
 internal representation looks like the following:
 
 ::
@@ -303,7 +319,9 @@ internal representation looks like the following:
       ['+','+','+','+',...,'+','+','+',' ','+','+','+']]
 
 The ``drawMaze`` method uses this internal representation to draw the
-initial view of the maze on the screen, see Figure {fig_mazescreen}.
+initial view of the maze on the screen, see :ref:`Figure 3 <fig_mazescreen>`.
+
+.. _fig_exmaze:
 
     ::
 
@@ -321,7 +339,7 @@ initial view of the maze on the screen, see Figure {fig_mazescreen}.
 
     {An Example Maze Data File} {fig_exmaze}
 
-The ``updatePosition`` method, as shown in Listing {lst_maze1} uses the
+The ``updatePosition`` method, as shown in :ref:`Listing 5 <lst_maze1>` uses the
 same internal representation to see if the turtle has run into a wall.
 It also updates the internal representation with a “.” or “-” to
 indicate that the turtle has visited a particular square or if the
@@ -333,6 +351,8 @@ Finally, the ``isExit`` method uses the current position of the turtle
 to test for an exit condition. An exit condition is whenever the turtle
 has navigated to the edge of the maze, either row zero or column zero,
 or the far right column or the bottom row.
+
+.. _lst_maze:
 
 ::
 
@@ -367,6 +387,8 @@ or the far right column or the bottom row.
                                 -(rowsInMaze-1)/2-.5,
                                 (columnsInMaze-1)/2+.5,
                                 (rowsInMaze-1)/2+.5)
+
+.. _lst_maze1:
 
 ::
 
@@ -422,6 +444,8 @@ or the far right column or the bottom row.
                 
             if color:
                 self.dropBreadcrumb(color)
+
+.. _lst_maze2:
 
 ::
 
@@ -501,7 +525,7 @@ following:
 
 
 The algorithm for doing what we have just described is shown in
-Listing {lst_change1}. In line {lst_c1bc} we are checking our base case;
+:ref:`Listing 7 <lst_change1>`. In line {lst_c1bc} we are checking our base case;
 that is, we are trying to make change in the exact amount of one of our
 coins. If we do not have a coin equal to the amount of change, we make
 recursive calls for each different coin value less than the amount of
@@ -513,6 +537,8 @@ call is made in line {lst_c1rc}. Notice that on that same line we add 1
 to our number of coins to account for the fact that we are using a coin.
 Just adding 1 is the same as if we had made a recursive call asking
 where we satisfy the base case condition immediately.
+
+.. _lst_change1:
 
 ::
 
@@ -530,10 +556,10 @@ where we satisfy the base case condition immediately.
 
     recMC([1,5,10,25],63)
 
-The trouble with the algorithm in Listing {lst_change1} is that it is
+The trouble with the algorithm in :ref:`Listing 7 <lst_change1>` is that it is
 extremely inefficient. In fact, it takes 67,716,925 recursive calls to
 find the optimal solution to the 4 coins, 63 cents problem! To
-understand the fatal flaw in our approach look at Figure {fig_c1ct},
+understand the fatal flaw in our approach look at :ref:`Figure 5 <fig_c1ct>`,
 which illustrates a small fraction of the 377 function calls needed to
 find the optimal set of coins to make change for 26 cents.
 
@@ -549,12 +575,14 @@ the optimal number of coins for 15 cents itself takes 52 function calls.
 Clearly we are wasting a lot of time and effort recalculating old
 results.
 
+.. _fig_c1ct:
+
     .. figure:: callTree.png
        :align: center
        :alt: image
 
        image
-       {Call Tree for Listing {lst_change1}. } {fig_c1ct}
+       {Call Tree for :ref:`Listing 7 <lst_change1>`. } {fig_c1ct}
 
 The key to cutting down on the amount of work we do is to remember some
 of the past results so we can avoid recomputing results we already know.
@@ -562,8 +590,10 @@ A simple solution is to store the results for the minimum number of
 coins in a table when we find them. Then before we compute a new
 minimum, we first check the table to see if a result is already known.
 If there is already a result in the table, we use the value from the
-table rather than recomputing. Listing {lst_change2} shows a modified
+table rather than recomputing. :ref:`Listing 8 <lst_change2>` shows a modified
 algorithm to incorporate our table lookup scheme.
+
+.. _lst_change2:
 
 ::
 
@@ -593,7 +623,7 @@ minimum in the table. Using this modified algorithm reduces the number
 of recursive calls we need to make for the four coin, 63 cent problem to
 221 calls!
 
-Although the algorithm in Listing {lst_change2} is correct it looks and
+Although the algorithm in :ref:`Listing 8 <lst_change2>` is correct it looks and
 feels like a bit of a hack, and if we look at the ``knownResults`` lists
 we can see that there are some holes in the table. In fact the term for
 what we have done is not dynamic programming but rather we have improved
@@ -608,7 +638,7 @@ of the algorithm we already know the minimum number of coins needed to
 make change for any smaller amount.
 
 Let’s look at how we would fill in a table of minimum coins to use in
-making change for 11 cents. Figure {fig_dpcoins} illustrates the
+making change for 11 cents. :ref:`Figure 6 <fig_dpcoins>` illustrates the
 process. We start with one cent. The only solution possible is one coin
 (a penny). The next row shows the minimum for one cent and two cents.
 Again, the only solution is two pennies. The fifth row is where things
@@ -618,7 +648,7 @@ that the number of coins needed to make change for four cents is four,
 plus one more penny to make five, equals five coins. Or we can look at
 zero cents plus one more nickel to make five cents equals 1 coin. Since
 the minimum of one and five is one we store 1 in the table. Fast forward
-again to the end of the table and consider 11 cents. Figure {fig_eleven}
+again to the end of the table and consider 11 cents. :ref:`Figure 7 <fig_eleven>`
 shows the three options that we have to consider:
 
 #. A penny plus the minimum number of coins to make change for
@@ -633,6 +663,8 @@ shows the three options that we have to consider:
 Either option 1 or 3 will give us a total of two coins which is the
 minimum number of coins for 11 cents.
 
+.. _fig_dpcoins:
+
     .. figure:: changeTable.png
        :align: center
        :alt: image
@@ -640,19 +672,23 @@ minimum number of coins for 11 cents.
        image
        {Minimum Number of Coins Needed to Make Change} {fig_dpcoins}
 
-    .. figure:: elevenCents.png
-       :align: center
-       :alt: image
+.. _fig_eleven:
 
-       image
-       {Three Options to Consider for the Minimum Number of Coins for Eleven Cents} {fig_eleven}
+.. figure:: elevenCents.png
+   :align: center
+   :alt: image
 
-Listing {lst_dpchange} is a dynamic programming algorithm to solve our
+   image
+   {Three Options to Consider for the Minimum Number of Coins for Eleven Cents} {fig_eleven}
+
+:ref:`Listing 9 <lst_dpchange>` is a dynamic programming algorithm to solve our
 change-making problem. ``dpMakeChange`` takes three parameters: a list
 of valid coin values, the amount of change we want to make, and a list
 of the minimum number of coins needed to make each value. When the
 function is done ``minCoins`` will contain the solution for all values
 from 0 to the value of ``change``.
+
+.. _lst_dpchange:
 
 ::
 
@@ -684,10 +720,12 @@ for each entry in the ``minCoins`` table. If we know the last coin
 added, we can simply subtract the value of the coin to find a previous
 entry in the table that tells us the last coin we added to make that
 amount. We can keep tracing back through the table until we get to the
-beginning. Listing {lst_dpremember} shows the ``dpMakeChange`` algorithm
+beginning. :ref:`Listing 10 <lst_dpremember>` shows the ``dpMakeChange`` algorithm
 modified to keep track of the coins used, along with a function
 ``printCoins`` that walks backward through the table to print out the
 value of each coin used.
+
+.. _lst_dpremember:
 
 ::
 
@@ -746,4 +784,4 @@ Then we take :math:`63 - 21 = 42` and look at the 42nd element of the
 list. Once again we find a 21 stored there. Finally, element 21 of the
 array also contains 21, giving us the three 21 cent pieces.
 
-.. |image2| image:: Recursion/Figures/maze.png
+.. |image2| image:: Figures/maze.png
