@@ -3,25 +3,77 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+==============================================================
 Welcome to Problem Solving with Algorithms and Data Structures
 ==============================================================
 
-Contents:
+By Brad Miller and David Ranum, Luther College
+
+
+Introduction
+::::::::::::
 
 .. toctree::
    :maxdepth: 2
 
    introduction.rst
+
+Analysis
+::::::::
+
+.. toctree::
+   :maxdepth: 2
+
    analysis.rst
-   basic.rst
+
+Basic Data Structures
+:::::::::::::::::::::
+
+.. toctree::
+   :maxdepth: 2
+
+   BasicDS/basic.rst
+   BasicDS/stacks.rst
+   BasicDS/queues.rst
+   BasicDS/deques.rst
+   BasicDS/linkedlists.rst
+   BasicDS/basic_ex.rst
+
+Recursion
+:::::::::
+
+.. toctree::
+   :maxdepth: 2
+
    recursion.rst
+
+Sorting and Searching
+:::::::::::::::::::::
+
+.. toctree::
+   :maxdepth: 2
+
    sortsearch.rst
+
+Trees and Tree Agorithms
+::::::::::::::::::::::::
+
+.. toctree::
+   :maxdepth: 2
+
    trees.rst
+
+Graphs and Graph Algorithms
+:::::::::::::::::::::::::::
+
+.. toctree::
+   :maxdepth: 2
+
    graphs.rst
 
 
 Indices and tables
-==================
+::::::::::::::::::
 
 * :ref:`genindex`
 * :ref:`modindex`
