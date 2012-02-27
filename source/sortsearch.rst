@@ -57,23 +57,23 @@ index values are ordered, it is possible for us to visit them in
 sequence. This process gives rise to our first searching technique, the
 **sequential search**.
 
-Figure {seqsearch} shows how this search works. Starting at the first
+Figure {fig_seqsearch} shows how this search works. Starting at the first
 item in the list, we simply move from item to item, following the
 underlying sequential ordering until we either find what we are looking
 for or run out of items. If we run out of items, we have discovered that
 the item we were searching for was not present.
 
-    |image| {Sequential Search of a List of Integers} {seqsearch}
+    |image| {Sequential Search of a List of Integers} {fig_seqsearch}
 
 The Python implementation for this algorithm is shown in
-Listing {seqsearchpython}. The function needs the list and the item we
+Listing {lst_seqsearchpython}. The function needs the list and the item we
 are looking for and returns a boolean value as to whether it is present.
 The boolean variable ``found`` is initialized to ``False`` and is
 assigned the value ``True`` if we discover the item in the list.
 
 ::
 
-    [caption={Sequential Search of an Unordered List},label=seqsearchpython,index={sequentialSearch},float=htb]
+    [caption={Sequential Search of an Unordered List},label=lst_seqsearchpython,index={sequentialSearch},float=htb]
     def sequentialSearch(alist, item):
         pos = 0
         found = False
@@ -114,7 +114,7 @@ halfway into the list; that is, we will compare against
 :math:`\frac{n}{2}` items. Recall, however, that as *n* gets large,
 the coefficients, no matter what they are, become insignificant in our
 approximation, so the complexity of the sequential search, is
-:math:`O(n)`. Table {seqsearchtable} summarizes these results.
+:math:`O(n)`. Table {tbl_seqsearchtable} summarizes these results.
 
         & **Best Case** & **Worst Case** & **Average Case**
          [-1.25ex] {0cm} {3.5ex} item is present & :math:`1` &
@@ -123,7 +123,7 @@ approximation, so the complexity of the sequential search, is
         :math:`n` & :math:`n`
 
     {Comparisons Used in a Sequential Search of an Unordered List}
-    {seqsearchtable}
+    {tbl_seqsearchtable}
 
 We assumed earlier that the items in our collection had been randomly
 placed so that there is no relative order between the items. What would
@@ -135,22 +135,22 @@ ascending order, from low to high. If the item we are looking for is
 present in the list, the chance of it being in any one of the *n*
 positions is still the same as before. We will still have the same
 number of comparisons to find the item. However, if the item is not
-present there is a slight advantage. Figure {seqsearch2} shows this
+present there is a slight advantage. Figure {fig_seqsearch2} shows this
 process as the algorithm looks for the item 50. Notice that items are
 still compared in sequence until 54. At this point, however, we know
 something extra. Not only is 54 not the item we are looking for, but no
 other elements beyond 54 can work either since the list is sorted. In
 this case, the algorithm does not have to continue looking through all
 of the items to report that the item was not found. It can stop
-immediately. Listing {seqsearchpython2} shows this variation of the
+immediately. Listing {lst_seqsearchpython2} shows this variation of the
 sequential search function.
 
     |image1| {Sequential Search of an Ordered List of Integers}
-    {seqsearch2}
+    {fig_seqsearch2}
 
 ::
 
-    [caption={Sequential Search of an Ordered List},label=seqsearchpython2,index={orderedSequentialSearch},float=htb]
+    [caption={Sequential Search of an Ordered List},label=lst_seqsearchpython2,index={orderedSequentialSearch},float=htb]
     def orderedSequentialSearch(alist, item):
         pos = 0
         found = False
@@ -166,7 +166,7 @@ sequential search function.
 
         return found
 
-Table {seqsearchtable2} summarizes these results. Note that in the best
+Table {tbl_seqsearchtable2} summarizes these results. Note that in the best
 case we might discover that the item is not in the list by looking at
 only one item. On average, we will know after looking through only
 :math:`\frac {n}{2}` items. However, this technique is still
@@ -180,7 +180,7 @@ the list only in the case where we do not find the item.
         :math:`n` & :math:`\frac{n}{2}`
 
     {Comparisons Used in Sequential Search of an Ordered List}
-    {seqsearchtable2}
+    {tbl_seqsearchtable2}
 
 The Binary Search
 ~~~~~~~~~~~~~~~~~
@@ -201,15 +201,15 @@ must be in the upper half.
 We can then repeat the process with the upper half. Start at the middle
 item and compare it against what we are looking for. Again, we either
 find it or split the list in half, therefore eliminating another large
-part of our possible search space. Figure {binsearch} shows how this
+part of our possible search space. Figure {fig_binsearch} shows how this
 algorithm can quickly find the value 54. The complete function is shown
-in Listing {binarysearchpy}.
+in Listing {lst_binarysearchpy}.
 
-    |image2| {Binary Search of an Ordered List of Integers} {binsearch}
+    |image2| {Binary Search of an Ordered List of Integers} {fig_binsearch}
 
 ::
 
-    [caption={Binary Search of an Ordered List},label=binarysearchpy,index={binarySearch},float=htb]
+    [caption={Binary Search of an Ordered List},label=lst_binarysearchpy,index={binarySearch},float=htb]
     def binarySearch(alist, item):
         first = 0
         last = len(alist)-1
@@ -236,12 +236,12 @@ middle item. If the item we are searching for is less than the middle
 item, we can simply perform a binary search of the left half of the
 original list. Likewise, if the item is greater, we can perform a binary
 search of the right half. Either way, this is a recursive call to the
-binary search function passing a smaller list. Listing {recbinarysearch}
+binary search function passing a smaller list. Listing {lst_recbinarysearch}
 shows this recursive version.
 
 ::
 
-    [caption={A Binary Search--Recursive Version},label=recbinarysearch,index={binarySearch},float=htb]
+    [caption={A Binary Search--Recursive Version},label=lst_recbinarysearch,index={binarySearch},float=htb]
     def binarySearch(alist, item):
         if len(alist) == 0:
             return False
@@ -265,7 +265,7 @@ will require to check the entire list? If we start with *n* items, about
 :math:`\frac{n}{2}` items will be left after the first comparison.
 After the second comparison, there will be about :math:`\frac{n}{4}`.
 Then :math:`\frac{n}{8}`, :math:`\frac{n}{16}`, and so on. How many
-times can we split the list? Table {binaryanalysis} helps us to see the
+times can we split the list? Table {tbl_binaryanalysis} helps us to see the
 answer.
 
         **Comparisons** & **Approximate Number of Items Left**
@@ -275,7 +275,7 @@ answer.
          [-1.25ex] {0cm} {3.5ex}... &
          [-1.25ex] {0cm} {3.5ex} i & :math:`\frac {n}{2^i}`
 
-    {Tabular Analysis for a Binary Search} {binaryanalysis}
+    {Tabular Analysis for a Binary Search} {tbl_binaryanalysis}
 
 When we split the list enough times, we end up with a list that has just
 one item. Either that is the item we are looking for or it is not.
@@ -297,7 +297,7 @@ constant time. However, we know that the slice operator in Python is
 actually O(k). This means that the binary search using slice will not
 perform in strict logarithmic time. Luckily this can be remedied by
 passing the list along with the starting and ending indices. The indices
-can be calculated as we did in Listing {binarysearchpy}. We leave this
+can be calculated as we did in Listing {lst_binarysearchpy}. We leave this
 implementation as an exercise.
 
 Even though a binary search is generally better than a sequential
@@ -333,10 +333,10 @@ value starting at 0. For example, we will have a slot named 0, a slot
 named 1, a slot named 2, and so on. Initially, the hash table contains
 no items so every slot is empty. We can implement a hash table by using
 a list with each element initialized to the special Python value
-``None``. Figure {hashtable1} shows a hash table of size :math:`m=11`.
+``None``. Figure {fig_hashtable1} shows a hash table of size :math:`m=11`.
 In other words, there are *m* slots in the table, named 0 through 10.
 
-    |image3| {Hash Table with 11 Empty Slots} {hashtable1}
+    |image3| {Hash Table with 11 Empty Slots} {fig_hashtable1}
 
 The mapping between an item and the slot where that item belongs in the
 hash table is called the **hash function**. The hash function will take
@@ -345,7 +345,7 @@ names, between 0 and *m*-1. Assume that we have the set of integer items
 54, 26, 93, 17, 77, and 31. Our first hash function, sometimes referred
 to as the “remainder method,” simply takes an item and divides it by the
 table size, returning the remainder as its hash value
-(:math:`h(item)=item \% 11`). Table {hashvalues1} gives all of the
+(:math:`h(item)=item \% 11`). Table {tbl_hashvalues1} gives all of the
 hash values for our example items. Note that this remainder method
 (modulo arithmetic) will typically be present in some form in all hash
 functions, since the result must be in the range of slot names.
@@ -358,16 +358,16 @@ functions, since the result must be in the range of slot names.
          77 & 0
          31 & 9
 
-    {Simple Hash Function Using Remainders} {hashvalues1}
+    {Simple Hash Function Using Remainders} {tbl_hashvalues1}
 
 Once the hash values have been computed, we can insert each item into
 the hash table at the designated position as shown in
-Figure {hashtable2}. Note that 6 of the 11 slots are now occupied. This
+Figure {fig_hashtable2}. Note that 6 of the 11 slots are now occupied. This
 is referred to as the **load factor**, and is commonly denoted by
 :math:`\lambda = \frac {numberofitems}{tablesize}`. For this example,
 :math:`\lambda = \frac {6}{11}`.
 
-    |image4| {Hash Table with Six Items} {hashtable2}
+    |image4| {Hash Table with Six Items} {fig_hashtable2}
 
 Now when we want to search for an item, we simply use the hash function
 to compute the slot name for the item and then check the hash table to
@@ -423,14 +423,14 @@ the extra step of dividing by 11 and keeping the remainder. In this case
 :math:`210\ \%\ 11` is 1, so the phone number 436-555-4601 hashes to
 slot 1. Some folding methods go one step further and reverse every other
 piece before the addition. For the above example, we get
-:math:`43+56+55+64+01 = 219`; :math:`219\ \%\ 11 = 10 `.
+:math:`43+56+55+64+01 = 219` which gives :math:`219\ \%\ 11 = 10 `.
 
 Another numerical technique for constructing a hash function is called
 the **mid-square method**. We first square the item, and then extract
 some portion of the resulting digits. For example, if the item were 44,
 we would first compute :math:`44 ^{2} = 1,936`. By extracting the
 middle two digits, 93, and performing the remainder step, we get 5
-(:math:`93\ \%\ 11`). Table {hashvalues2} shows items under both the
+(:math:`93\ \%\ 11`). Table {tbl_hashvalues2} shows items under both the
 remainder method and the mid-square method. You should verify that you
 understand how these values were computed.
 
@@ -442,7 +442,7 @@ understand how these values were computed.
          77 & 0 & 4
          31 & 9 & 6
 
-    {Comparison of Remainder and Mid-Square Methods} {hashvalues2}
+    {Comparison of Remainder and Mid-Square Methods} {tbl_hashvalues2}
 
 We can also create hash functions for character-based items such as
 strings. The word “cat” can be thought of as a sequence of ordinal
@@ -458,16 +458,16 @@ values.
     116
 
 We can then take these three ordinal values, add them up, and use the
-remainder method to get a ``hash`` value (see Figure {stringhash}).
-Listing {hashfunction1} shows a function called ``hash`` that takes a
+remainder method to get a ``hash`` value (see Figure {fig_stringhash}).
+Listing {lst_hashfunction1} shows a function called ``hash`` that takes a
 string and a table size and returns the hash value in the range from 0
 to ``tablesize``-1.
 
-    |image5| {Hashing a String Using Ordinal Values} {stringhash}
+    |image5| {Hashing a String Using Ordinal Values} {fig_stringhash}
 
 ::
 
-    [caption={Simple Hash Function for Strings},label=hashfunction1,index={hash},float=htb]
+    [caption={Simple Hash Function for Strings},label=lst_hashfunction1,index={hash},float=htb]
     def hash(astring, tablesize):
         sum = 0
         for pos in range(len(astring)):
@@ -477,12 +477,12 @@ to ``tablesize``-1.
 
 It is interesting to note that when using this hash function, anagrams
 will always be given the same hash value. To remedy this, we could use
-the position of the character as a weight. Figure {stringhash2} shows
+the position of the character as a weight. Figure {fig_stringhash2} shows
 one possible way to use the positional value as a weighting factor. The
 modification to the ``hash`` function is left as an exercise.
 
     |image6| {Hashing a String Using Ordinal Values with Weighting}
-    {stringhash2}
+    {fig_stringhash2}
 
 You may be able to think of a number of additional ways to compute hash
 values for items in a collection. The important thing to remember is
@@ -513,10 +513,10 @@ that it tries to find the next open slot or address in the hash table.
 By systematically visiting each slot one at a time, we are performing an
 open addressing technique called **linear probing**.
 
-Figure {linearprobing} shows an extended set of integer items under the
+Figure {fig_linearprobing} shows an extended set of integer items under the
 simple remainder method hash function (54,26,93,17,77,31,44,55,20).
-Table {hashvalues1} above shows the hash values for the original items.
-Figure {hashtable2} shows the original contents. When we attempt to
+Table {tbl_hashvalues1} above shows the hash values for the original items.
+Figure {fig_hashtable2} shows the original contents. When we attempt to
 place 44 into slot 0, a collision occurs. Under linear probing, we look
 sequentially, slot by slot, until we find an open position. In this
 case, we find slot 1.
@@ -526,7 +526,7 @@ the next open position. The final value of 20 hashes to slot 9. Since
 slot 9 is full, we begin to do linear probing. We visit slots 10, 0, 1,
 and 2, and finally find an empty slot at position 3.
 
-    |image7| {Collision Resolution with Linear Probing} {linearprobing}
+    |image7| {Collision Resolution with Linear Probing} {fig_linearprobing}
 
 Once we have built a hash table using open addressing and linear
 probing, it is essential that we utilize the same methods to search for
