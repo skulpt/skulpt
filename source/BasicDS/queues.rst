@@ -27,7 +27,7 @@ line (so that we can pop the tray stack). Well-behaved lines, or queues,
 are very restrictive in that they have only one way in and only one way
 out. There is no jumping in the middle and no leaving before you have
 waited the necessary amount of time to get to the front.
-:ref:`Figure x <fig_qubasicqueue>` shows a simple queue of Python data objects.
+:ref:`Figure 1 <fig_qubasicqueue>` shows a simple queue of Python data objects.
 
 .. _fig_qubasicqueue:
 
@@ -80,12 +80,12 @@ ordering property. The queue operations are given below.
    parameters and returns an integer.
 
 As an example, if we assume that ``q`` is a queue that has been created
-and is currently empty, then :ref:`Table x <ququeueoperations>` shows the
+and is currently empty, then :ref:`Table 1 <tbl_queueoperations>` shows the
 results of a sequence of queue operations. The queue contents are shown
 such that the front is on the right. 4 was the first item enqueued so it
 is the first item returned by dequeue.
 
-.. _ququeueoperations:
+.. _tbl_queueoperations:
 
 ============================ ======================== ================== 
          **Queue Operation**       **Queue Contents**   **Return Value** 
@@ -113,14 +113,14 @@ simplicity of the list collection to build the internal representation
 of the queue.
 
 We need to decide which end of the list to use as the rear and which to
-use as the front. The implementation shown in Listing {ququeuecode}
+use as the front. The implementation shown in :ref:`Listing 1 <lst_queuecode>`
 assumes that the rear is at position 0 in the list. This allows us to
 use the ``insert`` function on lists to add new elements to the rear of
 the queue. The ``pop`` operation can be used to remove the front element
 (the last element of the list). Recall that this also means that enqueue
-will be O(n) and dequeue will be O(1). {escapeinside={#//}{^^M}}
+will be O(n) and dequeue will be O(1). 
 
-.. _ququeuecode:
+.. _lst_queuecode:
 
 ::
 
@@ -142,7 +142,7 @@ will be O(n) and dequeue will be O(1). {escapeinside={#//}{^^M}}
 
 The following interactive Python session shows the ``Queue`` class in
 action as we perform the sequence of operations from
-:ref:`Table x <ququeueoperations>`.
+:ref:`Table 1 <tbl_queueoperations>`.
 
 .. codelens:: ququeuetest
 
@@ -194,7 +194,7 @@ Simulation: Hot Potato
 One of the typical applications for showing a queue in action is to
 simulate a real situation that requires data to be managed in a FIFO
 manner. To begin, let’s consider the children’s game Hot Potato. In this
-game (see :ref:`Figure x <fig_quhotpotato>`) children line up in a circle and
+game (see :ref:`Figure 2 <fig_quhotpotato>`) children line up in a circle and
 pass an item from neighbor to neighbor as fast as they can. At a certain
 point in the game, the action is stopped and the child who has the item
 (the potato) is removed from the circle. Play continues until only one
@@ -228,7 +228,7 @@ counting. It will return the name of the last person remaining after
 repetitive counting by ``num``. What happens at that point is up to you.
 
 To simulate the circle, we will use a queue (see
-Figure {qupotatoqueue}). Assume that the child holding the potato will
+:ref:`Figure 3 <fig_qupotatoqueue>`). Assume that the child holding the potato will
 be at the front of the queue. Upon passing the potato, the simulation
 will simply dequeue and then immediately enqueue that child, putting her
 at the end of the line. She will then wait until all the others have
@@ -244,10 +244,10 @@ until only one name remains (the size of the queue is 1).
 
    A Queue Implementation of Hot Potato
 
-The program is shown in Listing {qujosephussim}. A call to the
+The program is shown in :ref:`Listing 2 <lst_josephussim>`. A call to the
 ``hotPotato`` function using 7 as the counting constant returns:
 
-.. _qujosephussim:
+.. _lst_josephussim:
 
 .. activecode:: qujosephussim
    :caption: Hot Potato Simulation
@@ -301,7 +301,7 @@ could make students wait too long. What page rate should be used?
 
 We could decide by building a simulation that models the laboratory. We
 will need to construct representations for students, printing tasks, and
-the printer (:ref:`Figure x <fig_qulabsim>`). As students submit printing tasks,
+the printer (:ref:`Figure 4 <fig_qulabsim>`). As students submit printing tasks,
 we will add them to a waiting list, a queue of print tasks attached to
 the printer. When the printer completes a task, it will look at the
 queue to see if there are any remaining tasks to process. Of interest
@@ -309,8 +309,13 @@ for us is the average amount of time students will wait for their papers
 to be printed. This is equal to the average amount of time a task waits
 in the queue.
 
-    |image14| {Computer Science Laboratory Printing Queue}
-    {fig_qulabsim}
+.. _fig_qulabsim:
+
+.. figure:: Pictures/simulationsetup.png
+   :align: center
+
+   Computer Science Laboratory Printing Queue
+
 
 To model this situation we need to use some probabilities. For example,
 students may print a paper from 1 to 20 pages in length. If each length
@@ -385,14 +390,14 @@ To design this simulation we will create classes for the three
 real-world objects described above: ``Printer``, ``Task``, and
 ``PrintQueue``.
 
-The ``Printer`` class (Listing {quprinter}) will need to track whether
+The ``Printer`` class (:ref:`Listing 3 <lst_printer>`) will need to track whether
 it has a current task. If it does, then it is busy (lines 13–17) and the
 amount of time needed can be computed from the number of pages in the
 task. The constructor will also allow the pages-per-minute setting to be
 initialized. The ``tick`` method decrements the internal timer and sets
 the printer to idle (line 11) if the task is completed.
 
-.. _quprinter:
+.. _lst_printer:
 
 .. activecode:: printerdef
 
@@ -419,7 +424,7 @@ the printer to idle (line 11) if the task is completed.
            self.timeRemaining = newtask.getPages() \
                                 * 60/self.pagerate
 
-The Task class (Listing {qutask}) will represent a single printing
+The Task class (:ref:`Listing 4 <lst_task>`) will represent a single printing
 task. When the task is created, a random number generator will provide a
 length from 1 to 20 pages. We have chosen to use the ``randrange``
 function from the ``random`` module.
@@ -439,7 +444,7 @@ created and placed in the printer queue. The ``waitTime`` method can
 then be used to retrieve the amount of time spent in the queue before
 printing begins.
 
-.. _qutask:
+.. _lst_task:
 
 .. activecode:: taskdef
 
@@ -458,7 +463,7 @@ printing begins.
        def waitTime(self, currenttime):
            return currenttime - self.timestamp
 
-The main simulation (Listing {qumainsim}) implements the algorithm
+The main simulation (:ref:`Listing 5 <lst_qumainsim>`) implements the algorithm
 described above. The ``printQueue`` object is an instance of our
 existing queue ADT. A boolean helper function, ``newPrintTask``, decides
 whether a new printing task has been created. We have again chosen to
@@ -469,7 +474,7 @@ seconds. By arbitrarily choosing 180 from the range of random integers
 allows us to set the total time and the pages per minute for the
 printer.
 
-.. _qumainsim:
+.. _lst_qumainsim:
 
 .. activecode:: qumainsim
    :include: printerdef, taskdef
