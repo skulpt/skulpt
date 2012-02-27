@@ -108,7 +108,7 @@ Second, on line {lst_recsum:rec} our function calls itself! This is the
 reason that we call the ``listsum`` algorithm recursive. A recursive
 function is a function that calls itself.
 
-Figure {fig_recsumin} shows the series of **recursive calls** that are
+:ref:`Figure x <fig_recsumin>` shows the series of **recursive calls** that are
 needed to sum the list :math:`[1, 3, 5, 7, 9]`. You should think of
 this series of calls as a series of simplifications. Each time we make a
 recursive call we are solving a smaller problem, until we reach the
@@ -164,8 +164,7 @@ represents our problem gets smaller in some way. In the ``listsum``
 algorithm our primary data structure is a list, so we must focus our
 state-changing efforts on the list. Since the base case is a list of
 length 1, a natural progression toward the base case is to shorten the
-list. This is exactly what happens on line {lst_recsum:rec} of Listing
-{lst_recsum} when we call ``listsum`` with a shorter list.
+list. This is exactly what happens on line {lst_recsum:rec} of :ref:`Listing x <lst_recsum>` when we call ``listsum`` with a shorter list.
 
 The final law is that the algorithm must call itself. This is the very
 definition of recursion. Recursion is a confusing concept to many
@@ -276,7 +275,7 @@ to its base 2 string representation (``"1010"``).
     {Converting the Number 10 to its Base 2 String Representation}
     {fig_tostr2}
 
-Figure {fig_tostr2} shows that we get the results we are looking for,
+:ref:`Figure x <fig_tostr2>` shows that we get the results we are looking for,
 but it looks like the digits are in the wrong order. The algorithm works
 correctly because we make the recursive call first on line
 {lst_rectostr:rec}, then we add the string representation of the remainder.
@@ -310,7 +309,7 @@ call. The code for this modified algorithm is shown in
 
 Each time we make a call to ``toStr``, we push a character on the stack.
 Returning to the previous example we can see that after the fourth call
-to ``toStr`` the stack would look like Figure {fig_recstack}. Notice
+to ``toStr`` the stack would look like :ref:`Figure x <fig_recstack>`. Notice
 that now we can simply pop the characters off the stack and concatenate
 them into the final result, ``"1010"``.
 
@@ -326,7 +325,7 @@ The previous example gives us some insight into how Python implements a
 recursive function call. When a function is called in Python, a **stack
 frame** is allocated to handle the local variables of the function. When
 the function returns, the return value is left on top of the stack for
-the calling function to access. Figure {fig_callstack} illustrates the
+the calling function to access. :ref:`Figure x <fig_callstack>` illustrates the
 call stack after the return statement on line {lst_rectostr:bc}.
 
 .. _fig_callstack:
