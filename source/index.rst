@@ -45,7 +45,10 @@ Recursion
 .. toctree::
    :maxdepth: 2
 
-   recursion.rst
+   Recursion/recursionsimple.rst
+   Recursion/recursioncomplex.rst
+   Recursion/recursionexercises.rst
+
 
 Sorting and Searching
 :::::::::::::::::::::
