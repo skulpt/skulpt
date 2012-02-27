@@ -59,7 +59,6 @@ objects.
 
 .. figure:: Pictures/simplereversal.png
    :align: center
-   :scale: 50 %
 
    The Reversal Property of Stacks
 

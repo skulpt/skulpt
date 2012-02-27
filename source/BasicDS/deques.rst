@@ -17,7 +17,7 @@ deque different is the unrestrictive nature of adding and removing
 items. New items can be added at either the front or the rear. Likewise,
 existing items can be removed from either end. In a sense, this hybrid
 linear structure provides all the capabilities of stacks and queues in a
-single data structure. :ref:`Figure x <fig_basicdeque>` shows a deque of Python
+single data structure. :ref:`Figure 1 <fig_basicdeque>` shows a deque of Python
 data objects.
 
 It is important to note that even though the deque can assume many of
@@ -69,6 +69,8 @@ listed on the right. It is very important to keep track of the front and
 the rear as you move items in and out of the collection as things can
 get a bit confusing.
 
+.. _tbl_dequeoperations:
+
 ============================ ============================ ================== 
          **Deque Operation**           **Deque Contents**   **Return Value** 
 ============================ ============================ ================== 
@@ -84,7 +86,7 @@ get a bit confusing.
          ``d.removeFront()``          ``['dog',4,'cat']``           ``True`` 
 ============================ ============================ ================== 
 
-    {Examples of Deque Operations} {dequeoperations}
+    Examples of Deque Operations
 
 Implementing a Deque in Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,14 +94,13 @@ Implementing a Deque in Python
 As we have done in previous sections, we will create a new class for the
 implementation of the abstract data type deque. Again, the Python list
 will provide a very nice set of methods upon which to build the details
-of the deque. Our implementation (Listing {dequecode}) will assume that
+of the deque. Our implementation (:ref:`Listing 1 <lst_dequecode>`) will assume that
 the rear of the deque is at position 0 in the list.
 
-{escapeinside={#//}{^^M}}
+.. _lst_dequecode:
 
-::
+.. activecode:: dequecode
 
-    [caption={Deque Implementation in Python},label=dequecode,index={isEmpty,addFront,addRear,removeFront,removeRear,size},float=htb]
     class Deque:
         def __init__(self):
             self.items = []
@@ -122,6 +123,7 @@ the rear of the deque is at position 0 in the list.
         def size(self):
             return len(self.items)
 
+
 In ``removeFront`` we use the ``pop`` method to remove the last element
 from the list. However, in ``removeRear``, the ``pop(0)`` method must
 remove the first element of the list. Likewise, we need to use the
@@ -130,26 +132,23 @@ assumes the addition of a new element to the end of the list.
 
 The following interactive Python session shows the ``Deque`` class in
 action as we perform the sequence of operations from
-Table {dequeoperations}.
+:ref:`Table 1 <tbl_dequeoperations>`.
 
-::
+.. activecode:: deqtest
+   :include: dequecode
 
-    >>> d=Deque()
-    >>> d.isEmpty()
-    True
-    >>> d.addRear(4)
-    >>> d.addRear('dog')
-    >>> d.addFront('cat')
-    >>> d.addFront(True)
-    >>> d.size()
-    4
-    >>> d.isEmpty()
-    False
-    >>> d.addRear(8.4)
-    >>> d.removeRear()
-    8.4
-    >>> d.removeFront()
-    True
+   d=Deque()
+   print(d.isEmpty())
+   d.addRear(4)
+   d.addRear('dog')
+   d.addFront('cat')
+   d.addFront(True)
+   print(d.size())
+   print(d.isEmpty())
+   d.addRear(8.4)
+   print(d.removeRear())
+   print(d.removeFront())
+   
 
 You can see many similarities to Python code already described for
 stacks and queues. You are also likely to observe that in this
@@ -174,7 +173,7 @@ character to the rear of the deque. At this point, the deque will be
 acting very much like an ordinary queue. However, we can now make use of
 the dual functionality of the deque. The front of the deque will hold
 the first character of the string and the rear of the deque will hold
-the last character (see :ref:`Figure x <fig_palindrome>`).
+the last character (see :ref:`Figure 2 <fig_palindrome>`).
 
 .. _fig_palindrome:
 
@@ -190,34 +189,29 @@ items, we will eventually either run out of characters or be left with a
 deque of size 1 depending on whether the length of the original string
 was even or odd. In either case, the string must be a palindrome. The
 complete function for palindrome-checking appears in
-Listing {palchecker}.
+:ref:`Listing 2 <lst_palchecker>`.
 
-::
+.. _lst_palchecker:
 
-    [caption={Palindrome Checker},label=palchecker,float=htbp]
-    from pythonds.basic import Deque
-    def palchecker(aString):
-        chardeque = Deque()
+.. activecode:: palchecker
 
-        for ch in aString:
-            chardeque.addRear(ch)
+   from pythonds.basic.deque import Deque
+   def palchecker(aString):
+       chardeque = Deque()
 
-        stillEqual = True
+       for ch in aString:
+           chardeque.addRear(ch)
 
-        while chardeque.size() > 1 and stillEqual:
-            first = chardeque.removeFront()
-            last = chardeque.removeRear()
-            if first != last:
-                stillEqual = False
+       stillEqual = True
 
-        return stillEqual
+       while chardeque.size() > 1 and stillEqual:
+           first = chardeque.removeFront()
+           last = chardeque.removeRear()
+           if first != last:
+               stillEqual = False
 
-{} A few sample invocations of the function should suffice to show how
-it works.
+       return stillEqual
 
-::
+   print(palchecker("lsdkjfskf"))
+   print(palchecker("radar"))
 
-    >>> palchecker("lsdkjfskf")
-    False
-    >>> palchecker("toot")
-    True

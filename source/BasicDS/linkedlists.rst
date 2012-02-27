@@ -72,9 +72,9 @@ commonly known as a **linked list**. Recall that we need to be sure that
 we can maintain the relative positioning of the items. However, there is
 no requirement that we maintain that positioning in contiguous memory.
 For example, consider the collection of items shown in
-Figure {idea}. It appears that these values have been placed
+:ref:`Figure 1 <fig_idea>`. It appears that these values have been placed
 randomly. If we can maintain some explicit information in each item,
-namely the location of the next item (see Figure {idea2}), then the
+namely the location of the next item (see :ref:`Figure 2 <fig_idea2>`), then the
 relative position of each item can be expressed by simply following the
 link from one item to the next.
 
@@ -106,12 +106,12 @@ The basic building block for the linked list implementation is the
 **node**. Each node object must hold at least two pieces of information.
 First, the node must contain the list item itself. We will call this the
 **data field** of the node. In addition, each node must hold a reference
-to the next node. Listing {nodeclass} shows the Python
+to the next node. :ref:`Listing 1 <lst_nodeclass>` shows the Python
 implementation. To construct a node, you need to supply the initial data
 value for the node. Evaluating the assignment statement below will yield
-a node object containing the value 93 (see Figure {node}). You
+a node object containing the value 93 (see :ref:`Figure 3 <fig_node>`). You
 should note that we will typically represent a node object as shown in
-Figure {node2}. The ``Node`` class also includes the usual methods
+:ref:`Figure 4 <fig_node2>`. The ``Node`` class also includes the usual methods
 to access and modify the data and the next reference.
 
 ::
@@ -129,25 +129,27 @@ we will use the standard ground symbol to denote a reference that is
 referring to ``None``. It is always a good idea to explicitly assign
 ``None`` to your initial next reference values.
 
-::
+.. _lst_nodeclass:
 
-    [caption={A \texttt{Node} Class},label=nodeclass,index={getData,getNext,setData,setNext},float=htb]
-    class Node:
-        def __init__(self,initdata):
-            self.data = initdata
-            self.next = None
+.. activecode:: nodeclass
+   :caption: Node Class
 
-        def getData(self):
-            return self.data
+   class Node:
+       def __init__(self,initdata):
+           self.data = initdata
+           self.next = None
 
-        def getNext(self):
-            return self.next
+       def getData(self):
+           return self.data
 
-        def setData(self,newdata):
-            self.data = newdata
+       def getNext(self):
+           return self.next
 
-        def setNext(self,newnext):
-            self.next = newnext
+       def setData(self,newdata):
+           self.data = newdata
+
+       def setNext(self,newnext):
+           self.next = newnext
 
 .. _fig_node:
 
@@ -172,7 +174,7 @@ collection of nodes, each linked to the next by explicit references. As
 long as we know where to find the first node (containing the first
 item), each item after that can be found by successively following the
 next links. With this in mind, the ``UnorderedList`` class must maintain
-a reference to the first node. Listing {listclass} shows the
+a reference to the first node. :ref:`Listing 2 <lst_listclass>` shows the
 constructor. Note that each list object will maintain a single reference
 to the head of the list.
 
@@ -184,11 +186,11 @@ statement
     >>> mylist = UnorderedList()
 
 creates the linked list representation shown in
-Figure {initlinkedlist}. As we discussed in the ``Node`` class, the
+:ref:`Figure 5 <fig_initlinkedlist>`. As we discussed in the ``Node`` class, the
 special reference ``None`` will again be used to state that the head of
 the list does not refer to anything. Eventually, the example list given
 earlier will be represented by a linked list as shown in
-Figure {linkedlist}. The head of the list refers to the first node
+:ref:`Figure 6 <fig_linkedlist>`. The head of the list refers to the first node
 which contains the first item of the list. In turn, that node holds a
 reference to the next node (the next item) and so on. It is very
 important to note that the list class itself does not contain any node
@@ -211,14 +213,14 @@ in the linked structure.
    A Linked List of Integers
 
 
+.. _lst_listclass:
+
 ::
 
-    [caption={The \texttt{UnorderedList} Class Constructor},label=listclass,float=htb]
-    class UnorderedList:
         def __init__(self):
             self.head = None
 
-The ``isEmpty`` method, shown in Listing {isempty}, simply checks to
+The ``isEmpty`` method, shown in :ref:`Listing 3 <lst_isempty>`, simply checks to
 see if the head of the list is a reference to ``None``. The result of
 the boolean expression ``self.head==None`` will only be true if there
 are no nodes in the linked list. Since a new list is empty, the
@@ -228,9 +230,10 @@ This shows the advantage to using the reference ``None`` to denote the
 any reference. Two references are equal if they both refer to the same
 object. We will use this often in our remaining methods.
 
+.. _lst_isempty:
+
 ::
 
-    [caption={The \texttt{isEmpty} Method},label=isempty,index={isEmpty},float=htb]
     def isEmpty(self):
         return self.head == None
 
@@ -250,7 +253,7 @@ or beginning, of the list. In other words, we will make the new item the
 first item of the list and the existing items will need to be linked to
 this new first item so that they follow.
 
-The linked list shown in Figure {linkedlist} was built by calling
+The linked list shown in :ref:`Figure 6 <fig_linkedlist>` was built by calling
 the ``add`` method a number of times.
 
 ::
@@ -267,11 +270,11 @@ eventually be the last node on the linked list as every other item is
 added ahead of it. Also, since 54 is the last item added, it will become
 the data value in the first node of the linked list.
 
-The ``add`` method is shown in Listing {add}. Each item of the list
+The ``add`` method is shown in :ref:`Listing 4 <lst_add>`. Each item of the list
 must reside in a node object. Line 2 creates a new node and places the
 item as its data. Now we must complete the process by linking the new
 node into the existing structure. This requires two steps as shown in
-Figure {addtohead}. Step 1 (line 3) changes the ``next`` reference
+:ref:`Figure 7 <fig_addtohead>`. Step 1 (line 3) changes the ``next`` reference
 of the new node to refer to the old first node of the list. Now that the
 rest of the list has been properly attached to the new node, we can
 modify the head of the list to refer to the new node. The assignment
@@ -280,13 +283,14 @@ statement in line 4 sets the head of the list.
 The order of the two steps described above is very important. What
 happens if the order of line 3 and line 4 is reversed? If the
 modification of the head of the list happens first, the result can be
-seen in Figure {wrongorder}. Since the head was the only external
+seen in :ref:`Figure 8 <fig_wrongorder>`. Since the head was the only external
 reference to the list nodes, all of the original nodes are lost and can
 no longer be accessed.
 
+.. _lst_add:
+
 ::
 
-    [caption={The \texttt{add} Method},label=add,index={add},float=htb]
     def add(self,item):
         temp = Node(item)
         temp.setNext(self.head)
@@ -316,7 +320,7 @@ the next node by “traversing” the next reference.
 
 To implement the ``length`` method, we need to traverse the linked list
 and keep a count of the number of nodes that occurred.
-Listing {length} shows the Python code for counting the number of
+:ref:`Listing 5 <lst_length>` shows the Python code for counting the number of
 nodes in the list. The external reference is called ``current`` and is
 initialized to the head of the list in line 2. At the start of the
 process we have not seen any nodes so the count is set to :math:`0`.
@@ -326,11 +330,12 @@ along to the next node via the assignment statement in line 6. Again,
 the ability to compare a reference to ``None`` is very useful. Every
 time current moves to a new node, we add :math:`1` to ``count``.
 Finally, ``count`` gets returned after the iteration stops.
-Figure {traversal} shows this process as it proceeds down the list.
+:ref:`Figure 9 <fig_traversal>` shows this process as it proceeds down the list.
+
+.. _lst_length:
 
 ::
 
-    [caption={The \texttt{length} Method},label=length,index={length},float=htb]
     def length(self):
         current = self.head
         count = 0
@@ -356,7 +361,7 @@ all the way to the end of the list. In fact, if we do get to the end of
 the list, that means that the item we are looking for must not be
 present. Also, if we do find the item, there is no need to continue.
 
-Listing {search} shows the implementation for the ``search`` method.
+:ref:`Listing 6 <lst_search>` shows the implementation for the ``search`` method.
 As in the ``length`` method, the traversal is initialized to start at
 the head of the list (line 2). We also use a boolean variable called
 ``found`` to remember whether we have located the item we are searching
@@ -368,9 +373,10 @@ we continue to check the next node. The question in line 5 asks whether
 the data item is present in the current node. If so, ``found`` can be
 set to ``True``.
 
+.. _lst_search:
+
 ::
 
-    [caption={The \texttt{search} Method},label=search,index={search},float=htb]
     def search(self,item):
         current = self.head
         found = False
@@ -393,7 +399,7 @@ item 17.
 Since 17 is in the list, the traversal process needs to move only to the
 node containing 17. At that point, the variable ``found`` is set to
 ``True`` and the ``while`` condition will fail, leading to the return
-value seen above. This process can be seen in Figure {searchpic}.
+value seen above. This process can be seen in :ref:`Figure 10 <fig_searchpic>`.
 
 .. _fig_searchpic:
 
@@ -436,13 +442,13 @@ which we will call ``previous``, will always travel one node behind
 ``previous`` will be referring to the proper place in the linked list
 for the modification.
 
-{} Listing {remove} shows the complete ``remove`` method. Lines 2–3
+{} :ref:`Listing 7 <lst_remove>` shows the complete ``remove`` method. Lines 2–3
 assign initial values to the two references. Note that ``current``
 starts out at the list head as in the other traversal examples.
 ``previous``, however, is assumed to always travel one node behind
 current. For this reason, ``previous`` starts out with a value of
 ``None`` since there is no node before the head (see
-Figure {removeinit}). The boolean variable ``found`` will again be
+:ref:`Figure 11 <fig_removeinit>`). The boolean variable ``found`` will again be
 used to control the iteration.
 
 In lines 6–7 we ask whether the item stored in the current node is the
@@ -452,13 +458,14 @@ one node ahead. Again, the order of these two statements is crucial.
 ``previous`` must first be moved one node ahead to the location of
 ``current``. At that point, ``current`` can be moved. This process is
 often referred to as “inch-worming” as ``previous`` must catch up to
-``current`` before ``current`` moves ahead. Figure {prevcurr} shows
+``current`` before ``current`` moves ahead. :ref:`Figure 12 <fig_prevcurr>` shows
 the movement of ``previous`` and ``current`` as they progress down the
 list looking for the node containing the value 17.
 
+.. _lst_remove:
+
 ::
 
-    [caption={The \texttt{remove} Method},label=remove,index={remove},float=htb]
     def remove(self,item):
         current = self.head
         previous = None
@@ -492,7 +499,7 @@ list looking for the node containing the value 17.
 
 
 Once the searching step of the ``remove`` has been completed, we need to
-remove the node from the linked list. Figure {removepic1} shows the
+remove the node from the linked list. :ref:`Figure 13 <fig_removepic1>` shows the
 link that must be modified. However, there is a special case that needs
 to be addressed. If the item to be removed happens to be the first item
 in the list, then ``current`` will reference the first node in the
@@ -500,7 +507,7 @@ linked list. This also means that ``previous`` will be ``None``. We said
 earlier that ``previous`` would be referring to the node whose next
 reference needs to be modified in order to complete the remove. In this
 case, it is not ``previous`` but rather the head of the list that needs
-to be changed (see Figure {removehead}).
+to be changed (see :ref:`Figure 14 <fig_removehead>`).
 
 .. _fig_removepic1:
 
@@ -591,7 +598,7 @@ In order to implement the ordered list, we must remember that the
 relative positions of the items are based on some underlying
 characteristic. The ordered list of integers given above (17, 26, 31,
 54, 77, and 93) can be represented by a linked structure as shown in
-Figure {orderlinked}. Again, the node and link structure is ideal
+:ref:`Figure 15 <fig_orderlinked>`. Again, the node and link structure is ideal
 for representing the relative positioning of the items.
 
 .. _fig_orderlinked:
@@ -605,11 +612,12 @@ for representing the relative positioning of the items.
 To implement the ``OrderedList`` class, we will use the same technique
 as seen previously with unordered lists. Once again, an empty list will
 be denoted by a ``head`` reference to ``None`` (see
-Listing {{orderlist}).
+:ref:`Listing 8 <lst_orderlist>`).
+
+.. _lst_orderlist:
 
 ::
 
-    [caption={\texttt{OrderedList} Class Constructor},label=orderlist,float=htb]
     class OrderedList:
         def __init__(self):
             self.head = None
@@ -630,7 +638,7 @@ find the item it is exactly what we need. However, in the case where the
 item is not in the list, we can take advantage of the ordering to stop
 the search as soon as possible.
 
-For example, Figure {stopearly} shows the ordered linked list as a
+For example, :ref:`Figure 16 <fig_stopearly>` shows the ordered linked list as a
 search is looking for the value 45. As we traverse, starting at the head
 of the list, we first compare against 17. Since 17 is not the item we
 are looking for, we move to the next node, in this case 26. Again, this
@@ -650,7 +658,7 @@ exist further out in the linked list.
    Searching an Ordered Linked List
 
 
-Listing {ordersearch} shows the complete ``search`` method. It is
+:ref:`Listing 9 <lst_ordersearch>` shows the complete ``search`` method. It is
 easy to incorporate the new condition discussed above by adding another
 boolean variable, ``stop``, and initializing it to ``False`` (line 4).
 While ``stop`` is ``False`` (not ``stop``) we can continue to look
@@ -659,9 +667,10 @@ contains data greater than the item we are looking for, we will set
 ``stop`` to ``True`` (lines 9–10). The remaining lines are identical to
 the unordered list search.
 
+.. _lst_ordersearch:
+
 ::
 
-    [caption={The Modified \texttt{search} Method for the Ordered List},label=ordersearch,index={search},float=htb]
     def search(self,item):
         current = self.head
         found = False
@@ -686,7 +695,7 @@ in the existing ordered list.
 
 Assume we have the ordered list consisting of 17, 26, 54, 77, and 93 and
 we want to add the value 31. The ``add`` method must decide that the new
-item belongs between 26 and 54. Figure {orderinsert} shows the setup
+item belongs between 26 and 54. :ref:`Figure 17 <fig_orderinsert>` shows the setup
 that we need. As we explained earlier, we need to traverse the linked
 list looking for the place where the new node will be added. We know we
 have found that place when either we run out of nodes (``current``
@@ -704,7 +713,7 @@ to stop.
 
 As we saw with unordered lists, it is necessary to have an additional
 reference, again called ``previous``, since ``current`` will not provide
-access to the node that must be modified. Listing {orderadd} shows
+access to the node that must be modified. :ref:`Listing 10 <lst_orderadd>` shows
 the complete ``add`` method. Lines 2–3 set up the two external
 references and lines 9–10 again allow ``previous`` to follow one node
 behind ``current`` every time through the iteration. The condition (line
@@ -714,14 +723,15 @@ case, when the iteration fails, we have found the location for the new
 node.
 
 The remainder of the method completes the two-step process shown in
-Figure {orderinsert}. Once a new node has been created for the item,
+:ref:`Figure 17 <fig_orderinsert>`. Once a new node has been created for the item,
 the only remaining question is whether the new node will be added at the
 beginning of the linked list or some place in the middle. Again,
 ``previous == None`` (line 13) can be used to provide the answer.
 
+.. _lst_orderadd:
+
 ::
 
-    [caption={The Modified \texttt{add} Method for the Ordered List},label=orderadd,index={add},float=htb]
     def add(self,item):
         current = self.head
         previous = None
