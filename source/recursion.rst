@@ -38,13 +38,13 @@ We will begin our investigation with a simple problem that you already
 know how to solve without using recursion. Suppose that you want to
 calculate the sum of a list of numbers such as:
 :math:`[1, 3, 5, 7, 9]`. An iterative function that computes the sum
-is shown in Listing {itsum}. The function uses an accumulator variable
+is shown in Listing {lst_itsum}. The function uses an accumulator variable
 (``theSum``) to compute a running total of all the numbers in the list
 by starting with :math:`0` and adding each number in the list.
 
 ::
 
-    [caption=The Iterative Sum Function,label=itsum,float=htb,index={listsum}]
+    [caption=The Iterative Sum Function,label=lst_itsum,float=htb,index={listsum}]
     def listsum(numList):
         theSum = 0
         for i in numList:
@@ -88,28 +88,28 @@ list (``numList[1:]``). To state it in a functional form:
 In this equation :math:`first(numList)` returns the first element of
 the list and :math:`rest(numList)` returns a list of everything but
 the first element. This is easily expressed in Python as shown in
-Listing {recsum}.
+Listing {lst_recsum}.
 
 {escapeinside={#//}{^^M}}
 
 ::
 
-    [caption={Recursive listSum},label=recsum,float=htb,index={listsum}]
+    [caption={Recursive listSum},label=lst_recsum,float=htb,index={listsum}]
     def listsum(numList):
-        if len(numList) == 1:               #// \label{recsum:bc}
+        if len(numList) == 1:               #// \label{lst_recsum:bc}
             return numList[0]
         else:
-            return numList[0] + listsum(numList[1:])  #// \label{recsum:rec}
+            return numList[0] + listsum(numList[1:])  #// \label{lst_recsum:rec}
 
 There are a few key ideas in this listing to look at. First, on line
-{recsum:bc} we are checking to see if the list is one element long. This
+{lst_recsum:bc} we are checking to see if the list is one element long. This
 check is crucial and is our escape clause from the function. The sum of
 a list of length 1 is trivial; it is just the number in the list.
-Second, on line {recsum:rec} our function calls itself! This is the
+Second, on line {lst_recsum:rec} our function calls itself! This is the
 reason that we call the ``listsum`` algorithm recursive. A recursive
 function is a function that calls itself.
 
-Figure {fig:recsumin} shows the series of **recursive calls** that are
+Figure {fig_recsumin} shows the series of **recursive calls** that are
 needed to sum the list :math:`[1, 3, 5, 7, 9]`. You should think of
 this series of calls as a series of simplifications. Each time we make a
 recursive call we are solving a smaller problem, until we reach the
@@ -121,11 +121,11 @@ point where the problem cannot get any smaller.
 
            image
 
-    {Series of Recursive Calls Adding a List of Numbers} {fig:recsumin}
+    {Series of Recursive Calls Adding a List of Numbers} {fig_recsumin}
 
 When we reach the point where the problem is as simple as it can get, we
 begin to piece together the solutions of each of the small problems
-until the initial problem is solved. Figure {fig:recsumout} shows the
+until the initial problem is solved. Figure {fig_recsumout} shows the
 additions that are performed as ``listsum`` works its way backward
 through the series of calls. When ``listsum`` returns from the topmost
 problem, we have the solution to the whole problem.
@@ -137,7 +137,7 @@ problem, we have the solution to the whole problem.
            image
 
     {Series of Recursive Returns from Adding a List of Numbers}
-    {fig:recsumout}
+    {fig_recsumout}
 
 The Three Laws of Recursion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -165,8 +165,8 @@ represents our problem gets smaller in some way. In the ``listsum``
 algorithm our primary data structure is a list, so we must focus our
 state-changing efforts on the list. Since the base case is a list of
 length 1, a natural progression toward the base case is to shorten the
-list. This is exactly what happens on line {recsum:rec} of Listing
-{recsum} when we call ``listsum`` with a shorter list.
+list. This is exactly what happens on line {lst_recsum:rec} of Listing
+{lst_recsum} when we call ``listsum`` with a shorter list.
 
 The final law is that the algorithm must call itself. This is the very
 definition of recursion. Recursion is a confusing concept to many
@@ -232,7 +232,7 @@ we will use integer division plus remainder to get results of 7 and 6
 respectively. Finally, we have reduced the problem to converting 7,
 which we can do easily since it satisfies the base case condition of
 :math:`n < base`, where :math:`base = 10`. The series of operations
-we have just performed is illustrated in Figure {fig:tostr}. Notice that
+we have just performed is illustrated in Figure {fig_tostr}. Notice that
 the numbers we want to remember are in the remainder boxes along the
 right side of the diagram.
 
@@ -242,26 +242,26 @@ right side of the diagram.
 
            image
 
-    {Converting an Integer to a String in Base 10} {fig:tostr}
+    {Converting an Integer to a String in Base 10} {fig_tostr}
 
-Listing {rectostr} shows the Python code that implements the algorithm
+Listing {lst_rectostr} shows the Python code that implements the algorithm
 outlined above for any base between 2 and 16.
 
 ::
 
-    [caption={Converting an Integer to a String in Base 2--16},label=rectostr,float=htb,index={toStr}]
+    [caption={Converting an Integer to a String in Base 2--16},label=lst_rectostr,float=htb,index={toStr}]
 
     def toStr(n,base):
        convertString = "0123456789ABCDEF"
-       if n < base:        #// \label{rectostr:bc}
+       if n < base:        #// \label{lst_rectostr:bc}
           return convertString[n]
        else:
-          return toStr(n//base,base) + convertString[n%base]   #// \label{rectostr:rec}
+          return toStr(n//base,base) + convertString[n%base]   #// \label{lst_rectostr:rec}
 
-Notice that in line {rectostr:bc} we check for the base case where ``n``
+Notice that in line {lst_rectostr:bc} we check for the base case where ``n``
 is less than the base we are converting to. When we detect the base
 case, we stop recursing and simply return the string from the
-``convertString`` sequence. In line {rectostr:rec} we satisfy both the
+``convertString`` sequence. In line {lst_rectostr:rec} we satisfy both the
 second and third laws–by making the recursive call and by reducing the
 problem size–using division.
 
@@ -275,17 +275,17 @@ to its base 2 string representation (``"1010"``).
            image
 
     {Converting the Number 10 to its Base 2 String Representation}
-    {fig:tostr2}
+    {fig_tostr2}
 
-Figure {fig:tostr2} shows that we get the results we are looking for,
+Figure {fig_tostr2} shows that we get the results we are looking for,
 but it looks like the digits are in the wrong order. The algorithm works
 correctly because we make the recursive call first on line
-{rectostr:rec}, then we add the string representation of the remainder.
+{lst_rectostr:rec}, then we add the string representation of the remainder.
 If we reversed returning the ``convertString`` lookup and returning the
 ``toStr`` call, the resulting string would be backward! But by delaying
 the concatenation operation until after the recursive call has returned,
 we get the result in the proper order. This should remind you of our
-discussion of stacks back in Chapter {chap:basicds}.
+discussion of stacks back in the previous chapter.
 
 Stack Frames: Implementing Recursion
 ------------------------------------
@@ -294,11 +294,11 @@ Suppose that instead of concatenating the result of the recursive call
 to ``toStr`` with the string from ``convertString``, we modified our
 algorithm to push the strings onto a stack prior to making the recursive
 call. The code for this modified algorithm is shown in
-Listing {recstack:lst}.
+Listing {lst_recstack}.
 
 ::
 
-    [caption=Pushing the Strings onto a Stack,label=recstack:lst,float=htb,index={toStr}]
+    [caption=Pushing the Strings onto a Stack,label=lst_recstack,float=htb,index={toStr}]
     rStack = Stack()
 
     def toStr(n,base):
@@ -311,28 +311,28 @@ Listing {recstack:lst}.
 
 Each time we make a call to ``toStr``, we push a character on the stack.
 Returning to the previous example we can see that after the fourth call
-to ``toStr`` the stack would look like Figure {recstack:fig}. Notice
+to ``toStr`` the stack would look like Figure {fig_recstack}. Notice
 that now we can simply pop the characters off the stack and concatenate
 them into the final result, ``"1010"``.
 
     |image| {Strings Placed on the Stack During Conversion}
-    {recstack:fig}
+    {fig_recstack}
 
 The previous example gives us some insight into how Python implements a
 recursive function call. When a function is called in Python, a **stack
 frame** is allocated to handle the local variables of the function. When
 the function returns, the return value is left on top of the stack for
-the calling function to access. Figure {fig:callstack} illustrates the
-call stack after the return statement on line {rectostr:bc}.
+the calling function to access. Figure {fig_callstack} illustrates the
+call stack after the return statement on line {lst_rectostr:bc}.
 
-    |image1| {Call Stack Generated from ``toStr(10,2)``} {fig:callstack}
+    |image1| {Call Stack Generated from ``toStr(10,2)``} {fig_callstack}
 
 Notice that the call to ``toStr(2//2,2)`` leaves a return value of
 ``"1"`` on the stack. This return value is then used in place of the
 function call (``toStr(1,2)``) in the expression {"1" +
 convertString[2%2]}, which will leave the string ``"10"`` on the top of
 the stack. In this way, the Python call stack takes the place of the
-stack we used explicitly in Listing {recstack:lst}. In our list summing
+stack we used explicitly in Listing {lst_recstack}. In our list summing
 example, you can think of the return value on the stack taking the place
 of an accumulator variable.
 
@@ -377,7 +377,7 @@ tower of 64 disks is :math:`2^{64}-1 = 18,446,744,073,709,551,615`. At
 a rate of one move per second, that is 584,942,417,355 years! Clearly
 there is more to this puzzle than meets the eye.
 
-Figure {fig:hanoi} shows an example of a configuration of disks in the
+Figure {fig_hanoi} shows an example of a configuration of disks in the
 middle of a move from the first peg to the third. Notice that, as the
 rules specify, the disks on each peg are stacked so that smaller disks
 are always on top of the larger disks. If you have not tried to solve
@@ -389,7 +389,7 @@ and poles–a pile of books or pieces of paper will work.
        :alt: image
 
        image
-       {An Example Arrangement of Disks for the Tower of Hanoi} {fig:hanoi}
+       {An Example Arrangement of Disks for the Tower of Hanoi} {fig_hanoi}
 
 How do we go about solving this problem recursively? How would you go
 about solving this problem at all? What is our base case? Let’s think
@@ -426,39 +426,39 @@ case. The simplest Tower of Hanoi problem is a tower of one disk. In
 this case, we need move only a single disk to its final destination. A
 tower of one disk will be our base case. In addition, the steps outlined
 above move us toward the base case by reducing the height of the tower
-in steps 1 and 3. Listing {lst:hanoi} shows the Python code to solve the
+in steps 1 and 3. Listing {lst_hanoi} shows the Python code to solve the
 Tower of Hanoi puzzle.
 
 ::
 
-    [caption=Python Code for the Tower of Hanoi,label=lst:hanoi,float=htbp,index={moveTower}]
+    [caption=Python Code for the Tower of Hanoi,label=lst_hanoi,float=htbp,index={moveTower}]
     def moveTower(height,fromPole, toPole, withPole):
         if height >= 1:
-            moveTower(height-1,fromPole,withPole,toPole)  #// \label{hanoi:r1}
+            moveTower(height-1,fromPole,withPole,toPole)  #// \label{lst_hanoi:r1}
             moveDisk(fromPole,toPole)
-            moveTower(height-1,withPole,toPole,fromPole)  #// \label{hanoi:r2}
+            moveTower(height-1,withPole,toPole,fromPole)  #// \label{lst_hanoi:r2}
 
-Notice that the code in Listing {lst:hanoi} is almost identical to the
+Notice that the code in Listing {lst_hanoi} is almost identical to the
 English description. The key to the simplicity of the algorithm is that
-we make two different recursive calls, one on line {hanoi:r1} and a
-second on line {hanoi:r2}. On line {hanoi:r1} we move all but the bottom
+we make two different recursive calls, one on line {lst_hanoi:r1} and a
+second on line {lst_hanoi:r2}. On line {lst_hanoi:r1} we move all but the bottom
 disk on the initial tower to an intermediate pole. The next line simply
 moves the bottom disk to its final resting place. Then on line
-{hanoi:r2} we move the tower from the intermediate pole to the top of
+{lst_hanoi:r2} we move the tower from the intermediate pole to the top of
 the largest disk. The base case is detected when the tower height is 0;
 in this case there is nothing to do, so the ``moveTower`` function
 simply returns. The important thing to remember about handling the base
 case this way is that simply returning from ``moveTower`` is what
 finally allows the ``moveDisk`` function to be called.
 
-The function ``moveDisk``, shown in Listing {lst:movedisk}, is very
+The function ``moveDisk``, shown in Listing {lst_movedisk}, is very
 simple. All it does is print out that it is moving a disk from one pole
 to another. If you type in and run the ``moveTower`` program you can see
 that it gives you a very efficient solution to the puzzle.
 
 ::
 
-    [caption=Python Code to Move One Disk ,label=lst:movedisk,float=htbp,index={moveDisk}]
+    [caption=Python Code to Move One Disk ,label=lst_movedisk,float=htbp,index={moveDisk}]
     def moveDisk(fp,tp):
         print("moving disk from %d to %d\n" % (fp,tp))
 
@@ -483,10 +483,10 @@ Greek myth about Theseus who was sent into a maze to kill the minotaur.
 Theseus used a ball of thread to help him find his way back out again
 once he had finished off the beast. In our problem we will assume that
 our turtle is dropped down somewhere into the middle of the maze and
-must find its way out. Look at Figure {fig:mazescreen} to get an idea of
+must find its way out. Look at Figure {fig_mazescreen} to get an idea of
 where we are going in this section.
 
-    |image2| {The Finished Maze Search Program} {fig:mazescreen}
+    |image2| {The Finished Maze Search Program} {fig_mazescreen}
 
 To make it easier for us we will assume that our maze is divided up into
 “squares.” Each square of the maze is either open or occupied by a
@@ -566,14 +566,14 @@ The ``Maze`` class also overloads the index operator ``[]`` so that our
 algorithm can easily access the status of any particular square.
 
 Let’s examine the code for the search function which we call
-``searchFrom``. The code is shown in Listing {lst:mazesearch}. Notice
+``searchFrom``. The code is shown in Listing {lst_mazesearch}. Notice
 that this function takes three parameters: a maze object, the starting
 row, and the starting column. This is important because as a recursive
 function the search logically starts again with each recursive call.
 
 ::
 
-    [caption=The Maze Search Function,label=lst:mazesearch,float=htb,basicstyle=\footnotesize]
+    [caption=The Maze Search Function,label=lst_mazesearch,float=htb,basicstyle=\footnotesize]
     def searchFrom(maze, startRow, startColumn):
         maze.updatePosition(startRow, startColumn)
        #  Check for base cases:
@@ -623,15 +623,15 @@ finally East. If all four recursive calls return false then we have
 found a dead end. You should download or type in the whole program and
 experiment with it by changing the order of these calls.
 
-The code for the ``Maze`` class is shown in Listings {lst:maze} –
-{lst:maze3}. The ``__init__`` method takes the name of a file as its
+The code for the ``Maze`` class is shown in Listings {lst_maze} –
+{lst_maze2}. The ``__init__`` method takes the name of a file as its
 only parameter. This file is a text file that represents a maze by using
 “+” characters for walls, spaces for open squares, and the letter “S” to
-indicate the starting position. Figure {fig:exmaze} is an example of a
+indicate the starting position. Figure {fig_exmaze} is an example of a
 maze data file. The internal representation of the maze is a list of
 lists. Each row of the ``mazelist`` instance variable is also a list.
 This secondary list contains one character per square using the
-characters described above. For the data file in Figure {fig:exmaze} the
+characters described above. For the data file in Figure {fig_exmaze} the
 internal representation looks like the following:
 
 ::
@@ -649,7 +649,7 @@ internal representation looks like the following:
       ['+','+','+','+',...,'+','+','+',' ','+','+','+']]
 
 The ``drawMaze`` method uses this internal representation to draw the
-initial view of the maze on the screen, see Figure {fig:mazescreen}.
+initial view of the maze on the screen, see Figure {fig_mazescreen}.
 
     ::
 
@@ -665,9 +665,9 @@ initial view of the maze on the screen, see Figure {fig:mazescreen}.
                   +                + +++
                   ++++++++++++++++++ +++
 
-    {An Example Maze Data File} {fig:exmaze}
+    {An Example Maze Data File} {fig_exmaze}
 
-The ``updatePosition`` method, as shown in Listing {lst:maze1} uses the
+The ``updatePosition`` method, as shown in Listing {lst_maze1} uses the
 same internal representation to see if the turtle has run into a wall.
 It also updates the internal representation with a “.” or “-” to
 indicate that the turtle has visited a particular square or if the
@@ -682,7 +682,7 @@ or the far right column or the bottom row.
 
 ::
 
-    [caption=The Maze Class,label=lst:maze,index={Maze},float=htb,basicstyle=\footnotesize]
+    [caption=The Maze Class,label=lst_maze,index={Maze},float=htb,basicstyle=\footnotesize]
     class Maze:
         def __init__(self,mazeFileName):
             rowsInMaze = 0
@@ -716,7 +716,7 @@ or the far right column or the bottom row.
 
 ::
 
-    [caption=The Maze Class,label=lst:maze1,float=h!tb,basicstyle=\footnotesize]
+    [caption=The Maze Class,label=lst_maze1,float=h!tb,basicstyle=\footnotesize]
         def drawMaze(self):
             for y in range(self.rowsInMaze):
                 for x in range(self.columnsInMaze):
@@ -769,6 +769,19 @@ or the far right column or the bottom row.
             if color:
                 self.dropBreadcrumb(color)
 
+::
+
+    [caption=The Maze Class,label=lst_maze2,float=tb,basicstyle=\footnotesize]
+        def isExit(self,row,col):
+            return (row == 0 or
+                    row == self.rowsInMaze-1 or
+                    col == 0 or
+                    col == self.columnsInMaze-1 )
+
+       def __getitem__(self,idx):
+            return self.mazelist[idx]
+
+
 Dynamic Programming
 -------------------
 
@@ -794,17 +807,7 @@ the next lowest coin value and use as many of those as possible. This
 first approach is called a **greedy method** because we try to solve as
 big a piece of the problem as possible right away.
 
-::
 
-    [caption=The Maze Class,label=lst:maze3,float=tb,basicstyle=\footnotesize]
-        def isExit(self,row,col):
-            return (row == 0 or
-                    row == self.rowsInMaze-1 or
-                    col == 0 or
-                    col == self.columnsInMaze-1 )
-
-       def __getitem__(self,idx):
-            return self.mazelist[idx]
 
 The greedy method works fine when we are using U.S. coins, but suppose
 that your company decides to deploy its vending machines in Lower
@@ -828,7 +831,9 @@ coins needed to make change for the original amount minus five cents, or
 a dime plus the number of coins needed to make change for the original
 amount minus ten cents, and so on. So the number of coins needed to make
 change for the original amount can be computed according to the
-following: .. math::
+following: 
+
+.. math::
 
       numCoins =
    min
@@ -838,43 +843,43 @@ following: .. math::
    1 + numCoins(original amount - 10) \\
    1 + numCoins(original amount - 25)
    \end{cases}
-   \label{eqn:change}
+   \label{eqn_change}
 
 
 The algorithm for doing what we have just described is shown in
-Listing {lst:change1}. In line {lst:c1bc} we are checking our base case;
+Listing {lst_change1}. In line {lst_c1bc} we are checking our base case;
 that is, we are trying to make change in the exact amount of one of our
 coins. If we do not have a coin equal to the amount of change, we make
 recursive calls for each different coin value less than the amount of
-change we are trying to make. Line {lst:c1li} shows how we filter the
+change we are trying to make. Line {lst_c1li} shows how we filter the
 list of coins to those less than the current value of change using a
 list comprehension. The recursive call also reduces the total amount of
 change we need to make by the value of the coin selected. The recursive
-call is made in line {lst:c1rc}. Notice that on that same line we add 1
+call is made in line {lst_c1rc}. Notice that on that same line we add 1
 to our number of coins to account for the fact that we are using a coin.
 Just adding 1 is the same as if we had made a recursive call asking
 where we satisfy the base case condition immediately.
 
 ::
 
-    [caption=Recursive Version of Coin Optimization Problem,label=lst:change1,float=htb,index={recMC}]
+    [caption=Recursive Version of Coin Optimization Problem,label=lst_change1,float=htb,index={recMC}]
     def recMC(coinValueList,change):
        minCoins = change
-       if change in coinValueList:   #// \label{lst:c1bc}
+       if change in coinValueList:   #// \label{lst_c1bc}
          return 1
        else:
-          for i in [c for c in coinValueList if c <= change]:  #// \label{lst:c1li}
-             numCoins = 1 + recMC(coinValueList,change-i)  #// \label{lst:c1rc}
+          for i in [c for c in coinValueList if c <= change]:  #// \label{lst_c1li}
+             numCoins = 1 + recMC(coinValueList,change-i)  #// \label{lst_c1rc}
              if numCoins < minCoins:
                 minCoins = numCoins
        return minCoins
 
     recMC([1,5,10,25],63)
 
-The trouble with the algorithm in Listing {lst:change1} is that it is
+The trouble with the algorithm in Listing {lst_change1} is that it is
 extremely inefficient. In fact, it takes 67,716,925 recursive calls to
 find the optimal solution to the 4 coins, 63 cents problem! To
-understand the fatal flaw in our approach look at Figure {fig:c1ct},
+understand the fatal flaw in our approach look at Figure {fig_c1ct},
 which illustrates a small fraction of the 377 function calls needed to
 find the optimal set of coins to make change for 26 cents.
 
@@ -895,7 +900,7 @@ results.
        :alt: image
 
        image
-       {Call Tree for Listing {lst:change1}. } {fig:c1ct}
+       {Call Tree for Listing {lst_change1}. } {fig_c1ct}
 
 The key to cutting down on the amount of work we do is to remember some
 of the past results so we can avoid recomputing results we already know.
@@ -903,18 +908,18 @@ A simple solution is to store the results for the minimum number of
 coins in a table when we find them. Then before we compute a new
 minimum, we first check the table to see if a result is already known.
 If there is already a result in the table, we use the value from the
-table rather than recomputing. Listing {lst:change2} shows a modified
+table rather than recomputing. Listing {lst_change2} shows a modified
 algorithm to incorporate our table lookup scheme.
 
 ::
 
-    [caption=Recursive Coin Optimization Using Table Lookup,label=lst:change2,float=htbp]
+    [caption=Recursive Coin Optimization Using Table Lookup,label=lst_change2,float=htbp]
     def recDC(coinValueList,change,knownResults):
        minCoins = change
        if change in coinValueList:   
           knownResults[change] = 1
           return 1
-       elif knownResults[change] > 0: #// \label{lst:c2bc}
+       elif knownResults[change] > 0: #// \label{lst_c2bc}
           return knownResults[change]
        else:
            for i in [c for c in coinValueList if c <= change]:
@@ -927,14 +932,14 @@ algorithm to incorporate our table lookup scheme.
 
     recDC([1,5,10,25],63,[0]*63)
 
-Notice that in line {lst:c2bc} we have added a test to see if our table
+Notice that in line {lst_c2bc} we have added a test to see if our table
 contains the minimum number of coins for a certain amount of change. If
 it does not, we compute the minimum recursively and store the computed
 minimum in the table. Using this modified algorithm reduces the number
 of recursive calls we need to make for the four coin, 63 cent problem to
 221 calls!
 
-Although the algorithm in Listing {lst:change2} is correct it looks and
+Although the algorithm in Listing {lst_change2} is correct it looks and
 feels like a bit of a hack, and if we look at the ``knownResults`` lists
 we can see that there are some holes in the table. In fact the term for
 what we have done is not dynamic programming but rather we have improved
@@ -949,7 +954,7 @@ of the algorithm we already know the minimum number of coins needed to
 make change for any smaller amount.
 
 Let’s look at how we would fill in a table of minimum coins to use in
-making change for 11 cents. Figure {fig:dpcoins} illustrates the
+making change for 11 cents. Figure {fig_dpcoins} illustrates the
 process. We start with one cent. The only solution possible is one coin
 (a penny). The next row shows the minimum for one cent and two cents.
 Again, the only solution is two pennies. The fifth row is where things
@@ -959,7 +964,7 @@ that the number of coins needed to make change for four cents is four,
 plus one more penny to make five, equals five coins. Or we can look at
 zero cents plus one more nickel to make five cents equals 1 coin. Since
 the minimum of one and five is one we store 1 in the table. Fast forward
-again to the end of the table and consider 11 cents. Figure {fig:eleven}
+again to the end of the table and consider 11 cents. Figure {fig_eleven}
 shows the three options that we have to consider:
 
 #. A penny plus the minimum number of coins to make change for
@@ -979,16 +984,16 @@ minimum number of coins for 11 cents.
        :alt: image
 
        image
-       {Minimum Number of Coins Needed to Make Change} {fig:dpcoins}
+       {Minimum Number of Coins Needed to Make Change} {fig_dpcoins}
 
     .. figure:: Recursion/elevenCents.png
        :align: center
        :alt: image
 
        image
-       {Three Options to Consider for the Minimum Number of Coins for Eleven Cents} {fig:eleven}
+       {Three Options to Consider for the Minimum Number of Coins for Eleven Cents} {fig_eleven}
 
-Listing {lst:dpchange} is a dynamic programming algorithm to solve our
+Listing {lst_dpchange} is a dynamic programming algorithm to solve our
 change-making problem. ``dpMakeChange`` takes three parameters: a list
 of valid coin values, the amount of change we want to make, and a list
 of the minimum number of coins needed to make each value. When the
@@ -997,11 +1002,11 @@ from 0 to the value of ``change``.
 
 ::
 
-    [caption=Dynamic Programming Solution,label=lst:dpchange,float=htbp]
+    [caption=Dynamic Programming Solution,label=lst_dpchange,float=htbp]
     def dpMakeChange(coinValueList,change,minCoins):
        for cents in range(change+1):
           coinCount = cents
-          for j in [c for c in coinValueList if c <= cents]:  #// \label{lst:dploop}
+          for j in [c for c in coinValueList if c <= cents]:  #// \label{lst_dploop}
                 if minCoins[cents-j] + 1 < coinCount:
                    coinCount = minCoins[cents-j]+1
           minCoins[cents] = coinCount
@@ -1012,7 +1017,7 @@ started with a recursive solution to this problem. It is important to
 realize that just because you can write a recursive solution to a
 problem does not mean it is the best or most efficient solution. The
 bulk of the work in this function is done by the loop that starts on
-line {lst:dploop}. In this loop we consider using all possible coins to
+line {lst_dploop}. In this loop we consider using all possible coins to
 make change for the amount specified by ``cents``. Like we did for the
 11 cent example above, we remember the minimum value and store it in our
 ``minCoins`` list.
@@ -1025,14 +1030,14 @@ for each entry in the ``minCoins`` table. If we know the last coin
 added, we can simply subtract the value of the coin to find a previous
 entry in the table that tells us the last coin we added to make that
 amount. We can keep tracing back through the table until we get to the
-beginning. Listing {lst:dpremember} shows the ``dpMakeChange`` algorithm
+beginning. Listing {lst_dpremember} shows the ``dpMakeChange`` algorithm
 modified to keep track of the coins used, along with a function
 ``printCoins`` that walks backward through the table to print out the
 value of each coin used.
 
 ::
 
-    [caption=Modified Dynamic Programming Solution,label=lst:dpremember,float=htbp]
+    [caption=Modified Dynamic Programming Solution,label=lst_dpremember,float=htbp]
     def dpMakeChange(coinValueList,change,minCoins,coinsUsed):
        for cents in range(change+1):
           coinCount = cents
