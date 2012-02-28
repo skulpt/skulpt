@@ -1,7 +1,6 @@
 Searching and Sorting
 =====================
 
-{chap:sortsearch}
 
 Objectives
 ----------
@@ -63,6 +62,8 @@ underlying sequential ordering until we either find what we are looking
 for or run out of items. If we run out of items, we have discovered that
 the item we were searching for was not present.
 
+.. _fig_seqsearch:
+
     |image| {Sequential Search of a List of Integers} {fig_seqsearch}
 
 The Python implementation for this algorithm is shown in
@@ -70,6 +71,8 @@ Listing {lst_seqsearchpython}. The function needs the list and the item we
 are looking for and returns a boolean value as to whether it is present.
 The boolean variable ``found`` is initialized to ``False`` and is
 assigned the value ``True`` if we discover the item in the list.
+
+.. _lst_seqsearchpython:
 
 ::
 
@@ -116,14 +119,15 @@ the coefficients, no matter what they are, become insignificant in our
 approximation, so the complexity of the sequential search, is
 :math:`O(n)`. Table {tbl_seqsearchtable} summarizes these results.
 
+.. _tbl_seqsearchtable:
+
         & **Best Case** & **Worst Case** & **Average Case**
          [-1.25ex] {0cm} {3.5ex} item is present & :math:`1` &
         :math:`n` & :math:`\frac{n}{2}`
          [-1.25ex] {0cm} {3.5ex} item is not present & :math:`n` &
         :math:`n` & :math:`n`
 
-    {Comparisons Used in a Sequential Search of an Unordered List}
-    {tbl_seqsearchtable}
+    {Comparisons Used in a Sequential Search of an Unordered List} {tbl_seqsearchtable}
 
 We assumed earlier that the items in our collection had been randomly
 placed so that there is no relative order between the items. What would
@@ -145,8 +149,12 @@ of the items to report that the item was not found. It can stop
 immediately. Listing {lst_seqsearchpython2} shows this variation of the
 sequential search function.
 
-    |image1| {Sequential Search of an Ordered List of Integers}
-    {fig_seqsearch2}
+.. _fig_seqsearch2:
+
+    |image1| {Sequential Search of an Ordered List of Integers} {fig_seqsearch2}
+
+
+.. _lst_seqsearchpython2:
 
 ::
 
@@ -173,14 +181,15 @@ only one item. On average, we will know after looking through only
 :math:`O(n)`. In summary, a sequential search is improved by ordering
 the list only in the case where we do not find the item.
 
+.. _tbl_seqsearchtable2:
+
         & **Best Case** & **Worst Case** & **Average Case**
          [-1.25ex] {0cm} {3.5ex} item is present & :math:`1` &
         :math:`n` & :math:`\frac{n}{2}`
          [-1.25ex] {0cm} {3.5ex} item is not present & :math:`1` &
         :math:`n` & :math:`\frac{n}{2}`
 
-    {Comparisons Used in Sequential Search of an Ordered List}
-    {tbl_seqsearchtable2}
+    {Comparisons Used in Sequential Search of an Ordered List} {tbl_seqsearchtable2}
 
 The Binary Search
 ~~~~~~~~~~~~~~~~~
@@ -205,7 +214,11 @@ part of our possible search space. Figure {fig_binsearch} shows how this
 algorithm can quickly find the value 54. The complete function is shown
 in Listing {lst_binarysearchpy}.
 
+.. _fig_binsearch:
+
     |image2| {Binary Search of an Ordered List of Integers} {fig_binsearch}
+
+.. _lst_binarysearchpy:
 
 ::
 
@@ -239,6 +252,8 @@ search of the right half. Either way, this is a recursive call to the
 binary search function passing a smaller list. Listing {lst_recbinarysearch}
 shows this recursive version.
 
+.. _lst_recbinarysearch:
+
 ::
 
     [caption={A Binary Search--Recursive Version},label=lst_recbinarysearch,index={binarySearch},float=htb]
@@ -255,6 +270,8 @@ shows this recursive version.
               else:
                 return binarySearch(alist[midpoint+1:],item)
 
+
+
 Analysis of Binary Search
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -267,6 +284,8 @@ After the second comparison, there will be about :math:`\frac{n}{4}`.
 Then :math:`\frac{n}{8}`, :math:`\frac{n}{16}`, and so on. How many
 times can we split the list? Table {tbl_binaryanalysis} helps us to see the
 answer.
+
+.. _tbl_binaryanalysis:
 
         **Comparisons** & **Approximate Number of Items Left**
          [-1.25ex] {0cm} {3.5ex} 1 & :math:`\frac {n}{2}`
@@ -336,6 +355,8 @@ a list with each element initialized to the special Python value
 ``None``. Figure {fig_hashtable1} shows a hash table of size :math:`m=11`.
 In other words, there are *m* slots in the table, named 0 through 10.
 
+.. _fig_hashtable1:
+
     |image3| {Hash Table with 11 Empty Slots} {fig_hashtable1}
 
 The mapping between an item and the slot where that item belongs in the
@@ -349,6 +370,8 @@ table size, returning the remainder as its hash value
 hash values for our example items. Note that this remainder method
 (modulo arithmetic) will typically be present in some form in all hash
 functions, since the result must be in the range of slot names.
+
+.. _tbl_hashvalues1:
 
         **Item** & **Hash Value**
          54 & 10
@@ -366,6 +389,8 @@ Figure {fig_hashtable2}. Note that 6 of the 11 slots are now occupied. This
 is referred to as the **load factor**, and is commonly denoted by
 :math:`\lambda = \frac {numberofitems}{tablesize}`. For this example,
 :math:`\lambda = \frac {6}{11}`.
+
+.. _fig_hashtable2:
 
     |image4| {Hash Table with Six Items} {fig_hashtable2}
 
@@ -434,6 +459,8 @@ middle two digits, 93, and performing the remainder step, we get 5
 remainder method and the mid-square method. You should verify that you
 understand how these values were computed.
 
+.. _tbl_hashvalues2:
+
         **Item** & **Remainder** & **Mid-Square**
          54 & 10 & 3
          26 & 4 & 7
@@ -463,7 +490,11 @@ Listing {lst_hashfunction1} shows a function called ``hash`` that takes a
 string and a table size and returns the hash value in the range from 0
 to ``tablesize``-1.
 
+.. _fig_stringhash:
+
     |image5| {Hashing a String Using Ordinal Values} {fig_stringhash}
+
+.. _lst_hashfunction1:
 
 ::
 
@@ -481,8 +512,9 @@ the position of the character as a weight. Figure {fig_stringhash2} shows
 one possible way to use the positional value as a weighting factor. The
 modification to the ``hash`` function is left as an exercise.
 
-    |image6| {Hashing a String Using Ordinal Values with Weighting}
-    {fig_stringhash2}
+.. _fig_stringhash2:
+
+    |image6| {Hashing a String Using Ordinal Values with Weighting} {fig_stringhash2}
 
 You may be able to think of a number of additional ways to compute hash
 values for items in a collection. The important thing to remember is
@@ -526,6 +558,8 @@ the next open position. The final value of 20 hashes to slot 9. Since
 slot 9 is full, we begin to do linear probing. We visit slots 10, 0, 1,
 and 2, and finally find an empty slot at position 3.
 
+.. _fig_linearprobing:
+
     |image7| {Collision Resolution with Linear Probing} {fig_linearprobing}
 
 Once we have built a hash table using open addressing and linear
@@ -545,20 +579,24 @@ filled by the linear probing resolution. This will have an impact on
 other items that are being inserted, as we saw when we tried to add the
 item 20 above. A cluster of values hashing to 0 had to be skipped to
 finally find an open position. This cluster is shown in
-Figure {clustering}.
+Figure {fig_clustering}.
 
-    |image8| {A Cluster of Items for Slot 0} {clustering}
+.. _fig_clustering:
 
-{} One way to deal with clustering is to extend the linear probing
+    |image8| {A Cluster of Items for Slot 0} {fig_clustering}
+
+One way to deal with clustering is to extend the linear probing
 technique so that instead of looking sequentially for the next open
 slot, we skip slots, thereby more evenly distributing the items that
 have caused collisions. This will potentially reduce the clustering that
-occurs. Figure {linearprobing2} shows the items when collision
+occurs. Figure {fig_linearprobing2} shows the items when collision
 resolution is done with a “plus 3” probe. This means that once a
 collision occurs, we will look at every third slot until we find one
 that is empty.
 
-    |image9| {Collision Resolution Using “Plus 3”} {linearprobing2}
+.. _fig_linearprobing2:
+
+    |image9| {Collision Resolution Using “Plus 3”} {fig_linearprobing2}
 
 The general name for this process of looking for another slot after a
 collision is **rehashing**. With simple linear probing, the rehash
@@ -581,6 +619,8 @@ quadratic probing uses a skip consisting of successive perfect squares.
 Figure {quadratic} shows our example values after they are placed using
 this technique.
 
+.. _fig_quadratic:
+
     |image10| {Collision Resolution with Quadratic Probing} {quadratic}
 
 An alternative method for handling the collision problem is to allow
@@ -591,6 +631,8 @@ slot of the hash table. As more and more items hash to the same
 location, the difficulty of searching for the item in the collection
 increases. Figure {chaining} shows the items as they are added to a hash
 table that uses chaining to resolve collisions.
+
+.. _fig_chaining:
 
     |image11| {Collision Resolution with Chaining} {chaining}
 
@@ -650,6 +692,8 @@ been chosen to be 11. Although this is arbitrary, it is important that
 the size be a prime number so that the collision resolution algorithm
 can be as efficient as possible.
 
+.. _lst_hashtablecodeconstructor:
+
 ::
 
     [caption={Map ADT Implementation--Constructor},label=hashtablecodeconstructor,float=htb]
@@ -667,6 +711,8 @@ in the ``self.slots``. It computes the original hash value and if that
 slot is not empty, iterates the ``rehash`` function until an empty slot
 occurs. If a nonempty slot already contains the key, the old data value
 is replaced with the new data value.
+
+.. _lst_hashtablecodestore:
 
 ::
 
@@ -711,6 +757,8 @@ dictionary functionality. We overload the {\_\_getitem\_\_} and
 {\_\_setitem\_\_} methods to allow access using``[]``. This means that
 once a ``HashTable`` has been created, the familiar index operator will
 be available. We leave the remaining methods as exercises.
+
+.. _lst_hashtablecodesearch:
 
 ::
 
@@ -858,6 +906,8 @@ need to be compared on the first pass. It is important to note that once
 the largest value in the list is part of a pair, it will continually be
 moved along until the pass is complete.
 
+.. _fig_bubblepass:
+
     |image12| {``bubbleSort``: The First Pass} {bubblepass}
 
 At the start of the second pass, the largest value is now in place.
@@ -894,7 +944,11 @@ sort. Lines 5-7 perform the exchange of the :math:`i` and
 earlier. Note that we could also have used the simultaneous assignment
 to swap the items.
 
+.. _fig_pythonswap:
+
     |image13| {Exchanging Two Values in Python} {pythonswap}
+
+.. _lst_bubble:
 
 ::
 
@@ -921,6 +975,8 @@ ordered, no exchanges will be made. However, in the worst case, every
 comparison will cause an exchange. On average, we exchange half of the
 time.
 
+.. _tbl_bubbleanalysis:
+
         **Pass** & **Comparisons**
          1 & :math:`n-1`
          2 & :math:`n-2`
@@ -942,6 +998,8 @@ lists that require just a few passes, a bubble sort may have an
 advantage in that it will recognize the sorted list and stop.
 Listing {shortbubble} shows this modification, which is often referred
 to as the **short bubble**.
+
+.. _lst_shortbubble:
 
 ::
 
@@ -977,7 +1035,12 @@ location. The first pass places 93, the second pass places 77, the third
 places 55, and so on. The function is shown in
 Listing {selectionsortcode}.
 
+.. _fig_selectionsort:
+
     |image14| {``selectionSort``} {selectionsort}
+
+.. _lst_selectionsortcode:
+
 
 ::
 
@@ -1010,6 +1073,8 @@ the previous sublist such that the sorted sublist is one item larger.
 Figure {insertionsort} shows the insertion sorting process. The shaded
 items represent the ordered sublists as the algorithm makes each pass.
 
+.. _fig_insertionsort:
+
     |image15| {``insertionSort``} {insertionsort}
 
 We begin by assuming that a list with one item (position :math:`0`) is
@@ -1027,8 +1092,9 @@ right. 77 and 54 are also shifted. When the item 26 is encountered, the
 shifting process stops and 31 is placed in the open position. Now we
 have a sorted sublist of six items.
 
-    |image16| {``insertionSort``: Fifth Pass of the Sort}
-    {insertionpass}
+.. _fig_insertionpass:
+
+    |image16| {``insertionSort``: Fifth Pass of the Sort} {insertionpass}
 
 The implementation of ``insertionSort`` (Listing {insertion}) shows that
 there are again :math:`n-1` passes to sort *n* items. The iteration
@@ -1047,6 +1113,8 @@ One note about shifting versus exchanging is also important. In general,
 a shift operation requires approximately a third of the processing work
 of an exchange since only one assignment is performed. In benchmark
 studies, insertion sort will show very good performance.
+
+.. _lst_insertion:
 
 ::
 
@@ -1083,7 +1151,11 @@ completely sorted, something very interesting has happened. By sorting
 the sublists, we have moved the items closer to where they actually
 belong.
 
+.. _fig_incrementsA:
+
     |image17| {A Shell Sort with Increments of Three} {incrementsA}
+
+.. _fig_incrementsB:
 
     |image18| {A Shell Sort after Sorting Each Sublist} {incrementsB}
 
@@ -1093,8 +1165,11 @@ the earlier sublist sorts, we have now reduced the total number of
 shifting operations necessary to put the list in its final order. For
 this case, we need only four more shifts to complete the process.
 
-    |image19| {ShellSort: A Final Insertion Sort with Increment of 1}
-    {incrementsC}
+.. _fig_incrementsC:
+
+    |image19| {ShellSort: A Final Insertion Sort with Increment of 1} {incrementsC}
+
+.. _fig_incrementsD:
 
     |image20| {Initial Sublists for a Shell Sort} {incrementsD}
 
@@ -1105,6 +1180,8 @@ uses a different set of increments. In this case, we begin with
 :math:`\frac {n}{4}` sublists are sorted. Eventually, a single list is
 sorted with the basic insertion sort. Figure {incrementsD} shows the
 first sublists for our example using this increment.
+
+.. _lst_shell:
 
 ::
 
@@ -1138,7 +1215,7 @@ The following invocation of the ``shellSort`` function shows the
 partially sorted lists after each increment, with the final sort being
 an insertion sort with an increment of one.
 
-{}
+
 
 ::
 
@@ -1183,11 +1260,16 @@ single, sorted, new list. Figure {mergesortA} shows our familiar example
 list as it is being split by ``mergeSort``. Figure {mergesortB} shows
 the simple lists, now sorted, as they are merged back together.
 
-    [Splitting the List in a Merge Sort] {
 
-    |image21| {mergesortA} } [Lists as They Are Merged Together] {
+.. _fig_mersortA:
 
-    |image22| {mergesortB} } {Splitting and Merging in a Merge Sort}
+    |image21| {Splitting the List in a Merge Sort} {mergesortA}
+
+.. _fig_mergesortB:
+
+    |image22| {Lists as They Are Merged Together} {mergesortB}
+
+.. _lst_merge:
 
 ::
 
@@ -1337,7 +1419,11 @@ Since we have looked at this example a few times already, we know that
 at the same time move other items to the appropriate side of the list,
 either less than or greater than the pivot value.
 
+.. _fig_splitvalue:
+
     |image23| {The First Pivot Value for a Quick Sort} {splitvalue}
+
+.. _fig_partitionA:
 
     |image24| {Finding the Split Point for 54} {partitionA}
 
@@ -1348,8 +1434,6 @@ of the partition process is to move items that are on the wrong side
 with respect to the pivot value while also converging on the split
 point. Figure {partitionA} shows this process as we locate the position
 of 54.
-
-{}
 
 We begin by incrementing ``leftmark`` until we locate a value that is
 greater than the pivot value. We then decrement ``rightmark`` until we
@@ -1367,8 +1451,9 @@ all the items to the right of the split point are greater than the pivot
 value. The list can now be divided at the split point and the quick sort
 can be invoked recursively on the two halves.
 
-    |image25| {Completing the Partition Process to Find the Split Point
-    for 54} {partitionB}
+.. _fig_partitionB:
+
+    |image25| {Completing the Partition Process to Find the Split Point for 54} {partitionB}
 
 The ``quickSort`` function shown in Listing {quick} invokes a recursive
 function, ``quickSortHelper``. ``quickSortHelper`` begins with the same
@@ -1376,6 +1461,8 @@ base case as the merge sort. If the length of the list is less than or
 equal to one, it is already sorted. If it is greater, then it can be
 partitioned and recursively sorted. The ``partition`` function
 implements the process described earlier.
+
+.. _lst_quick:
 
 ::
 

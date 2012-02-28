@@ -148,8 +148,6 @@ where we are going in this section.
 
 .. _fig_mazescreen:
 
-.. _fig_mazescreen:
-
 .. figure:: Figures/maze.png
    :align: center
 
