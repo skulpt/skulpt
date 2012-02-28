@@ -126,13 +126,16 @@ approximation, so the complexity of the sequential search, is
 
 .. _tbl_seqsearchtable:
 
-        & **Best Case** & **Worst Case** & **Average Case**
-         [-1.25ex] {0cm} {3.5ex} item is present & :math:`1` &
-        :math:`n` & :math:`\frac{n}{2}`
-         [-1.25ex] {0cm} {3.5ex} item is not present & :math:`n` &
-        :math:`n` & :math:`n`
+==================== ========================== ========================== ========================
+**Case**                      **Best Case**             **Worst Case**         **Average Case**
+==================== ========================== ========================== ========================
+item is present      :math:`1`                  :math:`n`                  :math:`\frac{n}{2}`
+item is not present  :math:`n`                  :math:`n`                  :math:`n`
+===================================================================================================
 
     {Comparisons Used in a Sequential Search of an Unordered List} {tbl_seqsearchtable}
+
+
 
 We assumed earlier that the items in our collection had been randomly
 placed so that there is no relative order between the items. What would

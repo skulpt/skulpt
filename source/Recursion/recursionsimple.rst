@@ -43,14 +43,15 @@ by starting with :math:`0` and adding each number in the list.
 
 .. _lst_itsum:
 
-::
+.. activecode:: lst_itsum
 
-    [caption=The Iterative Sum Function,label=lst_itsum,float=htb,index={listsum}]
     def listsum(numList):
         theSum = 0
         for i in numList:
             theSum = theSum + i
-        return theSum    
+        return theSum
+        
+    print(listsum([1,3,5,7,9]))
 
 Pretend for a minute that you do not have ``while`` loops or ``for``
 loops. How would you compute the sum of a list of numbers? If you were a
@@ -93,20 +94,20 @@ the first element. This is easily expressed in Python as shown in
 
 .. _lst_recsum:
 
-::
+.. activecode:: lst_recsum
 
-    [caption={Recursive listSum},label=lst_recsum,float=htb,index={listsum}]
     def listsum(numList):
-        if len(numList) == 1:               #// \label{lst_recsum:bc}
+        if len(numList) == 1:
             return numList[0]
         else:
-            return numList[0] + listsum(numList[1:])  #// \label{lst_recsum:rec}
+            return numList[0] + listsum(numList[1:])
+            
+    print(listsum([1,3,5,7,9]))
 
-There are a few key ideas in this listing to look at. First, on line
-{lst_recsum:bc} we are checking to see if the list is one element long. This
+There are a few key ideas in this listing to look at. First, on line 2 we are checking to see if the list is one element long. This
 check is crucial and is our escape clause from the function. The sum of
 a list of length 1 is trivial; it is just the number in the list.
-Second, on line {lst_recsum:rec} our function calls itself! This is the
+Second, on line 5 our function calls itself! This is the
 reason that we call the ``listsum`` algorithm recursive. A recursive
 function is a function that calls itself.
 
@@ -122,9 +123,8 @@ point where the problem cannot get any smaller.
            :align: center
            :alt: image
 
-           image
 
-    {Series of Recursive Calls Adding a List of Numbers} {fig_recsumin}
+        Series of Recursive Calls Adding a List of Numbers
 
 When we reach the point where the problem is as simple as it can get, we
 begin to piece together the solutions of each of the small problems
@@ -139,9 +139,7 @@ problem, we have the solution to the whole problem.
            :align: center
            :alt: image
 
-           image
-
-    {Series of Recursive Returns from Adding a List of Numbers} {fig_recsumout}
+   Series of Recursive Returns from Adding a List of Numbers
 
 The Three Laws of Recursion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -169,7 +167,7 @@ represents our problem gets smaller in some way. In the ``listsum``
 algorithm our primary data structure is a list, so we must focus our
 state-changing efforts on the list. Since the base case is a list of
 length 1, a natural progression toward the base case is to shorten the
-list. This is exactly what happens on line {lst_recsum:rec} of :ref:`Listing 2 <lst_recsum>` when we call ``listsum`` with a shorter list.
+list. This is exactly what happens on line 5 of :ref:`Listing 2 <lst_recsum>` when we call ``listsum`` with a shorter list.
 
 The final law is that the algorithm must call itself. This is the very
 definition of recursion. Recursion is a confusing concept to many
@@ -194,8 +192,8 @@ Suppose you want to convert an integer to a string in some base between
 binary and hexadecimal. For example, convert the integer 10 to its
 string representation in decimal as ``"10"``, or to its string
 representation in binary as ``"1010"``. While there are many algorithms
-to solve this problem, including the algorithm discussed in section
-{sec:dectobin}, the recursive formulation of the problem is very
+to solve this problem, including the algorithm discussed in the stack
+section, the recursive formulation of the problem is very
 elegant.
 
 Let’s look at a concrete example using base 10 and the number 769.
@@ -247,28 +245,28 @@ right side of the diagram.
 
            image
 
-    {Converting an Integer to a String in Base 10} {fig_tostr}
+    Converting an Integer to a String in Base 10
 
 :ref:`Listing 3 <lst_rectostr>` shows the Python code that implements the algorithm
 outlined above for any base between 2 and 16.
 
 .. _lst_rectostr:
 
-::
-
-    [caption={Converting an Integer to a String in Base 2--16},label=lst_rectostr,float=htb,index={toStr}]
+.. activecode:: lst_rectostr
 
     def toStr(n,base):
        convertString = "0123456789ABCDEF"
-       if n < base:        #// \label{lst_rectostr:bc}
+       if n < base:
           return convertString[n]
        else:
-          return toStr(n//base,base) + convertString[n%base]   #// \label{lst_rectostr:rec}
+          return toStr(n//base,base) + convertString[n%base]
 
-Notice that in line {lst_rectostr:bc} we check for the base case where ``n``
+    print(toStr(1453,16))
+
+Notice that in line 3 we check for the base case where ``n``
 is less than the base we are converting to. When we detect the base
 case, we stop recursing and simply return the string from the
-``convertString`` sequence. In line {lst_rectostr:rec} we satisfy both the
+``convertString`` sequence. In line 6 we satisfy both the
 second and third laws–by making the recursive call and by reducing the
 problem size–using division.
 
@@ -281,14 +279,12 @@ to its base 2 string representation (``"1010"``).
            :align: center
            :alt: image
 
-           image
-
-    {Converting the Number 10 to its Base 2 String Representation} {fig_tostr2}
+    Converting the Number 10 to its Base 2 String Representation
 
 :ref:`Figure 4 <fig_tostr2>` shows that we get the results we are looking for,
 but it looks like the digits are in the wrong order. The algorithm works
 correctly because we make the recursive call first on line
-{lst_rectostr:rec}, then we add the string representation of the remainder.
+6, then we add the string representation of the remainder.
 If we reversed returning the ``convertString`` lookup and returning the
 ``toStr`` call, the resulting string would be backward! But by delaying
 the concatenation operation until after the recursive call has returned,
@@ -306,9 +302,8 @@ call. The code for this modified algorithm is shown in
 
 .. _lst_recstack:
 
-::
+.. activecode:: lst_recstack
 
-    [caption=Pushing the Strings onto a Stack,label=lst_recstack,float=htb,index={toStr}]
     rStack = Stack()
 
     def toStr(n,base):
@@ -318,6 +313,8 @@ call. The code for this modified algorithm is shown in
         else:
             rStack.push(convertString[n % base])
             toStr(n // base, base)     
+            
+    print(toStr(1453,16))
 
 Each time we make a call to ``toStr``, we push a character on the stack.
 Returning to the previous example we can see that after the fourth call
@@ -338,7 +335,7 @@ recursive function call. When a function is called in Python, a **stack
 frame** is allocated to handle the local variables of the function. When
 the function returns, the return value is left on top of the stack for
 the calling function to access. :ref:`Figure 6 <fig_callstack>` illustrates the
-call stack after the return statement on line {lst_rectostr:bc}.
+call stack after the return statement on line 4.
 
 .. _fig_callstack:
 
@@ -350,8 +347,7 @@ call stack after the return statement on line {lst_rectostr:bc}.
 
 Notice that the call to ``toStr(2//2,2)`` leaves a return value of
 ``"1"`` on the stack. This return value is then used in place of the
-function call (``toStr(1,2)``) in the expression {"1" +
-convertString[2%2]}, which will leave the string ``"10"`` on the top of
+function call (``toStr(1,2)``) in the expression ``"1" + convertString[2%2]``, which will leave the string ``"10"`` on the top of
 the stack. In this way, the Python call stack takes the place of the
 stack we used explicitly in :ref:`Listing 4 <lst_recstack>`. In our list summing
 example, you can think of the return value on the stack taking the place
