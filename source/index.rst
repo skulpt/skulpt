@@ -55,8 +55,10 @@ Sorting and Searching
 
 .. toctree::
    :maxdepth: 2
-
-   sortsearch.rst
+   
+   SortSearch/searching.rst
+   SortSearch/sorting.rst
+   SortSearch/sortsearchexercises.rst
 
 Trees and Tree Agorithms
 ::::::::::::::::::::::::
