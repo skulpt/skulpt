@@ -1,7 +1,6 @@
 Visualizing Recursion
 =====================
 
-{sec:graphical-recursion}
 
 In the previous section we looked at some problems that were easy to
 solve using recursion; however, it can still be difficult to find a
@@ -24,7 +23,7 @@ dipped in.
 
 Lets illustrate some turtle graphics basics with a simple example. We
 will use the turtle module to draw a spiral recursively.
-Listing {lst:turt1} shows how it is done. After importing the ``turtle``
+:ref:`Listing 1 <lst_turt1>` shows how it is done. After importing the ``turtle``
 module we create a turtle. When the turtle is created it also creates a
 window for itself to draw in. Next we define the drawSpiral function.
 The base case for this simple function is when the length of the line we
@@ -32,21 +31,23 @@ want to draw, as given by the ``len`` parameter, is reduced to zero or
 less. If the length of the line is longer than zero we instruct the
 turtle to go forward by ``len`` units and then turn right 90 degrees.
 The recursive step is when we call drawSpiral again with a reduced
-length. At the end of Listing {lst:turt1} you will notice that we call
+length. At the end of :ref:`Listing 1 <lst_turt1>` you will notice that we call
 the function ``myWin.exitonclick()``, this is a handy little method of
 the window that puts the turtle into a wait mode until you click inside
 the window, after which the program cleans up and exits.
 
-::
+.. _lst_turt1:
 
-    [float=htb,label=lst:turt1,caption={Drawing a Spiral with Turtle Graphics}]
-    from turtle import *
+.. activecode:: lst_turt1
 
-    myTurtle = Turtle()
-    myWin = myTurtle.getscreen()
+
+    import turtle
+
+    myTurtle = turtle.Turtle()
+    myWin = turtle.Screen()
 
     def drawSpiral(myTurtle, lineLen):
-        if len > 0:
+        if lineLen > 0:
             myTurtle.forward(lineLen)
             myTurtle.right(90)
             drawSpiral(myTurtle,lineLen-5)
@@ -77,7 +78,7 @@ going off to the left. If you think of this definition recursively it
 means that we will apply the recursive definition of a tree to both of
 the smaller left and right trees.
 
-Lets translate this idea to some Python code. Listing {lst:fractree}
+Lets translate this idea to some Python code. :ref:`Listing 2 <lst_fractree>`
 shows how we can use our turtle to generate a fractal tree. Lets look at
 the code a bit more closely. You will see that on lines 5 and 7 we are
 making a recursive call. On line 5 we make the recursive call right
@@ -93,9 +94,10 @@ trees get smaller and smaller. You should also recognize the initial
 ``if`` statement on line 2 as a check for the base case of ``branchLen``
 getting too small.
 
+.. _lst_fractree:
+
 ::
 
-    [float=htb,label=lst:fractree,caption={Fractal Tree Code}]
     def tree(branchLen,t):
         if branchLen > 5:
             t.forward(branchLen)
@@ -106,40 +108,67 @@ getting too small.
             t.right(20)
             t.backward(branchLen)
 
-You should type in the code for this tree example, but before you run
+The activecode window below shows a complete program for this tree example (:ref:`Listing 3 <lst_complete_tree>`).  Before you run
 the code think about how you expect to see the tree take shape. Look at
 the recursive calls and think about how this tree will unfold. Will it
 be drawn symmetrically with the right and left halves of the tree taking
 shape simultaneously? Will it be drawn right side first then left side?
-After you have typed in the tree function use the following session to
-draw a tree.
 
-::
+.. _lst_complete_tree:
 
-    >>> from turtle import *
-    >>> t = Turtle()
-    >>> myWin = t.getscreen()
-    >>> t.left(90)
-    >>> t.up()
-    >>> t.backward(300)
-    >>> t.down()
-    >>> t.color('green')
-    >>> tree(110,t) 
-    >>> myWin.exitonclick()
+.. activecode:: lst_complete_tree
+
+    import turtle
+    
+    def tree(branchLen,t):
+        if branchLen > 5:
+            t.forward(branchLen)
+            t.right(20)
+            tree(branchLen-15,t)
+            t.left(40)
+            tree(branchLen-15,t)
+            t.right(20)
+            t.backward(branchLen)
+
+    def main():
+        t = turtle.Turtle()
+        myWin = turtle.Screen()
+        t.left(90)
+        t.up()
+        t.backward(100)
+        t.down()
+        t.color("green")
+        tree(75,t)
+        myWin.exitonclick()
+        
+    main()
+
 
 Notice how each branch point on the tree corresponds to a recursive
 call, and notice how the tree is drawn to the right all the way down to
-its shortest twig. You can see this in Figure {fig:tree1}. Now, notice
+its shortest twig. You can see this in :ref:`Figure 1 <fig_tree1>`. Now, notice
 how the program works its way back up the trunk until the entire right
 side of the tree is drawn. You can see the right half of the tree in
-Figure {fig:tree2}. Then the left side of the tree is drawn, but not by
+:ref:`Figure 2 <fig_tree2>`. Then the left side of the tree is drawn, but not by
 going as far out to the left as possible. Rather, once again the entire
 right side of the left tree is drawn until we finally make our way out
 to the smallest twig on the left.
 
-    |image| {The Beginning of a Fractal Tree} {fig:tree1}
 
-    |image1| {The First Half of the Tree} {fig:tree2}
+.. _fig_tree1:
+
+.. figure:: Figures/tree1.png
+   :align: center
+
+   The Beginning of a Fractal Tree
+   
+.. _fig_tree2:
+
+.. figure:: Figures/tree2.png
+   :align: center
+
+   The First Half of the Tree
+
 
 This simple tree program is just a starting point for you, and you will
 notice that the tree does not look particularly realistic because nature
@@ -150,10 +179,9 @@ interesting options to make your tree look more realistic.
 Sierpinski Triangle
 -------------------
 
-{sec:sierpinski}
 
 Another fractal that exhibits the property of self-similarity is the
-Sierpinski triangle. An example is shown in Figure {fig:st}. The
+Sierpinski triangle. An example is shown in :ref:`Figure 3 <fig_sierpinski>`. The
 Sierpinski triangle illustrates a three-way recursive algorithm. The
 procedure for drawing a Sierpinski triangle by hand is simple. Start
 with a single large triangle. Divide this large triangle into four new
@@ -165,12 +193,13 @@ You can continue to apply this procedure indefinitely if you have a
 sharp enough pencil. Before you continue reading, you may want to try
 drawing the Sierpinski triangle yourself, using the method described.
 
-    .. figure:: Recursion/sierpinski.pdf
-       :align: center
-       :alt: image
 
-       image
-    {The Sierpinski Triangle} {fig:st}
+.. _fig_sierpinski:
+
+.. figure:: sierpinski.png
+     :align: center
+
+      The Sierpinski Triangle
 
 Since we can continue to apply the algorithm indefinitely, what is the
 base case? We will see that the base case is set arbitrarily as the
@@ -178,23 +207,24 @@ number of times we want to divide the triangle into pieces. Sometimes we
 call this number the “degree” of the fractal. Each time we make a
 recursive call, we subtract 1 from the degree until we reach 0. When we
 reach a degree of 0, we stop making recursive calls. The code that
-generated the Sierpinski Triangle in Figure {fig:st} is shown in
-Listing {lst:st}.
+generated the Sierpinski Triangle in :ref:`Figure 3 <fig_sierpinski>` is shown in
+:ref:`Listing 4 <lst_st>`.
 
-::
+.. _lst_st:
 
-    [caption=Code for the Sierpinski Triangle,label=lst:st,float=htbp,index={sierpinski,getMid}]
-    from turtle import *
+.. activecode:: lst_st
+
+    import turtle
 
     def drawTriangle(points,color,myTurtle):
         myTurtle.fillcolor(color)
         myTurtle.up()
-        myTurtle.goto(points[0])
+        myTurtle.goto(points[0][0],points[0][1])
         myTurtle.down()
         myTurtle.begin_fill()
-        myTurtle.goto(points[1])
-        myTurtle.goto(points[2])
-        myTurtle.goto(points[0])
+        myTurtle.goto(points[1][0],points[1][1])
+        myTurtle.goto(points[2][0],points[2][1])
+        myTurtle.goto(points[0][0],points[0][1])
         myTurtle.end_fill()
 
     def getMid(p1,p2):
@@ -212,25 +242,32 @@ Listing {lst:st}.
             sierpinski([points[1],
                             getMid(points[0], points[1]),
                             getMid(points[1], points[2])],
-                       degree-1, myTurtle)                        
+                       degree-1, myTurtle)
             sierpinski([points[2],
                             getMid(points[2], points[1]),
                             getMid(points[0], points[2])],
                        degree-1, myTurtle)
-        
-    myTurtle = Turtle()
-    myWin = myTurtle.getscreen()
-    myPoints = [(-500,-250),(0,500),(500,-250)]
-    sierpinski(myPoints,5,myTurtle)
-    myWin.exitonclick()
 
-The program in Listing {lst:st} follows the ideas outlined above. The
+    def main():
+       myTurtle = turtle.Turtle()
+       myWin = turtle.Screen()
+       myPoints = [[-100,-50],[0,100],[100,-50]]
+       sierpinski(myPoints,3,myTurtle)
+       myWin.exitonclick()
+
+    main()
+
+
+
+    
+    
+The program in :ref:`Listing 4 <lst_st>` follows the ideas outlined above. The
 first thing ``sierpinski`` does is draw the outer triangle. Next, there
 are three recursive calls, one for each of the new corner triangles we
 get when we connect the midpoints. Once again we make use of the
 standard turtle module that comes with Python. You can learn all the
 details of the methods available in the turtle module by using
-``help('turtle')`` from the Python prompt. {sierpinski-hanoi,breinholt}
+``help('turtle')`` from the Python prompt.
 
 Look at the code and think about the order in which the triangles will
 be drawn. While the exact order of the corners depends upon how the
@@ -244,27 +281,25 @@ Finally, it fills in the lower-right corner, working its way toward the
 smallest triangle in the lower right.
 
 Sometimes it is helpful to think of a recursive algorithm in terms of a
-diagram of function calls. Figure {fig:stcall} shows that the recursive
+diagram of function calls. :ref:`Figure 4 <fig_stcalltree>` shows that the recursive
 calls are always made going to the left. The active functions are
 outlined in black, and the inactive function calls are in gray. The
-farther you go toward the bottom of Figure {fig:stcall}, the smaller the
+farther you go toward the bottom of :ref:`Figure 4 <fig_stcalltree>`, the smaller the
 triangles. The function finishes drawing one level at a time; once it is
 finished with the bottom left it moves to the bottom middle, and so on.
 
-        .. figure:: Recursion/stCallTree.pdf
-           :align: center
-           :alt: image
 
-           image
+.. _fig_stcalltree:
 
-    {Building a Sierpinski Triangle} {fig:stcall}
+.. figure:: stCallTree.png
+    :align: center   
+   
+     Building a Sierpinski Triangle
 
 The ``sierpinski`` function relies heavily on the ``getMid`` function.
 ``getMid`` takes as arguments two endpoints and returns the point
-halfway between them. In addition, Listing {lst:st} has a function that
-draws a filled triangle using the {begin\_fill} and {end\_fill} turtle
+halfway between them. In addition, :ref:`Listing 4 <lst_st>` has a function that
+draws a filled triangle using the ``begin_fill`` and ``end_fill`` turtle
 methods. This means that each degree of the Sierpinski triangle is drawn
 in a different color.
 
-.. |image| image:: Recursion/Figures/tree1.png
-.. |image1| image:: Recursion/Figures/tree2.png

@@ -46,6 +46,7 @@ Recursion
    :maxdepth: 2
 
    Recursion/recursionsimple.rst
+   Recursion/graphical.rst
    Recursion/recursioncomplex.rst
    Recursion/recursionexercises.rst
 
