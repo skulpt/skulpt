@@ -36,7 +36,7 @@ Discussion Questions
 #. Draw a call stack for the Tower of Hanoi problem. Assume that you
    start with a stack of three disks.
 
-#. Using the rules as described in Section {sec:sierpinski} draw a
+#. Using the recursive rules as described, draw a
    Sierpinski triangle using paper and pencil.
 
 #. Using the dynamic programming algorithm for making change, find the
@@ -139,16 +139,14 @@ Programming Exercises
    sample problem for you to use to get started: Suppose your knapsack
    can hold a total weight of 20. You have 5 items as follows:
 
-    
-==================== ==================== ================
-        item                 weight           value
-==================== ==================== ================
-          1                    2                3
-          2                    3                4
-          3                    4                8
-          4                    5                8
-          5                    9                10
-==================== ==================== ================
+   :: 
+   
+        item     weight      value
+          1        2           3
+          2        3           4
+          3        4           8
+          4        5           8
+          5        9          10
 
 #. This problem is called the string edit distance problem, and is quite
    useful in many areas of research. Suppose that you want to transform
