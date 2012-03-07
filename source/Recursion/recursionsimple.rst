@@ -59,9 +59,19 @@ mathematician you might start by recalling that addition is a function
 that is defined for two parameters, a pair of numbers. To redefine the
 problem from adding a list to adding pairs of numbers, we could rewrite
 the list as a fully parenthesized expression. Such an expression looks
-like this: :math:`((((1 + 3) + 5) + 7) + 9)`. We can also parenthesize
+like this: 
+
+.. math::
+    ((((1 + 3) + 5) + 7) + 9)
+    
+We can also parenthesize
 the expression the other way around,
-:math:`(1 + (3 + (5 + (7 + 9))))`. Notice that the innermost set of
+
+.. math::
+
+     (1 + (3 + (5 + (7 + 9)))) 
+
+Notice that the innermost set of
 parentheses, :math:`(7 + 9)`, is a problem that we can solve without a
 loop or any special constructs. In fact, we can use the following
 sequence of simplifications to compute a final sum.
@@ -85,6 +95,7 @@ list (``numList[1:]``). To state it in a functional form:
 
       listSum(numList) = first(numList) + listSum(rest(numList))
     \label{eqn:listsum}
+
 
 
 In this equation :math:`first(numList)` returns the first element of

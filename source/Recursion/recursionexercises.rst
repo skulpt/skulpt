@@ -24,10 +24,11 @@ technique. The key points to remember from this chapter are as follows:
 Key Terms
 ---------
 
-            base case & decrypt
-            dynamic programming & fractal
-            recursion & recursive call
-            stack frame
+============================= ========================== ======================= 
+                    base case                    decrypt     dynamic programming
+                    recursion             recursive call             stack frame
+============================= ========================== ======================= 
+
 
 Discussion Questions
 --------------------
@@ -138,12 +139,16 @@ Programming Exercises
    sample problem for you to use to get started: Suppose your knapsack
    can hold a total weight of 20. You have 5 items as follows:
 
-       item & weight & value
-       1 & 2 & 3
-       2 & 3 & 4
-       3 & 4 & 8
-       4 & 5 & 8
-       5 & 9 & 10
+    
+==================== ==================== ================
+        item                 weight           value
+==================== ==================== ================
+          1                    2                3
+          2                    3                4
+          3                    4                8
+          4                    5                8
+          5                    9                10
+==================== ==================== ================
 
 #. This problem is called the string edit distance problem, and is quite
    useful in many areas of research. Suppose that you want to transform
