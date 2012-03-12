@@ -307,6 +307,12 @@ function sendGrade(grade,sid,acid) {
     jQuery.get('/savegrade',data);
 }
 
+function logPageLoad() {
+    var url = window.location.pathname;
+    var filename = url.substring(url.lastIndexOf('/')+1);
+    jQuery.get("/hsblog",{'event':'page','act': 'view', 'div_id':filename});
+}
+
 function gotUser(data, status, whatever) {
     var mess;
     if (data.redirect) {
@@ -329,6 +335,7 @@ function gotUser(data, status, whatever) {
 function addUserToFooter() {
     // test to see if online before doing this.
     jQuery.get("/getuser",null,gotUser)
+    logPageLoad()
 
 }
 $(document).ready(createEditors);
