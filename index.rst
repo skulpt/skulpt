@@ -11,6 +11,8 @@ by Brad Miller and David Ranum
 
    Luther College
 
+`Please send us your feedback <http://groups.google.com/group/runestoneinteractive?lnk=gcimh>`__ at our Google Group.
+
 -----------------------------------------------------------
 
 Based on the original book

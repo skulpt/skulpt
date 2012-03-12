@@ -48,6 +48,12 @@ access to the grading interface contact Brad Miller. You don't need to login to 
 features of the book, but if you choose to login with any old gmail account you will be able to
 save your work.
 
+How to Contribute
+=================
+
+We invite you to join our open source project.  Please visit our web page for more information about obtaining the source: `Runestone Interactive <http://runestoneinteractive.org>`__
+
+
 Acknowledgements
 ================
 
