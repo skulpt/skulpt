@@ -38,7 +38,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'How to Think Like a Computer Scientist: Learning with Python: Interactive Edition (Using Python 3.x)'
+project = u'How to Think Like a Computer Scientist: Learning with Python: Interactive Edition'
 copyright = u'2011, Brad Miller and David Ranum'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -111,7 +111,7 @@ html_style = "style.css"
 html_title = "How to Think Like a Computer Scientist: Learning with Python: Interactive Edition"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = "How to Think Like a Computer Scientist: Learning with Python: Interactive Edition (Using Python 3.x)"
+html_short_title = "How to Think Like a Computer Scientist: Interactive Edition"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
