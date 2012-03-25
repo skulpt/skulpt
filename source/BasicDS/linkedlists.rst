@@ -547,6 +547,17 @@ else. Also, ``insert``, ``index``, and ``pop`` require that we name the
 positions of the list. We will assume that position names are integers
 starting with 0.
 
+.. admonition:: Self Check
+   
+   Part I:  Implement the append method for UnorderedList.  What is the time complexity of the method you created?
+
+   .. actex:: self_check_list1
+
+   Part I:  You most likely created an append method that was :math:`O(n)`  If you add an instance variable to the UnorderedList class you can create an append method that is :math:`O(1)`.  Modify your append method to be :math:`O(1)`  Be Careful!  To really do this correctly you will need to consider a couple of special cases that may require you to make a modification to the add method as well.
+
+   .. actex:: self_check_list2
+
+
 The Ordered List Abstract Data Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
