@@ -252,7 +252,7 @@ The program is shown in :ref:`Listing 2 <lst_josephussim>`. A call to the
 .. activecode:: qujosephussim
    :caption: Hot Potato Simulation
 
-   from pythonds.basic import Queue
+   from pythonds.basic.queue import Queue
    def hotPotato(namelist, num):
        simqueue = Queue()
        for name in namelist:

@@ -457,7 +457,7 @@ mismatch occurs, the boolean variable ``balanced`` is set to ``False``.
 
 .. activecode :: parcheck2
 
-   from pythonds.basic import Stack
+   from pythonds.basic.stack import Stack
    def parChecker(symbolString):
        s = Stack()
        balanced = True
@@ -1074,7 +1074,7 @@ operator and then perform the proper arithmetic operation.
 .. activecode:: postfixeval
    :caption: Postfix Evaluation
 
-   from pythonds.basic import Stack
+   from pythonds.basic.stack import Stack
 
    def postfixEval(postfixExpr):
        operandStack = Stack()
