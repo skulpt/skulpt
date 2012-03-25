@@ -153,11 +153,11 @@ Sk.misceval.richCompareBool = function(v, w, op)
 
         var res;
         //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
-        if (v && v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
+        if (v && w && v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
         {
             return res;
         }
-        else if (w && w.tp$richcompare && (res = v.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
+        else if (w && v && w.tp$richcompare && (res = v.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
         {
             return res;
         }
