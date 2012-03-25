@@ -473,17 +473,17 @@ Note that it is a much more simple example file in that the exit is very close t
 .. raw:: html
 
 	<pre id="maze2.txt">
-    ++++++++++++++++++++++
-    +   +   ++ ++ S        
-    +     +     ++++++++++
-    + +    ++  ++++ +++ ++
-    + +   + + ++    +++  +
-    +          ++  ++  + +
-    +++++ + +      ++  + +
-    +++++ +++  + +  ++   +
-    +          + +  + +  +
-    +++++ +  + + +     + +
-    ++++++++++++++++++++++
+  ++++++++++++++++++++++
+  +   +   ++ ++        +
+        +     ++++++++++
+  + +    ++  ++++ +++ ++
+  + +   + + ++    +++  +
+  +          ++  ++  + +
+  +++++ + +      ++  + +
+  +++++ +++  + +  ++   +
+  +          + +  + +  +
+  +++++ +  + + +  S  + +
+  ++++++++++++++++++++++
     </pre>
 
 .. activecode:: completemaze
@@ -519,23 +519,25 @@ Note that it is a much more simple example file in that the exit is very close t
             self.columnsInMaze = columnsInMaze
             self.xTranslate = -columnsInMaze/2
             self.yTranslate = rowsInMaze/2
-            self.t = turtle.Turtle(shape='turtle')
+            self.t = turtle.Turtle()
+            self.t.shape('turtle')
             self.wn = turtle.Screen()
-            self.wn.setup(width=600,height=600)
             self.wn.setworldcoordinates(-(columnsInMaze-1)/2-.5,-(rowsInMaze-1)/2-.5,(columnsInMaze-1)/2+.5,(rowsInMaze-1)/2+.5)
 
         def drawMaze(self):
             for y in range(self.rowsInMaze):
                 for x in range(self.columnsInMaze):
                     if self.mazelist[y][x] == OBSTACLE:
-                        self.drawCenteredBox(x+self.xTranslate,-y+self.yTranslate,'tan')
-            self.t.color('black','blue')
+                        self.drawCenteredBox(x+self.xTranslate,-y+self.yTranslate,'orange')
+            self.t.color('black')
+            self.t.fillcolor('blue')
 
         def drawCenteredBox(self,x,y,color):
-            self.wn.tracer(0)
+            self.t.speed(10)
             self.t.up()
             self.t.goto(x-.5,y-.5)
-            self.t.color('black',color)
+            self.t.color(color)
+            self.t.fillcolor(color)
             self.t.setheading(90)
             self.t.down()
             self.t.begin_fill()
@@ -543,8 +545,6 @@ Note that it is a much more simple example file in that the exit is very close t
                 self.t.forward(1)
                 self.t.right(90)
             self.t.end_fill()
-            self.wn.update()
-            self.wn.tracer(1)
 
         def moveTurtle(self,x,y):
             self.t.up()
@@ -552,7 +552,7 @@ Note that it is a much more simple example file in that the exit is very close t
             self.t.goto(x+self.xTranslate,-y+self.yTranslate)
 
         def dropBreadcrumb(self,color):
-            self.t.dot(color)
+            self.t.dot(10,color)
 
         def updatePosition(self,row,col,val=None):
             if val:
@@ -569,7 +569,7 @@ Note that it is a much more simple example file in that the exit is very close t
                 color = 'red'
             else:
                 color = None
-            
+
             if color:
                 self.dropBreadcrumb(color)
 
@@ -578,12 +578,9 @@ Note that it is a much more simple example file in that the exit is very close t
                     row == self.rowsInMaze-1 or
                     col == 0 or
                     col == self.columnsInMaze-1 )
-
+        
         def __getitem__(self,idx):
             return self.mazelist[idx]
-        
-        def freeze(self):
-            self.wn.exitonclick()
 
 
     def searchFrom(maze, startRow, startColumn):
@@ -601,12 +598,11 @@ Note that it is a much more simple example file in that the exit is very close t
             maze.updatePosition(startRow, startColumn, PART_OF_PATH)
             return True
         maze.updatePosition(startRow, startColumn, TRIED)
-
         # Otherwise, use logical short circuiting to try each direction 
         # in turn (if needed)
         found = searchFrom(maze, startRow-1, startColumn) or \
-                searchFrom(maze, startRow, startColumn-1) or \
                 searchFrom(maze, startRow+1, startColumn) or \
+                searchFrom(maze, startRow, startColumn-1) or \
                 searchFrom(maze, startRow, startColumn+1)
         if found:
             maze.updatePosition(startRow, startColumn, PART_OF_PATH)
@@ -614,17 +610,13 @@ Note that it is a much more simple example file in that the exit is very close t
             maze.updatePosition(startRow, startColumn, DEAD_END)
         return found
 
-    def main():
 
-        myMaze = Maze('maze2.txt')
-        myMaze.drawMaze()
-        myMaze.updatePosition(myMaze.startCol,myMaze.startRow)
-        if searchFrom(myMaze, myMaze.startRow, myMaze.startCol):
-           myMaze.freeze()
-        else:
-            print("HELP...I can't get out!!")
-        
-    main()
+    myMaze = Maze('maze2.txt')
+    myMaze.drawMaze()
+    myMaze.updatePosition(myMaze.startRow,myMaze.startCol)
+
+    searchFrom(myMaze, myMaze.startRow, myMaze.startCol)
+
     
 Dynamic Programming
 -------------------
