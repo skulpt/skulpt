@@ -481,8 +481,8 @@ Note that it is a much more simple example file in that the exit is very close t
   +          ++  ++  + +
   +++++ + +      ++  + +
   +++++ +++  + +  ++   +
-  +          + +  + +  +
-  +++++ +  + + +  S  + +
+  +          + + S+ +  +
+  +++++ +  + + +     + +
   ++++++++++++++++++++++
     </pre>
 
@@ -525,6 +525,7 @@ Note that it is a much more simple example file in that the exit is very close t
             self.wn.setworldcoordinates(-(columnsInMaze-1)/2-.5,-(rowsInMaze-1)/2-.5,(columnsInMaze-1)/2+.5,(rowsInMaze-1)/2+.5)
 
         def drawMaze(self):
+            self.t.speed(10)        
             for y in range(self.rowsInMaze):
                 for x in range(self.columnsInMaze):
                     if self.mazelist[y][x] == OBSTACLE:
@@ -533,7 +534,6 @@ Note that it is a much more simple example file in that the exit is very close t
             self.t.fillcolor('blue')
 
         def drawCenteredBox(self,x,y,color):
-            self.t.speed(10)
             self.t.up()
             self.t.goto(x-.5,y-.5)
             self.t.color(color)
@@ -591,7 +591,7 @@ Note that it is a much more simple example file in that the exit is very close t
         if maze[startRow][startColumn] == OBSTACLE :
             return False
         #  2. We have found a square that has already been explored
-        if maze[startRow][startColumn] == TRIED:
+        if maze[startRow][startColumn] == TRIED or maze[startRow][startColumn] == DEAD_END:
             return False
         # 3. We have found an outside edge not occupied by an obstacle
         if maze.isExit(startRow,startColumn):
