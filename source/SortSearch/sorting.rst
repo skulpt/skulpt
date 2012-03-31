@@ -114,6 +114,13 @@ to swap the items.
                     alist[i] = alist[i+1]
                     alist[i+1] = temp
 
+
+.. animation:: bubble_anim
+   :modelfile: sortmodels.js
+   :viewerfile: sortviewers.js
+   :model: BubbleSortModel
+   :viewer: BarViewer
+
 To analyze the bubble sort, we should note that regardless of how the
 items are arranged in the initial list, :math:`n-1` passes will be
 made to sort a list of size *n*. :ref:`Table 1 <tbl_bubbleanalysis>` shows the number
@@ -213,6 +220,12 @@ places 55, and so on. The function is shown in
            alist[fillslot] = alist[positionOfMax]
            alist[positionOfMax] = temp
 
+.. animation:: selection_anim
+   :modelfile: sortmodels.js
+   :viewerfile: sortviewers.js
+   :model: BubbleSortModel
+   :viewer: BoxViewer
+
 You may see that the selection sort makes the same number of comparisons
 as the bubble sort and is therefore also :math:`O(n^{2})`. However,
 due to the reduction in the number of exchanges, the selection sort
@@ -295,6 +308,14 @@ studies, insertion sort will show very good performance.
              position = position-1
 
          alist[position]=currentvalue
+
+
+.. animation:: insertion_anim
+   :modelfile: sortmodels.js
+   :viewerfile: sortviewers.js
+   :model: InsertionSortModel
+   :viewer: BoxViewer
+
 
 The Shell Sort
 ~~~~~~~~~~~~~~
@@ -409,6 +430,14 @@ an insertion sort with an increment of one.
               [20, 17, 44, 26, 54, 31, 77, 55, 93]
     After increments of size 1 the list is 
               [17, 20, 26, 31, 44, 54, 55, 77, 93]
+
+
+.. animation:: shell_anim
+   :modelfile: sortmodels.js
+   :viewerfile: sortviewers.js
+   :model: ShellSortModel
+   :viewer: BarViewer
+
 
 At first glance you may think that a shell sort cannot be better than an
 insertion sort, since it does a complete insertion sort as the last
@@ -562,6 +591,13 @@ will not divide evenly. The first split gives [44] and the second gives
 [55,20]. It is easy to see how the splitting process eventually yields a
 list that can be immediately merged with other sorted lists.
 
+
+.. animation:: merge_anim
+   :modelfile: sortmodels.js
+   :viewerfile: sortviewers.js
+   :model: MergeSortModel
+   :viewer: BarViewer
+
 In order to analyze the ``mergeSort`` function, we need to consider the
 two distinct processes that make up its implementation. First, the list
 is split into halves. We already computed (in a binary search) that we
@@ -712,6 +748,12 @@ implements the process described earlier.
 
 
        return rightmark
+
+.. animation:: quick_anim
+   :modelfile: sortmodels.js
+   :viewerfile: sortviewers.js
+   :model: QuickSortModel
+   :viewer: BarViewer
 
 To analyze the ``quickSort`` function, note that for a list of length
 *n*, if the partition always occurs in the middle of the list, there
