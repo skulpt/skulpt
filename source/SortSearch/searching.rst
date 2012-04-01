@@ -1,5 +1,5 @@
-Searching and Sorting
-=====================
+Searching
+=========
 
 
 Objectives
@@ -79,9 +79,9 @@ assigned the value ``True`` if we discover the item in the list.
 
 .. _lst_seqsearchpython:
 
-::
+.. codelens:: search1
+    :caption: Sequential Search of an Unordered List
 
-    [caption={Sequential Search of an Unordered List},label=lst_seqsearchpython,index={sequentialSearch},float=htb]
     def sequentialSearch(alist, item):
         pos = 0
         found = False
@@ -93,6 +93,10 @@ assigned the value ``True`` if we discover the item in the list.
                 pos = pos+1
 
         return found
+
+    testlist = [1, 2, 32, 8, 17, 19, 42, 13, 0]
+    print(sequentialSearch(testlist, 3))
+    print(sequentialSearch(testlist, 13))
 
 Analysis of Sequential Search
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -131,9 +135,10 @@ approximation, so the complexity of the sequential search, is
 ==================== ========================== ========================== ========================
 item is present      :math:`1`                  :math:`n`                  :math:`\frac{n}{2}`
 item is not present  :math:`n`                  :math:`n`                  :math:`n`
-===================================================================================================
+==================== ========================== ========================== ========================
 
-    {Comparisons Used in a Sequential Search of an Unordered List} {tbl_seqsearchtable}
+
+    Comparisons Used in a Sequential Search of an Unordered List
 
 
 
@@ -168,9 +173,9 @@ sequential search function.
 
 .. _lst_seqsearchpython2:
 
-::
+.. codelens:: search2
+    :caption: Sequential Search of an Ordered List
 
-    [caption={Sequential Search of an Ordered List},label=lst_seqsearchpython2,index={orderedSequentialSearch},float=htb]
     def orderedSequentialSearch(alist, item):
         pos = 0
         found = False
@@ -186,6 +191,10 @@ sequential search function.
 
         return found
 
+    testlist = [0, 1, 2, 8, 13, 17, 19, 32, 42,]
+    print(orderedSequentialSearch(testlist, 3))
+    print(orderedSequentialSearch(testlist, 13))
+
 :ref:`Table 2 <tbl_seqsearchtable2>` summarizes these results. Note that in the best
 case we might discover that the item is not in the list by looking at
 only one item. On average, we will know after looking through only
@@ -195,13 +204,14 @@ the list only in the case where we do not find the item.
 
 .. _tbl_seqsearchtable2:
 
-        & **Best Case** & **Worst Case** & **Average Case**
-         [-1.25ex] {0cm} {3.5ex} item is present & :math:`1` &
-        :math:`n` & :math:`\frac{n}{2}`
-         [-1.25ex] {0cm} {3.5ex} item is not present & :math:`1` &
-        :math:`n` & :math:`\frac{n}{2}`
+     ================ ============== ==============  ===================
+                      **Best Case**  **Worst Case**  **Average Case**
+     ================ ============== ==============  ===================
+     item is present  :math:`1`        :math:`n`     :math:`\frac{n}{2}`
+     item not present :math:`1`        :math:`n`     :math:`\frac{n}{2}`
+     ================ ============== ==============  ===================
 
-    {Comparisons Used in Sequential Search of an Ordered List} {tbl_seqsearchtable2}
+    Comparisons Used in Sequential Search of an Ordered List
 
 The Binary Search
 ~~~~~~~~~~~~~~~~~
@@ -237,9 +247,9 @@ in :ref:`Listing 3 <lst_binarysearchpy>`.
 
 .. _lst_binarysearchpy:
 
-::
+.. codelens:: search3
+    :caption: Binary Search of an Ordered List
 
-    [caption={Binary Search of an Ordered List},label=lst_binarysearchpy,index={binarySearch},float=htb]
     def binarySearch(alist, item):
         first = 0
         last = len(alist)-1
@@ -257,6 +267,10 @@ in :ref:`Listing 3 <lst_binarysearchpy>`.
 
         return found
 
+    testlist = [0, 1, 2, 8, 13, 17, 19, 32, 42,]
+    print(binarySearch(testlist, 3))
+    print(binarySearch(testlist, 13))
+
 Before we move on to the analysis, we should note that this algorithm is
 a great example of a divide and conquer strategy. Divide and conquer
 means that we divide the problem into smaller pieces, solve the smaller
@@ -271,9 +285,9 @@ shows this recursive version.
 
 .. _lst_recbinarysearch:
 
-::
+.. codelens:: search4
+    :caption: A Binary Search--Recursive Version
 
-    [caption={A Binary Search--Recursive Version},label=lst_recbinarysearch,index={binarySearch},float=htb]
     def binarySearch(alist, item):
         if len(alist) == 0:
             return False
@@ -286,6 +300,10 @@ shows this recursive version.
                 return binarySearch(alist[:midpoint],item)
               else:
                 return binarySearch(alist[midpoint+1:],item)
+
+    testlist = [0, 1, 2, 8, 13, 17, 19, 32, 42,]
+    print(binarySearch(testlist, 3))
+    print(binarySearch(testlist, 13))
 
 
 
@@ -394,15 +412,18 @@ functions, since the result must be in the range of slot names.
 
 .. _tbl_hashvalues1:
 
-        **Item** & **Hash Value**
-         54 & 10
-         26 & 4
-         93 & 5
-         17 & 6
-         77 & 0
-         31 & 9
+================= ================ 
+         **Item**   **Hash Value** 
+================= ================ 
+               54               10 
+               26                4 
+               93                5 
+               17                6 
+               77                0 
+               31                9 
+================= ================ 
 
-    {Simple Hash Function Using Remainders} {tbl_hashvalues1}
+    Simple Hash Function Using Remainders
 
 Once the hash values have been computed, we can insert each item into
 the hash table at the designated position as shown in
@@ -474,7 +495,7 @@ the extra step of dividing by 11 and keeping the remainder. In this case
 :math:`210\ \%\ 11` is 1, so the phone number 436-555-4601 hashes to
 slot 1. Some folding methods go one step further and reverse every other
 piece before the addition. For the above example, we get
-:math:`43+56+55+64+01 = 219` which gives :math:`219\ \%\ 11 = 10 `.
+:math:`43+56+55+64+01 = 219` which gives :math:`219\ \%\ 11 = 10`.
 
 Another numerical technique for constructing a hash function is called
 the **mid-square method**. We first square the item, and then extract
@@ -487,13 +508,16 @@ understand how these values were computed.
 
 .. _tbl_hashvalues2:
 
-        **Item** & **Remainder** & **Mid-Square**
-         54 & 10 & 3
-         26 & 4 & 7
-         93 & 5 & 9
-         17 & 6 & 8
-         77 & 0 & 4
-         31 & 9 & 6
+================= =============== ================ 
+         **Item**   **Remainder**   **Mid-Square** 
+================= =============== ================ 
+               54              10                3 
+               26               4                7 
+               93               5                9 
+               17               6                8 
+               77               0                4 
+               31               9                6 
+================= =============== ================ 
 
     {Comparison of Remainder and Mid-Square Methods} {tbl_hashvalues2}
 
@@ -685,7 +709,7 @@ table that uses chaining to resolve collisions.
 
 .. _fig_chaining:
 
-.. figure:: SortSearch/Figures/chaining.png
+.. figure:: Figures/chaining.png
    :align: center
 
    Collision Resolution with Chaining
@@ -736,7 +760,7 @@ binary search but it would be even better to use a hash table as
 described above since looking up an item in a hash table can approach
 :math:`O(1)` performance.
 
-In :ref:`Listing x <hashtablecodeconstructor>` we use two lists to create a
+In :ref:`Listing x <lst_hashtablecodeconstructor>` we use two lists to create a
 ``HashTable`` class that implements the Map abstract data type. One
 list, called ``slots``, will hold the key items and a parallel list,
 called ``data``, will hold the data values. When we look up a key, the
@@ -751,16 +775,17 @@ can be as efficient as possible.
 
 ::
 
-    [caption={Map ADT Implementation--Constructor},label=hashtablecodeconstructor,float=htb]
     class HashTable:
         def __init__(self):
             self.size = 11
             self.slots = [None] * self.size
             self.data = [None] * self.size
 
+Map ADT Implementation--Constructor
+
 ``hashfunction`` implements the simple remainder method. The collision
 resolution technique is linear probing with a “plus 1” rehash function.
-The ``put`` function (see :ref:`Listing x <hashtablecodestore>`) assumes that
+The ``put`` function (see :ref:`Listing x <lst_hashtablecodestore>`) assumes that
 there will eventually be an empty slot unless the key is already present
 in the ``self.slots``. It computes the original hash value and if that
 slot is not empty, iterates the ``rehash`` function until an empty slot
@@ -771,7 +796,6 @@ is replaced with the new data value.
 
 ::
 
-    [caption={Map ADT Implementation--Put Method},label=hashtablecodestore,index={store,hashfunction,rehash},float=htb]
     def put(self,key,data):
       hashvalue = self.hashfunction(key,len(self.slots))
 
@@ -799,7 +823,10 @@ is replaced with the new data value.
     def rehash(self,oldhash,size):
         return (oldhash+1)%size
 
-Likewise, the ``get`` function (see :ref:`Listing x <hashtablecodesearch>`)
+
+Map ADT Implementation--Put Method
+
+Likewise, the ``get`` function (see :ref:`Listing x <lst_hashtablecodesearch>`)
 begins by computing the initial hash value. If the value is not in the
 initial slot, ``rehash`` is used to locate the next possible position.
 Notice that line 15 guarantees that the search will terminate by
@@ -817,8 +844,6 @@ be available. We leave the remaining methods as exercises.
 
 ::
 
-    [caption={Map ADT Implementation--Search Method},
-    label=hashtablecodesearch,index={get,\_\_getitem\_\_,\_\_setitem\_\_},float=htb]
     def get(self,key):
       startslot = self.hashfunction(key,len(self.slots))
 
@@ -842,6 +867,8 @@ be available. We leave the remaining methods as exercises.
 
     def __setitem__(self,key,data):
         self.put(key,data)
+
+Map ADT Implementation -- Search Method
 
 The following session shows the ``HashTable`` class in action. First we
 will create a hash table and store some items with integer keys and
