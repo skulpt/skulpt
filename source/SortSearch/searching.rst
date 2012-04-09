@@ -1,7 +1,3 @@
-Searching
-=========
-
-
 Objectives
 ----------
 
@@ -322,14 +318,17 @@ answer.
 
 .. _tbl_binaryanalysis:
 
-        **Comparisons** & **Approximate Number of Items Left**
-         [-1.25ex] {0cm} {3.5ex} 1 & :math:`\frac {n}{2}`
-         [-1.25ex] {0cm} {3.5ex} 2 & :math:`\frac {n}{4}`
-         [-1.25ex] {0cm} {3.5ex} 3 & :math:`\frac {n}{8}`
-         [-1.25ex] {0cm} {3.5ex}... &
-         [-1.25ex] {0cm} {3.5ex} i & :math:`\frac {n}{2^i}`
+======================== ====================================== 
+         **Comparisons**   **Approximate Number of Items Left** 
+======================== ====================================== 
+                       1                   :math:`\frac {n}{2}` 
+                       2                   :math:`\frac {n}{4}` 
+                       3                   :math:`\frac {n}{8}` 
+                     ...                                        
+                       i                 :math:`\frac {n}{2^i}` 
+======================== ====================================== 
 
-    {Tabular Analysis for a Binary Search} {tbl_binaryanalysis}
+    Tabular Analysis for a Binary Search
 
 When we split the list enough times, we end up with a list that has just
 one item. Either that is the item we are looking for or it is not.
@@ -553,13 +552,14 @@ to ``tablesize``-1.
 
 ::
 
-    [caption={Simple Hash Function for Strings},label=lst_hashfunction1,index={hash},float=htb]
     def hash(astring, tablesize):
         sum = 0
         for pos in range(len(astring)):
             sum = sum + ord(astring[pos])
 
         return sum%tablesize
+
+Simple Hash Function for Strings
 
 It is interesting to note that when using this hash function, anagrams
 will always be given the same hash value. To remedy this, we could use
@@ -933,10 +933,10 @@ number of items on each chain.
 As before, we will have a result for both a successful and an
 unsuccessful search. For a successful search using open addressing with
 linear probing, the average number of comparisons is approximately
-:math:`$\frac{1}{2}\left(1+\frac{1}{1-\lambda}\right)$` and an
+:math:`\frac{1}{2}\left(1+\frac{1}{1-\lambda}\right)` and an
 unsuccessful search gives
-:math:`$\frac{1}{2}\left(1+\left(\frac{1}{1-\lambda}\right)^2\right)$`
+:math:`\frac{1}{2}\left(1+\left(\frac{1}{1-\lambda}\right)^2\right)`
 If we are using chaining, the average number of comparisons is
-:math:`$1 + \frac {\lambda}{2} $` for the successful case, and simply
+:math:`1 + \frac {\lambda}{2}` for the successful case, and simply
 :math:`\lambda` comparisons if the search is unsuccessful.
 
