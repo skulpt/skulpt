@@ -1,3 +1,7 @@
+Searching
+=========
+
+
 Objectives
 ----------
 
@@ -115,7 +119,7 @@ analysis is not so straightforward. There are actually three different
 scenarios that can occur. In the best case we will find the item in the
 first place we look, at the beginning of the list. We will need only one
 comparison. In the worst case, we will not discover the item until the
-very last comparison, the n``th`` comparison.
+very last comparison, the `nth` comparison.
 
 What about the average case? On average, we will find the item about
 halfway into the list; that is, we will compare against
@@ -318,6 +322,7 @@ answer.
 
 .. _tbl_binaryanalysis:
 
+
 ======================== ====================================== 
          **Comparisons**   **Approximate Number of Items Left** 
 ======================== ====================================== 
@@ -518,7 +523,7 @@ understand how these values were computed.
                31               9                6 
 ================= =============== ================ 
 
-    {Comparison of Remainder and Mid-Square Methods} {tbl_hashvalues2}
+    {Comparison of Remainder and Mid-Square Methods}
 
 We can also create hash functions for character-based items such as
 strings. The word “cat” can be thought of as a sequence of ordinal
