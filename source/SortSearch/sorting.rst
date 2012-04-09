@@ -64,7 +64,7 @@ There are :math:`n-1` items left to sort, meaning that there will be
 :math:`n-2` pairs. Since each pass places the next largest value in
 place, the total number of passes necessary will be :math:`n-1`. After
 completing the :math:`n-1` passes, the smallest item must be in the
-correct position with no further processing required. :ref:`Listing x <bubble>`
+correct position with no further processing required. :ref:`Listing 1 <lst_bubble>`
 shows the complete ``bubbleSort`` function. It takes the list as a
 parameter, and modifies it by exchanging items as necessary.
 
@@ -79,7 +79,7 @@ additional memory location). A code fragment such as
     alist[i] = alist[j]
     alist[j] = temp
 
-will exchange the *i*th and *j*th items in the list. Without the
+will exchange the `ith` and `jth` items in the list. Without the
 temporary storage, one of the values would be overwritten.
 
 In Python, it is possible to perform simultaneous assignment. The
@@ -87,9 +87,8 @@ statement ``a,b=b,a`` will result in two assignment statements being
 done at the same time (see :ref:`Figure 2 <fig_pythonswap>`). Using simultaneous
 assignment, the exchange operation can be done in one statement.
 
-:ref:`Listing 1 <lst_bubble>` shows the complete Python implementation for the bubble
-sort. Lines 5-7 perform the exchange of the :math:`i` and
-:math:`(i+1)`th items using the three–step procedure described
+Lines 5-7 in :ref:`Listing 1 <lst_bubble>` perform the exchange of the :math:`i` and
+:math:(i+1)th items using the three–step procedure described
 earlier. Note that we could also have used the simultaneous assignment
 to swap the items.
 
@@ -100,12 +99,14 @@ to swap the items.
 
    Exchanging Two Values in Python
 
+The following activecode example shows the complete ``bubbleSort`` function working on the list
+shown above.
+
 
 .. _lst_bubble:
 
-::
+.. activecode:: lst_bubble
 
-    [caption={A Bubble Sort},label=lst_bubble,index={bubbleSort},float=htb]
     def bubbleSort(alist):
         for passnum in range(len(alist)-1,0,-1):
             for i in range(passnum):
@@ -114,12 +115,34 @@ to swap the items.
                     alist[i] = alist[i+1]
                     alist[i+1] = temp
 
+    alist = [54,26,93,17,77,31,44,55,20]
+    bubbleSort(alist)
+    print(alist)
+
+The following animation shows ``bubbleSort`` in action.
 
 .. animation:: bubble_anim
    :modelfile: sortmodels.js
    :viewerfile: sortviewers.js
    :model: BubbleSortModel
    :viewer: BarViewer
+
+For more detail, use codelens to step thru the algorithm.
+
+.. codelens:: bubbletrace
+    
+    def bubbleSort(alist):
+        for passnum in range(len(alist)-1,0,-1):
+            for i in range(passnum):
+                if alist[i]>alist[i+1]:
+                    temp = alist[i]
+                    alist[i] = alist[i+1]
+                    alist[i+1] = temp
+    
+    alist = [54,26,93,17,77,31,44,55,20]
+    #bubbleSort(alist)    
+    print(alist)       
+                    
 
 To analyze the bubble sort, we should note that regardless of how the
 items are arranged in the initial list, :math:`n-1` passes will be
@@ -137,14 +160,17 @@ time.
 
 .. _tbl_bubbleanalysis:
 
-        **Pass** & **Comparisons**
-         1 & :math:`n-1`
-         2 & :math:`n-2`
-         3 & :math:`n-3`
-         ... &
-         :math:`n-1` & :math:`1`
+================= ==================
+**Pass**          **Comparisons**
+================= ==================
+         1         :math:`n-1`
+         2         :math:`n-2`
+         3         :math:`n-3`
+         ...       ...
+   :math:`n-1`     :math:`1`
+================= ==================
 
-    {Comparisons for Each Pass of Bubble Sort} {bubbleanalysis}
+    Comparisons for Each Pass of Bubble Sort
 
 A bubble sort is often considered the most inefficient sorting method
 since it must exchange items before the final location is known. These
@@ -161,9 +187,8 @@ to as the **short bubble**.
 
 .. _lst_shortbubble:
 
-::
+.. activecode:: lst_shortbubble
 
-    [caption={A Modified Bubble Sort},label=lst_shortbubble,index={shortBubbleSort},float=htb]
     def shortBubbleSort(alist):
         exchanges = True
         passnum = len(alist)-1
@@ -177,6 +202,34 @@ to as the **short bubble**.
                    alist[i+1] = temp
            passnum = passnum-1
 
+    alist=[20,30,40,90,50,60,70,80,100,110]
+    shortBubbleSort(alist)
+    print(alist)
+    
+Finally, here is ``shortBubbleSort`` in codelens.
+    
+.. codelens:: shortbubbletrace
+
+    def shortBubbleSort(alist):
+        exchanges = True
+        passnum = len(alist)-1
+        while passnum > 0 and exchanges:
+           exchanges = False
+           for i in range(passnum):
+               if alist[i]>alist[i+1]:
+                   exchanges = True
+                   temp = alist[i]
+                   alist[i] = alist[i+1]
+                   alist[i+1] = temp
+           passnum = passnum-1
+
+    alist=[20,30,40,90,50,60,70,80,100,110]
+    shortBubbleSort(alist)
+    print(alist)
+ 
+ 
+ 
+ 
 The Selection Sort
 ~~~~~~~~~~~~~~~~~~
 
@@ -206,9 +259,8 @@ places 55, and so on. The function is shown in
 .. _lst_selectionsortcode:
 
 
-::
+.. activecode:: lst_selectionsortcode
 
-    [caption={A Selection Sort},label=lst_selectionsortcode,index={selectionSort},float=htb]
     def selectionSort(alist):
        for fillslot in range(len(alist)-1,0,-1):
            positionOfMax=0
@@ -220,11 +272,33 @@ places 55, and so on. The function is shown in
            alist[fillslot] = alist[positionOfMax]
            alist[positionOfMax] = temp
 
+    alist = [54,26,93,17,77,31,44,55,20]
+    selectionSort(alist)
+    print(alist)
+
 .. animation:: selection_anim
    :modelfile: sortmodels.js
    :viewerfile: sortviewers.js
    :model: BubbleSortModel
    :viewer: BoxViewer
+   
+   
+.. codelens:: selectionsortcodetrace
+
+    def selectionSort(alist):
+       for fillslot in range(len(alist)-1,0,-1):
+           positionOfMax=0
+           for location in range(1,fillslot+1):
+               if alist[location]>alist[positionOfMax]:
+                   positionOfMax = location
+
+           temp = alist[fillslot]
+           alist[fillslot] = alist[positionOfMax]
+           alist[positionOfMax] = temp
+
+    alist = [54,26,93,17,77,31,44,55,20]
+    #selectionSort(alist)
+    print(alist)
 
 You may see that the selection sort makes the same number of comparisons
 as the bubble sort and is therefore also :math:`O(n^{2})`. However,
@@ -294,9 +368,8 @@ studies, insertion sort will show very good performance.
 
 .. _lst_insertion:
 
-::
+.. activecode:: lst_insertion
 
-    [caption={\texttt{insertionSort}},label=lst_insertion,index={insertionSort},float=htb]
     def insertionSort(alist):
        for index in range(1,len(alist)):
 
@@ -309,6 +382,9 @@ studies, insertion sort will show very good performance.
 
          alist[position]=currentvalue
 
+    alist = [54,26,93,17,77,31,44,55,20]
+    insertionSort(alist)
+    print(alist)
 
 .. animation:: insertion_anim
    :modelfile: sortmodels.js
@@ -316,6 +392,24 @@ studies, insertion sort will show very good performance.
    :model: InsertionSortModel
    :viewer: BoxViewer
 
+
+.. codelens:: insertionsortcodetrace
+
+    def insertionSort(alist):
+       for index in range(1,len(alist)):
+
+         currentvalue = alist[index]
+         position = index
+
+         while position>0 and alist[position-1]>currentvalue:
+             alist[position]=alist[position-1]
+             position = position-1
+
+         alist[position]=currentvalue
+
+    alist = [54,26,93,17,77,31,44,55,20]
+    #insertionSort(alist)
+    print(alist)
 
 The Shell Sort
 ~~~~~~~~~~~~~~
@@ -377,18 +471,21 @@ this case, we need only four more shifts to complete the process.
 
 
 We said earlier that the way in which the increments are chosen is the
-unique feature of the shell sort. The function shown in :ref:`Listing x <shell>`
+unique feature of the shell sort. The function shown in :ref:`Listing 5 <lst_shell>`
 uses a different set of increments. In this case, we begin with
 :math:`\frac {n}{2}` sublists. On the next pass,
 :math:`\frac {n}{4}` sublists are sorted. Eventually, a single list is
 sorted with the basic insertion sort. :ref:`Figure 9 <fig_incrementsD>` shows the
 first sublists for our example using this increment.
 
+The following invocation of the ``shellSort`` function shows the
+partially sorted lists after each increment, with the final sort being
+an insertion sort with an increment of one.
+
 .. _lst_shell:
 
-::
+.. activecode:: lst_shellSort
 
-    [caption={shellSort},label=shell,index={lst_shellSort,gapInsertionSort},float=htb]
     def shellSort(alist):
         sublistcount = len(alist)//2
         while sublistcount > 0:
@@ -407,29 +504,16 @@ first sublists for our example using this increment.
             currentvalue = alist[i]
             position = i
 
-            while position>=gap and \
-                    alist[position-gap]>currentvalue:
+            while position>=gap and alist[position-gap]>currentvalue:
                 alist[position]=alist[position-gap] 
                 position = position-gap
 
             alist[position]=currentvalue
+            
+    alist = [54,26,93,17,77,31,44,55,20]
+    shellSort(alist)
+    print(alist)
 
-The following invocation of the ``shellSort`` function shows the
-partially sorted lists after each increment, with the final sort being
-an insertion sort with an increment of one.
-
-
-
-::
-
-    >>> alist=[54,26,93,17,77,31,44,55,20]
-    >>> shellSort(alist)
-    After increments of size 4 the list is 
-              [20, 26, 44, 17, 54, 31, 93, 55, 77]
-    After increments of size 2 the list is 
-              [20, 17, 44, 26, 54, 31, 77, 55, 93]
-    After increments of size 1 the list is 
-              [17, 20, 26, 31, 44, 54, 55, 77, 93]
 
 
 .. animation:: shell_anim
@@ -437,6 +521,37 @@ an insertion sort with an increment of one.
    :viewerfile: sortviewers.js
    :model: ShellSortModel
    :viewer: BarViewer
+
+.. codelens:: shellSorttrace
+
+    def shellSort(alist):
+        sublistcount = len(alist)//2
+        while sublistcount > 0:
+
+          for startposition in range(sublistcount):
+            gapInsertionSort(alist,startposition,sublistcount)
+
+          print("After increments of size",sublistcount,
+                                       "The list is",alist)
+
+          sublistcount = sublistcount // 2
+
+    def gapInsertionSort(alist,start,gap):
+        for i in range(start+gap,len(alist),gap):
+
+            currentvalue = alist[i]
+            position = i
+
+            while position>=gap and alist[position-gap]>currentvalue:
+                alist[position]=alist[position-gap] 
+                position = position-gap
+
+            alist[position]=currentvalue
+            
+    alist = [54,26,93,17,77,31,44,55,20]
+    #shellSort(alist)
+    print(alist)
+
 
 
 At first glance you may think that a shell sort cannot be better than an
@@ -450,7 +565,7 @@ previous one. This makes the final pass very efficient.
 Although a general analysis of the shell sort is well beyond the scope
 of this text, we can say that it tends to fall somewhere between
 :math:`O(n)` and :math:`O(n^{2})`, based on the behavior described
-above. For the increments shown in :ref:`Listing x <shell>`, the performance is
+above. For the increments shown in :ref:`Listing 5 <lst_shell>`, the performance is
 :math:`O(n^{2})`. By changing the increment, for example using
 :math:`2^{k}-1` (1, 3, 7, 15, 31, and so on), a shell sort can perform
 at :math:`O(n^{\frac {3}{2}})`.
@@ -467,12 +582,12 @@ has more than one item, we split the list and recursively invoke a merge
 sort on both halves. Once the two halves are sorted, the fundamental
 operation, called a **merge**, is performed. Merging is the process of
 taking two smaller sorted lists and combining them together into a
-single, sorted, new list. :ref:`Figure x <fig_mergesortA>` shows our familiar example
+single, sorted, new list. :ref:`Figure 10 <fig_mergesortA>` shows our familiar example
 list as it is being split by ``mergeSort``. :ref:`Figure 11 <fig_mergesortB>` shows
 the simple lists, now sorted, as they are merged back together.
 
 
-.. _fig_mersortA:
+.. _fig_mergesortA:
 
 .. figure:: Figures/mergesortA.png
    :align: center
@@ -488,11 +603,20 @@ the simple lists, now sorted, as they are merged back together.
    Lists as They Are Merged Together
 
 
+
+The ``mergeSort`` function shown in :ref:`Listing 6 <lst_merge>` begins by asking the
+base case question. If the length of the list is less than or equal to
+one, then we already have a sorted list and no more processing is
+necessary. If, on the other hand, the length is greater than one, then
+we use the Python ``slice`` operation to extract the left and right
+halves. It is important to note that the list may not have an even
+number of items. That does not matter, as the lengths will differ by at
+most one.
+
 .. _lst_merge:
 
-::
+.. activecode:: lst_merge
 
-    [caption={mergeSort},label=lst_merge,index={mergeSort},float=htb]
     def mergeSort(alist):
         print("Splitting ",alist)
         if len(alist)>1:
@@ -525,57 +649,13 @@ the simple lists, now sorted, as they are merged back together.
                 j=j+1
                 k=k+1
         print("Merging ",alist)
+        
+    alist = [54,26,93,17,77,31,44,55,20]
+    mergeSort(alist)
+    print(alist)
 
-The ``mergeSort`` function shown in :ref:`Listing 6 <lst_merge>` begins by asking the
-base case question. If the length of the list is less than or equal to
-one, then we already have a sorted list and no more processing is
-necessary. If, on the other hand, the length is greater than one, then
-we use the Python ``slice`` operation to extract the left and right
-halves. It is important to note that the list may not have an even
-number of items. That does not matter, as the lengths will differ by at
-most one.
 
-    ::
-
-        >>> b=[54,26,93,17,77,31,44,55,20]
-        >>> mergeSort(b)
-        Splitting  [54, 26, 93, 17, 77, 31, 44, 55, 20]
-        Splitting  [54, 26, 93, 17]
-        Splitting  [54, 26]
-        Splitting  [54]
-        Merging  [54]
-        Splitting  [26]
-        Merging  [26]
-        Merging  [26, 54]
-        Splitting  [93, 17]
-        Splitting  [93]
-        Merging  [93]
-        Splitting  [17]
-        Merging  [17]
-        Merging  [17, 93]
-        Merging  [17, 26, 54, 93]
-        Splitting  [77, 31, 44, 55, 20]
-        Splitting  [77, 31]
-        Splitting  [77]
-        Merging  [77]
-        Splitting  [31]
-        Merging  [31]
-        Merging  [31, 77]
-        Splitting  [44, 55, 20]
-        Splitting  [44]
-        Merging  [44]
-        Splitting  [55, 20]
-        Splitting  [55]
-        Merging  [55]
-        Splitting  [20]
-        Merging  [20]
-        Merging  [20, 55]
-        Merging  [20, 44, 55]
-        Merging  [20, 31, 44, 55, 77]
-        Merging  [17, 20, 26, 31, 44, 54, 55, 77, 93]
-        >>> 
-
-{-} Once the ``mergeSort`` function is invoked on the left half and the
+Once the ``mergeSort`` function is invoked on the left half and the
 right half (lines 8–9), it is assumed they are sorted. The rest of the
 function (lines 11–31) is responsible for merging the two smaller sorted
 lists into a larger sorted list. Notice that the merge operation places
@@ -597,11 +677,52 @@ list that can be immediately merged with other sorted lists.
    :viewerfile: sortviewers.js
    :model: MergeSortModel
    :viewer: BarViewer
+  
+
+.. codelens:: mergetrace
+
+    def mergeSort(alist):
+        print("Splitting ",alist)
+        if len(alist)>1:
+            mid = len(alist)//2
+            lefthalf = alist[:mid]
+            righthalf = alist[mid:]
+
+            mergeSort(lefthalf)
+            mergeSort(righthalf)
+
+            i=0
+            j=0
+            k=0
+            while i<len(lefthalf) and j<len(righthalf):
+                if lefthalf[i]<righthalf[j]:
+                    alist[k]=lefthalf[i]
+                    i=i+1
+                else:
+                    alist[k]=righthalf[j]
+                    j=j+1
+                k=k+1
+
+            while i<len(lefthalf):
+                alist[k]=lefthalf[i]
+                i=i+1
+                k=k+1
+
+            while j<len(righthalf):
+                alist[k]=righthalf[j]
+                j=j+1
+                k=k+1
+        print("Merging ",alist)
+        
+    alist = [54,26,93,17,77,31,44,55,20]
+    #mergeSort(alist)
+    print(alist)
+
 
 In order to analyze the ``mergeSort`` function, we need to consider the
 two distinct processes that make up its implementation. First, the list
 is split into halves. We already computed (in a binary search) that we
-can divide a list in half :math:` \log_{2} n` times where *n* is the
+can divide a list in half :math:`\log n` times where *n* is the
 length of the list. The second process is the merge. Each item in the
 list will eventually be processed and placed on the sorted list. So the
 merge operation which results in a list of size *n* requires *n*
@@ -654,12 +775,7 @@ either less than or greater than the pivot value.
    The First Pivot Value for a Quick Sort
 
 
-.. _fig_partitionA:
 
-.. figure:: Figures/partitionA.png
-   :align: center
-
-   Finding the Split Point for 54
 
 
 Partitioning begins by locating two position markers—let’s call them
@@ -669,6 +785,13 @@ of the partition process is to move items that are on the wrong side
 with respect to the pivot value while also converging on the split
 point. :ref:`Figure 13 <fig_partitionA>` shows this process as we locate the position
 of 54.
+
+.. _fig_partitionA:
+
+.. figure:: Figures/partitionA.png
+   :align: center
+
+   Finding the Split Point for 54
 
 We begin by incrementing ``leftmark`` until we locate a value that is
 greater than the pivot value. We then decrement ``rightmark`` until we
@@ -680,7 +803,7 @@ exchange these two items and then repeat the process again.
 At the point where ``rightmark`` becomes less than ``leftmark``, we
 stop. The position of ``rightmark`` is now the split point. The pivot
 value can be exchanged with the contents of the split point and the
-pivot value is now in place (:ref:`Figure x <partitionB>`). In addition, all the
+pivot value is now in place (:ref:`Figure 14 <fig_partitionB>`). In addition, all the
 items to the left of the split point are less than the pivot value, and
 all the items to the right of the split point are greater than the pivot
 value. The list can now be divided at the split point and the quick sort
@@ -703,9 +826,8 @@ implements the process described earlier.
 
 .. _lst_quick:
 
-::
+.. activecode:: lst_quick
 
-    [caption={A Quick Sort},label=lst_quick,index={quickSort,quickSortHelper,partition},float=htbp]
     def quickSort(alist):
        quickSortHelper(alist,0,len(alist)-1)
 
@@ -748,12 +870,66 @@ implements the process described earlier.
 
 
        return rightmark
+       
+    alist = [54,26,93,17,77,31,44,55,20]
+    quickSort(alist)
+    print(alist)
 
 .. animation:: quick_anim
    :modelfile: sortmodels.js
    :viewerfile: sortviewers.js
    :model: QuickSortModel
    :viewer: BarViewer
+
+
+.. codelens:: quicktrace
+
+    def quickSort(alist):
+       quickSortHelper(alist,0,len(alist)-1)
+
+    def quickSortHelper(alist,first,last):
+       if first<last:
+
+           splitpoint = partition(alist,first,last)
+
+           quickSortHelper(alist,first,splitpoint-1)
+           quickSortHelper(alist,splitpoint+1,last)
+
+
+    def partition(alist,first,last):
+       pivotvalue = alist[first]
+
+       leftmark = first+1
+       rightmark = last
+
+       done = False
+       while not done:
+
+           while leftmark <= rightmark and \
+                   alist[leftmark] <= pivotvalue:
+               leftmark = leftmark + 1
+
+           while alist[rightmark] >= pivotvalue and \
+                   rightmark >= leftmark:
+               rightmark = rightmark -1
+
+           if rightmark < leftmark:
+               done = True
+           else:
+               temp = alist[leftmark]
+               alist[leftmark] = alist[rightmark]
+               alist[rightmark] = temp
+
+       temp = alist[first]
+       alist[first] = alist[rightmark]
+       alist[rightmark] = temp
+
+
+       return rightmark
+       
+    alist = [54,26,93,17,77,31,44,55,20]
+    #quickSort(alist)
+    print(alist)
 
 To analyze the ``quickSort`` function, note that for a list of length
 *n*, if the partition always occurs in the middle of the list, there

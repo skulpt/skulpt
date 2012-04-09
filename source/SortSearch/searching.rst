@@ -1,5 +1,5 @@
-Searching
-=========
+Searching and Sorting
+=====================
 
 
 Objectives
@@ -119,7 +119,7 @@ analysis is not so straightforward. There are actually three different
 scenarios that can occur. In the best case we will find the item in the
 first place we look, at the beginning of the list. We will need only one
 comparison. In the worst case, we will not discover the item until the
-very last comparison, the n``th`` comparison.
+very last comparison, the `nth` comparison.
 
 What about the average case? On average, we will find the item about
 halfway into the list; that is, we will compare against
@@ -322,14 +322,17 @@ answer.
 
 .. _tbl_binaryanalysis:
 
-        **Comparisons** & **Approximate Number of Items Left**
-         [-1.25ex] {0cm} {3.5ex} 1 & :math:`\frac {n}{2}`
-         [-1.25ex] {0cm} {3.5ex} 2 & :math:`\frac {n}{4}`
-         [-1.25ex] {0cm} {3.5ex} 3 & :math:`\frac {n}{8}`
-         [-1.25ex] {0cm} {3.5ex}... &
-         [-1.25ex] {0cm} {3.5ex} i & :math:`\frac {n}{2^i}`
 
-    {Tabular Analysis for a Binary Search} {tbl_binaryanalysis}
+=============================== ===========================================
+   **Comparisons**                 **Approximate Number of Items Left**
+=============================== ===========================================
+   1                               :math:`\frac {n}{2}`
+   2                               :math:`\frac {n}{4}`
+   3                               :math:`\frac {n}{8}`
+   ...                             ...
+   i                               :math:`\frac {n}{2^i}`
+=============================== ===========================================
+
 
 When we split the list enough times, we end up with a list that has just
 one item. Either that is the item we are looking for or it is not.
@@ -519,7 +522,7 @@ understand how these values were computed.
                31               9                6 
 ================= =============== ================ 
 
-    {Comparison of Remainder and Mid-Square Methods} {tbl_hashvalues2}
+    {Comparison of Remainder and Mid-Square Methods}
 
 We can also create hash functions for character-based items such as
 strings. The word “cat” can be thought of as a sequence of ordinal
@@ -553,7 +556,6 @@ to ``tablesize``-1.
 
 ::
 
-    [caption={Simple Hash Function for Strings},label=lst_hashfunction1,index={hash},float=htb]
     def hash(astring, tablesize):
         sum = 0
         for pos in range(len(astring)):

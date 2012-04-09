@@ -222,7 +222,7 @@ drawing the Sierpinski triangle yourself, using the method described.
 .. figure:: sierpinski.png
      :align: center
 
-      The Sierpinski Triangle
+     The Sierpinski Triangle
 
 Since we can continue to apply the algorithm indefinitely, what is the
 base case? We will see that the base case is set arbitrarily as the
@@ -317,7 +317,7 @@ finished with the bottom left it moves to the bottom middle, and so on.
 .. figure:: stCallTree.png
     :align: center   
    
-     Building a Sierpinski Triangle
+    Building a Sierpinski Triangle
 
 The ``sierpinski`` function relies heavily on the ``getMid`` function.
 ``getMid`` takes as arguments two endpoints and returns the point
