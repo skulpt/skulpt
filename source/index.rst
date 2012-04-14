@@ -67,7 +67,14 @@ Trees and Tree Agorithms
 .. toctree::
    :maxdepth: 2
 
-   trees.rst
+   Trees/trees.rst
+   Trees/implementation.rst
+   Trees/bintreeapps.rst
+   Trees/heap.rst
+   Trees/bst.rst
+   Trees/balanced.rst
+   Trees/treeexercises.rst
+
 
 Graphs and Graph Algorithms
 :::::::::::::::::::::::::::
