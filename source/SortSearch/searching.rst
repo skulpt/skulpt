@@ -1,7 +1,3 @@
-Searching
-=========
-
-
 Objectives
 ----------
 

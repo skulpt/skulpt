@@ -1,8 +1,3 @@
-Searching and Sorting
-=====================
-
-
-
 Sorting
 -------
 
@@ -140,7 +135,7 @@ For more detail, use codelens to step thru the algorithm.
                     alist[i+1] = temp
     
     alist = [54,26,93,17,77,31,44,55,20]
-    #bubbleSort(alist)    
+    bubbleSort(alist)    
     print(alist)       
                     
 
@@ -279,8 +274,8 @@ places 55, and so on. The function is shown in
 .. animation:: selection_anim
    :modelfile: sortmodels.js
    :viewerfile: sortviewers.js
-   :model: BubbleSortModel
-   :viewer: BoxViewer
+   :model: SelectionSortModel
+   :viewer: BarViewer
    
    
 .. codelens:: selectionsortcodetrace
@@ -297,7 +292,7 @@ places 55, and so on. The function is shown in
            alist[positionOfMax] = temp
 
     alist = [54,26,93,17,77,31,44,55,20]
-    #selectionSort(alist)
+    selectionSort(alist)
     print(alist)
 
 You may see that the selection sort makes the same number of comparisons
@@ -408,7 +403,7 @@ studies, insertion sort will show very good performance.
          alist[position]=currentvalue
 
     alist = [54,26,93,17,77,31,44,55,20]
-    #insertionSort(alist)
+    insertionSort(alist)
     print(alist)
 
 The Shell Sort
