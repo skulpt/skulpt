@@ -32,7 +32,7 @@ references.”
 List of Lists Representation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-{sec:bintree} In a tree represented by a list of lists, we will begin
+In a tree represented by a list of lists, we will begin
 with Python’s list data structure and write the functions defined above.
 Although writing the interface as a set of operations on a list is a bit
 different from the other abstract data types we have implemented, it is
@@ -45,27 +45,27 @@ another list that represents the right subtree. To illustrate this
 storage technique, let’s look at an example. Figure {fig:smalltree}
 shows a simple tree and the corresponding list implementation.
 
-	    .. figure:: Trees/smalltree.png
-	       :align: center
-	       :alt: image
+        .. figure:: smalltree.png
+           :align: center
+           :alt: image
 
-	       image
+           image
 
-	{{fig:smalltreeG} A small tree}
+    {{fig:smalltreeG} A small tree}
 
-	    ::
+        ::
 
-		myTree = ['a',	 #root
-			  ['b',	 #left subtree
-			   ['d' [], []],
-			   ['e' [], []] ],  
-			  ['c',	 #right subtree
-			   ['f' [], []],
-			   [] ]	 
-			 ]		     
-			      
+        myTree = ['a',   #root
+              ['b',  #left subtree
+               ['d' [], []],
+               ['e' [], []] ],  
+              ['c',  #right subtree
+               ['f' [], []],
+               [] ]  
+             ]           
+                  
 
-	{{fig:smalltreeL} The list representation of the tree}
+    {{fig:smalltreeL} The list representation of the tree}
 
     {Representing a Tree as a List of Lists} {fig:smalltree}
 
@@ -82,23 +82,15 @@ Another nice feature of the list of lists approach is that it
 generalizes to a tree that has many subtrees. In the case where the tree
 is more than a binary tree, another subtree is just another list.
 
-{
 
-::
+.. activecode:: tree_list1
 
-    >>> myTree = ['a', ['b', ['d',[],[]], ['e',[],[]] ], \
-		       ['c', ['f',[],[]], []] ]
-    >>> myTree
-    ['a', ['b', ['d',[],[]], ['e',[],[]]], 
-	  ['c', ['f',[],[]], []]]
-    >>> myTree[1]
-    ['b', ['d',[],[]], ['e',[],[]]]
-    >>> myTree[0]
-    'a'
-    >>> myTree[2]
-    ['c', ['f', [], []], []]
+    myTree = ['a', ['b', ['d',[],[]], ['e',[],[]] ], ['c', ['f',[],[]], []] ]
+    print(myTree)
+    print 'left subtree = ', myTree[1]
+    print 'root = ', myTree[0]
+    print 'right subtree = ', myTree[2]
 
-}
 
 Let’s formalize this definition of the tree data structure by providing
 some functions that make it easy for us to use lists as trees. Note that
@@ -108,9 +100,9 @@ working with a tree.
 
 ::
 
-    [caption=List Functions,label=lst:treefuncs,float=htbp,index={BinaryTree}]
+
     def BinaryTree(r):
-	return [r, [], []]    
+        return [r, [], []]    
 
 The ``BinaryTree`` function simply constructs a list with a root node
 and two empty sublists for the children. To add a left subtree to the
@@ -122,14 +114,13 @@ shows the Python code for inserting a left child.
 
 ::
 
-    [caption=Insert a Left Subtree,label=lst:linsleft,float=htbp,index={insertLeft}]
     def insertLeft(root,newBranch):
-	t = root.pop(1)
-	if len(t) > 1:
-	    root.insert(1,[newBranch,t,[]])
-	else:
-	    root.insert(1,[newBranch, [], []])
-	return root
+        t = root.pop(1)
+        if len(t) > 1:
+            root.insert(1,[newBranch,t,[]])
+        else:
+            root.insert(1,[newBranch, [], []])
+        return root
 
 Notice that to insert a left child, we first obtain the (possibly empty)
 list that corresponds to the current left child. We then add the new
@@ -140,14 +131,13 @@ in Listing {lst:linsright}.
 
 ::
 
-    [caption=Insert a Right Subtree,label=lst:linsright,float=htbp,index={insertright}]
     def insertRight(root,newBranch):
-	t = root.pop(2)
-	if len(t) > 1:
-	    root.insert(2,[newBranch,[],t])
-	else:
-	    root.insert(2,[newBranch,[],[]])
-	return root
+        t = root.pop(2)
+        if len(t) > 1:
+            root.insert(2,[newBranch,[],t])
+        else:
+            root.insert(2,[newBranch,[],[]])
+        return root
 
 To round out this set of tree-making functions, let’s write a couple of
 access functions for getting and setting the root value, as well as
@@ -155,26 +145,75 @@ getting the left or right subtrees.
 
 ::
 
-    [caption=Access Functions for Parts of the Tree,label=lst:lab,float=htbp,index={getRootVal,setRootVal,getLeftChild,getRightChild}]
+
     def getRootVal(root):
-	return root[0]
-	
+        return root[0]
+    
     def setRootVal(root,newVal):
-	root[0] = newVal
-	
+        root[0] = newVal
+    
     def getLeftChild(root):
-	return root[1]
-	
+        return root[1]
+    
     def getRightChild(root):
-	return root[2]
+        return root[2]
 
 The Python session in Figure {fig:makeTreess} exercises the tree
 functions we have just written. You should type in this code and try it
 out for yourself. One of the exercises asks you to draw the tree
 structure resulting from this set of calls.
 
-    {A Python Session to Illustrate Basic Tree Functions }
-    {fig:makeTreess}
+.. activecode:: bin_tree
+    :caption: A Python Session to Illustrate Basic Tree Functions
+
+    def BinaryTree(r):
+        return [r, [], []]    
+
+            def insertLeft(root,newBranch):
+        t = root.pop(1)
+        if len(t) > 1:
+            root.insert(1,[newBranch,t,[]])
+        else:
+            root.insert(1,[newBranch, [], []])
+        return root
+
+    def insertRight(root,newBranch):
+        t = root.pop(2)
+        if len(t) > 1:
+            root.insert(2,[newBranch,[],t])
+        else:
+            root.insert(2,[newBranch,[],[]])
+        return root
+
+    def getRootVal(root):
+        return root[0]
+    
+    def setRootVal(root,newVal):
+        root[0] = newVal
+    
+    def getLeftChild(root):
+        return root[1]
+    
+    def getRightChild(root):
+        return root[2]
+
+    r = BinaryTree(3)
+    insertLeft(r,4)
+    insertLeft(r,5)
+    insertRight(r,6)
+    insertRight(r,7)
+    l = getLeftChild(r)
+    print l
+    
+    setRootVal(l,9)
+    print r
+    insertLeft(l,11)
+    print r
+    print getRightChild(getRightChild(r))
+    
+
+
+{fig:makeTreess}
 
 Nodes and References
 ~~~~~~~~~~~~~~~~~~~~
@@ -188,13 +227,13 @@ continue to use this representation for the remainder of the chapter.
 Using nodes and references, we might think of the tree as being
 structured like the one shown in Figure {fig:treerec}.
 
-	.. figure:: Trees/treerecs.png
-	   :align: center
-	   :alt: image
+    .. _fig_treerec:
 
-	   image
+    .. figure:: treerecs.png
+       :align: center
+       :alt: image
 
-    {A Simple Tree Using a Nodes and References Approach} {fig:treerec}
+       A Simple Tree Using a Nodes and References Approach
 
 We will start out with a simple class definition for the nodes and
 references approach as shown in Listing {lst:nar}. The important thing
@@ -206,13 +245,12 @@ the tree we create another instance of ``BinaryTree`` and modify
 
 ::
 
-    [caption=A Simple Class Definition,label=lst:nar,float=htbp,index={BinaryTree}]
     class BinaryTree:
-	def __init__(self,rootObj):
-	    self.key = rootObj
-	    self.leftChild = None
-	    self.rightChild = None
-	    
+        def __init__(self,rootObj):
+            self.key = rootObj
+            self.leftChild = None
+            self.rightChild = None
+        
 
 Notice that in Listing {lst:nar}, the constructor function expects to
 get some kind of object to store in the root. Just like you can store
@@ -230,14 +268,13 @@ Listing {lst:inleft}.
 
 ::
 
-    [caption=Insert a New Left Child,label=lst:inleft,float=htb] 
-	def insertLeft(self,newNode):
-	    if self.leftChild == None:
-		self.leftChild = BinaryTree(newNode)
-	    else:  #// \label{lst:inilinsrt}
-		t = BinaryTree(newNode)
-		t.left = self.leftChild
-		self.leftChild = t
+    def insertLeft(self,newNode):
+        if self.leftChild == None:
+        self.leftChild = BinaryTree(newNode)
+        else:  #// \label{lst:inilinsrt}
+        t = BinaryTree(newNode)
+        t.left = self.leftChild
+        self.leftChild = t
 
 We must consider two cases for insertion. The first case is
 characterized by a node with no existing left child. When there is no
@@ -254,14 +291,13 @@ Listing {lst:insrt}.
 
 ::
 
-    [caption=Code to Insert a Right Child,label=lst:insrt,float=htb]
-	def insertRight(self,newNode):
-	    if self.rightChild == None:
-		self.rightChild = BinaryTree(newNode)
-	    else:
-		t = BinaryTree(newNode)
-		t.right = self.rightChild
-		self.rightChild = t
+    def insertRight(self,newNode):
+        if self.rightChild == None:
+        self.rightChild = BinaryTree(newNode)
+        else:
+        t = BinaryTree(newNode)
+        t.right = self.rightChild
+        self.rightChild = t
 
 To round out the definition for a simple binary tree data structure, we
 will write access functions for the left and right children, as well as
@@ -269,19 +305,18 @@ the root values.
 
 ::
 
-    [caption=Access Methods for the Binary Tree Class,label=lst:btaccess,float=htb]
-	def getRightChild(self):
-	    return self.rightChild
+    def getRightChild(self):
+        return self.rightChild
 
-	def getLeftChild(self):
-	    return self.leftChild
+    def getLeftChild(self):
+        return self.leftChild
 
-	def setRootVal(self,obj):
-	    self.key = obj
+    def setRootVal(self,obj):
+        self.key = obj
 
-	def getRootVal(self):
-	    return self.key
-	    
+    def getRootVal(self):
+        return self.key
+        
 
 Now that we have all the pieces to create and manipulate a binary tree,
 let’s use them to check on the structure a bit more. Let’s make a simple
@@ -293,27 +328,19 @@ the ``BinaryTree`` class. As we said in our original recursive
 definition for a tree, this allows us to treat any child of a binary
 tree as a binary tree itself. {
 
-::
+.. activecode:: bintree
 
-	>>> from pythonds.trees import BinaryTree
-	>>> r = BinaryTree('a')
-	>>> r.getRootVal()
-	'a'
-	>>> print(r.getLeftChild())
-	None
-	>>> r.insertLeft('b')
-	>>> print(r.getLeftChild())
-	<__main__.BinaryTree instance at 0x6b238>
-	>>> print(r.getLeftChild().getRootVal())
-	b
-	>>> r.insertRight('c')
-	>>> print(r.getRightChild())
-	<__main__.BinaryTree instance at 0x6b9e0>
-	>>> print(r.getRightChild().getRootVal())
-	c
-	>>> r.getRightChild().setRootVal('hello')
-	>>> print(r.getRightChild().getRootVal())
-	hello
-	>>> 
+    from pythonds.trees.binaryTree import BinaryTree
+    r = BinaryTree('a')
+    r.getRootVal()
+    print(r.getLeftChild())
+    r.insertLeft('b')
+    print(r.getLeftChild())
+    print(r.getLeftChild().getRootVal())
+    r.insertRight('c')
+    print(r.getRightChild())
+    print(r.getRightChild().getRootVal())
+    r.getRightChild().setRootVal('hello')
+    print(r.getRightChild().getRootVal())
 
-}
+

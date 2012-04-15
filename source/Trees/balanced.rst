@@ -463,4 +463,12 @@ map ADT.
     {Comparing the Performance of Different Map Implementations}
     {tab:mapcompare}
 
-    
+
+.. |image1| image:: Figures/unbalanced.png
+.. |image2| image:: Figures/worstAVL.png
+.. |image3| image:: Figures/simpleunbalanced.png
+.. |image4| image:: Figures/rightrotate1.png
+.. |image5| image:: Figures/bfderive.png
+.. |image6| image:: Figures/hardunbalanced.png
+.. |image7| image:: Figures/badrotate.png
+.. |image8| image:: Figures/rotatelr.png

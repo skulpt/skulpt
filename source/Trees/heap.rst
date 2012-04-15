@@ -336,3 +336,6 @@ Using the fact that you can build a heap from a list in :math:`O(n)`
 time, you will construct a sorting algorithm that uses a heap and sorts
 a list in :math:`O(n\log{n}))` as an exercise at the end of this
 chapter.
+
+
+.. |image| image:: Figures/buildheap.png

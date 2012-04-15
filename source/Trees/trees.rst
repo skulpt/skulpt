@@ -39,13 +39,15 @@ the layer above) is the Phylum, then the Class, and so on. However, no
 matter how deep we go in the classification tree, all the organisms are
 still animals.
 
-	.. figure:: Trees/biology.png
-	   :align: center
-	   :alt: image
+.. _fig_biotree:
 
-	   image
+.. figure:: biology.png
+   :scale: 50%
+   :align: center
+   :alt: image
 
-    {Taxonomy of Some Common Animals Shown as a Tree} {fig:biotree}
+
+   Taxonomy of Some Common Animals Shown as a Tree
 
 Notice that you can start at the top of the tree and follow a path made
 of circles and arrows all the way to the bottom. At each level of the
@@ -77,13 +79,14 @@ file system. In a file system, directories, or folders, are structured
 as a tree. Figure {fig:filetree} illustrates a small part of a Unix file
 system hierarchy.
 
-	.. figure:: Trees/directory.png
-	   :align: center
-	   :alt: image
+.. _fig_filetree:
 
-	   image
+.. figure:: directory.png
+   :scale: 50%
+   :align: center
+   :alt: image
 
-    {A Small Part of the Unix File System Hierarchy} {fig:filetree}
+   A Small Part of the Unix File System Hierarchy
 
 The file system tree has much in common with the biological
 classification tree. You can follow a path from the root to any
@@ -103,7 +106,6 @@ that corresponds to each of the HTML tags used to create the page.
 
 ::
 
-    [label=lst:html,float=htbp,language=html,frame=none,numbers=none]
     <html xmlns="http://www.w3.org/1999/xhtml" 
 	  xml:lang="en" lang="en">
     <head>
@@ -121,16 +123,17 @@ that corresponds to each of the HTML tags used to create the page.
     </body>
     </html>
 
-	.. figure:: Trees/htmltree
-	   :align: center
-	   :alt: image
 
-	   image
+.. _fig_html
 
-    {A Tree Corresponding to the Markup Elements of a Web Page}
-    {fig:html}
+.. figure:: htmltree.png
+   :align: center
+   :alt: image
 
-{} The HTML source code and the tree accompanying the source illustrate
+   A Tree Corresponding to the Markup Elements of a Web Page
+
+
+The HTML source code and the tree accompanying the source illustrate
 another hierarchy. Notice that each level of the tree corresponds to a
 level of nesting inside the HTML tags. The first tag in the source is
 ``<html>`` and the last is ``</html>`` All the rest of the tags in the
@@ -139,8 +142,6 @@ property is true at all levels of the tree.
 
 Vocabulary and Definitions
 --------------------------
-
-{sec:treevocab}
 
 Now that we have looked at examples of trees, we will formally define a
 tree and its components.
@@ -165,7 +166,7 @@ Root
 Path
     A path is an ordered list of nodes that are connected by edges. For
     example,
-    Mammal:math:`\rightarrow`Carnivora:math:`\rightarrow`Felidae:math:`\rightarrow`Felis:math:`\rightarrow`Domestica
+    Mammal :math:`\rightarrow` Carnivora :math:`\rightarrow` Felidae :math:`\rightarrow` Felis :math:`\rightarrow` Domestica
     is a path.
 
 Children
@@ -207,7 +208,7 @@ definition of a tree. In fact, we will provide two definitions of a
 tree. One definition involves nodes and edges. The second definition,
 which will prove to be very useful, is a recursive definition.
 
-{} *Definition One:* A tree consists of a set of nodes and a set of
+*Definition One:* A tree consists of a set of nodes and a set of
 edges that connect pairs of nodes. A tree has the following properties:
 
 -  One node of the tree is designated as the root node.
@@ -224,13 +225,13 @@ edges that connect pairs of nodes. A tree has the following properties:
 Figure {fig:nodeedgetree} illustrates a tree that fits definition one.
 The arrowheads on the edges indicate the direction of the connection.
 
-	.. figure:: Trees/treedef1.png
+    .. _fig_nodeedgetree:
+
+	.. figure:: treedef1.png
 	   :align: center
 	   :alt: image
 
-	   image
-
-    {A Tree Consisting of a Set of Nodes and Edges} {fig:nodeedgetree}
+	   A Tree Consisting of a Set of Nodes and Edges
 
 *Definition Two:* A tree is either empty or consists of a root and zero
 or more subtrees, each of which is also a tree. The root of each subtree
@@ -241,20 +242,9 @@ Figure {fig:rectree} has at least four nodes, since each of the
 triangles representing a subtree must have a root. It may have many more
 nodes than that, but we do not know unless we look deeper into the tree.
 
-	.. figure:: Trees/TreeDefRecursive.png
+	.. figure:: TreeDefRecursive.png
 	   :align: center
 	   :alt: image
 
-	   image
+	   A recursive Definition of a tree
 
-
-
-.. |image| image:: Trees/Figures/buildheap.png
-.. |image1| image:: Trees/Figures/unbalanced.png
-.. |image2| image:: Trees/Figures/worstAVL.png
-.. |image3| image:: Trees/Figures/simpleunbalanced.png
-.. |image4| image:: Trees/Figures/rightrotate1.png
-.. |image5| image:: Trees/Figures/bfderive.png
-.. |image6| image:: Trees/Figures/hardunbalanced.png
-.. |image7| image:: Trees/Figures/badrotate.png
-.. |image8| image:: Trees/Figures/rotatelr.png

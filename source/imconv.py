@@ -1,6 +1,9 @@
-import re
+#!/usr/bin/python
 
-f = open('recursionsimple.rst')
+import re
+import sys
+
+f = open(sys.argv[1],'r')
 immap = {}
 
 impat = re.compile(r'\.\. (\|image\d+\|)\s+image::\s+(.*)$')
@@ -12,8 +15,8 @@ for line in f:
         
 f.close()
 
-f = open('recursionsimple.rst','r')
-nf = open('newrecursionsimple.rst','w')
+f = open(sys.argv[1],'r')
+nf = open(sys.argv[2],'w')
 
 #re.search("\\s+(\\|image\\d+\\|)\\s+\\{(.*)?\\}\\s+\\{(.*)\\}", searchText)
 #iminline = re.compile("\\s+(\\|image\\d+\\|)\\s+\\{(.*)?\\}\\s+\\{(.*)\\}")
