@@ -16,7 +16,7 @@ body {
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
-    background-color: white;
+    background-image: url(bg01.jpg);
     color: black;
     padding: 0;
     border: 1px solid #aaa;
@@ -52,7 +52,7 @@ div.related {
 }
 
 div.related ul {
-    background-image: url(navigation.png);
+    background-color: rgb(49,94,97);
     height: 2em;
     border-top: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
@@ -74,7 +74,8 @@ div.related ul li a {
     margin: 0;
     padding: 0 5px 0 5px;
     line-height: 1.75em;
-    color: #EE9816;
+    /*color: rgb(75,136,141); */
+    color: #ffffff;
 }
 
 div.related ul li a:hover {
@@ -119,8 +120,8 @@ div.sphinxsidebar ul ul {
 }
 
 div.footer {
-    background-color: #E3EFF1;
-    color: #86989B;
+    background-color: rgb(49,94,97);
+    color: #ffffff;
     padding: 3px 8px 3px 0;
     clear: both;
     font-size: 0.8em;
@@ -139,7 +140,7 @@ p {
 }
 
 a {
-    color: #CA7900;
+    color: rgb(75,136,141);
     text-decoration: none;
 }
 
@@ -228,7 +229,7 @@ hr {
 
 a tt {
     border: 0;
-    color: #CA7900;
+    color: rgb(75,136,141);
 }
 
 a tt:hover {
