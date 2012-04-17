@@ -57,21 +57,21 @@ if (! PythonTutor) {
         this.jmpFirstInstr.click(function() {
             myvis.curInstr = 0;
             myvis.updateOutput();
-            jQuery.get("/hsblog",{'event':'codelens', 'act': 'first', 'div_id':myvis.divid}); // Log the run event
+            jQuery.get("/eds/ajax/hsblog",{'event':'codelens', 'act': 'first', 'div_id':myvis.divid}); // Log the run event
 
         });
 
         this.jmpLastInstr.click(function() {
             myvis.curInstr = myvis.curTrace.length - 1;
             myvis.updateOutput();
-            jQuery.get("/hsblog",{'event':'codelens', 'act':'last', 'div_id': myvis.divid}); // Log the run event
+            jQuery.get("/eds/ajax/hsblog",{'event':'codelens', 'act':'last', 'div_id': myvis.divid}); // Log the run event
         });
 
         this.jmpStepBack.click(function() {
             if (myvis.curInstr > 0) {
                 myvis.curInstr -= 1;
                 myvis.updateOutput();
-                jQuery.get("/hsblog",{'event':'codelens', 'act': 'back', 'div_id': myvis.divid}); // Log the run event
+                jQuery.get("/eds/ajax/hsblog",{'event':'codelens', 'act': 'back', 'div_id': myvis.divid}); // Log the run event
             }
         });
 
@@ -79,7 +79,7 @@ if (! PythonTutor) {
             if (myvis.curInstr < myvis.curTrace.length - 1) {
                 myvis.curInstr += 1;
                 myvis.updateOutput();
-                jQuery.get("/hsblog",{'event':'codelens', 'act':'fwd', 'div_id':myvis.divid}); // Log the run event
+                jQuery.get("/eds/ajax/hsblog",{'event':'codelens', 'act':'fwd', 'div_id':myvis.divid}); // Log the run event
             }
         });
 
