@@ -37,28 +37,29 @@ similar to the Python dictionary.
 Search Tree Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A binary search tree {cormen-algorithms} relies on the property that
+A binary search tree relies on the property that
 keys that are less than the parent are found in the left subtree, and
 keys that are greater than the parent are found in the right subtree. We
 will call this the **bst property**. As we implement the Map interface
 as described above, the bst property will guide our implementation.
-Figure {fig:simplebst} illustrates this property of a binary search
+:ref:`Figure 1 <fig_simpleBST>` illustrates this property of a binary search
 tree, showing the keys without any associated values. Notice that the
 property holds for each parent and child. All of the keys in the left
 subtree are less than the key in the root. All of the keys in the right
 subtree are greater than the root.
 
-	.. figure:: Trees/simpleBST.png
-	   :align: center
-	   :alt: image
+   
+.. _fig_simpleBST:
 
-	   image
+.. figure:: simpleBST.png
+   :align: center
 
-    {A Simple Binary Search Tree} {fig:simplebst}
+   A Simple Binary Search Tree
+    
 
 Now that you know what a binary search tree is, we will look at how a
 binary search tree is constructed. The search tree in
-Figure {fig:simplebst} represents the nodes that exist after we have
+:ref:`Figure 1 <fig_simpleBST>` represents the nodes that exist after we have
 inserted the following keys in the order shown:
 :math:`70,31,93,94,14,23,73`. Since 70 was the first key inserted into
 the tree, it is the root. Next, 31 is less than 70, so it becomes the
@@ -84,24 +85,23 @@ the ``BinarySearch`` tree class that takes the root as a parameter. In
 the case where the tree is empty or we want to delete the key at the
 root of the tree, we must take special action. The code for the
 ``BinarySearchTree`` class constructor along with a few other
-miscellaneous functions is shown in Listing {lst:bstshell}.
+miscellaneous functions is shown below.
 
 ::
 
-    [caption=The Binary Search Tree Outer Class,label=lst:bstshell,float=htbp,index={BinarySearchTree,put,get,lenth}]
-    class BinarySearchTree:
+class BinarySearchTree:
 
-	def __init__(self):
+    def __init__(self):
 	    self.root = None
 	    self.size = 0
 	
-       def length(self):
+    def length(self):
 	    return self.size
 
-	def __len__(self):
+    def __len__(self):
 	    return self.size
 
-	def __iter__(self):
+    def __iter__(self):
 	    return self.root.__iter__()
 
 The ``TreeNode`` class provides many helper functions that make the work

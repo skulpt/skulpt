@@ -235,7 +235,7 @@ completing the pass, places it in the proper location. As with a bubble
 sort, after the first pass, the largest item is in the correct place.
 After the second pass, the next largest is in place. This process
 continues and requires :math:`n-1` passes to sort *n* items, since the
-final item must be in place after the :math:`(n-1)`st pass.
+final item must be in place after the :math:`(n-1)` st pass.
 
 :ref:`Figure 3 <fig_selectionsort>` shows the entire sorting process. On each pass,
 the largest remaining item is selected and then placed in its proper
