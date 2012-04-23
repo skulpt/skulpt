@@ -91,23 +91,22 @@ Discussion Questions
 
 #. Show the function calls needed to build the following binary tree.
 
-	   .. figure:: exerTree.png
-	      :align: center
-	      :alt: image
+.. figure:: exerTree.png
+   :align: center
 
-	      image
 
 #. Given the following tree, perform the appropriate rotations to bring
    it back into balance.
 
-       .. figure:: Figures/rotexer1.png
-	  :align: center
-	  :alt: image
+.. figure:: Figures/rotexer1.png
+   :align: center
 
-	  image
 
-#. Using Figure {fig:bfderive}, as a starting point, derive the equation
+#. Using the following as a starting point, derive the equation
    that gives the updated balance factor for node D.
+
+.. figure:: Figures/bfderive.png
+   :align: center
 
 Programming Exercises
 ---------------------

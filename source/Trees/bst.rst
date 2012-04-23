@@ -89,20 +89,21 @@ miscellaneous functions is shown below.
 
 ::
 
-class BinarySearchTree:
+    class BinarySearchTree:
 
-    def __init__(self):
-	    self.root = None
-	    self.size = 0
+        def __init__(self):
+    	    self.root = None
+    	    self.size = 0
 	
-    def length(self):
-	    return self.size
+        def length(self):
+    	    return self.size
 
-    def __len__(self):
-	    return self.size
+        def __len__(self):
+    	    return self.size
 
-    def __iter__(self):
-	    return self.root.__iter__()
+        def __iter__(self):
+    	    return self.root.__iter__()
+	    
 
 The ``TreeNode`` class provides many helper functions that make the work
 done in the ``BinarySearchTree`` class methods much easier. The
@@ -130,7 +131,6 @@ are used.
 
 ::
 
-    [caption=Constructor for a TreeNode,label=lst:bstInit,float=htbp,index={TreeNode}]
     class TreeNode:
        def __init__(self,key,val,left=None,right=None,
 					   parent=None):
@@ -147,12 +147,10 @@ are used.
 	    return self.rightChild
 	
 	def isLeftChild(self):
-	    return self.parent and \
-		   self.parent.leftChild == self
+	    return self.parent and self.parent.leftChild == self
 
 	def isRightChild(self):
-	    return self.parent and \
-		   self.parent.rightChild == self
+	    return self.parent and self.parent.rightChild == self
 
 	def isRoot(self):
 	    return not self.parent
@@ -175,6 +173,7 @@ are used.
 		self.leftChild.parent = self
 	    if self.hasRightChild():
 		self.rightChild.parent = self
+		
 
 Now that we have the ``BinarySearchTree`` shell and the ``TreeNode`` it
 is time to write the ``put`` method that will allow us to build our
@@ -183,7 +182,7 @@ binary search tree. The ``put`` method is a method of the
 already has a root. If there is not a root then ``put`` will create a
 new ``TreeNode`` and install it as the root of the tree. If a root node
 is already in place then ``put`` calls the private, recursive, helper
-function {\_put} to search the tree according to the following
+function ``_put`` to search the tree according to the following
 algorithm:
 
 -  Starting at the root of the tree, search the binary tree comparing
@@ -197,8 +196,8 @@ algorithm:
 -  To add a node to the tree, create a new ``TreeNode`` object and
    insert the object at the point discovered in the previous step.
 
-Listing {lst:bstput} shows the Python code for inserting a new node in
-the tree. The {\_put} function is written recursively following the
+The listing below shows the Python code for inserting a new node in
+the tree. The ``_put`` function is written recursively following the
 steps outlined above. Notice that when a new child is inserted into the
 tree, the ``currentNode`` is passed to the new tree as the parent.
 
@@ -213,27 +212,24 @@ this bug as an exercise for you.
 
 ::
 
-    [caption=Insert a New Node in a Binary Search Tree,label=lst:bstput,float=htbp,index={put}]
     def put(self,key,val):
-	if self.root:
-	    self._put(key,val,self.root)
-	else:
-	    self.root = TreeNode(key,val)
-	self.size = self.size + 1
+    	if self.root:
+    	    self._put(key,val,self.root)
+    	else:
+    	    self.root = TreeNode(key,val)
+    	self.size = self.size + 1
 
     def _put(self,key,val,currentNode):
-	if key < currentNode.key:
-	    if currentNode.hasLeftChild():
-		self._put(key,val,currentNode.leftChild)
-	    else:
-		currentNode.leftChild = TreeNode(key,val,
-					  parent=currentNode)
-	else:
-	    if currentNode.hasRightChild():
-		self._put(key,val,currentNode.rightChild)
-	    else:
-		currentNode.rightChild = TreeNode(key,val,
-					  parent=currentNode)
+    	if key < currentNode.key:
+    	    if currentNode.hasLeftChild():
+    		   self._put(key,val,currentNode.leftChild)
+    	    else:
+    		   currentNode.leftChild = TreeNode(key,val,parent=currentNode)
+    	else:
+    	    if currentNode.hasRightChild():
+    		   self._put(key,val,currentNode.rightChild)
+    	    else:
+    		   currentNode.rightChild = TreeNode(key,val,parent=currentNode)
 
 With the ``put`` method defined, we can easily overload the ``[]``
 operator for assignment by having the ``__setitem__`` method call the
@@ -242,21 +238,19 @@ put method. This allows us to write Python statements like
 
 ::
 
-    [caption=Overloading \texttt{\_\_setitem\_\_},label=lst:bstsi,float=htbp]
 	def __setitem__(self,k,v):
 	    self.put(k,v)
 
-Figure {fig:bstput} illustrates the process for inserting a new node
+:ref:`Figure 2 <fig_bstput>` illustrates the process for inserting a new node
 into a binary search tree. The lightly shaded nodes indicate the nodes
 that were visited during the insertion process.
 
-	.. figure:: Trees/bstput.png
-	   :align: center
-	   :alt: image
+.. _fig_bstput:
 
-	   image
+.. figure:: bstput.png
+   :align: center
 
-    {Inserting a Node with Key = 19} {fig:bstput}
+   Inserting a Node with Key = 19
 
 Once the tree is constructed, the next task is to implement the
 retrieval of a value for a given key. The ``get`` method is even easier
@@ -265,75 +259,71 @@ until it gets to a non-matching leaf node or finds a matching key. When
 a matching key is found, the value stored in the payload of the node is
 returned.
 
-Listing {lst:bstget} shows the code for ``get``, {\_get} and
-{\_\_getitem\_\_}. The search code in the {\_get} method uses the same
-logic for choosing the left or right child as the {\_put} method. Notice
-that the {\_get} method returns a ``TreeNode`` to ``get``, this allows
-{\_get} to be used as a flexible helper method for other
+The following listing shows the code for ``get``, ``_get`` and
+``__getitem__``. The search code in the ``_get`` method uses the same
+logic for choosing the left or right child as the ``_put`` method. Notice
+that the ``_get`` method returns a ``TreeNode`` to ``get``, this allows
+``_get`` to be used as a flexible helper method for other
 ``BinarySearchTree`` methods that may need to make use of other data
 from the ``TreeNode`` besides the payload.
 
-By implementing the {\_\_getitem\_\_} method we can write a Python
+By implementing the ``__getitem__`` method we can write a Python
 statement that looks just like we are accessing a dictionary, when in
 fact we are using a binary search tree, for example
-``z = myZipTree['Fargo']}.  As you can see from
-Listing~\ref``lst:bstget} all the {\_\_getitem\_\_} method does is call
+``z = myZipTree['Fargo']}.  As you can see, all the ``__getitem__`` method does is call
 ``get``.
 
 ::
 
-    [caption=Find the Value Stored with a Key,label=lst:bstget,float=htbp,index={get}]
     def get(self,key):
-	if self.root:
-	    res = self._get(key,self.root)
-	    if res:
-		return res.payload
-	    else:
-		return None
-	else:
-	    return None
+    	if self.root:
+    	    res = self._get(key,self.root)
+    	    if res:
+    		   return res.payload
+    	    else:
+    		   return None
+    	else:
+    	    return None
 
     def _get(self,key,currentNode):
-	if not currentNode:
-	    return None
-	elif currentNode.key == key:
-	    return currentNode
-	elif key < currentNode.key:
-	    return self._get(key,currentNode.leftChild)
-	else:
-	    return self._get(key,currentNode.rightChild)
+    	if not currentNode:
+    	    return None
+    	elif currentNode.key == key:
+    	    return currentNode
+    	elif key < currentNode.key:
+    	    return self._get(key,currentNode.leftChild)
+    	else:
+    	    return self._get(key,currentNode.rightChild)
 
     def __getitem__(self,key):
-	return self.get(key) 
+    	return self.get(key) 
 
 Using ``get``, we can implement the ``in`` operation by writing a
-{\_\_contains\_\_} method for the ``BinarySearchTree``. The
-{\_\_contains\_\_} method will simply call ``get`` and return ``True``
+``__contains__`` method for the ``BinarySearchTree``. The
+``__contains__`` method will simply call ``get`` and return ``True``
 if ``get`` returns a value, or ``False`` if it returns ``None``. The
-code for {\_\_contains\_\_} is in Listing {lst:bsthaskey}.
+code for ``__contains__`` is shown below.
 
 ::
 
-    [caption=Testing Whether a Key is in a Tree,label=lst:bsthaskey,float=htbp,index={\_\_contains\_\_}]
     def __contains__(self,key):
-	if self._get(key,self.root):
-	    return True
-	else:
-	    return False
+    	if self._get(key,self.root):
+    	    return True
+    	else:
+    	    return False
 
 Recall that ``__contains__`` overloads the ``in`` operator and allows us
 to write statements such as:
 
 ::
 
-    [frame=none,numbers=none]
 	if 'Northfield' in myZipTree:
 	    print("oom ya ya")
 
 Finally, we turn our attention to the most challenging method in the
 binary search tree, the deletion of a key. The first task is to find the
 node to delete by searching the tree. If the tree has more than one node
-we search using the {\_get} method to find the ``TreeNode`` that needs
+we search using the ``_get`` method to find the ``TreeNode`` that needs
 to be removed. If the tree only has a single node, that means we are
 removing the root of the tree, but we still must check to make sure the
 key of the root matches the key that is to be deleted. In either case if
@@ -341,58 +331,55 @@ the key is not found the ``del`` operator raises an error.
 
 ::
 
-    [float=htb,caption=The \texttt{delete} method,label=lst:delkey,index={\_\_delitem\_\_,del}]
     def delete(self,key):
-      if self.size > 1:
-	  nodeToRemove = self._get(key,self.root)
-	  if nodeToRemove:
-	      self.remove(nodeToRemove)
-	      self.size = self.size-1
-	  else:
-	      raise KeyError('Error, key not in tree')
-      elif self.size == 1 and self.root.key == key:
-	  self.root = None
-	  self.size = self.size - 1
-      else:
-	  raise KeyError('Error, key not in tree')
+       if self.size > 1:
+          nodeToRemove = self._get(key,self.root)
+    	  if nodeToRemove:
+    	      self.remove(nodeToRemove)
+    	      self.size = self.size-1
+    	  else:
+    	      raise KeyError('Error, key not in tree')
+       elif self.size == 1 and self.root.key == key:
+    	  self.root = None
+    	  self.size = self.size - 1
+       else:
+    	  raise KeyError('Error, key not in tree')
 
     def __delitem__(self,key):
-	self.delete(key)
+    	self.delete(key)
 
 Once we’ve found the node containing the key we want to delete, there
 are three cases that we must consider:
 
-#. The node to be deleted has no children (see Figure {fig:bstdel1}).
+#. The node to be deleted has no children (see :ref:`Figure 3 <fig_bstdel1>`).
 
-#. The node to be deleted has only one child (see Figure {fig:bstdel2}).
+#. The node to be deleted has only one child (see :ref:`Figure 4 <fig_bstdel2>`).
 
-#. The node to be deleted has two children (see Figure {fig:bstdel3}).
+#. The node to be deleted has two children (see :ref:`Figure 5 <fig_bstdel3>`).
 
 The first case is straightforward. If the current node has no children
 all we need to do is delete the node and remove the reference to this
-node in the parent. The code for this case is shown in
-Listing {lst:bstdel1}.
+node in the parent. The code for this case is shown in here.
 
 ::
 
-    [caption=Case 1: Deleting a Node with No Children,label=lst:bstdel1,float=htbp]
     if currentNode.isLeaf():
-	if currentNode == currentNode.parent.leftChild:
-	    currentNode.parent.leftChild = None
-	else:
-	    currentNode.parent.rightChild = None
+    	if currentNode == currentNode.parent.leftChild:
+    	    currentNode.parent.leftChild = None
+    	else:
+    	    currentNode.parent.rightChild = None
 
-	.. figure:: Trees/bstdel1
-	   :align: center
-	   :alt: image
 
-	   image
+.. _fig_bstdel1:
 
-    {Deleting Node 16, a Node without Children} {fig:bstdel1}
+.. figure:: bstdel1.png
+   :align: center
+
+   Deleting Node 16, a Node without Children
 
 The second case is only slightly more complicated. If a node has only a
 single child, then we can simply promote the child to take the place of
-its parent. The code for this case is shown in Listing {lst:bstdel2}. As
+its parent. The code for this case is shown in the next listing. As
 you look at this code you will see that there are six cases to consider.
 Since the cases are symmetric with respect to either having a left or
 right child we will just discuss the case where the current node has a
@@ -415,40 +402,38 @@ left child. The decision proceeds as follows:
 
 ::
 
-    [caption=Case 2: Deleting a Node with One Child,label=lst:bstdel2,float=htbp,basicstyle=\footnotesize]
     else: # this node has one child
-      if currentNode.hasLeftChild():
-	  if currentNode.isLeftChild():
-	      currentNode.leftChild.parent = currentNode.parent
-	      currentNode.parent.leftChild = currentNode.leftChild
-	  elif currentNode.isRightChild():
-	      currentNode.leftChild.parent = currentNode.parent
-	      currentNode.parent.rightChild = currentNode.leftChild
-	  else:
-	      currentNode.replaceNodeData(currentNode.leftChild.key,
-				 currentNode.leftChild.payload,
-				 currentNode.leftChild.leftChild,
-				 currentNode.leftChild.rightChild)
-      else:
-	  if currentNode.isLeftChild():
-	      currentNode.rightChild.parent = currentNode.parent
-	      currentNode.parent.leftChild = currentNode.rightChild
-	  elif currentNode.isRightChild():
-	      currentNode.rightChild.parent = currentNode.parent
-	      currentNode.parent.rightChild = currentNode.rightChild
-	  else:
-	      currentNode.replaceNodeData(currentNode.rightChild.key,
-				 currentNode.rightChild.payload,
-				 currentNode.rightChild.leftChild,
-				 currentNode.rightChild.rightChild)
+       if currentNode.hasLeftChild():
+    	  if currentNode.isLeftChild():
+    	      currentNode.leftChild.parent = currentNode.parent
+    	      currentNode.parent.leftChild = currentNode.leftChild
+    	  elif currentNode.isRightChild():
+    	      currentNode.leftChild.parent = currentNode.parent
+    	      currentNode.parent.rightChild = currentNode.leftChild
+    	  else:
+    	      currentNode.replaceNodeData(currentNode.leftChild.key,
+    				 currentNode.leftChild.payload,
+    				 currentNode.leftChild.leftChild,
+    				 currentNode.leftChild.rightChild)
+       else:
+    	  if currentNode.isLeftChild():
+    	      currentNode.rightChild.parent = currentNode.parent
+    	      currentNode.parent.leftChild = currentNode.rightChild
+    	  elif currentNode.isRightChild():
+    	      currentNode.rightChild.parent = currentNode.parent
+    	      currentNode.parent.rightChild = currentNode.rightChild
+    	  else:
+    	      currentNode.replaceNodeData(currentNode.rightChild.key,
+    				 currentNode.rightChild.payload,
+    				 currentNode.rightChild.leftChild,
+    				 currentNode.rightChild.rightChild)
 
-	.. figure:: Trees/bstdel2
-	   :align: center
-	   :alt: image
+.. _fig_bstdel2:
 
-	   image
+.. figure:: bstdel2.png
+   :align: center
 
-    {Deleting Node 25, a Node That Has a Single Child} {fig:bstdel2}
+   Deleting Node 25, a Node That Has a Single Child
 
 The third case is the most difficult case to handle. If a node has two
 children, then it is unlikely that we can simply promote one of them to
@@ -463,33 +448,31 @@ how to remove it using the two cases for deletion that we have already
 implemented. Once the successor has been removed, we simply put it in
 the tree in place of the node to be deleted.
 
-	.. figure:: Trees/bstdel3.png
-	   :align: center
-	   :alt: image
+.. _fig_bstdel3:
 
-	   image
+.. figure:: bstdel3.png
+    :align: center
 
-    {Deleting Node 5, a Node with Two Children} {fig:bstdel3}
+    Deleting Node 5, a Node with Two Children
 
-The code to handle the third case is shown in Listing {lst:bstdel3}.
+The code to handle the third case is shown in the next listing.
 Notice that we make use of the helper methods ``findSuccessor`` and
 ``findMin`` to find the successor. To remove the successor, we make use
 of the method ``spliceOut``. The reason we use ``spliceOut`` is that it
 goes directly to the node we want to splice out and makes the right
 changes. We could call ``delete`` recursively, but then we would waste
-time re-searching for the key node. The code for the helper function
-``spliceOut`` is shown in Listing {lst:bstso}.
+time re-searching for the key node.
+
 
 ::
 
-    [caption=Case 3: Delete a Node with Two Children,label=lst:bstdel3,float=htbp]
-    elif currentNode.hasBothChildren(): #interior
-	succ = currentNode.findSuccessor()
-	succ.spliceOut()
-	currentNode.key = succ.key
-	currentNode.payload = succ.payload
+   elif currentNode.hasBothChildren(): #interior
+	   succ = currentNode.findSuccessor()
+	   succ.spliceOut()
+	   currentNode.key = succ.key
+	   currentNode.payload = succ.payload
 
-The code to find the successor is shown in Listing {lst:bstfs} and as
+The code to find the successor is shown below and as
 you can see is a method of the ``TreeNode`` class. This code makes use
 of the same properties of binary search trees that cause an inorder
 traversal to print out the nodes in the tree from smallest to largest.
@@ -514,97 +497,95 @@ The ``findMin`` method is called to find the minimum key in a subtree.
 You should convince yourself that the minimum valued key in any binary
 search tree is the leftmost child of the tree. Therefore the ``findMin``
 method simply follows the ``leftChild`` references in each node of the
-subtree until it reaches a node that does not have a left child. The
-complete listing for ``delete`` is given in Listing {lst:bstdelk}.
+subtree until it reaches a node that does not have a left child.
 
 ::
 
-    [caption=Finding the Successor,label=lst:bstfs,float=h!tbp,index={findSuccessor,findMin}]
     def findSuccessor(self):
-	succ = None
-	if self.hasRightChild():
-	    succ = self.rightChild.findMin()
-	else:
-	    if self.parent:
-		if self.isLeftChild():
-		    succ = self.parent
-		else:
-		    self.parent.rightChild = None
-		    succ = self.parent.findSuccessor()
-		    self.parent.rightChild = self
-	return succ
+    	succ = None
+    	if self.hasRightChild():
+    	    succ = self.rightChild.findMin()
+    	else:
+    	    if self.parent:
+    		   if self.isLeftChild():
+    		       succ = self.parent
+    		   else:
+    		       self.parent.rightChild = None
+    		       succ = self.parent.findSuccessor()
+    		       self.parent.rightChild = self
+    	return succ
 
     def findMin(self):
-	current = self
-	while current.hasLeftChild():
-	    current = current.leftChild
-	return current
+    	current = self
+    	while current.hasLeftChild():
+    	    current = current.leftChild
+    	return current
 
 ::
 
-    [caption=Helper Method to Splice Out a Node,label=lst:bstso,float=htbp]
     def spliceOut(self):
-	if self.isLeaf():
-	    if self.isLeftChild():
-		self.parent.leftChild = None
-	    else:
-		self.parent.rightChild = None
-	elif self.hasAnyChildren():
-	    if self.hasLeftChild():
-		if self.isLeftChild():
-		    self.parent.leftChild = self.leftChild
-		else:
-		    self.parent.rightChild = self.leftChild
-		self.leftChild.parent = self.parent
-	    else:
-		if self.isLeftChild():
-		    self.parent.leftChild = self.rightChild
-		else:
-		    self.parent.rightChild = self.rightChild
-		self.rightChild.parent = self.parent
+    	if self.isLeaf():
+    	    if self.isLeftChild():
+    		   self.parent.leftChild = None
+    	    else:
+    		   self.parent.rightChild = None
+    	elif self.hasAnyChildren():
+    	    if self.hasLeftChild():
+    		   if self.isLeftChild():
+    		      self.parent.leftChild = self.leftChild
+    		   else:
+    		      self.parent.rightChild = self.leftChild
+    		   self.leftChild.parent = self.parent
+    	    else:
+    		   if self.isLeftChild():
+    		      self.parent.leftChild = self.rightChild
+    		   else:
+    		      self.parent.rightChild = self.rightChild
+    		   self.rightChild.parent = self.parent
+
+
+The
+complete listing for ``delete`` is given here for additional clarity.
 
 ::
-
-    [caption=Code for Deleting a Key,label=lst:bstdelk,float=htbp,index={delete},basicstyle=\footnotesize]
 
     def remove(self,currentNode):
       if currentNode.isLeaf(): #leaf
-	if currentNode == currentNode.parent.leftChild:
-	    currentNode.parent.leftChild = None
-	else:
-	    currentNode.parent.rightChild = None
+    	if currentNode == currentNode.parent.leftChild:
+    	    currentNode.parent.leftChild = None
+    	else:
+    	    currentNode.parent.rightChild = None
       elif currentNode.hasBothChildren(): #interior
-	succ = currentNode.findSuccessor()
-	succ.spliceOut()
-	currentNode.key = succ.key
-	currentNode.payload = succ.payload
+    	succ = currentNode.findSuccessor()
+    	succ.spliceOut()
+    	currentNode.key = succ.key
+    	currentNode.payload = succ.payload
 
       else: # this node has one child
-	if currentNode.hasLeftChild():
-	  if currentNode.isLeftChild():
-	      currentNode.leftChild.parent = currentNode.parent
-	      currentNode.parent.leftChild = currentNode.leftChild
-	  elif currentNode.isRightChild():
-	      currentNode.leftChild.parent = currentNode.parent
-	      currentNode.parent.rightChild = currentNode.leftChild
-	  else:
-	      currentNode.replaceNodeData(currentNode.leftChild.key,
-				 currentNode.leftChild.payload,
-				 currentNode.leftChild.leftChild,
-				 currentNode.leftChild.rightChild)
-
-	else:
-	  if currentNode.isLeftChild():
-	      currentNode.rightChild.parent = currentNode.parent
-	      currentNode.parent.leftChild = currentNode.rightChild
-	  elif currentNode.isRightChild():
-	      currentNode.rightChild.parent = currentNode.parent
-	      currentNode.parent.rightChild = currentNode.rightChild
-	  else:
-	      currentNode.replaceNodeData(currentNode.rightChild.key,
-				 currentNode.rightChild.payload,
-				 currentNode.rightChild.leftChild,
-				 currentNode.rightChild.rightChild)
+    	if currentNode.hasLeftChild():
+    	  if currentNode.isLeftChild():
+    	      currentNode.leftChild.parent = currentNode.parent
+    	      currentNode.parent.leftChild = currentNode.leftChild
+    	  elif currentNode.isRightChild():
+    	      currentNode.leftChild.parent = currentNode.parent
+    	      currentNode.parent.rightChild = currentNode.leftChild
+    	  else:
+    	      currentNode.replaceNodeData(currentNode.leftChild.key,
+    				 currentNode.leftChild.payload,
+    				 currentNode.leftChild.leftChild,
+    				 currentNode.leftChild.rightChild)
+    	else:
+    	  if currentNode.isLeftChild():
+    	      currentNode.rightChild.parent = currentNode.parent
+    	      currentNode.parent.leftChild = currentNode.rightChild
+    	  elif currentNode.isRightChild():
+    	      currentNode.rightChild.parent = currentNode.parent
+    	      currentNode.parent.rightChild = currentNode.rightChild
+    	  else:
+    	      currentNode.replaceNodeData(currentNode.rightChild.key,
+    				 currentNode.rightChild.payload,
+    				 currentNode.rightChild.leftChild,
+    				 currentNode.rightChild.rightChild)
 
 We need to look at one last interface method for the binary search tree.
 Suppose that we would like to simply iterate over all the keys in the
@@ -622,8 +603,8 @@ that the next time the function is called it continues executing from
 the exact point it left off earlier. Functions that create objects that
 can be iterated are called generator functions.
 
-The code for an ``inorder`` iterator of a binary tree is shown in
-Listing {lst:inyield}. Look at this code carefully; at first glance you
+The code for an ``inorder`` iterator of a binary tree is shown in the next
+listing. Look at this code carefully; at first glance you
 might think that the code is not recursive. However, remember that
 ``__iter__`` overrides the ``for x in`` operation for iteration, so it
 really is recursive! Because it is recursive over ``TreeNode`` instances
@@ -631,16 +612,15 @@ the ``__iter__`` method is defined in the ``TreeNode`` class.
 
 ::
 
-    [caption=An Iterator for a Binary Search Tree,label=lst:inyield,float=htbp]
     def __iter__(self):
        if self:
-	    if self.hasLeftChild():
-		for elem in self.leftChiLd:
-		    yield elem
-	    yield self.key
-	    if self.hasRightChild():
-		for elem in self.rightChild:
-		    yield elem
+    	  if self.hasLeftChild():
+    	  	 for elem in self.leftChiLd:
+    		    yield elem
+    	     yield self.key
+    	  if self.hasRightChild():
+    		 for elem in self.rightChild:
+    		    yield elem
 
 At this point you may want to download the entire file containing the
 full version of the ``BinarySearchTree`` and ``TreeNode`` classes. You
@@ -650,12 +630,10 @@ can find this file (bst.py) on the support web site for this book at
 Search Tree Analysis
 ~~~~~~~~~~~~~~~~~~~~
 
-{sec:stanal}
-
 With the implementation of a binary search tree now complete, we will do
 a quick analysis of the methods we have implemented. Let’s first look at
 the ``put`` method. The limiting factor on its performance is the height
-of the binary tree. Recall from section {sec:treevocab} that the height
+of the binary tree. Recall from the vocabulary section that the height
 of a tree is the number of edges between the root and the deepest leaf
 node. The height is the limiting factor because when we are searching
 for the appropriate place to insert a node into the tree, we will need
@@ -685,8 +663,16 @@ searches for the proper place to insert a new node.
 
 Unfortunately it is possible to construct a search tree that has height
 :math:`n` simply by inserting the keys in sorted order! An example of
-such a tree is shown in Figure {fig:skewedTree}. In this case the
+such a tree is shown in :ref:`Figure 6 <fig_skewedtree_analysis>`. In this case the
 performance of the ``put`` method is :math:`O(n)`.
+
+.. _fig_skewedtree_analysis:
+
+.. figure:: skewedTree.png
+   :align: center
+
+   A skewed binary search tree would give poor performance
+
 
 
 Now that you understand that the performance of
@@ -700,4 +686,3 @@ But remember that the worst-case scenario to find the successor is also
 just the height of the tree which means that you would simply double the
 work. Since doubling is a constant factor it does not change worst case
 analysis of :math:`O(n)` for an unbalanced tree.
-
