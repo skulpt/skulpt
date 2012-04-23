@@ -52,22 +52,22 @@ follows:
 The following Python session demonstrates the use of some of the binary
 heap methods.
 
-::
+.. activecode:: heap1
 
-	>>> from pythonds.trees import BinaryHeap
-	>>> bh = BinaryHeap()
-	>>> bh.insert(5)
-	>>> bh.insert(7)
-	>>> bh.insert(3)
-	>>> bh.insert(11)
-	>>> print(bh.delMin())
-	3
-	>>> print(bh.delMin())
-	5
-	>>> print(bh.delMin())
-	7
-	>>> print(bh.delMin())
-	11
+    from pythonds.trees.binheap import BinHeap
+    bh = BinHeap()
+    bh.insert(5)
+    bh.insert(7)
+    bh.insert(3)
+    bh.insert(11)
+    print(bh.delMin())
+
+    print(bh.delMin())
+
+    print(bh.delMin())
+
+    print(bh.delMin())
+
 
 Binary Heap Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,16 +83,16 @@ roughly the same number of nodes in the left and right subtrees of the
 root. In our heap implementation we keep the tree balanced by creating a
 **complete binary tree**. A complete binary tree is a tree in which each
 level has all of its nodes. The exception to this is the bottom level of
-the tree, which we fill in from left to right. Figure {fig:comptree}
+the tree, which we fill in from left to right. :ref:`Figure x <fig_comptree>`
 shows an example of a complete binary tree.
 
-	.. figure:: Trees/compTree.png
-	   :align: center
-	   :alt: image
+.. _fig_comptree:
 
-	   image
+    .. figure:: compTree.png
+       :align: center
+       :alt: image
 
-    {A Complete Binary Tree} {fig:comptree}
+    A Complete Binary Tree
 
 Another interesting property of a complete tree is that we can represent
 it using a single list. We do not need to use nodes and references or
@@ -102,7 +102,7 @@ parent (at position :math:`p`) is the node that is found in position
 position :math:`2p + 1` in the list. To find the parent of any node in
 the tree, we can simply use Python’s integer division. Given that a node
 is at position :math:`n` in the list, the parent is at position
-:math:`n/2`. Figure {fig:heapOrder} illustrates a complete binary tree
+:math:`n/2`. :ref:`Figure x <fig_heapOrder>` illustrates a complete binary tree
 and also gives the list representation of the tree. The list
 representation of the tree, along with the full structure property,
 allows us to efficiently traverse a complete binary tree using only a
@@ -112,21 +112,21 @@ an efficient implementation of our binary heap.
 The Heap Order Property
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-{} The method that we will use to store items in a heap relies on
+The method that we will use to store items in a heap relies on
 maintaining the heap order property. The **heap order property** is as
 follows: In a heap, for every node :math:`x` with parent :math:`p`,
 the key in :math:`p` is smaller than or equal to the key in
-:math:`x`. Figure {fig:heapOrder} also illustrates a complete binary
+:math:`x`. :ref:`Figure x <fig_heapOrder>` also illustrates a complete binary
 tree that has the heap order property.
 
-	.. figure:: Trees/heapOrder.png
-	   :align: center
-	   :alt: image
+.. _fig_heapOrder:
 
-	   image
+    .. figure:: heapOrder.png
+       :align: center
+       :alt: image
 
-    {A Complete Binary Tree, along with its List Representation}
-    {fig:heapOrder}
+    A Complete Binary Tree, along with its List Representation
+
 
 Heap Operations
 ^^^^^^^^^^^^^^^
@@ -142,10 +142,9 @@ that simple integer division can be used in later methods.
 
 ::
 
-    [caption=Create a New Binary Heap,label=lst:bh:init,float=htbp,index={BinaryHeap}]
-	def __init__(self):
-	    self.heapList = [0]
-	    self.currentSize = 0
+    def __init__(self):
+        self.heapList = [0]
+        self.currentSize = 0
 
 The next method we will implement is ``insert``. The easiest, and most
 efficient, way to add an item to a list is to simply append the item to
@@ -155,17 +154,17 @@ appending is that we will very likely violate the heap structure
 property. However, it is possible to write a method that will allow us
 to regain the heap structure property by comparing the newly added item
 with its parent. If the newly added item is less than its parent, then
-we can swap the item with its parent. Figure {fig:percUp} shows the
+we can swap the item with its parent. :ref:`Figure x <fig_percUp>` shows the
 series of swaps needed to percolate the newly added item up to its
 proper position in the tree.
 
-	.. figure:: Trees/percUp.png
-	   :align: center
-	   :alt: image
+.. _fig_percUp:
 
-	   image
+    .. figure:: percUp.png
+       :align: center
+       :alt: image
 
-    {Percolate the New Node up to Its Proper Position} {fig:percUp}
+    Percolate the New Node up to Its Proper Position
 
 Notice that when we percolate an item up, we are restoring the heap
 property between the newly added item and the parent. We are also
@@ -187,22 +186,20 @@ properly.
 
 ::
 
-    [caption=The \texttt{percUp} Method,label=lst:bh:helpers,float=htbp,index={percUp}]
-	def percUp(self,i):
-	    while i // 2 > 0:
-		if self.heapList[i] < self.heapList[i // 2]:
-		   tmp = self.heapList[i // 2]
-		   self.heapList[i // 2] = self.heapList[i]
-		   self.heapList[i] = tmp
-		i = i // 2
+    def percUp(self,i):
+        while i // 2 > 0:
+        if self.heapList[i] < self.heapList[i // 2]:
+           tmp = self.heapList[i // 2]
+           self.heapList[i // 2] = self.heapList[i]
+           self.heapList[i] = tmp
+        i = i // 2
 
 ::
 
-    [caption=Adding a New Item to the Binary Heap,label=lst:bh:add,float=htbp]
-	def insert(self,k):
-	    self.heapList.append(k)
-	    self.currentSize = self.currentSize + 1
-	    self.percUp(self.currentSize)
+    def insert(self,k):
+        self.heapList.append(k)
+        self.currentSize = self.currentSize + 1
+        self.percUp(self.currentSize)
 
 With the ``insert`` method properly defined, we can now look at the
 ``delMin`` method. Since the heap property requires that the root of the
@@ -214,17 +211,17 @@ by taking the last item in the list and moving it to the root position.
 Moving the last item maintains our heap structure property. However, we
 have probably destroyed the heap order property of our binary heap.
 Second, we will restore the heap order property by pushing the new root
-node down the tree to its proper position. Figure {fig:percDown} shows
+node down the tree to its proper position. :ref:`Figure x <fig_percDown>` shows
 the series of swaps needed to move the new root node to its proper
 position in the heap.
 
-	.. figure:: Trees/percDown.png
-	   :align: center
-	   :alt: image
+.. _fig_percdown:
 
-	   image
+    .. figure:: percDown.png
+       :align: center
+       :alt: image
 
-    {Percolating the Root Node down the Tree} {fig:percDown}
+    Percolating the Root Node down the Tree
 
 In order to maintain the heap order property, all we need to do is swap
 the root with its smallest child less than the root. After the initial
@@ -236,24 +233,23 @@ Listing {lst:bh:pdown}.
 
 ::
 
-    [caption=The \texttt{percDown} Method,label=lst:bh:pdown,float=htbp,index={percDown,minChild}]
     def percDown(self,i):
-	while (i * 2) <= self.currentSize:
-	    mc = self.minChild(i)
-	    if self.heapList[i] > self.heapList[mc]:
-		tmp = self.heapList[i]
-		self.heapList[i] = self.heapList[mc]
-		self.heapList[mc] = tmp
-	    i = mc
+        while (i * 2) <= self.currentSize:
+            mc = self.minChild(i)
+            if self.heapList[i] > self.heapList[mc]:
+            tmp = self.heapList[i]
+            self.heapList[i] = self.heapList[mc]
+            self.heapList[mc] = tmp
+            i = mc
 
     def minChild(self,i):
-	if i * 2 + 1 > self.currentSize:
-	    return i * 2
-	else:
-	    if self.heapList[i*2] < self.heapList[i*2+1]:
-		return i * 2
-	    else:
-		return i * 2 + 1
+        if i * 2 + 1 > self.currentSize:
+            return i * 2
+        else:
+            if self.heapList[i*2] < self.heapList[i*2+1]:
+            return i * 2
+            else:
+            return i * 2 + 1
 
 The code for the ``delmin`` operation is in Listing {lst:bh:del}. Note
 that once again the hard work is handled by a helper function, in this
@@ -261,14 +257,13 @@ case ``percDown``.
 
 ::
 
-    [caption=Deleting the Minimum Item from the Binary Heap,label=lst:bh:del,float=htbp]
     def delMin(self):
-	retval = self.heapList[1]
-	self.heapList[1] = self.heapList[self.currentSize]
-	self.currentSize = self.currentSize - 1
-	self.heapList.pop()
-	self.percDown(1)
-	return retval
+        retval = self.heapList[1]
+        self.heapList[1] = self.heapList[self.currentSize]
+        self.currentSize = self.currentSize - 1
+        self.heapList.pop()
+        self.percDown(1)
+        return retval
 
 To finish our discussion of binary heaps, we will look at a method to
 build an entire heap from a list of keys. The first method you might
@@ -287,19 +282,24 @@ to build the entire heap.
 
 ::
 
-    [caption=Building a New Heap from a List of Items,label=lst:bh:build,float=htbp]
     def buildHeap(self,alist):
-	i = len(alist) // 2
-	self.currentSize = len(alist)
-	self.heapList = [0] + alist[:]
-	while (i > 0):	#// \label{lst:bh:loop}
-	    self.percDown(i)
-	    i = i - 1
+        i = len(alist) // 2
+        self.currentSize = len(alist)
+        self.heapList = [0] + alist[:]
+        while (i > 0):  #// \label{lst:bh:loop}
+            self.percDown(i)
+            i = i - 1
 
-    |image| {Building a Heap from the List [9, 6, 5, 2, 3]}
-    {fig:buildheap}
 
-Figure {fig:buildheap} shows the swaps that the ``buildHeap`` method
+.. _fig_buildheap:
+
+    .. figure:: Figures/buildheap.png
+       :align: center
+       :alt: image
+
+    Building a Heap from the List [9, 6, 5, 2, 3]
+
+:ref:`Figure x <fig_buildheap>` shows the swaps that the ``buildHeap`` method
 makes as it moves the nodes in an initial tree of {[9, 6, 5, 2, 3]} into
 their proper positions. Although we start out in the middle of the tree
 and work our way back toward the root, the ``percDown`` method ensures
@@ -308,20 +308,20 @@ complete binary tree, any nodes past the halfway point will be leaves
 and therefore have no children. Notice that when ``i=1``, we are
 percolating down from the root of the tree, so this may require multiple
 swaps. As you can see in the rightmost two subtrees of
-Figure {fig:buildheap}, first the 9 is moved out of the root position,
+:ref:`Figure x <fig_buildheap>`, first the 9 is moved out of the root position,
 but after 9 is moved down one level in the tree, ``percDown`` ensures
 that we check the next set of children farther down in the tree to
 ensure that it is pushed as low as it can go. In this case it results in
 a second swap with 3. Now that 9 has been moved to the lowest level of
 the tree, no further swapping can be done. It is useful to compare the
 list representation of this series of swaps as shown in
-Figure {fig:bldheap} with the tree representation.
+:ref:`Figure x <fig_buildheap>` with the tree representation.
 
     ::
 
-			  i = 2	 [0, 9, 5, 6, 2, 3]
-			  i = 1	 [0, 9, 2, 6, 5, 3]
-			  i = 0	 [0, 2, 3, 6, 5, 9]
+              i = 2  [0, 9, 5, 6, 2, 3]
+              i = 1  [0, 9, 2, 6, 5, 3]
+              i = 0  [0, 2, 3, 6, 5, 9]
 
     {Building a Heap from the List [9, 5, 6, 2, 3]} {fig:bldheap}
 
@@ -337,5 +337,3 @@ time, you will construct a sorting algorithm that uses a heap and sorts
 a list in :math:`O(n\log{n}))` as an exercise at the end of this
 chapter.
 
-
-.. |image| image:: Figures/buildheap.png

@@ -169,7 +169,7 @@ structure resulting from this set of calls.
     def BinaryTree(r):
         return [r, [], []]    
 
-            def insertLeft(root,newBranch):
+    def insertLeft(root,newBranch):
         t = root.pop(1)
         if len(t) > 1:
             root.insert(1,[newBranch,t,[]])
@@ -270,11 +270,11 @@ Listing {lst:inleft}.
 
     def insertLeft(self,newNode):
         if self.leftChild == None:
-        self.leftChild = BinaryTree(newNode)
-        else:  #// \label{lst:inilinsrt}
-        t = BinaryTree(newNode)
-        t.left = self.leftChild
-        self.leftChild = t
+            self.leftChild = BinaryTree(newNode)
+        else:  
+            t = BinaryTree(newNode)
+            t.leftChild = self.leftChild
+            self.leftChild = t
 
 We must consider two cases for insertion. The first case is
 characterized by a node with no existing left child. When there is no
@@ -293,11 +293,11 @@ Listing {lst:insrt}.
 
     def insertRight(self,newNode):
         if self.rightChild == None:
-        self.rightChild = BinaryTree(newNode)
+            self.rightChild = BinaryTree(newNode)
         else:
-        t = BinaryTree(newNode)
-        t.right = self.rightChild
-        self.rightChild = t
+            t = BinaryTree(newNode)
+            t.rightChild = self.rightChild
+            self.rightChild = t
 
 To round out the definition for a simple binary tree data structure, we
 will write access functions for the left and right children, as well as

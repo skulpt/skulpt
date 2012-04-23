@@ -13,9 +13,9 @@ trees can be used to represent real-world constructions like sentences
 
 .. _fig_nlparse:
 
-	.. figure:: nlParse.png
-	   :align: center
-	   :alt: image
+    .. figure:: nlParse.png
+       :align: center
+       :alt: image
 
        A Parse Tree for a Simple Sentence
 
@@ -25,9 +25,9 @@ with the individual parts of the sentence by using subtrees.
 
 .. _fig_meparse:
 
-	.. figure:: meParse.png
-	   :align: center
-	   :alt: image
+    .. figure:: meParse.png
+       :align: center
+       :alt: image
 
         Parse Tree for :math:`((7+3)*(5-2))`
 
@@ -50,9 +50,9 @@ simplified tree shown in :ref:`Figure x <fig_mesimple>`.
 
 .. _fig_mesimple:
 
-	.. figure:: meSimple.png
-	   :align: center
-	   :alt: image
+    .. figure:: meSimple.png
+       :align: center
+       :alt: image
 
        A Simplified Parse Tree for :math:`((7+3)*(5-2))`
 
@@ -104,47 +104,47 @@ token is processed.
 
 .. _fig_bldExpstep:
 
-	.. figure:: buildExp1.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp1.png
+       :align: center
+       :alt: image
 
 
 
-	.. figure:: buildExp2.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp2.png
+       :align: center
+       :alt: image
 
 
 
-	.. figure:: buildExp3.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp3.png
+       :align: center
+       :alt: image
 
 
 
-	.. figure:: buildExp4.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp4.png
+       :align: center
+       :alt: image
 
 
-	.. figure:: buildExp5.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp5.png
+       :align: center
+       :alt: image
 
 
-	.. figure:: buildExp6.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp6.png
+       :align: center
+       :alt: image
 
 
-	.. figure:: buildExp7.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp7.png
+       :align: center
+       :alt: image
 
 
-	.. figure:: buildExp8.png
-	   :align: center
-	   :alt: image
+    .. figure:: buildExp8.png
+       :align: center
+       :alt: image
 
 
        Tracing Parse Tree Construction
@@ -202,36 +202,37 @@ in Listing {lst:buildexp}.
 .. activecode::  parsebuild
     :caption: Building a Parse Tree
 
-    from pythonds.basic import Stack
-    from pythonds.trees import BinaryTree
+    from pythonds.basic.stack import Stack
+    from pythonds.trees.binaryTree import BinaryTree
 
     def buildParseTree(fpexp):
-	fplist = fpexp.split()
-	pStack = Stack()
-	eTree = BinaryTree('')
-	pStack.push(eTree)
-	currentTree = eTree
-	for i in fplist:
-	    if i == '(':	    #// \label{lst:ptlp}
-		currentTree.insertLeft('')
-		pStack.push(currentTree)
-		currentTree = currentTree.getLeftChild()
-	    elif i not in '+-*/)':  #// \label{lst:ptoper}
-		currentTree.setRootVal(eval(i))
-		parent = pStack.pop()
-		currentTree = parent
-	    elif i in '+-*/':	    #// \label{lst:ptopnd}
-		currentTree.setRootVal(i)
-		currentTree.insertRight('')
-		pStack.push(currentTree)
-		currentTree = currentTree.getRightChild()      
-	    elif i == ')':	    #// \label{lst:ptrp}
-		currentTree = pStack.pop()
-	    else:
-		raise ValueError("Unknown Operator: " + i)
-	return eTree
+        fplist = fpexp.split()
+        pStack = Stack()
+        eTree = BinaryTree('')
+        pStack.push(eTree)
+        currentTree = eTree
+        for i in fplist:
+            if i == '(':            
+                currentTree.insertLeft('')
+                pStack.push(currentTree)
+                currentTree = currentTree.getLeftChild()
+            elif i not in ['+', '-', '*', '/', ')']:  
+                currentTree.setRootVal(int(i))
+                parent = pStack.pop()
+                currentTree = parent
+            elif i in ['+', '-', '*', '/']:       
+                currentTree.setRootVal(i)
+                currentTree.insertRight('')
+                pStack.push(currentTree)
+                currentTree = currentTree.getRightChild()
+            elif i == ')':          
+                currentTree = pStack.pop()
+            else:
+                raise ValueError
+        return eTree
 
-    print(buildParseTree("10 + 5 * 3"))
+    pt = buildParseTree("( ( 10 + 5 ) * 3 )")
+    pt.postorder()
 
 
 The four rules for building a parse tree are coded as the first four
@@ -289,17 +290,17 @@ equivalent to ``operator.add(2,2)``.
 
 ::
 
-	def evaluate(parseTree):
-	    opers = {'+':operator.add, '-':operator.sub, 
-		     '*':operator.mul, '/':operator.truediv}
-	    leftC = parseTree.getLeftChild()
-	    rightC = parseTree.getRightChild()
-	    
-	    if leftC and rightC:  #// \label{lst:etbc}
-		fn = opers[parseTree.getRootVal()]
-		return fn(evaluate(leftC),evaluate(rightC)) #//\label{lst:evalexprec}
-	    else:
-		return parseTree.getRootVal()
+    def evaluate(parseTree):
+        opers = {'+':operator.add, '-':operator.sub, 
+             '*':operator.mul, '/':operator.truediv}
+        leftC = parseTree.getLeftChild()
+        rightC = parseTree.getRightChild()
+        
+        if leftC and rightC:  #// \label{lst:etbc}
+        fn = opers[parseTree.getRootVal()]
+        return fn(evaluate(leftC),evaluate(rightC)) #//\label{lst:evalexprec}
+        else:
+        return parseTree.getRootVal()
 
 ..     [caption=A Recursive Function to Evaluate a Binary Parse Tree,label=lst:eteval,float=htbp,index={evaluate}]
 
@@ -376,9 +377,9 @@ will stick with binary trees for now.
 
 .. _fig_booktree:
 
-	.. figure:: booktree.png
-	   :align: center
-	   :alt: image
+    .. figure:: booktree.png
+       :align: center
+       :alt: image
 
        Representing a Book as a Tree
 
@@ -412,10 +413,10 @@ then the function returns without taking any action.
 ::
 
     def preorder(tree):
-	if tree:
-	    print(tree.getRootVal())
-	    preorder(tree.getLeftChild())
-	    preorder(tree.getRightChild())  
+    if tree:
+        print(tree.getRootVal())
+        preorder(tree.getLeftChild())
+        preorder(tree.getRightChild())  
 
 ..     [caption=External Function Implementing Preorder Traversal of a Tree,label=lst:preordext,float=htbp,index={preorder}]
 
@@ -430,12 +431,12 @@ children *before* making the recursive call to ``preorder``.
 
 ::
 
-	def preorder(self):
-	    print(self.key)
-	    if self.leftChild:
-		self.left.preorder()
-	    if self.rightChild:
-		self.right.preorder()
+    def preorder(self):
+        print(self.key)
+        if self.leftChild:
+        self.left.preorder()
+        if self.rightChild:
+        self.right.preorder()
 
 ..     [caption=Preorder Traversal Implemented as a Method of \texttt{BinaryTree},label=lst:preorder,float=htbp,index={preorder}]
 
@@ -457,10 +458,10 @@ we move the call to print to the end of the function.
 ::
 
     def postorder(tree):
-	if tree != None:
-	    postorder(tree.getLeftChild())
-	    postorder(tree.getRightChild())
-	    print(tree.getRootVal())
+    if tree != None:
+        postorder(tree.getLeftChild())
+        postorder(tree.getRightChild())
+        print(tree.getRootVal())
 
 ..     [caption=Postorder Traversal Algorithm,label=lst:postorder,float=htbp,index={postorder}]
 
@@ -476,17 +477,17 @@ closely on the ``postorder`` code in Listing {lst:postorder}.
 ::
 
     def postordereval(tree):
-	opers = {'+':operator.add, '-':operator.sub, 
-		 '*':operator.mul, '/':operator.truediv}
-	res1 = None
-	res2 = None
-	if tree:
-	    res1 = postordereval(tree.getLeftChild())  #// \label{peleft}
-	    res2 = postordereval(tree.getRightChild()) #// \label{peright}
-	    if res1 and res2:
-		return opers[tree.getRootVal()](res1,res2) #// \label{peeval}
-	    else:
-		return tree.getRootVal()
+    opers = {'+':operator.add, '-':operator.sub, 
+         '*':operator.mul, '/':operator.truediv}
+    res1 = None
+    res2 = None
+    if tree:
+        res1 = postordereval(tree.getLeftChild())  #// \label{peleft}
+        res2 = postordereval(tree.getRightChild()) #// \label{peright}
+        if res1 and res2:
+        return opers[tree.getRootVal()](res1,res2) #// \label{peeval}
+        else:
+        return tree.getRootVal()
 
 ..     [caption=Postorder Evaluation Algorithm,label=lst:posteval,float=htbp,index={postorder}]
 
@@ -508,12 +509,13 @@ statement with respect to the two recursive function calls.
 
 
     def inorder(tree):
-	if tree != None:
-	    inorder(tree.getLeftChild())
-	    print(tree.getRootVal())
-	    inorder(tree.getRightChild())
+    if tree != None:
+        inorder(tree.getLeftChild())
+        print(tree.getRootVal())
+        inorder(tree.getRightChild())
 
 ..     [caption=Inorder Traversal Algorithm,label=lst:inorder,float=htbp,index={inorder}]
+
 If we perform a simple inorder traversal of a parse tree we get our
 original expression back, without any parentheses. Let’s modify the
 basic inorder algorithm to allow us to recover the fully parenthesized
@@ -526,12 +528,12 @@ shown in Listing {lst:prtfpe}.
 ::
 
     def printexp(tree):
-	sVal = ""
-	if tree:
-	    sVal = '(' + printexp(tree.getLeftChild())
-	    sVal = sVal + str(tree.getRootVal())
-	    sVal = sVal + printexp(tree.getRightChild())+')'
-	return sVal
+    sVal = ""
+    if tree:
+        sVal = '(' + printexp(tree.getLeftChild())
+        sVal = sVal + str(tree.getRootVal())
+        sVal = sVal + printexp(tree.getRightChild())+')'
+    return sVal
 
 
 ..    [caption=Modified Inorder Traversal to Print Fully Parenthesized Expression,label=lst:prtfpe,float=htbp,index={printexp}]
@@ -542,20 +544,20 @@ The following Python session shows the ``printexp`` and
 
 ::
 
-	>>> from pythonds.trees import BinaryTree
-	>>> x = BinaryTree('*')
-	>>> x.insertLeft('+')
-	>>> l = x.getLeftChild()
-	>>> l.insertLeft(4)
-	>>> l.insertRight(5)
-	>>> x.insertRight(7)
-	>>> 
-	>>> print(printexp(x))
-	(((4) + (5)) * (7))
-	>>>
-	>>> print(postordereval(x))
-	63
-	>>> 
+    >>> from pythonds.trees import BinaryTree
+    >>> x = BinaryTree('*')
+    >>> x.insertLeft('+')
+    >>> l = x.getLeftChild()
+    >>> l.insertLeft(4)
+    >>> l.insertRight(5)
+    >>> x.insertRight(7)
+    >>> 
+    >>> print(printexp(x))
+    (((4) + (5)) * (7))
+    >>>
+    >>> print(postordereval(x))
+    63
+    >>> 
 
 
 Notice that the ``printexp`` function as we have implemented it puts

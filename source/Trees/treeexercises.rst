@@ -91,7 +91,7 @@ Discussion Questions
 
 #. Show the function calls needed to build the following binary tree.
 
-	   .. figure:: Trees/exerTree.png
+	   .. figure:: exerTree.png
 	      :align: center
 	      :alt: image
 
@@ -100,7 +100,7 @@ Discussion Questions
 #. Given the following tree, perform the appropriate rotations to bring
    it back into balance.
 
-       .. figure:: Trees/Figures/rotexer1.png
+       .. figure:: Figures/rotexer1.png
 	  :align: center
 	  :alt: image
 
