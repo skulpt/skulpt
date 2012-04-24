@@ -124,7 +124,7 @@ that corresponds to each of the HTML tags used to create the page.
     </html>
 
 
-.. _fig_html
+.. _fig_html:
 
 .. figure:: htmltree.png
    :align: center
