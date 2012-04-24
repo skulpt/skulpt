@@ -29,7 +29,7 @@ with the individual parts of the sentence by using subtrees.
        :align: center
        :alt: image
 
-        Parse Tree for :math:`((7+3)*(5-2))`
+       Parse Tree for :math:`((7+3)*(5-2))`
 
 We can also represent a mathematical expression such as
 :math:`((7 + 3) * (5 - 2))` as a parse tree, as shown in
@@ -297,10 +297,10 @@ equivalent to ``operator.add(2,2)``.
         rightC = parseTree.getRightChild()
         
         if leftC and rightC:  #// \label{lst:etbc}
-        fn = opers[parseTree.getRootVal()]
-        return fn(evaluate(leftC),evaluate(rightC)) #//\label{lst:evalexprec}
+            fn = opers[parseTree.getRootVal()]
+            return fn(evaluate(leftC),evaluate(rightC)) #//\label{lst:evalexprec}
         else:
-        return parseTree.getRootVal()
+            return parseTree.getRootVal()
 
 ..     [caption=A Recursive Function to Evaluate a Binary Parse Tree,label=lst:eteval,float=htbp,index={evaluate}]
 
@@ -413,10 +413,10 @@ then the function returns without taking any action.
 ::
 
     def preorder(tree):
-    if tree:
-        print(tree.getRootVal())
-        preorder(tree.getLeftChild())
-        preorder(tree.getRightChild())  
+        if tree:
+            print(tree.getRootVal())
+            preorder(tree.getLeftChild())
+            preorder(tree.getRightChild())  
 
 ..     [caption=External Function Implementing Preorder Traversal of a Tree,label=lst:preordext,float=htbp,index={preorder}]
 
@@ -434,9 +434,9 @@ children *before* making the recursive call to ``preorder``.
     def preorder(self):
         print(self.key)
         if self.leftChild:
-        self.left.preorder()
+            self.left.preorder()
         if self.rightChild:
-        self.right.preorder()
+            self.right.preorder()
 
 ..     [caption=Preorder Traversal Implemented as a Method of \texttt{BinaryTree},label=lst:preorder,float=htbp,index={preorder}]
 
@@ -458,10 +458,10 @@ we move the call to print to the end of the function.
 ::
 
     def postorder(tree):
-    if tree != None:
-        postorder(tree.getLeftChild())
-        postorder(tree.getRightChild())
-        print(tree.getRootVal())
+        if tree != None:
+            postorder(tree.getLeftChild())
+            postorder(tree.getRightChild())
+            print(tree.getRootVal())
 
 ..     [caption=Postorder Traversal Algorithm,label=lst:postorder,float=htbp,index={postorder}]
 
@@ -477,17 +477,17 @@ closely on the ``postorder`` code in Listing {lst:postorder}.
 ::
 
     def postordereval(tree):
-    opers = {'+':operator.add, '-':operator.sub, 
-         '*':operator.mul, '/':operator.truediv}
-    res1 = None
-    res2 = None
-    if tree:
-        res1 = postordereval(tree.getLeftChild())  #// \label{peleft}
-        res2 = postordereval(tree.getRightChild()) #// \label{peright}
-        if res1 and res2:
-        return opers[tree.getRootVal()](res1,res2) #// \label{peeval}
-        else:
-        return tree.getRootVal()
+        opers = {'+':operator.add, '-':operator.sub, 
+             '*':operator.mul, '/':operator.truediv}
+        res1 = None
+        res2 = None
+        if tree:
+            res1 = postordereval(tree.getLeftChild())  #// \label{peleft}
+            res2 = postordereval(tree.getRightChild()) #// \label{peright}
+            if res1 and res2:
+                return opers[tree.getRootVal()](res1,res2) #// \label{peeval}
+            else:
+                return tree.getRootVal()
 
 ..     [caption=Postorder Evaluation Algorithm,label=lst:posteval,float=htbp,index={postorder}]
 
@@ -509,10 +509,10 @@ statement with respect to the two recursive function calls.
 
 
     def inorder(tree):
-    if tree != None:
-        inorder(tree.getLeftChild())
-        print(tree.getRootVal())
-        inorder(tree.getRightChild())
+      if tree != None:
+          inorder(tree.getLeftChild())
+          print(tree.getRootVal())
+          inorder(tree.getRightChild())
 
 ..     [caption=Inorder Traversal Algorithm,label=lst:inorder,float=htbp,index={inorder}]
 
@@ -528,12 +528,12 @@ shown in Listing {lst:prtfpe}.
 ::
 
     def printexp(tree):
-    sVal = ""
-    if tree:
-        sVal = '(' + printexp(tree.getLeftChild())
-        sVal = sVal + str(tree.getRootVal())
-        sVal = sVal + printexp(tree.getRightChild())+')'
-    return sVal
+      sVal = ""
+      if tree:
+          sVal = '(' + printexp(tree.getLeftChild())
+          sVal = sVal + str(tree.getRootVal())
+          sVal = sVal + printexp(tree.getRightChild())+')'
+      return sVal
 
 
 ..    [caption=Modified Inorder Traversal to Print Fully Parenthesized Expression,label=lst:prtfpe,float=htbp,index={printexp}]
