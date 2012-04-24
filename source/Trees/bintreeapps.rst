@@ -29,7 +29,7 @@ with the individual parts of the sentence by using subtrees.
        :align: center
        :alt: image
 
-        Parse Tree for :math:`((7+3)*(5-2))`
+       Parse Tree for :math:`((7+3)*(5-2))`
 
 We can also represent a mathematical expression such as
 :math:`((7 + 3) * (5 - 2))` as a parse tree, as shown in

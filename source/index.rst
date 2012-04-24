@@ -82,7 +82,12 @@ Graphs and Graph Algorithms
 .. toctree::
    :maxdepth: 2
 
-   graphs.rst
+   Graphs/graphintro.rst
+   Graphs/graphbfs.rst
+   Graphs/graphdfs.rst
+   Graphs/graphshortpath.rst
+   Graphs/graphexercises.rst
+   
 
 
 Indices and tables
