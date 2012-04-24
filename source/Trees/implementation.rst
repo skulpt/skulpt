@@ -45,15 +45,12 @@ another list that represents the right subtree. To illustrate this
 storage technique, let’s look at an example. Figure {fig:smalltree}
 shows a simple tree and the corresponding list implementation.
 
-        .. figure:: smalltree.png
-           :align: center
-           :alt: image
+.. figure:: smalltree.png
+   :align: center
+           
+   A small tree
 
-           image
-
-    {{fig:smalltreeG} A small tree}
-
-        ::
+::
 
         myTree = ['a',   #root
               ['b',  #left subtree
@@ -64,10 +61,9 @@ shows a simple tree and the corresponding list implementation.
                [] ]  
              ]           
                   
+       The list representation of the tree}
 
-    {{fig:smalltreeL} The list representation of the tree}
 
-    {Representing a Tree as a List of Lists} {fig:smalltree}
 
 Notice that we can access subtrees of the list using standard list
 slices. The root of the tree is ``myTree[0]``, the left subtree of the

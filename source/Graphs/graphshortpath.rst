@@ -1,5 +1,4 @@
 
-
 Shortest Path Problems
 ----------------------
 
@@ -11,34 +10,31 @@ to another over the Internet is the primary topic for a class in
 computer networking. However, we will talk about how the Internet works
 just enough to understand another very important graph algorithm.
 
-        .. figure:: Graphs/Internet.png
-           :align: center
-           :alt: image
-
-           image
-
-    {Overview of Connectivity in the Internet}       
 .. _fig_inet:
 
+.. figure:: Internet.png
+   :align: center
 
-:ref:`Figure 51 <fig_inet>` shows you a high-level overview of how communication
+   Overview of Connectivity in the Internet     
+
+
+
+:ref:`Figure 1 <fig_inet>` shows you a high-level overview of how communication
 on the Internet works. When you use your browser to request a web page
 from a server, the request must travel over your local area network and
 out onto the Internet through a router. The request travels over the
 Internet and eventually arrives at a router for the local area network
 where the server is located. The web page you requested then travels
 back through the same routers to get to your browser. Inside the cloud
-labelled “Internet” in :ref:`Figure 51 <fig_inet>` are additional routers. The job
+labelled “Internet” in :ref:`Figure 1 <fig_inet>` are additional routers. The job
 of all of these routers is to work together to get your information from
 place to place. You can see there are many routers for yourself if your
-computer supports the ``traceroute`` command. :ref:`Figure 52 <fig_routes>` shows
+computer supports the ``traceroute`` command. The text below shows
 the output of the ``traceroute`` command which illustrates that there
 are 13 routers between the web server at Luther College and the mail
 server at the University of Minnesota.
 
-{
-
-    ::
+::
 
          1  192.203.196.1  
          2  hilda.luther.edu (216.159.75.1)  
@@ -55,11 +51,8 @@ server at the University of Minnesota.
          13  baldrick.cs.umn.edu (128.101.80.129)(N!)  88.631 ms (N!)
             
 
-    {Routers from One Host to the Next over the Internet}       
-.. _fig_routes:
+         Routers from One Host to the Next over the Internet      
 
-
-}
 
 Each router on the Internet is connected to one or more other routers.
 So if you run the ``traceroute`` command at different times of the day,
@@ -70,18 +63,17 @@ volume of traffic, the time of day, and many other factors. By this time
 it will not surprise you to learn that we can represent the network of
 routers as a graph with weighted edges.
 
-        .. figure:: Graphs/routeGraph.png
-           :align: center
-           :alt: image
-
-           image
-
-    {Connections and Weights between Routers in the Internet}
-          
 .. _fig_network:
 
 
-:ref:`Figure 53 <fig_network>` shows a small example of a weighted graph that
+.. figure:: routeGraph.png
+   :align: center
+
+   Connections and Weights between Routers in the Internet
+          
+
+
+:ref:`Figure 2 <fig_network>` shows a small example of a weighted graph that
 represents the interconnection of routers in the Internet. The problem
 that we want to solve is to find the path with the smallest total weight
 along which to route any given message. This problem should sound
@@ -111,26 +103,9 @@ is set to a very large number. Theoretically you would set ``dist`` to
 infinity, but in practice we just set it to a number that is larger than
 any real distance we would have in the problem we are trying to solve.
 
-The code for Dijkstra’s algorithm {dijkstra-59} is shown in
-Listing {lst:dij}. When the algorithm finishes the distances are set
+The code for Dijkstra’s algorithm is shown in
+the following listing. When the algorithm finishes the distances are set
 correctly as are the predecessor links for each vertex in the graph.
-
-Dijkstra’s algorithm uses a priority queue. You may recall that a
-priority queue is based on the heap that we implemented in
-Chapter {chap:tree}. There are a couple of differences between the
-simple implementation in Chapter {chap:tree} and the implementation we
-use for Dijkstra’s algorithm. First, the ``PriorityQueue`` class stores
-tuples of key, value pairs. This is important for Dijkstra’s algorithm
-as the key in the priority queue must match the key of the vertex in the
-graph. Secondly the value is used for deciding the priority, and thus
-the position of the key in the priority queue. In this implementation we
-use the distance to the vertex as the priority because as we will see
-when we are exploring the next vertex, we always want to explore the
-vertex that has the smallest distance. The second difference is the
-addition of the ``decreaseKey`` method. As you can see on
-line {lst:dij:dk} this method is used when the distance to a vertex that
-is already in the queue is reduced, and thus moves that vertex toward
-the front of the queue.
 
 ::
 
@@ -139,18 +114,37 @@ the front of the queue.
         pq = PriorityQueue()
         start.setDistance(0)
         pq.buildHeap([(v.getDistance(),v) for v in aGraph])        
-        while not pq.isEmpty():   #// \label{lst:dij:while}
+        while not pq.isEmpty():
             currentVert = pq.delMin()
-            for nextVert in currentVert.getConnections():  #// \label{lst:dij:for}
+            for nextVert in currentVert.getConnections():
                 newDist = currentVert.getDistance() \
                         + currentVert.getWeight(nextVert)
                 if newDist < nextVert.getDistance():
                     nextVert.setDistance( newDist )
                     nextVert.setPred(currentVert)
-                    pq.decreaseKey(nextVert,newDist)  #// \label{lst:dij:dk}
+                    pq.decreaseKey(nextVert,newDist)
+
+
+Dijkstra’s algorithm uses a priority queue. You may recall that a
+priority queue is based on the heap that we implemented in the Tree Chapter. 
+There are a couple of differences between that
+simple implementation and the implementation we
+use for Dijkstra’s algorithm. First, the ``PriorityQueue`` class stores
+tuples of key, value pairs. This is important for Dijkstra’s algorithm
+as the key in the priority queue must match the key of the vertex in the
+graph. Secondly the value is used for deciding the priority, and thus
+the position of the key in the priority queue. In this implementation we
+use the distance to the vertex as the priority because as we will see
+when we are exploring the next vertex, we always want to explore the
+vertex that has the smallest distance. The second difference is the
+addition of the ``decreaseKey`` method. As you can see, this method is used when the distance to a vertex that
+is already in the queue is reduced, and thus moves that vertex toward
+the front of the queue.
+
+
 
 Let’s walk through an application of Dijkstra’s algorithm one vertex at
-a time using :ref:`Figure 60 <fig_dijstep>` as our guide. We begin with the vertex
+a time using the following sequence of figures as our guide. We begin with the vertex
 :math:`u`. The three vertices adjacent to :math:`u` are
 :math:`v,w,` and :math:`x`. Since the initial distances to
 :math:`v,w,` and :math:`x` are all initialized to ``sys.maxint``,
@@ -158,7 +152,7 @@ the new costs to get to them through the start node are all their direct
 costs. So we update the costs to each of these three nodes. We also set
 the predecessor for each node to :math:`u` and we add each node to the
 priority queue. We use the distance as the key for the priority queue.
-The state of the algorithm is shown in :ref:`Figure 54 <fig_dija>`.
+The state of the algorithm is shown in :ref:`Figure 3 <fig_dija>`.
 
 In the next iteration of the ``while`` loop we examine the vertices that
 are adjacent to :math:`x`. The vertex :math:`x` is next because it
@@ -173,7 +167,7 @@ respectively. However, we now learn that the distance to :math:`w` is
 smaller if we go through :math:`x` than from :math:`u` directly to
 :math:`w`. Since that is the case we update :math:`w` with a new
 distance and change the predecessor for :math:`w` from :math:`u` to
-:math:`x`. See :ref:`Figure 55 <fig_dijb>` for the state of all the vertices.
+:math:`x`. See :ref:`Figure 4 <fig_dijb>` for the state of all the vertices.
 
 The next step is to look at the vertices neighboring :math:`v`. This
 step results in no changes to the graph, so we move on to node
@@ -183,74 +177,54 @@ predecessor links accordingly. Finally we check nodes :math:`w` and
 :math:`z`. However, no additional changes are found and so the
 priority queue is empty and Dijkstra’s algorithm exits.
 
-    [] {       
+   
 .. _fig_dija:
 
+.. figure:: dijkstraa.png
+   :align: center
 
-        .. figure:: Graphs/dijkstraa.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Tracing Dijkstra’s Algorithm-3      
+   
 .. _fig_dijb:
 
+.. figure:: dijkstrab.png
+   :align: center
 
-        .. figure:: Graphs/dijkstrab.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Tracing Dijkstra’s Algorithm-4      
+   
 .. _fig_dijc:
 
+.. figure:: dijkstrac.png
+   :align: center
 
-        .. figure:: Graphs/dijkstrac.png
-           :align: center
-           :alt: image
-
-           image
-
-    } [] {       
+   Tracing Dijkstra’s Algorithm-5      
+   
 .. _fig_dijd:
 
+.. figure:: dijkstrad.png
+   :align: center
 
-        .. figure:: Graphs/dijkstrad.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Tracing Dijkstra’s Algorithm-6      
+   
 .. _fig_dije:
 
+.. figure:: dijkstrae.png
+   :align: center
 
-        .. figure:: Graphs/dijkstrae.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Tracing Dijkstra’s Algorithm-7      
+   
 .. _fig_dijf:
 
+.. figure:: dijkstraf.png
+   :align: center
 
-        .. figure:: Graphs/dijkstraf.png
-           :align: center
-           :alt: image
+   Tracing Dijkstra’s Algorithm-8      
 
-           image
-
-    } {Tracing Dijkstra’s Algorithm}       
-.. _fig_dijstep:
 
 
 It is important to note that Dijkstra’s algorithm works only when the
 weights are all positive. You should convince yourself that if you
-introduced a negative weight on one of the edges to the graph in
-:ref:`Figure 53 <fig_network>` that the algorithm would never exit.
+introduced a negative weight on one of the edges to the graph that the algorithm would never exit.
 
 We will note that to route messages through the Internet, other
 algorithms are used for finding the shortest path. One of the problems
@@ -265,17 +239,16 @@ the “distance vector” routing algorithm.
 Analysis of Dijkstra’s Algorithm
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-{sec:analys-dijkstr-algor}
 
 Finally, let us look at the running time of Dijkstra’s algorithm. We
 first note that building the priority queue takes :math:`O(V)` time
 since we initially add every vertex in the graph to the priority queue.
-Once the queue is constructed the ``while`` loop on line {lst:dij:while}
+Once the queue is constructed the ``while`` loop 
 is executed once for every vertex since vertices are all added at the
 beginning and only removed after that. Within that loop each call to
 ``delMin``, takes :math:`O(\log V)` time. Taken together that part of
 the loop and the calls to delMin take :math:`O(V \log(V))`. The
-``for`` loop on line {lst:dij:for} is executed once for each edge in the
+``for`` loop is executed once for each edge in the
 graph, and within the ``for`` loop the call to ``decreaseKey`` takes
 time :math:`O(E
 \log(V))`. So the combined running time is :math:` O((V+E) \log(V))`.
@@ -290,15 +263,14 @@ everyone who may be listening. This is important in gaming so that all
 the players know the very latest position of every other player. This is
 important for Internet radio so that all the listeners that are tuned in
 are getting all the data they need to reconstruct the song they are
-listening to. :ref:`Figure x <fig_bcast1>` illustrates the broadcast problem.
+listening to. :ref:`Figure 9 <fig_bcast1>` illustrates the broadcast problem.
 
-        .. figure:: Graphs/bcast1.png
-           :align: center
-           :alt: image
+.. _fig_bcast1:
 
-           image
+.. figure:: bcast1.png
+   :align: center
 
-    {The Broadcast Problem} .. _fig_bcast1
+   The Broadcast Problem 
 
 There are some brute force solutions to this problem, so let’s look at
 them first to help understand the broadcast problem better. This will
@@ -306,7 +278,7 @@ also help you appreciate the solution that we will propose when we are
 done. To begin, the broadcast host has some information that the
 listeners all need to receive. The simplest solution is for the
 broadcasting host to keep a list of all of the listeners and send
-individual messages to each. In :ref:`Figure x <fig_bcast1>` we show a small
+individual messages to each. In :ref:`Figure 9 <fig_bcast1>` we show a small
 network with a broadcaster and some listeners. Using this first
 approach, four copies of every message would be sent. Assuming that the
 least cost path is used, let’s see how many times each router would
@@ -339,7 +311,7 @@ weight **spanning tree**. Formally we define the minimum spanning tree
 an acyclic subset of :math:`E` that connects all the vertices in
 :math:`V`. The sum of the weights of the edges in T is minimized.
 
-:ref:`Figure x <fig_mst1>` shows a simplified version of the broadcast graph and
+:ref:`Figure 10 <fig_mst1>` shows a simplified version of the broadcast graph and
 highlights the edges that form a minimum spanning tree for the graph.
 Now to solve our broadcast problem, the broadcast host simply sends a
 single copy of the broadcast message into the network. Each router
@@ -350,13 +322,12 @@ the message to E, which forwards it to F, which forwards it to G. No
 router sees more than one copy of any message, and all the listeners
 that are interested see a copy of the message.
 
-        .. figure:: Graphs/mst1.png
-           :align: center
-           :alt: image
+.. _fig_mst1:
 
-           image
+.. figure:: mst1.png
+   :align: center
 
-    {Minimum Spanning Tree for the Broadcast Graph} .. _fig_mst1
+   Minimum Spanning Tree for the Broadcast Graph 
 
 The algorithm we will use to solve this problem is called Prim’s
 algorithm. Prim’s algorithm belongs to a family of algorithms called the
@@ -366,11 +337,11 @@ with the lowest weight. Our last step is to develop Prim’s algorithm.
 
 The basic idea in constructing a spanning tree is as follows:
 
-#. While :math:`T` is not yet a spanning tree
+::
 
-   #. Find an edge that is safe to add to the tree
-
-   #. Add the new edge to :math:`T`
+   While :math:`T` is not yet a spanning tree
+      Find an edge that is safe to add to the tree
+      Add the new edge to :math:`T`
 
 The trick is in the step that directs us to “find an edge that is safe.”
 We define a safe edge as any edge that connects a vertex that is in the
@@ -378,7 +349,7 @@ spanning tree to a vertex that is not in the spanning tree. This ensures
 that the tree will always remain a tree and therefore have no cycles.
 
 The Python code to implement Prim’s algorithm is shown in
-Listing {lst:prim}. Prim’s algorithm is similar to Dijkstra’s algorithm
+the listing below. Prim’s algorithm is similar to Dijkstra’s algorithm
 in that they both use a priority queue to select the next vertex to add
 to the growing graph.
 
@@ -402,7 +373,7 @@ to the growing graph.
                   nextVert.setDistance(newCost)
                   pq.decreaseKey(nextVert,newCost)
 
-:ref:`Figure 68 <fig_primtrace>` shows the algorithm in operation on our sample
+The following sequence of figures shows the algorithm in operation on our sample
 tree. We begin with the starting vertex as A. The distances to all the
 other vertices are initialized to infinity. Looking at the neighbors of
 A we can update distances to two of the additional vertices B and C
@@ -426,78 +397,54 @@ change the predecessor link on E to point back to D, thus preparing it
 to be grafted into the spanning tree but in a different location. The
 rest of the algorithm proceeds as you would expect, adding each new node
 to the tree.
-
-    [] {       
+    
 .. _fig_prima:
 
+.. figure:: prima.png
+   :align: center
+   
+   Tracing Prim’s Algorithm-11
 
-        .. figure:: Graphs/prima.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
 .. _fig_primb:
 
+.. figure:: primb.png
+   :align: center
 
-        .. figure:: Graphs/primb.png
-           :align: center
-           :alt: image
+   Tracing Prim’s Algorithm-12
 
-           image
-
-    }[] {       
 .. _fig_primc:
 
+.. figure:: primc.png
+   :align: center
 
-        .. figure:: Graphs/primc.png
-           :align: center
-           :alt: image
-
-           image
-
-    } [] {       
+   Tracing Prim’s Algorithm-13
+   
 .. _fig_primd:
 
+.. figure:: primd.png
+   :align: center
 
-        .. figure:: Graphs/primd.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Tracing Prim’s Algorithm-14
+   
 .. _fig_prime:
 
+.. figure:: prime.png
+   :align: center
 
-        .. figure:: Graphs/prime.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Tracing Prim’s Algorithm-15
+   
 .. _fig_primf:
 
-
-        .. figure:: Graphs/primf.png
-           :align: center
-           :alt: image
-
-           image
-
-    } [] {       
+.. figure:: primf.png
+   :align: center
+   
+   Tracing Prim’s Algorithm-16
+    
 .. _fig_primg:
 
+.. figure:: primg.png
+   :align: center
 
-        .. figure:: Graphs/primg.png
-           :align: center
-           :alt: image
-
-           image
-
-    } {Tracing Prim’s Algorithm}       
-.. _fig_primtrace:
+   Tracing Prim’s Algorithm-17
 
 

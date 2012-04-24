@@ -40,15 +40,12 @@ Discussion Questions
 --------------------
 
 #. Draw the graph corresponding to the following adjacency matrix.
-   {q:am}
 
-           .. figure:: Graphs/adjMatEx.png
-              :align: center
-              :alt: image
+.. figure:: adjMatEx.png
+   :align: center
 
-              image
 
-#. Draw the graph corresponding to the following list of edges. {q:al}
+#. Draw the graph corresponding to the following list of edges.
 
            +--------+------+--------+
            | from   | to   | cost   |
@@ -73,21 +70,19 @@ Discussion Questions
            +--------+------+--------+
 
 #. Ignoring the weights, perform a breadth first search on the graph
-   from question {q:am}.
+   from the previous question.
 
-#. What is the Big-O running time of the ``buildGraph`` function in
-   Listing {lst:laddergraph}?
+#. What is the Big-O running time of the ``buildGraph`` function?
 
 #. Derive the Big-O running time for the topological sort algorithm.
 
 #. Derive the Big-O running time for the strongly connected components
    algorithm.
 
-#. Show each step in applying Dijkstra’s algorithm to the graph in
-   question {q:al}.
+#. Show each step in applying Dijkstra’s algorithm to the graph shown above.
 
 #. Using Prim’s algorithm, find the minimum weight spanning tree for the
-   graph in question {q:am}.
+   graph shown above.
 
 #. Draw a dependency graph illustrating the steps needed to send an
    email. Perform a topological sort on your graph.
@@ -116,7 +111,7 @@ Programming Exercises
    the all pairs shortest path problem.
 
 #. Using breadth first search revise the maze program from
-   Chapter {chap:recursion} to find the shortest path out of a maze.
+   the recursion chapter to find the shortest path out of a maze.
 
 #. Write a program to solve the following problem: You have two jugs, a
    4-gallon and a 3-gallon. Neither of the jugs has markings on them.
