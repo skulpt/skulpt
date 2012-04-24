@@ -6,7 +6,7 @@ The Knight’s Tour Problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another classic problem that we can use to illustrate a second common
-graph algorithm is called the “knight’s tour.” {gordon-kt} The knight’s
+graph algorithm is called the “knight’s tour.” The knight’s
 tour puzzle is played on a chess board with a single chess piece, the
 knight. The object of the puzzle is to find a sequence of moves that
 allow the knight to visit every square on the board exactly once. One
@@ -35,23 +35,25 @@ Building the Knight’s Tour Graph
 To represent the knight’s tour problem as a graph we will use the
 following two ideas: Each square on the chessboard can be represented as
 a node in the graph. Each legal move by the knight can be represented as
-an edge in the graph. :ref:`Figure 10 <fig_knightmoves>` illustrates the legal
+an edge in the graph. :ref:`Figure 1 <fig_knightmoves>` illustrates the legal
 moves by a knight and the corresponding edges in a graph.
-
-    |image1| {Legal Moves for a Knight on Square 12, and the
-    Corresponding Graph}       
+ 
 .. _fig_knightmoves:
 
+.. figure:: knightmoves.png
+   :align: center
+
+   Legal Moves for a Knight on Square 12, and the Corresponding Graph     
 
 To build the full graph for an n-by-n board we can use the Python
-function shown in Listing {lst:ktbuild}. The ``knightGraph`` function
+function shown below. The ``knightGraph`` function
 makes one pass over the entire board. At each square on the board the
 ``knightGraph`` function calls a helper, ``genLegalMoves``, to create a
 list of legal moves for that position on the board. All legal moves are
 then converted into edges in the graph. Another helper function
 ``posToNodeId`` converts a location on the board in terms of a row and a
 column into a linear vertex number similar to the vertex numbers shown
-in :ref:`Figure 10 <fig_knightmoves>`.
+in :ref:`Figure 1 <fig_knightmoves>`.
 
 ::
 
@@ -93,7 +95,7 @@ still on the board.
         else:
             return False
 
-:ref:`Figure 11 <fig_bigknight>` shows the complete graph of possible moves on an
+:ref:`Figure 2 <fig_bigknight>` shows the complete graph of possible moves on an
 eight-by-eight board. There are exactly 336 edges in the graph. Notice
 that the vertices corresponding to the edges of the board have fewer
 connections (legal moves) than the vertices in the middle of the board.
@@ -101,22 +103,21 @@ Once again we can see how sparse the graph is. If the graph was fully
 connected there would be 4,096 edges. Since there are only 336 edges,
 the adjacency matrix would be only 8.2 percent full.
 
-        .. figure:: Graphs/bigknight.png
-           :align: center
-           :alt: image
-
-           image
-
-    {All Legal Moves for a Knight on an :math:`8 \times 8` Chessboard}
-          
 .. _fig_bigknight:
+
+.. figure:: bigknight.png
+   :align: center
+
+   All Legal Moves for a Knight on an :math:`8 \times 8` Chessboard
+          
+
 
 
 Implementing Knight’s Tour
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The search algorithm we will use to solve the knight’s tour problem is
-called **depth first search**(**DFS**). {cormen-algorithms} Whereas the
+called **depth first search** (**DFS**).  Whereas the
 breadth first search algorithm discussed in the previous section builds
 a search tree one level at a time, a depth first search creates a search
 tree by exploring one branch of the tree as deeply as possible. In this
@@ -153,9 +154,9 @@ Backtracking happens when we return from ``knightTour`` with a status of
 ``False``. In the breadth first search we used a queue to keep track of
 which vertex to visit next. Since depth first search is recursive, we
 are implicitly using a stack to help us with our backtracking. When we
-return from a call to ``knightTour`` with a status of ``False``, in line
-{lst:kt:bt}, we remain inside the ``while`` loop and look at the next
-vertex in ``nbrList}.
+return from a call to ``knightTour`` with a status of ``False``, in line 11, 
+we remain inside the ``while`` loop and look at the next
+vertex in ``nbrList``.
 
 ::
 
@@ -164,15 +165,12 @@ vertex in ``nbrList}.
             u.setColor('gray')
             path.append(u)
             if n < limit:
-                nbrList = list(u.getConnections())  #// \label{lst:kt:oba}
+                nbrList = list(u.getConnections())
                 i = 0
                 done = False
                 while i < len(nbrList) and not done:
                     if nbrList[i].getColor() == 'white':
-                        done = knightTour(n+1,      #// \label{lst:kt:bt}
-                                      path, 
-                                      nbrList[i],
-                                      limit)
+                        done = knightTour(n+1, path, nbrList[i], limit)
                     i = i + 1    
                 if not done:  # prepare to backtrack
                     path.pop()
@@ -182,128 +180,109 @@ vertex in ``nbrList}.
             return done
 
 
-Let's look at a simple example of \texttt``knightTour} in action. You
-can refer to :ref:`Figure 20 <fig_ktexamp>` to follow the steps of the search. For
+Let's look at a simple example of ``knightTour`` in action. You
+can refer to the figures below to follow the steps of the search. For
 this example we will assume that the call to the ``getConnections``
-method on line {lst:kt:oba} of Listing {lst:knight} orders the nodes in
+method on line 6 orders the nodes in
 alphabetical order. We begin by calling ``knightTour(0,path,A,6)``
 
-``knightTour`` starts with node A. The nodes adjacent to A are B and D.
+``knightTour`` starts with node A :ref:`Figure 3 <fig_ktb>`. The nodes adjacent to A are B and D.
 Since B is before D alphabetically, DFS selects B to expand next as
-shown in :ref:`Figure 13 <fig_ktb>`. Exploring B happens when ``knightTour`` is
+shown in :ref:`Figure 4 <fig_ktb>`. Exploring B happens when ``knightTour`` is
 called recursively. B is adjacent to C and D, so ``knightTour`` elects
-to explore C next. However, as you can see in :ref:`Figure 14 <fig_ktc>` node C is
+to explore C next. However, as you can see in :ref:`Figure 5 <fig_ktc>` node C is
 a dead end with no adjacent white nodes. At this point we change the
 color of node C back to white. The call to ``knightTour`` returns a
 value of ``False``. The return from the recursive call effectively
-backtracks the search to vertex B (see :ref:`Figure 15 <fig_ktd>`). The next
+backtracks the search to vertex B (see :ref:`Figure 6 <fig_ktd>`). The next
 vertex on the list to explore is vertex D, so ``knightTour`` makes a
 recursive call moving to node D. From vertex D on,
-``knightTour} can continue to make recursive calls until we
+``knightTour`` can continue to make recursive calls until we
 get to node C again.  However, this time when we get to node C the
-test \texttt``n < limit} fails so we know that we have exhausted all the
+test ``n < limit`` fails so we know that we have exhausted all the
 nodes in the graph. At this point we can return ``True`` to indicate
 that we have made a successful tour of the graph. When we return the
 list, ``path`` has the values ``[A,B,D,E,F,C]``, which is the the order
 we need to traverse the graph to visit each node exactly once.
 
-    [Start with node A] {       
+
 .. _fig_kta:
 
 
-        .. figure:: Graphs/ktdfsa.png
-           :align: center
-           :alt: image
+.. figure:: ktdfsa.png
+   :align: center
 
-           image
+   Start with node A
 
-    }[Explore B] {       
+
 .. _fig_ktb:
 
 
-        .. figure:: Graphs/ktdfsb.png
-           :align: center
-           :alt: image
+.. figure:: ktdfsb.png
+   :align: center
+           
+   Explore B
 
-           image
-
-    }[node C is a dead end] {       
+     
 .. _fig_ktc:
 
 
-        .. figure:: Graphs/ktdfsc.png
-           :align: center
-           :alt: image
+.. figure:: ktdfsc.png
+   :align: center
 
-           image
+   Node C is a dead end
 
-    } [backtrack to B] {       
+
 .. _fig_ktd:
 
 
-        .. figure:: Graphs/ktdfsd.png
-           :align: center
-           :alt: image
+.. figure:: ktdfsd.png
+   :align: center
+           
+   backtrack to B    
 
-           image
-
-    }[] {       
+  
 .. _fig_kte:
 
 
-        .. figure:: Graphs/ktdfse.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+.. figure:: ktdfse.png
+   :align: center
+   
+   
 .. _fig_ktf:
 
+.. figure:: ktdfsf.png
+   :align: center
 
-        .. figure:: Graphs/ktdfsf.png
-           :align: center
-           :alt: image
-
-           image
-
-    } [] {       
+   
 .. _fig_ktg:
 
-
-        .. figure:: Graphs/ktdfsg.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[finish] {       
+.. figure:: ktdfsg.png
+   :align: center
+   
+         
 .. _fig_kth:
 
+.. figure:: ktdfsh.png
+   :align: center
 
-        .. figure:: Graphs/ktdfsh.png
-           :align: center
-           :alt: image
-
-           image
-
-    } {Finding a Path through a Graph with ``knightTour``}       
-.. _fig_ktexamp:
+   Finish
+         
 
 
-:ref:`Figure 21 <fig_tour>` shows you what a complete tour around an
+:ref:`Figure 7 <fig_tour>` shows you what a complete tour around an
 eight-by-eight board looks like. There are many possible tours; some are
 symmetric. With some modification you can make circular tours that start
 and end at the same square.
 
-        .. figure:: Graphs/completeTour.png
-           :align: center
-           :alt: image
-
-           image
-
-    {A Complete Tour of the Board}       
 .. _fig_tour:
+
+.. figure:: completeTour.png
+   :align: center
+
+   A Complete Tour of the Board
+       
+
 
 
 Knight’s Tour Analysis
@@ -320,24 +299,33 @@ computer, you may have to wait up to a half hour to get the results! The
 reason for this is that the knight’s tour problem as we have implemented
 it so far is an exponential algorithm of size :math:`O(k^N)`, where N
 is the number of squares on the chess board, and k is a small constant.
-:ref:`Figure 22 <fig_8array>` can help us visualize why this is so. The root of
+:ref:`Figure 8 <fig_8array>` can help us visualize why this is so. The root of
 the tree represents the starting point of the search. From there the
 algorithm generates and checks each of the possible moves the knight can
 make. As we have noted before the number of moves possible depends on
 the position of the knight on the board. In the corners there are only
 two legal moves, on the squares adjacent to the corners there are three
-and in the middle of the board there are eight. :ref:`Figure 23 <fig_numMoves>`
+and in the middle of the board there are eight. :ref:`Figure 9 <fig_numMoves>`
 shows the number of moves possible for each position on a board. At the
 next level of the tree there are once again between 2 and 8 possible
 next moves from the position we are currently exploring. The number of
 possible positions to examine corresponds to the number of nodes in the
 search tree.
 
-    |image2| {A Search Tree for the Knight’s Tour} 
-.. _fig_8array:
+.. _fig_8array:  
 
-    |image3| {Number of Possible Moves for Each Square}       
+.. figure:: 8arrayTree.png
+   :align: center
+
+   A Search Tree for the Knight’s Tour 
+
 .. _fig_numMoves:
+
+.. figure:: moveCount.png
+   :align: center
+
+   Number of Possible Moves for Each Square      
+
 
 
 We have already seen that the number of nodes in a binary tree of height
@@ -363,11 +351,11 @@ you to see if you can express :math:`k` as a function of the board
 size.
 
 Luckily there is a way to speed up the eight-by-eight case so that it
-runs in under one second. In Listing {lst:oba} we show the code that
+runs in under one second. In the listing below we show the code that
 speeds up the ``knightTour``. This function, called ``orderbyAvail``
-will be used in place of the call to ``u.getConnections`` on
-line {lst:kt:oba} of Listing {lst:knight}. The critical line in the
-``orderByAvail`` function is {lst:oba:sort}. This line ensures that we
+will be used in place of the call to ``u.getConnections`` in the code previously
+shown above. The critical line in the
+``orderByAvail`` function is line 10. This line ensures that we
 select the vertex to go next that has the fewest available moves. You
 might think this is really counter productive; why not select the node
 that has the most available moves? You can try that approach easily by
@@ -400,7 +388,7 @@ algorithm, named after H. C. Warnsdorff who published his idea in 1823.
                     if w.getColor() == 'white':
                         c = c + 1
                 resList.append((c,v))
-        resList.sort(key=lambda x: x[0])  #// \label{lst:oba:sort}
+        resList.sort(key=lambda x: x[0])
         return [y[1] for y in resList]   
 
 General Depth First Search
@@ -425,21 +413,51 @@ colored black. As we will see after looking at the algorithm, the
 discovery and finish times of the nodes provide some interesting
 properties we can use in later algorithms.
 
-The code for our depth first search is shown in Listing {lst:dfs}. Since
+The code for our depth first search is shown in the next listing. Since
 the two functions ``dfs`` and its helper ``dfsvisit`` use a variable to
 keep track of the time across calls to ``dfsvisit`` we chose to
 implement the code as methods of a class that inherits from the
 ``Graph`` class. This implementation extends the graph class by adding a
 ``time`` instance variable and the two methods ``dfs`` and ``dfsvisit``.
-Looking at line {lst:dfs:iter} you will notice that the ``dfs`` method
+Looking at line 11 you will notice that the ``dfs`` method
 iterates over all of the vertices in the graph calling ``dfsvisit`` on
 the nodes that are white. The reason we iterate over all the nodes,
 rather than simply searching from a chosen starting node, is to make
 sure that all nodes in the graph are considered and that no vertices are
 left out of the depth first forest. It may look unusual to see the
-statement {for aVertex in self}, but remember that in this case ``self``
+statement ``for aVertex in self``, but remember that in this case ``self``
 is an instance of the ``DFSGraph`` class, and iterating over all the
 vertices in an instance of a graph is a natural thing to do.
+
+::
+
+    from pythonds.graphs import Graph
+    class DFSGraph(Graph):
+        def __init__(self):
+            super().__init__()
+            self.time = 0
+
+        def dfs(self):
+            for aVertex in self:
+                aVertex.setColor('white')
+                aVertex.setPred(-1)
+            for aVertex in self:
+                if aVertex.getColor() == 'white':
+                    self.dfsvisit(aVertex)
+
+        def dfsvisit(self,startVertex):
+            startVertex.setColor('gray')
+            self.time += 1
+            startVertex.setDiscovery(self.time)
+            for nextVertex in startVertex.getConnections():
+                if nextVertex.getColor() == 'white':
+                    nextVertex.setPred(startVertex)
+                    self.dfsvisit(nextVertex)
+            startVertex.setColor('black')
+            self.time += 1
+            startVertex.setFinish(self.time)
+
+
 
 Although our implementation of ``bfs`` was only interested in
 considering nodes for which there was a path leading back to the start,
@@ -460,41 +478,14 @@ note that where ``bfs`` uses a queue, ``dfsvisit`` uses a stack. You
 don’t see a stack in the code, but it is implicit in the recursive call
 to ``dfsvisit``.
 
-::
 
-    from pythonds.graphs import Graph
-    class DFSGraph(Graph):
-        def __init__(self):
-            super().__init__()
-            self.time = 0
-
-        def dfs(self):
-            for aVertex in self:   #// \label{lst:dfs:init}
-                aVertex.setColor('white')
-                aVertex.setPred(-1)
-            for aVertex in self:   #// \label{lst:dfs:iter}
-                if aVertex.getColor() == 'white':
-                    self.dfsvisit(aVertex)
-
-        def dfsvisit(self,startVertex):
-            startVertex.setColor('gray')
-            self.time += 1
-            startVertex.setDiscovery(self.time)
-            for nextVertex in startVertex.getConnections(): #// \label{lst:dfsvisit:loop}
-                if nextVertex.getColor() == 'white':
-                    nextVertex.setPred(startVertex)
-                    self.dfsvisit(nextVertex)
-            startVertex.setColor('black')
-            self.time += 1
-            startVertex.setFinish(self.time)
-
-:ref:`Figure 36 <fig_dfsexamp>` illustrates the depth first search algorithm in
-action for a small graph. In :ref:`Figure 36 <fig_dfsexamp>` the dotted lines
+The following sequence of figures illustrates the depth first search algorithm in
+action for a small graph. In these figures, the dotted lines
 indicate edges that are checked, but the node at the other end of the
 edge has already been added to the depth first tree. In the code this
 test is done by checking that the color of the other node is non-white.
 
-The search begins at vertex A of the graph. Since all of the vertices
+The search begins at vertex A of the graph (:ref:`Figure 10 <fig_gdfsa>`). Since all of the vertices
 are white at the beginning of the search the algorithm visits vertex A.
 The first step in visiting a vertex is to set the color to gray, which
 indicates that the vertex is being explored and the discovery time is
@@ -511,7 +502,7 @@ coloring the node gray and setting its discovery time to 3, the
 algorithm also determines that there are no adjacent vertices to C. This
 means that we are done exploring node C and so we can color the vertex
 black, and set the finish time to 4. You can see the state of our search
-at this point in :ref:`Figure 27 <fig_gdfsd>`.
+at this point in :ref:`Figure 13 <fig_gdfsd>`.
 
 Since vertex C was the end of one branch we now return to vertex B and
 continue exploring the nodes adjacent to B. The only additional vertex
@@ -525,160 +516,117 @@ in the list, namely F.
 
 Vertex F has only one adjacent vertex, C, but since C is colored black
 there is nothing else to explore, and the algorithm has reached the end
-of another branch. From here on, you will see in Figures .. _fig_gdfsh –
-.. _fig_gdfsl that the algorithm works its way back to the first node,
+of another branch. From here on, you will see in :ref:`Figure 17 <fig_gdfsh>` thru
+:ref:`Figure 21 <fig_gdfsl>`  that the algorithm works its way back to the first node,
 setting finish times and coloring vertices black.
-
-    [] {       
+     
 .. _fig_gdfsa:
 
+.. figure:: gendfsa.png
+   :align: center
 
-        .. figure:: Graphs/gendfsa.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-10
+   
 .. _fig_gdfsb:
 
-
-        .. figure:: Graphs/gendfsb.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+.. figure:: gendfsb.png
+   :align: center
+   
+   Constructing the Depth First Search Tree-11
+          
 .. _fig_gdfsc:
 
+.. figure:: gendfsc.png
+   :align: center
 
-        .. figure:: Graphs/gendfsc.png
-           :align: center
-           :alt: image
-
-           image
-
-    } [] {       
+   Constructing the Depth First Search Tree-12
+   
 .. _fig_gdfsd:
 
+.. figure:: gendfsd.png
+   :align: center
 
-        .. figure:: Graphs/gendfsd.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-13
+   
 .. _fig_gdfse:
 
+.. figure:: gendfse.png
+   :align: center
 
-        .. figure:: Graphs/gendfse.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-14
+   
 .. _fig_gdfsf:
 
+.. figure:: gendfsf.png
+   :align: center
 
-        .. figure:: Graphs/gendfsf.png
-           :align: center
-           :alt: image
+   Constructing the Depth First Search Tree-15
 
-           image
-
-    } [] {       
 .. _fig_gdfsg:
 
+.. figure:: gendfsg.png
+   :align: center
 
-        .. figure:: Graphs/gendfsg.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-16
+   
 .. _fig_gdfsh:
 
+.. figure:: gendfsh.png
+   :align: center
 
-        .. figure:: Graphs/gendfsh.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-17
+   
 .. _fig_gdfsi:
 
+.. figure:: gendfsi.png
+   :align: center
 
-        .. figure:: Graphs/gendfsi.png
-           :align: center
-           :alt: image
-
-           image
-
-    } [] {       
+   Constructing the Depth First Search Tree-18
+   
 .. _fig_gdfsj:
 
+.. figure:: gendfsj.png
+   :align: center
 
-        .. figure:: Graphs/gendfsj.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-19
+   
 .. _fig_gdfsk:
 
+.. figure:: gendfsk.png
+   :align: center
 
-        .. figure:: Graphs/gendfsk.png
-           :align: center
-           :alt: image
-
-           image
-
-    }[] {       
+   Constructing the Depth First Search Tree-20
+   
 .. _fig_gdfsl:
 
+.. figure:: gendfsl.png
+   :align: center
 
-        .. figure:: Graphs/gendfsl.png
-           :align: center
-           :alt: image
-
-           image
-
-    } {Constructing the Depth First Search Tree}       
-.. _fig_dfsexamp:
-
+   Constructing the Depth First Search Tree-21
 
 The starting and finishing times for each node display a property called
 the **parenthesis property**. This property means that all the children
 of a particular node in the depth first tree have a later discovery time
-and an earlier finish time than their parent. :ref:`Figure 37 <fig_dfstree>` shows
+and an earlier finish time than their parent. :ref:`Figure 22 <fig_dfstree>` shows
 the tree constructed by the depth first search algorithm.
 
-        .. figure:: Graphs/dfstree.png
-           :align: center
-           :alt: image
-
-           image
-
-    {The Resulting Depth First Search Tree}       
 .. _fig_dfstree:
+
+
+.. figure:: dfstree.png
+   :align: center
+   
+   The Resulting Depth First Search Tree   
 
 
 Depth First Search Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-{sec:depth-first-search}
 
 The general running time for depth first search is as follows. The loops
-on lines {lst:dfs:init} and {lst:dfs:iter} both run in :math:`O(V)`,
+in ``dfs`` both run in :math:`O(V)`,
 not counting what happens in ``dfsvisit``, since they are executed once
-for each vertex in the graph. In ``dfsvisit`` the loop on
-line {lst:dfsvisit:loop} is executed once for each edge in the adjacency
+for each vertex in the graph. In ``dfsvisit`` the loop is executed once for each edge in the adjacency
 list of the current vertex. Since ``dfsvisit`` is only called
 recursively if the vertex is white, the loop will execute a maximum of
 once for every edge in the graph or :math:`O(E)`. So, the total time
@@ -695,21 +643,21 @@ To make pancakes you must heat the griddle, mix all the ingredients
 together and spoon the mix onto a hot griddle. When the pancakes start
 to bubble you turn them over and let them cook until they are golden
 brown on the bottom. Before you eat your pancakes you are going to want
-to heat up some syrup. :ref:`Figure 38 <fig_pancakes>` illustrates this process as
+to heat up some syrup. :ref:`Figure 23 <fig_pancakes>` illustrates this process as
 a graph.
 
-        .. figure:: Graphs/pancakes.png
-           :align: center
-           :alt: image
 
-           image
-
-    {The Steps for Making Pancakes}       
 .. _fig_pancakes:
+
+.. figure:: pancakes.png
+   :align: center
+
+   The Steps for Making Pancakes       
+
 
 
 The difficult thing about making pancakes is knowing what to do first.
-As you can see from :ref:`Figure 38 <fig_pancakes>` you might start by heating the
+As you can see from :ref:`Figure 23 <fig_pancakes>` you might start by heating the
 griddle or by adding any of the ingredients to the pancake mix. To help
 us decide the precise order in which we should do each of the steps
 required to make our pancakes we turn to a graph algorithm called the
@@ -735,34 +683,32 @@ search. The algorithm for the topological sort is as follows:
 
 #. Return the ordered list as the result of the topological sort.
 
-:ref:`Figure 39 <fig_pancakesDFS>` shows the depth first forest constructed by
-``dfs`` on the pancake-making graph shown in :ref:`Figure 38 <fig_pancakes>`.
+:ref:`Figure 24 <fig_pancakesDFS>` shows the depth first forest constructed by
+``dfs`` on the pancake-making graph shown in :ref:`Figure 23 <fig_pancakes>`.
 
-        .. figure:: Graphs/pancakesDFS.png
-           :align: center
-           :alt: image
-
-           image
-
-    {Result of Depth First Search on the Pancake Graph}
-          
 .. _fig_pancakesDFS:
 
+.. figure:: pancakesDFS.png
+   :align: center
 
-Finally, :ref:`Figure 40 <fig_pancakesTS>` shows the results of applying the
+   Result of Depth First Search on the Pancake Graph
+          
+
+
+
+Finally, :ref:`Figure 25 <fig_pancakesTS>` shows the results of applying the
 topological sort algorithm to our graph. Now all the ambiguity has been
 removed and we know exactly the order in which to perform the pancake
 making steps.
 
-        .. figure:: Graphs/pancakesTS.png
-           :align: center
-           :alt: image
-
-           image
-
-    {Result of Topological Sort on Directed Acyclic Graph}
-          
 .. _fig_pancakesTS:
+
+.. figure:: pancakesTS.png
+   :align: center
+
+   Result of Topological Sort on Directed Acyclic Graph
+          
+
 
 
 Strongly Connected Components
@@ -778,24 +724,22 @@ Search engines like Google and Bing exploit the fact that the pages on
 the web form a very large directed graph. To transform the World Wide
 Web into a graph, we will treat a page as a vertex, and the hyperlinks
 on the page as edges connecting one vertex to another.
-:ref:`Figure 41 <fig_cshome>` shows a very small part of the graph produced by
+:ref:`Figure 26 <fig_cshome>` shows a very small part of the graph produced by
 following the links from one page to the next, beginning at Luther
 College’s Computer Science home page. Of course, this graph could be
 huge, so we have limited it to web sites that are no more than 10 links
 away from the CS home page.
 
-    .. figure:: Graphs/cshome.png
-       :align: center
-       :alt: image
-
-       image
-
-    {The Graph Produced by Links from the
-    Luther Computer Science Home Page}       
 .. _fig_cshome:
 
+.. figure:: cshome.png
+   :align: center
 
-If you study the graph in :ref:`Figure 41 <fig_cshome>` you might make some
+   The Graph Produced by Links from the Luther Computer Science Home Page      
+
+
+
+If you study the graph in :ref:`Figure 26 <fig_cshome>` you might make some
 interesting observations. First you might notice that many of the other
 web sites on the graph are other Luther College web sites. Second, you
 might notice that there are several links to other colleges in Iowa.
@@ -810,32 +754,30 @@ algorithm (**SCC**). We formally define a **strongly connected
 component**, :math:`C`, of a graph :math:`G`, as the largest subset
 of vertices :math:`C \subset V` such that for every pair of vertices
 :math:`v, w \in C` we have a path from :math:`v` to :math:`w` and
-a path from :math:`w` to :math:`v`. :ref:`Figure 42 <fig_scc1>` shows a simple
+a path from :math:`w` to :math:`v`. :ref:`Figure 27 <fig_scc1>` shows a simple
 graph with three strongly connected components. The strongly connected
 components are identified by the different shaded areas.
 
-        .. figure:: Graphs/scc1.png
-           :align: center
-           :alt: image
-
-           image
-
-    {A Directed Graph with Three Strongly Connected Components}
 .. _fig_scc1:
+        
+.. figure:: scc1.png
+   :align: center
+
+   A Directed Graph with Three Strongly Connected Components
+
 
 Once the strongly connected components have been identified we can show
 a simplified view of the graph by combining all the vertices in one
 strongly connected component into a single larger vertex. The simplified
-version of the graph in :ref:`Figure x <fig_scc1>` is shown in :ref:`Figure x <fig_scc2>`.
+version of the graph in :ref:`Figure 27 <fig_scc1>` is shown in :ref:`Figure 28 <fig_scc2>`.
 
-        .. figure:: Graphs/scc2.png
-           :align: center
-           :alt: image
-
-           image
-
-    {The Reduced Graph} 
 .. _fig_scc2:
+
+.. figure:: scc2.png
+   :align: center
+
+   The Reduced Graph
+
 
 Once again we will see that we can create a very powerful and efficient
 algorithm by making use of a depth first search. Before we tackle the
@@ -844,36 +786,31 @@ transposition of a graph :math:`G` is defined as the graph
 :math:`G^T` where all the edges in the graph have been reversed. That
 is, if there is a directed edge from node A to node B in the original
 graph then :math:`G^T` will contain and edge from node B to node A.
-:ref:`Figure 46 <fig_transpose>` shows a simple graph and its transposition.
+:ref:`Figure 29 <fig_tpa>` and :ref:`Figure 30 <fig_tpb>` show a simple graph and its transposition.
 
-    [a graph :math:`G`] {       
+
+
+    
 .. _fig_tpa:
 
 
-        .. figure:: Graphs/transpose1.png
-           :align: center
-           :alt: image
+.. figure:: transpose1.png
+   :align: center
 
-           image
-
-    }[the transposition of :math:`G`, :math:`G^T`] {       
+   A Graph :math:`G` and Its Transpose :math:`G^T`
+          
 .. _fig_tpb:
 
 
-        .. figure:: Graphs/transpose2.png
-           :align: center
-           :alt: image
+.. figure:: transpose2.png
+   :align: center
 
-           image
-
-    } {A Graph :math:`G` and Its Transpose :math:`G^T`}
-          
-.. _fig_transpose:
+   A Graph :math:`G` and Its Transpose :math:`G^T`
 
 
-Look at :ref:`Figure 46 <fig_transpose>` again. Notice that the graph in
-:ref:`Figure 44 <fig_tpa>` has two strongly connected components. Now look at the
-.. _fig_tpb. Notice that it has the same two strongly connected
+Look at the figures again. Notice that the graph in
+:ref:`Figure 29 <fig_tpa>` has two strongly connected components. Now look at 
+:ref:`Figure 30 <fig_tpb>`. Notice that it has the same two strongly connected
 components.
 
 We can now describe the algorithm to compute the strongly connected
@@ -892,42 +829,39 @@ components for a graph.
    forest to identify the component.
 
 Lets trace the operation of the steps described above on the example
-graph in :ref:`Figure x <fig_scc1}. Figure {fig:sccalga>` shows the starting and
+graph in :ref:`Figure 27 <fig_scc1>`. :ref:`Figure 31 <fig_sccalga>` shows the starting and
 finishing times computed for the original graph by the DFS algorithm.
-:ref:`Figure 48 <fig_sccalgb>` shows the starting and finishing times computed by
+:ref:`Figure 32 <fig_sccalgb>` shows the starting and finishing times computed by
 running DFS on the transposed graph.
 
-    [finishing times for the original graph :math:`G`] {       
+ 
 .. _fig_sccalga:
 
+.. figure:: scc1a.png
+   :align: center
+   
+   Finishing times for the original graph :math:`G`     
 
-        .. figure:: Graphs/scc1a.png
-           :align: center
-           :alt: image
 
-           image
-
-    }[finishing times for :math:`G^T`] {       
+     
 .. _fig_sccalgb:
 
-
-        .. figure:: Graphs/scc1b.png
-           :align: center
-           :alt: image
-
-           image
-
-    } {Computing the Strongly Connected Components}       
-.. _fig_scctrace:
+.. figure:: scc1b.png
+   :align: center
+   
+   Finishing times for :math:`G^T`
+    
 
 
-Finally, :ref:`Figure 50 <fig_sccforest>` shows the forest of three trees produced
+Finally, :ref:`Figure 33 <fig_sccforest>` shows the forest of three trees produced
 in step 3 of the strongly connected component algorithm. You will notice
 that we do not provide you with the Python code for the SCC algorithm,
 we leave writing this program as an exercise.
 
-    |image4| {The Strongly Connected Components as a Forest of Trees}
           
 .. _fig_sccforest:
 
-
+.. figure:: sccforest.png
+   :align: center
+   
+   The Strongly Connected Components as a Forest of Trees

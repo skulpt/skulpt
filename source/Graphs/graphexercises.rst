@@ -135,9 +135,4 @@ Programming Exercises
    crossings that will get everyone safely to the other side of the
    river.
 
-.. |image| image:: Graphs/wordbuckets.png
-.. |image1| image:: Graphs/knightmoves.png
-.. |image2| image:: Graphs/8arrayTree.png
-.. |image3| image:: Graphs/moveCount.png
-.. |image4| image:: Graphs/sccforest.png
 

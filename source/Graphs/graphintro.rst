@@ -103,7 +103,7 @@ and the set of nine edges:
 .. figure:: digraph.png
    :align: center
 
-    A Simple Example of a Directed Graph
+   A Simple Example of a Directed Graph
 
 The example graph in :ref:`Figure 2 <fig_dgsimple>` helps illustrate two other
 key graph terms:
