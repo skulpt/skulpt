@@ -797,7 +797,7 @@ graph then :math:`G^T` will contain and edge from node B to node A.
 .. figure:: transpose1.png
    :align: center
 
-   A Graph :math:`G` and Its Transpose :math:`G^T`
+   A Graph :math:`G`
           
 .. _fig_tpb:
 
@@ -805,7 +805,7 @@ graph then :math:`G^T` will contain and edge from node B to node A.
 .. figure:: transpose2.png
    :align: center
 
-   A Graph :math:`G` and Its Transpose :math:`G^T`
+   Its Transpose :math:`G^T`
 
 
 Look at the figures again. Notice that the graph in
