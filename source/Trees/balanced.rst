@@ -1,8 +1,6 @@
 Balanced Binary Search Trees
 ----------------------------
 
-{sec:balanc-binary-search}
-
 In the previous section we looked at building a binary search tree. As
 we learned, the performance of the binary search tree can degrade to
 :math:`O(n)` for operations like ``get`` and ``put`` when the tree

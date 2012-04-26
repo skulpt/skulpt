@@ -1,3 +1,6 @@
+Trees
+=====
+
 Objectives
 ----------
 
@@ -41,7 +44,7 @@ still animals.
 
 .. _fig_biotree:
 
-.. figure:: biology.png
+.. figure:: Figures/biology.png
    :scale: 50%
    :align: center
    :alt: image
@@ -81,7 +84,7 @@ system hierarchy.
 
 .. _fig_filetree:
 
-.. figure:: directory.png
+.. figure:: Figures/directory.png
    :scale: 50%
    :align: center
    :alt: image
@@ -126,7 +129,7 @@ that corresponds to each of the HTML tags used to create the page.
 
 .. _fig_html:
 
-.. figure:: htmltree.png
+.. figure:: Figures/htmltree.png
    :align: center
    :alt: image
 
@@ -225,13 +228,13 @@ edges that connect pairs of nodes. A tree has the following properties:
 Figure {fig:nodeedgetree} illustrates a tree that fits definition one.
 The arrowheads on the edges indicate the direction of the connection.
 
-    .. _fig_nodeedgetree:
+.. _fig_nodeedgetree:
 
-	.. figure:: treedef1.png
-	   :align: center
-	   :alt: image
+.. figure:: Figures/treedef1.png
+   :align: center
+   :alt: image
 
-	   A Tree Consisting of a Set of Nodes and Edges
+   A Tree Consisting of a Set of Nodes and Edges
 
 *Definition Two:* A tree is either empty or consists of a root and zero
 or more subtrees, each of which is also a tree. The root of each subtree
@@ -242,9 +245,9 @@ Figure {fig:rectree} has at least four nodes, since each of the
 triangles representing a subtree must have a root. It may have many more
 nodes than that, but we do not know unless we look deeper into the tree.
 
-	.. figure:: TreeDefRecursive.png
-	   :align: center
-	   :alt: image
+.. figure:: Figures/TreeDefRecursive.png
+   :align: center
+   :alt: image
 
-	   A recursive Definition of a tree
+   A recursive Definition of a tree
 

@@ -13,11 +13,11 @@ trees can be used to represent real-world constructions like sentences
 
 .. _fig_nlparse:
 
-    .. figure:: nlParse.png
-       :align: center
-       :alt: image
+.. figure:: Figures/nlParse.png
+   :align: center
+   :alt: image
 
-       A Parse Tree for a Simple Sentence
+   A Parse Tree for a Simple Sentence
 
 :ref:`Figure x <fig_nlparse>` shows the hierarchical structure of a simple
 sentence. Representing a sentence as a tree structure allows us to work
@@ -25,11 +25,11 @@ with the individual parts of the sentence by using subtrees.
 
 .. _fig_meparse:
 
-    .. figure:: meParse.png
-       :align: center
-       :alt: image
+.. figure:: Figures/meParse.png
+   :align: center
+   :alt: image
 
-       Parse Tree for :math:`((7+3)*(5-2))`
+   Parse Tree for :math:`((7+3)*(5-2))`
 
 We can also represent a mathematical expression such as
 :math:`((7 + 3) * (5 - 2))` as a parse tree, as shown in
@@ -50,11 +50,11 @@ simplified tree shown in :ref:`Figure x <fig_mesimple>`.
 
 .. _fig_mesimple:
 
-    .. figure:: meSimple.png
-       :align: center
-       :alt: image
+.. figure:: Figures/meSimple.png
+   :align: center
+   :alt: image
 
-       A Simplified Parse Tree for :math:`((7+3)*(5-2))`
+   A Simplified Parse Tree for :math:`((7+3)*(5-2))`
 
 In the rest of this section we are going to examine parse trees in more
 detail. In particular we will look at
@@ -104,50 +104,50 @@ token is processed.
 
 .. _fig_bldExpstep:
 
-    .. figure:: buildExp1.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp1.png
+   :align: center
+   :alt: image
 
 
 
-    .. figure:: buildExp2.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp2.png
+   :align: center
+   :alt: image
 
 
 
-    .. figure:: buildExp3.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp3.png
+   :align: center
+   :alt: image
 
 
 
-    .. figure:: buildExp4.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp4.png
+   :align: center
+   :alt: image
 
 
-    .. figure:: buildExp5.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp5.png
+   :align: center
+   :alt: image
 
 
-    .. figure:: buildExp6.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp6.png
+   :align: center
+   :alt: image
 
 
-    .. figure:: buildExp7.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp7.png
+   :align: center
+   :alt: image
 
 
-    .. figure:: buildExp8.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildExp8.png
+   :align: center
+   :alt: image
 
 
-       Tracing Parse Tree Construction
+   Tracing Parse Tree Construction
 
 Using :ref:`Figure x <fig_bldExpstep>`, let’s walk through the example step by
 step:
@@ -377,11 +377,11 @@ will stick with binary trees for now.
 
 .. _fig_booktree:
 
-    .. figure:: booktree.png
-       :align: center
-       :alt: image
+.. figure:: Figures/booktree.png
+   :align: center
+   :alt: image
 
-       Representing a Book as a Tree
+   Representing a Book as a Tree
 
 Suppose that you wanted to read this book from front to back. The
 preorder traversal gives you exactly that ordering. Starting at the root
@@ -417,8 +417,6 @@ then the function returns without taking any action.
             print(tree.getRootVal())
             preorder(tree.getLeftChild())
             preorder(tree.getRightChild())  
-
-..     [caption=External Function Implementing Preorder Traversal of a Tree,label=lst:preordext,float=htbp,index={preorder}]
 
 
 We can also implement ``preorder`` as a method of the ``BinaryTree``

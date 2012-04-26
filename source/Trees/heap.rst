@@ -88,11 +88,11 @@ shows an example of a complete binary tree.
 
 .. _fig_comptree:
 
-    .. figure:: compTree.png
-       :align: center
-       :alt: image
+.. figure:: Figures/compTree.png
+   :align: center
+   :alt: image
 
-    A Complete Binary Tree
+   A Complete Binary Tree
 
 Another interesting property of a complete tree is that we can represent
 it using a single list. We do not need to use nodes and references or
@@ -121,11 +121,11 @@ tree that has the heap order property.
 
 .. _fig_heapOrder:
 
-    .. figure:: heapOrder.png
-       :align: center
-       :alt: image
+.. figure:: Figures/heapOrder.png
+   :align: center
+   :alt: image
 
-    A Complete Binary Tree, along with its List Representation
+   A Complete Binary Tree, along with its List Representation
 
 
 Heap Operations
@@ -160,11 +160,11 @@ proper position in the tree.
 
 .. _fig_percUp:
 
-    .. figure:: percUp.png
-       :align: center
-       :alt: image
+.. figure:: Figures/percUp.png
+   :align: center
+   :alt: image
 
-    Percolate the New Node up to Its Proper Position
+   Percolate the New Node up to Its Proper Position
 
 Notice that when we percolate an item up, we are restoring the heap
 property between the newly added item and the parent. We are also
@@ -217,11 +217,11 @@ position in the heap.
 
 .. _fig_percdown:
 
-    .. figure:: percDown.png
-       :align: center
-       :alt: image
+.. figure:: Figures/percDown.png
+   :align: center
+   :alt: image
 
-    Percolating the Root Node down the Tree
+   Percolating the Root Node down the Tree
 
 In order to maintain the heap order property, all we need to do is swap
 the root with its smallest child less than the root. After the initial
@@ -293,11 +293,11 @@ to build the entire heap.
 
 .. _fig_buildheap:
 
-    .. figure:: Figures/buildheap.png
-       :align: center
-       :alt: image
+.. figure:: Figures/buildheap.png
+   :align: center
+   :alt: image
 
-    Building a Heap from the List [9, 6, 5, 2, 3]
+   Building a Heap from the List [9, 6, 5, 2, 3]
 
 :ref:`Figure x <fig_buildheap>` shows the swaps that the ``buildHeap`` method
 makes as it moves the nodes in an initial tree of {[9, 6, 5, 2, 3]} into

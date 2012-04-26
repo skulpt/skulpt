@@ -80,14 +80,14 @@ link from one item to the next.
 
 .. _fig_idea:
 
-.. figure:: Pictures/idea.png
+.. figure:: Figures/idea.png
    :align: center
 
    Items Not Constrained in Their Physical Placement
 
 .. _fig_idea2:
 
-.. figure:: Pictures/idea2.png
+.. figure:: Figures/idea2.png
    :align: center
 
    Relative Positions Maintained by Explicit Links.
@@ -153,14 +153,14 @@ referring to ``None``. It is always a good idea to explicitly assign
 
 .. _fig_node:
 
-.. figure:: Pictures/node.png
+.. figure:: Figures/node.png
    :align: center
 
    A Node Object Contains the Item and a Reference to the Next Node
 
 .. _fig_node2:
 
-.. figure:: Pictures/node2.png
+.. figure:: Figures/node2.png
    :align: center
 
    A Typical Representation for a Node
@@ -199,7 +199,7 @@ in the linked structure.
 
 .. _fig_initlinkedlist:
 
-.. figure:: Pictures/initlinkedlist.png
+.. figure:: Figures/initlinkedlist.png
    :align: center
 
    An Empty List
@@ -207,7 +207,7 @@ in the linked structure.
 
 .. _fig_linkedlist:
 
-.. figure:: Pictures/linkedlist.png
+.. figure:: Figures/linkedlist.png
    :align: center
 
    A Linked List of Integers
@@ -298,14 +298,14 @@ no longer be accessed.
 
 .. _fig_addtohead:
 
-.. figure:: Pictures/addtohead.png
+.. figure:: Figures/addtohead.png
    :align: center
 
    Adding a New Node is a Two-Step Process
 
 .. _fig_wrongorder:
 
-.. figure:: Pictures/wrongorder.png
+.. figure:: Figures/wrongorder.png
    :align: center
 
    Result of Reversing the Order of the Two Steps
@@ -347,7 +347,7 @@ Finally, ``count`` gets returned after the iteration stops.
 
 .. _fig_traversal:
 
-.. figure:: Pictures/traversal.png
+.. figure:: Figures/traversal.png
    :align: center
 
    Traversing the Linked List from the Head to the End
@@ -403,7 +403,7 @@ value seen above. This process can be seen in :ref:`Figure 10 <fig_searchpic>`.
 
 .. _fig_searchpic:
 
-.. figure:: Pictures/search.png
+.. figure:: Figures/search.png
    :align: center
 
    Successful Search for the Value 17
@@ -484,7 +484,7 @@ list looking for the node containing the value 17.
 
 .. _fig_removeinit:
 
-.. figure:: Pictures/removeinit.png
+.. figure:: Figures/removeinit.png
    :align: center
 
    Initial Values for the ``previous`` and ``current`` References
@@ -492,7 +492,7 @@ list looking for the node containing the value 17.
 
 .. _fig_prevcurr:
 
-.. figure:: Pictures/prevcurr.png
+.. figure:: Figures/prevcurr.png
    :align: center
 
    ``previous`` and ``current`` Move Down the List
@@ -511,7 +511,7 @@ to be changed (see :ref:`Figure 14 <fig_removehead>`).
 
 .. _fig_removepic1:
 
-.. figure:: Pictures/remove.png
+.. figure:: Figures/remove.png
    :align: center
 
    Removing an Item from the Middle of the List
@@ -519,7 +519,7 @@ to be changed (see :ref:`Figure 14 <fig_removehead>`).
 
 .. _fig_removehead:
 
-.. figure:: Pictures/remove2.png
+.. figure:: Figures/remove2.png
    :align: center
 
    Removing the First Node from the List
@@ -614,7 +614,7 @@ for representing the relative positioning of the items.
 
 .. _fig_orderlinked:
 
-.. figure:: Pictures/orderlinkedlist.png
+.. figure:: Figures/orderlinkedlist.png
    :align: center
 
    An Ordered Linked List
@@ -663,7 +663,7 @@ exist further out in the linked list.
 
 .. _fig_stopearly:
 
-.. figure:: Pictures/orderedsearch.png
+.. figure:: Figures/orderedsearch.png
    :align: center
 
    Searching an Ordered Linked List
@@ -716,7 +716,7 @@ to stop.
 
 .. _fig_orderinsert:
 
-.. figure:: Pictures/linkedlistinsert.png
+.. figure:: Figures/linkedlistinsert.png
    :align: center
 
    Adding an Item to an Ordered Linked List

@@ -31,7 +31,7 @@ waited the necessary amount of time to get to the front.
 
 .. _fig_qubasicqueue:
 
-.. figure:: Pictures/basicqueue.png
+.. figure:: Figures/basicqueue.png
    :align: center
 
    A Queue of Python Data Objects
@@ -202,7 +202,7 @@ child is left.
 
 .. _fig_quhotpotato:
 
-.. figure:: Pictures/hotpotato.png
+.. figure:: Figures/hotpotato.png
    :align: center
 
    A Six Person Game of Hot Potato
@@ -239,7 +239,7 @@ until only one name remains (the size of the queue is 1).
 
 .. _fig_qupotatoqueue:
 
-.. figure:: Pictures/namequeue.png
+.. figure:: Figures/namequeue.png
    :align: center
 
    A Queue Implementation of Hot Potato
@@ -311,7 +311,7 @@ in the queue.
 
 .. _fig_qulabsim:
 
-.. figure:: Pictures/simulationsetup.png
+.. figure:: Figures/simulationsetup.png
    :align: center
 
    Computer Science Laboratory Printing Queue

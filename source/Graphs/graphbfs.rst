@@ -53,7 +53,7 @@ are unweighted.
 
 .. _fig_wordladder:
 
-.. figure:: wordgraph.png
+.. figure:: Figures/wordgraph.png
    :align: center
 
    A Small Word Ladder Graph
@@ -84,7 +84,7 @@ that all the words in the bucket must be connected.
 
 .. _fig_wordbucket:
     
-.. figure:: wordbuckets.png
+.. figure:: Figures/wordbuckets.png
    :align: center
 
    Word Buckets for Words That are Different by One Letter
@@ -225,7 +225,7 @@ queue after this step.
 
 .. _fig_bfs1:
 
-.. figure:: bfs1.png
+.. figure:: Figures/bfs1.png
    :align: center
 
    The First Step in the Breadth First Search
@@ -240,7 +240,7 @@ poll. The new state of the tree and queue is shown in :ref:`Figure 4 <fig_bfs2>`
 
 .. _fig_bfs2:
 
-.. figure:: bfs2.png
+.. figure:: Figures/bfs2.png
    :align: center
 
    The Second Step in the Breadth First Search
@@ -256,7 +256,7 @@ vertices on the second level of the tree.
 
 .. _fig_bfs3:
 
-.. figure:: bfs3.png
+.. figure:: Figures/bfs3.png
    :align: center
    
    Breadth First Search Tree After Completing One Level
@@ -264,7 +264,7 @@ vertices on the second level of the tree.
 
 .. _fig_bfsDone:
 
-.. figure:: bfsDone.png
+.. figure:: Figures/bfsDone.png
    :align: center
 
    Final Breadth First Search Tree      

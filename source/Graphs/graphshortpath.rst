@@ -12,7 +12,7 @@ just enough to understand another very important graph algorithm.
 
 .. _fig_inet:
 
-.. figure:: Internet.png
+.. figure:: Figures/Internet.png
    :align: center
 
    Overview of Connectivity in the Internet     
@@ -66,7 +66,7 @@ routers as a graph with weighted edges.
 .. _fig_network:
 
 
-.. figure:: routeGraph.png
+.. figure:: Figures/routeGraph.png
    :align: center
 
    Connections and Weights between Routers in the Internet
@@ -180,42 +180,42 @@ priority queue is empty and Dijkstra’s algorithm exits.
    
 .. _fig_dija:
 
-.. figure:: dijkstraa.png
+.. figure:: Figures/dijkstraa.png
    :align: center
 
    Tracing Dijkstra’s Algorithm-3      
    
 .. _fig_dijb:
 
-.. figure:: dijkstrab.png
+.. figure:: Figures/dijkstrab.png
    :align: center
 
    Tracing Dijkstra’s Algorithm-4      
    
 .. _fig_dijc:
 
-.. figure:: dijkstrac.png
+.. figure:: Figures/dijkstrac.png
    :align: center
 
    Tracing Dijkstra’s Algorithm-5      
    
 .. _fig_dijd:
 
-.. figure:: dijkstrad.png
+.. figure:: Figures/dijkstrad.png
    :align: center
 
    Tracing Dijkstra’s Algorithm-6      
    
 .. _fig_dije:
 
-.. figure:: dijkstrae.png
+.. figure:: Figures/dijkstrae.png
    :align: center
 
    Tracing Dijkstra’s Algorithm-7      
    
 .. _fig_dijf:
 
-.. figure:: dijkstraf.png
+.. figure:: Figures/dijkstraf.png
    :align: center
 
    Tracing Dijkstra’s Algorithm-8      
@@ -267,7 +267,7 @@ listening to. :ref:`Figure 9 <fig_bcast1>` illustrates the broadcast problem.
 
 .. _fig_bcast1:
 
-.. figure:: bcast1.png
+.. figure:: Figures/bcast1.png
    :align: center
 
    The Broadcast Problem 
@@ -324,7 +324,7 @@ that are interested see a copy of the message.
 
 .. _fig_mst1:
 
-.. figure:: mst1.png
+.. figure:: Figures/mst1.png
    :align: center
 
    Minimum Spanning Tree for the Broadcast Graph 
@@ -400,49 +400,49 @@ to the tree.
     
 .. _fig_prima:
 
-.. figure:: prima.png
+.. figure:: Figures/prima.png
    :align: center
    
    Tracing Prim’s Algorithm-11
 
 .. _fig_primb:
 
-.. figure:: primb.png
+.. figure:: Figures/primb.png
    :align: center
 
    Tracing Prim’s Algorithm-12
 
 .. _fig_primc:
 
-.. figure:: primc.png
+.. figure:: Figures/primc.png
    :align: center
 
    Tracing Prim’s Algorithm-13
    
 .. _fig_primd:
 
-.. figure:: primd.png
+.. figure:: Figures/primd.png
    :align: center
 
    Tracing Prim’s Algorithm-14
    
 .. _fig_prime:
 
-.. figure:: prime.png
+.. figure:: Figures/prime.png
    :align: center
 
    Tracing Prim’s Algorithm-15
    
 .. _fig_primf:
 
-.. figure:: primf.png
+.. figure:: Figures/primf.png
    :align: center
    
    Tracing Prim’s Algorithm-16
     
 .. _fig_primg:
 
-.. figure:: primg.png
+.. figure:: Figures/primg.png
    :align: center
 
    Tracing Prim’s Algorithm-17

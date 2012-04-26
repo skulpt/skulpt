@@ -29,7 +29,7 @@ of primitive Python data objects.
 
 .. _fig_bookstack:
 
-.. figure:: Pictures/bookstack2.png
+.. figure:: Figures/bookstack2.png
    :align: center
    :scale: 50 %
 
@@ -37,7 +37,7 @@ of primitive Python data objects.
 
 .. _fig_objectstack:
 
-.. figure:: Pictures/primitive.png
+.. figure:: Figures/primitive.png
    :align: center
    :scale: 50 %
 
@@ -57,7 +57,7 @@ objects.
 
 .. _fig_reversal:
 
-.. figure:: Pictures/simplereversal.png
+.. figure:: Figures/simplereversal.png
    :align: center
 
    The Reversal Property of Stacks
@@ -344,7 +344,7 @@ problem.
 
 .. _fig_parmatch:
 
-.. figure:: Pictures/simpleparcheck.png    
+.. figure:: Figures/simpleparcheck.png    
 
    Matching Parentheses
 
@@ -532,7 +532,7 @@ appropriate data structure for solving the problem.
 
 .. _fig_decbin:
 
-.. figure:: Pictures/dectobin.png
+.. figure:: Figures/dectobin.png
    :align: center
 
    Decimal-to-Binary Conversion
@@ -789,7 +789,7 @@ expression would result (see :ref:`Figure 6 <fig_moveright>`).
 
 .. _fig_moveright:
 
-.. figure:: Pictures/moveright.png
+.. figure:: Figures/moveright.png
    :align: center
 
    Moving Operators to the Right for Postfix Notation
@@ -801,7 +801,7 @@ actually a clue to the final position of the enclosed operator.
 
 .. _fig_moveleft:
 
-.. figure:: Pictures/moveleft.png
+.. figure:: Figures/moveleft.png
    :align: center
 
    Moving Operators to the Left for Prefix Notation
@@ -819,7 +819,7 @@ notations.
 
 .. _fig_complexmove:
 
-.. figure:: Pictures/complexmove.png
+.. figure:: Figures/complexmove.png
    :align: center
 
    Converting a Complex Expression to Prefix and Postfix Notations
@@ -911,7 +911,7 @@ operators and placing + as the last operator in the postfix expression.
 
 .. _fig_intopost:
 
-.. figure:: Pictures/intopost.png
+.. figure:: Figures/intopost.png
    :align: center
 
    Converting A \* B + C \* D to Postfix Notation
@@ -1017,7 +1017,7 @@ expression is being processed.
 
 .. _fig_evalpost1:
 
-.. figure:: Pictures/evalpostfix1.png
+.. figure:: Figures/evalpostfix1.png
    :align: center
 
    Stack Contents During Evaluation
@@ -1036,7 +1036,7 @@ the order of the operands is not switched.
 
 .. _fig_evalpost2:
 
-.. figure:: Pictures/evalpostfix2.png
+.. figure:: Figures/evalpostfix2.png
    :align: center
 
    A More Complex Example of Evaluation

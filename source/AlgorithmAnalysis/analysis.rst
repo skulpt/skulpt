@@ -346,7 +346,7 @@ another.
 
 .. _fig_graphfigure:
 
-.. figure:: AlgorithmAnalysis/Figures/newplot.png
+.. figure:: Figures/newplot.png
 
    Plot of Common Big-O Functions
 
@@ -388,7 +388,7 @@ ignored as *n* grows larger.
 
 .. _fig_graphfigure2:
 
-.. figure:: AlgorithmAnalysis/Figures/newplot2.png
+.. figure:: Figures/newplot2.png
 
    Comparing :math:`T(n)` with Common Big-O Functions
 
@@ -867,7 +867,7 @@ reliable.
 
 .. _fig_poptest:
 
-.. figure:: AlgorithmAnalysis/Figures/poptime.png
+.. figure:: Figures/poptime.png
 
    Comparing the Performance of ``pop`` and ``pop(0)``
 
@@ -959,7 +959,7 @@ of 990,000 it also took 0.004 milliseconds.
 
 .. _fig_listvdict:
 
-.. figure:: AlgorithmAnalysis/Figures/listvdict.png
+.. figure:: Figures/listvdict.png
 
     Comparing the ``in`` Operator for Python Lists and Dictionaries
 
