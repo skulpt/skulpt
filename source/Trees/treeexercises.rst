@@ -21,7 +21,6 @@ Key Terms
 
 ============= ===================== ==================== 
      AVL tree           binary heap   binary search tree 
-============= ===================== ==================== 
   binary tree      child / children complete binary tree 
          edge   heap order property               height 
   ``inorder``             leaf node                level 
@@ -91,7 +90,7 @@ Discussion Questions
 
 #. Show the function calls needed to build the following binary tree.
 
-.. figure:: exerTree.png
+.. figure:: Figures/exerTree.png
    :align: center
 
 

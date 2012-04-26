@@ -45,7 +45,7 @@ another list that represents the right subtree. To illustrate this
 storage technique, let’s look at an example. Figure {fig:smalltree}
 shows a simple tree and the corresponding list implementation.
 
-.. figure:: smalltree.png
+.. figure:: Figures/smalltree.png
    :align: center
            
    A small tree
@@ -223,13 +223,13 @@ continue to use this representation for the remainder of the chapter.
 Using nodes and references, we might think of the tree as being
 structured like the one shown in Figure {fig:treerec}.
 
-    .. _fig_treerec:
+.. _fig_treerec:
 
-    .. figure:: treerecs.png
-       :align: center
-       :alt: image
+.. figure:: Figures/treerecs.png
+   :align: center
+   :alt: image
 
-       A Simple Tree Using a Nodes and References Approach
+   A Simple Tree Using a Nodes and References Approach
 
 We will start out with a simple class definition for the nodes and
 references approach as shown in Listing {lst:nar}. The important thing

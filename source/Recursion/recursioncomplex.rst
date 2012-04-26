@@ -40,7 +40,7 @@ and poles–a pile of books or pieces of paper will work.
 
 .. _fig_hanoi:
 
-.. figure:: hanoi.png
+.. figure:: Figures/hanoi.png
    :align: center
    :alt: image
 
@@ -733,7 +733,7 @@ results.
 
 .. _fig_c1ct:
 
-    .. figure:: callTree.png
+    .. figure:: Figures/callTree.png
        :align: center
        :width: 100%
        :alt: image
@@ -820,15 +820,15 @@ minimum number of coins for 11 cents.
 
 .. _fig_dpcoins:
 
-    .. figure:: changeTable.png
-       :align: center
-       :alt: image
+.. figure:: Figures/changeTable.png
+   :align: center
+   :alt: image
        
-       Minimum Number of Coins Needed to Make Change
+   Minimum Number of Coins Needed to Make Change
 
 .. _fig_eleven:
 
-.. figure:: elevenCents.png
+.. figure:: Figures/elevenCents.png
    :align: center
    :alt: image
 

@@ -27,7 +27,7 @@ to you to make consistent use of the addition and removal operations.
 
 .. _fig_basicdeque:
 
-.. figure:: Pictures/basicdeque.png
+.. figure:: Figures/basicdeque.png
    :align: center
 
    A Deque of Python Data Objects
@@ -177,7 +177,7 @@ the last character (see :ref:`Figure 2 <fig_palindrome>`).
 
 .. _fig_palindrome:
 
-.. figure:: Pictures/palindromesetup.png
+.. figure:: Figures/palindromesetup.png
    :align: center
 
    A Deque

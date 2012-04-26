@@ -51,7 +51,7 @@ subtree are greater than the root.
    
 .. _fig_simpleBST:
 
-.. figure:: simpleBST.png
+.. figure:: Figures/simpleBST.png
    :align: center
 
    A Simple Binary Search Tree
@@ -247,7 +247,7 @@ that were visited during the insertion process.
 
 .. _fig_bstput:
 
-.. figure:: bstput.png
+.. figure:: Figures/bstput.png
    :align: center
 
    Inserting a Node with Key = 19
@@ -372,7 +372,7 @@ node in the parent. The code for this case is shown in here.
 
 .. _fig_bstdel1:
 
-.. figure:: bstdel1.png
+.. figure:: Figures/bstdel1.png
    :align: center
 
    Deleting Node 16, a Node without Children
@@ -430,7 +430,7 @@ left child. The decision proceeds as follows:
 
 .. _fig_bstdel2:
 
-.. figure:: bstdel2.png
+.. figure:: Figures/bstdel2.png
    :align: center
 
    Deleting Node 25, a Node That Has a Single Child
@@ -450,7 +450,7 @@ the tree in place of the node to be deleted.
 
 .. _fig_bstdel3:
 
-.. figure:: bstdel3.png
+.. figure:: Figures/bstdel3.png
     :align: center
 
     Deleting Node 5, a Node with Two Children
@@ -668,7 +668,7 @@ performance of the ``put`` method is :math:`O(n)`.
 
 .. _fig_skewedtree_analysis:
 
-.. figure:: skewedTree.png
+.. figure:: Figures/skewedTree.png
    :align: center
 
    A skewed binary search tree would give poor performance

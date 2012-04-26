@@ -219,7 +219,7 @@ drawing the Sierpinski triangle yourself, using the method described.
 
 .. _fig_sierpinski:
 
-.. figure:: sierpinski.png
+.. figure:: Figures/sierpinski.png
      :align: center
 
      The Sierpinski Triangle
@@ -314,7 +314,7 @@ finished with the bottom left it moves to the bottom middle, and so on.
 
 .. _fig_stcalltree:
 
-.. figure:: stCallTree.png
+.. figure:: Figures/stCallTree.png
     :align: center   
    
     Building a Sierpinski Triangle

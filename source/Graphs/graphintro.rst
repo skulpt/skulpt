@@ -39,7 +39,7 @@ computer science at Luther College.
 
 .. _fig1:
 
-.. figure:: CS-Prereqs.png
+.. figure:: Figures/CS-Prereqs.png
     :align: center
 
     Prerequisites for a Computer Science Major
@@ -100,7 +100,7 @@ and the set of nine edges:
 
 ..  _fig_dgsimple:
 
-.. figure:: digraph.png
+.. figure:: Figures/digraph.png
    :align: center
 
    A Simple Example of a Directed Graph
@@ -175,7 +175,7 @@ edge from vertex :math:`v` to vertex :math:`w`.
 
 .. _fig_adjmat:
 
-.. figure:: adjMat.png
+.. figure:: Figures/adjMat.png
    :align: center
 
    An Adjacency Matrix Representation for a Graph 
@@ -212,7 +212,7 @@ illustrates the adjacency list representation for the graph in
 
 .. _fig_adjlist:
 
-.. figure:: adjlist.png
+.. figure:: Figures/adjlist.png
    :align: center
 
    An Adjacency List Representation of a Graph

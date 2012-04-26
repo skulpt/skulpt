@@ -16,7 +16,7 @@ Introduction
 .. toctree::
    :maxdepth: 2
 
-   introduction.rst
+   Introduction/introduction.rst
 
 Analysis
 ::::::::
@@ -24,7 +24,7 @@ Analysis
 .. toctree::
    :maxdepth: 2
 
-   analysis.rst
+   AlgorithmAnalysis/analysis.rst
 
 Basic Data Structures
 :::::::::::::::::::::

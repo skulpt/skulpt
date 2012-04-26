@@ -23,25 +23,24 @@ useful to solve problems in the following general areas.
 Key Terms
 ---------
 
-            acyclic graph & adjacency list
-            adjacency matrix & adjacent
-            breadth first search (BFS) & cycle
-            cyclic graph & DAG
-            depth first forest & depth first search (DFS)
-            digraph & directed acyclic graph (DAG)
-            directed graph & edge cost
-            edge & parenthesis property
-            path & shortest path
-            spanning tree & strongly connected components (SCC)
-            topological sort & uncontrolled flooding
-            vertex & weight
+===================================== =================================== ===================================
+acyclic graph                         adjacency list                      adjacency matrix
+adjacent                              breadth first search (BFS)          cycle
+cyclic graph                          DAG                                 depth first forest
+depth first search (DFS)              digraph                             directed acyclic graph (DAG)
+directed graph                        edge cost                           edge
+parenthesis property                  path                                shortest path
+spanning tree                         strongly connected components (SCC) topological sort & uncontrolled flooding
+vertex                                weight
+===================================== =================================== ===================================
+
 
 Discussion Questions
 --------------------
 
 #. Draw the graph corresponding to the following adjacency matrix.
 
-.. figure:: adjMatEx.png
+.. figure:: Figures/adjMatEx.png
    :align: center
 
 

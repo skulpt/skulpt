@@ -147,7 +147,7 @@ parameters), and what will be returned. The details are hidden inside
 
 .. _fig_procabstraction:
 
-.. figure::  Introduction/Figures/blackbox.png
+.. figure::  Figures/blackbox.png
    :scale: 50 %
    :align: center
 
@@ -238,7 +238,7 @@ the implementation.
 
 .. _fig_adt:
 
-.. figure:: Introduction/Figures/adt.png
+.. figure:: Figures/adt.png
    :align: center
    :scale: 50 %
 
@@ -451,14 +451,14 @@ same variable can refer to many different types of data.
 
 .. _fig_assignment1:
 
-.. figure:: Introduction/Figures/assignment1.png
+.. figure:: Figures/assignment1.png
    :align: center
 
    Variables Hold References to Data Objects
 
 .. _fig_assignment2:
 
-.. figure:: Introduction/Figures/assignment2.png
+.. figure:: Figures/assignment2.png
    :align: center
 
    Assignment Changes the Reference
@@ -1709,7 +1709,7 @@ object as it is now implemented.
 
 .. _fig_fraction1:
 
-.. figure:: Introduction/Figures/fraction1.png
+.. figure:: Figures/fraction1.png
    :align: center
 
    An Instance of the ``Fraction`` Class
@@ -1933,7 +1933,7 @@ the bottom by 2 creates a new fraction, :math:`3/4` (see
 
 .. _fig_fraction2:
 
-.. figure:: Introduction/Figures/fraction2.png
+.. figure:: Figures/fraction2.png
    :align: center
 
    An Instance of the ``Fraction`` Class with Two Methods
@@ -1951,7 +1951,7 @@ implementation. This is called **shallow equality** (see
 
 .. _fig_fraction3:
 
-.. figure:: Introduction/Figures/fraction3.png
+.. figure:: Figures/fraction3.png
    :align: center
 
    Shallow Equality Versus Deep Equality
@@ -2046,7 +2046,7 @@ data and operations such as concatenation, repetition, and indexing.
 
 .. _fig_inherit1:
 
-.. figure::  Introduction/Figures/inheritance1.png
+.. figure::  Figures/inheritance1.png
    :align: center
 
    An Inheritance Hierarchy for Python Collections
@@ -2089,7 +2089,7 @@ gate.
 
 .. _fig_truthtable:
 
-.. figure:: Introduction/Figures/truthtable.png
+.. figure:: Figures/truthtable.png
    :align: center
 
    Three Types of Logic Gates
@@ -2106,7 +2106,7 @@ shows an example with values.
 
 .. _fig_circuit1:
 
-.. figure:: Introduction/figures/circuit1.png
+.. figure:: Figures/circuit1.png
    :align: center
 
    Circuit
@@ -2122,7 +2122,7 @@ Below that, the specific logic functions of each appear.
 
 .. _fig_gates:
 
-.. figure:: Introduction/Figures/gates.png
+.. figure:: Figures/gates.png
    :align: center
 
    An Inheritance Hierarchy for Logic Gates
@@ -2315,7 +2315,7 @@ for example ``UnaryGate`` IS-A ``LogicGate``.
 
 .. _fig_connector:
 
-.. figure:: Introduction/Figures/connector.png
+.. figure:: Figures/connector.png
    :align: center
 
    A Connector Connects the Output of One Gate to the Input of Another
@@ -2440,7 +2440,7 @@ companion website for this book ``http://www.pythonworks.org``.
 
 ..    One of the fundamental building blocks of a computer is somethnig called a flip flop.  Its not something that computer science professors wear on their feet, but rather a kind of circut that is stable and stores the last piece of data that was put on it.  A simple flip-flop can be made from two NOR gates that are tied together as in the following diagram.
 
-..    .. image:: Introduction/Figures/flipflop.png
+..    .. image:: Figures/flipflop.png
 
 ..    This is a challenge problem because the entire 
 ..    Note if the initial inputs to Reset and Set are both 0 then the output of the flip-flop is 0.  But if the Set input is toggled to 1 then the output becomes 1.  The great thing is that when the set input goes to 0 the output stays 1, until the reset input is toggled to 1 which resets the output of the circuit back to zero.

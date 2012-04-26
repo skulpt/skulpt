@@ -40,7 +40,7 @@ moves by a knight and the corresponding edges in a graph.
  
 .. _fig_knightmoves:
 
-.. figure:: knightmoves.png
+.. figure:: Figures/knightmoves.png
    :align: center
 
    Legal Moves for a Knight on Square 12, and the Corresponding Graph     
@@ -105,7 +105,7 @@ the adjacency matrix would be only 8.2 percent full.
 
 .. _fig_bigknight:
 
-.. figure:: bigknight.png
+.. figure:: Figures/bigknight.png
    :align: center
 
    All Legal Moves for a Knight on an :math:`8 \times 8` Chessboard
@@ -209,7 +209,7 @@ we need to traverse the graph to visit each node exactly once.
 .. _fig_kta:
 
 
-.. figure:: ktdfsa.png
+.. figure:: Figures/ktdfsa.png
    :align: center
 
    Start with node A
@@ -218,7 +218,7 @@ we need to traverse the graph to visit each node exactly once.
 .. _fig_ktb:
 
 
-.. figure:: ktdfsb.png
+.. figure:: Figures/ktdfsb.png
    :align: center
            
    Explore B
@@ -227,7 +227,7 @@ we need to traverse the graph to visit each node exactly once.
 .. _fig_ktc:
 
 
-.. figure:: ktdfsc.png
+.. figure:: Figures/ktdfsc.png
    :align: center
 
    Node C is a dead end
@@ -236,7 +236,7 @@ we need to traverse the graph to visit each node exactly once.
 .. _fig_ktd:
 
 
-.. figure:: ktdfsd.png
+.. figure:: Figures/ktdfsd.png
    :align: center
            
    backtrack to B    
@@ -245,25 +245,25 @@ we need to traverse the graph to visit each node exactly once.
 .. _fig_kte:
 
 
-.. figure:: ktdfse.png
+.. figure:: Figures/ktdfse.png
    :align: center
    
    
 .. _fig_ktf:
 
-.. figure:: ktdfsf.png
+.. figure:: Figures/ktdfsf.png
    :align: center
 
    
 .. _fig_ktg:
 
-.. figure:: ktdfsg.png
+.. figure:: Figures/ktdfsg.png
    :align: center
    
          
 .. _fig_kth:
 
-.. figure:: ktdfsh.png
+.. figure:: Figures/ktdfsh.png
    :align: center
 
    Finish
@@ -277,7 +277,7 @@ and end at the same square.
 
 .. _fig_tour:
 
-.. figure:: completeTour.png
+.. figure:: Figures/completeTour.png
    :align: center
 
    A Complete Tour of the Board
@@ -314,14 +314,14 @@ search tree.
 
 .. _fig_8array:  
 
-.. figure:: 8arrayTree.png
+.. figure:: Figures/8arrayTree.png
    :align: center
 
    A Search Tree for the Knight’s Tour 
 
 .. _fig_numMoves:
 
-.. figure:: moveCount.png
+.. figure:: Figures/moveCount.png
    :align: center
 
    Number of Possible Moves for Each Square      
@@ -522,84 +522,84 @@ setting finish times and coloring vertices black.
      
 .. _fig_gdfsa:
 
-.. figure:: gendfsa.png
+.. figure:: Figures/gendfsa.png
    :align: center
 
    Constructing the Depth First Search Tree-10
    
 .. _fig_gdfsb:
 
-.. figure:: gendfsb.png
+.. figure:: Figures/gendfsb.png
    :align: center
    
    Constructing the Depth First Search Tree-11
           
 .. _fig_gdfsc:
 
-.. figure:: gendfsc.png
+.. figure:: Figures/gendfsc.png
    :align: center
 
    Constructing the Depth First Search Tree-12
    
 .. _fig_gdfsd:
 
-.. figure:: gendfsd.png
+.. figure:: Figures/gendfsd.png
    :align: center
 
    Constructing the Depth First Search Tree-13
    
 .. _fig_gdfse:
 
-.. figure:: gendfse.png
+.. figure:: Figures/gendfse.png
    :align: center
 
    Constructing the Depth First Search Tree-14
    
 .. _fig_gdfsf:
 
-.. figure:: gendfsf.png
+.. figure:: Figures/gendfsf.png
    :align: center
 
    Constructing the Depth First Search Tree-15
 
 .. _fig_gdfsg:
 
-.. figure:: gendfsg.png
+.. figure:: Figures/gendfsg.png
    :align: center
 
    Constructing the Depth First Search Tree-16
    
 .. _fig_gdfsh:
 
-.. figure:: gendfsh.png
+.. figure:: Figures/gendfsh.png
    :align: center
 
    Constructing the Depth First Search Tree-17
    
 .. _fig_gdfsi:
 
-.. figure:: gendfsi.png
+.. figure:: Figures/gendfsi.png
    :align: center
 
    Constructing the Depth First Search Tree-18
    
 .. _fig_gdfsj:
 
-.. figure:: gendfsj.png
+.. figure:: Figures/gendfsj.png
    :align: center
 
    Constructing the Depth First Search Tree-19
    
 .. _fig_gdfsk:
 
-.. figure:: gendfsk.png
+.. figure:: Figures/gendfsk.png
    :align: center
 
    Constructing the Depth First Search Tree-20
    
 .. _fig_gdfsl:
 
-.. figure:: gendfsl.png
+.. figure:: Figures/gendfsl.png
    :align: center
 
    Constructing the Depth First Search Tree-21
@@ -613,7 +613,7 @@ the tree constructed by the depth first search algorithm.
 .. _fig_dfstree:
 
 
-.. figure:: dfstree.png
+.. figure:: Figures/dfstree.png
    :align: center
    
    The Resulting Depth First Search Tree   
@@ -649,7 +649,7 @@ a graph.
 
 .. _fig_pancakes:
 
-.. figure:: pancakes.png
+.. figure:: Figures/pancakes.png
    :align: center
 
    The Steps for Making Pancakes       
@@ -688,7 +688,7 @@ search. The algorithm for the topological sort is as follows:
 
 .. _fig_pancakesDFS:
 
-.. figure:: pancakesDFS.png
+.. figure:: Figures/pancakesDFS.png
    :align: center
 
    Result of Depth First Search on the Pancake Graph
@@ -703,7 +703,7 @@ making steps.
 
 .. _fig_pancakesTS:
 
-.. figure:: pancakesTS.png
+.. figure:: Figures/pancakesTS.png
    :align: center
 
    Result of Topological Sort on Directed Acyclic Graph
@@ -732,7 +732,7 @@ away from the CS home page.
 
 .. _fig_cshome:
 
-.. figure:: cshome.png
+.. figure:: Figures/cshome.png
    :align: center
 
    The Graph Produced by Links from the Luther Computer Science Home Page      
@@ -760,7 +760,7 @@ components are identified by the different shaded areas.
 
 .. _fig_scc1:
         
-.. figure:: scc1.png
+.. figure:: Figures/scc1.png
    :align: center
 
    A Directed Graph with Three Strongly Connected Components
@@ -773,7 +773,7 @@ version of the graph in :ref:`Figure 27 <fig_scc1>` is shown in :ref:`Figure 28
 
 .. _fig_scc2:
 
-.. figure:: scc2.png
+.. figure:: Figures/scc2.png
    :align: center
 
    The Reduced Graph
@@ -794,7 +794,7 @@ graph then :math:`G^T` will contain and edge from node B to node A.
 .. _fig_tpa:
 
 
-.. figure:: transpose1.png
+.. figure:: Figures/transpose1.png
    :align: center
 
    A Graph :math:`G`
@@ -802,7 +802,7 @@ graph then :math:`G^T` will contain and edge from node B to node A.
 .. _fig_tpb:
 
 
-.. figure:: transpose2.png
+.. figure:: Figures/transpose2.png
    :align: center
 
    Its Transpose :math:`G^T`
@@ -837,7 +837,7 @@ running DFS on the transposed graph.
  
 .. _fig_sccalga:
 
-.. figure:: scc1a.png
+.. figure:: Figures/scc1a.png
    :align: center
    
    Finishing times for the original graph :math:`G`     
@@ -846,7 +846,7 @@ running DFS on the transposed graph.
      
 .. _fig_sccalgb:
 
-.. figure:: scc1b.png
+.. figure:: Figures/scc1b.png
    :align: center
    
    Finishing times for :math:`G^T`
@@ -861,7 +861,7 @@ we leave writing this program as an exercise.
           
 .. _fig_sccforest:
 
-.. figure:: sccforest.png
+.. figure:: Figures/sccforest.png
    :align: center
    
    The Strongly Connected Components as a Forest of Trees

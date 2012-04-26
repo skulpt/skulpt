@@ -130,12 +130,12 @@ point where the problem cannot get any smaller.
 
 .. _fig_recsumin:
 
-        .. figure:: sumlistIn.png
-           :align: center
-           :alt: image
+.. figure:: Figures/sumlistIn.png
+   :align: center
+   :alt: image
 
 
-        Series of Recursive Calls Adding a List of Numbers
+   Series of Recursive Calls Adding a List of Numbers
 
 When we reach the point where the problem is as simple as it can get, we
 begin to piece together the solutions of each of the small problems
@@ -146,9 +146,9 @@ problem, we have the solution to the whole problem.
 
 .. _fig_recsumout:
 
-        .. figure:: sumlistOut.png
-           :align: center
-           :alt: image
+.. figure:: Figures/sumlistOut.png
+   :align: center
+   :alt: image
 
    Series of Recursive Returns from Adding a List of Numbers
 
@@ -250,11 +250,11 @@ right side of the diagram.
 
 .. _fig_tostr:
 
-        .. figure:: toStr.png
-           :align: center
-           :alt: image
+.. figure:: Figures/toStr.png
+   :align: center
+   :alt: image
 
-           image
+   image
 
     Converting an Integer to a String in Base 10
 
@@ -286,11 +286,11 @@ to its base 2 string representation (``"1010"``).
 
 .. _fig_tostr2:
 
-        .. figure:: toStrBase2.png
-           :align: center
-           :alt: image
+.. figure:: Figures/toStrBase2.png
+   :align: center
+   :alt: image
 
-    Converting the Number 10 to its Base 2 String Representation
+   Converting the Number 10 to its Base 2 String Representation
 
 :ref:`Figure 4 <fig_tostr2>` shows that we get the results we are looking for,
 but it looks like the digits are in the wrong order. The algorithm works
@@ -378,7 +378,7 @@ them into the final result, ``"1010"``.
 
 .. _fig_recstack:
 
-.. figure:: recstack.png
+.. figure:: Figures/recstack.png
    :align: center
 
    Strings Placed on the Stack During Conversion
@@ -393,7 +393,7 @@ call stack after the return statement on line 4.
 
 .. _fig_callstack:
 
-.. figure:: callstack.png
+.. figure:: Figures/callstack.png
    :align: center
 
    Call Stack Generated from ``toStr(10,2)``
@@ -414,6 +414,3 @@ function.
 
 If you keep this idea of the stack in your head, you will find it much
 easier to write a proper recursive function.
-
-.. |image3| image:: recstack.png
-.. |image1| image:: callstack.png
