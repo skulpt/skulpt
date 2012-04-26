@@ -257,7 +257,13 @@ Sk.builtin.set.prototype['discard'] = new Sk.builtin.func(function(self, item)
 {
     if (self.v.mp$subscript(item) !== undefined)
     {
-        self.v.mp$ass_subscript(item, null);
+        var kf = Sk.builtin.hash;
+        var k = kf(item);
+        if (self.v[k] !== undefined) {
+            self.v.size -= 1;
+            delete self.v[k];
+        }
+        //self.v.mp$ass_subscript(item, null);
     }
     return null;
 });

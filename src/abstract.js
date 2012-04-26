@@ -349,8 +349,16 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 
 Sk.abstr.objectDelItem = function(o, key)
 {
-    if (o.mp$ass_subscript)
+    if (o.mp$ass_subscript) {
+        var kf = Sk.builtin.hash;
+        var k = kf(key)
+        if (o[k] !== undefined) {
+            o.size -= 1;
+            delete o[k];
+            return;
+        }
         return o.mp$ass_subscript(key, null);
+    }
     if (o.sq$ass_item)
     {
         var keyValue = Sk.misceval.asIndex(key);
@@ -358,6 +366,7 @@ Sk.abstr.objectDelItem = function(o, key)
             throw new TypeError("sequence index must be integer, not '" + key.tp$name + "'");
         return Sk.abstr.sequenceDelItem(o, keyValue);
     }
+    // if o is a slice do something else...
     throw new TypeError("'" + o.tp$name + "' object does not support item deletion");
 };
 goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);

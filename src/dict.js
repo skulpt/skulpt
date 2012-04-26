@@ -31,24 +31,17 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
-    if (w === null)
-    {
-        if (this[k] !== undefined)
-        {
-            this.size -=1;
-            delete this[k];
-        }
-        else
-        {
-            // todo; throw?
-        }
+    // if (this[k] !== undefined)
+    // {
+    //     this.size -=1;
+    //     delete this[k];
+    //     return;
+    // }
+    // only increment if it's not already used as a key
+    if ( !(k in this) ) {
+        this.size += 1;
     }
-    else
-    {
-        // only increment if it's not already used as a key
-        if ( !(k in this) ) this.size += 1;
-        this[k] = { lhs: key, rhs: w };
-    }
+    this[k] = { lhs: key, rhs: w };
 };
 
 Sk.builtin.dict.prototype.tp$iter = function()
