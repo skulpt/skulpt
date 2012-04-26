@@ -143,13 +143,10 @@ Sk.misceval.richCompareBool = function(v, w, op)
     }
     else
     {
-        
+
         if (op === "In") return Sk.abstr.sequenceContains(w, v);
         if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
 
-        if (typeof v !== typeof w) {
-            return false;
-        }
 
         var res;
         //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
@@ -228,6 +225,12 @@ Sk.misceval.richCompareBool = function(v, w, op)
             }
 
         }
+        if (typeof v !== typeof w) {
+            if (op === 'NotEq') return true;
+            else
+                return false;
+        }
+
     }
 
     // todo; some defaults, mostly to handle diff types -> false. are these ok?
