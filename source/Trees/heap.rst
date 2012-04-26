@@ -188,11 +188,11 @@ properly.
 
     def percUp(self,i):
         while i // 2 > 0:
-        if self.heapList[i] < self.heapList[i // 2]:
-           tmp = self.heapList[i // 2]
-           self.heapList[i // 2] = self.heapList[i]
-           self.heapList[i] = tmp
-        i = i // 2
+          if self.heapList[i] < self.heapList[i // 2]:
+             tmp = self.heapList[i // 2]
+             self.heapList[i // 2] = self.heapList[i]
+             self.heapList[i] = tmp
+          i = i // 2
 
 ::
 
@@ -237,9 +237,9 @@ Listing {lst:bh:pdown}.
         while (i * 2) <= self.currentSize:
             mc = self.minChild(i)
             if self.heapList[i] > self.heapList[mc]:
-            tmp = self.heapList[i]
-            self.heapList[i] = self.heapList[mc]
-            self.heapList[mc] = tmp
+                tmp = self.heapList[i]
+                self.heapList[i] = self.heapList[mc]
+                self.heapList[mc] = tmp
             i = mc
 
     def minChild(self,i):
@@ -247,9 +247,9 @@ Listing {lst:bh:pdown}.
             return i * 2
         else:
             if self.heapList[i*2] < self.heapList[i*2+1]:
-            return i * 2
+                return i * 2
             else:
-            return i * 2 + 1
+                return i * 2 + 1
 
 The code for the ``delmin`` operation is in Listing {lst:bh:del}. Note
 that once again the hard work is handled by a helper function, in this
