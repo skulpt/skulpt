@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 43363)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="328px"
+   height="363px"
+   viewBox="0 0 328 363"
+   enable-background="new 0 0 328 363"
+   xml:space="preserve"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="flowchart_nested_conditional.svg"
+   inkscape:export-filename="/home/dmitchell/thinkcspy/source/illustrations/ch05/flowchart_nested_conditional.png"
+   inkscape:export-xdpi="57.599998"
+   inkscape:export-ydpi="57.599998"><metadata
+   id="metadata81"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs79" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1280"
+   inkscape:window-height="947"
+   id="namedview77"
+   showgrid="false"
+   inkscape:zoom="1.553719"
+   inkscape:cx="169.44313"
+   inkscape:cy="203.03382"
+   inkscape:window-x="0"
+   inkscape:window-y="24"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<g
+   id="g3">
+	<rect
+   x="140.06346"
+   y="47.141998"
+   width="85.155067"
+   height="37.141998"
+   id="rect5"
+   style="fill:#ffffff;stroke:#000000;stroke-width:0.97649443" />
+	<text
+   font-size="12"
+   id="text7"
+   x="166.4639"
+   y="67.942398"
+   style="font-size:12px;font-family:MyriadPro-Regular">x &lt; y</text>
+
+</g>
+<line
+   x1="182.641"
+   y1="13.618"
+   x2="182.641"
+   y2="47.142"
+   id="line9"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<path
+   d="M227.293,64.42"
+   id="path11" />
+<path
+   d="M184.516,13.618c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.838-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C183.676,11.743,184.516,12.582,184.516,13.618L184.516,13.618z"
+   id="path13" />
+<path
+   d="M269.098,176.563c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.838-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C268.258,174.688,269.098,175.526,269.098,176.563L269.098,176.563z"
+   id="path15" />
+<path
+   d="M183.943,268.018c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C183.104,266.143,183.943,266.981,183.943,268.018L183.943,268.018z"
+   id="path17" />
+<path
+   d="M52.994,268.018c0,1.036-0.84,1.875-1.875,1.875l0,0c-1.035,0-1.875-0.839-1.875-1.875l0,0c0-1.036,0.84-1.875,1.875-1.875  l0,0C52.154,266.143,52.994,266.981,52.994,268.018L52.994,268.018z"
+   id="path19" />
+<g
+   id="g21">
+	<rect
+   x="71.304474"
+   y="120.827"
+   width="85.156067"
+   height="37.141998"
+   id="rect23"
+   style="fill:#ffffff;stroke:#000000;stroke-width:0.97649473" />
+	<text
+   font-size="12"
+   id="text25"
+   x="97.705597"
+   y="143.0322"
+   style="font-size:12px;font-family:MyriadPro-Regular">x &gt; y</text>
+
+</g>
+<g
+   id="g27">
+	<path
+   d="m 316.63512,151.491 c 0,6.627 -6.72785,12 -15.02977,12 h -68.7667 c -8.29963,0 -15.02977,-5.373 -15.02977,-12 v -18.188 c 0,-6.627 6.73014,-12 15.02977,-12 h 68.7667 c 8.30192,0 15.02977,5.373 15.02977,12 v 18.188 z"
+   id="path29"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#000000;stroke-width:1.06994212" />
+	<text
+   font-size="12"
+   id="text31"
+   x="226.8242"
+   y="145.7412"
+   style="font-size:12px;font-family:MyriadPro-Regular">statements_a</text>
+
+</g>
+<g
+   id="g33">
+	<path
+   d="m 231.56703,243.803 c 0,6.627 -6.72321,12 -15.0194,12 h -68.71926 c -8.2939,0 -15.0194,-5.373 -15.0194,-12 v -18.188 c 0,-6.627 6.7255,-12 15.0194,-12 h 68.71926 c 8.29619,0 15.0194,5.373 15.0194,12 v 18.188 z"
+   id="path35"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#000000;stroke-width:1.06957304" />
+	<text
+   font-size="12"
+   id="text37"
+   x="141.78999"
+   y="238.0527"
+   style="font-size:12px;font-family:MyriadPro-Regular">statements_b</text>
+
+</g>
+<g
+   id="g39">
+	<path
+   d="m 97.806699,243.803 c 0,6.627 -6.356773,12 -14.20079,12 H 18.632091 c -7.841854,0 -14.2007864,-5.373 -14.2007864,-12 v -18.188 c 0,-6.627 6.3589324,-12 14.2007864,-12 h 64.973818 c 7.844017,0 14.20079,5.373 14.20079,12 v 18.188 z"
+   id="path41"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#000000;stroke-width:1.04001689" />
+	<text
+   font-size="12"
+   id="text43"
+   x="10.7207"
+   y="238.0527"
+   style="font-size:12px;font-family:MyriadPro-Regular">statements_c</text>
+
+</g>
+<polyline
+   points="125.153,64.42 113.882,64.42 113.882,120.827 "
+   id="polyline45"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="238.741,64.42 267.223,64.42 267.223,120.827 "
+   id="polyline47"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="55.552,139.51 50.272,139.51 50.272,213.615 "
+   id="polyline49"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="170.464,139.51 182.188,139.51 182.068,213.615 "
+   id="polyline51"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="214.173,352.931 214.173,333.104 117.189,333.104 117.189,302.069 51.119,302.069   51.119,268.018 "
+   id="polyline53"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="117.189,302.069 182.188,302.069 182.068,268.018 "
+   id="polyline55"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<polyline
+   points="267.223,176.563 267.223,332.811 214.173,333.104 "
+   id="polyline57"
+   style="fill:none;stroke:#000000;stroke-opacity:1.0" />
+<rect
+   x="168.712"
+   y="137.682"
+   width="3.504"
+   height="3.657"
+   id="rect59" />
+<rect
+   x="53.8"
+   y="137.682"
+   width="3.504"
+   height="3.657"
+   id="rect61" />
+<rect
+   x="123.401"
+   y="62.592"
+   width="3.504"
+   height="3.657"
+   id="rect63" />
+<rect
+   x="236.989"
+   y="62.592"
+   width="3.504"
+   height="3.657"
+   id="rect65" />
+<text
+   transform="matrix(1 0 0 1 236.9902 51.6055)"
+   font-size="11"
+   id="text67"
+   style="font-weight:bold;-inkscape-font-specification:Sans Bold">True</text>
+
+<text
+   transform="matrix(1 0 0 1 169.3008 126.1748)"
+   font-size="11"
+   id="text69"
+   style="font-weight:bold;-inkscape-font-specification:Sans Bold">True</text>
+
+<text
+   transform="matrix(1 0 0 1 29.5068 126.1851)"
+   font-size="11"
+   id="text71"
+   style="font-weight:bold;-inkscape-font-specification:Sans Bold">False</text>
+
+<text
+   transform="matrix(1 0 0 1 98.1953 51.5645)"
+   font-size="11"
+   id="text73"
+   style="font-weight:bold;-inkscape-font-specification:Sans Bold">False</text>
+
+<polygon
+   points="214.221,355.431 218.923,350.431 209.422,350.431 "
+   id="polygon75" />
+</svg>
