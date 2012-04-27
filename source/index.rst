@@ -9,6 +9,16 @@ Welcome to Problem Solving with Algorithms and Data Structures
 
 By Brad Miller and David Ranum, Luther College
 
+CS1
+:::
+
+.. toctree::
+   :maxdepth: 2
+
+   introduction.rst
+   simpledata.rst
+   helloturtle.rst
+   functions.rst
 
 Introduction
 ::::::::::::
@@ -89,6 +99,17 @@ Graphs and Graph Algorithms
    Graphs/graphexercises.rst
    
 
+Acknowledgements
+::::::::::::::::
+.. toctree::
+    :maxdepth: 1
+
+    copyright.rst
+    prefaceinteractive.rst
+    foreword.rst
+    preface.rst
+    preface2e.rst
+    contrib.rst
 
 Indices and tables
 ::::::::::::::::::
