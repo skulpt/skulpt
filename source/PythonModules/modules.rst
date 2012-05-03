@@ -15,7 +15,7 @@ Modules
 
 .. video:: inputvid
     :controls:
-    :thumb: _static/modules.png
+    :thumb: ../_static/modules.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/modules.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/modules.webm
@@ -109,7 +109,7 @@ We will now turn our attention to a few other modules that you might find useful
 
 .. video:: randmodvid
     :controls:
-    :thumb: _static/mathrandommodule.png
+    :thumb: ../_static/mathrandommodule.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/mathrandommodule.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/mathrandommodule.webm

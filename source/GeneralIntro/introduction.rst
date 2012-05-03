@@ -159,7 +159,7 @@ Special Ways to Execute Python in this Book
 
 .. video:: codelensvid
     :controls:
-    :thumb: _static/activecodethumb.png
+    :thumb: ../_static/activecodethumb.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/activecodelens.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/activecodelens.webm

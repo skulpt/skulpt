@@ -30,7 +30,7 @@ Boolean Values and Boolean Expressions
 
 .. video:: booleanexpressions
    :controls:
-   :thumb: _static/booleanexpressions.png
+   :thumb: ../_static/booleanexpressions.png
 
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/booleanexpressions.mov
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/booleanexpressions.webm
@@ -184,7 +184,7 @@ Conditional Execution: Binary Selection
 
 .. video:: binaryselection
    :controls:
-   :thumb: _static/binaryselection.png
+   :thumb: ../_static/binaryselection.png
 
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/binaryselection.mov
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/binaryselection.webm
@@ -258,7 +258,7 @@ Omitting the `else` Clause: Unary Selection
 
 .. video:: unaryselection
    :controls:
-   :thumb: _static/unaryselection.png
+   :thumb: ../_static/unaryselection.png
 
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/unaryselection.mov
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/unaryselection.webm

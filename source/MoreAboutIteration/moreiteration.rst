@@ -80,7 +80,7 @@ The ``while`` Statement
 
 .. video:: whileloop
    :controls:
-   :thumb: _static/whileloop.png
+   :thumb: ../_static/whileloop.png
 
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/whileloop.mov
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/whileloop.webm

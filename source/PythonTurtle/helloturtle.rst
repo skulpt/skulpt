@@ -19,7 +19,7 @@ Hello, Little Turtles!
 
 .. video:: assignvid
     :controls:
-    :thumb: _static/turtleintro.png
+    :thumb: ../_static/turtleintro.png
 
     http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.mov
     http://knuth.luther.edu/~bmiller/thinkcsVideos/turtleintro.webm
@@ -245,7 +245,7 @@ The **for** Loop
 
 .. video:: forloopvid
    :controls:
-   :thumb: _static/for_loop.png
+   :thumb: ../_static/for_loop.png
 
    http://knuth.luther.edu/~bmiller/thinkcsVideos/for_loop.mov
    http://knuth.luther.edu/~bmiller/thinkcsVideos/for_loop.webm
@@ -398,7 +398,7 @@ The range Function
 
 .. video:: advrange
    :controls:
-   :thumb: _static/advrange.png
+   :thumb: ../_static/advrange.png
 
    http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.mov
    http://knuth.luther.edu/~bmiller/thinkcsVideos/AdvancedRange.webm

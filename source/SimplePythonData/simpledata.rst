@@ -251,7 +251,7 @@ Variables
 
 .. video:: assignvid
     :controls:
-    :thumb: _static/assignment.png
+    :thumb: ../_static/assignment.png
 
     http://knuth.luther.edu/~bmiller/thinkcsVideos/Variables.mov
     http://knuth.luther.edu/~bmiller/thinkcsVideos/Variables.webm
@@ -459,7 +459,7 @@ Statements and Expressions
 
 .. video:: expression_vid
     :controls:
-    :thumb: _static/expressions.png
+    :thumb: ../_static/expressions.png
 
     http://knuth.luther.edu/~bmiller/thinkcsVideos/Expressions.mov
     http://knuth.luther.edu/~bmiller/thinkcsVideos/Expressions.webm
@@ -638,7 +638,7 @@ Input
 
 .. video:: inputvid
     :controls:
-    :thumb: _static/inputthumb.png
+    :thumb: ../_static/inputthumb.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/input.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/input.webm
@@ -700,7 +700,7 @@ Order of Operations
 
 .. video:: precedencevid
     :controls:
-    :thumb: _static/precedencethumb.png
+    :thumb: ../_static/precedencethumb.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/precedence.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/precedence.webm
@@ -708,7 +708,7 @@ Order of Operations
 
 .. video:: associativityvid
     :controls:
-    :thumb: _static/associativitythumb.png
+    :thumb: ../_static/associativitythumb.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/associativity.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/associativity.webm
@@ -773,7 +773,7 @@ Reassignment
 
 .. video:: reassignmentvid
     :controls:
-    :thumb: _static/reassignmentthumb.png
+    :thumb: ../_static/reassignmentthumb.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/reassignment.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/reassignment.webm
@@ -832,7 +832,7 @@ Updating Variables
 
 .. video:: updatevid
     :controls:
-    :thumb: _static/updatethumb.png
+    :thumb: ../_static/updatethumb.png
 
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/update.mov
     http://knuth.luther.edu/~pythonworks/thinkcsVideos/update.webm

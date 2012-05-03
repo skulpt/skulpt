@@ -21,7 +21,7 @@ Functions
       
 .. video:: function_intro
    :controls:
-   :thumb: _static/function_intro.png
+   :thumb: ../_static/function_intro.png
 
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/FunctionsIntro.mov
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/FunctionsIntro.webm
@@ -501,7 +501,7 @@ The Accumulator Pattern
 
 .. video:: function_accumulator_pattern
    :controls:
-   :thumb: _static/accumulatorpattern.png
+   :thumb: ../_static/accumulatorpattern.png
 
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/accumulatorpattern.mov
    http://knuth.luther.edu/~pythonworks/thinkcsVideos/accumulatorpattern.webm
