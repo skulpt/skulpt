@@ -10,7 +10,7 @@ var checkMe = function(divid, expected, feedback) {
 	// log this to the db
 	feedBack('#'+divid+'_feedback',given == expected, feedback);
 	var answerInfo = 'answer:' +  (given==expected ? 'correct' : given);
-	jQuery.get("/eds/ajax/hsblog",{'event':'assses', 'act':answerInfo, 'div_id':divid});
+	logEbookEvent({'event':'assses', 'act':answerInfo, 'div_id':divid});
 };
 
 

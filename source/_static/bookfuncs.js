@@ -25,6 +25,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+/* This should come from a config object loaded by the book...
+   something like configjs  */
+
+eBookConfig = {}
+eBookConfig.ajaxURL = 'http://localhost:8080/eds/ajax/'
+eBookConfig.course = 'development'
+eBookConfig.logLevel = 10
+
 function handleEdKeys(ed, e) {
     if (e.keyCode === 13) {
         if (e.ctrlKey) {
@@ -111,10 +119,10 @@ function runit(myDiv,theButton,includes) {
     }
     var editor = cm_editors[myDiv+"_code"];
     if (editor.acEditEvent) {
-        jQuery.get("/eds/ajax/hsblog",{'event':'activecode','act': 'edit', 'div_id':myDiv}); // Log the run event
+        logBookEvent({'event':'activecode','act': 'edit', 'div_id':myDiv}); // Log the run event
         editor.acEditEvent = false;
     }
-    jQuery.get("/eds/ajax/hsblog",{'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
+    logBookEvent({'event':'activecode','act': 'run', 'div_id':myDiv}); // Log the run event
     var prog = "";
     var text = "";
     if (includes !== undefined ) {
@@ -153,6 +161,13 @@ function runit(myDiv,theButton,includes) {
     }
 }
 
+function logBookEvent(eventInfo) {
+    eventInfo.course = eBookConfig.course
+    if (eBookConfig.logLevel > 0){
+       jQuery.get(eBookConfig.ajaxURL+'hsblog',eventInfo); // Log the run event
+    }
+}
+
 function saveSuccess(data,status,whatever) {
     if (data.redirect) {
         alert("Did not save!  It appears you are not logged in properly")
@@ -171,25 +186,25 @@ function saveEditor(divName) {
     var editor = cm_editors[divName+"_code"];
     var data = {acid:divName, code:editor.getValue()};
     $(document).ajaxError(function(e,jqhxr,settings,exception){alert("Request Failed for"+settings.url)});
-    jQuery.post("/eds/ajax/saveprog",data,saveSuccess);
+    jQuery.post(eBookConfig.ajaxURL+'saveprog',data,saveSuccess);
     if (editor.acEditEvent) {
-        jQuery.get("/eds/ajax/hsblog",{'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
+        logBookEvent({'event':'activecode','act': 'edit', 'div_id':divName}); // Log the run event
         editor.acEditEvent = false;
     }
-    jQuery.get("/eds/ajax/hsblog",{'event':'activecode' ,'act':'save', 'div_id':divName}); // Log the run event
+    logBookEvent({'event':'activecode' ,'act':'save', 'div_id':divName}); // Log the run event
 
 }
 
 function requestCode(divName,sid) {
     var editor = cm_editors[divName+"_code"];
     
-    var url = "/eds/ajax/getprog"
+
     var data = {acid: divName}
     if (sid !== undefined) {
         data['sid'] = sid;
     }
-    jQuery.get("/eds/ajax/hsblog",{'event':'activecode', 'act':'load', 'div_id':divName}); // Log the run event
-    jQuery.get(url,data, loadEditor);
+    logBookEvent({'event':'activecode', 'act':'load', 'div_id':divName}); // Log the run event
+    jQuery.get(eBookConfig.ajaxURL+'getprog',data, loadEditor);
 }
 
 function loadEditor(data, status, whatever) {
@@ -302,7 +317,7 @@ function comment(blockid) {
 
 function sendGrade(grade,sid,acid) {
     data = {'sid':sid, 'acid':acid, 'grade':grade};
-    jQuery.get('/eds/ajax/savegrade',data);
+    jQuery.get(eBookConfig.ajaxURL+'savegrade',data);
 }
 
 function gotUser(data, status, whatever) {
@@ -321,7 +336,7 @@ function gotUser(data, status, whatever) {
 
 function addUserToFooter() {
     // test to see if online before doing this.
-    jQuery.get("/eds/ajax/getuser",null,gotUser)
+    jQuery.get(eBookConfig.ajaxURL+'getuser',null,gotUser)
 
 }
 $(document).ready(createEditors);
