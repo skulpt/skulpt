@@ -1338,7 +1338,7 @@ Regardless, the next action is to compute the square root.
 
 .. video:: list_unique
    :controls:
-   :thumb: _static/videothumb.png
+   :thumb: ../_static/videothumb.png
 
    http://knuth.luther.edu/~pythonworks/pythondsVideos/list_unique.mov
    http://knuth.luther.edu/~pythonworks/pythondsVideos/list_unique.webm
@@ -1406,7 +1406,7 @@ a new list.
 
 .. video:: listcomp
    :controls:
-   :thumb: _static/videothumb.png
+   :thumb: ../_static/videothumb.png
 
    http://knuth.luther.edu/~pythonworks/pythondsVideos/listcomp.mov
    http://knuth.luther.edu/~pythonworks/pythondsVideos/listcomp.webm
@@ -1601,7 +1601,7 @@ marker. Any characters that follow the # on a line are ignored.
 
 .. video:: monkeyvid
    :controls:
-   :thumb: _static/videothumb.png
+   :thumb: ../_static/videothumb.png
 
    http://knuth.luther.edu/~pythonworks/pythondsVideos/monkeys.mov
    http://knuth.luther.edu/~pythonworks/pythondsVideos/monkeys.webm

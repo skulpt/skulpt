@@ -99,7 +99,7 @@ Dictionaries
    Dictionaries/dictionaries.rst
 
 Recursion
-:::::::::
+::::::::::
 
 .. toctree::
    :maxdepth: 2

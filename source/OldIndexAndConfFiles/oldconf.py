@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Python Courseware'
-copyright = u'2012, Brad Miller, David Ranum'
+project = u'Problem Solving with Algorithms and Data Structures'
+copyright = u'2011, Brad Miller, Kent Lee, David Ranum'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -64,7 +64,7 @@ release = '3.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['ActiveIndexFiles/*','OldIndexAndConfFiles/*','ExtraStuff/*']
+exclude_patterns = ['index-thinkcs.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -166,7 +166,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PythonCoursewareProjectdoc'
+htmlhelp_basename = 'ProblemSolvingwithAlgorithmsandDataStructuresdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -216,7 +216,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'problemsolvingwithalgorithmsanddatastructures', u'Problem Solving with Algorithms and Data Structures Documentation',
-     [u'Brad Miller, David Ranum'], 1)
+     [u'Brad Miller, Kent Lee, David Ranum'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -229,10 +229,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PythonCourseware',
-   u'Python Courseware Project',
-   u'Brad Miller, David Ranum',
-   'PythonCoursewareProject', 'One line description of project.', 'Miscellaneous'),
+  ('index', 'ProblemSolvingwithAlgorithmsandDataStructures',
+   u'Problem Solving with Algorithms and Data Structures Documentation',
+   u'Brad Miller, Kent Lee, David Ranum',
+   'ProblemSolvingwithAlgorithmsandDataStructures', 'One line description of project.', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
