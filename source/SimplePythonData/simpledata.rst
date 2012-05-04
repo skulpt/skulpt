@@ -188,6 +188,34 @@ Remember not to put commas or spaces in your integers, no
 matter how big they are. Also revisit what we said in the previous chapter:
 formal languages are strict, the notation is concise, and even the smallest
 change might mean something quite different from what you intended. 
+
+**Check your understanding**
+
+.. mchoicemf:: test_question2_1_1
+   :answer_a: Print out the value and determine the data type based on the value printed.
+   :answer_b: Use the type function.
+   :answer_c: Use it in a known equation and print the result.
+   :answer_d: Look at the declaration of the variable.
+   :correct: b
+   :feedback_a: You may be able to determine the data type based on the printed value, but it may also be  deceptive, like when a string prints, there are no quotes around it. 
+   :feedback_b: The type function will tell you the class the value belongs to.
+   :feedback_c: Only numeric values can be used in equations.
+   :feedback_d: In Python variables are not declared.
+
+   How can you determine the type of a variable?
+
+.. mchoicemf:: test_question2_1_2
+   :answer_a: character
+   :answer_b: integer
+   :answer_c: float
+   :answer_d: string
+   :correct: d
+   :feedback_a: It is not a single character.
+   :feedback_b: The data is not numeric.
+   :feedback_c: The value is not numeric with a decimal.
+   :feedback_d: Strings can be enclosed in single quotes.
+
+   What is the data type of 'this is what kind of data'?
     
 
 .. index:: type converter functions, int, float, str, truncation
@@ -242,7 +270,23 @@ quotes are removed.  However, if we print the type, we can see that it is defini
     print(str(123.45))
     print(type(str(123.45)))
 
+**Check your understanding**
 
+.. mchoicemf:: test_question2_2_1
+   :answer_a: Nothing, it generates a runtime error.
+   :answer_b: 53
+   :answer_c: 54
+   :answer_d: 53.785
+   :correct: b
+   :feedback_a: The statement is valid Python code.  It calls the int function on 53.785 and then prints the value that is returned.
+   :feedback_b: The int function truncates all values after the decimal and prints the integer value.
+   :feedback_c: When converting to an integer, the int function does not round.
+   :feedback_d: The int function removes the fractional part of 53.785 and returns an integer, which is what is printed.
+
+   What value is printed by the following statement:
+   <pre>
+   print( int(53.785) )  
+   </pre>
 
 .. index:: variable, assignment, assignment statement, state snapshot
 
@@ -382,6 +426,26 @@ A great deal of programming is about having the computer remember things,
 e.g.  *The number of missed calls on your phone*, and then arranging to update
 or change the variable when you miss another call. 
 
+**Check your understanding**
+
+.. mchoicemf:: test_question2_3_2
+   :answer_a: Nothing is printed, a runtime error occurs.
+   :answer_b: Thursday
+   :answer_c: 32.5
+   :answer_d: 19
+   :correct: d
+   :feedback_a: It is not illegal to change the type of data that a variable holds.
+   :feedback_b: This is the first value assigned to the variable day, but the next statements reassign that variable to new values.
+   :feedback_c: This is the second value assigned to the variable day, but the next statement reassigns that variable to a new value.
+   :feedback_d: The variable day will contain the last value assigned to it when it is printed.
+
+   What is printed after the following set of statements?
+   <pre>
+   day = "Thursday"
+   day = 32.5
+   day = 19
+   print(day)
+   </pre>
 
 .. index:: keyword, underscore character
 
@@ -450,6 +514,17 @@ remember, what the variable is used for.
     the programmer, have to write some program code to calculate the average,
     or you must write an assignment statement to give a variable the value you
     want it to have.
+
+**Check your understanding**
+
+.. mchoicemf:: test_question2_4_1
+   :answer_a: True
+   :answer_b: False
+   :correct: b
+   :feedback_a: -  The + character is not allowed in variable names.
+   :feedback_b: -  The + character is not allowed in variable names (everything else in this name is fine).
+   
+   True or False:  the following is a legal variable name in Python:   A_good_grade_is_A+
 
 
 .. index:: statement
@@ -628,6 +703,57 @@ compute the correct values.
 
     print("Hrs=", hours, "mins=", minutes, "secs=", secs_finally_remaining)
 
+**Check your understanding**
+
+.. mchoicemf:: test_question2_6_1 
+   :answer_a: 4.5
+   :answer_b: 5
+   :answer_c: 4
+   :answer_d: 2
+   :correct: a
+   :feedback_a: The / operator does exact division and returns a floating point result.
+   :feedback_b: The / operator does exact division and returns a floating point result.
+   :feedback_c: The / operator does exact division and returns a floating point result.
+   :feedback_d: The / operator does exact division and returns a floating point result.
+   
+   What is printed from the following statement?
+   <pre>
+   print (18 / 4)
+   </pre>
+
+	
+.. mchoicemf:: test_question2_6_2
+   :answer_a: 4.25
+   :answer_b: 5
+   :answer_c: 4 
+   :answer_d: 2
+   :correct: c
+   :feedback_a: -  The // operator does integer division and returns an integer result 
+   :feedback_b: - The // operator does integer division and returns an integer result, but it truncates the result of the division.  It does not round.
+   :feedback_c: - The // operator does integer division and returns the truncated integer result
+   :feedback_d: - The // operator does integer division and returns the result of the division on an integer (not the remainder).
+   
+   What is printed from the following statement?
+   <pre>
+   print (18 // 4)
+   </pre>
+
+
+.. mchoicemf:: test_question2_6_3
+   :answer_a: 4.25
+   :answer_b: 5
+   :answer_c: 4 
+   :answer_d: 2
+   :correct: d
+   :feedback_a: The % operator returns the remainder after division. 
+   :feedback_b: The % operator returns the remainder after division. 
+   :feedback_c: The % operator returns the remainder after division. 
+   :feedback_d: The % operator returns the remainder after division. 
+
+   What is printed from the following statement?
+   <pre>
+   print (18 % 4)
+   </pre>
 
 .. index:: input, input dialog
 
@@ -690,7 +816,25 @@ we will convert that string to an integer.  From there the process is the same a
 The variable ``str_seconds`` will refer to the string that is entered by the user. As we said above, even though this string may be ``7684``, it is still a string and not a number.  To convert it to an integer, we use the ``int`` function.
 The result is referred to by ``total_secs``.  Now, each time you run the program, you can enter a new value for the number of seconds to be converted.
 
+**Check your understanding**
 
+.. mchoicemf:: test_question2_7_1 
+   :answer_a: &lt;class 'str'&gt;
+   :answer_b: &lt;class 'int'&gt;
+   :answer_c: &lt;class 18&gt;
+   :answer_d: 18
+   :correct: a
+   :feedback_a: All input from users is read in as a string.
+   :feedback_b: Even though the user typed in an integer, it does not come into the program as an integer.
+   :feedback_c: 18 is the value of what the user typed, not the type of the data.
+   :feedback_d: 18 is the value of what the user typed, not the type of the data.
+
+   What is printed from the following statements?
+   <pre>
+   n = input("Please enter your age: ")
+   # user types in 18
+   print ( type(n) )
+   </pre>
 
 
 .. index:: order of operations, rules of precedence
@@ -764,7 +908,40 @@ rules for its mathematical operators that mathematics does.
 .. The immediate mode command prompt of Python is great for exploring and
 .. experimenting with expressions like this.       
 
+**Check your understanding**    
 
+.. mchoicemf:: test_question2_8_1 
+   :answer_a: 14
+   :answer_b: 24
+   :answer_c: 3
+   :answer_d: 13.667
+   :correct: a
+   :feedback_a: Using parentheses, the expression is evaluated as (2*5) first, then (10 // 3), then (16-3), and then (13+1).
+   :feedback_b: Remember that * has precedence over  -.
+   :feedback_c: Remember that // has precedence over -.
+   :feedback_d: Remember that // does integer division.  
+
+   What is the value of the following expression:
+   <pre>
+   16 - 2 * 5 // 3 + 1
+   </pre>
+
+
+.. mchoicemf:: test_question2_8_2 
+   :answer_a: 768
+   :answer_b: 128
+   :answer_c: 12
+   :answer_d: 256
+   :correct: a
+   :feedback_a: Exponentiation has precedence over multiplication, but its precedence goes from right to left!  So 2 ** 3 is 8, 2 ** 8 is 256 and 256 * 3 is 768.  
+   :feedback_b: Exponentiation (**) is processed right to left, so take 2 ** 3 first.  
+   :feedback_c: There are two exponentiations.
+   :feedback_d: Remember to multiply by 3.
+   
+   What is the value of the following expression:
+   <pre>
+   2 ** 2 ** 3 * 3
+   </pre>
 
 
 
@@ -826,6 +1003,27 @@ Line 4 changes the value of ``a`` but does not change the value of
 	chose to use the tokens ``=`` for assignment, and ``==`` for equality.  This is a popular
 	choice also found in languages like C, C++, Java, and C#.
 
+**Check your understanding**
+
+.. mchoicemf:: test_question2_9_1 
+   :answer_a: x is 15 and y is 15
+   :answer_b: x is 22 and y is 22
+   :answer_c: x is 15 and y is 22
+   :answer_d: x is 22 and y is 15
+   :correct: d
+   :feedback_a: Look at the last assignment statement which gives x a different value.
+   :feedback_b: No, x and y are two separate variables.  Just because x changes in the last assignment statement, it does not change the value that was copied into y in the second statement.
+   :feedback_c: Look at the last assignment statement, which reassigns x, and not y.
+   :feedback_d: Yes, x has the value 22 and y the value 15.
+
+
+   After the following statements, what are the values of x and y?
+   <pre>
+   x = 15
+   y = x
+   x = 22
+   </pre>
+
 
 Updating Variables
 ------------------
@@ -884,6 +1082,27 @@ a variable, which means the same as incrementing it by 1.
      this is another oline textbook by Mark Pilgrim.  If you've had some
      programming experience already this book takes you off the deep end with
      both feet.
+
+**Check your understanding**
+
+.. mchoicemf:: test_question2_10_1 
+   :answer_a: 12
+   :answer_b: -1
+   :answer_c: 11
+   :answer_d: Nothing.  An error occurs because x can never be equal to x - 1
+   :correct: c
+   :feedback_a: The value of x changes in the second statement.
+   :feedback_b: In the second statement, evaluate the current value of x before subtracting 1.
+   :feedback_c: Yes, this statement sets the value of x equal to the current value minus 1.
+   :feedback_d: Remember that variables in Python are different from variables in math in that they (temporarily) hold values, but can be reassigned.
+
+
+   What is printed by the following statements?
+   <pre>
+   x = 12
+   x = x - 1
+   print (x)
+   </pre>
 
 
 Glossary

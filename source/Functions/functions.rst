@@ -201,6 +201,121 @@ been defined, we can call it as many times as we like with whatever actual param
 
     .. actex:: scratch_1
 
+**Check your understanding**
+
+.. mchoicemf:: test_question5_1_1
+   :answer_a: A named sequence of statements.
+   :answer_b: Any sequence of statements.
+   :answer_c: A mathematical expression that calculates a value.
+   :answer_d: A statement of the form x = 5 + 4.
+   :correct: a
+   :feedback_a: Yes, a function is a named sequence of statements.
+   :feedback_b: While functions contain sequences of statements, not all sequences of statements are considered functions.
+   :feedback_c: While some functions do calculate values, the python idea of a function is slightly different from the mathematical idea of a function in that not all functions calculate values.  Consider, for example, the turtle functions in this section.   They made the turtle draw a specific shape, rather than calculating a value.
+   :feedback_d: This statement is called an assignment statement.  It assigns the value on the right (9), to the name on the left (x).
+
+   What is a function in Python?
+
+.. mchoicemf:: test_question5_1_2
+   :answer_a: To improve the speed of execution
+   :answer_b: To help the programmer organize programs into chunks that match how they think about the solution to the problem.
+   :answer_c: All Python programs must be written using functions
+   :answer_d: To calculate values.
+   :correct: b
+   :feedback_a: Functions have little effect on how fast the program runs.
+   :feedback_b: While functions are not required, they help the programmer better think about the solution by organizing pieces of the solution into logical chunks that can be reused.
+   :feedback_c: In the first several chapters, youíve seen many examples of Python programs written without the use of functions.  While writing and using functions is desirable and essential for good programming style as your programs get longer, it is not required.
+   :feedback_d: Not all functions calculate values.  
+
+   What is one main purpose of a function?
+
+.. mchoicemf:: test_question5_1_3
+   :answer_a: def drawCircle(t):
+   :answer_b: def drawCircle:
+   :answer_c: drawCircle(t, sz):
+   :answer_d: def drawCircle(t, sz)
+   :correct: a 
+   :feedback_a: A function may take zero or more parameters.  It does not have to have two.  In this case the size of the circle might be specified in the body of the function.
+   :feedback_b: A function needs to specify its parameters in its header.
+   :feedback_c: A function definition needs to include the keyword def.
+   :feedback_d: A function definition header must end in a colon (:).
+
+   Which of the following is a valid function header (first line of a function definition)?
+
+.. mchoicemf:: test_question5_1_4
+   :answer_a: def drawSquare(t, sz)
+   :answer_b: drawSquare
+   :answer_c: drawSquare(t, sz)
+   :answer_d: Make turtle t draw a square with side sz.
+   :correct: b
+   :feedback_a: This line is the complete function header (except for the semi-colon) which includes the name as well as several other components.
+   :feedback_b: Yes, the name of the function is given after the keyword def and before the list of parameters.
+   :feedback_c: This includes the function name and its parameters
+   :feedback_d: This is a comment stating what the function does.
+
+   What is the name of the following function?
+   <pre>
+   def drawSquare(t, sz):
+       """Make turtle t draw a square of with side sz."""
+       for i in range(4):
+           t.forward(sz)
+           t.left(90)
+   </pre>
+
+
+.. mchoicemf:: test_question5_1_5
+   :answer_a: i
+   :answer_b: t
+   :answer_c: t, sz
+   :answer_d: t, sz, i
+   :correct: c
+   :feedback_a: i is a variable used inside of the function, but not a parameter, which is passed in to the function.
+   :feedback_b: t is only one of the parameters to this function.   
+   :feedback_c: Yes, the function specifies two parameters: t and sz.
+   :feedback_d: the parameters include only those variables whose values that the function expects to receive as input.  They are specified in the header of the function.
+
+   What are the parameters of the following function?
+   <pre>
+   def drawSquare(t, sz):
+       """Make turtle t draw a square of with side sz."""
+       for i in range(4):
+	   t.forward(sz)
+	   t.left(90)
+   </pre>
+
+
+.. mchoicemf:: test_question5_1_6
+   :answer_a: def drawSquare(t, sz)
+   :answer_b: drawSquare
+   :answer_c: drawSquare(10)
+   :answer_d: drawSquare(alex, 10):
+   :answer_e: drawSquare(alex, 10)
+   :correct: e
+   :feedback_a: No, t and sz are the names of the formal parameters to this function.  When the function is called, it requires actual values to be passed in.
+   :feedback_b: A function call always requires parentheses after the name of the function.
+   :feedback_c: This function takes two parameters (arguments)
+   :feedback_d: A colon is only required in a function definition.  It will cause an error with a function call.
+   :feedback_e: Since alex was already previously defined and 10 is a value, we have passed in two correct values for this function.
+
+   Considering the function below, which of the following statements correctly invokes, or calls, this function (i.e., causes it to run)?  Assume we already have a turtle named alex.
+   <pre>
+   def drawSquare(t, sz):
+       """Make turtle t draw a square of with side sz."""
+       for i in range(4):
+           t.forward(sz)
+	   t.left(90)
+   </pre>
+
+
+.. mchoicemf:: test_question5_1_7
+   :answer_a: True
+   :answer_b: False
+   :correct: a
+   :feedback_a: Yes, you can call a function multiple times by putting the call in a loop.
+   :feedback_b: One of the purposes of a function is to allow you to call it more than once.   Placing it in a loop allows it to executed multiple times as the body of the loop runs multiple times.
+
+   True or false: A function can be called several times by placing a function call in the body of a loop.
+
 Functions that return values
 ----------------------------
 
@@ -375,6 +490,41 @@ function returns.
 
     .. actex:: scratch_2
 
+**Check your understanding**
+
+.. mchoicemf:: test_question5_2_1
+   :answer_a: You should never use a print statement in a function definition.
+   :answer_b: You should not have any statements in a function after the return statement.  Once the function gets to the return statement it will immediately stop executing the function.
+   :answer_c: You must calculate the value of x+y+z before you return it.
+   :answer_d: A function cannot return a number.
+   :correct: b
+   :feedback_a: Although you should not mistake print for return, you may include print statements inside your functions.
+   :feedback_b: This is a very common mistake so be sure to watch out for it when you write your code!
+   :feedback_c: Python will automatically calculate the value x+y+z and then return it in the statement as it is written
+   :feedback_d: Functions can return any legal data, including (but not limited to) numbers, strings, turtles, etc.
+
+   What is wrong with the following function definition:
+   <pre>
+   def addEm(x, y, z):
+       return x+y+z
+       print('the answer is', x+y+z)
+   </pre>
+
+.. mchoicemf:: test_question5_2_2
+   :answer_a: None (no value)
+   :answer_b: The value of x+y+z
+   :answer_c: The string 'x+y+z'
+   :correct: a
+   :feedback_a: We have accidentally used print where we mean return.  This is a VERY COMMON mistake so watch out!  This mistake is also particularly difficult to find because when you run the function the output looks the same.  It is not until you try to assign its value to a variable that you can notice a difference.
+   :feedback_b: Careful!  This is a very common mistake.  Here we have printed the value x+y+z but we have not returned it.  To return a value we MUST use the return keyword.
+   :feedback_c: x+y+z calculates a number (assuming x+y+z are numbers) which represents the sum of the values x, y and z.
+
+   What will the following function return?
+   <pre>
+   def addEm(x, y, z):
+       print x+y+z
+   </pre>
+
 Variables and parameters are local
 ----------------------------------
 
@@ -496,6 +646,41 @@ But this example demonstrates that that is clearly not how Python operates.
 
     .. actex:: scratch_3
 
+**Check your understanding**
+
+.. mchoicemf:: test_question5_3_1
+   :answer_a: Its value
+   :answer_b: The range of code where a variable has a certain value.
+   :answer_c: Its name
+   :correct: b
+   :feedback_a: Value is the contents of the variable.  Scope concerns where the variable is &quot;known&quot;.  
+   :feedback_b: 
+   :feedback_c: The name of a variable is just an identifier or alias.  Scope concerns where the variable is &quot;known&quot;.
+
+   What is a variable's scope?
+
+.. mchoicemf:: test_question5_3_2
+   :answer_a: A temporary variable that is only used inside a function
+   :answer_b: The same as a parameter
+   :answer_c: Another name for any variable
+   :correct: a
+   :feedback_a: Yes, a local variable is a temporary variable that is only known in the function it is defined in.
+   :feedback_b: While parameters may be considered local variables, functions may also define and use additional local variables.
+   :feedback_c: Variables that are used outside a function are not local, but rather global variables.
+
+   What is a local variable?
+
+.. mchoicemf:: test_question5_3_3
+   :answer_a: Yes, and there is no reason not to.
+   :answer_b: Yes, but it is considered bad form.
+   :answer_c: No, it will cause an error.
+   :correct: b
+   :feedback_a: While there is no problem as far as Python is concerned, it is generally considered bad style because of the potential for the programmer to get confused.
+   :feedback_b: it is generally considered bad style because of the potential for the programmer to get confused.  If you must use global variables (also generally bad form) make sure they have unique names.
+   :feedback_c: Python manages global and local scope separately and has clear rules for how to handle variables with the same name in different scopes, so this will not cause a Python error.
+
+   Can you use the same name for a local variable as a global variable?
+
 The Accumulator Pattern
 -----------------------
 
@@ -584,6 +769,31 @@ Here is the same program in codelens.  Step thru the function and watch the "run
 .. admonition:: Scratch Editor
 
     .. actex:: scratch_4
+
+**Check your understanding**
+
+.. mchoicemf:: test_question5_4_1
+   :answer_a: The square function will return x instead of x*x
+   :answer_b: The square function will cause an error
+   :answer_c: The square function will work as expected and return x*x
+   :answer_d: The square function will return 0 instead of x*x
+   :correct: a
+   :feedback_a: The variable runningtotal will be reset to 0 each time through the loop.   However because this assignment happens as the first instruction, the next instruction in the loop will set it back to x.   When the loop finishes, it will have the value x, which is what is returned.
+   :feedback_b: Assignment statements are perfectly legal inside loops and will not cause an error.
+   :feedback_c: By putting the statement that sets runningtotal to 0 inside the loop, that statement gets executed every time through the loop, instead of once before the loop begins.  The result is that runningtotal is ìclearedî (reset to 0) each time through the loop. 
+   :feedback_d: The line runningtotal=0 is the first line in the for loop, but immediately after this line, the line runningtotal = runningtotal + x will execute, giving runningtotal a non-zero value  (assuming x is non-zero).
+
+   Consider the following code:
+   <pre>
+   def square(x):
+       runningtotal = 0
+       for counter in range(x):
+           runningtotal = runningtotal + x
+       return runningtotal
+   </pre>
+   What happens if you put the initialization of runningtotal (the    
+   line runningtotal = 0) inside the for loop as the first 
+   instruction in the loop?
 
 Functions can call other functions
 ----------------------------------
@@ -743,6 +953,7 @@ demonstrates two:
 
     .. actex:: scratch_5
 
+
 Flow of execution summary
 -------------------------
 
@@ -798,6 +1009,64 @@ until you reach a point where that function is called.
 .. admonition:: Scratch Editor
 
     .. actex:: scratch_6
+
+**Check your understanding**
+
+.. mchoicemf:: test_question5_6_1
+   :answer_a: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+   :answer_b: 1, 2, 3, 5, 6, 7, 9, 10, 11
+   :answer_c: 9, 10, 11, 1, 2, 3, 5, 6, 7
+   :answer_d: 9, 10, 5, 6, 7, 1, 2, 3, 11
+   :answer_e: 1, 5, 9, 10, 6, 2, 3, 7, 11
+   :correct: e
+   :feedback_a: Although Python typically processes lines in order from top to bottom, function definitions and calls are an exception to this rule.
+   :feedback_b: Although Python typically processes lines in order from top to bottom, function definitions and calls are an exception to this rule.  Although this order skips blank lines, it still lists the lines of code in order. 
+   :feedback_c: This is close, in that Python will not execute the functions until after they are called, but there are two problems here.  First, Python does not know which lines are function definitions until it processes them, so it must at least process the function headers before skipping over the functions. Section, notice that line 10 involves a function call.  Python must execute the function square before moving on to line 11.
+   :feedback_d: This is close, in that Python will not execute the functions until after they are called, but there is one problem here.  Python does not know which lines are function definitions until it processes them, so it must at least process the function headers before skipping over the functions.
+   :feedback_e: Python starts at line 1, notices that it is a function definition and skips over all of the lines in the function definition until it finds a line that it no longer included in the function (line 5).  It then notices line 5 is also a function definition and again skips over the function body to line 9.  On line 10 it notices it has a function to execute, so it goes back and executes the body of that function.  Notice that that function includes another function call.  Finally, it will return to line 11 after the function square is complete.
+
+   Consider the following Python code. Note that line numbers are included on the left.
+   <pre>
+   1	def pow(b, p):
+   2	    y = b ** p
+   3	    return y
+   4	
+   5	def square(x):
+   6	    a = pow(x, 2)
+   7	    return a
+   8	
+   9	n = 5
+   10   result = square(n)
+   11   print(result)
+   </pre>
+   Which of the following best reflects the order in which these lines of code are processed in Python?
+
+.. mchoicemf:: test_question5_6_2
+   :answer_a: 25
+   :answer_b: 5
+   :answer_c: 125
+   :answer_d: 32
+   :correct: a
+   :feedback_a: The function square returns the square of its input (via a call to pow)
+   :feedback_b: What is printed is the output of the square function.  5 is the input to the square function.
+   :feedback_c: Notice that pow is called from within square with a base (b) of 5 and a power (p) of two.
+   :feedback_d: Notice that pow is called from within square with a base (b) of 5 and a power (p) of two.
+
+   Consider the following Python code. Note that line numbers are included on the left.
+   <pre>
+   1	def pow(b, p):
+   2	    y = b ** p
+   3	    return y
+   4	
+   5	def square(x):
+   6	    a = pow(x, 2)
+   7	    return a
+   8	
+   9	n = 5
+   10   result = square(n)
+   11   print(result)
+   </pre>
+   What does this function print?
 
 A Turtle Bar Chart
 ------------------

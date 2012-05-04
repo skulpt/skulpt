@@ -286,7 +286,8 @@ The following sample file contains one line for each student in an imaginary cla
 
    .. actex:: ex_10_3
 
-Here is a file called ``lab_data.dat`` that contains some sample data from a lab experiment.
+   Here is a file called ``lab_data.dat`` that contains some sample data from a lab experiment.
+
 
 .. raw:: html
 
@@ -336,7 +337,8 @@ Here is a file called ``lab_data.dat`` that contains some sample data from a lab
 	draw the best fit line, in a different color, through the points.	
 
     .. actex:: ex_10_4
-    
+
+
 5.  At the end of this chapter is a very long file called ``mystery.dat`` The lines of this 
     file contain either the word UP or DOWN or a pair of numbers.  UP and DOWN are instructions
     for a turtle to lift up or put down its tail.  The pair of numbers are some x,y coordinates.
@@ -345,6 +347,7 @@ Here is a file called ``lab_data.dat`` that contains some sample data from a lab
     
     .. actex:: ex_10_5
     
+
 .. raw:: html
 
    <pre id="mystery.dat">

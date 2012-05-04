@@ -105,6 +105,23 @@ is legal and ``7 = a`` is not. (Can you explain why?)
 
     .. actex:: scratch_6_1
 
+**Check your understanding**
+
+.. mchoicema:: test_question6_1_1
+   :answer_a: True
+   :answer_b: 3 == 4
+   :answer_c: 3 + 4
+   :answer_d: 3 + 4 == 7
+   :answer_e: &quot;False&quot;
+   :correct: a,b,d
+   :feedback_a: True and False are both Boolean literals.
+   :feedback_b: The comparison between two numbers via == results in either True or False (in this case False),  both Boolean values.
+   :feedback_c:  3+4 evaluates to 7, which is a number, not a Boolean value.
+   :feedback_d: 3+4 evaluates to 7.  7 == 7 then evaluates to True, which is a Boolean value.
+   :feedback_e: With the double quotes surrounding it, False is interpreted as a string, not a Boolean value.  If the quotes had not been included, False alone is in fact a Boolean value.
+
+   Which of the following is a Boolean expression?  Select all that apply.
+
 .. index::
     single: logical operator
     single: operator; logical 
@@ -143,6 +160,21 @@ is true if ``x > y`` is false, that is, if ``x`` is less than or equal to
 
     .. actex:: scratch_6_2
 
+**Check your understanding**
+
+.. mchoicemf:: test_question6_2_1
+   :answer_a: x &gt; 0 and &lt; 5
+   :answer_b: 0 &lt; x &lt; 5
+   :answer_c: x &gt; 0 or x &lt; 5
+   :answer_d: x &gt; 0 and x &lt; 5
+   :correct: d
+   :feedback_a: Each comparison must be between exactly two values.  In this case the right-hand expression &lt; 5 lacks a value on its left.
+   :feedback_b: This is not legal syntax in Python.  To make multiple comparisons you must use and or or.
+   :feedback_c: Although this is legal Python syntax, the expression is incorrect.  It will evaluate to true for all numbers that are either greater than 0 or less than 5.  Because all numbers are either greater than 0 or less than 5, this expression will always be True.
+   :feedback_d: Yes, with an and keyword both expressions must be true so the number must be greater than 0 an less than 5 for this expression to be true.
+
+   What is the correct Python expression for checking to see if a number stored in a variable x is between 0 and 5.
+
 Precedence of Operators
 -----------------------
 
@@ -167,6 +199,20 @@ Level     Category        Operators
 
     .. actex:: scratch_6_3
 
+**Check your understanding**
+
+.. mchoicemf:: test_question6_3_1
+   :answer_a: ((5*3) &gt; 10) and ((4+6) == 11)
+   :answer_b: (5*(3 &gt; 10)) and (4 + (6 == 11))
+   :answer_c: ((((5*3) &gt; 10) and 4)+6) == 11
+   :answer_d: ((5*3) &gt; (10 and (4+6))) == 11
+   :correct: a
+   :feedback_a: Yes, * and + are the strongest binding, followed by &gt; and ==, and then the keyword &quot;and&quot;
+   :feedback_b: Arithmetic operators (*, +) bind stronger than comparison operators (&gt;, ==)
+   :feedback_c: This grouping assumes Python simply binds from left to right, which is incorrect.  It follows the binding precedence listed in the table in this section.
+   :feedback_d: This grouping assumes that &quot;and&quot; has a stronger binding precedence than ==, which is not true. 
+
+   Which of the following properly expresses the  precedence of operators (using parentheses) in the following expression: 5*3 > 10 and 4+6==11
 
 .. index:: conditional branching, conditional execution, if, elif, else,
            if statement, compound statement, statement block, block, body,
@@ -250,6 +296,60 @@ There is no limit on the number of statements that can appear under the two clau
 
     .. actex:: scratch_6_4
 
+**Check your understanding**
+
+.. mchoicemf:: test_question6_4_1
+   :answer_a: Just one.
+   :answer_b: Zero or more.
+   :answer_c: One or more.
+   :answer_d: One or more, and each must contain the same number.
+   :correct: c
+   :feedback_a: Each block may also contain more than one.
+   :feedback_b: Each block must contain at least one statement.
+   :feedback_c: Yes, a block must contain at least one statement and can have many statements.
+   :feedback_d: The blocks may contain different numbers of statements.
+
+   How many statements can appear in each block (the if and the else) in a conditional statement?
+
+.. mchoicemf:: test_question6_4_2
+   :answer_a: <br>TRUE
+   :answer_b: <br>FALSE
+   :answer_c: <br>TRUE <br> FALSE
+   :answer_d: Nothing
+   :correct: b
+   :feedback_a: TRUE is printed by the if-block, which only executes if the conditional (in this case, 4+5 == 10) is true.  In this case 5+4 is not equal to 10.
+   :feedback_b: Since 4+5==10 evaluates to False, Python will skip over the if block and execute the statement in the else block.
+   :feedback_c: Python would never print both TRUE and FALSE because it will only execute one of the if-block or the else-block, but not both.
+   :feedback_d: Python will always execute either the if-block (if the condition is true) or the else-block (if the condition is false).  It would never skip over both blocks.
+
+   What does the following code print?
+   <pre>
+   if (4 + 5 == 10):
+       print TRUE
+   else:
+       print FALSE
+   </pre>
+
+.. mchoicemf:: test_question6_4_3
+   :answer_a: <br>TRUE 
+   :answer_b: <br>TRUE <br> FALSE
+   :answer_c: <br>FALSE <br> TRUE
+   :answer_d: <br>TRUE<br>FALSE<br>TRUE<br>
+   :correct: c
+   :feedback_a: Although TRUE is printed after the if-else statement completes, both blocks within the if-else statement print something too.  In this case, Python would have had to have skipped both blocks in the if-else statement, which it never would do.
+   :feedback_b: Because there is a TRUE printed after the if-else statement ends, Python will always print TRUE as the last statement.
+   :feedback_c: Python will print FALSE from within the else-block (because 5+4 does not equal 10), and then print TRUE after the if-else statement completes.
+   :feedback_d: To print these three lines, Python would have to execute both blocks in the if-else statement, which it can never do.
+
+   What does the following code print?
+   <pre>
+   if (4 + 5 == 10):
+       print TRUE
+   else:
+       print FALSE
+   print TRUE
+   </pre>
+
 
 .. index:: alternative execution, branch, wrapping code in a function
 
@@ -290,6 +390,45 @@ What would be printed if the value of `` x`` is negative?  Try it.
 .. admonition:: Scratch Editor
 
     .. actex:: scratch_6_5
+
+**Check your understanding**
+
+.. mchoicemf:: test_question6_5_1
+   :answer_a: <br>This is always printed
+   :answer_b: <br>The negative number -10 is not valid here <br>This is always printed
+   :answer_c: <br>The negative number -10 is not valid here<br>
+   :answer_d: It will cause an error because every if must have an else clause.
+   :correct: b
+   :feedback_a: Because -10 is less than 0, Python will execute the body of the if-statement here.
+   :feedback_b: Python executes the body of the if-block as well as the statement that follows the if-block.
+   :feedback_c: Python will also execute the statement that follows the if-block (because it is not enclosed in an else-block, but rather just a normal statement).
+   :feedback_d: It is valid to have an if-block without a corresponding else-block (though you cannot have an else-block without a corresponding if-block).
+
+   What does the following code print?
+   <pre>
+   x = -10
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   print("This is always printed")
+   </pre>
+
+.. mchoicemf:: test_question6_5_2
+   :answer_a: No
+   :answer_b: Yes
+   :correct: b
+   :feedback_a: Every else-block must have exactly one corresponding if-block.  If you want to chain if-else statements together, you must use the else if construct, described in section 6.7.
+   :feedback_b: This will cause an error because the second else-block is not attached to a corresponding if-block.
+
+   Will the following code cause an error? 
+   <pre>
+   x = -10
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   else:
+       print(x, " is a positive number")
+   else:
+       print("This is always printed")
+   </pre>
 
 .. index::
     single: nested conditionals
@@ -364,6 +503,27 @@ If you are still a bit unsure, here is the same selection as part of a codelens 
 
     .. actex:: scratch_6_6
 
+**Check your understanding**
+
+.. mchoicemf:: test_question6_6_1
+   :answer_a: No
+   :answer_b: Yes
+   :correct: a
+   :feedback_a: This is a legal nested if-else statement.  The inner if-else statement is contained completely within the body of the outer else-block.
+   :feedback_b: This is a legal nested if-else statement.  The inner if-else statement is contained completely within the body of the outer else-block.
+
+   Will the following code cause an error?
+   <pre>
+   x = -10
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   else:
+       if x > 0:
+           print(x, " is a positive number")
+       else:
+           print(x," is 0")
+   </pre>
+
 .. index::
     single: chained conditional 
     single: conditional; chained
@@ -416,6 +576,81 @@ Here is the same program using ``elif``.
 .. admonition:: Scratch Editor
 
     .. actex:: scratch_6_7
+
+**Check your understanding**
+
+.. mchoicemf:: test_question6_7_1
+   :answer_a: I only
+   :answer_b: II only
+   :answer_c: III only
+   :answer_d: II and III
+   :answer_e: I, II, and III
+   :correct: d
+   :feedback_a: You can not use a Boolean expression after an else.
+   :feedback_b: Yes, II will give the same result but so will III as well.  III is not as efficient since it will always execute the 2nd if.  
+   :feedback_c: Yes, III will give the same result but so will II and II is more efficient.  
+   :feedback_d: Yes, both II and III give the same result.
+   :feedback_e: No, in I you can not have a Boolean expression after an else.
+
+   Which of I, II, and III below gives the same result as the following nested if?
+   <pre>
+   # nested if-else statement
+   x = -10
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   else:
+       if x > 0:
+           print(x, " is a positive number")
+       else:
+           print(x, " is 0")
+   </pre>
+   I.
+   <pre>
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   else (x > 0): 
+       print(x, " is a positive number")
+   else:
+       print(x, " is 0")
+   </pre>
+   II.
+     <pre>
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   elif (x > 0): 
+       print(x, " is a positive number")
+   else:
+       print(x, " is 0")
+   </pre>
+   III. 
+     <pre>
+   if x < 0:
+       print("The negative number ",  x, " is not valid here.")
+   if (x > 0): 
+       print(x, " is a positive number")
+   else:
+       print(x, " is 0")
+   </pre>
+
+.. mchoicemf:: test_question6_7_2
+   :answer_a: a
+   :answer_b: b
+   :answer_c: c
+   :correct: c
+   :feedback_a: While the value in x is less than the value in y (3 is less than 5) it is not less than the value in z (3 is not less than 2).
+   :feedback_b: The value in y is not less than the value in x (5 is not less than 3).  
+   :feedback_c: Since the first two Boolean expressions are false the else will be executed.   
+
+   What will the following code print if x = 3, y = 5, and z = 2?
+   <pre>
+   if x < y and x < z:
+       print ("a")
+   elif y < x and y < z:
+       print ("b")
+   else:
+       print ("c")
+   </pre>
+  
 
 Boolean Functions
 -----------------
@@ -500,6 +735,31 @@ Here is the same program in codelens.
 .. admonition:: Scratch Editor
 
     .. actex:: scratch_6_8
+
+**Check your understanding**
+
+.. mchoicemf:: test_question6_8_1
+   :answer_a: A function that returns True or False
+   :answer_b: A function that takes True or False as an argument
+   :answer_c: The same as a Boolean expression
+   :correct: a
+   :feedback_a: A Boolean function is just like any other function, but it always returns True or False.
+   :feedback_b: A Boolean function may take any number of arguments (including 0, though that is rare), of any type.
+   :feedback_c: A Boolean expression is a statement that evaluates to True or False, e.g. 5+3==8.  A function is a series of expressions grouped together with a name that are only executed when you call the function.
+
+   What is a Boolean function?
+
+.. mchoicemf:: test_question6_8_2
+   :answer_a: Yes
+   :answer_b: No
+   :correct: a
+   :feedback_a: It is perfectly valid to return the result of evaluating a Boolean expression.
+   :feedback_b: x +y &lt;z is a valid Boolean expression, which will evaluate to True or False.  It is perfectly legal to return True or False from a function, and to have the statement to be evaluated in the same line as the return keyword.
+
+   Is the following statement legal in Python (assuming x, y and z are defined to be numbers)?
+   <pre>
+   return x + y < z
+   </pre>
 
 
 

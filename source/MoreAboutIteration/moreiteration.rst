@@ -75,6 +75,39 @@ The assignment statement, ``theSum = theSum + aNumber``, updates ``theSum`` each
     .. actex:: scratch_7_2
 
 
+**Check your understanding**
+
+.. mchoicemf:: test_question7_2_1
+   :answer_a: True
+   :answer_b: False
+   :correct: a
+   :feedback_a: Although the while loop uses a different syntax, it is just as powerful as a for-loop and often more flexible. 
+   :feedback_b: Often a for-loop is more natural and convenient for a task, but that same task can always be expressed using a while loop.
+
+   True or False: You can rewrite any for-loop as a while-loop.
+   
+.. mchoicemf:: test_question7_2_2
+   :answer_a: n starts at 10 and is incremented by 1 each time through the loop, so it will always be positive
+   :answer_b: answer starts at 1 and is incremented by n each time, so it will always be positive
+   :answer_c: You cannot compare n to 0 in while loop.  You must compare it to another variable.
+   :answer_d: In the while loop body, we must set n False, and this code does not do that.  
+   :correct: a
+   :feedback_a: The loop will run as long as n is positive.  In this case, we can see that n will never become non-positive. 
+   :feedback_b: While it is true that answer will always be positive, answer is not considered in the loop condition.
+   :feedback_c: It is perfectly valid to compare n to 0.  Though indirectly, this _is_ what causes the infinite loop.
+   :feedback_d: The loop condition must become False for the loop to terminate, but n by itself is not the condition in this case.
+
+   The following code contains an infinite loop.  Which is the best explanation for why the loop does not terminate?
+     <pre>
+     n = 10
+     answer = 1
+     while ( n > 0 ):
+       answer = answer + n
+	   n = n + 1
+     print answer
+     </pre>
+
+
 The ``while`` Statement
 -----------------------
 
@@ -191,6 +224,31 @@ we need the extra power that we get from the ``while`` loop.
 
     .. actex:: scratch_7_3
 
+**Check your understanding**
+
+.. mchoicemf:: test_question7_3_1
+   :answer_a: a for-loop or a while-loop
+   :answer_b: only a for-loop
+   :answer_c: only a while-loop
+   :correct: a
+   :feedback_a: Although you do not know how many iterations you loop will run before the program starts running, once you have chosen your random integer, Python knows exactly how many iterations the loop will run, so either a for-loop or a while-loop will work. 
+   :feedback_b: As you learned in section 7.2, a while-loop can always be used for anything a for-loop can be used for.
+   :feedback_c: Although you do not know how many iterations you loop will run before the program starts running, once you have chosen your random integer, Python knows exactly how many iterations the loop will run, so this is an example of definite iteration.
+
+   Which type of loop can be used to perform the following iteration: You choose a positive integer at random and then print the numbers from 1 up to and including the selected integer.
+   
+.. mchoicemf:: test_question7_3_2
+   :answer_a: Returns True if the turtle is still on the screen and False if the turtle is no longer on the screen.
+   :answer_b: Uses a while loop to move the turtle randomly until it goes off the screen.
+   :answer_c: Turns the turtle right or left at random and moves the turtle forward 50.
+   :answer_d: Calculates and returns the position of the turtle in the window.
+   :correct: a
+   :feedback_a: The isInScreen function computes the boolean test of whether the turtle is still in the window.  It makes the condition of the while loop in the main part of the code simpler.
+   :feedback_b: The isInScreen function does not contain a while-loop.  That loop is outside the isInScreen function.
+   :feedback_c: The isInScreen function does not move the turtle.
+   :feedback_d: While the isInScreen function does use the size of the window and position of the turtle, it does not return the turtle position.
+   
+   In the random walk program in this section, what does the isInScreen function do?
 
 
 Randomly Walking Turtles
@@ -369,7 +427,20 @@ program into a couple of parts is another example of functional decomposition.
 
 
 
-.. index:: 3n + 1 sequence        
+.. index:: 3n + 1 sequence  
+
+**Check your understanding**
+
+.. mchoicemf:: test_question7_4_1
+   :answer_a: Yes.
+   :answer_b: No.
+   :answer_c: No one knows.
+   :correct: c
+   :feedback_a: The 3n+1 sequence has not been proven to terminate for all values of n.
+   :feedback_b: It has not been disproven that the 3n+1 sequence will terminate for all values of n.  In other words, there might be some value for n such that this sequence does not terminate. We just have not found it yet.
+   :feedback_c: That this sequence terminates for all values of n has not been proven or disproven so no one knows whether the while loop will always terminate or not.
+
+   Consider the code that prints the 3n+1 sequence in ActiveCode box 6.  Will the while loop in this code always terminate for any value of n?      
         
 The 3n + 1 Sequence
 -------------------
@@ -647,7 +718,20 @@ column does not depend on the number of digits in the first column.
     single: local variable
     single: variable; local
 
+**Check your understanding**
 
+.. mchoicemf:: test_question7_7_1
+  :answer_a: A tab will line up items in a second column, regardless of how many characters were in the first column, while spaces will not.
+  :answer_b: There is no difference
+  :answer_c: A tab is wider than a sequence of spaces
+  :answer_d: You must use tabs for creating tables.  You cannot use spaces.
+  :correct: a
+  :feedback_a: Assuming the size of the first column is less than the size of the tab width.
+  :feedback_b: Tabs and spaces will sometimes make output appear visually different.
+  :feedback_c: A tab has a pre-defined width that is equal to a given number of spaces.
+  :feedback_d: You may use spaces to create tables.  The columns might look jagged, or they might not, depending on the width of the items in each column.
+  
+  What is the difference between a tab (\t) and a sequence of spaces?
 
 2-Dimensional Iteration: Image Processing
 -----------------------------------------
@@ -924,6 +1008,77 @@ Finally, we need to insert the new pixel into the empty image in the same locati
 
 You have just passed a very important point in your study of Python programming.  Even though there is much more that we will do, you have learned all of the basic building blocks that are necessary to solve many interesting problems.  From and algorithm point of view, you can now implement selection and iteration.  You can also solve problems by breaking them down into smaller parts, writing functions for those parts, and then calling the functions to complete the implementation.
 What remains is to focus on ways that we can better represent our problems in terms of the data that we manipulate.  We will now turn our attention to studying the main data collections provided by Python.
+
+**Check your understanding**
+
+.. mchoicemf:: test_question7_8_1
+   :answer_a: Dark red
+   :answer_b: Light red
+   :answer_c: Dark green
+   :answer_d: Light green
+   :correct: a
+   :feedback_a: Because all three values are close to 0, the color will be dark.  But because the red value is higher than the other two, the color will appear red.
+   :feedback_b: The closer the values are to 0, the darker the color will appear.
+   :feedback_c: The first value in RGB is the red value.  The second is the green.  This color has no green in it.
+   :feedback_d: The first value in RGB is the red value.  The second is the green.  This color has no green in it.
+  
+   If you have a pixel whose RGB value is (20, 0, 0), what color will this pixel appear to be?
+
+.. mchoicemf:: test_question7_8_2
+   :answer_a: 149 132 122
+   :answer_b: 183 179 170
+   :answer_c: 165 161 158
+   :answer_d: 201 104 115
+   :correct: a
+   :feedback_a: Yes, the RGB values are 149 132 122 at row 100 and column 30.
+   :feedback_b: These are the values for the pixel at row 30, column 100
+   :feedback_c: These are the values from the original example (row 45, column 55)
+   :feedback_d: These are simply made-up values that may or may not appear in the image.
+  
+   In the example in ActiveCode box 10, what are the RGB values of the pixel at row 100, column 30?
+   
+.. mchoicemf:: test_question7_8_3
+   :answer_a: <table><tr><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>0</td></tr><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>0</td></tr><tr><td>2</td><td>1</td></table>
+   :answer_b: <table><tr><td>0</td><td>0</td></tr><tr><td>1</td><td>0</td></tr><tr><td>2</td><td>0</td></tr><tr><td>0</td><td>1</td></tr><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>1</td></table>
+   :answer_c: <table><tr><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td></tr><tr><td>0</td><td>2</td></tr><tr><td>1</td><td>0</td></tr><tr><td>1</td><td>1</td></tr><tr><td>1</td><td>2</td></table>
+   :answer_d: <table><tr><td>0</td><td>1</td></tr><tr><td>0</td><td>1</td></tr><tr><td>0</td><td>1</td></tr></table>
+   :correct: a
+   :feedback_a: i will start with a value of 0 and then j will iterate from 0 to 1.  Next, i will be 1 and j will iterate from 0 to 1.  Finally, i will be 2 and j will iterate from 0 to 1.
+   :feedback_b: The inner for-loop controls the second digit (j).  The inner for-loop must complete before the outer for-loop advances.
+   :feedback_c: The inner for-loop controls the second digit (j).  Notice that the inner for-loop is over the list [0, 1].
+   :feedback_d: The outer for-loop runs 3 times (0, 1, 2) and the inner for-loop runs twice for each time the outer for-loop runs, so this code prints exactly 6 lines.
+  
+   What will the following nested for-loop print?  (Note, if you are having trouble with this question, review CodeLens 3).
+    <pre>
+    for i in range(3):
+      for j in range(2):
+        print(i,j)  
+    </pre>
+
+.. mchoicemf:: test_question7_8_4
+   :answer_a: It would look like a red-washed version of the bell image
+   :answer_b: It would be a solid red rectangle the same size as the original image
+   :answer_c: It would look the same as the original image
+   :answer_d: It would look the same as the negative image in the example code
+   :correct: a
+   :feedback_a: Because we are removing the green and the blue values, but keeping the variation of the red the same, you will get the same image, but it will look like it has been bathed in red.
+   :feedback_b: Because the red value varies from pixel to pixel, this will not look like a solid red rectangle.  For it to look like a solid red rectangle each pixel would have to have exactly the same red value.
+   :feedback_c: If you remove the blue and green values from the pixels, the image will look different, even though there does not appear to be any blue or green in the original image (remember that other colors are made of combinations of red, green and blue).
+   :feedback_d: Because we have changed the value of the pixels from what they were in the original ActiveCode box code, the image will not be the same.
+  
+   What would the image produced from ActiveCode box 12 look like if you replaced the lines:
+   <pre>
+   newred = 255-p.getRed()
+   newgreen = 255-p.getGreen()
+   newblue = 255-p.getBlue()
+   </pre>
+   with the lines:
+   <pre>
+   newred = p.getRed()
+   newgreen = 0
+   newblue = 0
+   </pre>
+
 
 Glossary
 --------

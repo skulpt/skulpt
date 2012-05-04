@@ -73,6 +73,8 @@ turtle and a half drawn rectangle.  Press the run button to try it and see.
     alex = turtle.Turtle()   # create a turtle named alex
     alex.forward(150)        # tell alex to move forward by 150 units
     alex.left(90)            # turn by 90 degrees
+    alex.forward(50)         # barb added this
+    alex.right(30)	         # barb added this too
     alex.forward(75)         # complete the second side of a rectangle
 
     
@@ -165,6 +167,51 @@ screen until we click on it.
        expects its argument to be an int.  So you'll need to convert 
        the string to an int before you pass it to ``pensize``.   
  
+
+**Check your understanding**
+
+.. mchoicemf:: test_question3_1_1
+   :answer_a: It creates a new turtle object that can be used for drawing 
+   :answer_b: It allows us to create a data object called a Turtle that can be used for drawing
+   :answer_c: It makes the turtle draw half of a rectangle on the screen
+   :answer_d: Nothing, it is unnecessary
+   :correct: b
+   :feedback_a: The line &quotalex = turtle.Turtle()&quot is what actually creates the turtle object 
+   :feedback_b: This line imports the module called turtle, which has all the built in functions for drawing on the screen with the Turtle object
+   :feedback_c: This functionality is performed with the lines &quotalex.forward(150)&quot, &quotalex.left(90)&quot, and &quotalex.forward(75)&quot
+   :feedback_d: If we leave it out, Python will give an error saying that it does not know about the name &quotturtle&quot when it reaches the line &quotwn = turtle.Screen()&quot
+   
+   Consider the following code:
+   <pre>
+   import turtle            
+   wn = turtle.Screen()     
+   alex = turtle.Turtle()   
+   alex.forward(150)        
+   alex.left(90)            
+   alex.forward(75)  
+   </pre>       
+
+   What does the line "import turtle" do?
+
+.. mchoicemf:: test_question3_1_2
+   :answer_a: This is simply for clarity.  It would also work to just type \"Turtle()\" instead of \"turtle.Turtle()\"
+   :answer_b: The period (.) is what tells Python that we want to invoke a new object.
+   :answer_c: The first "turtle" (before the period) tells Python that we are referring to the turtle module, which is where the object "Turtle" is found.
+   :correct: c
+   :feedback_a: We must specify the name of the module where Python can find the Turtle object. 
+   :feedback_b: The period separates the module name from the object name.  The parentheses at the end are what tell Python to invoke a new object.
+   :feedback_c: Yes, the Turtle type is defined in the module turtle.  Remember that Python is case sensitive and Turtle is different from turtle.
+
+   Why do we type "turtle.Turtle()" to get a new Turtle object?
+
+.. mchoicemf:: test_question3_1_3
+   :answer_a: True
+   :answer_b: False
+   :correct: a
+   :feedback_a: In the chapter you saw one named alex and one named tess, but any legal variable name is allowed.
+   :feedback_b: A Turtle, like any data, can be assigned to a variable that can have whatever name you choose as long as it follows the naming conventions from Chapter 2.
+   
+   True or False: A Turtle object can have any name that follows the naming rules from Chapter 2.
 
 .. index:: instance
   
@@ -290,6 +337,16 @@ Take a look at the output produced when you press the ``run`` button.  There is 
 * At the end of each execution of the body of the loop, Python returns 
   to the ``for`` statement, to see if there are more items to be handled.
 
+**Check your understanding**
+
+.. mchoicemf:: test_question3_2_1
+   :answer_a: True
+   :answer_b: False
+   :correct: b
+   :feedback_a: You can create and use as many turtles as you like.  As long as they have different names, you can operate them independently, and make them move in any order you like.  To convince yourself this is true, try interleaving the instructions for alex and tess in ActiveCode box 3. 
+   :feedback_b: You can create and use as many turtles as you like.  As long as they have different names, you can operate them independently, and make them move in any order you like.  If you are not totally convinced, try interleaving the instructions for alex and tess in ActiveCode box 3.
+
+   True or False: You can only have one active turtle at a time.  If you create a second one, you will no longer be able to access or use the first.
 
 .. index:: control flow, flow of execution
   
@@ -392,6 +449,69 @@ of the computation.
 
 In this case, the value of ``aColor`` is used to change the color attribute of ``alex``.  Each iteration causes ``aColor`` to change to the next value in the list.
 
+**Check your understanding**
+
+.. mchoicemf:: test_question3_4_1
+   :answer_a: 1
+   :answer_b: 5
+   :answer_c: 6
+   :answer_d: 10
+   :correct: c
+   :feedback_a: The loop body prints one line, but the body will execute exactly one time for each element in the list [5, 4, 3, 2, 1, 0]. 
+   :feedback_b: Although the biggest number in the list is 5, there are actually 6 elements in the list.
+   :feedback_c: The loop body will execute (and print one line) for each of the 6 elements in the list [5, 4, 3, 2, 1, 0]
+   :feedback_d: The loop body will not execute more times than the number of elements in the list.
+
+   In the following code, how many lines does this code print? 
+   <pre>
+   for number in [5, 4, 3, 2, 1, 0]:
+       print("I have", number, "cookies.  Iím going to eat one.")
+   </pre>
+   
+.. mchoicemf:: test_question3_4_2
+   :answer_a: They are indented to the same degree from the loop header
+   :answer_b: There is always exactly one line in the loop body
+   :answer_c: The loop body ends with a semi-colon (;) which is not shown in the code above 
+   :correct: a
+   :feedback_a: The loop body can have any number of lines, all indented from the loop header.
+   :feedback_b: The loop body may have more than one line.
+   :feedback_c: Python does not use semi-colons in its syntax, but relies mainly on indentation.
+   
+   How does python know what lines are contained in the loop body?
+   
+.. mchoicemf:: test_question3_4_3
+      :answer_a: 2
+      :answer_b: 4
+      :answer_c: 5
+      :answer_d: 1  
+      :correct: b
+      :feedback_a: Python gives number the value of items in the list, one at a time, in order (from left to right).  number gets a new value each time the loop repeats.
+      :feedback_b: Yes, Python will process the items from left to right so the first time the value of number is 5 and the second time it is 4.
+      :feedback_c: Python gives number the value of items in the list, one at a time, in order.  number gets a new value each time the loop repeats.
+      :feedback_d: Python gives number the value of items in the list, one at a time, in order (from left to right).  number gets a new value each time the loop repeats.
+   
+      In the following code, what is the value of number the second time Python executes the loop?
+      <pre>
+         for number in [5, 4, 3, 2, 1, 0]:
+             print("I have", number, "cookies.  Iím going to eat one.")
+      </pre>
+
+.. mchoicemf:: test_question3_4_4
+      :answer_a: Draw one side of a square, using the same color each time.
+      :answer_b: Draw one side of a square, using a different color each time.
+      :answer_c: Draw a complete square.
+      :correct: a
+      :feedback_a: The items in the list are not actually used to control the color of the turtle because aColor is never used inside the loop.
+      :feedback_b: Notice that aColor is never actually used inside the loop.
+      :feedback_c: The body of the loop only contains two instructions: go forward and turn left.  This is not enough to draw a complete square.
+   
+      Consider the following code:
+      <pre>
+      for aColor in ["yellow", "red", "green", "blue"]:
+         alex.forward(50)
+         alex.left(90)
+      </pre>
+      What does each iteration through the loop (i.e. "chunk of code") do?
 
 The range Function
 ------------------
@@ -512,6 +632,47 @@ Try it in codelens.
 
     for i in range(0,20,2):
        print(i)
+
+**Check your understanding**
+
+.. mchoicemf:: test_question3_5_1
+  :answer_a: Range should generate a list that stops at 9 (including 9).
+  :answer_b: Range should generate a list that starts at 10 (including 10).
+  :answer_c: Range should generate a list starting at 3 that stops at 10 (including 10).
+  :answer_d: Range should generate a list using every 10th number between the start and the stopping number.  
+  :correct: a
+  :feedback_a: Range will generate the list [3, 5, 7, 9]
+  :feedback_b: The first argument (3) tells range what number to start at.
+  :feedback_c: Range will always stop at the number before (not including) the specified ending point for the list.
+  :feedback_d: The third argument (2) tells range how many numbers to skip between each element in the list.
+
+  In the command range(3, 10, 2), what does the second argument (10) specify?
+
+.. mchoicemf:: test_question3_5_2
+  :answer_a: range(2, 5, 8)
+  :answer_b: range(2, 8, 3)
+  :answer_c: range(2, 10, 3)
+  :answer_d: range(8, 1, -3)
+  :correct: c
+  :feedback_a: This command generates the list [2] because the first number (2) tells range where to start, the second number tells range where to end (5, not inclusive) and the third number tells range how many numbers to skip between elements (8).  Since 10>= 8, there is only one number in this list.
+  :feedback_b: This command generates the list [2, 5] because 8 is not less than 8 (the specified ending number).
+  :feedback_c: The first number is the starting point, the second is the maximum allowed, and the third is the amount to increment by.  
+  :feedback_d: This command generates the list [8, 5, 3] because it starts at 8, ends at (or above 1), and skips every third number going down.
+  
+  What command correctly generates the list [2, 5, 8]?
+  
+.. mchoicemf:: test_question3_5_3
+  :answer_a: It will generate a list starting at 0, with every number included up to but not including the argument it was passed.
+  :answer_b: It will generate a list starting at 1, with every number up to but not including the argument it was passed.
+  :answer_c: It will generate a list starting at 1, with every number including the argument it was passed.
+  :answer_d: It will cause an error: range always takes exactly 3 arguments.
+  :correct: a
+  :feedback_a: Yes, if you only give one number to range it starts with 0 and ends before the number specified incrementing by 1.
+  :feedback_b: Range starts at 0 unless otherwise specified.
+  :feedback_c: Range starts at 0 unless otherwise specified, and never includes its ending element (which is the argument it was passed).
+  :feedback_d: If range is passed only one argument, it interprets that argument as the end of the list (not inclusive).
+
+  What happens if you give range only one argument?  For example: range(4)
 
 
 A Few More turtle Methods and Observations

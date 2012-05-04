@@ -85,6 +85,43 @@ You can see that all the turtle functionality that we have talked about is there
 	ported at this point.  If you wish to explore any
 	additional modules, you will need to also explore using a more robust development environment.
 
+**Check your understanding**
+
+.. mchoicemf:: question4_1_1
+   :answer_a: A file containing Python definitions and statements intended for use in other Python programs.
+   :answer_b: A separate block of code within a program.
+   :answer_c: One line of code in a program.
+   :answer_d: A file that contains documentation about functions in Python.
+   :correct: a
+   :feedback_a: A module can be reused in different programs.
+   :feedback_b: While a module is separate block of code, it is separate from a program.
+   :feedback_c: The call to a feature within a module may be one line of code, but modules are usually multiple lines of code separate from the program	
+   :feedback_d: Each module has its own documentation, but the module itself is more than just documentation.
+
+   In Python a module is:
+
+.. mchoicemf:: question4_1_2
+   :answer_a: Go to the Python Documentation site. 
+   :answer_b: Look at the import statements of the program you are working with or writing.
+   :answer_c: Ask the professor
+   :answer_d: Look in this textbook.  
+   :correct: a
+   :feedback_a: The site contains a listing of all the standard modules that are available with Python.
+   :feedback_b: The import statements only tell you what modules are currently being used in the program, not how to use them or what they contain.
+   :feedback_c: While the professor knows a subset of the modules available in Python, chances are the professor will have to look up the available modules just like you would.
+   :feedback_d: This book only explains a portion of the modules available.  For a full listing you should look elsewhere.
+
+   To find out information on the standard modules available with Python you should:
+   
+.. mchoicemf:: question4_1_3 
+   :answer_a: True
+   :answer_b: False
+   :correct: b
+   :feedback_a: Only turtle, math, and random have been ported to work in activecode at this time.
+   :feedback_b: Only turtle, math, and random have been ported to work in activecode at this time.
+
+   True / False:  All standard Python modules will work in activecode.
+
 
 More About Using Modules
 ------------------------
@@ -161,6 +198,21 @@ family and the firstname is the individual entry in the module.
 If you have not done so already, take a look at the documentation
 for the math module.  
 
+**Check your understanding**
+
+.. mchoicemf:: question4_2_1
+   :answer_a: import math 
+   :answer_b: include math 
+   :answer_c: use math
+   :answer_d:  You don’t need a statement.  You can always use the math module
+   :correct: a
+   :feedback_a: The module must be imported before you can use anything declared inside the module. 
+   :feedback_b: The correct term is not include, but you are close.
+   :feedback_c: You will be using parts of the module, but that is not the right term.
+   :feedback_d: You cannot use a Python module without a statement at the top of your program that explicitly tells Python you want to use the module.
+
+   Which statement allows you to use the math module in your program?
+
 
 The `random` module
 -----------------------------------
@@ -234,6 +286,61 @@ get random behavior each time you execute.
 .. admonition:: Lab
 
     * `Sine Wave <sinlab.html>`_ In this guided lab exercise we will have the turtle plot a sine wave.
+
+**Check your understanding**
+
+.. mchoicemf:: question4_4_1
+   :answer_a: math.pi
+   :answer_b: math(pi) 
+   :answer_c: pi.math 
+   :answer_d: math->pi
+   :correct: a
+   :feedback_a: To invoke or reference something contained in a module you use the dot (.) notation.
+   :feedback_b: This is the syntax for calling a function, not referencing an item in a module.  
+   :feedback_c: The module name must come first when accessing values and functions with a module.
+   :feedback_d: The -> notation is not used in Python.
+
+   Which of the following is the correct way to reference the value pi within the math module.   Assume you have already imported the math module. 
+   
+.. mchoicemf:: question4_4_2
+   :answer_a: the math module
+   :answer_b: the random module
+   :answer_c: the turtle module 
+   :answer_d: the game module
+   :correct: b
+   :feedback_a: While you might want to use the math module for other numerical computations in your program, it does not contain functions that are likely to help you simulate a dice roll.
+   :feedback_b: You would likely call the function random.randrange.
+   :feedback_c: The turtle module, while producing interesting graphics, is unlikely to help you here.
+   :feedback_d: Python does not have a game module.
+
+   Which module would you most likely use if you were writing a function to simulate rolling dice?
+
+   
+.. mchoicemf:: question4_4_3
+   :answer_a: prob = random.randrange(1, 101)
+   :answer_b: prob = random.randrange(1, 100)
+   :answer_c: prob = random.randrange(0, 101)
+   :answer_d: prob = random.randrange(0, 100)
+   :correct: a
+   :feedback_a: This will generate a number between 1 and 101, but does not include 101.
+   :feedback_b: This will generate a number between 1 and 100, but does not include 100.  The highest value generated will be 99.
+   :feedback_c: This will generate a number between 0 and 100.  The lowest value generated is 0.  The highest value generated will be 100.
+   :feedback_d: This will generate a number between 0 and 100, but does not include 100.  The lowest value generated is 0 and the highest value generated will be 99.
+   
+   The correct code to generate a random number between 1 and 100 (inclusive) is:
+   
+.. mchoicemf:: question4_4_4
+   :answer_a: There is no computer on the stage for the drawing.
+   :answer_b: Because computers don’t really generate random numbers, they generate pseudo-random numbers.
+   :answer_c: They would just generate the same numbers over and over again.
+   :answer_d: The computer can’t tell what values were already selected, so it might generate all 5’s instead of 5 unique numbers.
+   :correct: b
+   :feedback_a: They could easily put one there.
+   :feedback_b: Computers generate random numbers using a deterministic algorithm.  This means that if anyone ever found out the algorithm they could accurately predict the next value to be generated and would always win the lottery.
+   :feedback_c: This might happen if the same seed value was used over and over again, but they could make sure this was not the case.
+   :feedback_d: While a programmer would need to ensure the computer did not select the same number more than once, it is easy to ensure this.
+   
+   One reason that lotteries don’t use computers to generate random numbers is:
 
 Glossary
 --------
