@@ -6,6 +6,7 @@ db.define_table('useinfo',
   Field('event','string'),
   Field('act','string'),
   Field('div_id','string'),
+  Field('course_id','string'),
   migrate=settings.migrate
 )
 

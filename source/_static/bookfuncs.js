@@ -28,10 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* This should come from a config object loaded by the book...
    something like configjs  */
 
-eBookConfig = {}
-eBookConfig.ajaxURL = 'http://localhost:8080/eds/ajax/'
-eBookConfig.course = 'development'
-eBookConfig.logLevel = 10
+
 
 function handleEdKeys(ed, e) {
     if (e.keyCode === 13) {
@@ -322,13 +319,20 @@ function sendGrade(grade,sid,acid) {
 
 function gotUser(data, status, whatever) {
     var mess;
-    if (data.redirect) {
+
+    if (data.indexOf('login') != -1) {
+        mess = "Redirect to Login";
+        window.location.href=eBookConfig.host+'/eds/default/user/login'
+    } else if (data.redirect) {
         mess = "Not logged in";
-    } else if (data == "") {
-        mess = "Not logged in";
+        window.location.href=data.redirect
     } else {
         var d = eval(data)[0];
+        if (d.redirect) {
+            window.location.href=eBookConfig.host+'/eds/default/user/login?_next='+window.location.href
+        } else {
         mess = d.email;
+        }
     }
     x = $(".footer").text();
     $(".footer").text(x + mess);
@@ -336,8 +340,9 @@ function gotUser(data, status, whatever) {
 
 function addUserToFooter() {
     // test to see if online before doing this.
-    jQuery.get(eBookConfig.ajaxURL+'getuser',null,gotUser)
-
+    if (eBookConfig.loginRequired == true) {
+        jQuery.get(eBookConfig.ajaxURL+'getuser',null,gotUser)
+    }
 }
 $(document).ready(createEditors);
 $(document).ready(addUserToFooter)

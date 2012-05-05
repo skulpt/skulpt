@@ -1,11 +1,17 @@
 from sphinx.websupport import WebSupport
 import json
 import datetime
+import logging
+
+logger = logging.getLogger("web2py.app.eds")
+logger.setLevel(logging.DEBUG)
 
 web_support = WebSupport(datadir=settings.sphinx_datadir,
                 staticdir=settings.sphinx_staticdir,
                 docroot=settings.sphinx_docroot,
                 storage=settings.database_uri)
+
+response.headers['Access-Control-Allow-Origin'] = '*'
 
 @auth.requires_login()
 def get_comments():
@@ -117,11 +123,19 @@ def getprog():
     response.headers['content-type'] = 'application/json'
     return json.dumps([res])
 
-
+#@auth.requires_login()
 def getuser():
+    print 'in getuser'
+    response.headers['content-type'] = 'application/json'
+    print request.env.http_cookie
 
-    if  auth.user.username:
+    if  auth.user:
+        print 'logged in!!!'
         res = {'email':auth.user.email,'nick':auth.user.username}
-        response.headers['content-type'] = 'application/json'
-        return json.dumps([res])
+    else:
+        print auth.settings.login_url
+        res = dict(redirect=auth.settings.login_url) #?_next=....
+        print response.cookies
+    logging.debug("returning login info: %s",res)
+    return json.dumps([res])
 
