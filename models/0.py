@@ -2,7 +2,7 @@ from gluon.storage import Storage
 settings = Storage()
 from os import uname
 
-settings.migrate = False
+settings.migrate = True
 settings.title = 'Data Structures'
 settings.subtitle = 'powered by web2py'
 settings.author = 'Brad Miller'

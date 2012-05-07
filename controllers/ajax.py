@@ -46,9 +46,10 @@ def hsblog():
     act = request.vars.act
     div_id = request.vars.div_id
     event = request.vars.event
+    course = request.vars.course
     ts = datetime.datetime.now()
 
-    db.useinfo.insert(sid=sid,act=act,div_id=div_id,event=event,timestamp=ts)
+    db.useinfo.insert(sid=sid,act=act,div_id=div_id,event=event,timestamp=ts,course_id=course)
 
 
 ## Sample DB statements 
@@ -63,32 +64,17 @@ def hsblog():
 def saveprog():
     acid = request.vars.acid
     code = request.vars.code
-    print 'acid = ', acid
-    # now check to see if there is an object for this user,acid pair
-    # if not create a new Code object and store it
 
-    codetbl = db.code
-    query = codetbl.sid==auth.user.username and codetbl.acid==acid
-    result = db(query)
+    # codetbl = db.code
+    # query = codetbl.sid==auth.user.username and codetbl.acid==acid
+    # result = db(query)
 
-    # student.filter("student = ", user)
-    # if student.count() == 0:
-    #     theStudent = Student()
-    #     theStudent.student = user
-    #     theStudent.sid = user.email()
-    #     theStudent.put()
-    # else:
-    #     theStudent = student[0]
+    print 'inserting new', acid
+    db.code.insert(sid=auth.user.username,
+                   acid=acid,code=code,
+                   timestamp=datetime.datetime.now(),
+                   course_id=auth.user.course_id)
 
-    if result.isempty():
-#        logging.debug("creating new code object")
-        print 'inserting new', acid
-        db.code.insert(sid=auth.user.username,acid=acid,code=code)
-    else:
-#        logging.debug("updating old code object")
-        row = result.select().first()
-        row.code = code
-        row.update_record()
     return acid
 #    response.headers.add_header('content-type','application/json')
 #    response.out.write(simplejson.dumps([acid]))
@@ -115,13 +101,20 @@ def getprog():
     res = {}
     if not result.isempty():
         res['acid'] = acid
-        res['source'] = result.select().first().code
+        res['source'] = result.select(orderby=~codetbl.timestamp).first().code
         if sid:
             res['sid'] = sid
     else:
         logging.debug("Did not find anything to load for %s"%sid)
     response.headers['content-type'] = 'application/json'
     return json.dumps([res])
+
+
+@auth.requires_membership('instructor')
+def savegrade():
+    res = db(db.code.id == request.vars.id)
+    res.update(grade = int(request.vars.grade))
+
 
 #@auth.requires_login()
 def getuser():

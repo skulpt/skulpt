@@ -69,6 +69,7 @@ db.define_table('auth_user',
           writable=False,readable=False),
     Field('registration_id',default='',
           writable=False,readable=False),
+    Field('course_id','string',label=T('Course Name')),
     format='%(username)s',
     migrate=settings.migrate)
 

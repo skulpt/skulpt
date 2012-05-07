@@ -312,8 +312,8 @@ function comment(blockid) {
             });
 }
 
-function sendGrade(grade,sid,acid) {
-    data = {'sid':sid, 'acid':acid, 'grade':grade};
+function sendGrade(grade,sid,acid,id) {
+    data = {'sid':sid, 'acid':acid, 'grade':grade, 'id':id};
     jQuery.get(eBookConfig.ajaxURL+'savegrade',data);
 }
 
@@ -338,9 +338,18 @@ function gotUser(data, status, whatever) {
     $(".footer").text(x + mess);
 }
 
+function shouldLogin() {
+    var sli = eBookConfig.loginRequired;
+
+    if (window.location.href.indexOf('file://') > -1)
+        sli = false
+
+    return sli;
+}
+
 function addUserToFooter() {
     // test to see if online before doing this.
-    if (eBookConfig.loginRequired == true) {
+    if (shouldLogin()) {
         jQuery.get(eBookConfig.ajaxURL+'getuser',null,gotUser)
     }
 }

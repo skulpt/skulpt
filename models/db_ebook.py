@@ -13,8 +13,9 @@ db.define_table('useinfo',
 db.define_table('code',
   Field('acid','string'),
   Field('code','text'),
-  Field('class_group','string'),
+  Field('course_id','string'),
   Field('grade','double'),
   Field('sid','string'),
+  Field('timestamp','datetime'),
   migrate=settings.migrate
 )
