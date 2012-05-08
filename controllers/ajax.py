@@ -1,4 +1,3 @@
-from sphinx.websupport import WebSupport
 import json
 import datetime
 import logging
@@ -6,39 +5,8 @@ import logging
 logger = logging.getLogger("web2py.app.eds")
 logger.setLevel(logging.DEBUG)
 
-web_support = WebSupport(datadir=settings.sphinx_datadir,
-                staticdir=settings.sphinx_staticdir,
-                docroot=settings.sphinx_docroot,
-                storage=settings.database_uri)
 
 response.headers['Access-Control-Allow-Origin'] = '*'
-
-@auth.requires_login()
-def get_comments():
-    #moderator = g.user.moderator if g.user else False
-    username = auth.user.username
-    moderator = False
-    node_id = request.vars.node
-    try:
-        data = web_support.get_data(node_id, username, moderator)
-    except:
-        data = {'comments':[]}
-    return data
-
-@auth.requires_login()
-def add_comment():
-    parent_id = request.vars.parent
-    node_id = request.vars.node
-    text = request.vars.text
-    proposal = request.vars.proposal
-    username = auth.user.username if auth.user.username is not None else 'Anonymous'
-
-    comment = web_support.add_comment(text, node_id=node_id,
-                                  parent_id=parent_id,
-                                  username=username, proposal=proposal)
-
-    return {'comment':comment}
-
 
 @auth.requires_login()
 def hsblog():
@@ -51,11 +19,6 @@ def hsblog():
 
     db.useinfo.insert(sid=sid,act=act,div_id=div_id,event=event,timestamp=ts,course_id=course)
 
-
-## Sample DB statements 
-## >>> db.mytable.insert(myfield='value')
-## >>> rows=db(db.mytable.myfield=='value').select(db.mytable.ALL)
-## >>> for row in rows: print row.id, row.myfield
 
 #
 #  Ajax Handlers for saving and restoring active code blocks
