@@ -352,6 +352,7 @@ function addUserToFooter() {
     if (shouldLogin()) {
         jQuery.get(eBookConfig.ajaxURL+'getuser',null,gotUser)
     }
+    logBookEvent({'event':'page', 'act':'view', 'div_id':window.location.pathname})
 }
 $(document).ready(createEditors);
 $(document).ready(addUserToFooter)
