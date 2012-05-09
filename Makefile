@@ -1,12 +1,12 @@
 # Makefile for Sphinx documentation
 #
-
+COURSEID = book
 # You can set these variables from the command line.
-SPHINXOPTS    = -a -E
+SPHINXOPTS    = -a -E -A course_id=$(COURSEID)
 #SPHINXOPTS    = 
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = private
+BUILDDIR      = static/$(COURSEID)
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
