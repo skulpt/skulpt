@@ -16,6 +16,7 @@ settings.email_sender = 'you@example.com'
 settings.email_login = ''
 settings.login_method = 'local'
 settings.login_config = ''
+settings.course_id = 'book'
 settings.plugins = []
 if 'local' in uname()[1]:
 	settings.database_uri = 'postgres://bmiller:grouplens@localhost/eds'
