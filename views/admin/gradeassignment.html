@@ -1,14 +1,13 @@
 {{extend 'layout.html'}}
 
-    <script type="text/javascript" src="/eds/static/_static/eBookConfig.js"></script>
-    <script src="/eds/static/_static/skulpt.js" type="text/javascript"></script>
-    <script src="/eds/static/_static/builtin.js" type="text/javascript"></script>
-    <script src="/eds/static/_static/bookfuncs.js" type="text/javascript"></script>
-    <link href="/eds/static/_static/codemirror.css" rel="stylesheet" type="text/css"/>
-    <link href="/eds/static/_static/theme/default.css" rel="stylesheet" type="text/css"/>
-    <!-- <link href="../static/_static/docs.css" rel="stylesheet" type="text/css"/>  -->
-    <script type="text/javascript" src="/eds/static/_static/codemirror.js"></script>
-    <script type="text/javascript" src="/eds/static/_static/python.js"></script>
+    <script type="text/javascript" src="/eds/static/{{=settings.course_id}}/_static/eBookConfig.js"></script>
+    <script src="/eds/static/{{=settings.course_id}}/_static/skulpt.js" type="text/javascript"></script>
+    <script src="/eds/static/{{=settings.course_id}}/_static/builtin.js" type="text/javascript"></script>
+    <script src="/eds/static/{{=settings.course_id}}/_static/bookfuncs.js" type="text/javascript"></script>
+    <link href="/eds/static/{{=settings.course_id}}/_static/codemirror.css" rel="stylesheet" type="text/css"/>
+    <link href="/eds/static/{{=settings.course_id}}/_static/theme/default.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="/eds/static/{{=settings.course_id}}/_static/codemirror.js"></script>
+    <script type="text/javascript" src="/eds/static/{{=settings.course_id}}/_static/python.js"></script>
 
 </head>
 <body>
