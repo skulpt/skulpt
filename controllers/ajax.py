@@ -5,12 +5,13 @@ import logging
 logger = logging.getLogger("web2py.app.eds")
 logger.setLevel(logging.DEBUG)
 
-
 response.headers['Access-Control-Allow-Origin'] = '*'
 
-@auth.requires_login()
 def hsblog():
-    sid = auth.user.username
+    if auth.user:
+        sid = auth.user.username
+    else:
+        sid = request.client+"@anon.user"
     act = request.vars.act
     div_id = request.vars.div_id
     event = request.vars.event
@@ -81,17 +82,12 @@ def savegrade():
 
 #@auth.requires_login()
 def getuser():
-    print 'in getuser'
     response.headers['content-type'] = 'application/json'
-    print request.env.http_cookie
 
     if  auth.user:
-        print 'logged in!!!'
         res = {'email':auth.user.email,'nick':auth.user.username}
     else:
-        print auth.settings.login_url
         res = dict(redirect=auth.settings.login_url) #?_next=....
-        print response.cookies
     logging.debug("returning login info: %s",res)
     return json.dumps([res])
 
