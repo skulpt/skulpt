@@ -44,6 +44,12 @@ auth = Auth(db, hmac_key=Auth.get_or_create_key())
 crud, service, plugins = Crud(db), Service(), PluginManager()
 
 ## create all tables needed by auth if not custom tables
+db.define_table('courses',
+  Field('course_id','string'),
+  migrate=settings.migrate
+  )
+if db(db.courses.id > 0).isempty():
+    db.courses.insert(course_id='devcourse')
 
 ########################################
 db.define_table('auth_user',
@@ -69,7 +75,9 @@ db.define_table('auth_user',
           writable=False,readable=False),
     Field('registration_id',default='',
           writable=False,readable=False),
-    Field('course_id','string',label=T('Course Name')),
+    Field('course_id',db.courses,label=T('Course Name'),
+      requires=IS_IN_DB(db,db.courses.id,'%(course_id)'),
+      widget=SQLFORM.widgets.options.widget   ),
     format='%(username)s',
     migrate=settings.migrate)
 
