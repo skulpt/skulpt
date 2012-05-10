@@ -1,6 +1,6 @@
 # Makefile for Sphinx documentation
 #
-COURSEID = book
+COURSEID = devcourse
 # You can set these variables from the command line.
 SPHINXOPTS    = -a -E -A course_id=$(COURSEID)
 #SPHINXOPTS    = 
