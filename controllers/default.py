@@ -12,7 +12,7 @@ def call(): return service()
 @auth.requires_login()
 def index():
     course = db(db.courses.id == auth.user.course_id).select(db.courses.course_id).first()
-    redirect('/eds/static/%s/index.html' % course.course_id)
+    redirect('/%s/static/%s/index.html' % (request.application,course.course_id))
 
     # web_support = WebSupport(datadir=settings.sphinx_datadir,
     #                 staticdir=settings.sphinx_staticdir,
