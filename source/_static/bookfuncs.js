@@ -322,14 +322,14 @@ function gotUser(data, status, whatever) {
 
     if (data.indexOf('login') != -1) {
         mess = "Redirect to Login";
-        window.location.href=eBookConfig.host+'/eds/default/user/login'
+        window.location.href=eBookConfig.app+'/default/user/login'
     } else if (data.redirect) {
         mess = "Not logged in";
         window.location.href=data.redirect
     } else {
         var d = eval(data)[0];
         if (d.redirect) {
-            window.location.href=eBookConfig.host+'/eds/default/user/login?_next='+window.location.href
+            window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
         } else {
         mess = d.email;
         }

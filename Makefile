@@ -1,8 +1,9 @@
 # Makefile for Sphinx documentation
 #
 COURSEID = devcourse
+APPNAME = courselib
 # You can set these variables from the command line.
-SPHINXOPTS    = -a -E -A course_id=$(COURSEID)
+SPHINXOPTS    = -a -E -A course_id=$(COURSEID) -A appname=$(APPNAME)
 #SPHINXOPTS    = 
 SPHINXBUILD   = sphinx-build
 PAPER         =
