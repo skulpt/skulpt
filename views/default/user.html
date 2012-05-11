@@ -1,7 +1,21 @@
 {{extend 'layout.html'}}
+
+{{block statusbar}}
+{{end}}
+
+<h2>Welcome</h2>
+<p>We offer some pre-formatted books that you are welcome to browse on your own.  You can also create a custom textbook for you own class.</p>
+<p>Why Log in?  Excellent question.  You don't need to log in to use the books we've provided.  But you won't be able to save your work and come back to it later.  Don't worry we have no plans to spam you with email, and we would never ever sell your contact information to anyone.  If you are student that is part of a course, please register and/or login.  When you register be sure to choose the course that your instructor has given you.</p>
+
 <h2>{{=T( request.args(0).replace('_',' ').capitalize() )}}</h2>
 <div id="web2py_user_form">
   {{=form}}
+  <h3>Our eBooks</h3>
+  <ul>
+    <li><a href="/{{=request.application}}/static/thinkcspy/index.html">How to Think Like a Computer Scientist:  Interactive Edition</a></li>
+    <li><a href="/{{=request.application}}/static/pythonds/index.html">Problem Solving with Algorithms and Data Structures using Python</a> </li>
+    <li><a href="/{{=request.application}}/static/java4python/index.html">Java for Python Programmers</a> </li>
+  </ul>
   {{if request.args(0)=='login':}}
   {{if not 'register' in auth.settings.actions_disabled:}}
   <br/>
