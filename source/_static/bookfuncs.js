@@ -326,16 +326,25 @@ function gotUser(data, status, whatever) {
     } else if (data.redirect) {
         mess = "Not logged in";
         window.location.href=data.redirect
+    } else if (data == "") {
+        mess = "Not logged in"
+        $('button.ac_opt').hide();
+        $('span.loginout').html('<a href="'+ eBookConfig.app + '/default/user/login">login</a>')
     } else {
-        var d = eval(data)[0];
-        if (d.redirect) {
+        try {
+            var d = eval(data)[0];
+            if (d.redirect) {
+                window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
+            } else {
+                mess = d.email;
+            }
+        } catch(err) {
             window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
-        } else {
-        mess = d.email;
         }
     }
     x = $(".footer").text();
     $(".footer").text(x + mess);
+    logBookEvent({'event':'page', 'act':'view', 'div_id':window.location.pathname})
 }
 
 function shouldLogin() {
@@ -351,8 +360,15 @@ function addUserToFooter() {
     // test to see if online before doing this.
     if (shouldLogin()) {
         jQuery.get(eBookConfig.ajaxURL+'getuser',null,gotUser)
+    } else {
+        x = $(".footer").text();
+        $(".footer").text(x + 'not logged in');
+        $('button.ac_opt').hide();
+        $('span.loginout').html('<a href="'+ eBookConfig.app+'/default/user/login">login</a>')
+        logBookEvent({'event':'page', 'act':'view', 'div_id':window.location.pathname})
     }
-    logBookEvent({'event':'page', 'act':'view', 'div_id':window.location.pathname})
+
+
 }
 $(document).ready(createEditors);
 $(document).ready(addUserToFooter)
