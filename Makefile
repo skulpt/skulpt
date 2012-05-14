@@ -19,7 +19,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 .PHONY: help clean html thinkcspy pythonds dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext 
 
 help:
-	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "Please use \'make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -50,12 +50,14 @@ html:
 
 thinkcspy:
 	cp source/OldIndexAndConfFiles/index-thinkcs source/index.rst
-	$(SPHINXBUILD) -d $(BUILDDIR)/doctrees -a -E -D project='How to Think Like a ComputerScientist Interactive Edition' -A course_id=thinkcspy -A appname=$(APPNAME) source static/thinkcspy
+	cp source/OldIndexAndConfFiles/thinkcs-conf.py source/conf.py
+	$(SPHINXBUILD) -d static/thinkcspy/doctrees -a -E -A project='How to Think Like a Computer Scientist Interactive Edition' -A course_id=thinkcspy -A appname=$(APPNAME) source static/thinkcspy
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
 
 pythonds:
 	cp source/OldIndexAndConfFiles/index-pythonds source/index.rst
-	$(SPHINXBUILD) -a -E -A course_id=thinkcspy -A appname=$(APPNAME) static/pythonds
+	cp source/OldIndexAndConfFiles/pythonds-conf.py source/conf.py
+	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' -A course_id=pythonds -A appname=$(APPNAME) source static/pythonds
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
 
 dirhtml:
