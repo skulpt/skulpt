@@ -45,3 +45,5 @@ def showlog():
     res = r.select(orderby=db.useinfo.timestamp)
 
     return dict(log=res,course_id=course.course_id)
+
+
