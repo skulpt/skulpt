@@ -1,27 +1,4 @@
 {{extend 'layout.html'}}
 
-	<script src="/{{=request.application}}/static/{{=course_id}}/_static/jquery.tablesorter.js" type="text/javascript"></script>
+{{=grid}}
 
-<table id="myTable" class="tablesorter">
-	<thead>
-		<tr><th>timestamp</th><th>sid</th><th>event</th><th>act</th><th>div_id</th></tr>
-	</thead>
-	<tbody>
-		{{for row in log:}}
-		<tr> <td>{{=row.timestamp}}</td> 
-			 <td>{{=row.sid}}</td>  
-			 <td>{{=row.event}}</td>
-			 <td>{{=row.act}}</td>
-			 <td>{{=row.div_id}}</td>
-		</tr>
-		{{pass}}
-	</tbody>
-</table>
-
-<script type="text/javascript">
-	$(document).ready(function() 
-    { 
-        $("#myTable").tablesorter(); 
-    } 
-); 
-</script>

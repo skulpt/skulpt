@@ -41,9 +41,14 @@ def gradeassignment():
 @auth.requires_membership('instructor')
 def showlog():
     course = db(db.courses.id == auth.user.course_id).select(db.courses.course_id).first()    
-    r = db(db.useinfo.course_id == course.course_id)
-    res = r.select(orderby=db.useinfo.timestamp)
-
-    return dict(log=res,course_id=course.course_id)
+    grid = SQLFORM.grid(db.useinfo.course_id==course.course_id,
+        fields=[db.useinfo.timestamp,db.useinfo.sid, db.useinfo.event,db.useinfo.act,db.useinfo.div_id],
+        editable=False,
+        deletable=False,
+        details=False,
+        orderby=~db.useinfo.timestamp,
+        paginate=40,
+        formstyle='divs')
+    return dict(grid=grid,course_id=course.course_id)
 
 
