@@ -1,9 +1,16 @@
 # Makefile for Sphinx documentation
 #
+
+# You can set these variables from the command line.
 COURSEID = devcourse
 APPNAME = courselib
-# You can set these variables from the command line.
-SPHINXOPTS    = -a -E -A course_id=$(COURSEID) -A appname=$(APPNAME)
+LOGLEVEL = 10
+COURSEURL = http://127.0.0.1:8080
+LOGINREQ = true
+#
+#
+TEMPLATEDEFS  = -A course_id=$(COURSEID) -A appname=$(APPNAME) -A loglevel=$(LOGLEVEL) -A course_url=$(COURSEURL) -A login_required=$(LOGINREQ)
+SPHINXOPTS    = -a -E $(TEMPLATEDEFS)
 #SPHINXOPTS    = 
 SPHINXBUILD   = sphinx-build
 PAPER         =
@@ -51,15 +58,19 @@ html:
 thinkcspy:
 	cp source/OldIndexAndConfFiles/index-thinkcs source/index.rst
 	cp source/OldIndexAndConfFiles/thinkcs-conf.py source/conf.py
-	$(SPHINXBUILD) -d static/thinkcspy/doctrees -a -E -A project='How to Think Like a Computer Scientist Interactive Edition' -A course_id=thinkcspy -A appname=$(APPNAME) source static/thinkcspy
+	COURSEID=thinkcspy
+	$(SPHINXBUILD) -d static/thinkcspy/doctrees -a -E -A project='How to Think Like a Computer Scientist Interactive Edition' $(TEMPLATEDEFS) source static/thinkcspy
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
+	cp source/OldIndexAndConfFiles/master-conf.py source/conf.py
 
 pythonds:
 	cp source/OldIndexAndConfFiles/index-pythonds source/index.rst
 	cp source/OldIndexAndConfFiles/pythonds-conf.py source/conf.py
-	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' -A course_id=pythonds -A appname=$(APPNAME) source static/pythonds
+	COURSEID=pythonds
+	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' $(TEMPLATEDEFS) source static/pythonds
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
-
+	cp source/OldIndexAndConfFiles/master-conf.py source/conf.py
+	
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
