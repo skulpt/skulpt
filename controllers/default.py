@@ -38,3 +38,10 @@ def index():
 def error():
     return dict()
 
+def about():
+    return dict()
+
+def ack():
+    return dict()
+
+    
