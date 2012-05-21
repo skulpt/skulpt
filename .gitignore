@@ -14,3 +14,8 @@ databases/c8b669d15150d7109e5f7ab36744a5b7_auth_permission.table
 databases/c8b669d15150d7109e5f7ab36744a5b7_auth_user.table
 private/*
 *.pyc
+static/devcourse/
+static/gatech/
+static/pythonds/
+static/thinkcspy/
+static/unics1140/
