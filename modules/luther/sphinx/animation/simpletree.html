@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<script type="text/javascript" src="animationrefactor.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script> 
+<script type="text/javascript" src="jqchart/jquery.gchart.js"></script>
+<script type="text/javascript" src="jqchart/jquery.gchart.graphviz.js"></script>
+<script type="text/javascript" src="animationrefactor.js"></script>
+<script type="text/javascript" src="simpletree.js"></script>
+</head>
+
+
+<body>
+
+<style>
+#ancan_div { width: 800px; height: 400px; }
+</style>
+
+<div id="ancan">
+<canvas id="ancan_canvas" width="400" height="400" style="border:4px solid blue"></canvas>
+<div id="ancan_div" width="400" height="400"> </div>
+<br />
+<button onclick="ancan_anim = init1('ancan')">Initialize</button>
+<button onclick="ancan_anim.run('ancan_anim')">Run</button>
+<button onclick="ancan_anim.stop()">Stop</button> </br>
+<button onclick="ancan_anim.begin()">Beginning</button>
+<button onclick="ancan_anim.forward()">Step Forward</button>
+<button onclick="ancan_anim.backward()">Step Backward</button>
+<button onclick="ancan_anim.end()">End</button>
+</div>
+<script type="text/javascript">
+init1 = function(divid)
+{
+   var a = new Animator(new SimpleTreeModel(), new TreeViewer(), divid)
+   a.init()
+   return a
+}
+</script>
+</body>
+</html>

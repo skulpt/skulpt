@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<head>
+<script type "text/javascript" src="animationrefactor.js"></script>
+
+<html>
+<body onload="">
+
+<div id="ancan">
+<canvas id="ancan_canvas" width="400" height="400" style="border:4px solid blue"></canvas>
+<br />
+<button onclick="ancan_anim = init1('ancan')">Initialize with BarView</button><button onclick="ancan_anim = init2('ancan')">Initialize with ListView</button><br/>
+<button onclick="ancan_anim.run('ancan_anim')">Run</button>
+<button onclick="ancan_anim.stop()">Stop</button> </br>
+<button onclick="ancan_anim.begin()">Beginning</button>
+<button onclick="ancan_anim.forward()">Step Forward</button>
+<button onclick="ancan_anim.backward()">Step Backward</button>
+<button onclick="ancan_anim.end()">End</button>
+</div>
+<script type="text/javascript">
+init1 = function(divid)
+{
+   var a = new Animator(new SortModel(), new BarViewer(), divid)
+   a.init()
+   return a
+}
+
+init2 = function(divid)
+{
+   var a = new Animator(new SortModel(), new ListViewer(), divid)
+   a.init()
+   return a
+
+}
+
+</script>
+</body>
+</html>

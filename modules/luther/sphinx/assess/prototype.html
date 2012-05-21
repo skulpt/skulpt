@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>trial</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" ></script>
+</head>
+<body>
+	<div id="prototype">
+	<p>Evaluate the following boolean expression:  True or False</p>
+	<form name="prototype_form" method="get" action="" onsubmit="return false;">
+	<input type="radio" name="group1" value="a" id="prototype_opt_1" />
+	<label for= "prototype_opt_1"> a) True</label><br />
+	<input type="radio" name="group1" value="b" id="prototype_opt_2" />
+	<label for="prototype_opt_2">  b) False</label><br />
+	<input type="radio" name="group1" value="c" id="prototype_opt_3">
+	<label for="prototype_opt_3"> c) Unknown</label><br />
+
+	<input type="button" name="do answer" 
+	       value="Check Me" onclick="checkMe('prototype','a','try again')"/> 
+	</form>
+	<div id="prototype_feedback">
+	</div>
+	</div>
+
+	<script type="text/javascript">  // can go in assessfuncs??
+	var checkMe = function(divid, expected,feedback) {
+		var given;
+		var buttonObjs = document.forms[divid+"_form"].elements['group1']
+		for (var i = buttonObjs.length - 1; i >= 0; i--) {
+			if (buttonObjs[i].checked) {
+				given = buttonObjs[i].value;
+			}
+		};
+		// update number of trials??
+		// log this to the db
+		feedBack('#'+divid+'_feedback',given == expected, feedback)
+	}
+	var feedBack = function(divid,correct,feedbackText) {
+		if (correct) {
+			$(divid).html('You are Correct!');		
+		} else {
+			$(divid).html("Inorrect.  Here's something to think about: " + feedbackText );						
+		}
+	}
+
+	// for each form in the div
+	//    get the id of the form
+	//    call checkMe on the form...  -- need metadata what kind of question what parms etc
+	//    hidden fields for meta data??? each form defines a checkme function with no parameters
+	//    that calls the actual function that checks the answer properly??
+	// summarize
+	</script>
+</body>
+</html>
