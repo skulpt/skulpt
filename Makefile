@@ -5,7 +5,7 @@
 COURSEID = devcourse
 APPNAME = courselib
 LOGLEVEL = 10
-COURSEURL = http://127.0.0.1:8080
+COURSEURL = http://127.0.0.1:8000
 LOGINREQ = true
 #
 #
@@ -70,7 +70,7 @@ pythonds:
 	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' $(TEMPLATEDEFS) source static/pythonds
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
 	cp source/OldIndexAndConfFiles/master-conf.py source/conf.py
-	
+
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo

@@ -6,7 +6,7 @@
 {% block extrahead %}
 <script type="text/javascript"> 
 eBookConfig = {}
-eBookConfig.host = '{{course_url}}' ? '{{course_url}}' : 'http://127.0.0.1:8080',
+eBookConfig.host = '{{course_url}}' ? '{{course_url}}' : 'http://127.0.0.1:8000',
 eBookConfig.app = eBookConfig.host+'/{{appname}}',
 eBookConfig.ajaxURL = eBookConfig.app+'/ajax/',
 eBookConfig.course = '{{course_id}}',
