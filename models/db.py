@@ -92,6 +92,7 @@ db.auth_user.email.requires = (IS_EMAIL(error_message=auth.messages.invalid_emai
                                IS_NOT_IN_DB(db, db.auth_user.email))
 auth.define_tables(migrate = settings.migrate)
 
+
 ## configure email
 mail=auth.settings.mailer
 mail.settings.server = 'logging' or 'smtp.gmail.com:587'
@@ -105,8 +106,8 @@ auth.settings.reset_password_requires_verification = True
 
 ## if you need to use OpenID, Facebook, MySpace, Twitter, Linkedin, etc.
 ## register with janrain.com, write your domain:api_key in private/janrain.key
-from gluon.contrib.login_methods.rpx_account import use_janrain
-use_janrain(auth,filename='private/janrain.key')
+#from gluon.contrib.login_methods.rpx_account import use_janrain
+#use_janrain(auth,filename='private/janrain.key')
 
 #########################################################################
 ## Define your tables below (or better in another model file) for example
