@@ -165,7 +165,7 @@ def makefile():
 
     shutil.rmtree(sourcedir)
     
-    yoururlpath=path.join(workingdir,"static",coursename,"index.html")
+    yoururlpath=path.join('/',request.application,"static",coursename,"index.html")
 
     return dict(message=T("Here is the link to your new eBook"),yoururl=yoururlpath)
 

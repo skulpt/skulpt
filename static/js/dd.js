@@ -69,10 +69,14 @@ function displayContents()
    x.innerHTML=txt;
 }
 
+function buildSuccess(data,status,ignore) {
+  window.location.href = data.yoururl
+}
 function buildIndexFile(projname)
 {
    var cdiv = document.getElementById("chapterboxes")
-   txt="projectname="+projname+"&toc="
+//   txt="projectname="+projname+"&toc="
+   txt=""
    var cchildren = cdiv.childNodes
    
    var bchildren = cchildren[1].childNodes
@@ -95,8 +99,11 @@ function buildIndexFile(projname)
         txt=txt + bchildren[i].getAttribute("data-filename") + " ";
       };
    }
-   //var x=document.getElementById("output");  
-   window.location.href="makefile?"+txt
+
+   data = {}
+   data.projectname=projname;
+   data.toc=txt
+   jQuery.post('/courselib/designer/makefile.json',data,buildSuccess)
 }
 
 function displayItems(boxid)
