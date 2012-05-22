@@ -5,6 +5,9 @@
     Invariant Sections being Forward, Prefaces, and Contributor List, 
     no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license
     is included in the section entitled "GNU Free Documentation License".
+    
+..  shortname:: SearchSortExercises
+..  description:: Exercises about sorting and searching
 
 Searching and Sorting
 =====================

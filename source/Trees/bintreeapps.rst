@@ -5,6 +5,9 @@
     Invariant Sections being Forward, Prefaces, and Contributor List, 
     no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license
     is included in the section entitled "GNU Free Documentation License".
+    
+..  shortname:: BinaryTreeApplications
+..  description:: What can we do with a binary tree?
 
 
 Binary Tree Applications

@@ -5,6 +5,9 @@
     Contributor List, no Front-Cover Texts, and no Back-Cover Texts.  A copy of
     the license is included in the section entitled "GNU Free Documentation
     License".
+    
+..  shortname:: FractionClassExample
+..  description:: This is a example class to represent a fraction
 
 Classes and Objects - Digging a little deeper
 =============================================

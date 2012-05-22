@@ -28,7 +28,7 @@ body {
 
 .homeboxclass { 
 	float:left;
-	width:400px; 
+	width:260px; 
 	height:1500px; 
 	padding:10px; 
 	margin-right:30px;
@@ -38,7 +38,7 @@ body {
 
 .boxclass { 
 	float:left;
-	width:400px; 
+	width:260px; 
 	height:200px; 
 	padding:10px; 
 	margin-right:30px;
@@ -62,7 +62,7 @@ body {
 }
      
 .word {
-	width:350px; height:20px; padding:1px; margin:5px; text-align:center; font-weight:bold; font-size:14px; border:1px solid #ff0000;
+	width:250px; height:20px; padding:1px; margin:5px; text-align:center; font-weight:bold; font-size:14px; border:1px solid #ff0000;
 	background-color:#fff;
 	display:inline-block;
 }

@@ -6,6 +6,9 @@
     no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license
     is included in the section entitled "GNU Free Documentation License".
 
+..  shortname:: Deques
+..  description:: The deque data structure
+
 Deques
 ------
 

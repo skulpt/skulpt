@@ -164,8 +164,10 @@ def makefile():
     app.build(force_all, filenames)
 
     shutil.rmtree(sourcedir)
+    
+    yoururlpath=path.join(workingdir,"static",coursename,"index.html")
 
-    return dict(message=T("Here is the link to your new eBook"))
+    return dict(message=T("Here is the link to your new eBook"),yoururl=yoururlpath)
 
 def user():
     """

@@ -7,6 +7,9 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
     
+..  shortname:: Lists
+..  description:: The basic list data type in python
+    
 .. index:: list, element, sequence, collection    
     
 Lists

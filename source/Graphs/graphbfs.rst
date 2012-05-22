@@ -6,6 +6,8 @@
     no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license
     is included in the section entitled "GNU Free Documentation License".
 
+..  shortname:: GraphsBFS
+..  description:: Solving problems with Graphs using breadth first search
 
 Breadth First Search
 --------------------

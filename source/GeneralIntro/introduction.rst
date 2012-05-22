@@ -7,6 +7,9 @@
     the license is included in the section entitled "GNU Free Documentation
     License".
 
+..  shortname:: GeneralIntroduction
+..  description:: This is a general introduction to computer science.
+
 The Way of the Program
 ======================
 

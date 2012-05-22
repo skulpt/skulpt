@@ -6,6 +6,9 @@
     Contributor List, no Front-Cover Texts, and no Back-Cover Texts.  A copy of
     the license is included in the section entitled "GNU Free Documentation
     License".
+    
+..  shortname:: MoreAboutFunctions
+..  description:: This module contains more details about functions
 
 Functions Revisited
 ===================
