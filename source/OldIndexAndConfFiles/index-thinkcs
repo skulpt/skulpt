@@ -11,7 +11,8 @@
 How to Think Like a Computer Scientist
 ======================================
 
-.. image:: _static/thinkcspy.png
+.. image:: _static/python-logo.png
+    :scale: 75%
     :alt: ThinkCSPy Logo
 
 Learning with Python: Interactive Edition (Using Python 3.x)

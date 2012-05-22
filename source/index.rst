@@ -11,6 +11,10 @@
 Your Project Name Here
 ======================
 
+.. image:: _static/python-logo.png
+    :scale: 75%
+    :alt: ThinkCSPy Logo
+
 
 General Introduction
 ::::::::::::::::::::
