@@ -2,6 +2,18 @@
 # this file is released under public domain and you can use without limitations
 from os import path
 import os
+import shutil
+import sys
+
+from docutils.utils import SystemMessage
+
+from sphinx import __version__
+from sphinx.errors import SphinxError
+from sphinx.application import Sphinx
+from sphinx.util import Tee, format_exception_cut_frames, save_traceback
+from sphinx.util.console import red, nocolor, color_terminal
+from sphinx.util.pycompat import terminal_safe
+
 
 #########################################################################
 ## This is a samples controller
@@ -58,7 +70,11 @@ def makefile():
     
     workingdir = request.folder
     sourcedir = path.join(workingdir,'tmp',pcode)
+
+    # copy modules from source
+
     os.mkdir(sourcedir)
+
     f = open(path.join(sourcedir,"index.rst"),"w")
     
     f.write('''.. Copyright (C)  Brad Miller, David Ranum
@@ -83,6 +99,12 @@ def makefile():
         if ".rst" in item:
             f.write("   "+item+"\n")
             idx=idx+1
+            moduleDir = item.split('/')[0]
+            try:
+                shutil.copytree(path.join(workingdir,'source',moduleDir),
+                                path.join(sourcedir,moduleDir))
+            except:
+                print 'copying %s again' % moduleDir
         else:
             topic = ""
             while idx<len(parts) and ".rst" not in parts[idx]:
@@ -114,6 +136,34 @@ def makefile():
 
 
     f.close()
+
+    shutil.copytree(path.join(workingdir,'source','FrontBackMatter'),
+                                path.join(sourcedir,'FrontBackMatter'))
+
+    coursename = pcode
+    confdir = path.join(workingdir,'source')
+    outdir = path.join(request.folder, 'static' , coursename)
+    doctreedir = path.join(outdir,'.doctrees')
+    buildername = 'html'
+    confoverrides = {}
+    confoverrides['html_context.appname'] = 'courselib'
+    confoverrides['html_context.course_id'] = coursename
+    confoverrides['html_context.loglevel'] = 10
+    confoverrides['html_context.course_url'] = 'http://127.0.0.1:8000'
+    confoverrides['html_context.login_required'] = 'true'
+    status = sys.stdout
+    warning = sys.stdout
+    freshenv = True
+    warningiserror = False
+    tags = []
+    app = Sphinx(sourcedir, confdir, outdir, doctreedir, buildername,
+                confoverrides, status, warning, freshenv,
+                warningiserror, tags)
+    force_all = True
+    filenames = []
+    app.build(force_all, filenames)
+
+    shutil.rmtree(sourcedir)
 
     return dict(message=T("Here is the link to your new eBook"))
 
