@@ -370,5 +370,8 @@ function addUserToFooter() {
 
 
 }
-$(document).ready(createEditors);
+if (typeof addingEditors == 'undefined') {
+    addingEditors = true;
+    $(document).ready(createEditors);
+}
 $(document).ready(addUserToFooter)
