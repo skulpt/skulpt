@@ -74,7 +74,6 @@ def buildmodulelist():
                     break
             if found > 1:
                 dirs = dirname.split('/')
-                print shortname.strip(), description.strip(), os.path.join(dirs[-1],rf)
                 db.modules.insert(shortname=shortname.strip(),
                                   description=description.strip(),
                                   pathtofile=os.path.join(dirs[-1],rf))
