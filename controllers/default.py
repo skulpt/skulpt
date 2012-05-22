@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 ### required - do no delete
-from sphinx.websupport import WebSupport
 import json
 
 
