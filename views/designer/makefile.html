@@ -1,0 +1,15 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,True}}
+{{extend 'layout.html'}}
+
+
+{{if 'message' in globals():}}
+<h3>{{=message}}</h3>
+{{pass}}
+
+<a href="">Your New Course</a>
+
+
+{{block right_sidebar}}
+
+
+{{end}}

@@ -1,0 +1,24 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,True}}
+{{extend 'layout.html'}}
+
+
+{{if 'message' in globals():}}
+<h3>{{=message}}</h3>
+
+<h5>{{=descr}}</h5>
+
+
+<form name="mainform" action="build" method="get">
+Project Name: <input type="text" value="Short project name, no spaces" name="projectname" /> <br/>
+Description: <input type="text" size="100" value="Enter a short description" name="projectdescription" />
+<input type="submit" value="Submit" />
+</form>
+
+
+{{pass}}
+
+{{block right_sidebar}}
+
+
+{{end}}
+
