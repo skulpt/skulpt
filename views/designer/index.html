@@ -8,7 +8,7 @@
 <h5>{{=descr}}</h5>
 
 
-<form name="mainform" action="build" method="get">
+<form name="mainform" action="/{{=request.application}}/{{=request.controller}}/build" method="get">
 Project Name: <input type="text" value="Short project name, no spaces" name="projectname" /> <br/>
 Description: <input type="text" size="100" value="Enter a short description" name="projectdescription" />
 <input type="submit" value="Submit" />

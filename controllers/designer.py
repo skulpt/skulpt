@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
+from os import path
+import os
 
 #########################################################################
 ## This is a samples controller
@@ -28,7 +30,9 @@ def build():
     buildvalues = {}
     buildvalues['pname']=request.vars.projectname
     buildvalues['pdescr']=request.vars.projectdescription
-    
+    response.files.append(URL('static','css/dd.css'))
+    response.files.append(URL('static','js/dd.js'))
+
     db.projects.update_or_insert(projectcode=request.vars.projectname,description=request.vars.projectdescription)
 
     
@@ -45,8 +49,17 @@ def build():
 def makefile():
     
     p = request.vars.toc
+
+        
+                  
+    pcode = request.vars.projectname
+    row = db(db.projects.projectcode==pcode).select()
+    title = row[0].description
     
-    f = open("/Users/davidranum/Desktop/index.rst","w")
+    workingdir = request.folder
+    sourcedir = path.join(workingdir,'tmp',pcode)
+    os.mkdir(sourcedir)
+    f = open(path.join(sourcedir,"index.rst"),"w")
     
     f.write('''.. Copyright (C)  Brad Miller, David Ranum
    Permission is granted to copy, distribute and/or modify this document
@@ -55,11 +68,7 @@ def makefile():
    Invariant Sections being Forward, Prefaces, and Contributor List, 
    no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license
    is included in the section entitled "GNU Free Documentation License".''' + "\n\n")
-                  
-    pcode = request.vars.projectname
-    row = db(db.projects.projectcode==pcode).select()
-    title = row[0].description
-    
+
                   
     f.write("="*len(title) + "\n")
     f.write(title + "\n")
