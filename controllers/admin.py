@@ -8,6 +8,11 @@
 # - show totals for all students
 
 # select acid, sid from code as T where timestamp = (select max(timestamp) from code where sid=T.sid and acid=T.acid);
+
+@auth.requires_membership('instructor')
+def index():
+    return dict()
+
 @auth.requires_membership('instructor')
 def listassignments():
     sid = request.vars.student
@@ -82,6 +87,9 @@ def buildmodulelist():
 
 
     os.path.walk(os.path.join(request.folder,'source'),procrst,None)
+
+    session.flash = 'Module Database Rebuild Finished'
+    redirect('/%s/admin'%request.application)
 
 
 
