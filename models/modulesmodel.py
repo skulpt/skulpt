@@ -1,4 +1,3 @@
-db = DAL('sqlite://storage.db', migrate=True)
 
 db.define_table('modules',
    Field('shortname','string'),
