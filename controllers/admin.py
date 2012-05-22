@@ -8,6 +8,11 @@
 # - show totals for all students
 
 # select acid, sid from code as T where timestamp = (select max(timestamp) from code where sid=T.sid and acid=T.acid);
+
+@auth.requires_membership('instructor')
+def index():
+    return dict()
+
 @auth.requires_membership('instructor')
 def listassignments():
     sid = request.vars.student
@@ -50,5 +55,42 @@ def showlog():
         paginate=40,
         formstyle='divs')
     return dict(grid=grid,course_id=course.course_id)
+
+#@auth.requires_membership('instructor')
+def buildmodulelist():
+    import os.path
+    import re
+    db.modules.truncate()
+
+    def procrst(arg, dirname, names):
+        rstfiles = [x for x in names if '.rst' in x]
+
+        for rf in rstfiles:
+            found = 0
+            openrf = open(os.path.abspath(os.path.join(dirname,rf)))
+            for line in openrf:
+                if 'shortname::' in line:
+                    first,shortname = line.split('::')
+                    found += 1
+                if 'description::' in line:
+                    first,description = line.split('::')
+                    found += 1
+                if found > 1:
+                    break
+            if found > 1:
+                dirs = dirname.split('/')
+                db.modules.insert(shortname=shortname.strip(),
+                                  description=description.strip(),
+                                  pathtofile=os.path.join(dirs[-1],rf))
+
+
+
+
+    os.path.walk(os.path.join(request.folder,'source'),procrst,None)
+
+    session.flash = 'Module Database Rebuild Finished'
+    redirect('/%s/admin'%request.application)
+
+
 
 
