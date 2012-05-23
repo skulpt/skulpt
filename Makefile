@@ -53,13 +53,13 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)
 	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)"
 
 thinkcspy:
 	cp source/OldIndexAndConfFiles/index-thinkcs source/index.rst
 	cp source/OldIndexAndConfFiles/thinkcs-conf.py source/conf.py
 	COURSEID=thinkcspy
-	$(SPHINXBUILD) -d static/thinkcspy/doctrees -a -E -A project='How to Think Like a Computer Scientist Interactive Edition' $(TEMPLATEDEFS) source static/thinkcspy
+	$(SPHINXBUILD) -d static/thinkcspy/doctrees -a -E -A project='How to Think Like a Computer Scientist Interactive Edition' $(TEMPLATEDEFS) source static/$(COURSEID)
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
 	cp source/OldIndexAndConfFiles/master-conf.py source/conf.py
 
@@ -67,7 +67,16 @@ pythonds:
 	cp source/OldIndexAndConfFiles/index-pythonds source/index.rst
 	cp source/OldIndexAndConfFiles/pythonds-conf.py source/conf.py
 	COURSEID=pythonds
-	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' $(TEMPLATEDEFS) source static/pythonds
+	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' $(TEMPLATEDEFS) source static/$(COURSEID)
+	cp source/OldIndexAndConfFiles/index-master source/index.rst
+	cp source/OldIndexAndConfFiles/master-conf.py source/conf.py
+
+luther151:
+	cp source/OldIndexAndConfFiles/index-pythonds source/index.rst
+	cp source/OldIndexAndConfFiles/pythonds-conf.py source/conf.py
+	COURSEID=luther151
+	COURSEURL=http://interactivepython.org
+	$(SPHINXBUILD) -d static/pythonds/doctrees -a -E -D project='Problem Solving with Algorithms and Data Structures' $(TEMPLATEDEFS) source static/$(COURSEID)
 	cp source/OldIndexAndConfFiles/index-master source/index.rst
 	cp source/OldIndexAndConfFiles/master-conf.py source/conf.py
 
