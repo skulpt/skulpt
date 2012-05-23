@@ -15,7 +15,6 @@ body {
 
 h1, h2, h3 {
 	margin-top: 0px;
-	text-transform: lowercase;
 	font-family: Georgia, "Times New Roman", Times, serif;
 	font-weight: normal;
 }
@@ -217,8 +216,17 @@ a img {
 	padding: 15px 15px 25px 15px;
 }
 
-/* Sidebar */
+.booktitle {
+	font-size: large;
+}
 
+
+#loginexp {
+	float: right;
+	width: 55%;
+}
+
+/* Sidebar */
 #sidebar {
 	float: right;
 	width: 180px;
