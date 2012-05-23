@@ -2033,6 +2033,12 @@ methods as exercises.
 
    .. actex:: self_check_4
 
+.. video:: fraction
+   :controls:
+   :thumb: ../_static/videothumb.png
+
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/fraction.mov
+   http://knuth.luther.edu/~pythonworks/pythondsVideos/fraction.webm
 
 Inheritance: Logic Gates and Circuits
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
