@@ -22,7 +22,7 @@ settings.plugins = []
 if 'local' in uname()[1]:
 	settings.database_uri = 'postgres://bmiller:grouplens@localhost/eds'
 elif 'webfaction' in uname()[1]:
-	settings.database_uri = 'postgres://bnmnetp_eds:grouplens@web318.webfaction.com/bnmnetp_eds'
+	settings.database_uri = 'postgres://bnmnetp_courselib:f635ac32@web318.webfaction.com/bnmnetp_courselib'
 elif 'luther' in uname()[1]:
 	settings.database_uri = 'sqlite://storage.sqlite'
 else:
