@@ -16,11 +16,11 @@
             {{idstr = str(item)}}
             <div id={{=idstr}} data-filename="{{=moddata[item][2]}}" class="word" draggable="true" onclick="showDetails({{=item}})" ondragstart="drag(event)">
                 
-                <a onmouseover='this.style.cursor="pointer" ' onfocus='this.blur();' onclick="document.getElementById('PopUp').style.display = 'block' " >{{=moddata[item][0]}}</a>
-	<div id='PopUp' style='display: none; position: absolute; left: 500px; top: 100px; border: solid black 1px; padding: 10px; background-color: rgb(255,255,225); text-align: justify; font-size: 12px; width: 135px;'>
+                <a onmouseover='this.style.cursor="pointer" ' onfocus='this.blur();' onclick="document.getElementById('PopUp{{=idstr}}').style.display = 'block' " >{{=moddata[item][0]}}</a>
+	<div id='PopUp{{=idstr}}' style='display: none; position: absolute; left: 500px; top: 100px; border: solid black 1px; padding: 10px; background-color: rgb(255,255,225); text-align: justify; font-size: 12px; width: 135px;'>
 	{{=moddata[item][1]}}
 	<br />
-	<div style='text-align: right;'><a onmouseover='this.style.cursor="pointer" ' style='font-size: 12px;' onfocus='this.blur();' onclick="document.getElementById('PopUp').style.display = 'none' " >Close</a></div>
+	<div style='text-align: right;'><a onmouseover='this.style.cursor="pointer" ' style='font-size: 12px;' onfocus='this.blur();' onclick="document.getElementById('PopUp{{=idstr}}').style.display = 'none' " >Close</a></div>
 	</div>
    </div>
             
