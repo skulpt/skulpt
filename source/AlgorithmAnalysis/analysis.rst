@@ -411,6 +411,12 @@ n grows, the cubic function quickly overtakes :math:`T(n)`. It is easy
 to see that :math:`T(n)` then follows the quadratic function as
 :math:`n` continues to grow.
 
+
+.. admonition:: Self Check
+
+   Write two Python functions to find the minimum number in a list.  The first function should compare each number to every other number on the list. :math:`O(n^2)`.  The second function should be linear :math:`O(n)`.
+
+
 An Anagram Detection Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -616,6 +622,55 @@ millions of characters, there would be more concern. As a computer
 scientist, when given a choice of algorithms, it will be up to you to
 determine the best use of computing resources given a particular
 problem.
+
+.. admonition:: Self Check
+   
+   .. multiplechoice:: analysis_1
+       :iscode:
+       :answer_a: O(n)
+       :answer_b: O(n^2)
+       :answer_c: O(log n)
+       :answer_d: O(n^3)
+       :correct: b
+       :feedback: In an example like this you want to count the nested loops. especially the loops that are dependent on the same variable, in this case, n.
+
+       Given the following code fragment, what is its Big-O running time?
+       test = 0
+       for i in range(n):
+          for j in range(n):
+             test = test + i * j
+
+   .. multiplechoice:: analysis_2
+       :iscode:
+       :answer_a: O(n)
+       :answer_b: O(n^2)
+       :answer_c: O(log n)
+       :answer_d: O(n^3)
+       :correct: a
+       :feedback: Be careful, in counting loops you want to make sure the loops are nested.
+
+       Given the following code fragment what is its Big-O running time?
+       test = 0
+       for i in range(n):
+          test = test + 1
+
+       for j in range(n):
+          test = test - 1
+
+   .. multiplechoice:: analysis_2
+       :iscode:
+       :answer_a: O(n)
+       :answer_b: O(n^2)
+       :answer_c: O(log n)
+       :answer_d: O(n^3)
+       :correct: a
+       :feedback: Look carefully at the loop variable i.  Notice that the value of i is cut in half each time through the loop.  This is a big hint that the performance is better than O(n)
+
+       Given the following code fragment what is its Big-O running time?
+       i = n
+       while i > 0:
+          k = 2 + 2
+          i = i // 2
 
 Performance of Python Data Structures
 -------------------------------------
@@ -979,6 +1034,33 @@ behind the scenes. The latest information on the performance of Python
 data structures can be found on the Python website. As of this writing
 the Python wiki has a nice time complexity page that can be found at
 ``http://wiki.python.org/moin/TimeComplexity``.
+
+
+.. admonition:: Self Check
+
+    .. multiplechoice:: mcpyperform
+       :answer_a: list.pop(0)
+       :answer_b: list.pop()
+       :answer_c: list.append()
+       :answer_d: list[10]
+       :answer_e: all of the above are O(1)
+       :correct: a
+       :feedback: When you remove the first element of a list, all the other elements of the list must be shifted forward.
+
+       Which of the above list operations is not O(1)?
+
+    .. multiplechoice:: mcpydictperf
+      :answer_a: 'x' in mydict
+      :answer_b: del mydict['x']
+      :answer_c: mydict['x'] == 10
+      :answer_d: mydict['x'] = mydict['x'] + 1
+      :answer_e: all of the above are O(1)
+      :correct: e
+      :feedback: The only dictionary operations that are not O(1) are those that require iteration.
+
+      Which of the above dictionary operations is O(1)?
+
+
 
 Summary
 -------
