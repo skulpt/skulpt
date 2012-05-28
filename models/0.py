@@ -19,7 +19,7 @@ settings.login_config = ''
 settings.course_id = 'devcourse'
 settings.plugins = []
 
-if 'local' in uname()[1]:
+if 'local' in uname()[1] or 'Darwin' in uname()[0]:
 	settings.database_uri = 'sqlite://storage.sqlite'
 elif 'webfaction' in uname()[1]:
 	settings.database_uri = 'postgres://bnmnetp_courselib:f635ac32@web318.webfaction.com/bnmnetp_courselib'
