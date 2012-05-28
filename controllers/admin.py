@@ -9,7 +9,7 @@
 
 # select acid, sid from code as T where timestamp = (select max(timestamp) from code where sid=T.sid and acid=T.acid);
 
-@auth.requires_membership('instructor')
+@auth.requires_login()
 def index():
     return dict()
 
