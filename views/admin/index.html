@@ -1,16 +1,34 @@
 {{extend 'layout.html'}}
 
+<h1>Instructors Page</h1>
+<h3>Build Your Own Course</h3>
 <ul>
 	<li>
-	<a href="/{{=request.application}}/admin/listassignments">List All Assignments</a>
+		<a href="/{{=request.application}}/designer">Create a Custom Course</a>
+	</li>
+</ul>
+<h3>Administer Your Course</h3>
+<ul>
+	<li>
+	<a href="/{{=request.application}}">Take me to my Course</a>
+	</li>
+	<li>
+	<a href="/{{=request.application}}/admin/listassignments">List and Grade Assignments</a>
 	</li>
 	<li>
 		<a href="/{{=request.application}}/admin/showlog">Show Course Logs</a>
 	</li>
+</ul>
+	<h3>Contribute</h3>
+<ul>
 	<li>
-		<a href="/{{=request.application}}/designer">Create a Custom Course</a>
+		<a href="https://github.com/bnmnetp/runestone/issues/new">Submit an Exercise</a>
 	</li>
 	<li>
-		<a href="/{{=request.application}}/admin/buildmodulelist">Rebuild Module Database</a>
+		<a href="https://github.com/bnmnetp/runestone/issues/new">Report a Bug or Request a Feature</a>
 	</li>
+	<li>
+		We also welcome submissions of modules, videos, new and other material.  Fork us on <a href="http://github.com/bnmnetp/runestone">Github</a>
+	</li>
+
 </ul>
