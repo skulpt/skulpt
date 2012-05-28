@@ -23,6 +23,7 @@ from sphinx.util.pycompat import terminal_safe
 ## - call exposes all registered services (none by default)
 #########################################################################
 
+@auth.requires_login()
 def index():
     """
     example action using the internationalization operator T and flash
@@ -47,16 +48,79 @@ def build():
 
     db.projects.update_or_insert(projectcode=request.vars.projectname,description=request.vars.projectdescription)
 
-    
-    moddata = {}
-    
-    rows = db(db.modules.id>0).select()
-    for row in rows:
-        moddata[row.id]=[row.shortname,row.description,row.pathtofile]
-    
-    buildvalues['moddata']=  moddata   #actually come from source files
-    
-    return buildvalues
+    if request.vars.coursetype != 'custom':
+
+        cid = db.courses.update_or_insert(course_id=request.vars.projectname)
+
+        # if make instructor add row to auth_membership
+        if request.vars.instructor == "yes":
+            gid = db(db.auth_group.role == 'instructor').select(db.auth_group.id).first()
+            db.auth_membership.insert(user_id=auth.user.id,group_id=gid)
+
+        # update instructor record to have course_id be this course
+        db(db.auth_user.id == auth.user.id).update(course_id = cid)
+
+        # Now Copy the whole source directory to tmp
+        workingdir = request.folder
+        sourcedir = path.join(workingdir,'tmp',request.vars.projectname)
+
+        shutil.copytree(path.join(workingdir,'source'),sourcedir)
+
+        conffile = request.vars.coursetype + '-conf.py'
+        indexfile = 'index-' + request.vars.coursetype
+        # copy the config file to conf.py
+        shutil.copy(path.join(workingdir,'source','OldIndexAndConfFiles',conffile),
+            path.join(sourcedir,'conf.py'))
+
+        # copy the index file
+        shutil.copy(path.join(workingdir,'source','OldIndexAndConfFiles',indexfile),
+            path.join(sourcedir,'index.rst'))
+
+        # set the courseid
+        # set the url
+        # build the book
+
+        coursename = request.vars.projectname
+        confdir = sourcedir
+        outdir = path.join(request.folder, 'static' , coursename)
+        doctreedir = path.join(outdir,'.doctrees')
+        buildername = 'html'
+        confoverrides = {}
+        confoverrides['html_context.appname'] = request.application
+        confoverrides['html_context.course_id'] = coursename
+        confoverrides['html_context.loglevel'] = 10
+        confoverrides['html_context.course_url'] = 'http://' + request.env.http_host
+        if request.vars.loginreq == 'yes':
+            confoverrides['html_context.login_required'] = 'true'
+        else:
+            confoverrides['html_context.login_required'] = 'false'
+        status = sys.stdout
+        warning = sys.stdout
+        freshenv = True
+        warningiserror = False
+        tags = []
+        print sys.path
+        sys.path.insert(0,path.join(request.folder,'modules'))
+        app = Sphinx(sourcedir, confdir, outdir, doctreedir, buildername,
+                    confoverrides, status, warning, freshenv,
+                    warningiserror, tags)
+        force_all = True
+        filenames = []
+        app.build(force_all, filenames)
+
+        shutil.rmtree(sourcedir)
+
+        return dict(mess='Your course is being built')        
+    else:
+        moddata = {}
+        
+        rows = db(db.modules.id>0).select()
+        for row in rows:
+            moddata[row.id]=[row.shortname,row.description,row.pathtofile]
+        
+        buildvalues['moddata']=  moddata   #actually come from source files
+        
+        return buildvalues
     
 def makefile():
     
@@ -146,10 +210,10 @@ def makefile():
     doctreedir = path.join(outdir,'.doctrees')
     buildername = 'html'
     confoverrides = {}
-    confoverrides['html_context.appname'] = 'courselib'
+    confoverrides['html_context.appname'] = request.application
     confoverrides['html_context.course_id'] = coursename
     confoverrides['html_context.loglevel'] = 10
-    confoverrides['html_context.course_url'] = 'http://127.0.0.1:8000'
+    confoverrides['html_context.course_url'] = 'http://' + request.env.http_host
     confoverrides['html_context.login_required'] = 'true'
     status = sys.stdout
     warning = sys.stdout

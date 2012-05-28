@@ -9,8 +9,20 @@
 
 
 <form name="mainform" action="/{{=request.application}}/{{=request.controller}}/build" method="get">
-Project Name: <input type="text" value="Short project name, no spaces" name="projectname" /> <br/>
-Description: <input type="text" size="100" value="Enter a short description" name="projectdescription" />
+Project Name: <input type="text" value="Short name, no spaces" name="projectname" /> <br/>
+Description: <input type="text" size="100" value="Enter a short description" name="projectdescription" /> <br /> <br />
+
+<p>If you would like to use a copy of one of our ready-made books select it below:</p>
+
+<input type="radio" name="coursetype" value="thinkcs" /> How to Think Like a Computer Scientist: Interactive Edition<br />
+<input type="radio" name="coursetype" value="pythonds" /> Problem Solving with Algorithms and Data Structures<br />
+OR<br />
+<input type="radio" name="coursetype" value="custom" /> Build a Custom Course <br /> <br />
+
+<input type="checkbox" name="loginreq" value="yes" checked="checked" /> Require a username to access this course. <br /> <br />
+
+<input type="checkbox" name="instructor" value="yes" checked="checked"/> Make me the Instructor of this course. <br /> <br />
+
 <input type="submit" value="Submit" />
 </form>
 
