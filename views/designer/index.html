@@ -8,7 +8,7 @@
 <h5>{{=descr}}</h5>
 
 
-<form name="mainform" action="/{{=request.application}}/{{=request.controller}}/build" method="get">
+<form name="mainform" action="/{{=request.application}}/{{=request.controller}}/build" method="get"  onsubmit="unhide_img('spinner'); return true;">
 Project Name: <input type="text" value="Short name, no spaces" name="projectname" /> <br/>
 Description: <input type="text" size="100" value="Enter a short description" name="projectdescription" /> <br /> <br />
 
@@ -26,8 +26,24 @@ OR<br />
 <input type="submit" value="Submit" />
 </form>
 
-
+<div style="align: center;">
+	<img id="spinner" src="/courselib/static/images/spinner10.gif" style="display: none;">
+</div>
 {{pass}}
+
+<script type="text/javascript">
+	function unhide_img(id) {
+		var i = document.getElementById('spinner');
+		i.style.display = "block";
+	}
+	function show_image(src) {
+        var img = document.createElement("img");
+        img.src = src;
+        spinner = document.getElementById('spinner');
+        spinner.appendChild(img);
+        alert(img.src);
+    }
+</script>
 
 {{block right_sidebar}}
 
