@@ -315,29 +315,42 @@ There is no limit on the number of statements that can appear under the two clau
    How many statements can appear in each block (the if and the else) in a conditional statement?
 
 .. mchoicemf:: test_question6_4_2
-   :answer_a: <br>TRUE
-   :answer_b: <br>FALSE
-   :answer_c: <br>TRUE <br> FALSE
-   :answer_d: Nothing
+   :answer_a: Output a
+   :answer_b: Output b
+   :answer_c: Output c
+   :answer_d: Nothing will be printed
    :correct: b
    :feedback_a: TRUE is printed by the if-block, which only executes if the conditional (in this case, 4+5 == 10) is true.  In this case 5+4 is not equal to 10.
    :feedback_b: Since 4+5==10 evaluates to False, Python will skip over the if block and execute the statement in the else block.
    :feedback_c: Python would never print both TRUE and FALSE because it will only execute one of the if-block or the else-block, but not both.
    :feedback_d: Python will always execute either the if-block (if the condition is true) or the else-block (if the condition is false).  It would never skip over both blocks.
 
-   What does the following code print?
+   What does the following code print (choose from output a, b, c or nothing).
    <pre>
    if (4 + 5 == 10):
        print TRUE
    else:
        print FALSE
    </pre>
+   a.
+   <pre>
+   TRUE
+   </pre>
+   b.
+   <pre>
+   FALSE
+   </pre>
+   c.
+   <pre>
+   TRUE
+   FALSE
+   </pre>
 
 .. mchoicemf:: test_question6_4_3
-   :answer_a: <br>TRUE 
-   :answer_b: <br>TRUE <br> FALSE
-   :answer_c: <br>FALSE <br> TRUE
-   :answer_d: <br>TRUE<br>FALSE<br>TRUE<br>
+   :answer_a: Output a
+   :answer_b: Output b
+   :answer_c: Output c
+   :answer_d: Output d
    :correct: c
    :feedback_a: Although TRUE is printed after the if-else statement completes, both blocks within the if-else statement print something too.  In this case, Python would have had to have skipped both blocks in the if-else statement, which it never would do.
    :feedback_b: Because there is a TRUE printed after the if-else statement ends, Python will always print TRUE as the last statement.
@@ -351,6 +364,26 @@ There is no limit on the number of statements that can appear under the two clau
    else:
        print FALSE
    print TRUE
+   </pre>
+    a.
+   <pre>
+   TRUE
+   </pre>
+   b.
+   <pre>
+   TRUE
+   FALSE
+   </pre>
+   c.
+   <pre>
+   FALSE
+   TRUE
+   </pre>
+   d.
+   <pre>
+   TRUE
+   FALSE
+   TRUE
    </pre>
 
 
@@ -397,9 +430,9 @@ What would be printed if the value of `` x`` is negative?  Try it.
 **Check your understanding**
 
 .. mchoicemf:: test_question6_5_1
-   :answer_a: <br>This is always printed
-   :answer_b: <br>The negative number -10 is not valid here <br>This is always printed
-   :answer_c: <br>The negative number -10 is not valid here<br>
+   :answer_a: Output a
+   :answer_b: Output b
+   :answer_c: Output c
    :answer_d: It will cause an error because every if must have an else clause.
    :correct: b
    :feedback_a: Because -10 is less than 0, Python will execute the body of the if-statement here.
@@ -413,6 +446,19 @@ What would be printed if the value of `` x`` is negative?  Try it.
    if x < 0:
        print("The negative number ",  x, " is not valid here.")
    print("This is always printed")
+   </pre>
+   a.
+   <pre>
+   This is always printed
+   </pre>
+   b.
+   <pre>
+   The negative number -10 is not valid here
+   This is always printed 
+   </pre>
+   c.
+   <pre>
+   The negative number -10 is not valid here
    </pre>
 
 .. mchoicemf:: test_question6_5_2

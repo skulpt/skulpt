@@ -514,7 +514,7 @@ function returns.
    </pre>
 
 .. mchoicemf:: test_question5_2_2
-   :answer_a: None (no value)
+   :answer_a: Nothing (no value)
    :answer_b: The value of x+y+z
    :answer_c: The string 'x+y+z'
    :correct: a

@@ -21,7 +21,7 @@ var feedBack = function(divid,correct,feedbackText) {
       $(divid).css('background-color','#C8F4AD');
    	} else {
 	    $(divid).html("Inorrect.  " + feedbackText );
-      $(divid).css('background-color','#FFFFFF');		
+      $(divid).css('background-color','#F4F4AD');		
 	}
 };
 
@@ -54,7 +54,7 @@ var feedBackMCMF = function(divid,correct,feedbackText) {
         $(divid).css('background-color','#C8F4AD');
 	} else {
 		$(divid).html("Inorrect.  " + feedbackText );
-        $(divid).css('background-color','#FFFFFF');
+        $(divid).css('background-color','#F4F4AD');
 	}
 };
 
@@ -129,7 +129,7 @@ var feedBackMCMA = function(divid,numCorrect,numNeeded,numGiven,feedbackText) {
 		$(divid).html("Incorrect.  " +  "You gave " + numGiven + 
         " " + answerStr + " and got " + numCorrect + " correct of " +
          numNeeded + " needed.<br /> " + feedbackText );
-        $(divid).css('background-color','#FFFFFF');
+        $(divid).css('background-color','#F4F4AD');
 	}
 };
 
