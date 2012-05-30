@@ -110,7 +110,7 @@ def build():
 
         shutil.rmtree(sourcedir)
 
-        return dict(mess='Your course is being built')        
+        return dict(mess='Your course is ready',course_url='static/'+coursename+'/index.html' )       
     else:
         moddata = {}
         
