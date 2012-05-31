@@ -138,7 +138,8 @@ OUTERWHILE:
         {
             // no transition
             var errline = context[0][0];
-            throw new Sk.builtin.ParseError("bad input on line" + errline.toString());
+            throw new Sk.builtin.ParseError("bad input on line " + errline.toString(), "", errline, context);	//	RNL
+//          throw new Sk.builtin.ParseError("bad input on line " + errline.toString());		RNL
         }
     }
 };
@@ -303,8 +304,9 @@ function makeParser(filename, style)
         //print("tok:"+ret);
         if (ret)
         {
-            if (ret !== "done")
+            if (ret !== "done") {
                 throw "ParseError: incomplete input";
+			}
             return p.rootnode;
         }
         return false;
