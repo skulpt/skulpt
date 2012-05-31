@@ -58,7 +58,10 @@ def build():
             db.auth_membership.insert(user_id=auth.user.id,group_id=gid)
 
         # update instructor record to have course_id be this course
-        db(db.auth_user.id == auth.user.id).update(course_id = cid)
+        # if the above update_or_insert on project does nothing (meaning this is a duplicate)
+        # then do not change teh instructors cid.
+        if cid:
+            db(db.auth_user.id == auth.user.id).update(course_id = cid)
 
         # Now Copy the whole source directory to tmp
         workingdir = request.folder
