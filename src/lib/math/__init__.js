@@ -8,6 +8,11 @@ var $builtinmodule = function(name)
 	return Math.abs(x);
     });
 
+//	RNL	added
+    mod.fabs = new Sk.builtin.func(function(x) {
+	return Math.abs(x);
+    });
+
     mod.asin = new Sk.builtin.func(function(rad) {
 	return Math.asin(rad);
     });
