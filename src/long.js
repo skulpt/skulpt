@@ -44,9 +44,10 @@ Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.bu
 Sk.builtin.lng.SHIFT$ = 15;
 Sk.builtin.lng.BASE$ = 1 << Sk.builtin.lng.SHIFT$;
 Sk.builtin.lng.MASK$ = Sk.builtin.lng.BASE$ - 1;
-Sk.builtin.lng.threshold$ = Math.pow(2, 30);
+Sk.builtin.lng.threshold$ = Math.pow(2, 46);	//	RNL Math.pow(2,30)
+Sk.builtin.lng.TWOTOTHESHIFT$ = Math.pow(2,Sk.builtin.lng.SHIFT$);
 
-Sk.builtin.lng.fromInt$ = function(ival)
+Sk.builtin.lng.fromInt$ = function(ival) 
 {
     var negative = false;
     if (ival < 0)
@@ -54,29 +55,26 @@ Sk.builtin.lng.fromInt$ = function(ival)
         ival = -ival;
         negative = true;
     }
-
-    var t = ival;
-    var ndigits = 0;
-    while (t)
-    {
-        ndigits += 1;
-        t >>= Sk.builtin.lng.SHIFT$;
+    
+    var t = ival
+    var d = new Array(0)
+    while (t) {
+    	var b = t & Sk.builtin.lng.MASK$
+    	d.push(b)
+    	t = (t - b) / Sk.builtin.lng.TWOTOTHESHIFT$	
+    	if (d.length > 500) //	Safety net, to avoid an infinite loop
+    		throw "Internal Error: Too many digits encountered converting to long."
     }
-
-    var ret = new Sk.builtin.lng(undefined, ndigits);
-    if (negative) ret.size$ = -ret.size$;
-    t = ival;
-    var i = 0;
-    while (t)
-    {
-        ret.digit$[i] = t & Sk.builtin.lng.MASK$;
-        t >>= Sk.builtin.lng.SHIFT$;
-        i += 1;
+    
+    var ret = new Sk.builtin.lng(undefined, d.length)
+    if (negative) ret.size$ = -ret.size$
+    
+    for (var i in d) {
+    	ret.digit$[i] = d[i]
     }
-
-    return ret;
+    
+    return ret
 };
-
 
 // mul by single digit, ignoring sign
 Sk.builtin.lng.mulInt$ = function(a, n)
