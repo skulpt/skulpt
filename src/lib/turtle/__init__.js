@@ -49,9 +49,15 @@ if (! TurtleGraphics) {
         TurtleGraphics.canvasInit = true;
         this.tlist = []
 
-        this.delay = 50;
+		this.timeFactor = 5;
+        if (TurtleGraphics.defaults.animate) {
+            this.delay = 5 * this.timeFactor;
+        } else {
+            this.delay = 0;
+        }
         this.segmentLength = 10;
         this.renderCounter = 1;
+        this.clearPoint = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
     }
 
@@ -67,6 +73,13 @@ if (! TurtleGraphics) {
         this.urx = this.canvas.width / 2;
         this.ury = this.canvas.height / 2;
         this.renderCounter = 1;
+        this.clearPoint = 0;
+		this.timeFactor = 5;
+        if (TurtleGraphics.defaults.animate ) {
+            this.delay = 5 * this.timeFactor;
+        } else {
+            this.delay = 0;
+        }
 
         if (TurtleGraphics.canvasInit == false) {
             this.context.save();
@@ -75,6 +88,7 @@ if (! TurtleGraphics) {
             TurtleGraphics.canvasInit = true;
             TurtleGraphics.eventCount = 0;
             TurtleGraphics.renderClock = 0;
+            TurtleGraphics.renderTime = 0;	// RNL
         } else {
             this.context.restore();
             this.context.translate(this.canvas.width / 2, this.canvas.height / 2); // move 0,0 to center.
@@ -84,7 +98,7 @@ if (! TurtleGraphics) {
         }
     }
     TurtleCanvas.prototype.addToCanvas = function(t) {
-        this.tlist.push(t);
+	        this.tlist.push(t);
     }
 
     TurtleCanvas.prototype.onCanvas = function(t) {
@@ -96,25 +110,23 @@ if (! TurtleGraphics) {
     }
 
     TurtleCanvas.prototype.startAnimating = function(t) {
-        this.intervalId = setInterval(render, this.delay);
-        this.addToCanvas(t);
+		if (! this.isAnimating()) {
+        	this.intervalId = setTimeout(render, this.delay);	//	setInterval(render, this.delay);
+		}
+    	if (!this.onCanvas(t))	//	Added by RNL in case startAnimating is called after it's already been added
+       		this.addToCanvas(t);
         Sk.isTurtleProgram = true;
     }
 
     TurtleCanvas.prototype.doneAnimating = function(t) {
-        var idx = this.tlist.indexOf(t);
-        if (idx > -1)
-            this.tlist.splice(idx, 1);
-        if (this.tlist.length == 0) {
-            clearInterval(this.intervalId);
-            $(Sk.runButton).removeAttr('disabled');
-        }
-
+        this.tlist.splice(0,this.tlist.length)
+        clearTimeout(this.intervalId)   
+        $(Sk.runButton).removeAttr('disabled');
     }
 
     TurtleCanvas.prototype.cancelAnimation = function() {
         if (this.intervalId) {
-            clearInterval(this.intervalId);
+            clearTimeout(this.intervalId)	//	clearInterval(this.intervalId);
         }
 
         for (var t in this.tlist) {
@@ -123,9 +135,17 @@ if (! TurtleGraphics) {
         render();
     }
 
-    TurtleCanvas.prototype.setDelay = function(s) {
+    TurtleCanvas.prototype.setSpeedDelay = function(s) {	// RNL
         var df = 10 - (s % 11) + 1;
-        this.delay = df * 10;
+        this.delay = df * this.timeFactor;	//	RNL was 10;
+    }
+
+    TurtleCanvas.prototype.setDelay = function(d) {
+        this.delay = d;
+    }
+
+    TurtleCanvas.prototype.getDelay = function(s) { // RNL
+        return this.delay;
     }
 
     TurtleCanvas.prototype.setCounter = function(s) {
@@ -220,11 +240,13 @@ if (! TurtleGraphics) {
                 //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
             }
             var incr = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID].getCounter();
+            var lastCanvas = null
 
             TurtleGraphics.renderClock += incr;
 
             for (var tix in TurtleGraphics.turtleList) {
                 var t = TurtleGraphics.turtleList[tix]
+                lastCanvas = t.turtleCanvas 
                 if (t.aCount >= t.drawingEvents.length)
                     t.aCount = t.drawingEvents.length - 1;
                 moveTo(0, 0);
@@ -235,10 +257,19 @@ if (! TurtleGraphics) {
                 lineJoin = 'round';
                 strokeStyle = 'black';
                 var filling = false;
-                for (var i = 0; i <= t.aCount; i++) {
+                if (isNaN(t.turtleCanvas.delay))
+                	t.turtleCanvas.delay = 0
+//				console.log(tix + " : " + t.clearPoint + " to " + t.aCount)
+                for (var i = t.clearPoint; (i <= t.aCount || t.turtleCanvas.delay == 0) && i < t.drawingEvents.length; i++) {
+                	if (i > t.aCount)	//	If se jump past aCount, jump it ahead
+                		t.aCount = i
                     var oper = t.drawingEvents[i];
                     var ts = oper[oper.length-1];
-                    if (ts <= TurtleGraphics.renderClock) {
+//					console.log(i + "/" + ts + oper [0] + "{" + oper [1] + "}" + t.turtleCanvas.delay)
+                    if (ts <= TurtleGraphics.renderClock || t.turtleCanvas.delay == 0) {
+                    	if (ts > TurtleGraphics.renderClock)	//	If we go past the render clock, jump it ahead
+                    		TurtleGraphics.renderClock = ts
+//						console.log("<==")
                         if (oper[0] == "LT") {  //  line to
                             if (! filling) {
                                 beginPath();
@@ -305,21 +336,53 @@ if (! TurtleGraphics) {
                             t.visible = true;
                         } else if (oper[0] == "TT") {
                             currentHead = oper[1];
-                        }
-                        else {
-                            console.log("unknown op: " + oper[0]);
-                        }
-                    }
-                }
+                        } else if (oper[0] == "CL") { // RNL clear
+                        	clear_canvas(t.canvasID);
+                        	t.clearPoint = i;	// Different from reset that calls clear because it leaves the turtles where they are
+                        } else if (oper[0] == "DL") { // RNL delay
+                        	var df = oper[1]
+//                      	console.log("animated delay set " + df)
+                        	t.turtleCanvas.delay = df
+                        } else if (oper[0] == "SC") { // RNL speed change
+                        	var s = oper[1]
+                        	if (s < 0)
+                        		s = 0
+                        	if (s > 10)
+                        		s = 10
+       						var df = (10 - (s % 11) + 1) * t.turtleCanvas.timeFactor	//	10
+       						if (s == 0) {
+       							df = 0
+       						}
+	                        //	t.turtleCanvas.intervalId = clearInterval(t.turtleCanvas.intervalId);
+	       					t.turtleCanvas.delay = df;
+	       					//	t.turtleCanvas.intervalId = setInterval(render, t.turtleCanvas.delay)
+       						if (oper[2]) {
+       							t.turtleCanvas.setSegmentLength(oper[2]);
+       						}
+       					} else if (oper[0] == "NO") { // RNL no op                	
+                        } else {
+							console.log("unknown op: " + oper[0]);
+                        } // end of oper[0] test
+                    } // end of if ts < render clock
+                } // end of for
+//				console.log(TurtleGraphics.renderClock + " / " + t.aCount)
+//				console.log("------------------------------")
                 t.aCount += incr;
                 if (t.visible) {
                     // draw the turtle
                     t.drawturtle(currentHead.toAngle(), currentPos); // just use currentHead
                 }
-                //if (t.aCount >= t.drawingEvents.length) {
-                if (TurtleGraphics.renderClock > TurtleGraphics.eventCount ){ // && allDone() ){
-                    t.turtleCanvas.doneAnimating(t);
-                }
+            }
+            //if (t.aCount >= t.drawingEvents.length) {
+            if (TurtleGraphics.renderClock > TurtleGraphics.eventCount ){ // && allDone() ){
+//              t.turtleCanvas.doneAnimating(t);
+//				console.log("done animating")
+                if (lastCanvas) lastCanvas.doneAnimating(t);
+            } else {
+//    			t.turtleCanvas.intervalId = setTimeout(render, t.turtleCanvas.delay)
+    			if (lastCanvas) {
+    				lastCanvas.intervalId = setTimeout(render, lastCanvas.delay)
+    			}
             }
         }
     }
@@ -403,6 +466,7 @@ if (! TurtleGraphics) {
             this.normal = [ ];
             this.go_home();
             this.aCount = 0;
+            this.clearPoint = 0;	// RNL for clear/clearScreen
         }
     }
     function turtleShapePoints() {
@@ -620,14 +684,32 @@ if (! TurtleGraphics) {
         }
     }
 
+    Turtle.prototype.delay = function(d) {	// RNL
+    	if (d != null) {
+    		if (d < 0)
+    			d = -d
+    		if (!this.animate) 
+    			this.turtleCanvas.setDelay(d)
+    		else {
+    			this.turtleCanvas.setDelay(d)
+	    		this.addDrawingEvent(["DL", d])
+	    		this.addDrawingEvent(["NO"])
+    		}
+    	}
+        return this.turtleCanvas.getDelay();
+    }
+
     Turtle.prototype.speed = function(s,t) {
-        if (s > 0) {
+        if (s > 0 && !this.animate) {
             this.animate = true;
-            this.turtleCanvas.setDelay(s);
-        }
-        else {
-            this.animate = false;
-            this.turtleCanvas.cancelAnimation();
+            this.turtleCanvas.setSpeedDelay(s)
+        } if (s == 0 && !this.animate) {
+        	this.turtleCanvas.setSpeedDelay(s)
+        } else {
+//          this.animate = false;
+//          this.turtleCanvas.cancelAnimation();
+			this.addDrawingEvent(["SC", s, t])
+			this.addDrawingEvent(["NO"])
         }
         if (t) {
             this.turtleCanvas.setSegmentLength(t);
@@ -804,9 +886,18 @@ if (! TurtleGraphics) {
         if (typeof(c) == "string") {
             this.penStyle = c;
         } else {
-            var rs = c.toString(16);
-            var gs = g.toString(16);
-            var bs = b.toString(16);
+        	var rs
+        	var gs
+        	var bs
+        	if (typeof( c) == "object" && c.length == 3) {
+        		rs = c[0].toString(16)
+        		gs = c[1].toString(16)
+        		bs = c[2].toString(16)
+        	} else {
+            	rs = c.toString(16);
+            	gs = g.toString(16);
+            	bs = b.toString(16);
+        	}
             while (rs.length < 2) rs = "0" + rs;
             while (gs.length < 2) gs = "0" + gs;
             while (bs.length < 2) bs = "0" + bs;
@@ -823,9 +914,18 @@ if (! TurtleGraphics) {
         if (typeof(c) == "string") {
             this.fillStyle = c;
         } else {
-            var rs = c.toString(16);
-            var gs = g.toString(16);
-            var bs = b.toString(16);
+        	var rs
+        	var gs
+        	var bs
+        	if (typeof( c) == "object" && c.length == 3) {
+        		rs = c[0].toString(16)
+        		gs = c[1].toString(16)
+        		bs = c[2].toString(16)
+        	} else {
+            	rs = c.toString(16);
+            	gs = g.toString(16);
+            	bs = b.toString(16);
+        	}
             while (rs.length < 2) rs = "0" + rs;
             while (gs.length < 2) gs = "0" + gs;
             while (bs.length < 2) bs = "0" + bs;
@@ -919,6 +1019,14 @@ if (! TurtleGraphics) {
             this.addDrawingEvent(["ST",this.position[0],this.position[1],this.heading.toAngle()]);
         } else
             this.drawturtle();
+    }
+    
+    Turtle.prototype.clear = function () {
+    	if (this.animate) {
+    		this.addDrawingEvent(["CL"])
+    	} else {
+    		clear_canvas(this.canvasID);
+    	}
     }
 
     function clear_canvas(canId) {
@@ -1074,6 +1182,7 @@ if (! TurtleGraphics) {
     TurtleGraphics.canvasInit = false;
     TurtleGraphics.eventCount = 0;
     TurtleGraphics.renderClock = 0;
+    TurtleGraphics.renderTime  = 0; // RNL
 
 })();
 
@@ -1180,6 +1289,10 @@ var $builtinmodule = function(name) {
 
         $loc.circle = new Sk.builtin.func(function(self, radius, extent) {
             self.theTurtle.circle(radius, extent);
+        });
+
+        $loc.delay = new Sk.builtin.func(function(self, d) {
+            return self.theTurtle.delay(d);
         });
 
         $loc.speed = new Sk.builtin.func(function(self, s, t) {
@@ -1374,6 +1487,12 @@ var $builtinmodule = function(name) {
             self.theTurtle.setworldcoordinates(llx, lly, urx, ury);
         });
 
+		//	Added by RNL
+
+		$loc.clear = new Sk.builtin.func(function(self) {
+			self.theTurtle.clear()
+		});
+
     }
 
     mod.Turtle = Sk.misceval.buildClass(mod, turtle, 'Turtle', []);
@@ -1416,6 +1535,14 @@ var $builtinmodule = function(name) {
         $loc.turtles = new Sk.builtin.func(function(self) {
             return self.theScreen.turtles();
         });
+
+		$loc.colormode = new Sk.builtin.func(function(self) {
+			//	Empty function to emulate compatibility
+		});
+        
+//        $loc.clear = new Sk.builtin.func(function(self) {
+//        	
+//        });
 
         var myfunc = function(self, width, height, startx, starty) {
             self.theScreen.setup(width,height);
