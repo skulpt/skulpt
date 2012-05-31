@@ -8,6 +8,7 @@ Sk.builtins = {
 'max': Sk.builtin.max,
 'sum': Sk.builtin.sum,
 'abs': Sk.builtin.abs,
+'fabs': Sk.builtin.abs,	//	Added by RNL
 'ord': Sk.builtin.ord,
 'chr': Sk.builtin.chr,
 'dir': Sk.builtin.dir,
@@ -35,6 +36,9 @@ Sk.builtins = {
 'set': Sk.builtin.set,
 'tuple': Sk.builtin.tuple,
 'type': Sk.builtin.type,
-'input': Sk.builtin.input
+'input': Sk.builtin.input,
+'jseval': Sk.builtin.jseval,		//	Added by RNL
+'jsmillis': Sk.builtin.jsmillis /*,	//	Added by RNL
+'read': Sk.builtin.read*/			//	Added and removed by RNL
 };
 goog.exportSymbol("Sk.builtins", Sk.builtins);

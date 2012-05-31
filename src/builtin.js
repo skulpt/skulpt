@@ -201,3 +201,24 @@ Sk.builtin.input = function(obj, name, default_)
     var x = prompt(obj.v);
     return new Sk.builtin.str(x);
 };
+
+Sk.builtin.jseval = function jseval(evalcode)
+{
+    goog.global.eval(evalcode);
+};
+
+Sk.builtin.jsmillis = function jsmillis()
+{
+	var now = new Date()
+	return now.valueOf();
+};
+
+/*
+Sk.builtinFiles = {};
+Sk.builtin.read = function read(x) {
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+};
+Sk.builtinFiles = undefined;
+*/
