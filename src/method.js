@@ -28,7 +28,7 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
         {
             // todo; make this a dict mapping name to offset
             var varnames = this.im_func.func_code['co_varnames'];
-            var numvarnames = varnames.length;
+            var numvarnames = varnames &&  varnames.length;
             for (var j = 0; j < numvarnames; ++j)
             {
                 if (kw[i] === varnames[j])
