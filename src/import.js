@@ -147,12 +147,15 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
 
     module.$js = co.code; // todo; only in DEBUG?
     var finalcode = co.code;
+	if (Sk.dateSet == null || !Sk.dateSet) {
+		finalcode = 'Sk.execStart = new Date();\n' + co.code;
+		Sk.dateSet = true;
+	}
 
     //if (!COMPILED)
     {
         if (dumpJS)
         {
-            Sk.debugout("-----");
             var withLineNumbers = function(code)
             {
                 var beaut = js_beautify(co.code);
@@ -167,12 +170,16 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
                 return lines.join("\n");
             };
             finalcode = withLineNumbers(co.code);
-            Sk.debugout(finalcode);
+//          Sk.debugout(finalcode);
         }
     }
 
     var namestr = "new Sk.builtin.str('" + modname + "')";
     finalcode += "\n" + co.funcname + "(" + namestr + ");";
+
+//	if (Sk.debugCode)
+//		Sk.debugout(finalcode);
+
     var modlocs = goog.global.eval(finalcode);
 
     // pass in __name__ so the module can set it (so that the code can access
@@ -209,11 +216,23 @@ Sk.importModule = function(name, dumpJS)
 
 Sk.importMain = function(name, dumpJS)
 {
+	Sk.dateSet = false;
+	Sk.filesLoaded = false
+	//	Added to reset imports
+	Sk.sysmodules = new Sk.builtin.dict([]);
+	Sk.realsyspath = undefined;
+
     return Sk.importModuleInternal_(name, dumpJS, "__main__");
 };
 
 Sk.importMainWithBody = function(name, dumpJS, body)
 {
+	Sk.dateSet = false;
+	Sk.filesLoaded = false
+	//	Added to reset imports
+	Sk.sysmodules = new Sk.builtin.dict([]);
+	Sk.realsyspath = undefined;
+    
     return Sk.importModuleInternal_(name, dumpJS, "__main__", body);
 };
 

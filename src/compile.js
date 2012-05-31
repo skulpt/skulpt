@@ -93,6 +93,9 @@ Compiler.prototype.annotateSource = function(ast)
         out("\n//\n// line ", lineno, ":\n// ", this.getSourceLine(lineno), "\n// ");
         for (var i = 0; i < col_offset; ++i) out(" ");
         out("^\n//\n");
+
+		out("\nSk.currLineNo = ",lineno, ";\nSk.currColNo = ",col_offset,"\n\n");	//	Added by RNL
+		out("\nSk.currFilename = '",this.filename,"';\n\n");	//	Added by RNL
     }
 };
 
@@ -164,25 +167,38 @@ Compiler.prototype._gr = function(hint, rest)
     return v;
 }
 
+/**
+* Function to test if an interrupt should occur if the program has been running for too long.
+* This function is executed at every test/branch operation. 
+*/
+Compiler.prototype._interruptTest = function() { // Added by RNL
+	out("if (Sk.execStart === undefined) {Sk.execStart=new Date()}");
+  	out("if (Sk.execLimit != null && new Date() - Sk.execStart > Sk.execLimit) {throw new Error('Program exceeded run time limit.')}");
+}
+
 Compiler.prototype._jumpfalse = function(test, block)
 {
     var cond = this._gr('jfalse', "(", test, "===false||!Sk.misceval.isTrue(", test, "))");
+    this._interruptTest();	// Added by RNL
     out("if(", cond, "){/*test failed */$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jumpundef = function(test, block)
 {
+    this._interruptTest();	// Added by RNL
     out("if(", test, "===undefined){$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jumptrue = function(test, block)
 {
     var cond = this._gr('jtrue', "(", test, "===true||Sk.misceval.isTrue(", test, "))");
+    this._interruptTest();	// Added by RNL
     out("if(", cond, "){/*test passed */$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jump = function(block)
 {
+    this._interruptTest();	// Added by RNL
     out("$blk=", block, ";/* jump */continue;");
 };
 
