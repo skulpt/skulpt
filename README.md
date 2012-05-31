@@ -11,11 +11,11 @@ Skulpt is the brainchild of Scott Graham.  See [Skulpt.org](http://skulpt.org) f
 
 There is plenty of work still to do in making improvements to Skulpt.  If you would like to contribute
 
-#. Create a Github account if you don't already have one
-#. Create a Fork of the Skulpt repository
-#. Check the issues list for something to do.
-#. Fix or add your own features.
-#. Make a Pull Request to get your feature(s) added to the main repository.
+1. Create a Github account if you don't already have one
+2. Create a Fork of the Skulpt repository
+3. Check the issues list for something to do.
+4. Fix or add your own features.
+5. Make a Pull Request to get your feature(s) added to the main repository.
 
 
 ## Community
