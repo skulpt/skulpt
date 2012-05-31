@@ -135,10 +135,11 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
     if (typeof a === "number" && typeof b === "number")
     {
         var ans = opfn(a, b);
-        // todo; handle float
-        if (ans > Sk.builtin.lng.threshold$ || ans < -Sk.builtin.lng.threshold$)
-            return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
-        else
+        // todo; handle float	Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
+        if ( (ans > Sk.builtin.lng.threshold$ || ans < -Sk.builtin.lng.threshold$)	// RNL
+        && Math.floor(ans) === ans)	{												// RNL
+            return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];		// RNL
+        } else																		// RNL
             return ans;
     }
     else if (a.constructor === Sk.builtin.lng && typeof b === "number")
