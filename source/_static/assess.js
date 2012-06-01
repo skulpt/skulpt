@@ -10,7 +10,7 @@ var checkMe = function(divid, expected, feedback) {
 	// update number of trials??
 	// log this to the db
 	feedBack('#'+divid+'_feedback',given == expected, feedback);
-	var answerInfo = 'answer:' +  (given==expected ? 'correct' : given);
+	var answerInfo = 'answer:' + given + ":"  + (given==expected ? 'correct' : 'no');
 	logBookEvent({'event':'assses', 'act':answerInfo, 'div_id':divid});
 };
 
@@ -41,7 +41,8 @@ var checkMCMF = function(divid, expected, feedbackArray) {
 		}
 	}
 	// log the answer
-    logBookEvent({'event':'mChoice','act': 'answer_' + given, 'div_id':divid}); 
+  var answerInfo = 'answer:' + given + ":" + (given == expected ? 'correct' : 'no');
+  logBookEvent({'event':'mChoice','act': answerInfo, 'div_id':divid}); 
     
     // give the user feedback
 	feedBackMCMF('#'+divid+'_feedback',given == expected, feedback);
@@ -68,6 +69,7 @@ var checkMCMA = function(divid, expected, feedbackArray) {
     var correctCount = 0;
     var correctIndex = 0;
     var givenIndex = 0;
+    var givenlog = '';
 	var buttonObjs = document.forms[divid+"_form"].elements.group1;
     
     // loop through the checkboxes
@@ -76,6 +78,7 @@ var checkMCMA = function(divid, expected, feedbackArray) {
 			given = buttonObjs[i].value; // get value of this button
             givenArray.push(given)    // add it to the givenArray
             feedback+=given + ": " + feedbackArray[i] + "<br />"; // add the feedback
+            givenlog += given + ",";
 		}
 	}
     // sort the given array
@@ -107,7 +110,9 @@ var checkMCMA = function(divid, expected, feedbackArray) {
     } // end while
     
 	// log the answer
-    logBookEvent({'event':'mChoice','act': 'answer_' + given, 'div_id':divid}); 
+  var answerInfo = 'answer:' + givenlog.substring(0,givenlog.length-1) + ':' +
+    (correctCount == correctArray.length ? 'correct' : 'no');
+    logBookEvent({'event':'mChoice','act': answerInfo, 'div_id':divid}); 
     
 	// give the user feedback
 	feedBackMCMA('#'+divid+'_feedback', correctCount,
