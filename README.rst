@@ -1,6 +1,11 @@
 Runestone Interactive Tools and Content
 =======================================
 
+Important Notice
+----------------
+
+This is the consolidated repository for all work related to our interactive textbook project.  If you were using the 
+thinkcspy repository and the eBookExtensions repository you will find all of that work here.  Thanks.
 
 Dependencies
 ------------
