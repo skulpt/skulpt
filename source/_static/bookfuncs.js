@@ -144,6 +144,9 @@ function runit(myDiv,theButton,includes) {
             Sk.tg.turtleList = [];
         }
     }
+    // set execLimit in milliseconds  -- for student projects set this to 
+    // 30 seconds?
+    Sk.execLimit = 10000;
     // configure Skulpt output function, and module reader
     Sk.configure({output:outf,
                 read: builtinRead
