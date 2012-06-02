@@ -170,7 +170,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
                 return lines.join("\n");
             };
             finalcode = withLineNumbers(co.code);
-//          Sk.debugout(finalcode);
+            Sk.debugout(finalcode);
         }
     }
 
