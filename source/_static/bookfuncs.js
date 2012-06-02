@@ -325,10 +325,16 @@ function gotUser(data, status, whatever) {
 
     if (data.indexOf('login') != -1) {
         mess = "Redirect to Login";
-        window.location.href=eBookConfig.app+'/default/user/login'
+        if (eBookConfig.loginRequired) {
+            window.location.href=eBookConfig.app+'/default/user/login'
+            return
+        }
     } else if (data.redirect) {
         mess = "Not logged in";
-        window.location.href=data.redirect
+        if (eBookConfig.loginRequired) {
+            window.location.href=data.redirect
+            return
+        }
     } else if (data == "") {
         mess = "Not logged in"
         $('button.ac_opt').hide();
@@ -337,12 +343,20 @@ function gotUser(data, status, whatever) {
         try {
             var d = eval(data)[0];
             if (d.redirect) {
-                window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
+                if (eBookConfig.loginRequired) {
+                    window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
+                } else {
+                    mess = "Not logged in";
+                    $('button.ac_opt').hide();
+                    $('span.loginout').html('<a href="'+ eBookConfig.app + '/default/user/login">login</a>')
+                }
             } else {
                 mess = d.email;
             }
         } catch(err) {
-            window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
+            if (eBookConfig.loginRequired) {
+                window.location.href=eBookConfig.app+'/default/user/login?_next='+window.location.href
+            }
         }
     }
     x = $(".footer").text();
@@ -351,7 +365,7 @@ function gotUser(data, status, whatever) {
 }
 
 function shouldLogin() {
-    var sli = eBookConfig.loginRequired;
+    var sli = true;
 
     if (window.location.href.indexOf('file://') > -1)
         sli = false
