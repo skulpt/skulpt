@@ -1,4 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
+
+# 
+#   Note:  python2.6 is specified because that is what the skulpt parser
+#          used as a reference.  This is only important when you are doing
+#          things like regenerating tests and/or regenerating symtabs
+#          If you do not have python 2.6 and you ARE NOT creating new tests
+#          then all should be well for you to use 2.7 or whatever you have around
 
 from subprocess import Popen, PIPE
 import os

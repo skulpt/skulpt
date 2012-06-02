@@ -1,0 +1,13 @@
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=Call(func=Attribute(value=Str(s='foo bar baz'),
+                                              attr='split',
+                                              ctx=Load()),
+                               args=[],
+                               keywords=[],
+                               starargs=None,
+                               kwargs=None)),
+             Print(dest=None,
+                   values=[Name(id='x',
+                                ctx=Load())],
+                   nl=True)])

@@ -1,0 +1,5 @@
+Module(body=[Print(dest=None,
+                   values=[Compare(left=Str(s=''),
+                                   ops=[In()],
+                                   comparators=[Str(s='abc')])],
+                   nl=True)])

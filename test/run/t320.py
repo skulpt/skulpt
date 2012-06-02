@@ -1,0 +1,1 @@
+print "" in "abc"

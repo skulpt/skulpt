@@ -1,0 +1,11 @@
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='sum',
+                                          ctx=Load()),
+                                args=[List(elts=[Num(n=1),
+                                                 Num(n=2),
+                                                 Num(n=3)],
+                                           ctx=Load())],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])
