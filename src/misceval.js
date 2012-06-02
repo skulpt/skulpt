@@ -154,7 +154,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
         {
             return res;
         }
-        else if (w && v && w.tp$richcompare && (res = v.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
+        else if (w && v && w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
         {
             return res;
         }
