@@ -2,3 +2,5 @@ dist/
 support/tmp/
 doc/static/builtin.js
 doc/static/skulpt.js
+
+*.pyc
