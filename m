@@ -10,6 +10,12 @@ import shutil
 import re
 import pprint
 import json
+try:
+    from git import *
+except:
+    print "GitPython is not installed!"
+    print "dist will not work without it.  Get it using pip or easy_install"
+    print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
 
 # order is important!
 Files = [
@@ -68,14 +74,13 @@ TestFiles = [
         ]
 
 def isClean():
-    out, err = Popen("/usr/local/bin/hg status", shell=True,
-    stdout=PIPE).communicate()
-    return out == ""
+    repo = Repo(".")
+    return not repo.is_dirty()
 
 def getTip():
-    out, err = Popen("/usr/local/bin/hg tip", shell=True,
-    stdout=PIPE).communicate()
-    return out.split("\n")[0].split(":")[2].strip()
+    repo = Repo(".")
+    return repo.head.commit.hexsha
+    
 
 def getFileList(type):
     ret = []
@@ -305,10 +310,9 @@ def dist():
     """
 
     if not isClean():
-        print "WARNING: working directory not clean (according to 'hg status')"
+        print "WARNING: working directory not clean (according to 'git status')"
         #raise SystemExit()
 
-    label = getTip()
 
     print ". Nuking old dist/"
     os.system("rm -rf dist/")
