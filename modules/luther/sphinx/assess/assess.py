@@ -24,6 +24,7 @@ def setup(app):
     app.add_directive('multiplechoice',MultipleChoice)
     app.add_directive('mchoicemf',MChoiceMF)
     app.add_directive('mchoicema',MChoiceMA)
+    app.add_directive('fillintheblank',FillInTheBlank)
 
     app.add_javascript('assess.js')
 
@@ -310,5 +311,72 @@ class MChoiceMA(Directive):
         return [nodes.raw('',res , format='html')]
 
 
+################################
+
+class FillInTheBlank(Directive):
+    required_arguments = 1
+    optional_arguments = 1
+    final_argument_whitespace = True
+    has_content = True
+    option_spec = {'correct':directives.unchanged,
+                   'feedback':directives.unchanged,
+                   'iscode':directives.flag,
+                   'casei':directives.flag  # case insensitive matching
+                   }
+
+    def run(self):
+        """
+        process the fillintheblank directive and generate html for output.
+        :param self:
+        :return:
+        .. fillintheblank:: qname
+           :iscode: boolean
+           :correct: somestring
+           :feedback: -- displayed if wrong
+
+           Question text
+           ...
+        """
+
+        TEMPLATE_START = '''
+    <div id="%(divid)s">
+    <form name="%(divid)s_form" method="get" action="" onsubmit="return false;">
+    <p>%(bodytext)s</p>
+    '''
+
+        TEMPLATE_END = '''
+    <input type="button" name="do answer" 
+           value="Check Me" onclick="checkFIB('%(divid)s','%(correct)s','%(feedback)s', %(casei)s)"/> 
+    </form>
+    <div id="%(divid)s_feedback">
+    </div>
+    </div>
+ '''   
+
+        BLANK = '''<input type="text" name="blank" />'''
+
+        self.options['divid'] = self.arguments[0]
+        if self.content:
+            if 'iscode' in self.options:
+                self.options['bodytext'] = '<pre>' + "\n".join(self.content) + '</pre>'
+            else:
+                self.options['bodytext'] = "\n".join(self.content)
+
+        self.options['bodytext'] = self.options['bodytext'].replace('___',BLANK)
+
+        if 'feedback' not in self.options:
+            self.options['feedback'] = 'No Hints'
+
+        if 'casei' in self.options:
+            self.options['casei'] = 'true'
+        else:
+            self.options['casei'] = 'false'
+
+        res = ""
+        res = TEMPLATE_START % self.options
+        # Add all of the possible answers
+
+        res += TEMPLATE_END % self.options
+        return [nodes.raw('',res , format='html')]
 
 

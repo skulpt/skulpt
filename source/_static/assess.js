@@ -14,6 +14,20 @@ var checkMe = function(divid, expected, feedback) {
 	logBookEvent({'event':'assses', 'act':answerInfo, 'div_id':divid});
 };
 
+var checkFIB = function(divid, expected, feedback, casi) {
+  var given = document.forms[divid+"_form"].elements.blank.value;
+  // update number of trials??
+  // log this to the db
+  modifiers = ''
+  if (casi) {
+    modifiers = 'i'
+  }
+  var patt = RegExp(expected,modifiers)
+  var isCorrect = patt.test(given)
+  feedBack('#'+divid+'_feedback',isCorrect, feedback);
+  var answerInfo = 'answer:' + given + ":"  + (isCorrect ? 'correct' : 'no');
+  logBookEvent({'event':'assses', 'act':answerInfo, 'div_id':divid});
+};
 
 var feedBack = function(divid,correct,feedbackText) {
 	if (correct) {
