@@ -657,7 +657,7 @@ problem.
        for j in range(n):
           test = test - 1
 
-   .. multiplechoice:: analysis_2
+   .. multiplechoice:: analysis_3
        :iscode:
        :answer_a: O(n)
        :answer_b: O(n^2)
