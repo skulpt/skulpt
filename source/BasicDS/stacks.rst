@@ -293,6 +293,22 @@ benchmark testing.
 	     m.pop()
          m.pop()
 
+   Write a function `revstring(mystr)` that uses a stack to reverse the
+   characters in a string.
+
+   .. actex:: stack_stringrev
+      
+      from test import testEqual
+      from pythonds.basic.stack import Stack
+
+      def revstring(mystr):
+          # your code here
+
+      testEqual(revstring('apple'),'elppa')
+      testEqual(revstring('x'),'x')
+      testEqual(revstring('1234567890'),'0987654321')
+
+
 Simple Balanced Parentheses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -630,7 +646,7 @@ beyond 9.
 
         return newString
 
-    print(baseConverter(25))
+    print(baseConverter(25,2))
 
 A solution to this problem is to extend the digit set to include some
 alphabet characters. For example, hexadecimal uses the ten decimal
@@ -643,6 +659,24 @@ stack, it can be used to index into the digit string and the correct
 resulting digit can be appended to the answer. For example, if the
 remainder 13 is removed from the stack, the digit D is appended to the
 resulting string.
+
+.. admonition:: Self Check
+
+   .. fillintheblank:: baseconvert1
+      :correct: \\b31\\b
+
+      What is value of 25 expressed as an octal number (base 8) ___
+
+   .. fillintheblank:: baseconvert2
+      :correct: \\b100\\b
+
+      What is value of 256 expressed as a hexidecimal number (base 16) ___
+
+   .. fillintheblank:: baseconvert3
+      :correct: \\b10\\b
+      :feedback: You may need to modify the baseConverter function, or simply find a pattern in the conversion of bases.
+
+      What is value of 26 expressed in base 26 ___
 
 Infix, Prefix and Postfix Expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1116,3 +1150,26 @@ postfix evaluation programs we assumed that there were no errors in the
 input expression. Using these programs as a starting point, you can
 easily see how error detection and reporting can be included. We leave
 this as an exercise at the end of the chapter.
+
+.. admonition:: Self Check
+
+   .. fillintheblank:: postfix1
+      :casei:
+      :correct: \\b10\\s+3\\s+5\\s*\\*\\s*16\\s+4\\s*-\\s*/\\s*\\+
+      :feedback:  If you can't do this on your own.
+
+      Without using the activecode infixToPostfix function, convert the following expression to postfix 10 + 3 * 5 / (16 - 4) ___
+
+   .. fillintheblank:: postfix2
+      :correct: \\b9\\b
+
+      17 10 + 3 * 9 / == ___
+
+   .. fillintheblank:: postfix3
+      :correct: 5\\s+3\\s+4\\s+2\\s*-\\s*\\^\\s*\\*
+      :feedback: Hint: You only need to add one line to the function!!
+      
+      Modify the infixToPostfix function so that it can convert the following expression:  5 * 3 ^ (4 - 2)   Paste the answer here: ___
+
+
+
