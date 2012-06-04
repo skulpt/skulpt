@@ -1,285 +1,208 @@
-// seedrandom.js version 2.0.
-// Author: David Bau 4/2/2011
-//
-// Defines a method Math.seedrandom() that, when called, substitutes
-// an explicitly seeded RC4-based algorithm for Math.random().  Also
-// supports automatic seeding from local or network sources of entropy.
-//
-// Usage:
-//
-//   <script src=http://davidbau.com/encode/seedrandom-min.js></script>
-//
-//   Math.seedrandom('yipee'); Sets Math.random to a function that is
-//                             initialized using the given explicit seed.
-//
-//   Math.seedrandom();        Sets Math.random to a function that is
-//                             seeded using the current time, dom state,
-//                             and other accumulated local entropy.
-//                             The generated seed string is returned.
-//
-//   Math.seedrandom('yowza', true);
-//                             Seeds using the given explicit seed mixed
-//                             together with accumulated entropy.
-//
-//   <script src="http://bit.ly/srandom-512"></script>
-//                             Seeds using physical random bits downloaded
-//                             from random.org.
-//
-//   <script src="https://jsonlib.appspot.com/urandom?callback=Math.seedrandom">
-//   </script>                 Seeds using urandom bits from call.jsonlib.com,
-//                             which is faster than random.org.
-//
-// Examples:
-//
-//   Math.seedrandom("hello");            // Use "hello" as the seed.
-//   document.write(Math.random());       // Always 0.5463663768140734
-//   document.write(Math.random());       // Always 0.43973793770592234
-//   var rng1 = Math.random;              // Remember the current prng.
-//
-//   var autoseed = Math.seedrandom();    // New prng with an automatic seed.
-//   document.write(Math.random());       // Pretty much unpredictable.
-//
-//   Math.random = rng1;                  // Continue "hello" prng sequence.
-//   document.write(Math.random());       // Always 0.554769432473455
-//
-//   Math.seedrandom(autoseed);           // Restart at the previous seed.
-//   document.write(Math.random());       // Repeat the 'unpredictable' value.
-//
-// Notes:
-//
-// Each time seedrandom('arg') is called, entropy from the passed seed
-// is accumulated in a pool to help generate future seeds for the
-// zero-argument form of Math.seedrandom, so entropy can be injected over
-// time by calling seedrandom with explicit data repeatedly.
-//
-// On speed - This javascript implementation of Math.random() is about
-// 3-10x slower than the built-in Math.random() because it is not native
-// code, but this is typically fast enough anyway.  Seeding is more expensive,
-// especially if you use auto-seeding.  Some details (timings on Chrome 4):
-//
-// Our Math.random()            - avg less than 0.002 milliseconds per call
-// seedrandom('explicit')       - avg less than 0.5 milliseconds per call
-// seedrandom('explicit', true) - avg less than 2 milliseconds per call
-// seedrandom()                 - avg about 38 milliseconds per call
-//
-// LICENSE (BSD):
-//
-// Copyright 2010 David Bau, all rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-// 
-//   1. Redistributions of source code must retain the above copyright
-//      notice, this list of conditions and the following disclaimer.
-//
-//   2. Redistributions in binary form must reproduce the above copyright
-//      notice, this list of conditions and the following disclaimer in the
-//      documentation and/or other materials provided with the distribution.
-// 
-//   3. Neither the name of this module nor the names of its contributors may
-//      be used to endorse or promote products derived from this software
-//      without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-/**
- * All code is in an anonymous closure to keep the global namespace clean.
- *
- * @param {number=} overflow 
- * @param {number=} startdenom
- */
-(function (pool, math, width, chunks, significance, overflow, startdenom) {
 
+/*
+  I've wrapped Makoto Matsumoto and Takuji Nishimura's code in a namespace
+  so it's better encapsulated. Now you can have multiple random number generators
+  and they won't stomp all over eachother's state.
+  
+  If you want to use this as a substitute for Math.random(), use the random()
+  method like so:
+  
+  var m = new MersenneTwister();
+  var randomNumber = m.random();
+  
+  You can also call the other genrand_{foo}() methods on the instance.
 
-//
-// seedrandom()
-// This is the seedrandom function described above.
-//
-math['seedrandom'] = function seedrandom(seed, use_entropy) {
-  var key = [];
-  var arc4;
+  If you want to use a specific seed in order to get a repeatable random
+  sequence, pass an integer into the constructor:
 
-  // Flatten the seed string or build one from local entropy if needed.
-  if (typeof window === undefined) {  // will be defined in the browser
-    var window = 'foo';
-    }
-  seed = mixkey(flatten(
-    use_entropy ? [seed, pool] :
-    arguments.length ? seed :
-    [new Date().getTime(), pool, window], 3), key);
+  var m = new MersenneTwister(123);
 
-  // Use the seed to initialize an ARC4 generator.
-  arc4 = new ARC4(key);
+  and that will always produce the same random sequence.
 
-  // Mix the randomness into accumulated entropy.
-  mixkey(arc4.S, pool);
+  Sean McCullough (banksean@gmail.com)
+*/
 
-  // Override Math.random
+/* 
+   A C-program for MT19937, with initialization improved 2002/1/26.
+   Coded by Takuji Nishimura and Makoto Matsumoto.
+ 
+   Before using, initialize the state by using init_genrand(seed)  
+   or init_by_array(init_key, key_length).
+ 
+   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+   All rights reserved.                          
+ 
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+ 
+     1. Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+ 
+     2. Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+ 
+     3. The names of its contributors may not be used to endorse or promote 
+        products derived from this software without specific prior written 
+        permission.
+ 
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ 
+   Any feedback is very welcome.
+   http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+   email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
+*/
 
-  // This function returns a random double in [0, 1) that contains
-  // randomness in every bit of the mantissa of the IEEE 754 value.
+var MersenneTwister = function(seed) {
+  if (seed == undefined) {
+    seed = new Date().getTime();
+  } 
+  /* Period parameters */  
+  this.N = 624;
+  this.M = 397;
+  this.MATRIX_A = 0x9908b0df;   /* constant vector a */
+  this.UPPER_MASK = 0x80000000; /* most significant w-r bits */
+  this.LOWER_MASK = 0x7fffffff; /* least significant r bits */
+ 
+  this.mt = new Array(this.N); /* the array for the state vector */
+  this.mti=this.N+1; /* mti==N+1 means mt[N] is not initialized */
 
-  math['random'] = function random() {  // Closure to return a random double:
-    var n = arc4.g(chunks);             // Start with a numerator n < 2 ^ 48
-    var d = startdenom;                 //   and denominator d = 2 ^ 48.
-    var x = 0;                          //   and no 'extra last byte'.
-    while (n < significance) {          // Fill up all significant digits by
-      n = (n + x) * width;              //   shifting numerator and
-      d *= width;                       //   denominator and generating a
-      x = arc4.g(1);                    //   new least-significant-byte.
-    }
-    while (n >= overflow) {             // To avoid rounding up, before adding
-      n /= 2;                           //   last byte, shift everything
-      d /= 2;                           //   right using integer math until
-      x >>>= 1;                         //   we have exactly the desired bits.
-    }
-    return (n + x) / d;                 // Form the number within [0, 1).
-  };
-
-  // Return the seed that was used
-  return seed;
-};
-
-//
-// ARC4
-//
-// An ARC4 implementation.  The constructor takes a key in the form of
-// an array of at most (width) integers that should be 0 <= x < (width).
-//
-// The g(count) method returns a pseudorandom integer that concatenates
-// the next (count) outputs from ARC4.  Its return value is a number x
-// that is in the range 0 <= x < (width ^ count).
-//
-/** @constructor */
-function ARC4(key) {
-  var t, u, me = this, keylen = key.length;
-  var i = 0, j = me.i = me.j = me.m = 0;
-  me.S = [];
-  me.c = [];
-
-  // The empty key [] is treated as [0].
-  if (!keylen) { key = [keylen++]; }
-
-  // Set up S using the standard key scheduling algorithm.
-  while (i < width) { me.S[i] = i++; }
-  for (i = 0; i < width; i++) {
-    t = me.S[i];
-    j = lowbits(j + t + key[i % keylen]);
-    u = me.S[j];
-    me.S[i] = u;
-    me.S[j] = t;
+  this.init_genrand(seed);
+}  
+ 
+/* initializes mt[N] with a seed */
+MersenneTwister.prototype.init_genrand = function(s) {
+  this.mt[0] = s >>> 0;
+  for (this.mti=1; this.mti<this.N; this.mti++) {
+      var s = this.mt[this.mti-1] ^ (this.mt[this.mti-1] >>> 30);
+   this.mt[this.mti] = (((((s & 0xffff0000) >>> 16) * 1812433253) << 16) + (s & 0x0000ffff) * 1812433253)
+  + this.mti;
+      /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+      /* In the previous versions, MSBs of the seed affect   */
+      /* only MSBs of the array mt[].                        */
+      /* 2002/01/09 modified by Makoto Matsumoto             */
+      this.mt[this.mti] >>>= 0;
+      /* for >32 bit machines */
+  }
+}
+ 
+/* initialize by an array with array-length */
+/* init_key is the array for initializing keys */
+/* key_length is its length */
+/* slight change for C++, 2004/2/26 */
+MersenneTwister.prototype.init_by_array = function(init_key, key_length) {
+  var i, j, k;
+  this.init_genrand(19650218);
+  i=1; j=0;
+  k = (this.N>key_length ? this.N : key_length);
+  for (; k; k--) {
+    var s = this.mt[i-1] ^ (this.mt[i-1] >>> 30)
+    this.mt[i] = (this.mt[i] ^ (((((s & 0xffff0000) >>> 16) * 1664525) << 16) + ((s & 0x0000ffff) * 1664525)))
+      + init_key[j] + j; /* non linear */
+    this.mt[i] >>>= 0; /* for WORDSIZE > 32 machines */
+    i++; j++;
+    if (i>=this.N) { this.mt[0] = this.mt[this.N-1]; i=1; }
+    if (j>=key_length) j=0;
+  }
+  for (k=this.N-1; k; k--) {
+    var s = this.mt[i-1] ^ (this.mt[i-1] >>> 30);
+    this.mt[i] = (this.mt[i] ^ (((((s & 0xffff0000) >>> 16) * 1566083941) << 16) + (s & 0x0000ffff) * 1566083941))
+      - i; /* non linear */
+    this.mt[i] >>>= 0; /* for WORDSIZE > 32 machines */
+    i++;
+    if (i>=this.N) { this.mt[0] = this.mt[this.N-1]; i=1; }
   }
 
-  // The "g" method returns the next (count) outputs as one number.
-  me.g = function getnext(count) {
-    var s = me.S;
-    var i = lowbits(me.i + 1); var t = s[i];
-    var j = lowbits(me.j + t); var u = s[j];
-    s[i] = u;
-    s[j] = t;
-    var r = s[lowbits(t + u)];
-    while (--count) {
-      i = lowbits(i + 1); t = s[i];
-      j = lowbits(j + t); u = s[j];
-      s[i] = u;
-      s[j] = t;
-      r = r * width + s[lowbits(t + u)];
+  this.mt[0] = 0x80000000; /* MSB is 1; assuring non-zero initial array */ 
+}
+ 
+/* generates a random number on [0,0xffffffff]-interval */
+MersenneTwister.prototype.genrand_int32 = function() {
+  var y;
+  var mag01 = new Array(0x0, this.MATRIX_A);
+  /* mag01[x] = x * MATRIX_A  for x=0,1 */
+
+  if (this.mti >= this.N) { /* generate N words at one time */
+    var kk;
+
+    if (this.mti == this.N+1)   /* if init_genrand() has not been called, */
+      this.init_genrand(5489); /* a default initial seed is used */
+
+    for (kk=0;kk<this.N-this.M;kk++) {
+      y = (this.mt[kk]&this.UPPER_MASK)|(this.mt[kk+1]&this.LOWER_MASK);
+      this.mt[kk] = this.mt[kk+this.M] ^ (y >>> 1) ^ mag01[y & 0x1];
     }
-    me.i = i;
-    me.j = j;
-    return r;
-  };
-  // For robust unpredictability discard an initial batch of values.
-  // See http://www.rsa.com/rsalabs/node.asp?id=2009
-  me.g(width);
-}
-
-//
-// flatten()
-// Converts an object tree to nested arrays of strings.
-//
-/** @param {Object=} result 
-  * @param {string=} prop
-  * @param {string=} typ */
-function flatten(obj, depth, result, prop, typ) {
-  result = [];
-  typ = typeof(obj);
-  if (depth && typ == 'object') {
-    for (prop in obj) {
-      if (prop.indexOf('S') < 5) {    // Avoid FF3 bug (local/sessionStorage)
-        try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
-      }
+    for (;kk<this.N-1;kk++) {
+      y = (this.mt[kk]&this.UPPER_MASK)|(this.mt[kk+1]&this.LOWER_MASK);
+      this.mt[kk] = this.mt[kk+(this.M-this.N)] ^ (y >>> 1) ^ mag01[y & 0x1];
     }
+    y = (this.mt[this.N-1]&this.UPPER_MASK)|(this.mt[0]&this.LOWER_MASK);
+    this.mt[this.N-1] = this.mt[this.M-1] ^ (y >>> 1) ^ mag01[y & 0x1];
+
+    this.mti = 0;
   }
-  return (result.length ? result : obj + (typ != 'string' ? '\0' : ''));
+
+  y = this.mt[this.mti++];
+
+  /* Tempering */
+  y ^= (y >>> 11);
+  y ^= (y << 7) & 0x9d2c5680;
+  y ^= (y << 15) & 0xefc60000;
+  y ^= (y >>> 18);
+
+  return y >>> 0;
+}
+ 
+/* generates a random number on [0,0x7fffffff]-interval */
+MersenneTwister.prototype.genrand_int31 = function() {
+  return (this.genrand_int32()>>>1);
+}
+ 
+/* generates a random number on [0,1]-real-interval */
+MersenneTwister.prototype.genrand_real1 = function() {
+  return this.genrand_int32()*(1.0/4294967295.0); 
+  /* divided by 2^32-1 */ 
 }
 
-//
-// mixkey()
-// Mixes a string seed into a key that is an array of integers, and
-// returns a shortened string seed that is equivalent to the result key.
-//
-/** @param {number=} smear 
-  * @param {number=} j */
-function mixkey(seed, key, smear, j) {
-  seed += '';                         // Ensure the seed is a string
-  smear = 0;
-  for (j = 0; j < seed.length; j++) {
-    key[lowbits(j)] =
-      lowbits((smear ^= key[lowbits(j)] * 19) + seed.charCodeAt(j));
-  }
-  seed = '';
-  for (j in key) { seed += String.fromCharCode(key[j]); }
-  return seed;
+/* generates a random number on [0,1)-real-interval */
+MersenneTwister.prototype.random = function() {
+  return this.genrand_int32()*(1.0/4294967296.0); 
+  /* divided by 2^32 */
 }
+ 
+/* generates a random number on (0,1)-real-interval */
+MersenneTwister.prototype.genrand_real3 = function() {
+  return (this.genrand_int32() + 0.5)*(1.0/4294967296.0); 
+  /* divided by 2^32 */
+}
+ 
+/* generates a random number on [0,1) with 53-bit resolution*/
+MersenneTwister.prototype.genrand_res53 = function() { 
+  var a=this.genrand_int32()>>>5, b=this.genrand_int32()>>>6; 
+  return(a*67108864.0+b)*(1.0/9007199254740992.0); 
+} 
 
-//
-// lowbits()
-// A quick "n mod width" for width a power of 2.
-//
-function lowbits(n) { return n & (width - 1); }
+/* These real versions are due to Isaku Wada, 2002/01/09 added */
 
-//
-// The following constants are related to IEEE 754 limits.
-//
-startdenom = math.pow(width, chunks);
-significance = math.pow(2, significance);
-overflow = significance * 2;
-
-//
-// When seedrandom.js is loaded, we immediately mix a few bits
-// from the built-in RNG into the entropy pool.  Because we do
-// not want to intefere with determinstic PRNG state later,
-// seedrandom will not call math.random on its own again after
-// initialization.
-//
-mixkey(math.random(), pool);
-
-// End anonymous scope, and pass initial values.
-})(
-  [],   // pool: entropy pool starts empty
-  Math, // math: package containing random, pow, and seedrandom
-  256,  // width: each RC4 output is 0 <= x < 256
-  6,    // chunks: at least six RC4 outputs for each double
-  52    // significance: there are 52 significant digits in a double
-);
-
-Math.seedrandom();
 
 
 var $builtinmodule = function(name)
 {
     var mod = {};
+
+    var myGenerator = new MersenneTwister();
 
     var checkArgs = function(expected, actual, func) {
         if (actual != expected ) {
@@ -290,18 +213,18 @@ var $builtinmodule = function(name)
 
     mod.seed = new Sk.builtin.func(function(x) {
         if (arguments.length > 0)
-            Math.seedrandom(x);
+            myGenerator = new MersenneTwister(x);
         else
-            Math.seedrandom();
+            myGenerator = new MersenneTwister();
     });
 
     mod.random = new Sk.builtin.func(function() {
-	return Math.random();
+	return myGenerator.genrand_res53();
     });
 
     mod.randint = new Sk.builtin.func(function(low,high) {
         checkArgs(2,arguments.length,"randint()")
-        return Math.round(Math.random()*(high-low))+low;
+        return Math.round(myGenerator.genrand_res53()*(high-low))+low;
     });
 
     mod.randrange = new Sk.builtin.func(function(low,high) {
@@ -310,7 +233,7 @@ var $builtinmodule = function(name)
             low = 0;
         }
         high = high - 1;
-        return Math.round(Math.random()*(high-low))+low;
+        return Math.round(myGenerator.genrand_res53()*(high-low))+low;
     });
     return mod;
 }
