@@ -18,7 +18,7 @@ __author__ = 'bmiller'
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.parsers.rst import Directive
-
+import json
 
 def setup(app):
     app.add_directive('multiplechoice',MultipleChoice)
@@ -320,6 +320,10 @@ class FillInTheBlank(Directive):
     has_content = True
     option_spec = {'correct':directives.unchanged,
                    'feedback':directives.unchanged,
+                   'feedback1':directives.unchanged,
+                   'feedback2':directives.unchanged,
+                   'feedback3':directives.unchanged,                   
+                   'feedback4':directives.unchanged,                   
                    'iscode':directives.flag,
                    'casei':directives.flag  # case insensitive matching
                    }
@@ -333,7 +337,7 @@ class FillInTheBlank(Directive):
            :iscode: boolean
            :correct: somestring
            :feedback: -- displayed if wrong
-
+           :feedback: ('.*', 'this is the message')
            Question text
            ...
         """
@@ -346,7 +350,7 @@ class FillInTheBlank(Directive):
 
         TEMPLATE_END = '''
     <input type="button" name="do answer" 
-           value="Check Me" onclick="checkFIB('%(divid)s','%(correct)s','%(feedback)s', %(casei)s)"/> 
+           value="Check Me" onclick="checkFIB('%(divid)s','%(correct)s',%(fbl)s, %(casei)s)"/> 
     </form>
     <div id="%(divid)s_feedback">
     </div>
@@ -364,14 +368,22 @@ class FillInTheBlank(Directive):
 
         self.options['bodytext'] = self.options['bodytext'].replace('___',BLANK)
 
-        if 'feedback' not in self.options:
-            self.options['feedback'] = 'No Hints'
+        #if 'feedback' not in self.options:
+        #    self.options['feedback'] = 'No Hints'
+        fbl = []
+        for k in sorted(self.options.keys()):
+            if 'feedback' in k:
+                pair = eval(self.options[k])
+                p1 = pair[1].replace('"','&quot;')
+                p1 = p1.replace("'",'&acute;')
+                newpair = (pair[0],p1)
+                fbl.append(newpair)
 
         if 'casei' in self.options:
             self.options['casei'] = 'true'
         else:
             self.options['casei'] = 'false'
-
+        self.options['fbl'] = json.dumps(fbl).replace('"',"'")
         res = ""
         res = TEMPLATE_START % self.options
         # Add all of the possible answers

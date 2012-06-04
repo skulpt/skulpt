@@ -24,6 +24,17 @@ var checkFIB = function(divid, expected, feedback, casi) {
   }
   var patt = RegExp(expected,modifiers)
   var isCorrect = patt.test(given)
+  if (! isCorrect) {
+    fbl = feedback;
+    for (var i=0; i< fbl.length; i++) {
+      patt = RegExp(fbl[i][0])
+      if (patt.test(given)) {
+        feedback = fbl[i][1];
+        break;
+      }
+    }
+
+  }
   feedBack('#'+divid+'_feedback',isCorrect, feedback);
   var answerInfo = 'answer:' + given + ":"  + (isCorrect ? 'correct' : 'no');
   logBookEvent({'event':'assses', 'act':answerInfo, 'div_id':divid});
