@@ -689,7 +689,7 @@ Where command is one of:
         browser -- run all tests in the browser
         shell   -- run a python program but keep a shell open (like python -i) 
                    ./m shell myprog.py
-        vfs -- Build a virtual file system to support skulpt read
+        vfs -- Build a virtual file system to support skulpt read tests
 
         debugbrowser  -- debug in the browser -- open your javascript console
         '''
