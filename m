@@ -20,10 +20,11 @@ import json
 try:
     from git import *
 except:
-    print "GitPython is not installed!"
+    print "+-----------------------------------------------------------------------------+"
+    print "GitPython is not installed for Python 2.6"
     print "dist will not work without it.  Get it using pip or easy_install"
     print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
-
+    print "+-----------------------------------------------------------------------------+"
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
@@ -178,6 +179,8 @@ def debugbrowser():
 
     if sys.platform == "win32":
         os.system("start support/tmp/test.html")
+    elif sys.platform == "darwin":
+        os.system("open support/tmp/test.html")
     else:
         os.system("gnome-open support/tmp/test.html")
 
@@ -326,24 +329,24 @@ def dist():
     if not os.path.exists("dist"): os.mkdir("dist")
 
 
-    # print ". Writing combined version..."
-    # combined = ''
-    # linemap = open("dist/linemap.txt", "w")
-    # curline = 1
-    # for file in getFileList('dist'):
-    #     curfiledata = open(file).read()
-    #     combined += curfiledata
-    #     print >>linemap, "%d:%s" % (curline, file)
-    #     curline += len(curfiledata.split("\n")) - 1
-    # linemap.close()
+    if sys.argv[2] == '-u':
+        print ". Writing combined version..."
+        combined = ''
+        linemap = open("dist/linemap.txt", "w")
+        curline = 1
+        for file in getFileList('dist'):
+            curfiledata = open(file).read()
+            combined += curfiledata
+            print >>linemap, "%d:%s" % (curline, file)
+            curline += len(curfiledata.split("\n")) - 1
+        linemap.close()
+        uncompfn = "dist/skulpt-uncomp.js"
+        open(uncompfn, "w").write(combined)
+        os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
 
-    # make combined version
-    #uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
     builtinfn = "dist/builtin.js"
-    #open(uncompfn, "w").write(combined)
-    #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
     #buildBrowserTests()
 
@@ -663,7 +666,33 @@ if __name__ == "__main__":
     else:
         os.system("clear")
     def usage():
-        print "usage: m {test|dist|regenparser|regentests|regenasttests|regenruntests|regensymtabtests|upload|doctest|nrt|run|runopt|vmwareregr|browser|shell|debugbrowser|vfs|host}"
+        print '''USAGE: m [command] [options] [.py file]
+Where command is one of:
+
+        run   -- given a .py file run it using skulpt  ./m run myprog.py
+        test  -- run all test cases in test/run
+        dist  -- create skulpt.js and builtin.js  with -u also build 
+                 uncompressed skulpt for debugging
+        docbi -- regenerate builtin.js only and copy to doc/static
+
+        regenparser      -- regenerate parser tests 
+        regenasttests    -- regen abstract symbol table tests
+        regenruntests    -- regenerate runtime unit tests
+        regensymtabtests -- regenerate symbol table tests
+        regentests       -- regenerate all of the above
+
+        host    -- start a simple HTTP server for testing
+        upload  -- run appcfg.py to upload doc to live GAE site
+        doctest -- run the GAE development server for doc testing
+        nrt     -- generate a file for a new test case
+        runopt  -- run a .py file optimized
+        browser -- run all tests in the browser
+        shell   -- run a python program but keep a shell open (like python -i) 
+                   ./m shell myprog.py
+        vfs -- Build a virtual file system to support skulpt read
+
+        debugbrowser  -- debug in the browser -- open your javascript console
+        '''
         sys.exit(1)
     if len(sys.argv) < 2:
         cmd = "test"
