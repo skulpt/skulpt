@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="107"
+   height="59"
+   id="svg2">
+  <defs
+     id="defs4">
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3052" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3042" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3028" />
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(0,-993.36218)"
+     id="layer1">
+    <text
+       x="5.6347189"
+       y="1024.9738"
+       id="text2985"
+       xml:space="preserve"
+       style="font-size:14.48504257px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+         x="5.6347189"
+         y="1024.9738"
+         id="tspan2987">bruce</tspan></text>
+    <text
+       x="76.619415"
+       y="1015.4709"
+       id="text2989"
+       xml:space="preserve"
+       style="font-size:23.58907509px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+         x="76.619415"
+         y="1015.4709"
+         id="tspan2991">5</tspan></text>
+    <text
+       x="76.974731"
+       y="1043.2583"
+       id="text2989-3"
+       xml:space="preserve"
+       style="font-size:23.58907509px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+         x="76.974731"
+         y="1043.2583"
+         id="tspan2991-1">7</tspan></text>
+    <path
+       d="m 76.089555,998.6512 15.639373,14.8495"
+       id="path3030"
+       style="fill:none;stroke:#ff0000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="M 92.044875,998.49323 76.405502,1013.6587"
+       id="path3032"
+       style="fill:none;stroke:#ff0000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="M 52.921111,21.402315 71.088059,15.715271"
+       transform="translate(0,993.36218)"
+       id="path3048"
+       style="fill:none;stroke:#ff0000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <g
+       id="g3054">
+      <path
+         d="m 53.395031,32.460458 18.798842,7.108806"
+         transform="translate(0,993.36218)"
+         id="path3046"
+         style="fill:none;stroke:#00ff00;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         d="m 71.338388,33.717698 -3.976074,9.175556 6.727241,-2.534123 z"
+         transform="translate(0,993.36218)"
+         id="path3050"
+         style="fill:#00ff00;fill-rule:evenodd;stroke:#00ff00" />
+    </g>
+  </g>
+</svg>

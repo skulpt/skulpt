@@ -1,0 +1,53 @@
+..  Copyright (C) 2011  Brad Miller and David Ranum
+    Permission is granted to copy, distribute
+    and/or modify this document under the terms of the GNU Free Documentation
+    License, Version 1.3 or any later version published by the Free Software
+    Foundation; with Invariant Sections being Forward, Prefaces, and
+    Contributor List, no Front-Cover Texts, and no Back-Cover Texts.  A copy of
+    the license is included in the section entitled "GNU Free Documentation
+    License".
+   
+
+Drawing a Circle
+================
+
+In this lesson we are going to develop a function that uses a turtle to draw
+a circle.  As we develop this function we will investigate several problem
+solving strategies that illustrate how computer scientists think as they
+solve problems.
+
+In figuring out how to write this function we must realize that there are
+some limitations ot our ability to draw a circle.  First,
+we are limited by the turtle functions we already know about, for example,
+left, right, forward.  There is not a method for drawing a curved line with a
+turtle (well, actually there is, but we're not going to use it).
+
+One of the first strategies we will employ is called *simplification*.  Lets
+look at something simpler than drawing a circle and see what we can learn,
+as we look at some simpler examples we'll try to *generalize* what we learn
+to help us build a more complex function.
+
+One thing we already know how to do is to write a function to draw a square.
+Now a square doesn't look anything like a circle, but maybe if we look at
+some other simple shapes that will help us.  Just to remind you,
+here is the code for the ``drawSquare`` function.
+
+.. activecode:: l0401
+
+    def drawSquare(t, sz):
+        """Make turtle t draw a square of sz."""
+
+        for i in range(4):
+            t.forward(sz)
+            t.left(90)
+
+
+Although this isn't going to do anything if you click on the run button,
+you could fill in the rest of the code to make it work, right?
+
+Now, see if you can modify the code for ``drawSquare`` to make it draw a
+triangle.  Call this new function ``drawTriangle``  When you finish
+``drawTriangle`` write a third function called ``drawOctagon``.  When you are
+finished follow the link below to the next part of this lesson.
+
+`OK, they work now <lab04_01a.html>`__

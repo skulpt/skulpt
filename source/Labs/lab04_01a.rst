@@ -1,0 +1,125 @@
+..  Copyright (C) 2011  Brad Miller and David Ranum
+    Permission is granted to copy, distribute
+    and/or modify this document under the terms of the GNU Free Documentation
+    License, Version 1.3 or any later version published by the Free Software
+    Foundation; with Invariant Sections being Forward, Prefaces, and
+    Contributor List, no Front-Cover Texts, and no Back-Cover Texts.  A copy of
+    the license is included in the section entitled "GNU Free Documentation
+    License".
+   
+
+Lessons from a Triangle
+=======================
+
+OK, lets look at what we have learned from writing a ``drawTriangle`` and
+``drawOctagon`` function.  The first thing you had to figure out was that you
+needed to modify the parameter to the ``range`` function based on the number
+of sides in the polygon.  The next thing, and this may have been the most
+challenging part for you was to figure out how much to turn each time.  The
+following table summarizes what you probably learned very nicely.  If you
+didn't, look at the table and then go back to the previous page and see if
+you can finish ``drawTriangle`` and ``drawOctagon``.
+
+
+========= ======= ========= ============
+Shape     Sides   range()   Angle
+========= ======= ========= ============
+Triangle  3       3         360/3 = 120
+Square    4       4         360/4 = 90
+Octagon   8       8         360/8 = 45
+========= ======= ========= ============
+
+
+Looking at the table above you can really see that there is a pattern.  If
+you know the number of sides you want, the rest can be figured out from there.
+This leads us to the next problem solving stage of this exercise,
+generalization.  Why write a separate function for every kind of polygon when
+you can just write a single function that can be used to draw many different
+polygons?
+
+Our new function ``drawPolygon`` will have three parameters,
+a turtle and the length of the side just like we have in the previous
+functions, but now we will add an additional parameter: numSides.
+
+Here's the starting point for the drawPolygon function,
+see if you can fill in the details on your own.
+
+.. activecode:: lab0401a
+
+    import turtle
+
+    def drawPolygon(t, sideLength, numSides):
+        # your code here.
+
+
+    wn = turtle.Screen()
+    geo = turtle.Turtle()
+
+    drawPolygon(geo,30,10)  # draw a decagon
+
+    wn.exitonclick()
+
+
+Finally a Circle
+================
+
+Now that we have our ``drawPolygon`` function working we are almost done with
+the drawCircle function.  In fact if you tried to make a 100 sided polygon,
+you probably noticed that it looked suspiciously close to a circle.  The only
+thing we'll want to do differently is to remember that we don't usually
+specify a circle according to the number of sides it has,
+but rather we specify a circle by its radius.
+
+So, here is our next problem solving challenge.  Given a radius,
+how can we transform the radius into the parameters  we need for the
+``drawPolygon`` function?   Lets figure this out in two steps.  First what
+should we use as the number of sides?  Second, what should we use as the side
+length?  To simplify the problem we can make a simple assumption about the
+number of sides.  Lets just assume that 360 sides is going to be good enough
+for any circle.  Plus, it just makes sense that a circle has 360 degrees,
+one side for each degree should give us a nice round circle.
+
+Now that we have the number of sides figured out we can use a big of math to
+figure out the length of each of those sides. Since we are given the radius
+we know how large the circumference of the circle is.  Right?  You may
+remember from math class that the circumference of a circle is 2 * pi *
+radius.  If we know the circumference and the number of sides (360),
+then the length of each side should be an equal proportion of the
+circumference.  circumference / 360.
+
+Here's the final solution:
+
+.. activecode:: lab0401aa
+
+    import turtle
+
+    def drawPolygon(t, sideLength, numSides):
+        turnAngle = 360 / numSides
+        for i in range(numSides):
+            t.forward(sideLength)
+            t.right(turnAngle)
+    
+    def drawCircle(anyTurtle, radius):
+        circumference = 2 * 3.1415 * radius
+        sideLength = circumference / 360
+        drawPolygon(anyTurtle, sideLength, 360)
+
+
+    wn = turtle.Screen()
+    wheel = turtle.Turtle()
+
+    drawCircle(wheel,20)
+
+    wn.exitonclick()
+
+One annoying limitation of this ``drawCircle`` function is that it draws the
+circle to the right of the turtle's current position and heading.  As a short
+aside, how could you change one line of the code to draw the circle to the
+left of the turtle's current position and heading?
+What we would really like is to have the circle centered
+on the turtle's current position when drawCircle is called.  Modify the
+program above to make it so.
+
+Finally, write another function ``drawFilledCircle`` that takes a turtle,
+a radius, and a color to fill in the circle.
+

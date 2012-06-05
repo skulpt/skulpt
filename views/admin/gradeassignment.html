@@ -1,0 +1,25 @@
+{{extend 'layout.html'}}
+
+    <script type="text/javascript" src="/{{=request.application}}/static/{{=course_id}}/_static/eBookConfig.js"></script>
+    <script src="/{{=request.application}}/static/{{=course_id}}/_static/skulpt.js" type="text/javascript"></script>
+    <script src="/{{=request.application}}/static/{{=course_id}}/_static/builtin.js" type="text/javascript"></script>
+    <script src="/{{=request.application}}/static/{{=course_id}}/_static/bookfuncs.js" type="text/javascript"></script>
+    <link href="/{{=request.application}}/static/{{=course_id}}/_static/codemirror.css" rel="stylesheet" type="text/css"/>
+    <link href="/{{=request.application}}/static/{{=course_id}}/_static/theme/default.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="/{{=request.application}}/static/{{=course_id}}/_static/codemirror.js"></script>
+    <script type="text/javascript" src="/{{=request.application}}/static/{{=course_id}}/_static/python.js"></script>
+
+</head>
+<body>
+<table>
+{{ for s in solutions: }}
+    <tr>
+        <td>{{ =s[1] }}</td>
+        <td><button onclick="createActiveCode('{{ =s[0] }}',undefined,'{{ =s[1] }}')">grade</button></td>
+        <td><div id="{{ =s[0] }}_{{ =s[1] }}"></div></td>
+        <td><input type="text" value= "{{=s[2]}}" onchange="sendGrade(this.value,'{{ =s[1] }}','{{ =s[0] }}', {{=s[3]}});" /></td>
+    </tr>
+{{ pass }}
+</table>
+</body>
+</html>

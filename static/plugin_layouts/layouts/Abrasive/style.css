@@ -1,0 +1,284 @@
+/*
+Design by NodeThirtyThree for Free CSS Templates
+http://www.nodethirtythree.com/ + http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+body {
+	margin: 0px;
+	padding: 0px;
+	background: #FFFFFF url(images/bg01.jpg) repeat left top;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	color: #797979;
+}
+
+h1, h2, h3 {
+	margin-top: 0px;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-weight: normal;
+}
+
+h1 {
+	font-size: 42px;
+}
+
+h2 {
+	font-size: 30px;
+}
+
+h3 {
+	font-size: 24px;
+}
+
+p, ul, ol {
+	margin-top: 0px;
+	line-height: 160%;
+}
+
+ul, ol {
+}
+
+a {
+	color: #0098A4;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+.alignleft {
+	float: left;
+}
+
+.alignright {
+	float: right;
+}
+
+.aligncenter {
+	margin: 0px auto;
+}
+
+img.alignleft {
+	margin-right: 20px;
+}
+
+img.alignright {
+	margin-left: 20px;
+}
+
+a img {
+	border: none;
+}
+
+/* Wrapper */
+
+#wrapper {
+	background: url(images/bg02.jpg) repeat-x left top;
+}
+
+/* Header */
+
+#header {
+	width: 920px;
+	height: 130px;
+	margin: 0px auto;
+	background: url(images/bg03.jpg) no-repeat left top;
+}
+
+/* Logo */
+
+#logo {
+	float: left;
+}
+
+#logo h1, #logo h2 {
+	float: left;
+	margin: 0px;
+}
+
+#logo h1 {
+	padding: 60px 0px 0px 30px;
+}
+
+#logo h2 {
+	padding: 80px 0px 0px 10px;
+}
+
+#logo a {
+	text-decoration: none;
+	color: #797979;
+}
+
+#logo a:hover {
+	text-decoration: underline;
+	color: #0098A4;
+}
+
+#logo h2, #logo h2 a {
+	font-size: 13px;
+	color: #9F9F9F;
+}
+
+/* Menu */
+
+#menu {
+	float: right;
+}
+
+#menu ul {
+	margin: 0px;
+	padding: 78px 30px 0px 0px;
+	list-style: none;
+}
+
+#menu li {
+	float: left;
+}
+
+#menu a {
+	padding: 0px 20px 0px 22px;
+	background: url(images/img02.gif) no-repeat left center;
+	text-decoration: none;
+	text-transform: lowercase;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 14px;
+	color: #7B7B7B;
+}
+
+#menu a:hover {
+	text-decoration: underline;
+	color: #0098A4;
+}
+
+#menu .first a {
+	background: none;
+}
+
+/* Page */
+
+#page {
+	width: 920px;
+	margin: 0px auto;
+	background: url(images/bg04.jpg) repeat-y left top;
+}
+
+#bgtop {
+	background: url(images/bg05.jpg) no-repeat left top;
+}
+
+#bgbottom {
+	background: url(images/bg06.jpg) no-repeat left bottom;
+}
+
+/* Content */
+
+#content {
+	float: left;
+	width: 650px;
+	padding: 50px 0px 0px 35px;
+}
+
+.post {
+}
+
+.post .title {
+	padding: 0px 0px 0px 15px;
+	background: url(images/img03.gif) no-repeat left top;
+}
+
+.post .title h2, .post .title h3 {
+	margin: 0px;
+}
+
+.post .title h2 a, .post .title h3 a {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+.post .title h2 a:hover, .post .title h3 a:hover {
+	text-decoration: underline;
+}
+
+.post .title p {
+	margin: 0px;
+	text-transform: lowercase;
+	font-size: 16px;
+	color: #8D8D8D;
+}
+
+.post .title p a {
+	text-decoration: none;
+	color: #8D8D8D;
+}
+
+.post .entry {
+	padding: 15px 15px 25px 15px;
+}
+
+.booktitle {
+	font-size: large;
+}
+
+
+#loginexp {
+	float: right;
+	width: 55%;
+}
+
+/* Sidebar */
+#sidebar {
+	float: right;
+	width: 180px;
+	padding: 50px 10px 0px 0px;
+}
+
+#sidebar ul {
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+
+#sidebar li {
+}
+
+#sidebar li ul {
+	margin: 15px 15px 25px 15px;
+}
+
+#sidebar li li {
+	font-size: 11px;
+}
+
+#sidebar h2 {
+	height: 27px;
+	margin: 0px;
+	padding: 3px 0px 0px 15px;
+	background: url(images/img04.gif) no-repeat left top;
+	font-size: 24px;
+	color: #FFFFFF;
+}
+
+#sidebar a {
+	color: #BCE8EC;
+}
+
+/* Footer */
+
+#footer {
+	width: 920px;
+	height: 100px;
+	margin: 0px auto;
+	background: url(images/bg07.jpg) no-repeat left top;
+}
+
+#footer p {
+	margin: 0px;
+	padding: 30px 0px 0px 0px;
+	text-align: center;
+	font-size: 11px;
+}
+
+#footer a {
+	color: #797979;
+}

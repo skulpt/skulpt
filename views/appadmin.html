@@ -1,0 +1,232 @@
+{{extend 'layout.html'}}
+<script><!--
+    jQuery(document).ready(function(){
+    jQuery("table.sortable tbody tr").mouseover( function() {
+    jQuery(this).addClass("highlight"); }).mouseout( function() { 
+    jQuery(this).removeClass("highlight"); });
+    jQuery('table.sortable tbody tr:odd').addClass('odd');
+    jQuery('table.sortable tbody tr:even').addClass('even');
+});
+//--></script>
+
+{{if request.function=='index':}}
+<h2>{{=T("Available databases and tables")}}</h2>
+  {{if not databases:}}{{=T("No databases in this application")}}{{pass}}
+  {{for db in sorted(databases):}}
+    {{for table in databases[db].tables:}}
+      {{qry='%s.%s.id>0'%(db,table)}}
+      {{tbl=databases[db][table]}}
+      {{if hasattr(tbl,'_primarykey'):}}
+        {{if tbl._primarykey:}}
+            {{firstkey=tbl[tbl._primarykey[0]]}}
+            {{if firstkey.type in ['string','text']:}}
+              {{qry='%s.%s.%s!=""'%(db,table,firstkey.name)}}
+            {{else:}}
+              {{qry='%s.%s.%s>0'%(db,table,firstkey.name)}}
+            {{pass}}
+        {{else:}}
+             {{qry=''}}
+             {{pass}}
+      {{pass}}
+      <h3>
+	{{=A("%s.%s" % (db,table),_href=URL('select',args=[db],vars=dict(query=qry)))}}
+      </h3>
+      [ {{=A(str(T('insert new'))+' '+table,_href=URL('insert',args=[db,table]))}} ]
+    <br /><br />
+    {{pass}}
+  {{pass}}
+
+{{elif request.function=='select':}}
+  <h2>{{=XML(str(T("database %s select"))%A(request.args[0],_href=URL('index'))) }}
+  </h2>
+   {{if table:}}
+  [ {{=A(str(T('insert new %s'))%table,_href=URL('insert',args=[request.args[0],table]))}} ]<br/><br/>
+    <h3>{{=T("Rows in table")}}</h3><br/>
+   {{else:}}
+    <h3>{{=T("Rows selected")}}</h3><br/>
+   {{pass}}
+   {{=form}}
+   <p>{{=T('The "query" is a condition like "db.table1.field1==\'value\'". Something like "db.table1.field1==db.table2.field2" results in a SQL JOIN.')}}<br/>
+      {{=T('Use (...)&(...) for AND, (...)|(...) for OR, and ~(...)  for NOT to build more complex queries.')}}<br/>
+      {{=T('"update" is an optional expression like "field1=\'newvalue\'". You cannot update or delete the results of a JOIN')}}</p>
+    <br/><br/>
+    <h4>{{=nrows}} {{=T("selected")}}</h4>
+    {{if start>0:}}[ {{=A(T('previous 100 rows'),_href=URL('select',args=request.args[0],vars=dict(start=start-100)))}} ]{{pass}}
+    {{if stop<nrows:}}[ {{=A(T('next 100 rows'),_href=URL('select',args=request.args[0],vars=dict(start=start+100)))}} ]{{pass}}    
+    {{if rows:}}
+       <div style="overflow: auto;" width="80%">
+       {{linkto=URL('update',args=request.args[0])}}
+       {{upload=URL('download',args=request.args[0])}}    
+       {{=SQLTABLE(rows,linkto,upload,orderby=True,_class='sortable')}}
+       </div>
+    {{pass}}
+    <br/><br/><h3>{{=T("Import/Export")}}</h3><br/>
+    [ <a href="{{=URL('csv',args=request.args[0],vars=dict(query=query))}}">{{=T("export as csv file")}}</a> ]
+  {{if table:}}
+    {{=FORM(str(T('or import from csv file'))+" ",INPUT(_type='file',_name='csvfile'),INPUT(_type='hidden',_value=table,_name='table'),INPUT(_type='submit',_value='import'))}}
+  {{pass}}
+
+
+{{elif request.function=='insert':}}  
+  <h2>{{=T("database")}} {{=A(request.args[0],_href=URL('index'))}}
+    {{if hasattr(table,'_primarykey'):}}
+      {{fieldname=table._primarykey[0]}}
+      {{dbname=request.args[0]}}
+      {{tablename=request.args[1]}}
+      {{cond = table[fieldname].type in ['string','text'] and '!=""' or '>0'}}
+      {{=T("table")}} {{=A(tablename,_href=URL('select',args=dbname,vars=dict(query='%s.%s.%s%s'%(dbname,tablename,fieldname,cond))))}}
+    {{else:}}  
+      {{=T("table")}} {{=A(request.args[1],_href=URL('select',args=request.args[0],vars=dict(query='%s.%s.id>0'%tuple(request.args[:2]))))}}
+    {{pass}}
+  </h2>
+  <h3>{{=T("New Record")}}</h3><br/>
+  {{=form}}
+{{elif request.function=='update':}}
+  <h2>{{=T("database")}} {{=A(request.args[0],_href=URL('index'))}}
+    {{if hasattr(table,'_primarykey'):}}
+      {{fieldname=request.vars.keys()[0]}}
+      {{dbname=request.args[0]}}
+      {{tablename=request.args[1]}}
+      {{cond = table[fieldname].type in ['string','text'] and '!=""' or '>0'}}      
+      {{=T("table")}} {{=A(tablename,_href=URL('select',args=dbname,vars=dict(query='%s.%s.%s%s'%(dbname,tablename,fieldname,cond))))}}
+      {{=T("record")}} {{=A('%s=%s'%request.vars.items()[0],_href=URL('update',args=request.args[:2],vars=request.vars))}}
+    {{else:}}
+      {{=T("table")}} {{=A(request.args[1],_href=URL('select',args=request.args[0],vars=dict(query='%s.%s.id>0'%tuple(request.args[:2]))))}}
+      {{=T("record id")}} {{=A(request.args[2],_href=URL('update',args=request.args[:3]))}}
+    {{pass}}
+  </h2>
+  <h3>{{=T("Edit current record")}}</h3><br/><br/>{{=form}}
+
+{{elif request.function=='state':}}
+  <h2>{{=T("Internal State")}}</h2>
+  <h3>{{=T("Current request")}}</h3>
+  {{=BEAUTIFY(request)}}
+  <br/><h3>{{=T("Current response")}}</h3>
+  {{=BEAUTIFY(response)}}
+  <br/><h3>{{=T("Current session")}}</h3>
+  {{=BEAUTIFY(session)}}
+
+
+{{elif request.function == 'ccache':}}
+<h2>Cache</h2>
+<div class="list">
+
+  <div class="list-header">
+    <h3>Statistics</h3>
+  </div>
+
+  <div class="content">
+    <h4>Overview</h4>
+    <p>Number of entries: <strong>{{=total['entries']}}</strong>
+      {{if total['entries'] > 0:}}
+    </p>
+    <p>
+      Hit Ratio: 
+      <strong>{{=total['ratio']}}%</strong> 
+      (<strong>{{=total['hits']}}</strong> hits 
+      and <strong>{{=total['misses']}}</strong> misses)
+    </p>
+    <p>
+      Size of cache: 
+      {{if object_stats:}}
+      <strong>{{=total['objects']}}</strong> items, 
+      <strong>{{=total['bytes']}}</strong> bytes 
+      {{if total['bytes'] > 524287:}}
+      (<strong>{{="%.0d" % (total['bytes'] / 1048576)}} MB</strong>)
+      {{pass}}
+      {{else:}} <strong>not available</strong> (requires the Python <a href="http://pypi.python.org/pypi/guppy/" target="_blank">guppy</a> library)
+      {{pass}}
+    </p>
+    <p>
+      Cache contains items up to 
+      <strong>{{="%02d" % total['oldest'][0]}}</strong> hours 
+      <strong>{{="%02d" % total['oldest'][1]}}</strong> minutes 
+      <strong>{{="%02d" % total['oldest'][2]}}</strong> seconds old.
+    </p>
+    {{=BUTTON(T('Cache Keys'), _onclick='jQuery("#all_keys").toggle();')}}
+    <div class="hidden" id="all_keys">
+      {{=total['keys']}}
+    </div>
+    <br />
+    {{pass}}
+        
+    <h4>RAM</h4>
+    <p>Number of entries: <strong>{{=ram['entries']}}</strong>
+        {{if ram['entries'] > 0:}}</p>
+    <p>
+      Hit Ratio: 
+      <strong>{{=ram['ratio']}}%</strong> 
+      (<strong>{{=ram['hits']}}</strong> hits 
+      and <strong>{{=ram['misses']}}</strong> misses)
+    </p>
+    <p>
+      Size of cache: 
+      {{if object_stats:}}
+      <strong>{{=ram['objects']}}</strong> items, 
+      <strong>{{=ram['bytes']}}</strong> bytes 
+      {{if ram['bytes'] > 524287:}}
+      (<strong>{{=ram['bytes'] / 1048576}} MB</strong>)
+      {{pass}}
+      {{else:}} <strong>not available</strong> (requires the Python <a href="http://pypi.python.org/pypi/guppy/" target="_blank">guppy</a> library)
+      {{pass}}
+    </p>
+    <p>
+      RAM contains items up to 
+      <strong>{{="%02d" % ram['oldest'][0]}}</strong> hours 
+      <strong>{{="%02d" % ram['oldest'][1]}}</strong> minutes 
+      <strong>{{="%02d" % ram['oldest'][2]}}</strong> seconds old.
+    </p>
+    {{=BUTTON(T('RAM Cache Keys'), _onclick='jQuery("#ram_keys").toggle();')}}
+    <div class="hidden" id="ram_keys">
+      {{=ram['keys']}}
+    </div>
+    <br />
+    {{pass}}
+    
+    <h4>DISK</h4>
+    <p>Number of entries: <strong>{{=disk['entries']}}</strong>
+      {{if disk['entries'] > 0:}}
+    </p>
+    <p>
+      Hit Ratio: 
+      <strong>{{=disk['ratio']}}%</strong> 
+      (<strong>{{=disk['hits']}}</strong> hits 
+      and <strong>{{=disk['misses']}}</strong> misses)
+    </p>
+    <p>
+      Size of cache: 
+      {{if object_stats:}}
+      <strong>{{=disk['objects']}}</strong> items, 
+      <strong>{{=disk['bytes']}}</strong> bytes 
+      {{if disk['bytes'] > 524287:}}
+      (<strong>{{=disk['bytes'] / 1048576}} MB</strong>)
+      {{pass}}
+      {{else:}} <strong>not available</strong> (requires the Python <a href="http://pypi.python.org/pypi/guppy/" target="_blank">guppy</a> library)
+      {{pass}}
+    </p>
+    <p>
+      DISK contains items up to 
+      <strong>{{="%02d" % disk['oldest'][0]}}</strong> hours 
+      <strong>{{="%02d" % disk['oldest'][1]}}</strong> minutes 
+      <strong>{{="%02d" % disk['oldest'][2]}}</strong> seconds old.
+    </p>
+    {{=BUTTON(T('Disk Cache Keys'), _onclick='jQuery("#disk_keys").toggle();')}}
+    <div class="hidden" id="disk_keys">
+      {{=disk['keys']}}
+    </div>
+    <br />
+    {{pass}}
+  </div>
+    
+  <div class="list-header">
+    <h3>Manage Cache</h3>
+  </div>
+  
+  <div class="content">
+    <p>
+      {{=form}}
+    </p>
+  </div>
+</div>
+<div class="clear"></div>
+{{pass}}

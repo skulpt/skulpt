@@ -1,0 +1,40 @@
+{{extend 'layout.html'}}
+
+{{block statusbar}}
+{{end}}
+
+<h2>Welcome</h2>
+
+<p>Our open library contains some books that you are welcome to browse on your own. These books are essentially samples of what you can use to mix and match in your own course.  You can also create a custom textbook for your own class.</p>
+<h2>Interactive Books</h2>
+<ul class="booktitle">
+  <li class="booktitle"><a href="{{=URL(c='static',f='thinkcspy/index.html')}}">How to Think Like a Computer Scientist:  Interactive Edition</a></li>
+  <li class="booktitle"><a href="{{=URL(c='static',f='pythonds/index.html')}}">Problem Solving with Algorithms and Data Structures Using Python</a></li>  
+</ul>
+
+<div>
+<h2>{{=T( request.args(0).replace('_',' ').capitalize() )}}</h2>
+<div id="loginexp">
+<p><strong>Why Log in?</strong>  Excellent question.  You don't need to log in to use the books we've provided.  But you won't be able to save your work and come back to it later.  Don't worry we have no plans to spam you with email, and we would never ever sell your contact information to anyone.  If you are student that is part of a course, please register and/or login.  When you register be sure to choose the course that your instructor has given you.</p>
+</div>
+
+<div id="web2py_user_form">
+  {{=form}}
+  {{if request.args(0)=='login':}}
+  {{if not 'register' in auth.settings.actions_disabled:}}
+  <br/>
+  <a href="{{=URL(args='register')}}">{{=T('Register')}}</a>
+  {{pass}}
+  {{if not 'request_reset_password' in auth.settings.actions_disabled:}}
+  <br/>
+  <a href="{{=URL(args='request_reset_password')}}">{{=T('Lost Password')}}</a>
+  {{pass}}
+  {{pass}}
+</div>
+
+</div>
+
+<script language="javascript"><!--
+      jQuery("#web2py_user_form input:visible:enabled:first").focus();
+      //--></script>
+

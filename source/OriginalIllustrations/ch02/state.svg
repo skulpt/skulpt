@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="330"
+   height="88"
+   id="svg2">
+  <defs
+     id="defs4">
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3007" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect2999" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect2995" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3007-0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3007-1" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3007-3" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3007-0-8" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect3007-1-6" />
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(0,-964.36218)"
+     id="layer1">
+    <g
+       id="g3141">
+      <rect
+         width="322.60962"
+         height="82.609619"
+         rx="5"
+         ry="5"
+         x="3.1951921"
+         y="967.55737"
+         id="rect3109"
+         style="fill:#e6e6e6;stroke:#000000;stroke-width:1.3903842;stroke-opacity:1" />
+      <text
+         x="10.018362"
+         y="990.22369"
+         id="text2985"
+         xml:space="preserve"
+         style="font-size:19.80709076px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+           x="10.018362"
+           y="990.22369"
+           id="tspan2987">message       &quot;What's up, Doc?&quot;</tspan></text>
+      <g
+         transform="matrix(-0.99996686,-0.00814159,0.00814159,-0.99996686,239.11358,1963.5087)"
+         id="g3015">
+        <path
+           d="m 106.16358,15.913615 6.55331,5 0,-10 z"
+           transform="translate(0,964.36218)"
+           id="path3005"
+           style="fill:#000000;fill-rule:evenodd;stroke:none" />
+        <path
+           d="m 111.84312,15.695172 23.59191,-0.218444"
+           transform="translate(0,964.36218)"
+           id="path3013"
+           style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <text
+         x="87.360779"
+         y="1013.7571"
+         id="text2985-7"
+         xml:space="preserve"
+         style="font-size:19.80709076px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+           x="87.360779"
+           y="1013.7571"
+           id="tspan2987-1">n        17</tspan><tspan
+           x="87.360779"
+           y="1038.516"
+           id="tspan3105" /></text>
+      <text
+         x="82.018448"
+         y="1038.7537"
+         id="text2985-7-1"
+         xml:space="preserve"
+         style="font-size:19.80709076px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+           x="82.018448"
+           y="1038.7537"
+           id="tspan2987-1-3">pi        3.14159</tspan></text>
+      <g
+         transform="matrix(-0.99996686,-0.00814159,0.00814159,-0.99996686,239.56608,1988.5232)"
+         id="g3015-7">
+        <path
+           d="m 106.16358,15.913615 6.55331,5 0,-10 z"
+           transform="translate(0,964.36218)"
+           id="path3005-6"
+           style="fill:#000000;fill-rule:evenodd;stroke:none" />
+        <path
+           d="m 111.84312,15.695172 23.59191,-0.218444"
+           transform="translate(0,964.36218)"
+           id="path3013-0"
+           style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <g
+         transform="matrix(-0.99996686,-0.00814159,0.00814159,-0.99996686,239.56608,2012.5232)"
+         id="g3015-0">
+        <path
+           d="m 106.16358,15.913615 6.55331,5 0,-10 z"
+           transform="translate(0,964.36218)"
+           id="path3005-2"
+           style="fill:#000000;fill-rule:evenodd;stroke:none" />
+        <path
+           d="m 111.84312,15.695172 23.59191,-0.218444"
+           transform="translate(0,964.36218)"
+           id="path3013-5"
+           style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+    </g>
+  </g>
+</svg>
