@@ -1,6 +1,35 @@
+<<<<<<< HEAD
 dist/
 support/tmp/
 doc/static/builtin.js
 doc/static/skulpt.js
 
 *.pyc
+=======
+127.0.0.1.2012*
+errors/*
+sessions/*
+127.0.0.1-*
+databases/*
+
+databases/storage.sqlite
+data/*
+databases/c8b669d15150d7109e5f7ab36744a5b7_auth_cas.table
+databases/c8b669d15150d7109e5f7ab36744a5b7_auth_event.table
+databases/c8b669d15150d7109e5f7ab36744a5b7_auth_group.table
+databases/c8b669d15150d7109e5f7ab36744a5b7_auth_membership.table
+databases/c8b669d15150d7109e5f7ab36744a5b7_auth_permission.table
+databases/c8b669d15150d7109e5f7ab36744a5b7_auth_user.table
+private/*
+*.pyc
+static/devcourse/
+static/gatech/
+static/pythonds/
+static/thinkcspy/
+static/unics1140/
+static/luther151/
+static/COSC122/
+static/python4bio/
+>>>>>>> upstream/master
+
+src/lib/.DS_Store

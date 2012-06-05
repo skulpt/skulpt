@@ -1,0 +1,1 @@
+var checkMe=function(a,b,c){var d,e=document.forms[a+"_form"].elements.group1;for(var f=e.length-1;f>=0;f--)e[f].checked&&(d=e[f].value);feedBack("#"+a+"_feedback",d==b,c)},feedBack=function(a,b,c){b?$(a).html("You are Correct!"):$(a).html("Inorrect.  "+c)};

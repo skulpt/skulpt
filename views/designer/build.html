@@ -1,0 +1,64 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,False}}
+
+{{extend 'layout.html'}}
+
+
+{{block left_sidebar}}
+
+{{end}}
+
+{{ if mess:}}
+    <h1>{{=mess}}</h1>
+    You can access your course here:  <a href="/{{=request.application}}/{{=course_url}}">Here</a>
+
+{{ else: }}
+    <h4>Module Index</h4>
+         
+    <div id="boxA" class="homeboxclass" ondrop="drop(event)" ondragover="allowDrop(event)">
+        {{dragitemidx = 0}}
+        {{for item in moddata.keys():}}
+                {{dragitemidx = dragitemidx + 1}}
+                {{idstr = str(item)}}
+                <div id={{=idstr}} data-filename="{{=moddata[item][2]}}" class="word" draggable="true" onclick="showDetails({{=item}})" ondragstart="drag(event)">
+                    
+                    <a onmouseover='this.style.cursor="pointer" ' onfocus='this.blur();' onclick="document.getElementById('PopUp').style.display = 'block' " >{{=moddata[item][0]}}</a>
+    	<div id='PopUp' style='display: none; position: absolute; left: 500px; top: 100px; border: solid black 1px; padding: 10px; background-color: rgb(255,255,225); text-align: justify; font-size: 12px; width: 135px;'>
+    	{{=moddata[item][1]}}
+    	<br />
+    	<div style='text-align: right;'><a onmouseover='this.style.cursor="pointer" ' style='font-size: 12px;' onfocus='this.blur();' onclick="document.getElementById('PopUp').style.display = 'none' " >Close</a></div>
+    	</div>
+       </div>
+                
+                <a onmouseover='this.style.cursor="pointer" ' onfocus='this.blur();' onclick="document.getElementById('PopUp{{=idstr}}').style.display = 'block' " >{{=moddata[item][0]}}</a>
+	<div id='PopUp{{=idstr}}' style='display: none; position: absolute; left: 500px; top: 100px; border: solid black 1px; padding: 10px; background-color: rgb(255,255,225); text-align: justify; font-size: 12px; width: 135px;'>
+	{{=moddata[item][1]}}
+	<br />
+	<div style='text-align: right;'><a onmouseover='this.style.cursor="pointer" ' style='font-size: 12px;' onfocus='this.blur();' onclick="document.getElementById('PopUp{{=idstr}}').style.display = 'none' " >Close</a></div>
+	</div>
+   </div>
+            
+            
+    {{pass}}
+
+    </div>
+
+
+    <h4>Choose topics for...</h4>
+    <h4>{{=pname}}</h4>
+
+    <button type="button" onclick="addModBlock()">+</button>
+
+    <button type="button" onclick="buildIndexFile('{{=pname}}')">Create Index</button>
+
+    <div id="chapterboxes">
+         <div id="box1" class="boxclass" ondrop="drop(event)" ondragover="allowDrop(event)">     
+             <input id="title" type="text" value="Your Section Title Here" name="label" />
+         </div>
+
+    </div>
+{{pass}}
+
+
+
+</body>
+<html>

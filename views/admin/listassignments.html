@@ -1,0 +1,8 @@
+{{extend 'layout.html'}}
+
+<table>
+{{for actcode in exercises:}}
+	<tr><td><a href="/{{=request.application}}/admin/gradeassignment/?id={{=actcode.acid}}">{{=actcode.acid}}</a></td></tr>  
+    {{pass}}
+
+</table>	

@@ -1,0 +1,59 @@
+.exercises {
+    background-color:#f0ffff;
+}
+
+
+.active_out {
+    background-color:#dcdcdc;
+    border-radius: 6px;
+}
+
+figcaption {
+	margin: .75em 0;
+	text-align: center;
+	font: italic 13px/18px Cambria, Georgia, "Times New Roman", Times, serif;
+}
+
+img.bookfig {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.video_popup {
+    display: none;
+}
+.ac_caption {
+    text-align: center;
+    font-weight: bold;
+}
+
+.ac_caption_text {
+    font-weight: normal;
+}
+
+.cl_caption {
+    font-weight: bold;
+}
+
+.ac_caption:before {
+    content: "ActiveCode: " counter(activecode) " ";
+    counter-increment: activecode;
+}
+.cl_caption:before {
+    content: "CodeLens: " counter(codelens) " ";
+    counter-increment: codelens;
+}
+
+body {
+    counter-reset: activecode codelens;
+}
+
+#simplemodal-overlay {background-color:#000; cursor:wait;}
+
+/* Container */
+#simplemodal-container {height:590px; width:768px; color:#bbb; background-color:#333; border:4px solid #444; padding:12px;}
+#simplemodal-container .simplemodal-data {padding:8px;}
+#simplemodal-container code {background:#141414; border-left:3px solid #65B43D; color:#bbb; display:block; font-size:12px; margin-bottom:12px; padding:4px 6px 6px;}
+#simplemodal-container a {color:#ddd;}
+#simplemodal-container a.modalCloseImg {background:url(x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
+#simplemodal-container h3 {color:#84b8d9;}

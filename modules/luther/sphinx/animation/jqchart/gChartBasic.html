@@ -1,0 +1,41 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<title>jQuery Google Chart</title>
+<style type="text/css">
+#basicGChart { width: 450px; height: 300px }
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.gchart.js"></script>
+<script type="text/javascript">
+$(function () {
+	$('#basicGChart').gchart({type: 'line', maxValue: 40,
+		title: 'Weather for|Brisbane, Australia', titleColor: 'green',
+		backgroundColor: $.gchart.gradient('horizontal', 'ccffff', 'ccffff00'),
+		series: [$.gchart.series('Max', [29.1, 28.9, 28.1, 26.3,
+		23.5, 21.2, 20.6, 21.7, 23.8, 25.6, 27.3, 28.6], 'red', 'ffcccc'),
+		$.gchart.series('Min', [20.9, 20.8, 19.5, 16.9,
+		13.8, 10.9, 9.5, 10.0, 12.5, 15.6, 18.0, 19.8], 'green'),
+		$.gchart.series('Rainfall', [157.7, 174.6, 138.5, 90.4,
+		98.8, 71.2, 62.6, 42.7, 34.9, 94.4, 96.5, 126.2], 'blue', 0, 200)],
+		axes: [$.gchart.axis('bottom', ['Jan', 'Feb', 'Mar', 'Apr',
+		'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], 'black'),
+		$.gchart.axis('left', 0, 40, 'red', 'right'),
+		$.gchart.axis('left', ['C'], [50], 'red', 'right'),
+		$.gchart.axis('right', 0, 200, 50, 'blue', 'left'),
+		$.gchart.axis('right', ['mm'], [50], 'blue', 'left')],
+		legend: 'right'});
+});
+</script>
+</head>
+<body>
+<h1>jQuery Google Chart Basics</h1>
+<p>This page demonstrates the very basics of the
+	<a href="http://keith-wood.name/gChart.html">jQuery Google Chart plugin</a>.
+	It contains the minimum requirements for using the plugin and
+	can be used as the basis for your own experimentation.</p>
+<p>For more detail see the <a href="http://keith-wood.name/gChartRef.html">documentation reference</a> page.</p>
+<div id="basicGChart"></div>
+</body>
+</html>

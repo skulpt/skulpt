@@ -1,0 +1,32 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,True}}
+{{extend 'layout.html'}}
+
+{{if 'message' in globals():}}
+<h3>{{=message}}</h3>
+
+<h4/>{{=T('How did you get here?')}}</h4>
+<ol>
+  <li>{{=T('You are successfully running web2py')}}</li>
+  <li>{{=T('You visited the url')}} {{=A(request.env.path_info,_href=request.env.path_info)}}</li>
+  <li>{{=T('Which called the function')}} {{=A(request.function+'()',_href='#')}} {{=T('located in the file')}}
+    {{=A('web2py/applications/%(application)s/controllers/%(controller)s.py'%request,_href=URL('admin','default','peek',args=(request.application,'controllers',request.controller+'.py')))}}</li>
+  <li>{{=T('The output of the file is a dictionary that was rendered by the view')}}
+    {{=A('web2py/applications/%(application)s/views/%(controller)s/index.html'%request,_href=URL('admin','default','peek',args=(request.application,'views',request.controller,'index.html')))}}</li>
+  <li>{{=T('You can modify this application and adapt it to your needs')}}</li>
+</ul>
+</ol>
+{{else:}}
+{{=BEAUTIFY(response._vars)}}
+{{pass}}
+
+{{block right_sidebar}}
+{{=A(T("Administrative Interface"), _href=URL('admin','default','index'), _class='button',
+     _style='margin-top: 1em;')}}
+<h6>{{=T("Don't know what to do?")}}</h6>
+<ul>
+  <li>{{=A(T("Online examples"), _href=URL('examples','default','index'))}}</li>
+  <li><a href="http://web2py.com">web2py.com</a></li>
+  <li><a href="http://web2py.com/book">{{=T('Documentation')}}</a></li>
+</ul>
+{{end}}
+

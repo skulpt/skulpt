@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.1"
+   width="300"
+   height="300"
+   id="svg2">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3971">
+      <stop
+         id="stop3973"
+         style="stop-color:#000000;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop3975"
+         style="stop-color:#fef608;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <radialGradient
+       cx="388.3642"
+       cy="73.157158"
+       r="128.65974"
+       fx="388.3642"
+       fy="73.157158"
+       id="radialGradient3969"
+       xlink:href="#linearGradient3971"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(-0.999941,2.2161505e-8,-1.3877645e-6,-1.008849,545.4564,236.61352)" />
+    <filter
+       color-interpolation-filters="sRGB"
+       id="filter4099">
+      <feGaussianBlur
+         id="feGaussianBlur4101"
+         result="result1"
+         in="SourceAlpha"
+         stdDeviation="2.2" />
+      <feSpecularLighting
+         id="feSpecularLighting4103"
+         result="result0"
+         specularExponent="18.10000038"
+         specularConstant="2"
+         surfaceScale="5">
+        <feDistantLight
+           id="feDistantLight4105"
+           azimuth="225"
+           elevation="24" />
+      </feSpecularLighting>
+      <feComposite
+         in2="SourceAlpha"
+         operator="in"
+         result="result6"
+         id="feComposite4107" />
+      <feMorphology
+         id="feMorphology4109"
+         radius="5.7"
+         operator="dilate" />
+      <feGaussianBlur
+         id="feGaussianBlur4111"
+         result="result11"
+         stdDeviation="5.7" />
+      <feDiffuseLighting
+         id="feDiffuseLighting4113"
+         surfaceScale="5"
+         result="result3"
+         diffuseConstant="2"
+         in="result1">
+        <feDistantLight
+           id="feDistantLight4115"
+           elevation="25"
+           azimuth="225" />
+      </feDiffuseLighting>
+      <feBlend
+         in2="SourceGraphic"
+         mode="multiply"
+         in="result3"
+         result="result7"
+         id="feBlend4117" />
+      <feComposite
+         in2="SourceAlpha"
+         operator="in"
+         in="result7"
+         result="result91"
+         id="feComposite4119" />
+      <feBlend
+         in2="result91"
+         mode="lighten"
+         in="result6"
+         result="result9"
+         id="feBlend4121" />
+      <feComposite
+         in2="result9"
+         in="result11"
+         id="feComposite4123" />
+    </filter>
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6"
+       style="fill:none;stroke:none" />
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6-4"
+       style="fill:none;stroke:none" />
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6-5"
+       style="fill:none;stroke:none" />
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6-9"
+       style="fill:none;stroke:none" />
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6-9-4"
+       style="fill:none;stroke:none" />
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6-9-8"
+       style="fill:none;stroke:none" />
+    <path
+       d="m -57,-6.9999987 c 0,0 0,-54.9999993 123,-53.9999993 123,1 209,1 209,1"
+       id="path4038-6-9-8-9"
+       style="fill:none;stroke:none" />
+    <filter
+       color-interpolation-filters="sRGB"
+       id="filter3583">
+      <feTurbulence
+         id="feTurbulence3585"
+         baseFrequency="0.14299516908212559"
+         numOctaves="1"
+         type="fractalNoise" />
+      <feColorMatrix
+         id="feColorMatrix3587"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 6 -3.5 "
+         result="result5" />
+      <feComposite
+         in2="result5"
+         operator="in"
+         in="SourceGraphic"
+         result="result6"
+         id="feComposite3589" />
+      <feMorphology
+         id="feMorphology3591"
+         result="result3"
+         radius="5"
+         operator="dilate"
+         in="result6" />
+      <feDisplacementMap
+         in2="result3"
+         scale="0"
+         xChannelSelector="R"
+         yChannelSelector="A"
+         in="result3"
+         result="result4"
+         id="feDisplacementMap3593" />
+      <feComposite
+         in2="result4"
+         operator="arithmetic"
+         k1="1"
+         k2="0"
+         k3="1"
+         k4="0"
+         result="result2"
+         id="feComposite3595" />
+      <feBlend
+         in2="result2"
+         mode="darken"
+         in="result2"
+         id="feBlend3597" />
+      <feConvolveMatrix
+         id="feConvolveMatrix3599"
+         order="3 3"
+         kernelMatrix="2 0 0 0 1 0 0 0 -1 "
+         targetX="1"
+         targetY="1"
+         divisor="2"
+         edgeMode="duplicate" />
+    </filter>
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="matrix(1.0086254,0,0,1.0086254,1.0312019,0.18555015)"
+     id="layer4">
+    <path
+       d="m 281.21308,159.67809 a 126.65974,127.79825 0 1 1 -253.319472,0 126.65974,127.79825 0 1 1 253.319472,0 z"
+       transform="matrix(1.1086387,0,0,1.1086387,-23.327975,-26.515815)"
+       id="path3961"
+       style="fill:url(#radialGradient3969);fill-opacity:1;stroke:none;filter:url(#filter3583)" />
+  </g>
+  <g
+     transform="matrix(0.79355398,0,0,0.79355398,30.324822,37.127956)"
+     id="layer2" />
+  <g
+     transform="matrix(1.4791939,0,0,1.4791939,-67.408692,-77.5389)"
+     id="layer3">
+    <path
+       d="m 174.77717,68.59693 66.88773,94.78133 0.28462,16.79309 -63.47218,14.23143 -6.83108,11.66978 -81.688418,34.72469 -35.863205,-103.32019 35.00932,-21.34715 29.032123,-9.962 z"
+       id="path3152"
+       style="fill:#ffcd00;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="m 61.779609,135.76929 24.478061,79.12675 29.60138,7.11572 c 0,0 16.22383,-28.46286 44.97132,-23.33955 L 125.82105,114.9914"
+       id="path3924"
+       style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    <path
+       d="m 127.24419,113.28363 38.42486,86.5271 c 0,0 3.70018,-21.63178 25.90121,-27.89361 l 45.25595,-4.26943 -62.6183,-93.642816 c 0,0 -7.40034,0.853886 -14.23143,7.115715"
+       id="path3926"
+       style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    <path
+       d="m 174.20791,72.866363 c 0,0 -5.12331,3.415544 -19.63937,3.130915 -14.51606,-0.284629 -29.60138,10.24663 -31.59378,24.478062 -1.9924,14.23143 5.9772,13.9468 5.9772,13.9468"
+       id="path3958"
+       style="fill:#ffffff;stroke:#ff9955;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  </g>
+  <g
+     transform="matrix(1.4791939,0,0,1.4791939,-67.408692,-1190.4283)"
+     id="layer1">
+    <path
+       d="m 88.476095,895.85908 c 0,0 5.902505,-9.40713 18.260885,-6.08696 12.35837,3.32015 -2.76681,49.06459 -2.76681,49.06459 0,0 -6.2714,21.02767 6.08696,27.11464 12.35838,6.08696 24.5323,-4.24243 24.5323,-4.24243 0,0 28.59026,-22.87221 49.24904,-10.88275 20.65877,11.98946 19.92096,20.10542 30.0659,24.71675 10.14492,4.61133 14.01844,3.13571 16.41634,3.13571 2.39789,0 13.28065,-4.98024 14.75627,-11.80501 0,0 -3.50461,18.62978 -12.72728,24.34783 -9.22266,5.71805 -27.48354,7.74705 -35.23058,-2.21343 -7.74704,-9.96049 -23.24112,-17.15417 -33.01716,-14.38736 -9.77603,2.7668 -20.10541,17.15415 -30.98816,20.28984 -10.88274,3.13569 -30.06589,11.805 -50.355758,-8.48483 -20.289867,-20.28987 -8.85376,-43.71544 -8.85376,-43.71544 0,0 9.40712,-9.96049 12.358373,-31.17262 2.951254,-21.21214 0.922267,-8.48484 2.21344,-15.67853 z"
+       id="path3010"
+       style="fill:#008000;fill-opacity:1;stroke:#000000;stroke-width:4.13175488;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="m 120.07143,847.54075 c 0,0 14.82143,14.10714 -1.07143,36.25 -15.89286,22.14286 -40.892857,12.67857 -40.892857,12.67857 0,0 -35.535714,-14.10714 -14.107143,-47.5 0,0 12.132,-25.62298 29.107143,-15.99988 0,0 8.610397,2.77822 26.964287,14.57131 z"
+       id="path3004"
+       style="fill:#008000;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="m 79,875.21932 c 0,0 -0.178571,7.85715 5.714286,7.32143 C 86.321429,873.96932 79,875.21932 79,875.21932 z"
+       id="path3014"
+       style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="m 100.54207,875.00901 c 0,0 -7.656437,1.77356 -5.677489,7.34999 8.702379,-0.5665 5.677489,-7.34999 5.677489,-7.34999 z"
+       id="path3014-1"
+       style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       d="m 91.365784,81.262909 a 12.523659,13.23523 0 1 1 -25.047318,0 12.523659,13.23523 0 1 1 25.047318,0 z"
+       transform="matrix(1.1868227,0,0,1.1868227,-15.431689,736.61117)"
+       id="path3262"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-opacity:1" />
+    <path
+       d="m 38.843726,87.667717 a 5.5347276,6.0378847 0 1 1 -11.069455,0 5.5347276,6.0378847 0 1 1 11.069455,0 z"
+       transform="translate(47.057616,747.21941)"
+       id="path3091"
+       style="fill:#000000;fill-opacity:1;stroke:none" />
+    <path
+       d="m 91.365784,81.262909 a 12.523659,13.23523 0 1 1 -25.047318,0 12.523659,13.23523 0 1 1 25.047318,0 z"
+       transform="matrix(1.1868227,0,0,1.1868227,14.58725,737.892)"
+       id="path3262-1"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-opacity:1" />
+    <path
+       d="m 38.843726,87.667717 a 5.5347276,6.0378847 0 1 1 -11.069455,0 5.5347276,6.0378847 0 1 1 11.069455,0 z"
+       transform="translate(74.841357,747.17809)"
+       id="path3091-5"
+       style="fill:#000000;fill-opacity:1;stroke:none" />
+    <text
+       x="281.4285"
+       y="50.037754"
+       transform="translate(0,752.36218)"
+       id="text3447"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
+         x="281.4285"
+         y="50.037754"
+         id="tspan3449" /></text>
+  </g>
+  <g
+     transform="matrix(0.79355398,0,0,0.79355398,30.324822,37.127956)"
+     id="layer6" />
+  <g
+     transform="matrix(0.79355398,0,0,0.79355398,30.324822,37.127956)"
+     id="layer7" />
+  <g
+     transform="matrix(0.79355398,0,0,0.79355398,30.324822,37.127956)"
+     id="layer8" />
+  <g
+     transform="matrix(1.4791939,0,0,1.4791939,-67.408692,-77.5389)"
+     id="layer9">
+    <text
+       transform="matrix(0.31574762,0,0.01653412,0.31574762,157.72539,115.84267)"
+       id="text4034"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><textPath
+         xlink:href="#path4038-6"
+         id="textPath4040"
+         style="font-weight:bold;-inkscape-font-specification:Sans Bold">How <tspan
+   id="tspan3374"
+   style="font-size:31.67086411px">to</tspan></textPath></text>
+    <text
+       transform="matrix(0.31574762,0,0.01653412,0.31574762,163.87101,130.89027)"
+       id="text4034-2"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><textPath
+         xlink:href="#path4038-6-9"
+         id="textPath4040-4"
+         style="font-size:31.67086411px;font-weight:bold;-inkscape-font-specification:Sans Bold">think like</textPath></text>
+    <text
+       transform="matrix(0.31574762,0,0.01653412,0.31574762,173.47933,141.65194)"
+       id="text4034-2-6"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><textPath
+         xlink:href="#path4038-6-9-4"
+         id="textPath4040-4-6"
+         style="font-size:31.67086411px;font-weight:bold;-inkscape-font-specification:Sans Bold">      a</textPath></text>
+    <text
+       transform="matrix(0.31559697,-0.00975248,0.02627871,0.31508628,175.44046,154.78641)"
+       id="text4034-2-60"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><textPath
+         xlink:href="#path4038-6-9-8"
+         id="textPath4040-4-3"
+         style="font-size:34.83795166px;font-weight:bold;-inkscape-font-specification:Sans Bold">computer</textPath></text>
+    <text
+       transform="matrix(0.34767351,0,0.01820592,0.34767351,184.86425,172.64244)"
+       id="text4034-2-60-4"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><textPath
+         xlink:href="#path4038-6-9-8-9"
+         id="textPath4040-4-3-9"
+         style="font-size:34.83795166px;font-weight:bold;-inkscape-font-specification:Sans Bold">scientist</textPath></text>
+  </g>
+</svg>

@@ -1,0 +1,90 @@
+body {
+        font-size: 10px;
+        font-family: "verdana", Serif;
+        background-color: #ffffff;
+        color: #330033;
+     }
+
+#lists {background-color: #aaaaaa;}
+
+#boxdiv {width:400px;height:30px;padding:10px;border:3px solid #aaaaaa; margin-bottom:30px; background-color:#FFCC99}
+     
+#boxAxxx, #boxBxxx { 
+	float:left;
+	width:200px; 
+	height:200px; 
+	padding:10px; 
+	margin-right:30px;
+	border:1px solid #000;
+	background-color:#aaa;
+}
+
+#output {        
+        font-size: 14px;
+        font-family: "verdana", Serif;
+        background-color: #ffffff;
+        color: #330033;}
+        
+
+.homeboxclass { 
+	float:left;
+	width:260px; 
+	height:1500px; 
+	padding:10px; 
+	margin-right:30px;
+	border:3px solid #000;
+	background-color:#dddddd;
+}
+
+.boxclass { 
+	float:left;
+	width:260px; 
+	height:200px; 
+	padding:10px; 
+	margin-right:30px;
+	border:3px solid #000;
+	background-color:#dddddd;
+}
+
+.contentdiv { 
+	float:left;
+	width:300px; 
+	height:400px; 
+	padding:10px; 
+	margin-right:30px;
+	border:3px solid #000000;
+/*	background-color:#ff6598;*/
+    background-color:#dddddd
+}
+     
+.sectionlabel {
+    border:1px solid #000000;
+}
+     
+.word {
+	width:250px; height:20px; padding:1px; margin:5px; text-align:center; font-weight:bold; font-size:14px; border:1px solid #ff0000;
+	background-color:#fff;
+	display:inline-block;
+}
+
+.clearit{
+    clear:both;
+}
+     
+.hidden{
+    display:none;
+}
+
+.nothidden{
+    display:inline;
+}
+
+td  {color:#ff0000;}
+
+table, tr, td {border: 3px solid green}
+
+
+       
+
+
+

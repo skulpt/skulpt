@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Abrasive
+Description: A two-column, fixed-width design with dirty looks.
+Version    : 1.0
+Released   : 20081122
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title>
+   {{=response.title or request.application}}
+  </title>
+  {{response.files.append(URL(request.application,'static','plugin_layouts/layouts/Abrasive/style.css'))}}
+  {{response.files.append(URL('static','plugin_layouts/superfish.js'))}}
+  {{include 'web2py_ajax.html'}}
+  <style>
+ul.web2py-menu-vertical { width: 150px; position: relative; top:1em; left:1em;  z-index:30; border:0; margin:0; padding: 0; list-style: none; text-decoration: none;}
+ul.web2py-menu-vertical li { margin:0; padding:0; border:0; width: 150px; background: black; text-align:left;}
+ul.web2py-menu-vertical li a { margin:0; padding: 1px 3px 1px 3px; border:0; width: 144px; color: white; font-size:12px;}
+div.flash { position: fixed; float: right; padding: 10px; top: 10px; right: 30px; opacity: 0.75; margin: 10px 10px 10px 10px; text-align: center; clear: both; color: #fff; font-size: 11pt; text-align: center; vertical-align: middle; cursor: pointer; background: black; border: 2px solid #fff; -moz-border-radius: 5px; -webkit-border-radius: 5px; z-index: 2; }
+div.error { background-color: red; color: white; padding: 3px; }
+.auth_navbar { text-align:right; z-index:20; position: absolute; top: 2px; right:30px; border:0; padding:0 }
+  </style>
+ </head>
+ <body>
+  <!-- start header -->
+  {{try:}}{{=auth.navbar(action=URL('default','user'))}}{{except:pass}}
+
+  <div id="wrapper">
+   <div id="header">
+    <div id="logo">
+     <h1>
+      {{=response.title or request.application}}
+     </h1>
+     <h2>
+      {{=response.subtitle or '=response.subtitle'}}
+     </h2>
+    </div>
+    <!-- end #logo -->
+    <div id="menu">
+     {{=MENU(response.menu,_class='web2py-menu')}}
+    <script>
+      jQuery(document).ready(function(){jQuery('ul.web2py-menu').superfish({delay:400});});
+    </script>
+    </div>
+    <!-- end #menu -->
+   </div>
+   <!-- end #header -->
+   <div id="page">
+    <div id="bgtop">
+     <div id="bgbottom">
+      <div id="content">
+       <div class="flash">{{=response.flash or ''}}</div>
+       {{include}}
+      </div>
+      <!-- end #content -->
+      <div id="sidebar">
+       <ul>
+        <li>
+         <h2>
+          Nullam vitae
+         </h2>
+         <ul>
+          <li>
+           <a href="#">
+            Morbi ante sem aliquam
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vitae egestas ullamcorpe
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Ornare donec nec neque
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vel rhoncus adipiscing
+           </a>
+          </li>
+         </ul>
+        </li>
+        <li>
+         <h2>
+          Sed magna
+         </h2>
+         <ul>
+          <li>
+           <a href="#">
+            Morbi ante sem aliquam
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vitae egestas ullamcorpe
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vulputate non magna
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Cras a massa integer
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Nec turpis vel pulvinar
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Ornare donec nec neque
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vel rhoncus adipiscing
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vulputate non magna
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Cras a massa integer
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Nec turpis vel pulvinar
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Vulputate non magna
+           </a>
+          </li>
+          <li>
+           <a href="#">
+            Nec turpis vel pulvinar
+           </a>
+          </li>
+         </ul>
+        </li>
+       </ul>
+      </div>
+      <!-- end #sidebar -->
+      <div style="clear: both;">
+       &nbsp;
+      </div>
+     </div>
+    </div>
+   </div>
+   <!-- end #page -->
+   <div id="footer">
+    <p>
+     Copyright (c) 2008 SiteName.com. Design by
+     <a href="http://www.nodethirtythree.com/">
+      NodeThirtyThree
+     </a>
+     and
+     <a href="http://www.freecsstemplates.org/">
+      FreeCSSTemplates
+     </a>
+    </p>
+   </div>
+   <!-- end #footer -->
+  </div>
+  <!-- end #wrapper -->
+ </body>
+</html>

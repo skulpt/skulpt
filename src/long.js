@@ -44,7 +44,7 @@ Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.bu
 Sk.builtin.lng.SHIFT$ = 15;
 Sk.builtin.lng.BASE$ = 1 << Sk.builtin.lng.SHIFT$;
 Sk.builtin.lng.MASK$ = Sk.builtin.lng.BASE$ - 1;
-Sk.builtin.lng.threshold$ = Math.pow(2, 46);	//	RNL Math.pow(2,30)
+Sk.builtin.lng.threshold$ = Math.pow(2,63);	//	Math.pow(2, 46);	//	RNL Math.pow(2,30)
 Sk.builtin.lng.TWOTOTHESHIFT$ = Math.pow(2,Sk.builtin.lng.SHIFT$);
 
 Sk.builtin.lng.fromInt$ = function(ival) 
