@@ -37,8 +37,9 @@ Sk.builtins = {
 'tuple': Sk.builtin.tuple,
 'type': Sk.builtin.type,
 'input': Sk.builtin.input,
-'jseval': Sk.builtin.jseval,		//	Added by RNL
-'jsmillis': Sk.builtin.jsmillis /*,	//	Added by RNL
-'read': Sk.builtin.read*/			//	Added and removed by RNL
+/*'read': Sk.builtin.read,*/
+'jseval': Sk.builtin.jseval,
+'jsmillis': Sk.builtin.jsmillis,
+'long_div_mode': Sk.builtin.lng.longDivideMode
 };
 goog.exportSymbol("Sk.builtins", Sk.builtins);

@@ -45,6 +45,7 @@ Files = [
         'src/str.js',
         'src/tuple.js',
         'src/dict.js',
+        'src/biginteger.js',
         'src/long.js',
         'src/int.js',
         'src/float.js',
