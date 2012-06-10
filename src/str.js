@@ -462,7 +462,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             else if (n instanceof Sk.builtin.lng)
             {
                 r = n.str$(base, false);
-                neg = n.size$ < 0;
+                neg = n.compare(0) < 0;
             }
 
             goog.asserts.assert(r !== undefined, "unhandled number format");
@@ -559,7 +559,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
                 if (typeof value === "number")
                     return String.fromCharCode(value);
                 else if (value instanceof Sk.builtin.lng)
-                    return String.fromCharCode(value.digit$[0] & 255);
+                    return String.fromCharCode(value.str$(10,false)[0]);
                 else if (value.constructor === Sk.builtin.str)
                     return value.v.substr(0, 1);
                 else
