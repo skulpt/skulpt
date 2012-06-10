@@ -329,7 +329,7 @@ def dist():
     if not os.path.exists("dist"): os.mkdir("dist")
 
 
-    if sys.argv[2] == '-u':
+    if len(sys.argv) > 2 and sys.argv[2] == '-u':
         print ". Writing combined version..."
         combined = ''
         linemap = open("dist/linemap.txt", "w")
