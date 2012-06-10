@@ -59,6 +59,7 @@ if (! TurtleGraphics) {
         this.renderCounter = 1;
         this.clearPoint = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
+		this.fadeOnExit = true;	//	This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
     }
 
     TurtleCanvas.prototype.setup = function(width, height) {
@@ -149,6 +150,8 @@ if (! TurtleGraphics) {
     }
 
     TurtleCanvas.prototype.setCounter = function(s) {
+		if (!s || s <= 0)	//	Don't let this be less than 1
+			s = 1;
         this.renderCounter = s;
     }
 
@@ -208,7 +211,8 @@ if (! TurtleGraphics) {
         var theCanvas = this;
         $(this.canvas).click(function() {
             if (! theCanvas.isAnimating()) {
-                $("#"+canvas_id).fadeOut();
+				if (Sk.tg.fadeOnExit)	//	Let's this be configurable
+                	$("#"+canvas_id).fadeOut();
                 $("#"+canvas_id).unbind('click');
                 Sk.tg.canvasInit = false;
                 delete Sk.tg.canvasLib[canvas_id];
@@ -219,6 +223,17 @@ if (! TurtleGraphics) {
     TurtleCanvas.prototype.turtles = function() {
         return TurtleGraphics.turtleList;
     }
+
+	TurtleCanvas.prototype.tracer = function(t, d) {	//	New version NOT attached to a turtle (as per real turtle)
+        this.setCounter(t);
+		if (t == 0) {
+			for (var i in this.turtleList)
+				this.turtleList[i].animate = false;
+			this.cancelAnimation();
+		}
+		if (d !== undefined)
+			this.setDelay(d);
+	}
 
     // check if all turtles are done
     allDone = function() {
@@ -315,12 +330,13 @@ if (! TurtleGraphics) {
                             fillStyle = col;
                         }
                         else if (oper[0] == "CI") {  // Circle
-                            beginPath();
-                            arc(oper[1], oper[2], Math.abs(oper[3]), 0, oper[4], (oper[3] > 0));
+                            if (!filling)
+								beginPath();
+                            arc(oper[1], oper[2], oper[3], oper[4], oper[5], oper[6]);
+                            stroke();
                             if (! filling) {
                                 closePath();
                             }
-                            stroke();
                         }
                         else if (oper[0] == "WT") { // write
                             if (font)
@@ -656,6 +672,16 @@ if (! TurtleGraphics) {
         this.forward(-d);
     }
 
+//	This is an internal function that sets the position without doing any drawing
+    Turtle.prototype.teleport_to = function(nx, ny) {
+        if (nx instanceof Vector)
+            var newposition = nx;
+        else
+            var newposition = new Vector([nx,ny,0]);
+        this.context.moveTo(newposition[0], newposition[1]);
+		this.position = newposition;
+	}
+
     Turtle.prototype.goto = function(nx, ny) {
         if (nx instanceof Vector)
             var newposition = nx;
@@ -703,7 +729,7 @@ if (! TurtleGraphics) {
         if (s > 0 && !this.animate) {
             this.animate = true;
             this.turtleCanvas.setSpeedDelay(s)
-        } if (s == 0 && !this.animate) {
+        } else if (s == 0 && !this.animate) {
         	this.turtleCanvas.setSpeedDelay(s)
         } else {
 //          this.animate = false;
@@ -719,8 +745,14 @@ if (! TurtleGraphics) {
         }
     }
 
-    Turtle.prototype.tracer = function(t) {
+    Turtle.prototype.tracer = function(t, d) {
         this.turtleCanvas.setCounter(t);
+		if (t == 0) {
+			this.animate=false;
+			this.turtleCanvas.cancelAnimation();
+		}
+		if (d !== undefined)
+			this.turtleCanvas.setDelay(d);
     }
 
     Turtle.prototype.getRenderCounter = function() {
@@ -814,23 +846,112 @@ if (! TurtleGraphics) {
 
     }
 
-    // Todo:  fix up the turtle position and heading for a partial circle....
-    //        this may be just as easy to do using my own circle drawing
-    //        function rather than the builtin arc...
-    Turtle.prototype.circle = function(radius, extent) {
-        var cx = this.position[0] - Math.abs(radius);
-        var cy = this.position[1];
-        var endAngle;
-        if (extent)
-            endAngle = extent * Degree2Rad;
-        else
-            endAngle = 360 * Degree2Rad;
-        if (! this.animate) {
-            this.context.arc(cx, cy, Math.abs(radius), 0, endAngle, (radius > 0));
-            this.context.stroke();
+    Turtle.prototype.circle = function(radius, extent) {	//	RNLc
+		if (this.animate) {
+			var arcLen = Math.abs(radius * Math.PI * 2.0  * extent / 360);
+			var segLen = this.turtleCanvas.getSegmentLength();
+			if (arcLen <= segLen)
+				this.arc(radius,extent);
+			else {
+				//	Break the arc into segments for animation
+				var extentPart = segLen;
+				if (extent < 0)
+					extentPart = -extentPart;
+				var extentLeft = extent;
+				while (Math.abs(extentLeft) > segLen) {
+					this.arc(radius, extentPart);
+					extentLeft = extentLeft - extentPart;
+				}
+				if (Math.abs(extentLeft) > 0.01)
+					this.arc(radius, extentLeft);
+			}
+		} else {
+			this.arc(radius,extent);
+		}
+	}
+	
+    Turtle.prototype.arc = function(radius, extent) {	//	RNLc
+		//	Figure out where the turtle is and which way it's facing
+		var turtleHeading = this.get_heading()
+		var tx = this.position[0]
+		var ty = this.position[1]
+
+		//	Figure out the circle center
+		var cx = tx + (radius * Math.cos((turtleHeading + 90) * Degree2Rad));
+		var cy = ty + (radius * Math.sin((turtleHeading + 90) * Degree2Rad));
+
+		//	Canvas arc angles go CLOCKWISE, not COUNTERCLOCKWISE like Turtle
+
+		//	Figure out our arc angles
+		var startAngleDeg;
+		if (radius >= 0)
+			startAngleDeg = turtleHeading - 90;
+		else
+			startAngleDeg = turtleHeading + 90;
+
+		var endAngleDeg;
+        if (extent) {
+			if (radius >= 0)
+	            endAngleDeg = startAngleDeg + extent;
+			else
+	            endAngleDeg = startAngleDeg - extent;
         } else {
-            this.addDrawingEvent(["CI", cx, cy, radius, endAngle]);
+			if (radius >= 0)
+	            endAngleDeg = startAngleDeg + 360;
+			else
+				endAngleDeg = startAngleDeg - 360;
+		}
+
+		//	Canvas angles are opposite
+		startAngleDeg = 360 - startAngleDeg
+		endAngleDeg   = 360 - endAngleDeg
+
+		//	Becuase the y axis has been flipped in HTML5 Canvas with a tanslation, we need to adjust the angles
+		startAngleDeg = -startAngleDeg
+		endAngleDeg   = -endAngleDeg
+
+		//	Convert to radians
+		var startAngle = startAngleDeg * Degree2Rad;
+		var endAngle   = endAngleDeg   * Degree2Rad;
+
+
+		//	Do the drawing
+        if (! this.animate) {
+			if (!this.filling)
+				this.context.beginPath();
+            this.context.arc(cx, cy, Math.abs(radius), startAngle, endAngle, (radius * extent <= 0));
+            this.context.stroke();
+			if (!this.filling)
+				this.context.closePath();
+        } else {
+            this.addDrawingEvent(["CI", cx, cy, Math.abs(radius), startAngle, endAngle, (radius * extent <= 0)]);
         }
+
+		//	Move the turtle only if we have to
+		if (extent && (extent % 360) != 0) {
+			var turtleArc;
+			if (radius >= 0)
+				turtleArc = extent;
+			else 
+				turtleArc = -extent;
+			var newTurtleHeading = (turtleHeading + turtleArc) % 360;
+			if (newTurtleHeading < 0)
+				newTurtleHeading = newTurtleHeading + 360;
+
+			var nx = cx + (radius * Math.cos((newTurtleHeading - 90) * Degree2Rad));
+			var ny = cy + (radius * Math.sin((newTurtleHeading - 90) * Degree2Rad));	//	y coord is inverted in turtle
+
+			//	Move it internally
+			this.set_heading(newTurtleHeading);
+			this.teleport_to(nx,ny);
+
+			//	If we're animating the turtle, move it on the screen
+			if (this.animate) {
+				this.addDrawingEvent(["TT", this.heading]);
+				this.addDrawingEvent(["MT", this.position[0], this.position[1]]);
+			}
+		}
+
     }
 
     Turtle.prototype.write = function(theText, move, align, font) {
@@ -1299,9 +1420,13 @@ var $builtinmodule = function(name) {
             self.theTurtle.speed(s,t);
         });
 
-        $loc.tracer = new Sk.builtin.func(function(self, t) {
-            self.theTurtle.tracer(t);
+        $loc.tracer = new Sk.builtin.func(function(self, t, d) {
+            self.theTurtle.tracer(t, d);
         });
+
+		$loc.update = new Sk.builtin.func(function(self) {
+			//	Dummy function to emulate update... when not animating, we don't save the drawing operations, so this is pointless for us
+		});
 
         // todo:  stamp, clearstamp, clearstamps, undo, speed
 
@@ -1554,6 +1679,15 @@ var $builtinmodule = function(name) {
     }
 
     mod.Screen = Sk.misceval.buildClass(mod, screen, 'Screen', []);
+
+    mod.tracer = new Sk.builtin.func(function(t, d) {
+		for (var i in Sk.tg.canvasLib)
+			Sk.tg.canvasLib[i].tracer(t, d);
+    });
+
+	mod.update = new Sk.builtin.func(function(self) {
+		//	Dummy function to emulate update... when not animating, we don't save the drawing operations, so this is pointless for us
+	});
 
 
     return mod
