@@ -854,11 +854,9 @@ if (! TurtleGraphics) {
 				this.arc(radius,extent);
 			else {
 				//	Break the arc into segments for animation
-				var extentPart = segLen;
-				if (extent < 0)
-					extentPart = -extentPart;
+				var extentPart = (segLen / arcLen) * extent;
 				var extentLeft = extent;
-				while (Math.abs(extentLeft) > segLen) {
+				while (Math.abs(extentLeft) > Math.abs(extentPart)) {
 					this.arc(radius, extentPart);
 					extentLeft = extentLeft - extentPart;
 				}
