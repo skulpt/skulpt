@@ -257,74 +257,74 @@ Sk.builtin.lng.prototype.compare = function(other)
 
 Sk.builtin.lng.prototype.__eq__ = function(me, other) {
 	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger) == 0;
+		return me.biginteger.compare(other.biginteger) == 0;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other) == 0;
+		return me.biginteger.compare(other) == 0;
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other)) == 0;
+	return me.biginteger.compare(new Sk.builtin.biginteger(other)) == 0;
 };
 
 Sk.builtin.lng.prototype.__ne__ = function(me, other) {
 	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger) != 0;
+		return me.biginteger.compare(other.biginteger) != 0;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other) != 0;
+		return me.biginteger.compare(other) != 0;
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other)) != 0;
+	return me.biginteger.compare(new Sk.builtin.biginteger(other)) != 0;
 };
 
 Sk.builtin.lng.prototype.__lt__ = function(me, other) {
 	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger) < 0;
+		return me.biginteger.compare(other.biginteger) < 0;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other) < 0;
+		return me.biginteger.compare(other) < 0;
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other)) < 0;
+	return me.biginteger.compare(new Sk.builtin.biginteger(other)) < 0;
 };
 
 Sk.builtin.lng.prototype.__le__ = function(me, other) {
 	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger) <= 0;
+		return me.biginteger.compare(other.biginteger) <= 0;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other) <= 0;
+		return me.biginteger.compare(other) <= 0;
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other)) <= 0;
+	return me.biginteger.compare(new Sk.builtin.biginteger(other)) <= 0;
 };
 
 Sk.builtin.lng.prototype.__gt__ = function(me, other) {
 	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger) > 0;
+		return me.biginteger.compare(other.biginteger) > 0;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other) > 0;
+		return me.biginteger.compare(other) > 0;
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other)) > 0;
+	return me.biginteger.compare(new Sk.builtin.biginteger(other)) > 0;
 };
 
 Sk.builtin.lng.prototype.__ge__ = function(me, other) {
 	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger) >= 0;
+		return me.biginteger.compare(other.biginteger) >= 0;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other) >= 0;
+		return me.biginteger.compare(other) >= 0;
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other)) >= 0;
+	return me.biginteger.compare(new Sk.builtin.biginteger(other)) >= 0;
 };
 
 Sk.builtin.lng.prototype['$r'] = function()
