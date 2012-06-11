@@ -14,6 +14,16 @@ var $builtinmodule = function(name)
 
     sys.path = Sk.realsyspath;
 
+    sys.getExecutionLimit = new Sk.builtin.func(function() {
+        return Sk.execLimit
+    });
+
+    sys.setExecutionLimit = new Sk.builtin.func(function(t) {
+        if (t !==  undefined) {
+            Sk.execLimit = t
+        }
+    });
+
     sys.debug = new Sk.builtin.func(function() {
         debugger;
     });
