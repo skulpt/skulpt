@@ -848,6 +848,8 @@ if (! TurtleGraphics) {
 
     Turtle.prototype.circle = function(radius, extent) {	//	RNLc
 		if (this.animate) {
+			if (extent === undefined)
+				extent = 360;
 			var arcLen = Math.abs(radius * Math.PI * 2.0  * extent / 360);
 			var segLen = this.turtleCanvas.getSegmentLength();
 			if (arcLen <= segLen)
