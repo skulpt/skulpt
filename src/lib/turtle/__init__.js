@@ -333,6 +333,8 @@ if (! TurtleGraphics) {
                             if (!filling)
 								beginPath();
                             arc(oper[1], oper[2], oper[3], oper[4], oper[5], oper[6]);
+                            currentPos = new Vector(oper[1]+Math.cos(oper[5])*oper[3],
+                                oper[2]+Math.sin(oper[5])*oper[3],0);
                             stroke();
                             if (! filling) {
                                 closePath();
@@ -847,6 +849,9 @@ if (! TurtleGraphics) {
     }
 
     Turtle.prototype.circle = function(radius, extent) {	//	RNLc
+        if (extent === undefined) {
+            extent = 360
+        }
 		if (this.animate) {
 			var arcLen = Math.abs(radius * Math.PI * 2.0  * extent / 360);
 			var segLen = this.turtleCanvas.getSegmentLength();
@@ -946,7 +951,7 @@ if (! TurtleGraphics) {
 			//	If we're animating the turtle, move it on the screen
 			if (this.animate) {
 				this.addDrawingEvent(["TT", this.heading]);
-				this.addDrawingEvent(["MT", this.position[0], this.position[1]]);
+//				this.addDrawingEvent(["MT", this.position[0], this.position[1]]);
 			}
 		}
 
