@@ -15,7 +15,13 @@ Sk.builtin.float_ = function(x)
             throw new Sk.builtin.ValueError("float: Argument: " + x.v + " is not number");
         }
     }
-    return x;
+
+    if (typeof x === "number")
+    {
+        return x;   
+    }
+
+    throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
 Sk.builtin.float_.prototype.tp$name = "float";
