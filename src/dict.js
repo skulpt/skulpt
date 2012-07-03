@@ -8,9 +8,32 @@ Sk.builtin.dict = function dict(L)
 
     this.size = 0;
 
-    for (var i = 0; i < L.length; i += 2)
+    if (Object.prototype.toString.apply(L) === '[object Array]')
     {
-        this.mp$ass_subscript(L[i], L[i+1]);
+        // Handle dictionary literals
+        for (var i = 0; i < L.length; i += 2)
+        {
+            this.mp$ass_subscript(L[i], L[i+1]);
+        }
+    }
+    else if (L.tp$iter)
+    {
+        // Handle calls to "dict(...)" from Python code
+        for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        {
+            if (i.mp$subscript)
+            {
+                this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
+            }
+            else
+            {
+                throw new Sk.builtin.TypeError("element " + this.size + " is not a sequence");    
+            }
+        }
+    }
+    else
+    {
+        throw new Sk.builtin.TypeError("object is not iterable");
     }
 
     this.__class__ = Sk.builtin.dict;
