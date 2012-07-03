@@ -1,5 +1,10 @@
 Sk.builtin.float_ = function(x)
 {
+    if (x === undefined)
+    {
+        return 0.0;
+    }
+
     if (x instanceof Sk.builtin.str)
     {
         if (x.v === "inf") return Infinity;

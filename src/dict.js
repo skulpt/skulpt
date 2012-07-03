@@ -6,6 +6,8 @@ Sk.builtin.dict = function dict(L)
 {
     if (!(this instanceof Sk.builtin.dict)) return new Sk.builtin.dict(L);
 
+    L = L || [];
+
     this.size = 0;
 
     if (Object.prototype.toString.apply(L) === '[object Array]')

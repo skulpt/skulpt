@@ -7,7 +7,7 @@ var interned = {};
  */
 Sk.builtin.str = function(x)
 {
-    if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
+    if (x === undefined) x = "";
     if (x instanceof Sk.builtin.str && x !== Sk.builtin.str.prototype.ob$type) return x;
     if (!(this instanceof Sk.builtin.str)) return new Sk.builtin.str(x);
 
