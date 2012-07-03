@@ -7,7 +7,10 @@ Sk.builtin.list = function(L)
 {
     if (!(this instanceof Sk.builtin.list)) return new Sk.builtin.list(L);
 
-    L = L || [];
+    if (L === undefined)
+    {
+        L = [];
+    }
 
     if (Object.prototype.toString.apply(L) === '[object Array]')
     {

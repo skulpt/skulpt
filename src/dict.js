@@ -6,7 +6,10 @@ Sk.builtin.dict = function dict(L)
 {
     if (!(this instanceof Sk.builtin.dict)) return new Sk.builtin.dict(L);
 
-    L = L || [];
+    if (L === undefined)
+    {
+        L = [];
+    }
 
     this.size = 0;
 
