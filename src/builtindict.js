@@ -7,6 +7,7 @@ Sk.builtins = {
 'min': Sk.builtin.min,
 'max': Sk.builtin.max,
 'sum': Sk.builtin.sum,
+'zip': Sk.builtin.zip,
 'abs': Sk.builtin.abs,
 'fabs': Sk.builtin.abs,	//	Added by RNL
 'ord': Sk.builtin.ord,

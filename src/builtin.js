@@ -71,6 +71,50 @@ Sk.builtin.sum = function sum(iter,start)
     return tot;
 };
 
+Sk.builtin.zip = function zip()
+{
+    arguments = arguments || [];
+    arguments = Sk.misceval.arrayFromArguments(arguments);
+    if (arguments.length === 0)
+    {
+        return new Sk.builtin.list([]);        
+    }
+
+    var iters = [];
+    for (var i = 0; i < arguments.length; i++)
+    {
+        if (arguments[i].tp$iter)
+        {
+            iters.push(arguments[i].tp$iter());
+        }
+        else
+        {
+            throw "TypeError: argument " + i + " must support iteration";    
+        }
+    }
+    var res = [];
+    var done = false;
+    while (!done)
+    {
+        var tup = [];
+        for (i = 0; i < arguments.length; i++)
+        {
+            var el = iters[i].tp$iternext();
+            if (el === undefined)
+            {
+                done = true;
+                break;
+            }
+            tup.push(el);
+        }
+        if (!done)
+        {
+            res.push(new Sk.builtin.tuple(tup));    
+        }
+    }
+    return new Sk.builtin.list(res);
+}
+
 Sk.builtin.abs = function abs(x)
 {
     return Math.abs(x);
