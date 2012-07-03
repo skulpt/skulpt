@@ -53,21 +53,25 @@ Sk.builtin.max = function max()
 Sk.builtin.sum = function sum(iter,start)
 {
     var tot = 0;
-    if (iter instanceof Sk.builtin.list) {
-        iter = iter.v;
-    } else {
-        throw "TypeError: an iterable is required";   
-    }
+    var it, i;
     if (start === undefined ) {
         start = 0;
     }
-    for (var i = start; i < iter.length; ++i) {
-        if (typeof iter[i] !== "number")
-        {
-            throw "TypeError: an number is required";
-        }
-        tot = tot + iter[i];
+
+    tot += start;
+
+    if (!iter.tp$iter) {
+        throw "TypeError: object is not iterable";
     }
+
+    it = iter.tp$iter();
+    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (typeof i !== "number") {
+            throw "TypeError: a number is required";
+        }
+        tot += i;
+    }
+
     return tot;
 };
 
