@@ -4,17 +4,32 @@
  */
 Sk.builtin.tuple = function(L)
 {
-    if (arguments.length > 1) {
-	throw new TypeError("tuple must be created from a sequence");
-    }
-    L = L || [];
-    if (L instanceof Sk.builtin.tuple) return;
     if (!(this instanceof Sk.builtin.tuple)) return new Sk.builtin.tuple(L);
+
+    if (L === undefined)
+    {
+        L = [];
+    }
+
     if (Object.prototype.toString.apply(L) === '[object Array]')
+    {
         this.v = L;
+    }
     else
-        this.v = L.v;
+    {
+        if (L.tp$iter)
+        {
+            this.v = [];
+            for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+                this.v.push(i);
+        }
+        else
+            throw new Sk.builtin.ValueError("expecting Array or iterable");        
+    }
+
     this.__class__ = Sk.builtin.tuple;
+
+    this["v"] = this.v;
     return this;
 };
 
