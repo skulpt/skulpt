@@ -126,6 +126,68 @@ Sk.builtin.dict.prototype.mp$length = function() { return this.size; };
 
 Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
+Sk.builtin.dict.prototype.tp$richcompare = function(other, op)
+{
+    // if the comparison allows for equality then short-circuit it here
+    if (this === other && Sk.misceval.opAllowsEquality(op))
+        return true;
+
+    // Only support Eq and NotEq comparisons
+    switch (op)
+    {
+        case 'Lt': return undefined;
+        case 'LtE': return undefined;
+        case 'Eq': break;
+        case 'NotEq': break;
+        case 'Gt': return undefined;
+        case 'GtE': return undefined;
+        default:
+            goog.asserts.fail();
+    }
+
+    if (!(other instanceof Sk.builtin.dict)) {
+        if (op === 'Eq') {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    var thisl = this.size;
+    var otherl = other.size;
+
+    if (thisl !== otherl) {
+        if (op === 'Eq') {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    for (var iter = this.tp$iter(), k = iter.tp$iternext();
+            k !== undefined;
+            k = iter.tp$iternext())
+    {
+        var v = this.mp$subscript(k);
+        var otherv = other.mp$subscript(k);
+
+        if (!Sk.misceval.richCompareBool(v, otherv, 'Eq'))
+        {
+            if (op === 'Eq') {
+                return false;
+            } else {
+                return true;
+            }            
+        }
+    }
+
+    if (op === 'Eq') {
+        return true;
+    } else {
+        return false;
+    }                
+}
+
 Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 {
     if (d === undefined) {
