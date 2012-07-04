@@ -235,5 +235,15 @@ var $builtinmodule = function(name)
         high = high - 1;
         return Math.round(myGenerator.genrand_res53()*(high-low))+low;
     });
+
+    mod.choice = new Sk.builtin.func(function(seq) {
+        if (seq.sq$length !== undefined) {
+            var r = Math.round(myGenerator.genrand_res53()*(seq.sq$length()-1));
+            return seq.mp$subscript(r);
+        } else {
+            throw new TypeError("object has no length");
+        }
+    });
+
     return mod;
 }
