@@ -49,8 +49,20 @@ var $builtinmodule = function(name)
 	return Math.sqrt(x);
     });
 
-    mod.log = new Sk.builtin.func(function(x) {
-	return Math.log(x);
+    mod.trunc = new Sk.builtin.func(function(x) {
+        return x | 0;
+    });
+
+    mod.log = new Sk.builtin.func(function(x, base) {
+        if (base === undefined) {
+	    return Math.log(x);            
+        } else {
+            return Math.log(x) / Math.log(base);
+        }
+    });
+
+    mod.log10 = new Sk.builtin.func(function(x) {
+        return Math.log(x) / Math.log(10);
     });
 
     mod.exp = new Sk.builtin.func(function(x) {
