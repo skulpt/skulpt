@@ -28,6 +28,8 @@ Sk.builtin.list = function(L)
             throw new Sk.builtin.ValueError("expecting Array or iterable");
     }
 
+    this.__class__ = Sk.builtin.list;
+
     this["v"] = this.v;
     return this;
 };
