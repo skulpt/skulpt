@@ -245,7 +245,21 @@ Sk.builtin.str.prototype['upper'] = new Sk.builtin.func(function(self)
 
 Sk.builtin.str.prototype['capitalize'] = new Sk.builtin.func(function(self)
 {
-    return new Sk.builtin.str(self.v.charAt(0).toUpperCase()+self.v.substring(1));
+    var orig = self.v;
+    var cap;
+    var i;
+
+    if (orig.length === 0) {
+        return new Sk.builtin.str("");
+    };
+
+    cap = orig.charAt(0).toUpperCase();
+
+    for (i = 1; i < orig.length; i++) {
+        cap += orig.charAt(i).toLowerCase();
+    };
+        
+    return new Sk.builtin.str(cap);
 });
 
 Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
