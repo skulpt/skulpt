@@ -19,7 +19,7 @@ Sk.builtin.range = function(start, stop, step)
     };
 
     if (step === 0) {
-        throw new Sk.builtin.ValueError("step must be non-zero");
+        throw new Sk.builtin.ValueError("range() step argument must not be zero");
     };
 
     if (step > 0) {
