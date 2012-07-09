@@ -8,8 +8,30 @@ Sk.builtin = {};
 Sk.builtin.range = function(start, stop, step)
 {
     var ret = [];
-    var s = new Sk.builtin.slice(start, stop, step);
-    s.sssiter$(0, function(i) { ret.push(i); });
+    var i;
+
+    if ((stop === undefined) && (step === undefined)) {
+        stop = start;
+        start = 0;
+        step = 1;
+    } else if (step === undefined) {
+        step = 1;
+    };
+
+    if (step === 0) {
+        throw new Sk.builtin.ValueError("range() step argument must not be zero");
+    };
+
+    if (step > 0) {
+        for (i=start; i<stop; i+=step) {
+            ret.push(i);
+        };
+    } else {
+        for (i=start; i>stop; i+=step) {
+            ret.push(i);
+        };        
+    };
+
     return new Sk.builtin.list(ret);
 };
 
