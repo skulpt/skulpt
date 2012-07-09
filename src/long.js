@@ -15,7 +15,7 @@ Sk.builtin.lng = function(x)	/* long is a reserved word */
 	else if (x instanceof String)
 		return Sk.longFromStr(x);
 	else
-		this.biginteger = new Sk.builtin.biginteger(x | 0);
+		this.biginteger = new Sk.builtin.biginteger(x);
 
     return this;
 };
