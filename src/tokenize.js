@@ -273,6 +273,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
         {
             throw new Sk.builtin.TokenError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
         }
+        this.endprog.lastIndex = 0;
         endmatch = this.endprog.test(line);
         if (endmatch)
         {
@@ -408,6 +409,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             else if (triple_quoted.hasOwnProperty(token))
             {
                 this.endprog = endprogs[token];
+                this.endprog.lastIndex = 0;
                 endmatch = this.endprog.test(line.substring(pos));
                 if (endmatch)
                 {
