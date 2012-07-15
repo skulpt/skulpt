@@ -1,5 +1,7 @@
-var py$checkArgs = function (name, nargs, minargs, maxargs) {
-    if (maxargs === undefined) maxargs = Infinity;
+var py$checkArgs = function (name, args, minargs, maxargs, kwargs) {
+    var nargs = args.length;
+    if (maxargs === undefined) { maxargs = Infinity; }
+    if (kwargs) { nargs -= 1; }
     if ((nargs < minargs) || (nargs > maxargs)) {
         if (minargs === maxargs) {
             throw new TypeError(name + "() takes exactly " + minargs + " arguments");
