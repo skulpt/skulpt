@@ -1112,6 +1112,18 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     }
 
     //
+    // make sure correct number of arguments were passed
+    //
+    var minargs = args.args.length - defaults.length;
+    var maxargs = vararg ? Infinity : args.args.length;
+    var argstr = "arguments.length";
+    if (kwarg) {
+        argstr = "arguments.length - 1";
+    };
+    this.u.varDeclsCode += "py$checkArgs(\"" + coname.v + 
+        "\", " + argstr + ", " + minargs + ", " + maxargs + ");";
+
+    //
     // initialize default arguments. we store the values of the defaults to
     // this code object as .$defaults just below after we exit this scope.
     //

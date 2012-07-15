@@ -1,3 +1,16 @@
+var py$checkArgs = function (name, nargs, minargs, maxargs) {
+    if (maxargs === undefined) maxargs = Infinity;
+    if ((nargs < minargs) || (nargs > maxargs)) {
+        if (minargs === maxargs) {
+            throw new TypeError(name + "() takes exactly " + minargs + " arguments");
+        } else if (nargs < minargs) {
+            throw new TypeError(name + "() takes at least " + minargs + " arguments");
+        } else {
+            throw new TypeError(name + "() takes at most " + maxargs + " arguments");
+        }
+    };
+};
+
 /**
  * @constructor
  *
