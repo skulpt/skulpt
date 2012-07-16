@@ -1,17 +1,33 @@
-var py$checkArgs = function (name, args, minargs, maxargs, kwargs) {
+/**
+ * Check arguments to Python functions to ensure the correct number of
+ * arguments are passed.
+ * 
+ * @param string name the name of the function
+ * @param arguments args the args passed to the function
+ * @param number minargs the minimum number of allowable arguments
+ * @param number maxargs optional maximum number of allowable
+ * arguments (default: Infinity)
+ * @param boolean kwargs optional true if kwargs, false otherwise
+ * (default: false)
+ */
+Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs) {
     var nargs = args.length;
+    var msg = "";
     if (maxargs === undefined) { maxargs = Infinity; }
     if (kwargs) { nargs -= 1; }
     if ((nargs < minargs) || (nargs > maxargs)) {
         if (minargs === maxargs) {
-            throw new TypeError(name + "() takes exactly " + minargs + " arguments");
+            msg = name + "() takes exactly " + minargs + " arguments";
         } else if (nargs < minargs) {
-            throw new TypeError(name + "() takes at least " + minargs + " arguments");
+            msg = name + "() takes at least " + minargs + " arguments";
         } else {
-            throw new TypeError(name + "() takes at most " + maxargs + " arguments");
+            msg = name + "() takes at most " + maxargs + " arguments";
         }
+        msg += " (" + nargs + " given)";
+        throw new TypeError(msg);        
     };
 };
+goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
  * @constructor

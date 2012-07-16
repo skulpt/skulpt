@@ -1117,7 +1117,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     var minargs = args.args.length - defaults.length;
     var maxargs = vararg ? Infinity : args.args.length;
     var kw = kwarg ? true : false;
-    this.u.varDeclsCode += "py$checkArgs(\"" + coname.v + 
+    this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v + 
         "\", arguments, " + minargs + ", " + maxargs + ", " + kw + ");";
 
     //
