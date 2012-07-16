@@ -1114,11 +1114,16 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     // make sure correct number of arguments were passed
     //
-    var minargs = args.args.length - defaults.length;
-    var maxargs = vararg ? Infinity : args.args.length;
-    var kw = kwarg ? true : false;
-    this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v + 
-        "\", arguments, " + minargs + ", " + maxargs + ", " + kw + ");";
+    if (isGenerator) {
+        // TODO
+    } else {        
+        var minargs = args ? args.args.length - defaults.length : 0;
+        var maxargs = vararg ? Infinity : args ? args.args.length : 0;
+        var kw = kwarg ? true : false;
+        this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v + 
+            "\", arguments, " + minargs + ", " + maxargs + ", " + kw + 
+            ", " + hasFree + ");";
+    }
 
     //
     // initialize default arguments. we store the values of the defaults to

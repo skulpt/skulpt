@@ -2,19 +2,29 @@
  * Check arguments to Python functions to ensure the correct number of
  * arguments are passed.
  * 
- * @param string name the name of the function
- * @param arguments args the args passed to the function
- * @param number minargs the minimum number of allowable arguments
- * @param number maxargs optional maximum number of allowable
+ * @param {Object} name the name of the function
+ * @param {Object} args the args passed to the function
+ * @param {Number} minargs the minimum number of allowable arguments
+ * @param {Number=} maxargs optional maximum number of allowable
  * arguments (default: Infinity)
- * @param boolean kwargs optional true if kwargs, false otherwise
+ * @param {Boolean=} kwargs optional true if kwargs, false otherwise
+ * (default: false)
+ * @param {Boolean=} free optional true if free vars, false otherwise
  * (default: false)
  */
-Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs) {
+Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
     var nargs = args.length;
     var msg = "";
+    // print("pyCA: ", name);
+    // for (a in args) {
+    //     print(args[a]);
+    //     for (prop in args[a]) {
+    //         print(prop);
+    //     };
+    // }
     if (maxargs === undefined) { maxargs = Infinity; }
     if (kwargs) { nargs -= 1; }
+    if (free) { nargs -= 1; }
     if ((nargs < minargs) || (nargs > maxargs)) {
         if (minargs === maxargs) {
             msg = name + "() takes exactly " + minargs + " arguments";
