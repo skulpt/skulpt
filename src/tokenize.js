@@ -380,6 +380,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             pos += 1;
             capos = line.charAt(pos);
         }
+        pseudoprog.lastIndex = 0;
         var pseudomatch = pseudoprog.exec(line.substring(pos));
         if (pseudomatch)
         {
