@@ -15,13 +15,7 @@
 Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
     var nargs = args.length;
     var msg = "";
-    // print("pyCA: ", name);
-    // for (a in args) {
-    //     print(args[a]);
-    //     for (prop in args[a]) {
-    //         print(prop);
-    //     };
-    // }
+
     if (maxargs === undefined) { maxargs = Infinity; }
     if (kwargs) { nargs -= 1; }
     if (free) { nargs -= 1; }

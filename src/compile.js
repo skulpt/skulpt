@@ -1065,7 +1065,17 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     var funcArgs = [];
     if (isGenerator)
+    {
+        if (kwarg)
+        {
+            throw new SyntaxError(coname.v + "(): keyword arguments in generators not supported");
+        }
+        if (vararg)
+        {
+            throw new SyntaxError(coname.v + "(): variable number of arguments in generators not supported");    
+        }
         funcArgs.push("$gen");
+    }
     else
     {
         if (kwarg)
@@ -1112,13 +1122,11 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     }
 
     //
-    // make sure correct number of arguments were passed
+    // make sure correct number of arguments were passed (generators handled below)
     //
-    if (isGenerator) {
-        // TODO
-    } else {        
+    if (!isGenerator) {
         var minargs = args ? args.args.length - defaults.length : 0;
-        var maxargs = vararg ? Infinity : args ? args.args.length : 0;
+        var maxargs = vararg ? Infinity : (args ? args.args.length : 0);
         var kw = kwarg ? true : false;
         this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v + 
             "\", arguments, " + minargs + ", " + maxargs + ", " + kw + 
@@ -1243,10 +1251,15 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
             frees += ",$free";
     }
     if (isGenerator)
+        // Keyword and variable arguments are not currently supported in generators.
+        // The call to pyCheckArgs assumes they can't be true.
         if (args && args.args.length > 0)
-            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");})");
+            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgs(\"", 
+                                     coname.v, "\",arguments,", args.args.length - defaults.length, ",", args.args.length, 
+                                     ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");})");
         else
-            return this._gr("gener", "(function(){return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");})");
+            return this._gr("gener", "(function(){Sk.builtin.pyCheckArgs(\"", coname.v, 
+                                     "\",arguments,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");})");
     else
         return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees ,")");
 };
