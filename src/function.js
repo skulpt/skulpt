@@ -34,6 +34,41 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
 goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
+ * Check type of argument to Python functions.
+ * 
+ * @param {Object} name the name of the argument
+ * @param {Object} exptype string of the expected type name
+ * @param {Boolean} check truthy if type check passes, falsy otherwise
+ */
+
+Sk.builtin.pyCheckType = function (name, exptype, check) {
+    if (!check) {
+        throw new Sk.builtin.TypeError(name + " must be a " + exptype);
+    };
+};
+goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
+
+Sk.builtin.checkSequence = function (arg) {
+    return !(arg.mp$subscript === undefined);
+};
+goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
+
+Sk.builtin.checkNumber = function (arg) {
+    return (typeof arg === "number");
+};
+goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
+
+Sk.builtin.checkString = function (arg) {
+    return (arg.__class__ == Sk.builtin.str);
+};
+goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
+
+Sk.builtin.checkFunction = function (arg) {
+    return (arg != null && arg.tp$call !== undefined);  
+};
+goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
+
+/**
  * @constructor
  *
  * @param {Function} code the javascript implementation of this function
