@@ -496,7 +496,10 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case Compare:
             return this.ccompare(e);
         case Call:
-            return this.ccall(e);
+            var result = this.ccall(e);
+            // After the function call, we've returned to this line
+            this.annotateSource(e);
+            return result;
         case Num:
             if (typeof e.n === "number")
                 return e.n;
