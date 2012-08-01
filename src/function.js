@@ -2,14 +2,14 @@
  * Check arguments to Python functions to ensure the correct number of
  * arguments are passed.
  * 
- * @param {Object} name the name of the function
+ * @param {string} name the name of the function
  * @param {Object} args the args passed to the function
- * @param {Number} minargs the minimum number of allowable arguments
- * @param {Number=} maxargs optional maximum number of allowable
+ * @param {number} minargs the minimum number of allowable arguments
+ * @param {number=} maxargs optional maximum number of allowable
  * arguments (default: Infinity)
- * @param {Boolean=} kwargs optional true if kwargs, false otherwise
+ * @param {boolean=} kwargs optional true if kwargs, false otherwise
  * (default: false)
- * @param {Boolean=} free optional true if free vars, false otherwise
+ * @param {boolean=} free optional true if free vars, false otherwise
  * (default: false)
  */
 Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
@@ -36,9 +36,9 @@ goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 /**
  * Check type of argument to Python functions.
  * 
- * @param {Object} name the name of the argument
- * @param {Object} exptype string of the expected type name
- * @param {Boolean} check truthy if type check passes, falsy otherwise
+ * @param {string} name the name of the argument
+ * @param {string} exptype string of the expected type name
+ * @param {boolean} check truthy if type check passes, falsy otherwise
  */
 
 Sk.builtin.pyCheckType = function (name, exptype, check) {
@@ -49,9 +49,14 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
 goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
-    return !(arg.mp$subscript === undefined);
+    return (arg != null && arg.mp$subscript !== undefined);
 };
 goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
+
+Sk.builtin.checkIterable = function (arg) {
+    return (arg != null && arg.tp$iter !== undefined);
+};
+goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkNumber = function (arg) {
     return (typeof arg === "number");

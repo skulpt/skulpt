@@ -10,6 +10,15 @@ Sk.builtin.range = function(start, stop, step)
     var ret = [];
     var i;
 
+    Sk.builtin.pyCheckArgs("range", arguments, 1, 3);
+    Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+    if (stop !== undefined) {
+        Sk.builtin.pyCheckType("stop", "number", Sk.builtin.checkNumber(stop));
+    }
+    if (step !== undefined) {
+        Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
+    }
+
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
         start = 0;
@@ -37,6 +46,8 @@ Sk.builtin.range = function(start, stop, step)
 
 Sk.builtin.len = function(item)
 {
+    Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
+
     if (item.sq$length)
         return item.sq$length();
     
@@ -48,7 +59,8 @@ Sk.builtin.len = function(item)
 
 Sk.builtin.min = function min()
 {
-    // todo; throw if no args
+    Sk.builtin.pyCheckArgs("min", arguments, 1);
+
     arguments = Sk.misceval.arrayFromArguments(arguments);
     var lowest = arguments[0];
     for (var i = 1; i < arguments.length; ++i)
@@ -61,7 +73,8 @@ Sk.builtin.min = function min()
 
 Sk.builtin.max = function max()
 {
-    // todo; throw if no args
+    Sk.builtin.pyCheckArgs("max", arguments, 1);
+
     arguments = Sk.misceval.arrayFromArguments(arguments);
     var highest = arguments[0];
     for (var i = 1; i < arguments.length; ++i)
@@ -76,6 +89,13 @@ Sk.builtin.sum = function sum(iter,start)
 {
     var tot = 0;
     var it, i;
+
+    Sk.builtin.pyCheckArgs("sum", arguments, 1, 2);
+    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
+    if (start !== undefined) {        
+        Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+    };
+
     if (start === undefined ) {
         start = 0;
     }
@@ -143,11 +163,16 @@ Sk.builtin.zip = function zip()
 
 Sk.builtin.abs = function abs(x)
 {
+    Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
+    Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
     return Math.abs(x);
 };
 
 Sk.builtin.ord = function ord(x)
 {
+    Sk.builtin.pyCheckArgs("ord", arguments, 1, 1);
+
     if (x.constructor !== Sk.builtin.str || x.v.length !== 1)
     {
         throw "ord() expected string of length 1";
@@ -157,6 +182,8 @@ Sk.builtin.ord = function ord(x)
 
 Sk.builtin.chr = function chr(x)
 {
+    Sk.builtin.pyCheckArgs("chr", arguments, 1, 1);
+
     if (typeof x !== "number")
     {
         throw "TypeError: an integer is required";
@@ -166,6 +193,8 @@ Sk.builtin.chr = function chr(x)
 
 Sk.builtin.dir = function dir(x)
 {
+    Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
+
     var names = [];
     for (var k in x.constructor.prototype)
     {
@@ -189,6 +218,8 @@ Sk.builtin.dir.slotNameToRichName = function(k)
 
 Sk.builtin.repr = function repr(x)
 {
+    Sk.builtin.pyCheckArgs("repr", arguments, 1, 1);
+
     return Sk.misceval.objectRepr(x);
 };
 
@@ -201,6 +232,8 @@ Sk.builtin.open = function open(filename, mode, bufsize)
 
 Sk.builtin.isinstance = function(obj, type)
 {
+    Sk.builtin.pyCheckArgs("isinstance", arguments, 2, 2);
+
     if (obj.ob$type === type) return true;
 
     if (type instanceof Sk.builtin.tuple)
@@ -232,6 +265,8 @@ Sk.builtin.isinstance = function(obj, type)
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
 {
+    Sk.builtin.pyCheckArgs("hash", arguments, 1, 1);
+
     if (value instanceof Object && value.tp$hash !== undefined)
     {
         if (value.$savedHash_) return value.$savedHash_;
@@ -255,6 +290,9 @@ Sk.builtin.hash = function hash(value)
 
 Sk.builtin.getattr = function(obj, name, default_)
 {
+    Sk.builtin.pyCheckArgs("getattr", arguments, 2, 3);
+    Sk.builtin.pyCheckType("name", "string", Sk.builtin.checkString(name));
+
     var ret = obj.tp$getattr(name.v);
     if (ret === undefined)
     {
