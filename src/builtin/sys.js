@@ -24,6 +24,10 @@ var $builtinmodule = function(name)
         }
     });
 
+    sys.resetTimeout = new Sk.builtin.func(function() {
+        Sk.execStart = new Date();
+    });
+
     sys.debug = new Sk.builtin.func(function() {
         debugger;
     });
