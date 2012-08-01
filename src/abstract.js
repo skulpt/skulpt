@@ -15,7 +15,7 @@ var typeName = function(v) {
     if (v === null) {
         vtypename = "NoneType";
     } else if (typeof v === "number") {
-        vtypename = "int";
+        vtypename = "number";
     } else if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
     } else {
