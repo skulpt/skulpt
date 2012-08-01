@@ -10,10 +10,27 @@ Sk.abstr = {};
 //
 //
 
+var typeName = function(v) {
+    var vtypename;
+    if (v === null) {
+        vtypename = "NoneType";
+    } else if (typeof v === "number") {
+        vtypename = "int";
+    } else if (v.tp$name !== undefined) {
+        vtypename = v.tp$name;
+    } else {
+        vtypename = "unknown";
+    };
+    return vtypename;
+};
+
 Sk.abstr.binop_type_error = function(v, w, name)
 {
+    var vtypename = typeName(v);
+    var wtypename = typeName(w);
+
     throw new TypeError("unsupported operand type(s) for " + name + ": '"
-            + v.tp$name + "' and '" + w.tp$name + "'");
+            + vtypename + "' and '" + wtypename + "'");
 };
 
 // this can't be a table for closure
@@ -21,6 +38,10 @@ Sk.abstr.binop_type_error = function(v, w, name)
 //        operators. (__xxx__ that I've defined in my own class)
 Sk.abstr.boNameToSlotFunc_ = function(obj, name)
 {
+    if (obj === null) {
+        return undefined;
+    };
+
     switch (name)
     {
         case "Add": return obj.nb$add ? obj.nb$add : obj['__add__'];
@@ -80,11 +101,11 @@ Sk.abstr.binary_op_ = function(v, w, opname)
         if (ret !== undefined) return ret;
     }
 
-    if (opname === "Add" && v.sq$concat)
+    if (opname === "Add" && v && v.sq$concat)
         return v.sq$concat(w);
-    else if (opname === "Mult" && v.sq$repeat)
+    else if (opname === "Mult" && v && v.sq$repeat)
         return Sk.abstr.sequenceRepeat(v.sq$repeat, v, w);
-    else if (opname === "Mult" && w.sq$repeat)
+    else if (opname === "Mult" && w && w.sq$repeat)
         return Sk.abstr.sequenceRepeat(w.sq$repeat, w, v);
 
     Sk.abstr.binop_type_error(v, w, opname);
@@ -132,6 +153,10 @@ Sk.abstr.binary_iop_ = function(v, w, opname)
 // result, or if either of the ops are already longs
 Sk.abstr.numOpAndPromote = function(a, b, opfn)
 {
+    if (a === null || b === null) {
+        return undefined;
+    };
+
     if (typeof a === "number" && typeof b === "number")
     {
         var ans = opfn(a, b);
