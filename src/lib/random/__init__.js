@@ -204,14 +204,9 @@ var $builtinmodule = function(name)
 
     var myGenerator = new MersenneTwister();
 
-    var checkArgs = function(expected, actual, func) {
-        if (actual != expected ) {
-            throw new Sk.builtin.TypeError(func + " takes exactly " + expected +
-                    " positional argument (" + actual + " given)")
-        }
-    }
-
     mod.seed = new Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("seed", arguments, 0, 1);
+
         if (arguments.length > 0)
             myGenerator = new MersenneTwister(x);
         else
@@ -219,15 +214,26 @@ var $builtinmodule = function(name)
     });
 
     mod.random = new Sk.builtin.func(function() {
+        Sk.builtin.pyCheckArgs("random", arguments, 0, 0);
+
 	return myGenerator.genrand_res53();
     });
 
     mod.randint = new Sk.builtin.func(function(low,high) {
-        checkArgs(2,arguments.length,"randint()")
+        Sk.builtin.pyCheckArgs("randint", arguments, 2, 2);
+        Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
+        Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
+
         return Math.round(myGenerator.genrand_res53()*(high-low))+low;
     });
 
     mod.randrange = new Sk.builtin.func(function(low,high) {
+        Sk.builtin.pyCheckArgs("randrange", arguments, 1, 2);
+        Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
+        if (high !== undefined) {
+            Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
+        };            
+
         if (high === undefined) {
             high = low;
             low = 0;
@@ -237,12 +243,35 @@ var $builtinmodule = function(name)
     });
 
     mod.choice = new Sk.builtin.func(function(seq) {
+        Sk.builtin.pyCheckArgs("choice", arguments, 1, 1);
+        Sk.builtin.pyCheckType("seq", "sequence", Sk.builtin.checkSequence(seq));
+
         if (seq.sq$length !== undefined) {
             var r = Math.round(myGenerator.genrand_res53()*(seq.sq$length()-1));
             return seq.mp$subscript(r);
         } else {
             throw new TypeError("object has no length");
         }
+    });
+
+    mod.shuffle = new Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("shuffle", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "sequence", Sk.builtin.checkSequence(x));
+
+        if (x.sq$length !== undefined) {
+            if (x.mp$ass_subscript !== undefined) {
+                for (var i = x.sq$length() - 2; i > 0; i -= 1) {
+                    var r = Math.round(myGenerator.genrand_res53()*i);
+                    var tmp = x.mp$subscript(r);
+                    x.mp$ass_subscript(r, x.mp$subscript(i+1));
+                    x.mp$ass_subscript(i+1, tmp);
+                };
+            } else {
+                throw new TypeError("object is immutable");
+            };
+        } else {
+            throw new TypeError("object has no length");
+        };        
     });
 
     return mod;
