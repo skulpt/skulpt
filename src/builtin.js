@@ -14,10 +14,10 @@ Sk.builtin.range = function(start, stop, step)
     Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
     if (stop !== undefined) {
         Sk.builtin.pyCheckType("stop", "number", Sk.builtin.checkNumber(stop));
-    }
+    };
     if (step !== undefined) {
         Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
-    }
+    };
 
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
