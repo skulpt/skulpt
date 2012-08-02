@@ -424,9 +424,13 @@ goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 Sk.abstr.gattr = function(obj, nameJS)
 {
+    if (obj === null || obj.tp$getattr === undefined) {
+        throw new Sk.builtin.AttributeError("'" + typeName(obj) + "' object has no attribute '" + nameJS + "'");
+    };
+
     var ret = obj.tp$getattr(nameJS);
     if (ret === undefined)
-        throw new Sk.builtin.AttributeError("'" + obj.tp$name + "' object has no attribute '" + nameJS + "'");
+        throw new Sk.builtin.AttributeError("'" + typeName(obj) + "' object has no attribute '" + nameJS + "'");
     return ret;
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
