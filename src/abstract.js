@@ -10,7 +10,7 @@ Sk.abstr = {};
 //
 //
 
-var typeName = function(v) {
+Sk.abstr.typeName = function(v) {
     var vtypename;
     if (v === null) {
         vtypename = "NoneType";
@@ -26,8 +26,8 @@ var typeName = function(v) {
 
 Sk.abstr.binop_type_error = function(v, w, name)
 {
-    var vtypename = typeName(v);
-    var wtypename = typeName(w);
+    var vtypename = Sk.abstr.typeName(v);
+    var wtypename = Sk.abstr.typeName(w);
 
     throw new TypeError("unsupported operand type(s) for " + name + ": '"
             + vtypename + "' and '" + wtypename + "'");
@@ -424,13 +424,15 @@ goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 Sk.abstr.gattr = function(obj, nameJS)
 {
+    var objname = Sk.abstr.typeName(obj);
+
     if (obj === null || obj.tp$getattr === undefined) {
-        throw new Sk.builtin.AttributeError("'" + typeName(obj) + "' object has no attribute '" + nameJS + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     };
 
     var ret = obj.tp$getattr(nameJS);
     if (ret === undefined)
-        throw new Sk.builtin.AttributeError("'" + typeName(obj) + "' object has no attribute '" + nameJS + "'");
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     return ret;
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
