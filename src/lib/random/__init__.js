@@ -219,27 +219,81 @@ var $builtinmodule = function(name)
 	return myGenerator.genrand_res53();
     });
 
-    mod.randint = new Sk.builtin.func(function(low,high) {
-        Sk.builtin.pyCheckArgs("randint", arguments, 2, 2);
-        Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
-        Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
+    var toInt = function(num) {
+        return num | 0;
+    };
 
-        return Math.round(myGenerator.genrand_res53()*(high-low))+low;
+    var randrange = function(start, stop, step) {
+        // Ported from CPython 2.7
+        var width, n;
+
+        if (start != toInt(start)) {
+            throw new ValueError("non-integer first argument for randrange()");
+        };
+
+        if (stop === undefined) {
+            // Random in [0, start)
+            return toInt(myGenerator.genrand_res53() * start);
+        };
+
+        if (stop != toInt(stop)) {
+            throw new ValueError("non-integer stop for randrange()");
+        };
+
+        if (step === undefined) {
+            step = 1;
+        };
+
+        width = stop - start;
+
+        if ((step == 1) && (width > 0)) {
+            // Random in [start, stop), must use toInt on product for correct results with negative ranges
+            return start + toInt(myGenerator.genrand_res53() * width);
+        };
+
+        if (step == 1) {
+            throw new ValueError("empty range for randrange() (" + start + ", " + stop + ", " + width + ")");
+        };
+
+        if (step != toInt(step)) {
+            throw new ValueError("non-integer step for randrange()");
+        };
+
+        if (step > 0) {
+            n = toInt((width + step - 1) / step);
+        } else if (step < 0) {
+            n = toInt((width + step + 1) / step);
+        } else {
+            throw new ValueError("zero step for randrange()");
+        };
+
+        if (n <= 0) {
+            throw new ValueError("empty range for randrange()");
+        };
+
+        // Random in range(start, stop, step)
+        return start + (step * toInt(myGenerator.genrand_res53() * n));
+    };
+
+    mod.randint = new Sk.builtin.func(function(a, b) {
+        Sk.builtin.pyCheckArgs("randint", arguments, 2, 2);
+        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
+        Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
+
+        return randrange(a, b+1);
     });
 
-    mod.randrange = new Sk.builtin.func(function(low,high) {
-        Sk.builtin.pyCheckArgs("randrange", arguments, 1, 2);
-        Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
-        if (high !== undefined) {
-            Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
+    mod.randrange = new Sk.builtin.func(function(start, stop, step) {
+        Sk.builtin.pyCheckArgs("randrange", arguments, 1, 3);
+        Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+        if (stop !== undefined) {
+            Sk.builtin.pyCheckType("stop", "number", Sk.builtin.checkNumber(stop));
+        };            
+        if (step !== undefined) {
+            Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
         };            
 
-        if (high === undefined) {
-            high = low;
-            low = 0;
-        }
-        high = high - 1;
-        return Math.round(myGenerator.genrand_res53()*(high-low))+low;
+        return randrange(start, stop, step);
     });
 
     mod.choice = new Sk.builtin.func(function(seq) {
@@ -247,7 +301,7 @@ var $builtinmodule = function(name)
         Sk.builtin.pyCheckType("seq", "sequence", Sk.builtin.checkSequence(seq));
 
         if (seq.sq$length !== undefined) {
-            var r = Math.round(myGenerator.genrand_res53()*(seq.sq$length()-1));
+            var r = toInt(myGenerator.genrand_res53() * seq.sq$length());
             return seq.mp$subscript(r);
         } else {
             throw new TypeError("object has no length");
@@ -260,11 +314,11 @@ var $builtinmodule = function(name)
 
         if (x.sq$length !== undefined) {
             if (x.mp$ass_subscript !== undefined) {
-                for (var i = x.sq$length() - 2; i > 0; i -= 1) {
-                    var r = Math.round(myGenerator.genrand_res53()*i);
+                for (var i = x.sq$length() - 1; i > 0; i -= 1) {
+                    var r = toInt(myGenerator.genrand_res53() * (i + 1));
                     var tmp = x.mp$subscript(r);
-                    x.mp$ass_subscript(r, x.mp$subscript(i+1));
-                    x.mp$ass_subscript(i+1, tmp);
+                    x.mp$ass_subscript(r, x.mp$subscript(i));
+                    x.mp$ass_subscript(i, tmp);
                 };
             } else {
                 throw new TypeError("object is immutable");
