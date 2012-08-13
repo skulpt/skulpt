@@ -44,6 +44,26 @@ Sk.builtin.range = function(start, stop, step)
     return new Sk.builtin.list(ret);
 };
 
+Sk.builtin.round = function(number, ndigits)
+{
+    var result, multiplier;
+
+    Sk.builtin.pyCheckArgs("round", arguments, 1, 2);
+    Sk.builtin.pyCheckType("number", "number", Sk.builtin.checkNumber(number));
+    if (ndigits !== undefined) {
+        Sk.builtin.pyCheckType("ndigits", "number", Sk.builtin.checkNumber(ndigits));
+    };
+
+    if (ndigits === undefined) {
+        ndigits = 0;
+    };
+
+    multiplier = Math.pow(10, ndigits);
+    result = Math.round(number * multiplier) / multiplier;
+
+    return result;
+};
+
 Sk.builtin.len = function(item)
 {
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);

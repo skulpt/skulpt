@@ -3,6 +3,7 @@
 // Javascript. This is a bit hokey.
 Sk.builtins = {
 'range': Sk.builtin.range,
+'round': Sk.builtin.round,
 'len': Sk.builtin.len,
 'min': Sk.builtin.min,
 'max': Sk.builtin.max,
