@@ -33,6 +33,7 @@ Sk.builtin.tuple = function(L)
     return this;
 };
 
+Sk.builtin.tuple.prototype.tp$name = "tuple";
 Sk.builtin.tuple.prototype['$r'] = function()
 {
     if (this.v.length === 0) return new Sk.builtin.str("()");
