@@ -252,7 +252,9 @@ Sk.abstr.numberUnaryOp = function(v, op)
         if (op === "UAdd" && v.nb$positive) return v.nb$positive();
         //todo; if (op === "Invert" && v.nb$positive) return v.nb$invert();
     }
-    throw new TypeError("unsupported operand type for " + op + " '" + v.tp$name + "'");
+
+    var vtypename = Sk.abstr.typeName(v);
+    throw new TypeError("unsupported operand type for " + op + " '" + vtypename + "'");
 };
 goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
@@ -277,7 +279,8 @@ Sk.abstr.sequenceContains = function(seq, ob)
 {
     if (seq.sq$contains) return seq.sq$contains(ob);
 
-    if (!seq.tp$iter) throw new TypeError("argument of type '" + seq.tp$name + "' is not iterable");
+    var seqtypename = Sk.abstr.typeName(seq);
+    if (!seq.tp$iter) throw new TypeError("argument of type '" + seqtypename + "' is not iterable");
     
     for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
     {
@@ -304,7 +307,9 @@ Sk.abstr.sequenceDelItem = function(seq, i)
         i = Sk.abstr.fixSeqIndex_(seq, i);
         return seq.sq$ass_item(i, null);
     }
-    throw new TypeError("'" + seq.tp$name + "' object does not support item deletion");
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new TypeError("'" + seqtypename + "' object does not support item deletion");
 };
 
 Sk.abstr.sequenceRepeat = function(f, seq, n)
@@ -312,7 +317,8 @@ Sk.abstr.sequenceRepeat = function(f, seq, n)
     var count = Sk.misceval.asIndex(n);
     if (count === undefined)
     {
-        throw new TypeError("can't multiply sequence by non-int of type '" + n.tp$name + "'");
+        var ntypename = Sk.abstr.typeName(n);
+        throw new TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
     }
     return f.call(seq, n);
 };
@@ -329,7 +335,9 @@ Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
     {
         return seq.mp$subscript(new Sk.builtin.slice(i1, i2));
     }
-    throw new TypeError("'" + seq.tp$name + "' object is unsliceable");
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new TypeError("'" + seqtypename + "' object is unsliceable");
 };
 
 Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
@@ -340,7 +348,9 @@ Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
         return seq.sq$ass_slice(i1, i2, null);
     }
-    throw new TypeError("'" + seq.tp$name + "' doesn't support slice deletion");
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new TypeError("'" + seqtypename + "' doesn't support slice deletion");
 };
 
 Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
@@ -357,7 +367,8 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
     }
     else
     {
-        throw new TypeError("'" + seq.tp$name + "' object doesn't support slice assignment");
+        var seqtypename = Sk.abstr.typeName(seq);
+        throw new TypeError("'" + seqtypename + "' object doesn't support slice assignment");
     }
 };
 
@@ -388,12 +399,15 @@ Sk.abstr.objectDelItem = function(o, key)
     if (o.sq$ass_item)
     {
         var keyValue = Sk.misceval.asIndex(key);
-        if (keyValue === undefined)
-            throw new TypeError("sequence index must be integer, not '" + key.tp$name + "'");
+        if (keyValue === undefined) {
+            var keytypename = Sk.abstr.typeName(key);
+            throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
+        }
         return Sk.abstr.sequenceDelItem(o, keyValue);
     }
     // if o is a slice do something else...
-    throw new TypeError("'" + o.tp$name + "' object does not support item deletion");
+    var otypename = Sk.abstr.typeName(o);
+    throw new TypeError("'" + otypename + "' object does not support item deletion");
 };
 goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
@@ -406,7 +420,9 @@ Sk.abstr.objectGetItem = function(o, key)
     else if (o.__getitem__ !== undefined) {
         return Sk.misceval.callsim(o.__getitem__,o,key);
     }
-    throw new TypeError("'" + o.tp$name + "' does not support indexing");
+
+    var otypename = Sk.abstr.typeName(o);
+    throw new TypeError("'" + otypename + "' does not support indexing");
 };
 goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
@@ -416,7 +432,9 @@ Sk.abstr.objectSetItem = function(o, key, v)
         return o.mp$ass_subscript(key, v);
     else if (Sk.misceval.isIndex(key) && o.sq$ass_item)
         return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
-    throw new TypeError("'" + o.tp$name + "' does not support item assignment");
+
+    var otypename = Sk.abstr.typeName(o);
+    throw new TypeError("'" + otypename + "' does not support item assignment");
 };
 goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
