@@ -18,6 +18,8 @@ Sk.abstr.typeName = function(v) {
         vtypename = "number";
     } else if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
+    } else if (v.ob$type && (v.ob$type.tp$name !== undefined)) {
+        vtypename = v.ob$type.tp$name;
     } else {
         vtypename = "unknown";
     };
