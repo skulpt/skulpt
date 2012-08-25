@@ -156,3 +156,12 @@ Sk.builtin.ValueError.prototype.tp$name = "ValueError";
 Sk.builtin.ZeroDivisionError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.ZeroDivisionError, Sk.builtin.Exception);
 Sk.builtin.ZeroDivisionError.prototype.tp$name = "ZeroDivisionError";
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.TimeLimitError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.TimeLimitError, Sk.builtin.Exception);
+Sk.builtin.TimeLimitError.prototype.tp$name = "TimeLimitError";

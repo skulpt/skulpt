@@ -173,7 +173,7 @@ Compiler.prototype._gr = function(hint, rest)
 */
 Compiler.prototype._interruptTest = function() { // Added by RNL
 	out("if (Sk.execStart === undefined) {Sk.execStart=new Date()}");
-  	out("if (Sk.execLimit != null && new Date() - Sk.execStart > Sk.execLimit) {throw new Error('Program exceeded run time limit.')}");
+  	out("if (Sk.execLimit != null && new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError('Program exceeded run time limit.')}");
 }
 
 Compiler.prototype._jumpfalse = function(test, block)
