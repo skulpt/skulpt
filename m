@@ -20,8 +20,8 @@ import json
 try:
     from git import *
 except:
-    print "+----------------------------------------------------------------------------+"
-    print "GitPython is not installed! for Python 2.6"
+    print "+-----------------------------------------------------------------------------+"
+    print "GitPython is not installed for Python 2.6"
     print "dist will not work without it.  Get it using pip or easy_install"
     print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
     print "+----------------------------------------------------------------------------+"
@@ -47,6 +47,7 @@ Files = [
         'src/str.js',
         'src/tuple.js',
         'src/dict.js',
+        'src/biginteger.js',
         'src/long.js',
         'src/int.js',
         'src/float.js',
@@ -180,6 +181,8 @@ def debugbrowser():
 
     if sys.platform == "win32":
         os.system("start support/tmp/test.html")
+    elif sys.platform == "darwin":
+        os.system("open support/tmp/test.html")
     else:
         os.system("gnome-open support/tmp/test.html")
 
@@ -328,16 +331,20 @@ def dist():
     if not os.path.exists("dist"): os.mkdir("dist")
 
 
-    # print ". Writing combined version..."
-    # combined = ''
-    # linemap = open("dist/linemap.txt", "w")
-    # curline = 1
-    # for file in getFileList('dist'):
-    #     curfiledata = open(file).read()
-    #     combined += curfiledata
-    #     print >>linemap, "%d:%s" % (curline, file)
-    #     curline += len(curfiledata.split("\n")) - 1
-    # linemap.close()
+    if len(sys.argv) > 2 and sys.argv[2] == '-u':
+        print ". Writing combined version..."
+        combined = ''
+        linemap = open("dist/linemap.txt", "w")
+        curline = 1
+        for file in getFileList('dist'):
+            curfiledata = open(file).read()
+            combined += curfiledata
+            print >>linemap, "%d:%s" % (curline, file)
+            curline += len(curfiledata.split("\n")) - 1
+        linemap.close()
+        uncompfn = "dist/skulpt-uncomp.js"
+        open(uncompfn, "w").write(combined)
+        os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
 
     # make combined version
