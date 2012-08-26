@@ -78,7 +78,16 @@ Sk.builtin.str.prototype.sq$length = function()
 {
     return this.v.length;
 };
-Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str(this.v + other.v); };
+Sk.builtin.str.prototype.sq$concat = function(other) 
+{ 
+    if (!other || !Sk.builtin.checkString(other))
+    {
+        var otypename = Sk.abstr.typeName(other);
+        throw new TypeError("cannot concatenate 'str' and '" 
+                            + otypename + "' objects");
+    }
+    return new Sk.builtin.str(this.v + other.v); 
+};
 Sk.builtin.str.prototype.sq$repeat = function(n)
 {
     var ret = "";
