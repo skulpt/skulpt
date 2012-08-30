@@ -21,7 +21,7 @@ var $builtinmodule = function(name) {
             self.canvas = document.createElement("canvas");
             self.canvas.height = self.height;
             self.canvas.width = self.width;
-            self.ctx = self.canvas.getImageDatatext("2d");
+            self.ctx = self.canvas.getContext("2d");
             self.ctx.drawImage(self.image,0,0)
             self.imagedata = self.ctx.getImageData(0,0,self.width,self.height);
         });
