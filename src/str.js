@@ -415,6 +415,18 @@ Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, n
     return new Sk.builtin.str(self.v.replace(patt, newS.v));
 });
 
+Sk.builtin.str.prototype['isdigit'] = new Sk.builtin.func(function(self) {
+    if (self.v.length === 0) { return false; }
+    var i;
+    for (i=0; i<self.v.length; i++) {
+        var ch = self.v.charAt(i);
+        if (ch < '0' || ch > '9') {
+            return false;
+        };
+    };
+    return true;
+});
+
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('str', Sk.builtin.str);
 
 Sk.builtin.str.prototype.nb$remainder = function(rhs)
