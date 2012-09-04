@@ -181,14 +181,23 @@ Sk.abstr.boNumPromote_ = {
     "Add": function(a, b) { return a + b; },
     "Sub": function(a, b) { return a - b; },
     "Mult": function(a, b) { return a * b; },
-    "Mod": function(a, b) { var m = a % b; return ((m * b) < 0 ? (m + b) : m); },
+    "Mod": function(a, b) { 
+        if (b === 0)
+            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
+        var m = a % b; return ((m * b) < 0 ? (m + b) : m); 
+    },
     "Div": function(a, b) {
         if (b === 0)
-            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
+            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
         else
             return a / b;
     },
-    "FloorDiv": function(a, b) { return Math.floor(a / b); }, // todo; wrong? neg?
+    "FloorDiv": function(a, b) { 
+        if (b === 0)
+            throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
+        else
+            return Math.floor(a / b); // todo; wrong? neg?
+    },
     "Pow": Math.pow,
     "BitAnd": function(a, b) { return a & b; },
     "BitOr": function(a, b) { return a | b; },
