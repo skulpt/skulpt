@@ -25,6 +25,10 @@ var $builtinmodule = function(name)
 	return Math.atan(rad);
     });
 
+    mod.atan2 = new Sk.builtin.func(function(y, x) {
+	return Math.atan2(y, x);
+    });
+
     mod.sin = new Sk.builtin.func(function(rad) {
 	return Math.sin(rad);
     });
