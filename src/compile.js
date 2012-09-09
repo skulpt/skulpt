@@ -756,7 +756,7 @@ Compiler.prototype.cif = function(s)
         var next = this.newBlock('next branch of if');
 
         var test = this.vexpr(s.test);
-        this._jumpfalse(this.vexpr(s.test), next);
+        this._jumpfalse(test, next);
         this.vseqstmt(s.body);
         this._jump(end);
 
