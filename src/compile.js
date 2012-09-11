@@ -931,7 +931,7 @@ Compiler.prototype.cassert = function(s)
     this._jumptrue(test, end);
     // todo; exception handling
     // maybe replace with goog.asserts.fail?? or just an alert?
-    out("throw new Sk.builtins.AssertionError(", s.msg ? this.vexpr(s.msg) : "", ");");
+    out("throw new Sk.builtin.AssertionError(", s.msg ? this.vexpr(s.msg) : "", ");");
     this.setBlock(end);
 };
 
