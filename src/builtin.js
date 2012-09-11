@@ -206,8 +206,14 @@ Sk.builtin.chr = function chr(x)
 
     if (typeof x !== "number")
     {
-        throw "TypeError: an integer is required";
+        throw new Sk.builtin.TypeError("an integer is required");
     }
+
+    if ((x < 0) || (x > 255))
+    {
+        throw new Sk.builtin.ValueError("chr() arg not in range(256)");
+    }
+
     return new Sk.builtin.str(String.fromCharCode(x));
 };
 
