@@ -492,10 +492,11 @@ SymbolTable.prototype.visitStmt = function(s)
                 var cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE))
                 {
-                    if (cur & DEF_LOCAL)
-                        throw new SyntaxError("name '" + name + "' is assigned to before global declaration");
+                    if (cur & DEF_LOCAL) {
+                        throw new SyntaxError("name '" + name + "' is assigned to before global declaration", "", s.lineno);
+                    }
                     else
-                        throw new SyntaxError("name '" + name + "' is used prior to global declaration");
+                        throw new SyntaxError("name '" + name + "' is used prior to global declaration", "", s.lineno);
                 }
                 this.addDef(new Sk.builtin.str(name), DEF_GLOBAL);
             }
