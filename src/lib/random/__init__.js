@@ -228,7 +228,7 @@ var $builtinmodule = function(name)
         var width, n;
 
         if (start != toInt(start)) {
-            throw new ValueError("non-integer first argument for randrange()");
+            throw new Sk.builtin.ValueError("non-integer first argument for randrange()");
         };
 
         if (stop === undefined) {
@@ -237,7 +237,7 @@ var $builtinmodule = function(name)
         };
 
         if (stop != toInt(stop)) {
-            throw new ValueError("non-integer stop for randrange()");
+            throw new Sk.builtin.ValueError("non-integer stop for randrange()");
         };
 
         if (step === undefined) {
@@ -252,11 +252,11 @@ var $builtinmodule = function(name)
         };
 
         if (step == 1) {
-            throw new ValueError("empty range for randrange() (" + start + ", " + stop + ", " + width + ")");
+            throw new Sk.builtin.ValueError("empty range for randrange() (" + start + ", " + stop + ", " + width + ")");
         };
 
         if (step != toInt(step)) {
-            throw new ValueError("non-integer step for randrange()");
+            throw new Sk.builtin.ValueError("non-integer step for randrange()");
         };
 
         if (step > 0) {
@@ -264,11 +264,11 @@ var $builtinmodule = function(name)
         } else if (step < 0) {
             n = toInt((width + step + 1) / step);
         } else {
-            throw new ValueError("zero step for randrange()");
+            throw new Sk.builtin.ValueError("zero step for randrange()");
         };
 
         if (n <= 0) {
-            throw new ValueError("empty range for randrange()");
+            throw new Sk.builtin.ValueError("empty range for randrange()");
         };
 
         // Random in range(start, stop, step)
@@ -304,7 +304,7 @@ var $builtinmodule = function(name)
             var r = toInt(myGenerator.genrand_res53() * seq.sq$length());
             return seq.mp$subscript(r);
         } else {
-            throw new TypeError("object has no length");
+            throw new Sk.builtin.TypeError("object has no length");
         }
     });
 
@@ -321,10 +321,10 @@ var $builtinmodule = function(name)
                     x.mp$ass_subscript(i, tmp);
                 };
             } else {
-                throw new TypeError("object is immutable");
+                throw new Sk.builtin.TypeError("object is immutable");
             };
         } else {
-            throw new TypeError("object has no length");
+            throw new Sk.builtin.TypeError("object has no length");
         };        
     });
 
