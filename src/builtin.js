@@ -296,7 +296,7 @@ Sk.builtin.hash = function hash(value)
     if (value instanceof Object && value.tp$hash !== undefined)
     {
         if (value.$savedHash_) return value.$savedHash_;
-        value.$savedHash_ = 'custom ' + value.tp$hash();
+        value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
     }
 
@@ -305,7 +305,7 @@ Sk.builtin.hash = function hash(value)
         if (value.__id === undefined)
         {
             Sk.builtin.hashCount += 1;
-            value.__id = 'object ' + Sk.builtin.hashCount;
+            value.__id = Sk.builtin.hashCount;
         }
         return value.__id;
     }
