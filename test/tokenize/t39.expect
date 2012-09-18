@@ -1,5 +1,6 @@
+TokenError: EOF in multi-line string
 File "test/tokenize/t39.py", line 1
 wee = """this is some
 stuff and
       ^
-TokenError: EOF in multi-line string
+
