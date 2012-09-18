@@ -309,8 +309,13 @@ Sk.builtin.hash = function hash(value)
         }
         return value.__id;
     }
-    return (typeof value) + ' ' + String(value);
 
+    if (typeof value === "number")
+    {
+        return value;
+    }
+
+    return (typeof value) + ' ' + String(value);
     // todo; throw properly for unhashable types
 };
 
