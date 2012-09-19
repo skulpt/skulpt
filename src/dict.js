@@ -52,24 +52,59 @@ var kf = Sk.builtin.hash;
 
 Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
-    var entry = this[kf(key)];
+    var bucket = this[kf(key)];
+
     // todo; does this need to go through mp$ma_lookup
-    return entry === undefined ? undefined : entry.rhs;
+
+    if (bucket === undefined)
+    {
+        // Not found in dictionary 
+
+        // Incorrect: should throw exception!
+        return undefined;
+    }
+
+    for (var i=0; i<bucket.items.length; i++)
+    {
+        item = bucket.items[i];
+        if (item.lhs === key)
+        {
+            return item.rhs;
+        }
+    }
+
+    // Not found in dictionary 
+    
+    // Incorrect: should throw exception!
+    return undefined;
 };
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
-    // if (this[k] !== undefined)
-    // {
-    //     this.size -=1;
-    //     delete this[k];
-    //     return;
-    // }
-    // only increment if it's not already used as a key
-    if ( !(k in this) ) {
+    var bucket = this[k];
+
+    if (bucket === undefined)
+    {
+        // New bucket
+        bucket = {$hash: k, items: [{lhs: key, rhs: w}]}
+        this[k] = bucket;
         this.size += 1;
+        return;
     }
-    this[k] = { lhs: key, rhs: w };
+
+    for (var i=0; i<bucket.items.length; i++)
+    {
+        var item = bucket.items[i];
+        if (item.lhs === key)
+        {
+            item.rhs = w;
+            return;
+        }
+    }
+
+    // Not found in dictionary
+    bucket.items.push({lhs: key, rhs: w});
+    this.size += 1;
 };
 
 Sk.builtin.dict.prototype.tp$iter = function()
@@ -79,10 +114,13 @@ Sk.builtin.dict.prototype.tp$iter = function()
     {
         if (this.hasOwnProperty(k))
         {
-            var i = this[k];
-            if (i && i.lhs !== undefined) // skip internal stuff. todo; merge pyobj and this
+            var bucket = this[k];
+            if (bucket && bucket.$hash !== undefined) // skip internal stuff. todo; merge pyobj and this
             {
-                allkeys.push(k);
+                for (var i=0; i<bucket.items.length; i++)
+                {
+                    allkeys.push(bucket.items[i].lhs);
+                }
             }
         }
     }
@@ -98,7 +136,8 @@ Sk.builtin.dict.prototype.tp$iter = function()
         {
             // todo; StopIteration
             if (ret.$index >= ret.$keys.length) return undefined;
-            return ret.$obj[ret.$keys[ret.$index++]].lhs;
+            return ret.$keys[ret.$index++];
+            // return ret.$obj[ret.$keys[ret.$index++]].lhs;
         }
     };
     return ret;
