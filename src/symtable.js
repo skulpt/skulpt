@@ -303,7 +303,7 @@ SymbolTable.prototype.visitParams = function(args, toplevel)
         else
         {
             // Tuple isn't supported
-            throw new SyntaxError("invalid expression in parameter list");
+            throw new Sk.builtin.SyntaxError("invalid expression in parameter list");
         }
     }
 }
@@ -411,7 +411,7 @@ SymbolTable.prototype.visitStmt = function(s)
                 this.visitExpr(s.value);
                 this.cur.returnsValue = true;
                 if (this.cur.generator)
-                    throw new SyntaxError("'return' with argument inside generator");
+                    throw new Sk.builtin.SyntaxError("'return' with argument inside generator");
             }
             break;
         case Delete_:
@@ -493,10 +493,10 @@ SymbolTable.prototype.visitStmt = function(s)
                 if (cur & (DEF_LOCAL | USE))
                 {
                     if (cur & DEF_LOCAL) {
-                        throw new SyntaxError("name '" + name + "' is assigned to before global declaration", "", s.lineno);
+                        throw new Sk.builtin.SyntaxError("name '" + name + "' is assigned to before global declaration", "", s.lineno);
                     }
                     else
-                        throw new SyntaxError("name '" + name + "' is used prior to global declaration", "", s.lineno);
+                        throw new Sk.builtin.SyntaxError("name '" + name + "' is used prior to global declaration", "", s.lineno);
                 }
                 this.addDef(new Sk.builtin.str(name), DEF_GLOBAL);
             }
@@ -571,7 +571,7 @@ SymbolTable.prototype.visitExpr = function(e)
             if (e.value) this.visitExpr(e.value);
             this.cur.generator = true;
             if (this.cur.returnsValue)
-                throw new SyntaxError("'return' with argument inside generator");
+                throw new Sk.builtin.SyntaxError("'return' with argument inside generator");
             break;
         case Compare:
             this.visitExpr(e.left);
@@ -640,7 +640,7 @@ SymbolTable.prototype.visitAlias = function(names)
         else
         {
             if (this.cur.blockType !== ModuleBlock)
-                throw new SyntaxError("import * only allowed at module level");
+                throw new Sk.builtin.SyntaxError("import * only allowed at module level");
         }
     }
 };
