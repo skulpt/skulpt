@@ -212,7 +212,7 @@ if (! TurtleGraphics) {
         $(this.canvas).click(function() {
             if (! theCanvas.isAnimating()) {
 				if (Sk.tg.fadeOnExit)	//	Let's this be configurable
-                	$("#"+canvas_id).fadeOut();
+                	$("#"+canvas_id).hide();
                 $("#"+canvas_id).unbind('click');
                 Sk.tg.canvasInit = false;
                 delete Sk.tg.canvasLib[canvas_id];
