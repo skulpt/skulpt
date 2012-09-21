@@ -53,6 +53,7 @@ var kf = Sk.builtin.hash;
 Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
     var bucket = this[kf(key)];
+    var item;
 
     // todo; does this need to go through mp$ma_lookup
 
@@ -78,6 +79,7 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
     // Incorrect: should throw exception!
     return undefined;
 };
+
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
