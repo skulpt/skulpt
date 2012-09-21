@@ -54,6 +54,7 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
     var bucket = this[kf(key)];
     var item;
+    var eq;
 
     // todo; does this need to go through mp$ma_lookup
 
@@ -68,7 +69,8 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
     for (var i=0; i<bucket.items.length; i++)
     {
         item = bucket.items[i];
-        if (item.lhs === key)
+        eq = Sk.misceval.richCompareBool(item.lhs, key, 'Eq');
+        if (eq)
         {
             return item.rhs;
         }
@@ -84,6 +86,8 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
     var bucket = this[k];
+    var item;
+    var eq;
 
     if (bucket === undefined)
     {
@@ -96,8 +100,9 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 
     for (var i=0; i<bucket.items.length; i++)
     {
-        var item = bucket.items[i];
-        if (item.lhs === key)
+        item = bucket.items[i];
+        eq = Sk.misceval.richCompareBool(item.lhs, key, 'Eq');
+        if (eq)
         {
             item.rhs = w;
             return;
