@@ -142,6 +142,9 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
         } else																		// RNL
             return ans;
     }
+	else if (a === undefined || b === undefined) {
+		throw new Sk.builtin.NameError('Undefined variable in expression')
+	}
     else if (a.constructor === Sk.builtin.lng && typeof b === "number")
         return [a, Sk.builtin.lng.fromInt$(b)];
     else if (b.constructor === Sk.builtin.lng && typeof a === "number")

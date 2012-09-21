@@ -165,3 +165,4 @@ Sk.builtin.ZeroDivisionError.prototype.tp$name = "ZeroDivisionError";
 Sk.builtin.TimeLimitError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.TimeLimitError, Sk.builtin.Exception);
 Sk.builtin.TimeLimitError.prototype.tp$name = "TimeLimitError";
+goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
