@@ -50,11 +50,28 @@ Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('dict', Sk.b
 
 var kf = Sk.builtin.hash;
 
+Sk.builtin.dict.prototype.key$lookup = function(bucket, key)
+{
+    var item;
+    var eq;
+    var i;
+
+    for (i=0; i<bucket.items.length; i++)
+    {
+        item = bucket.items[i];
+        eq = Sk.misceval.richCompareBool(item.lhs, key, 'Eq');
+        if (eq)
+        {
+            return item;
+        }
+    }
+    return null;
+}   
+
 Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
     var bucket = this[kf(key)];
     var item;
-    var eq;
 
     // todo; does this need to go through mp$ma_lookup
 
@@ -66,15 +83,10 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
         return undefined;
     }
 
-    for (var i=0; i<bucket.items.length; i++)
-    {
-        item = bucket.items[i];
-        eq = Sk.misceval.richCompareBool(item.lhs, key, 'Eq');
-        if (eq)
-        {
-            return item.rhs;
-        }
-    }
+    item = this.key$lookup(bucket, key);
+    if (item) {
+        return item.rhs;
+    };
 
     // Not found in dictionary 
     
@@ -87,7 +99,6 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
     var k = kf(key);
     var bucket = this[k];
     var item;
-    var eq;
 
     if (bucket === undefined)
     {
@@ -98,16 +109,11 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
         return;
     }
 
-    for (var i=0; i<bucket.items.length; i++)
-    {
-        item = bucket.items[i];
-        eq = Sk.misceval.richCompareBool(item.lhs, key, 'Eq');
-        if (eq)
-        {
-            item.rhs = w;
-            return;
-        }
-    }
+    item = this.key$lookup(bucket, key);
+    if (item) {
+        item.rhs = w;
+        return;
+    };
 
     // Not found in dictionary
     bucket.items.push({lhs: key, rhs: w});
