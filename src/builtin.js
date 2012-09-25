@@ -293,14 +293,20 @@ Sk.builtin.hash = function hash(value)
 {
     Sk.builtin.pyCheckArgs("hash", arguments, 1, 1);
 
-    if (value instanceof Object && value.tp$hash !== undefined)
+    // Useless object to get compiler to allow check for __hash__ property
+    var junk = {__hash__: function() {return 0;}}
+
+    if ((value instanceof Object) && (value.tp$hash !== undefined))
     {
         if (value.$savedHash_) return value.$savedHash_;
         value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
     }
-
-    if (value instanceof Object)
+    else if ((value instanceof Object) && (value.__hash__ !== undefined))
+    {
+        return Sk.misceval.callsim(value.__hash__, value);
+    }
+    else if (value instanceof Object)
     {
         if (value.__id === undefined)
         {
@@ -309,8 +315,7 @@ Sk.builtin.hash = function hash(value)
         }
         return value.__id;
     }
-
-    if (typeof value === "number")
+    else if (typeof value === "number")
     {
         return value;
     }
