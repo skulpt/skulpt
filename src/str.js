@@ -395,15 +395,39 @@ Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start
 });
 
 Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.indexOf(tgt.v,start);
+    var idx = Sk.misceval.callsim(self['find'], self, tgt, start);
+    if (idx === -1) {
+        throw new Sk.builtin.ValueError("substring not found");
+    };
+    return idx;
 });
 
 Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.lastIndexOf(tgt.v,start);
+    var s = self.v;
+    var offset = 0;
+    var idx = -1;
+
+    if (start !== undefined) {
+        // Only look after start position
+        s = s.substring(start);
+        offset = start;
+    };
+    idx = s.lastIndexOf(tgt.v);
+
+    if (idx !== -1) {
+        // Adjust so that index is from start of string
+        idx = idx + offset;
+    };
+
+    return idx;
 });
 
 Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.lastIndexOf(tgt.v,start);
+    var idx = Sk.misceval.callsim(self['rfind'], self, tgt, start);
+    if (idx === -1) {
+        throw new Sk.builtin.ValueError("substring not found");
+    };
+    return idx;
 });
 
 Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, newS, count)
