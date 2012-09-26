@@ -139,8 +139,6 @@ Sk.builtin.sum = function sum(iter,start)
 
 Sk.builtin.zip = function zip()
 {
-    arguments = arguments || [];
-    arguments = Sk.misceval.arrayFromArguments(arguments);
     if (arguments.length === 0)
     {
         return new Sk.builtin.list([]);        
