@@ -237,7 +237,9 @@ Sk.misceval.richCompareBool = function(v, w, op)
     if (op === 'Eq') return v === w;
     if (op === 'NotEq') return v !== w;
 
-    throw new Sk.builtin.ValueError("don't know how to compare '" + v.tp$name + "' and '" + w.tp$name + "'");
+    var vname = Sk.abstr.typeName(v);
+    var wname = Sk.abstr.typeName(w);
+    throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
