@@ -159,8 +159,12 @@ Parser.prototype.classify = function(type, value, context)
         }
     }
     ilabel = this.grammar.tokens.hasOwnProperty(type) && this.grammar.tokens[type];
-    if (!ilabel)
-        throw new Sk.builtin.ParseError("bad token", type, value, context);
+    if (!ilabel) {
+        // throw new Sk.builtin.ParseError("bad token", type, value, context);
+        // Questionable modification to put line number in position 2
+        // like everywhere else.
+        throw new Sk.builtin.ParseError("bad token", type, context[0][0], context);
+    }
     return ilabel;
 };
 
