@@ -268,7 +268,12 @@ Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
 
 Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
 {
-    if (i === undefined) i = self.v.length - 1;
+    if (i === undefined) {
+        i = self.v.length - 1;
+    };
+    if ((i < 0) || (i >= self.v.length)) {
+        throw new Sk.builtin.IndexError("pop index out of range");
+    };
     var ret = self.v[i];
     self.v.splice(i, 1);
     return ret;
