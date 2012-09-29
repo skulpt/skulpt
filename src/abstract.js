@@ -402,17 +402,29 @@ goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 Sk.abstr.gattr = function(obj, nameJS)
 {
-    var ret = obj.tp$getattr(nameJS);
+    var ret;
+    if(obj['__getattr__']) {
+        ret = Sk.misceval.callsim(obj['__getattr__'],obj,nameJS)
+    } else {
+        ret = obj.tp$getattr(nameJS);
+    }
     if (ret === undefined)
         throw new Sk.builtin.AttributeError("'" + obj.tp$name + "' object has no attribute '" + nameJS + "'");
     return ret;
+    
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function(obj, nameJS, data)
 {
-    obj.tp$setattr(nameJS, data);
+    if(obj['__setattr__']) {
+        print('trying to set ' + nameJS + ' to ' + data);
+        ret = Sk.misceval.callsim(obj['__setattr__'],obj, nameJS, data)
+    } else {
+        obj.tp$setattr(nameJS, data);
+    }
 };
+
 goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
 Sk.abstr.iter = function(obj)
