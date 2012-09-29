@@ -418,7 +418,6 @@ goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 Sk.abstr.sattr = function(obj, nameJS, data)
 {
     if(obj['__setattr__']) {
-        print('trying to set ' + nameJS + ' to ' + data);
         ret = Sk.misceval.callsim(obj['__setattr__'],obj, nameJS, data)
     } else {
         obj.tp$setattr(nameJS, data);
