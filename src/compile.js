@@ -859,7 +859,7 @@ Compiler.prototype.cfor = function(s)
 
 Compiler.prototype.craise = function(s)
 {
-    if (s.type.id.v === "StopIteration")
+    if (s && s.type && s.type.id && (s.type.id.v === "StopIteration"))
     {
         // currently, we only handle StopIteration, and all it does it return
         // undefined which is what our iterator protocol requires.
