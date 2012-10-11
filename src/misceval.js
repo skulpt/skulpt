@@ -436,7 +436,18 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
         // alternatively, put it to more use, and perhaps use
         // descriptors to create builtin.func's in other places.
 
-        goog.asserts.assert(kws === undefined);
+        // This actually happens for all builtin functions (in
+        // builtin.js, for example) as they are javascript functions,
+        // not Sk.builtin.func objects.
+
+        if (varargseq)
+        {
+            for (var it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            {
+                args.push(i);
+            }
+        }
+        goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
         return func.apply(null, args);
     }
     else
