@@ -120,10 +120,19 @@ Sk.builtin.tuple.prototype.tp$iter = function()
 
 Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
 {
-    // todo; NotImplemented if either isn't a tuple
-
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
         
+    // w not a tuple
+    if (!w.__class__ || w.__class__ != Sk.builtin.tuple)
+    {
+        // shortcuts for eq/not
+        if (op === 'Eq') return false;
+        if (op === 'NotEq') return true;
+
+        // todo; other types should have an arbitrary order
+        return false;
+    }
+
     var v = this.v;
     var w = w.v;
     var vl = v.length;
