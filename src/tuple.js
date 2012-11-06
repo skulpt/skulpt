@@ -118,6 +118,8 @@ Sk.builtin.tuple.prototype.tp$iter = function()
     return ret;
 };
 
+Sk.builtin.tuple.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
 Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
 {
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
@@ -177,5 +179,33 @@ Sk.builtin.tuple.prototype.sq$concat = function(other)
 };
 
 Sk.builtin.tuple.prototype.sq$length = function() { return this.v.length; };
+
+
+Sk.builtin.tuple.prototype['index'] = new Sk.builtin.func(function(self, item)
+{
+    var len = self.v.length;
+    var obj = self.v;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+            return i;
+    }
+    throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
+});
+
+Sk.builtin.tuple.prototype['count'] = new Sk.builtin.func(function(self, item)
+{
+    var len = self.v.length;
+    var obj = self.v;
+    var count = 0;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+        {
+            count += 1;
+        }
+    }
+    return count;
+});
 
 goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
