@@ -125,9 +125,8 @@ var reservedWords_ = { 'abstract': true, 'as': true, 'boolean': true,
     'private': true, 'protected': true, 'public': true, 'return': true,
     'short': true, 'static': true, 'super': true, 'switch': true,
     'synchronized': true, 'this': true, 'throw': true, 'throws': true,
-    'transient': true, 'true': true, 'try': true, 'typeof': true, 
-    'unwatch': true, 'use': true, 'var': true, 'void': true, 
-    'volatile': true, 'watch': true, 'while': true, 'with': true
+    'transient': true, 'true': true, 'try': true, 'typeof': true, 'use': true,
+    'var': true, 'void': true, 'volatile': true, 'while': true, 'with': true
 };
 
 function fixReservedWords(name)
