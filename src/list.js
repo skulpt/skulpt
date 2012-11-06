@@ -95,8 +95,6 @@ Sk.builtin.list.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplement
 
 Sk.builtin.list.prototype.tp$richcompare = function(w, op)
 {
-    // todo; NotImplemented if either isn't a list
-
     // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
     // perhaps by trapping a stack overflow? otherwise i'm not sure for more
     // complicated cases. bleh
@@ -104,6 +102,17 @@ Sk.builtin.list.prototype.tp$richcompare = function(w, op)
     // if the comparison allows for equality then short-circuit it here
     if (this === w && Sk.misceval.opAllowsEquality(op))
         return true;
+
+    // w not a list
+    if (!w.__class__ || w.__class__ != Sk.builtin.list)
+    {
+        // shortcuts for eq/not
+        if (op === 'Eq') return false;
+        if (op === 'NotEq') return true;
+
+        // todo; other types should have an arbitrary order
+        return false;
+    }
 
     var v = this.v;
     var w = w.v;

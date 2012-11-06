@@ -790,7 +790,7 @@ SymbolTable.prototype.analyzeName = function(ste, dict, name, flags, bound, loca
 {
     if (flags & DEF_GLOBAL)
     {
-        if (flags & DEF_PARAM) throw new Sk.builtin.SyntaxError("name '" + name + "' is local and global");
+        if (flags & DEF_PARAM) throw new Sk.builtin.SyntaxError("name '" + name + "' is local and global", "", ste.lineno);
         dict[name] = GLOBAL_EXPLICIT;
         global[name] = null;
         if (bound && bound[name] !== undefined) delete bound[name];

@@ -88,11 +88,11 @@ Sk.misceval.arrayFromArguments = function(args)
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
 
 /**
- * for reversed comparison: Eq -> NotEq, etc.
+ * for reversed comparison: Gt -> Lt, etc.
  */
 Sk.misceval.swappedOp_ = {
-    'Eq': 'NotEq',
-    'NotEq': 'Eq',
+    'Eq': 'Eq',
+    'NotEq': 'NotEq',
     'Lt': 'Gt',
     'LtE': 'GtE',
     'Gt': 'Lt',
@@ -167,13 +167,13 @@ Sk.misceval.richCompareBool = function(v, w, op)
                 if (v && v['__eq__']) 
                     return Sk.misceval.callsim(v['__eq__'], v, w);
                 else if (w && w['__ne__'])
-                    return Sk.misceval.callsim(w['__ne__'], w, v);
+                    return Sk.misceval.callsim(w['__eq__'], w, v);
                 }
             else if (op === 'NotEq') {
                 if (v && v['__ne__'])
                     return Sk.misceval.callsim(v['__ne__'], v, w);
                 else if (w && w['__eq__'])
-                    return Sk.misceval.callsim(w['__eq__'], w, v);
+                    return Sk.misceval.callsim(w['__ne__'], w, v);
                 }
             else if (op === 'Gt') {
                 if (v && v['__gt__'])
