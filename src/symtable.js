@@ -48,7 +48,7 @@ var ClassBlock = 'class';
  */
 function Symbol(name, flags, namespaces)
 {
-    this.__name = fixReservedNames(name);
+    this.__name = name;
     this.__flags = flags;
     this.__scope = (flags >> SCOPE_OFF) & SCOPE_MASK;
     this.__namespaces = namespaces || [];
@@ -262,6 +262,7 @@ SymbolTable.prototype.SEQExpr = function(nodes)
 
 SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
 {
+    name = fixReservedNames(name);
     //print("enterBlock:", name);
     var prev = null;
     if (this.cur)
@@ -490,6 +491,7 @@ SymbolTable.prototype.visitStmt = function(s)
             for (var i = 0; i < nameslen; ++i)
             {
                 var name = mangleName(this.curClass, s.names[i]).v;
+                name = fixReservedNames(name);
                 var cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE))
                 {
