@@ -146,9 +146,9 @@ var reservedNames_ = { '__defineGetter__': true, '__defineSetter__': true,
 
 function fixReservedNames(name)
 {
-    if (reservedNames_[name] !== true)
-        return name;
-    return name + "_$rw$";    
+    if (reservedNames_[name])
+        return name + "_$rn$";
+    return name;
 }
 
 function mangleName(priv, ident)
@@ -527,19 +527,23 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
             var val;
             if (e.ctx !== AugStore)
                 val = this.vexpr(e.value);
+            var mangled = e.attr['$r']().v;
+            mangled = mangled.substring(1, mangled.length-1);
+            mangled = fixReservedWords(mangled);
+            mangled = fixReservedNames(mangled);
             switch (e.ctx)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",", e.attr['$r']().v, ")");
+                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",'", mangled, "')");
                 case AugStore:
                     out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
                     val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     out("}");
                     break;
                 case Store:
-                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     break;
                 case Del:
                     goog.asserts.fail("todo;");
@@ -1714,8 +1718,13 @@ Compiler.prototype.exitScope = function()
     if (this.u)
         this.u.activateScope();
 
-    if (prev.name.v !== "<module>") // todo; hacky
-        out(prev.scopename, ".co_name=new Sk.builtins['str'](", prev.name['$r']().v, ");");
+    if (prev.name.v !== "<module>") {// todo; hacky
+        var mangled = prev.name['$r']().v;
+        mangled = mangled.substring(1, mangled.length-1);
+        mangled = fixReservedWords(mangled);
+        mangled = fixReservedNames(mangled);
+        out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
+    }
 };
 
 Compiler.prototype.cbody = function(stmts)

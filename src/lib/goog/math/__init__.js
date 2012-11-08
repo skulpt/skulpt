@@ -129,11 +129,11 @@ var $builtinmodule = function(name)
                     return Sk.ffi.stdwrap(mod.Coordinate, self.v.clone());
                 });
 
-        $loc.toString = new Sk.builtin.func(function(self)
+        $loc.toString_$rn$ = new Sk.builtin.func(function(self)
                 {
                     return new Sk.builtin.str(self.v.toString());
                 });
-        $loc.__repr__ = $loc.toString;
+        $loc.__repr__ = $loc.toString_$rn$;
 
         $loc.equals = new Sk.builtin.func(function(a, b)
                 {
