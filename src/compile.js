@@ -1568,6 +1568,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
     if (name.v === "False") return "false";
 
     var mangled = mangleName(this.u.private_, name).v;
+    // Have to do this before looking it up in the scope
+    mangled = fixReservedNames(mangled);
     var op = 0;
     var optype = OP_NAME;
     var scope = this.u.ste.getScope(mangled);
@@ -1599,7 +1601,6 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
 
     // have to do this after looking it up in the scope
     mangled = fixReservedWords(mangled);
-    mangled = fixReservedNames(mangled);
 
     //print("mangled", mangled);
     // TODO TODO TODO todo; import * at global scope failing here

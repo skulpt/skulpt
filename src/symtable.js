@@ -48,7 +48,7 @@ var ClassBlock = 'class';
  */
 function Symbol(name, flags, namespaces)
 {
-    this.__name = name;
+    this.__name = fixReservedNames(name);
     this.__flags = flags;
     this.__scope = (flags >> SCOPE_OFF) & SCOPE_MASK;
     this.__namespaces = namespaces || [];
@@ -332,6 +332,7 @@ SymbolTable.prototype.addDef = function(name, flag)
 {
     //print("addDef:", name.v, flag);
     var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
+    mangled = fixReservedNames(mangled);
     var val = this.cur.symFlags[mangled];
     if (val !== undefined)
     {
