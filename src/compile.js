@@ -136,6 +136,21 @@ function fixReservedWords(name)
     return name + "_$rw$";
 }
 
+var reservedNames_ = { '__defineGetter__': true, '__defineSetter__': true, 
+    'eval': true, 'hasOwnProperty': true, 'isPrototypeOf': true, 
+    '__lookupGetter__': true, '__lookupSetter__': true, 
+    '__noSuchMethod__': true, 'propertyIsEnumerable': true,
+    'toSource': true, 'toLocaleString': true, 'toString': true,
+    'unwatch': true, 'valueOf': true, 'watch': true
+};
+
+function fixReservedNames(name)
+{
+    if (reservedNames_[name] !== true)
+        return name;
+    return name + "_$rw$";    
+}
+
 function mangleName(priv, ident)
 {
     var name = ident.v;
@@ -1532,9 +1547,6 @@ Compiler.prototype.isCell = function(name)
     return false;
 };
 
-var reservedNames_ = { 'watch': true, 'unwatch': true    
-};
-
 /**
  * @param {Sk.builtin.str} name
  * @param {Object} ctx
@@ -1583,6 +1595,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
 
     // have to do this after looking it up in the scope
     mangled = fixReservedWords(mangled);
+    mangled = fixReservedNames(mangled);
 
     //print("mangled", mangled);
     // TODO TODO TODO todo; import * at global scope failing here
