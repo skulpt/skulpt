@@ -1532,6 +1532,9 @@ Compiler.prototype.isCell = function(name)
     return false;
 };
 
+var reservedNames_ = { 'watch': true, 'unwatch': true    
+};
+
 /**
  * @param {Sk.builtin.str} name
  * @param {Object} ctx
@@ -1540,9 +1543,9 @@ Compiler.prototype.isCell = function(name)
 Compiler.prototype.nameop = function(name, ctx, dataToStore)
 {
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__")
-        this.error("can not assign to __debug__");
+        throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None")
-        this.error("can not assign to None");
+        throw new Sk.builtin.SyntaxError("can not assign to None");
 
     if (name.v === "None") return "null";
     if (name.v === "True") return "true";
