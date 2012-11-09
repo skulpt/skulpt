@@ -136,6 +136,21 @@ function fixReservedWords(name)
     return name + "_$rw$";
 }
 
+var reservedNames_ = { '__defineGetter__': true, '__defineSetter__': true, 
+    'eval': true, 'hasOwnProperty': true, 'isPrototypeOf': true, 
+    '__lookupGetter__': true, '__lookupSetter__': true, 
+    '__noSuchMethod__': true, 'propertyIsEnumerable': true,
+    'toSource': true, 'toLocaleString': true, 'toString': true,
+    'unwatch': true, 'valueOf': true, 'watch': true
+};
+
+function fixReservedNames(name)
+{
+    if (reservedNames_[name])
+        return name + "_$rn$";
+    return name;
+}
+
 function mangleName(priv, ident)
 {
     var name = ident.v;
@@ -512,19 +527,23 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
             var val;
             if (e.ctx !== AugStore)
                 val = this.vexpr(e.value);
+            var mangled = e.attr['$r']().v;
+            mangled = mangled.substring(1, mangled.length-1);
+            mangled = fixReservedWords(mangled);
+            mangled = fixReservedNames(mangled);
             switch (e.ctx)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",", e.attr['$r']().v, ")");
+                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",'", mangled, "')");
                 case AugStore:
                     out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
                     val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     out("}");
                     break;
                 case Store:
-                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     break;
                 case Del:
                     goog.asserts.fail("todo;");
@@ -1540,15 +1559,17 @@ Compiler.prototype.isCell = function(name)
 Compiler.prototype.nameop = function(name, ctx, dataToStore)
 {
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__")
-        this.error("can not assign to __debug__");
+        throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None")
-        this.error("can not assign to None");
+        throw new Sk.builtin.SyntaxError("can not assign to None");
 
     if (name.v === "None") return "null";
     if (name.v === "True") return "true";
     if (name.v === "False") return "false";
 
     var mangled = mangleName(this.u.private_, name).v;
+    // Have to do this before looking it up in the scope
+    mangled = fixReservedNames(mangled);
     var op = 0;
     var optype = OP_NAME;
     var scope = this.u.ste.getScope(mangled);
@@ -1698,8 +1719,13 @@ Compiler.prototype.exitScope = function()
     if (this.u)
         this.u.activateScope();
 
-    if (prev.name.v !== "<module>") // todo; hacky
-        out(prev.scopename, ".co_name=new Sk.builtins['str'](", prev.name['$r']().v, ");");
+    if (prev.name.v !== "<module>") {// todo; hacky
+        var mangled = prev.name['$r']().v;
+        mangled = mangled.substring(1, mangled.length-1);
+        mangled = fixReservedWords(mangled);
+        mangled = fixReservedNames(mangled);
+        out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
+    }
 };
 
 Compiler.prototype.cbody = function(stmts)

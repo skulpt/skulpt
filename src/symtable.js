@@ -262,6 +262,7 @@ SymbolTable.prototype.SEQExpr = function(nodes)
 
 SymbolTable.prototype.enterBlock = function(name, blockType, ast, lineno)
 {
+    name = fixReservedNames(name);
     //print("enterBlock:", name);
     var prev = null;
     if (this.cur)
@@ -332,6 +333,7 @@ SymbolTable.prototype.addDef = function(name, flag)
 {
     //print("addDef:", name.v, flag);
     var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
+    mangled = fixReservedNames(mangled);
     var val = this.cur.symFlags[mangled];
     if (val !== undefined)
     {
@@ -489,6 +491,7 @@ SymbolTable.prototype.visitStmt = function(s)
             for (var i = 0; i < nameslen; ++i)
             {
                 var name = mangleName(this.curClass, s.names[i]).v;
+                name = fixReservedNames(name);
                 var cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE))
                 {
