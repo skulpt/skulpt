@@ -56,6 +56,12 @@ Sk.builtin.list.prototype.list_iter_ = function()
 
 Sk.builtin.list.prototype.list_concat_ = function(other)
 {
+    // other not a list
+    if (!other.__class__ || other.__class__ != Sk.builtin.list)
+    {
+        throw new Sk.builtin.TypeError("can only concatenate list to list")
+    }
+
     var ret = this.v.slice();
     for (var i = 0; i < other.v.length; ++i)
     {
