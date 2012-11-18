@@ -270,7 +270,7 @@ Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
 Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
 {
     if (i < 0) i = 0;
-    else if (i > self.v.length) i = self.v.length - 1;
+    else if (i > self.v.length) i = self.v.length;
     self.v.splice(i, 0, x);
 });
 
