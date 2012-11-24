@@ -182,7 +182,7 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
     var descr = Sk.builtin.type.typeLookup(tp, name);
     var f;
     //print("type.tpgetattr descr", descr, descr.tp$name, descr.func_code, name);
-    if (descr !== undefined && descr.ob$type !== undefined)
+    if (descr !== undefined && descr !== null && descr.ob$type !== undefined)
     {
         f = descr.ob$type.tp$descr_get;
         // todo;if (f && descr.tp$descr_set) // is a data descriptor if it has a set
@@ -204,7 +204,7 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
         return f.call(descr, null, tp);
     }
 
-    if (descr)
+    if (descr !== undefined)
     {
         return descr;
     }
