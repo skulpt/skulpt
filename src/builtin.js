@@ -105,6 +105,50 @@ Sk.builtin.max = function max()
     return highest;
 };
 
+Sk.builtin.bool = function bool(x)
+{
+    Sk.builtin.pyCheckArgs("bool", arguments, 1);
+    return Sk.misceval.isTrue(x);
+}
+
+Sk.builtin.any = function any(iter)
+{
+    Sk.builtin.pyCheckArgs("any", arguments, 1);
+    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
+
+    if (!iter.tp$iter) {
+        throw "TypeError: object is not iterable";
+    }
+
+    it = iter.tp$iter();
+    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.builtin.bool(i)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Sk.builtin.all = function all(iter)
+{
+    Sk.builtin.pyCheckArgs("all", arguments, 1);
+    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
+
+    if (!iter.tp$iter) {
+        throw "TypeError: object is not iterable";
+    }
+
+    it = iter.tp$iter();
+    for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (!Sk.builtin.bool(i)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Sk.builtin.sum = function sum(iter,start)
 {
     var tot = 0;

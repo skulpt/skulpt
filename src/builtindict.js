@@ -22,6 +22,10 @@ Sk.builtins = {
 'float_$rw$': Sk.builtin.float_,
 'int_$rw$': Sk.builtin.int_,
 
+'bool': Sk.builtin.bool,
+'any': Sk.builtin.any,
+'all': Sk.builtin.all,
+
 'AttributeError': Sk.builtin.AttributeError,
 'ValueError': Sk.builtin.ValueError,
 
