@@ -113,6 +113,8 @@ Sk.builtin.bool = function bool(x)
 
 Sk.builtin.any = function any(iter)
 {
+    var it, i;
+
     Sk.builtin.pyCheckArgs("any", arguments, 1);
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
 
@@ -132,6 +134,8 @@ Sk.builtin.any = function any(iter)
 
 Sk.builtin.all = function all(iter)
 {
+    var it, i;
+
     Sk.builtin.pyCheckArgs("all", arguments, 1);
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
 
