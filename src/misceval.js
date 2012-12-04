@@ -479,7 +479,7 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
             args.unshift(func);
             return Sk.misceval.apply(fcall, kws, args, kwdict, varargseq);
         }
-        throw new TypeError("'" + func.tp$name + "' object is not callable");
+        throw new TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
 };
 goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
