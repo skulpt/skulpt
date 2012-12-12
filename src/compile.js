@@ -823,6 +823,7 @@ Compiler.prototype.cwhile = function(s)
         {
             this.setBlock(orelse);
             this.vseqstmt(s.orelse);
+            this._jump(next);
         }
 
         this.setBlock(next);
