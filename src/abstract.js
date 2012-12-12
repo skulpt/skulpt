@@ -14,6 +14,8 @@ Sk.abstr.typeName = function(v) {
     var vtypename;
     if (v === null) {
         vtypename = "NoneType";
+    } else if ((v === true) || (v === false)) {
+        vtypename = "bool";
     } else if (typeof v === "number") {
         vtypename = "number";
     } else if (v.tp$name !== undefined) {
