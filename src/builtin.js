@@ -74,7 +74,7 @@ Sk.builtin.len = function(item)
     if (item.mp$length)
         return item.mp$length();
 
-    throw new Sk.builtin.TypeError("object of type '" + item.tp$name + "' has no len()");
+    throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };
 
 Sk.builtin.min = function min()

@@ -89,19 +89,20 @@ Sk.builtin.type = function(name, bases, dict)
             /* todo; vararg kwdict */
             if (callf)
                 return Sk.misceval.apply(callf, undefined, undefined, kw, args);
-            throw new Sk.builtin.TypeError("'" + this.tp$name + "' object is not callable");
+            throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not callable");
         };
         klass.prototype.tp$iter = function()
         {
             var iterf = this.tp$getattr("__iter__");
+            var tname = Sk.abstr.typeName(this);
             if (iterf)
             {
                  var ret = Sk.misceval.callsim(iterf);
                  if (ret.tp$getattr("next") === undefined)
-                    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + this.tp$name + "'");
+                    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + tname + "'");
                  return ret;
             }
-            throw new Sk.builtin.TypeError("'" + this.tp$name + "' object is not iterable");
+            throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
         klass.prototype.tp$iternext = function()
         {

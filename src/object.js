@@ -70,7 +70,7 @@ goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.objec
 
 Sk.builtin.object.prototype.HashNotImplemented = function()
 {
-    throw new Sk.builtin.TypeError("unhashable type: '" + this.tp$name + "'");
+    throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
 };
 
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
