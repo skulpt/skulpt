@@ -171,6 +171,9 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
         } else																		// RNL
             return ans;
     }
+	else if (a === undefined || b === undefined) {
+		throw new Sk.builtin.NameError('Undefined variable in expression')
+	}
     else if (a.constructor === Sk.builtin.lng && typeof b === "number")
         return [a, Sk.builtin.lng.fromInt$(b)];
     else if (b.constructor === Sk.builtin.lng && typeof a === "number")
@@ -457,21 +460,36 @@ Sk.abstr.gattr = function(obj, nameJS)
 {
     var objname = Sk.abstr.typeName(obj);
 
-    if (obj === null || obj.tp$getattr === undefined) {
+    if (obj === null) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    };
+    }
 
-    var ret = obj.tp$getattr(nameJS);
-    if (ret === undefined)
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+    var ret = undefined;
+
+    if(obj['__getattr__']) {
+        ret = Sk.misceval.callsim(obj['__getattr__'], obj, nameJS);
+    } else if (obj.tp$getattr !== undefined) {
+        ret = obj.tp$getattr(nameJS);
+    }
+
+    if (ret === undefined) {
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");       
+    }
+ 
     return ret;
+    
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function(obj, nameJS, data)
 {
-    obj.tp$setattr(nameJS, data);
+    if(obj['__setattr__']) {
+            Sk.misceval.callsim(obj['__setattr__'],obj, nameJS, data)
+    } else {
+        obj.tp$setattr(nameJS, data);
+    }
 };
+
 goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
 Sk.abstr.iter = function(obj)

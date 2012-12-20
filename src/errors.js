@@ -19,16 +19,18 @@ Sk.builtin.Exception.prototype.tp$str = function()
 {
     var ret = "";
     //print(JSON.stringify(this.args));
+
+    ret += this.tp$name;
+    if (this.args)
+        ret += ": " + this.args.v[0].v;
+
     if (this.args.v.length > 4)		//	RNL from length > 1
     {
-        var ret = "File \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
+        ret += "\nFile \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
             this.args.v[4].v + "\n";
         for (var i = 0; i < this.args.v[3]; ++i) ret += " ";
         ret += "^\n";
     }
-    ret += this.tp$name;
-    if (this.args)
-        ret += ": " + this.args.v[0].v;
     return new Sk.builtin.str(ret);
 };
 
@@ -155,3 +157,13 @@ goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
 Sk.builtin.ZeroDivisionError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.ZeroDivisionError, Sk.builtin.Exception);
 Sk.builtin.ZeroDivisionError.prototype.tp$name = "ZeroDivisionError";
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.TimeLimitError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.TimeLimitError, Sk.builtin.Exception);
+Sk.builtin.TimeLimitError.prototype.tp$name = "TimeLimitError";
+goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);

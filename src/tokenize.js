@@ -44,30 +44,6 @@ Sk.Tokenizer = function (filename, interactive, callback)
 
         return 'failed';
     };
-    pseudoprog = new RegExp(PseudoToken);
-    single3prog = new RegExp(Single3, "g");
-    double3prog = new RegExp(Double3, "g");
-
-    endprogs = {     "'": new RegExp(Single, "g"), '"': new RegExp(Double_, "g"),
-    "'''": single3prog, '"""': double3prog,
-    "r'''": single3prog, 'r"""': double3prog,
-    "u'''": single3prog, 'u"""': double3prog,
-    "b'''": single3prog, 'b"""': double3prog,
-    "ur'''": single3prog, 'ur"""': double3prog,
-    "br'''": single3prog, 'br"""': double3prog,
-    "R'''": single3prog, 'R"""': double3prog,
-    "U'''": single3prog, 'U"""': double3prog,
-    "B'''": single3prog, 'B"""': double3prog,
-    "uR'''": single3prog, 'uR"""': double3prog,
-    "Ur'''": single3prog, 'Ur"""': double3prog,
-    "UR'''": single3prog, 'UR"""': double3prog,
-    "bR'''": single3prog, 'bR"""': double3prog,
-    "Br'''": single3prog, 'Br"""': double3prog,
-    "BR'''": single3prog, 'BR"""': double3prog,
-    'r': null, 'R': null,
-    'u': null, 'U': null,
-    'b': null, 'B': null
-};
 
 };
 
@@ -259,6 +235,38 @@ function rstrip(input, what)
 Sk.Tokenizer.prototype.generateTokens = function(line)
 {
     var endmatch, pos, column, end, max;
+
+
+    // bnm - Move these definitions in this function otherwise test state is preserved between
+    // calls on single3prog and double3prog causing weird errors with having multiple instances
+    // of triple quoted strings in the same program.
+
+    var pseudoprog = new RegExp(PseudoToken);
+    var single3prog = new RegExp(Single3, "g");
+    var double3prog = new RegExp(Double3, "g");
+
+    var endprogs = {     "'": new RegExp(Single, "g"), '"': new RegExp(Double_, "g"),
+    "'''": single3prog, '"""': double3prog,
+    "r'''": single3prog, 'r"""': double3prog,
+    "u'''": single3prog, 'u"""': double3prog,
+    "b'''": single3prog, 'b"""': double3prog,
+    "ur'''": single3prog, 'ur"""': double3prog,
+    "br'''": single3prog, 'br"""': double3prog,
+    "R'''": single3prog, 'R"""': double3prog,
+    "U'''": single3prog, 'U"""': double3prog,
+    "B'''": single3prog, 'B"""': double3prog,
+    "uR'''": single3prog, 'uR"""': double3prog,
+    "Ur'''": single3prog, 'Ur"""': double3prog,
+    "UR'''": single3prog, 'UR"""': double3prog,
+    "bR'''": single3prog, 'bR"""': double3prog,
+    "Br'''": single3prog, 'Br"""': double3prog,
+    "BR'''": single3prog, 'BR"""': double3prog,
+    'r': null, 'R': null,
+    'u': null, 'U': null,
+    'b': null, 'B': null
+    };
+
+
 
     if (!line) line = '';
     //print("LINE:'"+line+"'");

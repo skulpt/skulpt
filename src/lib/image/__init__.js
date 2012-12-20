@@ -58,7 +58,7 @@ var $builtinmodule = function(name) {
                 ulx = 0;
                 uly = 0;
             }
-            console.log("drawing at: " + ulx + "," + uly);
+            //console.log("drawing at: " + ulx + "," + uly);
             ctx.putImageData(self.imagedata,ulx,uly);
         });
 
@@ -128,7 +128,7 @@ var $builtinmodule = function(name) {
         });
 
         $loc.__str__ = new Sk.builtin.func(function(self) {
-            console.log("in __str__")
+            //console.log("in __str__")
             return "[" + self.red + "," + self.green + "," + self.blue + "]"
         });
         
@@ -159,7 +159,7 @@ var $builtinmodule = function(name) {
 
                 ImageMod.canvasLib[Sk.canvas] = self.theScreen;
             } else {
-                console.log("canvas is already in place");
+                //console.log("canvas is already in place");
                 self.theScreen = currentCanvas;
                 self.theScreen.height = self.theScreen.height;
             }
