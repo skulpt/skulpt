@@ -466,7 +466,7 @@ Sk.abstr.gattr = function(obj, nameJS)
 
     var ret = undefined;
 
-    if(obj['__getattr__']) {
+    if (obj['__getattr__']) {
         ret = Sk.misceval.callsim(obj['__getattr__'], obj, nameJS);
     } else if (obj.tp$getattr !== undefined) {
         ret = obj.tp$getattr(nameJS);
@@ -483,10 +483,16 @@ goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function(obj, nameJS, data)
 {
-    if(obj['__setattr__']) {
-            Sk.misceval.callsim(obj['__setattr__'],obj, nameJS, data)
-    } else {
+    var objname = Sk.abstr.typeName(obj);
+
+    if (obj === null) {
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+    } else if (obj['__setattr__']) {
+        Sk.misceval.callsim(obj['__setattr__'], obj, nameJS, data);
+    } else if (obj.tp$setattr !== undefined) {
         obj.tp$setattr(nameJS, data);
+    } else {
+        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 };
 
