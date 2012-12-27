@@ -347,17 +347,6 @@ function testsMain()
     }
     print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
 
-    {
-        var origrunfail = runfail;
-        runpass = runfail = rundisabled = 0;
-        for (i = 0; i <= 20; ++i)
-        {
-            testRun(sprintf("test/closure-cmd/t%02d", i));
-        }
-        print(sprintf("closure-cmd: %d/%d", runpass, runpass + runfail));
-        runfail += origrunfail; // for exit code
-    }
-
     if (Sk.inBrowser)
     {
         var origrunfail = runfail;
