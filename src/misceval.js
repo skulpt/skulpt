@@ -426,8 +426,11 @@ goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  */
 Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
 {
-
-    if (typeof func === "function")
+    if (func === null)
+    {
+        throw new TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");        
+    }
+    else if (typeof func === "function")
     {
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
