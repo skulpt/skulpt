@@ -500,7 +500,12 @@ goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
 Sk.abstr.iter = function(obj)
 {
-    return obj.tp$iter();
+    if (obj.tp$iter) {
+        return obj.tp$iter();
+    }
+    else {
+        throw new TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
+    }
 };
 goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
