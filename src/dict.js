@@ -72,15 +72,15 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
     var bucket = this[kf(key)];
     var item;
+    var s;
 
     // todo; does this need to go through mp$ma_lookup
 
     if (bucket === undefined)
     {
         // Not found in dictionary 
-
-        // Incorrect: should throw exception!
-        return undefined;
+        s = new Sk.builtin.str(key);
+        throw new Sk.builtin.KeyError(s.v);
     }
 
     item = this.key$lookup(bucket, key);
@@ -88,10 +88,9 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
         return item.rhs;
     };
 
-    // Not found in dictionary 
-    
-    // Incorrect: should throw exception!
-    return undefined;
+    // Not found in dictionary     
+    s = new Sk.builtin.str(key);
+    throw new Sk.builtin.KeyError(s.v);
 };
 
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
@@ -103,7 +102,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
     if (bucket === undefined)
     {
         // New bucket
-        bucket = {$hash: k, items: [{lhs: key, rhs: w}]}
+        bucket = {$hash: k, items: [{lhs: key, rhs: w}]};
         this[k] = bucket;
         this.size += 1;
         return;
@@ -246,9 +245,15 @@ Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
         //d = new Sk.builtin.NoneObj();
         d = null;
     }
-    var ret = self.mp$subscript(k);
-    if (ret !== undefined) return ret;
-    return d;
+
+    try {
+        var ret = self.mp$subscript(k);
+        // Found
+        return ret;
+    } catch (x) {
+        // Not found
+        return d;
+    }
 });
 
 Sk.builtin.dict.prototype['items'] = new Sk.builtin.func(function(self)

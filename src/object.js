@@ -34,8 +34,13 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     if (this['$d'])
     {
         var res;
-        if (this['$d'].mp$subscript)
-            res = this['$d'].mp$subscript(new Sk.builtin.str(name));
+        if (this['$d'].mp$subscript) {
+            try {
+                res = this['$d'].mp$subscript(new Sk.builtin.str(name));
+            } catch (x) {
+                res = undefined;
+            }
+        }
         else if (typeof this['$d'] === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = this['$d'][name];
         if (res !== undefined)

@@ -192,11 +192,12 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
     if (this['$d'])
     {
-        //print("hi");
-        var res = this['$d'].mp$subscript(new Sk.builtin.str(name));
-        //print(res);
-        if (res !== undefined)
+        try {
+            var res = this['$d'].mp$subscript(new Sk.builtin.str(name));
+            //print(res);
             return res;
+        } catch (x) {
+        }
     }
 
     if (f)
@@ -227,9 +228,11 @@ Sk.builtin.type.typeLookup = function(type, name)
         var base = mro.v[i];
         if (base.hasOwnProperty(name))
             return base[name];
-        var res = base['$d'].mp$subscript(new Sk.builtin.str(name));
-        if (res !== undefined)
+        try {
+            var res = base['$d'].mp$subscript(new Sk.builtin.str(name));
             return res;
+        } catch (x) {
+        }
     }
 
     return undefined;
