@@ -21,9 +21,24 @@ Sk.builtin.dict = function dict(L)
             this.mp$ass_subscript(L[i], L[i+1]);
         }
     }
+    else if (L instanceof Sk.builtin.dict) {
+        // Handle calls of type "dict(mapping)" from Python code
+        for (var it = L.tp$iter(), k = it.tp$iternext();
+             k !== undefined;
+             k = it.tp$iternext())
+        {
+            var v = L.mp$subscript(k);
+            if (v === undefined)
+            {
+                //print(k, "had undefined v");
+                v = null;
+            }
+            this.mp$ass_subscript(k, v);
+        }
+    }
     else if (L.tp$iter)
     {
-        // Handle calls to "dict(...)" from Python code
+        // Handle calls of type "dict(iterable)" from Python code
         for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
         {
             if (i.mp$subscript)
