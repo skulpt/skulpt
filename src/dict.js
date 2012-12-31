@@ -83,6 +83,26 @@ Sk.builtin.dict.prototype.key$lookup = function(bucket, key)
     return null;
 }   
 
+Sk.builtin.dict.prototype.key$pop = function(bucket, key)
+{
+    var item;
+    var eq;
+    var i;
+
+    for (i=0; i<bucket.items.length; i++)
+    {
+        item = bucket.items[i];
+        eq = Sk.misceval.richCompareBool(item.lhs, key, 'Eq');
+        if (eq)
+        {
+            bucket.items.splice(i, 1);
+            this.size -= 1;
+            return item;
+        }
+    }
+    return null;    
+}
+
 Sk.builtin.dict.prototype.mp$subscript = function(key)
 {
     var bucket = this[kf(key)];
@@ -133,6 +153,31 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
     bucket.items.push({lhs: key, rhs: w});
     this.size += 1;
 };
+
+Sk.builtin.dict.prototype.mp$del_subscript = function(key)
+{
+    var bucket = this[kf(key)];
+    var item;
+    var s;
+
+    // todo; does this need to go through mp$ma_lookup
+
+    if (bucket === undefined)
+    {
+        // Not found in dictionary 
+        s = new Sk.builtin.str(key);
+        throw new Sk.builtin.KeyError(s.v);
+    }
+
+    item = this.key$pop(bucket, key);
+    if (item) {
+        return;
+    };
+
+    // Not found in dictionary     
+    s = new Sk.builtin.str(key);
+    throw new Sk.builtin.KeyError(s.v);    
+}
 
 Sk.builtin.dict.prototype.tp$iter = function()
 {

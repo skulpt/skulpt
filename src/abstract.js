@@ -318,10 +318,11 @@ Sk.abstr.sequenceSetItem = function(seq, i, x)
 
 Sk.abstr.sequenceDelItem = function(seq, i)
 {
-    if (seq.sq$ass_item)
+    if (seq.sq$del_item)
     {
         i = Sk.abstr.fixSeqIndex_(seq, i);
-        return seq.sq$ass_item(i, null);
+        seq.sq$del_item(i);
+        return;
     }
 
     var seqtypename = Sk.abstr.typeName(seq);
@@ -358,11 +359,12 @@ Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
 
 Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
 {
-    if (seq.sq$ass_slice)
+    if (seq.sq$del_slice)
     {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
-        return seq.sq$ass_slice(i1, i2, null);
+        seq.sq$del_slice(i1, i2);
+        return;
     }
 
     var seqtypename = Sk.abstr.typeName(seq);
@@ -402,15 +404,9 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 
 Sk.abstr.objectDelItem = function(o, key)
 {
-    if (o.mp$ass_subscript) {
-        var kf = Sk.builtin.hash;
-        var k = kf(key)
-        if (o[k] !== undefined) {
-            o.size -= 1;
-            delete o[k];
-            return;
-        }
-        return o.mp$ass_subscript(key, null);
+    if (o.mp$del_subscript) {
+        o.mp$del_subscript(key);
+        return;
     }
     if (o.sq$ass_item)
     {
@@ -419,7 +415,8 @@ Sk.abstr.objectDelItem = function(o, key)
             var keytypename = Sk.abstr.typeName(key);
             throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
         }
-        return Sk.abstr.sequenceDelItem(o, keyValue);
+        Sk.abstr.sequenceDelItem(o, keyValue);
+        return;
     }
     // if o is a slice do something else...
     var otypename = Sk.abstr.typeName(o);

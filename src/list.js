@@ -59,7 +59,7 @@ Sk.builtin.list.prototype.list_concat_ = function(other)
     // other not a list
     if (!other.__class__ || other.__class__ != Sk.builtin.list)
     {
-        throw new Sk.builtin.TypeError("can only concatenate list to list")
+        throw new Sk.builtin.TypeError("can only concatenate list to list");
     }
 
     var ret = this.v.slice();
@@ -70,19 +70,32 @@ Sk.builtin.list.prototype.list_concat_ = function(other)
     return new Sk.builtin.list(ret);
 }
 
+Sk.builtin.list.prototype.list_del_item_ = function(i)
+{
+    if (i < 0 || i >= this.v.length)
+        throw new Sk.builtin.IndexError("list assignment index out of range");
+    this.list_del_slice_(i, i+1);    
+};
+
+Sk.builtin.list.prototype.list_del_slice_ = function(ilow, ihigh)
+{
+    var args = [];
+    args.unshift(ihigh - ilow);
+    args.unshift(ilow);
+    this.v.splice.apply(this.v, args);
+};
+
 Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 {
     if (i < 0 || i >= this.v.length)
         throw new Sk.builtin.IndexError("list assignment index out of range");
-    if (v === null)
-        return Sk.builtin.list.prototype.list_ass_slice_.call(this, i, i+1, v);
     this.v[i] = v;
 };
 
 Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 {
     // todo; item rather list/null
-    var args = v === null ? [] : v.v.slice(0);
+    var args = v.v.slice(0);
     args.unshift(ihigh - ilow);
     args.unshift(ilow);
     this.v.splice.apply(this.v, args);
@@ -173,7 +186,9 @@ Sk.builtin.list.prototype.sq$item = list_item;
 Sk.builtin.list.prototype.sq$slice = list_slice;
 */
 Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.prototype.list_ass_item_;
+Sk.builtin.list.prototype.sq$del_item = Sk.builtin.list.prototype.list_del_item_;
 Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.prototype.list_ass_slice_;
+Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.list_del_slice_;
 //Sk.builtin.list.prototype.sq$contains // iter version is fine
 /*
 Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
@@ -201,15 +216,6 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
         throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
-Sk.builtin.list.prototype.list_ass_item_ = function(i, value)
-{
-    if (i < 0 || i >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
-    if (value === null)
-        this.list_ass_slice_(i, i+1, value);
-    else
-        this.v[i] = value;
-};
-
 Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
 {
     if (Sk.misceval.isIndex(index))
@@ -224,29 +230,43 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
             this.list_ass_slice_(index.start, index.stop, value);
         else
         {
-            if (value === null)
+            var tosub = [];
+            index.sssiter$(this, function(i, wrt) { tosub.push(i); });
+            var j = 0;
+            if (tosub.length !== value.v.length) throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
+            for (var i = 0; i < tosub.length; ++i)
             {
-                var self = this;
-                var dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
-                var offdir = index.step > 0 ? 1 : 0;
-                index.sssiter$(this, function(i, wrt)
-                        {
-                            self.v.splice(i - dec, 1);
-                            dec += offdir;
-                        });
+                this.v.splice(tosub[i], 1, value.v[j]);
+                j += 1;
             }
-            else
-            {
-                var tosub = [];
-                index.sssiter$(this, function(i, wrt) { tosub.push(i); });
-                var j = 0;
-                if (tosub.length !== value.v.length) throw new Sk.builtin.ValueError("attempt to assign sequence of size " + value.v.length + " to extended slice of size " + tosub.length);
-                for (var i = 0; i < tosub.length; ++i)
-                {
-                    this.v.splice(tosub[i], 1, value.v[j]);
-                    j += 1;
-                }
-            }
+        }
+    }
+    else
+        throw new TypeError("list indices must be integers, not " + typeof index);
+};
+
+Sk.builtin.list.prototype.list_del_subscript_ = function(index)
+{
+    if (Sk.misceval.isIndex(index))
+    {
+        var i = Sk.misceval.asIndex(index);
+        if (i < 0) i = this.v.length + i;
+        this.list_del_item_(i);
+    }
+    else if (index instanceof Sk.builtin.slice)
+    {
+        if (index.step === 1)
+            this.list_del_slice_(index.start, index.stop);
+        else
+        {
+            var self = this;
+            var dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
+            var offdir = index.step > 0 ? 1 : 0;
+            index.sssiter$(this, function(i, wrt)
+                           {
+                               self.v.splice(i - dec, 1);
+                               dec += offdir;
+                           });
         }
     }
     else
@@ -255,6 +275,7 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
 
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
 Sk.builtin.list.prototype.mp$ass_subscript = Sk.builtin.list.prototype.list_ass_subscript_;
+Sk.builtin.list.prototype.mp$del_subscript = Sk.builtin.list.prototype.list_del_subscript_;
 
 Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index)
         {
