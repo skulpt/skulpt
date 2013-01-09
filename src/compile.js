@@ -1,6 +1,8 @@
 /** @param {...*} x */
 var out;
 
+Sk.gensymcount = 0;
+
 /**
  * @constructor
  * @param {string} filename
@@ -21,7 +23,7 @@ function Compiler(filename, st, flags, sourceCodeForAnnotation)
 
     this.result = [];
 
-    this.gensymcount = 0;
+    // this.gensymcount = 0;
 
     this.allUnits = [];
 
@@ -103,7 +105,7 @@ Compiler.prototype.gensym = function(hint)
 {
     hint = hint || '';
     hint = '$' + hint;
-    hint += this.gensymcount++;
+    hint += Sk.gensymcount++;
     return hint;
 };
 
@@ -1798,3 +1800,10 @@ Sk.compile = function(source, filename, mode)
 };
 
 goog.exportSymbol("Sk.compile", Sk.compile);
+
+Sk.resetCompiler = function()
+{
+    Sk.gensymcount = 0;
+}
+
+goog.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);

@@ -223,6 +223,8 @@ Sk.importMain = function(name, dumpJS)
 	Sk.sysmodules = new Sk.builtin.dict([]);
 	Sk.realsyspath = undefined;
 
+    Sk.resetCompiler();
+
     return Sk.importModuleInternal_(name, dumpJS, "__main__");
 };
 
@@ -234,6 +236,8 @@ Sk.importMainWithBody = function(name, dumpJS, body)
 	Sk.sysmodules = new Sk.builtin.dict([]);
 	Sk.realsyspath = undefined;
     
+    Sk.resetCompiler();
+
     return Sk.importModuleInternal_(name, dumpJS, "__main__", body);
 };
 
