@@ -196,7 +196,17 @@ MersenneTwister.prototype.genrand_res53 = function() {
 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
-
+function fisherYates ( myArray ) {
+  var i = myArray.length, j, tempi, tempj;
+  if ( i == 0 ) return false;
+  while ( --i ) {
+     j = Math.floor( Math.random() * ( i + 1 ) );
+     tempi = myArray[i];
+     tempj = myArray[j];
+     myArray[i] = tempj;
+     myArray[j] = tempi;
+   }
+}
 
 var $builtinmodule = function(name)
 {
@@ -235,5 +245,11 @@ var $builtinmodule = function(name)
         high = high - 1;
         return Math.round(myGenerator.genrand_res53()*(high-low))+low;
     });
+
+    mod.shuffle = new Sk.builtin.func(function(myarray) {
+	fisherYates(myarray.v)
+    });
+
     return mod;
+
 }
