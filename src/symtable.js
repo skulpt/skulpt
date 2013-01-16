@@ -299,7 +299,7 @@ SymbolTable.prototype.visitParams = function(args, toplevel)
         if (arg.constructor === Name)
         {
             goog.asserts.assert(arg.ctx === Param || (arg.ctx === Store && !toplevel));
-            this.addDef(arg.id, DEF_PARAM);
+            this.addDef(arg.id, DEF_PARAM, arg.lineno);
         }
         else
         {
@@ -329,7 +329,7 @@ SymbolTable.prototype.newTmpname = function()
     this.addDef(new Sk.builtin.str("_[" + (++this.tmpname) + "]"), DEF_LOCAL);
 }
 
-SymbolTable.prototype.addDef = function(name, flag)
+SymbolTable.prototype.addDef = function(name, flag, lineno)
 {
     //print("addDef:", name.v, flag);
     var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
@@ -339,7 +339,7 @@ SymbolTable.prototype.addDef = function(name, flag)
     {
         if ((flag & DEF_PARAM) && (val & DEF_PARAM))
         {
-            throw new Sk.builtin.SyntaxError("duplicate argument '" + name + "' in function definition");
+            throw new Sk.builtin.SyntaxError("duplicate argument '" + name.v + "' in function definition", "", lineno);
         }
         val |= flag;
     }
@@ -388,7 +388,7 @@ SymbolTable.prototype.visitStmt = function(s)
     switch (s.constructor)
     {
         case FunctionDef:
-            this.addDef(s.name, DEF_LOCAL);
+            this.addDef(s.name, DEF_LOCAL, s.lineno);
             if (s.args.defaults) this.SEQExpr(s.args.defaults);
             if (s.decorator_list) this.SEQExpr(s.decorator_list);
             this.enterBlock(s.name.v, FunctionBlock, s, s.lineno);
@@ -397,7 +397,7 @@ SymbolTable.prototype.visitStmt = function(s)
             this.exitBlock();
             break;
         case ClassDef:
-            this.addDef(s.name, DEF_LOCAL);
+            this.addDef(s.name, DEF_LOCAL, s.lineno);
             this.SEQExpr(s.bases);
             if (s.decorator_list) this.SEQExpr(s.decorator_list);
             this.enterBlock(s.name.v, ClassBlock, s, s.lineno);
@@ -501,7 +501,7 @@ SymbolTable.prototype.visitStmt = function(s)
                     else
                         throw new Sk.builtin.SyntaxError("name '" + name + "' is used prior to global declaration", "", s.lineno);
                 }
-                this.addDef(new Sk.builtin.str(name), DEF_GLOBAL);
+                this.addDef(new Sk.builtin.str(name), DEF_GLOBAL, s.lineno);
             }
             break;
         case Expr:
@@ -545,7 +545,7 @@ SymbolTable.prototype.visitExpr = function(e)
             this.visitExpr(e.operand);
             break;
         case Lambda:
-            this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL);
+            this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL, e.lineno);
             if (e.args.defaults)
                 this.SEQExpr(e.args.defaults);
             this.enterBlock("lambda", FunctionBlock, e, e.lineno);
@@ -601,7 +601,7 @@ SymbolTable.prototype.visitExpr = function(e)
             this.visitSlice(e.slice);
             break;
         case Name:
-            this.addDef(e.id, e.ctx === Load ? USE : DEF_LOCAL);
+            this.addDef(e.id, e.ctx === Load ? USE : DEF_LOCAL, e.lineno);
             break;
         case List:
         case Tuple:
@@ -655,7 +655,7 @@ SymbolTable.prototype.visitGenexp = function(e)
     this.visitExpr(outermost.iter);
     this.enterBlock("genexpr", FunctionBlock, e, e.lineno);
     this.cur.generator = true;
-    this.addDef(new Sk.builtin.str(".0"), DEF_PARAM);
+    this.addDef(new Sk.builtin.str(".0"), DEF_PARAM, e.lineno);
     this.visitExpr(outermost.target);
     this.SEQExpr(outermost.ifs);
     this.visitComprehension(e.generators, 1);
