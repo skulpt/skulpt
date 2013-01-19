@@ -309,24 +309,24 @@ SymbolTable.prototype.visitParams = function(args, toplevel)
     }
 }
 
-SymbolTable.prototype.visitArguments = function(a)
+SymbolTable.prototype.visitArguments = function(a, lineno)
 {
     if (a.args) this.visitParams(a.args, true);
     if (a.vararg)
     {
-        this.addDef(a.vararg, DEF_PARAM);
+        this.addDef(a.vararg, DEF_PARAM, lineno);
         this.cur.varargs = true;
     }
     if (a.kwarg)
     {
-        this.addDef(a.kwarg, DEF_PARAM);
+        this.addDef(a.kwarg, DEF_PARAM, lineno);
         this.cur.varkeywords = true;
     }
 };
 
-SymbolTable.prototype.newTmpname = function()
+SymbolTable.prototype.newTmpname = function(lineno)
 {
-    this.addDef(new Sk.builtin.str("_[" + (++this.tmpname) + "]"), DEF_LOCAL);
+    this.addDef(new Sk.builtin.str("_[" + (++this.tmpname) + "]"), DEF_LOCAL, lineno);
 }
 
 SymbolTable.prototype.addDef = function(name, flag, lineno)
@@ -392,7 +392,7 @@ SymbolTable.prototype.visitStmt = function(s)
             if (s.args.defaults) this.SEQExpr(s.args.defaults);
             if (s.decorator_list) this.SEQExpr(s.decorator_list);
             this.enterBlock(s.name.v, FunctionBlock, s, s.lineno);
-            this.visitArguments(s.args);
+            this.visitArguments(s.args, s.lineno);
             this.SEQStmt(s.body);
             this.exitBlock();
             break;
@@ -475,7 +475,7 @@ SymbolTable.prototype.visitStmt = function(s)
             break;
         case Import_:
         case ImportFrom:
-            this.visitAlias(s.names);
+            this.visitAlias(s.names, s.lineno);
             break;
         case Exec:
             this.visitExpr(s.body);
@@ -513,11 +513,11 @@ SymbolTable.prototype.visitStmt = function(s)
             // nothing
             break;
         case With_:
-            this.newTmpname();
+            this.newTmpname(s.lineno);
             this.visitExpr(s.context_expr);
             if (s.optional_vars)
             {
-                this.newTmpname();
+                this.newTmpname(s.lineno);
                 this.visitExpr(s.optional_vars);
             }
             this.SEQStmt(s.body);
@@ -549,7 +549,7 @@ SymbolTable.prototype.visitExpr = function(e)
             if (e.args.defaults)
                 this.SEQExpr(e.args.defaults);
             this.enterBlock("lambda", FunctionBlock, e, e.lineno);
-            this.visitArguments(e.args);
+            this.visitArguments(e.args, e.lineno);
             this.visitExpr(e.body);
             this.exitBlock();
             break;
@@ -563,7 +563,7 @@ SymbolTable.prototype.visitExpr = function(e)
             this.SEQExpr(e.values);
             break;
         case ListComp:
-            this.newTmpname();
+            this.newTmpname(e.lineno);
             this.visitExpr(e.elt);
             this.visitComprehension(e.generators, 0);
             break;
@@ -624,7 +624,7 @@ SymbolTable.prototype.visitComprehension = function(lcs, startAt)
     }
 };
 
-SymbolTable.prototype.visitAlias = function(names)
+SymbolTable.prototype.visitAlias = function(names, lineno)
 {
     /* Compute store_name, the name actually bound by the import
         operation.  It is diferent than a->name when a->name is a
@@ -639,7 +639,7 @@ SymbolTable.prototype.visitAlias = function(names)
         if (dot !== -1)
             storename = name.substr(0, dot);
         if (name !== "*")
-            this.addDef(new Sk.builtin.str(storename), DEF_IMPORT);
+            this.addDef(new Sk.builtin.str(storename), DEF_IMPORT, lineno);
         else
         {
             if (this.cur.blockType !== ModuleBlock)
