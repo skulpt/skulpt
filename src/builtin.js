@@ -211,6 +211,12 @@ Sk.builtin.getattr = function(obj, name, default_)
     return ret;
 };
 
+Sk.builtin.raw_input = function(obj, name, default_)
+{
+    var x = prompt(obj.v);
+    return new Sk.builtin.str(x);
+};
+
 Sk.builtin.input = function(obj, name, default_)
 {
     var x = prompt(obj.v);
