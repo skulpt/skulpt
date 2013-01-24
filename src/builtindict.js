@@ -9,6 +9,7 @@ Sk.builtins = {
 'sum': Sk.builtin.sum,
 'abs': Sk.builtin.abs,
 'fabs': Sk.builtin.abs,	//	Added by RNL
+'round': Sk.builtin.round,
 'ord': Sk.builtin.ord,
 'chr': Sk.builtin.chr,
 'dir': Sk.builtin.dir,
@@ -37,6 +38,7 @@ Sk.builtins = {
 'tuple': Sk.builtin.tuple,
 'type': Sk.builtin.type,
 'input': Sk.builtin.input,
+'raw_input': Sk.builtin.raw_input,
 /*'read': Sk.builtin.read,*/
 'jseval': Sk.builtin.jseval,
 'jsmillis': Sk.builtin.jsmillis,

@@ -383,6 +383,15 @@ Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, sta
    return self.v.lastIndexOf(tgt.v,start);
 });
 
+Sk.builtin.str.prototype['startswith'] = new Sk.builtin.func(function(self, tgt) {
+   return 0 == self.v.indexOf(tgt.v);
+});
+
+// http://stackoverflow.com/questions/280634/endswith-in-javascript
+Sk.builtin.str.prototype['endswith'] = new Sk.builtin.func(function(self, tgt) {
+    return self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1;
+});
+
 Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, newS, count)
 {
     if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)

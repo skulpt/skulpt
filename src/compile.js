@@ -678,15 +678,13 @@ Compiler.prototype.popFinallyBlock = function()
 
 Compiler.prototype.setupExcept = function(eb)
 {
-    out("$exc.push(", eb, ");try{");
+    out("$exc.push(", eb, ");");
     //this.pushExceptBlock(eb);
 };
 
 Compiler.prototype.endExcept = function()
 {
-    out("$exc.pop();}catch($err){");
-    out("$blk=$exc.pop();");
-    out("continue;}");
+    out("$exc.pop();");
 };
 
 Compiler.prototype.outputLocals = function(unit)
@@ -904,6 +902,11 @@ Compiler.prototype.ctryexcept = function(s)
         // todo; name
         this.vseqstmt(handler.body);
     }
+
+    // This should really jump to finally instead of end
+    // but until we implement finally jump to end is what
+    // we do.
+    this._jump(end);
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
@@ -1427,6 +1430,10 @@ Compiler.prototype.vstmt = function(s)
             else
                 out("return null;");
             break;
+        case Quit_:
+        case Exit_:
+            out("return $loc;");
+            break;
         case Delete_:
             this.vseqexpr(s.targets);
             break;
@@ -1689,8 +1696,7 @@ Compiler.prototype.cprint = function(s)
         out('Sk.misceval.print_(', /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
         out('Sk.misceval.print_(', /*dest, ',*/ '"\\n");');
-};
-
+}; 
 Compiler.prototype.cmod = function(mod)
 {
     //print("-----");
@@ -1700,8 +1706,31 @@ Compiler.prototype.cmod = function(mod)
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){";
     this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;";
-    this.u.switchCode = "while(true){switch($blk){";
-    this.u.suffixCode = "}}});";
+
+    // Add the try block that pops the try/except stack if one exists
+    // Github Issue #38 
+    // Google Code Issue: 109 / 114 
+
+    // Old code:
+    //this.u.switchCode = "while(true){switch($blk){";
+    //this.u.suffixCode = "}}});";
+
+    // New Code:
+    this.u.switchCode = "while(true){try{ switch($blk){";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $blk=$exc.pop(); continue; } else { throw err; }} }});";
+
+    // Note - this change may need to be adjusted for all the other instances of 
+    // switchCode and suffixCode in this file.  Not knowing how to test those 
+    // other cases I left them alone.   At least the changes to 
+    // setupExcept and endExcept will insure that the generated JavaScript 
+    // will be syntactically correct.  The worst that will happen is that when 
+    // code in a try block blows up, we will not know to run the except block.
+    // The other problem is that we might catch something that is really an internal
+    // error - it might be nice to add code in the above catch block that looked at 
+    // the kind of exception and only popped the stack for exceptions that are 
+    // from the original code rather than artifacts of some code generation or 
+    // exeution environment error.  We at least err on the side of exceptions
+    // being revealed to the user.  drchuck - Wed Jan 23 19:20:18 EST 2013
 
     switch (mod.constructor)
     {
