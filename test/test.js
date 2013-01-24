@@ -117,6 +117,7 @@ function testParse(name)
 
 var transformpass = 0;
 var transformfail = 0;
+var transformdisabled = 0;
 
 function testTransform(name)
 {
@@ -125,7 +126,10 @@ function testTransform(name)
 
     var expect = 'NO_.TRANS_FILE';
     try { expect = read(name + ".trans"); }
-    catch (e) {}
+    catch (e) {
+	transformdisabled += 1;
+	return;
+    }
     var cst = Sk.parse(name + ".py", input);
     var got = Sk.astDump(Sk.astFromParse(cst)) + "\n";
 
@@ -152,6 +156,7 @@ function testTransform(name)
 
 var symtabpass = 0;
 var symtabfail = 0;
+var symtabdisabled = 0;
 function testSymtab(name)
 {
     try { var input = read(name + ".py"); }
@@ -160,7 +165,10 @@ function testSymtab(name)
 
     var expect = 'NO_.SYMTAB_FILE';
     try { expect = read(name + ".py.symtab"); }
-    catch (e) {}
+    catch (e) {
+        symtabdisabled += 1;
+	return;
+    }
     var cst = Sk.parse(name + ".py", input);
     var ast = Sk.astFromParse(cst);
     var st = Sk.symboltable(ast, name + ".py");
@@ -334,12 +342,12 @@ function testsMain()
     {
         testTransform(sprintf("test/run/t%02d", i));
     }
-    print(sprintf("transform: %d/%d", transformpass, transformpass + transformfail));
+    print(sprintf("transform: %d/%d (+%d disabled)", transformpass, transformpass + transformfail, transformdisabled));
     for (i = 0; i <= 1000; ++i)
     {
         testSymtab(sprintf("test/run/t%02d", i));
     }
-    print(sprintf("symtab: %d/%d", symtabpass, symtabpass + symtabfail));
+    print(sprintf("symtab: %d/%d (+%d disabled)", symtabpass, symtabpass + symtabfail, symtabdisabled));
 
     for (i = 0; i <= 1000; ++i)
     {
