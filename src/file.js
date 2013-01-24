@@ -10,10 +10,13 @@ Sk.builtin.file = function(name, mode, buffering)
     this.name = name;
     this.closed = false;
 	if ( Sk.inBrowser ) {  // todo:  Maybe provide a replaceable function for non-import files
-	    if (document.all) {
-		    this.data$ = document.getElementById(name.v).innerText;
+        var elem = document.getElementById(name.v);
+        if ( elem == null) {
+            throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '"+name.v+"'");
+        } else if (document.all) {
+		    this.data$ = elem.innerText;
 	    } else { // stupid Firefox
-	        this.data$ = document.getElementById(name.v).textContent;
+	        this.data$ = elem.textContent;
 	    }
 	} else {
   		this.data$ = Sk.read(name.v);
