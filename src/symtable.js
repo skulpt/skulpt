@@ -414,6 +414,24 @@ SymbolTable.prototype.visitStmt = function(s)
                     throw new SyntaxError("'return' with argument inside generator");
             }
             break;
+        case Exit_:
+            if (s.value)
+            {
+                this.visitExpr(s.value);
+                this.cur.returnsValue = false;
+                if (this.cur.generator)
+                    throw new SyntaxError("'exit' with argument inside generator");
+            }
+            break;
+        case Quit_:
+            if (s.value)
+            {
+                this.visitExpr(s.value);
+                this.cur.returnsValue = false;
+                if (this.cur.generator)
+                    throw new SyntaxError("'quit' with argument inside generator");
+            }
+            break;
         case Delete_:
             this.SEQExpr(s.targets);
             break;

@@ -76,6 +76,21 @@ Sk.builtin.abs = function abs(x)
     return Math.abs(x);
 };
 
+// http://stackoverflow.com/questions/11832914/round-up-to-2-decimal-places-in-javascript
+Sk.builtin.round = function round(x,digits)
+{
+    if (typeof x != "number" ) {
+        throw "TypeError: a float is required";
+    }
+
+    if(typeof digits === "undefined") {
+        return Math.round(x);
+    } else {
+        var multiplier = Math.pow(10, digits);
+        return (Math.round(x * multiplier) / multiplier);
+    }
+};
+
 Sk.builtin.ord = function ord(x)
 {
     if (x.constructor !== Sk.builtin.str || x.v.length !== 1)
@@ -124,7 +139,7 @@ Sk.builtin.repr = function repr(x)
 
 Sk.builtin.open = function open(filename, mode, bufsize)
 {
-    if (mode === undefined) mode = "r";
+    if (mode === undefined) mode = new Sk.builtin.str("r");
     if (mode.v !== "r" && mode.v !== "rb") throw "todo; haven't implemented non-read opens";
     return new Sk.builtin.file(filename, mode, bufsize);
 };
@@ -194,6 +209,12 @@ Sk.builtin.getattr = function(obj, name, default_)
             throw new Sk.builtin.AttributeError();
     }
     return ret;
+};
+
+Sk.builtin.raw_input = function(obj, name, default_)
+{
+    var x = prompt(obj.v);
+    return new Sk.builtin.str(x);
 };
 
 Sk.builtin.input = function(obj, name, default_)
