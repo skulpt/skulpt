@@ -8,9 +8,12 @@ Sk.builtin.dict = function dict(L)
 
     this.size = 0;
 
-    for (var i = 0; i < L.length; i += 2)
+    if ( L !== undefined ) 
     {
-        this.mp$ass_subscript(L[i], L[i+1]);
+        for (var i = 0; i < L.length; i += 2)
+        {
+            this.mp$ass_subscript(L[i], L[i+1]);
+        }
     }
 
     this.__class__ = Sk.builtin.dict;
