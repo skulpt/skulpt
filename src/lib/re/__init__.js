@@ -69,14 +69,14 @@ var $builtinmodule = function(name)
         
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
-        print("Pat: " + pat);
-        print("Str: " + str);
+        //print("Pat: " + pat);
+        //print("Str: " + str);
 
         var captured = !(pat.match(/^\(.*\)$/) === null);
-        print("Captured: ", captured);
+        //print("Captured: ", captured);
 
         var jsflags = getFlags(flags);
-        print("Flags: ", jsflags);
+        //print("Flags: ", jsflags);
 
         var regex = new RegExp(pat, jsflags);
 
@@ -85,8 +85,8 @@ var $builtinmodule = function(name)
         var index = 0;
         var splits = 0;
         while ((match = regex.exec(str)) != null) {
-            print("Matched '" + match[0] + "' at position " + match.index + 
-                  "; next search at " + regex.lastIndex);
+            //print("Matched '" + match[0] + "' at position " + match.index + 
+            //      "; next search at " + regex.lastIndex);
             if (match.index === regex.lastIndex) {
                 // empty match
                 break;
@@ -127,19 +127,19 @@ var $builtinmodule = function(name)
         
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
-        print("Pat: " + pat);
-        print("Str: " + str);
+        //print("Pat: " + pat);
+        //print("Str: " + str);
 
         var jsflags = getFlags(flags);
-        print("Flags: ", jsflags);
+        //print("Flags: ", jsflags);
 
         var regex = new RegExp(pat, jsflags);
 
         var result = [];
         var match;
         while ((match = regex.exec(str)) != null) {
-            print("Matched '" + match[0] + "' at position " + match.index + 
-                  "; next search at " + regex.lastIndex);
+            //print("Matched '" + match[0] + "' at position " + match.index + 
+            //      "; next search at " + regex.lastIndex);
             if (match.index === regex.lastIndex) {
                 // empty match
                 break;
