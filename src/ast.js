@@ -1478,7 +1478,9 @@ function parsestr(c, s)
                 }
                 else
                 {
-                    goog.asserts.fail("unhandled escape: '" + c.charCodeAt(0) + "'");
+                    // Leave it alone
+                    ret += "\\" + c;
+                    // goog.asserts.fail("unhandled escape: '" + c.charCodeAt(0) + "'");
                 }
             }
             else
