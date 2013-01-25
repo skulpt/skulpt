@@ -172,7 +172,8 @@ var ContStr = group("[uUbB]?[rR]?'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*" +
                 '[uUbB]?[rR]?"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*' +
                 group('"', '\\\\\\r?\\n'));
 var PseudoExtras = group('\\\\\\r?\\n', Comment_, Triple);
-var PseudoToken = group(PseudoExtras, Number_, Funny, ContStr, Ident);
+// Need to prefix with "^" as we only want to match what's next
+var PseudoToken = "^" + group(PseudoExtras, Number_, Funny, ContStr, Ident);
 
 var pseudoprog;
 var single3prog;
