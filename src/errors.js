@@ -166,3 +166,13 @@ Sk.builtin.TimeLimitError = function(args) { Sk.builtin.Exception.apply(this, ar
 goog.inherits(Sk.builtin.TimeLimitError, Sk.builtin.Exception);
 Sk.builtin.TimeLimitError.prototype.tp$name = "TimeLimitError";
 goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.IOError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.IOError, Sk.builtin.Exception);
+Sk.builtin.IOError.prototype.tp$name = "IOError";
+goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
