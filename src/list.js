@@ -321,9 +321,12 @@ Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(function(self)
 Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key, reverse)
 {
     goog.asserts.assert(!key, "todo;");
-    goog.asserts.assert(!reverse, "todo;");
-    Sk.mergeSort(self.v, cmp);
+    Sk.mergeSort(self.v, cmp, key, reverse);
     return null;
 });
 
+// Make sure that key/value variations of lst.sort() work
+// See issue 45 on github as to possible alternate approaches to this and
+// why this was chosen - csev
+Sk.builtin.list.prototype['sort'].func_code['co_varnames']=['__self__','cmp', 'key', 'reverse'];
 goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);
