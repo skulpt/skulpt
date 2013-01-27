@@ -6,6 +6,7 @@ Skulpt is a Javascript implementation of Python 2.x.  Python that runs in your b
 
 Skulpt is the brainchild of Scott Graham.  See [Skulpt.org](http://skulpt.org) for some early demos of skulpt in action.
 
+Brad Miller has been shepherding the development since sometime in 2010/2011.
 
 ## How can I help
 
@@ -21,4 +22,10 @@ There is plenty of work still to do in making improvements to Skulpt.  If you wo
 ## Community
 
 Check out the mailing list:  https://groups.google.com/forum/?fromgroups#!forum/skulpt
+
+## Acknowledgements
+
+* First and foremost to Scott Graham for starting the original project.
+* Bob Lacatena for lots of work on Python longs
+* Charles Severence for bug fixes and the re module.
 
