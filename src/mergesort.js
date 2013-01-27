@@ -17,14 +17,13 @@ Sk.mergeSort = function(arr, cmp, key, reverse)	//	Replaced by quicksort
 Sk.quickSort = function(arr, cmp, key, reverse)
 {
     goog.asserts.assert(!key, "todo;");
-    goog.asserts.assert(!reverse, "todo;");
 
     if (!cmp)
     {
         cmp = Sk.mergeSort.stdCmp;
     }
 
-    var partition = function(arr, begin, end, pivot)
+    var partition = function(arr, begin, end, pivot, reverse)
 	{
 		var tmp;
 		var piv=arr[pivot];
@@ -37,7 +36,12 @@ Sk.quickSort = function(arr, cmp, key, reverse)
 		var store=begin;
 		var ix;
 		for(ix=begin; ix<end-1; ++ix) {
-			if(Sk.misceval.callsim(cmp, arr[ix], piv) < 0) { // arr[ix]<=piv) {
+            if ( reverse ) {
+			  var cmpresult = Sk.misceval.callsim(cmp, piv, arr[ix]);
+            } else {
+			  var cmpresult = Sk.misceval.callsim(cmp, arr[ix], piv);
+            }
+            if( cmpresult < 0 ) {
 //				swap store, ix
 				tmp=arr[store];
 				arr[store]=arr[ix];
@@ -54,19 +58,19 @@ Sk.quickSort = function(arr, cmp, key, reverse)
 		return store;
 	}
 	
-	var qsort = function(arr, begin, end)
+	var qsort = function(arr, begin, end, reverse)
 	{
 		if(end-1>begin) {
 			var pivot=begin+Math.floor(Math.random()*(end-begin));
 	
-			pivot=partition(arr, begin, end, pivot);
+			pivot=partition(arr, begin, end, pivot, reverse);
 	
-			qsort(arr, begin, pivot);
-			qsort(arr, pivot+1, end);
+			qsort(arr, begin, pivot, reverse);
+			qsort(arr, pivot+1, end, reverse);
 		}
 	}
 
-    qsort(arr, 0, arr.length);
+    qsort(arr, 0, arr.length, reverse);
     return null;
 };
 
