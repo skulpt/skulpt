@@ -5,12 +5,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Skulpt</title>
 <link rel="stylesheet" type="text/css" media="all" href="static/main.css">
-<script src="http://ajax.googleapis.com/ajax/libs/mootools/1.2.3/mootools.js" type="text/javascript"></script>
-<script src="static/mootools-1.2.3.1-more.js" type="text/javascript"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
 <script src="static/env/codemirror/js/codemirror.js" type="text/javascript"></script>
 <script src="static/env/editor.js" type="text/javascript"></script>
 <script src="static/skulpt.js" type="text/javascript"></script>
+<script src="static/builtin.js" type="text/javascript"></script>
 </head><body>
+
+
+<a href="https://github.com/bnmnetp/skulpt"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png" alt="Fork me on GitHub"></a>
 
 <div class="page">
     <div class="body">
@@ -39,7 +42,7 @@ Python and reload.</p>
         Ctrl-Enter to run.
     </p>
 
-    <div id="quickdocs">
+    <div id="quickdocs" style="display: none">
         <ul>
             <li>cut/copy/paste/undo/redo with the usual shortcut keys</li>
             <li>Tab does decent indenting.
@@ -62,11 +65,15 @@ Python and reload.</p>
 
     <p></p>
 
-    <textarea id="code" cols="85" rows="25">
-def test(name):
-    print "Hello", name
+<textarea id="code" cols="85" rows="25">
+import turtle
 
-test("world")
+t = turtle.Turtle()
+
+for c in ['red', 'green', 'yellow', 'blue']:
+    t.color(c)
+    t.forward(75)
+    t.left(90)
 </textarea>
 
 
@@ -77,55 +84,107 @@ test("world")
 <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
 <pre id="edoutput">
 </pre>
-
-<p>If you're a saucy fellow with a WebGL <a
-href="http://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">
-enabled</a> browser, you can <a href="ide">play with a WebGL binding</a> too.</p>
+<canvas id="mycanvas"  height="400" width="400"
+	style="border-style: solid; display: none"></canvas>
 
 <h2>Your Very Own Copy</h2>
 
 <p>Want to give it a shot? Grab it with a:</p>
 <pre>
-    hg clone https://skulpt.googlecode.com/hg/ skulpt
+    git clone https://github.com/bnmnetp/skulpt.git
 </pre>
 
 <p>Skulpt surely isn't done yet.</p>
 
 <p>If you want to check out a list of bugs, or add to it, or see what's been
 fixed recently, you can head over to the always-euphemistic-sounding <a
-    href="http://code.google.com/p/skulpt/issues/list">issues page</a>.
+    href="http://github.com/bnmnetp/skulpt/issues">issues page</a>.
 
-<p>I'd call it something like 0.56 if it had a version, but versions
-are just SHA1's these days.</p>
-
-<p>It's peeking out into the world now, as it's fun to play with already. If
-you decide to peek back, first imagine a fearsomely comprehensive disclaimer
-of liability. Then fear, comprehensively<sup><a
-        href="http://www.cliki.net/">&dagger;</a></sup>.
-
-<p>The entire Python test suite does not run correctly yet, but that is the
-long term goal, insofar as it makes sense. The compiler has been completely
-rewritten since this time last year, and it's getting much closer to that goal
-now.</p>
 
 <p>If you'd like to chit-chat, <a href="http://groups.google.com/group/skulpt">there's a list for
     that</a>.</p>
 
-<p>My <a href="http://www.h4ck3r.net/">personal page (and blog)</a> where I
-post about Skulpt sometimes.</p>
 
 <p>And, if &quot;daring&quot; is your <em>middle</em> name, there's a wee bit of <a
     href="http://code.google.com/p/skulpt/w/list">developer docs</a>.</p>
 
-<h2>Usability</h2>
+<h2>Skulpt in the Wild</h2>
 
-<p>There's two bindings in the works. One is to the <a
-    href="http://code.google.com/p/closure-library/">Closure Library</a>.
-Currently this is done manually by making Python modules that know how to call the associated Closure module. It seems it should be possible to automate this, but it hasn't happened yet.
-</p>
+<ul>
+  <li><a href="http://interactivepython.org/courselib/static/thinkcspy/index.html"> How to Think like a Computer Scientist: Interactive Edition</a></li>
+  <li><a href="http://interactivepython.org/courselib/static/pythonds/index.html"> Problem Solving with Algorithms and Data Structures using Python</a></li>
 
-<p>There's also a binding to WebGL. If you have a WebGL enabled browser, you
-can play with <a href="ide">the beginnings of that</a>. </p>
+<li><a href="https://lti-tools.dr-chuck.com/pythonauto/">Python for Informatics AutoGrader</a></li>
+
+</ul>
+
+
+<p>If you have a project that uses skulpt and would like me to link to it here, let me know on our github page.</p>
+
+
+
+<h2>Getting Started</h2>
+
+Getting started with skulpt on your own page can seem a little intimidating, but here's a really simple example that gets you going.  You can copy and paste or grab the code from <a href="https://gist.github.com/4650616">this gist</a>.
+<pre>
+&lt;html&gt; 
+&lt;head&gt; 
+&lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"&gt;&lt;/script&gt; 
+&lt;script src="skulpt.js" type="text/javascript"&gt;&lt;/script&gt; 
+&lt;script src="builtin.js" type="text/javascript"&gt;&lt;/script&gt; 
+
+&lt;/head&gt; 
+
+&lt;body&gt; 
+
+&lt;script type="text/javascript"&gt; 
+// output functions are configurable.  This one just appends some text
+// to a pre element.
+function outf(text) { 
+    var mypre = document.getElementById("output"); 
+    mypre.innerHTML = mypre.innerHTML + text; 
+} 
+function builtinRead(x) {
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+// Here's everything you need to run a python program in skulpt
+// grab the code from your textarea
+// get a reference to your pre element for output
+// configure the output function
+// call Sk.importMainWithBody()
+function runit() { 
+   var prog = document.getElementById("yourcode").value; 
+   var mypre = document.getElementById("output"); 
+   mypre.innerHTML = ''; 
+   Sk.canvas = "mycanvas";
+   Sk.pre = "output";
+   Sk.configure({output:outf, read:builtinRead}); 
+   eval(Sk.importMainWithBody("&lt;stdin&gt;",false,prog)); 
+} 
+&lt;/script&gt; 
+
+&lt;h3&gt;Try This&lt;/h3&gt; 
+&lt;form&gt; 
+&lt;textarea id="yourcode" cols="40" rows="10" &gt;import turtle
+
+t = turtle.Turtle()
+t.forward(100)
+
+print "Hello World" 
+&lt;/textarea&gt;&lt;br /&gt; 
+&lt;button type="button" onclick="runit()"&gt;Run&lt;/button&gt; 
+&lt;/form&gt; 
+&lt;pre id="output" &gt;&lt;/pre&gt; 
+&lt;!-- If you want turtle graphics include a canvas --&gt;
+&lt;canvas id="mycanvas" &gt;&lt;/mycanvas&gt; 
+
+&lt;/body&gt; 
+
+&lt;/html&gt; 
+</pre>
 
 <h2>License</h2>
 
@@ -143,6 +202,10 @@ processing or testing. Tests are run using <a
 some test code is taken from the <a href="http://www.tinypy.org/">tinypy</a>
 and <a href="http://www.python.org/">Python</a> test suites, which may be
 distributed under different licensing terms. </p>
+
+<h3>About</h3>
+<p>The Father of skulpt is Scott Graham, you can find his blog here: <a href="http://www.h4ck3r.net/">personal page (and blog)</a></p>
+<p>My own personal page and blog is <a href="http://reputablejournal.com">Reputable Journal</a></p>
 
 </div>
 
