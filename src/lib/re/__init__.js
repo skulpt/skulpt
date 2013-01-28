@@ -144,7 +144,16 @@ var $builtinmodule = function(name)
                 // empty match
                 break;
             };
-            result.push(new Sk.builtin.str(match[0]));
+            // print("match: " + JSON.stringify(match));
+            if (match.length <= 2) {
+                result.push(new Sk.builtin.str(match[0]));
+            } else {
+                var groups = [];
+                for (var i=1; i<match.length; i++) {
+                    groups.push(new Sk.builtin.str(match[i]));  
+                };
+                result.push(new Sk.builtin.tuple(groups));
+            };
         };
 
         return new Sk.builtin.list(result);
