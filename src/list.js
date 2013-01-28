@@ -284,12 +284,19 @@ Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index
 //Sk.builtin.list.prototype.__reversed__ = todo;
 Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
 {
+    Sk.builtin.pyCheckArgs("append", arguments, 2, 2);
+
     self.v.push(item);
     return null;
 });
 
 Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
 {
+    Sk.builtin.pyCheckArgs("insert", arguments, 3, 3);
+    if (!Sk.builtin.checkNumber(i)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    };
+
     if (i < 0) i = 0;
     else if (i > self.v.length) i = self.v.length;
     self.v.splice(i, 0, x);
@@ -297,6 +304,22 @@ Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
 
 Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
 {
+    Sk.builtin.pyCheckArgs("extend", arguments, 2, 2);
+    if (!Sk.builtin.checkIterable(b)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(b) 
+                                        + "' object is not iterable");  
+    };
+    if (self == b) {
+        // Handle extending list with itself
+        var newb = [];
+        for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            newb.push(i);
+
+        // Concatenate
+        self.v.push.apply(self.v, newb);
+
+        return null;
+    };
     for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
         self.v.push(i);
     return null;
@@ -304,9 +327,14 @@ Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
 
 Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
 {
+    Sk.builtin.pyCheckArgs("pop", arguments, 1, 2);
     if (i === undefined) {
         i = self.v.length - 1;
     };
+    if (!Sk.builtin.checkNumber(i)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    };
+
     if ((i < 0) || (i >= self.v.length)) {
         throw new Sk.builtin.IndexError("pop index out of range");
     };
@@ -317,6 +345,8 @@ Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
 
 Sk.builtin.list.prototype['remove'] = new Sk.builtin.func(function(self, item)
 {
+    Sk.builtin.pyCheckArgs("remove", arguments, 2, 2);
+
     var idx = Sk.builtin.list.prototype['index'].func_code(self, item);
     self.v.splice(idx, 1);
     return null;
@@ -324,6 +354,8 @@ Sk.builtin.list.prototype['remove'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
 {
+    Sk.builtin.pyCheckArgs("index", arguments, 2, 2);
+
     var len = self.v.length;
     var obj = self.v;
     for (var i = 0; i < len; ++i)
@@ -336,6 +368,8 @@ Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.list.prototype['count'] = new Sk.builtin.func(function(self, item)
 {
+    Sk.builtin.pyCheckArgs("count", arguments, 2, 2);
+
     var len = self.v.length;
     var obj = self.v;
     var count = 0;
@@ -351,6 +385,8 @@ Sk.builtin.list.prototype['count'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(function(self)
 {
+    Sk.builtin.pyCheckArgs("reverse", arguments, 1, 1);
+
     var len = self.v.length;
     var old = self.v;
     var newarr = [];
