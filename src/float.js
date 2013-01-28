@@ -16,9 +16,20 @@ Sk.builtin.float_ = function(x)
         }
     }
 
+    // Floats are just numbers
     if (typeof x === "number")
     {
         return x;   
+    }
+
+    // Convert booleans
+    if (x === true) 
+    {
+        return 1.0;
+    }
+    if (x === false)
+    {
+        return 0.0;
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
