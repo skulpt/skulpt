@@ -23,14 +23,14 @@ Sk.builtin.type = function(name, bases, dict)
     {
         // 1 arg version of type()
         var obj = name;
-        if (obj === true || obj === false) return Sk.builtin.BoolObj.prototype.ob$type;
+        if (obj === true || obj === false) return Sk.builtin.bool.prototype.ob$type;
         if (obj === null) return Sk.builtin.NoneObj.prototype.ob$type;
         if (typeof obj === "number")
         {
             if (Math.floor(obj) === obj)
-                return Sk.builtin.IntObj.prototype.ob$type;
+                return Sk.builtin.int_.prototype.ob$type;
             else
-                return Sk.builtin.FloatObj.prototype.ob$type;
+                return Sk.builtin.float_.prototype.ob$type;
         }
         return obj.ob$type;
     }

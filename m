@@ -48,6 +48,7 @@ Files = [
         'src/dict.js',
         'src/biginteger.js',
         'src/long.js',
+        'src/bool.js',
         'src/int.js',
         'src/float.js',
         'src/slice.js',

@@ -105,12 +105,6 @@ Sk.builtin.max = function max()
     return highest;
 };
 
-Sk.builtin.bool = function bool(x)
-{
-    Sk.builtin.pyCheckArgs("bool", arguments, 1);
-    return Sk.misceval.isTrue(x);
-}
-
 Sk.builtin.any = function any(iter)
 {
     var it, i;
@@ -306,8 +300,29 @@ Sk.builtin.isinstance = function(obj, type)
 {
     Sk.builtin.pyCheckArgs("isinstance", arguments, 2, 2);
 
+    // Handle types that are represented as native javascript objects
+    if (type === Sk.builtin.int_) {
+        if (typeof obj === "number") {
+            return (Math.floor(obj) === obj);
+        }
+    }
+
+    if (type === Sk.builtin.float_) {
+        return (typeof obj === "number");        
+    }
+
+    if (type === Sk.builtin.NoneObj.prototype.ob$type) {
+        return obj === null;
+    }
+
+    if (type === Sk.builtin.bool.prototype.ob$type) {
+        return (obj === true) || (obj === false);
+    }
+
+    // Normal case
     if (obj.ob$type === type) return true;
 
+    // Handle tuple type argument
     if (type instanceof Sk.builtin.tuple)
     {
         for (var i = 0; i < type.v.length; ++i)
