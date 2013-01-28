@@ -3,9 +3,23 @@ var $builtinmodule = function(name)
     var mod = {};
 
     var matchobj = function($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function(self,thematch) {
+        $loc.__init__ = new Sk.builtin.func(function(self,thematch, pattern, string) {
             self.thematch = thematch;
+	    self.re = pattern;
+	    self.string = string;
         });
+
+	$loc.groups = new Sk.builtin.func(function(self) {
+	    return new Sk.builtin.tuple(self.thematch.v.slice(1))
+	});
+
+	$loc.group = new Sk.builtin.func(function(self,grpnum) {
+	    if(grpnum >= self.thematch.v.length) {
+		throw new Sk.builtin.IndexError("Index out of range: " + grpnum);
+		}
+	    return self.thematch.v[grpnum]
+	});
+
     }
 
     mod.MatchObject = Sk.misceval.buildClass(mod, matchobj, 'MatchObject', []);
@@ -41,7 +55,7 @@ var $builtinmodule = function(name)
         var res = "/"+pattern.v.replace("/","\\/")+"/";
         lst = mod._findre(res,string);
         if ( lst.v.length < 1 ) return null;
-        var mob = Sk.misceval.callsim(mod.MatchObject, lst);
+        var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     });
 
@@ -49,7 +63,7 @@ var $builtinmodule = function(name)
         var res = "/^"+pattern.v.replace("/","\\/")+"/";
         lst = mod._findre(res,string);
         if ( lst.v.length < 1 ) return null;
-        var mob = Sk.misceval.callsim(mod.MatchObject, lst);
+        var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     });
 
