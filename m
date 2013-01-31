@@ -115,6 +115,10 @@ elif sys.platform == "darwin":
     #jsengine = "support/d8/d8"
     nul = "/dev/null"
     crlfprog = None
+elif sys.platform == "cygwin":
+    jsengine = "support/d8/d8.exe --trace_exception --debugger"
+    nul = "nul"
+    crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 else:
     jsengine = "support/d8/d8 --trace_exception --debugger"
     #jsengine = "support/d8/d8"
@@ -179,7 +183,7 @@ def debugbrowser():
     with open("support/tmp/test.html", "w") as f:
         print >>f, tmpl % '\n'.join(scripts)
 
-    if sys.platform == "win32":
+    if sys.platform == "win32" or sys.platform == "cygwin":
         os.system("start support/tmp/test.html")
     elif sys.platform == "darwin":
         os.system("open support/tmp/test.html")
