@@ -426,9 +426,9 @@ def regenparser():
     # sanity check that they at least parse
     #os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/astnodes.js")
 
-def regenasttests():
+def regenasttests(togen="test/run/*.py"):
     """regenerate the ast test files by running our helper script via real python"""
-    for f in glob.glob("test/run/*.py"):
+    for f in glob.glob(togen):
         transname = f.replace(".py", ".trans")
         os.system("python test/astppdump.py %s > %s" % (f, transname))
         forcename = f.replace(".py", ".trans.force")
@@ -438,9 +438,9 @@ def regenasttests():
             os.system("python %s %s" % (crlfprog, transname))
 
 
-def regenruntests():
+def regenruntests(togen="test/run/*.py"):
     """regenerate the test data by running the tests on real python"""
-    for f in glob.glob("test/run/*.py"):
+    for f in glob.glob(togen):
         os.system("python %s > %s.real 2>&1" % (f, f))
         forcename = f + ".real.force"
         if os.path.exists(forcename):
@@ -506,9 +506,9 @@ def symtabdump(fn):
         return ret
     return getidents(mod)
 
-def regensymtabtests():
+def regensymtabtests(togen="test/run/*.py"):
     """regenerate the test data by running the symtab dump via real python"""
-    for fn in glob.glob("test/run/*.py"):
+    for fn in glob.glob(togen):
         outfn = "%s.symtab" % fn
         f = open(outfn, "wb")
         f.write(symtabdump(fn))
@@ -573,7 +573,13 @@ def nrt():
             else:
                 editor = 'vim'
             os.system(editor + ' ' + fn)
-            print "don't forget to ./m regentests"
+            if os.path.exists(fn):
+                print "Generating tests for %s" % fn
+                regensymtabtests(fn)
+                regenasttests(fn)
+                regenruntests(fn)
+            else:
+                print "run ./m regentests t%02d.py" % i
             break
 
 def vmwareregr(names):
@@ -712,9 +718,14 @@ Where command is one of:
     elif cmd == "regengooglocs":
         regengooglocs()
     elif cmd == "regentests":
-        regensymtabtests()
-        regenasttests()
-        regenruntests()
+        if len(sys.argv) > 2:
+            togen = "test/run/"+sys.argv[2]
+        else:
+            togen = "test/run/*.py"
+        print "generating tests for ", togen
+        regensymtabtests(togen)
+        regenasttests(togen)
+        regenruntests(togen)
     elif cmd == "regensymtabtests":
         regensymtabtests()
     elif cmd == "run":
