@@ -40,6 +40,8 @@ Sk.builtins = {
 'input': Sk.builtin.input,
 'raw_input': Sk.builtin.raw_input,
 /*'read': Sk.builtin.read,*/
+'all': Sk.builtin.all,
+'any': Sk.builtin.any,
 'jseval': Sk.builtin.jseval,
 'jsmillis': Sk.builtin.jsmillis,
 'long_div_mode': Sk.builtin.lng.longDivideMode

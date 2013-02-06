@@ -234,6 +234,36 @@ Sk.builtin.jsmillis = function jsmillis()
 	return now.valueOf();
 };
 
+Sk.builtin.all =  function all()
+{
+    if (arguments.length == 0) {
+        throw new Sk.builtin.TypeError("all() takes exactly one argument (0 given)")
+    }
+    arguments = Sk.misceval.arrayFromArguments(arguments);
+    var lowest = arguments[0];
+    for (var i = 0; i < arguments.length; ++i)
+    {
+        if (! Sk.misceval.isTrue(arguments[i]))
+            return false;
+    }
+    return true;
+};
+
+Sk.builtin.any =  function any()
+{
+    if (arguments.length == 0) {
+        throw new Sk.builtin.TypeError("any() takes exactly one argument (0 given)")
+    }
+    arguments = Sk.misceval.arrayFromArguments(arguments);
+    var lowest = arguments[0];
+    for (var i = 0; i < arguments.length; ++i)
+    {
+        if (Sk.misceval.isTrue(arguments[i]))
+            return true;
+    }
+    return false;
+};
+
 /*
 Sk.builtinFiles = {};
 Sk.builtin.read = function read(x) {
