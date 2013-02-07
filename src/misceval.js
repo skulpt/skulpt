@@ -138,6 +138,10 @@ Sk.misceval.richCompareBool = function(v, w, op)
             case 'GtE': return v >= w;
             case 'NotEq': return v != w;
             case 'Eq': return v == w;
+            case 'In':
+            case 'NotIn':  {
+                throw new Sk.builtin.TypeError("argument of type '" + Sk.abstr.typeName(w) + "' is not iterable");
+            };
             default: throw "assert";
         }
     }
