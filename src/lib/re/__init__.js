@@ -16,15 +16,22 @@ var $builtinmodule = function(name)
     // mod.X = 64;
     // mod.VERBOSE = 64;
 
+    var validGroups = ["(?:", "(?=", "(?!"];
+
     var convert = function(pattern) {
         var newpattern;
         var match;
+        var i;
 
         // Look for disallowed constructs
-        match = pattern.match(/\(\?.*\)/);
+        match = pattern.match(/\(\?./g);
         if (match) {
-            throw new Sk.builtin.ValueError("Disallowed group in pattern: '"
-                                           + match[0] + "'");
+            for (i=0; i<match.length; i++) {
+                if (validGroups.indexOf(match[i]) == -1) {
+                    throw new Sk.builtin.ValueError("Disallowed group in pattern: '"
+                                                    + match[i] + "'");
+                };
+            };
         };
 
         newpattern = pattern.replace('/\\/g', '\\\\');
