@@ -128,6 +128,24 @@ Sk.builtin.dict.prototype.mp$subscript = function(key)
     throw new Sk.builtin.KeyError(s.v);
 };
 
+Sk.builtin.dict.prototype.sq$contains = function(ob) 
+{
+    var bucket = this[kf(ob)];
+    var item;
+
+    if (bucket == undefined)
+    {
+        return false;
+    }
+
+    item = this.key$lookup(bucket, ob);
+    if (item) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
