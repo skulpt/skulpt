@@ -152,8 +152,10 @@ var $builtinmodule = function(name)
                 break;
             };
             // print("match: " + JSON.stringify(match));
-            if (match.length <= 2) {
+            if (match.length < 2) {
                 result.push(new Sk.builtin.str(match[0]));
+            } else if (match.length == 2) {
+                result.push(new Sk.builtin.str(match[1]));
             } else {
                 var groups = [];
                 for (var i=1; i<match.length; i++) {
