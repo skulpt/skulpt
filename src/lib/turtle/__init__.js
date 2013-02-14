@@ -1462,16 +1462,22 @@ var $builtinmodule = function(name) {
         });
 
         $loc.towards = new Sk.builtin.func(function(self, tx, ty) {
-            if ((typeof(tx)).toLowerCase() === 'number')
+            if ((typeof(tx)).toLowerCase() === 'number') {
                 tx = [tx, ty, 0];
+            } else {
+                tx = [tx.theTurtle.getx(),tx.theTurtle.gety(),0]
+            }
             return self.theTurtle.towards(tx);
         });
 
         // tx can be either a number or a vector position.
         // tx can not be a turtle at this time as multiple turtles have not been implemented yet.
         $loc.distance = new Sk.builtin.func(function(self, tx, ty) {
-            if ((typeof(tx)).toLowerCase() === 'number')
+            if ((typeof(tx)).toLowerCase() === 'number') {
                 tx = [tx, ty, 0];
+            } else {
+                tx = [self.theTurtle.getx(), self.theTurtle.gety(), 0];
+            }
             return self.theTurtle.distance(tx);
         });
 
