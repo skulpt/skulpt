@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.6
 
-# 
+#
 #   Note:  python2.6 is specified because that is what the skulpt parser
 #          used as a reference.  This is only important when you are doing
 #          things like regenerating tests and/or regenerating symtabs
@@ -25,7 +25,7 @@ except:
     print "dist will not work without it.  Get it using pip or easy_install"
     print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
     print "+----------------------------------------------------------------------------+"
-    
+
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
@@ -90,7 +90,7 @@ def isClean():
 def getTip():
     repo = Repo(".")
     return repo.head.commit.hexsha
-    
+
 
 def getFileList(type):
     ret = []
@@ -137,11 +137,11 @@ def debugbrowser():
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
         <title>Skulpt test</title>
-        <link rel="stylesheet" href="../closure-library/closure/goog/demos/css/demo.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menu.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuitem.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuseparator.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/combobox.css"> 
+        <link rel="stylesheet" href="../closure-library/closure/goog/demos/css/demo.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menu.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuitem.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuseparator.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/combobox.css">
         <style>
             .type { font-size:14px; font-weight:bold; font-family:arial; background-color:#f7f7f7; text-align:center }
         </style>
@@ -150,7 +150,7 @@ def debugbrowser():
     </head>
 
     <body onload="testsMain()">
-        <canvas id="__webglhelpercanvas" style="border: none;" width="500" height="500"></canvas> 
+        <canvas id="__webglhelpercanvas" style="border: none;" width="500" height="500"></canvas>
         <table>
         <tr>
             <td>
@@ -175,7 +175,7 @@ def debugbrowser():
     for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js" ] + TestFiles:
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
- 
+
     with open("support/tmp/test.html", "w") as f:
         print >>f, tmpl % '\n'.join(scripts)
 
@@ -317,7 +317,7 @@ def getBuiltinsAsJson():
 
 def dist():
     """builds a 'shippable' version of Skulpt.
-    
+
     this is all combined into one file, tests run, jslint'd, compressed.
     """
 
@@ -366,12 +366,12 @@ def dist():
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn))
     # to disable asserts
-    # --define goog.DEBUG=false 
+    # --define goog.DEBUG=false
     #
     # to make a file that for ff plugin, not sure of format
-    # --create_source_map dist/srcmap.txt 
+    # --create_source_map dist/srcmap.txt
     #
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     #
@@ -584,7 +584,7 @@ def nrt():
 
 def vmwareregr(names):
     """todo; not working yet.
-    
+
     run unit tests via vmware on a bunch of browsers"""
 
     xp = "/data/VMs/xpsp3/xpsp3.vmx"
@@ -620,7 +620,7 @@ def regengooglocs():
 
     # from calcdeps.py
     prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
-    
+
     # walk whole tree, find all the 'provide's in a file, and note the location
     root = "support/closure-library/closure"
     modToFile = {}
@@ -683,11 +683,11 @@ Where command is one of:
 
         run   -- given a .py file run it using skulpt  ./m run myprog.py
         test  -- run all test cases in test/run
-        dist  -- create skulpt.js and builtin.js  with -u also build 
+        dist  -- create skulpt.js and builtin.js  with -u also build
                  uncompressed skulpt for debugging
         docbi -- regenerate builtin.js only and copy to doc/static
 
-        regenparser      -- regenerate parser tests 
+        regenparser      -- regenerate parser tests
         regenasttests    -- regen abstract symbol table tests
         regenruntests    -- regenerate runtime unit tests
         regensymtabtests -- regenerate symbol table tests
@@ -699,7 +699,7 @@ Where command is one of:
         nrt     -- generate a file for a new test case
         runopt  -- run a .py file optimized
         browser -- run all tests in the browser
-        shell   -- run a python program but keep a shell open (like python -i) 
+        shell   -- run a python program but keep a shell open (like python -i)
                    ./m shell myprog.py
         vfs -- Build a virtual file system to support skulpt read tests
 
