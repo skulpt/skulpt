@@ -264,6 +264,11 @@ Sk.builtin.any =  function any()
     return false;
 };
 
+
+Sk.builtin.superbi =  function superbi()
+{
+    throw new Sk.builtin.NotImplementedError("Super is not yet implemented, please report your use case as a github issue.");
+}
 /*
 Sk.builtinFiles = {};
 Sk.builtin.read = function read(x) {

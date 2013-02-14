@@ -176,3 +176,14 @@ Sk.builtin.IOError = function(args) { Sk.builtin.Exception.apply(this, arguments
 goog.inherits(Sk.builtin.IOError, Sk.builtin.Exception);
 Sk.builtin.IOError.prototype.tp$name = "IOError";
 goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
+
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.NotImplementedError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.NotImplementedError, Sk.builtin.Exception);
+Sk.builtin.NotImplementedError.prototype.tp$name = "NotImplementedError";
+goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);

@@ -123,7 +123,7 @@ var reservedWords_ = { 'abstract': true, 'as': true, 'boolean': true,
     'interface': true, 'is': true, 'long': true, 'namespace': true,
     'native': true, 'new': true, 'null': true, 'package': true,
     'private': true, 'protected': true, 'public': true, 'return': true,
-    'short': true, 'static': true, 'super': true, 'switch': true,
+    'short': true, 'static': true, 'super': false, 'switch': true,
     'synchronized': true, 'this': true, 'throw': true, 'throws': true,
     'transient': true, 'true': true, 'try': true, 'typeof': true, 'use': true,
     'var': true, 'void': true, 'volatile': true, 'while': true, 'with': true
