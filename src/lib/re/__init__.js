@@ -147,10 +147,6 @@ var $builtinmodule = function(name)
         while ((match = regex.exec(str)) != null) {
             //print("Matched '" + match[0] + "' at position " + match.index + 
             //      "; next search at " + regex.lastIndex);
-            if (match.index === regex.lastIndex) {
-                // empty match
-                break;
-            };
             // print("match: " + JSON.stringify(match));
             if (match.length < 2) {
                 result.push(new Sk.builtin.str(match[0]));
@@ -162,6 +158,9 @@ var $builtinmodule = function(name)
                     groups.push(new Sk.builtin.str(match[i]));  
                 };
                 result.push(new Sk.builtin.tuple(groups));
+            };
+            if (match.index === regex.lastIndex) {
+                regex.lastIndex += 1;
             };
         };
 
