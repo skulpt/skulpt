@@ -18,7 +18,7 @@
  * to access them via dict-style lookup for closure.
  *
  */
-Sk.builtin.func = function(code, globals, closure, closure2)
+Sk.builtin.func = function(code, globals, closure, closure2, wrap_flag)
 {
     this.func_code = code;
     this.func_globals = globals || null;
@@ -29,6 +29,7 @@ Sk.builtin.func = function(code, globals, closure, closure2)
             closure[k] = closure2[k];
     }
     this.func_closure = closure;
+    this.wrap_flag = wrap_flag || null;
     return this;
 };
 goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
@@ -43,6 +44,19 @@ Sk.builtin.func.prototype.tp$descr_get = function(obj, objtype)
 };
 Sk.builtin.func.prototype.tp$call = function(args, kw)
 {
+    // wrap_flag indicates that this.func_code is some native javascript that is
+    // getting wrapped inside an object automatically.  But we need to adjust
+    // some argument types, like strings and lists.
+    if(this.wrap_flag) {
+        for (var a in args) {
+            if (args[a] instanceof Sk.builtin.list) {
+                args[a] = args[a].v
+            }
+            else if (args[a] instanceof Sk.builtin.str) {
+                args[a] = args[a].v
+            }
+        }
+    }
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
     if (this.func_closure)
@@ -86,8 +100,20 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
     }
 
     //print(JSON.stringify(args, null, 2));
-
-    return this.func_code.apply(this.func_globals, args);
+    // todo: replace this check for wrap_flag with a supplied function that can do the proper wrapping, as this will depend on the object getting wrapped.
+    var res = this.func_code.apply(this.func_globals, args);
+    if (this.wrap_flag) {
+        if (typeof res === "string") {
+            return new Sk.builtin.str(res);
+        }
+        else if (res instanceof Array) {
+            return new Sk.builtin.list(res);
+        }
+        else {
+            return new Sk.builtin.str("Unknown return object");
+        }
+    }
+    return res;
 };
 
 //todo; investigate why the other doesn't work
