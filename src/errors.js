@@ -39,6 +39,8 @@ Sk.builtin.Exception.prototype.toString = function()
     return this.tp$str().v;
 }
 
+goog.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception

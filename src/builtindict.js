@@ -23,6 +23,17 @@ Sk.builtins = {
 
 'AttributeError': Sk.builtin.AttributeError,
 'ValueError': Sk.builtin.ValueError,
+'Exception' : Sk.builtin.Exception,
+'ZeroDivisionError' : Sk.builtin.ZeroDivisionError,
+'AssertionError' : Sk.builtin.AssertionError,
+'ImportError' : Sk.builtin.ImportError,
+'IndentationError' : Sk.builtin.IndentationError,
+'IndexError' : Sk.builtin.IndexError,
+'KeyError' : Sk.builtin.KeyError,
+'TypeError' : Sk.builtin.TypeError,
+'NameError' : Sk.builtin.NameError,
+'IOError' : Sk.builtin.IOError,
+'NotImplementedError' : Sk.builtin.NotImplementedError,
 
 'dict': Sk.builtin.dict,
 'file': Sk.builtin.file,
