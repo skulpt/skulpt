@@ -20,6 +20,9 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
     // todo; modification OK?
     args.unshift(this.im_self);
     // todo:  if this.im_func.wrap_flag then process parameters and replace with natives.
+    if (this.args_unwrap_fun) {
+        this.args_unwrap_fun(args);
+    }
     if (kw)
     {
         // bind the kw args
@@ -40,8 +43,8 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
 
     // note: functions expect globals to be their 'this'. see compile.js and function.js also
     var ret = this.im_func.func_code.apply(this.im_func.func_globals, args);
-    if (this.im_func.wrap_flag) {
-        return new Sk.builtin.str("finish this")
+    if (this.res_wrap_fun) {
+        return this.res_wrap_fun(ret)
     }
     return ret
 };
