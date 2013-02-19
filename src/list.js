@@ -197,11 +197,17 @@ Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
 
 Sk.builtin.list.prototype.list_subscript_ = function(index)
 {
-    if (typeof index === "number")
+    if (Sk.misceval.isIndex(index))
     {
-        if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
-        return this.v[index];
+        var i = Sk.misceval.asIndex(index);
+        if (i !== undefined) 
+        {
+            if (i < 0) i = this.v.length + i;
+            if (i < 0 || i >= this.v.length) {
+                throw new Sk.builtin.IndexError("list index out of range");
+            }
+            return this.v[i]
+        }
     }
     else if (index instanceof Sk.builtin.slice)
     {
@@ -212,8 +218,8 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
                 });
         return new Sk.builtin.list(ret);
     }
-    else
-        throw new TypeError("list indices must be integers, not " + typeof index);
+
+    throw new TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
 Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
@@ -221,8 +227,12 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
     if (Sk.misceval.isIndex(index))
     {
         var i = Sk.misceval.asIndex(index);
-        if (i < 0) i = this.v.length + i;
-        this.list_ass_item_(i, value);
+        if (i !== undefined) 
+        {
+            if (i < 0) i = this.v.length + i;
+            this.list_ass_item_(i, value);
+            return;
+        }
     }
     else if (index instanceof Sk.builtin.slice)
     {
@@ -240,9 +250,10 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
                 j += 1;
             }
         }
+        return;
     }
-    else
-        throw new TypeError("list indices must be integers, not " + typeof index);
+
+    throw new TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
 Sk.builtin.list.prototype.list_del_subscript_ = function(index)
@@ -250,8 +261,12 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
     if (Sk.misceval.isIndex(index))
     {
         var i = Sk.misceval.asIndex(index);
-        if (i < 0) i = this.v.length + i;
-        this.list_del_item_(i);
+        if (i !== undefined) 
+        {
+            if (i < 0) i = this.v.length + i;
+            this.list_del_item_(i);
+            return;
+        }
     }
     else if (index instanceof Sk.builtin.slice)
     {
@@ -268,9 +283,10 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
                                dec += offdir;
                            });
         }
+        return;
     }
-    else
-        throw new TypeError("list indices must be integers, not " + typeof index);
+
+    throw new TypeError("list indices must be integers, not " + typeof index);
 };
 
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;
