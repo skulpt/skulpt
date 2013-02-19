@@ -19,6 +19,13 @@ Sk.builtin.slice = function slice(start, stop, step)
     this.start = start;
     this.stop = stop;
     this.step = step;
+    
+    if (((this.start !== null) && !Sk.builtin.checkInt(this.start))
+        || ((this.stop !== null) && !Sk.builtin.checkInt(this.stop))
+        || ((this.step !== null) && !Sk.builtin.checkInt(this.step))) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+    }
+
     return this;
 };
 

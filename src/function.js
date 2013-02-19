@@ -49,27 +49,32 @@ Sk.builtin.pyCheckType = function (name, exptype, check) {
 goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
 Sk.builtin.checkSequence = function (arg) {
-    return (arg != null && arg.mp$subscript !== undefined);
+    return (arg !== null && arg.mp$subscript !== undefined);
 };
 goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
 Sk.builtin.checkIterable = function (arg) {
-    return (arg != null && arg.tp$iter !== undefined);
+    return (arg !== null && arg.tp$iter !== undefined);
 };
 goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkNumber = function (arg) {
-    return (typeof arg === "number");
+    return (arg !== null && typeof arg === "number");
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
+Sk.builtin.checkInt = function (arg) {
+    return (arg !== null) && (typeof arg === "number") && (arg === (arg|0));
+};
+goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
+
 Sk.builtin.checkString = function (arg) {
-    return (arg.__class__ == Sk.builtin.str);
+    return (arg !== null && arg.__class__ == Sk.builtin.str);
 };
 goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
 Sk.builtin.checkFunction = function (arg) {
-    return (arg != null && arg.tp$call !== undefined);  
+    return (arg !== null && arg.tp$call !== undefined);  
 };
 goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
