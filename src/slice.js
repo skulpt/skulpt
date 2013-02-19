@@ -39,7 +39,12 @@ Sk.builtin.slice.prototype.indices = function(length)
     {
         if (start === null) start = 0;
         if (stop === null) stop = length;
-        if (start < 0) start = length + start;
+        if (start < 0) {
+            start = length + start;
+            if (start < 0) {
+                start = 0;
+            }
+        }
         if (stop < 0) stop = length + stop;
     }
     else
