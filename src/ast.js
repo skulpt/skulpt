@@ -1458,6 +1458,9 @@ function parsestr(c, s)
                 else if (c === '\\') ret += "\\";
                 else if (c === 't') ret += "\t";
                 else if (c === 'r') ret += "\r";
+                else if (c === 'b') ret += "\b";
+                else if (c === 'f') ret += "\f";
+                else if (c === 'v') ret += "\v";
                 else if (c === '0') ret += "\0";
                 else if (c === '"') ret += '"';
                 else if (c === '\'') ret += '\'';
