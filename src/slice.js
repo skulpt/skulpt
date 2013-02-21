@@ -19,6 +19,13 @@ Sk.builtin.slice = function slice(start, stop, step)
     this.start = start;
     this.stop = stop;
     this.step = step;
+    
+    if (((this.start !== null) && !Sk.builtin.checkInt(this.start))
+        || ((this.stop !== null) && !Sk.builtin.checkInt(this.stop))
+        || ((this.step !== null) && !Sk.builtin.checkInt(this.step))) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+    }
+
     return this;
 };
 
@@ -39,7 +46,12 @@ Sk.builtin.slice.prototype.indices = function(length)
     {
         if (start === null) start = 0;
         if (stop === null) stop = length;
-        if (start < 0) start = length + start;
+        if (start < 0) {
+            start = length + start;
+            if (start < 0) {
+                start = 0;
+            }
+        }
         if (stop < 0) stop = length + stop;
     }
     else

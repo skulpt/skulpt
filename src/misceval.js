@@ -2,7 +2,11 @@ Sk.misceval = {};
 
 Sk.misceval.isIndex = function(o)
 {
-    return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.tp$index;
+    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index) {
+        return true;
+    }
+
+    return Sk.builtin.checkInt(o);
 };
 goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 

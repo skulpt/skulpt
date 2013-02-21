@@ -95,6 +95,7 @@ Sk.builtin.str.prototype.sq$repeat = function(n)
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
+    if (i1 < 0) i1 = 0;
     return new Sk.builtin.str(this.v.substr(i1, i2 - i1));
 };
 
