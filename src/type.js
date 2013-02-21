@@ -83,6 +83,13 @@ Sk.builtin.type = function(name, bases, dict)
             if (mod) cname = mod.v + ".";
             return new Sk.builtin.str("<" + cname + name + " object>");
         };
+        klass.prototype.tp$str = function()
+        {
+            var strf = this.tp$getattr("__str__");
+            if (strf !== undefined)
+                return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
+            return this['$r']();
+        };
         klass.prototype.tp$call = function(args, kw)
         {
             var callf = this.tp$getattr("__call__");
