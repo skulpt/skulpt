@@ -189,3 +189,11 @@ Sk.builtin.NotImplementedError = function(args) { Sk.builtin.Exception.apply(thi
 goog.inherits(Sk.builtin.NotImplementedError, Sk.builtin.Exception);
 Sk.builtin.NotImplementedError.prototype.tp$name = "NotImplementedError";
 goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.NegativePowerError = function(args) { Sk.builtin.Exception.apply(this, arguments); }goog.inherits(Sk.builtin.NegativePowerError, Sk.builtin.Exception);Sk.builtin.NegativePowerError.prototype.tp$name = "NegativePowerError";
+goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);

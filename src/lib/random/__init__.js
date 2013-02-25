@@ -222,6 +222,7 @@ var $builtinmodule = function(name)
     }
 
     mod.seed = new Sk.builtin.func(function(x) {
+  		x = Sk.builtin.asnum$(x);
         if (arguments.length > 0)
             myGenerator = new MersenneTwister(x);
         else
@@ -229,21 +230,25 @@ var $builtinmodule = function(name)
     });
 
     mod.random = new Sk.builtin.func(function() {
-	return myGenerator.genrand_res53();
+	return Sk.builtin.assk$(myGenerator.genrand_res53(), undefined);
     });
 
     mod.randint = new Sk.builtin.func(function(low,high) {
+		low = Sk.builtin.asnum$(low);
+  		high = Sk.builtin.asnum$(high);
         checkArgs(2,arguments.length,"randint()")
-        return Math.round(myGenerator.genrand_res53()*(high-low))+low;
+        return Sk.builtin.assk$(Math.round(myGenerator.genrand_res53()*(high-low))+low, undefined);
     });
 
     mod.randrange = new Sk.builtin.func(function(low,high) {
+		low = Sk.builtin.asnum$(low);
+  		high = Sk.builtin.asnum$(high);
         if (high === undefined) {
             high = low;
             low = 0;
         }
         high = high - 1;
-        return Math.round(myGenerator.genrand_res53()*(high-low))+low;
+        return Sk.builtin.assk$(Math.round(myGenerator.genrand_res53()*(high-low))+low, undefined);
     });
 
     mod.shuffle = new Sk.builtin.func(function(myarray) {

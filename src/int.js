@@ -3,6 +3,7 @@ Sk.builtin.int_ = function(x, base)
     if (x instanceof Sk.builtin.str)
     {
         // todo; this should handle longs too
+		base = Sk.builtin.asnum$(base);
         if (base === undefined) base = 10; // default radix is 10, not dwim
 		if ( x.v.substring(0,2).toLowerCase() == '0x' && base != 16 && base != 0) {
 			throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not a valid literal");
@@ -17,15 +18,28 @@ Sk.builtin.int_ = function(x, base)
 		}
 
         if (!isNaN(x.v) && x.v.indexOf(".") < 0)
-            return parseInt(x.v, base);
+            return new Sk.builtin.nmber(parseInt(x.v, base), Sk.builtin.nmber.int$);
         else {
             throw new Sk.builtin.ValueError("int: Argument: " + x.v + " is not a valid literal");
         }
 
     }
-    // sneaky way to do truncate, floor doesn't work < 0, round doesn't work on the .5> side
-    // bitwise ops convert to 32bit int in the "C-truncate-way" we want.
-    return x | 0;
+
+	if (x instanceof Sk.builtin.lng) {
+		if (x.cantBeInt())
+			return new Sk.builtin.lng(x);
+		else
+			return new Sk.builtin.nmber(x.str$(10, true), Sk.builtin.nmber.int$);
+	}
+
+	x = Sk.builtin.asnum$(x);
+	if (x % 1 != 0) {
+		if (x < 0)
+			x = -Math.floor(-x);
+		else
+			x = Math.floor(x);
+    }
+	return new Sk.builtin.nmber(x, Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.int_.prototype.tp$name = "int";

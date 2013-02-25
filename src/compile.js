@@ -173,7 +173,7 @@ Compiler.prototype._gr = function(hint, rest)
 */
 Compiler.prototype._interruptTest = function() { // Added by RNL
 	out("if (Sk.execStart === undefined) {Sk.execStart=new Date()}");
-  	out("if (Sk.execLimit != null && new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError('Program exceeded run time limit.')}");
+  	out("if (Sk.execLimit != null && new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}");
 }
 
 Compiler.prototype._jumpfalse = function(test, block)
@@ -500,6 +500,8 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case Num:
             if (typeof e.n === "number")
                 return e.n;
+			else if (e.n instanceof Sk.builtin.nmber)
+				return "Sk.numberFromStr('" + e.n.tp$str().v + "')";
             else if (e.n instanceof Sk.builtin.lng)
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             goog.asserts.fail("unhandled Num type");

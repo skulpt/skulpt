@@ -30,11 +30,11 @@ Sk.abstr.boNameToSlotFunc_ = function(obj, name)
         case "FloorDiv": return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__floordiv__'];
         case "Mod": return obj.nb$remainder ? obj.nb$remainder : obj['__mod__'];
         case "Pow": return obj.nb$power ? obj.nb$power : obj['__pow__'];
-        //case "LShift": return obj.nb$lshift;
-        //case "RShift": return obj.nb$rshift;
-        //case "BitAnd": return obj.nb$and;
-        //case "BitOr": return obj.nb$or;
-        //case "BitXor": return obj.nb$xor;
+        case "LShift": return obj.nb$lshift;
+        case "RShift": return obj.nb$rshift;
+        case "BitAnd": return obj.nb$and;
+        case "BitOr": return obj.nb$or;
+        case "BitXor": return obj.nb$xor;
     }
 };
 Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
@@ -42,17 +42,17 @@ Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
     switch (name)
     {
         case "Add": return obj.nb$inplace_add;
-        //case "Sub": return obj.nb$inplace_subtract;
-        //case "Mult": return obj.nb$inplace_multiply;
-        //case "Div": return obj.nb$divide;
-        //case "FloorDiv": return obj.nb$floor_divide;
-        //case "Mod": return obj.nb$inplace_remainder;
-        //case "Pow": return obj.nb$inplace_power;
-        //case "LShift": return obj.nb$lshift;
-        //case "RShift": return obj.nb$rshift;
-        //case "BitAnd": return obj.nb$and;
-        //case "BitOr": return obj.nb$or;
-        //case "BitXor": return obj.nb$xor;
+        case "Sub": return obj.nb$inplace_subtract;
+        case "Mult": return obj.nb$inplace_multiply;
+        case "Div": return obj.nb$inplace_divide;
+        case "FloorDiv": return obj.nb$inplace_floor_divide;
+        case "Mod": return obj.nb$inplace_remainder;
+        case "Pow": return obj.nb$inplace_power;
+        case "LShift": return obj.nb$lshift;
+        case "RShift": return obj.nb$rshift;
+        case "BitAnd": return obj.nb$and;
+        case "BitOr": return obj.nb$or;
+        case "BitXor": return obj.nb$xor;
     }
 };
 
@@ -62,9 +62,9 @@ Sk.abstr.binary_op_ = function(v, w, opname)
     var vop = Sk.abstr.boNameToSlotFunc_(v, opname);
     if (vop !== undefined)
     {	
-		if (vop.call)
+		if (vop.call) {
         	ret = vop.call(v, w);
-		else {  // assume that vop is an __xxx__ type method
+		} else {  // assume that vop is an __xxx__ type method
 			ret = Sk.misceval.callsim(vop,v,w)
 		}
         if (ret !== undefined) return ret;
@@ -72,9 +72,9 @@ Sk.abstr.binary_op_ = function(v, w, opname)
     var wop = Sk.abstr.boNameToSlotFunc_(w, opname);
     if (wop !== undefined)
     {
-		if (wop.call)
+		if (wop.call) {
         	ret = wop.call(w, v);
-		else { // assume that wop is an __xxx__ type method
+		} else { // assume that wop is an __xxx__ type method
 			ret = Sk.misceval.callsim(wop,w,v)
 		}
         if (ret !== undefined) return ret;
@@ -96,13 +96,21 @@ Sk.abstr.binary_iop_ = function(v, w, opname)
     var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
     if (vop !== undefined)
     {
-        ret = vop.call(v, w);
+		if (vop.call) {
+        	ret = vop.call(v, w);
+		} else {  // assume that vop is an __xxx__ type method
+			ret = Sk.misceval.callsim(vop,v,w);	//	added to be like not-in-place... is this okay?
+		}
         if (ret !== undefined) return ret;
     }
     var wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
     if (wop !== undefined)
     {
-        ret = wop.call(w, v);
+		if (wop.call) {
+        	ret = wop.call(w, v);
+		} else { // assume that wop is an __xxx__ type method
+			ret = Sk.misceval.callsim(wop,w,v);	//	added to be like not-in-place... is this okay?
+		}
         if (ret !== undefined) return ret;
     }
 
@@ -132,25 +140,26 @@ Sk.abstr.binary_iop_ = function(v, w, opname)
 // result, or if either of the ops are already longs
 Sk.abstr.numOpAndPromote = function(a, b, opfn)
 {
-    if (typeof a === "number" && typeof b === "number")
-    {
-        var ans = opfn(a, b);
-        // todo; handle float	Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
-        if ( (ans > Sk.builtin.lng.threshold$ || ans < -Sk.builtin.lng.threshold$)	// RNL
-        && Math.floor(ans) === ans)	{												// RNL
-            return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];		// RNL
-        } else																		// RNL
-            return ans;
-    }
-	else if (a === undefined || b === undefined) {
-		throw new Sk.builtin.NameError('Undefined variable in expression')
-	}
-    else if (a.constructor === Sk.builtin.lng && typeof b === "number")
-        return [a, Sk.builtin.lng.fromInt$(b)];
-    else if (b.constructor === Sk.builtin.lng && typeof a === "number")
-        return [Sk.builtin.lng.fromInt$(a), b];
-
-    return undefined;
+	if (typeof a === "number" && typeof b === "number") {
+		a = new Sk.builtin.nmber(a, undefined);
+		b = new Sk.builtin.nmber(b, undefined);
+	} else if (a === undefined || b === undefined) {		throw new Sk.builtin.NameError('Undefined variable in expression')	}
+	
+	if (a.constructor === Sk.builtin.lng) {
+//		if (b.constructor == Sk.builtin.nmber)
+//			if (b.skType == Sk.builtin.nmber.float$) {
+//				var tmp = new Sk.builtin.nmber(a.tp$str(), Sk.builtin.nmber.float$);
+//				return [tmp, b];
+//			} else
+//				return [a, b.v];
+		return [a, b];
+	} else if (a.constructor === Sk.builtin.nmber) {
+		return [a, b];
+	} else if (typeof a === "number") {
+		var tmp = new Sk.builtin.nmber(a, undefined);
+		return [tmp, b];
+	} else
+		return undefined;
 };
 
 Sk.abstr.boNumPromote_ = {
@@ -165,7 +174,14 @@ Sk.abstr.boNumPromote_ = {
             return a / b;
     },
     "FloorDiv": function(a, b) { return Math.floor(a / b); }, // todo; wrong? neg?
-    "Pow": Math.pow,
+    "Pow": function(a, b) {
+		if (a < 0 && b % 1 != 0)
+			throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
+		else if (a == 0 && b < 0)
+			throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
+		else
+			return Math.pow(a, b);
+	},
     "BitAnd": function(a, b) { return a & b; },
     "BitOr": function(a, b) { return a | b; },
     "BitXor": function(a, b) { return a ^ b; },
@@ -179,10 +195,18 @@ Sk.abstr.numberBinOp = function(v, w, op)
     if (numPromoteFunc !== undefined)
     {
         var tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
-        if (typeof tmp === "number")
+		if (typeof tmp === "number")
         {
             return tmp;
         }
+		else if (tmp !== undefined &&  tmp.constructor === Sk.builtin.nmber)
+		{
+            return tmp;
+		}
+		else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng)
+		{
+            return tmp;
+		}
         else if (tmp !== undefined)
         {
             v = tmp[0];
@@ -200,10 +224,18 @@ Sk.abstr.numberInplaceBinOp = function(v, w, op)
     if (numPromoteFunc !== undefined)
     {
         var tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
-        if (typeof tmp === "number")
+		if (typeof tmp === "number")
         {
             return tmp;
         }
+		else if (tmp !== undefined &&  tmp.constructor === Sk.builtin.nmber)
+		{
+            return tmp;
+		}
+		else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng)
+		{
+            return tmp;
+		}
         else if (tmp !== undefined)
         {
             v = tmp[0];
@@ -277,6 +309,7 @@ Sk.abstr.sequenceSetItem = function(seq, i, x)
 
 Sk.abstr.sequenceDelItem = function(seq, i)
 {
+	i = Sk.builtin.asnum$(i);
     if (seq.sq$ass_item)
     {
         i = Sk.abstr.fixSeqIndex_(seq, i);
@@ -287,6 +320,7 @@ Sk.abstr.sequenceDelItem = function(seq, i)
 
 Sk.abstr.sequenceRepeat = function(f, seq, n)
 {
+	n = Sk.builtin.asnum$(n);
     var count = Sk.misceval.asIndex(n);
     if (count === undefined)
     {
@@ -297,6 +331,8 @@ Sk.abstr.sequenceRepeat = function(f, seq, n)
 
 Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
 {
+	i1 = Sk.builtin.asnum$(i1);
+	i2 = Sk.builtin.asnum$(i2);
     if (seq.sq$slice)
     {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
@@ -312,6 +348,8 @@ Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
 
 Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
 {
+	i1 = Sk.builtin.asnum$(i1);
+	i2 = Sk.builtin.asnum$(i2);
     if (seq.sq$ass_slice)
     {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
@@ -323,6 +361,8 @@ Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
 
 Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 {
+	i1 = Sk.builtin.asnum$(i1);
+	i2 = Sk.builtin.asnum$(i2);
     if (seq.sq$ass_slice)
     {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);

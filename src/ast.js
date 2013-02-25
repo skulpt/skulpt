@@ -1560,28 +1560,7 @@ function parsenumber(c, s)
         return Sk.longFromStr(s);
     }
 
-    // todo; we don't currently distinguish between int and float so str is wrong
-    // for these.
-    if (s.indexOf('.') !== -1
-            || s.indexOf('e') !== -1
-            || s.indexOf('E') !== -1)
-    {
-        return parseFloat(s);
-    }
-
-    // ugly gunk to placate an overly-nanny closure-compiler: 
-    // http://code.google.com/p/closure-compiler/issues/detail?id=111
-    // this is all just to emulate "parseInt(s)" with no radix.
-    var tmp = s;
-    if (s.charAt(0) === '-') tmp = s.substr(1);
-    if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'x' || tmp.charAt(1) === 'X'))
-        return parseInt(s, 16);
-    else if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'b' || tmp.charAt(1) === 'B'))
-        return parseInt(s, 2);
-    else if (tmp.charAt(0) === '0')
-        return parseInt(s, 8);
-    else
-        return parseInt(s, 10);
+	return Sk.numberFromStr(s);
 }
 
 function astForSlice(c, n)

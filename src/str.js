@@ -55,6 +55,7 @@ Sk.builtin.str.$emptystr = new Sk.builtin.str('');
 
 Sk.builtin.str.prototype.mp$subscript = function(index)
 {
+	index = Sk.builtin.asnum$(index);
     if (typeof index === "number" && Math.floor(index) === index /* not a float*/ )
     {
         if (index < 0) index = this.v.length + index;
@@ -81,6 +82,7 @@ Sk.builtin.str.prototype.sq$length = function()
 Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str(this.v + other.v); };
 Sk.builtin.str.prototype.sq$repeat = function(n)
 {
+	n = Sk.builtin.asnum$(n);
     var ret = "";
     for (var i = 0; i < n; ++i)
         ret += this.v;
@@ -89,6 +91,8 @@ Sk.builtin.str.prototype.sq$repeat = function(n)
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
+	i1 = Sk.builtin.asnum$(i1);
+	i2 = Sk.builtin.asnum$(i2);
     return new Sk.builtin.str(this.v.substr(i1, i2 - i1));
 };
 
@@ -261,6 +265,7 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
+	howmany = Sk.builtin.asnum$(howmany);
     var res;
     if (! on) {
         res = self.v.trim().split(/[\s]+/, howmany);
@@ -335,6 +340,7 @@ Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
 });
 
 Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
+	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
@@ -344,6 +350,7 @@ Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
+	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
@@ -354,6 +361,7 @@ Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
+	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
@@ -429,6 +437,9 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
     var index = 0;
     var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
+		fieldWidth = Sk.builtin.asnum$(fieldWidth);
+		precision  = Sk.builtin.asnum$(precision);
+
         var i;
         if (mappingKey === undefined || mappingKey === "" ) i = index++; // ff passes '' not undef for some reason
 
@@ -455,6 +466,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
 
         var formatNumber = function(n, base)
         {
+			base = Sk.builtin.asnum$(base);
             var j;
             var r;
             var neg = false;
@@ -468,10 +480,17 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
                 }
                 r = n.toString(base);
             }
+            else if (n instanceof Sk.builtin.nmber)
+            {
+                r = n.str$(base, false);
+				if (r.length > 2 && r.substr(-2) === ".0")
+					r = r.substr(0, r.length - 2);
+                neg = n.nb$isnegative();
+            }
             else if (n instanceof Sk.builtin.lng)
             {
                 r = n.str$(base, false);
-                neg = n.compare(0) < 0;
+                neg = n.nb$isnegative();	//	neg = n.size$ < 0;	RNL long.js change
             }
 
             goog.asserts.assert(r !== undefined, "unhandled number format");
@@ -558,8 +577,22 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             case 'F':
             case 'g':
             case 'G':
+				var convValue = Sk.builtin.asnum$(value);
+				if (typeof convValue === "string")
+					convValue = Number(convValue);
+				if (convValue === Infinity)
+					return "inf";
+				if (convValue === -Infinity)
+					return "-inf";
+				if (isNaN(convValue))
+					return "nan";
                 var convName = ['toExponential', 'toFixed', 'toPrecision']['efg'.indexOf(conversionType.toLowerCase())];
-                var result = (value)[convName](precision);
+				if (precision === undefined || precision === "")
+					if (conversionType === 'e' || conversionType === 'E')
+						precision = 6;
+					else if (conversionType === 'f' || conversionType === 'F')
+						precision = 7;
+                var result = (convValue)[convName](precision);
                 if ('EFG'.indexOf(conversionType) !== -1) result = result.toUpperCase();
                 // todo; signs etc.
                 return handleWidth(['', result]);
@@ -567,6 +600,8 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             case 'c':
                 if (typeof value === "number")
                     return String.fromCharCode(value);
+                else if (value instanceof Sk.builtin.nmber)
+                    return String.fromCharCode(value.v);
                 else if (value instanceof Sk.builtin.lng)
                     return String.fromCharCode(value.str$(10,false)[0]);
                 else if (value.constructor === Sk.builtin.str)

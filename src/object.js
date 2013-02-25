@@ -78,7 +78,7 @@ Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetA
 Sk.builtin.type.makeIntoTypeObj('object', Sk.builtin.object);
 
 Sk.builtin.BoolObj = function() {};
-Sk.builtin.BoolObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('Bool', new Sk.builtin.BoolObj());
+Sk.builtin.BoolObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('bool', new Sk.builtin.BoolObj());
 
 Sk.builtin.IntObj = function() {};
 Sk.builtin.IntObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('int', new Sk.builtin.IntObj());

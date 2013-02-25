@@ -63,6 +63,7 @@ Sk.builtin.list.prototype.list_concat_ = function(other)
 
 Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 {
+	i = Sk.builtin.asnum$(i);
     if (i < 0 || i >= this.v.length)
         throw new Sk.builtin.IndexError("list assignment index out of range");
     if (v === null)
@@ -72,6 +73,9 @@ Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 
 Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 {
+	ilow = Sk.builtin.asnum$(ilow);
+	ihigh = Sk.builtin.asnum$(ihigh);
+
     // todo; item rather list/null
     var args = v === null ? [] : v.v.slice(0);
     args.unshift(ihigh - ilow);
@@ -144,6 +148,7 @@ Sk.builtin.list.prototype.sq$length = function() { return this.v.length; };
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
 Sk.builtin.list.prototype.sq$repeat = function(n)
 {
+	n = Sk.builtin.asnum$(n);
     var ret = [];
     for (var i = 0; i < n; ++i)
         for (var j = 0; j < this.v.length; ++j)
@@ -164,6 +169,7 @@ Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
 
 Sk.builtin.list.prototype.list_subscript_ = function(index)
 {
+	index = Sk.builtin.asnum$(index);
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;
@@ -185,6 +191,7 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
 
 Sk.builtin.list.prototype.list_ass_item_ = function(i, value)
 {
+	i = Sk.builtin.asnum$(i);
     if (i < 0 || i >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
     if (value === null)
         this.list_ass_slice_(i, i+1, value);
@@ -251,6 +258,7 @@ Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
 {
+	i = Sk.builtin.asnum$(i);
     if (i < 0) i = 0;
     else if (i > self.v.length) i = self.v.length - 1;
     self.v.splice(i, 0, x);
@@ -265,7 +273,10 @@ Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
 
 Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
 {
-    if (i === undefined) i = self.v.length - 1;
+    if (i === undefined)
+		i = self.v.length - 1;
+	else	
+		i = Sk.builtin.asnum$(i);
     var ret = self.v[i];
     self.v.splice(i, 1);
     return ret;
