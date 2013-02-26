@@ -14,6 +14,7 @@ var $builtinmodule = function(name)
 	});
 
 	$loc.group = new Sk.builtin.func(function(self,grpnum) {
+		grpnum = Sk.builtin.asnum$(grpnum);
 	    if(grpnum >= self.thematch.v.length) {
 		throw new Sk.builtin.IndexError("Index out of range: " + grpnum);
 		}

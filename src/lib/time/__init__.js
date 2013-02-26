@@ -10,7 +10,7 @@ var $builtinmodule = function(name)
     var mod = {};
 
     mod.time = new Sk.builtin.func(function() {
-	  return (new Date().getTime() / 1000);
+	  return Sk.builtin.assk$(new Date().getTime() / 1000, undefined);
     });
 
     return mod;

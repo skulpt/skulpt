@@ -244,7 +244,7 @@ Sk.builtin.biginteger.prototype.bnCompareTo = function(a) {
   if(r != 0) return r;
   var i = this.t;
   r = i-a.t;
-  if(r != 0) return r;
+  if(r != 0) return (this.s<0)?-r:r;
   while(--i >= 0) if((r=this[i]-a[i]) != 0) return r;
   return 0;
 }
@@ -1180,6 +1180,14 @@ for(var i = 0; i < t; ++i) {
  }
 }
 return true;
+}
+
+Sk.builtin.biginteger.prototype.isnegative = function() { return this.s < 0; }
+Sk.builtin.biginteger.prototype.ispositive = function() { return this.s >= 0; }
+Sk.builtin.biginteger.prototype.trueCompare = function(a) {
+	if (this.s >= 0 && a.s < 0) return 1;
+	if (this.s < 0 && a.s >= 0) return -1;
+	return this.compare(a);
 }
 
 //protected
