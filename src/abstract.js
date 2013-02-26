@@ -404,21 +404,25 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 
 Sk.abstr.objectDelItem = function(o, key)
 {
-    if (o.mp$del_subscript) {
-        o.mp$del_subscript(key);
-        return;
-    }
-    if (o.sq$ass_item)
+    if (o !== null)
     {
-        var keyValue = Sk.misceval.asIndex(key);
-        if (keyValue === undefined) {
-            var keytypename = Sk.abstr.typeName(key);
-            throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
+        if (o.mp$del_subscript) {
+            o.mp$del_subscript(key);
+            return;
         }
-        Sk.abstr.sequenceDelItem(o, keyValue);
-        return;
+        if (o.sq$ass_item)
+        {
+            var keyValue = Sk.misceval.asIndex(key);
+            if (keyValue === undefined) {
+                var keytypename = Sk.abstr.typeName(key);
+                throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
+            }
+            Sk.abstr.sequenceDelItem(o, keyValue);
+            return;
+        }
+        // if o is a slice do something else...
     }
-    // if o is a slice do something else...
+
     var otypename = Sk.abstr.typeName(o);
     throw new TypeError("'" + otypename + "' object does not support item deletion");
 };
@@ -426,12 +430,15 @@ goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function(o, key)
 {
-    if (o.mp$subscript)
-        return o.mp$subscript(key);
-    else if (Sk.misceval.isIndex(key) && o.sq$item)
-        return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key));
-    else if (o.__getitem__ !== undefined) {
-        return Sk.misceval.callsim(o.__getitem__,o,key);
+    if (o !== null) 
+    {
+        if (o.mp$subscript)
+            return o.mp$subscript(key);
+        else if (Sk.misceval.isIndex(key) && o.sq$item)
+            return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key));
+        else if (o.__getitem__ !== undefined) {
+            return Sk.misceval.callsim(o.__getitem__,o,key);
+        }
     }
 
     var otypename = Sk.abstr.typeName(o);
@@ -441,10 +448,13 @@ goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function(o, key, v)
 {
-    if (o.mp$ass_subscript)
-        return o.mp$ass_subscript(key, v);
-    else if (Sk.misceval.isIndex(key) && o.sq$ass_item)
-        return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
+    if (o !== null) 
+    {
+        if (o.mp$ass_subscript)
+            return o.mp$ass_subscript(key, v);
+        else if (Sk.misceval.isIndex(key) && o.sq$ass_item)
+            return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
+    }
 
     var otypename = Sk.abstr.typeName(o);
     throw new TypeError("'" + otypename + "' does not support item assignment");
