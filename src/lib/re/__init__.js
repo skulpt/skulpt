@@ -50,7 +50,7 @@ var $builtinmodule = function(name)
         return jsflags;
     };
 
-    mod.split = new Sk.builtin.func(function(pattern, string, maxsplit, flags) {
+    mod.split = Sk.nativejs.func(function split(pattern, string, maxsplit, flags) {
         Sk.builtin.pyCheckArgs("split", arguments, 2, 4);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
@@ -114,7 +114,7 @@ var $builtinmodule = function(name)
         return new Sk.builtin.list(result);
     });
 
-    mod.findall = new Sk.builtin.func(function(pattern, string, flags) {
+    mod.findall = Sk.nativejs.func(function findall(pattern, string, flags) {
         Sk.builtin.pyCheckArgs("findall", arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");

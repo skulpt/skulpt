@@ -38,6 +38,7 @@ Files = [
         'src/type.js',
         'src/object.js',
         'src/function.js',
+        'src/native.js',
         'src/method.js',
         'src/misceval.js',
         'src/abstract.js',
