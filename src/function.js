@@ -152,11 +152,16 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
             {
                 args[j] = kw[i+1];
             }
-            else if (this.func_code['co_kwargs'])
+            else if (expectskw)
             {
                 // build kwargs dict
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
+            }
+            else
+            {
+                var name = (this.func_code && this.func_code['co_name'] && this.func_code['co_name'].v) || '<native JS>';
+                throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }
         }
     }
