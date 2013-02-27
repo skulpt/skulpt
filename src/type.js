@@ -199,11 +199,10 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
     if (this['$d'])
     {
-        try {
-            var res = this['$d'].mp$subscript(new Sk.builtin.str(name));
-            //print(res);
+        var res = this['$d'].mp$lookup(new Sk.builtin.str(name));
+        if (res !== undefined)
+        {
             return res;
-        } catch (x) {
         }
     }
 
@@ -224,21 +223,25 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 Sk.builtin.type.typeLookup = function(type, name)
 {
     var mro = type.tp$mro;
+    var pyname = new Sk.builtin.str(name);
+    var base;
+    var res;
+    var i;
 
     // todo; probably should fix this, used for builtin types to get stuff
     // from prototype
     if (!mro)
         return type.prototype[name];
 
-    for (var i = 0; i < mro.v.length; ++i)
+    for (i = 0; i < mro.v.length; ++i)
     {
-        var base = mro.v[i];
+        base = mro.v[i];
         if (base.hasOwnProperty(name))
             return base[name];
-        try {
-            var res = base['$d'].mp$subscript(new Sk.builtin.str(name));
+        res = base['$d'].mp$lookup(pyname);
+        if (res !== undefined)
+        {
             return res;
-        } catch (x) {
         }
     }
 

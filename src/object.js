@@ -34,7 +34,10 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     if (this['$d'])
     {
         var res;
-        if (this['$d'].mp$subscript) {
+        if  (this['$d'].mp$lookup) {
+            res = this['$d'].mp$lookup(new Sk.builtin.str(name));
+        }
+        else if (this['$d'].mp$subscript) {
             try {
                 res = this['$d'].mp$subscript(new Sk.builtin.str(name));
             } catch (x) {
