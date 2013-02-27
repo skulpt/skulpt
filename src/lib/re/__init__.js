@@ -115,7 +115,7 @@ var $builtinmodule = function(name)
     });
 
     mod.findall = new Sk.builtin.func(function(pattern, string, flags) {
-        Sk.builtin.pyCheckArgs("split", arguments, 2, 4);
+        Sk.builtin.pyCheckArgs("findall", arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         };
