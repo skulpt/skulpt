@@ -156,16 +156,23 @@ function fixReservedNames(name)
 function mangleName(priv, ident)
 {
     var name = ident.v;
+    var strpriv = null;
+
     if (priv === null || name === null || name.charAt(0) !== '_' || name.charAt(1) !== '_')
         return ident;
     // don't mangle __id__
     if (name.charAt(name.length - 1) === '_' && name.charAt(name.length - 2) === '_')
         return ident;
     // don't mangle classes that are all _ (obscure much?)
-    if (priv.v.replace(/_/g, '') === '')
+    strpriv = priv.v;
+    strpriv.replace(/_/g, '');
+    if (strpriv === '')
         return ident;
-    priv = priv.v.replace(/^_*/, '');
-    return '_' + priv + name;
+
+    strpriv = priv.v;
+    strpriv.replace(/^_*/, '');
+    strpriv = new Sk.builtin.str('_' + strpriv + name);
+    return strpriv;
 }
 
 /**
@@ -531,6 +538,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
                 val = this.vexpr(e.value);
             var mangled = e.attr['$r']().v;
             mangled = mangled.substring(1, mangled.length-1);
+            mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
             mangled = fixReservedWords(mangled);
             mangled = fixReservedNames(mangled);
             switch (e.ctx)
@@ -1697,6 +1705,9 @@ Compiler.prototype.enterScope = function(name, key, lineno)
     u.ste = this.st.getStsForAst(key);
     u.name = name;
     u.firstlineno = lineno;
+
+    if (this.u && this.u.private_)
+        u.private_ = this.u.private_;
 
     this.stack.push(this.u);
     this.allUnits.push(u);

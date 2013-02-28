@@ -262,16 +262,32 @@ Sk.builtin.dir = function dir(x)
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
     var names = [];
+
+    // Add all object properties
     for (var k in x.constructor.prototype)
     {
-        var s;
+        var s = null;
         if (k.indexOf('$') !== -1)
             s = Sk.builtin.dir.slotNameToRichName(k);
         else if (k.charAt(k.length - 1) !== '_')
             s = k;
+        else if (k.charAt(0) === '_')
+            s = k;
         if (s)
             names.push(new Sk.builtin.str(s));
     }
+
+    // Add all attributes
+    if (x['$d'] && x['$d'].tp$iter)
+    {
+        var it = x['$d'].tp$iter();
+        var i;
+        for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        {
+            names.push(new Sk.builtin.str(i));
+        }
+    }
+
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new Sk.builtin.list(names);
 };
