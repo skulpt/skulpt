@@ -261,6 +261,8 @@ Sk.builtin.dir = function dir(x)
 {
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
+    //print(JSON.stringify(x));
+
     var names = [];
 
     // Add all object properties
@@ -278,16 +280,28 @@ Sk.builtin.dir = function dir(x)
     }
 
     // Add all attributes
-    if (x['$d'] && x['$d'].tp$iter)
+    if (x['$d']) 
     {
-        var it = x['$d'].tp$iter();
-        var i;
-        for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+        if (x['$d'].tp$iter)
         {
-            names.push(new Sk.builtin.str(i));
+            // Dictionary
+            var it = x['$d'].tp$iter();
+            var i;
+            for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            {
+                names.push(new Sk.builtin.str(i));
+            }
+        }
+        else
+        {
+            // Object
+            for (s in x['$d'])
+            {
+                names.push(new Sk.builtin.str(s));
+            }
         }
     }
-
+        
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new Sk.builtin.list(names);
 };
