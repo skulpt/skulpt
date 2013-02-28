@@ -261,14 +261,14 @@ Sk.builtin.dir = function dir(x)
 {
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
-    //print(JSON.stringify(x));
-
     var names = [];
+    var k;
+    var s;
 
     // Add all object properties
-    for (var k in x.constructor.prototype)
+    for (k in x.constructor.prototype)
     {
-        var s = null;
+        s = null;
         if (k.indexOf('$') !== -1)
             s = Sk.builtin.dir.slotNameToRichName(k);
         else if (k.charAt(k.length - 1) !== '_')
