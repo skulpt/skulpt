@@ -1504,7 +1504,7 @@ var $builtinmodule = function(name) {
         $loc.distance = new Sk.builtin.func(function(self, tx, ty) {
 			tx = Sk.builtin.asnum$(tx);
 			ty = Sk.builtin.asnum$(ty);
-            if ((typeof(tx)).toLowerCase() === 'number')
+            if ((typeof(tx)).toLowerCase() === 'number') {
                 tx = [tx, ty, 0];
             } else {
                 tx = [self.theTurtle.getx(), self.theTurtle.gety(), 0];
