@@ -1,9 +1,9 @@
-<class 'int'>
-<class 'int'>
-<class 'int'>
-<__main__.X object>
-<__main__.X object>
-<class '__main__.X'>
-<class '__main__.X'>
-<class '__main__.X'>
-<class '__main__.X'>
+<type 'int'>
+<type 'int'>
+<type 'int'>
+<__main__.X instance at 0x105294050>
+<__main__.X instance at 0x105294050>
+__main__.X
+<class __main__.X at 0x10527e770>
+__main__.X
+<class __main__.X at 0x10527e770>
