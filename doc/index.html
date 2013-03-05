@@ -32,11 +32,11 @@ Python and reload.</p>
     <p>The code is run entirely in your browser, so don't feel
     obligated to &quot;crash the server&quot;, you'll only stub your
     toe. <a id="toggledocs" href="#">Help</a>, or examples:
-        <a href="#" id="codeexample1">1</a> 
-        <a href="#" id="codeexample2">2</a> 
-        <a href="#" id="codeexample3">3</a> 
-        <a href="#" id="codeexample4">4</a> 
-        <a href="#" id="codeexample5">5</a> 
+        <a href="#" id="codeexample1">1</a>
+        <a href="#" id="codeexample2">2</a>
+        <a href="#" id="codeexample3">3</a>
+        <a href="#" id="codeexample4">4</a>
+        <a href="#" id="codeexample5">5</a>
         <a href="#" id="codeexample6">6</a>
         <a href="#" id="codeexample7">7</a>.
         Ctrl-Enter to run.
@@ -106,7 +106,7 @@ fixed recently, you can head over to the always-euphemistic-sounding <a
 
 
 <p>And, if &quot;daring&quot; is your <em>middle</em> name, there's a wee bit of <a
-    href="http://code.google.com/p/skulpt/w/list">developer docs</a>.</p>
+    href="static/developer.html">developer docs</a> (New and Improved!).</p>
 
 <h2>Skulpt in the Wild</h2>
 
@@ -127,23 +127,23 @@ fixed recently, you can head over to the always-euphemistic-sounding <a
 
 Getting started with skulpt on your own page can seem a little intimidating, but here's a really simple example that gets you going.  You can copy and paste or grab the code from <a href="https://gist.github.com/4650616">this gist</a>.
 <pre>
-&lt;html&gt; 
-&lt;head&gt; 
-&lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"&gt;&lt;/script&gt; 
-&lt;script src="skulpt.js" type="text/javascript"&gt;&lt;/script&gt; 
-&lt;script src="builtin.js" type="text/javascript"&gt;&lt;/script&gt; 
+&lt;html&gt;
+&lt;head&gt;
+&lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="skulpt.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="builtin.js" type="text/javascript"&gt;&lt;/script&gt;
 
-&lt;/head&gt; 
+&lt;/head&gt;
 
-&lt;body&gt; 
+&lt;body&gt;
 
-&lt;script type="text/javascript"&gt; 
+&lt;script type="text/javascript"&gt;
 // output functions are configurable.  This one just appends some text
 // to a pre element.
-function outf(text) { 
-    var mypre = document.getElementById("output"); 
-    mypre.innerHTML = mypre.innerHTML + text; 
-} 
+function outf(text) {
+    var mypre = document.getElementById("output");
+    mypre.innerHTML = mypre.innerHTML + text;
+}
 function builtinRead(x) {
     if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
             throw "File not found: '" + x + "'";
@@ -155,35 +155,35 @@ function builtinRead(x) {
 // get a reference to your pre element for output
 // configure the output function
 // call Sk.importMainWithBody()
-function runit() { 
-   var prog = document.getElementById("yourcode").value; 
-   var mypre = document.getElementById("output"); 
-   mypre.innerHTML = ''; 
+function runit() {
+   var prog = document.getElementById("yourcode").value;
+   var mypre = document.getElementById("output");
+   mypre.innerHTML = '';
    Sk.canvas = "mycanvas";
    Sk.pre = "output";
-   Sk.configure({output:outf, read:builtinRead}); 
-   eval(Sk.importMainWithBody("&lt;stdin&gt;",false,prog)); 
-} 
-&lt;/script&gt; 
+   Sk.configure({output:outf, read:builtinRead});
+   eval(Sk.importMainWithBody("&lt;stdin&gt;",false,prog));
+}
+&lt;/script&gt;
 
-&lt;h3&gt;Try This&lt;/h3&gt; 
-&lt;form&gt; 
+&lt;h3&gt;Try This&lt;/h3&gt;
+&lt;form&gt;
 &lt;textarea id="yourcode" cols="40" rows="10" &gt;import turtle
 
 t = turtle.Turtle()
 t.forward(100)
 
-print "Hello World" 
-&lt;/textarea&gt;&lt;br /&gt; 
-&lt;button type="button" onclick="runit()"&gt;Run&lt;/button&gt; 
-&lt;/form&gt; 
-&lt;pre id="output" &gt;&lt;/pre&gt; 
+print "Hello World"
+&lt;/textarea&gt;&lt;br /&gt;
+&lt;button type="button" onclick="runit()"&gt;Run&lt;/button&gt;
+&lt;/form&gt;
+&lt;pre id="output" &gt;&lt;/pre&gt;
 &lt;!-- If you want turtle graphics include a canvas --&gt;
-&lt;canvas id="mycanvas" &gt;&lt;/mycanvas&gt; 
+&lt;canvas id="mycanvas" &gt;&lt;/mycanvas&gt;
 
-&lt;/body&gt; 
+&lt;/body&gt;
 
-&lt;/html&gt; 
+&lt;/html&gt;
 </pre>
 
 <h2>License</h2>
