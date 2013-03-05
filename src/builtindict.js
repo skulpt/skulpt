@@ -55,7 +55,7 @@ Sk.builtins = {
 'all': Sk.builtin.all,
 'any': Sk.builtin.any,
 'jseval': Sk.builtin.jseval,
-'jsmillis': Sk.builtin.jsmillis,
-'long_div_mode': Sk.builtin.lng.longDivideMode
+'jsmillis': Sk.builtin.jsmillis
+/*'long_div_mode': Sk.builtin.lng.longDivideMode	//	No longer used/relevant */
 };
 goog.exportSymbol("Sk.builtins", Sk.builtins);
