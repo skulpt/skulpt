@@ -57,7 +57,7 @@ $(document).ready(function() {
                         var output = $('#edoutput');
                         var outf = function(text)
                         {
-                            output.html(output.text() + text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>"));
+                            output.text(output.text() + text);
                         };
                         Sk.configure({output:outf, read:builtinRead});
                         if (e.ctrlKey)
