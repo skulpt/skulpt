@@ -357,8 +357,8 @@ Sk.builtin.type.prototype.tp$richcompare = function(other, op)
 	if (!this['$r'] || !other['$r'])
 		return undefined;
 
-	var r1 = this.$r();
-	var r2 = other.$r();
+	var r1 = this['$r']();
+	var r2 = other['$r']();
 
 	return r1.tp$richcompare(r2, op);
 };
