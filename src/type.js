@@ -178,6 +178,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+	t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
     return t;
 };
 
@@ -348,3 +349,16 @@ Sk.builtin.type.buildMRO = function(klass)
     return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
 };
 
+Sk.builtin.type.prototype.tp$richcompare = function(other, op)
+{
+	if (other.ob$type != Sk.builtin.type)
+		return undefined;
+
+	if (!this['$r'] || !other['$r'])
+		return undefined;
+
+	var r1 = this.$r();
+	var r2 = other.$r();
+
+	return r1.tp$richcompare(r2, op);
+};
