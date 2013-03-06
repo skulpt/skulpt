@@ -37,3 +37,5 @@ Sk.nativejs = {
         return new Sk.builtin.func(code);
     }
 };
+goog.exportSymbol("Sk.nativejs.func", Sk.nativejs.func);
+goog.exportSymbol("Sk.nativejs.func_nokw", Sk.nativejs.func_nokw);
