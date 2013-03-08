@@ -1534,7 +1534,11 @@ function parsestrplus(c, n)
     var ret = new Sk.builtin.str("");
     for (var i = 0; i < NCH(n); ++i)
     {
-        ret = ret.sq$concat(parsestr(c, CHILD(n, i).value));
+        try {
+            ret = ret.sq$concat(parsestr(c, CHILD(n, i).value));
+        } catch (x) {
+            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", "", CHILD(n, i).lineno);
+        }
     }
     return ret;
 }
