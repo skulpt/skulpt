@@ -5,7 +5,7 @@ Sk.builtin = {};
 // todo; these should all be func objects too, otherwise str() of them won't
 // work, etc.
 
-Sk.builtin.range = function(start, stop, step)
+Sk.builtin.range = function range(start, stop, step)
 {
     var ret = [];
     var i;
@@ -44,7 +44,7 @@ Sk.builtin.range = function(start, stop, step)
     return new Sk.builtin.list(ret);
 };
 
-Sk.builtin.round = function(number, ndigits)
+Sk.builtin.round = function round(number, ndigits)
 {
     var result, multiplier;
 
@@ -64,7 +64,7 @@ Sk.builtin.round = function(number, ndigits)
     return result;
 };
 
-Sk.builtin.len = function(item)
+Sk.builtin.len = function len(item)
 {
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
@@ -262,16 +262,46 @@ Sk.builtin.dir = function dir(x)
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
     var names = [];
-    for (var k in x.constructor.prototype)
+    var k;
+    var s;
+
+    // Add all object properties
+    for (k in x.constructor.prototype)
     {
-        var s;
+        s = null;
         if (k.indexOf('$') !== -1)
             s = Sk.builtin.dir.slotNameToRichName(k);
         else if (k.charAt(k.length - 1) !== '_')
             s = k;
+        else if (k.charAt(0) === '_')
+            s = k;
         if (s)
             names.push(new Sk.builtin.str(s));
     }
+
+    // Add all attributes
+    if (x['$d']) 
+    {
+        if (x['$d'].tp$iter)
+        {
+            // Dictionary
+            var it = x['$d'].tp$iter();
+            var i;
+            for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            {
+                names.push(new Sk.builtin.str(i));
+            }
+        }
+        else
+        {
+            // Object
+            for (s in x['$d'])
+            {
+                names.push(new Sk.builtin.str(s));
+            }
+        }
+    }
+        
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
     return new Sk.builtin.list(names);
 };
@@ -296,7 +326,7 @@ Sk.builtin.open = function open(filename, mode, bufsize)
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
-Sk.builtin.isinstance = function(obj, type)
+Sk.builtin.isinstance = function isinstance(obj, type)
 {
     Sk.builtin.pyCheckArgs("isinstance", arguments, 2, 2);
 
@@ -385,7 +415,7 @@ Sk.builtin.hash = function hash(value)
     // todo; throw properly for unhashable types
 };
 
-Sk.builtin.getattr = function(obj, name, default_)
+Sk.builtin.getattr = function getattr(obj, name, default_)
 {
     Sk.builtin.pyCheckArgs("getattr", arguments, 2, 3);
     Sk.builtin.pyCheckType("name", "string", Sk.builtin.checkString(name));
@@ -401,7 +431,7 @@ Sk.builtin.getattr = function(obj, name, default_)
     return ret;
 };
 
-Sk.builtin.input = function(obj, name, default_)
+Sk.builtin.input = function input(obj, name, default_)
 {
     var x = prompt(obj.v);
     return new Sk.builtin.str(x);

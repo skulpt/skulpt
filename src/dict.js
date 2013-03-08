@@ -103,47 +103,48 @@ Sk.builtin.dict.prototype.key$pop = function(bucket, key)
     return null;    
 }
 
-Sk.builtin.dict.prototype.mp$subscript = function(key)
+// Perform dictionary lookup, either return value or undefined if key not in dictionary
+Sk.builtin.dict.prototype.mp$lookup = function(key)
 {
     var bucket = this[kf(key)];
     var item;
-    var s;
 
     // todo; does this need to go through mp$ma_lookup
 
-    if (bucket === undefined)
+    if (bucket !== undefined)
     {
-        // Not found in dictionary 
-        s = new Sk.builtin.str(key);
-        throw new Sk.builtin.KeyError(s.v);
+        item = this.key$lookup(bucket, key);
+        if (item) {
+            return item.rhs;
+        };
     }
-
-    item = this.key$lookup(bucket, key);
-    if (item) {
-        return item.rhs;
-    };
 
     // Not found in dictionary     
-    s = new Sk.builtin.str(key);
-    throw new Sk.builtin.KeyError(s.v);
+    return undefined;
+}
+
+Sk.builtin.dict.prototype.mp$subscript = function(key)
+{
+    var res = this.mp$lookup(key);
+
+    if (res !== undefined)
+    {
+        // Found in dictionary
+        return res;
+    }
+    else
+    {
+        // Not found in dictionary
+        var s = new Sk.builtin.str(key);
+        throw new Sk.builtin.KeyError(s.v);
+    }
 };
 
-Sk.builtin.dict.prototype.sq$contains = function(ob) 
+Sk.builtin.dict.prototype.sq$contains = function(ob)
 {
-    var bucket = this[kf(ob)];
-    var item;
+    var res = this.mp$lookup(ob);
 
-    if (bucket == undefined)
-    {
-        return false;
-    }
-
-    item = this.key$lookup(bucket, ob);
-    if (item) {
-        return true;
-    } else {
-        return false;
-    }
+    return (res !== undefined);
 }
 
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
@@ -180,17 +181,13 @@ Sk.builtin.dict.prototype.mp$del_subscript = function(key)
 
     // todo; does this need to go through mp$ma_lookup
 
-    if (bucket === undefined)
+    if (bucket !== undefined)
     {
-        // Not found in dictionary 
-        s = new Sk.builtin.str(key);
-        throw new Sk.builtin.KeyError(s.v);
+        item = this.key$pop(bucket, key);
+        if (item) {
+            return;
+        };
     }
-
-    item = this.key$pop(bucket, key);
-    if (item) {
-        return;
-    };
 
     // Not found in dictionary     
     s = new Sk.builtin.str(key);
@@ -319,19 +316,20 @@ Sk.builtin.dict.prototype.tp$richcompare = function(other, op)
 
 Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 {
+    var ret;
+
     if (d === undefined) {
         //d = new Sk.builtin.NoneObj();
         d = null;
     }
 
-    try {
-        var ret = self.mp$subscript(k);
-        // Found
-        return ret;
-    } catch (x) {
-        // Not found
-        return d;
+    ret = self.mp$lookup(k);
+    if (ret === undefined)
+    {
+        ret = d;
     }
+
+    return ret;
 });
 
 Sk.builtin.dict.prototype['items'] = new Sk.builtin.func(function(self)
