@@ -17,7 +17,7 @@ Sk.builtin.len = function(item)
 {
     if (item.sq$length)
         return item.sq$length();
-    
+
     if (item.mp$length)
         return item.mp$length();
 
@@ -56,7 +56,7 @@ Sk.builtin.sum = function sum(iter,start)
     if (iter instanceof Sk.builtin.list) {
         iter = iter.v;
     } else {
-        throw "TypeError: an iterable is required";   
+        throw "TypeError: an iterable is required";
     }
     if (start === undefined ) {
         start = 0;
@@ -107,6 +107,33 @@ Sk.builtin.chr = function chr(x)
         throw "TypeError: an integer is required";
     }
     return new Sk.builtin.str(String.fromCharCode(x));
+};
+
+Sk.builtin.hex = function hex(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new Sk.builtin.str('0x'+x.toString(16));
+};
+
+Sk.builtin.oct = function oct(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new Sk.builtin.str('0'+x.toString(8));
+};
+
+Sk.builtin.bin = function bin(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new Sk.builtin.str('0b'+x.toString(2));
 };
 
 Sk.builtin.dir = function dir(x)
