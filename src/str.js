@@ -282,18 +282,49 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
-    var res;
-    if (! on) {
-        res = self.v.trim().split(/[\s]+/, howmany);
+    Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
+    if (on === undefined) {
+        on = null;
+    }
+    if ((on !== null) && !Sk.builtin.checkString(on)) { 
+        throw new Sk.builtin.TypeError("expected a string");
+    }
+    if ((on !== null) && on.v === "") {
+        throw new Sk.builtin.ValueError("empty separator");
+    }
+    if ((howmany !== undefined) && !Sk.builtin.checkInt(howmany)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    }
+
+    var regex = /[\s]+/g;
+    var str = self.v;
+    if (on === null) {
+        str = str.trim();
     } else {
-        res = self.v.split(new Sk.builtin.str(on).v, howmany);
+        regex = new RegExp(on.v, "g");
     }
-    var tmp = [];
-    for (var i = 0; i < res.length; ++i)
-    {
-        tmp.push(new Sk.builtin.str(res[i]));
+
+    // This is almost identical to re.split, excpet how the regexp is constructed
+
+    var result = [];
+    var match;
+    var index = 0;
+    var splits = 0;
+    while ((match = regex.exec(str)) != null) {
+        if (match.index === regex.lastIndex) {
+            // empty match
+            break;
+        }
+        result.push(new Sk.builtin.str(str.substring(index, match.index)));
+        index = regex.lastIndex;
+        splits += 1;
+        if (howmany && (splits >= howmany)) {
+            break;
+        }
     }
-    return new Sk.builtin.list(tmp);
+    result.push(new Sk.builtin.str(str.substring(index)));
+
+    return new Sk.builtin.list(result);
 });
 
 Sk.builtin.str.prototype['strip'] = new Sk.builtin.func(function(self, chars)
