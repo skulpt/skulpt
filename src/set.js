@@ -62,6 +62,17 @@ Sk.builtin.set.prototype.tp$richcompare = function(w, op)
     if (this === w && Sk.misceval.opAllowsEquality(op))
         return true;
 
+    // w not a set
+    if (!w.__class__ || w.__class__ != Sk.builtin.set)
+    {
+        // shortcuts for eq/not
+        if (op === 'Eq') return false;
+        if (op === 'NotEq') return true;
+
+        // todo; other types should have an arbitrary order
+        return false;
+    }
+
     var vl = this.sq$length();
     var wl = w.sq$length();
 
