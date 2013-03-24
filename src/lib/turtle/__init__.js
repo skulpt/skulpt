@@ -1529,16 +1529,19 @@ var $builtinmodule = function(name) {
         // Color Control
         //
 
-        $loc.fillcolor = new Sk.builtin.func(function(self, color) {
-            checkArgs(2,arguments.length,"fillcolor()");
+        $loc.fillcolor = new Sk.builtin.func(function(self, color, green, blue) {
             if (color) {
-                color = color.v || self.theTurtle.context.fillStyle;
-                self.theTurtle.set_fill_color(color);
+                if (blue) {
+                    self.theTurtle.set_fill_color(color, green, blue);
+                } else {
+                    color = color.v || self.theTurtle.context.fillStyle;
+                    self.theTurtle.set_fill_color(color);
+                }
             } else
                 return self.theTurtle.fillStyle;
         });
 
-        $loc.color = new Sk.builtin.func(function(self, color, green, blue) {
+        $loc.pencolor = new Sk.builtin.func(function(self, color, green, blue) {
             if (color) {
                 if (blue) {
                     self.theTurtle.set_pen_color(color, green, blue);
@@ -1550,7 +1553,19 @@ var $builtinmodule = function(name) {
                 return self.theTurtle.penStyle;
         });
 
-        $loc.pencolor = $loc.color;
+        $loc.color = new Sk.builtin.func(function(self, color, green, blue) {
+            if(color) {
+                if (blue) {
+                    self.theTurtle.set_pen_color(color, green, blue);
+                    self.theTurtle.set_fill_color(color, green, blue);
+                } else {
+                    color = color.v || self.theTurtle.context.fillStyle;
+                    self.theTurtle.set_pen_color(color);
+                    self.theTurtle.set_fill_color(color);
+                }
+            } else 
+                return [self.theTurtle.penStyle, self.theTurtle.fillStyle];            
+        });
 
         //
         //  Filling
