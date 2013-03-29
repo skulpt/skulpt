@@ -73,7 +73,7 @@ Sk.builtin.nmber.threshold$ = Math.pow(2, 53);
 Sk.builtin.nmber.float$ = "float";
 Sk.builtin.nmber.int$ = "int";
 
-Sk.builtin.nmber.fromInt$ = function(ival) 
+Sk.builtin.nmber.fromInt$ = function(ival)
 {
 	return new Sk.builtin.nmber(ival, undefined);
 };
@@ -85,7 +85,7 @@ Sk.numberFromStr = function(s)
 	if (s == 'inf')
 		return new Sk.builtin.nmber(Infinity, undefined);
 	if (s == '-inf')
-		return new Sk.builtin.nmber(-Infinity, undefined);	
+		return new Sk.builtin.nmber(-Infinity, undefined);
 
 	var res = new Sk.builtin.nmber(0, undefined);
 
@@ -98,7 +98,7 @@ Sk.numberFromStr = function(s)
 		return res;
     }
 
-    // ugly gunk to placate an overly-nanny closure-compiler: 
+    // ugly gunk to placate an overly-nanny closure-compiler:
     // http://code.google.com/p/closure-compiler/issues/detail?id=111
     // this is all just to emulate "parseInt(s)" with no radix.
     var tmp = s;
@@ -127,7 +127,7 @@ Sk.builtin.nmber.prototype.clone = function()
 Sk.builtin.nmber.prototype.toFixed = function(x) {
 	x = Sk.builtin.asnum$(x);
 	return this.v.toFixed(x)
-} 
+}
 
 Sk.builtin.nmber.prototype.nb$add = function(other)
 {
@@ -668,10 +668,12 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 	} else {
 		tmp = work.toString(base);
 	}
-	
+
 	if (this.skType !== Sk.builtin.nmber.float$)
 		return tmp;
 	if (tmp.indexOf('.') < 0 && tmp.indexOf('E') < 0 && tmp.indexOf('e') < 0)
 		tmp = tmp + '.0';
 	return tmp;
 };
+
+goog.exportSymbol("Sk.builtin.nmber", Sk.builtin.nmber);
