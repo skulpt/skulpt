@@ -27,6 +27,8 @@ var $builtinmodule = function(name) {
         });
 
         $loc.getPixel = new Sk.builtin.func(function(self,x,y) {
+			x = Sk.builtin.asnum$(x);
+			y = Sk.builtin.asnum$(y);
             var index = (y*4)*self.width+(x*4);
             var red = self.imagedata.data[index]
             var green = self.imagedata.data[index+1]
@@ -35,6 +37,8 @@ var $builtinmodule = function(name) {
         });
 
         $loc.setPixel = new Sk.builtin.func(function(self, x, y, pix) {
+			x = Sk.builtin.asnum$(x);
+			y = Sk.builtin.asnum$(y);
             var index = (y*4)*self.width+(x*4);
             self.imagedata.data[index] = Sk.misceval.callsim(pix.getRed,pix);
             self.imagedata.data[index+1] = Sk.misceval.callsim(pix.getGreen,pix);
@@ -51,6 +55,9 @@ var $builtinmodule = function(name) {
         });
 
         $loc.draw = new Sk.builtin.func(function(self,win,ulx,uly) {
+			win = Sk.builtin.asnum$(win);
+			ulx = Sk.builtin.asnum$(ulx);
+			uly = Sk.builtin.asnum$(uly);
             var can = Sk.misceval.callsim(win.getWin,win);
             var ctx = can.getContext("2d");
             //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
@@ -69,8 +76,8 @@ var $builtinmodule = function(name) {
 
     var eImage = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self,width,height) {
-            self.width = width;
-            self.height = height;
+            self.width = Sk.builtin.asnum$(width);
+            self.height = Sk.builtin.asnum$(height);
             self.canvas = document.createElement("canvas");
             self.ctx = self.canvas.getContext('2d');
             self.canvas.height = self.height;
@@ -87,9 +94,9 @@ var $builtinmodule = function(name) {
     
     var pixel = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self,r,g,b) {
-            self.red = r;
-            self.green = g;
-            self.blue = b;
+            self.red = Sk.builtin.asnum$(r);
+            self.green = Sk.builtin.asnum$(g);
+            self.blue = Sk.builtin.asnum$(b);
         });
 
         $loc.getRed = new Sk.builtin.func(function(self) {
@@ -105,18 +112,19 @@ var $builtinmodule = function(name) {
         });
 
         $loc.setRed = new Sk.builtin.func(function(self,r) {
-           self.red = r;
+           self.red = Sk.builtin.asnum$(r);
         });
 
         $loc.setGreen = new Sk.builtin.func(function(self,g) {
-           self.green = g;
+           self.green = Sk.builtin.asnum$(g);
         });
 
         $loc.setBlue = new Sk.builtin.func(function(self,b) {
-           self.blue = b;
+           self.blue = Sk.builtin.asnum$(b);
         });
 
         $loc.__getitem__ = new Sk.builtin.func(function(self,k) {
+		   k = Sk.builtin.asnum$(k);
            if(k == 0) {
                return self.red;
            } else if (k == 1) {
@@ -137,7 +145,7 @@ var $builtinmodule = function(name) {
 
         //setRange -- change from 0..255 to 0.0 .. 1.0
         $loc.setRange = new Sk.builtin.func(function(self,mx) {
-            self.max = mx;
+            self.max = Sk.builtin.asnum$(mx);
         });
 
     }

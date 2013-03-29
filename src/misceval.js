@@ -2,7 +2,7 @@ Sk.misceval = {};
 
 Sk.misceval.isIndex = function(o)
 {
-    return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.tp$index;
+   return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.constructor === Sk.builtin.nmber || o.tp$index;
 };
 goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
@@ -11,6 +11,8 @@ Sk.misceval.asIndex = function(o)
     if (!Sk.misceval.isIndex(o)) return undefined;
     if (o === null) return undefined;
     if (typeof o === "number") return o;
+	if (o.constructor === Sk.builtin.nmber) return o.v;
+	if (o.constructor === Sk.builtin.lng) return o.tp$index();
     goog.asserts.fail("todo;");
 };
 
@@ -88,19 +90,19 @@ Sk.misceval.arrayFromArguments = function(args)
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
 
 /**
- * for reversed comparison: Eq -> NotEq, etc.
+ * for reversed comparison: Lt -> GtE, etc.
  */
 Sk.misceval.swappedOp_ = {
-    'Eq': 'NotEq',
-    'NotEq': 'Eq',
-    'Lt': 'Gt',
-    'LtE': 'GtE',
-    'Gt': 'Lt',
-    'GtE': 'LtE',
-    'Is': 'IsNot',
-    'IsNot': 'Is',
-    'In_': 'NotIn',
-    'NotIn': 'In_'
+    'Eq': 'Eq',			//
+    'NotEq': 'NotEq',	//
+    'Lt': 'GtE',
+    'LtE': 'Gt',
+    'Gt': 'LtE',
+    'GtE': 'Lt',
+    'Is': 'Is',			//
+    'IsNot': 'IsNot',	//	
+    'In_': undefined,	//	No swap equivalent (equivalent = "contains")
+    'NotIn': undefined	//	No swap equivalent (equivalent = "does not contain")
 };
 
 
@@ -166,39 +168,72 @@ Sk.misceval.richCompareBool = function(v, w, op)
             if (op === 'Eq') {
                 if (v && v['__eq__']) 
                     return Sk.misceval.callsim(v['__eq__'], v, w);
-                else if (w && w['__ne__'])
-                    return Sk.misceval.callsim(w['__ne__'], w, v);
+                else if (w && w['__eq__'])
+                    return Sk.misceval.callsim(w['__eq__'], w, v);
                 }
             else if (op === 'NotEq') {
                 if (v && v['__ne__'])
                     return Sk.misceval.callsim(v['__ne__'], v, w);
                 else if (w && w['__eq__'])
-                    return Sk.misceval.callsim(w['__eq__'], w, v);
+                    return Sk.misceval.callsim(w['__ne__'], w, v);
                 }
             else if (op === 'Gt') {
                 if (v && v['__gt__'])
                     return Sk.misceval.callsim(v['__gt__'], v, w);
-                else if (w && w['__lt__'])
-                    return Sk.misceval.callsim(w['__lt__'], w, v);
+                else if (w && w['__le__'])
+                    return Sk.misceval.callsim(w['__le__'], w, v);
                 }
             else if (op === 'Lt') {
                 if (v && v['__lt__'])
                     return Sk.misceval.callsim(v['__lt__'], v, w);
-                else if (w && w['__gt__'])
-                    return Sk.misceval.callsim(w['__gt__'], w, v);
+                else if (w && w['__ge__'])
+                    return Sk.misceval.callsim(w['__ge__'], w, v);
                 }
             else if (op === 'GtE') {
                 if (v && v['__ge__'])
                     return Sk.misceval.callsim(v['__ge__'], v, w);
-                else if (w && w['__le__'])
-                    return Sk.misceval.callsim(w['__le__'], w, v);
+                else if (w && w['__lt__'])
+                    return Sk.misceval.callsim(w['__lt__'], w, v);
                 }
             else if (op === 'LtE') {
                 if (v && v['__le__'])
                     return Sk.misceval.callsim(v['__le__'], v, w);
+                else if (w && w['__gt__'])
+                    return Sk.misceval.callsim(w['__gt__'], w, v);
+                }
+
+/*	Fix by BM -- old version
+            if (op === 'Eq')
+                if (v && v['__eq__'])
+                    return Sk.misceval.callsim(v['__eq__'], v, w);
+                else if (w && w['__ne__'])
+                    return Sk.misceval.callsim(w['__ne__'], w, v);
+            else if (op === 'NotEq')
+                if (v && v['__ne__'])
+                    return Sk.misceval.callsim(v['__ne__'], v, w);
+                else if (w && w['__eq__'])
+                    return Sk.misceval.callsim(w['__eq__'], w, v);
+            else if (op === 'Gt')
+                if (v && v['__gt__'])
+                    return Sk.misceval.callsim(v['__gt__'], v, w);
+                else if (w && w['__lt__'])
+                    return Sk.misceval.callsim(w['__lt__'], w, v);
+            else if (op === 'Lt')
+                if (v && v['__lt__'])
+                    return Sk.misceval.callsim(v['__lt__'], v, w);
+                else if (w && w['__gt__'])
+                    return Sk.misceval.callsim(w['__gt__'], w, v);
+            else if (op === 'GtE')
+                if (v && v['__ge__'])
+                    return Sk.misceval.callsim(v['__ge__'], v, w);
+                else if (w && w['__le__'])
+                    return Sk.misceval.callsim(w['__le__'], w, v);
+            else if (op === 'LtE')
+                if (v && v['__le__'])
+                    return Sk.misceval.callsim(v['__le__'], v, w);
                 else if (w && w['__ge__'])
                     return Sk.misceval.callsim(w['__ge__'], w, v);
-                }
+*/
 
             // if those aren't defined, fallback on the __cmp__ method if it
             // exists
@@ -252,6 +287,8 @@ Sk.misceval.objectRepr = function(v)
         return new Sk.builtin.str("False");
     else if (typeof v === "number")
         return new Sk.builtin.str("" + v);
+    else if (v.constructor === Sk.builtin.nmber)
+        return new Sk.builtin.str("" + v.v);
     else if (!v['$r'])
         return new Sk.builtin.str("<" + v.tp$name + " object>");
     else
@@ -278,6 +315,7 @@ Sk.misceval.isTrue = function(x)
     if (x === false) return false;
     if (x === null) return false;
     if (typeof x === "number") return x !== 0;
+    if (x.constructor === Sk.builtin.nmber) return x.v !== 0;
     if (x.mp$length) return x.mp$length() !== 0;
     if (x.sq$length) return x.sq$length() !== 0;
     return true;

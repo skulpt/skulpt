@@ -32,6 +32,7 @@ Sk.builtin.tuple.prototype['$r'] = function()
 
 Sk.builtin.tuple.prototype.mp$subscript = function(index)
 {
+	if (index.constructor === Sk.builtin.nmber) index = index.v;
     if (typeof index === "number")
     {
         if (index < 0) index = this.v.length + index;

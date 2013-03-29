@@ -2,15 +2,19 @@ Sk.builtin.float_ = function(x)
 {
     if (x instanceof Sk.builtin.str)
     {
-        if (x.v === "inf") return Infinity;
-        if (x.v === "-inf") return -Infinity;
-        if (!isNaN(x.v))
-            return parseFloat(x.v);
+		var tmp;
+        if (x.v === "inf") tmp = Infinity;
+        else if (x.v === "-inf") tmp = -Infinity;
+        else if (!isNaN(x.v))
+            tmp = parseFloat(x.v);
         else {
             throw new Sk.builtin.ValueError("float: Argument: " + x.v + " is not number");
         }
+		return new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
     }
-    return x;
+
+	x = Sk.builtin.asnum$(x);
+	return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
 };
 
 Sk.builtin.float_.prototype.tp$name = "float";

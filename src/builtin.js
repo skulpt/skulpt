@@ -5,21 +5,124 @@ Sk.builtin = {};
 // todo; these should all be func objects too, otherwise str() of them won't
 // work, etc.
 
+Sk.builtin.asnum$ = function(a) {
+	if (a === undefined) return a;
+	if (a === null) return a;
+	if (typeof a === "number") return a;
+	if (typeof a === "string") return a;
+	if (a.constructor === Sk.builtin.nmber) return a.v;
+	if (a.constructor === Sk.builtin.lng)   return a.str$(10, true);
+	if (a.constructor === Sk.builtin.biginteger) return a.toString();
+
+	return a;
+}
+goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
+
+Sk.builtin.assk$ = function(a, b) {
+	return new Sk.builtin.nmber(a, b);
+}
+goog.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
+
+Sk.builtin.asnum$nofloat = function(a) {
+	if (a === undefined) return a;
+	if (a === null) return a;
+	if (typeof a === "number") a = a.toString();
+	if (a.constructor === Sk.builtin.nmber) a = a.v.toString();
+	if (a.constructor === Sk.builtin.lng)   a = a.str$(10, true);
+	if (a.constructor === Sk.builtin.biginteger) a = a.toString();
+
+//	Sk.debugout("INITIAL: " + a);
+
+	//	If not a float, great, just return this
+	if (a.indexOf('.') < 0 && a.indexOf('e') < 0 && a.indexOf('E') < 0)
+		return a;
+
+	var expon=0;
+	var mantissa;
+
+	if (a.indexOf('e') >= 0) {
+		mantissa = a.substr(0,a.indexOf('e'));
+		expon = a.substr(a.indexOf('e')+1);
+	} else if (a.indexOf('E') >= 0) {
+		mantissa = a.substr(0,a.indexOf('e'));
+		expon = a.substr(a.indexOf('E')+1);
+	} else {
+		mantissa = a;
+	}
+
+//	Sk.debugout("e:" + expon);
+
+	expon = parseInt(expon, 10);
+
+//	Sk.debugout("MANTISSA:" + mantissa);
+//	Sk.debugout("EXPONENT:" + expon);
+
+	var decimal = mantissa.indexOf('.');
+
+//	Sk.debugout("DECIMAL: " + decimal);
+
+	//	Simplest case, no decimal
+	if (decimal < 0) {
+		if (expon >= 0) {
+			// Just add more zeroes and we're done
+			while (expon-- > 0)
+				mantissa += "0";
+			return mantissa;	
+		} else {
+			if (mantissa.length > -expon)
+				return mantissa.substr(0,mantissa.length + expon);
+			else
+				return 0;
+		}
+	}
+
+	//	Negative exponent OR decimal (neg or pos exp)
+	if (decimal == 0)
+		mantissa = mantissa.substr(1);
+	else if (decimal < mantissa.length)
+		mantissa = mantissa.substr(0,decimal) + mantissa.substr(decimal+1);
+	else
+		mantissa = mantissa.substr(0,decimal);
+
+//	Sk.debugout("NO DECIMAL: " + mantissa);
+
+	decimal = decimal + expon;
+
+//	Sk.debugout("MOVE DECIM: " + decimal);
+
+	while (decimal > mantissa.length)
+		mantissa += "0";
+
+//	Sk.debugout("PADDED    : " + mantissa);
+
+	if (decimal <= 0) {
+		mantissa = 0;
+	} else {
+		mantissa = mantissa.substr(0,decimal);
+	}
+
+//	Sk.debugout("LENGTH: " + mantissa.length);
+//	Sk.debugout("RETURN: " + mantissa);
+
+	return mantissa;
+}
+goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
+
 Sk.builtin.range = function(start, stop, step)
 {
     var ret = [];
-    var s = new Sk.builtin.slice(start, stop, step);
-    s.sssiter$(0, function(i) { ret.push(i); });
+    var s = new Sk.builtin.slice(Sk.builtin.asnum$(start), Sk.builtin.asnum$(stop), Sk.builtin.asnum$(step));
+    s.sssiter$(0, function(i) { ret.push(new Sk.builtin.nmber(i,undefined)); });
     return new Sk.builtin.list(ret);
 };
 
 Sk.builtin.len = function(item)
 {
     if (item.sq$length)
-        return item.sq$length();
-
+        return new Sk.builtin.nmber(item.sq$length(),undefined);
+    
     if (item.mp$length)
-        return item.mp$length();
+        return new Sk.builtin.nmber(item.mp$length(),undefined);
 
     throw new Sk.builtin.TypeError("object of type '" + item.tp$name + "' has no len()");
 };
@@ -60,36 +163,28 @@ Sk.builtin.sum = function sum(iter,start)
     }
     if (start === undefined ) {
         start = 0;
-    }
+    } else {
+		start = Sk.builtin.asnum$(start);
+	}
     for (var i = start; i < iter.length; ++i) {
-        if (typeof iter[i] !== "number")
+		var tmp = Sk.builtin.asnum$(iter[i]);
+        if (typeof tmp !== "number")
         {
             throw "TypeError: an number is required";
         }
-        tot = tot + iter[i];
+        tot = tot + tmp;
     }
-    return tot;
+    return new Sk.builtin.nmber(tot,undefined);
 };
 
 Sk.builtin.abs = function abs(x)
 {
-    return Math.abs(x);
+    return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)),undefined);
 };
 
-// http://stackoverflow.com/questions/11832914/round-up-to-2-decimal-places-in-javascript
-Sk.builtin.round = function round(x,digits)
-{
-    if (typeof x != "number" ) {
-        throw "TypeError: a float is required";
-    }
-
-    if(typeof digits === "undefined") {
-        return Math.round(x);
-    } else {
-        var multiplier = Math.pow(10, digits);
-        return (Math.round(x * multiplier) / multiplier);
-    }
-};
+// http://stackoverflow.com/questions/11832914/round-up-to-2-decimal-places-in-javascriptSk.builtin.round = function round(x,digits){	
+	x = Sk.builtin.asnum$(x);	//	This is the lazy way...the right way implements a round routine based on nmber
+	digits = Sk.builtin.asnum$(digits);    if (typeof x != "number" ) {        throw "TypeError: a float is required";    }    if(typeof digits === "undefined") {        return Sk.builtin.assk$(Math.round(x), Sk.builtin.nmber.float$);    } else {        var multiplier = Math.pow(10, digits);        return Sk.builtin.assk$((Math.round(x * multiplier) / multiplier), Sk.builtin.nmber.float$);    }};
 
 Sk.builtin.ord = function ord(x)
 {
@@ -102,6 +197,7 @@ Sk.builtin.ord = function ord(x)
 
 Sk.builtin.chr = function chr(x)
 {
+	x = Sk.builtin.asnum$(x);
     if (typeof x !== "number")
     {
         throw "TypeError: an integer is required";

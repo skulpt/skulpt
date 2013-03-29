@@ -197,7 +197,7 @@ var rundisabled = 0;
 function testRun(name, nocatch)
 {
     try { var input = read(name + ".py"); }
-    catch (e) { 
+    catch (e) {
         try { read(name + ".py.disabled"); rundisabled += 1;}
         catch (e) {}
         return;
@@ -321,40 +321,50 @@ function testInteractive(name)
         interactivepass += 1;
     }
 }
-
+var doTestToken = false
+var doTestParse = false
+var doTestTrans = false
+var doTestSymtab = false
+var doTestRun = true
 function testsMain()
 {
     var i;
 
-    for (i = 0; i <= 100; i += 1)
-    {
-        testTokenize(sprintf("test/tokenize/t%02d", i));
+    if (doTestToken) {
+        for (i = 0; i <= 100; i += 1)
+        {
+            testTokenize(sprintf("test/tokenize/t%02d", i));
+        }
+        print(sprintf("tokenize: %d/%d", tokenizepass, tokenizepass + tokenizefail));
     }
-    print(sprintf("tokenize: %d/%d", tokenizepass, tokenizepass + tokenizefail));
-
-    for (i = 0; i <= 10; i += 1)
-    {
-        testParse(sprintf("test/parse/t%02d", i));
+    if (doTestParse) {
+        for (i = 0; i <= 10; i += 1)
+        {
+            testParse(sprintf("test/parse/t%02d", i));
+        }
+        print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
     }
-    print(sprintf("parse: %d/%d", parsepass, parsepass + parsefail));
-
-    for (i = 0; i <= 1000; ++i)
-    {
-        testTransform(sprintf("test/run/t%02d", i));
+    if (doTestTrans) {
+        for (i = 0; i <= 1000; ++i)
+        {
+            testTransform(sprintf("test/run/t%02d", i));
+        }
+        print(sprintf("transform: %d/%d (+%d disabled)", transformpass, transformpass + transformfail, transformdisabled));
     }
-    print(sprintf("transform: %d/%d (+%d disabled)", transformpass, transformpass + transformfail, transformdisabled));
-    for (i = 0; i <= 1000; ++i)
-    {
-        testSymtab(sprintf("test/run/t%02d", i));
+    if (doTestSymtab) {
+        for (i = 0; i <= 1000; ++i)
+        {
+            testSymtab(sprintf("test/run/t%02d", i));
+        }
+        print(sprintf("symtab: %d/%d (+%d disabled)", symtabpass, symtabpass + symtabfail, symtabdisabled));
     }
-    print(sprintf("symtab: %d/%d (+%d disabled)", symtabpass, symtabpass + symtabfail, symtabdisabled));
-
-    for (i = 0; i <= 1000; ++i)
-    {
-        testRun(sprintf("test/run/t%02d", i));
+    if (doTestRun) {
+        for (i = 0; i <= 1000; ++i)
+        {
+            testRun(sprintf("test/run/t%02d", i));
+        }
+        print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
     }
-    print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
-
     if (Sk.inBrowser)
     {
         var origrunfail = runfail;
