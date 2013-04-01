@@ -139,7 +139,8 @@ function fixReservedWords(name)
 }
 
 var reservedNames_ = { '__defineGetter__': true, '__defineSetter__': true, 
-    'eval': true, 'hasOwnProperty': true, 'isPrototypeOf': true, 
+    'apply': true, 'call': true, 'eval': true, 'hasOwnProperty': true, 
+    'isPrototypeOf': true, 
     '__lookupGetter__': true, '__lookupSetter__': true, 
     '__noSuchMethod__': true, 'propertyIsEnumerable': true,
     'toSource': true, 'toLocaleString': true, 'toString': true,
