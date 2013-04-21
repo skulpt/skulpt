@@ -169,7 +169,7 @@ Compiler.prototype._gr = function(hint, rest)
 
 /**
 * Function to test if an interrupt should occur if the program has been running for too long.
-* This function is executed at every test/branch operation. 
+* This function is executed at every test/branch operation.
 */
 Compiler.prototype._interruptTest = function() { // Added by RNL
 	out("if (Sk.execStart === undefined) {Sk.execStart=new Date()}");
@@ -740,7 +740,7 @@ Compiler.prototype.cif = function(s)
     var constant = this.exprConstant(s.test);
     if (constant === 0)
     {
-        if (s.orelse) 
+        if (s.orelse)
             this.vseqstmt(s.orelse);
     }
     else if (constant === 1)
@@ -999,7 +999,7 @@ Compiler.prototype.cfromimport = function(s)
         if (i === 0 && alias.name.v === "*")
         {
             goog.asserts.assert(n === 1);
-            out("Sk.importStar(", mod, ");");
+            out("Sk.importStar(", mod,  ",$loc, $gbl);");
             return;
         }
 
@@ -1221,7 +1221,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     // yields.
     //
     // todo; possibly this should be outside?
-    // 
+    //
     var frees = "";
     if (hasFree)
     {
@@ -1698,7 +1698,7 @@ Compiler.prototype.cprint = function(s)
         out('Sk.misceval.print_(', /*dest, ',',*/ "new Sk.builtins['str'](", this.vexpr(s.values[i]), ').v);');
     if (s.nl)
         out('Sk.misceval.print_(', /*dest, ',*/ '"\\n");');
-}; 
+};
 Compiler.prototype.cmod = function(mod)
 {
     //print("-----");
@@ -1710,8 +1710,8 @@ Compiler.prototype.cmod = function(mod)
     this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;";
 
     // Add the try block that pops the try/except stack if one exists
-    // Github Issue #38 
-    // Google Code Issue: 109 / 114 
+    // Github Issue #38
+    // Google Code Issue: 109 / 114
 
     // Old code:
     //this.u.switchCode = "while(true){switch($blk){";
@@ -1721,16 +1721,16 @@ Compiler.prototype.cmod = function(mod)
     this.u.switchCode = "while(true){try{ switch($blk){";
     this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
-    // Note - this change may need to be adjusted for all the other instances of 
-    // switchCode and suffixCode in this file.  Not knowing how to test those 
-    // other cases I left them alone.   At least the changes to 
-    // setupExcept and endExcept will insure that the generated JavaScript 
-    // will be syntactically correct.  The worst that will happen is that when 
+    // Note - this change may need to be adjusted for all the other instances of
+    // switchCode and suffixCode in this file.  Not knowing how to test those
+    // other cases I left them alone.   At least the changes to
+    // setupExcept and endExcept will insure that the generated JavaScript
+    // will be syntactically correct.  The worst that will happen is that when
     // code in a try block blows up, we will not know to run the except block.
     // The other problem is that we might catch something that is really an internal
-    // error - it might be nice to add code in the above catch block that looked at 
-    // the kind of exception and only popped the stack for exceptions that are 
-    // from the original code rather than artifacts of some code generation or 
+    // error - it might be nice to add code in the above catch block that looked at
+    // the kind of exception and only popped the stack for exceptions that are
+    // from the original code rather than artifacts of some code generation or
     // exeution environment error.  We at least err on the side of exceptions
     // being revealed to the user.  drchuck - Wed Jan 23 19:20:18 EST 2013
 

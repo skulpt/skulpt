@@ -248,6 +248,14 @@ Sk.builtin.__import__ = function(name, globals, locals, fromlist)
     return ret;
 };
 
+Sk.importStar = function(module,loc) {
+    var props = Object['getOwnPropertyNames'](module['$d'])
+    for(var i in props) {
+        loc[props[i]] = module['$d'][props[i]];
+    }
+}
+
 goog.exportSymbol("Sk.importMain", Sk.importMain);
 goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
 goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
+goog.exportSymbol("Sk.importStar", Sk.importStar);
