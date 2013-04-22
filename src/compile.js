@@ -1707,7 +1707,7 @@ Compiler.prototype.cmod = function(mod)
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;";
+    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;Sk.globals=$gbl;";
 
     // Add the try block that pops the try/except stack if one exists
     // Github Issue #38
