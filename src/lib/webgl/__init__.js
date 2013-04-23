@@ -124,6 +124,9 @@ var $builtinmodule = function(name)
               case 'vertexAttribPointer': {
               }
               break;
+              case 'viewport': {
+              }
+              break;
               default: {
                 (function(key) {
                   Sk.abstr.objectSetItem(self['$d'], new Sk.builtin.str(k), new Sk.builtin.func(function() {
@@ -166,10 +169,16 @@ var $builtinmodule = function(name)
         self.gl.drawArrays(Sk.builtin.asnum$(mode), Sk.builtin.asnum$(first), Sk.builtin.asnum$(count));
       }
     );
-    
+
     $loc.vertexAttribPointer = new Sk.builtin.func(
       function(self, index, size, type, normalized, stride, dunno) {
         self.gl.vertexAttribPointer(index, Sk.builtin.asnum$(size), Sk.builtin.asnum$(type), normalized, Sk.builtin.asnum$(stride), Sk.builtin.asnum$(dunno));
+      }
+    );
+
+    $loc.viewport = new Sk.builtin.func(
+      function(self, x, y, width, height) {
+        self.gl.viewport(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y), Sk.builtin.asnum$(width), Sk.builtin.asnum$(height));
       }
     );
   }, 'Context', []);
