@@ -112,6 +112,9 @@ var $builtinmodule = function(name)
               case 'bufferData': {
               }
               break;
+              case 'clearColor': {
+              }
+              break;
               case 'drawArrays': {
               }
               break;
@@ -152,6 +155,12 @@ var $builtinmodule = function(name)
       }
     );
 
+    $loc.clearColor = new Sk.builtin.func(
+      function(self, red, green, blue, alpha) {
+        self.gl.clearColor(Sk.builtin.asnum$(red), Sk.builtin.asnum$(green), Sk.builtin.asnum$(blue), Sk.builtin.asnum$(alpha));
+      }
+    );
+
     $loc.getAttribLocation = new Sk.builtin.func(
       function(self, program, name) {
         return self.gl.getAttribLocation(program, name.v);
@@ -181,6 +190,15 @@ var $builtinmodule = function(name)
         self.gl.viewport(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y), Sk.builtin.asnum$(width), Sk.builtin.asnum$(height));
       }
     );
+
+    $loc.setDrawFunc = new Sk.builtin.func(function(self, func) {
+      var startTime = (new Date()).getTime();
+      var intervalId = setInterval(
+        function() {
+          Sk.misceval.callsim(func, self, (new Date()).getTime() - startTime);
+        }, 1000.0 / 60.0); // 60 fps
+    });
+
   }, 'Context', []);
 
   mod.Float32Array = Sk.misceval.buildClass(mod, function($gbl, $loc) {
