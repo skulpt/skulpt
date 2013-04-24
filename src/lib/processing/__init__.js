@@ -14,6 +14,7 @@ var $builtinmodule = function(name)
     mod.mouseY = null
     mod.frameCount = null
     mod.p = null
+    mod.mouse = Sk.builtin.assk$(12345, Sk.builtin.nmber.int$);
     
     mod.strokeWeight = new Sk.builtin.func(function(wt) {
         mod.processing.strokeWeight(wt.v)
@@ -52,6 +53,10 @@ var $builtinmodule = function(name)
         
     });
 
+    mod.exitp = new Sk.builtin.func(function(h,w) {
+        mod.processing.exit()
+    });
+
     mod.mouseX = new Sk.builtin.func(function() {
         return Sk.builtin.assk$(mod.processing.mouseX, Sk.builtin.nmber.int$);
         
@@ -68,15 +73,16 @@ var $builtinmodule = function(name)
             mod.processing = processing
 
             mod.frameCount = processing.frameCount
-                        
+
+            
+            //Sk.globals['mouse'] = mod['mouse']
+
             processing.setup = function() {
                 Sk.misceval.callsim(Sk.globals['setup'])
             }
 
             processing.mouseMoved = function() {
-                mod.mouseX = processing.mouseX
-                mod.mouseY = processing.mouseY
-                
+                Sk.misceval.callsim(mod.mouse['setMouse'],mod.mouse,processing.mouseX,processing.mouseY)
                 Sk.misceval.callsim(Sk.globals['mouseMoved'])
             }
             
@@ -95,6 +101,35 @@ var $builtinmodule = function(name)
         
     });
 
+    var mouseClass = function($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function(self) {
+            self.x = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
+            self.y = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
+
+        });
+
+        $loc.setMouse = new Sk.builtin.func(function(self,x,y) {
+           self.x = Sk.builtin.assk$(x, Sk.builtin.nmber.int$);
+           self.y = Sk.builtin.assk$(y, Sk.builtin.nmber.int$);
+        });
+
+        $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
+            if (key == 'x') 
+                return self.x;
+            else if (key == 'y') 
+                return self.y
+
+        });
+
+
+    }
+
+
+    mod.Mouse = Sk.misceval.buildClass(mod, mouseClass, 'Mouse', []);
+
+    mod.mouse = Sk.misceval.callsim(mod.Mouse)
+
+    console.log('mouse = ' + mod.mouse)
 
 // Create a class for mouse, frame, etc.. see globs.py in pyprocessing
 // todo... find a way to stop this thing with a button.  the following
