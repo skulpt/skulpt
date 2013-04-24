@@ -375,35 +375,7 @@ Compiler.prototype.ccall = function(e)
     }
 };
 
-Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
-{
-    goog.asserts.assert(s.step === null);
-    var lower = 'null', upper = 'null';
-    if (s.lower)
-        lower = this.vexpr(s.lower);
-    if (s.upper)
-        upper = this.vexpr(s.upper);
-
-    // todo; don't require making a slice obj, and move logic into general sequence place
-    switch (ctx)
-    {
-        case AugLoad:
-        case Load:
-            return this._gr("simpsliceload", "Sk.misceval.applySlice(", obj, ",", lower, ",", upper, ")");
-        case AugStore:
-        case Store:
-            out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",", dataToStore, ");");
-            break;
-        case Del:
-            out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",null);");
-            break;
-        case Param:
-        default:
-            goog.asserts.fail("invalid simple slice");
-    }
-};
-
-Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
+Compiler.prototype.cslice = function(s)
 {
     goog.asserts.assert(s instanceof Slice);
     var low = s.lower ? this.vexpr(s.lower) : 'null';
@@ -412,21 +384,16 @@ Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
     return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
 
-Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
+Compiler.prototype.vslicesub = function(s)
 {
-    var kindname = null;
     var subs;
     switch (s.constructor)
     {
         case Index:
-            kindname = "index";
             subs = this.vexpr(s.value);
             break;
         case Slice:
-            if (!s.step)
-                return this.csimpleslice(s, ctx, obj, dataToStore);
-            if (ctx !== AugStore)
-                subs = this.cslice(s, ctx, obj, dataToStore);
+            subs = this.cslice(s);
             break;
         case Ellipsis:
         case ExtSlice:
@@ -435,10 +402,16 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
         default:
             goog.asserts.fail("invalid subscript kind");
     }
-    return this.chandlesubscr(kindname, ctx, obj, subs, dataToStore);
+    return subs;
+}
+
+Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
+{
+    var subs = this.vslicesub(s);
+    return this.chandlesubscr(ctx, obj, subs, dataToStore);
 };
 
-Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
+Compiler.prototype.chandlesubscr = function(ctx, obj, subs, data)
 {
     if (ctx === Load || ctx === AugLoad)
         return this._gr('lsubscr', "Sk.abstr.objectGetItem(", obj, ",", subs, ")");

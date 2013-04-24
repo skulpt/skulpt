@@ -236,7 +236,8 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
     }
     else if (index instanceof Sk.builtin.slice)
     {
-        if (index.step === 1)
+        var step = index.step !== null ? index.step : 1;
+        if (step === 1)
             this.list_ass_slice_(index.start, index.stop, value);
         else
         {
@@ -276,7 +277,8 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
         {
             var self = this;
             var dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
-            var offdir = index.step > 0 ? 1 : 0;
+            var step = index.step === null ? 1 : index.step;
+            var offdir = step > 0 ? 1 : 0;
             index.sssiter$(this, function(i, wrt)
                            {
                                self.v.splice(i - dec, 1);
