@@ -389,6 +389,10 @@ Compiler.prototype.vslicesub = function(s)
     var subs;
     switch (s.constructor)
     {
+        case String:
+            // Already compiled, should only happen for augmented assignments
+            subs = s;
+            break;
         case Index:
             subs = this.vexpr(s.value);
             break;
@@ -595,7 +599,9 @@ Compiler.prototype.caugassign = function(s)
             auge.ctx = AugStore;
             return this.vexpr(auge, res, e.value)
         case Subscript:
-            var auge = new Subscript(e.value, e.slice, AugLoad, e.lineno, e.col_offset);
+            // Only compile the subscript value once
+            var augsub = this.vslicesub(e.slice);
+            var auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
             var aug = this.vexpr(auge);
             var val = this.vexpr(s.value);
             var res = this._gr('inplbinopsubscr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
