@@ -15,17 +15,52 @@ var $builtinmodule = function(name)
     mod.frameCount = null
     mod.p = null
     mod.mouse = Sk.builtin.assk$(12345, Sk.builtin.nmber.int$);
-    
+    mod.CENTER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
+    mod.RADIUS = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
+    mod.CORNERS = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
+    mod.CORNER = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
+
+
     mod.strokeWeight = new Sk.builtin.func(function(wt) {
         mod.processing.strokeWeight(wt.v)
         
     });
 
+// 2D - Primitives
+    mod.line = new Sk.builtin.func(function(x1, y1, x2, y2) {
+        mod.processing.line(x1.v, y1.v, x2.v, y2.v)
+    });
+    
     mod.ellipse = new Sk.builtin.func(function(x,y,r1,r2) {
         mod.processing.ellipse(x.v,y.v,r1.v,r2.v)
         
     });
+
+    mod.point = new Sk.builtin.func(function(x1,y1) {
+        mod.processing.point(x1.v,y1.v)
+    });
+        
+    mod.arc = new Sk.builtin.func(function(x, y, width, height, start, stop) {
+        mod.processing.arc(x.v, y.v, width.v, height.v, start.v, stop.v)
+    });
+
+    mod.quad = new Sk.builtin.func(function(x1, y1, x2, y2, x3, y3, x4, y4) {
+        mod.processing.quad(x1.v, y1.v, x2.v, y2.v, x3.v, y3.v, x4.v, y4.v)
+    });
+            
+    mod.rect = new Sk.builtin.func(function(x, y, width, height, radius) {
+        if (typeof(radius) == 'undefined') {
+            var rad = 0
+        } else {
+            var rad = radius.v
+        }
+        mod.processing.rect(x.v, y.v, width.v, height.v, rad)
+    });
     
+    mod.triangle = new Sk.builtin.func(function(x1, y1, x2, y2, x3, y3) {
+            mod.processing.triangle(x1.v, y1.v, x2.v, y2.v, x3.v, y3.v)
+        });
+            
     mod.background = new Sk.builtin.func(function(r,g,b) {
         mod.processing.background(r.v)
         
@@ -67,7 +102,10 @@ var $builtinmodule = function(name)
         
     });
 
-    
+    mod.rectMode = new Sk.builtin.func(function(mode) {
+            mod.processing.rectMode(mode.v)
+        });
+            
     mod.run = new Sk.builtin.func(function() {
         function sketchProc(processing) {
             mod.processing = processing
@@ -118,7 +156,10 @@ var $builtinmodule = function(name)
                 return self.x;
             else if (key == 'y') 
                 return self.y
-
+            else if (key == 'px')
+                return mod.processing.pmouseX;
+            else if (key == 'py')
+                return mod.processing.pmouseY;
         });
 
 
