@@ -121,7 +121,13 @@ var $builtinmodule = function(name)
               case 'getAttribLocation': {
               }
               break;
+              case 'getUniformLocation': {
+              }
+              break;
               case 'shaderSource': {
+              }
+              break;
+              case 'uniformMatrix4fv': {
               }
               break;
               case 'vertexAttribPointer': {
@@ -167,6 +173,12 @@ var $builtinmodule = function(name)
       }
     );
 
+    $loc.getUniformLocation = new Sk.builtin.func(
+      function(self, program, name) {
+        return self.gl.getUniformLocation(program, name.v);
+      }
+    );
+
     $loc.shaderSource = new Sk.builtin.func(
       function(self, shader, src) {
         self.gl.shaderSource(shader, src.v);
@@ -188,6 +200,15 @@ var $builtinmodule = function(name)
     $loc.viewport = new Sk.builtin.func(
       function(self, x, y, width, height) {
         self.gl.viewport(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y), Sk.builtin.asnum$(width), Sk.builtin.asnum$(height));
+      }
+    );
+
+    $loc.uniformMatrix4fv = new Sk.builtin.func(
+      function(self, location, transpose, values) {
+//        console.log("location  " + (typeof location));
+//        console.log("transpose " + (typeof transpose));
+//        console.log("values.v  " + (typeof values.v));
+        self.gl.uniformMatrix4fv(Sk.builtin.asnum$(location), transpose, values.v);
       }
     );
 
@@ -219,6 +240,119 @@ var $builtinmodule = function(name)
       return new Sk.builtin.str("[" + copy.join(', ') + "]");
      });
   }, 'Float32Array', []);
+
+  /**
+   * A 4x4 (mutable) matrix suitable for OpenGL.
+   *
+   * Mutability is chosen for performance.
+   * The inderlying implementation is Float32Array.
+   * The indexing of the elements is
+   * 0 4  8 12
+   * 1 5  9 13
+   * 2 6 10 14
+   * 3 7 11 15
+   */
+  mod.Matrix4x4 = Sk.misceval.buildClass(mod, function($gbl, $loc) {
+    $loc.__init__ = new Sk.builtin.func(function(self, data) {
+      self.v = new Float32Array(Sk.ffi.remapToJs(data));
+    });
+
+    $loc.identity = new Sk.builtin.func(
+      function(self) {
+
+        var m = self.v;
+
+        m[0]  = 1;
+        m[1]  = 0;
+        m[2]  = 0;
+        m[3]  = 0;
+
+        m[4]  = 0;
+        m[5]  = 1;
+        m[6]  = 0;
+        m[7]  = 0;
+
+        m[8]  = 0;
+        m[9]  = 0;
+        m[10] = 1;
+        m[11] = 0;
+
+        m[12] = 0;
+        m[13] = 0;
+        m[14] = 0;
+        m[15] = 1;
+      }
+    );
+
+    $loc.perspective = new Sk.builtin.func(
+      function(self, fov, aspect, near, far) {
+        
+        var t = Math.tan(Math.PI * 0.5 - 0.5 * (Sk.builtin.asnum$(fov) * Math.PI / 180));
+        var a = Sk.builtin.asnum$(aspect)
+        var n = Sk.builtin.asnum$(near)
+        var f = Sk.builtin.asnum$(far)
+        var k = 1.0 / (n - f);
+
+        var m = self.v;
+
+        m[0]  = t / a;
+        m[1]  = 0;
+        m[2]  = 0;
+        m[3]  = 0;
+
+        m[4]  = 0;
+        m[5]  = t;
+        m[6]  = 0;
+        m[7]  = 0;
+
+        m[8]  = 0;
+        m[9]  = 0;
+        m[10] = (n + f) * k;
+        m[11] = -1;
+
+        m[12] = 0;
+        m[13] = 0;
+        m[14] = n * f * k * 2;
+        m[15] = 0;
+      }
+    );
+
+    $loc.translate = new Sk.builtin.func(
+      function(self, translation) {
+
+        var m = self.v;
+        var t = Sk.ffi.remapToJs(translation);
+
+        m[0]  = 1;
+        m[1]  = 0;
+        m[2]  = 0;
+        m[3]  = 0;
+
+        m[4]  = 0;
+        m[5]  = 1;
+        m[6]  = 0;
+        m[7]  = 0;
+
+        m[8]  = 0;
+        m[9]  = 0;
+        m[10] = 1;
+        m[11] = 0;
+
+        m[12] = t[0];
+        m[13] = t[1];
+        m[14] = t[2];
+        m[15] = 1;
+      }
+    );
+
+    $loc.__repr__ = new Sk.builtin.func(function(self) {
+      var copy = [];
+      for (var i = 0; i < self.v.length; ++i) {
+        copy.push(self.v[i]);
+      }
+      return new Sk.builtin.str("[" + copy.join(', ') + "]");
+     });
+  }, 'Matrix4x4', []);
 
   return mod;
 };
