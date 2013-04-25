@@ -6,6 +6,9 @@ var $builtinmodule = function(name)
     // until the run function is called.  Even then the processing object is passed by the
     // processing-js sytem as a parameter to the sketchProc function.  Why not set it to None here
     //
+
+    // See:  http://processingjs.org/reference/
+
     mod.processing = null
 
     mod.width = null
@@ -14,17 +17,14 @@ var $builtinmodule = function(name)
     mod.mouseY = null
     mod.frameCount = null
     mod.p = null
-    mod.mouse = Sk.builtin.assk$(12345, Sk.builtin.nmber.int$);
+
     mod.CENTER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
     mod.RADIUS = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
     mod.CORNERS = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
     mod.CORNER = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-
-
-    mod.strokeWeight = new Sk.builtin.func(function(wt) {
-        mod.processing.strokeWeight(wt.v)
-        
-    });
+    mod.RGB = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
+    mod.HSB = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
+    mod.CMYK = Sk.builtin.assk$(5, Sk.builtin.nmber.int$);
 
 // 2D - Primitives
     mod.line = new Sk.builtin.func(function(x1, y1, x2, y2) {
@@ -61,23 +61,77 @@ var $builtinmodule = function(name)
             mod.processing.triangle(x1.v, y1.v, x2.v, y2.v, x3.v, y3.v)
         });
             
-    mod.background = new Sk.builtin.func(function(r,g,b) {
-        mod.processing.background(r.v)
-        
-    });
 
-    mod.stroke = new Sk.builtin.func(function(r,g,b) {
-        mod.processing.stroke(r.v)
+    // 3D Primitives
+
+    // todo:  box, sphere, sphereDetail
+
+    // Color
+    mod.background = new Sk.builtin.func(function(r,g,b) {
+
+        if (typeof(g) == 'undefined') {
+            g = r.v
+        } else 
+            g = g.v
+        if (typeof(b) == 'undefined') {
+            b = r.v
+        } else
+            b = b.v
+
+        mod.processing.background(r.v,g,b)
         
     });
 
     mod.fill = new Sk.builtin.func(function(r,g,b) {
+
+        if (typeof(g) == 'undefined') {
+            g = r.v
+        } else 
+            g = g.v
+        if (typeof(b) == 'undefined') {
+            b = r.v
+        } else
+            b = b.v
     
-        mod.processing.fill(r.v,g.v,b.v)
+        mod.processing.fill(r.v,g,b)
         
     });
 
 
+    mod.stroke = new Sk.builtin.func(function(r,g,b) {
+
+        if (typeof(g) == 'undefined') {
+            g = r.v
+        } else 
+            g = g.v
+        if (typeof(b) == 'undefined') {
+            b = r.v
+        } else
+            b = b.v
+
+        mod.processing.stroke(r.v,g,b)
+        
+    });
+
+
+    //todo:  colorMode, noFill, noStroke, 
+
+    // Environment
+
+    mod.loop = new Sk.builtin.func(function() {
+            if (mod.processing === null) {
+                throw new Sk.builtin.Exception("Loop should be called in setup")
+            }
+            mod.processing.loop()
+        });
+            
+    mod.noLoop = new Sk.builtin.func(function() {
+        if (mod.processing === null) {
+            throw new Sk.builtin.Exception("noLoop should be called in setup")
+        }
+        mod.processing.noLoop()
+    });
+    
     mod.frameRate = new Sk.builtin.func(function(fr) {
         mod.processing.frameRate(fr.v)
         
@@ -92,6 +146,7 @@ var $builtinmodule = function(name)
         mod.processing.exit()
     });
 
+
     mod.mouseX = new Sk.builtin.func(function() {
         return Sk.builtin.assk$(mod.processing.mouseX, Sk.builtin.nmber.int$);
         
@@ -102,10 +157,53 @@ var $builtinmodule = function(name)
         
     });
 
+    // Attributes
     mod.rectMode = new Sk.builtin.func(function(mode) {
-            mod.processing.rectMode(mode.v)
-        });
-            
+        mod.processing.rectMode(mode.v)
+    });
+
+    mod.strokeWeight = new Sk.builtin.func(function(wt) {
+        mod.processing.strokeWeight(wt.v)
+        
+    });
+
+    // todo:  ellipseMode, noSmooth, smooth, strokeCap, strokeJoin, strokeWeight
+
+
+    // Transforms
+
+    mod.rotate = new Sk.builtin.func(function(rads) {
+        // rotation in radians
+        mod.processing.rotate(rads.v)
+        
+    });
+
+    mod.scale = new Sk.builtin.func(function(sx, sy, sz) {
+        if (typeof(sy) == 'undefined') {
+            sy = 1.0
+        } else 
+            sy = sy.v
+        if (typeof(sz) == 'undefined') {
+            sz = 1.0
+        } else
+            sz = sz.v
+        mod.processing.scale(sx.v, sy, sz)
+    });
+
+    mod.translate = new Sk.builtin.func(function(sx, sy, sz) {
+        if (typeof(sy) == 'undefined') {
+            sy = 1.0
+        } else 
+            sy = sy.v
+        if (typeof(sz) == 'undefined') {
+            sz = 1.0
+        } else
+            sz = sz.v
+        mod.processing.translate(sx.v, sy, sz)
+    });
+
+    // todo:  applyMatrix, popMatrix, printMatrix??, pushMatrix, resetMatrix, rotate{X,Y,Z}
+    
     mod.run = new Sk.builtin.func(function() {
         function sketchProc(processing) {
             mod.processing = processing
@@ -129,8 +227,9 @@ var $builtinmodule = function(name)
                 Sk.misceval.callsim(Sk.globals['draw'])
             }
             
-
+            //todo:  mouseClicked(), mouseDragged(), mouseMoved(), mouseOut(), mouseOver(), mousePressed(), mouseReleased()
             
+            //todo:  keyPressed(), keyReleased(), keyTyped()
         }
         
         var canvas = document.getElementById(Sk.canvas)
@@ -160,6 +259,10 @@ var $builtinmodule = function(name)
                 return mod.processing.pmouseX;
             else if (key == 'py')
                 return mod.processing.pmouseY;
+            else if (key == 'pressed')
+                return mod.processing.mousePressed;
+            else if (key == 'button')
+                return mod.processing.mouseButton
         });
 
 
@@ -170,7 +273,19 @@ var $builtinmodule = function(name)
 
     mod.mouse = Sk.misceval.callsim(mod.Mouse)
 
-    console.log('mouse = ' + mod.mouse)
+    var keyboardClass = function($gbl, $loc) {
+
+        $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
+            if (key == 'key') 
+                return mod.processing.key
+            else if (key == 'keyCode') 
+                return mod.processing.keyCode
+            else if (key == 'keyPressed')
+                return mod.processing.keyPressed
+        });
+
+
+    }
 
 // Create a class for mouse, frame, etc.. see globs.py in pyprocessing
 // todo... find a way to stop this thing with a button.  the following
