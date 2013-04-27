@@ -233,7 +233,8 @@ var $builtinmodule = function(name)
 
             processing.mouseMoved = function() {
                 Sk.misceval.callsim(mod.mouse['setMouse'],mod.mouse,processing.mouseX,processing.mouseY)
-                Sk.misceval.callsim(Sk.globals['mouseMoved'])
+                if (Sk.globals['mouseMoved'])
+                    Sk.misceval.callsim(Sk.globals['mouseMoved'])
             }
             
             processing.draw = function() {
