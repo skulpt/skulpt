@@ -10,12 +10,6 @@ var $builtinmodule = function(name)
     // See:  http://processingjs.org/reference/
 
     mod.processing = null
-
-    mod.width = null
-    mod.height = null
-    mod.mouseX = null
-    mod.mouseY = null
-    mod.frameCount = null
     mod.p = null
 
     mod.CENTER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
@@ -113,7 +107,19 @@ var $builtinmodule = function(name)
         
     });
 
+    mod.noStroke = new Sk.builtin.func(function() {
+        mod.processing.noStroke()
+    });
+    
 
+    mod.colorMode = new Sk.builtin.func(function(model, maxV) {
+        if (typeof(maxV) === 'undefined')
+            maxV = 255
+        else
+            maxV = maxV.v
+        mod.processing.colorMode(model.v, maxV)
+    });
+    
     //todo:  colorMode, noFill, noStroke, 
 
     // Environment
@@ -167,7 +173,15 @@ var $builtinmodule = function(name)
         
     });
 
-    // todo:  ellipseMode, noSmooth, smooth, strokeCap, strokeJoin, strokeWeight
+    mod.smooth = new Sk.builtin.func(function() {
+        mod.processing.smooth()
+    });
+
+    mod.noSmooth = new Sk.builtin.func(function() {
+            mod.processing.noSmooth()
+        });
+            
+    // todo:  ellipseMode, strokeCap, strokeJoin
 
 
     // Transforms
@@ -287,13 +301,38 @@ var $builtinmodule = function(name)
 
     }
 
-// Create a class for mouse, frame, etc.. see globs.py in pyprocessing
-// todo... find a way to stop this thing with a button.  the following
-//         is proof of concept for how to do it.
-//                if (processing.frameCount > 300) {
-//                    console.log('time to stop')
-//                    mod.p.exit();
-//                }
+    mod.Keyboard = Sk.misceval.buildClass(mod,keyboardClass,'Keyboard', [])
+
+    mod.keyboard = Sk.misceval.callsim(mod.Keyboard)
+
+
+
+    var environmentClass = function($gbl, $loc) {
+
+        $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
+            if (key == 'frameCount') 
+                return mod.processing.frameCount
+            else if (key == 'frameRate') 
+                return mod.processing.frameRate
+            else if (key == 'height')
+                return mod.processing.height
+            else if (key == 'width')
+                return mod.processing.width
+            else if (key == 'online')
+                return mod.processing.online
+            else if (key == 'focused')
+                return mod.processing.focused
+        });
+
+
+    }
+
+    mod.Environment = Sk.misceval.buildClass(mod,environmentClass,'Environment', [])
+
+    mod.environment = Sk.misceval.callsim(mod.Environment)
+
+
+// todo  -- add a color class for creating color objects.
 
 
     return mod;
