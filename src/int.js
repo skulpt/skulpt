@@ -17,6 +17,7 @@ Sk.builtin.int_ = function(x, base)
 	    if (base != 16 && base != 0) {
 		throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
 	    } else {
+		s = s.substring(2);
 		base = 16;
 	    }
 	}
@@ -35,17 +36,41 @@ Sk.builtin.int_ = function(x, base)
 	    }
 	}
 
-	// !isNaN is not the right check for all bases
-        if (!isNaN(s) && s.indexOf(".") < 0) {
-	    var val = parseInt(s, base);
-	    if (isNaN(val)) {
+	// strip whitespace from ends
+	// s = s.trim();
+	s = s.replace(/^\s+|\s+$/g, '');
+
+        // check all characters are valid
+	var i, ch, val;
+        var b = base ? base : 36; // is it correct to default to 36?
+        for (i=0; i<s.length; i++) {
+	    ch = s.charCodeAt(i);
+	    val = b;
+	    if ((ch >= 48) && (ch <= 57)) {
+		// 0-9
+		val = ch - 48;
+            }
+	    else if ((ch >= 65) && (ch <= 90)) {
+		// A-Z
+		val = ch - 65 + 10;
+            }
+            else if ((ch >= 97) && (ch <= 122)) {
+		// a-z
+		val = ch - 97 + 10;
+	    }
+
+	    if (val >= b) {
 		throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
 	    }
-            return val;
 	}
-        else {
+
+	// parse number
+	val = parseInt(s, base);
+	if (isNaN(val)) {
+	    // Should not happen, should have been caught above
 	    throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
-        }
+	}
+        return val;
     }
 
     if (base !== undefined) {
