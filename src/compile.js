@@ -389,6 +389,7 @@ Compiler.prototype.vslicesub = function(s)
     var subs;
     switch (s.constructor)
     {
+        case Number:
         case String:
             // Already compiled, should only happen for augmented assignments
             subs = s;
