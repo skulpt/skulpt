@@ -40,6 +40,12 @@ Sk.builtin.int_ = function(x, base)
 	// s = s.trim();
 	s = s.replace(/^\s+|\s+$/g, '');
 
+	var neg = false;
+	if (s.charAt(0) == '-') {
+	    neg = true;
+	    s = s.substring(1);
+	}
+
         // check all characters are valid
 	var i, ch, val;
         var b = base ? base : 36; // is it correct to default to 36?
@@ -69,6 +75,9 @@ Sk.builtin.int_ = function(x, base)
 	if (isNaN(val)) {
 	    // Should not happen, should have been caught above
 	    throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
+	}
+	if (neg) {
+	    val = -val;
 	}
         return val;
     }
