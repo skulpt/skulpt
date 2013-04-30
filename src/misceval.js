@@ -2,7 +2,8 @@ Sk.misceval = {};
 
 Sk.misceval.isIndex = function(o)
 {
-    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index) {
+    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index
+	|| o === true || o === false) {
         return true;
     }
 
@@ -14,6 +15,8 @@ Sk.misceval.asIndex = function(o)
 {
     if (!Sk.misceval.isIndex(o)) return undefined;
     if (o === null) return undefined;
+    if (o === true) return 1;
+    if (o === false) return 0;
     if (typeof o === "number") return o;
     goog.asserts.fail("todo;");
 };

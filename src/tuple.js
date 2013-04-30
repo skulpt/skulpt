@@ -49,11 +49,17 @@ Sk.builtin.tuple.prototype['$r'] = function()
 
 Sk.builtin.tuple.prototype.mp$subscript = function(index)
 {
-    if (typeof index === "number")
+    if (Sk.misceval.isIndex(index))
     {
-        if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("tuple index out of range");
-        return this.v[index];
+	var i = Sk.misceval.asIndex(index);
+	if (i !== undefined)
+	{
+            if (i < 0) index = this.v.length + i;
+            if (i < 0 || i >= this.v.length) {
+		throw new Sk.builtin.IndexError("tuple index out of range");
+	    }
+            return this.v[i];
+	}
     }
     else if (index instanceof Sk.builtin.slice)
     {
@@ -64,8 +70,8 @@ Sk.builtin.tuple.prototype.mp$subscript = function(index)
                 });
         return new Sk.builtin.tuple(ret);
     }
-    else
-        throw new TypeError("tuple indices must be integers, not " + typeof index);
+
+    throw new TypeError("tuple indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
 // todo; the numbers and order are taken from python, but the answer's
