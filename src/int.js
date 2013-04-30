@@ -3,6 +3,17 @@ Sk.builtin.int_ = function(x, base)
     if (x instanceof Sk.builtin.str)
     {
 	var s = x.v;
+	var neg = false;
+
+	// strip whitespace from ends
+	// s = s.trim();
+	s = s.replace(/^\s+|\s+$/g, '');
+
+        // check for minus sign
+	if (s.charAt(0) == '-') {
+	    neg = true;
+	    s = s.substring(1);
+	}
 
         // todo; this should handle longs too
         if (base === undefined) base = 10; // default radix is 10, not dwim
@@ -34,16 +45,6 @@ Sk.builtin.int_ = function(x, base)
 	    if (base == 8 || base == 0) {
 		base = 8;
 	    }
-	}
-
-	// strip whitespace from ends
-	// s = s.trim();
-	s = s.replace(/^\s+|\s+$/g, '');
-
-	var neg = false;
-	if (s.charAt(0) == '-') {
-	    neg = true;
-	    s = s.substring(1);
 	}
 
         // check all characters are valid
