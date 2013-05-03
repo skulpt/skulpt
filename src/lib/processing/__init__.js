@@ -1,6 +1,8 @@
 var $builtinmodule = function(name)
 {
     var mod = {};
+    var imList = [];
+    var looping = true;
 
     // We need this to store a reference to the actual processing object which is not created
     // until the run function is called.  Even then the processing object is passed by the
@@ -19,10 +21,15 @@ var $builtinmodule = function(name)
     mod.RGB = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
     mod.HSB = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
     mod.CMYK = Sk.builtin.assk$(5, Sk.builtin.nmber.int$);
+    mod.MITER = new Sk.builtin.str('miter');
+    mod.BEVEL = new Sk.builtin.str('bevel');
+    mod.ROUND = new Sk.builtin.str('round');
+    mod.SQUARE = new Sk.builtin.str('butt');
+    mod.PROJECT = new Sk.builtin.str('square');
 
 // 2D - Primitives
     mod.line = new Sk.builtin.func(function(x1, y1, x2, y2) {
-        mod.processing.line(x1.v, y1.v, x2.v, y2.v)
+        mod.processing.line(x1.v, y1.v, x2.v, y2.v);
     });
     
     mod.ellipse = new Sk.builtin.func(function(x,y,r1,r2) {
@@ -63,13 +70,9 @@ var $builtinmodule = function(name)
     // Color
     mod.background = new Sk.builtin.func(function(r,g,b) {
 
-        if (typeof(g) == 'undefined') {
-            g = r.v
-        } else 
+        if (typeof(g) !== 'undefined')
             g = g.v
-        if (typeof(b) == 'undefined') {
-            b = r.v
-        } else
+        if (typeof(b) !== 'undefined')
             b = b.v
 
         mod.processing.background(r.v,g,b)
@@ -77,14 +80,14 @@ var $builtinmodule = function(name)
     });
 
     mod.fill = new Sk.builtin.func(function(r,g,b) {
-
-        if (typeof(g) == 'undefined') {
-            g = r.v
-        } else 
+        // r will be either:
+        //      a number in which case the fill will be grayscale
+        //      a color object
+        // g, and b may be undefined.  If they hold values it will
+        // be assumed that we have an r,g,b color tuple
+        if (typeof(g) !== 'undefined')
             g = g.v
-        if (typeof(b) == 'undefined') {
-            b = r.v
-        } else
+        if (typeof(b) !== 'undefined')
             b = b.v
     
         mod.processing.fill(r.v,g,b)
@@ -94,13 +97,9 @@ var $builtinmodule = function(name)
 
     mod.stroke = new Sk.builtin.func(function(r,g,b) {
 
-        if (typeof(g) == 'undefined') {
-            g = r.v
-        } else 
+        if (typeof(g) !== 'undefined')
             g = g.v
-        if (typeof(b) == 'undefined') {
-            b = r.v
-        } else
+        if (typeof(b) !== 'undefined')
             b = b.v
 
         mod.processing.stroke(r.v,g,b)
@@ -119,8 +118,11 @@ var $builtinmodule = function(name)
             maxV = maxV.v
         mod.processing.colorMode(model.v, maxV)
     });
-    
-    //todo:  colorMode, noFill, noStroke, 
+
+    mod.noFill = new Sk.builtin.func(function() {
+            mod.processing.noFill()
+        });
+            
 
     // Environment
 
@@ -128,6 +130,7 @@ var $builtinmodule = function(name)
             if (mod.processing === null) {
                 throw new Sk.builtin.Exception("Loop should be called in setup")
             }
+            looping = true;
             mod.processing.loop()
         });
             
@@ -135,6 +138,7 @@ var $builtinmodule = function(name)
         if (mod.processing === null) {
             throw new Sk.builtin.Exception("noLoop should be called in setup")
         }
+        looping = false;
         mod.processing.noLoop()
     });
     
@@ -178,10 +182,21 @@ var $builtinmodule = function(name)
     });
 
     mod.noSmooth = new Sk.builtin.func(function() {
-            mod.processing.noSmooth()
+        mod.processing.noSmooth()
         });
             
-    // todo:  ellipseMode, strokeCap, strokeJoin
+    mod.ellipseMode = new Sk.builtin.func(function(mode) {
+        mod.processing.ellipseMode(mode.v)
+        });
+
+    mod.strokeCap = new Sk.builtin.func(function(mode) {
+        mod.processing.strokeCap(mode.v)
+        });
+
+    mod.strokeJoin = new Sk.builtin.func(function(mode) {
+        mod.processing.strokeJoin(mode.v)
+    });
+    
 
 
     // Transforms
@@ -218,33 +233,62 @@ var $builtinmodule = function(name)
 
     // todo:  applyMatrix, popMatrix, printMatrix??, pushMatrix, resetMatrix, rotate{X,Y,Z}
     
+
+    //  //////////////////////////////////////////////////////////////////////
+    //  Run
+    // 
+    //  Create the processing context and setup of calls to setup, draw etc.
+    //
+    //
+    //  //////////////////////////////////////////////////////////////////////    
     mod.run = new Sk.builtin.func(function() {
         function sketchProc(processing) {
             mod.processing = processing
 
-            mod.frameCount = processing.frameCount
+            // processing.setup = function() {
+            //     if Sk.globals['setup']
+            //         Sk.misceval.callsim(Sk.globals['setup'])
+            // }
 
-            
-            //Sk.globals['mouse'] = mod['mouse']
-
-            processing.setup = function() {
-                Sk.misceval.callsim(Sk.globals['setup'])
-            }
-
-            processing.mouseMoved = function() {
-                Sk.misceval.callsim(mod.mouse['setMouse'],mod.mouse,processing.mouseX,processing.mouseY)
-                if (Sk.globals['mouseMoved'])
-                    Sk.misceval.callsim(Sk.globals['mouseMoved'])
-            }
             
             processing.draw = function() {
-                mod.frameCount = processing.frameCount  // does not work -- try the pyprocessing method
-                Sk.misceval.callsim(Sk.globals['draw'])
+                // if there are pending image loads then just use the natural looping calls to 
+                // retry until all the images are loaded.  If noLoop was called in setup then make
+                // sure to revert to that after all the images in hand.
+                var wait = false
+                for (var i in imList) {
+                    if (imList[i].width == 0) {
+                        wait = true
+                    }
+                }
+                if (wait == true) {
+                    if (looping == true) 
+                        return
+                    else {
+                        processing.loop()
+                        return
+                    }
+
+                } else {
+                    if (looping == false)
+                        processing.noLoop()
+                }
+
+                mod.frameCount = processing.frameCount  
+                if (Sk.globals['draw'])
+                    Sk.misceval.callsim(Sk.globals['draw'])
             }
             
-            //todo:  mouseClicked(), mouseDragged(), mouseMoved(), mouseOut(), mouseOver(), mousePressed(), mouseReleased()
-            
-            //todo:  keyPressed(), keyReleased(), keyTyped()
+            var callBacks = ['setup', 'mouseMoved','mouseClicked', 'mouseDragged', 'mouseMoved', 'mouseOut',
+             'mouseOver', 'mousePressed', 'mouseReleased', 'keyPressed', 'keyReleased', 'keyTyped'
+             ];
+
+             for(var cb in callBacks) {
+                if (Sk.globals[callBacks[cb]]) {
+                    console.log('defining ' + callBacks[cb])                    
+                    processing[callBacks[cb]] = new Function("Sk.misceval.callsim(Sk.globals['"+callBacks[cb]+"']);")
+                }
+            }
         }
         
         var canvas = document.getElementById(Sk.canvas)
@@ -254,22 +298,12 @@ var $builtinmodule = function(name)
     });
 
     var mouseClass = function($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function(self) {
-            self.x = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-            self.y = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-
-        });
-
-        $loc.setMouse = new Sk.builtin.func(function(self,x,y) {
-           self.x = Sk.builtin.assk$(x, Sk.builtin.nmber.int$);
-           self.y = Sk.builtin.assk$(y, Sk.builtin.nmber.int$);
-        });
 
         $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
             if (key == 'x') 
-                return self.x;
+                return mod.processing.mouseX;
             else if (key == 'y') 
-                return self.y
+                return mod.processing.mouseY;
             else if (key == 'px')
                 return mod.processing.pmouseX;
             else if (key == 'py')
@@ -333,6 +367,68 @@ var $builtinmodule = function(name)
     mod.environment = Sk.misceval.callsim(mod.Environment)
 
 
+    var colorClass = function($gbl, $loc) {
+        /* images are loaded async.. so its best to preload them */
+        $loc.__init__ = new Sk.builtin.func(function(self, val1, val2, val3, alpha) {
+            if (typeof(val2) !== 'undefined')
+                val2 = val2.v
+            if (typeof(val3) !== 'undefined')
+                val3 = val3.v
+            if (typeof(alpha) !== 'undefined')
+                alpha = alpha.v
+            self.v = mod.processing.color(val1.v, val2, val3, alpha)
+        })
+    
+    }
+
+    mod.color = Sk.misceval.buildClass(mod,colorClass,'color', [])
+
+    mod.red = new Sk.builtin.func(function(clr) {
+        mod.processing.red(clr.v)
+    });
+    
+    mod.green = new Sk.builtin.func(function(clr) {
+        mod.processing.green(clr.v)
+    });
+
+    mod.blue = new Sk.builtin.func(function(clr) {
+                mod.processing.blue(clr.v)
+            });
+
+    // Image class and functions
+    //
+    var imageClass = function($gbl, $loc) {
+        /* images are loaded async.. so its best to preload them */
+        $loc.__init__ = new Sk.builtin.func(function(self,im) {
+            self.v = im
+            self.width = Sk.builtin.assk$(im.width, Sk.builtin.nmber.int$);
+            self.height = Sk.builtin.assk$(im.height, Sk.builtin.nmber.int$);
+        })
+    
+    }
+
+    mod.PImage = Sk.misceval.buildClass(mod,imageClass,'PImage', [])
+
+    mod.loadImage = new Sk.builtin.func(function(imfile) {
+        var i = mod.processing.loadImage(imfile.v);
+        imList.push(i);
+        return Sk.misceval.callsim(mod.PImage,i);
+    });
+    
+
+    mod.image = new Sk.builtin.func(function(im,x,y) {
+        if (im.v.width > 0)
+            mod.processing.image(im.v,x.v,y.v,im.v.width,im.v.height)
+    });
+
+    mod.get = new Sk.builtin.func(function(x,y) {
+        mod.processing.get(x.v,y.v)
+    });
+
+    mod.set = new Sk.builtin.func(function(x, y, color) {
+        mod.processing.set(x.v, y.v, color.v)
+    });
+    
 // todo  -- add a color class for creating color objects.
 
 
