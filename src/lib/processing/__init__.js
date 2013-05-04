@@ -327,11 +327,11 @@ var $builtinmodule = function(name)
 
         $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
             if (key == 'key') 
-                return mod.processing.key
+                return new Sk.builtin.str(mod.processing.key)
             else if (key == 'keyCode') 
                 return mod.processing.keyCode
             else if (key == 'keyPressed')
-                return mod.processing.keyPressed
+                return new Sk.builtin.str(mod.processing.keyPressed)
         });
 
 
