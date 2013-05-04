@@ -366,6 +366,35 @@ var $builtinmodule = function(name)
 
     mod.environment = Sk.misceval.callsim(mod.Environment)
 
+    var screenClass = function($gbl, $loc) {
+
+        $loc.__init__ = new Sk.builtin.func(function(self) {
+            self.pixels = null;
+        });
+
+        $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
+            if (key == 'height')
+                return mod.processing.height
+            else if (key == 'width')
+                return mod.processing.width
+            else if (key == 'pixels')
+                if (self.pixels == null) {
+                    self.pixels = new Sk.builtin.list(mod.processing.pixels.toArray())
+                }
+                return self.pixels
+        });
+
+    }
+
+    mod.Screen = Sk.misceval.buildClass(mod,screenClass,'Screen', [])
+
+    mod.screen = Sk.misceval.callsim(mod.Screen)
+
+    mod.loadPixels = new Sk.builtin.func(function() {
+        mod.processing.loadPixels()
+        console.log(mod.processing.pixels)
+    });
+    
 
     var colorClass = function($gbl, $loc) {
         /* images are loaded async.. so its best to preload them */
