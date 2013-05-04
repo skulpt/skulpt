@@ -292,6 +292,7 @@ var $builtinmodule = function(name)
         }
         
         var canvas = document.getElementById(Sk.canvas)
+        $(canvas).show()
         mod.p = new Processing(canvas, sketchProc)
 
         
