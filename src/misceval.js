@@ -528,7 +528,7 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
 
     // init the dict for the class
     //print("CALLING", func);
-    func(globals, locals);
+    func(globals, locals, []);
 
     // file's __name__ is class's __module__
     locals.__module__ = globals['__name__'];
