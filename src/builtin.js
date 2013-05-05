@@ -182,9 +182,22 @@ Sk.builtin.abs = function abs(x)
     return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)),undefined);
 };
 
-// http://stackoverflow.com/questions/11832914/round-up-to-2-decimal-places-in-javascriptSk.builtin.round = function round(x,digits){	
+// http://stackoverflow.com/questions/11832914/round-up-to-2-decimal-places-in-javascript
+Sk.builtin.round = function round(x,digits)
+{	
 	x = Sk.builtin.asnum$(x);	//	This is the lazy way...the right way implements a round routine based on nmber
-	digits = Sk.builtin.asnum$(digits);    if (typeof x != "number" ) {        throw "TypeError: a float is required";    }    if(typeof digits === "undefined") {        return Sk.builtin.assk$(Math.round(x), Sk.builtin.nmber.float$);    } else {        var multiplier = Math.pow(10, digits);        return Sk.builtin.assk$((Math.round(x * multiplier) / multiplier), Sk.builtin.nmber.float$);    }};
+	digits = Sk.builtin.asnum$(digits);
+    if (typeof x != "number" ) {
+        throw "TypeError: a float is required";
+    }
+
+    if(typeof digits === "undefined") {
+        return Sk.builtin.assk$(Math.round(x), Sk.builtin.nmber.float$);
+    } else {
+        var multiplier = Math.pow(10, digits);
+        return Sk.builtin.assk$((Math.round(x * multiplier) / multiplier), Sk.builtin.nmber.float$);
+    }
+};
 
 Sk.builtin.ord = function ord(x)
 {
@@ -392,6 +405,20 @@ Sk.builtin.superbi =  function superbi()
 {
     throw new Sk.builtin.NotImplementedError("Super is not yet implemented, please report your use case as a github issue.");
 }
+
+Sk.builtin.hasattr = function hasattr(obj,attr) {
+    if (typeof attr.v !== "string") 
+        throw new Sk.builtin.TypeError('hasattr() attribute name must be a string')
+    
+    if (obj.tp$getattr) {
+        if (obj.tp$getattr(attr.v)) {
+            return true;
+        } else
+            return false;
+    } else
+        throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
+}
+
 /*
 Sk.builtinFiles = {};
 Sk.builtin.read = function read(x) {
