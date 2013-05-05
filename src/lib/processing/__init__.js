@@ -326,12 +326,14 @@ var $builtinmodule = function(name)
     var keyboardClass = function($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
-            if (key == 'key') 
-                return new Sk.builtin.str(mod.processing.key)
+            if (key == 'key') {
+                console.log(mod.processing.key)
+                return new Sk.builtin.str(mod.processing.key.toString())
+            }
             else if (key == 'keyCode') 
                 return mod.processing.keyCode
             else if (key == 'keyPressed')
-                return new Sk.builtin.str(mod.processing.keyPressed)
+                return new Sk.builtin.str(mod.processing.keyPressed) // todo bool
         });
 
 
