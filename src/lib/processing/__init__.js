@@ -416,16 +416,16 @@ var $builtinmodule = function(name)
     mod.color = Sk.misceval.buildClass(mod,colorClass,'color', [])
 
     mod.red = new Sk.builtin.func(function(clr) {
-        mod.processing.red(clr.v)
+        return Sk.builtin.assk$(mod.processing.red(clr.v), Sk.builtin.nmber.int$);
     });
     
     mod.green = new Sk.builtin.func(function(clr) {
-        mod.processing.green(clr.v)
+        return Sk.builtin.assk$(mod.processing.green(clr.v), Sk.builtin.nmber.int$);
     });
 
     mod.blue = new Sk.builtin.func(function(clr) {
-                mod.processing.blue(clr.v)
-            });
+        return Sk.builtin.assk$(mod.processing.blue(clr.v), Sk.builtin.nmber.int$);
+    });
 
     // Image class and functions
     //
@@ -436,6 +436,11 @@ var $builtinmodule = function(name)
             self.width = Sk.builtin.assk$(im.width, Sk.builtin.nmber.int$);
             self.height = Sk.builtin.assk$(im.height, Sk.builtin.nmber.int$);
         })
+
+        $loc.__getattr__ = new Sk.builtin.func(function(self,key) {
+            if (key == 'width') return self.v.width;
+            if (key == 'height') return self.v.height;
+        });
     
     }
 
@@ -454,7 +459,11 @@ var $builtinmodule = function(name)
     });
 
     mod.get = new Sk.builtin.func(function(x,y) {
-        mod.processing.get(x.v,y.v)
+        var clr = mod.processing.get(x.v,y.v)
+        return Sk.misceval.callsim(mod.color,
+            Sk.builtin.assk$(mod.processing.red(clr), Sk.builtin.nmber.int$),
+            Sk.builtin.assk$(mod.processing.green(clr), Sk.builtin.nmber.int$),
+            Sk.builtin.assk$(mod.processing.blue(clr), Sk.builtin.nmber.int$));
     });
 
     mod.set = new Sk.builtin.func(function(x, y, color) {
