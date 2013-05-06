@@ -14,6 +14,11 @@ at one point about creating the pre tag and the canvas tag on the fly
 the more I think about it the more I wonder...
 -->
 <head>
+<title>Processing Integration with Skulpt</title>
+<link rel="stylesheet" type="text/css" media="all" href="main.css">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+<script src="env/codemirror/js/codemirror.js" type="text/javascript"></script>
+<script src="env/editor.js" type="text/javascript"></script>
 <script src="skulpt.js" type="text/javascript"></script>
 <script src="builtin.js" type="text/javascript"></script>
 <script src="processing-1.4.1.min.js" type="text/javascript"></script>
@@ -21,6 +26,9 @@ the more I think about it the more I wonder...
 </script>
 
 </head>
+<div class="page">
+    <div class="body">
+        <div class="main">
 
 <body>
 <script type="text/javascript">
@@ -62,54 +70,124 @@ function runit(myDiv) {
    }
 }
 </script>
-<h3>Try This</h3>
-<div id="example1">
-<form>
-<textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
-from math import sin
+<h1>Integrating Processing-js and Skulpt!</h1>
+<h1>Recursive Circles</h1>
+<p>This illustrates how processing and skulpt work together.  You must define a draw function that does the drawing, and then you must call the run function to start things off.  You may optionally define a setup call that does one time initialization of size and color etc.</p>
+
+<div id="example2">
+<textarea edit_id="eta_5a" id="example2_code" cols="60" rows="21">
 from processing import *
 
+def setup():
+    size(400,400)
+    noStroke()
+    smooth()
+    noLoop()
+
+def draw():
+    drawCircle(200,170,6)
+
+def drawCircle(x, radius, level):
+    tt = 128.0 * level / 4.0
+    fill(tt)
+    ellipse(x, 200, radius*2, radius*2)
+    if level > 1:
+        level = level - 1
+        drawCircle(x - radius / 2, radius/2, level)
+        drawCircle(x + radius / 2, radius/2, level)
+
+run()
+</textarea>
+<button onclick="runit('example2')" type="button">Run</button>
+<canvas id="example2_canvas"></canvas>
+<pre id="example2_pre"></pre>
+
+</div>
+
+<h1>Try These</h1>
+<p>There are three functions defined in this example, each returns a draw function.
+<ul>
+<li>ellipseFun  -- Watch the pulsing ball follow your mouse</li>
+<li>colorFun -- a rainbow of color</li>
+<li>distanceFun -- Watch the circles changes as you move your mouse</li>
+</ul>
+Click the run button and then move your mouse over the picture.  To try one of the other examples change the second to the last line to make draw refer to a different function.
+</p>
+<div id="example1">
+<form>
+<textarea edit_id="eta_5" id="example1_code" cols="60" rows="15">
+from math import sin, sqrt
+from processing import *
 
 X = 30
 Y = 30
-nX = X
-nY = Y
 delay = 16
 radius = 30
-fc = 1
 
 def setup():
    strokeWeight(10)
    frameRate(20)
    size(300,300)
 
-def draw():
-   global X, Y, delay, radius, fc
-   background(100)
-   fill(0,121,184)
-   stroke(255)
-   X += (nX-X)/delay;
-   Y += (nY-Y)/delay;
+def ellipseFun():
+     global X, Y, radius
+     background(100)
+     fill(0,121,184)
+     stroke(255)
+     fc = environment.frameCount
 
-   radius = radius + sin(fc / 4)
-   fc += 1
-   ellipse(X,Y,radius,radius)
+     X += (mouse.x-X)/delay;
+     Y += (mouse.y-Y)/delay;
 
-def mouseMoved():
-    global nX, nY
-    nX = mouse.x
-    nY = mouse.y
+     radius = radius + sin(fc / 4)
 
+     ellipse(X,Y,radius,radius)
+
+def colorFun():
+    noStroke()
+    noLoop()
+    colorMode(RGB,300)
+    for r in range(300):
+        for g in range(300):
+            stroke(r, g, 0)
+            point(r,g)
+
+def dist(x1,y1,x2,y2):
+    o = y2-y1
+    a = x2-x1
+    return sqrt(o*o + a*a)
+
+def distanceFun():
+    background(51)
+    strokeWeight(1)
+    for i in range(0,environment.width,20):
+        for j in range(0,environment.width,20):
+           size = dist(mouse.x,mouse.y,i,j)
+           size = size/dist(0,0,environment.height,environment.width) * 100
+           ellipse(i,j,size,size)
+
+draw = distanceFun    # try colorFun or ellipseFun
 run()
 </textarea>
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
 
 <canvas id="example1_canvas" height="500" width="800"
-	style="border-style: solid; display: none"></canvas>
-
+  style="border-style: solid; display: none"></canvas>
 <pre id="example1_pre"></pre>
 
 </div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-10993568-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
 </body>
+</div> </div></div>
 </html>

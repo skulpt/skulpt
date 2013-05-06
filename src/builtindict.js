@@ -23,6 +23,7 @@ Sk.builtins = {
 'getattr': Sk.builtin.getattr,
 'float_$rw$': Sk.builtin.float_,
 'int_$rw$': Sk.builtin.int_,
+'hasattr': Sk.builtin.hasattr,
 
 'AttributeError': Sk.builtin.AttributeError,
 'ValueError': Sk.builtin.ValueError,

@@ -90,6 +90,13 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
     return this.func_code.apply(this.func_globals, args);
 };
 
+Sk.builtin.func.prototype.tp$getattr = function(key) {
+    return this[key];
+}
+Sk.builtin.func.prototype.tp$setattr = function(key,value) {
+    this[key] = value;
+}
+
 //todo; investigate why the other doesn't work
 //Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
 Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new Sk.builtin.func(null, null));
