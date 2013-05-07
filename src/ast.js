@@ -1543,15 +1543,20 @@ function parsestrplus(c, n)
     return ret;
 }
 
-function parsenumber(c, s)
+function parsenumber(c, s, lineno)
 {
+    var end = s.charAt(s.length - 1);
+
     // todo; no complex support
+    if (end === 'j' || end === 'J') {
+	throw new Sk.builtin.SyntaxError("complex numbers are currently unsupported", "", lineno);
+    }
 
     // Handle longs
-    var end = s.charAt(s.length - 1);
-    if (end === 'l' || end === 'L')
+    if (end === 'l' || end === 'L') {
         return Sk.longFromStr(s.substr(0, s.length - 1));
-
+    }
+    
     // todo; we don't currently distinguish between int and float so
     // str is wrong for these.
     if (s.indexOf('.') !== -1
@@ -1678,7 +1683,7 @@ function astForAtom(c, n)
         case TOK.T_STRING:
             return new Str(parsestrplus(c, n), n.lineno, n.col_offset);
         case TOK.T_NUMBER:
-            return new Num(parsenumber(c, ch.value), n.lineno, n.col_offset);
+        return new Num(parsenumber(c, ch.value, n.lineno), n.lineno, n.col_offset);
         case TOK.T_LPAR: // various uses for parens
             ch = CHILD(n, 1);
             if (ch.type === TOK.T_RPAR)
