@@ -143,7 +143,9 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
 	if (typeof a === "number" && typeof b === "number") {
 		a = new Sk.builtin.nmber(a, undefined);
 		b = new Sk.builtin.nmber(b, undefined);
-	} else if (a === undefined || b === undefined) {		throw new Sk.builtin.NameError('Undefined variable in expression')	}
+	} else if (a === undefined || b === undefined) {
+		throw new Sk.builtin.NameError('Undefined variable in expression')
+	}
 	
 	if (a.constructor === Sk.builtin.lng) {
 //		if (b.constructor == Sk.builtin.nmber)
