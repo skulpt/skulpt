@@ -54,7 +54,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function(index)
 	var i = Sk.misceval.asIndex(index);
 	if (i !== undefined)
 	{
-            if (i < 0) index = this.v.length + i;
+            if (i < 0) i = this.v.length + i;
             if (i < 0 || i >= this.v.length) {
 		throw new Sk.builtin.IndexError("tuple index out of range");
 	    }
