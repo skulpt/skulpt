@@ -18,7 +18,7 @@
             var obj = module.tp$getattr('a');
             var runMethod = obj.tp$getattr('run');
             var ret = Sk.misceval.callsim(runMethod, 10);
-            alert(ret);
+            alert(ret.v);
         } catch (e) {
             alert(e);
         }
