@@ -1460,11 +1460,11 @@ function parsestr(c, s)
         var ret = '';
         for (var i = 0; i < len; ++i)
         {
-            var c = s[i];
+            var c = s.charAt(i);
             if (c === '\\')
             {
                 ++i;
-                c = s[i];
+                c = s.charAt(i);
                 if (c === 'n') ret += "\n";
                 else if (c === '\\') ret += "\\";
                 else if (c === 't') ret += "\t";
@@ -1475,16 +1475,16 @@ function parsestr(c, s)
                 else if (c === '\n') /* escaped newline, join lines */ {}
                 else if (c === 'x')
                 {
-                    var d0 = s[++i];
-                    var d1 = s[++i];
+                    var d0 = s.charAt(++i);
+                    var d1 = s.charAt(++i);
                     ret += String.fromCharCode(parseInt(d0+d1, 16));
                 }
                 else if (c === 'u' || c === 'U')
                 {
-                    var d0 = s[++i];
-                    var d1 = s[++i];
-                    var d2 = s[++i];
-                    var d3 = s[++i];
+                    var d0 = s.charAt(++i);
+                    var d1 = s.charAt(++i);
+                    var d2 = s.charAt(++i);
+                    var d3 = s.charAt(++i);
                     ret += String.fromCharCode(parseInt(d0+d1, 16), parseInt(d2+d3, 16));
                 }
                 else
