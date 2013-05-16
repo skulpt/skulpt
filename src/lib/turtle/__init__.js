@@ -1024,14 +1024,14 @@ if (! TurtleGraphics) {
 				var c0 = Sk.builtin.asnum$(c[0]);
 				var c1 = Sk.builtin.asnum$(c[1]);
 				var c2 = Sk.builtin.asnum$(c[2]);
-        		rs = c0.toString(16)
-        		gs = c1.toString(16)
-        		bs = c2.toString(16)
         	} else {
-            	rs = c.toString(16);
-            	gs = g.toString(16);
-            	bs = b.toString(16);
+                var c0 = Sk.builtin.asnum$(c);
+                var c1 = Sk.builtin.asnum$(g);
+                var c2 = Sk.builtin.asnum$(b);
         	}
+            rs = c0.toString(16);
+            gs = c1.toString(16);
+            bs = c2.toString(16);
             while (rs.length < 2) rs = "0" + rs;
             while (gs.length < 2) gs = "0" + gs;
             while (bs.length < 2) bs = "0" + bs;
@@ -1055,14 +1055,14 @@ if (! TurtleGraphics) {
 				var c0 = Sk.builtin.asnum$(c[0]);
 				var c1 = Sk.builtin.asnum$(c[1]);
 				var c2 = Sk.builtin.asnum$(c[2]);
-        		rs = c0.toString(16)
-        		gs = c1.toString(16)
-        		bs = c2.toString(16)
         	} else {
-            	rs = c.toString(16);
-            	gs = g.toString(16);
-            	bs = b.toString(16);
+                var c0 = Sk.builtin.asnum$(c);
+                var c1 = Sk.builtin.asnum$(g);
+                var c2 = Sk.builtin.asnum$(b);
         	}
+            rs = c0.toString(16)
+            gs = c1.toString(16)
+            bs = c2.toString(16)
             while (rs.length < 2) rs = "0" + rs;
             while (gs.length < 2) gs = "0" + gs;
             while (bs.length < 2) bs = "0" + bs;
