@@ -120,12 +120,15 @@ if (! TurtleGraphics) {
     }
 
     TurtleCanvas.prototype.doneAnimating = function(t) {
-        var idx = this.tlist.indexOf(t);
-        if (idx > -1)
-            this.tlist.splice(idx, 1);
-        if (this.tlist.length == 0) {
-            clearTimeout(this.intervalId)	//	clearInterval(this.intervalId);
-            $(Sk.runButton).removeAttr('disabled');
+        this.tlist.splice(0,this.tlist.length)
+        clearTimeout(this.intervalId)   
+        $(Sk.runButton).removeAttr('disabled');
+        // var idx = this.tlist.indexOf(t);
+        // if (idx > -1)
+        //     this.tlist.splice(idx, 1);
+        // if (this.tlist.length == 0) {
+        //     clearTimeout(this.intervalId)	//	clearInterval(this.intervalId);
+        //     $(Sk.runButton).removeAttr('disabled');
         }
 
     }
