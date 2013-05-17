@@ -56,7 +56,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
         return f.call(descr, this, this.ob$type);
     }
 
-    if (descr)
+    if (descr !== undefined)
     {
         return descr;
     }
