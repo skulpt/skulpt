@@ -251,6 +251,7 @@ Sk.builtin.dict.prototype['$r'] = function()
 Sk.builtin.dict.prototype.mp$length = function() { return this.size; };
 
 Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.builtin.dict.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
 
 Sk.builtin.dict.prototype.tp$richcompare = function(other, op)
 {
