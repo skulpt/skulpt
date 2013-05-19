@@ -100,7 +100,7 @@ Sk.builtin.dict.prototype.key$pop = function(bucket, key)
             return item;
         }
     }
-    return null;    
+    return undefined;    
 }
 
 // Perform dictionary lookup, either return value or undefined if key not in dictionary
@@ -184,7 +184,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function(key)
     if (bucket !== undefined)
     {
         item = this.key$pop(bucket, key);
-        if (item) {
+        if (item !== undefined) {
             return;
         };
     }
