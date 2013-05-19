@@ -266,7 +266,7 @@ Sk.builtin.set.prototype['add'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.set.prototype['discard'] = new Sk.builtin.func(function(self, item)
 {
-    if (self.v.mp$subscript(item) !== undefined)
+    if (self.v.mp$lookup(item) !== undefined)
     {
         var kf = Sk.builtin.hash;
         var k = kf(item);
@@ -293,14 +293,7 @@ Sk.builtin.set.prototype['pop'] = new Sk.builtin.func(function(self)
 
 Sk.builtin.set.prototype['remove'] = new Sk.builtin.func(function(self, item)
 {
-    if (Sk.abstr.sequenceContains(self, item))
-    {
-        Sk.builtin.set.prototype['discard'].func_code(self, item);
-    }
-    else
-    {
-        throw new Sk.builtin.KeyError(item);
-    }
+    self.v.mp$del_subscript(item);
     return null;
 });
 
