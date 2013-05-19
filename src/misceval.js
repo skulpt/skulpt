@@ -177,13 +177,13 @@ Sk.misceval.richCompareBool = function(v, w, op)
             if (op === 'Eq') {
                 if (v && v['__eq__']) 
                     return Sk.misceval.callsim(v['__eq__'], v, w);
-                else if (w && w['__ne__'])
+                else if (w && w['__eq__'])
                     return Sk.misceval.callsim(w['__eq__'], w, v);
                 }
             else if (op === 'NotEq') {
                 if (v && v['__ne__'])
                     return Sk.misceval.callsim(v['__ne__'], v, w);
-                else if (w && w['__eq__'])
+                else if (w && w['__ne__'])
                     return Sk.misceval.callsim(w['__ne__'], w, v);
                 }
             else if (op === 'Gt') {
