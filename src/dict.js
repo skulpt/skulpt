@@ -333,6 +333,11 @@ Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
     return ret;
 });
 
+Sk.builtin.dict.prototype['has_key'] = new Sk.builtin.func(function(self, k)
+{
+    return self.sq$contains(k);
+});
+
 Sk.builtin.dict.prototype['items'] = new Sk.builtin.func(function(self)
 {
     var ret = [];
