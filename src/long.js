@@ -140,6 +140,8 @@ Sk.builtin.lng.prototype.nb$subtract = function(other)
 	return new Sk.builtin.lng(this.biginteger.subtract(new Sk.builtin.biginteger(other)));
 };
 
+Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
+
 Sk.builtin.lng.prototype.nb$multiply = function(other)
 {
 	if (other instanceof Sk.builtin.lng) {
@@ -152,6 +154,8 @@ Sk.builtin.lng.prototype.nb$multiply = function(other)
 
 	return new Sk.builtin.lng(this.biginteger.multiply(new Sk.builtin.biginteger(other)));
 };
+
+Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
 
 Sk.builtin.lng.prototype.nb$divide = function(other)
 {
@@ -191,6 +195,8 @@ Sk.builtin.lng.prototype.nb$divide = function(other)
 	return result;
 };
 
+Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
+
 Sk.builtin.lng.prototype.nb$floor_divide = function(other)
 {
 	if (other instanceof Sk.builtin.lng) {
@@ -203,6 +209,8 @@ Sk.builtin.lng.prototype.nb$floor_divide = function(other)
 
 	return new Sk.builtin.lng(this.biginteger.divide(new Sk.builtin.biginteger(other)));
 };
+
+Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
 
 Sk.builtin.lng.prototype.nb$remainder = function(other)
 {
@@ -217,6 +225,8 @@ Sk.builtin.lng.prototype.nb$remainder = function(other)
 	return new Sk.builtin.lng(this.biginteger.remainder(new Sk.builtin.biginteger(other)));
 };
 
+Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
+
 Sk.builtin.lng.prototype.nb$power = function(n)
 {
 	if (n instanceof Sk.builtin.lng) {
@@ -229,6 +239,8 @@ Sk.builtin.lng.prototype.nb$power = function(n)
 
 	return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(n)));
 };
+
+Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 
 Sk.builtin.lng.prototype.nb$negative = function()
 {

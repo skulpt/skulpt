@@ -67,12 +67,12 @@ Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
     switch (name)
     {
         case "Add": return obj.nb$inplace_add;
-        //case "Sub": return obj.nb$inplace_subtract;
-        //case "Mult": return obj.nb$inplace_multiply;
-        //case "Div": return obj.nb$divide;
-        //case "FloorDiv": return obj.nb$floor_divide;
-        //case "Mod": return obj.nb$inplace_remainder;
-        //case "Pow": return obj.nb$inplace_power;
+        case "Sub": return obj.nb$inplace_subtract;
+        case "Mult": return obj.nb$inplace_multiply;
+        case "Div": return obj.nb$divide;
+        case "FloorDiv": return obj.nb$floor_divide;
+        case "Mod": return obj.nb$inplace_remainder;
+        case "Pow": return obj.nb$inplace_power;
         //case "LShift": return obj.nb$lshift;
         //case "RShift": return obj.nb$rshift;
         //case "BitAnd": return obj.nb$and;
