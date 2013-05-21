@@ -55,11 +55,11 @@ Sk.abstr.boNameToSlotFunc_ = function(obj, name)
         case "FloorDiv": return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__floordiv__'];
         case "Mod": return obj.nb$remainder ? obj.nb$remainder : obj['__mod__'];
         case "Pow": return obj.nb$power ? obj.nb$power : obj['__pow__'];
-        //case "LShift": return obj.nb$lshift;
-        //case "RShift": return obj.nb$rshift;
-        //case "BitAnd": return obj.nb$and;
-        //case "BitOr": return obj.nb$or;
-        //case "BitXor": return obj.nb$xor;
+        case "LShift": return obj.nb$lshift;
+        case "RShift": return obj.nb$rshift;
+        case "BitAnd": return obj.nb$and;
+        case "BitOr": return obj.nb$or;
+        case "BitXor": return obj.nb$xor;
     }
 };
 Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
@@ -73,11 +73,11 @@ Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
         case "FloorDiv": return obj.nb$floor_divide;
         case "Mod": return obj.nb$inplace_remainder;
         case "Pow": return obj.nb$inplace_power;
-        //case "LShift": return obj.nb$lshift;
-        //case "RShift": return obj.nb$rshift;
-        //case "BitAnd": return obj.nb$and;
-        //case "BitOr": return obj.nb$or;
-        //case "BitXor": return obj.nb$xor;
+        case "LShift": return obj.nb$inplace_lshift;
+        case "RShift": return obj.nb$inplace_rshift;
+        case "BitAnd": return obj.nb$inplace_and;
+        case "BitOr": return obj.nb$inplace_or;
+        case "BitXor": return obj.nb$inplace_xor;
     }
 };
 
@@ -207,8 +207,25 @@ Sk.abstr.boNumPromote_ = {
     "BitAnd": function(a, b) { return a & b; },
     "BitOr": function(a, b) { return a | b; },
     "BitXor": function(a, b) { return a ^ b; },
-    "LShift": function(a, b) { return a << b; },
-    "RShift": function(a, b) { return a >> b; }
+    "LShift": function(a, b) { 
+	if (b < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
+	var m = a << b;
+	if (m > a) {
+	    return m; 
+	}
+	else {
+	    // Fail, this will get recomputed with longs
+	    return a * Math.pow(2, b);
+	}
+    },
+    "RShift": function(a, b) { 
+	if (b < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
+	return a >> b; 
+    }
 };
 
 Sk.abstr.numberBinOp = function(v, w, op)

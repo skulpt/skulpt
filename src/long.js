@@ -242,6 +242,76 @@ Sk.builtin.lng.prototype.nb$power = function(n)
 
 Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 
+Sk.builtin.lng.prototype.nb$lshift = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.shiftLeft(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
+    }
+    
+    return new Sk.builtin.lng(this.biginteger.shiftLeft(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_lshift = Sk.builtin.lng.prototype.nb$lshift;
+
+Sk.builtin.lng.prototype.nb$rshift = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.shiftRight(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.shiftRight(other));
+    }
+    
+    return new Sk.builtin.lng(this.biginteger.shiftRight(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_rshift = Sk.builtin.lng.prototype.nb$rshift;
+
+Sk.builtin.lng.prototype.nb$and = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.and(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.and(other));
+    }
+    
+    return new Sk.builtin.lng(this.biginteger.and(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_and = Sk.builtin.lng.prototype.nb$and;
+
+Sk.builtin.lng.prototype.nb$or = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.or(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.or(other));
+    }
+    
+    return new Sk.builtin.lng(this.biginteger.or(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_or = Sk.builtin.lng.prototype.nb$or;
+
+Sk.builtin.lng.prototype.nb$xor = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.xor(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.xor(other));
+    }
+    
+    return new Sk.builtin.lng(this.biginteger.xor(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
+
 Sk.builtin.lng.prototype.nb$negative = function()
 {
 	return new Sk.builtin.lng(this.biginteger.negate());
