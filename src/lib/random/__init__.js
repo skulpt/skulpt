@@ -211,6 +211,8 @@ var $builtinmodule = function(name)
             myGenerator = new MersenneTwister(x);
         else
             myGenerator = new MersenneTwister();
+
+	return null;
     });
 
     mod.random = new Sk.builtin.func(function() {
@@ -326,6 +328,8 @@ var $builtinmodule = function(name)
         } else {
             throw new Sk.builtin.TypeError("object has no length");
         };        
+
+	return null;
     });
 
     return mod;
