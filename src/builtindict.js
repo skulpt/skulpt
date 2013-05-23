@@ -25,6 +25,7 @@ Sk.builtins = {
 'bool': Sk.builtin.bool,
 'any': Sk.builtin.any,
 'all': Sk.builtin.all,
+ 'enumerate': Sk.builtin.enumerate,
 
 'AttributeError': Sk.builtin.AttributeError,
 'ValueError': Sk.builtin.ValueError,
