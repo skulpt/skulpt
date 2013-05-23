@@ -109,7 +109,16 @@ Sk.builtin.int_ = function(x, base)
 {
     if (x instanceof Sk.builtin.str)
     {
-        return Sk.str2number(x.v, base, parseInt, function(x){return -x;}, "int");
+        var val = Sk.str2number(x.v, base, parseInt, 
+                                function(x){return -x;}, "int");
+        if ((val > Sk.builtin.lng.threshold$) 
+            || (val < -Sk.builtin.lng.threshold$)) 
+        {
+            // Too big for int, convert to long
+            val = new Sk.builtin.lng(x, base);
+        }
+
+        return val;
     }
 
     if (base !== undefined) {
