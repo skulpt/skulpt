@@ -22,6 +22,8 @@ Sk.builtin.enumerate = function(iterable, start)
     this.start = start;
 
     this.__class__ = Sk.builtin.enumerate;
+
+    return this;
 }
 
 Sk.builtin.enumerate.prototype.tp$name = "enumerate";
