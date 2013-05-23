@@ -3,19 +3,25 @@
 //  Using javascript BigInteger by Tom Wu
 /**
  * @constructor
+ * @param {*} x
+ * @param {number=} base
  */
-Sk.builtin.lng = function(x)	/* long is a reserved word */
+Sk.builtin.lng = function(x, base)	/* long is a reserved word */
 {
-    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(x);
+    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(x, base);
 
-	if (x instanceof Sk.builtin.lng)
-		this.biginteger = x.biginteger.clone();
-	else if (x instanceof Sk.builtin.biginteger)
-		this.biginteger = x;
-	else if (x instanceof String)
-		return Sk.longFromStr(x);
-	else
-		this.biginteger = new Sk.builtin.biginteger(x);
+    if (x === undefined)
+	this.biginteger = new Sk.builtin.biginteger(0);
+    else if (x instanceof Sk.builtin.lng)
+	this.biginteger = x.biginteger.clone();
+    else if (x instanceof Sk.builtin.biginteger)
+	this.biginteger = x;
+    else if (x instanceof String)
+	return Sk.longFromStr(x, base);
+    else if (x instanceof Sk.builtin.str)
+	return Sk.longFromStr(x.v, base);
+    else
+	this.biginteger = new Sk.builtin.biginteger(x);
 
     return this;
 };
@@ -62,50 +68,28 @@ Sk.builtin.lng.fromInt$ = function(ival)
 
 // js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
 // 0x, 0o, 0b, etc.
-Sk.longFromStr = function(s)
+Sk.longFromStr = function(s, base)
 {
-    goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
+    // l/L are valid digits with base >= 22
+    // goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
 
-	var neg=false;
-	if (s.substr(0, 1) == "-") {
-		s = s.substr(1);
-		neg=true;
-	}
-    var base = 10;
-    if (s.substr(0, 2) === "0x" || s.substr(0, 2) === "0X")
-    {
-        s = s.substr(2);
-        base = 16;
-    }
-    else if (s.substr(0, 2) === "0o")
-    {
-        s = s.substr(2);
-        base = 8;
-    }
-    else if (s.substr(0, 1) === "0")
-    {
-        s = s.substr(1);
-        base = 8;
-    }
-    else if (s.substr(0, 2) === "0b")
-    {
-        s = s.substr(2);
-        base = 2;
-    }
+    var parser = function (s, base) {
+        if (base == 10)
+            return new Sk.builtin.biginteger(s);
+        else
+            return new Sk.builtin.biginteger(s, base);
+    };
 
-	var biginteger;
-	if (base == 10)
-		biginteger = new Sk.builtin.biginteger(s);
-	else
-		biginteger = new Sk.builtin.biginteger(s,base);
+    var biginteger = Sk.str2number(s, base, parser, function(x){return x.negate();}, "long");
 
-	if (neg)
-		biginteger = biginteger.negate();
-
-	return new Sk.builtin.lng(biginteger);
-
+    return new Sk.builtin.lng(biginteger);
 };
 goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
+
+Sk.builtin.lng.prototype.toInt$ = function()
+{
+    return this.biginteger.intValue();
+};
 
 Sk.builtin.lng.prototype.clone = function()
 {
@@ -245,12 +229,21 @@ Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 Sk.builtin.lng.prototype.nb$lshift = function(other)
 {
     if (other instanceof Sk.builtin.lng) {
+	if (other.biginteger.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
 	return new Sk.builtin.lng(this.biginteger.shiftLeft(other.biginteger));
     }
     if (other instanceof Sk.builtin.biginteger) {
+	if (other.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
 	return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
     }
     
+    if (other < 0) {
+	throw new Sk.builtin.ValueError("negative shift count");
+    }
     return new Sk.builtin.lng(this.biginteger.shiftLeft(new Sk.builtin.biginteger(other)));
 }
 
@@ -259,12 +252,21 @@ Sk.builtin.lng.prototype.nb$inplace_lshift = Sk.builtin.lng.prototype.nb$lshift;
 Sk.builtin.lng.prototype.nb$rshift = function(other)
 {
     if (other instanceof Sk.builtin.lng) {
+	if (other.biginteger.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
 	return new Sk.builtin.lng(this.biginteger.shiftRight(other.biginteger));
     }
     if (other instanceof Sk.builtin.biginteger) {
+	if (other.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
 	return new Sk.builtin.lng(this.biginteger.shiftRight(other));
     }
     
+    if (other < 0) {
+	throw new Sk.builtin.ValueError("negative shift count");
+    }
     return new Sk.builtin.lng(this.biginteger.shiftRight(new Sk.builtin.biginteger(other)));
 }
 

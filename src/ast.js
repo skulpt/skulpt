@@ -1554,7 +1554,7 @@ function parsenumber(c, s, lineno)
 
     // Handle longs
     if (end === 'l' || end === 'L') {
-        return Sk.longFromStr(s.substr(0, s.length - 1));
+        return Sk.longFromStr(s.substr(0, s.length - 1), 0);
     }
     
     // todo; we don't currently distinguish between int and float so
@@ -1606,7 +1606,7 @@ function parsenumber(c, s, lineno)
         && Math.floor(val) === val
         && (s.indexOf('e') === -1 && s.indexOf('E') === -1))
     {
-        return Sk.longFromStr(s);
+        return Sk.longFromStr(s, 0);
     }
 
     // Small enough, return parsed number

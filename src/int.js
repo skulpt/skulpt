@@ -1,90 +1,124 @@
+// Takes a JavaScript string and returns a number using the
+// parser and negater functions (for int/long right now)
+//
+// parser should take a string that is a postive number which only
+// contains characters that are valid in the given base and a base and
+// return a number
+//
+// negater should take a number and return its negation
+//
+// fname is a string containing the function name to be used in error
+// messages
+Sk.str2number = function(s, base, parser, negater, fname)
+{
+    var origs = s;
+    var neg = false;
+
+    // strip whitespace from ends
+    // s = s.trim();
+    s = s.replace(/^\s+|\s+$/g, '');
+
+    // check for minus sign
+    if (s.charAt(0) == '-') {
+	neg = true;
+	s = s.substring(1);
+    }
+
+    // check for plus sign
+    if (s.charAt(0) == '+') {
+	s = s.substring(1);
+    }
+
+    if (base === undefined) base = 10; // default radix is 10, not dwim
+
+    if (base < 2 || base > 36) {
+	if (base != 0) {
+	    throw new Sk.builtin.ValueError(fname + "() base must be >= 2 and <= 36");
+	}
+    }
+
+    if ( s.substring(0,2).toLowerCase() == '0x' ) {
+	if (base != 16 && base != 0) {
+	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+	} else {
+	    s = s.substring(2);
+	    base = 16;
+	}
+    }
+    else if ( s.substring(0,2).toLowerCase() == '0b' ) { 
+	if (base != 2 && base != 0) {
+	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+	} else {
+	    s = s.substring(2);
+	    base = 2;
+	}
+    }
+    else if ( s.substring(0,2).toLowerCase() == '0o' ) {
+	if (base != 8 && base != 0) {
+	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+	} else {
+	    s = s.substring(2);
+	    base = 8;
+	}
+    }
+    else if ( s.charAt(0) == '0' ) {
+	if (s == '0') return 0;
+	if (base == 8 || base == 0) {
+	    base = 8;
+	}
+    }
+
+    if (base == 0) base = 10;
+
+    if (s.length === 0) {
+	throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+    }
+
+    // check all characters are valid
+    var i, ch, val;
+    for (i=0; i<s.length; i++) {
+	ch = s.charCodeAt(i);
+	val = base;
+	if ((ch >= 48) && (ch <= 57)) {
+	    // 0-9
+	    val = ch - 48;
+        }
+	else if ((ch >= 65) && (ch <= 90)) {
+	    // A-Z
+	    val = ch - 65 + 10;
+        }
+        else if ((ch >= 97) && (ch <= 122)) {
+	    // a-z
+	    val = ch - 97 + 10;
+	}
+
+	if (val >= base) {
+	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
+	}
+    }
+
+    // parse number
+    val = parser(s, base);
+    if (neg) {
+	val = negater(val);
+    }
+    return val;
+}
+
 Sk.builtin.int_ = function(x, base)
 {
     if (x instanceof Sk.builtin.str)
     {
-	var s = x.v;
-	var neg = false;
-
-	// strip whitespace from ends
-	// s = s.trim();
-	s = s.replace(/^\s+|\s+$/g, '');
-
-        // check for minus sign
-	if (s.charAt(0) == '-') {
-	    neg = true;
-	    s = s.substring(1);
-	}
-
-        // todo; this should handle longs too
-        if (base === undefined) base = 10; // default radix is 10, not dwim
-
-	if (base < 2 || base > 36) {
-	    if (base != 0) {
-		throw new Sk.builtin.ValueError("int() base must be >= 2 and <= 36");
-	    }
-	}
-
-	if ( s.substring(0,2).toLowerCase() == '0x' ) {
-	    if (base != 16 && base != 0) {
-		throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
-	    } else {
-		s = s.substring(2);
-		base = 16;
-	    }
-	}
-	else if ( s.substring(0,2).toLowerCase() == '0b' ) { 
-	    if (base != 2 && base != 0) {
-		throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
-	    } else {
-		s = s.substring(2);
-		base = 2;
-	    }
-	}
-	else if ( s.charAt(0) == '0' ) {
-	    if (s == '0') return 0;
-	    if (base == 8 || base == 0) {
-		base = 8;
-	    }
-	}
-
-        // check all characters are valid
-	var i, ch, val;
-        var b = base ? base : 36; // is it correct to default to 36?
-        for (i=0; i<s.length; i++) {
-	    ch = s.charCodeAt(i);
-	    val = b;
-	    if ((ch >= 48) && (ch <= 57)) {
-		// 0-9
-		val = ch - 48;
-            }
-	    else if ((ch >= 65) && (ch <= 90)) {
-		// A-Z
-		val = ch - 65 + 10;
-            }
-            else if ((ch >= 97) && (ch <= 122)) {
-		// a-z
-		val = ch - 97 + 10;
-	    }
-
-	    if (val >= b) {
-		throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
-	    }
-	}
-
-	// parse number
-	val = parseInt(s, base);
-	if (isNaN(val)) {
-	    // Should not happen, should have been caught above
-	    throw new Sk.builtin.ValueError("invalid literal for int() with base " + base + ": '" + x.v + "'");
-	}
-	if (neg) {
-	    val = -val;
-	}
-        return val;
+        return Sk.str2number(x.v, base, parseInt, function(x){return -x;}, "int");
     }
 
     if (base !== undefined) {
 	throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
+    }
+
+    if (x instanceof Sk.builtin.lng)
+    {
+	return x.toInt$();
     }
 
     // sneaky way to do truncate, floor doesn't work < 0, round doesn't work on the .5> side
