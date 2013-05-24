@@ -58,7 +58,7 @@ Files = [
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',
-
+        'src/enumerate.js',
         'src/tokenize.js',
         'gen/parse_tables.js',
         'src/parser.js',
