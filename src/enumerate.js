@@ -13,13 +13,24 @@ Sk.builtin.enumerate = function(iterable, start)
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
     if (start !== undefined) {
-        if (!Sk.builtin.checkNumber(start)) {
+        if (!Sk.builtin.checkInt(start)) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
         }
     }
+    else {
+	start = 0;
+    }
 
-    this.v = iterable;
-    this.start = start;
+    var it = iterable.tp$iter();
+
+    this.tp$iter = function() { return this; };
+    this.$index = start;
+    this.tp$iternext = function () {
+        // todo; StopIteration
+        var next = it.tp$iternext();
+        if (next === undefined) return undefined;
+        return new Sk.builtin.tuple([this.$index++, next]);
+    };
 
     this.__class__ = Sk.builtin.enumerate;
 
@@ -29,27 +40,14 @@ Sk.builtin.enumerate = function(iterable, start)
 Sk.builtin.enumerate.prototype.tp$name = "enumerate";
 Sk.builtin.enumerate.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('enumerate', Sk.builtin.enumerate);
 
-Sk.builtin.enumerate.prototype.tp$iter = function()
+Sk.builtin.enumerate.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
+Sk.builtin.enumerate.prototype['__iter__'] = new Sk.builtin.func(function(self)
 {
-    var start = 0;
-    if (this.start !== undefined) {
-        start = this.start;
-    }
+    return self.tp$iter();
+});								 
 
-    var it = this.v.tp$iter();
-
-    var ret =
-    {
-        tp$iter: function() { return ret; },
-        $obj: this,
-        $index: start,
-        tp$iternext: function()
-        {
-            // todo; StopIteration
-            var n = it.tp$iternext();
-            if (n === undefined) return undefined;
-            return new Sk.builtin.tuple([ret.$index++, n]);
-        }
-    };
-    return ret;
-}
+Sk.builtin.enumerate.prototype['next'] = new Sk.builtin.func(function(self)
+{
+    return self.tp$iternext();
+});								 
