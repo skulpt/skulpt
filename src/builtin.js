@@ -74,15 +74,8 @@ Sk.builtin.len = function len(item)
     if (item.mp$length)
         return item.mp$length();
 
-    if (item.tp$getattr)
-    {
-	var lenf = item.tp$getattr("__len__");
-	if (lenf !== undefined)
-            return Sk.misceval.apply(lenf, undefined, undefined, undefined, []);
-
-	// No __len__ method
-        throw new Sk.builtin.AttributeError(Sk.abstr.typeName(item) + " instance has no attribute '__len__'");
-    }
+    if (item.tp$length)
+	return item.tp$length();
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };

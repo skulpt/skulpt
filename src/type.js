@@ -90,6 +90,14 @@ Sk.builtin.type = function(name, bases, dict)
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
             return this['$r']();
         };
+	klass.prototype.tp$length = function()
+	{
+            var lenf = this.tp$getattr("__len__");
+            if (lenf !== undefined)
+                return Sk.misceval.apply(lenf, undefined, undefined, undefined, []);
+	    var tname = Sk.abstr.typeName(this);
+	    throw new Sk.builtin.AttributeError(tname + " instance has no attribute '__len__'");
+	};	    
         klass.prototype.tp$call = function(args, kw)
         {
             var callf = this.tp$getattr("__call__");
