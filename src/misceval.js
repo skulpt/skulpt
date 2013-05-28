@@ -308,6 +308,7 @@ Sk.misceval.isTrue = function(x)
     if (x === false) return false;
     if (x === null) return false;
     if (typeof x === "number") return x !== 0;
+    if (x instanceof Sk.builtin.lng) return x.nb$nonzero();
     if (x.mp$length) return x.mp$length() !== 0;
     if (x.sq$length) return x.sq$length() !== 0;
     return true;
