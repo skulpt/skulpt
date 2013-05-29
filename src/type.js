@@ -141,13 +141,11 @@ Sk.builtin.type = function(name, bases, dict)
             //print("mro result", Sk.builtin.repr(mro).v);
         }
 
-        // because we're not returning a new type() here, we have to manually
-        // add all the methods we want from the type class.
-        klass.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
-        klass.ob$type = Sk.builtin.type;
-
         klass.prototype.ob$type = klass;
         Sk.builtin.type.makeIntoTypeObj(name, klass);
+	
+	// fix for class attributes
+	klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
 
         return klass;
     }
@@ -227,6 +225,12 @@ Sk.builtin.type.prototype.tp$getattr = function(name)
 
     return undefined;
 };
+
+Sk.builtin.type.prototype.tp$setattr = function(name, value)
+{
+    // class attributes are direct properties of the object
+    this[name] = value;
+}
 
 Sk.builtin.type.typeLookup = function(type, name)
 {
