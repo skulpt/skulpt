@@ -340,8 +340,16 @@ Sk.builtin.dir = function dir(x)
         }
     }
         
+    // Sort results
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
-    return new Sk.builtin.list(names);
+
+    // Get rid of duplicates before returning, as duplicates should
+    //  only occur when they are shadowed
+    var last = function(value, index, self) {
+	// Returns true iff the value is not the same as the next value
+	return value !== self[index+1];
+    };
+    return new Sk.builtin.list(names.filter(last));
 };
 
 Sk.builtin.dir.slotNameToRichName = function(k)
