@@ -264,20 +264,32 @@ Sk.builtin.dir = function dir(x)
 {
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
-    var names = [];
-    var k;
-    var s;
-
-    // Add all object properties
-    for (k in x.constructor.prototype)
-    {
-        s = null;
+    var getName = function (k) {
+        var s = null;
+        var internal = ["__bases__", "__mro__", "__class__"];
+        if (internal.indexOf(k) !== -1)
+            return null;
         if (k.indexOf('$') !== -1)
             s = Sk.builtin.dir.slotNameToRichName(k);
         else if (k.charAt(k.length - 1) !== '_')
             s = k;
         else if (k.charAt(0) === '_')
             s = k;
+        return s;
+    };
+
+    var names = [];
+    var k;
+    var s;
+    var i;
+    var mro;
+    var base;
+    var prop;
+
+    // Add all object properties
+    for (k in x.constructor.prototype)
+    {
+        s = getName(k);
         if (s)
             names.push(new Sk.builtin.str(s));
     }
@@ -292,7 +304,10 @@ Sk.builtin.dir = function dir(x)
             var i;
             for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
             {
-                names.push(new Sk.builtin.str(i));
+                s = new Sk.builtin.str(i);
+                s = getName(s.v);
+                if (s)
+                    names.push(new Sk.builtin.str(s));
             }
         }
         else
@@ -301,6 +316,26 @@ Sk.builtin.dir = function dir(x)
             for (s in x['$d'])
             {
                 names.push(new Sk.builtin.str(s));
+            }
+        }
+    }
+
+    // Add all class attributes
+    mro = x.tp$mro;
+    if (mro)
+    {
+        mro = x.tp$mro;
+        for (i = 0; i < mro.v.length; ++i)
+        {
+            base = mro.v[i];
+            for (prop in base)
+            {
+                if (base.hasOwnProperty(prop))
+                {
+                    s = getName(prop);
+                    if (s)
+                        names.push(new Sk.builtin.str(s));
+                }
             }
         }
     }
