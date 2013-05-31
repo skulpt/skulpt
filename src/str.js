@@ -303,8 +303,17 @@ Sk.builtin.str.prototype['lstrip'] = new Sk.builtin.func(function(self, chars)
 
 Sk.builtin.str.prototype['rstrip'] = new Sk.builtin.func(function(self, chars)
 {
-    goog.asserts.assert(!chars, "todo;");
-    return new Sk.builtin.str(self.v.replace(/\s+$/g, ''));
+    if (chars){
+        var currstr = self.v;
+        var charStr = new Sk.builtin.str(chars)
+        while(currstr.lastIndexOf(charStr.v) === currstr.length - charStr.v.length){
+            currstr = currstr.substr(0, currstr.length - charStr.v.length);
+        }
+        return new Sk.builtin.str(currstr);
+    }
+    else{
+      return new Sk.builtin.str(self.v.replace(/\s+$/g, ''));
+    }
 });
 
 Sk.builtin.str.prototype['partition'] = new Sk.builtin.func(function(self, sep)
