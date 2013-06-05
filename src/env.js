@@ -37,6 +37,9 @@ Sk.configure = function(options)
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
 
+    Sk.python3 = options["python3"] || Sk.python3;
+    goog.asserts.assert(typeof Sk.python3 === "boolean");
+    
     if (options["syspath"])
     {
         Sk.syspath = options["syspath"];
@@ -116,6 +119,10 @@ if (!Sk.inBrowser)
         }
     };
 }
+
+
+Sk.python3 = false;
+goog.exportSymbol("Sk.python3",Sk.python3)
 
 goog.require("goog.asserts");
 

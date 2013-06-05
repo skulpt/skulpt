@@ -531,7 +531,7 @@ def docbi():
         f.write(getBuiltinsAsJson())
         print ". Wrote %s" % builtinfn
 
-def run(fn, shell="", opt=False):
+def run(fn, shell="", opt=False, p3=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -539,15 +539,19 @@ def run(fn, shell="", opt=False):
         os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
+    if p3:
+        p3on = 'true'
+    else:
+        p3on = 'false'
     f.write("""
 var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read});
+Sk.configure({syspath:["%s"], read:read, python3:%s});
 Sk.importMain("%s", true);
 print("-----");
-    """ % (fn, os.path.split(fn)[0], modname))
+    """ % (fn, os.path.split(fn)[0], p3on, modname))
     f.close()
     if opt:
         os.system("%s dist/skulpt.js support/tmp/run.js" % jsengine)
@@ -559,6 +563,9 @@ print("-----");
 
 def runopt(fn):
     run(fn, "", True)
+
+def run3(fn):
+    run(fn,p3=True)
 
 def shell(fn):
     run(fn, "--shell")
@@ -733,6 +740,8 @@ Where command is one of:
         run(sys.argv[2])
     elif cmd == "runopt":
         runopt(sys.argv[2])
+    elif cmd == "run3":
+        run3(sys.argv[2])
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":

@@ -260,7 +260,7 @@ Sk.builtin.nmber.prototype.nb$divide = function(other)
 				return new Sk.builtin.nmber(-Infinity, Sk.builtin.nmber.float$);
 
 		result = new Sk.builtin.nmber(this.v / other.v, undefined);
-		if (this.skType === Sk.builtin.nmber.float$ || other.skType === Sk.builtin.nmber.float$)
+		if (this.skType === Sk.builtin.nmber.float$ || other.skType === Sk.builtin.nmber.float$ || Sk.python3)
 			result.skType = Sk.builtin.nmber.float$;
 		else {
 			result.v = Math.floor(result.v);
