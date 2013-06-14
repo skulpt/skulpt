@@ -98,7 +98,7 @@ class unittest:
 
     def assertAlmostEqual(self,a,b, feedback=""):
         res = round(a-b,7) == 0
-        self.appendResult(res,a,b,feedback)
+        self.appendResult(res,str(a)+' to equal ',b,feedback)
 
     def assertNotAlmostEqual(self,a,b, feedback=""):
         res = round(a-b,7) != 0
