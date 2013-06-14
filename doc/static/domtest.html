@@ -48,6 +48,7 @@ function runit(myDiv) {
    var prog = document.getElementById(myDiv+"_code").value;
    var mypre = document.getElementById(myDiv+"_pre");
    mypre.innerHTML = '';
+   Sk.divid = myDiv;
    Sk.canvas = myDiv+"_canvas";
     var can = document.getElementById(Sk.canvas);
     can.style.display = 'block';

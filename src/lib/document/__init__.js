@@ -6,6 +6,7 @@ var $builtinmodule = function(name) {
         if (result) {
             return Sk.misceval.callsim(mod.Element,result);
         }
+        return null;
     });
 
     mod.createElement = new Sk.builtin.func(function(eName) {
@@ -43,7 +44,14 @@ var $builtinmodule = function(name) {
         return new Sk.builtin.list(reslist);
     });
         
-
+    mod.currentDiv = new Sk.builtin.func(function() {
+        if (Sk.divid !== undefined) {
+            return new Sk.builtin.str(Sk.divid)
+        }
+        else {
+            throw new Sk.builtin.AttributeError("There is no value set for divid");
+        }
+    })
     var elementClass = function($gbl, $loc) {
         /*
             Notes:  self['$d'] is the dictionary used by the GenericGetAttr mechanism for an object.
