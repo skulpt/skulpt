@@ -204,9 +204,27 @@ Sk.abstr.boNumPromote_ = {
             return Math.floor(a / b); // todo; wrong? neg?
     },
     "Pow": Math.pow,
-    "BitAnd": function(a, b) { return a & b; },
-    "BitOr": function(a, b) { return a | b; },
-    "BitXor": function(a, b) { return a ^ b; },
+    "BitAnd": function(a, b) { 
+        var m = a & b;
+        if (m < 0) {
+            m = m + 4294967296; // convert back to unsigned
+        }
+        return m;
+    },
+    "BitOr": function(a, b) {
+        var m = a | b;
+        if (m < 0) {
+            m = m + 4294967296; // convert back to unsigned
+        }
+        return m;
+    },
+    "BitXor": function(a, b) {
+        var m = a ^ b;
+        if (m < 0) {
+            m = m + 4294967296; // convert back to unsigned
+        }
+        return m;
+    },
     "LShift": function(a, b) { 
 	if (b < 0) {
 	    throw new Sk.builtin.ValueError("negative shift count");
@@ -221,10 +239,15 @@ Sk.abstr.boNumPromote_ = {
 	}
     },
     "RShift": function(a, b) { 
-	if (b < 0) {
-	    throw new Sk.builtin.ValueError("negative shift count");
-	}
-	return a >> b; 
+        if (b < 0) {
+            throw new Sk.builtin.ValueError("negative shift count");
+        }
+        var m = a >> b;
+        if ((a > 0) && (m < 0)) {
+            // fix incorrect sign extension
+            m = m & (Math.pow(2, 32-b) - 1);
+        }
+        return m; 
     }
 };
 
