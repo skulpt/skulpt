@@ -46,6 +46,9 @@ Sk.builtin.slice.prototype.indices = function(length)
     {
         if (start === null) start = 0;
         if (stop === null) stop = length;
+        if (stop > length) {
+            stop = length;
+        }
         if (start < 0) {
             start = length + start;
             if (start < 0) {
@@ -57,9 +60,18 @@ Sk.builtin.slice.prototype.indices = function(length)
     else
     {
         if (start === null) start = length - 1;
-        else if (start < 0) start = length + start;
-        if (stop === null) stop = -1;
-        else if (stop < 0) stop = length + stop;
+        if (start >= length) {
+            start = length - 1;
+        }
+        if (stop === null) {
+            stop = -1;
+        } else if (stop < 0) {
+            stop = length + stop;
+            if (stop < 0) {
+                stop = -1;
+            }
+        }
+        if (start < 0) start = length + start;
     }
     return [start, stop, step];
 };
