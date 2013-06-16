@@ -1559,9 +1559,7 @@ function parsenumber(c, s, lineno)
     
     // todo; we don't currently distinguish between int and float so
     // str is wrong for these.
-    if (s.indexOf('.') !== -1
-        || s.indexOf('e') !== -1
-        || s.indexOf('E') !== -1)
+    if (s.indexOf('.') !== -1)
     {
         return parseFloat(s);
     }
@@ -1579,6 +1577,9 @@ function parsenumber(c, s, lineno)
         // Hex
         tmp = tmp.substring(2);
         val = parseInt(tmp, 16);
+    } else if ((s.indexOf('e') !== -1) || (s.indexOf('E') !== -1)) {
+	// Float with exponent (needed to make sure e/E wasn't hex first)
+	return parseFloat(s);
     } else if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'b' || tmp.charAt(1) === 'B')) {
         // Binary
         tmp = tmp.substring(2);
