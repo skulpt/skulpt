@@ -503,6 +503,8 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
 
     if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) rhs = new Sk.builtin.tuple([rhs]);
     
+    var default_float_precision = 6;
+
     // general approach is to use a regex that matches the format above, and
     // do an re.sub with a function as replacement to make the subs.
 
@@ -634,10 +636,13 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             case 'X':
                 return handleWidth(formatNumber(value, 16)).toUpperCase();
 
-            case 'e':
-            case 'E':
             case 'f':
             case 'F':
+                if (precision === undefined) {
+                    precision = default_float_precision;
+                }
+            case 'e':
+            case 'E':
             case 'g':
             case 'G':
                 var convName = ['toExponential', 'toFixed', 'toPrecision']['efg'.indexOf(conversionType.toLowerCase())];
