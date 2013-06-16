@@ -301,10 +301,13 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
     if (on === null) {
         str = str.trim();
     } else {
-        regex = new RegExp(on.v, "g");
+	// Escape special characters in "on" so we can use a regexp
+	var s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
+        regex = new RegExp(s, "g");
     }
 
-    // This is almost identical to re.split, excpet how the regexp is constructed
+    // This is almost identical to re.split, 
+    // except how the regexp is constructed
 
     var result = [];
     var match;
