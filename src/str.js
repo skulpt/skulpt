@@ -299,7 +299,7 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
     var regex = /[\s]+/g;
     var str = self.v;
     if (on === null) {
-        str = str.trim();
+        str = str.trimLeft();
     } else {
 	// Escape special characters in "on" so we can use a regexp
 	var s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
@@ -325,7 +325,10 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
             break;
         }
     }
-    result.push(new Sk.builtin.str(str.substring(index)));
+    str = str.substring(index);
+    if (on !== null || (str.length > 0)) {
+        result.push(new Sk.builtin.str(str));
+    }
 
     return new Sk.builtin.list(result);
 });
