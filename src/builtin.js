@@ -456,6 +456,18 @@ Sk.builtin.hash = function hash(value)
     {
         return value;
     }
+    else if (value === null)
+    {
+	return 0;  // what should this be?
+    }
+    else if (value === true)
+    {
+	return 1;
+    }
+    else if (value === false)
+    {
+	return 0;
+    }
 
     return (typeof value) + ' ' + String(value);
     // todo; throw properly for unhashable types
