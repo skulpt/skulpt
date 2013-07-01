@@ -200,12 +200,14 @@ MersenneTwister.prototype.genrand_res53 = function() {
 
 var $builtinmodule = function(name)
 {
+
     var mod = {};
 
     var myGenerator = new MersenneTwister();
 
     mod.seed = new Sk.builtin.func(function(x) {
         Sk.builtin.pyCheckArgs("seed", arguments, 0, 1);
+	x = Sk.builtin.asnum$(x);
 
         if (arguments.length > 0)
             myGenerator = new MersenneTwister(x);
@@ -282,6 +284,8 @@ var $builtinmodule = function(name)
         Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
         Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
 
+	a = Sk.builtin.asnum$(a);
+	b = Sk.builtin.asnum$(b);
         return randrange(a, b+1);
     });
 
@@ -295,6 +299,9 @@ var $builtinmodule = function(name)
             Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
         };            
 
+	start = Sk.builtin.asnum$(start);
+	stop = Sk.builtin.asnum$(stop);
+	step = Sk.builtin.asnum$(step);
         return randrange(start, stop, step);
     });
 

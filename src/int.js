@@ -62,7 +62,7 @@ Sk.str2number = function(s, base, parser, negater, fname)
 	}
     }
     else if ( s.charAt(0) == '0' ) {
-	if (s == '0') return 0;
+	if (s == '0') return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
 	if (base == 8 || base == 0) {
 	    base = 8;
 	}
@@ -102,13 +102,15 @@ Sk.str2number = function(s, base, parser, negater, fname)
     if (neg) {
 	val = negater(val);
     }
-    return val;
+    val = Sk.builtin.asnum$(val);
+	return new Sk.builtin.nmber(val, Sk.builtin.nmber.int$);
 }
 
 Sk.builtin.int_ = function(x, base)
 {
     if (x instanceof Sk.builtin.str)
     {
+		base = Sk.builtin.asnum$(base);
         var val = Sk.str2number(x.v, base, parseInt, 
                                 function(x){return -x;}, "int");
         if ((val > Sk.builtin.lng.threshold$) 
@@ -116,9 +118,10 @@ Sk.builtin.int_ = function(x, base)
         {
             // Too big for int, convert to long
             val = new Sk.builtin.lng(x, base);
+
         }
 
-        return val;
+        return new Sk.builtin.nmber(val, Sk.builtin.nmber.int$);
     }
 
     if (base !== undefined) {
@@ -127,12 +130,16 @@ Sk.builtin.int_ = function(x, base)
 
     if (x instanceof Sk.builtin.lng)
     {
-	return x.toInt$();
+	if (x.cantBeInt())
+	    return new Sk.builtin.lng(x);
+	else
+	    return new Sk.builtin.nmber(x.toInt$(), Sk.builtin.nmber.int$);
     }
 
     // sneaky way to do truncate, floor doesn't work < 0, round doesn't work on the .5> side
     // bitwise ops convert to 32bit int in the "C-truncate-way" we want.
-    return x | 0;
+    x = Sk.builtin.asnum$(x);
+    return new Sk.builtin.nmber(x | 0, Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.int_.prototype.tp$name = "int";

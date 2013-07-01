@@ -9,10 +9,9 @@ Sk.builtin.list = function(L)
 
     if (L === undefined)
     {
-        L = [];
+            this.v = [];
     }
-
-    if (Object.prototype.toString.apply(L) === '[object Array]')
+    else if (Object.prototype.toString.apply(L) === '[object Array]')
     {
         this.v = L;
     }
@@ -87,6 +86,7 @@ Sk.builtin.list.prototype.list_del_slice_ = function(ilow, ihigh)
 
 Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 {
+	i = Sk.builtin.asnum$(i);
     if (i < 0 || i >= this.v.length)
         throw new Sk.builtin.IndexError("list assignment index out of range");
     this.v[i] = v;
@@ -94,6 +94,9 @@ Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 
 Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 {
+	ilow = Sk.builtin.asnum$(ilow);
+	ihigh = Sk.builtin.asnum$(ihigh);
+
     // todo; item rather list/null
     var args = v.v.slice(0);
     args.unshift(ihigh - ilow);
@@ -175,6 +178,7 @@ Sk.builtin.list.prototype.sq$length = function() { return this.v.length; };
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
 Sk.builtin.list.prototype.sq$repeat = function(n)
 {
+	n = Sk.builtin.asnum$(n);
     var ret = [];
     for (var i = 0; i < n; ++i)
         for (var j = 0; j < this.v.length; ++j)
@@ -220,6 +224,16 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
     }
 
     throw new TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
+};
+
+Sk.builtin.list.prototype.list_ass_item_ = function(i, value)
+{
+	i = Sk.builtin.asnum$(i);
+    if (i < 0 || i >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
+    if (value === null)
+        this.list_ass_slice_(i, i+1, value);
+    else
+        this.v[i] = value;
 };
 
 Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
@@ -315,6 +329,7 @@ Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
         throw new Sk.builtin.TypeError("an integer is required");
     };
 
+	i = Sk.builtin.asnum$(i);
     if (i < 0) i = 0;
     else if (i > self.v.length) i = self.v.length;
     self.v.splice(i, 0, x);
@@ -353,9 +368,11 @@ Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
         throw new Sk.builtin.TypeError("an integer is required");
     };
 
+    i = Sk.builtin.asnum$(i);
     if ((i < 0) || (i >= self.v.length)) {
         throw new Sk.builtin.IndexError("pop index out of range");
     };
+
     var ret = self.v[i];
     self.v.splice(i, 1);
     return ret;
@@ -419,9 +436,12 @@ Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(function(self)
 Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key, reverse)
 {
     goog.asserts.assert(!key, "todo;");
-    goog.asserts.assert(!reverse, "todo;");
-    Sk.mergeSort(self.v, cmp);
+    Sk.mergeSort(self.v, cmp, key, reverse);
     return null;
 });
 
+// Make sure that key/value variations of lst.sort() work
+// See issue 45 on github as to possible alternate approaches to this and
+// why this was chosen - csev
+Sk.builtin.list.prototype['sort'].func_code['co_varnames']=['__self__','cmp', 'key', 'reverse'];
 goog.exportSymbol("Sk.builtin.list", Sk.builtin.list);

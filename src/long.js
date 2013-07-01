@@ -20,15 +20,22 @@ Sk.builtin.lng = function(x, base)	/* long is a reserved word */
 	return Sk.longFromStr(x, base);
     else if (x instanceof Sk.builtin.str)
 	return Sk.longFromStr(x.v, base);
-    else
+    else {
+	x = Sk.builtin.asnum$nofloat(x);
 	this.biginteger = new Sk.builtin.biginteger(x);
+    }
 
     return this;
 };
 
 Sk.builtin.lng.tp$index = function()
 {
-    goog.asserts.fail("todo;");
+    return parseInt(this.str$(10, true), 10);
+};
+
+Sk.builtin.lng.tp$hash = function()
+{
+    return 'number ' + this.str$(10, true);
 };
 
 Sk.builtin.lng.prototype.tp$name = "long";
@@ -37,29 +44,36 @@ Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.bu
 //	Threshold to determine when types should be converted to long
 Sk.builtin.lng.threshold$ = Math.pow(2, 53);
 
-Sk.builtin.lng.LONG_DIVIDE$ = 0;
-Sk.builtin.lng.FLOAT_DIVIDE$ = -1;
-Sk.builtin.lng.VARIABLE_DIVIDE$ = -2;
-// Positive values reserved for scaled, fixed precision big number implementations where mode = number of digits to the right of the decimal
-Sk.builtin.lng.dividemode$ = Sk.builtin.lng.LONG_DIVIDE$;
+Sk.builtin.lng.MAX_INT$ = new Sk.builtin.lng(Sk.builtin.lng.threshold$);
+Sk.builtin.lng.MIN_INT$ = new Sk.builtin.lng(-Sk.builtin.lng.threshold$);
 
-Sk.builtin.lng.longDivideMode = function(m) 
-{
-	if (m) {
-		if (m instanceof Sk.builtin.str) {
-			if (m.v == 'float') m = Sk.builtin.lng.FLOAT_DIVIDE$;
-			else if (m.v == 'long')  m = Sk.builtin.lng.LONG_DIVIDE$;
-			else if (m.v == 'variable') m = Sk.builtin.lng.VARIABLE_DIVIDE$;
-			else goog.asserts.assert(true, "Invalid long division mode.");
-		}
-		Sk.builtin.lng.dividemode$ = m;
-	}
-	if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.FLOAT_DIVIDE$)
-		return new Sk.builtin.str('float');
-	if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.VARIABLE_DIVIDE$)
-		return new Sk.builtin.str('variable');
-	return new Sk.builtin.str('long'); 
-};
+//Sk.builtin.lng.LONG_DIVIDE$ = 0;
+//Sk.builtin.lng.FLOAT_DIVIDE$ = -1;
+//Sk.builtin.lng.VARIABLE_DIVIDE$ = -2;
+//// Positive values reserved for scaled, fixed precision big number implementations where mode = number of digits to the right of the decimal
+//Sk.builtin.lng.dividemode$ = Sk.builtin.lng.LONG_DIVIDE$;
+
+Sk.builtin.lng.prototype.cantBeInt = function() {
+	return (this.longCompare(Sk.builtin.lng.MAX_INT$) > 0) || (this.longCompare(Sk.builtin.lng.MIN_INT$) < 0);
+}
+
+//Sk.builtin.lng.longDivideMode = function(m) 
+//{
+//	if (m) {
+//		if (m instanceof Sk.builtin.str) {
+//			if (m.v == 'float') m = Sk.builtin.lng.FLOAT_DIVIDE$;
+//			else if (m.v == 'long')  m = Sk.builtin.lng.LONG_DIVIDE$;
+//			else if (m.v == 'variable') m = Sk.builtin.lng.VARIABLE_DIVIDE$;
+//			else goog.asserts.assert(true, "Invalid long division mode.");
+//		}
+//		Sk.builtin.lng.dividemode$ = m;
+//	}
+//	if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.FLOAT_DIVIDE$)
+//		return new Sk.builtin.str('float');
+//	if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.VARIABLE_DIVIDE$)
+//		return new Sk.builtin.str('variable');
+//	return new Sk.builtin.str('long'); 
+//};
 
 Sk.builtin.lng.fromInt$ = function(ival) 
 {
@@ -82,7 +96,7 @@ Sk.longFromStr = function(s, base)
 
     var biginteger = Sk.str2number(s, base, parser, function(x){return x.negate();}, "long");
 
-    return new Sk.builtin.lng(biginteger);
+    return new Sk.builtin.lng(Sk.builtin.asnum$(biginteger));
 };
 goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
@@ -98,6 +112,16 @@ Sk.builtin.lng.prototype.clone = function()
 
 Sk.builtin.lng.prototype.nb$add = function(other)
 {
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.float$) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$add(other);
+		} else {
+			//	Promote an int to long
+			other = new Sk.builtin.lng(other.v);
+		}
+	}
+
 	if (other instanceof Sk.builtin.lng) {
 		return new Sk.builtin.lng(this.biginteger.add(other.biginteger));
 	}
@@ -113,6 +137,16 @@ Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
 
 Sk.builtin.lng.prototype.nb$subtract = function(other)
 {
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.float$) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$subtract(other);
+		} else {
+			//	Promote an int to long
+			other = new Sk.builtin.lng(other.v);
+		}
+	}
+
 	if (other instanceof Sk.builtin.lng) {
 		return new Sk.builtin.lng(this.biginteger.subtract(other.biginteger));
 	}
@@ -128,8 +162,22 @@ Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtr
 
 Sk.builtin.lng.prototype.nb$multiply = function(other)
 {
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.float$) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$multiply(other);
+		} else {
+			//	Promote an int to long
+			other = new Sk.builtin.lng(other.v);
+		}
+	}
+
 	if (other instanceof Sk.builtin.lng) {
 		return new Sk.builtin.lng(this.biginteger.multiply(other.biginteger));
+	}
+
+	if (typeof(other) == 'float') {
+		return parseFloat(this.biginteger.toString()) * other;
 	}
 
 	if (other instanceof Sk.builtin.biginteger) {
@@ -143,81 +191,150 @@ Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multi
 
 Sk.builtin.lng.prototype.nb$divide = function(other)
 {
-	var result;
-	if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.FLOAT_DIVIDE$ || Sk.builtin.lng.dividemode$ == Sk.builtin.lng.VARIABLE_DIVIDE$) {
-		if (other instanceof Sk.builtin.lng) {
-			result = this.biginteger.divideAndRemainder(other.biginteger);
-		} else if (other instanceof Sk.builtin.biginteger) {
-			result = this.biginteger.divideAndRemainder(other);
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.float$) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$divide(other);
 		} else {
-			result = this.biginteger.divideAndRemainder(new Sk.builtin.biginteger(other));
-		}
-
-		//	result = Array of quotient [0], remainder [1]
-
-		if (result [1].compare(Sk.builtin.biginteger.ZERO) != 0) {
-			//	Non-zero remainder -- this will be a float no matter what
-			return parseFloat(this.biginteger.toString()) / parseFloat(other.biginteger.toString());
-		} else {
-			//	No remainder
-			if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.FLOAT_DIVIDE$)
-				return parseFloat(result [0].toString());		//	Float option with no remainder, return quotient as float
-			else
-				return new Sk.builtin.lng(result [0]);			//	Variable option with no remainder, return new long from quotient
+			//	Promote an int to long
+			other = new Sk.builtin.lng(other.v);
 		}
 	}
+
+	var result;
+//	if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.FLOAT_DIVIDE$ || Sk.builtin.lng.dividemode$ == Sk.builtin.lng.VARIABLE_DIVIDE$) {
+//		if (other instanceof Sk.builtin.lng) {
+//			result = this.biginteger.divideAndRemainder(other.biginteger);
+//		} else if (other instanceof Sk.builtin.biginteger) {
+//			result = this.biginteger.divideAndRemainder(other);
+//		} else {
+//			result = this.biginteger.divideAndRemainder(new Sk.builtin.biginteger(other));
+//		}
+//
+//		//	result = Array of quotient [0], remainder [1]
+//
+//		if (result [1].compare(Sk.builtin.biginteger.ZERO) != 0) {
+//			//	Non-zero remainder -- this will be a float no matter what
+//			return parseFloat(this.biginteger.toString()) / parseFloat(other.biginteger.toString());
+//		} else {
+//			//	No remainder
+//			if (Sk.builtin.lng.dividemode$ == Sk.builtin.lng.FLOAT_DIVIDE$)
+//				return parseFloat(result [0].toString());		//	Float option with no remainder, return quotient as float
+//			else
+//				return new Sk.builtin.lng(result [0]);			//	Variable option with no remainder, return new long from quotient
+//		}
+//	}
 
 //	Standard, long result mode
-	if (other instanceof Sk.builtin.lng) {
-		result = new Sk.builtin.lng(this.biginteger.divide(other.biginteger));
-	} else if (other instanceof Sk.builtin.biginteger) {
-		result = new Sk.builtin.lng(this.biginteger.divide(other));
-	} else {
-		result = new Sk.builtin.lng(this.biginteger.divide(new Sk.builtin.biginteger(other)));
+
+	if (! (other instanceof Sk.builtin.lng) ) {
+		other = new Sk.builtin.lng(other);
 	}
 
-	return result;
+	//	Special logic to round DOWN towards negative infinity for negative results
+	var thisneg = this.nb$isnegative();
+	var otherneg = other.nb$isnegative();
+	if ((thisneg && !otherneg) || (otherneg && !thisneg)) {
+		result = this.biginteger.divideAndRemainder(other.biginteger);
+		//	If remainder is zero or positive, just return division result
+		if (result[1].trueCompare(Sk.builtin.biginteger.ZERO) == 0) {
+			//	No remainder, just return result
+			return new Sk.builtin.lng(result[0]);
+		} else {
+			//	Reminder... subtract 1 from the result (like rounding to neg infinity)
+			result = result[0].subtract(Sk.builtin.biginteger.ONE);
+			return new Sk.builtin.lng(result);
+		}
+	} else {
+		return new Sk.builtin.lng(this.biginteger.divide(other.biginteger));
+	}
 };
 
 Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
 
 Sk.builtin.lng.prototype.nb$floor_divide = function(other)
 {
-	if (other instanceof Sk.builtin.lng) {
-		return new Sk.builtin.lng(this.biginteger.divide(other.biginteger));
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.float$) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$floor_divide(other);
+		}
 	}
 
-	if (other instanceof Sk.builtin.biginteger) {
-		return new Sk.builtin.lng(this.biginteger.divide(other));
-	}
-
-	return new Sk.builtin.lng(this.biginteger.divide(new Sk.builtin.biginteger(other)));
+	return this.nb$divide(other);
 };
 
 Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
 
 Sk.builtin.lng.prototype.nb$remainder = function(other)
 {
-	if (other instanceof Sk.builtin.lng) {
-		return new Sk.builtin.lng(this.biginteger.remainder(other.biginteger));
+	if (this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) === 0)
+		if (other instanceof Sk.builtin.nmber && other.skType === Sk.builtin.nmber.float$)
+			return new Sk.builtin.nmber(0, Sk.builtin.nmber.float$);
+		else
+			return new Sk.builtin.lng(0);
+
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.float$) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$remainder(other);
+		} else {
+			//	Promote an int to long
+			other = new Sk.builtin.lng(other.v);
+		}
 	}
 
-	if (other instanceof Sk.builtin.biginteger) {
-		return new Sk.builtin.lng(this.biginteger.remainder(other));
+	if (! (other instanceof Sk.builtin.lng) ) {
+		other = new Sk.builtin.lng(other);
 	}
 
-	return new Sk.builtin.lng(this.biginteger.remainder(new Sk.builtin.biginteger(other)));
+	var tmp = new Sk.builtin.lng(this.biginteger.remainder(other.biginteger));
+	if (this.nb$isnegative()) {
+		if (other.nb$ispositive() && tmp.nb$nonzero())
+			tmp = tmp.nb$add(other).nb$remainder(other);
+	} else {
+		if (other.nb$isnegative() && tmp.nb$nonzero())
+			tmp = tmp.nb$add(other);
+	}
+	return tmp;
+
 };
 
 Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
 Sk.builtin.lng.prototype.nb$power = function(n)
 {
+	if (typeof n === "number") {
+		if (n < 0) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$power(n);
+		} else
+			return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(n)));
+	}
+
+	if (n instanceof Sk.builtin.nmber) {
+		if (n.skType === Sk.builtin.nmber.float$ || n.v < 0) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$power(n);
+		} else {
+			//	Promote an int to long
+			n = new Sk.builtin.lng(n.v);
+		}
+	}
+
 	if (n instanceof Sk.builtin.lng) {
-		return new Sk.builtin.lng(this.biginteger.pow(n.biginteger));
+		if (n.nb$isnegative()) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$power(n);
+		} else
+			return new Sk.builtin.lng(this.biginteger.pow(n.biginteger));
 	}
 
 	if (n instanceof Sk.builtin.biginteger) {
+		if (n.isnegative()) {
+			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+			return thisAsFloat.nb$power(n);
+		}
 		return new Sk.builtin.lng(this.biginteger.pow(n));
 	}
 
@@ -319,96 +436,89 @@ Sk.builtin.lng.prototype.nb$negative = function()
 	return new Sk.builtin.lng(this.biginteger.negate());
 };
 
-Sk.builtin.lng.prototype.nb$positive = function() { return this; };
+Sk.builtin.lng.prototype.nb$positive = function() { return this.clone(); };
 
 Sk.builtin.lng.prototype.nb$nonzero = function()
 {
-	return this.biginteger.compare(Sk.builtin.biginteger.ZERO) !== 0;
+	return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) !== 0;
 };
 
-Sk.builtin.lng.prototype.compare = function(other)
+Sk.builtin.lng.prototype.nb$isnegative = function()
 {
-	if (other instanceof Sk.builtin.lng) {
-		return this.biginteger.compare(other.biginteger);
+	return this.biginteger.isnegative();
+	//return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) < 0;
+};
+
+Sk.builtin.lng.prototype.nb$ispositive = function()
+{
+	return ! this.biginteger.isnegative();
+	//return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) >= 0;
+};
+
+Sk.builtin.lng.prototype.longCompare = function(other)
+{
+	if (typeof other === "boolean")
+		if (other)
+			other = 1;
+		else
+			other = 0;
+
+	var tmp;
+
+	if (typeof other === "number") {
+		other = new Sk.builtin.lng(other);
 	}
 
-	if (other instanceof Sk.builtin.biginteger) {
-		return this.biginteger.compare(other);
+	if (other instanceof Sk.builtin.nmber) {
+		if (other.skType === Sk.builtin.nmber.int$ || other.v % 1 == 0) {
+			var otherAsLong = new Sk.builtin.lng(other.v);
+			return this.longCompare(otherAsLong);
+		} else {
+			var thisAsFloat = new Sk.builtin.nmber(this, Sk.builtin.nmber.float$);
+			return thisAsFloat.numberCompare(other);
+		}
 	}
 
-	return this.biginteger.compare(new Sk.builtin.biginteger(other));
+	else if (other instanceof Sk.builtin.lng) {
+//		tmp = this.biginteger.trueCompare(other.biginteger);
+		tmp = this.biginteger.subtract(other.biginteger);
+	}
+
+	else if (other instanceof Sk.builtin.biginteger) {
+//		tmp = this.biginteger.trueCompare(other);
+		tmp = this.biginteger.subtract(other);
+	}
+
+	else {
+//		tmp = this.biginteger.trueCompare(new Sk.builtin.biginteger(other));
+		tmp = this.biginteger.subtract(new Sk.builtin.biginteger(other));
+	}
+
+	return Sk.builtin.asnum$(tmp);
 }
 
 Sk.builtin.lng.prototype.__eq__ = function(me, other) {
-	if (other instanceof Sk.builtin.lng) {
-		return me.biginteger.compare(other.biginteger) == 0;
-	}
-
-	if (other instanceof Sk.builtin.biginteger) {
-		return me.biginteger.compare(other) == 0;
-	}
-
-	return me.biginteger.compare(new Sk.builtin.biginteger(other)) == 0;
+	return me.longCompare(other) == 0;
 };
 
 Sk.builtin.lng.prototype.__ne__ = function(me, other) {
-	if (other instanceof Sk.builtin.lng) {
-		return me.biginteger.compare(other.biginteger) != 0;
-	}
-
-	if (other instanceof Sk.builtin.biginteger) {
-		return me.biginteger.compare(other) != 0;
-	}
-
-	return me.biginteger.compare(new Sk.builtin.biginteger(other)) != 0;
+	return me.longCompare(other) != 0;
 };
 
 Sk.builtin.lng.prototype.__lt__ = function(me, other) {
-	if (other instanceof Sk.builtin.lng) {
-		return me.biginteger.compare(other.biginteger) < 0;
-	}
-
-	if (other instanceof Sk.builtin.biginteger) {
-		return me.biginteger.compare(other) < 0;
-	}
-
-	return me.biginteger.compare(new Sk.builtin.biginteger(other)) < 0;
+	return me.longCompare(other) < 0;
 };
 
 Sk.builtin.lng.prototype.__le__ = function(me, other) {
-	if (other instanceof Sk.builtin.lng) {
-		return me.biginteger.compare(other.biginteger) <= 0;
-	}
-
-	if (other instanceof Sk.builtin.biginteger) {
-		return me.biginteger.compare(other) <= 0;
-	}
-
-	return me.biginteger.compare(new Sk.builtin.biginteger(other)) <= 0;
+	return me.longCompare(other) <= 0;
 };
 
 Sk.builtin.lng.prototype.__gt__ = function(me, other) {
-	if (other instanceof Sk.builtin.lng) {
-		return me.biginteger.compare(other.biginteger) > 0;
-	}
-
-	if (other instanceof Sk.builtin.biginteger) {
-		return me.biginteger.compare(other) > 0;
-	}
-
-	return me.biginteger.compare(new Sk.builtin.biginteger(other)) > 0;
+	return me.longCompare(other) > 0;
 };
 
 Sk.builtin.lng.prototype.__ge__ = function(me, other) {
-	if (other instanceof Sk.builtin.lng) {
-		return me.biginteger.compare(other.biginteger) >= 0;
-	}
-
-	if (other instanceof Sk.builtin.biginteger) {
-		return me.biginteger.compare(other) >= 0;
-	}
-
-	return me.biginteger.compare(new Sk.builtin.biginteger(other)) >= 0;
+	return me.longCompare(other) >= 0;
 };
 
 Sk.builtin.lng.prototype['$r'] = function()

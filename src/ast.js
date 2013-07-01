@@ -1005,6 +1005,17 @@ function astForFlowStmt(c, n)
                 return new Return_(null, n.lineno, n.col_offset);
             else
                 return new Return_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+        case SYM.quit_stmt:
+            if (NCH(ch) === 1)
+                return new Quit_(null, n.lineno, n.col_offset);
+            else
+                return new Quit_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+        case SYM.exit_stmt:
+            if (NCH(ch) === 1)
+                return new Exit_(null, n.lineno, n.col_offset);
+            else
+                return new Exit_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+
         case SYM.raise_stmt:
             if (NCH(ch) === 1)
                 return new Raise(null, null, null, n.lineno, n.col_offset);
@@ -1449,11 +1460,11 @@ function parsestr(c, s)
         var ret = '';
         for (var i = 0; i < len; ++i)
         {
-            var c = s[i];
+            var c = s.charAt(i);
             if (c === '\\')
             {
                 ++i;
-                c = s[i];
+                c = s.charAt(i);
                 if (c === 'n') ret += "\n";
                 else if (c === '\\') ret += "\\";
                 else if (c === 't') ret += "\t";
@@ -1467,16 +1478,16 @@ function parsestr(c, s)
                 else if (c === '\n') /* escaped newline, join lines */ {}
                 else if (c === 'x')
                 {
-                    var d0 = s[++i];
-                    var d1 = s[++i];
+                    var d0 = s.charAt(++i);
+                    var d1 = s.charAt(++i);
                     ret += String.fromCharCode(parseInt(d0+d1, 16));
                 }
                 else if (c === 'u' || c === 'U')
                 {
-                    var d0 = s[++i];
-                    var d1 = s[++i];
-                    var d2 = s[++i];
-                    var d3 = s[++i];
+                    var d0 = s.charAt(++i);
+                    var d1 = s.charAt(++i);
+                    var d2 = s.charAt(++i);
+                    var d3 = s.charAt(++i);
                     ret += String.fromCharCode(parseInt(d0+d1, 16), parseInt(d2+d3, 16));
                 }
                 else
@@ -1561,7 +1572,7 @@ function parsenumber(c, s, lineno)
     // str is wrong for these.
     if (s.indexOf('.') !== -1)
     {
-        return parseFloat(s);
+        return new Sk.builtin.nmber(parseFloat(s), Sk.builtin.nmber.float$);
     }
 
     // Handle integers of various bases
@@ -1579,7 +1590,7 @@ function parsenumber(c, s, lineno)
         val = parseInt(tmp, 16);
     } else if ((s.indexOf('e') !== -1) || (s.indexOf('E') !== -1)) {
 	// Float with exponent (needed to make sure e/E wasn't hex first)
-	return parseFloat(s);
+	return new Sk.builtin.nmber(parseFloat(s), Sk.builtin.nmber.float$);
     } else if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'b' || tmp.charAt(1) === 'B')) {
         // Binary
         tmp = tmp.substring(2);
@@ -1612,9 +1623,9 @@ function parsenumber(c, s, lineno)
 
     // Small enough, return parsed number
     if (neg) {
-        return -val;
+        return new Sk.builtin.nmber(-val, Sk.builtin.int$);
     } else {
-        return val;
+        return new Sk.builtin.nmber(val, Sk.builtin.int$);
     }
 }
 

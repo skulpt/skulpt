@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.6
 
-# 
+#
 #   Note:  python2.6 is specified because that is what the skulpt parser
 #          used as a reference.  This is only important when you are doing
 #          things like regenerating tests and/or regenerating symtabs
@@ -24,7 +24,8 @@ except:
     print "GitPython is not installed for Python 2.6"
     print "dist will not work without it.  Get it using pip or easy_install"
     print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
-    print "+-----------------------------------------------------------------------------+"
+    print "+----------------------------------------------------------------------------+"
+
 # order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
@@ -48,6 +49,7 @@ Files = [
         'src/tuple.js',
         'src/dict.js',
         'src/biginteger.js',
+        'src/number.js',
         'src/long.js',
         'src/bool.js',
         'src/int.js',
@@ -91,7 +93,7 @@ def isClean():
 def getTip():
     repo = Repo(".")
     return repo.head.commit.hexsha
-    
+
 
 def getFileList(type):
     ret = []
@@ -138,11 +140,11 @@ def debugbrowser():
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
         <title>Skulpt test</title>
-        <link rel="stylesheet" href="../closure-library/closure/goog/demos/css/demo.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menu.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuitem.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuseparator.css"> 
-        <link rel="stylesheet" href="../closure-library/closure/goog/css/combobox.css"> 
+        <link rel="stylesheet" href="../closure-library/closure/goog/demos/css/demo.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menu.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuitem.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/menuseparator.css">
+        <link rel="stylesheet" href="../closure-library/closure/goog/css/combobox.css">
         <style>
             .type { font-size:14px; font-weight:bold; font-family:arial; background-color:#f7f7f7; text-align:center }
         </style>
@@ -151,7 +153,7 @@ def debugbrowser():
     </head>
 
     <body onload="testsMain()">
-        <canvas id="__webglhelpercanvas" style="border: none;" width="500" height="500"></canvas> 
+        <canvas id="__webglhelpercanvas" style="border: none;" width="500" height="500"></canvas>
         <table>
         <tr>
             <td>
@@ -176,7 +178,7 @@ def debugbrowser():
     for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js" ] + TestFiles:
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
- 
+
     with open("support/tmp/test.html", "w") as f:
         print >>f, tmpl % '\n'.join(scripts)
 
@@ -318,7 +320,7 @@ def getBuiltinsAsJson():
 
 def dist():
     """builds a 'shippable' version of Skulpt.
-    
+
     this is all combined into one file, tests run, jslint'd, compressed.
     """
 
@@ -348,8 +350,12 @@ def dist():
         os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
 
+    # make combined version
+    #uncompfn = "dist/skulpt-uncomp.js"
     compfn = "dist/skulpt.js"
     builtinfn = "dist/builtin.js"
+    #open(uncompfn, "w").write(combined)
+    #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
 
     #buildBrowserTests()
 
@@ -363,12 +369,12 @@ def dist():
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
     print ". Compressing..."
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn)) 
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn))
     # to disable asserts
-    # --define goog.DEBUG=false 
+    # --define goog.DEBUG=false
     #
     # to make a file that for ff plugin, not sure of format
-    # --create_source_map dist/srcmap.txt 
+    # --create_source_map dist/srcmap.txt
     #
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     #
@@ -423,9 +429,9 @@ def regenparser():
     # sanity check that they at least parse
     #os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/astnodes.js")
 
-def regenasttests():
+def regenasttests(togen="test/run/*.py"):
     """regenerate the ast test files by running our helper script via real python"""
-    for f in glob.glob("test/run/*.py"):
+    for f in glob.glob(togen):
         transname = f.replace(".py", ".trans")
         os.system("python test/astppdump.py %s > %s" % (f, transname))
         forcename = f.replace(".py", ".trans.force")
@@ -435,9 +441,9 @@ def regenasttests():
             os.system("python %s %s" % (crlfprog, transname))
 
 
-def regenruntests():
+def regenruntests(togen="test/run/*.py"):
     """regenerate the test data by running the tests on real python"""
-    for f in glob.glob("test/run/*.py"):
+    for f in glob.glob(togen):
         os.system("python %s > %s.real 2>&1" % (f, f))
         forcename = f + ".real.force"
         if os.path.exists(forcename):
@@ -503,9 +509,9 @@ def symtabdump(fn):
         return ret
     return getidents(mod)
 
-def regensymtabtests():
+def regensymtabtests(togen="test/run/*.py"):
     """regenerate the test data by running the symtab dump via real python"""
-    for fn in glob.glob("test/run/*.py"):
+    for fn in glob.glob(togen):
         outfn = "%s.symtab" % fn
         f = open(outfn, "wb")
         f.write(symtabdump(fn))
@@ -527,7 +533,7 @@ def docbi():
         f.write(getBuiltinsAsJson())
         print ". Wrote %s" % builtinfn
 
-def run(fn, shell="", opt=False):
+def run(fn, shell="", opt=False, p3=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -535,15 +541,19 @@ def run(fn, shell="", opt=False):
         os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
     modname = os.path.splitext(os.path.basename(fn))[0]
+    if p3:
+        p3on = 'true'
+    else:
+        p3on = 'false'
     f.write("""
 var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read});
+Sk.configure({syspath:["%s"], read:read, python3:%s});
 Sk.importMain("%s", true);
 print("-----");
-    """ % (fn, os.path.split(fn)[0], modname))
+    """ % (fn, os.path.split(fn)[0], p3on, modname))
     f.close()
     if opt:
         os.system("%s dist/skulpt.js support/tmp/run.js" % jsengine)
@@ -555,6 +565,9 @@ print("-----");
 
 def runopt(fn):
     run(fn, "", True)
+
+def run3(fn):
+    run(fn,p3=True)
 
 def shell(fn):
     run(fn, "--shell")
@@ -570,12 +583,18 @@ def nrt():
             else:
                 editor = 'vim'
             os.system(editor + ' ' + fn)
-            print "don't forget to ./m regentests"
+            if os.path.exists(fn):
+                print "Generating tests for %s" % fn
+                regensymtabtests(fn)
+                regenasttests(fn)
+                regenruntests(fn)
+            else:
+                print "run ./m regentests t%02d.py" % i
             break
 
 def vmwareregr(names):
     """todo; not working yet.
-    
+
     run unit tests via vmware on a bunch of browsers"""
 
     xp = "/data/VMs/xpsp3/xpsp3.vmx"
@@ -611,7 +630,7 @@ def regengooglocs():
 
     # from calcdeps.py
     prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
-    
+
     # walk whole tree, find all the 'provide's in a file, and note the location
     root = "support/closure-library/closure"
     modToFile = {}
@@ -674,11 +693,11 @@ Where command is one of:
 
         run   -- given a .py file run it using skulpt  ./m run myprog.py
         test  -- run all test cases in test/run
-        dist  -- create skulpt.js and builtin.js  with -u also build 
+        dist  -- create skulpt.js and builtin.js  with -u also build
                  uncompressed skulpt for debugging
         docbi -- regenerate builtin.js only and copy to doc/static
 
-        regenparser      -- regenerate parser tests 
+        regenparser      -- regenerate parser tests
         regenasttests    -- regen abstract symbol table tests
         regenruntests    -- regenerate runtime unit tests
         regensymtabtests -- regenerate symbol table tests
@@ -690,13 +709,14 @@ Where command is one of:
         nrt     -- generate a file for a new test case
         runopt  -- run a .py file optimized
         browser -- run all tests in the browser
-        shell   -- run a python program but keep a shell open (like python -i) 
+        shell   -- run a python program but keep a shell open (like python -i)
                    ./m shell myprog.py
         vfs -- Build a virtual file system to support skulpt read tests
 
         debugbrowser  -- debug in the browser -- open your javascript console
         '''
         sys.exit(1)
+
     if len(sys.argv) < 2:
         cmd = "test"
     else:
@@ -708,15 +728,22 @@ Where command is one of:
     elif cmd == "regengooglocs":
         regengooglocs()
     elif cmd == "regentests":
-        regensymtabtests()
-        regenasttests()
-        regenruntests()
+        if len(sys.argv) > 2:
+            togen = "test/run/"+sys.argv[2]
+        else:
+            togen = "test/run/*.py"
+        print "generating tests for ", togen
+        regensymtabtests(togen)
+        regenasttests(togen)
+        regenruntests(togen)
     elif cmd == "regensymtabtests":
         regensymtabtests()
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "runopt":
         runopt(sys.argv[2])
+    elif cmd == "run3":
+        run3(sys.argv[2])
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":

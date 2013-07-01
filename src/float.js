@@ -2,34 +2,37 @@ Sk.builtin.float_ = function(x)
 {
     if (x === undefined)
     {
-        return 0.0;
+        return new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
     }
 
     if (x instanceof Sk.builtin.str)
     {
-        if (x.v === "inf") return Infinity;
-        if (x.v === "-inf") return -Infinity;
-        if (!isNaN(x.v))
-            return parseFloat(x.v);
+		var tmp;
+        if (x.v === "inf") tmp = Infinity;
+        else if (x.v === "-inf") tmp = -Infinity;
+        else if (!isNaN(x.v))
+            tmp = parseFloat(x.v);
         else {
             throw new Sk.builtin.ValueError("float: Argument: " + x.v + " is not number");
         }
+		return new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
     }
 
     // Floats are just numbers
-    if (typeof x === "number")
+    if (typeof x === "number" || x instanceof Sk.builtin.nmber)
     {
-        return x;   
+	x = Sk.builtin.asnum$(x);
+        return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
     }
 
     // Convert booleans
     if (x === true) 
     {
-        return 1.0;
+        return new Sk.builtin.nmber(1.0, Sk.builtin.nmber.float$);
     }
     if (x === false)
     {
-        return 0.0;
+        return new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");

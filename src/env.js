@@ -30,9 +30,16 @@ Sk.configure = function(options)
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 
+    Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;											// RNL
+    goog.asserts.assert(typeof Sk.timeoutMsg === "function");										// RNL
+	goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
     goog.asserts.assert(goog.isArrayLike(Sk.sysargv));
 
+    Sk.python3 = options["python3"] || Sk.python3;
+    goog.asserts.assert(typeof Sk.python3 === "boolean");
+    
     if (options["syspath"])
     {
         Sk.syspath = options["syspath"];
@@ -46,6 +53,12 @@ Sk.configure = function(options)
     Sk.misceval.softspace_ = false;
 };
 goog.exportSymbol("Sk.configure", Sk.configure);
+
+/*
+*	Replaceable message for message timeouts
+*/
+Sk.timeoutMsg=function() { return "Program exceeded run time limit."; }
+goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
 /*
  * Replacable output redirection (called from print, etc).
@@ -106,6 +119,10 @@ if (!Sk.inBrowser)
         }
     };
 }
+
+
+Sk.python3 = false;
+goog.exportSymbol("Sk.python3",Sk.python3)
 
 goog.require("goog.asserts");
 

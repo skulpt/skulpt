@@ -69,8 +69,8 @@ Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
         case "Add": return obj.nb$inplace_add;
         case "Sub": return obj.nb$inplace_subtract;
         case "Mult": return obj.nb$inplace_multiply;
-        case "Div": return obj.nb$divide;
-        case "FloorDiv": return obj.nb$floor_divide;
+        case "Div": return obj.nb$inplace_divide;
+        case "FloorDiv": return obj.nb$inplace_floor_divide;
         case "Mod": return obj.nb$inplace_remainder;
         case "Pow": return obj.nb$inplace_power;
         case "LShift": return obj.nb$inplace_lshift;
@@ -87,9 +87,9 @@ Sk.abstr.binary_op_ = function(v, w, opname)
     var vop = Sk.abstr.boNameToSlotFunc_(v, opname);
     if (vop !== undefined)
     {	
-		if (vop.call)
+		if (vop.call) {
         	ret = vop.call(v, w);
-		else {  // assume that vop is an __xxx__ type method
+		} else {  // assume that vop is an __xxx__ type method
 			ret = Sk.misceval.callsim(vop,v,w)
 		}
         if (ret !== undefined) return ret;
@@ -97,9 +97,9 @@ Sk.abstr.binary_op_ = function(v, w, opname)
     var wop = Sk.abstr.boNameToSlotFunc_(w, opname);
     if (wop !== undefined)
     {
-		if (wop.call)
+		if (wop.call) {
         	ret = wop.call(w, v);
-		else { // assume that wop is an __xxx__ type method
+		} else { // assume that wop is an __xxx__ type method
 			ret = Sk.misceval.callsim(wop,w,v)
 		}
         if (ret !== undefined) return ret;
@@ -121,13 +121,21 @@ Sk.abstr.binary_iop_ = function(v, w, opname)
     var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
     if (vop !== undefined)
     {
-        ret = vop.call(v, w);
+	if (vop.call) {
+            ret = vop.call(v, w);
+	} else {  // assume that vop is an __xxx__ type method
+	    ret = Sk.misceval.callsim(vop,v,w);	//	added to be like not-in-place... is this okay?
+		}
         if (ret !== undefined) return ret;
     }
     var wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
     if (wop !== undefined)
     {
-        ret = wop.call(w, v);
+	if (wop.call) {
+            ret = wop.call(w, v);
+	} else { // assume that wop is an __xxx__ type method
+	    ret = Sk.misceval.callsim(wop,w,v);	//	added to be like not-in-place... is this okay?
+		}
         if (ret !== undefined) return ret;
     }
 
@@ -174,12 +182,22 @@ Sk.abstr.numOpAndPromote = function(a, b, opfn)
 	else if (a === undefined || b === undefined) {
 		throw new Sk.builtin.NameError('Undefined variable in expression')
 	}
-    else if (a.constructor === Sk.builtin.lng && typeof b === "number")
-        return [a, Sk.builtin.lng.fromInt$(b)];
-    else if (b.constructor === Sk.builtin.lng && typeof a === "number")
-        return [Sk.builtin.lng.fromInt$(a), b];
 
-    return undefined;
+	if (a.constructor === Sk.builtin.lng) {
+//		if (b.constructor == Sk.builtin.nmber)
+//			if (b.skType == Sk.builtin.nmber.float$) {
+//				var tmp = new Sk.builtin.nmber(a.tp$str(), Sk.builtin.nmber.float$);
+//				return [tmp, b];
+//			} else
+//				return [a, b.v];
+		return [a, b];
+	} else if (a.constructor === Sk.builtin.nmber) {
+		return [a, b];
+	} else if (typeof a === "number") {
+		var tmp = new Sk.builtin.nmber(a, undefined);
+		return [tmp, b];
+	} else
+		return undefined;
 };
 
 Sk.abstr.boNumPromote_ = {
@@ -261,6 +279,14 @@ Sk.abstr.numberBinOp = function(v, w, op)
         {
             return tmp;
         }
+		else if (tmp !== undefined &&  tmp.constructor === Sk.builtin.nmber)
+		{
+            return tmp;
+		}
+		else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng)
+		{
+            return tmp;
+		}
         else if (tmp !== undefined)
         {
             v = tmp[0];
@@ -282,6 +308,14 @@ Sk.abstr.numberInplaceBinOp = function(v, w, op)
         {
             return tmp;
         }
+		else if (tmp !== undefined &&  tmp.constructor === Sk.builtin.nmber)
+		{
+            return tmp;
+		}
+		else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng)
+		{
+            return tmp;
+		}
         else if (tmp !== undefined)
         {
             v = tmp[0];
@@ -326,6 +360,7 @@ goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
 Sk.abstr.fixSeqIndex_ = function(seq, i)
 {
+    i = Sk.builtin.asnum$(i);
     if (i < 0 && seq.sq$length)
         i += seq.sq$length();
     return i;
@@ -371,6 +406,7 @@ Sk.abstr.sequenceDelItem = function(seq, i)
 
 Sk.abstr.sequenceRepeat = function(f, seq, n)
 {
+    n = Sk.builtin.asnum$(n);
     var count = Sk.misceval.asIndex(n);
     if (count === undefined)
     {

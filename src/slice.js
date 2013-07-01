@@ -6,6 +6,9 @@
  */
 Sk.builtin.slice = function slice(start, stop, step)
 {
+	start = Sk.builtin.asnum$(start);
+	stop  = Sk.builtin.asnum$(stop);
+	step  = Sk.builtin.asnum$(step);
     if (!(this instanceof Sk.builtin.slice)) return new Sk.builtin.slice(start, stop, step);
 
     if (stop === undefined && step === undefined)
@@ -39,6 +42,7 @@ Sk.builtin.slice.prototype.tp$str = function()
 
 Sk.builtin.slice.prototype.indices = function(length)
 {
+	length = Sk.builtin.asnum$(length);
     // this seems ugly, better way?
     var start = this.start, stop = this.stop, step = this.step, i;
     if (step === null) step = 1;
@@ -78,17 +82,18 @@ Sk.builtin.slice.prototype.indices = function(length)
 
 Sk.builtin.slice.prototype.sssiter$ = function(wrt, f)
 {
-    var sss = this.indices(typeof wrt === "number" ? wrt : wrt.v.length);
+	var wrtv = Sk.builtin.asnum$(wrt);
+    var sss = this.indices(typeof wrtv === "number" ? wrtv : wrt.v.length);
     if (sss[2] > 0)
     {
         var i;
         for (i = sss[0]; i < sss[1]; i += sss[2])
-            if (f(i, wrt) === false) return;
+            if (f(i, wrtv) === false) return;	//	wrt or wrtv? RNL
     }
     else
     {
         for (i = sss[0]; i > sss[1]; i += sss[2])
-            if (f(i, wrt) === false) return;
+            if (f(i, wrtv) === false) return;	//	wrt or wrtv? RNL
 
     }
 };

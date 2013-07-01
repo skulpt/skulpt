@@ -18,6 +18,8 @@ Sk.misceval.asIndex = function(o)
     if (o === true) return 1;
     if (o === false) return 0;
     if (typeof o === "number") return o;
+	if (o.constructor === Sk.builtin.nmber) return o.v;
+	if (o.constructor === Sk.builtin.lng) return o.tp$index();
     goog.asserts.fail("todo;");
 };
 
@@ -112,10 +114,10 @@ goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArgumen
 Sk.misceval.swappedOp_ = {
     'Eq': 'Eq',
     'NotEq': 'NotEq',
-    'Lt': 'Gt',
-    'LtE': 'GtE',
-    'Gt': 'Lt',
-    'GtE': 'LtE',
+    'Lt': 'GtE',
+    'LtE': 'Gt',
+    'Gt': 'LtE',
+    'GtE': 'Lt',
     'Is': 'IsNot',
     'IsNot': 'Is',
     'In_': 'NotIn',
@@ -201,27 +203,60 @@ Sk.misceval.richCompareBool = function(v, w, op)
             else if (op === 'Gt') {
                 if (v && v['__gt__'])
                     return Sk.misceval.callsim(v['__gt__'], v, w);
-                else if (w && w['__lt__'])
-                    return Sk.misceval.callsim(w['__lt__'], w, v);
+                else if (w && w['__le__'])
+                    return Sk.misceval.callsim(w['__le__'], w, v);
                 }
             else if (op === 'Lt') {
                 if (v && v['__lt__'])
                     return Sk.misceval.callsim(v['__lt__'], v, w);
-                else if (w && w['__gt__'])
-                    return Sk.misceval.callsim(w['__gt__'], w, v);
+                else if (w && w['__ge__'])
+                    return Sk.misceval.callsim(w['__ge__'], w, v);
                 }
             else if (op === 'GtE') {
                 if (v && v['__ge__'])
                     return Sk.misceval.callsim(v['__ge__'], v, w);
-                else if (w && w['__le__'])
-                    return Sk.misceval.callsim(w['__le__'], w, v);
+                else if (w && w['__lt__'])
+                    return Sk.misceval.callsim(w['__lt__'], w, v);
                 }
             else if (op === 'LtE') {
                 if (v && v['__le__'])
                     return Sk.misceval.callsim(v['__le__'], v, w);
+                else if (w && w['__gt__'])
+                    return Sk.misceval.callsim(w['__gt__'], w, v);
+                }
+
+/*	Fix by BM -- old version
+            if (op === 'Eq')
+                if (v && v['__eq__'])
+                    return Sk.misceval.callsim(v['__eq__'], v, w);
+                else if (w && w['__ne__'])
+                    return Sk.misceval.callsim(w['__ne__'], w, v);
+            else if (op === 'NotEq')
+                if (v && v['__ne__'])
+                    return Sk.misceval.callsim(v['__ne__'], v, w);
+                else if (w && w['__eq__'])
+                    return Sk.misceval.callsim(w['__eq__'], w, v);
+            else if (op === 'Gt')
+                if (v && v['__gt__'])
+                    return Sk.misceval.callsim(v['__gt__'], v, w);
+                else if (w && w['__lt__'])
+                    return Sk.misceval.callsim(w['__lt__'], w, v);
+            else if (op === 'Lt')
+                if (v && v['__lt__'])
+                    return Sk.misceval.callsim(v['__lt__'], v, w);
+                else if (w && w['__gt__'])
+                    return Sk.misceval.callsim(w['__gt__'], w, v);
+            else if (op === 'GtE')
+                if (v && v['__ge__'])
+                    return Sk.misceval.callsim(v['__ge__'], v, w);
+                else if (w && w['__le__'])
+                    return Sk.misceval.callsim(w['__le__'], w, v);
+            else if (op === 'LtE')
+                if (v && v['__le__'])
+                    return Sk.misceval.callsim(v['__le__'], v, w);
                 else if (w && w['__ge__'])
                     return Sk.misceval.callsim(w['__ge__'], w, v);
-                }
+*/
 
             // if those aren't defined, fallback on the __cmp__ method if it
             // exists
@@ -284,6 +319,8 @@ Sk.misceval.objectRepr = function(v)
             return new Sk.builtin.str("<unknown>");
         };
     }
+    else if (v.constructor === Sk.builtin.nmber)
+        return new Sk.builtin.str("" + v.v);
     else
         return v['$r']();
 };
@@ -309,6 +346,7 @@ Sk.misceval.isTrue = function(x)
     if (x === null) return false;
     if (typeof x === "number") return x !== 0;
     if (x instanceof Sk.builtin.lng) return x.nb$nonzero();
+    if (x.constructor === Sk.builtin.nmber) return x.v !== 0;
     if (x.mp$length) return x.mp$length() !== 0;
     if (x.sq$length) return x.sq$length() !== 0;
     return true;
@@ -535,7 +573,7 @@ Sk.misceval.buildClass = function(globals, func, name, bases)
 
     // init the dict for the class
     //print("CALLING", func);
-    func(globals, locals);
+    func(globals, locals, []);
 
     // file's __name__ is class's __module__
     locals.__module__ = globals['__name__'];

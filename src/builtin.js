@@ -19,6 +19,10 @@ Sk.builtin.range = function range(start, stop, step)
         Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
     };
 
+    start = Sk.builtin.asnum$(start);
+    stop = Sk.builtin.asnum$(stop);
+    step = Sk.builtin.asnum$(step);
+
     if ((stop === undefined) && (step === undefined)) {
         stop = start;
         start = 0;
@@ -33,16 +37,119 @@ Sk.builtin.range = function range(start, stop, step)
 
     if (step > 0) {
         for (i=start; i<stop; i+=step) {
-            ret.push(i);
+            ret.push(new Sk.builtin.nmber(i, Sk.builtin.nmber.int$));
         };
     } else {
         for (i=start; i>stop; i+=step) {
-            ret.push(i);
+            ret.push(new Sk.builtin.nmber(i, Sk.builtin.nmber.int$));
         };        
     };
 
     return new Sk.builtin.list(ret);
 };
+
+Sk.builtin.asnum$ = function(a) {
+	if (a === undefined) return a;
+	if (a === null) return a;
+	if (typeof a === "number") return a;
+	if (typeof a === "string") return a;
+	if (a.constructor === Sk.builtin.nmber) return a.v;
+	if (a.constructor === Sk.builtin.lng)   return a.str$(10, true);
+	if (a.constructor === Sk.builtin.biginteger) return a.toString();
+
+	return a;
+}
+goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
+
+Sk.builtin.assk$ = function(a, b) {
+	return new Sk.builtin.nmber(a, b);
+}
+goog.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
+
+Sk.builtin.asnum$nofloat = function(a) {
+	if (a === undefined) return a;
+	if (a === null) return a;
+	if (typeof a === "number") a = a.toString();
+	if (a.constructor === Sk.builtin.nmber) a = a.v.toString();
+	if (a.constructor === Sk.builtin.lng)   a = a.str$(10, true);
+	if (a.constructor === Sk.builtin.biginteger) a = a.toString();
+
+//	Sk.debugout("INITIAL: " + a);
+
+	//	If not a float, great, just return this
+	if (a.indexOf('.') < 0 && a.indexOf('e') < 0 && a.indexOf('E') < 0)
+		return a;
+
+	var expon=0;
+	var mantissa;
+
+	if (a.indexOf('e') >= 0) {
+		mantissa = a.substr(0,a.indexOf('e'));
+		expon = a.substr(a.indexOf('e')+1);
+	} else if (a.indexOf('E') >= 0) {
+		mantissa = a.substr(0,a.indexOf('e'));
+		expon = a.substr(a.indexOf('E')+1);
+	} else {
+		mantissa = a;
+	}
+
+//	Sk.debugout("e:" + expon);
+
+	expon = parseInt(expon, 10);
+
+//	Sk.debugout("MANTISSA:" + mantissa);
+//	Sk.debugout("EXPONENT:" + expon);
+
+	var decimal = mantissa.indexOf('.');
+
+//	Sk.debugout("DECIMAL: " + decimal);
+
+	//	Simplest case, no decimal
+	if (decimal < 0) {
+		if (expon >= 0) {
+			// Just add more zeroes and we're done
+			while (expon-- > 0)
+				mantissa += "0";
+			return mantissa;
+		} else {
+			if (mantissa.length > -expon)
+				return mantissa.substr(0,mantissa.length + expon);
+			else
+				return 0;
+		}
+	}
+
+	//	Negative exponent OR decimal (neg or pos exp)
+	if (decimal == 0)
+		mantissa = mantissa.substr(1);
+	else if (decimal < mantissa.length)
+		mantissa = mantissa.substr(0,decimal) + mantissa.substr(decimal+1);
+	else
+		mantissa = mantissa.substr(0,decimal);
+
+//	Sk.debugout("NO DECIMAL: " + mantissa);
+
+	decimal = decimal + expon;
+
+//	Sk.debugout("MOVE DECIM: " + decimal);
+
+	while (decimal > mantissa.length)
+		mantissa += "0";
+
+//	Sk.debugout("PADDED    : " + mantissa);
+
+	if (decimal <= 0) {
+		mantissa = 0;
+	} else {
+		mantissa = mantissa.substr(0,decimal);
+	}
+
+//	Sk.debugout("LENGTH: " + mantissa.length);
+//	Sk.debugout("RETURN: " + mantissa);
+
+	return mantissa;
+}
+goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
 Sk.builtin.round = function round(number, ndigits)
 {
@@ -58,10 +165,13 @@ Sk.builtin.round = function round(number, ndigits)
         ndigits = 0;
     };
 
+    number = Sk.builtin.asnum$(number);
+    ndigits = Sk.builtin.asnum$(ndigits);
+
     multiplier = Math.pow(10, ndigits);
     result = Math.round(number * multiplier) / multiplier;
 
-    return result;
+    return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
 };
 
 Sk.builtin.len = function len(item)
@@ -69,10 +179,10 @@ Sk.builtin.len = function len(item)
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
     if (item.sq$length)
-        return item.sq$length();
+        return new Sk.builtin.nmber(item.sq$length(),undefined);
     
     if (item.mp$length)
-        return item.mp$length();
+        return new Sk.builtin.nmber(item.mp$length(),undefined);
 
     if (item.tp$length)
 	return item.tp$length();
@@ -159,6 +269,7 @@ Sk.builtin.sum = function sum(iter,start)
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
     if (start !== undefined) {        
         Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+	start = Sk.builtin.asnum$(start);
     };
 
     if (start === undefined ) {
@@ -173,13 +284,13 @@ Sk.builtin.sum = function sum(iter,start)
 
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (typeof i !== "number") {
+        if (!Sk.builtin.checkNumber(i)) {
             throw "TypeError: a number is required";
         }
-        tot += i;
+        tot += Sk.builtin.asnum$(i);
     }
 
-    return tot;
+    return new Sk.builtin.nmber(tot, undefined);
 };
 
 Sk.builtin.zip = function zip()
@@ -229,7 +340,7 @@ Sk.builtin.abs = function abs(x)
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
     Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-    return Math.abs(x);
+    return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)),x.skType);
 };
 
 Sk.builtin.ord = function ord(x)
@@ -246,6 +357,7 @@ Sk.builtin.ord = function ord(x)
 Sk.builtin.chr = function chr(x)
 {
     Sk.builtin.pyCheckArgs("chr", arguments, 1, 1);
+	x = Sk.builtin.asnum$(x);
 
     if (typeof x !== "number")
     {
@@ -258,6 +370,33 @@ Sk.builtin.chr = function chr(x)
     }
 
     return new Sk.builtin.str(String.fromCharCode(x));
+};
+
+Sk.builtin.hex = function hex(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new Sk.builtin.str('0x'+x.toString(16));
+};
+
+Sk.builtin.oct = function oct(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new Sk.builtin.str('0'+x.toString(8));
+};
+
+Sk.builtin.bin = function bin(x)
+{
+    if (typeof x !== "number")
+    {
+        throw "TypeError: an integer is required";
+    }
+    return new Sk.builtin.str('0b'+x.toString(2));
 };
 
 Sk.builtin.dir = function dir(x)
@@ -367,7 +506,7 @@ Sk.builtin.repr = function repr(x)
 
 Sk.builtin.open = function open(filename, mode, bufsize)
 {
-    if (mode === undefined) mode = "r";
+    if (mode === undefined) mode = new Sk.builtin.str("r");
     if (mode.v !== "r" && mode.v !== "rb") throw "todo; haven't implemented non-read opens";
     return new Sk.builtin.file(filename, mode, bufsize);
 };
@@ -489,7 +628,13 @@ Sk.builtin.getattr = function getattr(obj, name, default_)
     return ret;
 };
 
-Sk.builtin.input = function input(obj, name, default_)
+Sk.builtin.raw_input = function(obj, name, default_)
+{
+    var x = prompt(obj.v);
+    return new Sk.builtin.str(x);
+};
+
+Sk.builtin.input = function(obj, name, default_)
 {
     var x = prompt(obj.v);
     return new Sk.builtin.str(x);
@@ -505,6 +650,55 @@ Sk.builtin.jsmillis = function jsmillis()
 	var now = new Date()
 	return now.valueOf();
 };
+
+Sk.builtin.all =  function all()
+{
+    if (arguments.length == 0) {
+        throw new Sk.builtin.TypeError("all() takes exactly one argument (0 given)")
+    }
+    arguments = Sk.misceval.arrayFromArguments(arguments);
+    var lowest = arguments[0];
+    for (var i = 0; i < arguments.length; ++i)
+    {
+        if (! Sk.misceval.isTrue(arguments[i]))
+            return false;
+    }
+    return true;
+};
+
+Sk.builtin.any =  function any()
+{
+    if (arguments.length == 0) {
+        throw new Sk.builtin.TypeError("any() takes exactly one argument (0 given)")
+    }
+    arguments = Sk.misceval.arrayFromArguments(arguments);
+    var lowest = arguments[0];
+    for (var i = 0; i < arguments.length; ++i)
+    {
+        if (Sk.misceval.isTrue(arguments[i]))
+            return true;
+    }
+    return false;
+};
+
+
+Sk.builtin.superbi =  function superbi()
+{
+    throw new Sk.builtin.NotImplementedError("Super is not yet implemented, please report your use case as a github issue.");
+}
+
+Sk.builtin.hasattr = function hasattr(obj,attr) {
+    if (typeof attr.v !== "string")
+        throw new Sk.builtin.TypeError('hasattr() attribute name must be a string')
+
+    if (obj.tp$getattr) {
+        if (obj.tp$getattr(attr.v)) {
+            return true;
+        } else
+            return false;
+    } else
+        throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
+}
 
 /*
 Sk.builtinFiles = {};

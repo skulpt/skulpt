@@ -27,11 +27,21 @@ Sk.builtin.type = function(name, bases, dict)
         if (obj === null) return Sk.builtin.NoneObj.prototype.ob$type;
         if (typeof obj === "number")
         {
-            if (Math.floor(obj) === obj)
-                return Sk.builtin.int_.prototype.ob$type;
+			if (obj.skType === "int")
+				return Sk.builtin.IntObj.prototype.ob$type;
+			else if (obj.skType === "float")
+                return Sk.builtin.FloatObj.prototype.ob$type;
+            else if (Math.floor(obj) === obj)
+                return Sk.builtin.IntObj.prototype.ob$type;
             else
                 return Sk.builtin.float_.prototype.ob$type;
         }
+		if (obj.constructor === Sk.builtin.nmber) {
+			if (obj.skType === "int")
+				return Sk.builtin.IntObj.prototype.ob$type;
+			else // if (obj.skType === "float")
+                return Sk.builtin.FloatObj.prototype.ob$type;
+		}
         return obj.ob$type;
     }
     else
@@ -173,11 +183,16 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
         var mod = t.__module__;
         var cname = "";
         if (mod) cname = mod.v + ".";
-        return new Sk.builtin.str("<class '" + cname + t.tp$name + "'>");
+		var ctype = "class";
+		if (!mod)
+			if (name === 'float' || name === 'int' || name === 'long' || name === 'bool' || name === 'str')
+				ctype = "type";
+        return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
     };
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+	t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
     return t;
 };
 
@@ -360,3 +375,16 @@ Sk.builtin.type.buildMRO = function(klass)
     return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
 };
 
+Sk.builtin.type.prototype.tp$richcompare = function(other, op)
+{
+	if (other.ob$type != Sk.builtin.type)
+		return undefined;
+
+	if (!this['$r'] || !other['$r'])
+		return undefined;
+
+	var r1 = this['$r']();
+	var r2 = other['$r']();
+
+	return r1.tp$richcompare(r2, op);
+};

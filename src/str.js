@@ -52,6 +52,7 @@ Sk.builtin.str.$emptystr = new Sk.builtin.str('');
 
 Sk.builtin.str.prototype.mp$subscript = function(index)
 {
+	index = Sk.builtin.asnum$(index);
     if (typeof index === "number" && Math.floor(index) === index /* not a float*/ )
     {
         if (index < 0) index = this.v.length + index;
@@ -87,6 +88,7 @@ Sk.builtin.str.prototype.sq$concat = function(other)
 };
 Sk.builtin.str.prototype.sq$repeat = function(n)
 {
+	n = Sk.builtin.asnum$(n);
     var ret = "";
     for (var i = 0; i < n; ++i)
         ret += this.v;
@@ -95,6 +97,8 @@ Sk.builtin.str.prototype.sq$repeat = function(n)
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
+	i1 = Sk.builtin.asnum$(i1);
+	i2 = Sk.builtin.asnum$(i2);
     if (i1 < 0) i1 = 0;
     return new Sk.builtin.str(this.v.substr(i1, i2 - i1));
 };
@@ -341,14 +345,32 @@ Sk.builtin.str.prototype['strip'] = new Sk.builtin.func(function(self, chars)
 
 Sk.builtin.str.prototype['lstrip'] = new Sk.builtin.func(function(self, chars)
 {
-    goog.asserts.assert(!chars, "todo;");
-    return new Sk.builtin.str(self.v.replace(/^\s+/g, ''));
+    if (chars){
+        var currstr = self.v;
+        var charStr = new Sk.builtin.str(chars)
+        while(currstr.indexOf(charStr.v) === 0){
+            currstr = currstr.substr(charStr.v.length);
+        }
+        return new Sk.builtin.str(currstr);
+    }
+    else{
+        return new Sk.builtin.str(self.v.replace(/^\s+/g, ''));
+    }
 });
 
 Sk.builtin.str.prototype['rstrip'] = new Sk.builtin.func(function(self, chars)
 {
-    goog.asserts.assert(!chars, "todo;");
-    return new Sk.builtin.str(self.v.replace(/\s+$/g, ''));
+    if (chars){
+        var currstr = self.v;
+        var charStr = new Sk.builtin.str(chars)
+        while(currstr.lastIndexOf(charStr.v) === currstr.length - charStr.v.length){
+            currstr = currstr.substr(0, currstr.length - charStr.v.length);
+        }
+        return new Sk.builtin.str(currstr);
+    }
+    else{
+      return new Sk.builtin.str(self.v.replace(/\s+$/g, ''));
+    }
 });
 
 Sk.builtin.str.prototype['partition'] = new Sk.builtin.func(function(self, sep)
@@ -393,6 +415,7 @@ Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
 });
 
 Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
+	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
@@ -402,6 +425,7 @@ Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
+	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
@@ -412,6 +436,7 @@ Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
+	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
@@ -465,6 +490,15 @@ Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, sta
     return idx;
 });
 
+Sk.builtin.str.prototype['startswith'] = new Sk.builtin.func(function(self, tgt) {
+   return 0 == self.v.indexOf(tgt.v);
+});
+
+// http://stackoverflow.com/questions/280634/endswith-in-javascript
+Sk.builtin.str.prototype['endswith'] = new Sk.builtin.func(function(self, tgt) {
+    return self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1;
+});
+
 Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, newS, count)
 {
     if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)
@@ -516,6 +550,9 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
     var index = 0;
     var replFunc = function(substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType)
     {
+		fieldWidth = Sk.builtin.asnum$(fieldWidth);
+		precision  = Sk.builtin.asnum$(precision);
+
         var i;
         if (mappingKey === undefined || mappingKey === "" ) i = index++; // ff passes '' not undef for some reason
 
@@ -542,6 +579,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
 
         var formatNumber = function(n, base)
         {
+			base = Sk.builtin.asnum$(base);
             var j;
             var r;
             var neg = false;
@@ -555,10 +593,17 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
                 }
                 r = n.toString(base);
             }
+            else if (n instanceof Sk.builtin.nmber)
+            {
+                r = n.str$(base, false);
+				if (r.length > 2 && r.substr(-2) === ".0")
+					r = r.substr(0, r.length - 2);
+                neg = n.nb$isnegative();
+            }
             else if (n instanceof Sk.builtin.lng)
             {
                 r = n.str$(base, false);
-                neg = n.compare(0) < 0;
+                neg = n.nb$isnegative();	//	neg = n.size$ < 0;	RNL long.js change
             }
 
             goog.asserts.assert(r !== undefined, "unhandled number format");
@@ -648,8 +693,22 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             case 'E':
             case 'g':
             case 'G':
+				var convValue = Sk.builtin.asnum$(value);
+				if (typeof convValue === "string")
+					convValue = Number(convValue);
+				if (convValue === Infinity)
+					return "inf";
+				if (convValue === -Infinity)
+					return "-inf";
+				if (isNaN(convValue))
+					return "nan";
                 var convName = ['toExponential', 'toFixed', 'toPrecision']['efg'.indexOf(conversionType.toLowerCase())];
-                var result = (value)[convName](precision);
+				if (precision === undefined || precision === "")
+					if (conversionType === 'e' || conversionType === 'E')
+						precision = 6;
+					else if (conversionType === 'f' || conversionType === 'F')
+						precision = 7;
+                var result = (convValue)[convName](precision);
                 if ('EFG'.indexOf(conversionType) !== -1) result = result.toUpperCase();
                 // todo; signs etc.
                 return handleWidth(['', result]);
@@ -657,6 +716,8 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             case 'c':
                 if (typeof value === "number")
                     return String.fromCharCode(value);
+                else if (value instanceof Sk.builtin.nmber)
+                    return String.fromCharCode(value.v);
                 else if (value instanceof Sk.builtin.lng)
                     return String.fromCharCode(value.str$(10,false)[0]);
                 else if (value.constructor === Sk.builtin.str)
