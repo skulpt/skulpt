@@ -62,7 +62,7 @@ Sk.str2number = function(s, base, parser, negater, fname)
 	}
     }
     else if ( s.charAt(0) == '0' ) {
-	if (s == '0') return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+	if (s == '0') return 0;
 	if (base == 8 || base == 0) {
 	    base = 8;
 	}
@@ -102,8 +102,7 @@ Sk.str2number = function(s, base, parser, negater, fname)
     if (neg) {
 	val = negater(val);
     }
-    val = Sk.builtin.asnum$(val);
-	return new Sk.builtin.nmber(val, Sk.builtin.nmber.int$);
+    return Sk.builtin.asnum$(val);
 }
 
 Sk.builtin.int_ = function(x, base)
@@ -117,7 +116,7 @@ Sk.builtin.int_ = function(x, base)
             || (val < -Sk.builtin.lng.threshold$)) 
         {
             // Too big for int, convert to long
-            val = new Sk.builtin.lng(x, base);
+            return new Sk.builtin.lng(x, base);
 
         }
 

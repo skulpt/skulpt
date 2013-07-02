@@ -8,6 +8,7 @@
  */
 Sk.builtin.lng = function(x, base)	/* long is a reserved word */
 {
+    base = Sk.builtin.asnum$(base);
     if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(x, base);
 
     if (x === undefined)
@@ -96,7 +97,7 @@ Sk.longFromStr = function(s, base)
 
     var biginteger = Sk.str2number(s, base, parser, function(x){return x.negate();}, "long");
 
-    return new Sk.builtin.lng(Sk.builtin.asnum$(biginteger));
+    return new Sk.builtin.lng(biginteger);
 };
 goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
 
