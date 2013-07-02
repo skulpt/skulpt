@@ -28,12 +28,12 @@ Sk.builtin.lng = function(x, base)	/* long is a reserved word */
     return this;
 };
 
-Sk.builtin.lng.tp$index = function()
+Sk.builtin.lng.prototype.tp$index = function()
 {
     return parseInt(this.str$(10, true), 10);
 };
 
-Sk.builtin.lng.tp$hash = function()
+Sk.builtin.lng.prototype.tp$hash = function()
 {
     return 'number ' + this.str$(10, true);
 };
