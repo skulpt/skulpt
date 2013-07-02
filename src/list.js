@@ -226,16 +226,6 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
     throw new TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
-Sk.builtin.list.prototype.list_ass_item_ = function(i, value)
-{
-	i = Sk.builtin.asnum$(i);
-    if (i < 0 || i >= this.v.length) throw new Sk.builtin.IndexError("list index out of range");
-    if (value === null)
-        this.list_ass_slice_(i, i+1, value);
-    else
-        this.v[i] = value;
-};
-
 Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
 {
     if (Sk.misceval.isIndex(index))
