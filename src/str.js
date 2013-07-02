@@ -286,6 +286,7 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
+    howmany = Sk.builtin.asnum$(howmany);
     Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
     if (on === undefined) {
         on = null;
