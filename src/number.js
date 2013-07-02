@@ -62,7 +62,7 @@ Sk.builtin.nmber.prototype.tp$index = function()
 
 Sk.builtin.nmber.prototype.tp$hash = function()
 {
-    return 'number ' + this.v;
+    return this.v;
 };
 
 Sk.builtin.nmber.prototype.tp$name = "number";
