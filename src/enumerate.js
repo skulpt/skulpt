@@ -13,9 +13,11 @@ Sk.builtin.enumerate = function(iterable, start)
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
     }
     if (start !== undefined) {
-        if (!Sk.builtin.checkInt(start)) {
+        if (!Sk.misceval.isIndex(start)) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(start) + "' object cannot be interpreted as an index");
-        }
+        } else {
+	    start = Sk.misceval.asIndex(start);
+	}
     }
     else {
 	start = 0;
