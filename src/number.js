@@ -520,11 +520,18 @@ Sk.builtin.nmber.prototype.nb$xor = function(other)
 
 Sk.builtin.nmber.prototype.nb$lshift = function(other)
 {
-	var tmp;
-	if (typeof other === "number")
-		tmp = this.v << other;
-	else if (other instanceof Sk.builtin.nmber)
-		tmp = this.v << other.v
+    var tmp;
+    var shift = Sk.builtin.asnum$(other);
+
+    if (shift !== undefined) {
+        if (shift < 0)
+	    throw new Sk.builtin.ValueError("negative shift count");
+	tmp = this.v << shift;
+	if (tmp <= this.v) {
+	    // Fail, recompute with longs
+	    return Sk.builtin.lng.fromInt$(this.v).nb$lshift(shift);
+	}
+    }
 
 	if (tmp !== undefined)
 		return new Sk.builtin.nmber(tmp, undefined);
@@ -534,11 +541,18 @@ Sk.builtin.nmber.prototype.nb$lshift = function(other)
 
 Sk.builtin.nmber.prototype.nb$rshift = function(other)
 {
-	var tmp;
-	if (typeof other === "number")
-		tmp = this.v >> other;
-	else if (other instanceof Sk.builtin.nmber)
-		tmp = this.v >> other.v
+    var tmp;
+    var shift = Sk.builtin.asnum$(other);
+
+    if (shift !== undefined) {
+        if (shift < 0)
+	    throw new Sk.builtin.ValueError("negative shift count");
+	tmp = this.v >> shift;
+	if ((this.v > 0) && (tmp < 0)) {
+	    // Fix incorrect sign extension
+	    tmp = tmp & (Math.pow(2, 32-shift) - 1);
+	}
+    }
 
 	if (tmp !== undefined)
 		return new Sk.builtin.nmber(tmp, undefined);

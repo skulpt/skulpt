@@ -361,6 +361,7 @@ Sk.builtin.lng.prototype.nb$lshift = function(other)
     if (other < 0) {
 	throw new Sk.builtin.ValueError("negative shift count");
     }
+    other = Sk.builtin.asnum$(other);
     return new Sk.builtin.lng(this.biginteger.shiftLeft(new Sk.builtin.biginteger(other)));
 }
 
@@ -384,6 +385,7 @@ Sk.builtin.lng.prototype.nb$rshift = function(other)
     if (other < 0) {
 	throw new Sk.builtin.ValueError("negative shift count");
     }
+    other = Sk.builtin.asnum$(other);
     return new Sk.builtin.lng(this.biginteger.shiftRight(new Sk.builtin.biginteger(other)));
 }
 
@@ -398,6 +400,7 @@ Sk.builtin.lng.prototype.nb$and = function(other)
 	return new Sk.builtin.lng(this.biginteger.and(other));
     }
     
+    other = Sk.builtin.asnum$(other);
     return new Sk.builtin.lng(this.biginteger.and(new Sk.builtin.biginteger(other)));
 }
 
@@ -412,6 +415,7 @@ Sk.builtin.lng.prototype.nb$or = function(other)
 	return new Sk.builtin.lng(this.biginteger.or(other));
     }
     
+    other = Sk.builtin.asnum$(other);
     return new Sk.builtin.lng(this.biginteger.or(new Sk.builtin.biginteger(other)));
 }
 
@@ -426,6 +430,7 @@ Sk.builtin.lng.prototype.nb$xor = function(other)
 	return new Sk.builtin.lng(this.biginteger.xor(other));
     }
     
+    other = Sk.builtin.asnum$(other);
     return new Sk.builtin.lng(this.biginteger.xor(new Sk.builtin.biginteger(other)));
 }
 
