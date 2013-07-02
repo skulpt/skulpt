@@ -336,6 +336,12 @@ Sk.abstr.numberUnaryOp = function(v, op)
         if (op === "UAdd") return v;
         if (op === "Invert") return ~v;
     }
+    else if (v instanceof Sk.builtin.nmber) {
+	value = Sk.builtin.asnum$(v);
+	if (op === "USub") return new Sk.builtin.nmber(-value, value.skType);
+        if (op === "UAdd") return new Sk.builtin.nmber(value, value.skType);
+        if (op === "Invert") return new Sk.builtin.nmber(~value, value.skType);
+    }
     else
     {
         if (op === "USub" && v.nb$negative) return v.nb$negative();
