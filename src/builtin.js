@@ -179,13 +179,13 @@ Sk.builtin.len = function len(item)
     Sk.builtin.pyCheckArgs("len", arguments, 1, 1);
 
     if (item.sq$length)
-        return new Sk.builtin.nmber(item.sq$length(),undefined);
+        return new Sk.builtin.nmber(item.sq$length(), Sk.builtin.nmber.int$);
     
     if (item.mp$length)
-        return new Sk.builtin.nmber(item.mp$length(),undefined);
+        return new Sk.builtin.nmber(item.mp$length(), Sk.builtin.nmber.int$);
 
     if (item.tp$length)
-	return item.tp$length();
+	return new Sk.builtin.nmber(item.tp$length(), Sk.builtin.nmber.int$);
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };
@@ -282,15 +282,30 @@ Sk.builtin.sum = function sum(iter,start)
         throw "TypeError: object is not iterable";
     }
 
+    var has_long, has_float;
+
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (!Sk.builtin.checkNumber(i)) {
             throw "TypeError: a number is required";
         }
-        tot += Sk.builtin.asnum$(i);
+	if (i instanceof Sk.builtin.nmber) {
+	    tot += i.v;
+	    if (i.skType === Sk.builtin.nmber.float$)
+		has_float = true;
+	} else if (i instanceof Sk.builtin.lng) {
+	    tot += i.tp$index();
+	    has_long = true;
+	}
     }
 
-    return new Sk.builtin.nmber(tot, undefined);
+    if (has_float)
+	return new Sk.builtin.nmber(tot, Sk.builtin.nmber.float$);
+    else if (has_long)
+	return new Sk.builtin.lng(tot);
+    else
+	return new Sk.builtin.nmber(tot, Sk.builtin.nmber.int$);
+
 };
 
 Sk.builtin.zip = function zip()
