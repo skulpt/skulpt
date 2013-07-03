@@ -534,7 +534,7 @@ Sk.builtin.nmber.prototype.nb$lshift = function(other)
     }
 
 	if (tmp !== undefined)
-		return new Sk.builtin.nmber(tmp, undefined);
+		return new Sk.builtin.nmber(tmp, this.skType);
 
 	return undefined;
 }
@@ -555,7 +555,7 @@ Sk.builtin.nmber.prototype.nb$rshift = function(other)
     }
 
 	if (tmp !== undefined)
-		return new Sk.builtin.nmber(tmp, undefined);
+		return new Sk.builtin.nmber(tmp, this.skType);
 
 	return undefined;
 }
