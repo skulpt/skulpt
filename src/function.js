@@ -66,7 +66,10 @@ Sk.builtin.checkNumber = function (arg) {
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
 Sk.builtin.checkInt = function (arg) {
-    return (arg !== null) && (typeof arg === "number") && (arg === (arg|0));
+    return (arg !== null) && ((typeof arg === "number" && arg === (arg|0))
+			      || (arg instanceof Sk.builtin.nmber
+				  && arg.skType === Sk.builtin.nmber.int$)
+			      || arg instanceof Sk.builtin.lng);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
