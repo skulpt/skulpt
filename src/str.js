@@ -453,12 +453,12 @@ Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
 
 Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start) {
     start = Sk.builtin.asnum$(start);
-   return self.v.indexOf(tgt.v,start);
+    return new Sk.builtin.nmber(self.v.indexOf(tgt.v,start), Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start) {
     var idx = Sk.misceval.callsim(self['find'], self, tgt, start);
-    if (idx === -1) {
+    if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
     };
     return idx;
@@ -482,12 +482,12 @@ Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, star
         idx = idx + offset;
     };
 
-    return idx;
+    return new Sk.builtin.nmber(idx, Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start) {
     var idx = Sk.misceval.callsim(self['rfind'], self, tgt, start);
-    if (idx === -1) {
+    if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
     };
     return idx;
