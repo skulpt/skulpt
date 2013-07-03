@@ -220,7 +220,7 @@ var $builtinmodule = function(name)
     mod.random = new Sk.builtin.func(function() {
         Sk.builtin.pyCheckArgs("random", arguments, 0, 0);
 
-	return myGenerator.genrand_res53();
+	return new Sk.builtin.nmber(myGenerator.genrand_res53(), Sk.builtin.nmber.float$);
     });
 
     var toInt = function(num) {
@@ -229,9 +229,9 @@ var $builtinmodule = function(name)
 
     var randrange = function(start, stop, step) {
         // Ported from CPython 2.7
-        var width, n;
+        var width, n, ret;
 
-        if (start != toInt(start)) {
+        if (!Sk.builtin.checkInt(start)) {
             throw new Sk.builtin.ValueError("non-integer first argument for randrange()");
         };
 
@@ -240,7 +240,7 @@ var $builtinmodule = function(name)
             return toInt(myGenerator.genrand_res53() * start);
         };
 
-        if (stop != toInt(stop)) {
+        if (!Sk.builtin.checkInt(stop)) {
             throw new Sk.builtin.ValueError("non-integer stop for randrange()");
         };
 
@@ -252,14 +252,15 @@ var $builtinmodule = function(name)
 
         if ((step == 1) && (width > 0)) {
             // Random in [start, stop), must use toInt on product for correct results with negative ranges
-            return start + toInt(myGenerator.genrand_res53() * width);
+            ret = start + toInt(myGenerator.genrand_res53() * width);
+	    return new Sk.builtin.nmber(ret, Sk.builtin.nmber.int$);
         };
 
         if (step == 1) {
             throw new Sk.builtin.ValueError("empty range for randrange() (" + start + ", " + stop + ", " + width + ")");
         };
 
-        if (step != toInt(step)) {
+        if (!Sk.builtin.checkInt(step)) {
             throw new Sk.builtin.ValueError("non-integer step for randrange()");
         };
 
@@ -276,13 +277,12 @@ var $builtinmodule = function(name)
         };
 
         // Random in range(start, stop, step)
-        return start + (step * toInt(myGenerator.genrand_res53() * n));
+        ret = start + (step * toInt(myGenerator.genrand_res53() * n));
+	return new Sk.builtin.nmber(ret, Sk.builtin.nmber.int$);
     };
 
     mod.randint = new Sk.builtin.func(function(a, b) {
         Sk.builtin.pyCheckArgs("randint", arguments, 2, 2);
-        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-        Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
 
 	a = Sk.builtin.asnum$(a);
 	b = Sk.builtin.asnum$(b);
@@ -291,13 +291,6 @@ var $builtinmodule = function(name)
 
     mod.randrange = new Sk.builtin.func(function(start, stop, step) {
         Sk.builtin.pyCheckArgs("randrange", arguments, 1, 3);
-        Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
-        if (stop !== undefined) {
-            Sk.builtin.pyCheckType("stop", "number", Sk.builtin.checkNumber(stop));
-        };            
-        if (step !== undefined) {
-            Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
-        };            
 
 	start = Sk.builtin.asnum$(start);
 	stop = Sk.builtin.asnum$(stop);
