@@ -11,12 +11,12 @@ Sk.builtin.range = function range(start, stop, step)
     var i;
 
     Sk.builtin.pyCheckArgs("range", arguments, 1, 3);
-    Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+    Sk.builtin.pyCheckType("start", "integer", Sk.builtin.checkInt(start));
     if (stop !== undefined) {
-        Sk.builtin.pyCheckType("stop", "number", Sk.builtin.checkNumber(stop));
+        Sk.builtin.pyCheckType("stop", "integer", Sk.builtin.checkInt(stop));
     };
     if (step !== undefined) {
-        Sk.builtin.pyCheckType("step", "number", Sk.builtin.checkNumber(step));
+        Sk.builtin.pyCheckType("step", "integer", Sk.builtin.checkInt(step));
     };
 
     start = Sk.builtin.asnum$(start);
@@ -357,12 +357,10 @@ Sk.builtin.ord = function ord(x)
 Sk.builtin.chr = function chr(x)
 {
     Sk.builtin.pyCheckArgs("chr", arguments, 1, 1);
+    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
+
 	x = Sk.builtin.asnum$(x);
 
-    if (typeof x !== "number")
-    {
-        throw new Sk.builtin.TypeError("an integer is required");
-    }
 
     if ((x < 0) || (x > 255))
     {
@@ -374,28 +372,19 @@ Sk.builtin.chr = function chr(x)
 
 Sk.builtin.hex = function hex(x)
 {
-    if (typeof x !== "number")
-    {
-        throw "TypeError: an integer is required";
-    }
+    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
     return new Sk.builtin.str('0x'+x.toString(16));
 };
 
 Sk.builtin.oct = function oct(x)
 {
-    if (typeof x !== "number")
-    {
-        throw "TypeError: an integer is required";
-    }
+    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
     return new Sk.builtin.str('0'+x.toString(8));
 };
 
 Sk.builtin.bin = function bin(x)
 {
-    if (typeof x !== "number")
-    {
-        throw "TypeError: an integer is required";
-    }
+    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
     return new Sk.builtin.str('0b'+x.toString(2));
 };
 
