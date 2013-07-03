@@ -452,6 +452,7 @@ Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start) {
+    start = Sk.builtin.asnum$(start);
    return self.v.indexOf(tgt.v,start);
 });
 
@@ -470,6 +471,7 @@ Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, star
 
     if (start !== undefined) {
         // Only look after start position
+	start = Sk.builtin.asnum$(start);
         s = s.substring(start);
         offset = start;
     };
