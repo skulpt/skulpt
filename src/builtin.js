@@ -519,14 +519,11 @@ Sk.builtin.isinstance = function isinstance(obj, type)
 {
     Sk.builtin.pyCheckArgs("isinstance", arguments, 2, 2);
 
-    // Handle types that are represented as native javascript objects
-    if ((type === Sk.builtin.int_)
-	|| (type === Sk.builtin.IntObj.prototype.ob$type)) {
+    if (type === Sk.builtin.int_.prototype.ob$type) {
 	return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.int$);
     }
 
-    if ((type === Sk.builtin.float_)
-	|| (type === Sk.builtin.FloatObj.prototype.ob$type)) {
+    if (type === Sk.builtin.float_.prototype.ob$type) {
         return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.float$); 
     }
 
