@@ -71,6 +71,7 @@ Sk.builtin.list.prototype.list_concat_ = function(other)
 
 Sk.builtin.list.prototype.list_del_item_ = function(i)
 {
+    i = Sk.builtin.asnum$(i);
     if (i < 0 || i >= this.v.length)
         throw new Sk.builtin.IndexError("list assignment index out of range");
     this.list_del_slice_(i, i+1);    
@@ -78,6 +79,8 @@ Sk.builtin.list.prototype.list_del_item_ = function(i)
 
 Sk.builtin.list.prototype.list_del_slice_ = function(ilow, ihigh)
 {
+    ilow = Sk.builtin.asnum$(ilow);
+    ihigh = Sk.builtin.asnum$(ihigh);
     var args = [];
     args.unshift(ihigh - ilow);
     args.unshift(ilow);
