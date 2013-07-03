@@ -54,8 +54,18 @@ Sk.builtin.asnum$ = function(a) {
 	if (typeof a === "number") return a;
 	if (typeof a === "string") return a;
 	if (a.constructor === Sk.builtin.nmber) return a.v;
-	if (a.constructor === Sk.builtin.lng)   return a.str$(10, true);
-	if (a.constructor === Sk.builtin.biginteger) return a.toString();
+	if (a.constructor === Sk.builtin.lng) {
+	    if (a.cantBeInt())
+		return a.str$(10, true);
+	    return a.toInt$();
+	}
+	if (a.constructor === Sk.builtin.biginteger) {
+	    if ((a.trueCompare(Sk.builtin.lng.MAX_INT$.biginteger) > 0)
+		|| (a.trueCompare(Sk.builtin.lng.MIN_INT$.biginteger) < 0)) {
+		return a.toString();
+	    }
+	    return a.intValue();
+	}
 
 	return a;
 }
