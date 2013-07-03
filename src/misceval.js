@@ -130,12 +130,11 @@ Sk.misceval.richCompareBool = function(v, w, op)
     if (op === 'Is') {
 	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
 	{
-	    return (Sk.builtin.asnum$(v) === Sk.builtin.asnum$(w))
-		&& (v.skType === w.skType);
+	    return (v.numberCompare(w) === 0) && (v.skType === w.skType);
 	}
 	else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng)
 	{
-	    return (Sk.builtin.asnum$(v) === Sk.builtin.asnum$(w));
+	    return v.longCompare(w) === 0;
 	}
 
         return v === w;
@@ -144,12 +143,11 @@ Sk.misceval.richCompareBool = function(v, w, op)
     if (op === 'IsNot') {
 	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
 	{
-	    return (Sk.builtin.asnum$(v) !== Sk.builtin.asnum$(w))
-		|| (v.skType !== w.skType);
+	    return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
 	}
 	else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng)
 	{
-	    return (Sk.builtin.asnum$(v) !== Sk.builtin.asnum$(w));
+	    return v.longCompare(w) !== 0;
 	}
 
         return v !== w;
