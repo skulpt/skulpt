@@ -127,11 +127,33 @@ Sk.misceval.swappedOp_ = {
 
 Sk.misceval.richCompareBool = function(v, w, op)
 {
-    if (op === 'Is')
-        return v === w;
+    if (op === 'Is') {
+	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
+	{
+	    return (Sk.builtin.asnum$(v) === Sk.builtin.asnum$(w))
+		&& (v.skType === w.skType);
+	}
+	else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng)
+	{
+	    return (Sk.builtin.asnum$(v) === Sk.builtin.asnum$(w));
+	}
 
-    if (op === 'IsNot')
+        return v === w;
+    }
+
+    if (op === 'IsNot') {
+	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
+	{
+	    return (Sk.builtin.asnum$(v) !== Sk.builtin.asnum$(w))
+		|| (v.skType !== w.skType);
+	}
+	else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng)
+	{
+	    return (Sk.builtin.asnum$(v) !== Sk.builtin.asnum$(w));
+	}
+
         return v !== w;
+    }
 
     if (v === w)
     {
@@ -263,6 +285,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             if (v && v['__cmp__'])
             {
                 var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
+		ret = Sk.builtin.asnum$(ret);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret < 0;
@@ -274,6 +297,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             {
                 // note, flipped on return value and call
                 var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
+		ret = Sk.builtin.asnum$(ret);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret > 0;
