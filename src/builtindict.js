@@ -11,7 +11,6 @@ Sk.builtins = {
 'zip': Sk.builtin.zip,
 'abs': Sk.builtin.abs,
 'fabs': Sk.builtin.abs,	//	Added by RNL
-'round': Sk.builtin.round,
 'ord': Sk.builtin.ord,
 'chr': Sk.builtin.chr,
 'hex': Sk.builtin.hex,
@@ -63,8 +62,6 @@ Sk.builtins = {
 'input': Sk.builtin.input,
 'raw_input': Sk.builtin.raw_input,
 /*'read': Sk.builtin.read,*/
-'all': Sk.builtin.all,
-'any': Sk.builtin.any,
 'jseval': Sk.builtin.jseval,
 'jsmillis': Sk.builtin.jsmillis
 /*'long_div_mode': Sk.builtin.lng.longDivideMode	//	No longer used/relevant */
