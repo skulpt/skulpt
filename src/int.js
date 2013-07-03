@@ -102,7 +102,7 @@ Sk.str2number = function(s, base, parser, negater, fname)
     if (neg) {
 	val = negater(val);
     }
-    return Sk.builtin.asnum$(val);
+    return val;
 }
 
 Sk.builtin.int_ = function(x, base)
