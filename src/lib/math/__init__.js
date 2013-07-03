@@ -4,19 +4,12 @@ var $builtinmodule = function(name)
     mod.pi = Sk.builtin.assk$(Math.PI, Sk.builtin.nmber.float$);
     mod.e =  Sk.builtin.assk$(Math.E, Sk.builtin.nmber.float$);
 
-    mod.abs = new Sk.builtin.func(function(x) {
-        Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-	return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)), x.skType);
-    });
-
 //	RNL	added
     mod.fabs = new Sk.builtin.func(function(x) {
         Sk.builtin.pyCheckArgs("fabs", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-	return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+	return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
     mod.asin = new Sk.builtin.func(function(rad) {
