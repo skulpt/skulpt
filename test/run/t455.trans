@@ -1,0 +1,13 @@
+Module(body=[Import(names=[alias(name='random',
+                                 asname=None)]),
+             Print(dest=None,
+                   values=[Call(func=Attribute(value=Name(id='random',
+                                                          ctx=Load()),
+                                               attr='randint',
+                                               ctx=Load()),
+                                args=[Num(n=10),
+                                      Num(n=1)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])
