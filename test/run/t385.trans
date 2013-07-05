@@ -1,0 +1,5 @@
+Module(body=[Print(dest=None,
+                   values=[BinOp(left=Num(n=3),
+                                 op=RShift(),
+                                 right=Num(n=-3))],
+                   nl=True)])

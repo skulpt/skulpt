@@ -1,0 +1,12 @@
+Module(body=[Import(names=[alias(name='math',
+                                 asname=None)]),
+             Print(dest=None,
+                   values=[Call(func=Attribute(value=Name(id='math',
+                                                          ctx=Load()),
+                                               attr='sin',
+                                               ctx=Load()),
+                                args=[Str(s='3')],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

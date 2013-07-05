@@ -1,0 +1,12 @@
+Module(body=[Print(dest=None,
+                   values=[Call(func=Attribute(value=Tuple(elts=[Num(n=1),
+                                                                 Num(n=2),
+                                                                 Num(n=3)],
+                                                           ctx=Load()),
+                                               attr='index',
+                                               ctx=Load()),
+                                args=[Num(n=2)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

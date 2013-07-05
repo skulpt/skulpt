@@ -1,0 +1,15 @@
+s = "abcdabab"
+print s.find("ab")
+print s.find("ab", 5)
+print s.index("ab")
+print s.index("ab", 5)
+print s.find("ac")
+print s.find("ac", 5)
+
+print s.rfind("cd")
+print s.rfind("cd", 5)
+print s.rindex("ab")
+print s.rindex("ab", 5)
+print s.rfind("ac")
+print s.rfind("ac", 5)
+print s.rindex("ac", 5)

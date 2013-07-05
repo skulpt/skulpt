@@ -1,0 +1,12 @@
+print 0b1010
+print -0b1010
+print 0xff
+print -0xf
+print 0O63
+print -0O63
+print 063
+print -063
+print 0xffL
+print -0xffL
+print 0
+print -0

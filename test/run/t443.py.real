@@ -1,0 +1,43 @@
+
+testSimpleNesting
+2 2 True
+-3 -3 True
+18 18 True
+8 8 True
+
+testSimpleAndRebinding
+2 2 True
+-3 -3 True
+18 18 True
+8 8 True
+
+testNestingGlobalNoFree
+2 2 True
+8 8 True
+
+testNestingPlusFreeRefToGlobal
+2 2 True
+-3 -3 True
+18 18 True
+8 8 True
+
+testNearestEnclosingScope
+47 47 True
+
+testMixedFreevarsAndCellvars
+39 39 True
+
+testFreeVarInMethod
+var var True
+method method True
+global global True
+
+testRecursion
+720 720 True
+
+testLambdas
+2 2 True
+-3 -3 True
+18 18 True
+8 8 True
+3 3 True

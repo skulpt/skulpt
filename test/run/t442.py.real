@@ -1,0 +1,112 @@
+
+str.split()
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+
+SEP AS A REGULAR EXPRESSION
+without regex syntax
+True
+True
+
+syntax: .
+True
+True
+True
+True
+True
+True
+
+syntax: ^
+True
+True
+
+syntax: $
+True
+True
+
+syntax: *
+True
+True
+True
+True
+
+syntax: +
+True
+True
+True
+
+syntax: ?
+True
+True
+True
+True
+True
+
+syntax: *?
+True
+True
+True
+True
+
+syntax: +?
+True
+True
+True
+True
+
+syntax: ??
+True
+True
+True
+True
+
+syntax: {}
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+
+syntax: {}?
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+
+syntax: []
+True
+True
+True
+True
+
+syntax: |
+True
+True
+
+syntax: (...)
+True
+True
+True
+True
