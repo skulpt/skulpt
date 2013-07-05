@@ -272,8 +272,9 @@ Sk.builtin.all = function all(iter)
 
 Sk.builtin.sum = function sum(iter,start)
 {
-    var tot = 0;
+    var tot;
     var it, i;
+    var has_float;
 
     Sk.builtin.pyCheckArgs("sum", arguments, 1, 2);
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
@@ -286,36 +287,31 @@ Sk.builtin.sum = function sum(iter,start)
         start = 0;
     }
 
-    tot += start;
-
-    if (!iter.tp$iter) {
-        throw "TypeError: object is not iterable";
-    }
-
-    var has_long, has_float;
+    tot = new Sk.builtin.nmber(start, Sk.builtin.nmber.int$);
 
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (!Sk.builtin.checkNumber(i)) {
-            throw "TypeError: a number is required";
+            throw new Sk.builtin.TypeError("a number is required");
         }
-	if (i instanceof Sk.builtin.nmber) {
-	    tot += i.v;
-	    if (i.skType === Sk.builtin.nmber.float$)
-		has_float = true;
+	if (i.skType === Sk.builtin.nmber.float$) {
+	    has_float = true;
+	    if (tot.skType !== Sk.builtin.nmber.float$) {
+		tot = new Sk.builtin.nmber(Sk.builtin.asnum$(tot),
+					   Sk.builtin.nmber.float$)
+	    }
 	} else if (i instanceof Sk.builtin.lng) {
-	    tot += i.tp$index();
-	    has_long = true;
+	    if (!has_float) {
+		if (!(tot instanceof Sk.builtin.lng)) {
+		    tot = new Sk.builtin.lng(tot)
+		}
+	    }
 	}
+
+	tot = tot.nb$add(i);
     }
 
-    if (has_float)
-	return new Sk.builtin.nmber(tot, Sk.builtin.nmber.float$);
-    else if (has_long)
-	return new Sk.builtin.lng(tot);
-    else
-	return new Sk.builtin.nmber(tot, Sk.builtin.nmber.int$);
-
+    return tot;
 };
 
 Sk.builtin.zip = function zip()
