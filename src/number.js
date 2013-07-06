@@ -479,10 +479,11 @@ Sk.builtin.nmber.prototype.nb$power = function(other)
 Sk.builtin.nmber.prototype.nb$and = function(other)
 {
 	var tmp;
-	if (typeof other === "number")
-		tmp = this.v & other;
-	else if (other instanceof Sk.builtin.nmber)
-		tmp = this.v & other.v
+        other = Sk.builtin.asnum$(other);
+        tmp = this.v & other;
+        if ((tmp !== undefined) && (tmp < 0)) {
+            tmp = tmp + 4294967296; // convert back to unsigned
+        }
 
 	if (tmp !== undefined)
 		return new Sk.builtin.nmber(tmp, undefined);
@@ -493,10 +494,11 @@ Sk.builtin.nmber.prototype.nb$and = function(other)
 Sk.builtin.nmber.prototype.nb$or = function(other)
 {
 	var tmp;
-	if (typeof other === "number")
-		tmp = this.v | other;
-	else if (other instanceof Sk.builtin.nmber)
-		tmp = this.v | other.v
+        other = Sk.builtin.asnum$(other);
+        tmp = this.v | other;
+        if ((tmp !== undefined) && (tmp < 0)) {
+            tmp = tmp + 4294967296; // convert back to unsigned
+        }
 
 	if (tmp !== undefined)
 		return new Sk.builtin.nmber(tmp, undefined);
@@ -507,10 +509,11 @@ Sk.builtin.nmber.prototype.nb$or = function(other)
 Sk.builtin.nmber.prototype.nb$xor = function(other)
 {
 	var tmp;
-	if (typeof other === "number")
-		tmp = this.v ^ other;
-	else if (other instanceof Sk.builtin.nmber)
-		tmp = this.v ^ other.v
+        other = Sk.builtin.asnum$(other);
+        tmp = this.v ^ other;
+        if ((tmp !== undefined) && (tmp < 0)) {
+            tmp = tmp + 4294967296; // convert back to unsigned
+        }
 
 	if (tmp !== undefined)
 		return new Sk.builtin.nmber(tmp, undefined);
