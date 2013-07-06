@@ -241,7 +241,7 @@ Sk.builtin.any = function any(iter)
 
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (Sk.builtin.bool(i)) {
+        if (Sk.misceval.isTrue(i)) {
             return true;
         }
     }
@@ -262,7 +262,7 @@ Sk.builtin.all = function all(iter)
 
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (!Sk.builtin.bool(i)) {
+        if (!Sk.misceval.isTrue(i)) {
             return false;
         }
     }
