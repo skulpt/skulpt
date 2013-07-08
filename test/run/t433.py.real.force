@@ -1,0 +1,5 @@
+formatting with just 1 argument
+12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.2300000 -1.2300000
+0.00000123 0.00000123 1.4 -1.4
+'this' is a repr and this is a string
+I can also use a dictionary to format.

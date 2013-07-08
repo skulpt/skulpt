@@ -149,6 +149,7 @@ goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
 Sk.builtin.ValueError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.ValueError, Sk.builtin.Exception);
 Sk.builtin.ValueError.prototype.tp$name = "ValueError";
+goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
 
 /**
  * @constructor

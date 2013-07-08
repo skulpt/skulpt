@@ -14,8 +14,9 @@
  *
  * can throw ParseError
  */
-function Parser(grammar)
+function Parser(filename, grammar)
 {
+    this.filename = filename;
     this.grammar = grammar;
     return this;
 }
@@ -131,14 +132,14 @@ OUTERWHILE:
             this.pop();
             if (this.stack.length === 0)
             {
-                throw new Sk.builtin.ParseError("too much input");
+                throw new Sk.builtin.ParseError("too much input", this.filename);
             }
         }
         else
         {
             // no transition
             var errline = context[0][0];
-            throw new Sk.builtin.ParseError("bad input on line " + errline.toString(), "", errline, context);	//	RNL
+            throw new Sk.builtin.ParseError("bad input on line " + errline.toString(), this.filename, errline, context);	//	RNL
 //          throw new Sk.builtin.ParseError("bad input on line " + errline.toString());		RNL
         }
     }
@@ -159,8 +160,12 @@ Parser.prototype.classify = function(type, value, context)
         }
     }
     ilabel = this.grammar.tokens.hasOwnProperty(type) && this.grammar.tokens[type];
-    if (!ilabel)
-        throw new Sk.builtin.ParseError("bad token", type, value, context);
+    if (!ilabel) {
+        // throw new Sk.builtin.ParseError("bad token", type, value, context);
+        // Questionable modification to put line number in position 2
+        // like everywhere else and filename in position 1.
+        throw new Sk.builtin.ParseError("bad token", this.filename, context[0][0], context);
+    }
     return ilabel;
 };
 
@@ -252,7 +257,7 @@ Parser.prototype.pop = function()
 function makeParser(filename, style)
 {
     if (style === undefined) style = "file_input";
-    var p = new Parser(Sk.ParseTables);
+    var p = new Parser(filename, Sk.ParseTables);
     // for closure's benefit
     if (style === "file_input")
         p.setup(Sk.ParseTables.sym.file_input);
@@ -305,7 +310,7 @@ function makeParser(filename, style)
         if (ret)
         {
             if (ret !== "done") {
-                throw "ParseError: incomplete input";
+                throw new Sk.builtin.ParseError("incomplete input", this.filename);
 			}
             return p.rootnode;
         }

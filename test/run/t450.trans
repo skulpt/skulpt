@@ -1,0 +1,10 @@
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='range',
+                                          ctx=Load()),
+                                args=[Num(n=1),
+                                      Num(n=10),
+                                      Num(n=0.5)],
+                                keywords=[],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

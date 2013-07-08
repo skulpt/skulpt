@@ -1,0 +1,9 @@
+Module(body=[While(test=Compare(left=Num(n=1),
+                                ops=[Lt()],
+                                comparators=[Num(n=1)]),
+                   body=[Print(dest=None,
+                               values=[Str(s='2 < 1')],
+                               nl=True)],
+                   orelse=[Print(dest=None,
+                                 values=[Str(s='2 > 1')],
+                                 nl=True)])])

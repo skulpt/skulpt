@@ -3,13 +3,14 @@
 // Javascript. This is a bit hokey.
 Sk.builtins = {
 'range': Sk.builtin.range,
+'round': Sk.builtin.round,
 'len': Sk.builtin.len,
 'min': Sk.builtin.min,
 'max': Sk.builtin.max,
 'sum': Sk.builtin.sum,
+'zip': Sk.builtin.zip,
 'abs': Sk.builtin.abs,
 'fabs': Sk.builtin.abs,	//	Added by RNL
-'round': Sk.builtin.round,
 'ord': Sk.builtin.ord,
 'chr': Sk.builtin.chr,
 'hex': Sk.builtin.hex,
@@ -24,6 +25,11 @@ Sk.builtins = {
 'float_$rw$': Sk.builtin.float_,
 'int_$rw$': Sk.builtin.int_,
 'hasattr': Sk.builtin.hasattr,
+
+'bool': Sk.builtin.bool,
+'any': Sk.builtin.any,
+'all': Sk.builtin.all,
+ 'enumerate': Sk.builtin.enumerate,
 
 'AttributeError': Sk.builtin.AttributeError,
 'ValueError': Sk.builtin.ValueError,
@@ -56,8 +62,6 @@ Sk.builtins = {
 'input': Sk.builtin.input,
 'raw_input': Sk.builtin.raw_input,
 /*'read': Sk.builtin.read,*/
-'all': Sk.builtin.all,
-'any': Sk.builtin.any,
 'jseval': Sk.builtin.jseval,
 'jsmillis': Sk.builtin.jsmillis
 /*'long_div_mode': Sk.builtin.lng.longDivideMode	//	No longer used/relevant */

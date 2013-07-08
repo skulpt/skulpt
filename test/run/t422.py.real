@@ -1,0 +1,16 @@
+
+-1.4 to 1.4, no ndigit
+
+-1.49 to 1.49, no ndigit
+
+-0.064 to -0.025, ndigit=2
+
+0.025 to 0.064, ndigit=2
+
+-0.0064 to -0.0025, ndigit=3
+
+0.0025 to 0.0064, ndigit=3
+
+-649 to -250, ndigit=-2
+
+250 to 649, ndigit=-2

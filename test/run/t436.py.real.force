@@ -1,0 +1,128 @@
+
+Syntax: .
+True
+True
+True
+True
+True
+True
+
+Syntax: ^
+True
+True
+True
+True
+True
+True
+
+Syntax: $
+True
+True
+True
+True
+True
+False
+
+Syntax: *
+True
+True
+True
+True
+True
+True
+
+Syntax: +
+True
+True
+True
+True
+True
+True
+
+Syntax: ?
+True
+True
+True
+True
+True
+True
+
+Syntax: *?
+True
+True
+True
+True
+
+Syntax: +?
+True
+True
+True
+True
+
+Syntax: ??
+True
+True
+True
+True
+
+Syntax: {m}
+True
+True
+True
+
+Syntax: {m,n}
+True
+True
+True
+True
+didn't get a match
+didn't get a match
+didn't get a match
+didn't get a match
+True
+True
+True
+True
+True
+didn't get a match
+True
+
+Syntax: {m,n}?
+True
+True
+True
+True
+didn't get a match
+didn't get a match
+didn't get a match
+didn't get a match
+True
+True
+True
+True
+True
+didn't get a match
+True
+
+Syntax: []
+True
+True
+True
+True
+True
+
+Syntax: |
+True
+True
+True
+True
+
+Syntax: (...)
+True
+
+Syntax: (?...)
+True
+True
+True
+True
+True

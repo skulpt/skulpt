@@ -41,7 +41,7 @@ Sk.quickSort = function(arr, cmp, key, reverse)
             } else {
 			  var cmpresult = Sk.misceval.callsim(cmp, arr[ix], piv);
             }
-            if( cmpresult < 0 ) {
+            if( Sk.builtin.asnum$(cmpresult) < 0 ) {
 //				swap store, ix
 				tmp=arr[store];
 				arr[store]=arr[ix];

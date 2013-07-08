@@ -1,5 +1,10 @@
 Sk.builtin.float_ = function(x)
 {
+    if (x === undefined)
+    {
+        return new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
+    }
+
     if (x instanceof Sk.builtin.str)
     {
 		var tmp;
@@ -13,8 +18,24 @@ Sk.builtin.float_ = function(x)
 		return new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
     }
 
+    // Floats are just numbers
+    if (typeof x === "number" || x instanceof Sk.builtin.nmber)
+    {
 	x = Sk.builtin.asnum$(x);
-	return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
+        return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
+    }
+
+    // Convert booleans
+    if (x === true) 
+    {
+        return new Sk.builtin.nmber(1.0, Sk.builtin.nmber.float$);
+    }
+    if (x === false)
+    {
+        return new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
+    }
+
+    throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
 Sk.builtin.float_.prototype.tp$name = "float";

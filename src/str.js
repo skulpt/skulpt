@@ -7,7 +7,7 @@ var interned = {};
  */
 Sk.builtin.str = function(x)
 {
-    if (x === undefined) throw "error: trying to str() undefined (should be at least null)";
+    if (x === undefined) x = "";
     if (x instanceof Sk.builtin.str && x !== Sk.builtin.str.prototype.ob$type) return x;
     if (!(this instanceof Sk.builtin.str)) return new Sk.builtin.str(x);
 
@@ -29,9 +29,6 @@ Sk.builtin.str = function(x)
         ret = x.tp$str();
         if (!(ret instanceof Sk.builtin.str)) throw new Sk.builtin.ValueError("__str__ didn't return a str");
         return ret;
-    }
-    else if (x.__str__ !== undefined) {
-        return Sk.misceval.callsim(x.__str__,x);
     }
     else 
         return Sk.misceval.objectRepr(x);
@@ -79,7 +76,16 @@ Sk.builtin.str.prototype.sq$length = function()
 {
     return this.v.length;
 };
-Sk.builtin.str.prototype.sq$concat = function(other) { return new Sk.builtin.str(this.v + other.v); };
+Sk.builtin.str.prototype.sq$concat = function(other) 
+{ 
+    if (!other || !Sk.builtin.checkString(other))
+    {
+        var otypename = Sk.abstr.typeName(other);
+        throw new TypeError("cannot concatenate 'str' and '" 
+                            + otypename + "' objects");
+    }
+    return new Sk.builtin.str(this.v + other.v); 
+};
 Sk.builtin.str.prototype.sq$repeat = function(n)
 {
 	n = Sk.builtin.asnum$(n);
@@ -93,6 +99,7 @@ Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
 	i1 = Sk.builtin.asnum$(i1);
 	i2 = Sk.builtin.asnum$(i2);
+    if (i1 < 0) i1 = 0;
     return new Sk.builtin.str(this.v.substr(i1, i2 - i1));
 };
 
@@ -249,7 +256,21 @@ Sk.builtin.str.prototype['upper'] = new Sk.builtin.func(function(self)
 
 Sk.builtin.str.prototype['capitalize'] = new Sk.builtin.func(function(self)
 {
-    return new Sk.builtin.str(self.v.charAt(0).toUpperCase()+self.v.substring(1));
+    var orig = self.v;
+    var cap;
+    var i;
+
+    if (orig.length === 0) {
+        return new Sk.builtin.str("");
+    };
+
+    cap = orig.charAt(0).toUpperCase();
+
+    for (i = 1; i < orig.length; i++) {
+        cap += orig.charAt(i).toLowerCase();
+    };
+        
+    return new Sk.builtin.str(cap);
 });
 
 Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
@@ -265,19 +286,56 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
-	howmany = Sk.builtin.asnum$(howmany);
-    var res;
-    if (! on) {
-        res = self.v.trim().split(/[\s]+/, howmany);
+    howmany = Sk.builtin.asnum$(howmany);
+    Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
+    if (on === undefined) {
+        on = null;
+    }
+    if ((on !== null) && !Sk.builtin.checkString(on)) { 
+        throw new Sk.builtin.TypeError("expected a string");
+    }
+    if ((on !== null) && on.v === "") {
+        throw new Sk.builtin.ValueError("empty separator");
+    }
+    if ((howmany !== undefined) && !Sk.builtin.checkInt(howmany)) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    }
+
+    var regex = /[\s]+/g;
+    var str = self.v;
+    if (on === null) {
+        str = str.trimLeft();
     } else {
-        res = self.v.split(new Sk.builtin.str(on).v, howmany);
+	// Escape special characters in "on" so we can use a regexp
+	var s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
+        regex = new RegExp(s, "g");
     }
-    var tmp = [];
-    for (var i = 0; i < res.length; ++i)
-    {
-        tmp.push(new Sk.builtin.str(res[i]));
+
+    // This is almost identical to re.split, 
+    // except how the regexp is constructed
+
+    var result = [];
+    var match;
+    var index = 0;
+    var splits = 0;
+    while ((match = regex.exec(str)) != null) {
+        if (match.index === regex.lastIndex) {
+            // empty match
+            break;
+        }
+        result.push(new Sk.builtin.str(str.substring(index, match.index)));
+        index = regex.lastIndex;
+        splits += 1;
+        if (howmany && (splits >= howmany)) {
+            break;
+        }
     }
-    return new Sk.builtin.list(tmp);
+    str = str.substring(index);
+    if (on !== null || (str.length > 0)) {
+        result.push(new Sk.builtin.str(str));
+    }
+
+    return new Sk.builtin.list(result);
 });
 
 Sk.builtin.str.prototype['strip'] = new Sk.builtin.func(function(self, chars)
@@ -394,19 +452,45 @@ Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.indexOf(tgt.v,start);
+    start = Sk.builtin.asnum$(start);
+    return new Sk.builtin.nmber(self.v.indexOf(tgt.v,start), Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.indexOf(tgt.v,start);
+    var idx = Sk.misceval.callsim(self['find'], self, tgt, start);
+    if (Sk.builtin.asnum$(idx) === -1) {
+        throw new Sk.builtin.ValueError("substring not found");
+    };
+    return idx;
 });
 
 Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.lastIndexOf(tgt.v,start);
+    var s = self.v;
+    var offset = 0;
+    var idx = -1;
+
+    if (start !== undefined) {
+        // Only look after start position
+	start = Sk.builtin.asnum$(start);
+        s = s.substring(start);
+        offset = start;
+    };
+    idx = s.lastIndexOf(tgt.v);
+
+    if (idx !== -1) {
+        // Adjust so that index is from start of string
+        idx = idx + offset;
+    };
+
+    return new Sk.builtin.nmber(idx, Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start) {
-   return self.v.lastIndexOf(tgt.v,start);
+    var idx = Sk.misceval.callsim(self['rfind'], self, tgt, start);
+    if (Sk.builtin.asnum$(idx) === -1) {
+        throw new Sk.builtin.ValueError("substring not found");
+    };
+    return idx;
 });
 
 Sk.builtin.str.prototype['startswith'] = new Sk.builtin.func(function(self, tgt) {
@@ -425,6 +509,18 @@ Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, n
     goog.asserts.assert(count === undefined, "todo; replace() with count not implemented");
     var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
     return new Sk.builtin.str(self.v.replace(patt, newS.v));
+});
+
+Sk.builtin.str.prototype['isdigit'] = new Sk.builtin.func(function(self) {
+    if (self.v.length === 0) { return false; }
+    var i;
+    for (i=0; i<self.v.length; i++) {
+        var ch = self.v.charAt(i);
+        if (ch < '0' || ch > '9') {
+            return false;
+        };
+    };
+    return true;
 });
 
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('str', Sk.builtin.str);
@@ -446,7 +542,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
     // length modifier is ignored
 
     if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) rhs = new Sk.builtin.tuple([rhs]);
-    
+
     // general approach is to use a regex that matches the format above, and
     // do an re.sub with a function as replacement to make the subs.
 
@@ -589,10 +685,10 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
             case 'X':
                 return handleWidth(formatNumber(value, 16)).toUpperCase();
 
-            case 'e':
-            case 'E':
             case 'f':
             case 'F':
+            case 'e':
+            case 'E':
             case 'g':
             case 'G':
 				var convValue = Sk.builtin.asnum$(value);

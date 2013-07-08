@@ -1,0 +1,21 @@
+print "EVALUATE TO FALSE:"
+print bool(None)
+print bool(0)
+print bool(0.0)
+print bool('')
+print bool("")
+print bool(())
+print bool([])
+print bool({})
+print bool(False)
+
+print "EVALUATE TO TRUE:"
+print bool(1)
+print bool(5.0)
+print bool(-43L)
+print bool('hello')
+print bool("False")
+print bool((2,))
+print bool([12])
+print bool({'a':10})
+print bool(True)

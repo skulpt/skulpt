@@ -4,19 +4,36 @@
  */
 Sk.builtin.tuple = function(L)
 {
-    if (arguments.length > 1) {
-	throw new TypeError("tuple must be created from a sequence");
-    }
-    if (L instanceof Sk.builtin.tuple) return;
     if (!(this instanceof Sk.builtin.tuple)) return new Sk.builtin.tuple(L);
+
+    if (L === undefined)
+    {
+        L = [];
+    }
+
     if (Object.prototype.toString.apply(L) === '[object Array]')
+    {
         this.v = L;
+    }
     else
-        this.v = L.v;
+    {
+        if (L.tp$iter)
+        {
+            this.v = [];
+            for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+                this.v.push(i);
+        }
+        else
+            throw new Sk.builtin.ValueError("expecting Array or iterable");        
+    }
+
     this.__class__ = Sk.builtin.tuple;
+
+    this["v"] = this.v;
     return this;
 };
 
+Sk.builtin.tuple.prototype.tp$name = "tuple";
 Sk.builtin.tuple.prototype['$r'] = function()
 {
     if (this.v.length === 0) return new Sk.builtin.str("()");
@@ -32,12 +49,17 @@ Sk.builtin.tuple.prototype['$r'] = function()
 
 Sk.builtin.tuple.prototype.mp$subscript = function(index)
 {
-	if (index.constructor === Sk.builtin.nmber) index = index.v;
-    if (typeof index === "number")
+    if (Sk.misceval.isIndex(index))
     {
-        if (index < 0) index = this.v.length + index;
-        if (index < 0 || index >= this.v.length) throw new Sk.builtin.IndexError("tuple index out of range");
-        return this.v[index];
+	var i = Sk.misceval.asIndex(index);
+	if (i !== undefined)
+	{
+            if (i < 0) i = this.v.length + i;
+            if (i < 0 || i >= this.v.length) {
+		throw new Sk.builtin.IndexError("tuple index out of range");
+	    }
+            return this.v[i];
+	}
     }
     else if (index instanceof Sk.builtin.slice)
     {
@@ -48,8 +70,8 @@ Sk.builtin.tuple.prototype.mp$subscript = function(index)
                 });
         return new Sk.builtin.tuple(ret);
     }
-    else
-        throw new TypeError("tuple indices must be integers, not " + typeof index);
+
+    throw new TypeError("tuple indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
 // todo; the numbers and order are taken from python, but the answer's
@@ -102,12 +124,23 @@ Sk.builtin.tuple.prototype.tp$iter = function()
     return ret;
 };
 
+Sk.builtin.tuple.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
 Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
 {
-    // todo; NotImplemented if either isn't a tuple
-
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
         
+    // w not a tuple
+    if (!w.__class__ || w.__class__ != Sk.builtin.tuple)
+    {
+        // shortcuts for eq/not
+        if (op === 'Eq') return false;
+        if (op === 'NotEq') return true;
+
+        // todo; other types should have an arbitrary order
+        return false;
+    }
+
     var v = this.v;
     var w = w.v;
     var vl = v.length;
@@ -152,5 +185,33 @@ Sk.builtin.tuple.prototype.sq$concat = function(other)
 };
 
 Sk.builtin.tuple.prototype.sq$length = function() { return this.v.length; };
+
+
+Sk.builtin.tuple.prototype['index'] = new Sk.builtin.func(function(self, item)
+{
+    var len = self.v.length;
+    var obj = self.v;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+            return i;
+    }
+    throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
+});
+
+Sk.builtin.tuple.prototype['count'] = new Sk.builtin.func(function(self, item)
+{
+    var len = self.v.length;
+    var obj = self.v;
+    var count = 0;
+    for (var i = 0; i < len; ++i)
+    {
+        if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
+        {
+            count += 1;
+        }
+    }
+    return count;
+});
 
 goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
