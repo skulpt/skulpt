@@ -6,7 +6,7 @@
  */
 Sk.builtin.nmber = function(x, skType)	/* number is a reserved word */
 {
-    if (!(this instanceof Sk.builtin.nmber)) return new Sk.builtin.nmber(x, undefined);
+    if (!(this instanceof Sk.builtin.nmber)) return new Sk.builtin.nmber(x, skType);
 
 	if (x instanceof Sk.builtin.str)
 		x = x.v;
