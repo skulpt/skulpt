@@ -16,6 +16,7 @@ class unittest:
         else:
             self.resdiv = document.createElement('div')
             self.resdiv.setAttribute('id',self.divid+'_unit_results')
+            self.resdiv.setAttribute('class','unittest-results')
         self.mydiv.appendChild(self.resdiv)
 
         self.testlist = []
