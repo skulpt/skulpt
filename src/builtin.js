@@ -690,8 +690,10 @@ Sk.builtin.superbi =  function superbi()
 }
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {
-    if (typeof attr.v !== "string")
-        throw new Sk.builtin.TypeError('hasattr() attribute name must be a string')
+    Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
+    if (!Sk.builtin.checkString(attr)) {
+        throw new Sk.builtin.TypeError('hasattr(): attribute name must be string');
+    }
 
     if (obj.tp$getattr) {
         if (obj.tp$getattr(attr.v)) {
