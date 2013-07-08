@@ -71,6 +71,7 @@ var $builtinmodule = function(name)
             throw new Sk.builtin.TypeError("flags must be a number");
         };
 
+	maxsplit = Sk.builtin.asnum$(maxsplit);
         var pat = Sk.ffi.unwrapo(pattern);
         var str = Sk.ffi.unwrapo(string);
         
