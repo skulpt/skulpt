@@ -60,8 +60,8 @@ Sk.builtin.asnum$ = function(a) {
 	    return a.toInt$();
 	}
 	if (a.constructor === Sk.builtin.biginteger) {
-	    if ((a.trueCompare(Sk.builtin.lng.MAX_INT$.biginteger) > 0)
-		|| (a.trueCompare(Sk.builtin.lng.MIN_INT$.biginteger) < 0)) {
+	    if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.lng.threshold$)) > 0)
+		|| (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.lng.threshold$)) < 0)) {
 		return a.toString();
 	    }
 	    return a.intValue();
