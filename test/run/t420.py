@@ -1,0 +1,6 @@
+print range(10)
+print range(1,10)
+print range(0,10,2)
+print range(0,-10,-1)
+print range(0,-10,2)
+print range(-10,0,2)

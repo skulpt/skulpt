@@ -4,90 +4,148 @@ var $builtinmodule = function(name)
     mod.pi = Sk.builtin.assk$(Math.PI, Sk.builtin.nmber.float$);
     mod.e =  Sk.builtin.assk$(Math.E, Sk.builtin.nmber.float$);
 
-    mod.abs = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)), undefined);
-    });
-
 //	RNL	added
     mod.fabs = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.abs(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("fabs", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
     mod.asin = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(Math.asin(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("asin", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	return new Sk.builtin.nmber(Math.asin(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
     mod.acos = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(Math.acos(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("acos", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	return new Sk.builtin.nmber(Math.acos(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
     mod.atan = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(Math.atan(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("atan", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	return new Sk.builtin.nmber(Math.atan(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
-    mod.atan2 = new Sk.builtin.func(function(x, y) {
-		return Sk.builtin.assk$(Math.atan2(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y)), Sk.builtin.nmber.float$);
+    mod.atan2 = new Sk.builtin.func(function(y, x) {
+        Sk.builtin.pyCheckArgs("atan2", arguments, 2, 2);
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	return new Sk.builtin.nmber(Math.atan2(Sk.builtin.asnum$(y), Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
     mod.sin = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(Math.sin(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("sin", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	return new Sk.builtin.nmber(Math.sin(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
     mod.cos = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(Math.cos(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("cos", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	return new Sk.builtin.nmber(Math.cos(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
     mod.tan = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(Math.tan(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("tan", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	return new Sk.builtin.nmber(Math.tan(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
     mod.ceil = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.ceil(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("ceil", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	return new Sk.builtin.nmber(Math.ceil(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
     mod.floor = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.floor(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
+        Sk.builtin.pyCheckArgs("floor", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	return new Sk.builtin.nmber(Math.floor(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
     mod.sqrt = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.sqrt(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
-    });
+        Sk.builtin.pyCheckArgs("sqrt", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-    mod.log = new Sk.builtin.func(function(x, b) {
-		if (b) {
-			return Sk.builtin.assk$((Math.log(Sk.builtin.asnum$(x)) / Math.log(Sk.builtin.asnum$(b))), Sk.builtin.nmber.float$);
-		}
-		return Sk.builtin.assk$(Math.log(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
-    });
-
-    mod.log10 = new Sk.builtin.func(function(x, b) {
-		return Sk.builtin.assk$((Math.log(Sk.builtin.asnum$(x)) / Math.log(Sk.builtin.asnum$(10))), Sk.builtin.nmber.float$);
-	});
-
-    mod.exp = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.exp(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
-    });
-
-    mod.pow = new Sk.builtin.func(function(x,y) {
-		return Sk.builtin.assk$(Math.pow(Sk.builtin.asnum$(x),Sk.builtin.asnum$(y)), Sk.builtin.nmber.float$);
-    });
-
-    mod.radians = new Sk.builtin.func(function(deg) {
-		return Sk.builtin.assk$(Math.PI / 180.0 * Sk.builtin.asnum$(deg), Sk.builtin.nmber.float$);
-    });
-
-    mod.degrees = new Sk.builtin.func(function(rad) {
-		return Sk.builtin.assk$(180.0 / Math.PI * Sk.builtin.asnum$(rad), Sk.builtin.nmber.float$);
+	return new Sk.builtin.nmber(Math.sqrt(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
     mod.trunc = new Sk.builtin.func(function(x) {
-		return Sk.builtin.assk$(Math.floor(Sk.builtin.asnum$(x)), Sk.builtin.nmber.int$);
+        Sk.builtin.pyCheckArgs("trunc", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+        return new Sk.builtin.nmber(Sk.builtin.asnum$(x)|0, Sk.builtin.nmber.float$);
+    });
+
+    mod.log = new Sk.builtin.func(function(x, base) {
+        Sk.builtin.pyCheckArgs("log", arguments, 1, 2);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+        if (base === undefined) {
+	    return new Sk.builtin.nmber(Math.log(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
+        } else {
+            Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkNumber(base));
+            var ret = Math.log(Sk.builtin.asnum$(x)) / Math.log(Sk.builtin.asnum$(base));
+	    return new Sk.builtin.nmber(ret, Sk.builtin.nmber.float$);
+        }
+    });
+
+    mod.log10 = new Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("log10", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+        var ret = Math.log(Sk.builtin.asnum$(x)) / Math.log(10);
+	return new Sk.builtin.nmber(ret, Sk.builtin.nmber.float$);
+    });
+
+    mod.exp = new Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("exp", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	return new Sk.builtin.nmber(Math.exp(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
+    });
+
+    mod.pow = new Sk.builtin.func(function(x,y) {
+        Sk.builtin.pyCheckArgs("pow", arguments, 2, 2);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+
+	return new Sk.builtin.nmber(Math.pow(Sk.builtin.asnum$(x), Sk.builtin.asnum$(y)), Sk.builtin.nmber.float$);
+    });
+
+    mod.radians = new Sk.builtin.func(function(deg) {
+        Sk.builtin.pyCheckArgs("radians", arguments, 1, 1);
+        Sk.builtin.pyCheckType("deg", "number", Sk.builtin.checkNumber(deg));
+
+	var ret = Math.PI / 180.0 * Sk.builtin.asnum$(deg);
+	return new Sk.builtin.nmber(ret, Sk.builtin.nmber.float$);
+    });
+
+    mod.degrees = new Sk.builtin.func(function(rad) {
+        Sk.builtin.pyCheckArgs("degrees", arguments, 1, 1);
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+
+	var ret = 180.0 / Math.PI * Sk.builtin.asnum$(rad);
+	return new Sk.builtin.nmber(ret, Sk.builtin.nmber.float$);
     });
 
     mod.hypot = new Sk.builtin.func(function(x, y) {
 		x = Sk.builtin.asnum$(x);
 		y = Sk.builtin.asnum$(y);
-		return Sk.builtin.assk$(Math.sqrt((x*x)+(y*y)), Sk.builtin.nmber.float$);
+	return new Sk.builtin.nmber(Math.sqrt((x*x)+(y*y)), Sk.builtin.nmber.float$);
     });
 
 	mod.factorial = new Sk.builtin.func(function(x) {
@@ -95,7 +153,7 @@ var $builtinmodule = function(name)
 		var r = 1;
 		for (var i = 2; i <= x; i++)
 			r *= i;
-		return Sk.builtin.assk$(r, Sk.builtin.nmber.int$);
+		return new Sk.builtin.nmber(r, Sk.builtin.nmber.int$);
 	});
 
     return mod;

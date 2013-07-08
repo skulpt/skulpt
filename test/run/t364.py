@@ -1,0 +1,2 @@
+print "\W"
+print "\n"

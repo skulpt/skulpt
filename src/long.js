@@ -3,36 +3,40 @@
 //  Using javascript BigInteger by Tom Wu
 /**
  * @constructor
+ * @param {*} x
+ * @param {number=} base
  */
-Sk.builtin.lng = function(x)	/* long is a reserved word */
+Sk.builtin.lng = function(x, base)	/* long is a reserved word */
 {
-    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(x);
+    base = Sk.builtin.asnum$(base);
+    if (!(this instanceof Sk.builtin.lng)) return new Sk.builtin.lng(x, base);
 
-	if (x instanceof Sk.builtin.str)
-		x = x.v;
-
-	if (x instanceof Sk.builtin.lng)
-		this.biginteger = x.biginteger.clone();
-	else if (x instanceof Sk.builtin.biginteger)
-		this.biginteger = x;
-	else if (typeof x === "string")
-		return Sk.longFromStr(x);
-	else {
-		x = Sk.builtin.asnum$nofloat(x);
-		this.biginteger = new Sk.builtin.biginteger(x);
-	}
+    if (x === undefined)
+	this.biginteger = new Sk.builtin.biginteger(0);
+    else if (x instanceof Sk.builtin.lng)
+	this.biginteger = x.biginteger.clone();
+    else if (x instanceof Sk.builtin.biginteger)
+	this.biginteger = x;
+    else if (x instanceof String)
+	return Sk.longFromStr(x, base);
+    else if (x instanceof Sk.builtin.str)
+	return Sk.longFromStr(x.v, base);
+    else {
+	x = Sk.builtin.asnum$nofloat(x);
+	this.biginteger = new Sk.builtin.biginteger(x);
+    }
 
     return this;
 };
 
-Sk.builtin.lng.tp$index = function()
+Sk.builtin.lng.prototype.tp$index = function()
 {
     return parseInt(this.str$(10, true), 10);
 };
 
-Sk.builtin.lng.tp$hash = function()
+Sk.builtin.lng.prototype.tp$hash = function()
 {
-    return 'number ' + this.str$(10, true);
+    return this.tp$index();
 };
 
 Sk.builtin.lng.prototype.tp$name = "long";
@@ -41,8 +45,8 @@ Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.bu
 //	Threshold to determine when types should be converted to long
 Sk.builtin.lng.threshold$ = Math.pow(2, 53);
 
-Sk.builtin.lng.MAX_INT$ = new Sk.builtin.lng(Sk.builtin.lng.threshold$); 
-Sk.builtin.lng.MIN_INT$ = new Sk.builtin.lng(-Sk.builtin.lng.threshold$); 
+Sk.builtin.lng.MAX_INT$ = new Sk.builtin.lng(Sk.builtin.lng.threshold$);
+Sk.builtin.lng.MIN_INT$ = new Sk.builtin.lng(-Sk.builtin.lng.threshold$);
 
 //Sk.builtin.lng.LONG_DIVIDE$ = 0;
 //Sk.builtin.lng.FLOAT_DIVIDE$ = -1;
@@ -79,56 +83,28 @@ Sk.builtin.lng.fromInt$ = function(ival)
 
 // js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
 // 0x, 0o, 0b, etc.
-Sk.longFromStr = function(s)
+Sk.longFromStr = function(s, base)
 {
-    goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
+    // l/L are valid digits with base >= 22
+    // goog.asserts.assert(s.charAt(s.length - 1) !== "L" && s.charAt(s.length - 1) !== 'l', "L suffix should be removed before here");
 
-	var neg=false;
-	if (s.substr(0, 1) == "-") {
-		s = s.substr(1);
-		neg=true;
-	}
-    var base = 10;
-    if (s.substr(0, 2) === "0x" || s.substr(0, 2) === "0X")
-    {
-        s = s.substr(2);
-        base = 16;
-    }
-    else if (s.substr(0, 2) === "0o")
-    {
-        s = s.substr(2);
-        base = 8;
-    }
-    else if (s.substr(0, 1) === "0")
-    {
-        s = s.substr(1);
-        base = 8;
-    }
-    else if (s.substr(0, 2) === "0b")
-    {
-        s = s.substr(2);
-        base = 2;
-    }
+    var parser = function (s, base) {
+        if (base == 10)
+            return new Sk.builtin.biginteger(s);
+        else
+            return new Sk.builtin.biginteger(s, base);
+    };
 
-	if (base == 10) {
-		if (s.indexOf('e') >= 0 || s.indexOf('E') >= 0 || s.indexOf('.') >= 0) {
-			s = Math.floor(parseFloat(s));
-		}
-	}
+    var biginteger = Sk.str2number(s, base, parser, function(x){return x.negate();}, "long");
 
-	var biginteger;
-	if (base == 10)
-		biginteger = new Sk.builtin.biginteger(s);
-	else
-		biginteger = new Sk.builtin.biginteger(s,base);
-
-	if (neg)
-		biginteger = biginteger.negate();
-
-	return new Sk.builtin.lng(biginteger);
-
+    return new Sk.builtin.lng(biginteger);
 };
 goog.exportSymbol("Sk.longFromStr", Sk.longFromStr);
+
+Sk.builtin.lng.prototype.toInt$ = function()
+{
+    return this.biginteger.intValue();
+};
 
 Sk.builtin.lng.prototype.clone = function()
 {
@@ -158,6 +134,8 @@ Sk.builtin.lng.prototype.nb$add = function(other)
 	return new Sk.builtin.lng(this.biginteger.add(new Sk.builtin.biginteger(other)));
 };
 
+Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
+
 Sk.builtin.lng.prototype.nb$subtract = function(other)
 {
 	if (other instanceof Sk.builtin.nmber) {
@@ -180,6 +158,8 @@ Sk.builtin.lng.prototype.nb$subtract = function(other)
 
 	return new Sk.builtin.lng(this.biginteger.subtract(new Sk.builtin.biginteger(other)));
 };
+
+Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
 
 Sk.builtin.lng.prototype.nb$multiply = function(other)
 {
@@ -207,6 +187,8 @@ Sk.builtin.lng.prototype.nb$multiply = function(other)
 
 	return new Sk.builtin.lng(this.biginteger.multiply(new Sk.builtin.biginteger(other)));
 };
+
+Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
 
 Sk.builtin.lng.prototype.nb$divide = function(other)
 {
@@ -269,6 +251,8 @@ Sk.builtin.lng.prototype.nb$divide = function(other)
 	}
 };
 
+Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
+
 Sk.builtin.lng.prototype.nb$floor_divide = function(other)
 {
 	if (other instanceof Sk.builtin.nmber) {
@@ -280,6 +264,8 @@ Sk.builtin.lng.prototype.nb$floor_divide = function(other)
 
 	return this.nb$divide(other);
 };
+
+Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
 
 Sk.builtin.lng.prototype.nb$remainder = function(other)
 {
@@ -312,8 +298,10 @@ Sk.builtin.lng.prototype.nb$remainder = function(other)
 			tmp = tmp.nb$add(other);
 	}
 	return tmp;
-	
+
 };
+
+Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
 Sk.builtin.lng.prototype.nb$power = function(n)
 {
@@ -354,19 +342,100 @@ Sk.builtin.lng.prototype.nb$power = function(n)
 	return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(n)));
 };
 
-Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
-
-Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
-
-Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multiply;
-
-Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
-
-Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
-
-Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
-
 Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
+
+Sk.builtin.lng.prototype.nb$lshift = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	if (other.biginteger.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
+	return new Sk.builtin.lng(this.biginteger.shiftLeft(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	if (other.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
+	return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
+    }
+    
+    if (other < 0) {
+	throw new Sk.builtin.ValueError("negative shift count");
+    }
+    other = Sk.builtin.asnum$(other);
+    return new Sk.builtin.lng(this.biginteger.shiftLeft(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_lshift = Sk.builtin.lng.prototype.nb$lshift;
+
+Sk.builtin.lng.prototype.nb$rshift = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	if (other.biginteger.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
+	return new Sk.builtin.lng(this.biginteger.shiftRight(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	if (other.signum() < 0) {
+	    throw new Sk.builtin.ValueError("negative shift count");
+	}
+	return new Sk.builtin.lng(this.biginteger.shiftRight(other));
+    }
+    
+    if (other < 0) {
+	throw new Sk.builtin.ValueError("negative shift count");
+    }
+    other = Sk.builtin.asnum$(other);
+    return new Sk.builtin.lng(this.biginteger.shiftRight(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_rshift = Sk.builtin.lng.prototype.nb$rshift;
+
+Sk.builtin.lng.prototype.nb$and = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.and(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.and(other));
+    }
+    
+    other = Sk.builtin.asnum$(other);
+    return new Sk.builtin.lng(this.biginteger.and(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_and = Sk.builtin.lng.prototype.nb$and;
+
+Sk.builtin.lng.prototype.nb$or = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.or(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.or(other));
+    }
+    
+    other = Sk.builtin.asnum$(other);
+    return new Sk.builtin.lng(this.biginteger.or(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_or = Sk.builtin.lng.prototype.nb$or;
+
+Sk.builtin.lng.prototype.nb$xor = function(other)
+{
+    if (other instanceof Sk.builtin.lng) {
+	return new Sk.builtin.lng(this.biginteger.xor(other.biginteger));
+    }
+    if (other instanceof Sk.builtin.biginteger) {
+	return new Sk.builtin.lng(this.biginteger.xor(other));
+    }
+    
+    other = Sk.builtin.asnum$(other);
+    return new Sk.builtin.lng(this.biginteger.xor(new Sk.builtin.biginteger(other)));
+}
+
+Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
 
 Sk.builtin.lng.prototype.nb$negative = function()
 {

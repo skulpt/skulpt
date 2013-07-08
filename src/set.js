@@ -62,6 +62,17 @@ Sk.builtin.set.prototype.tp$richcompare = function(w, op)
     if (this === w && Sk.misceval.opAllowsEquality(op))
         return true;
 
+    // w not a set
+    if (!w.__class__ || w.__class__ != Sk.builtin.set)
+    {
+        // shortcuts for eq/not
+        if (op === 'Eq') return false;
+        if (op === 'NotEq') return true;
+
+        // todo; other types should have an arbitrary order
+        return false;
+    }
+
     var vl = this.sq$length();
     var wl = w.sq$length();
 
@@ -255,7 +266,7 @@ Sk.builtin.set.prototype['add'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.set.prototype['discard'] = new Sk.builtin.func(function(self, item)
 {
-    if (self.v.mp$subscript(item) !== undefined)
+    if (self.v.mp$lookup(item) !== undefined)
     {
         var kf = Sk.builtin.hash;
         var k = kf(item);
@@ -282,14 +293,7 @@ Sk.builtin.set.prototype['pop'] = new Sk.builtin.func(function(self)
 
 Sk.builtin.set.prototype['remove'] = new Sk.builtin.func(function(self, item)
 {
-    if (Sk.abstr.sequenceContains(self, item))
-    {
-        Sk.builtin.set.prototype['discard'].func_code(self, item);
-    }
-    else
-    {
-        throw new Sk.builtin.KeyError(item);
-    }
+    self.v.mp$del_subscript(item);
     return null;
 });
 

@@ -1,0 +1,6 @@
+Module(body=[Print(dest=None,
+                   values=[Str(s='\\W')],
+                   nl=True),
+             Print(dest=None,
+                   values=[Str(s='\n')],
+                   nl=True)])

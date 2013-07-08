@@ -172,7 +172,8 @@ var ContStr = group("[uUbB]?[rR]?'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*" +
                 '[uUbB]?[rR]?"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*' +
                 group('"', '\\\\\\r?\\n'));
 var PseudoExtras = group('\\\\\\r?\\n', Comment_, Triple);
-var PseudoToken = group(PseudoExtras, Number_, Funny, ContStr, Ident);
+// Need to prefix with "^" as we only want to match what's next
+var PseudoToken = "^" + group(PseudoExtras, Number_, Funny, ContStr, Ident);
 
 var pseudoprog;
 var single3prog;
@@ -281,6 +282,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
         {
             throw new Sk.builtin.TokenError("EOF in multi-line string", this.filename, this.strstart[0], this.strstart[1], this.contline);
         }
+        this.endprog.lastIndex = 0;
         endmatch = this.endprog.test(line);
         if (endmatch)
         {
@@ -387,6 +389,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             pos += 1;
             capos = line.charAt(pos);
         }
+        pseudoprog.lastIndex = 0;
         var pseudomatch = pseudoprog.exec(line.substring(pos));
         if (pseudomatch)
         {
@@ -416,6 +419,7 @@ Sk.Tokenizer.prototype.generateTokens = function(line)
             else if (triple_quoted.hasOwnProperty(token))
             {
                 this.endprog = endprogs[token];
+                this.endprog.lastIndex = 0;
                 endmatch = this.endprog.test(line.substring(pos));
                 if (endmatch)
                 {

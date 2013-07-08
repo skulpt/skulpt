@@ -95,14 +95,15 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
     var parentModName;
 
     // if leaf is already in sys.modules, early out
-    var prev = Sk.sysmodules.mp$subscript(modname);
-    if (prev !== undefined)
-    {
+    try {
+        var prev = Sk.sysmodules.mp$subscript(modname);
         // if we're a dotted module, return the top level, otherwise ourselves
         if (modNameSplit.length > 1)
             return Sk.sysmodules.mp$subscript(modNameSplit[0]);
         else
-            return prev;
+            return prev;        
+    } catch (x) {
+        // not in sys.modules, continue
     }
 
     if (modNameSplit.length > 1)
@@ -222,6 +223,8 @@ Sk.importMain = function(name, dumpJS)
 	Sk.sysmodules = new Sk.builtin.dict([]);
 	Sk.realsyspath = undefined;
 
+    Sk.resetCompiler();
+
     return Sk.importModuleInternal_(name, dumpJS, "__main__");
 };
 
@@ -233,6 +236,8 @@ Sk.importMainWithBody = function(name, dumpJS, body)
 	Sk.sysmodules = new Sk.builtin.dict([]);
 	Sk.realsyspath = undefined;
     
+    Sk.resetCompiler();
+
     return Sk.importModuleInternal_(name, dumpJS, "__main__", body);
 };
 

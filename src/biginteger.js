@@ -654,6 +654,7 @@ for(var i = 0; i < s.length; ++i) {
  var x = Sk.builtin.biginteger.intAt(s,i);
  if(x < 0) {
    if(s.charAt(i) == "-" && this.signum() == 0) mi = true;
+   if(s.charAt(i) == ".") break;
    continue;
  }
  w = b*w+x;

@@ -1,6 +1,8 @@
 /** @param {...*} x */
 var out;
 
+Sk.gensymcount = 0;
+
 /**
  * @constructor
  * @param {string} filename
@@ -21,7 +23,7 @@ function Compiler(filename, st, flags, sourceCodeForAnnotation)
 
     this.result = [];
 
-    this.gensymcount = 0;
+    // this.gensymcount = 0;
 
     this.allUnits = [];
 
@@ -103,7 +105,7 @@ Compiler.prototype.gensym = function(hint)
 {
     hint = hint || '';
     hint = '$' + hint;
-    hint += this.gensymcount++;
+    hint += Sk.gensymcount++;
     return hint;
 };
 
@@ -136,19 +138,42 @@ function fixReservedWords(name)
     return name + "_$rw$";
 }
 
+var reservedNames_ = { '__defineGetter__': true, '__defineSetter__': true, 
+    'apply': true, 'call': true, 'eval': true, 'hasOwnProperty': true, 
+    'isPrototypeOf': true, 
+    '__lookupGetter__': true, '__lookupSetter__': true, 
+    '__noSuchMethod__': true, 'propertyIsEnumerable': true,
+    'toSource': true, 'toLocaleString': true, 'toString': true,
+    'unwatch': true, 'valueOf': true, 'watch': true
+};
+
+function fixReservedNames(name)
+{
+    if (reservedNames_[name])
+        return name + "_$rn$";
+    return name;
+}
+
 function mangleName(priv, ident)
 {
     var name = ident.v;
+    var strpriv = null;
+
     if (priv === null || name === null || name.charAt(0) !== '_' || name.charAt(1) !== '_')
         return ident;
     // don't mangle __id__
     if (name.charAt(name.length - 1) === '_' && name.charAt(name.length - 2) === '_')
         return ident;
     // don't mangle classes that are all _ (obscure much?)
-    if (priv.v.replace(/_/g, '') === '')
+    strpriv = priv.v;
+    strpriv.replace(/_/g, '');
+    if (strpriv === '')
         return ident;
-    priv = priv.v.replace(/^_*/, '');
-    return '_' + priv + name;
+
+    strpriv = priv.v;
+    strpriv.replace(/^_*/, '');
+    strpriv = new Sk.builtin.str('_' + strpriv + name);
+    return strpriv;
 }
 
 /**
@@ -350,35 +375,7 @@ Compiler.prototype.ccall = function(e)
     }
 };
 
-Compiler.prototype.csimpleslice = function(s, ctx, obj, dataToStore)
-{
-    goog.asserts.assert(s.step === null);
-    var lower = 'null', upper = 'null';
-    if (s.lower)
-        lower = this.vexpr(s.lower);
-    if (s.upper)
-        upper = this.vexpr(s.upper);
-
-    // todo; don't require making a slice obj, and move logic into general sequence place
-    switch (ctx)
-    {
-        case AugLoad:
-        case Load:
-            return this._gr("simpsliceload", "Sk.misceval.applySlice(", obj, ",", lower, ",", upper, ")");
-        case AugStore:
-        case Store:
-            out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",", dataToStore, ");");
-            break;
-        case Del:
-            out("Sk.misceval.assignSlice(", obj, ",", lower, ",", upper, ",null);");
-            break;
-        case Param:
-        default:
-            goog.asserts.fail("invalid simple slice");
-    }
-};
-
-Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
+Compiler.prototype.cslice = function(s)
 {
     goog.asserts.assert(s instanceof Slice);
     var low = s.lower ? this.vexpr(s.lower) : 'null';
@@ -387,21 +384,21 @@ Compiler.prototype.cslice = function(s, ctx, obj, dataToStore)
     return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
 
-Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
+Compiler.prototype.vslicesub = function(s)
 {
-    var kindname = null;
     var subs;
     switch (s.constructor)
     {
+        case Number:
+        case String:
+            // Already compiled, should only happen for augmented assignments
+            subs = s;
+            break;
         case Index:
-            kindname = "index";
             subs = this.vexpr(s.value);
             break;
         case Slice:
-            if (!s.step)
-                return this.csimpleslice(s, ctx, obj, dataToStore);
-            if (ctx !== AugStore)
-                subs = this.cslice(s, ctx, obj, dataToStore);
+            subs = this.cslice(s);
             break;
         case Ellipsis:
         case ExtSlice:
@@ -410,10 +407,16 @@ Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
         default:
             goog.asserts.fail("invalid subscript kind");
     }
-    return this.chandlesubscr(kindname, ctx, obj, subs, dataToStore);
+    return subs;
+}
+
+Compiler.prototype.vslice = function(s, ctx, obj, dataToStore)
+{
+    var subs = this.vslicesub(s);
+    return this.chandlesubscr(ctx, obj, subs, dataToStore);
 };
 
-Compiler.prototype.chandlesubscr = function(kindname, ctx, obj, subs, data)
+Compiler.prototype.chandlesubscr = function(ctx, obj, subs, data)
 {
     if (ctx === Load || ctx === AugLoad)
         return this._gr('lsubscr', "Sk.abstr.objectGetItem(", obj, ",", subs, ")");
@@ -496,7 +499,10 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case Compare:
             return this.ccompare(e);
         case Call:
-            return this.ccall(e);
+            var result = this.ccall(e);
+            // After the function call, we've returned to this line
+            this.annotateSource(e);
+            return result;
         case Num:
             if (typeof e.n === "number")
                 return e.n;
@@ -511,19 +517,24 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
             var val;
             if (e.ctx !== AugStore)
                 val = this.vexpr(e.value);
+            var mangled = e.attr['$r']().v;
+            mangled = mangled.substring(1, mangled.length-1);
+            mangled = mangleName(this.u.private_, new Sk.builtin.str(mangled)).v;
+            mangled = fixReservedWords(mangled);
+            mangled = fixReservedNames(mangled);
             switch (e.ctx)
             {
                 case AugLoad:
                 case Load:
-                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",", e.attr['$r']().v, ")");
+                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",'", mangled, "')");
                 case AugStore:
                     out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
                     val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     out("}");
                     break;
                 case Store:
-                    out("Sk.abstr.sattr(", val, ",", e.attr['$r']().v, ",", data, ");");
+                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     break;
                 case Del:
                     goog.asserts.fail("todo;");
@@ -591,7 +602,9 @@ Compiler.prototype.caugassign = function(s)
             auge.ctx = AugStore;
             return this.vexpr(auge, res, e.value)
         case Subscript:
-            var auge = new Subscript(e.value, e.slice, AugLoad, e.lineno, e.col_offset);
+            // Only compile the subscript value once
+            var augsub = this.vslicesub(e.slice);
+            var auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
             var aug = this.vexpr(auge);
             var val = this.vexpr(s.value);
             var res = this._gr('inplbinopsubscr', "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
@@ -753,7 +766,7 @@ Compiler.prototype.cif = function(s)
         var next = this.newBlock('next branch of if');
 
         var test = this.vexpr(s.test);
-        this._jumpfalse(this.vexpr(s.test), next);
+        this._jumpfalse(test, next);
         this.vseqstmt(s.body);
         this._jump(end);
 
@@ -801,6 +814,7 @@ Compiler.prototype.cwhile = function(s)
         {
             this.setBlock(orelse);
             this.vseqstmt(s.orelse);
+            this._jump(next);
         }
 
         this.setBlock(next);
@@ -856,7 +870,7 @@ Compiler.prototype.cfor = function(s)
 
 Compiler.prototype.craise = function(s)
 {
-    if (s.type.id.v === "StopIteration")
+    if (s && s.type && s.type.id && (s.type.id.v === "StopIteration"))
     {
         // currently, we only handle StopIteration, and all it does it return
         // undefined which is what our iterator protocol requires.
@@ -933,7 +947,7 @@ Compiler.prototype.cassert = function(s)
     this._jumptrue(test, end);
     // todo; exception handling
     // maybe replace with goog.asserts.fail?? or just an alert?
-    out("throw new Sk.builtins.AssertionError(", s.msg ? this.vexpr(s.msg) : "", ");");
+    out("throw new Sk.builtin.AssertionError(", s.msg ? this.vexpr(s.msg) : "", ");");
     this.setBlock(end);
 };
 
@@ -1070,7 +1084,17 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     var funcArgs = [];
     if (isGenerator)
+    {
+        if (kwarg)
+        {
+            throw new SyntaxError(coname.v + "(): keyword arguments in generators not supported");
+        }
+        if (vararg)
+        {
+            throw new SyntaxError(coname.v + "(): variable number of arguments in generators not supported");    
+        }
         funcArgs.push("$gen");
+    }
     else
     {
         if (kwarg)
@@ -1114,6 +1138,18 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         var id = args.args[i].id;
         if (this.isCell(id))
             this.u.varDeclsCode += "$cell." + id.v + "=" + id.v + ";";
+    }
+
+    //
+    // make sure correct number of arguments were passed (generators handled below)
+    //
+    if (!isGenerator) {
+        var minargs = args ? args.args.length - defaults.length : 0;
+        var maxargs = vararg ? Infinity : (args ? args.args.length : 0);
+        var kw = kwarg ? true : false;
+        this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v + 
+            "\", arguments, " + minargs + ", " + maxargs + ", " + kw + 
+            ", " + hasFree + ");";
     }
 
     //
@@ -1234,10 +1270,15 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
             frees += ",$free";
     }
     if (isGenerator)
+        // Keyword and variable arguments are not currently supported in generators.
+        // The call to pyCheckArgs assumes they can't be true.
         if (args && args.args.length > 0)
-            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");})");
+            return this._gr("gener", "(function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgs(\"", 
+                                     coname.v, "\",arguments,", args.args.length - defaults.length, ",", args.args.length, 
+                                     ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");})");
         else
-            return this._gr("gener", "(function(){return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");})");
+            return this._gr("gener", "(function(){Sk.builtin.pyCheckArgs(\"", coname.v, 
+                                     "\",arguments,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");})");
     else
         return this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees ,")");
 };
@@ -1519,15 +1560,17 @@ Compiler.prototype.isCell = function(name)
 Compiler.prototype.nameop = function(name, ctx, dataToStore)
 {
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "__debug__")
-        this.error("can not assign to __debug__");
+        throw new Sk.builtin.SyntaxError("can not assign to __debug__");
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None")
-        this.error("can not assign to None");
+        throw new Sk.builtin.SyntaxError("can not assign to None");
 
     if (name.v === "None") return "null";
     if (name.v === "True") return "true";
     if (name.v === "False") return "false";
 
     var mangled = mangleName(this.u.private_, name).v;
+    // Have to do this before looking it up in the scope
+    mangled = fixReservedNames(mangled);
     var op = 0;
     var optype = OP_NAME;
     var scope = this.u.ste.getScope(mangled);
@@ -1579,6 +1622,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
             {
                 case Load:
                 case Param:
+                    // Need to check that it is bound!
+                    out("if (", mangled, " === undefined) { throw new Error('local variable \\\'", mangled, "\\\' referenced before assignment'); }\n");
                     return mangled;
                 case Store:
                     out(mangled, "=", dataToStore, ";");
@@ -1651,6 +1696,9 @@ Compiler.prototype.enterScope = function(name, key, lineno)
     u.name = name;
     u.firstlineno = lineno;
 
+    if (this.u && this.u.private_)
+        u.private_ = this.u.private_;
+
     this.stack.push(this.u);
     this.allUnits.push(u);
     var scopeName = this.gensym('scope');
@@ -1675,8 +1723,13 @@ Compiler.prototype.exitScope = function()
     if (this.u)
         this.u.activateScope();
 
-    if (prev.name.v !== "<module>") // todo; hacky
-        out(prev.scopename, ".co_name=new Sk.builtins['str'](", prev.name['$r']().v, ");");
+    if (prev.name.v !== "<module>") {// todo; hacky
+        var mangled = prev.name['$r']().v;
+        mangled = mangled.substring(1, mangled.length-1);
+        mangled = fixReservedWords(mangled);
+        mangled = fixReservedNames(mangled);
+        out(prev.scopename, ".co_name=new Sk.builtins['str']('", mangled, "');");
+    }
 };
 
 Compiler.prototype.cbody = function(stmts)
@@ -1770,3 +1823,10 @@ Sk.compile = function(source, filename, mode)
 };
 
 goog.exportSymbol("Sk.compile", Sk.compile);
+
+Sk.resetCompiler = function()
+{
+    Sk.gensymcount = 0;
+}
+
+goog.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);

@@ -2,7 +2,12 @@ Sk.misceval = {};
 
 Sk.misceval.isIndex = function(o)
 {
-   return o === null || typeof o === "number" || o.constructor === Sk.builtin.lng || o.constructor === Sk.builtin.nmber || o.tp$index;
+    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index
+	|| o === true || o === false) {
+        return true;
+    }
+
+    return Sk.builtin.checkInt(o);
 };
 goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
@@ -10,6 +15,8 @@ Sk.misceval.asIndex = function(o)
 {
     if (!Sk.misceval.isIndex(o)) return undefined;
     if (o === null) return undefined;
+    if (o === true) return 1;
+    if (o === false) return 0;
     if (typeof o === "number") return o;
 	if (o.constructor === Sk.builtin.nmber) return o.v;
 	if (o.constructor === Sk.builtin.lng) return o.tp$index();
@@ -72,7 +79,7 @@ Sk.misceval.arrayFromArguments = function(args)
     var arg = args[0];
     if ( arg instanceof Sk.builtin.set )
     {
-        // this is a Sk.builtin.list
+        // this is a Sk.builtin.set
         arg = arg.tp$iter().$obj;
     }
     else if ( arg instanceof Sk.builtin.dict )
@@ -80,7 +87,19 @@ Sk.misceval.arrayFromArguments = function(args)
         // this is a Sk.builtin.list
         arg = Sk.builtin.dict.prototype['keys'].func_code(arg);
     }
-    // shouldn't else if here as the two above output lists to arg.
+    else if ( arg instanceof Sk.builtin.str )
+    {
+        // this is a Sk.builtin.str
+        var res = [];
+        for (var it = arg.tp$iter(), i = it.tp$iternext(); 
+             i !== undefined; i = it.tp$iternext())
+        {
+            res.push(i);
+        }
+        return res;
+    }
+
+    // shouldn't else if here as the above may output lists to arg.
     if ( arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple )
     {
         return arg.v;
@@ -90,29 +109,49 @@ Sk.misceval.arrayFromArguments = function(args)
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
 
 /**
- * for reversed comparison: Lt -> GtE, etc.
+ * for reversed comparison: Gt -> Lt, etc.
  */
 Sk.misceval.swappedOp_ = {
-    'Eq': 'Eq',			//
-    'NotEq': 'NotEq',	//
+    'Eq': 'Eq',
+    'NotEq': 'NotEq',
     'Lt': 'GtE',
     'LtE': 'Gt',
     'Gt': 'LtE',
     'GtE': 'Lt',
-    'Is': 'Is',			//
-    'IsNot': 'IsNot',	//	
-    'In_': undefined,	//	No swap equivalent (equivalent = "contains")
-    'NotIn': undefined	//	No swap equivalent (equivalent = "does not contain")
+    'Is': 'IsNot',
+    'IsNot': 'Is',
+    'In_': 'NotIn',
+    'NotIn': 'In_'
 };
 
 
 Sk.misceval.richCompareBool = function(v, w, op)
 {
-    if (op === 'Is')
-        return v === w;
+    if (op === 'Is') {
+	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
+	{
+	    return (v.numberCompare(w) === 0) && (v.skType === w.skType);
+	}
+	else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng)
+	{
+	    return v.longCompare(w) === 0;
+	}
 
-    if (op === 'IsNot')
+        return v === w;
+    }
+
+    if (op === 'IsNot') {
+	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
+	{
+	    return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
+	}
+	else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng)
+	{
+	    return v.longCompare(w) !== 0;
+	}
+
         return v !== w;
+    }
 
     if (v === w)
     {
@@ -140,6 +179,10 @@ Sk.misceval.richCompareBool = function(v, w, op)
             case 'GtE': return v >= w;
             case 'NotEq': return v != w;
             case 'Eq': return v == w;
+            case 'In':
+            case 'NotIn':  {
+                throw new Sk.builtin.TypeError("argument of type '" + Sk.abstr.typeName(w) + "' is not iterable");
+            };
             default: throw "assert";
         }
     }
@@ -174,7 +217,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             else if (op === 'NotEq') {
                 if (v && v['__ne__'])
                     return Sk.misceval.callsim(v['__ne__'], v, w);
-                else if (w && w['__eq__'])
+                else if (w && w['__ne__'])
                     return Sk.misceval.callsim(w['__ne__'], w, v);
                 }
             else if (op === 'Gt') {
@@ -240,6 +283,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             if (v && v['__cmp__'])
             {
                 var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
+		ret = Sk.builtin.asnum$(ret);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret < 0;
@@ -251,6 +295,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             {
                 // note, flipped on return value and call
                 var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
+		ret = Sk.builtin.asnum$(ret);
                 if (op === 'Eq') return ret === 0;
                 else if (op === 'NotEq') return ret !== 0;
                 else if (op === 'Lt') return ret > 0;
@@ -272,7 +317,9 @@ Sk.misceval.richCompareBool = function(v, w, op)
     if (op === 'Eq') return v === w;
     if (op === 'NotEq') return v !== w;
 
-    throw new Sk.builtin.ValueError("don't know how to compare '" + v.tp$name + "' and '" + w.tp$name + "'");
+    var vname = Sk.abstr.typeName(v);
+    var wname = Sk.abstr.typeName(w);
+    throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
 };
 goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 
@@ -287,10 +334,15 @@ Sk.misceval.objectRepr = function(v)
         return new Sk.builtin.str("False");
     else if (typeof v === "number")
         return new Sk.builtin.str("" + v);
+    else if (!v['$r']) {
+        if (v.tp$name) {
+            return new Sk.builtin.str("<" + v.tp$name + " object>");
+        } else {
+            return new Sk.builtin.str("<unknown>");
+        };
+    }
     else if (v.constructor === Sk.builtin.nmber)
         return new Sk.builtin.str("" + v.v);
-    else if (!v['$r'])
-        return new Sk.builtin.str("<" + v.tp$name + " object>");
     else
         return v['$r']();
 };
@@ -315,6 +367,7 @@ Sk.misceval.isTrue = function(x)
     if (x === false) return false;
     if (x === null) return false;
     if (typeof x === "number") return x !== 0;
+    if (x instanceof Sk.builtin.lng) return x.nb$nonzero();
     if (x.constructor === Sk.builtin.nmber) return x.v !== 0;
     if (x.mp$length) return x.mp$length() !== 0;
     if (x.sq$length) return x.sq$length() !== 0;
@@ -457,8 +510,11 @@ goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  */
 Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
 {
-
-    if (typeof func === "function")
+    if (func === null)
+    {
+        throw new TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");        
+    }
+    else if (typeof func === "function")
     {
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
@@ -467,7 +523,18 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
         // alternatively, put it to more use, and perhaps use
         // descriptors to create builtin.func's in other places.
 
-        goog.asserts.assert(kws === undefined);
+        // This actually happens for all builtin functions (in
+        // builtin.js, for example) as they are javascript functions,
+        // not Sk.builtin.func objects.
+
+        if (varargseq)
+        {
+            for (var it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            {
+                args.push(i);
+            }
+        }
+        goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
         return func.apply(null, args);
     }
     else
@@ -499,7 +566,7 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
             args.unshift(func);
             return Sk.misceval.apply(fcall, kws, args, kwdict, varargseq);
         }
-        throw new TypeError("'" + func.tp$name + "' object is not callable");
+        throw new TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
 };
 goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);

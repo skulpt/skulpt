@@ -22,7 +22,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     // otherwise, look in the type for a descr
     var f;
     //print("descr", descr);
-    if (descr !== undefined && descr.ob$type !== undefined)
+    if (descr !== undefined && descr !== null && descr.ob$type !== undefined)
     {
         f = descr.ob$type.tp$descr_get;
         // todo;
@@ -34,8 +34,16 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
     if (this['$d'])
     {
         var res;
-        if (this['$d'].mp$subscript)
-            res = this['$d'].mp$subscript(new Sk.builtin.str(name));
+        if  (this['$d'].mp$lookup) {
+            res = this['$d'].mp$lookup(new Sk.builtin.str(name));
+        }
+        else if (this['$d'].mp$subscript) {
+            try {
+                res = this['$d'].mp$subscript(new Sk.builtin.str(name));
+            } catch (x) {
+                res = undefined;
+            }
+        }
         else if (typeof this['$d'] === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = this['$d'][name];
         if (res !== undefined)
@@ -48,7 +56,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function(name)
         return f.call(descr, this, this.ob$type);
     }
 
-    if (descr)
+    if (descr !== undefined)
     {
         return descr;
     }
@@ -70,21 +78,12 @@ goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.objec
 
 Sk.builtin.object.prototype.HashNotImplemented = function()
 {
-    throw new Sk.builtin.TypeError("unhashable type: '" + this.tp$name + "'");
+    throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
 };
 
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 Sk.builtin.type.makeIntoTypeObj('object', Sk.builtin.object);
-
-Sk.builtin.BoolObj = function() {};
-Sk.builtin.BoolObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('bool', new Sk.builtin.BoolObj());
-
-Sk.builtin.IntObj = function() {};
-Sk.builtin.IntObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('int', new Sk.builtin.IntObj());
-
-Sk.builtin.FloatObj = function() {};
-Sk.builtin.FloatObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('float', new Sk.builtin.FloatObj());
 
 Sk.builtin.NoneObj = function() {};
 Sk.builtin.NoneObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('None', new Sk.builtin.NoneObj());

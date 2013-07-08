@@ -1,0 +1,3 @@
+['__init__', '__module__', 'a', 'b', 'c']
+['__init__', '__module__', 'a', 'b', 'c', 'd']
+['__dir__', '__init__', '__module__', 'a', 'b', 'c', 'd']

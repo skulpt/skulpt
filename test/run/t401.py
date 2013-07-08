@@ -1,0 +1,6 @@
+print abs(-1)
+print abs(1)
+print abs(0)
+print abs(-0.0)
+print abs(-4.6)
+print abs(4.6)
