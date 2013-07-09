@@ -21,7 +21,7 @@ True
 True
 True
 True
-False
+True
 
 Syntax: *
 True
@@ -75,16 +75,16 @@ True
 True
 True
 True
-didn't get a match
-didn't get a match
-didn't get a match
-didn't get a match
 True
 True
 True
 True
 True
-didn't get a match
+True
+True
+True
+True
+True
 True
 
 Syntax: {m,n}?
@@ -92,16 +92,16 @@ True
 True
 True
 True
-didn't get a match
-didn't get a match
-didn't get a match
-didn't get a match
 True
 True
 True
 True
 True
-didn't get a match
+True
+True
+True
+True
+True
 True
 
 Syntax: []
