@@ -3464,7 +3464,7 @@ skipping pow of really big number
                1e-09 - -1000000000.0 = 1000000000.0 <type 'float'>
                1e-09 * -1000000000.0 = -1.0 <type 'float'>
                1e-09 / -1000000000.0 = -1e-18 <type 'float'>
-               1e-09 ** -1000000000.0 = inf <type 'float'>
+               1e-09 ** -1000000000.0 = Can't  <type 'float'> ** <type 'float'>
                1e-09 % -1000000000.0 = -1000000000.0 <type 'float'>
                1e-09 < -1000000000.0 = False <type 'bool'>
                1e-09 = -1000000000.0 = False <type 'bool'>
@@ -3699,7 +3699,7 @@ skipping pow of really big number
                -1e-09 - -1000000000.0 = 1000000000.0 <type 'float'>
                -1e-09 * -1000000000.0 = 1.0 <type 'float'>
                -1e-09 / -1000000000.0 = 1e-18 <type 'float'>
-               -1e-09 ** -1000000000.0 = inf <type 'float'>
+               -1e-09 ** -1000000000.0 = Can't  <type 'float'> ** <type 'float'>
                -1e-09 % -1000000000.0 = -1e-09 <type 'float'>
                -1e-09 < -1000000000.0 = False <type 'bool'>
                -1e-09 = -1000000000.0 = False <type 'bool'>
