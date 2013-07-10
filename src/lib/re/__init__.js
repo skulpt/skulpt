@@ -35,7 +35,7 @@ var $builtinmodule = function(name)
         };
 
         newpattern = pattern.replace('/\\/g', '\\\\');
-        newpattern = pattern.replace(/{,/, '{0,');
+        newpattern = pattern.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
 
         return newpattern;
     };
@@ -201,7 +201,7 @@ var $builtinmodule = function(name)
     // Internal function to return a Python list of strings 
     // From a JS regular expression string
     mod._findre = function(res, string) {
-	res = res.replace(/{,/, '{0,');
+	res = res.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
         var re = eval(res);
 	var patt = new RegExp('\n$');
 	if (string.v.match(patt))
