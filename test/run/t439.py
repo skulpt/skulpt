@@ -6,7 +6,7 @@ print math.exp(1)
 print math.exp(5)
 print math.exp(-5)
 print math.exp(12.3)
-print math.exp(-12.3)
+print math.exp(-21.3)
 
 print "\nmath.log(x[,base])"
 print math.log(1.0)

@@ -29,7 +29,7 @@ name: oper
   namespaces: [
     Sym_type: function
     Sym_name: oper
-    Sym_lineno: 6
+    Sym_lineno: 7
     Sym_nested: False
     Sym_haschildren: False
     Func_params: ['op', 'v1', 'v2']
