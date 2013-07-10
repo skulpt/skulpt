@@ -691,7 +691,19 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 
 	var tmp;
 	if (base === undefined || base === 10) {
-		tmp = work.toString();
+		if (this.skType == Sk.builtin.nmber.float$) {
+			tmp = work.toPrecision(12);
+
+			while (tmp.charAt(tmp.length-1) == "0" && tmp.indexOf('e') < 0) {
+				tmp = tmp.substring(0,tmp.length-1)
+			}
+			if (tmp.charAt(tmp.length-1) == ".") {
+				tmp = tmp + "0"
+			}
+			tmp = tmp.replace(new RegExp('\\.0+e'),'e',"i")
+		} else {
+			tmp = work.toString()
+		}
 	} else {
 		tmp = work.toString(base);
 	}
