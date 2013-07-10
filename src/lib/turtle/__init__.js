@@ -1378,7 +1378,7 @@ var $builtinmodule = function(name) {
 
         $loc.lt = $loc.left;
 
-        $loc.goto = new Sk.builtin.func(function(self, nx, ny) {
+        $loc.goto_$rw$ = new Sk.builtin.func(function(self, nx, ny) {
 			nx = Sk.builtin.asnum$(nx);
 			ny = Sk.builtin.asnum$(ny);
             checkArgs(3,arguments.length,"goto()");
