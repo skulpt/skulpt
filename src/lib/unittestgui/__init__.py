@@ -19,11 +19,11 @@ class unittest:
             self.resdiv.setAttribute('class','unittest-results')
         self.mydiv.appendChild(self.resdiv)
 
-        self.testlist = []
+        self.tlist = []
         testNames = {}
         for name in dir(self):
             if name[:4] == 'test' and name not in testNames:
-                self.testlist.append(getattr(self,name))
+                self.tlist.append(getattr(self,name))
                 testNames[name]=True
 
     def setup(self):
@@ -37,16 +37,14 @@ class unittest:
         self.resdiv.appendChild(l)
         self.resList = l
 
-
-        for func in self.testlist:
+        for func in self.tlist:
             try:
                 self.setup()
-                func(self)
+                func()
                 self.tearDown()
             except:
                 self.appendResult('Error')
                 self.numFailed += 1
-
         self.showSummary()
 
     def assertEqual(self, actual, expected, feedback=""):
