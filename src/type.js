@@ -131,6 +131,20 @@ Sk.builtin.type = function(name, bases, dict)
             goog.asserts.assert(iternextf !== undefined, "iter() should have caught this");
             return Sk.misceval.callsim(iternextf);
         };
+	klass.prototype.tp$getitem = function(key)
+	{
+	    var getf = this.tp$getattr("__getitem__");
+	    if (getf !== undefined)
+		return Sk.misceval.apply(getf, undefined, undefined, undefined, [key]);
+	    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
+	}
+	klass.prototype.tp$setitem = function(key, value)
+	{
+	    var setf = this.tp$getattr("__setitem__");
+	    if (setf !== undefined)
+		return Sk.misceval.apply(setf, undefined, undefined, undefined, [key,value]);
+	    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
+	}
 
         klass.tp$name = name;
 
