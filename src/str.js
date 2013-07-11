@@ -434,42 +434,81 @@ Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
     
 });
 
-Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
-    Sk.builtin.pyCheckArgs("ljust", arguments, 2, 2);
-    Sk.builtin.pyCheckType("len", "number", Sk.builtin.checkNumber(len));
+Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len, fillchar) {
+    Sk.builtin.pyCheckArgs("ljust", arguments, 2, 3);
+    if (!Sk.builtin.checkInt(len)) {
+	throw new Sk.builtin.TypeError("integer argument exepcted, got "
+				       + Sk.abstr.typeName(len));
+    }
+    if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar)
+				     || fillchar.v.length !== 1)) {
+	throw new Sk.builtin.TypeError("must be char, not "
+				       + Sk.abstr.typeName(fillchar))
+    }
+    if (fillchar === undefined) {
+	fillchar = " ";
+    } else {
+	fillchar = fillchar.v;
+    }
 	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
-        var newstr = Array.prototype.join.call({length:Math.floor(len-self.v.length)+1}," ");
+        var newstr = Array.prototype.join.call({length:Math.floor(len-self.v.length)+1},fillchar);
         return new Sk.builtin.str(self.v+newstr);
     }
 });
 
-Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
-    Sk.builtin.pyCheckArgs("rjust", arguments, 2, 2);
-    Sk.builtin.pyCheckType("len", "number", Sk.builtin.checkNumber(len));
+Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len, fillchar) {
+    Sk.builtin.pyCheckArgs("rjust", arguments, 2, 3);
+    if (!Sk.builtin.checkInt(len)) {
+	throw new Sk.builtin.TypeError("integer argument exepcted, got "
+				       + Sk.abstr.typeName(len));
+    }
+    if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar)
+				     || fillchar.v.length !== 1)) {
+	throw new Sk.builtin.TypeError("must be char, not "
+				       + Sk.abstr.typeName(fillchar))
+    }
+    if (fillchar === undefined) {
+	fillchar = " ";
+    } else {
+	fillchar = fillchar.v;
+    }
 	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
-        var newstr = Array.prototype.join.call({length:Math.floor(len-self.v.length)+1}," ");
+        var newstr = Array.prototype.join.call({length:Math.floor(len-self.v.length)+1},fillchar);
         return new Sk.builtin.str(newstr+self.v);
     }
 
 });
 
-Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
-    Sk.builtin.pyCheckArgs("center", arguments, 2, 2);
-    Sk.builtin.pyCheckType("len", "number", Sk.builtin.checkNumber(len));
+Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len, fillchar) {
+    Sk.builtin.pyCheckArgs("center", arguments, 2, 3);
+    if (!Sk.builtin.checkInt(len)) {
+	throw new Sk.builtin.TypeError("integer argument exepcted, got "
+				       + Sk.abstr.typeName(len));
+    }
+    if ((fillchar !== undefined) && (!Sk.builtin.checkString(fillchar)
+				     || fillchar.v.length !== 1)) {
+	throw new Sk.builtin.TypeError("must be char, not "
+				       + Sk.abstr.typeName(fillchar))
+    }
+    if (fillchar === undefined) {
+	fillchar = " ";
+    } else {
+	fillchar = fillchar.v;
+    }
 	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
     } else {
-        var newstr1 = Array.prototype.join.call({length:Math.floor((len-self.v.length)/2)+1}," ");
+        var newstr1 = Array.prototype.join.call({length:Math.floor((len-self.v.length)/2)+1},fillchar);
         var newstr = newstr1+self.v+newstr1;
         if (newstr.length < len ) {
-            newstr = newstr + " "
+            newstr = newstr + fillchar
         }
         return new Sk.builtin.str(newstr);
     }
