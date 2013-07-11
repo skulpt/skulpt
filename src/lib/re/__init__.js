@@ -231,7 +231,7 @@ var $builtinmodule = function(name)
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         };
-        var res = "/"+pattern.v.replace("/","\\/")+"/";
+        var res = "/"+pattern.v.replace(/\//g,"\\/")+"/";
         lst = mod._findre(res,string);
         if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
@@ -252,7 +252,7 @@ var $builtinmodule = function(name)
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         };
-        var res = "/^"+pattern.v.replace("/","\\/")+"/";
+        var res = "/^"+pattern.v.replace(/\//g,"\\/")+"/";
         lst = mod._findre(res,string);
         if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
