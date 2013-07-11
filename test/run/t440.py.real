@@ -44,8 +44,7 @@ math.sin(x)
 
 math.tan(x)
 0.0
-1.63312393532e+16
--1.22464679915e-16
+True
 1.55740772465
 
 math.degrees(x)
