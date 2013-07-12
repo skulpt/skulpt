@@ -421,11 +421,35 @@ Sk.builtin.str.prototype['rpartition'] = new Sk.builtin.func(function(self, sep)
         new Sk.builtin.str(self.v.substring(pos + sepStr.v.length))]);
 });
 
-Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
-    Sk.builtin.pyCheckArgs("count", arguments, 2, 2);
-    Sk.builtin.pyCheckType("pat", "string", Sk.builtin.checkString(pat));
+Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat, start, end) {
+    Sk.builtin.pyCheckArgs("count", arguments, 2, 4);
+    if (!Sk.builtin.checkString(pat)) {
+	throw new Sk.builtin.TypeError("expected a character buffer object");
+    }
+    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+	throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+	throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined)
+	start = 0;
+    else {
+	start = Sk.builtin.asnum$(start);
+	start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined)
+	end = self.v.length;
+    else {
+	end = Sk.builtin.asnum$(end);
+	end = end >= 0 ? end : self.v.length + end;
+    }
+
     var m = new RegExp(pat.v,'g');
-    var ctl = self.v.match(m)
+    var slice = self.v.slice(start,end);
+    var ctl = slice.match(m)
     if (! ctl) {
         return 0;
     } else {
