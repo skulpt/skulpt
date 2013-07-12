@@ -515,54 +515,83 @@ Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len, fil
 
 });
 
-Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start) {
-    Sk.builtin.pyCheckArgs("find", arguments, 2, 3);
-    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    if (start) {
-	Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start, end) {
+    Sk.builtin.pyCheckArgs("find", arguments, 2, 4);
+    if (!Sk.builtin.checkString(tgt)) {
+	throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    start = Sk.builtin.asnum$(start);
-    return new Sk.builtin.nmber(self.v.indexOf(tgt.v,start), Sk.builtin.nmber.int$);
+    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+	throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+	throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+
+    if (start === undefined)
+	start = 0;
+    else {
+	start = Sk.builtin.asnum$(start);
+	start = start >= 0 ? start : self.v.length + start;
+    }
+
+    if (end === undefined)
+	end = self.v.length;
+    else {
+	end = Sk.builtin.asnum$(end);
+	end = end >= 0 ? end : self.v.length + end;
+    }
+
+    var idx = self.v.indexOf(tgt.v, start);
+    idx = ((idx >= start) && (idx < end)) ? idx : -1;
+
+    return new Sk.builtin.nmber(idx, Sk.builtin.nmber.int$);
 });
 
-Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start) {
-    Sk.builtin.pyCheckArgs("index", arguments, 2, 3);
-    var idx = Sk.misceval.callsim(self['find'], self, tgt, start);
+Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start, end) {
+    Sk.builtin.pyCheckArgs("index", arguments, 2, 4);
+    var idx = Sk.misceval.callsim(self['find'], self, tgt, start, end);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
     };
     return idx;
 });
 
-Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, start) {
-    Sk.builtin.pyCheckArgs("rfind", arguments, 2, 3);
-    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    if (start) {
-	Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, start, end) {
+    Sk.builtin.pyCheckArgs("rfind", arguments, 2, 4);
+    if (!Sk.builtin.checkString(tgt)) {
+	throw new Sk.builtin.TypeError("expected a character buffer object");
     }
-    var s = self.v;
-    var offset = 0;
-    var idx = -1;
+    if ((start !== undefined) && !Sk.builtin.checkInt(start)) {
+	throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if ((end !== undefined) && !Sk.builtin.checkInt(end)) {
+	throw new Sk.builtin.TypeError("slice indices must be integers or None or have an __index__ method");
+    }
 
-    if (start !== undefined) {
-        // Only look after start position
+    if (start === undefined)
+	start = 0;
+    else {
 	start = Sk.builtin.asnum$(start);
-        s = s.substring(start);
-        offset = start;
-    };
-    idx = s.lastIndexOf(tgt.v);
+	start = start >= 0 ? start : self.v.length + start;
+    }
 
-    if (idx !== -1) {
-        // Adjust so that index is from start of string
-        idx = idx + offset;
-    };
+    if (end === undefined)
+	end = self.v.length;
+    else {
+	end = Sk.builtin.asnum$(end);
+	end = end >= 0 ? end : self.v.length + end;
+    }
+
+    var idx = self.v.lastIndexOf(tgt.v, end);
+    idx = (idx !== end) ? idx : self.v.lastIndexOf(tgt.v, end-1);
+    idx = ((idx >= start) && (idx < end)) ? idx : -1;
 
     return new Sk.builtin.nmber(idx, Sk.builtin.nmber.int$);
 });
 
-Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start) {
-    Sk.builtin.pyCheckArgs('rindex', arguments, 2, 3);
-    var idx = Sk.misceval.callsim(self['rfind'], self, tgt, start);
+Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start, end) {
+    Sk.builtin.pyCheckArgs('rindex', arguments, 2, 4);
+    var idx = Sk.misceval.callsim(self['rfind'], self, tgt, start, end);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
     };
