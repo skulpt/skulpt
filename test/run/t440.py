@@ -1,5 +1,8 @@
 import math
 
+def isCloseTo(expected, actual, precision):
+  return math.fabs(expected - actual) < (math.pow(10, -precision) / 2)
+
 print "\nmath.acos(x)"
 print math.acos(1.0)
 print math.acos(0.5)
@@ -45,8 +48,7 @@ print math.sin(1)
 
 print "\nmath.tan(x)"
 print math.tan(0.0)
-print math.tan(math.pi/2.0)
-print math.tan(math.pi)
+print isCloseTo(0, math.tan(math.pi), 15)
 print math.tan(1)
 
 print "\nmath.degrees(x)"
