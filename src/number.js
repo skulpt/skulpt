@@ -667,6 +667,8 @@ Sk.builtin.nmber.prototype.__ge__ = function(me, other) {
 	return me.numberCompare(other) >= 0;
 };
 
+Sk.builtin.nmber.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
 Sk.builtin.nmber.prototype['$r'] = function()
 {
     return new Sk.builtin.str(this.str$(10, true));
