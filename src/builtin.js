@@ -179,9 +179,11 @@ Sk.builtin.round = function round(number, ndigits)
     var result, multiplier;
 
     Sk.builtin.pyCheckArgs("round", arguments, 1, 2);
-    Sk.builtin.pyCheckType("number", "number", Sk.builtin.checkNumber(number));
-    if (ndigits !== undefined) {
-        Sk.builtin.pyCheckType("ndigits", "number", Sk.builtin.checkNumber(ndigits));
+    if (!Sk.builtin.checkNumber(number)) {
+	throw new Sk.builtin.TypeError("a float is required");
+    }
+    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
     };
 
     if (ndigits === undefined) {
@@ -189,7 +191,7 @@ Sk.builtin.round = function round(number, ndigits)
     };
 
     number = Sk.builtin.asnum$(number);
-    ndigits = Sk.builtin.asnum$(ndigits);
+    ndigits = Sk.misceval.asIndex(ndigits);
 
     multiplier = Math.pow(10, ndigits);
     result = Math.round(number * multiplier) / multiplier;
@@ -246,10 +248,9 @@ Sk.builtin.any = function any(iter)
     var it, i;
 
     Sk.builtin.pyCheckArgs("any", arguments, 1);
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-
-    if (!iter.tp$iter) {
-        throw "TypeError: object is not iterable";
+    if (!Sk.builtin.checkIterable(iter)) {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter)
+				       + "' object is not iterable");
     }
 
     it = iter.tp$iter();
@@ -267,10 +268,9 @@ Sk.builtin.all = function all(iter)
     var it, i;
 
     Sk.builtin.pyCheckArgs("all", arguments, 1);
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-
-    if (!iter.tp$iter) {
-        throw "TypeError: object is not iterable";
+     if (!Sk.builtin.checkIterable(iter)) {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter)
+				       + "' object is not iterable");
     }
 
     it = iter.tp$iter();
@@ -381,9 +381,12 @@ Sk.builtin.ord = function ord(x)
 {
     Sk.builtin.pyCheckArgs("ord", arguments, 1, 1);
 
-    if (x.constructor !== Sk.builtin.str || x.v.length !== 1)
+    if (!Sk.builtin.checkString(x))
     {
-        throw "ord() expected string of length 1";
+        throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + Sk.abstr.typeName(x) + " found");
+    }
+    else if (x.v.length !== 1) {
+	throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
     return new Sk.builtin.nmber((x.v).charCodeAt(0), Sk.builtin.nmber.int$);
 };
@@ -391,8 +394,9 @@ Sk.builtin.ord = function ord(x)
 Sk.builtin.chr = function chr(x)
 {
     Sk.builtin.pyCheckArgs("chr", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
-
+    if (!Sk.builtin.checkInt(x)) {
+	throw new Sk.builtin.TypeError("an integer is required");
+    }
 	x = Sk.builtin.asnum$(x);
 
 
@@ -418,7 +422,7 @@ Sk.builtin.int2str_ = function helper_(x, radix, prefix)
 	}
 	return new Sk.builtin.str(prefix+str+suffix);
     } else {
-	x = Sk.builtin.asnum$(x);
+	x = Sk.misceval.asIndex(x);
 	str = x.toString(radix);
 	if (x < 0) {
 	    return new Sk.builtin.str('-'+prefix+str.slice(1));
@@ -430,21 +434,27 @@ Sk.builtin.int2str_ = function helper_(x, radix, prefix)
 Sk.builtin.hex = function hex(x)
 {
     Sk.builtin.pyCheckArgs("hex", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
+    if (!Sk.misceval.isIndex(x)) {
+	throw new Sk.builtin.TypeError("hex() argument can't be converted to hex");
+    }
     return Sk.builtin.int2str_(x, 16, "0x");
 };
 
 Sk.builtin.oct = function oct(x)
 {
     Sk.builtin.pyCheckArgs("oct", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
+    if (!Sk.misceval.isIndex(x)) {
+	throw new Sk.builtin.TypeError("oct() argument can't be converted to hex");
+    }
     return Sk.builtin.int2str_(x, 8, "0");
 };
 
 Sk.builtin.bin = function bin(x)
 {
     Sk.builtin.pyCheckArgs("bin", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
+    if (!Sk.misceval.isIndex(x)) {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(x) + "' object can't be interpreted as an index");
+    }
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
@@ -555,6 +565,7 @@ Sk.builtin.repr = function repr(x)
 
 Sk.builtin.open = function open(filename, mode, bufsize)
 {
+    Sk.builtin.pyCheckArgs("open", arguments, 1, 3);
     if (mode === undefined) mode = new Sk.builtin.str("r");
     if (mode.v !== "r" && mode.v !== "rb") throw "todo; haven't implemented non-read opens";
     return new Sk.builtin.file(filename, mode, bufsize);
@@ -666,7 +677,9 @@ Sk.builtin.hash = function hash(value)
 Sk.builtin.getattr = function getattr(obj, name, default_)
 {
     Sk.builtin.pyCheckArgs("getattr", arguments, 2, 3);
-    Sk.builtin.pyCheckType("name", "string", Sk.builtin.checkString(name));
+    if (!Sk.builtin.checkString(name)) {
+	throw new Sk.builtin.TypeError("attribute name must be string");
+    }
 
     var ret = obj.tp$getattr(name.v);
     if (ret === undefined)
@@ -674,7 +687,7 @@ Sk.builtin.getattr = function getattr(obj, name, default_)
         if (default_ !== undefined)
             return default_;
         else
-            throw new Sk.builtin.AttributeError();
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + name.v + "'");
     }
     return ret;
 };
