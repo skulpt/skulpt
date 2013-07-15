@@ -640,12 +640,26 @@ Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, n
     Sk.builtin.pyCheckArgs("replace", arguments, 3, 4);
     Sk.builtin.pyCheckType("oldS", "string", Sk.builtin.checkString(oldS));
     Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
-    if (count) {
-	Sk.builtin.pyCheckType("count", "number", Sk.builtin.checkNumber(count));
+    if ((count !== undefined) && !Sk.builtin.checkInt(count)) {
+	throw new Sk.builtin.TypeError("integer argument expected, got " +
+				       Sk.abstr.typeName(count));
     }
-    goog.asserts.assert(count === undefined, "todo; replace() with count not implemented");
+    count = Sk.builtin.asnum$(count);
     var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
-    return new Sk.builtin.str(self.v.replace(patt, newS.v));
+
+    if ((count === undefined) || (count < 0)) {
+	return new Sk.builtin.str(self.v.replace(patt, newS.v));
+    }
+
+    var c = 0;
+    function replacer(match) {
+	c++;
+	if (c <= count) {
+	    return newS.v;
+	}
+	return match;
+    }
+    return new Sk.builtin.str(self.v.replace(patt, replacer));
 });
 
 Sk.builtin.str.prototype['isdigit'] = new Sk.builtin.func(function(self) {
