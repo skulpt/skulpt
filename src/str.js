@@ -345,46 +345,53 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
 
 Sk.builtin.str.prototype['strip'] = new Sk.builtin.func(function(self, chars)
 {
-    Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 2);
-    if (chars) {
-	Sk.builtin.pyCheckType("chars", "string", Sk.builtin.checkString(chars));
+    Sk.builtin.pyCheckArgs("strip", arguments, 1, 2);
+    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+	throw new Sk.builtin.TypeError("strip arg must be None or str");
     }
-    goog.asserts.assert(!chars, "todo;");
-    return new Sk.builtin.str(self.v.replace(/^\s+|\s+$/g, ''));
+    var pattern;
+    if (chars === undefined) {
+	pattern =  /^\s+|\s+$/g;
+    }
+    else {
+	var regex = Sk.builtin.str.re_escape_(chars.v);
+	pattern = new RegExp("^["+regex+"]+|["+regex+"]+$","g");
+    }
+    return new Sk.builtin.str(self.v.replace(pattern, ''));
 });
 
 Sk.builtin.str.prototype['lstrip'] = new Sk.builtin.func(function(self, chars)
 {
     Sk.builtin.pyCheckArgs("lstrip", arguments, 1, 2);
-    if (chars){
-	Sk.builtin.pyCheckType("chars", "string", Sk.builtin.checkString(chars));
-        var currstr = self.v;
-        var charStr = new Sk.builtin.str(chars)
-        while(currstr.indexOf(charStr.v) === 0){
-            currstr = currstr.substr(charStr.v.length);
-        }
-        return new Sk.builtin.str(currstr);
+    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+	throw new Sk.builtin.TypeError("lstrip arg must be None or str");
     }
-    else{
-        return new Sk.builtin.str(self.v.replace(/^\s+/g, ''));
+    var pattern;
+    if (chars === undefined) {
+	pattern =  /^\s+/g;
     }
+    else {
+	var regex = Sk.builtin.str.re_escape_(chars.v);
+	pattern = new RegExp("^["+regex+"]+","g");
+    }
+    return new Sk.builtin.str(self.v.replace(pattern, ''));
 });
 
 Sk.builtin.str.prototype['rstrip'] = new Sk.builtin.func(function(self, chars)
 {
     Sk.builtin.pyCheckArgs("rstrip", arguments, 1, 2);
-    if (chars){
-	Sk.builtin.pyCheckType("chars", "string", Sk.builtin.checkString(chars));
-        var currstr = self.v;
-        var charStr = new Sk.builtin.str(chars)
-        while(currstr.lastIndexOf(charStr.v) === currstr.length - charStr.v.length){
-            currstr = currstr.substr(0, currstr.length - charStr.v.length);
-        }
-        return new Sk.builtin.str(currstr);
+    if ((chars !== undefined) && !Sk.builtin.checkString(chars)) {
+	throw new Sk.builtin.TypeError("rstrip arg must be None or str");
     }
-    else{
-      return new Sk.builtin.str(self.v.replace(/\s+$/g, ''));
+    var pattern;
+    if (chars === undefined) {
+	pattern =  /\s+$/g;
     }
+    else {
+	var regex = Sk.builtin.str.re_escape_(chars.v);
+	pattern = new RegExp("["+regex+"]+$","g");
+    }
+    return new Sk.builtin.str(self.v.replace(pattern, ''));
 });
 
 Sk.builtin.str.prototype['partition'] = new Sk.builtin.func(function(self, sep)
