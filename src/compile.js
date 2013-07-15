@@ -890,11 +890,18 @@ Compiler.prototype.craise = function(s)
 
 Compiler.prototype.ctryexcept = function(s)
 {
-    var except = this.newBlock("except");
+    var n = s.handlers.length;
+    var handlers = [];
+    for (var i = 0; i < n; ++i)
+    {
+        handlers.push(this.newBlock("except_" + i + "_"));
+    }
+
     var orelse = this.newBlock("orelse");
     var end = this.newBlock("end");
+    var unhandled = this.newBlock("unhandled");
 
-    this.setupExcept(except);
+    this.setupExcept(handlers[0]);
 
     this.vseqstmt(s.body);
 
@@ -902,27 +909,38 @@ Compiler.prototype.ctryexcept = function(s)
 
     this._jump(orelse);
 
-    this.setBlock(except);
-    var n = s.handlers.length;
     for (var i = 0; i < n; ++i)
     {
+        this.setBlock(handlers[i]);
         var handler = s.handlers[i];
-        if (handler.type && i < n - 1)
+        if (!handler.type && i < n - 1)
             throw new SyntaxError("default 'except:' must be last");
-        except = this.newBlock("except_" + i + "_");
         if (handler.type)
         {
-            // todo; not right at all
-            this._jumpfalse(this.vexpr(handler.type), except);
+            // should jump to next handler if err not isinstance of handler.type
+            var handlertype = this.vexpr(handler.type);
+            var next = (i == n-1) ? unhandled : handlers[i+1];
+
+            // var isinstance = this.vexpr(new Name({"v": "isinstance"}, Load));
+            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $loc.err, ", handlertype, ")");
+
+            // this check is not right, should use isinstance, but exception objects
+            // are not yet proper Python objects
+            var check = this._gr('instance', "$loc.err instanceof ", handlertype);
+            this._jumpfalse(check, next);
         }
-        // todo; name
+        if (handler.name)
+        {
+            this.vexpr(handler.name, "$loc.err");
+        }
         this.vseqstmt(handler.body);
+
+        // Should jump to finally, but finally is not implemented yet
+        this._jump(end);
     }
 
-    // This should really jump to finally instead of end
-    // but until we implement finally jump to end is what
-    // we do.
-    this._jump(end);
+    this.setBlock(unhandled);
+    out("throw $loc.err;");
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
@@ -1768,7 +1786,7 @@ Compiler.prototype.cmod = function(mod)
 
     // New Code:
     this.u.switchCode = "try { while(true){try{ switch($blk){";
-    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $loc.err = err; $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those
