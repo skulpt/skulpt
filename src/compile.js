@@ -926,12 +926,12 @@ Compiler.prototype.ctryexcept = function(s)
 
             // this check is not right, should use isinstance, but exception objects
             // are not yet proper Python objects
-            var check = this._gr('instance', "$loc.err instanceof ", handlertype);
+            var check = this._gr('instance', "$err instanceof ", handlertype);
             this._jumpfalse(check, next);
         }
         if (handler.name)
         {
-            this.vexpr(handler.name, "$loc.err");
+            this.vexpr(handler.name, "$err");
         }
         this.vseqstmt(handler.body);
 
@@ -940,7 +940,7 @@ Compiler.prototype.ctryexcept = function(s)
     }
 
     this.setBlock(unhandled);
-    out("throw $loc.err;");
+    out("throw $err;");
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
@@ -1145,7 +1145,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined;";
 
     //
     // copy all parameters that are also cells into the cells dict. this is so
@@ -1207,8 +1207,13 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     // finally, set up the block switch that the jump code expects
     //
-    this.u.switchCode += "while(true){switch($blk){";
-    this.u.suffixCode = "}break;}});";
+    // Old switch code
+    // this.u.switchCode += "while(true){switch($blk){";
+    // this.u.suffixCode = "}break;}});";
+
+    // New switch code to catch exceptions
+    this.u.switchCode = "while(true){try{ switch($blk){";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
     //
     // jump back to the handler so it can do the main actual work of the
@@ -1774,7 +1779,7 @@ Compiler.prototype.cmod = function(mod)
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;Sk.globals=$gbl;";
+    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl,$err=undefined;$gbl.__name__=$modname;Sk.globals=$gbl;";
 
     // Add the try block that pops the try/except stack if one exists
     // Github Issue #38
@@ -1786,7 +1791,7 @@ Compiler.prototype.cmod = function(mod)
 
     // New Code:
     this.u.switchCode = "try { while(true){try{ switch($blk){";
-    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $loc.err = err; $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those
