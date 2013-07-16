@@ -97,12 +97,15 @@ Sk.builtin.tuple.prototype.tp$hash = function()
 
 Sk.builtin.tuple.prototype.sq$repeat = function(n)
 {
+    n = Sk.builtin.asnum$(n);
     var ret = [];
     for (var i = 0; i < n; ++i)
         for (var j = 0; j < this.v.length; ++ j)
             ret.push(this.v[j]);
     return new Sk.builtin.tuple(ret);
 };
+Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
+Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 
 Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('tuple', Sk.builtin.tuple);

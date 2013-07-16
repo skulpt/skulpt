@@ -190,6 +190,8 @@ Sk.builtin.list.prototype.sq$repeat = function(n)
             ret.push(this.v[j]);
     return new Sk.builtin.list(ret);
 };
+Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.sq$repeat;
+Sk.builtin.list.prototype.nb$inplace_multiply = Sk.builtin.list.prototype.sq$repeat;
 /*
 Sk.builtin.list.prototype.sq$item = list_item;
 Sk.builtin.list.prototype.sq$slice = list_slice;
