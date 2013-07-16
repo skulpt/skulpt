@@ -703,8 +703,11 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 		    var idx = tmp.indexOf('.');
 		    var pre = work.toString().slice(0,idx);
 		    var post = work.toString().slice(idx);
-		    if (pre.match(/^0$/) && post.slice(1).match(/^0{4,}/)) {
+		    if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
+			if (tmp.length < 12)
 			    tmp = work.toExponential();
+			else
+			    tmp = work.toExponential(11);
 		    }
 
 			while (tmp.charAt(tmp.length-1) == "0" && tmp.indexOf('e') < 0) {
