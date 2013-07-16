@@ -78,6 +78,16 @@ Sk.builtin.checkString = function (arg) {
 };
 goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
+Sk.builtin.checkClass = function (arg) {
+    if (arg.$is_klass === undefined)
+	// arg is a built-in type
+	return (typeof arg === 'function');
+    else
+	// arg is a user-defined class
+	return (arg.tp$mro !== undefined);
+};
+goog.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
+
 Sk.builtin.checkFunction = function (arg) {
     return (arg !== null && arg.tp$call !== undefined);  
 };
