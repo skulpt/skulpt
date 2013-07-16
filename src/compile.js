@@ -949,6 +949,7 @@ Compiler.prototype.ctryexcept = function(s)
             this.vexpr(handler.name, "$err");
         }
 
+        // Need to execute finally before leaving body if an exception is raised
         this.vseqstmt(handler.body);
 
         // Should jump to finally, but finally is not implemented yet
@@ -957,10 +958,12 @@ Compiler.prototype.ctryexcept = function(s)
 
     // If no except clause catches exception, throw it again
     this.setBlock(unhandled);
+    // Should execute finally first
     out("throw $err;");
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
+    // Should jump to finally, but finally is not implemented yet
     this._jump(end);
     this.setBlock(end);
 };
