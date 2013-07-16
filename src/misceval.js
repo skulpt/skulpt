@@ -405,8 +405,11 @@ Sk.misceval.loadname = function(name, other)
 
     var bi = Sk.builtins[name];
     if (bi !== undefined) return bi;
-
-    throw new Sk.builtin.NameError("name '" + name + "' is not defined");
+    var currLineNo = ""
+    if (Sk.currLineNo !== undefined) {
+        currLineNo = " on line " + Sk.currLineNo
+    }
+    throw new Sk.builtin.NameError("name '" + name + "' is not defined" + currLineNo);
 };
 goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
 

@@ -1,1 +1,1 @@
-EXCEPTION: NameError: name 'xyzy' is not defined
+EXCEPTION: NameError: name 'xyzy' is not defined on line 3
