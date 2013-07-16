@@ -397,7 +397,7 @@ goog.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 /**
  * @param {string} name
  * @param {Object=} other generally globals
- * @param {string} lineno
+ * @param {string=} lineno
  */
 Sk.misceval.loadname = function(name, other, lineno)
 {
