@@ -179,6 +179,8 @@ Sk.builtin.list.prototype.tp$richcompare = function(w, op)
 Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
 Sk.builtin.list.prototype.sq$length = function() { return this.v.length; };
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
+Sk.builtin.list.prototype.nb$add = Sk.builtin.list.prototype.list_concat_;
+Sk.builtin.list.prototype.nb$inplace_add = Sk.builtin.list.prototype.list_concat_;
 Sk.builtin.list.prototype.sq$repeat = function(n)
 {
 	n = Sk.builtin.asnum$(n);

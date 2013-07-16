@@ -91,6 +91,8 @@ Sk.builtin.str.prototype.sq$concat = function(other)
     }
     return new Sk.builtin.str(this.v + other.v); 
 };
+Sk.builtin.str.prototype.nb$add = Sk.builtin.str.prototype.sq$concat;
+Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
 Sk.builtin.str.prototype.sq$repeat = function(n)
 {
 	n = Sk.builtin.asnum$(n);
