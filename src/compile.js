@@ -891,22 +891,21 @@ Compiler.prototype.craise = function(s)
 Compiler.prototype.ctryexcept = function(s)
 {
     var n = s.handlers.length;
+
+    // Create a block for each except clause
     var handlers = [];
     for (var i = 0; i < n; ++i)
     {
         handlers.push(this.newBlock("except_" + i + "_"));
     }
 
+    var unhandled = this.newBlock("unhandled");
     var orelse = this.newBlock("orelse");
     var end = this.newBlock("end");
-    var unhandled = this.newBlock("unhandled");
 
     this.setupExcept(handlers[0]);
-
     this.vseqstmt(s.body);
-
     this.endExcept();
-
     this._jump(orelse);
 
     for (var i = 0; i < n; ++i)
@@ -914,31 +913,37 @@ Compiler.prototype.ctryexcept = function(s)
         this.setBlock(handlers[i]);
         var handler = s.handlers[i];
         if (!handler.type && i < n - 1)
+        {
             throw new SyntaxError("default 'except:' must be last");
+        }
+
         if (handler.type)
         {
             // should jump to next handler if err not isinstance of handler.type
             var handlertype = this.vexpr(handler.type);
             var next = (i == n-1) ? unhandled : handlers[i+1];
 
-            // var isinstance = this.vexpr(new Name({"v": "isinstance"}, Load));
-            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $loc.err, ", handlertype, ")");
+            // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
+            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
 
             // this check is not right, should use isinstance, but exception objects
             // are not yet proper Python objects
             var check = this._gr('instance', "$err instanceof ", handlertype);
             this._jumpfalse(check, next);
         }
+
         if (handler.name)
         {
             this.vexpr(handler.name, "$err");
         }
+
         this.vseqstmt(handler.body);
 
         // Should jump to finally, but finally is not implemented yet
         this._jump(end);
     }
 
+    // If no except clause catches exception, throw it again
     this.setBlock(unhandled);
     out("throw $err;");
 
@@ -951,6 +956,8 @@ Compiler.prototype.ctryexcept = function(s)
 Compiler.prototype.ctryfinally = function(s)
 {
     out("/*todo; tryfinally*/");
+    // everything but the finally?
+    this.ctryexcept(s.body[0]);
 };
 
 Compiler.prototype.cassert = function(s)
