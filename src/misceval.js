@@ -397,21 +397,16 @@ goog.exportSymbol("Sk.misceval.print_", Sk.misceval.print_);
 /**
  * @param {string} name
  * @param {Object=} other generally globals
- * @param {string=} lineno
  */
-Sk.misceval.loadname = function(name, other, lineno)
+Sk.misceval.loadname = function(name, other)
 {
     var v = other[name];
     if (v !== undefined) return v;
 
     var bi = Sk.builtins[name];
     if (bi !== undefined) return bi;
-    var currLineNo = ""
-    if (lineno !== undefined) {
-        currLineNo = " on line " + lineno;
-    }
 
-    throw new Sk.builtin.NameError("name '" + name + "' is not defined" + currLineNo);
+    throw new Sk.builtin.NameError("name '" + name + "' is not defined");
 };
 goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
 
