@@ -883,8 +883,20 @@ Compiler.prototype.craise = function(s)
         // todo;
         var inst = '';
         if (s.inst)
+        {
             inst = this.vexpr(s.inst);
-        out("throw new ", this.vexpr(s.type), "(", inst, ");");
+            out("throw new ", this.vexpr(s.type), "(", inst, ");");
+        }
+
+        if (s.type)
+        {
+            out("throw ", this.vexpr(s.type), ";");
+        }
+        else
+        {
+            // re-raise
+            out("throw $err;");
+        }
     }
 };
 
