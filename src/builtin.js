@@ -291,22 +291,19 @@ Sk.builtin.sum = function sum(iter,start)
 
     Sk.builtin.pyCheckArgs("sum", arguments, 1, 2);
     Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    if (start !== undefined) {        
-        Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
-	start = Sk.builtin.asnum$(start);
+    if (start !== undefined && Sk.builtin.checkString(start)) {
+	throw new Sk.builtin.TypeError("sum() can't sum strings [use ''.join(seq) instead]");
     };
 
     if (start === undefined ) {
-        start = 0;
+	tot = new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
-
-    tot = new Sk.builtin.nmber(start, Sk.builtin.nmber.int$);
+    else {
+	tot = start;
+    }
 
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (!Sk.builtin.checkNumber(i)) {
-            throw new Sk.builtin.TypeError("a number is required");
-        }
 	if (i.skType === Sk.builtin.nmber.float$) {
 	    has_float = true;
 	    if (tot.skType !== Sk.builtin.nmber.float$) {
@@ -321,7 +318,13 @@ Sk.builtin.sum = function sum(iter,start)
 	    }
 	}
 
-	tot = tot.nb$add(i);
+	if (tot.nb$add(i) !== undefined) {
+	    tot = tot.nb$add(i);
+	} else {
+	    throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '"
+					   + Sk.abstr.typeName(tot) + "' and '"
+					   + Sk.abstr.typeName(i)+"'");
+	}
     }
 
     return tot;

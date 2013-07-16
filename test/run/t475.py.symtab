@@ -1,0 +1,537 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: Counter
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: Counter
+    Sym_lineno: 23
+    Sym_nested: False
+    Sym_haschildren: True
+    Class_methods: ['CounterIterator', '__init__', '__iter__']
+    -- Identifiers --
+    name: CounterIterator
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: class
+        Sym_name: CounterIterator
+        Sym_lineno: 25
+        Sym_nested: False
+        Sym_haschildren: True
+        Class_methods: ['__init__', '__iter__', 'next']
+        -- Identifiers --
+        name: __init__
+          is_referenced: False
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: True
+          namespaces: [
+            Sym_type: function
+            Sym_name: __init__
+            Sym_lineno: 26
+            Sym_nested: False
+            Sym_haschildren: False
+            Func_params: ['c', 'self']
+            Func_locals: ['c', 'self']
+            Func_globals: []
+            Func_frees: []
+            -- Identifiers --
+            name: c
+              is_referenced: True
+              is_imported: False
+              is_parameter: True
+              is_global: False
+              is_declared_global: False
+              is_local: True
+              is_free: False
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
+              ]
+            name: self
+              is_referenced: True
+              is_imported: False
+              is_parameter: True
+              is_global: False
+              is_declared_global: False
+              is_local: True
+              is_free: False
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
+              ]
+          ]
+        name: __iter__
+          is_referenced: False
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: True
+          namespaces: [
+            Sym_type: function
+            Sym_name: __iter__
+            Sym_lineno: 36
+            Sym_nested: False
+            Sym_haschildren: False
+            Func_params: ['self']
+            Func_locals: ['self']
+            Func_globals: []
+            Func_frees: []
+            -- Identifiers --
+            name: self
+              is_referenced: True
+              is_imported: False
+              is_parameter: True
+              is_global: False
+              is_declared_global: False
+              is_local: True
+              is_free: False
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
+              ]
+          ]
+        name: next
+          is_referenced: False
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: True
+          namespaces: [
+            Sym_type: function
+            Sym_name: next
+            Sym_lineno: 30
+            Sym_nested: False
+            Sym_haschildren: False
+            Func_params: ['self']
+            Func_locals: ['self']
+            Func_globals: ['StopIteration']
+            Func_frees: []
+            -- Identifiers --
+            name: StopIteration
+              is_referenced: True
+              is_imported: False
+              is_parameter: False
+              is_global: True
+              is_declared_global: False
+              is_local: False
+              is_free: False
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
+              ]
+            name: self
+              is_referenced: True
+              is_imported: False
+              is_parameter: True
+              is_global: False
+              is_declared_global: False
+              is_local: True
+              is_free: False
+              is_assigned: False
+              is_namespace: False
+              namespaces: [
+              ]
+          ]
+      ]
+    name: __init__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __init__
+        Sym_lineno: 39
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['self', 'stop']
+        Func_locals: ['self', 'stop']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: stop
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: __iter__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __iter__
+        Sym_lineno: 43
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+  ]
+name: Squares
+  is_referenced: False
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: Squares
+    Sym_lineno: 7
+    Sym_nested: False
+    Sym_haschildren: True
+    Class_methods: ['__getitem__', '__init__', '__len__']
+    -- Identifiers --
+    name: __getitem__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __getitem__
+        Sym_lineno: 15
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['i', 'self']
+        Func_locals: ['i', 'n', 'self']
+        Func_globals: ['IndexError', 'len']
+        Func_frees: []
+        -- Identifiers --
+        name: IndexError
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: i
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: len
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: n
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: __init__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __init__
+        Sym_lineno: 9
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['max', 'self']
+        Func_locals: ['max', 'self']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: max
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: __len__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __len__
+        Sym_lineno: 13
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: ['len']
+        Func_frees: []
+        -- Identifiers --
+        name: len
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+  ]
+name: helper
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: helper
+    Sym_lineno: 1
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: ['expect', 'got']
+    Func_locals: ['expect', 'got']
+    Func_globals: ['False', 'True']
+    Func_frees: []
+    -- Identifiers --
+    name: False
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: True
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: expect
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: got
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: range
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: sum
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
