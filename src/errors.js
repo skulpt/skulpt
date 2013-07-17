@@ -12,6 +12,9 @@ Sk.builtin.Exception = function(args)
             args[i] = new Sk.builtin.str(args[i]);
     }
     this.args = new Sk.builtin.tuple(args);
+    this.lineno = Sk.currLineNo;
+    this.colno = Sk.currColNo;
+    this.filename = Sk.currFilename;
 };
 Sk.builtin.Exception.prototype.tp$name = "Exception";
 
