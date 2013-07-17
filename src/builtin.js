@@ -660,12 +660,12 @@ Sk.builtin.jsmillis = function jsmillis()
 
 Sk.builtin.superbi =  function superbi()
 {
-    throw new Sk.builtin.NotImplementedError("Super is not yet implemented, please report your use case as a github issue.");
+    throw new Sk.builtin.NotImplementedError("super is not yet implemented, please report your use case as a github issue.");
 }
 
 Sk.builtin.eval_ =  function eval_()
 {
-    throw new Sk.builtin.NotImplementedError("Eval is not yet implemented");
+    throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 }
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {
@@ -680,6 +680,38 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
     } else
         throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
 }
+
+Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
+Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
+Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
+Sk.builtin.delattr = function delattr() { throw new Sk.builtin.NotImplementedError("delattr is not yet implemented")}
+Sk.builtin.divmod = function divmod() { throw new Sk.builtin.NotImplementedError("divmod is not yet implemented")}
+Sk.builtin.execfile = function execfile() { throw new Sk.builtin.NotImplementedError("execfile is not yet implemented")}
+Sk.builtin.filter = function filter() { throw new Sk.builtin.NotImplementedError("filter is not yet implemented")}
+Sk.builtin.format = function format() { throw new Sk.builtin.NotImplementedError("format is not yet implemented")}
+Sk.builtin.frozenset = function frozenset() { throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented")}
+Sk.builtin.globals = function globals() { throw new Sk.builtin.NotImplementedError("globals is not yet implemented")}
+Sk.builtin.help = function help() { throw new Sk.builtin.NotImplementedError("help is not yet implemented")}
+Sk.builtin.issubclass = function issubclass() { throw new Sk.builtin.NotImplementedError("issubclass is not yet implemented")}
+Sk.builtin.iter = function iter() { throw new Sk.builtin.NotImplementedError("iter is not yet implemented")}
+Sk.builtin.locals = function locals() { throw new Sk.builtin.NotImplementedError("locals is not yet implemented")}
+Sk.builtin.map = function map() { throw new Sk.builtin.NotImplementedError("map is not yet implemented")}
+Sk.builtin.memoryview = function memoryview() { throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented")}
+Sk.builtin.next_ = function next_() { throw new Sk.builtin.NotImplementedError("next is not yet implemented")}
+Sk.builtin.pow = function pow() { throw new Sk.builtin.NotImplementedError("pow is not yet implemented")}
+Sk.builtin.property = function property() { throw new Sk.builtin.NotImplementedError("property is not yet implemented")}
+Sk.builtin.reduce = function reduce() { throw new Sk.builtin.NotImplementedError("reduce is not yet implemented")}
+Sk.builtin.reload = function reload() { throw new Sk.builtin.NotImplementedError("reload is not yet implemented")}
+Sk.builtin.reversed = function reversed() { throw new Sk.builtin.NotImplementedError("reversed is not yet implemented")}
+Sk.builtin.sorted = function sorted() { throw new Sk.builtin.NotImplementedError("sorted is not yet implemented")}
+Sk.builtin.unichr = function unichr() { throw new Sk.builtin.NotImplementedError("unichr is not yet implemented")}
+Sk.builtin.vars = function vars() { throw new Sk.builtin.NotImplementedError("vars is not yet implemented")}
+Sk.builtin.xrange = function xrange() { throw new Sk.builtin.NotImplementedError("xrange is not yet implemented")}
+Sk.builtin.apply_ = function apply_() { throw new Sk.builtin.NotImplementedError("apply is not yet implemented")}
+Sk.builtin.buffer = function buffer() { throw new Sk.builtin.NotImplementedError("buffer is not yet implemented")}
+Sk.builtin.coerce = function coerce() { throw new Sk.builtin.NotImplementedError("coerce is not yet implemented")}
+Sk.builtin.intern = function intern() { throw new Sk.builtin.NotImplementedError("intern is not yet implemented")}
+
 
 /*
 Sk.builtinFiles = {};
