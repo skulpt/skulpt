@@ -663,6 +663,11 @@ Sk.builtin.superbi =  function superbi()
     throw new Sk.builtin.NotImplementedError("Super is not yet implemented, please report your use case as a github issue.");
 }
 
+Sk.builtin.eval_ =  function eval_()
+{
+    throw new Sk.builtin.NotImplementedError("Eval is not yet implemented");
+}
+
 Sk.builtin.hasattr = function hasattr(obj,attr) {
     if (typeof attr.v !== "string")
         throw new Sk.builtin.TypeError('hasattr() attribute name must be a string')

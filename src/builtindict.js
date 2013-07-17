@@ -63,6 +63,7 @@ Sk.builtins = {
 'raw_input': Sk.builtin.raw_input,
 /*'read': Sk.builtin.read,*/
 'jseval': Sk.builtin.jseval,
+'eval_$rn$' : Sk.builtin.eval_,
 'jsmillis': Sk.builtin.jsmillis
 /*'long_div_mode': Sk.builtin.lng.longDivideMode	//	No longer used/relevant */
 };
