@@ -406,6 +406,8 @@ Sk.misceval.loadname = function(name, other)
     var bi = Sk.builtins[name];
     if (bi !== undefined) return bi;
 
+    name = name.replace('_$rw$', '');
+    name = name.replace('_$rn$', '');
     throw new Sk.builtin.NameError("name '" + name + "' is not defined");
 };
 goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);

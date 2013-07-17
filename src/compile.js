@@ -506,8 +506,8 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
         case Num:
             if (typeof e.n === "number")
                 return e.n;
-			else if (e.n instanceof Sk.builtin.nmber)
-				return "Sk.numberFromStr('" + e.n.tp$str().v + "')";
+	    else if (e.n instanceof Sk.builtin.nmber)
+		return "new Sk.builtin.nmber(" + e.n.v + ",'" + e.n.skType + "')";
             else if (e.n instanceof Sk.builtin.lng)
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             goog.asserts.fail("unhandled Num type");

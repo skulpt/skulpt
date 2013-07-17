@@ -1,0 +1,6 @@
+Module(body=[If(test=Name(id='true',
+                          ctx=Load()),
+                body=[Print(dest=None,
+                            values=[Str(s='Hello')],
+                            nl=True)],
+                orelse=[])])

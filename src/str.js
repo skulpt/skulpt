@@ -246,16 +246,19 @@ Sk.builtin.str.re_escape_ = function(s)
 
 Sk.builtin.str.prototype['lower'] = new Sk.builtin.func(function(self)
 {
+    Sk.builtin.pyCheckArgs("lower", arguments, 1, 1);
     return new Sk.builtin.str(self.v.toLowerCase());
 });
 
 Sk.builtin.str.prototype['upper'] = new Sk.builtin.func(function(self)
 {
+    Sk.builtin.pyCheckArgs("upper", arguments, 1, 1);
     return new Sk.builtin.str(self.v.toUpperCase());
 });
 
 Sk.builtin.str.prototype['capitalize'] = new Sk.builtin.func(function(self)
 {
+    Sk.builtin.pyCheckArgs("capitalize", arguments, 1, 1);
     var orig = self.v;
     var cap;
     var i;
@@ -275,6 +278,8 @@ Sk.builtin.str.prototype['capitalize'] = new Sk.builtin.func(function(self)
 
 Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 {
+    Sk.builtin.pyCheckArgs("join", arguments, 2, 2);
+    Sk.builtin.pyCheckType("seq", "iterable", Sk.builtin.checkIterable(seq));
     var arrOfStrs = [];
     for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
     {
@@ -286,7 +291,6 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
-    howmany = Sk.builtin.asnum$(howmany);
     Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
     if (on === undefined) {
         on = null;
@@ -301,6 +305,7 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
         throw new Sk.builtin.TypeError("an integer is required");
     }
 
+    howmany = Sk.builtin.asnum$(howmany);
     var regex = /[\s]+/g;
     var str = self.v;
     if (on === null) {
@@ -340,13 +345,19 @@ Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howma
 
 Sk.builtin.str.prototype['strip'] = new Sk.builtin.func(function(self, chars)
 {
+    Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 2);
+    if (chars) {
+	Sk.builtin.pyCheckType("chars", "string", Sk.builtin.checkString(chars));
+    }
     goog.asserts.assert(!chars, "todo;");
     return new Sk.builtin.str(self.v.replace(/^\s+|\s+$/g, ''));
 });
 
 Sk.builtin.str.prototype['lstrip'] = new Sk.builtin.func(function(self, chars)
 {
+    Sk.builtin.pyCheckArgs("lstrip", arguments, 1, 2);
     if (chars){
+	Sk.builtin.pyCheckType("chars", "string", Sk.builtin.checkString(chars));
         var currstr = self.v;
         var charStr = new Sk.builtin.str(chars)
         while(currstr.indexOf(charStr.v) === 0){
@@ -361,7 +372,9 @@ Sk.builtin.str.prototype['lstrip'] = new Sk.builtin.func(function(self, chars)
 
 Sk.builtin.str.prototype['rstrip'] = new Sk.builtin.func(function(self, chars)
 {
+    Sk.builtin.pyCheckArgs("rstrip", arguments, 1, 2);
     if (chars){
+	Sk.builtin.pyCheckType("chars", "string", Sk.builtin.checkString(chars));
         var currstr = self.v;
         var charStr = new Sk.builtin.str(chars)
         while(currstr.lastIndexOf(charStr.v) === currstr.length - charStr.v.length){
@@ -376,6 +389,8 @@ Sk.builtin.str.prototype['rstrip'] = new Sk.builtin.func(function(self, chars)
 
 Sk.builtin.str.prototype['partition'] = new Sk.builtin.func(function(self, sep)
 {
+    Sk.builtin.pyCheckArgs("partition", arguments, 2, 2);
+    Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
     var sepStr = new Sk.builtin.str(sep);
     var pos = self.v.indexOf(sepStr.v);
     if (pos < 0)
@@ -391,6 +406,8 @@ Sk.builtin.str.prototype['partition'] = new Sk.builtin.func(function(self, sep)
 
 Sk.builtin.str.prototype['rpartition'] = new Sk.builtin.func(function(self, sep)
 {
+    Sk.builtin.pyCheckArgs("rpartition", arguments, 2, 2);
+    Sk.builtin.pyCheckType("sep", "string", Sk.builtin.checkString(sep));
     var sepStr = new Sk.builtin.str(sep);
     var pos = self.v.lastIndexOf(sepStr.v);
     if (pos < 0)
@@ -405,6 +422,8 @@ Sk.builtin.str.prototype['rpartition'] = new Sk.builtin.func(function(self, sep)
 });
 
 Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
+    Sk.builtin.pyCheckArgs("count", arguments, 2, 2);
+    Sk.builtin.pyCheckType("pat", "string", Sk.builtin.checkString(pat));
     var m = new RegExp(pat.v,'g');
     var ctl = self.v.match(m)
     if (! ctl) {
@@ -416,6 +435,8 @@ Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat) {
 });
 
 Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
+    Sk.builtin.pyCheckArgs("ljust", arguments, 2, 2);
+    Sk.builtin.pyCheckType("len", "number", Sk.builtin.checkNumber(len));
 	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
@@ -426,6 +447,8 @@ Sk.builtin.str.prototype['ljust'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
+    Sk.builtin.pyCheckArgs("rjust", arguments, 2, 2);
+    Sk.builtin.pyCheckType("len", "number", Sk.builtin.checkNumber(len));
 	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
@@ -437,6 +460,8 @@ Sk.builtin.str.prototype['rjust'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
+    Sk.builtin.pyCheckArgs("center", arguments, 2, 2);
+    Sk.builtin.pyCheckType("len", "number", Sk.builtin.checkNumber(len));
 	len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
         return self;
@@ -452,11 +477,17 @@ Sk.builtin.str.prototype['center'] = new Sk.builtin.func(function(self, len) {
 });
 
 Sk.builtin.str.prototype['find'] = new Sk.builtin.func(function(self, tgt, start) {
+    Sk.builtin.pyCheckArgs("find", arguments, 2, 3);
+    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
+    if (start) {
+	Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+    }
     start = Sk.builtin.asnum$(start);
     return new Sk.builtin.nmber(self.v.indexOf(tgt.v,start), Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, start) {
+    Sk.builtin.pyCheckArgs("index", arguments, 2, 3);
     var idx = Sk.misceval.callsim(self['find'], self, tgt, start);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
@@ -465,6 +496,11 @@ Sk.builtin.str.prototype['index'] = new Sk.builtin.func(function(self, tgt, star
 });
 
 Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, start) {
+    Sk.builtin.pyCheckArgs("rfind", arguments, 2, 3);
+    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
+    if (start) {
+	Sk.builtin.pyCheckType("start", "number", Sk.builtin.checkNumber(start));
+    }
     var s = self.v;
     var offset = 0;
     var idx = -1;
@@ -486,6 +522,7 @@ Sk.builtin.str.prototype['rfind'] = new Sk.builtin.func(function(self, tgt, star
 });
 
 Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, start) {
+    Sk.builtin.pyCheckArgs('rindex', arguments, 2, 3);
     var idx = Sk.misceval.callsim(self['rfind'], self, tgt, start);
     if (Sk.builtin.asnum$(idx) === -1) {
         throw new Sk.builtin.ValueError("substring not found");
@@ -494,24 +531,33 @@ Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, sta
 });
 
 Sk.builtin.str.prototype['startswith'] = new Sk.builtin.func(function(self, tgt) {
+    Sk.builtin.pyCheckArgs("startswith", arguments, 2, 2);
+    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
    return 0 == self.v.indexOf(tgt.v);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
 Sk.builtin.str.prototype['endswith'] = new Sk.builtin.func(function(self, tgt) {
+    Sk.builtin.pyCheckArgs("endswith", arguments, 2, 2);
+    Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
     return self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1;
 });
 
 Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, newS, count)
 {
-    if (oldS.constructor !== Sk.builtin.str || newS.constructor !== Sk.builtin.str)
-        throw new Sk.builtin.TypeError("expecting a string");
+    Sk.builtin.pyCheckArgs("replace", arguments, 3, 4);
+    Sk.builtin.pyCheckType("oldS", "string", Sk.builtin.checkString(oldS));
+    Sk.builtin.pyCheckType("newS", "string", Sk.builtin.checkString(newS));
+    if (count) {
+	Sk.builtin.pyCheckType("count", "number", Sk.builtin.checkNumber(count));
+    }
     goog.asserts.assert(count === undefined, "todo; replace() with count not implemented");
     var patt = new RegExp(Sk.builtin.str.re_escape_(oldS.v), "g");
     return new Sk.builtin.str(self.v.replace(patt, newS.v));
 });
 
 Sk.builtin.str.prototype['isdigit'] = new Sk.builtin.func(function(self) {
+    Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 1);
     if (self.v.length === 0) { return false; }
     var i;
     for (i=0; i<self.v.length; i++) {
