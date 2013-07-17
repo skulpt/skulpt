@@ -1,1 +1,1 @@
-EXCEPTION: ValueError: no such method in <class '__main__.X'>: wee
+EXCEPTION: ValueError: no such method in <class '__main__.X'>: wee on line 8

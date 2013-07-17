@@ -1,1 +1,1 @@
-EXCEPTION: AttributeError: NoLen instance has no attribute '__len__'
+EXCEPTION: AttributeError: NoLen instance has no attribute '__len__' on line 21

@@ -34,6 +34,10 @@ Sk.builtin.Exception.prototype.tp$str = function()
         for (var i = 0; i < this.args.v[3]; ++i) ret += " ";
         ret += "^\n";
     }
+    else
+    {
+	ret += " on line " + this.lineno;
+    }
     return new Sk.builtin.str(ret);
 };
 
