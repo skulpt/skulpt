@@ -18,6 +18,8 @@ Sk.abstr.typeName = function(v) {
         vtypename = "bool";
     } else if (typeof v === "number") {
         vtypename = "number";
+    } else if (v instanceof Sk.builtin.nmber) {
+	vtypename = v.skType;
     } else if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
     } else if (v.ob$type && (v.ob$type.tp$name !== undefined)) {
@@ -518,8 +520,8 @@ Sk.abstr.objectGetItem = function(o, key)
             return o.mp$subscript(key);
         else if (Sk.misceval.isIndex(key) && o.sq$item)
             return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key));
-        else if (o.__getitem__ !== undefined) {
-            return Sk.misceval.callsim(o.__getitem__,o,key);
+        else if (o.tp$getitem) {
+            return o.tp$getitem(key);
         }
     }
 
@@ -536,6 +538,8 @@ Sk.abstr.objectSetItem = function(o, key, v)
             return o.mp$ass_subscript(key, v);
         else if (Sk.misceval.isIndex(key) && o.sq$ass_item)
             return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
+	else if (o.tp$setitem)
+	    return o.tp$setitem(key, v);
     }
 
     var otypename = Sk.abstr.typeName(o);

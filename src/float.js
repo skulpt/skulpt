@@ -8,8 +8,17 @@ Sk.builtin.float_ = function(x)
     if (x instanceof Sk.builtin.str)
     {
 		var tmp;
-        if (x.v === "inf") tmp = Infinity;
-        else if (x.v === "-inf") tmp = -Infinity;
+
+	if (x.v.match(/^-inf$/i)) {
+	    tmp = -Infinity;
+	}
+	else if (x.v.match(/^[+]?inf$/i)) {
+	    tmp = Infinity;
+	}
+	else if (x.v.match(/^[-+]?nan$/i)) {
+	    tmp = NaN;
+	}
+
         else if (!isNaN(x.v))
             tmp = parseFloat(x.v);
         else {
@@ -19,7 +28,8 @@ Sk.builtin.float_ = function(x)
     }
 
     // Floats are just numbers
-    if (typeof x === "number" || x instanceof Sk.builtin.nmber)
+    if (typeof x === "number" || x instanceof Sk.builtin.nmber
+	|| x instanceof Sk.builtin.lng)
     {
 	x = Sk.builtin.asnum$(x);
         return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);

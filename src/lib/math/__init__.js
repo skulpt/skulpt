@@ -143,12 +143,19 @@ var $builtinmodule = function(name)
     });
 
     mod.hypot = new Sk.builtin.func(function(x, y) {
+	Sk.builtin.pyCheckArgs("hypot", arguments, 2, 2);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+	Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+
 		x = Sk.builtin.asnum$(x);
 		y = Sk.builtin.asnum$(y);
 	return new Sk.builtin.nmber(Math.sqrt((x*x)+(y*y)), Sk.builtin.nmber.float$);
     });
 
 	mod.factorial = new Sk.builtin.func(function(x) {
+	    Sk.builtin.pyCheckArgs("factorial", arguments, 1, 1);
+            Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
 		x = Math.floor(Sk.builtin.asnum$(x));
 		var r = 1;
 		for (var i = 2; i <= x; i++)

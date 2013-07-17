@@ -6,7 +6,7 @@
  */
 Sk.builtin.nmber = function(x, skType)	/* number is a reserved word */
 {
-    if (!(this instanceof Sk.builtin.nmber)) return new Sk.builtin.nmber(x, undefined);
+    if (!(this instanceof Sk.builtin.nmber)) return new Sk.builtin.nmber(x, skType);
 
 	if (x instanceof Sk.builtin.str)
 		x = x.v;
@@ -458,6 +458,11 @@ Sk.builtin.nmber.prototype.nb$power = function(other)
 				result = new Sk.builtin.lng(this.v).nb$power(other.v);
 			}
 		}
+	    if ((Math.abs(result.v) === Infinity)
+		&& (Math.abs(this.v) !== Infinity)
+		&& (Math.abs(other.v) !== Infinity)) {
+		throw new Sk.builtin.OverflowError("Numerical result out of range");
+	    }
 		return result;
 	}
 
@@ -662,6 +667,8 @@ Sk.builtin.nmber.prototype.__ge__ = function(me, other) {
 	return me.numberCompare(other) >= 0;
 };
 
+Sk.builtin.nmber.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+
 Sk.builtin.nmber.prototype['$r'] = function()
 {
     return new Sk.builtin.str(this.str$(10, true));
@@ -694,6 +701,17 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 		if (this.skType == Sk.builtin.nmber.float$) {
 			tmp = work.toPrecision(12);
 
+		    // transform fractions with 4 or more leading zeroes into exponents
+		    var idx = tmp.indexOf('.');
+		    var pre = work.toString().slice(0,idx);
+		    var post = work.toString().slice(idx);
+		    if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
+			if (tmp.length < 12)
+			    tmp = work.toExponential();
+			else
+			    tmp = work.toExponential(11);
+		    }
+
 			while (tmp.charAt(tmp.length-1) == "0" && tmp.indexOf('e') < 0) {
 				tmp = tmp.substring(0,tmp.length-1)
 			}
@@ -701,6 +719,10 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 				tmp = tmp + "0"
 			}
 			tmp = tmp.replace(new RegExp('\\.0+e'),'e',"i")
+		    // make exponent two digits instead of one (ie e+09 not e+9)
+		    tmp = tmp.replace(/(e[-+])([1-9])$/, "$10$2");
+		    // remove trailing zeroes before the exponent
+		    tmp = tmp.replace(/0+(e.*)/,'$1');
 		} else {
 			tmp = work.toString()
 		}

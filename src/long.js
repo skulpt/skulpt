@@ -500,7 +500,7 @@ Sk.builtin.lng.prototype.longCompare = function(other)
 		tmp = this.biginteger.subtract(new Sk.builtin.biginteger(other));
 	}
 
-	return Sk.builtin.asnum$(tmp);
+	return tmp;
 }
 
 Sk.builtin.lng.prototype.__eq__ = function(me, other) {

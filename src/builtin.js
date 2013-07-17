@@ -60,8 +60,8 @@ Sk.builtin.asnum$ = function(a) {
 	    return a.toInt$();
 	}
 	if (a.constructor === Sk.builtin.biginteger) {
-	    if ((a.trueCompare(Sk.builtin.lng.MAX_INT$.biginteger) > 0)
-		|| (a.trueCompare(Sk.builtin.lng.MIN_INT$.biginteger) < 0)) {
+	    if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.lng.threshold$)) > 0)
+		|| (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.lng.threshold$)) < 0)) {
 		return a.toString();
 	    }
 	    return a.intValue();
@@ -391,22 +391,48 @@ Sk.builtin.chr = function chr(x)
     return new Sk.builtin.str(String.fromCharCode(x));
 };
 
+Sk.builtin.int2str_ = function helper_(x, radix, prefix)
+{
+    var str = '';
+    if (x instanceof Sk.builtin.lng) {
+	var suffix = '';
+	if (radix !== 2)
+	    suffix = 'L';
+
+	str = x.str$(radix, false);
+	if (x.nb$isnegative()) {
+	    return new Sk.builtin.str('-'+prefix+str+suffix);
+	}
+	return new Sk.builtin.str(prefix+str+suffix);
+    } else {
+	x = Sk.builtin.asnum$(x);
+	str = x.toString(radix);
+	if (x < 0) {
+	    return new Sk.builtin.str('-'+prefix+str.slice(1));
+	}
+	return new Sk.builtin.str(prefix+str);
+    }
+};
+
 Sk.builtin.hex = function hex(x)
 {
+    Sk.builtin.pyCheckArgs("hex", arguments, 1, 1);
     Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
-    return new Sk.builtin.str('0x'+x.toString(16));
+    return Sk.builtin.int2str_(x, 16, "0x");
 };
 
 Sk.builtin.oct = function oct(x)
 {
+    Sk.builtin.pyCheckArgs("oct", arguments, 1, 1);
     Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
-    return new Sk.builtin.str('0'+x.toString(8));
+    return Sk.builtin.int2str_(x, 8, "0");
 };
 
 Sk.builtin.bin = function bin(x)
 {
+    Sk.builtin.pyCheckArgs("bin", arguments, 1, 1);
     Sk.builtin.pyCheckType("x", "integer", Sk.builtin.checkInt(x));
-    return new Sk.builtin.str('0b'+x.toString(2));
+    return Sk.builtin.int2str_(x, 2, "0b");
 };
 
 Sk.builtin.dir = function dir(x)
@@ -664,8 +690,10 @@ Sk.builtin.superbi =  function superbi()
 }
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {
-    if (typeof attr.v !== "string")
-        throw new Sk.builtin.TypeError('hasattr() attribute name must be a string')
+    Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
+    if (!Sk.builtin.checkString(attr)) {
+        throw new Sk.builtin.TypeError('hasattr(): attribute name must be string');
+    }
 
     if (obj.tp$getattr) {
         if (obj.tp$getattr(attr.v)) {
