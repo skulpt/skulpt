@@ -220,3 +220,12 @@ goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedErr
  */
 Sk.builtin.NegativePowerError = function(args) { Sk.builtin.Exception.apply(this, arguments); }goog.inherits(Sk.builtin.NegativePowerError, Sk.builtin.Exception);Sk.builtin.NegativePowerError.prototype.tp$name = "NegativePowerError";
 goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
+
+Sk.currLineNo = -1;
+Sk.currColNo = -1;
+Sk.currFilename = '';
+
+goog.exportSymbol("Sk", Sk);
+goog.exportProperty(Sk, "currLineNo", Sk.currLineNo);
+goog.exportProperty(Sk, "currColNo", Sk.currColNo);
+goog.exportProperty(Sk, "currFilename", Sk.currFilename);
