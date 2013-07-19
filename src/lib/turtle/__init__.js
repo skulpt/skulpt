@@ -59,7 +59,7 @@ if (! TurtleGraphics) {
         this.renderCounter = 1;
         this.clearPoint = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
-		Sk.tg.fadeOnExit = true;	//	This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
+		//Sk.tg.fadeOnExit = true;	//	This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
     }
 
     TurtleCanvas.prototype.setup = function(width, height) {
@@ -470,6 +470,9 @@ if (! TurtleGraphics) {
             this.shapeStore['turtle'] = turtleShapePoints();
             this.shapeStore['arrow'] = defaultShapePoints();
             this.shapeStore['circle'] = circleShapePoints();
+            this.shapeStore['square'] = squareShapePoints();
+            this.shapeStore['triangle'] = triangleShapePoints();
+            this.shapeStore['blank'] = [new Vector(0,0)];
             this.shapeStore['classic'] = classicShapePoints();
             this.currentShape = 'classic';
             this.drawingEvents = [];
@@ -562,6 +565,37 @@ if (! TurtleGraphics) {
             res.push(new Vector(pl[p]));
         }
         return res;
+    }
+
+    function triangleShapePoints() {
+        var pl = [
+            [10,-5.77],
+            [0,-11.55],
+            [0,11.55]
+        ];
+
+        res = [];
+        for (p in pl) {
+            res.push(new Vector(pl[p]));
+        }
+        return res;
+
+    }
+
+    function squareShapePoints() {
+        var pl = [
+            [10,-10],
+            [10,10],
+            [-10,10],
+            [-10,-10]
+        ];
+
+        res = [];
+        for (p in pl) {
+            res.push(new Vector(pl[p]));
+        }
+        return res;
+
     }
 
     function classicShapePoints() {
