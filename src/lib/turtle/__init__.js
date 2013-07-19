@@ -570,8 +570,8 @@ if (! TurtleGraphics) {
     function triangleShapePoints() {
         var pl = [
             [10,-5.77],
-            [0,-11.55],
-            [0,11.55]
+            [0,11.55],
+            [-10,-5.77]
         ];
 
         res = [];
