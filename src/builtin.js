@@ -709,6 +709,78 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
         throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
 }
 
+
+Sk.builtin.map = function map(fun, iter) {
+/*
+    Sk.builtin.pyCheckArgs("map", arguments, 2);
+    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
+    var res = [];
+    var nFun;
+    if (fun === null) {
+        nFun = function(a) {
+          return a;
+        }
+    }
+    else {
+        nFun = function(a) {
+            return Sk.misceval.callsim(fun, a);
+        }
+    }
+    var it = iter.tp$iter();
+    for (var i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        res.push(nFun(i));
+    }
+    if (arguments.length > 2) {
+        var nRes = []
+        for (var i = 0; i < res.length; i++) {
+            nRes.push([res[i]]);
+        }
+        var maxLength = Sk.builtin.len(iter);
+        for (var i = 2; i < arguments.length; i++) {
+          Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(arguments[i]));
+          maxLength = Math.max(maxLength, Sk.builtin.len(arguments[i]));
+        }
+        for (var i = Sk.builtin.len(iter); i < maxLength; i++) {
+            nRes.push([new Sk.builtin.NoneObj()]);
+        }
+        for (var a = 2; a < arguments.length; a++) {
+            var it = arguments[a].tp$iter();
+            var index = 0;
+            for (var i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                nRes[index++].push(nFun(i));
+            }
+            for (var i = index; index < maxLength; i++) {
+                nRes[i].push(new Sk.builtin.NoneObj());
+            }
+        }
+        for (var i = 0; i < nRes.length; i++) {
+            res[i] = new Sk.builtin.tuple(nRes[i]);
+        }      
+    }
+    return new Sk.builtin.list(res);
+*/
+    throw new Sk.builtin.NotImplementedError("map is not yet implemented")
+}
+
+Sk.builtin.pow = function pow(a, b, c) {
+    Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
+    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
+    Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
+    var b = Sk.builtin.asnum$(b);
+    var type = a.skType;
+    if (b < 0 || b.skType === Sk.builtin.nmber.float$) {
+        type = Sk.builtin.nmber.float$;
+    }
+    if (c==undefined) {
+        return new Sk.builtin.nmber(Math.pow(Sk.builtin.asnum$(a),b), type);
+    }
+    Sk.builtin.pyCheckType("c", "number", Sk.builtin.checkNumber(c));
+    if (a.skType !== Sk.builtin.nmber.int$ || b.skType !== Sk.builtin.nmber.int$ || c.skType !== Sk.builtin.nmber.int$) {
+        throw new Sk.builtin.TypeError("TypeError: pow() 3rd argument not allowed unless all arguments are integers")
+    }
+    return new Sk.builtin.nmber(Math.pow(Sk.builtin.asnum$(a),Sk.builtin.asnum$(b)) % Sk.builtin.asnum$(c), Sk.builtin.nmber.int$);
+}
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
@@ -723,10 +795,8 @@ Sk.builtin.help = function help() { throw new Sk.builtin.NotImplementedError("he
 Sk.builtin.issubclass = function issubclass() { throw new Sk.builtin.NotImplementedError("issubclass is not yet implemented")}
 Sk.builtin.iter = function iter() { throw new Sk.builtin.NotImplementedError("iter is not yet implemented")}
 Sk.builtin.locals = function locals() { throw new Sk.builtin.NotImplementedError("locals is not yet implemented")}
-Sk.builtin.map = function map() { throw new Sk.builtin.NotImplementedError("map is not yet implemented")}
 Sk.builtin.memoryview = function memoryview() { throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented")}
 Sk.builtin.next_ = function next_() { throw new Sk.builtin.NotImplementedError("next is not yet implemented")}
-Sk.builtin.pow = function pow() { throw new Sk.builtin.NotImplementedError("pow is not yet implemented")}
 Sk.builtin.property = function property() { throw new Sk.builtin.NotImplementedError("property is not yet implemented")}
 Sk.builtin.reduce = function reduce() { throw new Sk.builtin.NotImplementedError("reduce is not yet implemented")}
 Sk.builtin.reload = function reload() { throw new Sk.builtin.NotImplementedError("reload is not yet implemented")}
@@ -734,7 +804,7 @@ Sk.builtin.reversed = function reversed() { throw new Sk.builtin.NotImplementedE
 Sk.builtin.sorted = function sorted() { throw new Sk.builtin.NotImplementedError("sorted is not yet implemented")}
 Sk.builtin.unichr = function unichr() { throw new Sk.builtin.NotImplementedError("unichr is not yet implemented")}
 Sk.builtin.vars = function vars() { throw new Sk.builtin.NotImplementedError("vars is not yet implemented")}
-Sk.builtin.xrange = function xrange() { throw new Sk.builtin.NotImplementedError("xrange is not yet implemented")}
+Sk.builtin.xrange = Sk.builtin.range;
 Sk.builtin.apply_ = function apply_() { throw new Sk.builtin.NotImplementedError("apply is not yet implemented")}
 Sk.builtin.buffer = function buffer() { throw new Sk.builtin.NotImplementedError("buffer is not yet implemented")}
 Sk.builtin.coerce = function coerce() { throw new Sk.builtin.NotImplementedError("coerce is not yet implemented")}
