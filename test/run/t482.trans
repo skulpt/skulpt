@@ -1,0 +1,10 @@
+Module(body=[Print(dest=None,
+                   values=[Num(n=1)],
+                   nl=True),
+             Raise(type=Name(id='SystemExit',
+                             ctx=Load()),
+                   inst=Str(s='quit message'),
+                   tback=None),
+             Print(dest=None,
+                   values=[Num(n=2)],
+                   nl=True)])

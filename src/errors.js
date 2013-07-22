@@ -124,6 +124,17 @@ Sk.builtin.ParseError = function(args) { Sk.builtin.Exception.apply(this, argume
 goog.inherits(Sk.builtin.ParseError, Sk.builtin.Exception);
 Sk.builtin.ParseError.prototype.tp$name = "ParseError";
 
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.SystemExit = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.SystemExit, Sk.builtin.Exception);
+Sk.builtin.SystemExit.prototype.tp$name = "SystemExit";
+
+
 /**
  * @constructor
  * @extends Sk.builtin.Exception

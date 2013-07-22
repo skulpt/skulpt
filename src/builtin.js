@@ -755,6 +755,11 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
         throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
 }
 
+Sk.builtin.quit = function quit(msg) {
+    var s = new Sk.builtin.str(msg).v;
+    throw new Sk.builtin.SystemExit(s);
+}
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
