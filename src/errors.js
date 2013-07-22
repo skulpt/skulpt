@@ -133,6 +133,7 @@ Sk.builtin.ParseError.prototype.tp$name = "ParseError";
 Sk.builtin.SystemExit = function(args) { Sk.builtin.Exception.apply(this, arguments); }
 goog.inherits(Sk.builtin.SystemExit, Sk.builtin.Exception);
 Sk.builtin.SystemExit.prototype.tp$name = "SystemExit";
+goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
 
 
 /**
