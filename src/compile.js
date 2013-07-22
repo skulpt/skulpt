@@ -1473,10 +1473,6 @@ Compiler.prototype.vstmt = function(s)
             else
                 out("return null;");
             break;
-        case Quit_:
-        case Exit_:
-            out("return $loc;");
-            break;
         case Delete_:
             this.vseqexpr(s.targets);
             break;
