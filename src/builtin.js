@@ -694,6 +694,52 @@ Sk.builtin.eval_ =  function eval_()
     throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 }
 
+
+Sk.builtin.map = function map(fun, seq) { 
+    var retval = new Array();
+	for (var i in seq.v){
+		retval.push(fun.func_code(seq.v[i]))
+	}
+	return new Sk.builtin.list(retval);
+}
+
+Sk.builtin.reduce = function reduce(fun, seq, initializer) {
+	var iter = seq.tp$iter();
+	if (initializer === undefined){
+		initializer = iter.tp$iternext();
+		if (retval === undefined){
+			throw new Sk.builtin.TypeError('reduce() of empty sequence with no initial value');
+		}
+	}
+	var accum_value = initializer;
+	var next = iter.tp$iternext();
+	while (next !== undefined){
+		accum_value = fun.func_code(accum_value, next)
+		next = iter.tp$iternext();
+	}
+	return accum_value;
+}
+
+Sk.builtin.filter = function filter(fun, iterable) { 
+	var iter = iterable.tp$iter(),
+		next = iter.tp$iternext(),
+		retval = new Array();
+		
+	if (next === undefined){
+		return new Sk.builtin.list();
+	}
+	
+	while (next !== undefined){
+		if (fun.func_code(next)){
+			retval.push(next);
+		}
+		next = iter.tp$iternext();
+	}
+	
+	return new Sk.builtin.list(retval);
+}
+
+
 Sk.builtin.hasattr = function hasattr(obj,attr) {
     Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
     if (!Sk.builtin.checkString(attr)) {
@@ -715,7 +761,6 @@ Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedErr
 Sk.builtin.delattr = function delattr() { throw new Sk.builtin.NotImplementedError("delattr is not yet implemented")}
 Sk.builtin.divmod = function divmod() { throw new Sk.builtin.NotImplementedError("divmod is not yet implemented")}
 Sk.builtin.execfile = function execfile() { throw new Sk.builtin.NotImplementedError("execfile is not yet implemented")}
-Sk.builtin.filter = function filter() { throw new Sk.builtin.NotImplementedError("filter is not yet implemented")}
 Sk.builtin.format = function format() { throw new Sk.builtin.NotImplementedError("format is not yet implemented")}
 Sk.builtin.frozenset = function frozenset() { throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented")}
 Sk.builtin.globals = function globals() { throw new Sk.builtin.NotImplementedError("globals is not yet implemented")}
@@ -723,12 +768,10 @@ Sk.builtin.help = function help() { throw new Sk.builtin.NotImplementedError("he
 Sk.builtin.issubclass = function issubclass() { throw new Sk.builtin.NotImplementedError("issubclass is not yet implemented")}
 Sk.builtin.iter = function iter() { throw new Sk.builtin.NotImplementedError("iter is not yet implemented")}
 Sk.builtin.locals = function locals() { throw new Sk.builtin.NotImplementedError("locals is not yet implemented")}
-Sk.builtin.map = function map() { throw new Sk.builtin.NotImplementedError("map is not yet implemented")}
 Sk.builtin.memoryview = function memoryview() { throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented")}
 Sk.builtin.next_ = function next_() { throw new Sk.builtin.NotImplementedError("next is not yet implemented")}
 Sk.builtin.pow = function pow() { throw new Sk.builtin.NotImplementedError("pow is not yet implemented")}
 Sk.builtin.property = function property() { throw new Sk.builtin.NotImplementedError("property is not yet implemented")}
-Sk.builtin.reduce = function reduce() { throw new Sk.builtin.NotImplementedError("reduce is not yet implemented")}
 Sk.builtin.reload = function reload() { throw new Sk.builtin.NotImplementedError("reload is not yet implemented")}
 Sk.builtin.reversed = function reversed() { throw new Sk.builtin.NotImplementedError("reversed is not yet implemented")}
 Sk.builtin.sorted = function sorted() { throw new Sk.builtin.NotImplementedError("sorted is not yet implemented")}
