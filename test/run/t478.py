@@ -14,3 +14,9 @@ print rnewseq2
 fseq = range(16)
 fnewseq = filter(lambda x: x % 2 == 0, fseq)
 print fnewseq
+
+#mapoverstring
+def f(x):
+    return ord(x)
+
+print map(f, "abcdef")
