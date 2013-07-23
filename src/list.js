@@ -1,6 +1,6 @@
 /**
  * @constructor
- * @param {Array.<Object>} L
+ * @param {Array.<Object>=} L
  * @extends Sk.builtin.object
  */
 Sk.builtin.list = function(L)
