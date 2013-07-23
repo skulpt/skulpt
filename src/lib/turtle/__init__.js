@@ -59,7 +59,7 @@ if (! TurtleGraphics) {
         this.renderCounter = 1;
         this.clearPoint = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
-		//Sk.tg.fadeOnExit = true;	//	This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
+		Sk.tg.fadeOnExit = true;	//	This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
     }
 
     TurtleCanvas.prototype.setup = function(width, height) {
