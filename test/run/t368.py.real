@@ -1,1 +1,1 @@
-EXCEPTION: TypeError
+EXCEPTION: TypeError: 'int' object is not iterable

@@ -35,7 +35,7 @@ Sk.abstr.binop_type_error = function(v, w, name)
     var vtypename = Sk.abstr.typeName(v);
     var wtypename = Sk.abstr.typeName(w);
 
-    throw new TypeError("unsupported operand type(s) for " + name + ": '"
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '"
             + vtypename + "' and '" + wtypename + "'");
 };
 
@@ -352,7 +352,7 @@ Sk.abstr.numberUnaryOp = function(v, op)
     }
 
     var vtypename = Sk.abstr.typeName(v);
-    throw new TypeError("unsupported operand type for " + op + " '" + vtypename + "'");
+    throw new Sk.builtin.TypeError("unsupported operand type for " + op + " '" + vtypename + "'");
 };
 goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
@@ -379,7 +379,7 @@ Sk.abstr.sequenceContains = function(seq, ob)
     if (seq.sq$contains) return seq.sq$contains(ob);
 
     var seqtypename = Sk.abstr.typeName(seq);
-    if (!seq.tp$iter) throw new TypeError("argument of type '" + seqtypename + "' is not iterable");
+    if (!seq.tp$iter) throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
     
     for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
     {
@@ -409,7 +409,7 @@ Sk.abstr.sequenceDelItem = function(seq, i)
     }
 
     var seqtypename = Sk.abstr.typeName(seq);
-    throw new TypeError("'" + seqtypename + "' object does not support item deletion");
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item deletion");
 };
 
 Sk.abstr.sequenceRepeat = function(f, seq, n)
@@ -419,7 +419,7 @@ Sk.abstr.sequenceRepeat = function(f, seq, n)
     if (count === undefined)
     {
         var ntypename = Sk.abstr.typeName(n);
-        throw new TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
     }
     return f.call(seq, n);
 };
@@ -438,7 +438,7 @@ Sk.abstr.sequenceGetSlice = function(seq, i1, i2)
     }
 
     var seqtypename = Sk.abstr.typeName(seq);
-    throw new TypeError("'" + seqtypename + "' object is unsliceable");
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsliceable");
 };
 
 Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
@@ -452,7 +452,7 @@ Sk.abstr.sequenceDelSlice = function(seq, i1, i2)
     }
 
     var seqtypename = Sk.abstr.typeName(seq);
-    throw new TypeError("'" + seqtypename + "' doesn't support slice deletion");
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' doesn't support slice deletion");
 };
 
 Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
@@ -470,7 +470,7 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
     else
     {
         var seqtypename = Sk.abstr.typeName(seq);
-        throw new TypeError("'" + seqtypename + "' object doesn't support slice assignment");
+        throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
     }
 };
 
@@ -499,7 +499,7 @@ Sk.abstr.objectDelItem = function(o, key)
             var keyValue = Sk.misceval.asIndex(key);
             if (keyValue === undefined) {
                 var keytypename = Sk.abstr.typeName(key);
-                throw new TypeError("sequence index must be integer, not '" + keytypename + "'");
+                throw new Sk.builtin.TypeError("sequence index must be integer, not '" + keytypename + "'");
             }
             Sk.abstr.sequenceDelItem(o, keyValue);
             return;
@@ -508,7 +508,7 @@ Sk.abstr.objectDelItem = function(o, key)
     }
 
     var otypename = Sk.abstr.typeName(o);
-    throw new TypeError("'" + otypename + "' object does not support item deletion");
+    throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
 };
 goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
@@ -526,7 +526,7 @@ Sk.abstr.objectGetItem = function(o, key)
     }
 
     var otypename = Sk.abstr.typeName(o);
-    throw new TypeError("'" + otypename + "' does not support indexing");
+    throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
 };
 goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
@@ -543,7 +543,7 @@ Sk.abstr.objectSetItem = function(o, key, v)
     }
 
     var otypename = Sk.abstr.typeName(o);
-    throw new TypeError("'" + otypename + "' does not support item assignment");
+    throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
 };
 goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
@@ -597,7 +597,7 @@ Sk.abstr.iter = function(obj)
         return obj.tp$iter();
     }
     else {
-        throw new TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
     }
 };
 goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);

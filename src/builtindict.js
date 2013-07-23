@@ -45,6 +45,7 @@ Sk.builtins = {
 'IOError' : Sk.builtin.IOError,
 'NotImplementedError' : Sk.builtin.NotImplementedError,
 'SystemExit': Sk.builtin.SystemExit,
+'OverflowError' : Sk.builtin.OverflowError,
 
 'dict': Sk.builtin.dict,
 'file': Sk.builtin.file,

@@ -883,49 +883,87 @@ Compiler.prototype.craise = function(s)
         // todo;
         var inst = '';
         if (s.inst)
+        {
             inst = this.vexpr(s.inst);
-        out("throw new ", this.vexpr(s.type), "(", inst, ");");
+            out("throw new ", this.vexpr(s.type), "(", inst, ");");
+        }
+
+        if (s.type)
+        {
+            out("throw ", this.vexpr(s.type), ";");
+        }
+        else
+        {
+            // re-raise
+            out("throw $err;");
+        }
     }
 };
 
 Compiler.prototype.ctryexcept = function(s)
 {
-    var except = this.newBlock("except");
+    var n = s.handlers.length;
+
+    // Create a block for each except clause
+    var handlers = [];
+    for (var i = 0; i < n; ++i)
+    {
+        handlers.push(this.newBlock("except_" + i + "_"));
+    }
+
+    var unhandled = this.newBlock("unhandled");
     var orelse = this.newBlock("orelse");
     var end = this.newBlock("end");
 
-    this.setupExcept(except);
-
+    this.setupExcept(handlers[0]);
     this.vseqstmt(s.body);
-
     this.endExcept();
-
     this._jump(orelse);
 
-    this.setBlock(except);
-    var n = s.handlers.length;
     for (var i = 0; i < n; ++i)
     {
+        this.setBlock(handlers[i]);
         var handler = s.handlers[i];
-        if (handler.type && i < n - 1)
+        if (!handler.type && i < n - 1)
+        {
             throw new SyntaxError("default 'except:' must be last");
-        except = this.newBlock("except_" + i + "_");
+        }
+
         if (handler.type)
         {
-            // todo; not right at all
-            this._jumpfalse(this.vexpr(handler.type), except);
+            // should jump to next handler if err not isinstance of handler.type
+            var handlertype = this.vexpr(handler.type);
+            var next = (i == n-1) ? unhandled : handlers[i+1];
+
+            // var isinstance = this.nameop(new Sk.builtin.str("isinstance"), Load));
+            // var check = this._gr('call', "Sk.misceval.callsim(", isinstance, ", $err, ", handlertype, ")");
+
+            // this check is not right, should use isinstance, but exception objects
+            // are not yet proper Python objects
+            var check = this._gr('instance', "$err instanceof ", handlertype);
+            this._jumpfalse(check, next);
         }
-        // todo; name
+
+        if (handler.name)
+        {
+            this.vexpr(handler.name, "$err");
+        }
+
+        // Need to execute finally before leaving body if an exception is raised
         this.vseqstmt(handler.body);
+
+        // Should jump to finally, but finally is not implemented yet
+        this._jump(end);
     }
 
-    // This should really jump to finally instead of end
-    // but until we implement finally jump to end is what
-    // we do.
-    this._jump(end);
+    // If no except clause catches exception, throw it again
+    this.setBlock(unhandled);
+    // Should execute finally first
+    out("throw $err;");
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
+    // Should jump to finally, but finally is not implemented yet
     this._jump(end);
     this.setBlock(end);
 };
@@ -933,6 +971,8 @@ Compiler.prototype.ctryexcept = function(s)
 Compiler.prototype.ctryfinally = function(s)
 {
     out("/*todo; tryfinally*/");
+    // everything but the finally?
+    this.ctryexcept(s.body[0]);
 };
 
 Compiler.prototype.cassert = function(s)
@@ -1127,7 +1167,7 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this;";
+    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined;";
 
     //
     // copy all parameters that are also cells into the cells dict. this is so
@@ -1189,8 +1229,13 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     //
     // finally, set up the block switch that the jump code expects
     //
-    this.u.switchCode += "while(true){switch($blk){";
-    this.u.suffixCode = "}break;}});";
+    // Old switch code
+    // this.u.switchCode += "while(true){switch($blk){";
+    // this.u.suffixCode = "}break;}});";
+
+    // New switch code to catch exceptions
+    this.u.switchCode = "while(true){try{ switch($blk){";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
     //
     // jump back to the handler so it can do the main actual work of the
@@ -1756,7 +1801,7 @@ Compiler.prototype.cmod = function(mod)
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl;$gbl.__name__=$modname;Sk.globals=$gbl;";
+    this.u.varDeclsCode = "var $blk=" + entryBlock + ",$exc=[],$gbl={},$loc=$gbl,$err=undefined;$gbl.__name__=$modname;Sk.globals=$gbl;";
 
     // Add the try block that pops the try/except stack if one exists
     // Github Issue #38
@@ -1768,7 +1813,7 @@ Compiler.prototype.cmod = function(mod)
 
     // New Code:
     this.u.switchCode = "try { while(true){try{ switch($blk){";
-    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those
