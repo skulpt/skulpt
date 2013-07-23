@@ -779,6 +779,11 @@ Sk.builtin.pow = function pow(a, b, c) {
     return new Sk.builtin.nmber(Math.pow(Sk.builtin.asnum$(a),Sk.builtin.asnum$(b)) % Sk.builtin.asnum$(c), Sk.builtin.nmber.int$);
 }
 
+Sk.builtin.quit = function quit(msg) {
+    var s = new Sk.builtin.str(msg).v;
+    throw new Sk.builtin.SystemExit(s);
+}
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
