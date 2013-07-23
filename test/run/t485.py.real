@@ -1,0 +1,10 @@
+Caught AssertionError
+Caught AttributeError
+Caught ImportError
+Caught IndexError
+Caught KeyError
+Caught NameError
+Caught OverflowError
+Caught TypeError
+Caught ValueError
+Caught ZeroDivisionError

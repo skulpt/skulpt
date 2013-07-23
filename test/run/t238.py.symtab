@@ -32,9 +32,9 @@ name: stuff
     Sym_lineno: 7
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ['toString_$rn$', 'valueOf_$rn$']
+    Class_methods: ['toString', 'valueOf']
     -- Identifiers --
-    name: toString_$rn$
+    name: toString
       is_referenced: False
       is_imported: False
       is_parameter: False
@@ -46,7 +46,7 @@ name: stuff
       is_namespace: True
       namespaces: [
         Sym_type: function
-        Sym_name: toString_$rn$
+        Sym_name: toString
         Sym_lineno: 8
         Sym_nested: False
         Sym_haschildren: False
@@ -68,7 +68,7 @@ name: stuff
           namespaces: [
           ]
       ]
-    name: valueOf_$rn$
+    name: valueOf
       is_referenced: False
       is_imported: False
       is_parameter: False
@@ -80,7 +80,7 @@ name: stuff
       is_namespace: True
       namespaces: [
         Sym_type: function
-        Sym_name: valueOf_$rn$
+        Sym_name: valueOf
         Sym_lineno: 10
         Sym_nested: False
         Sym_haschildren: False
@@ -103,7 +103,7 @@ name: stuff
           ]
       ]
   ]
-name: toString_$rn$
+name: toString
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -115,7 +115,7 @@ name: toString_$rn$
   is_namespace: True
   namespaces: [
     Sym_type: function
-    Sym_name: toString_$rn$
+    Sym_name: toString
     Sym_lineno: 4
     Sym_nested: False
     Sym_haschildren: False
