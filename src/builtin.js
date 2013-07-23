@@ -707,7 +707,7 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 	var iter = seq.tp$iter();
 	if (initializer === undefined){
 		initializer = iter.tp$iternext();
-		if (retval === undefined){
+		if (initializer === undefined){
 			throw new Sk.builtin.TypeError('reduce() of empty sequence with no initial value');
 		}
 	}
