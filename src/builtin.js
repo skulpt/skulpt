@@ -708,6 +708,7 @@ Sk.builtin.map = function map(fun, seq) {
 }
 
 Sk.builtin.reduce = function reduce(fun, seq, initializer) {
+	Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
 	var iter = seq.tp$iter();
 	if (initializer === undefined){
 		initializer = iter.tp$iternext();
@@ -725,6 +726,8 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 }
 
 Sk.builtin.filter = function filter(fun, iterable) { 
+	Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
+	
 	//todo: need to find a proper way to tell what type it is.
 	if (iterable.tp$iter === undefined){
 		throw new Sk.builtin.TypeError("'" + iterable.skType + "' object is not iterable");
