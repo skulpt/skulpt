@@ -694,12 +694,16 @@ Sk.builtin.eval_ =  function eval_()
     throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 }
 
-
 Sk.builtin.map = function map(fun, seq) { 
-    var retval = new Array();
-	for (var i in seq.v){
-		retval.push(fun.func_code(seq.v[i]))
-	}
+    var retval = new Array(),
+        iter = seq.tp$iter(),
+        next = iter.tp$iternext();
+
+    while (next !== undefined){
+        retval.push(fun.func_code(next));
+        next = iter.tp$iternext();
+    }
+
 	return new Sk.builtin.list(retval);
 }
 
