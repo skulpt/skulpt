@@ -725,24 +725,44 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 }
 
 Sk.builtin.filter = function filter(fun, iterable) { 
+	if (iterable.tp$iter === undefined){
+		throw new Sk.builtin.TypeError("'" + iterable.__class__ + "' object is not iterable");
+	}
+	
+	//simulate default identity function
+	if (fun == null) { 
+		fun = { func_code: function (x) { return Sk.builtin.bool(x); } } 
+	}
+	
+	var ctor = function () { return new Array(); }
+	var add = function (iter, item) { iter.push(item); return iter; } 
+	var ret = function (iter) { return new Sk.builtin.list(iter); }
+	
+	if (iterable.__class__ == Sk.builtin.str){
+		ctor = function () { return new Sk.builtin.str(); }
+		add = function (iter, item) { return iter.sq$concat(item); }
+		ret = function (iter) { return iter; }
+	} else if (iterable.__class__ == Sk.builtin.tuple) {
+		ret = function (iter) { return new Sk.builtin.tuple(iter); }
+	}
+	
 	var iter = iterable.tp$iter(),
-		next = iter.tp$iternext(),
-		retval = new Array();
-		
+		next = iter.tp$iternext()
+		retval = ctor();
+	
 	if (next === undefined){
-		return new Sk.builtin.list();
+		return ret(retval);
 	}
 	
 	while (next !== undefined){
 		if (fun.func_code(next)){
-			retval.push(next);
+			retval = add(retval, next);
 		}
 		next = iter.tp$iternext();
 	}
 	
-	return new Sk.builtin.list(retval);
+	return ret(retval);
 }
-
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {
     Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
