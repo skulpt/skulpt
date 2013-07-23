@@ -28,7 +28,7 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
             msg = name + "() takes at most " + maxargs + " arguments";
         }
         msg += " (" + nargs + " given)";
-        throw new TypeError(msg);        
+        throw new Sk.builtin.TypeError(msg);
     };
 };
 goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
@@ -143,7 +143,7 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
 
     if (this.func_code['no_kw'] && kw) {
         name = (this.func_code && this.func_code['co_name'] && this.func_code['co_name'].v) || '<native JS>';
-        throw new TypeError(name + "() takes no keyword arguments");
+        throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
     }
 
     if (kw)

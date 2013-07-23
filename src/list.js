@@ -226,7 +226,7 @@ Sk.builtin.list.prototype.list_subscript_ = function(index)
         return new Sk.builtin.list(ret);
     }
 
-    throw new TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
+    throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
 Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
@@ -261,7 +261,7 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
         return;
     }
 
-    throw new TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
+    throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
 };
 
 Sk.builtin.list.prototype.list_del_subscript_ = function(index)
@@ -295,7 +295,7 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
         return;
     }
 
-    throw new TypeError("list indices must be integers, not " + typeof index);
+    throw new Sk.builtin.TypeError("list indices must be integers, not " + typeof index);
 };
 
 Sk.builtin.list.prototype.mp$subscript = Sk.builtin.list.prototype.list_subscript_;

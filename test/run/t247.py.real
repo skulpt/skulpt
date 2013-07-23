@@ -1,1 +1,1 @@
-EXCEPTION: TypeError
+EXCEPTION: TypeError: string indices must be numbers, not number

@@ -1,1 +1,1 @@
-EXCEPTION: TypeError
+EXCEPTION: TypeError: cannot concatenate 'str' and 'NoneType' objects

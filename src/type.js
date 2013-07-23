@@ -331,7 +331,7 @@ Sk.builtin.type.mroMerge_ = function(seqs)
         }
 
         if (cands.length === 0)
-            throw new TypeError("Inconsistent precedences in type hierarchy");
+            throw new Sk.builtin.TypeError("Inconsistent precedences in type hierarchy");
 
         var next = cands[0];
         // append next to result and remove from sequences

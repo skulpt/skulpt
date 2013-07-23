@@ -69,7 +69,7 @@ Sk.builtin.str.prototype.mp$subscript = function(index)
         return new Sk.builtin.str(ret);
     }
     else
-        throw new TypeError("string indices must be numbers, not " + typeof index);
+        throw new Sk.builtin.TypeError("string indices must be numbers, not " + typeof index);
 };
 
 Sk.builtin.str.prototype.sq$length = function()
@@ -81,7 +81,7 @@ Sk.builtin.str.prototype.sq$concat = function(other)
     if (!other || !Sk.builtin.checkString(other))
     {
         var otypename = Sk.abstr.typeName(other);
-        throw new TypeError("cannot concatenate 'str' and '" 
+        throw new Sk.builtin.TypeError("cannot concatenate 'str' and '"
                             + otypename + "' objects");
     }
     return new Sk.builtin.str(this.v + other.v); 
@@ -105,7 +105,7 @@ Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 
 Sk.builtin.str.prototype.sq$contains = function(ob) {
     if ( ob.v === undefined || ob.v.constructor != String) {
-        throw new TypeError("TypeError: 'In <string> requires string as left operand");
+        throw new Sk.builtin.TypeError("TypeError: 'In <string> requires string as left operand");
     }
     if (this.v.indexOf(ob.v) != -1) {
         return true;
@@ -880,7 +880,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
                 else if (value.constructor === Sk.builtin.str)
                     return value.v.substr(0, 1);
                 else
-                    throw new TypeError("an integer is required");
+                    throw new Sk.builtin.TypeError("an integer is required");
                 break; // stupid lint
 
             case 'r':
