@@ -725,8 +725,9 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 }
 
 Sk.builtin.filter = function filter(fun, iterable) { 
+	//todo: need to find a proper way to tell what type it is.
 	if (iterable.tp$iter === undefined){
-		throw new Sk.builtin.TypeError("'" + iterable.__class__ + "' object is not iterable");
+		throw new Sk.builtin.TypeError("'" + iterable.skType + "' object is not iterable");
 	}
 	
 	//simulate default identity function
