@@ -164,26 +164,6 @@ function Return_(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */
 }
 
 /** @constructor */
-function Quit_(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */
-                    col_offset)
-{
-    this.value = value;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
-function Exit_(/* {expr_ty} */ value, /* {int} */ lineno, /* {int} */
-                    col_offset)
-{
-    this.value = value;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    return this;
-}
-
-/** @constructor */
 function Delete_(/* {asdl_seq *} */ targets, /* {int} */ lineno, /* {int} */
                       col_offset)
 {
@@ -768,14 +748,6 @@ ClassDef.prototype._fields = [
 ];
 Return_.prototype._astname = "Return";
 Return_.prototype._fields = [
-    "value", function(n) { return n.value; }
-];
-Quit_.prototype._astname = "Quit";
-Quit_.prototype._fields = [
-    "value", function(n) { return n.value; }
-];
-Exit_.prototype._astname = "Exit";
-Exit_.prototype._fields = [
     "value", function(n) { return n.value; }
 ];
 Delete_.prototype._astname = "Delete";

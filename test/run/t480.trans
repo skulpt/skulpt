@@ -1,0 +1,12 @@
+Module(body=[Print(dest=None,
+                   values=[Num(n=1)],
+                   nl=True),
+             Expr(value=Call(func=Name(id='exit',
+                                       ctx=Load()),
+                             args=[Str(s='exit message - quit the program')],
+                             keywords=[],
+                             starargs=None,
+                             kwargs=None)),
+             Print(dest=None,
+                   values=[Str(s="you shouldn't see this")],
+                   nl=True)])

@@ -1473,10 +1473,6 @@ Compiler.prototype.vstmt = function(s)
             else
                 out("return null;");
             break;
-        case Quit_:
-        case Exit_:
-            out("return $loc;");
-            break;
         case Delete_:
             this.vseqexpr(s.targets);
             break;
@@ -1771,8 +1767,8 @@ Compiler.prototype.cmod = function(mod)
     //this.u.suffixCode = "}}});";
 
     // New Code:
-    this.u.switchCode = "while(true){try{ switch($blk){";
-    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $blk=$exc.pop(); continue; } else { throw err; }} }});";
+    this.u.switchCode = "try { while(true){try{ switch($blk){";
+    this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $blk=$exc.pop(); continue; } else { throw err; }} } }catch(err){ if (err instanceof Sk.builtin.SystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those

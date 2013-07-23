@@ -1005,17 +1005,6 @@ function astForFlowStmt(c, n)
                 return new Return_(null, n.lineno, n.col_offset);
             else
                 return new Return_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
-        case SYM.quit_stmt:
-            if (NCH(ch) === 1)
-                return new Quit_(null, n.lineno, n.col_offset);
-            else
-                return new Quit_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
-        case SYM.exit_stmt:
-            if (NCH(ch) === 1)
-                return new Exit_(null, n.lineno, n.col_offset);
-            else
-                return new Exit_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
-
         case SYM.raise_stmt:
             if (NCH(ch) === 1)
                 return new Raise(null, null, null, n.lineno, n.col_offset);

@@ -44,6 +44,7 @@ Sk.builtins = {
 'NameError' : Sk.builtin.NameError,
 'IOError' : Sk.builtin.IOError,
 'NotImplementedError' : Sk.builtin.NotImplementedError,
+'SystemExit': Sk.builtin.SystemExit,
 
 'dict': Sk.builtin.dict,
 'file': Sk.builtin.file,
@@ -63,6 +64,9 @@ Sk.builtins = {
 /*'read': Sk.builtin.read,*/
 'jseval': Sk.builtin.jseval,
 'jsmillis': Sk.builtin.jsmillis,
+'quit': Sk.builtin.quit,
+'exit': Sk.builtin.quit,
+
 // Functions below are not implemented
 'bytearray': Sk.builtin.bytearray,
 'callable': Sk.builtin.callable,
