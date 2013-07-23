@@ -760,58 +760,6 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
 }
 
 
-Sk.builtin.map = function map(fun, iter) {
-/*
-    Sk.builtin.pyCheckArgs("map", arguments, 2);
-    Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(iter));
-    var res = [];
-    var nFun;
-    if (fun === null) {
-        nFun = function(a) {
-          return a;
-        }
-    }
-    else {
-        nFun = function(a) {
-            return Sk.misceval.callsim(fun, a);
-        }
-    }
-    var it = iter.tp$iter();
-    for (var i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        res.push(nFun(i));
-    }
-    if (arguments.length > 2) {
-        var nRes = []
-        for (var i = 0; i < res.length; i++) {
-            nRes.push([res[i]]);
-        }
-        var maxLength = Sk.builtin.len(iter);
-        for (var i = 2; i < arguments.length; i++) {
-          Sk.builtin.pyCheckType("iter", "iterable", Sk.builtin.checkIterable(arguments[i]));
-          maxLength = Math.max(maxLength, Sk.builtin.len(arguments[i]));
-        }
-        for (var i = Sk.builtin.len(iter); i < maxLength; i++) {
-            nRes.push([new Sk.builtin.NoneObj()]);
-        }
-        for (var a = 2; a < arguments.length; a++) {
-            var it = arguments[a].tp$iter();
-            var index = 0;
-            for (var i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                nRes[index++].push(nFun(i));
-            }
-            for (var i = index; index < maxLength; i++) {
-                nRes[i].push(new Sk.builtin.NoneObj());
-            }
-        }
-        for (var i = 0; i < nRes.length; i++) {
-            res[i] = new Sk.builtin.tuple(nRes[i]);
-        }      
-    }
-    return new Sk.builtin.list(res);
-*/
-    throw new Sk.builtin.NotImplementedError("map is not yet implemented")
-}
-
 Sk.builtin.pow = function pow(a, b, c) {
     Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
     Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
