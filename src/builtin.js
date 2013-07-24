@@ -706,7 +706,7 @@ Sk.builtin.map = function map(fun, seq) {
         var iterables = Array.prototype.slice.apply(arguments).slice(1);
         for (var i in iterables){
             if (iterables[i].tp$iter === undefined){
-                var argnum = parseInt(i) + 2;
+                var argnum = parseInt(i,10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
             }
             iterables[i] = iterables[i].tp$iter()
@@ -732,11 +732,11 @@ Sk.builtin.map = function map(fun, seq) {
                 break;
             }
         }
-        seq = Sk.builtin.list(combined);
+        seq = new Sk.builtin.list(combined);
     }
 
     if (seq.tp$iter === undefined){
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
     var retval = [],
@@ -788,7 +788,7 @@ Sk.builtin.filter = function filter(fun, iterable) {
 	var ret = function (iter) { return new Sk.builtin.list(iter); }
 	
 	if (iterable.__class__ === Sk.builtin.str){
-		ctor = function () { return new Sk.builtin.str(); }
+		ctor = function () { return new Sk.builtin.str(''); }
 		add = function (iter, item) { return iter.sq$concat(item); }
 		ret = function (iter) { return iter; }
 	} else if (iterable.__class__ === Sk.builtin.tuple) {
