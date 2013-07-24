@@ -253,6 +253,20 @@ function testRun(name, nocatch)
             print(got);
             print("-----\nWANTED:\n-----");
             print(expect);
+			print("-----\nDIFF:\n-----")
+			print("len got: " + got.length + "\n")
+			print("len wanted: " + expect.length + "\n")
+			var longest = got.length > expect.length ? got : expect;
+			for (var i in longest) {
+				if (got[i] !== expect[i]){
+					try{
+						print("firstdiff at: " + i + " got: " + got[i].charCodeAt(0) + " (" + got.substr(i) + ") expect: " + expect[i].charCodeAt(0) + " (" + expect.substr(i) + ")");
+					} catch (err){
+						break;
+					}
+					break;
+				}
+			}
             if (module && module.$js)
             {
                 print("-----\nJS:\n-----");
