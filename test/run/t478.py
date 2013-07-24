@@ -20,3 +20,29 @@ def f(x):
     return ord(x)
 
 print map(f, "abcdef")
+
+#filter over string returns string
+string = filter(lambda c: c != 'a', "abc")
+print type(string)
+print string
+
+#filter over tuple returns tuple
+tup = filter(lambda t: t % 2 == 0, (1,2,3,4,5,6,7,8,9,10))
+print type(tup)
+print tup
+
+#filter with default identity func
+print filter(None, [0,1,"","hello",False,True])
+
+#map with two iterables
+b = range(8)
+c = range(10)
+def mapy(x, y):
+    if (x == None): x = 0
+    if (y == None): y = 0
+    return x + y
+
+print map(mapy, b, c)
+
+#map with default identity func
+print map(None, [0, 1, {}, "", "hello", False, True]);

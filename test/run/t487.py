@@ -1,0 +1,1 @@
+map(lambda x,y: x + y, [0,1,2,3,4,5], False)

@@ -694,13 +694,58 @@ Sk.builtin.eval_ =  function eval_()
     throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 }
 
-Sk.builtin.map = function map(fun, seq) { 
-    var retval = new Array(),
+Sk.builtin.map = function map(fun, seq) {
+    Sk.builtin.pyCheckArgs("map", arguments, 2);
+
+    if (fun === null){
+        fun = { func_code: function (x) { return x; } }
+    }
+
+    if (arguments.length > 2){
+        var combined = [];
+        var iterables = Array.prototype.slice.apply(arguments).slice(1);
+        for (var i in iterables){
+            if (iterables[i].tp$iter === undefined){
+                var argnum = parseInt(i) + 2;
+                throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
+            }
+            iterables[i] = iterables[i].tp$iter()
+        }
+
+        while(true) {
+            var args = [];
+            var nones = 0;
+            for (var i in iterables){
+                var next = iterables[i].tp$iternext()
+                if (next === undefined) {
+                    args.push(null);
+                    nones++;
+                }
+                else{
+                    args.push(next);
+                }
+            }
+            if (nones !== iterables.length) {
+                combined.push(args);
+            }
+            else {
+                break;
+            }
+        }
+        seq = Sk.builtin.list(combined);
+    }
+
+    if (seq.tp$iter === undefined){
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+    }
+
+    var retval = [],
         iter = seq.tp$iter(),
         next = iter.tp$iternext();
 
     while (next !== undefined){
-        retval.push(fun.func_code(next));
+        if (!(next instanceof Array)){ next = [next]; }
+        retval.push(fun.func_code.apply(this, next));
         next = iter.tp$iternext();
     }
 
@@ -708,6 +753,7 @@ Sk.builtin.map = function map(fun, seq) {
 }
 
 Sk.builtin.reduce = function reduce(fun, seq, initializer) {
+	Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
 	var iter = seq.tp$iter();
 	if (initializer === undefined){
 		initializer = iter.tp$iternext();
@@ -725,24 +771,47 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 }
 
 Sk.builtin.filter = function filter(fun, iterable) { 
+	Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
+	
+	//todo: need to find a proper way to tell what type it is.
+	if (iterable.tp$iter === undefined){
+		throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+	}
+	
+	//simulate default identity function
+	if (fun === null) {
+		fun = { func_code: function (x) { return Sk.builtin.bool(x); } } 
+	}
+	
+	var ctor = function () { return []; }
+	var add = function (iter, item) { iter.push(item); return iter; } 
+	var ret = function (iter) { return new Sk.builtin.list(iter); }
+	
+	if (iterable.__class__ === Sk.builtin.str){
+		ctor = function () { return new Sk.builtin.str(); }
+		add = function (iter, item) { return iter.sq$concat(item); }
+		ret = function (iter) { return iter; }
+	} else if (iterable.__class__ === Sk.builtin.tuple) {
+		ret = function (iter) { return new Sk.builtin.tuple(iter); }
+	}
+	
 	var iter = iterable.tp$iter(),
 		next = iter.tp$iternext(),
-		retval = new Array();
-		
+		retval = ctor();
+	
 	if (next === undefined){
-		return new Sk.builtin.list();
+		return ret(retval);
 	}
 	
 	while (next !== undefined){
 		if (fun.func_code(next)){
-			retval.push(next);
+			retval = add(retval, next);
 		}
 		next = iter.tp$iternext();
 	}
 	
-	return new Sk.builtin.list(retval);
+	return ret(retval);
 }
-
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {
     Sk.builtin.pyCheckArgs("hasattr", arguments, 2, 2);
