@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: list indices must be integers, not NoneType
+EXCEPTION: TypeError: list indices must be integers, not NoneType on line 13
