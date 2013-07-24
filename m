@@ -203,10 +203,12 @@ def buildVFS():
                     if ".swp" in f: continue
                     if ".pyc" in f: continue
                     data = open(f, "rb").read()
+                    data = data.replace("\r\n", "\n")
                     all.append("'%s': '%s'" % (f.replace("\\", "/"), data.encode("hex")))
         print >>out, ",\n".join(all)
         print >>out, "};"
         print >>out, """
+
 function readFromVFS(fn)
 {
     var hexToStr = function(str)
