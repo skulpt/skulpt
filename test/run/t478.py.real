@@ -8,3 +8,5 @@ bc
 <class 'tuple'>
 (2, 4, 6, 8, 10)
 [1, 'hello', True]
+[0, 2, 4, 6, 8, 10, 12, 14, 8, 9]
+[0, 1, {}, '', 'hello', False, True]

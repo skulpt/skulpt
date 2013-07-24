@@ -33,3 +33,16 @@ print tup
 
 #filter with default identity func
 print filter(None, [0,1,"","hello",False,True])
+
+#map with two iterables
+b = range(8)
+c = range(10)
+def mapy(x, y):
+    if (x == None): x = 0
+    if (y == None): y = 0
+    return x + y
+
+print map(mapy, b, c)
+
+#map with default identity func
+print map(None, [0, 1, {}, "", "hello", False, True]);
