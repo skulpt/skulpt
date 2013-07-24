@@ -1,3 +1,13 @@
+/*
+ * The filename, line number, and column number of exceptions are
+ * stored within the exception object.  Note that not all exceptions
+ * clearly report the column number.  To customize the exception
+ * message to use any/all of these fields, you can either modify
+ * tp$str below to print the desired message, or use them in the
+ * skulpt wrapper (i.e., runit) to present the exception message.
+ */
+
+
 /**
  * @constructor
  * @param {...*} args
@@ -12,32 +22,73 @@ Sk.builtin.Exception = function(args)
             args[i] = new Sk.builtin.str(args[i]);
     }
     this.args = new Sk.builtin.tuple(args);
-    this.lineno = Sk.currLineNo;
-    this.colno = Sk.currColNo;
-    this.filename = Sk.currFilename;
+
+    if (Sk.currFilename)
+    {
+        this.filename = Sk.currFilename;
+    }
+    else if (this.args.sq$length() >= 4)
+    {
+        if (this.args.v[1].v)
+        {
+            this.filename = this.args.v[1].v;
+        }
+        else
+        {
+            // Unknown, this is an error, and the exception that causes it
+            // probably needs to be fixed.
+            this.filename = "<unknown>";
+        }
+    }
+    else
+    {
+        // Unknown, this is an error, and the exception that causes it
+        // probably needs to be fixed.
+        this.lineno = "<unknown>";
+    }
+
+    if (Sk.currLineNo > 0) 
+    {
+        this.lineno = Sk.currLineNo;
+    }
+    else if (this.args.sq$length() >= 4)
+    {
+        this.lineno = this.args.v[2];
+    }
+    else
+    {
+        // Unknown, this is an error, and the exception that causes it
+        // probably needs to be fixed.
+        this.lineno = "<unknown>";
+    }
+
+    if (Sk.currColNo > 0)
+    {
+        this.colno = Sk.currColNo;
+    }
+    else
+    {
+        this.colno = "<unknown>";
+    }
 };
 Sk.builtin.Exception.prototype.tp$name = "Exception";
 
 Sk.builtin.Exception.prototype.tp$str = function()
 {
     var ret = "";
-    //print(JSON.stringify(this.args));
 
     ret += this.tp$name;
     if (this.args)
         ret += ": " + this.args.v[0].v;
+    ret += " on line " + this.lineno;
 
-    if (this.args.v.length > 4)		//	RNL from length > 1
+    if (this.args.v.length > 4)
     {
-        ret += "\nFile \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
-            this.args.v[4].v + "\n";
+        ret += "\n" + this.args.v[4].v + "\n";
         for (var i = 0; i < this.args.v[3]; ++i) ret += " ";
         ret += "^\n";
     }
-    else
-    {
-	ret += " on line " + this.lineno;
-    }
+
     return new Sk.builtin.str(ret);
 };
 
