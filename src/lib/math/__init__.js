@@ -62,6 +62,81 @@ var $builtinmodule = function(name)
 	return new Sk.builtin.nmber(Math.tan(Sk.builtin.asnum$(rad)), Sk.builtin.nmber.float$);
     });
 
+    mod.asinh = new Sk.builtin.func(function(x) {
+	Sk.builtin.pyCheckArgs("asinh", arguments, 1, 1);
+	Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	x = Sk.builtin.asnum$(x);
+
+	var L = x + Math.sqrt(x*x+1);
+
+	return new Sk.builtin.nmber(Math.log(L), Sk.builtin.nmber.float$);
+    });
+
+    mod.acosh = new Sk.builtin.func(function(x) {
+	Sk.builtin.pyCheckArgs("acosh", arguments, 1, 1);
+	Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	x = Sk.builtin.asnum$(x);
+
+	var L = x + Math.sqrt(x*x-1);
+
+	return new Sk.builtin.nmber(Math.log(L), Sk.builtin.nmber.float$);
+    });
+
+    mod.atanh = new Sk.builtin.func(function(x) {
+	Sk.builtin.pyCheckArgs("atanh", arguments, 1, 1);
+	Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	x = Sk.builtin.asnum$(x);
+
+	var L = (1+x)/(1-x);
+
+	return new Sk.builtin.nmber(Math.log(L)/2, Sk.builtin.nmber.float$);
+    });
+
+    mod.sinh = new Sk.builtin.func(function(x) {
+	Sk.builtin.pyCheckArgs("sinh", arguments, 1, 1);
+	Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	x = Sk.builtin.asnum$(x);
+
+	var e = Math.E;
+	var p = Math.pow(e, x);
+	var n = 1/p;
+	var result = (p-n)/2;
+
+	return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+    });
+
+    mod.cosh = new Sk.builtin.func(function(x) {
+	Sk.builtin.pyCheckArgs("cosh", arguments, 1, 1);
+	Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	x = Sk.builtin.asnum$(x);
+
+	var e = Math.E;
+	var p = Math.pow(e, x);
+	var n = 1/p;
+	var result = (p+n)/2;
+
+	return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+    });
+
+    mod.tanh = new Sk.builtin.func(function(x) {
+	Sk.builtin.pyCheckArgs("tanh", arguments, 1, 1);
+	Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+
+	x = Sk.builtin.asnum$(x);
+
+	var e = Math.E;
+	var p = Math.pow(e, x);
+	var n = 1/p;
+	var result = ((p-n)/2)/((p+n)/2);
+
+	return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+    });
+
     mod.ceil = new Sk.builtin.func(function(x) {
         Sk.builtin.pyCheckArgs("ceil", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
