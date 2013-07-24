@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: unhashable type: 'list'
+EXCEPTION: TypeError: unhashable type: 'list' on line 3

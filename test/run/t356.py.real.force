@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: unhashable type: 'dict'
+EXCEPTION: TypeError: unhashable type: 'dict' on line 1

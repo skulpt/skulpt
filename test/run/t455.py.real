@@ -1,1 +1,1 @@
-EXCEPTION: ValueError: empty range for randrange() (10, 2, -8)
+EXCEPTION: ValueError: empty range for randrange() (10, 2, -8) on line 3

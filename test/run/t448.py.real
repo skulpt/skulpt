@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: range() takes at least 1 arguments (0 given)
+EXCEPTION: TypeError: range() takes at least 1 arguments (0 given) on line 1

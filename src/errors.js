@@ -1,3 +1,13 @@
+/*
+ * The filename, line number, and column number of exceptions are
+ * stored within the exception object.  Note that not all exceptions
+ * clearly report the column number.  To customize the exception
+ * message to use any/all of these fields, you can either modify
+ * tp$str below to print the desired message, or use them in the
+ * skulpt wrapper (i.e., runit) to present the exception message.
+ */
+
+
 /**
  * @constructor
  * @param {...*} args
@@ -12,25 +22,73 @@ Sk.builtin.Exception = function(args)
             args[i] = new Sk.builtin.str(args[i]);
     }
     this.args = new Sk.builtin.tuple(args);
+
+    if (Sk.currFilename)
+    {
+        this.filename = Sk.currFilename;
+    }
+    else if (this.args.sq$length() >= 4)
+    {
+        if (this.args.v[1].v)
+        {
+            this.filename = this.args.v[1].v;
+        }
+        else
+        {
+            // Unknown, this is an error, and the exception that causes it
+            // probably needs to be fixed.
+            this.filename = "<unknown>";
+        }
+    }
+    else
+    {
+        // Unknown, this is an error, and the exception that causes it
+        // probably needs to be fixed.
+        this.lineno = "<unknown>";
+    }
+
+    if (Sk.currLineNo > 0) 
+    {
+        this.lineno = Sk.currLineNo;
+    }
+    else if (this.args.sq$length() >= 4)
+    {
+        this.lineno = this.args.v[2];
+    }
+    else
+    {
+        // Unknown, this is an error, and the exception that causes it
+        // probably needs to be fixed.
+        this.lineno = "<unknown>";
+    }
+
+    if (Sk.currColNo > 0)
+    {
+        this.colno = Sk.currColNo;
+    }
+    else
+    {
+        this.colno = "<unknown>";
+    }
 };
 Sk.builtin.Exception.prototype.tp$name = "Exception";
 
 Sk.builtin.Exception.prototype.tp$str = function()
 {
     var ret = "";
-    //print(JSON.stringify(this.args));
 
     ret += this.tp$name;
     if (this.args)
         ret += ": " + this.args.v[0].v;
+    ret += " on line " + this.lineno;
 
-    if (this.args.v.length > 4)		//	RNL from length > 1
+    if (this.args.v.length > 4)
     {
-        ret += "\nFile \"" + this.args.v[1].v + "\", " + "line " + this.args.v[2] + "\n" +
-            this.args.v[4].v + "\n";
+        ret += "\n" + this.args.v[4].v + "\n";
         for (var i = 0; i < this.args.v[3]; ++i) ret += " ";
         ret += "^\n";
     }
+
     return new Sk.builtin.str(ret);
 };
 
@@ -220,3 +278,12 @@ goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedErr
  */
 Sk.builtin.NegativePowerError = function(args) { Sk.builtin.Exception.apply(this, arguments); }goog.inherits(Sk.builtin.NegativePowerError, Sk.builtin.Exception);Sk.builtin.NegativePowerError.prototype.tp$name = "NegativePowerError";
 goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
+
+Sk.currLineNo = -1;
+Sk.currColNo = -1;
+Sk.currFilename = '';
+
+goog.exportSymbol("Sk", Sk);
+goog.exportProperty(Sk, "currLineNo", Sk.currLineNo);
+goog.exportProperty(Sk, "currColNo", Sk.currColNo);
+goog.exportProperty(Sk, "currFilename", Sk.currFilename);

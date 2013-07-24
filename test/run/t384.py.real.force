@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: 'NoneType' does not support indexing
+EXCEPTION: TypeError: 'NoneType' does not support indexing on line 6

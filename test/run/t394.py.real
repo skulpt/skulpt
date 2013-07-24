@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: slice indices must be integers or None
+EXCEPTION: TypeError: slice indices must be integers or None on line 4

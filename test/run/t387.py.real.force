@@ -1,1 +1,1 @@
-EXCEPTION: ValueError: range() step argument must not be zero
+EXCEPTION: ValueError: range() step argument must not be zero on line 1
