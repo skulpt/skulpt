@@ -520,6 +520,15 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
                 args.push(i);
             }
         }
+	if (kwdict)
+        {
+            goog.asserts.fail("kwdict not implemented;");
+        }
+	if (func.$is_klass)
+	{
+	    // wrapper around __init__ requires special handling of keyword arguments
+	    return func.apply(null, [{ar:args, kw:kws}]);
+	}
         goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
         return func.apply(null, args);
     }
@@ -537,7 +546,7 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
             }
             if (kwdict)
             {
-                goog.asserts.fail("todo;");
+                goog.asserts.fail("kwdict not implemented;");
             }
             return fcall.call(func, args, kws, kwdict);
         }

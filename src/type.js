@@ -52,9 +52,14 @@ Sk.builtin.type = function(name, bases, dict)
         /**
          * @constructor
          */
-        var klass = (function(args)
+        var klass = (function(obj)
                 {
-                    if (!(this instanceof klass)) return new klass(Array.prototype.slice.call(arguments, 0));
+                    if (!(this instanceof klass))
+		    {
+			return new klass(obj);
+		    }
+		    var args = obj.ar;
+		    var kws = obj.kw;
 
                     args = args || [];
                     goog.asserts.assert(Sk.builtin.dict !== undefined);
@@ -63,9 +68,9 @@ Sk.builtin.type = function(name, bases, dict)
                     var init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
                     if (init !== undefined)
                     {
-                        // return ignored I guess?
+                        // return should be None or throw a TypeError otherwise
                         args.unshift(this);
-                        Sk.misceval.apply(init, undefined, undefined, undefined, args);
+                        Sk.misceval.apply(init, undefined, undefined, kws, args);
                     }
 
                     return this;
@@ -77,6 +82,7 @@ Sk.builtin.type = function(name, bases, dict)
             klass[v] = dict[v];
         }
         klass['__class__'] = klass;
+	klass.$is_klass = true;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
