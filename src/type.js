@@ -199,7 +199,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
         if (mod) cname = mod.v + ".";
 		var ctype = "class";
 		if (!mod)
-			if (name === 'float' || name === 'int' || name === 'long' || name === 'bool' || name === 'str' || name === 'NoneType')
+		    if (t.$is_klass === undefined)
 				ctype = "type";
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
     };

@@ -9,16 +9,16 @@
 
 <type 'float'>
 
-<class 'list'>
-<class 'list'>
+<type 'list'>
+<type 'list'>
 
-<class 'tuple'>
-<class 'tuple'>
+<type 'tuple'>
+<type 'tuple'>
 
-<class 'dict'>
-<class 'dict'>
+<type 'dict'>
+<type 'dict'>
 
 <type 'str'>
 <type 'str'>
 
-
+<type 'object'>

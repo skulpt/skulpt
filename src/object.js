@@ -83,7 +83,7 @@ Sk.builtin.object.prototype.HashNotImplemented = function()
 
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-Sk.builtin.type.makeIntoTypeObj('object', Sk.builtin.object);
+Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('object', Sk.builtin.object);
 
 /**
  * @constructor
