@@ -513,6 +513,12 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
         // builtin.js, for example) as they are javascript functions,
         // not Sk.builtin.func objects.
 
+	if (func.$is_klass)
+	{
+	    // klass wrapper around __init__ requires special handling
+	    return func.apply(null, [kwdict, varargseq, kws, args]);
+	}
+
         if (varargseq)
         {
             for (var it = varargseq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
@@ -524,11 +530,6 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
         {
             goog.asserts.fail("kwdict not implemented;");
         }
-	if (func.$is_klass)
-	{
-	    // wrapper around __init__ requires special handling of keyword arguments
-	    return func.apply(null, [{ar:args, kw:kws}]);
-	}
         goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
         return func.apply(null, args);
     }

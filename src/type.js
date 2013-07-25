@@ -52,17 +52,14 @@ Sk.builtin.type = function(name, bases, dict)
         /**
          * @constructor
          */
-        var klass = (function(obj)
+        var klass = (function(kwdict, varargseq, kws, args)
                 {
                     if (!(this instanceof klass))
 		    {
-			return new klass(obj);
+			return new klass(kwdict, varargseq, kws, args);
 		    }
-		    var args = obj.ar;
-		    var kws = obj.kw;
 
                     args = args || [];
-                    goog.asserts.assert(Sk.builtin.dict !== undefined);
                     this['$d'] = new Sk.builtin.dict([]);
 
                     var init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
@@ -70,7 +67,7 @@ Sk.builtin.type = function(name, bases, dict)
                     {
                         // return should be None or throw a TypeError otherwise
                         args.unshift(this);
-                        Sk.misceval.apply(init, undefined, undefined, kws, args);
+                        Sk.misceval.apply(init, kwdict, varargseq, kws, args);
                     }
 
                     return this;
