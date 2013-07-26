@@ -313,19 +313,42 @@ Sk.misceval.richCompareBool = function(v, w, op)
 
     }
 
-  if ((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) {
-      if (op === 'Eq')
-	  return v.v === w.v;
-      if (op === 'NotEq')
-	  return v.v !== w.v;
-      if (op === 'Gt')
-	  return v.v > w.v;
-      if (op === 'GtE')
-	  return v.v >= w.v;
-      if (op === 'Lt')
-	  return v.v < w.v;
-      if (op === 'LtE')
-	  return v.v <= w.v;
+    if (((v instanceof Sk.builtin.none) || (v instanceof Sk.builtin.bool))
+	&& ((w instanceof Sk.builtin.none) || (w instanceof Sk.builtin.bool)))
+    {
+
+	if ((v.v === false) && (w.v === null))
+	{
+	    if (op === 'Gt')
+		return true;
+	    if (op === 'LtE')
+		return false;
+	}
+
+	if ((v.v === null) && (w.v === false))
+	{
+	    if (op === 'GtE')
+		return false;
+	    if (op === 'Lt')
+		return true;
+	}
+
+	// Except for the above special case with None and False,
+	// Javascript happens to return the same values when comparing null,
+	// true, and false as Python does when comparing None, True, and False
+
+	if (op === 'Eq')
+	    return v.v === w.v;
+	if (op === 'NotEq')
+	    return v.v !== w.v;
+	if (op === 'Gt')
+	    return v.v > w.v;
+	if (op === 'GtE')
+	    return v.v >= w.v;
+	if (op === 'Lt')
+	    return v.v < w.v;
+	if (op === 'LtE')
+	    return v.v <= w.v;
     }
 
 
@@ -383,6 +406,7 @@ Sk.misceval.isTrue = function(x)
     if (x === false) return false;
     if (x === null) return false;
     if (x.constructor === Sk.builtin.none) return false;
+    if (x.constructor === Sk.builtin.bool) return x.v;
     if (typeof x === "number") return x !== 0;
     if (x instanceof Sk.builtin.lng) return x.nb$nonzero();
     if (x.constructor === Sk.builtin.nmber) return x.v !== 0;

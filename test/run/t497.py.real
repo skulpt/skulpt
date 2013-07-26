@@ -1,0 +1,54 @@
+
+compare None and None
+True False
+True False
+False True
+False True
+
+compare None and True
+False True
+False True
+True True
+False False
+
+compare None and False
+False True
+False True
+True True
+False False
+
+compare True and True
+True False
+True False
+False True
+False True
+
+compare True and False
+False True
+False True
+False False
+True True
+
+compare True and None
+False True
+False True
+False False
+True True
+
+compare False and False
+True False
+True False
+False True
+False True
+
+compare False and True
+False True
+False True
+True True
+False False
+
+compare False and None
+False True
+False True
+False False
+True True

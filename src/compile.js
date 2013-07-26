@@ -337,7 +337,7 @@ Compiler.prototype.ccompare = function(e)
     for (var i = 0; i < n; ++i)
     {
         var rhs = this.vexpr(e.comparators[i]);
-        var res = this._gr('compare', "Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "')");
+        var res = this._gr('compare', "Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "'))");
         out(fres, '=', res, ';');
         this._jumpfalse(res, done);
         cur = rhs;
@@ -1606,8 +1606,8 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
         throw new Sk.builtin.SyntaxError("can not assign to None");
 
     if (name.v === "None") return "Sk.builtin.none.none$";
-    if (name.v === "True") return "true";
-    if (name.v === "False") return "false";
+    if (name.v === "True") return "Sk.builtin.bool.true$";
+    if (name.v === "False") return "Sk.builtin.bool.false$";
 
     var mangled = mangleName(this.u.private_, name).v;
     // Have to do this before looking it up in the scope

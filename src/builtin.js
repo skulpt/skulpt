@@ -52,6 +52,11 @@ Sk.builtin.asnum$ = function(a) {
 	if (a === undefined) return a;
 	if (a === null) return a;
 	if (a.constructor === Sk.builtin.none) return null;
+	if (a.constructor === Sk.builtin.bool) {
+	    if (a.v)
+		return 1;
+	    return 0;
+	}
 	if (typeof a === "number") return a;
 	if (typeof a === "string") return a;
 	if (a.constructor === Sk.builtin.nmber) return a.v;
@@ -82,6 +87,11 @@ Sk.builtin.asnum$nofloat = function(a) {
 	if (a === undefined) return a;
 	if (a === null) return a;
 	if (a.constructor === Sk.builtin.none) return null;
+	if (a.constructor === Sk.builtin.bool) {
+	    if (a.v)
+		return 1;
+	    return 0;
+	}
 	if (typeof a === "number") a = a.toString();
 	if (a.constructor === Sk.builtin.nmber) a = a.v.toString();
 	if (a.constructor === Sk.builtin.lng)   a = a.str$(10, true);
@@ -566,10 +576,6 @@ Sk.builtin.isinstance = function isinstance(obj, type)
         return (obj instanceof Sk.builtin.none);
     }
 
-    if (type === Sk.builtin.bool.prototype.ob$type) {
-        return (obj === true) || (obj === false);
-    }
-
     // Normal case
     if (obj.ob$type === type) return true;
 
@@ -616,6 +622,12 @@ Sk.builtin.hash = function hash(value)
     else if ((value instanceof Object) && (value.__hash__ !== undefined))
     {
         return Sk.misceval.callsim(value.__hash__, value);
+    }
+    else if (value instanceof Sk.builtin.bool)
+    {
+	if (value.v)
+	    return 1;
+	return 0;
     }
     else if (value instanceof Sk.builtin.none)
     {
@@ -810,7 +822,7 @@ Sk.builtin.filter = function filter(fun, iterable) {
 	}
 	
 	while (next !== undefined){
-		if (fun.func_code(next)){
+		if (Sk.misceval.isTrue(fun.func_code(next))){
 			retval = add(retval, next);
 		}
 		next = iter.tp$iternext();
