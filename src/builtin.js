@@ -853,6 +853,61 @@ Sk.builtin.quit = function quit(msg) {
     throw new Sk.builtin.SystemExit(s);
 }
 
+Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) { 
+	
+	var compare_func;
+	var list;
+	if (key !== undefined) {
+        if (cmp === undefined) {
+			compare_func = Sk.mergeSort.stdCmp;
+		}
+        else {
+            compare_func = cmp;
+		}
+		var iter = iterable.tp$iter;
+		var next = iter.next();
+		var arr = [];
+		while (next !== undefined){
+			arr.push(new Sk.builtin.tuple([key(next), next]));
+			next = iter.next();
+		}
+        l = new Sk.builtin.list(arr);		
+	}
+	else {
+		if (cmp !== undefined) {
+			compare_func = cmp;
+		}
+		else {
+			list = new Sk.builtin.list(iterable);
+		}
+	}
+	
+	if (compare_func !== undefined) {
+		list.sort(compare_func);
+	}
+	else {
+		list.sort();
+	}
+	
+	if (reverse) {
+		list.reverse();
+	}
+	
+	if (key !== undefined) {
+		var iter = list.tp$iter();
+		var next = iter.next()
+		var arr = [];
+		while (next !== undefined){
+			arr.push(next.v[1]);
+			next = iter.next();
+		}
+		list = new Sk.builtin.list(arr);
+	}
+	
+	return list;
+}
+
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
@@ -871,7 +926,6 @@ Sk.builtin.next_ = function next_() { throw new Sk.builtin.NotImplementedError("
 Sk.builtin.property = function property() { throw new Sk.builtin.NotImplementedError("property is not yet implemented")}
 Sk.builtin.reload = function reload() { throw new Sk.builtin.NotImplementedError("reload is not yet implemented")}
 Sk.builtin.reversed = function reversed() { throw new Sk.builtin.NotImplementedError("reversed is not yet implemented")}
-Sk.builtin.sorted = function sorted() { throw new Sk.builtin.NotImplementedError("sorted is not yet implemented")}
 Sk.builtin.unichr = function unichr() { throw new Sk.builtin.NotImplementedError("unichr is not yet implemented")}
 Sk.builtin.vars = function vars() { throw new Sk.builtin.NotImplementedError("vars is not yet implemented")}
 Sk.builtin.xrange = Sk.builtin.range;
