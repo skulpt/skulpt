@@ -176,7 +176,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
     }
 
     var namestr = "new Sk.builtin.str('" + modname + "')";
-    finalcode += "debugger;\n" + co.funcname + "(" + namestr + ");";
+    finalcode += "\/*debugger*\/;\n" + co.funcname + "(" + namestr + ");";
 
 //	if (Sk.debugCode)
 //		Sk.debugout(finalcode);
