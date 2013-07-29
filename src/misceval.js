@@ -513,7 +513,7 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
         // builtin.js, for example) as they are javascript functions,
         // not Sk.builtin.func objects.
 
-	if (func.$is_klass)
+	if (func.sk$klass)
 	{
 	    // klass wrapper around __init__ requires special handling
 	    return func.apply(null, [kwdict, varargseq, kws, args]);

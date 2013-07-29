@@ -79,7 +79,7 @@ Sk.builtin.type = function(name, bases, dict)
             klass[v] = dict[v];
         }
         klass['__class__'] = klass;
-	klass.$is_klass = true;
+        klass.sk$klass = true;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
@@ -197,16 +197,16 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
         var mod = t.__module__;
         var cname = "";
         if (mod) cname = mod.v + ".";
-		var ctype = "class";
-		if (!mod)
-		    if (t.$is_klass === undefined)
-				ctype = "type";
+	var ctype = "class";
+	if (!mod && !t.sk$klass)
+	    ctype = "type";
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
     };
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-	t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
+    t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
+    t.sk$type = true;
     return t;
 };
 
