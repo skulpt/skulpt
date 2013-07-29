@@ -596,7 +596,6 @@ Sk.builtin.isinstance = function isinstance(obj, type)
 
     return issubclass(obj.ob$type, type);
 };
-
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
 {
@@ -853,16 +852,15 @@ Sk.builtin.quit = function quit(msg) {
     throw new Sk.builtin.SystemExit(s);
 }
 
-Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) { 
-	
+Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var compare_func;
 	var list;
-	if (key !== undefined) {
-        if (cmp === undefined) {
-			compare_func = Sk.mergeSort.stdCmp;
+	if (key !== undefined && key !== null) {
+        if (cmp === null) {
+			compare_func = Sk.mergeSort.stdCmp.func_code;
 		}
         else {
-            compare_func = cmp;
+            compare_func = cmp.func_code;
 		}
 		var iter = iterable.tp$iter;
 		var next = iter.next();
@@ -874,7 +872,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
         l = new Sk.builtin.list(arr);		
 	}
 	else {
-		if (cmp !== undefined) {
+		if (cmp !== null && cmp !== undefined) {
 			compare_func = cmp;
 		}
 		else {
@@ -893,7 +891,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 		list.reverse();
 	}
 	
-	if (key !== undefined) {
+	if (key !== undefined && key !== null) {
 		var iter = list.tp$iter();
 		var next = iter.next()
 		var arr = [];

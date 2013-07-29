@@ -428,9 +428,17 @@ Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(function(self)
 
 Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key, reverse)
 {
-    goog.asserts.assert(!key, "todo;");
-    Sk.mergeSort(self.v, cmp, key, reverse);
-    return null;
+    if (cmp !== undefined && cmp !== null){
+
+    }
+    else{
+        if (key !== undefined && key !== null){
+
+        }
+        else{
+            //sort list only accounting for reverse.
+        }
+    }
 });
 
 // Make sure that key/value variations of lst.sort() work
