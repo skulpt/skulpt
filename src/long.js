@@ -310,8 +310,20 @@ Sk.builtin.lng.prototype.nb$remainder = function(other)
 
 Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
-Sk.builtin.lng.prototype.nb$power = function(n)
+/**
+ * @param {number|Object} n
+ * @param {number|Object=} mod
+ * @suppress {checkTypes}
+ */
+Sk.builtin.lng.prototype.nb$power = function(n, mod)
 {
+    if (mod !== undefined)
+    {
+	n = new Sk.builtin.biginteger(Sk.builtin.asnum$(n));
+	mod = new Sk.builtin.biginteger(Sk.builtin.asnum$(mod));
+
+	return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
+    }
 	if (typeof n === "number") {
 		if (n < 0) {
 			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);

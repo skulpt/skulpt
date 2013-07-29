@@ -1,0 +1,57 @@
+
+integers
+1
+0
+1
+8
+-8
+0.125
+-0.125
+1
+2
+-1
+
+long integers
+1
+0
+1
+8
+-8
+0.125
+-0.125
+1
+2
+-1
+
+floating point
+1.0
+0.0
+1.0
+29.6741325364
+
+integers and long integers
+8 <type 'long'>
+-8 <type 'long'>
+0.125 <type 'float'>
+-0.125 <type 'float'>
+3 <type 'long'>
+3 <type 'long'>
+
+integers and floating point
+15.625 <type 'float'>
+11.313708499 <type 'float'>
+0.064 <type 'float'>
+0.0883883476483 <type 'float'>
+
+floating point and long integers
+15.625 <type 'float'>
+11.313708499 <type 'float'>
+0.064 <type 'float'>
+0.0883883476483 <type 'float'>
+
+ERROR CHECKING:
+TypeError: unsupported operand type(s) for pow(): 'list' and 'str' on line 53
+TypeError: unsupported operand type(s) for pow(): 'list', 'str', 'int' on line 59
+ValueError: negative number cannot be raised to a fractional power on line 65
+TypeError: pow() 3rd argument not allowed unless all arguments are integers on line 71
+TypeError: pow() 2nd argument cannot be negative when 3rd argument specified on line 77
