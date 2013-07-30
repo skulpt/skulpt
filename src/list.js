@@ -303,9 +303,80 @@ Sk.builtin.list.prototype.mp$ass_subscript = Sk.builtin.list.prototype.list_ass_
 Sk.builtin.list.prototype.mp$del_subscript = Sk.builtin.list.prototype.list_del_subscript_;
 
 Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index)
-        {
-            return Sk.builtin.list.prototype.list_subscript_.call(self, index);
-        });
+{
+    return Sk.builtin.list.prototype.list_subscript_.call(self, index);
+});
+
+/**
+ * @param {?=} cmp optional
+ * @param {?=} key optional
+ * @param {?=} reverse optional
+ */
+Sk.builtin.list.prototype.list_sort_ = function(cmp, key, reverse) {
+    var has_key = key !== undefined && key !== null;
+    var has_cmp = cmp !== undefined && cmp !== null;
+    if (reverse == undefined) { reverse = false; }
+
+    var timsort = new Sk.builtin.timSort(this);
+
+    this.v = [];
+
+    timsort.lt = function(a, b){
+        return cmp(a, b) < 0;
+    };
+
+    if (has_key){
+        for (var i in timsort.listlength){
+            var item = timsort.list.v[i];
+            var keyvalue = key(item);
+            timsort.list.v[i] = [keyvalue, item];
+        }
+    }
+
+    if (reverse){
+        timsort.list.list_reverse_();
+    }
+
+    timsort.sort();
+
+    if (reverse){
+        timsort.list.list_reverse_();
+    }
+
+    if (has_key){
+        for (var j in timsort.listlength){
+            item = timsort.list.v[j][0];
+            timsort.list.v[j] = item;
+        }
+    }
+
+    var mucked = this.sq$length() > 0;
+
+    this.v = timsort.list.v;
+
+    if (mucked) {
+        throw new Sk.builtin.OperationError("list modified during sort");
+    }
+}
+
+/**
+ * @param {Sk.builtin.list=} self optional
+ **/
+Sk.builtin.list.prototype.list_reverse_ = function(self)
+{
+    Sk.builtin.pyCheckArgs("reverse", arguments, 1, 1);
+
+    var len = self.v.length;
+    var old = self.v;
+    var newarr = [];
+    for (var i = len -1; i > -1; --i)
+    {
+        newarr.push(old[i]);
+    }
+    self.v = newarr;
+    return null;
+}
+
 //Sk.builtin.list.prototype.__reversed__ = todo;
 Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
 {
@@ -411,35 +482,9 @@ Sk.builtin.list.prototype['count'] = new Sk.builtin.func(function(self, item)
     return count;
 });
 
-Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(function(self)
-{
-    Sk.builtin.pyCheckArgs("reverse", arguments, 1, 1);
+Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
 
-    var len = self.v.length;
-    var old = self.v;
-    var newarr = [];
-    for (var i = len -1; i > -1; --i)
-    {
-        newarr.push(old[i]);
-    }
-    self.v = newarr;
-    return null;
-});
-
-Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(function(self, cmp, key, reverse)
-{
-    if (cmp !== undefined && cmp !== null){
-
-    }
-    else{
-        if (key !== undefined && key !== null){
-
-        }
-        else{
-            //sort list only accounting for reverse.
-        }
-    }
-});
+Sk.builtin.list.prototype['sort'] = new Sk.builtin.func(Sk.builtin.list.prototype.list_sort_);
 
 // Make sure that key/value variations of lst.sort() work
 // See issue 45 on github as to possible alternate approaches to this and

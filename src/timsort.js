@@ -1,20 +1,21 @@
+/**
+ * @constructor
+ * @param {Sk.builtin.list=} list
+ * @param {number=} length optional
+ * @extends Sk.builtin.object
+ */
 Sk.builtin.timSort = function(list, length){
-    this.v = list;
+    this.list = list;
+    // When we get into galloping mode, we stay there until both runs win less
+    // often than MIN_GALLOP consecutive times.  See listsort.txt for more info.
+    this.MIN_GALLOP = 7;
     if (length) {
-        this.l = length;
+        this.listlength = length;
     }
     else {
-        this.l = list.sq$length();
+        this.listlength = list.sq$length();
     }
-}
-
-Sk.builtin.timSort.prototype.setitem = function(list, item, value){
-    list.v[item] = value;
 };
-
-Sk.builtin.timSort.prototype.getitem = function(list, item){
-    return list.v[item];
-}
 
 Sk.builtin.timSort.prototype.lt = function(a, b){
     return a < b;
@@ -22,6 +23,10 @@ Sk.builtin.timSort.prototype.lt = function(a, b){
 
 Sk.builtin.timSort.prototype.le = function(a, b){
     return !this.lt(b, a)
+};
+
+Sk.builtin.timSort.prototype.setitem = function(item ,value){
+    this.list.v[item] = value;
 };
 
 /*
@@ -34,19 +39,19 @@ Sk.builtin.timSort.prototype.le = function(a, b){
  # Even in case of error, the output slice will be some permutation of
  # the input (nothing is lost or duplicated)
 */
-Sk.builtin.timSort.prototype.binarysort = function(a, sorted){
+Sk.builtin.timSort.prototype.binary_sort = function(a, sorted){
     //todo: find index of first element this assumes a list starts with index 0
-    for(var start in Sk.builtin.range(0, a.sq$length()).v){
-        var l = 0;
+    for(var start in Sk.builtin.range(a.base + sorted, a.base + a.len).v){
+        var l = a.base;
         var r = start;
-        var pivot = this.getitem(a, r);
+        var pivot = a.getitem(r);
         // Invariants:
         // pivot >= all in [base, l).
         // pivot  < all in [r, start).
         // The second is vacuously true at the start.
         while(l < r){
             var p = l + ((r - l) >> 1);
-            if (this.lt(pivot, this.getitem(a, p))){
+            if (this.lt(pivot, a.getitem(p))){
                 r = p;
             }
             else {
@@ -60,13 +65,13 @@ Sk.builtin.timSort.prototype.binarysort = function(a, sorted){
         // first slot after them -- that's why this sort is stable.
         // Slide over to make room.
         for (var j in Sk.builtin.range(start, l,-1).v){
-            this.setitem(a, p, this.getitem(a, p-1));
+            a.setitem(p, a.getitem(p-1));
         }
-        this.setitem(a, l, pivot);
+        a.setitem(l, pivot);
     }
 };
 
-Sk.builtin.timSort.prototype.count_run = funtion(a){
+Sk.builtin.timSort.prototype.count_run = function(a){
 	/*
 	# Compute the length of the run in the slice "a".
     # "A run" is the longest ascending sequence, with
@@ -91,10 +96,10 @@ Sk.builtin.timSort.prototype.count_run = funtion(a){
 	}
 	else {
 		var n = 2;
-		if (this.lt(this.getitem(a, 1), this.getitem(a, 0))){
+		if (this.lt(a.getitem(1), a.getitem(0))){
 			descending = true;
-			for (var p in Sk.builtin.range(2, a.sq$length())){
-				if (this.lt(a.getitem(p), this.getitem(p-1))){
+			for (var p in Sk.builtin.range(2, a.len)){
+				if (this.lt(a.getitem(p), a.getitem(p-1))){
 					break;
 				}
 				else {
@@ -103,7 +108,7 @@ Sk.builtin.timSort.prototype.count_run = funtion(a){
 			}
 		}
 	}
-	return [new Sk.builtin.listslice(a.list, a.base, n), descending]
+	return {'run': new Sk.builtin.listSlice(a.list, a.base, n), 'descending': descending};
 };
 
 Sk.builtin.timSort.prototype.sort = function (){
@@ -112,15 +117,15 @@ Sk.builtin.timSort.prototype.sort = function (){
     # Entry point.
 	*/
 	
-	var remaining = new Sk.builtin.listslice(this.list, 0, this.listlength);
+	var remaining = new Sk.builtin.listSlice(this.list, 0, this.listlength);
 	if (remaining.len < 2){
 		return;
 	}
 	
     // March over the array once, left to right, finding natural runs,
     // and extending short natural runs to minrun elements.
-    this.merge_init()
-    var minrun = this.merge_compute_minrun(remaining.len)
+    this.merge_init();
+    var minrun = this.merge_compute_minrun(remaining.len);
 	while (remaining.len > 0){
 		// Identify next run.
 		var cr = this.count_run(remaining);
@@ -130,23 +135,29 @@ Sk.builtin.timSort.prototype.sort = function (){
 		// If short, extend to min(minrun, nremaining).
 		if (cr.run.len < minrun){
 			var sorted = cr.run.len;
-			run.len = min(minrun, remaining.len);
-			this.binary_sort(run, sorted)
+            if (minrun < remaining.len){
+                cr.run.len = minrun;
+            }
+            else {
+                cr.run.len = remaining.len;
+            }
+			this.binary_sort(cr.run, sorted)
 		}
 		// Advance remaining past this run.
-        remaining.advance(run.len);
+        remaining.advance(cr.run.len);
 		// Push run onto pending-runs stack, and maybe merge.
-        this.pending.append(run)/;
+        this.pending.push(cr.run);
         this.merge_collapse();
 	}
-	goog.assers.assert(remaining.base == self.listlength);
+	goog.asserts.assert(remaining.base == this.listlength);
   
   	this.merge_force_collapse();
 
 	goog.asserts.assert(this.pending.length == 1);
 	goog.asserts.assert(this.pending[0].base == 0);
-	goog.asserts.assert(this.pending[0].len == self.listlength);
-}
+	goog.asserts.assert(this.pending[0].len == this.listlength);
+};
+
 /*
 	# Locate the proper position of key in a sorted vector; if the vector
 	# contains an element equal to key, return the position immediately to the
@@ -167,7 +178,8 @@ Sk.builtin.timSort.prototype.sort = function (){
 */
 Sk.builtin.timSort.prototype.gallop = function(key, a, hint, rightmost){
 	goog.asserts.assert(0 <= hint < a.len);
-	if (rightmost) {
+	var lower;
+    if (rightmost) {
 		lower = this.le // search for the largest k for which a[k] <= key
 	} 
 	else {
@@ -176,18 +188,18 @@ Sk.builtin.timSort.prototype.gallop = function(key, a, hint, rightmost){
 	var p = a.base + hint;
 	var lastofs = 0;
 	var ofs = 1;
+    var maxofs;
 	if (lower(a.getitem(p), key)) {
 		// a[hint] < key -- gallop right, until
 	    // a[hint + lastofs] < key <= a[hint + ofs]
 
-	    var maxofs = a.len - hint // a[a.len-1] is highest
+	    maxofs = a.len - hint // a[a.len-1] is highest
 	    while (ofs < maxofs){
-	    	if lower(a.getitem(p + ofs), key){
+	    	if (lower(a.getitem(p + ofs), key)) {
 	        	lastofs = ofs
 	        	try {
-	            	ofs = ovfcheck(ofs << 1);
-					ofs = ofs + 1;
-	        	} catch (err){
+	            	ofs = (ofs << 1) + 1;
+                } catch (err){
 					ofs = maxofs
 				}
 			}
@@ -206,17 +218,16 @@ Sk.builtin.timSort.prototype.gallop = function(key, a, hint, rightmost){
 	else {
 		// key <= a[hint] -- gallop left, until
         // a[hint - ofs] < key <= a[hint - lastofs]
-        var maxofs = hint + 1   // a[0] is lowest
+        maxofs = hint + 1   // a[0] is lowest
         while (ofs < maxofs) {
             if (lower(a.getitem(p - ofs), key)) {
                 break;
 			}
             else {
-                # key <= a[hint - ofs]
+                // key <= a[hint - ofs]
                 lastofs = ofs
                 try {
-                    ofs = ovfcheck(ofs << 1)
-					ofs = ofs + 1
+                    ofs = (ofs << 1) + 1;
                 } catch(err) {
 					ofs = maxofs;
 				}
@@ -229,13 +240,13 @@ Sk.builtin.timSort.prototype.gallop = function(key, a, hint, rightmost){
         lastofs = hint-ofs;
 		ofs = hint-lastofs;
 	}
-	goog.asserts.assert( -1 <= lastofs < ofs <= a.len):
+	goog.asserts.assert( -1 <= lastofs < ofs <= a.len);
 
     // Now a[lastofs] < key <= a[ofs], so key belongs somewhere to the
     // right of lastofs but no farther right than ofs.  Do a binary
     // search, with invariant a[lastofs-1] < key <= a[ofs].
 
-    lastofs += 1
+    lastofs += 1;
     while (lastofs < ofs){
         var m = lastofs + ((ofs - lastofs) >> 1);
         if (lower(a.getitem(a.base + m), key)){
@@ -248,7 +259,403 @@ Sk.builtin.timSort.prototype.gallop = function(key, a, hint, rightmost){
     goog.asserts.assert(lastofs == ofs);         // so a[ofs-1] < key <= a[ofs]
     return ofs;
 };
-    
-    
-       
 
+// ____________________________________________________________
+
+Sk.builtin.timSort.prototype.merge_init = function(){
+    // This controls when we get *into* galloping mode.  It's initialized
+    // to MIN_GALLOP.  merge_lo and merge_hi tend to nudge it higher for
+    // random data, and lower for highly structured data.
+    this.min_gallop = this.MIN_GALLOP
+
+    // A stack of n pending runs yet to be merged.  Run #i starts at
+    // address pending[i].base and extends for pending[i].len elements.
+    // It's always true (so long as the indices are in bounds) that
+    //
+    //     pending[i].base + pending[i].len == pending[i+1].base
+    //
+    // so we could cut the storage for this, but it's a minor amount,
+    // and keeping all the info explicit simplifies the code.
+    this.pending = [];
+};
+
+// Merge the slice "a" with the slice "b" in a stable way, in-place.
+// a.len <= b.len.  See listsort.txt for more info.
+// a.len and b.len must be > 0, and a.base + a.len == b.base.
+// Must also have that b.list[b.base] < a.list[a.base], that
+// a.list[a.base+a.len-1] belongs at the end of the merge, and should have
+
+Sk.builtin.timSort.prototype.merge_lo= function(a, b) {
+    goog.asserts.assert(a.len > 0 && b.len > 0 && a.base + a.len == b.base);
+    var min_gallop = this.min_gallop;
+    var dest = a.base;
+    a = a.copyitems();
+
+    // Invariant: elements in "a" are waiting to be reinserted into the list
+    // at "dest".  They should be merged with the elements of "b".
+    // b.base == dest + a.len.
+    // We use a finally block to ensure that the elements remaining in
+    // the copy "a" are reinserted back into this.list in all cases.
+    try {
+        this.setitem(dest, b.popleft());
+
+        dest++;
+        if (a.len == 1 || b.len == 0){ return; }
+
+        var acount, bcount;
+        while (true){
+            acount = 0;   // number of times A won in a row
+            bcount = 0;   // number of times B won in a row
+
+            // Do the straightforward thing until (if ever) one run
+            // appears to win consistently.
+            while (true){
+                if (this.lt(b.getitem(b.base), a.getitem(a.base))){
+                    this.setitem(dest, b.popleft());
+                    dest ++;
+                    if (b.len == 0){ return; }
+                    bcount ++;
+                    acount = 0;
+                    if (bcount >= min_gallop){ break; }
+                }
+                else {
+                    this.setitem(dest, a.popleft());
+                    dest ++;
+                    if (a.len == 1){ return; }
+                    acount ++;
+                    bcount = 0;
+                    if (acount >= min_gallop){
+                        break;
+                    }
+                }
+            }
+
+            // One run is winning so consistently that galloping may
+            // be a huge win.  So try that, and continue galloping until
+            // (if ever) neither run appears to be winning consistently
+            // anymore.
+            min_gallop += 1;
+
+            while (true) {
+                min_gallop -= min_gallop > 1;
+                this.min_gallop = min_gallop;
+                acount = this.gallop(b.getitem(b.base), a, 0, true);
+                for (var p in Sk.builtin.range(a.base, a.base + acount).v) {
+                    this.setitem(dest, a.getitem(p));
+                    dest++;
+                }
+
+                a.advance(acount);
+
+                if (a.len <= 1) { return; }
+
+                this.setitem(dest, b.popleft());
+                dest ++;
+
+                // a.len==0 is impossible now if the comparison
+                // function is consistent, but we can't assume
+                // that it is.
+                if (b.len == 0) { return; }
+
+                bcount = this.gallop(a.getitem(a.base), b, 0, false);
+
+                for (var p in Sk.builtin.range(b.base, b.base + bcount).v) {
+                    this.setitem(dest, b.getitem(p))
+                    dest ++;
+                }
+
+                b.advance(bcount)
+                if (b.len == 0) { return; }
+                this.setitem(dest, a.popleft());
+                dest++;
+
+                if (a.len == 1) { return; }
+
+                if (acount < this.MIN_GALLOP && bcount < this.MIN_GALLOP) { break; }
+
+                min_gallop++;  // penalize it for leaving galloping mode
+                this.min_gallop = min_gallop;
+            }
+        }
+    }
+    finally{
+        // The last element of a belongs at the end of the merge, so we copy
+        // the remaining elements of b before the remaining elements of a.
+        goog.asserts.assert(a.len >= 0 && b.len >= 0);
+        for (var p in Sk.builtin.range(b.base, b.base + b.len).v) {
+            this.setitem(dest, b.getitem(p))
+            dest ++;
+        }
+        for (var p in Sk.builtin.range(a.base, a.base + a.len).v){
+            this.setitem(dest, a.getitem(p))
+            dest ++;
+        }
+    }
+}
+
+Sk.builtin.timSort.prototype.merge_hi= function(a, b) {
+    goog.asserts.assert(a.len > 0 && b.len > 0 && a.base + a.len == b.base);
+    var min_gallop = this.min_gallop;
+    var dest = b.base + b.len;
+    b = b.copyitems();
+
+    // Invariant: elements in "a" are waiting to be reinserted into the list
+    // at "dest".  They should be merged with the elements of "b".
+    // b.base == dest + a.len.
+    // We use a finally block to ensure that the elements remaining in
+    // the copy "a" are reinserted back into this.list in all cases.
+    try {
+        dest--;
+        this.setitem(dest, b.popright());
+
+        if (a.len == 0 || b.len == 1){ return; }
+
+        var acount, bcount, nexta, nextb;
+        while (true){
+            acount = 0;   // number of times A won in a row
+            bcount = 0;   // number of times B won in a row
+
+            // Do the straightforward thing until (if ever) one run
+            // appears to win consistently.
+            while (true){
+                nexta = a.getitem(a.base + a.len - 1);
+                nextb = b.getitem(b.base + b.len - 1);
+                if (this.lt(nextb, nexta)){
+                    dest--;
+                    this.setitem(dest, nexta);
+                    a.len--;
+                    if (a.len == 0){ return; }
+                    acount ++;
+                    bcount = 0;
+                    if (acount >= min_gallop){ break; }
+                }
+                else {
+                    dest--;
+                    this.setitem(dest, nextb);
+                    b.len--;
+                    if (b.len == 1){ return; }
+                    bcount ++;
+                    acount = 0;
+                    if (bcount >= min_gallop){ break; }
+                }
+            }
+
+            // One run is winning so consistently that galloping may
+            // be a huge win.  So try that, and continue galloping until
+            // (if ever) neither run appears to be winning consistently
+            // anymore.
+            min_gallop += 1;
+
+            while (true) {
+                min_gallop -= min_gallop > 1;
+                this.min_gallop = min_gallop;
+                nextb = b.getitem(b.base + b.len - 1);
+                var k = this.gallop(nextb, a, a.len - 1, true);
+                acount = a.len - k;
+                for (var p in Sk.builtin.range(a.base + a.len - 1, a.base + k - 1, -1).v) {
+                    dest--;
+                    this.setitem(dest, a.getitem(p));
+                }
+                a.len -= acount;
+                if (a.len == 0) { return; }
+
+                dest--;
+                this.setitem(dest, b.popright());
+                if (b.len == 1) { return; }
+
+                nexta = a.getitem(a.base + a.len - 1);
+                k = this.gallop(nexta, b, b.len - 1, false);
+                bcount = b.len - k;
+                for (var p in Sk.builtin.range(b.base + b.len - 1, b.base + k - 1, -1).v) {
+                    dest --;
+                    this.setitem(dest, b.getitem(p));
+                }
+
+                b.len -= bcount;
+
+                // b.len==0 is impossible now if the comparison
+                // function is consistent, but we can't assume
+                // that it is.
+                if (b.len <= 1) { return; }
+                dest--;
+                this.setitem(dest, a.popright());
+                if (a.len == 0) { return; }
+
+                if (acount < this.MIN_GALLOP && bcount < this.MIN_GALLOP) { break; }
+
+                min_gallop++;  // penalize it for leaving galloping mode
+                this.min_gallop = min_gallop;
+            }
+        }
+    }
+    finally{
+        // The last element of a belongs at the end of the merge, so we copy
+        // the remaining elements of b before the remaining elements of a.
+        goog.asserts.assert(a.len >= 0 && b.len >= 0);
+        for (var p in Sk.builtin.range(a.base + a.len - 1, a.base - 1, -1).v){
+            dest --;
+            this.setitem(dest, a.getitem(p))
+        }
+        for (var p in Sk.builtin.range(b.base + b.len - 1, b.base - 1, -1).v) {
+            dest--;
+            this.setitem(dest, b.getitem(p))
+        }
+    }
+}
+
+// Merge the two runs at stack indices i and i+1.
+
+Sk.builtin.timSort.prototype.merge_at = function(i){
+    var a = this.pending[i];
+    var b = this.pending[i+1];
+    goog.asserts.assert(a.len > 0 && b.len > 0);
+    goog.asserts.assert(a.base + a.len == b.base);
+
+    // Record the length of the combined runs and remove the run b
+    this.pending[i] = new Sk.builtin.listSlice(this.list, a.base, a.len + b.len);
+    this.pending.splice(i + 1, 1)
+
+    // Where does b start in a?  Elements in a before that can be
+    // ignored (already in place).
+    var k = this.gallop(b.getitem(b.base), a, 0, true)     ;
+    a.advance(k);
+    if (a.len == 0) { return; }
+
+    // Where does a end in b?  Elements in b after that can be
+    // ignored (already in place).
+    b.len = this.gallop(a.getitem(a.base+a.len-1), b, b.len-1, false)
+    if (b.len == 0) { return; }
+
+    // Merge what remains of the runs.  The direction is chosen to
+    // minimize the temporary storage needed.
+    if (a.len <= b.len) {
+        this.merge_lo(a, b);
+    }
+    else{
+        this.merge_hi(a, b);
+    }
+}
+
+// Examine the stack of runs waiting to be merged, merging adjacent runs
+// until the stack invariants are re-established:
+//
+// 1. len[-3] > len[-2] + len[-1]
+// 2. len[-2] > len[-1]
+//
+// See listsort.txt for more info.
+Sk.builtin.timSort.prototype.merge_collapse = function() {
+    var p = this.pending;
+    while (p.length > 1)
+    {
+        if (p.length >= 3 && p[-3].len <= p[-2].len + p[-1].len) {
+            if (p[-3].len < p[-1].len) {
+                this.merge_at(-3);
+            }
+            else{
+                this.merge_at(-2);
+            }
+        } else if(p[-2].len <= p[-1].len) {
+            this.merge_at(-2);
+        }
+        else{
+            break;
+        }
+    }
+}
+
+// Regardless of invariants, merge all runs on the stack until only one
+// remains.  This is used at the end of the mergesort.
+
+Sk.builtin.timSort.prototype.merge_force_collapse = function(){
+    var p = this.pending
+    while (p.length > 1 ){
+        if (p.length >= 3 && p[-3].len < p[-1].len) {
+            this.merge_at(-3);
+        }
+        else{
+            this.merge_at(-2);
+        }
+    }
+}
+// Compute a good value for the minimum run length; natural runs shorter
+// than this are boosted artificially via binary insertion.
+//
+// If n < 64, return n (it's too small to bother with fancy stuff).
+// Else if n is an exact power of 2, return 32.
+// Else return an int k, 32 <= k <= 64, such that n/k is close to, but
+// strictly less than, an exact power of 2.
+//
+// See listsort.txt for more info.
+
+Sk.builtin.timSort.prototype.merge_compute_minrun = function (n){
+    var r = 0    // becomes 1 if any 1 bits are shifted off
+    while (n >= 64){
+        r = r | (n & 1);
+        n >>= 1;
+        return n + r;
+    }
+};
+
+//ListSlice
+/**
+ * @constructor
+ * @param {Sk.builtin.list=} list
+ * @param {number=} base
+ * @param {number=} len
+ * @extends Sk.builtin.object
+ */
+Sk.builtin.listSlice = function(list, base, len) {
+    this.list = list;
+    this.base = base;
+    this.len = len;
+};
+
+Sk.builtin.listSlice.prototype.copyitems = function (){
+    //Make a copy of the slice of the original list
+    var start = this.base;
+    var stop = this.base + this.len;
+    goog.asserts.assert(0 <= start <= stop);
+    return new Sk.builtin.listSlice(this.list.v.slice(start, stop), 0, this.len);
+};
+
+Sk.builtin.listSlice.prototype.advance = function (n){
+    this.base += n;
+};
+
+Sk.builtin.listSlice.prototype.getitem = function (item){
+    return this.list.v[item];
+};
+
+Sk.builtin.listSlice.prototype.setitem = function (item, value){
+    this.list.v[item] = value;
+};
+
+Sk.builtin.listSlice.prototype.popleft = function (){
+    var result = this.list.v[this.base];
+    this.base++;
+    this.len--;
+    return result;
+};
+
+Sk.builtin.listSlice.prototype.popright = function (){
+    this.len--;
+    return this.list.v[this.base + this.len];
+};
+
+Sk.builtin.listSlice.prototype.reverse = function (){
+    // Reverse the slice in-place.
+    var list = this.list;
+    var lo = this.base;
+    var hi = lo + this.len - 1;
+    while (lo < hi){
+        var list_hi = list.v[hi];
+        var list_lo = list.v[lo];
+        list.v[lo] = list_hi;
+        list.v[hi] = list_lo;
+        lo++;
+        hi--;
+    }
+};
+
+goog.exportSymbol("Sk.builtin.listSlice", Sk.builtin.listSlice);
+goog.exportSymbol("Sk.builtin.timSort", Sk.builtin.timSort);

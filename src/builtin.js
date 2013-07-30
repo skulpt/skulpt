@@ -866,10 +866,10 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 		var next = iter.next();
 		var arr = [];
 		while (next !== undefined){
-			arr.push(new Sk.builtin.tuple([key(next), next]));
+			arr.push([key(next), next]);
 			next = iter.next();
 		}
-        l = new Sk.builtin.list(arr);		
+        list = new Sk.builtin.list(arr);
 	}
 	else {
 		if (cmp !== null && cmp !== undefined) {
@@ -881,14 +881,14 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	}
 	
 	if (compare_func !== undefined) {
-		list.sort(compare_func);
+		list.list_sort_(compare_func);
 	}
 	else {
-		list.sort();
+		list.list_sort_();
 	}
 	
 	if (reverse) {
-		list.reverse();
+		list.list_reverse_();
 	}
 	
 	if (key !== undefined && key !== null) {
