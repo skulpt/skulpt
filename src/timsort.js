@@ -5,7 +5,7 @@
  * @extends Sk.builtin.object
  */
 Sk.builtin.timSort = function(list, length){
-    this.list = list;
+    this.list = new Sk.builtin.list(list);
     // When we get into galloping mode, we stay there until both runs win less
     // often than MIN_GALLOP consecutive times.  See listsort.txt for more info.
     this.MIN_GALLOP = 7;

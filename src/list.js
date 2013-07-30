@@ -308,22 +308,25 @@ Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index
 });
 
 /**
+ * @param {?=} self optional
  * @param {?=} cmp optional
  * @param {?=} key optional
  * @param {?=} reverse optional
  */
-Sk.builtin.list.prototype.list_sort_ = function(cmp, key, reverse) {
+Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
     var has_key = key !== undefined && key !== null;
     var has_cmp = cmp !== undefined && cmp !== null;
     if (reverse == undefined) { reverse = false; }
 
-    var timsort = new Sk.builtin.timSort(this);
+    var timsort = new Sk.builtin.timSort(self);
 
-    this.v = [];
+    self.v = [];
 
-    timsort.lt = function(a, b){
-        return cmp(a, b) < 0;
-    };
+    if (has_cmp) {
+        timsort.lt = function(a, b){
+            return cmp(a, b) < 0;
+        };
+    }
 
     if (has_key){
         for (var i in timsort.listlength){
@@ -352,7 +355,7 @@ Sk.builtin.list.prototype.list_sort_ = function(cmp, key, reverse) {
 
     var mucked = this.sq$length() > 0;
 
-    this.v = timsort.list.v;
+    self.v = timsort.list.v;
 
     if (mucked) {
         throw new Sk.builtin.OperationError("list modified during sort");
