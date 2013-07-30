@@ -15,7 +15,6 @@
 /**
  * @fileoverview Locale independent date/time class.
  *
-*
  */
 
 goog.provide('goog.date.UtcDateTime');
@@ -74,7 +73,8 @@ goog.date.UtcDateTime.fromIsoString = function(formatted) {
 /**
  * Clones the UtcDateTime object.
  *
- * @return {goog.date.UtcDateTime} A clone of the datetime object.
+ * @return {!goog.date.UtcDateTime} A clone of the datetime object.
+ * @override
  */
 goog.date.UtcDateTime.prototype.clone = function() {
   var date = new goog.date.UtcDateTime(this.date_);
@@ -84,94 +84,96 @@ goog.date.UtcDateTime.prototype.clone = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.add = function(interval) {
   if (interval.years || interval.months) {
     var yearsMonths = new goog.date.Interval(interval.years, interval.months);
     goog.date.Date.prototype.add.call(this, yearsMonths);
   }
-  var daysAndTimeMillis = 1000 * (interval.seconds + 60 * (interval.minutes +
-                          60 * (interval.hours + 24 * interval.days)));
+  var daysAndTimeMillis = 1000 * (
+      interval.seconds + 60 * (
+          interval.minutes + 60 * (
+              interval.hours + 24 * interval.days)));
   this.date_ = new Date(this.date_.getTime() + daysAndTimeMillis);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getTimezoneOffset = function() {
   return 0;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getFullYear =
     goog.date.DateTime.prototype.getUTCFullYear;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getMonth =
     goog.date.DateTime.prototype.getUTCMonth;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getDate =
     goog.date.DateTime.prototype.getUTCDate;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getHours =
     goog.date.DateTime.prototype.getUTCHours;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getMinutes =
     goog.date.DateTime.prototype.getUTCMinutes;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getSeconds =
     goog.date.DateTime.prototype.getUTCSeconds;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getMilliseconds =
     goog.date.DateTime.prototype.getUTCMilliseconds;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.getDay =
     goog.date.DateTime.prototype.getUTCDay;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setFullYear =
     goog.date.DateTime.prototype.setUTCFullYear;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setMonth =
     goog.date.DateTime.prototype.setUTCMonth;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setDate =
     goog.date.DateTime.prototype.setUTCDate;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setHours =
     goog.date.DateTime.prototype.setUTCHours;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setMinutes =
     goog.date.DateTime.prototype.setUTCMinutes;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setSeconds =
     goog.date.DateTime.prototype.setUTCSeconds;
 
 
-/** @inheritDoc */
+/** @override */
 goog.date.UtcDateTime.prototype.setMilliseconds =
     goog.date.DateTime.prototype.setUTCMilliseconds;

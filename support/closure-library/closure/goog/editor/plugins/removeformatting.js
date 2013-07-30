@@ -16,8 +16,6 @@
 /**
  * @fileoverview Plugin to handle Remove Formatting.
  *
-*
-*
  */
 
 goog.provide('goog.editor.plugins.RemoveFormatting');
@@ -31,6 +29,8 @@ goog.require('goog.editor.Plugin');
 goog.require('goog.editor.node');
 goog.require('goog.editor.range');
 goog.require('goog.string');
+goog.require('goog.userAgent');
+
 
 
 /**
@@ -97,13 +97,13 @@ goog.editor.plugins.RemoveFormatting.createRangeDelimitedByRanges_ = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.RemoveFormatting.prototype.getTrogClassId = function() {
   return 'RemoveFormatting';
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.RemoveFormatting.prototype.isSupportedCommand = function(
     command) {
   return command ==
@@ -111,7 +111,7 @@ goog.editor.plugins.RemoveFormatting.prototype.isSupportedCommand = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.RemoveFormatting.prototype.execCommandInternal =
     function(command, var_args) {
   if (command ==
@@ -121,9 +121,7 @@ goog.editor.plugins.RemoveFormatting.prototype.execCommandInternal =
 };
 
 
-/**
- * @inheritDoc
- */
+/** @override */
 goog.editor.plugins.RemoveFormatting.prototype.handleKeyboardShortcut =
     function(e, key, isModifierPressed) {
   if (!isModifierPressed) {
@@ -131,13 +129,13 @@ goog.editor.plugins.RemoveFormatting.prototype.handleKeyboardShortcut =
   }
 
   if (key == ' ') {
-    this.fieldObject.execCommand(
+    this.getFieldObject().execCommand(
         goog.editor.plugins.RemoveFormatting.REMOVE_FORMATTING_COMMAND);
     return true;
   }
 
   return false;
-}
+};
 
 
 /**
@@ -149,7 +147,7 @@ goog.editor.plugins.RemoveFormatting.prototype.handleKeyboardShortcut =
  * @private
  */
 goog.editor.plugins.RemoveFormatting.prototype.removeFormatting_ = function() {
-  var range = this.fieldObject.getRange();
+  var range = this.getFieldObject().getRange();
   if (range.isCollapsed()) {
     return;
   }
@@ -175,7 +173,8 @@ goog.editor.plugins.RemoveFormatting.prototype.removeFormatting_ = function() {
       // breaking spaces.
       // Old versions of WebKit (Safari 3, Chrome 1) incorrectly match /u00A0
       // and newer versions properly match &nbsp;.
-      var nbspRegExp = goog.userAgent.isVersion('528') ? /&nbsp;/g : /\u00A0/g;
+      var nbspRegExp =
+          goog.userAgent.isVersionOrHigher('528') ? /&nbsp;/g : /\u00A0/g;
       return text.replace(nbspRegExp, ' ');
     });
   }
@@ -188,9 +187,16 @@ goog.editor.plugins.RemoveFormatting.prototype.removeFormatting_ = function() {
  * @return {Node} The table, or null if one was not found.
  * @private
  */
-goog.editor.plugins.RemoveFormatting.getTableAncestor_ = function(nodeToCheck) {
-  return goog.dom.getAncestor(nodeToCheck,
-      function(node) { return node.tagName == goog.dom.TagName.TABLE; }, true);
+goog.editor.plugins.RemoveFormatting.prototype.getTableAncestor_ = function(
+    nodeToCheck) {
+  var fieldElement = this.getFieldObject().getElement();
+  while (nodeToCheck && nodeToCheck != fieldElement) {
+    if (nodeToCheck.tagName == goog.dom.TagName.TABLE) {
+      return nodeToCheck;
+    }
+    nodeToCheck = nodeToCheck.parentNode;
+  }
+  return null;
 };
 
 
@@ -206,7 +212,7 @@ goog.editor.plugins.RemoveFormatting.getTableAncestor_ = function(nodeToCheck) {
  * @private
  */
 goog.editor.plugins.RemoveFormatting.prototype.pasteHtml_ = function(html) {
-  var range = this.fieldObject.getRange();
+  var range = this.getFieldObject().getRange();
 
   var dh = this.getFieldDomHelper();
   // Use markers to set the extent of the selection so that we can reselect it
@@ -256,7 +262,7 @@ goog.editor.plugins.RemoveFormatting.prototype.pasteHtml_ = function(html) {
     // (e.g. if your selection spans two paragraphs)
     dh.getDocument().execCommand('insertImage', false, dummyNodeId);
     var dummyImageNodePattern = new RegExp('<[^<]*' + dummyNodeId + '[^>]*>');
-    var parent = this.fieldObject.getRange().getContainerElement();
+    var parent = this.getFieldObject().getRange().getContainerElement();
     if (parent.nodeType == goog.dom.NodeType.TEXT) {
       // Opera sometimes returns a text node here.
       // TODO(user): perhaps we should modify getParentContainer?
@@ -279,11 +285,11 @@ goog.editor.plugins.RemoveFormatting.prototype.pasteHtml_ = function(html) {
     // remove parentNodes of the span while they are empty.
 
     if (goog.userAgent.GECKO) {
-      parent.innerHTML =
-          parent.innerHTML.replace(dummyImageNodePattern, html);
+      goog.editor.node.replaceInnerHtml(parent,
+          parent.innerHTML.replace(dummyImageNodePattern, html));
     } else {
-      parent.innerHTML =
-          parent.innerHTML.replace(dummyImageNodePattern, dummySpanText);
+      goog.editor.node.replaceInnerHtml(parent,
+          parent.innerHTML.replace(dummyImageNodePattern, dummySpanText));
       var dummySpan = dh.getElement(dummyNodeId);
       parent = dummySpan;
       while ((parent = dummySpan.parentNode) &&
@@ -303,8 +309,8 @@ goog.editor.plugins.RemoveFormatting.prototype.pasteHtml_ = function(html) {
         goog.dom.insertSiblingAfter(dummySpan, parent);
         goog.dom.removeNode(parent);
       }
-      parent.innerHTML =
-          parent.innerHTML.replace(new RegExp(dummySpanText, 'i'), html);
+      goog.editor.node.replaceInnerHtml(parent,
+          parent.innerHTML.replace(new RegExp(dummySpanText, 'i'), html));
     }
   }
 
@@ -443,7 +449,7 @@ goog.editor.plugins.RemoveFormatting.prototype.restoreCaretsFromCave_ =
     function() {
   // To keep start before end, we put the end caret at the bottom of the field
   // and the start caret at the start of the field.
-  var field = this.fieldObject.getElement();
+  var field = this.getFieldObject().getElement();
   if (this.startCaretInCave_) {
     field.insertBefore(this.startCaretInCave_, field.firstChild);
     this.startCaretInCave_ = null;
@@ -465,7 +471,7 @@ goog.editor.plugins.RemoveFormatting.prototype.restoreCaretsFromCave_ =
  */
 goog.editor.plugins.RemoveFormatting.prototype.convertSelectedHtmlText_ =
     function(convertFunc) {
-  var range = this.fieldObject.getRange();
+  var range = this.getFieldObject().getRange();
 
   // For multiple ranges, it is really hard to do our custom remove formatting
   // without invalidating other ranges. So instead of always losing the
@@ -496,12 +502,10 @@ goog.editor.plugins.RemoveFormatting.prototype.convertSelectedHtmlText_ =
     // in the selection, but have the same visible selection. Stop expanding
     // if we reach the top level field.
     var expandedRange = goog.editor.range.expand(range,
-        this.fieldObject.getElement());
+        this.getFieldObject().getElement());
 
-    var startInTable = goog.editor.plugins.RemoveFormatting.getTableAncestor_(
-        expandedRange.getStartNode());
-    var endInTable = goog.editor.plugins.RemoveFormatting.getTableAncestor_(
-        expandedRange.getEndNode());
+    var startInTable = this.getTableAncestor_(expandedRange.getStartNode());
+    var endInTable = this.getTableAncestor_(expandedRange.getEndNode());
 
     if (startInTable || endInTable) {
       if (startInTable == endInTable) {
@@ -532,9 +536,9 @@ goog.editor.plugins.RemoveFormatting.prototype.convertSelectedHtmlText_ =
       }
 
       // Re-fetch the range, and re-expand it, since we just modified it.
-      range = this.fieldObject.getRange();
+      range = this.getFieldObject().getRange();
       expandedRange = goog.editor.range.expand(range,
-          this.fieldObject.getElement());
+          this.getFieldObject().getElement());
     }
 
     expandedRange.select();
@@ -550,7 +554,7 @@ goog.editor.plugins.RemoveFormatting.prototype.convertSelectedHtmlText_ =
     // If we moved the selection, move it back so the user can't tell we did
     // anything crazy and so the browser removeFormat that we call next
     // will operate on the entire originally selected range.
-    range = this.fieldObject.getRange();
+    range = this.getFieldObject().getRange();
     this.restoreCaretsFromCave_();
     var realSavedCaretRange = savedCaretRange.toAbstractRange();
     var startRange = startInTable ? realSavedCaretRange : range;
@@ -567,10 +571,12 @@ goog.editor.plugins.RemoveFormatting.prototype.convertSelectedHtmlText_ =
 /**
  * Does a best-effort attempt at clobbering all formatting that the
  * browser's execCommand couldn't clobber without being totally inefficient.
- * Attempts to convert visual line breaks to BRs.
+ * Attempts to convert visual line breaks to BRs. Leaves anchors that contain an
+ * href and images.
  * Adapted from Gmail's MessageUtil's htmlToPlainText. http://go/messageutil.js
  * @param {string} html The original html of the message.
- * @return {string} The unformatted html, which is just text and br's.
+ * @return {string} The unformatted html, which is just text, br's, anchors and
+ *     images.
  * @private
  */
 goog.editor.plugins.RemoveFormatting.prototype.removeFormattingWorker_ =
@@ -684,7 +690,14 @@ goog.editor.plugins.RemoveFormatting.prototype.removeFormattingWorker_ =
         case goog.dom.TagName.IMG:
           sb.push("<img src='");
           sb.push(node.src);
-          sb.push("'>");
+          sb.push("'");
+          // border=0 is a common way to not show a blue border around an image
+          // that is wrapped by a link. If we remove that, the blue border will
+          // show up, which to the user looks like adding format, not removing.
+          if (node.border == '0') {
+            sb.push(" border='0'");
+          }
+          sb.push('>');
           continue;
 
         case goog.dom.TagName.TD:

@@ -1,7 +1,7 @@
 /*
  * Copyright 2009 The Closure Library Authors. All Rights Reserved.
  *
- * Use of this source code is governed by an Apache 2.0 License.
+ * Use of this source code is governed by the Apache License, Version 2.0.
  * See the COPYING file for details.
  */
 
@@ -18,7 +18,7 @@
   font-family: Arial, sans-serif;
   color: #000;
   /* Client apps may override the URL at which they serve the image. */
-  background: #ddd url(https://ssl.gstatic.com/editor/button-bg.png) repeat-x top left;
+  background: #ddd url(//ssl.gstatic.com/editor/button-bg.png) repeat-x top left;
   text-decoration: none;
   list-style: none;
   vertical-align: middle;

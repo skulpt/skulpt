@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.structs.Map</title>
 <script src="../base.js"></script>
 <script>
@@ -257,14 +258,6 @@ function testDuplicateKeys() {
   assertEquals(7, m.getKeys().length);
 }
 
-function testMagicWords() {
-  var map1 = getMap();
-  x = map1.get('hasOwnProperty', 'X');
-  assertEquals(x, 'X');
-  var x = map1.get('__proto__', 'X');
-  assertEquals(x, 'X');
-}
-
 function testGetKeyIterator() {
   var m = new goog.structs.Map;
   m.set('a', 1);
@@ -330,12 +323,11 @@ function testMutatedIterator() {
 
   var iter = m.getValueIterator();
   m.set('e', 5);
-  try {
-    iter.next();
-    fail('Expected an exception since the map has changed');
-  } catch(ex) {
-    assertEquals(message, ex.message);
-  }
+  var ex = assertThrows('Expected an exception since the map has changed',
+      function() {
+        iter.next();
+      });
+  assertEquals(message, ex.message);
 
   m = new goog.structs.Map;
   m.set('a', 1);
@@ -345,12 +337,11 @@ function testMutatedIterator() {
 
   iter = m.getValueIterator();
   m.remove('d');
-  try {
-    iter.next();
-    fail('Expected an exception since the map has changed');
-  } catch(ex) {
-    assertEquals(message, ex.message);
-  }
+  var ex = assertThrows('Expected an exception since the map has changed',
+      function() {
+        iter.next();
+      });
+  assertEquals(message, ex.message);
 
   m = new goog.structs.Map;
   m.set('a', 1);
@@ -361,13 +352,8 @@ function testMutatedIterator() {
   iter = m.getValueIterator();
   m.set('d', 5);
   iter.next();
-  try {
-    iter.next();
-    // OK
-  } catch(ex) {
-    fail('Changing an existing value is OK');
-  }
-
+  // Changing an existing value is OK.
+  iter.next();
 };
 
 function testTranspose() {

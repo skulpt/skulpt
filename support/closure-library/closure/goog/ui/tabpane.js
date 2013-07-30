@@ -15,7 +15,7 @@
 /**
  * @fileoverview TabPane widget implementation.
  *
-*
+ * @author eae@google.com (Emil A Eklund)
  */
 
 goog.provide('goog.ui.TabPane');
@@ -32,6 +32,7 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.style');
+
 
 
 /**
@@ -146,6 +147,7 @@ goog.ui.TabPane.TabLocation = {
   RIGHT: 3
 };
 
+
 /**
  * Creates HTML nodes for tab pane.
  *
@@ -201,6 +203,7 @@ goog.ui.TabPane.prototype.create_ = function() {
   this.createPages_(nodes);
 };
 
+
 /**
  * Creates the HTML node for the clearing div, and associated style in
  * the <HEAD>.
@@ -215,7 +218,8 @@ goog.ui.TabPane.prototype.createClear_ = function() {
   return this.dom_.createDom('div', goog.getCssName('goog-tabpane-clear'));
 };
 
-/** @inheritDoc */
+
+/** @override */
 goog.ui.TabPane.prototype.disposeInternal = function() {
   goog.ui.TabPane.superClass_.disposeInternal.call(this);
   goog.events.unlisten(this.elButtonBar_,
@@ -610,6 +614,7 @@ goog.ui.TabPane.TabPage.prototype.setEnabled = function(enabled) {
       goog.getCssName('goog-tabpane-tab-disabled');
 };
 
+
 /**
  * Returns if the page is enabled.
  * @return {boolean} Whether the page is enabled or not.
@@ -617,6 +622,7 @@ goog.ui.TabPane.TabPage.prototype.setEnabled = function(enabled) {
 goog.ui.TabPane.TabPage.prototype.isEnabled = function() {
   return this.enabled_;
 };
+
 
 /**
  * Sets visible state for page content and updates style of tab.
@@ -632,6 +638,7 @@ goog.ui.TabPane.TabPage.prototype.setVisible_ = function(visible) {
         goog.getCssName('goog-tabpane-tab');
   }
 };
+
 
 /**
  * Sets parent tab pane for tab page.

@@ -16,11 +16,8 @@
  * @fileoverview Abstract class for all UI components. This defines the standard
  * design pattern that all UI components should follow.
  *
-*
-*
-*
-*
  * @see ../demos/samplecomponent.html
+ * @see http://code.google.com/p/closure-library/wiki/IntroToComponents
  */
 
 goog.provide('goog.ui.Component');
@@ -29,15 +26,15 @@ goog.provide('goog.ui.Component.EventType');
 goog.provide('goog.ui.Component.State');
 
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.DomHelper');
-goog.require('goog.events');
-goog.require('goog.events.Event');
+goog.require('goog.dom.NodeType');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.object');
 goog.require('goog.style');
 goog.require('goog.ui.IdGenerator');
+
 
 
 /**
@@ -55,6 +52,15 @@ goog.ui.Component = function(opt_domHelper) {
   this.rightToLeft_ = goog.ui.Component.defaultRightToLeft_;
 };
 goog.inherits(goog.ui.Component, goog.events.EventTarget);
+
+
+/**
+ * @define {boolean} Whether to support calling decorate with an element that is
+ *     not yet in the document. If true, we check if the element is in the
+ *     document, and avoid calling enterDocument if it isn't. If false, we
+ *     maintain legacy behavior (always call enterDocument from decorate).
+ */
+goog.define('goog.ui.Component.ALLOW_DETACHED_DECORATION', false);
 
 
 /**
@@ -334,11 +340,11 @@ goog.ui.Component.prototype.id_ = null;
 /**
  * DomHelper used to interact with the document, allowing components to be
  * created in a different window.
- * @type {goog.dom.DomHelper?}
+ * @type {!goog.dom.DomHelper}
  * @protected
  * @suppress {underscore}
  */
-goog.ui.Component.prototype.dom_ = null;
+goog.ui.Component.prototype.dom_;
 
 
 /**
@@ -349,7 +355,7 @@ goog.ui.Component.prototype.dom_ = null;
 goog.ui.Component.prototype.inDocument_ = false;
 
 
-// TODO(user): Stop referring to this private field in subclasses.
+// TODO(attila): Stop referring to this private field in subclasses.
 /**
  * The DOM element for the component.
  * @type {Element}
@@ -425,8 +431,13 @@ goog.ui.Component.prototype.childIndex_ = null;
 
 /**
  * Flag used to keep track of whether a component decorated an already existing
- * element or whether it created the DOM itself.  If an element was decorated
- * dispose will remove the node from the document, it is left up to the app.
+ * element or whether it created the DOM itself.
+ *
+ * If an element is decorated, dispose will leave the node in the document.
+ * It is up to the app to remove the node.
+ *
+ * If an element was rendered, dispose will remove the node automatically.
+ *
  * @type {boolean}
  * @private
  */
@@ -473,13 +484,73 @@ goog.ui.Component.prototype.getElement = function() {
 
 
 /**
+ * Gets the component's element. This differs from getElement in that
+ * it assumes that the element exists (i.e. the component has been
+ * rendered/decorated) and will cause an assertion error otherwise (if
+ * assertion is enabled).
+ * @return {!Element} The element for the component.
+ */
+goog.ui.Component.prototype.getElementStrict = function() {
+  var el = this.element_;
+  goog.asserts.assert(
+      el, 'Can not call getElementStrict before rendering/decorating.');
+  return el;
+};
+
+
+/**
  * Sets the component's root element to the given element.  Considered
  * protected and final.
+ *
+ * This should generally only be called during createDom. Setting the element
+ * does not actually change which element is rendered, only the element that is
+ * associated with this UI component.
+ *
+ * This should only be used by subclasses and its associated renderers.
+ *
  * @param {Element} element Root element for the component.
- * @protected
  */
 goog.ui.Component.prototype.setElementInternal = function(element) {
   this.element_ = element;
+};
+
+
+/**
+ * Returns an array of all the elements in this component's DOM with the
+ * provided className.
+ * @param {string} className The name of the class to look for.
+ * @return {!goog.array.ArrayLike} The items found with the class name provided.
+ */
+goog.ui.Component.prototype.getElementsByClass = function(className) {
+  return this.element_ ?
+      this.dom_.getElementsByClass(className, this.element_) : [];
+};
+
+
+/**
+ * Returns the first element in this component's DOM with the provided
+ * className.
+ * @param {string} className The name of the class to look for.
+ * @return {Element} The first item with the class name provided.
+ */
+goog.ui.Component.prototype.getElementByClass = function(className) {
+  return this.element_ ?
+      this.dom_.getElementByClass(className, this.element_) : null;
+};
+
+
+/**
+ * Similar to {@code getElementByClass} except that it expects the
+ * element to be present in the dom thus returning a required value. Otherwise,
+ * will assert.
+ * @param {string} className The name of the class to look for.
+ * @return {!Element} The first item with the class name provided.
+ */
+goog.ui.Component.prototype.getRequiredElementByClass = function(className) {
+  var el = this.getElementByClass(className);
+  goog.asserts.assert(el, 'Expected element in component with class: %s',
+      className);
+  return el;
 };
 
 
@@ -547,7 +618,7 @@ goog.ui.Component.prototype.setParentEventTarget = function(parent) {
 
 /**
  * Returns the dom helper that is being used on this component.
- * @return {goog.dom.DomHelper} The dom helper used on this component.
+ * @return {!goog.dom.DomHelper} The dom helper used on this component.
  */
 goog.ui.Component.prototype.getDomHelper = function() {
   return this.dom_;
@@ -573,10 +644,14 @@ goog.ui.Component.prototype.createDom = function() {
 
 
 /**
- * Renders the component.  If a parent element is supplied, it should already be
- * in the document and then the component's element will be appended to it.  If
- * there is no optional parent element and the element doesn't have a parentNode
- * then it will be appended to the document body.
+ * Renders the component.  If a parent element is supplied, the component's
+ * element will be appended to it.  If there is no optional parent element and
+ * the element doesn't have a parentNode then it will be appended to the
+ * document body.
+ *
+ * If this component has a parent component, and the parent component is
+ * not in the document already, then this will not call {@code enterDocument}
+ * on this component.
  *
  * Throws an Error if the component is already rendered.
  *
@@ -594,30 +669,34 @@ goog.ui.Component.prototype.render = function(opt_parentElement) {
  *
  * Throws an Error if the component is already rendered.
  *
- * @param {Element} siblingElement  Element to render the component before.
+ * @param {Node} sibling Node to render the component before.
  */
-goog.ui.Component.prototype.renderBefore = function(siblingElement) {
-  this.render_(/** @type {Element} */(siblingElement.parentNode),
-               siblingElement);
+goog.ui.Component.prototype.renderBefore = function(sibling) {
+  this.render_(/** @type {Element} */ (sibling.parentNode),
+               sibling);
 };
 
 
 /**
- * Renders the component.  If a parent element is supplied, it should already be
- * in the document and then the component's element will be appended to it.  If
- * there is no optional parent element and the element doesn't have a parentNode
- * then it will be appended to the document body.
+ * Renders the component.  If a parent element is supplied, the component's
+ * element will be appended to it.  If there is no optional parent element and
+ * the element doesn't have a parentNode then it will be appended to the
+ * document body.
+ *
+ * If this component has a parent component, and the parent component is
+ * not in the document already, then this will not call {@code enterDocument}
+ * on this component.
  *
  * Throws an Error if the component is already rendered.
  *
  * @param {Element=} opt_parentElement Optional parent element to render the
  *    component into.
- * @param {Element=} opt_beforeElement Element before which the component is to
+ * @param {Node=} opt_beforeNode Node before which the component is to
  *    be rendered.  If left out the node is appended to the parent element.
  * @private
  */
 goog.ui.Component.prototype.render_ = function(opt_parentElement,
-                                               opt_beforeElement) {
+                                               opt_beforeNode) {
   if (this.inDocument_) {
     throw Error(goog.ui.Component.Error.ALREADY_RENDERED);
   }
@@ -627,7 +706,7 @@ goog.ui.Component.prototype.render_ = function(opt_parentElement,
   }
 
   if (opt_parentElement) {
-    opt_parentElement.insertBefore(this.element_, opt_beforeElement || null);
+    opt_parentElement.insertBefore(this.element_, opt_beforeNode || null);
   } else {
     this.dom_.getDocument().body.appendChild(this.element_);
   }
@@ -644,7 +723,12 @@ goog.ui.Component.prototype.render_ = function(opt_parentElement,
 
 
 /**
- * Decorates the element for the UI component.
+ * Decorates the element for the UI component. If the element is in the
+ * document, the enterDocument method will be called.
+ *
+ * If goog.ui.Component.ALLOW_DETACHED_DECORATION is false, the caller must
+ * pass an element that is in the document.
+ *
  * @param {Element} element Element to decorate.
  */
 goog.ui.Component.prototype.decorate = function(element) {
@@ -654,14 +738,19 @@ goog.ui.Component.prototype.decorate = function(element) {
     this.wasDecorated_ = true;
 
     // Set the DOM helper of the component to match the decorated element.
-    if (!this.dom_ ||
-        this.dom_.getDocument() != goog.dom.getOwnerDocument(element)) {
+    var doc = goog.dom.getOwnerDocument(element);
+    if (!this.dom_ || this.dom_.getDocument() != doc) {
       this.dom_ = goog.dom.getDomHelper(element);
     }
 
     // Call specific component decorate logic.
     this.decorateInternal(element);
-    this.enterDocument();
+
+    // If supporting detached decoration, check that element is in doc.
+    if (!goog.ui.Component.ALLOW_DETACHED_DECORATION ||
+        goog.dom.contains(doc, element)) {
+      this.enterDocument();
+    }
   } else {
     throw Error(goog.ui.Component.Error.DECORATE_INVALID);
   }
@@ -711,6 +800,9 @@ goog.ui.Component.prototype.enterDocument = function() {
   this.inDocument_ = true;
 
   // Propagate enterDocument to child components that have a DOM, if any.
+  // If a child was decorated before entering the document (permitted when
+  // goog.ui.Component.ALLOW_DETACHED_DECORATION is true), its enterDocument
+  // will be called here.
   this.forEachChild(function(child) {
     if (!child.isInDocument() && child.getElement()) {
       child.enterDocument();
@@ -752,10 +844,9 @@ goog.ui.Component.prototype.exitDocument = function() {
  * the component's children, if any. Removes the component's DOM from the
  * document unless it was decorated.
  * @override
+ * @protected
  */
 goog.ui.Component.prototype.disposeInternal = function() {
-  goog.ui.Component.superClass_.disposeInternal.call(this);
-
   if (this.inDocument_) {
     this.exitDocument();
   }
@@ -780,18 +871,36 @@ goog.ui.Component.prototype.disposeInternal = function() {
   this.element_ = null;
   this.model_ = null;
   this.parent_ = null;
+
+  goog.ui.Component.superClass_.disposeInternal.call(this);
 };
 
 
 /**
  * Helper function for subclasses that gets a unique id for a given fragment,
- * this can be used by components to
- * generate unique string ids for DOM elements
+ * this can be used by components to generate unique string ids for DOM
+ * elements.
  * @param {string} idFragment A partial id.
  * @return {string} Unique element id.
  */
 goog.ui.Component.prototype.makeId = function(idFragment) {
   return this.getId() + '.' + idFragment;
+};
+
+
+/**
+ * Makes a collection of ids.  This is a convenience method for makeId.  The
+ * object's values are the id fragments and the new values are the generated
+ * ids.  The key will remain the same.
+ * @param {Object} object The object that will be used to create the ids.
+ * @return {Object} An object of id keys to generated ids.
+ */
+goog.ui.Component.prototype.makeIds = function(object) {
+  var ids = {};
+  for (var key in object) {
+    ids[key] = this.makeId(object[key]);
+  }
+  return ids;
 };
 
 
@@ -849,6 +958,11 @@ goog.ui.Component.prototype.getElementByFragment = function(idFragment) {
  *    into the parent.
  */
 goog.ui.Component.prototype.addChild = function(child, opt_render) {
+  // TODO(gboyer): addChildAt(child, this.getChildCount(), false) will
+  // reposition any already-rendered child to the end.  Instead, perhaps
+  // addChild(child, false) should never reposition the child; instead, clients
+  // that need the repositioning will use addChildAt explicitly.  Right now,
+  // clients can get around this by calling addChild first.
   this.addChildAt(child, this.getChildCount(), opt_render);
 };
 
@@ -863,7 +977,9 @@ goog.ui.Component.prototype.addChild = function(child, opt_render) {
  *    <li>the child component's element must be a descendant of the parent
  *        component's element, and
  *    <li>the DOM state of the child component must be consistent with the DOM
- *        state of the parent component (see {@code isInDocument}).
+ *        state of the parent component (see {@code isInDocument}) in the
+ *        steady state -- the exception is to addChildAt(child, i, false) and
+ *        then immediately decorate/render the child.
  *  </ul>
  *
  * In particular, {@code parent.addChild(child)} will throw an error if the
@@ -872,14 +988,17 @@ goog.ui.Component.prototype.addChild = function(child, opt_render) {
  * Clients of this API may call {@code addChild} and {@code addChildAt} with
  * {@code opt_render} set to true.  If {@code opt_render} is true, calling these
  * methods will automatically render the child component's element into the
- * parent component's element.  However, {@code parent.addChild(child, true)}
- * will throw an error if:
- *  <ul>
- *    <li>the parent component has no DOM (i.e. {@code parent.getElement()} is
- *        null), or
- *    <li>the child component is already in the document, regardless of the
- *        parent's DOM state.
- *  </ul>
+ * parent component's element. If the parent does not yet have an element, then
+ * {@code createDom} will automatically be invoked on the parent before
+ * rendering the child.
+ *
+ * Invoking {@code parent.addChild(child, true)} will throw an error if the
+ * child component is already in the document, regardless of the parent's DOM
+ * state.
+ *
+ * If {@code opt_render} is true and the parent component is not already
+ * in the document, {@code enterDocument} will not be called on this component
+ * at this point.
  *
  * Finally, this method also throws an error if the new child already has a
  * different parent, or the given index is out of bounds.
@@ -943,16 +1062,22 @@ goog.ui.Component.prototype.addChildAt = function(child, index, opt_render) {
     }
     // Render the child into the parent at the appropriate location.  Note that
     // getChildAt(index + 1) returns undefined if inserting at the end.
-    // TODO(user): We should have a renderer with a renderChildAt API.
+    // TODO(attila): We should have a renderer with a renderChildAt API.
     var sibling = this.getChildAt(index + 1);
     // render_() calls enterDocument() if the parent is already in the document.
     child.render_(this.getContentElement(), sibling ? sibling.element_ : null);
-  } else {
-    // We don't touch the DOM, but if the parent is in the document, the child
-    // isn't, and the child has a DOM, then we call enterDocument on the child.
-    if (this.inDocument_ && !child.inDocument_ && child.element_) {
-      child.enterDocument();
-    }
+  } else if (this.inDocument_ && !child.inDocument_ && child.element_ &&
+      child.element_.parentNode &&
+      // Under some circumstances, IE8 implicitly creates a Document Fragment
+      // for detached nodes, so ensure the parent is an Element as it should be.
+      child.element_.parentNode.nodeType == goog.dom.NodeType.ELEMENT) {
+    // We don't touch the DOM, but if the parent is in the document, and the
+    // child element is in the document but not marked as such, then we call
+    // enterDocument on the child.
+    // TODO(gboyer): It would be nice to move this condition entirely, but
+    // there's a large risk of breaking existing applications that manually
+    // append the child to the DOM and then call addChild.
+    child.enterDocument();
   }
 };
 
@@ -1043,7 +1168,7 @@ goog.ui.Component.prototype.getChildIds = function() {
  */
 goog.ui.Component.prototype.getChild = function(id) {
   // Use childIndex_ for O(1) access by ID.
-  return (this.childIndex_ && id) ? (/** @type {goog.ui.Component} */
+  return (this.childIndex_ && id) ? /** @type {goog.ui.Component} */ (
       goog.object.get(this.childIndex_, id)) || null : null;
 };
 
@@ -1064,9 +1189,10 @@ goog.ui.Component.prototype.getChildAt = function(index) {
  * {@code opt_obj} is provided, it will be used as the 'this' object in the
  * function when called.  The function should take two arguments:  the child
  * component and its 0-based index.  The return value is ignored.
- * @param {Function} f The function to call for every child component; should
- *    take 2 arguments (the child and its index).
- * @param {Object=} opt_obj Used as the 'this' object in f when called.
+ * @param {function(this:T,?,number):?} f The function to call for every
+ * child component; should take 2 arguments (the child and its index).
+ * @param {T=} opt_obj Used as the 'this' object in f when called.
+ * @template T
  */
 goog.ui.Component.prototype.forEachChild = function(f, opt_obj) {
   if (this.children_) {
@@ -1158,14 +1284,17 @@ goog.ui.Component.prototype.removeChildAt = function(index, opt_unrender) {
 
 
 /**
- * Removes every child component attached to this one.
+ * Removes every child component attached to this one and returns them.
  *
  * @see goog.ui.Component#removeChild
  * @param {boolean=} opt_unrender If true, calls {@link #exitDocument} on the
  *    removed child components, and detaches their DOM from the document.
+ * @return {!Array.<goog.ui.Component>} The removed components if any.
  */
 goog.ui.Component.prototype.removeChildren = function(opt_unrender) {
+  var removedChildren = [];
   while (this.hasChildren()) {
-    this.removeChildAt(0, opt_unrender);
+    removedChildren.push(this.removeChildAt(0, opt_unrender));
   }
+  return removedChildren;
 };

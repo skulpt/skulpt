@@ -20,14 +20,19 @@
 
 goog.provide('goog.editor.Link');
 
+goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.Range');
 goog.require('goog.editor.BrowserFeature');
+goog.require('goog.editor.Command');
 goog.require('goog.editor.node');
 goog.require('goog.editor.range');
+goog.require('goog.string');
 goog.require('goog.string.Unicode');
 goog.require('goog.uri.utils');
+goog.require('goog.uri.utils.ComponentIndex');
+
 
 
 /**
@@ -50,6 +55,15 @@ goog.editor.Link = function(anchor, isNew) {
    * @private
    */
   this.isNew_ = isNew;
+
+
+  /**
+   * Any extra anchors created by the browser from a selection in the same
+   * operation that created the primary link
+   * @type {!Array.<HTMLAnchorElement>}
+   * @private
+   */
+  this.extraAnchors_ = [];
 };
 
 
@@ -58,6 +72,15 @@ goog.editor.Link = function(anchor, isNew) {
  */
 goog.editor.Link.prototype.getAnchor = function() {
   return this.anchor_;
+};
+
+
+/**
+ * @return {!Array.<HTMLAnchorElement>} The extra anchor elements, if any,
+ *     created by the browser from a selection.
+ */
+goog.editor.Link.prototype.getExtraAnchors = function() {
+  return this.extraAnchors_;
 };
 
 
@@ -96,6 +119,9 @@ goog.editor.Link.prototype.initializeUrl = function(url) {
 goog.editor.Link.prototype.removeLink = function() {
   goog.dom.flattenElement(this.anchor_);
   this.anchor_ = null;
+  while (this.extraAnchors_.length) {
+    goog.dom.flattenElement(/** @type {Element} */(this.extraAnchors_.pop()));
+  }
 };
 
 
@@ -175,18 +201,71 @@ goog.editor.Link.prototype.placeCursorRightOf = function() {
 
 
 /**
+ * Updates the cursor position and link bubble for this link.
+ * @param {goog.editor.Field} field The field in which the link is created.
+ * @param {string} url The link url.
+ * @private
+ */
+goog.editor.Link.prototype.updateLinkDisplay_ = function(field, url) {
+  this.initializeUrl(url);
+  this.placeCursorRightOf();
+  field.execCommand(goog.editor.Command.UPDATE_LINK_BUBBLE);
+};
+
+
+/**
+ * @return {string?} The modified string for the link if the link
+ *     text appears to be a valid link. Returns null if this is not
+ *     a valid link address.
+ */
+goog.editor.Link.prototype.getValidLinkFromText = function() {
+  var text = this.getCurrentText();
+  if (goog.editor.Link.isLikelyUrl(text)) {
+    if (text.search(/:/) < 0) {
+      return 'http://' + goog.string.trimLeft(text);
+    }
+    return text;
+  } else if (goog.editor.Link.isLikelyEmailAddress(text)) {
+    return 'mailto:' + text;
+  }
+  return null;
+};
+
+
+/**
+ * After link creation, finish creating the link depending on the type
+ * of link being created.
+ * @param {goog.editor.Field} field The field where this link is being created.
+ */
+goog.editor.Link.prototype.finishLinkCreation = function(field) {
+  var linkFromText = this.getValidLinkFromText();
+  if (linkFromText) {
+    this.updateLinkDisplay_(field, linkFromText);
+  } else {
+    field.execCommand(goog.editor.Command.MODAL_LINK_EDITOR, this);
+  }
+};
+
+
+/**
  * Initialize a new link.
  * @param {HTMLAnchorElement} anchor The anchor element.
  * @param {string} url The initial URL.
  * @param {string=} opt_target The target.
+ * @param {Array.<HTMLAnchorElement>=} opt_extraAnchors Extra anchors created
+ *     by the browser when parsing a selection.
  * @return {goog.editor.Link} The link.
  */
-goog.editor.Link.createNewLink = function(anchor, url, opt_target) {
+goog.editor.Link.createNewLink = function(anchor, url, opt_target,
+    opt_extraAnchors) {
   var link = new goog.editor.Link(anchor, true);
   link.initializeUrl(url);
 
   if (opt_target) {
     anchor.target = opt_target;
+  }
+  if (opt_extraAnchors) {
+    link.extraAnchors_ = opt_extraAnchors;
   }
 
   return link;
@@ -228,9 +307,11 @@ goog.editor.Link.isLikelyUrl = function(str) {
     return true;
   }
 
-  // Require domains to contain a '.', unless the domain is fully qualified.
+  // Require domains to contain a '.', unless the domain is fully qualified and
+  // forbids domains from containing invalid characters.
   var domain = parts[goog.uri.utils.ComponentIndex.DOMAIN];
-  if (!domain || (addedScheme && domain.indexOf('.') == -1)) {
+  if (!domain || (addedScheme && domain.indexOf('.') == -1) ||
+      (/[^\w\d\-\u0100-\uffff.%]/.test(domain))) {
     return false;
   }
 

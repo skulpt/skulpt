@@ -15,16 +15,17 @@
 /**
  * @fileoverview Emoji Palette renderer implementation.
  *
-*
  */
 
 goog.provide('goog.ui.emoji.EmojiPaletteRenderer');
 
-goog.require('goog.dom');
-goog.require('goog.dom.a11y');
+goog.require('goog.a11y.aria');
+goog.require('goog.dom.NodeType');
+goog.require('goog.dom.classes');
+goog.require('goog.style');
 goog.require('goog.ui.PaletteRenderer');
 goog.require('goog.ui.emoji.Emoji');
-goog.require('goog.ui.emoji.SpriteInfo');
+
 
 
 /**
@@ -52,7 +53,6 @@ goog.inherits(goog.ui.emoji.EmojiPaletteRenderer, goog.ui.PaletteRenderer);
 goog.ui.emoji.EmojiPaletteRenderer.cellId_ = 0;
 
 
-
 /**
  * Url of the img that should be used for cells in the emoji palette that are
  * not filled with emoji, i.e., after all the emoji have already been placed
@@ -64,7 +64,7 @@ goog.ui.emoji.EmojiPaletteRenderer.cellId_ = 0;
 goog.ui.emoji.EmojiPaletteRenderer.prototype.defaultImgUrl_ = null;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.emoji.EmojiPaletteRenderer.getCssClass = function() {
   return goog.getCssName('goog-ui-emojipalette');
 };
@@ -115,7 +115,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.updateAnimatedPaletteItem =
   // now being updated. See createPaletteItem for the structure of the palette
   // items we're modifying.
 
-  var inner = (/** @type {Element} */ item.firstChild);
+  var inner = /** @type {Element} */ (item.firstChild);
 
   // The first case is a palette item with a CSS class representing the sprite,
   // and an animated emoji.
@@ -162,7 +162,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.buildElementFromSpriteMetadata =
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.createCell = function(node, dom) {
   // Create a cell with  the default img if we're out of items, in order to
   // prevent jitter in the table. If there's no default img url, just create an
@@ -181,7 +181,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.createCell = function(node, dom) {
     'id': this.getCssClass() + '-cell-' +
         goog.ui.emoji.EmojiPaletteRenderer.cellId_++
   }, node);
-  goog.dom.a11y.setRole(cell, 'gridcell');
+  goog.a11y.aria.setRole(cell, 'gridcell');
   return cell;
 };
 
@@ -192,6 +192,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.createCell = function(node, dom) {
  * @param {goog.ui.Palette} palette Palette in which to look for the item.
  * @param {Node} node Node to look for.
  * @return {Node} The corresponding palette item (null if not found).
+ * @override
  */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.getContainingItem =
     function(palette, node) {

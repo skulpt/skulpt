@@ -3,15 +3,17 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.structs.Pool</title>
 <script src="../base.js"></script>
 <script>
   goog.require('goog.structs');
   goog.require('goog.structs.Pool');
+  goog.require('goog.testing.MockClock');
   goog.require('goog.testing.jsunit');
 </script>
 </head>
@@ -233,13 +235,9 @@ function testInvalidMinMax1() {
   assertEquals(0, p.getInUseCount());
   assertEquals(0, p.getFreeCount());
 
-  try {
+  assertThrows(function() {
     p.setMinimumCount(11);
-  } catch(e) {
-    assertTrue('Excption caught', true);
-    return;
-  }
-  assertTrue('Exception should of been caught', false);
+  });
 }
 
 
@@ -250,25 +248,41 @@ function testInvalidMinMax2() {
   assertEquals(0, p.getInUseCount());
   assertEquals(5, p.getFreeCount());
 
-  try {
+  assertThrows(function() {
     p.setMaximumCount(4);
-  } catch(e) {
-    assertTrue('Excption caught', true);
-    return;
-  }
-  assertTrue('Exception should of been caught', false);
+  });
 }
 
 
 function testInvalidMinMax3() {
-  try {
-    var p = new goog.structs.Pool(10, 1);
-    info('pool made');
-  } catch(e) {
-    assertTrue('Excption caught', true);
-    return;
-  }
-  assertTrue('Exception should of been caught', false);
+  assertThrows(function() {
+    new goog.structs.Pool(10, 1);
+  });
+}
+
+
+function testRateLimiting() {
+  var clock = new goog.testing.MockClock();
+  clock.install();
+
+  var p = new goog.structs.Pool(0, 3);
+  p.setDelay(100);
+
+  assertNotUndefined(p.getObject());
+  assertUndefined(p.getObject());
+
+  clock.tick(100);
+  assertNotUndefined(p.getObject());
+  assertUndefined(p.getObject());
+
+  clock.tick(100);
+  assertNotUndefined(p.getObject());
+  assertUndefined(p.getObject());
+
+  clock.tick(100);
+  assertUndefined(p.getObject());
+
+  goog.dispose(clock);
 }
 
 

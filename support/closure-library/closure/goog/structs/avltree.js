@@ -15,12 +15,11 @@
 /**
  * @fileoverview Datastructure: AvlTree.
  *
-*
  *
  * This file provides the implementation of an AVL-Tree datastructure. The tree
  * maintains a set of unique values in a sorted order. The values can be
  * accessed efficiently in their sorted order since the tree enforces an O(logn)
- * maximum height.
+ * maximum height. See http://en.wikipedia.org/wiki/Avl_tree for more detail.
  *
  * The big-O notation for all operations are below:
  * <pre>
@@ -44,7 +43,8 @@
 goog.provide('goog.structs.AvlTree');
 goog.provide('goog.structs.AvlTree.Node');
 
-goog.require('goog.structs');
+goog.require('goog.structs.Collection');
+
 
 
 /**
@@ -54,6 +54,7 @@ goog.require('goog.structs');
  *
  * @param {Function=} opt_comparator Function used to order the tree's nodes.
  * @constructor
+ * @implements {goog.structs.Collection}
  */
 goog.structs.AvlTree = function(opt_comparator) {
   this.comparator_ = opt_comparator ||
@@ -123,21 +124,13 @@ goog.structs.AvlTree.prototype.maxNode_ = null;
 
 
 /**
- * Keeps track of the number of nodes in the tree.
- *
- * @type {number}
- * @private
- */
-goog.structs.AvlTree.prototype.count_ = 0;
-
-
-/**
  * Inserts a node into the tree with the specified value if the tree does
  * not already contain a node with the specified value. If the value is
  * inserted, the tree is balanced to enforce the AVL-Tree height property.
  *
  * @param {*} value Value to insert into the tree.
  * @return {boolean} Whether value was inserted into the tree.
+ * @override
  */
 goog.structs.AvlTree.prototype.add = function(value) {
   // If the tree is empty, create a root node with the specified value
@@ -145,12 +138,11 @@ goog.structs.AvlTree.prototype.add = function(value) {
     this.root_ = new goog.structs.AvlTree.Node(value);
     this.minNode_ = this.root_;
     this.maxNode_ = this.root_;
-    this.count_ = 1;
     return true;
   }
 
-  // Assume a node is not added and change status when one is
-  var retStatus = false;
+  // This will be set to the new node if a new node is added.
+  var newNode = null;
 
   // Depth traverse the tree and insert the value if we reach a null node
   this.traverse_(function(node) {
@@ -158,36 +150,38 @@ goog.structs.AvlTree.prototype.add = function(value) {
     if (this.comparator_(node.value, value) > 0) {
       retNode = node.left;
       if (node.left == null) {
-        var newNode = new goog.structs.AvlTree.Node(value, node);
+        newNode = new goog.structs.AvlTree.Node(value, node);
         node.left = newNode;
         if (node == this.minNode_) {
           this.minNode_ = newNode;
         }
-        retStatus = true; // Value was added to tree
-        this.balance_(node); // Maintain the AVL-tree balance
       }
-    } else if (this.comparator_(node.value, value) < 0){
+    } else if (this.comparator_(node.value, value) < 0) {
       retNode = node.right;
       if (node.right == null) {
-        var newNode = new goog.structs.AvlTree.Node(value, node);
+        newNode = new goog.structs.AvlTree.Node(value, node);
         node.right = newNode;
         if (node == this.maxNode_) {
           this.maxNode_ = newNode;
         }
-        retStatus = true; // Value was added to tree
-        this.balance_(node); // Maintain the AVL-tree balance
       }
     }
     return retNode; // If null, we'll stop traversing the tree
   });
 
-  // If a node was added, increment count
-  if (retStatus) {
-    this.count_ += 1;
+  // If a node was added, increment counts and balance tree.
+  if (newNode) {
+    this.traverse_(
+        function(node) {
+          node.count++;
+          return node.parent;
+        },
+        newNode.parent);
+    this.balance_(newNode.parent); // Maintain the AVL-tree balance
   }
 
   // Return true if a node was added, false otherwise
-  return retStatus;
+  return !!newNode;
 };
 
 
@@ -199,6 +193,7 @@ goog.structs.AvlTree.prototype.add = function(value) {
  * @param {*} value Value to find and remove from the tree.
  * @return {*} The value of the removed node or null if the value was not in
  *     the tree.
+ * @override
  */
 goog.structs.AvlTree.prototype.remove = function(value) {
   // Assume the value is not removed and set the value when it is removed
@@ -209,7 +204,7 @@ goog.structs.AvlTree.prototype.remove = function(value) {
     var retNode = null;
     if (this.comparator_(node.value, value) > 0) {
       retNode = node.left;
-    } else if (this.comparator_(node.value, value) < 0){
+    } else if (this.comparator_(node.value, value) < 0) {
       retNode = node.right;
     } else {
       retValue = node.value;
@@ -217,11 +212,6 @@ goog.structs.AvlTree.prototype.remove = function(value) {
     }
     return retNode; // If null, we'll stop traversing the tree
   });
-
-  // If a node was removed, decrement count
-  if (retValue) {
-    this.count_ -= 1;
-  }
 
   // Return the value that was removed, null if the value was not in the tree
   return retValue;
@@ -233,9 +223,8 @@ goog.structs.AvlTree.prototype.remove = function(value) {
  */
 goog.structs.AvlTree.prototype.clear = function() {
   this.root_ = null;
-  this.minNode_ = null
+  this.minNode_ = null;
   this.maxNode_ = null;
-  this.count_ = 0;
 };
 
 
@@ -245,6 +234,7 @@ goog.structs.AvlTree.prototype.clear = function() {
  *
  * @param {*} value Value to find in the tree.
  * @return {boolean} Whether the tree contains a node with the specified value.
+ * @override
  */
 goog.structs.AvlTree.prototype.contains = function(value) {
   // Assume the value is not in the tree and set this value if it is found
@@ -255,7 +245,7 @@ goog.structs.AvlTree.prototype.contains = function(value) {
     var retNode = null;
     if (this.comparator_(node.value, value) > 0) {
       retNode = node.left;
-    } else if (this.comparator_(node.value, value) < 0){
+    } else if (this.comparator_(node.value, value) < 0) {
       retNode = node.right;
     } else {
       isContained = true;
@@ -272,9 +262,24 @@ goog.structs.AvlTree.prototype.contains = function(value) {
  * Returns the number of values stored in the tree.
  *
  * @return {number} The number of values stored in the tree.
+ * @override
  */
 goog.structs.AvlTree.prototype.getCount = function() {
-  return this.count_;
+  return this.root_ ? this.root_.count : 0;
+};
+
+
+/**
+ * Returns a k-th smallest value, based on the comparator, where 0 <= k <
+ * this.getCount().
+ * @param {number} k The number k.
+ * @return {*} The k-th smallest value.
+ */
+goog.structs.AvlTree.prototype.getKthValue = function(k) {
+  if (k < 0 || k >= this.getCount()) {
+    return null;
+  }
+  return this.getKthNode_(k).value;
 };
 
 
@@ -346,18 +351,18 @@ goog.structs.AvlTree.prototype.inOrderTraverse =
   // Depth traverse the tree to find node to begin in-order traversal from
   var startNode;
   if (opt_startValue) {
-      this.traverse_(function(node) {
-        var retNode = null;
-        if (this.comparator_(node.value, opt_startValue) > 0) {
-          retNode = node.left;
-          startNode = node;
-        } else if (this.comparator_(node.value, opt_startValue) < 0){
-          retNode = node.right;
-        } else {
-          startNode = node;
-        }
-        return retNode; // If null, we'll stop traversing the tree
-      });
+    this.traverse_(function(node) {
+      var retNode = null;
+      if (this.comparator_(node.value, opt_startValue) > 0) {
+        retNode = node.left;
+        startNode = node;
+      } else if (this.comparator_(node.value, opt_startValue) < 0) {
+        retNode = node.right;
+      } else {
+        startNode = node;
+      }
+      return retNode; // If null, we'll stop traversing the tree
+    });
   } else {
     startNode = this.getMinNode_();
   }
@@ -403,18 +408,18 @@ goog.structs.AvlTree.prototype.reverseOrderTraverse =
   // Depth traverse the tree to find node to begin reverse-order traversal from
   var startNode;
   if (opt_startValue) {
-      this.traverse_(goog.bind(function(node) {
-        var retNode = null;
-        if (this.comparator_(node.value, opt_startValue) > 0) {
-          retNode = node.left;
-        } else if (this.comparator_(node.value, opt_startValue) < 0){
-          retNode = node.right;
-          startNode = node;
-        } else {
-          startNode = node;
-        }
-        return retNode; // If null, we'll stop traversing the tree
-      }, this));
+    this.traverse_(goog.bind(function(node) {
+      var retNode = null;
+      if (this.comparator_(node.value, opt_startValue) > 0) {
+        retNode = node.left;
+      } else if (this.comparator_(node.value, opt_startValue) < 0) {
+        retNode = node.right;
+        startNode = node;
+      } else {
+        startNode = node;
+      }
+      return retNode; // If null, we'll stop traversing the tree
+    }, this));
   } else {
     startNode = this.getMaxNode_();
   }
@@ -537,6 +542,10 @@ goog.structs.AvlTree.prototype.leftRotate_ = function(node) {
   if (node.right != null) node.right.parent = node;
   temp.left = node;
   node.parent = temp;
+
+  // Update counts.
+  temp.count = node.count;
+  node.count -= (temp.right ? temp.right.count : 0) + 1;
 };
 
 
@@ -551,7 +560,7 @@ goog.structs.AvlTree.prototype.rightRotate_ = function(node) {
   if (node.isLeftChild()) {
     node.parent.left = node.left;
     node.left.parent = node.parent;
-  } else if (node.isRightChild()){
+  } else if (node.isRightChild()) {
     node.parent.right = node.left;
     node.left.parent = node.parent;
   } else {
@@ -565,6 +574,10 @@ goog.structs.AvlTree.prototype.rightRotate_ = function(node) {
   if (node.left != null) node.left.parent = node;
   temp.right = node;
   node.parent = temp;
+
+  // Update counts.
+  temp.count = node.count;
+  node.count -= (temp.left ? temp.left.count : 0) + 1;
 };
 
 
@@ -583,6 +596,13 @@ goog.structs.AvlTree.prototype.removeNode_ = function(node) {
     var r;        // Node to replace the node being removed
     if (node.left != null) {
       r = this.getMaxNode_(node.left);
+
+      // Update counts.
+      this.traverse_(function(node) {
+        node.count--;
+        return node.parent;
+      }, r);
+
       if (r != node.left) {
         r.parent.right = r.left;
         if (r.left) r.left.parent = r.parent;
@@ -594,8 +614,16 @@ goog.structs.AvlTree.prototype.removeNode_ = function(node) {
       r.right = node.right;
       if (r.right) r.right.parent = r;
       if (node == this.maxNode_) this.maxNode_ = r;
+      r.count = node.count;
     } else {
       r = this.getMinNode_(node.right);
+
+      // Update counts.
+      this.traverse_(function(node) {
+        node.count--;
+        return node.parent;
+      }, r);
+
       if (r != node.right) {
         r.parent.left = r.right;
         if (r.right) r.right.parent = r.parent;
@@ -607,6 +635,7 @@ goog.structs.AvlTree.prototype.removeNode_ = function(node) {
       r.left = node.left;
       if (r.left) r.left.parent = r;
       if (node == this.minNode_) this.minNode_ = r;
+      r.count = node.count;
     }
 
     // Update the parent of the node being removed to point to its replace
@@ -621,6 +650,12 @@ goog.structs.AvlTree.prototype.removeNode_ = function(node) {
     // Balance the tree
     this.balance_(b ? b : r);
   } else {
+    // Update counts.
+    this.traverse_(function(node) {
+      node.count--;
+      return node.parent;
+    }, node.parent);
+
     // If the node is a leaf, remove it and balance starting from its parent
     if (node.isLeftChild()) {
       this.special = 1;
@@ -634,6 +669,30 @@ goog.structs.AvlTree.prototype.removeNode_ = function(node) {
     } else {
       this.clear();
     }
+  }
+};
+
+
+/**
+ * Returns the node in the tree that has k nodes before it in an in-order
+ * traversal, optionally rooted at {@code opt_rootNode}.
+ *
+ * @param {number} k The number of nodes before the node to be returned in an
+ *     in-order traversal, where 0 <= k < root.count.
+ * @param {goog.structs.AvlTree.Node=} opt_rootNode Optional root node.
+ * @return {goog.structs.AvlTree.Node} The node at the specified index.
+ * @private
+ */
+goog.structs.AvlTree.prototype.getKthNode_ = function(k, opt_rootNode) {
+  var root = opt_rootNode || this.root_;
+  var numNodesInLeftSubtree = root.left ? root.left.count : 0;
+
+  if (k < numNodesInLeftSubtree) {
+    return this.getKthNode_(k, root.left);
+  } else if (k == numNodesInLeftSubtree) {
+    return root;
+  } else {
+    return this.getKthNode_(k - numNodesInLeftSubtree - 1, root.right);
   }
 };
 
@@ -684,7 +743,7 @@ goog.structs.AvlTree.prototype.getMaxNode_ = function(opt_rootNode) {
   this.traverse_(function(node) {
     var retNode = null;
     if (node.right) {
-      maxNode = node.right
+      maxNode = node.right;
       retNode = node.right;
     }
     return retNode; // If null, we'll stop traversing the tree
@@ -692,7 +751,6 @@ goog.structs.AvlTree.prototype.getMaxNode_ = function(opt_rootNode) {
 
   return maxNode;
 };
-
 
 
 
@@ -719,6 +777,13 @@ goog.structs.AvlTree.Node = function(value, opt_parent) {
    * @type {goog.structs.AvlTree.Node}
    */
   this.parent = opt_parent ? opt_parent : null;
+
+  /**
+   * The number of nodes in the subtree rooted at this node.
+   *
+   * @type {number}
+   */
+  this.count = 1;
 };
 
 

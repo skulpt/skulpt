@@ -15,8 +15,6 @@
 /**
  * @fileoverview  Topic-based publish/subscribe channel implementation.
  *
-*
-*
  */
 
 goog.provide('goog.pubsub.PubSub');
@@ -319,7 +317,7 @@ goog.pubsub.PubSub.prototype.getCount = function(opt_topic) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.pubsub.PubSub.prototype.disposeInternal = function() {
   goog.pubsub.PubSub.superClass_.disposeInternal.call(this);
   delete this.subscriptions_;

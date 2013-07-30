@@ -3,7 +3,7 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
@@ -11,6 +11,7 @@ See the COPYING file for details.
   @author nicksantos@google.com (Nick Santos)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.editor.range</title>
 <script src="../base.js"></script>
 <script>
@@ -19,6 +20,7 @@ See the COPYING file for details.
   goog.require('goog.editor.range');
   goog.require('goog.testing.dom');
   goog.require('goog.testing.jsunit');
+  goog.require('goog.userAgent');
 </script>
 </head>
 <body>
@@ -244,7 +246,7 @@ function testSimpleDifferentContainersExpand() {
 function testSimpleDifferentContainersSmallExpand() {
   var div = $('parentNode');
   div.innerHTML = '<ol><li>1</li><li><b>bold</b><i>italic</i>' +
-      '<u>under</u<</li></ol>';
+      '<u>under</u></li></ol>';
   // Select all of "bold" and "italic", but we can't expand to the
   // entire li since we didn't select "under".
   var li = div.firstChild.childNodes[1];
@@ -369,6 +371,93 @@ function testPlaceCursorNextTo_rightOfLineBreak() {
   var node = children[1];
   var range = goog.editor.range.placeCursorNextTo(node, false);
   assertEquals(node.nextSibling, range.getStartNode());
+}
+
+function testPlaceCursorNextTo_leftOfHr() {
+  var div = $('parentNode');
+  div.innerHTML = '<hr />aaa';
+  var children = div.childNodes;
+  assertEquals(2, children.length);
+  var node = children[0];
+  var range = goog.editor.range.placeCursorNextTo(node, true);
+
+  assertEquals(div, range.getStartNode());
+  assertEquals(0, range.getStartOffset());
+}
+
+function testPlaceCursorNextTo_rightOfHr() {
+  var div = $('parentNode');
+  div.innerHTML = 'aaa<hr />';
+  var children = div.childNodes;
+  assertEquals(2, children.length);
+  var node = children[1];
+  var range = goog.editor.range.placeCursorNextTo(node, false);
+
+  assertEquals(div, range.getStartNode());
+  assertEquals(2, range.getStartOffset());
+}
+
+function testPlaceCursorNextTo_rightOfImg() {
+  var div = $('parentNode');
+  div.innerHTML =
+      'aaa<img src="https://www.google.com/images/srpr/logo3w.png">bbb';
+  var children = div.childNodes;
+  assertEquals(3, children.length);
+  var imgNode = children[1];
+  var range = goog.editor.range.placeCursorNextTo(imgNode, false);
+
+  assertEquals('range node should be the right sibling of img tag',
+      children[2], range.getStartNode());
+  assertEquals(0, range.getStartOffset());
+
+}
+
+function testPlaceCursorNextTo_rightOfImgAtEnd() {
+  var div = $('parentNode');
+  div.innerHTML =
+      'aaa<img src="https://www.google.com/images/srpr/logo3w.png">';
+  var children = div.childNodes;
+  assertEquals(2, children.length);
+  var imgNode = children[1];
+  var range = goog.editor.range.placeCursorNextTo(imgNode, false);
+
+  assertEquals('range node should be the parent of img',
+      div, range.getStartNode());
+  assertEquals('offset should be right after the img tag',
+      2, range.getStartOffset());
+
+}
+
+function testPlaceCursorNextTo_leftOfImg() {
+  var div = $('parentNode');
+  div.innerHTML =
+      '<img src="https://www.google.com/images/srpr/logo3w.png">xxx';
+  var children = div.childNodes;
+  assertEquals(2, children.length);
+  var imgNode = children[0];
+  var range = goog.editor.range.placeCursorNextTo(imgNode, true);
+
+  assertEquals('range node should be the parent of img',
+      div, range.getStartNode());
+  assertEquals('offset should point to the img tag',
+      0, range.getStartOffset());
+}
+
+function testPlaceCursorNextTo_rightOfFirstOfTwoImgTags() {
+  var div = $('parentNode');
+  div.innerHTML =
+      'aaa<img src="https://www.google.com/images/srpr/logo3w.png">' +
+      '<img src="https://www.google.com/images/srpr/logo3w.png">';
+  var children = div.childNodes;
+  assertEquals(3, children.length);
+  var imgNode = children[1];  // First of two IMG nodes
+  var range = goog.editor.range.placeCursorNextTo(imgNode, false);
+
+  assertEquals('range node should be the parent of img instead of ' +
+      'node with innerHTML=' + range.getStartNode().innerHTML,
+      div, range.getStartNode());
+  assertEquals('offset should be right after the img tag',
+      2, range.getStartOffset());
 }
 
 function testGetDeepEndPoint() {
@@ -619,12 +708,15 @@ function testSelectionPreservingNormalize1() {
   fragmentText(jkl.firstChild);
 
   goog.dom.Range.createFromNodes(def, 3, jkl, 4).select();
+  assertFalse(goog.dom.Range.createFromWindow(window).isReversed());
+
   var oldRangeDescription = goog.testing.dom.exposeRange(
       goog.dom.Range.createFromWindow(window));
   goog.editor.range.selectionPreservingNormalize(parent);
 
   // Check that everything was normalized ok.
   var range = goog.dom.Range.createFromWindow(window);
+  assertFalse(range.isReversed());
 
   assertEquals("def should have 1 child; range is " +
       goog.testing.dom.exposeRange(range) +
@@ -656,6 +748,39 @@ function testSelectionPreservingNormalize2() {
   assertEquals(1, def.childNodes.length);
   assertEquals(1, jkl.childNodes.length);
   assertFalse(goog.dom.Range.hasSelection(window));
+}
+
+function testSelectionPreservingNormalize3() {
+  if (goog.userAgent.IE) {
+    return;
+  }
+  var parent = $('normalizeTest-2');
+  var def = $('def-2');
+  var jkl = $('jkl-2');
+  fragmentText(def.firstChild);
+  fragmentText(jkl.firstChild);
+
+  goog.dom.Range.createFromNodes(jkl, 4, def, 3).select();
+  assertTrue(goog.dom.Range.createFromWindow(window).isReversed());
+
+  var oldRangeDescription = goog.testing.dom.exposeRange(
+      goog.dom.Range.createFromWindow(window));
+  goog.editor.range.selectionPreservingNormalize(parent);
+
+  // Check that everything was normalized ok.
+  var range = goog.dom.Range.createFromWindow(window);
+  assertTrue(range.isReversed());
+
+  assertEquals("def should have 1 child; range is " +
+      goog.testing.dom.exposeRange(range) +
+      ", range was " + oldRangeDescription,
+      1, def.childNodes.length);
+  assertEquals("jkl should have 1 child; range is " +
+      goog.testing.dom.exposeRange(range) +
+      ", range was " + oldRangeDescription,
+      1, jkl.childNodes.length);
+  goog.testing.dom.assertRangeEquals(def.firstChild, 1, jkl.firstChild, 2,
+      range);
 }
 
 function testSelectionPreservingNormalizeAfterPlaceCursorNextTo() {
@@ -725,7 +850,7 @@ function testSelectNodeStartSimple() {
   // of the text node, as you'd expect, but in pre-530 Webkit, it has been
   // normalized to the visible position of P:0.
   if (goog.userAgent.GECKO || goog.userAgent.IE ||
-      (goog.userAgent.WEBKIT && goog.userAgent.isVersion('530'))) {
+      (goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('530'))) {
     goog.testing.dom.assertRangeEquals(div.firstChild.firstChild, 0,
         div.firstChild.firstChild, 0, range);
   } else {
@@ -833,8 +958,8 @@ function testNormalizeNode() {
   assertEquals(5, div.childNodes.length);
   assertEquals(2, div.firstChild.childNodes.length);
   goog.editor.range.normalizeNode(div);
-  if (goog.userAgent.GECKO && !goog.userAgent.isVersion(1.9) ||
-      goog.userAgent.WEBKIT && !goog.userAgent.isVersion(526)) {
+  if (goog.userAgent.GECKO && !goog.userAgent.isVersionOrHigher(1.9) ||
+      goog.userAgent.WEBKIT && !goog.userAgent.isVersionOrHigher(526)) {
     // Old Gecko and Webkit versions don't delete the empty node.
     assertEquals(4, div.childNodes.length);
   } else {

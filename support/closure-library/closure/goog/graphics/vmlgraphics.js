@@ -15,8 +15,8 @@
 
 /**
  * @fileoverview VmlGraphics sub class that uses VML to draw the graphics.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 
@@ -24,21 +24,24 @@ goog.provide('goog.graphics.VmlGraphics');
 
 
 goog.require('goog.array');
-goog.require('goog.dom');
+goog.require('goog.events');
 goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventType');
 goog.require('goog.graphics.AbstractGraphics');
-goog.require('goog.graphics.Font');
 goog.require('goog.graphics.LinearGradient');
+goog.require('goog.graphics.Path');
 goog.require('goog.graphics.SolidFill');
-goog.require('goog.graphics.Stroke');
 goog.require('goog.graphics.VmlEllipseElement');
 goog.require('goog.graphics.VmlGroupElement');
 goog.require('goog.graphics.VmlImageElement');
 goog.require('goog.graphics.VmlPathElement');
 goog.require('goog.graphics.VmlRectElement');
 goog.require('goog.graphics.VmlTextElement');
+goog.require('goog.math');
 goog.require('goog.math.Size');
 goog.require('goog.string');
+goog.require('goog.style');
+
 
 
 /**
@@ -55,6 +58,9 @@ goog.require('goog.string');
  *     document we want to render in.
  * @constructor
  * @extends {goog.graphics.AbstractGraphics}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.VmlGraphics = function(width, height,
                                      opt_coordWidth, opt_coordHeight,
@@ -65,6 +71,7 @@ goog.graphics.VmlGraphics = function(width, height,
   this.handler_ = new goog.events.EventHandler(this);
 };
 goog.inherits(goog.graphics.VmlGraphics, goog.graphics.AbstractGraphics);
+
 
 /**
  * The prefix to use for VML elements
@@ -117,6 +124,7 @@ goog.graphics.VmlGraphics.toCssSize = function(size) {
   return goog.isString(size) && goog.string.endsWith(size, '%') ?
          size : parseFloat(size.toString()) + 'px';
 };
+
 
 /**
  * Multiplies positioning coordinates by COORD_MULTIPLIER to allow sub-pixel
@@ -172,7 +180,7 @@ goog.graphics.VmlGraphics.toSizeCoord = function(number) {
  * This function is internal for the VML supporting classes, and
  * should not be used externally.
  *
- * @param {number} number A size in pixels.
+ * @param {number|string} number A size in pixels.
  * @return {string} The size with suffix 'px'.
  */
 goog.graphics.VmlGraphics.toSizePx = function(number) {
@@ -247,7 +255,7 @@ goog.graphics.VmlGraphics.prototype.updateGraphics_ = function() {
  * Appends an element.
  *
  * @param {goog.graphics.Element} element The element wrapper.
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  * @private
  */
@@ -262,12 +270,13 @@ goog.graphics.VmlGraphics.prototype.append_ = function(element, opt_group) {
  * Sets the fill for the given element.
  * @param {goog.graphics.StrokeAndFillElement} element The element wrapper.
  * @param {goog.graphics.Fill?} fill The fill object.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.setElementFill = function(element, fill) {
   var vmlElement = element.getElement();
   this.removeFill(vmlElement);
   if (fill instanceof goog.graphics.SolidFill) {
-    // NOTE(user): VML does not understand 'transparent' so hard code support
+    // NOTE(arv): VML does not understand 'transparent' so hard code support
     // for it.
     if (fill.getColor() == 'transparent') {
       vmlElement.filled = false;
@@ -288,6 +297,12 @@ goog.graphics.VmlGraphics.prototype.setElementFill = function(element, fill) {
     var gradient = this.createVmlElement('fill');
     gradient.color = fill.getColor1();
     gradient.color2 = fill.getColor2();
+    if (goog.isNumber(fill.getOpacity1())) {
+      gradient.opacity = fill.getOpacity1();
+    }
+    if (goog.isNumber(fill.getOpacity2())) {
+      gradient.opacity2 = fill.getOpacity2();
+    }
     var angle = goog.math.angle(fill.getX1(), fill.getY1(),
         fill.getX2(), fill.getY2());
     // Our angles start from 0 to the right, and grow clockwise.
@@ -307,6 +322,7 @@ goog.graphics.VmlGraphics.prototype.setElementFill = function(element, fill) {
  * Sets the stroke for the given element.
  * @param {goog.graphics.StrokeAndFillElement} element The element wrapper.
  * @param {goog.graphics.Stroke?} stroke The stroke object.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.setElementStroke = function(element,
     stroke) {
@@ -350,6 +366,7 @@ goog.graphics.VmlGraphics.prototype.setElementStroke = function(element,
  * @param {number} angle The angle of the rotation transform.
  * @param {number} centerX The horizontal center of the rotation transform.
  * @param {number} centerY The vertical center of the rotation transform.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.setElementTransform = function(element, x,
     y, angle, centerX, centerY) {
@@ -440,6 +457,7 @@ try {
 
 /**
  * Creates the DOM representation of the graphics area.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.createDom = function() {
   var doc = this.dom_.getDocument();
@@ -468,8 +486,8 @@ goog.graphics.VmlGraphics.prototype.createDom = function() {
   var pixelHeight = this.height;
   var divElement = this.dom_.createDom('div', {
     'style': 'overflow:hidden;position:relative;width:' +
-             goog.graphics.VmlGraphics.toCssSize(pixelWidth) + ';height:' +
-             goog.graphics.VmlGraphics.toCssSize(pixelHeight)
+        goog.graphics.VmlGraphics.toCssSize(pixelWidth) + ';height:' +
+        goog.graphics.VmlGraphics.toCssSize(pixelHeight)
   });
 
   this.setElementInternal(divElement);
@@ -552,6 +570,7 @@ goog.graphics.VmlGraphics.prototype.handlePropertyChange_ = function(e) {
  * Changes the coordinate system position.
  * @param {number} left The coordinate system left bound.
  * @param {number} top The coordinate system top bound.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.setCoordOrigin = function(left, top) {
   this.coordLeft = left;
@@ -567,6 +586,7 @@ goog.graphics.VmlGraphics.prototype.setCoordOrigin = function(left, top) {
  * Changes the coordinate size.
  * @param {number} coordWidth The coordinate width.
  * @param {number} coordHeight The coordinate height.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.setCoordSize = function(coordWidth,
                                                             coordHeight) {
@@ -582,15 +602,17 @@ goog.graphics.VmlGraphics.prototype.setCoordSize = function(coordWidth,
  * Change the size of the canvas.
  * @param {number} pixelWidth The width in pixels.
  * @param {number} pixelHeight The height in pixels.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.setSize = function(pixelWidth,
     pixelHeight) {
-  // TODO(user): Implement
+  goog.style.setSize(this.getElement(), pixelWidth, pixelHeight);
 };
 
 
 /**
  * @return {goog.math.Size} Returns the number of pixels spanned by the surface.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.getPixelSize = function() {
   var el = this.getElement();
@@ -602,6 +624,7 @@ goog.graphics.VmlGraphics.prototype.getPixelSize = function() {
 
 /**
  * Remove all drawing elements from the graphics.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.clear = function() {
   this.canvasElement.clear();
@@ -618,10 +641,11 @@ goog.graphics.VmlGraphics.prototype.clear = function() {
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.EllipseElement} The newly created element.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.drawEllipse = function(cx, cy, rx, ry,
     stroke, fill, opt_group) {
@@ -645,10 +669,11 @@ goog.graphics.VmlGraphics.prototype.drawEllipse = function(cx, cy, rx, ry,
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.RectElement} The newly created element.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.drawRect = function(x, y, width, height,
     stroke, fill, opt_group) {
@@ -668,7 +693,7 @@ goog.graphics.VmlGraphics.prototype.drawRect = function(x, y, width, height,
  * @param {number} width Width of image.
  * @param {number} height Height of image.
  * @param {string} src Source of the image.
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.ImageElement} The newly created element.
@@ -696,10 +721,11 @@ goog.graphics.VmlGraphics.prototype.drawImage = function(x, y, width, height,
  * @param {goog.graphics.Font} font Font describing the font properties.
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.TextElement} The newly created element.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.drawTextOnLine = function(
     text, x1, y1, x2, y2, align, font, stroke, fill, opt_group) {
@@ -740,13 +766,14 @@ goog.graphics.VmlGraphics.prototype.drawTextOnLine = function(
 /**
  * Draw a path.
  *
- * @param {goog.graphics.Path} path The path object to draw.
+ * @param {!goog.graphics.Path} path The path object to draw.
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.PathElement} The newly created element.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.drawPath = function(path, stroke, fill,
     opt_group) {
@@ -766,6 +793,7 @@ goog.graphics.VmlGraphics.prototype.drawPath = function(path, stroke, fill,
  *
  * @param {goog.graphics.Path} path The logical path.
  * @return {string} The VML path representation.
+ * @suppress {deprecated} goog.graphics is deprecated.
  */
 goog.graphics.VmlGraphics.getVmlPath = function(path) {
   var list = [];
@@ -812,10 +840,11 @@ goog.graphics.VmlGraphics.getVmlPath = function(path) {
 /**
  * Create an empty group of drawing elements.
  *
- * @param {goog.graphics.VmlGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.GroupElement} The newly created group.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.createGroup = function(opt_group) {
   var element = this.createFullSizeElement_('group');
@@ -836,14 +865,15 @@ goog.graphics.VmlGraphics.prototype.createGroup = function(opt_group) {
  * @param {goog.graphics.Font} font The font object describing the font style.
  *
  * @return {number} The width in pixels of the text strings.
+ * @override
  */
 goog.graphics.VmlGraphics.prototype.getTextWidth = function(text, font) {
-  // TODO(user): Implement
+  // TODO(arv): Implement
   return 0;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.VmlGraphics.prototype.enterDocument = function() {
   goog.graphics.VmlGraphics.superClass_.enterDocument.call(this);
   this.handleContainerResize_();
@@ -854,6 +884,8 @@ goog.graphics.VmlGraphics.prototype.enterDocument = function() {
 /**
  * Disposes of the component by removing event handlers, detacing DOM nodes from
  * the document body, and removing references to them.
+ * @override
+ * @protected
  */
 goog.graphics.VmlGraphics.prototype.disposeInternal = function() {
   this.canvasElement = null;

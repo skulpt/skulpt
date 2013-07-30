@@ -17,7 +17,7 @@
  * plugin is intended to be an example of a very simple plugin for plugin
  * developers.
  *
-*
+ * @author gak@google.com (Gregory Kick)
  * @see helloworld.html
  */
 
@@ -40,7 +40,7 @@ goog.demos.editor.HelloWorld = function() {
 goog.inherits(goog.demos.editor.HelloWorld, goog.editor.Plugin);
 
 
-/** @inheritDoc */
+/** @override */
 goog.demos.editor.HelloWorld.prototype.getTrogClassId = function() {
   return 'HelloWorld';
 };
@@ -55,7 +55,7 @@ goog.demos.editor.HelloWorld.COMMAND = {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.demos.editor.HelloWorld.prototype.isSupportedCommand = function(
     command) {
   return command == goog.demos.editor.HelloWorld.COMMAND.HELLO_WORLD;
@@ -72,8 +72,8 @@ goog.demos.editor.HelloWorld.prototype.isSupportedCommand = function(
  */
 goog.demos.editor.HelloWorld.prototype.execCommandInternal = function(
     command) {
-  var domHelper = this.fieldObject.getEditableDomHelper();
-  var range = this.fieldObject.getRange();
+  var domHelper = this.getFieldObject().getEditableDomHelper();
+  var range = this.getFieldObject().getRange();
   range.removeContents();
   var newNode =
       domHelper.createDom(goog.dom.TagName.SPAN, null, 'Hello World!');

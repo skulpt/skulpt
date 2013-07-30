@@ -19,11 +19,11 @@
  * Implements a buffer with a maximum size. New entries override the oldest
  * entries when the maximum size has been reached.
  *
-*
  */
 
 
 goog.provide('goog.structs.CircularBuffer');
+
 
 
 /**
@@ -60,10 +60,14 @@ goog.structs.CircularBuffer.prototype.nextPtr_ = 0;
  * Adds an item to the buffer. May remove the oldest item if the buffer is at
  * max size.
  * @param {*} item The item to add.
+ * @return {*} The removed old item, if the buffer is at max size.
+ *     Return undefined, otherwise.
  */
 goog.structs.CircularBuffer.prototype.add = function(item) {
+  var previousItem = this.buff_[this.nextPtr_];
   this.buff_[this.nextPtr_] = item;
   this.nextPtr_ = (this.nextPtr_ + 1) % this.maxSize_;
+  return previousItem;
 };
 
 

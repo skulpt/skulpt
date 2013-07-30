@@ -3,7 +3,7 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
@@ -11,6 +11,7 @@ See the COPYING file for details.
   @author gboyer@google.com (Garrett Boyer)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.ComboBox</title>
 <style type='text/css'>
 .goog-menu {
@@ -21,9 +22,10 @@ See the COPYING file for details.
 <script>
   goog.require('goog.dom');
   goog.require('goog.dom.TagName');
-  goog.require('goog.dom.classes');
+  goog.require('goog.dom.classlist');
   goog.require('goog.events');
   goog.require('goog.events.KeyCodes');
+  goog.require('goog.testing.MockClock');
   goog.require('goog.testing.events');
   goog.require('goog.testing.jsunit');
   goog.require('goog.ui.ComboBox');
@@ -57,8 +59,8 @@ function setUp() {
   comboBox.setDefaultText('Select a color...');
   comboBox.addItem(new goog.ui.ComboBoxItem('Red'));
   comboBox.addItem(new goog.ui.ComboBoxItem('Maroon'));
-  comboBox.addItem(new goog.ui.ComboBoxItem('Gre&lt;en'));
-  comboBox.addItem(new goog.ui.ComboBoxItem('Blue', 'Blue&gt;Data'));
+  comboBox.addItem(new goog.ui.ComboBoxItem('Gre<en'));
+  comboBox.addItem(new goog.ui.ComboBoxItem('Blue'));
   comboBox.addItem(new goog.ui.ComboBoxItem('Royal Blue'));
   comboBox.addItem(new goog.ui.ComboBoxItem('Yellow'));
   comboBox.addItem(new goog.ui.ComboBoxItem('Magenta'));
@@ -66,13 +68,30 @@ function setUp() {
   comboBox.addItem(new goog.ui.ComboBoxItem('Grey'));
   comboBox.render(goog.dom.getElement('combo'));
 
-  input = comboBox.getElement().getElementsByTagName(
-      goog.dom.TagName.INPUT)[0];
+  input = comboBox.getInputElement();
 }
 
 function tearDown() {
   comboBox.dispose();
-  goog.events.removeAll();
+  goog.events.removeAllNativeListeners();
+}
+
+function testInputElementAttributes() {
+  var comboBox = new goog.ui.ComboBox();
+  comboBox.setFieldName('a_form_field');
+  comboBox.createDom();
+  var inputElement = comboBox.getInputElement();
+  assertEquals('text', inputElement.type);
+  assertEquals('a_form_field', inputElement.name);
+  assertEquals('off', inputElement.autocomplete);
+  comboBox.dispose();
+}
+
+function testSetDefaultText() {
+  assertEquals('Select a color...', comboBox.getDefaultText());
+  comboBox.setDefaultText('new default text...');
+  assertEquals('new default text...', comboBox.getDefaultText());
+  assertEquals('new default text...', comboBox.labelInput_.getLabel());
 }
 
 function testGetMenu() {
@@ -104,17 +123,18 @@ function testActionSelectsItem() {
   assertEquals('Gre<en', input.value);
 }
 
-function testActionSelectsItemWithData() {
-  comboBox.getMenu().getItemAt(3).dispatchEvent(
-      goog.ui.Component.EventType.ACTION);
-      assertEquals('Blue>Data', input.value);
+function testActionSelectsItemWithModel() {
+  var itemWithModel = new goog.ui.MenuItem('one', 1);
+  comboBox.addItem(itemWithModel);
+  itemWithModel.dispatchEvent(goog.ui.Component.EventType.ACTION);
+  assertEquals('one', comboBox.getValue());
 }
 
 function testRedisplayMenuAfterBackspace() {
   input.value = 'mx';
-  comboBox.onInputChange_();
+  comboBox.onInputEvent_();
   input.value = 'm';
-  comboBox.onInputChange_();
+  comboBox.onInputEvent_();
   assertEquals('Three items should be displayed',
       3, comboBox.getNumberOfVisibleItems_());
 }
@@ -137,7 +157,7 @@ function testExternallyCreatedMenu() {
 
 function testRecomputeVisibleCountAfterChangingItems() {
   input.value = 'Black';
-  comboBox.onInputChange_();
+  comboBox.onInputEvent_();
   assertEquals('No items should be displayed',
       0, comboBox.getNumberOfVisibleItems_());
   comboBox.addItem(new goog.ui.ComboBoxItem('Black'));
@@ -145,23 +165,23 @@ function testRecomputeVisibleCountAfterChangingItems() {
       1, comboBox.getNumberOfVisibleItems_());
 
   input.value = 'Red';
-  comboBox.onInputChange_();
+  comboBox.onInputEvent_();
   assertEquals('One item should be displayed',
       1, comboBox.getNumberOfVisibleItems_());
   comboBox.removeItemAt(0);  // Red
   assertEquals('No items should be displayed',
-      0, comboBox.getNumberOfVisibleItems_());  
+      0, comboBox.getNumberOfVisibleItems_());
 }
 
 function testSetEnabled() {
   // By default, everything should be enabled.
   assertFalse('Text input should initially not be disabled', input.disabled);
   assertFalse('Text input should initially not look disabled',
-      goog.dom.classes.has(input,
+      goog.dom.classlist.contains(input,
       goog.getCssName(goog.ui.LabelInput.prototype.LABEL_CLASS_NAME,
           'disabled')));
   assertFalse('Combo box should initially not look disabled',
-      goog.dom.classes.has(comboBox.getElement(),
+      goog.dom.classlist.contains(comboBox.getElement(),
       goog.getCssName('goog-combobox-disabled')));
   goog.testing.events.fireClickSequence(comboBox.getElement());
   assertTrue('Menu initially becomes visible after click',
@@ -174,11 +194,11 @@ function testSetEnabled() {
   assertTrue('Text input should be disabled after being disabled',
       input.disabled);
   assertTrue('Text input should appear disabled after being disabled',
-      goog.dom.classes.has(input,
+      goog.dom.classlist.contains(input,
       goog.getCssName(goog.ui.LabelInput.prototype.LABEL_CLASS_NAME,
           'disabled')));
   assertTrue('Combo box should appear disabled after being disabled',
-      goog.dom.classes.has(comboBox.getElement(),
+      goog.dom.classlist.contains(comboBox.getElement(),
       goog.getCssName('goog-combobox-disabled')));
   goog.testing.events.fireClickSequence(comboBox.getElement());
   assertFalse('Menu should not become visible after click if disabled',
@@ -188,11 +208,11 @@ function testSetEnabled() {
   assertFalse('Text input should not be disabled after being re-enabled',
       input.disabled);
   assertFalse('Text input should not appear disabled after being re-enabled',
-      goog.dom.classes.has(input,
+      goog.dom.classlist.contains(input,
       goog.getCssName(goog.ui.LabelInput.prototype.LABEL_CLASS_NAME,
           'disabled')));
   assertFalse('Combo box should not appear disabled after being re-enabled',
-      goog.dom.classes.has(comboBox.getElement(),
+      goog.dom.classlist.contains(comboBox.getElement(),
       goog.getCssName('goog-combobox-disabled')));
   goog.testing.events.fireClickSequence(comboBox.getElement());
   assertTrue('Menu becomes visible after click when re-enabled',
@@ -200,6 +220,71 @@ function testSetEnabled() {
   goog.testing.events.fireClickSequence(document);
   assertFalse('Menu becomes invisible after document click when re-enabled',
       comboBox.getMenu().isVisible());
+}
+
+function testSetFormatFromToken() {
+  var item = new goog.ui.ComboBoxItem('ABc');
+  item.setFormatFromToken('b');
+  var div = goog.dom.createDom('div');
+  new goog.ui.ControlRenderer().setContent(div, item.getContent());
+  assertTrue(div.innerHTML == 'A<b>B</b>c' || div.innerHTML == 'A<B>B</B>c');
+}
+
+function testSetValue() {
+  var clock = new goog.testing.MockClock(/* autoInstall */ true);
+
+  // Get the input focus. Note that both calls are needed to correctly
+  // simulate the focus (and setting document.activeElement) across all
+  // browsers.
+  input.focus();
+  goog.testing.events.fireClickSequence(input);
+
+  // Simulate text input.
+  input.value = 'Black';
+  comboBox.onInputEvent_();
+  clock.tick();
+  assertEquals('No items should be displayed',
+      0, comboBox.getNumberOfVisibleItems_());
+  assertFalse('Menu should be invisible', comboBox.getMenu().isVisible());
+
+  // Programmatic change with the input focus causes the menu visibility to
+  // change if needed.
+  comboBox.setValue('Blue');
+  clock.tick();
+  assertTrue('Menu should be visible1', comboBox.getMenu().isVisible());
+  assertEquals('One item should be displayed',
+      1, comboBox.getNumberOfVisibleItems_());
+
+  // Simulate user input to ensure all the items are invisible again, then
+  // blur away.
+  input.value = 'Black';
+  comboBox.onInputEvent_();
+  clock.tick();
+  input.blur();
+  document.body.focus();
+  clock.tick(goog.ui.ComboBox.BLUR_DISMISS_TIMER_MS);
+  assertEquals('No items should be displayed',
+      0, comboBox.getNumberOfVisibleItems_());
+  assertFalse('Menu should be invisible', comboBox.getMenu().isVisible());
+
+  // Programmatic change without the input focus does not pop up the menu,
+  // but still updates the list of visible items within it.
+  comboBox.setValue('Blue');
+  clock.tick();
+  assertFalse('Menu should be invisible', comboBox.getMenu().isVisible());
+  assertEquals('Menu should contain one item',
+      1, comboBox.getNumberOfVisibleItems_());
+
+  // Click on the combobox. The entire menu becomes visible, the last item
+  // (programmatically) set is highlighted.
+  goog.testing.events.fireClickSequence(comboBox.getElement());
+  assertTrue('Menu should be visible2', comboBox.getMenu().isVisible());
+  assertEquals('All items should be displayed',
+      comboBox.getMenu().getItemCount(), comboBox.getNumberOfVisibleItems_());
+  assertEquals('The last item set should be highlighted',
+      /* Blue= */ 3, comboBox.getMenu().getHighlightedIndex());
+
+  clock.uninstall();
 }
 
 </script>

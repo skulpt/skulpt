@@ -3,7 +3,7 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
@@ -22,9 +22,14 @@ See the COPYING file for details.
   </style>
   <script src="../base.js"></script>
   <script>
+    goog.require('goog.History');
+    goog.require('goog.debug.DivConsole');
     goog.require('goog.dom');
     goog.require('goog.events');
-    goog.require('goog.History');
+    goog.require('goog.history.EventType');
+    goog.require('goog.log');
+    goog.require('goog.object');
+    goog.require('goog.string');
   </script>
 </head>
 
@@ -82,9 +87,25 @@ See the COPYING file for details.
   see <a href="history3.html#came from history 1">history3.html</a>.
   </p>
 
+  <fieldset class="goog-debug-panel">
+    <legend>Event Log</legend>
+    <div id="log"></div>
+  </fieldset>
+
   <script>
+  var logger = goog.log.getLogger('demo');
+  var logconsole = new goog.debug.DivConsole(goog.dom.getElement('log'));
+  logconsole.setCapturing(true);
+
+  var events = goog.object.getValues(goog.history.EventType);
+  goog.log.info(logger, 'Listening for: ' + events.join(', ') + '.');
+
   var h = new goog.History();
-  goog.events.listen(h, goog.History.EventType.NAVIGATE, navCallback);
+  goog.events.listen(h, events, function(e) {
+    goog.log.info(logger, goog.string.subs('dispatched: %s (token="%s", isNavigation=%s)',
+        e.type, e.token, e.isNavigation));
+  });
+  goog.events.listen(h, goog.history.EventType.NAVIGATE, navCallback);
   h.setEnabled(true);
 
   function setToken(opt_val) {

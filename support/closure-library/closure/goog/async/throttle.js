@@ -15,8 +15,6 @@
 /**
  * @fileoverview Definition of the goog.async.Throttle class.
  *
-*
-*
  * @see ../demos/timers.html
  */
 
@@ -72,6 +70,7 @@ goog.async.Throttle = function(listener, interval, opt_handler) {
   this.callback_ = goog.bind(this.onTimer_, this);
 };
 goog.inherits(goog.async.Throttle, goog.Disposable);
+
 
 
 /**
@@ -159,7 +158,7 @@ goog.async.Throttle.prototype.resume = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.async.Throttle.prototype.disposeInternal = function() {
   goog.async.Throttle.superClass_.disposeInternal.call(this);
   this.stop();

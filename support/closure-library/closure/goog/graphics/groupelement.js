@@ -15,14 +15,15 @@
 
 /**
  * @fileoverview A thin wrapper around the DOM element for graphics groups.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 
 goog.provide('goog.graphics.GroupElement');
 
 goog.require('goog.graphics.Element');
+
 
 
 /**
@@ -34,6 +35,9 @@ goog.require('goog.graphics.Element');
  *     this element.
  * @constructor
  * @extends {goog.graphics.Element}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.GroupElement = function(element, graphics) {
   goog.graphics.Element.call(this, element, graphics);

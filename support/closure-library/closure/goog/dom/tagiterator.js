@@ -25,6 +25,7 @@ goog.require('goog.dom.NodeType');
 goog.require('goog.iter.Iterator');
 goog.require('goog.iter.StopIteration');
 
+
 /**
  * There are three types of token:
  *  <ol>
@@ -42,6 +43,7 @@ goog.dom.TagWalkType = {
   OTHER: 0,
   END_TAG: -1
 };
+
 
 
 /**
@@ -189,7 +191,8 @@ goog.dom.TagIterator.prototype.setPosition = function(node,
 
 
 /**
- * Replace this iterator's values with values from another.
+ * Replace this iterator's values with values from another. The two iterators
+ * must be of the same type.
  * @param {goog.dom.TagIterator} other The iterator to copy.
  * @protected
  */
@@ -241,6 +244,7 @@ goog.dom.TagIterator.prototype.restartTag = function() {
  * Move to the next position in the DOM tree.
  * @return {Node} Returns the next node, or throws a goog.iter.StopIteration
  *     exception if the end of the iterator's range has been reached.
+ * @override
  */
 goog.dom.TagIterator.prototype.next = function() {
   var node;
@@ -288,6 +292,7 @@ goog.dom.TagIterator.prototype.next = function() {
   }
   return node;
 };
+
 
 /**
  * @return {boolean} Whether next has ever been called on this iterator.

@@ -8,10 +8,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.editor.plugins.EnterHandler</title>
 <script src="../../base.js"></script>
 <script>
@@ -650,7 +651,7 @@ function waitForChangeEvents() {
 function getNbsp() {
   // On WebKit (pre-528) and Opera, &nbsp; shows up as its unicode character in
   // innerHTML under some circumstances.
-  return (goog.userAgent.WEBKIT && !goog.userAgent.isVersion('528')) ||
+  return (goog.userAgent.WEBKIT && !goog.userAgent.isVersionOrHigher('528')) ||
          goog.userAgent.OPERA ? '\u00a0' : '&nbsp;';
 }
 
@@ -730,6 +731,21 @@ function testIsInOneContainer() {
     range.select();
     assertTrue('Selection must be recognized as being in one container',
         goog.editor.plugins.EnterHandler.isInOneContainerW3c_(range));
+  }
+}
+
+function testDeletingEndNodesWithNoNewLine() {
+  if (goog.editor.BrowserFeature.HAS_W3C_RANGES) {
+    container.innerHTML =
+        'a<div>b</div><div><br></div><div>c</div><div>d</div>';
+    var range = goog.dom.Range.createFromNodes(
+      container.childNodes[2], 0, container.childNodes[4].childNodes[0], 1);
+    range.select();
+    var newRange = goog.editor.plugins.EnterHandler.deleteW3cRange_(range);
+    goog.testing.dom.assertHtmlContentsMatch('a<div>b</div>', container);
+    assertTrue(newRange.isCollapsed());
+    assertEquals(container, newRange.getStartNode());
+    assertEquals(2, newRange.getStartOffset());
   }
 }
 

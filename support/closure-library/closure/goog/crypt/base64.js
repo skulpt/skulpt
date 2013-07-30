@@ -17,15 +17,16 @@
  * work with decoded values in arrays of bytes. By "byte" I mean a number
  * in [0, 255].
  *
-*
-*
+ * @author doughtie@google.com (Gavin Doughtie)
+ * @author fschneider@google.com (Fritz Schneider)
  */
 
 goog.provide('goog.crypt.base64');
-
 goog.require('goog.crypt');
+goog.require('goog.userAgent');
 
 // Static lookup maps, lazily populated by init_()
+
 
 /**
  * Maps bytes to characters.
@@ -87,10 +88,24 @@ goog.crypt.base64.ENCODED_VALS_WEBSAFE =
 
 
 /**
+ * Whether this browser supports the atob and btoa functions. This extension
+ * started at Mozilla but is now implemented by many browsers. We use the
+ * ASSUME_* variables to avoid pulling in the full useragent detection library
+ * but still allowing the standard per-browser compilations.
+ *
+ * @type {boolean}
+ */
+goog.crypt.base64.HAS_NATIVE_SUPPORT = goog.userAgent.GECKO ||
+                                       goog.userAgent.WEBKIT ||
+                                       goog.userAgent.OPERA ||
+                                       typeof(goog.global.atob) == 'function';
+
+
+/**
  * Base64-encode an array of bytes.
  *
- * @param {Array.<number>} input An array of bytes (numbers with value in
- *     [0, 255]) to encode.
+ * @param {Array.<number>|Uint8Array} input An array of bytes (numbers with
+ *     value in [0, 255]) to encode.
  * @param {boolean=} opt_webSafe Boolean indicating we should use the
  *     alternative alphabet.
  * @return {string} The base64 encoded string.
@@ -149,7 +164,7 @@ goog.crypt.base64.encodeByteArray = function(input, opt_webSafe) {
 goog.crypt.base64.encodeString = function(input, opt_webSafe) {
   // Shortcut for Mozilla browsers that implement
   // a native base64 encoder in the form of "btoa/atob"
-  if (typeof goog.global.btoa == 'function' && !opt_webSafe) {
+  if (goog.crypt.base64.HAS_NATIVE_SUPPORT && !opt_webSafe) {
     return goog.global.btoa(input);
   }
   return goog.crypt.base64.encodeByteArray(
@@ -168,7 +183,7 @@ goog.crypt.base64.encodeString = function(input, opt_webSafe) {
 goog.crypt.base64.decodeString = function(input, opt_webSafe) {
   // Shortcut for Mozilla browsers that implement
   // a native base64 encoder in the form of "btoa/atob"
-  if (typeof goog.global.atob == 'function' && !opt_webSafe) {
+  if (goog.crypt.base64.HAS_NATIVE_SUPPORT && !opt_webSafe) {
     return goog.global.atob(input);
   }
   return goog.crypt.byteArrayToString(
@@ -179,17 +194,12 @@ goog.crypt.base64.decodeString = function(input, opt_webSafe) {
 /**
  * Base64-decode a string.
  *
- * @param {string} input to decode.
+ * @param {string} input to decode (length not required to be a multiple of 4).
  * @param {boolean=} opt_webSafe True if we should use the
  *     alternative alphabet.
  * @return {Array} bytes representing the decoded value.
  */
 goog.crypt.base64.decodeStringToByteArray = function(input, opt_webSafe) {
-
-  if (input.length % 4) {
-    throw Error('Length of b64-encoded data must be zero mod four');
-  }
-
   goog.crypt.base64.init_();
 
   var charToByteMap = opt_webSafe ?
@@ -198,12 +208,20 @@ goog.crypt.base64.decodeStringToByteArray = function(input, opt_webSafe) {
 
   var output = [];
 
-  for (var i = 0; i < input.length; i += 4) {
+  for (var i = 0; i < input.length; ) {
+    var byte1 = charToByteMap[input.charAt(i++)];
 
-    var byte1 = charToByteMap[input.charAt(i)];
-    var byte2 = charToByteMap[input.charAt(i + 1)];
-    var byte3 = charToByteMap[input.charAt(i + 2)];
-    var byte4 = charToByteMap[input.charAt(i + 3)];
+    var haveByte2 = i < input.length;
+    var byte2 = haveByte2 ? charToByteMap[input.charAt(i)] : 0;
+    ++i;
+
+    var haveByte3 = i < input.length;
+    var byte3 = haveByte3 ? charToByteMap[input.charAt(i)] : 0;
+    ++i;
+
+    var haveByte4 = i < input.length;
+    var byte4 = haveByte4 ? charToByteMap[input.charAt(i)] : 0;
+    ++i;
 
     if (byte1 == null || byte2 == null ||
         byte3 == null || byte4 == null) {

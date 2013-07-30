@@ -16,7 +16,6 @@
  * @fileoverview Generic tree node data structure with arbitrary number of child
  * nodes.
  *
-*
  */
 
 goog.provide('goog.structs.TreeNode');
@@ -70,6 +69,7 @@ goog.structs.TreeNode.prototype.children_ = null;
 /**
  * @return {!goog.structs.TreeNode} Clone of the tree node without its parent
  *     and child nodes. The key and the value are copied by reference.
+ * @override
  */
 goog.structs.TreeNode.prototype.clone = function() {
   return new goog.structs.TreeNode(this.getKey(), this.getValue());
@@ -100,7 +100,29 @@ goog.structs.TreeNode.prototype.getParent = function() {
  * @return {boolean} Whether the node is a leaf node.
  */
 goog.structs.TreeNode.prototype.isLeaf = function() {
-  return this.getChildren().length == 0;
+  return !this.getChildCount();
+};
+
+
+/**
+ * Tells if the node is the last child of its parent. This method helps how to
+ * connect the tree nodes with lines: L shapes should be used before the last
+ * children and |- shapes before the rest. Schematic tree visualization:
+ *
+ * <pre>
+ * Node1
+ * |-Node2
+ * | L-Node3
+ * |   |-Node4
+ * |   L-Node5
+ * L-Node6
+ * </pre>
+ *
+ * @return {boolean} Whether the node has parent and is the last child of it.
+ */
+goog.structs.TreeNode.prototype.isLastChild = function() {
+  var parent = this.getParent();
+  return Boolean(parent && this == goog.array.peek(parent.getChildren()));
 };
 
 
@@ -120,6 +142,14 @@ goog.structs.TreeNode.prototype.getChildren = function() {
  */
 goog.structs.TreeNode.prototype.getChildAt = function(index) {
   return this.getChildren()[index] || null;
+};
+
+
+/**
+ * @return {number} The number of children.
+ */
+goog.structs.TreeNode.prototype.getChildCount = function() {
+  return this.getChildren().length;
 };
 
 
@@ -166,15 +196,76 @@ goog.structs.TreeNode.prototype.getRoot = function() {
 
 
 /**
+ * Builds a nested array structure from the node keys in this node's subtree to
+ * facilitate testing tree operations that change the hierarchy.
+ * @return {!Array} The structure of this node's descendants as nested array
+ *     of node keys. The number of unclosed opening brackets up to a particular
+ *     node is proportional to the indentation of that node in the graphical
+ *     representation of the tree. Example:
+ *     <pre>
+ *       this
+ *       |- child1
+ *       |  L- grandchild
+ *       L- child2
+ *     </pre>
+ *     is represented as ['child1', ['grandchild'], 'child2'].
+ */
+goog.structs.TreeNode.prototype.getSubtreeKeys = function() {
+  var ret = [];
+  this.forEachChild(function(child) {
+    ret.push(child.getKey());
+    if (!child.isLeaf()) {
+      ret.push(child.getSubtreeKeys());
+    }
+  });
+  return ret;
+};
+
+
+/**
  * Tells whether this node is the ancestor of the given node.
  * @param {!goog.structs.TreeNode} node A node.
  * @return {boolean} Whether this node is the ancestor of {@code node}.
  */
 goog.structs.TreeNode.prototype.contains = function(node) {
+  var current = node;
   do {
-    node = node.getParent();
-  } while (node && node != this);
-  return Boolean(node);
+    current = current.getParent();
+  } while (current && current != this);
+  return Boolean(current);
+};
+
+
+/**
+ * Finds the deepest common ancestor of the given nodes. The concept of
+ * ancestor is not strict in this case, it includes the node itself.
+ * @param {...!goog.structs.TreeNode} var_args The nodes.
+ * @return {goog.structs.TreeNode} The common ancestor of the nodes or null if
+ *     they are from different trees.
+ */
+goog.structs.TreeNode.findCommonAncestor = function(var_args) {
+  var ret = arguments[0];
+  if (!ret) {
+    return null;
+  }
+
+  var retDepth = ret.getDepth();
+  for (var i = 1; i < arguments.length; i++) {
+    var node = arguments[i];
+    var depth = node.getDepth();
+    while (node != ret) {
+      if (depth <= retDepth) {
+        ret = ret.getParent();
+        retDepth--;
+      }
+      if (depth > retDepth) {
+        node = node.getParent();
+        depth--;
+      }
+    }
+  }
+
+  return ret;
 };
 
 
@@ -192,7 +283,7 @@ goog.structs.TreeNode.prototype.forEachChild = function(f, opt_this) {
 
 
 /**
- * Traverses all child nodes recursively.
+ * Traverses all child nodes recursively in preorder.
  * @param {function(!goog.structs.TreeNode)} f Callback function. It takes the
  *     node as argument.
  * @param {Object=} opt_this The object to be used as the value of {@code this}
@@ -203,6 +294,25 @@ goog.structs.TreeNode.prototype.forEachDescendant = function(f, opt_this) {
     f.call(opt_this, child);
     child.forEachDescendant(f, opt_this);
   });
+};
+
+
+/**
+ * Traverses the subtree with the possibility to skip branches. Starts with
+ * this node, and visits the descendant nodes depth-first, in preorder.
+ * @param {function(!goog.structs.TreeNode): (boolean|undefined)} f Callback
+ *     function. It takes the node as argument. The children of this node will
+ *     be visited if the callback returns true or undefined, and will be
+ *     skipped if the callback returns false.
+ * @param {Object=} opt_this The object to be used as the value of {@code this}
+ *     within {@code f}.
+ */
+goog.structs.TreeNode.prototype.traverse = function(f, opt_this) {
+  if (f.call(opt_this, this) !== false) {
+    goog.array.forEach(this.getChildren(), function(child) {
+      child.traverse(f, opt_this);
+    });
+  }
 };
 
 
@@ -238,6 +348,41 @@ goog.structs.TreeNode.prototype.addChildAt = function(child, index) {
   this.children_ = this.children_ || [];
   goog.asserts.assert(index >= 0 && index <= this.children_.length);
   goog.array.insertAt(this.children_, child, index);
+};
+
+
+/**
+ * Replaces a child node at the given index.
+ * @param {!goog.structs.TreeNode} newChild Child node to set. It must not have
+ *     parent node.
+ * @param {number} index Valid index of the old child to replace.
+ * @return {!goog.structs.TreeNode} The original child node, detached from its
+ *     parent.
+ */
+goog.structs.TreeNode.prototype.replaceChildAt = function(newChild, index) {
+  goog.asserts.assert(!newChild.getParent(),
+      'newChild must not have parent node');
+  var children = this.getChildren();
+  var oldChild = children[index];
+  goog.asserts.assert(oldChild, 'Invalid child or child index is given.');
+  oldChild.setParent(null);
+  children[index] = newChild;
+  newChild.setParent(this);
+  return oldChild;
+};
+
+
+/**
+ * Replaces the given child node.
+ * @param {!goog.structs.TreeNode} newChild New node to replace
+ *     {@code oldChild}. It must not have parent node.
+ * @param {!goog.structs.TreeNode} oldChild Existing child node to be replaced.
+ * @return {!goog.structs.TreeNode} The replaced child node detached from its
+ *     parent.
+ */
+goog.structs.TreeNode.prototype.replaceChild = function(newChild, oldChild) {
+  return this.replaceChildAt(newChild,
+      goog.array.indexOf(this.getChildren(), oldChild));
 };
 
 

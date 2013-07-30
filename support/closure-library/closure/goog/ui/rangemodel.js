@@ -23,13 +23,14 @@
  *
  * Based on http://webfx.eae.net/dhtml/slider/js/range.js
  *
-*
+ * @author arv@google.com (Erik Arvidsson)
  */
 
 goog.provide('goog.ui.RangeModel');
 
 goog.require('goog.events.EventTarget');
-goog.require('goog.ui.Component.EventType');
+goog.require('goog.ui.Component');
+
 
 
 /**
@@ -184,7 +185,7 @@ goog.ui.RangeModel.prototype.setMinimum = function(minimum) {
     if (minimum > this.maximum_) {
       this.extent_ = 0;
       this.setMaximum(minimum);
-      this.setValue(minimum)
+      this.setValue(minimum);
     }
 
 

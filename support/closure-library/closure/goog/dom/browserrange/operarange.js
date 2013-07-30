@@ -18,13 +18,13 @@
  *
  * DO NOT USE THIS FILE DIRECTLY.  Use goog.dom.Range instead.
  *
-*
  */
 
 
 goog.provide('goog.dom.browserrange.OperaRange');
 
 goog.require('goog.dom.browserrange.W3cRange');
+
 
 
 /**
@@ -66,7 +66,7 @@ goog.dom.browserrange.OperaRange.createFromNodes = function(startNode,
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.OperaRange.prototype.selectInternal = function(
     selection, reversed) {
   // Avoid using addRange as we have to removeAllRanges first, which

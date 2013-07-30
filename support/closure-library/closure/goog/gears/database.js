@@ -14,7 +14,6 @@
 
 /**
  * @fileoverview This file contains functions for using the Gears database.
-*
  */
 
 goog.provide('goog.gears.Database');
@@ -23,11 +22,12 @@ goog.provide('goog.gears.Database.TransactionEvent');
 
 goog.require('goog.array');
 goog.require('goog.debug');
-goog.require('goog.debug.Logger');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventTarget');
 goog.require('goog.gears');
 goog.require('goog.json');
+goog.require('goog.log');
+
 
 
 /**
@@ -58,7 +58,7 @@ goog.gears.Database = function(userId, appName) {
     var dbId = userId + '-' + appName;
     var safeDbId = goog.gears.makeSafeFileName(dbId);
     if (dbId != safeDbId) {
-      this.logger_.info('database name ' + dbId + '->' + safeDbId);
+      goog.log.info(this.logger_, 'database name ' + dbId + '->' + safeDbId);
     }
     this.safeDbId_ = safeDbId;
     this.database_.open(safeDbId);
@@ -83,6 +83,7 @@ goog.gears.Database.EventType = {
 };
 
 
+
 /**
  * Event info for transaction events.
  * @extends {goog.events.Event}
@@ -97,11 +98,11 @@ goog.inherits(goog.gears.Database.TransactionEvent, goog.events.Event);
 
 /**
  * Logger object
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @private
  */
 goog.gears.Database.prototype.logger_ =
-    goog.debug.Logger.getLogger('goog.gears.Database');
+    goog.log.getLogger('goog.gears.Database');
 
 
 /**
@@ -166,7 +167,6 @@ goog.gears.Database.BeginLevels_ = {
  */
 goog.gears.Database.prototype.currentBeginLevel_ =
     goog.gears.Database.BeginLevels_['DEFERRED'];
-
 
 
 /**
@@ -314,7 +314,7 @@ goog.gears.Database.resultSetToArray = function(rs) {
  * @return {GearsResultSet} The results.
  */
 goog.gears.Database.prototype.execute = function(sql, var_args) {
-  this.logger_.finer('Executing SQL: ' + sql);
+  goog.log.log(this.logger_, goog.log.Level.FINER, 'Executing SQL: ' + sql);
 
   // TODO(user): Remove when Gears adds more rubust type handling.
   // Safety measure since Gears behaves very badly if it gets an unexpected
@@ -332,7 +332,7 @@ goog.gears.Database.prototype.execute = function(sql, var_args) {
     } else {
       args = goog.array.slice(arguments, 1);
     }
-    this.logger_.finest('SQL arguments: ' + args);
+    goog.log.log(this.logger_, goog.log.Level.FINEST, 'SQL arguments: ' + args);
 
     // TODO(user): Type safety checking for args?
     return this.database_.execute(sql, args);
@@ -344,6 +344,7 @@ goog.gears.Database.prototype.execute = function(sql, var_args) {
     throw goog.debug.enhanceError(e, sql);
   }
 };
+
 
 /**
  * This is useful to remove all the arguments juggling from inside the
@@ -366,7 +367,8 @@ goog.gears.Database.prototype.executeVarArgs_ = function(sql, params,
     if (goog.isArray(params[startIndex])) {
       return this.execute(sql, params[startIndex]);
     }
-    var args = Array.prototype.slice.call(params, startIndex);
+    var args = Array.prototype.slice.call(
+        /** @type {{length:number}} */ (params), startIndex);
     return this.execute(sql, args);
   }
 };
@@ -405,7 +407,7 @@ goog.gears.Database.prototype.queryObject_ = function(sql,
  * containing the result.
  *
  * @param {string} sql The SQL statement.
- * @param {...Object} var_args Query params. An array or multiple arguments.
+ * @param {...*} var_args Query params. An array or multiple arguments.
  * @return {Array} An array of arrays containing the results of the query.
  */
 goog.gears.Database.prototype.queryArrays = function(sql, var_args) {
@@ -437,14 +439,14 @@ goog.gears.Database.prototype.queryObjectArray = function(sql, var_args) {
  * column.
  *
  * @param {string} sql SQL statement.
- * @param {...Object} var_args query params. An array or multiple arguments.
+ * @param {...*} var_args query params. An array or multiple arguments.
  * @return {Array} The values in the first column.
  */
 goog.gears.Database.prototype.queryValueArray = function(sql, var_args) {
   return /** @type {Array} */ (this.queryObject_(sql,
-    goog.gears.Database.resultSetToValueArray,
-    arguments,
-    1));
+      goog.gears.Database.resultSetToValueArray,
+      arguments,
+      1));
 };
 
 
@@ -485,7 +487,7 @@ goog.gears.Database.prototype.queryObject = function(sql, var_args) {
  * This calls query on the database and returns the first row as an array
  *
  * @param {string} sql SQL statement.
- * @param {...Object} var_args query params. An array or multiple arguments.
+ * @param {...*} var_args query params. An array or multiple arguments.
  * @return {Array} The first row as an array.
  */
 goog.gears.Database.prototype.queryArray = function(sql, var_args) {
@@ -505,7 +507,7 @@ goog.gears.Database.prototype.queryArray = function(sql, var_args) {
  * @param {Function} f Function to call for each value.
  * @param {Object=} opt_this If present f will be called using this object as
  *                          'this'.
- * @param {...Object} var_args query params. An array or multiple arguments.
+ * @param {...*} var_args query params. An array or multiple arguments.
  */
 goog.gears.Database.prototype.forEachValue = function(sql,
     f, opt_this, var_args) {
@@ -593,6 +595,7 @@ goog.gears.Database.prototype.transact = function(func) {
   return result;
 };
 
+
 /**
  * Helper that performs either a COMMIT or ROLLBACK command and dispatches
  * pre/post commit/rollback events.
@@ -645,6 +648,7 @@ goog.gears.Database.prototype.getUseTransactions = function() {
   return this.useTransactions_;
 };
 
+
 /**
  * Sets the default begin type.
  *
@@ -655,6 +659,7 @@ goog.gears.Database.prototype.setDefaultBeginType = function(beginType) {
     this.defaultBeginType_ = beginType;
   }
 };
+
 
 /**
  * Marks the beginning of a database transaction. Does a real BEGIN operation
@@ -834,7 +839,7 @@ goog.gears.Database.prototype.isInTransaction = function() {
  */
 goog.gears.Database.prototype.ensureNoTransaction = function(opt_logMsgPrefix) {
   if (this.isInTransaction()) {
-    this.logger_.warning((opt_logMsgPrefix || 'ensureNoTransaction') +
+    goog.log.warning(this.logger_, (opt_logMsgPrefix || 'ensureNoTransaction') +
                          ' - rolling back unexpected transaction');
     do {
       this.rollback();
@@ -899,9 +904,7 @@ goog.gears.Database.prototype.close = function() {
 };
 
 
-/**
- * Disposes of the object.
- */
+/** @override */
 goog.gears.Database.prototype.disposeInternal = function() {
   goog.gears.Database.superClass_.disposeInternal.call(this);
   this.database_ = null;

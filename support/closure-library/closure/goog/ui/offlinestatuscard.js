@@ -17,7 +17,6 @@
  * detailed information such as a progress bar the indicates the status of
  * syncing and allows you to perform actions (such as manually go offline).
  *
-*
  * @see ../demos/offline.html
  */
 
@@ -30,8 +29,8 @@ goog.require('goog.gears.StatusType');
 goog.require('goog.structs.Map');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.ProgressBar');
+
 
 
 /**
@@ -262,6 +261,7 @@ goog.ui.OfflineStatusCard.prototype.setStatus = function(status) {
 
 /**
  * Creates the initial DOM representation for the component.
+ * @override
  */
 goog.ui.OfflineStatusCard.prototype.createDom = function() {
   var dom = this.getDomHelper();
@@ -288,7 +288,7 @@ goog.ui.OfflineStatusCard.prototype.createDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.OfflineStatusCard.prototype.enterDocument = function() {
   goog.ui.OfflineStatusCard.superClass_.enterDocument.call(this);
 
@@ -343,7 +343,7 @@ goog.ui.OfflineStatusCard.prototype.update = function() {
     // Configure the message element.
     var message = this.getAdditionalMessage(status);
     var messageEl = this.messageEl_;
-    goog.style.showElement(messageEl, message);
+    goog.style.setElementShown(messageEl, message);
     if (message) {
       dom.setTextContent(messageEl, message);
     }
@@ -405,7 +405,7 @@ goog.ui.OfflineStatusCard.prototype.createLinkNode_ = function(
   // A text node is needed here in order for links to wrap.
   dom.appendChild(actionEl, dom.createTextNode(' '));
   this.actionMap_.set(goog.getUid(a), action.eventType);
-  goog.style.showElement(a, true);
+  goog.style.setElementShown(a, true);
   dom.setTextContent(a, action.message);
 };
 
@@ -417,7 +417,7 @@ goog.ui.OfflineStatusCard.prototype.createLinkNode_ = function(
 goog.ui.OfflineStatusCard.prototype.configureProgressElement =
     function(status) {
   var showProgress = this.shouldShowProgressBar(status);
-  goog.style.showElement(this.progressEl_, showProgress);
+  goog.style.setElementShown(this.progressEl_, showProgress);
   if (showProgress) {
     this.updateProgressStatus();
   }
@@ -562,7 +562,7 @@ goog.ui.OfflineStatusCard.prototype.getAdditionalMessage = function(status) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.OfflineStatusCard.prototype.disposeInternal = function() {
   goog.ui.OfflineStatusCard.superClass_.disposeInternal.call(this);
 

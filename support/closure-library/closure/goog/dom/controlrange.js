@@ -16,7 +16,7 @@
  * @fileoverview Utilities for working with IE control ranges.
  *
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author jparent@google.com (Julie Parent)
  */
 
 
@@ -34,6 +34,7 @@ goog.require('goog.dom.TagWalkType');
 goog.require('goog.dom.TextRange');
 goog.require('goog.iter.StopIteration');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -112,28 +113,26 @@ goog.dom.ControlRange.prototype.clearCachedValues_ = function() {
 };
 
 
-/**
- * @return {goog.dom.ControlRange} A clone of this range.
- */
+/** @override */
 goog.dom.ControlRange.prototype.clone = function() {
   return goog.dom.ControlRange.createFromElements.apply(this,
                                                         this.getElements());
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getType = function() {
   return goog.dom.RangeType.CONTROL;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getBrowserRangeObject = function() {
   return this.range_ || document.body.createControlRange();
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.setBrowserRangeObject = function(nativeRange) {
   if (!goog.dom.AbstractRange.isNativeControlRange(nativeRange)) {
     return false;
@@ -143,37 +142,37 @@ goog.dom.ControlRange.prototype.setBrowserRangeObject = function(nativeRange) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getTextRangeCount = function() {
   return this.range_ ? this.range_.length : 0;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getTextRange = function(i) {
   return goog.dom.TextRange.createFromNodeContents(this.range_.item(i));
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getContainer = function() {
   return goog.dom.findCommonAncestor.apply(null, this.getElements());
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getStartNode = function() {
   return this.getSortedElements()[0];
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getStartOffset = function() {
   return 0;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getEndNode = function() {
   var sorted = this.getSortedElements();
   var startsLast = /** @type {Node} */ (goog.array.peek(sorted));
@@ -183,7 +182,7 @@ goog.dom.ControlRange.prototype.getEndNode = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getEndOffset = function() {
   return this.getEndNode().childNodes.length;
 };
@@ -223,7 +222,7 @@ goog.dom.ControlRange.prototype.getSortedElements = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.isRangeInDocument = function() {
   var returnValue = false;
 
@@ -231,7 +230,7 @@ goog.dom.ControlRange.prototype.isRangeInDocument = function() {
     returnValue = goog.array.every(this.getElements(), function(element) {
       // On IE, this throws an exception when the range is detached.
       return goog.userAgent.IE ?
-          element.parentNode :
+          !!element.parentNode :
           goog.dom.contains(element.ownerDocument.body, element);
     });
   } catch (e) {
@@ -244,38 +243,38 @@ goog.dom.ControlRange.prototype.isRangeInDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.isCollapsed = function() {
   return !this.range_ || !this.range_.length;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getText = function() {
   // TODO(robbyw): What about for table selections?  Should those have text?
   return '';
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getHtmlFragment = function() {
   return goog.array.map(this.getSortedElements(), goog.dom.getOuterHtml).
       join('');
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getValidHtml = function() {
   return this.getHtmlFragment();
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.getPastableHtml =
     goog.dom.ControlRange.prototype.getValidHtml;
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.__iterator__ = function(opt_keys) {
   return new goog.dom.ControlRangeIterator(this);
 };
@@ -284,7 +283,7 @@ goog.dom.ControlRange.prototype.__iterator__ = function(opt_keys) {
 // RANGE ACTIONS
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.select = function() {
   if (this.range_) {
     this.range_.select();
@@ -292,7 +291,7 @@ goog.dom.ControlRange.prototype.select = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.removeContents = function() {
   // TODO(robbyw): Test implementing with execCommand('Delete')
   if (this.range_) {
@@ -307,7 +306,7 @@ goog.dom.ControlRange.prototype.removeContents = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.replaceContentsWithNode = function(node) {
   // Control selections have to have the node inserted before removing the
   // selection contents because a collapsed control range doesn't have start or
@@ -325,7 +324,7 @@ goog.dom.ControlRange.prototype.replaceContentsWithNode = function(node) {
 // SAVE/RESTORE
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.saveUsingDom = function() {
   return new goog.dom.DomSavedControlRange_(this);
 };
@@ -334,7 +333,7 @@ goog.dom.ControlRange.prototype.saveUsingDom = function() {
 // RANGE MODIFICATION
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRange.prototype.collapse = function(toAnchor) {
   // TODO(robbyw): Should this return a text range?  If so, API needs to change.
   this.range_ = null;
@@ -343,6 +342,7 @@ goog.dom.ControlRange.prototype.collapse = function(toAnchor) {
 
 
 // SAVED RANGE OBJECTS
+
 
 
 /**
@@ -363,9 +363,7 @@ goog.dom.DomSavedControlRange_ = function(range) {
 goog.inherits(goog.dom.DomSavedControlRange_, goog.dom.SavedRange);
 
 
-/**
- * @return {goog.dom.ControlRange} The restored range.
- */
+/** @override */
 goog.dom.DomSavedControlRange_.prototype.restoreInternal = function() {
   var doc = this.elements_.length ?
       goog.dom.getOwnerDocument(this.elements_[0]) : document;
@@ -377,7 +375,7 @@ goog.dom.DomSavedControlRange_.prototype.restoreInternal = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.DomSavedControlRange_.prototype.disposeInternal = function() {
   goog.dom.DomSavedControlRange_.superClass_.disposeInternal.call(this);
   delete this.elements_;
@@ -385,6 +383,7 @@ goog.dom.DomSavedControlRange_.prototype.disposeInternal = function() {
 
 
 // RANGE ITERATION
+
 
 
 /**
@@ -399,7 +398,8 @@ goog.dom.ControlRangeIterator = function(range) {
   if (range) {
     this.elements_ = range.getSortedElements();
     this.startNode_ = this.elements_.shift();
-    this.endNode_ = goog.array.peek(this.elements_) || this.startNode_;
+    this.endNode_ = /** @type {Node} */ (goog.array.peek(this.elements_)) ||
+        this.startNode_;
   }
 
   goog.dom.RangeIterator.call(this, this.startNode_, false);
@@ -431,31 +431,31 @@ goog.dom.ControlRangeIterator.prototype.endNode_ = null;
 goog.dom.ControlRangeIterator.prototype.elements_ = null;
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRangeIterator.prototype.getStartTextOffset = function() {
   return 0;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRangeIterator.prototype.getEndTextOffset = function() {
   return 0;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRangeIterator.prototype.getStartNode = function() {
   return this.startNode_;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRangeIterator.prototype.getEndNode = function() {
   return this.endNode_;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ControlRangeIterator.prototype.isLast = function() {
   return !this.depth && !this.elements_.length;
 };
@@ -465,6 +465,7 @@ goog.dom.ControlRangeIterator.prototype.isLast = function() {
  * Move to the next position in the selection.
  * Throws {@code goog.iter.StopIteration} when it passes the end of the range.
  * @return {Node} The node at the next position.
+ * @override
  */
 goog.dom.ControlRangeIterator.prototype.next = function() {
   // Iterate over each element in the range, and all of its children.
@@ -483,11 +484,7 @@ goog.dom.ControlRangeIterator.prototype.next = function() {
 };
 
 
-/**
- * Replace this iterator's values with values from another.
- * @param {goog.dom.ControlRangeIterator} other The iterator to copy.
- * @protected
- */
+/** @override */
 goog.dom.ControlRangeIterator.prototype.copyFrom = function(other) {
   this.elements_ = other.elements_;
   this.startNode_ = other.startNode_;
@@ -499,6 +496,7 @@ goog.dom.ControlRangeIterator.prototype.copyFrom = function(other) {
 
 /**
  * @return {goog.dom.ControlRangeIterator} An identical iterator.
+ * @override
  */
 goog.dom.ControlRangeIterator.prototype.clone = function() {
   var copy = new goog.dom.ControlRangeIterator(null);

@@ -3,25 +3,36 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.events.KeyHandler</title>
 <script src="../base.js"></script>
 <script>
   goog.require('goog.dom')
   goog.require('goog.events.KeyEvent');
+  goog.require('goog.events.EventType');
+  goog.require('goog.functions');
+  goog.require('goog.testing.events');
   goog.require('goog.testing.jsunit');
 </script>
 </head>
 <body>
 <script>
 
+  function setUp() {
+    // Have this based on a fictitious DOCUMENT_MODE constant.
+    goog.userAgent.isDocumentMode = function(mode) {
+      return mode <= goog.userAgent.DOCUMENT_MODE;
+    };
+  }
+
   /**
-   * Tests the key handler for the IE behavior.
+   * Tests the key handler for the IE 8 and lower behavior.
    */
-  function testIeStyleKeyHandling() {
+  function testIe8StyleKeyHandling() {
     goog.userAgent.OPERA = false;
     goog.userAgent.IE = true;
     goog.userAgent.GECKO = false;
@@ -30,8 +41,33 @@ See the COPYING file for details.
     goog.userAgent.MAC = false;
     goog.userAgent.WINDOWS = true;
     goog.userAgent.LINUX = false;
+    goog.userAgent.VERSION = 8;
+    goog.userAgent.DOCUMENT_MODE = 8;
     goog.events.KeyHandler.USES_KEYDOWN_ = true;
 
+    assertIe8StyleKeyHandling();
+  }
+
+  /**
+   * Tests the key handler for the IE 8 and lower behavior.
+   */
+  function testIe8StyleKeyHandlingInIe9DocumentMode() {
+    goog.userAgent.OPERA = false;
+    goog.userAgent.IE = true;
+    goog.userAgent.GECKO = false;
+    goog.userAgent.CAMINO = false;
+    goog.userAgent.WEBKIT = false;
+    goog.userAgent.MAC = false;
+    goog.userAgent.WINDOWS = true;
+    goog.userAgent.LINUX = false;
+    goog.userAgent.VERSION = 9; // Try IE9 in IE8 document mode.
+    goog.userAgent.DOCUMENT_MODE = 8;
+    goog.events.KeyHandler.USES_KEYDOWN_ = true;
+
+    assertIe8StyleKeyHandling();
+  }
+
+  function assertIe8StyleKeyHandling() {
     var keyEvent, keyHandler = new goog.events.KeyHandler();
     goog.events.listen(keyHandler, goog.events.KeyHandler.EventType.KEY,
         function(e) { keyEvent = e; });
@@ -133,6 +169,37 @@ See the COPYING file for details.
     assertTrue('Should have repeat=true on key repeat.',
         keyEvent.repeat);
     assertTrue('Ctrl should be down.', keyEvent.ctrlKey);
+  }
+
+
+  /**
+   * Tests special cases for IE9.
+   */
+  function testIe9StyleKeyHandling() {
+    goog.userAgent.OPERA = false;
+    goog.userAgent.IE = true;
+    goog.userAgent.GECKO = false;
+    goog.userAgent.CAMINO = false;
+    goog.userAgent.WEBKIT = false;
+    goog.userAgent.MAC = false;
+    goog.userAgent.WINDOWS = true;
+    goog.userAgent.LINUX = false;
+    goog.userAgent.VERSION = 9;
+    goog.userAgent.DOCUMENT_MODE = 9;
+    goog.events.KeyHandler.USES_KEYDOWN_ = true;
+
+    var keyEvent, keyHandler = new goog.events.KeyHandler();
+    goog.events.listen(keyHandler, goog.events.KeyHandler.EventType.KEY,
+        function(e) { keyEvent = e; });
+
+    fireKeyDown(keyHandler, goog.events.KeyCodes.ENTER);
+    fireKeyUp(keyHandler, goog.events.KeyCodes.ENTER);
+    assertEquals('Enter should fire a key event with the keycode 13',
+                 goog.events.KeyCodes.ENTER,
+                 keyEvent.keyCode);
+    assertEquals('Enter should fire a key event with the charcode 0',
+                 0,
+                 keyEvent.charCode);
   }
 
 
@@ -316,8 +383,18 @@ See the COPYING file for details.
                  keyEvent.charCode);
 
     fireKeyDown(keyHandler, goog.events.KeyCodes.CTRL);
-    fireKeyDown(keyHandler, goog.events.KeyCodes.A);
+    fireKeyDown(keyHandler, goog.events.KeyCodes.A, null, null, true /*ctrl*/);
     assertEquals('A with control down should fire a key event',
+                 goog.events.KeyCodes.A,
+                 keyEvent.keyCode);
+
+    // Test that Alt-Tab outside the window doesn't break things.
+    fireKeyDown(keyHandler, goog.events.KeyCodes.ALT);
+    keyEvent.keyCode = -1;  // Reset the event.
+    fireKeyDown(keyHandler, goog.events.KeyCodes.A);
+    assertEquals('Should not have dispatched an Alt-A', -1, keyEvent.keyCode);
+    fireKeyPress(keyHandler, 65, 65);
+    assertEquals('Alt should be ignored since it isn\'t currently depressed',
                  goog.events.KeyCodes.A,
                  keyEvent.keyCode);
 
@@ -445,6 +522,48 @@ See the COPYING file for details.
                  keyEvent.charCode);
   }
 
+  function testGeckoOnMacAltHandling() {
+    goog.userAgent.OPERA = false;
+    goog.userAgent.IE = false;
+    goog.userAgent.GECKO = true;
+    goog.userAgent.CAMINO = false;
+    goog.userAgent.WEBKIT = false;
+    goog.userAgent.MAC = true;
+    goog.userAgent.WINDOWS = false;
+    goog.userAgent.LINUX = false;
+    goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_ = true;
+
+    var keyEvent, keyHandler = new goog.events.KeyHandler();
+    goog.events.listen(keyHandler, goog.events.KeyHandler.EventType.KEY,
+        function(e) { keyEvent = e; });
+
+    fireKeyDown(keyHandler, goog.events.KeyCodes.COMMA, 0, null, false,
+        true, false);
+    fireKeyPress(keyHandler, 0, 8804, null, false, false, false);
+    assertEquals('should fire a key event with COMMA',
+        goog.events.KeyCodes.COMMA,
+        keyEvent.keyCode);
+    assertEquals('should fire a key event with alt key set',
+        true,
+        keyEvent.altKey);
+
+    // Scenario: alt down, a down, a press, a up (should say alt is true),
+    // alt up.
+    keyEvent = undefined;
+    fireKeyDown(keyHandler, 18, 0, null, false, true, false);
+    fireKeyDown(keyHandler, goog.events.KeyCodes.A, 0, null, false, true,
+        false);
+    fireKeyPress(keyHandler, 0, 229, null, false, false, false);
+    assertEquals('should fire a key event with alt key set',
+        true,
+        keyEvent.altKey);
+    fireKeyUp(keyHandler, 0, 229, null, false, true, false);
+    assertEquals('alt key should still be set',
+        true,
+        keyEvent.altKey);
+    fireKeyUp(keyHandler, 18, 0, null, false, false, false);
+  }
+
   function testGeckoEqualSign() {
     goog.userAgent.OPERA = false;
     goog.userAgent.IE = false;
@@ -466,7 +585,7 @@ See the COPYING file for details.
                  goog.events.KeyCodes.EQUALS,
                  keyEvent.keyCode);
     assertEquals('= should fire a key event with the charCode 61',
-                 61,
+                 goog.events.KeyCodes.FF_EQUALS,
                  keyEvent.charCode);
   }
 
@@ -487,10 +606,10 @@ See the COPYING file for details.
 
     fireKeyDown(keyHandler, 0, 63, null, false, false, true);
     fireKeyPress(keyHandler, 0, 63, null, false, false, true);
-    assertEquals('= should fire should fire a key event with the keyCode 191',
+    assertEquals('/ should fire a key event with the keyCode 191',
                  goog.events.KeyCodes.SLASH,
                  keyEvent.keyCode);
-    assertEquals('= should fire a key event with the charCode 63',
+    assertEquals('? should fire a key event with the charCode 63',
                  goog.events.KeyCodes.QUESTION_MARK,
                  keyEvent.charCode);
   }
@@ -538,6 +657,28 @@ See the COPYING file for details.
     assertEquals('keycode should be -1', -1, keyHandler.keyCode_);
   }
 
+  function testCapturePhase() {
+    var gotInCapturePhase;
+    var gotInBubblePhase;
+
+    var target = goog.dom.createDom('div');
+    goog.events.listen(
+        new goog.events.KeyHandler(target, false /* bubble */),
+        goog.events.KeyHandler.EventType.KEY,
+        function() {
+          gotInBubblePhase = true;
+          assertTrue(gotInCapturePhase);
+        });
+    goog.events.listen(
+        new goog.events.KeyHandler(target, true /* capture */),
+        goog.events.KeyHandler.EventType.KEY,
+        function() {
+          gotInCapturePhase = true;
+        });
+
+    goog.testing.events.fireKeySequence(target, goog.events.KeyCodes.ESC);
+    assertTrue(gotInBubblePhase);
+  }
 
   function fireKeyDown(keyHandler, keyCode, opt_charCode, opt_keyIdentifier,
       opt_ctrlKey, opt_altKey, opt_shiftKey) {

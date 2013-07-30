@@ -25,6 +25,7 @@ goog.require('goog.dom.pattern.StartTag');
 goog.require('goog.dom.pattern.Tag');
 
 
+
 /**
  * Pattern object that matches a full tag including all its children.
  *
@@ -60,6 +61,7 @@ goog.inherits(goog.dom.pattern.FullTag, goog.dom.pattern.StartTag);
  */
 goog.dom.pattern.FullTag.prototype.depth_ = 0;
 
+
 /**
  * Test whether the given token is a start tag token which matches the tag name,
  * style, and attributes provided in the constructor.
@@ -69,6 +71,7 @@ goog.dom.pattern.FullTag.prototype.depth_ = 0;
  * @return {goog.dom.pattern.MatchType} <code>MATCH</code> at the end of our
  *    tag, <code>MATCHING</code> if we are within the tag, and
  *    <code>NO_MATCH</code> if the starting tag does not match.
+ * @override
  */
 goog.dom.pattern.FullTag.prototype.matchToken = function(token, type) {
   if (!this.depth_) {

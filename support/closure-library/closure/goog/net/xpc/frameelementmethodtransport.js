@@ -18,14 +18,15 @@
  * iframe call a method on the iframe-element it is contained in, even if the
  * containing page is from a different domain.
  *
-*
  */
 
 
 goog.provide('goog.net.xpc.FrameElementMethodTransport');
 
 goog.require('goog.net.xpc');
+goog.require('goog.net.xpc.CrossPageChannelRole');
 goog.require('goog.net.xpc.Transport');
+
 
 
 /**
@@ -37,10 +38,14 @@ goog.require('goog.net.xpc.Transport');
  *
  * @param {goog.net.xpc.CrossPageChannel} channel The channel this transport
  *     belongs to.
+ * @param {goog.dom.DomHelper=} opt_domHelper The dom helper to use for finding
+ *     the correct window.
  * @constructor
  * @extends {goog.net.xpc.Transport}
  */
-goog.net.xpc.FrameElementMethodTransport = function(channel) {
+goog.net.xpc.FrameElementMethodTransport = function(channel, opt_domHelper) {
+  goog.base(this, opt_domHelper);
+
   /**
    * The channel this transport belongs to.
    * @type {goog.net.xpc.CrossPageChannel}
@@ -73,9 +78,10 @@ goog.inherits(goog.net.xpc.FrameElementMethodTransport, goog.net.xpc.Transport);
  * The transport type.
  * @type {number}
  * @protected
+ * @override
  */
 goog.net.xpc.FrameElementMethodTransport.prototype.transportType =
-   goog.net.xpc.TransportTypes.FRAME_ELEMENT_METHOD;
+    goog.net.xpc.TransportTypes.FRAME_ELEMENT_METHOD;
 
 
 /**
@@ -105,11 +111,12 @@ goog.net.xpc.FrameElementMethodTransport.outgoing_ = null;
 
 /**
  * Connect this transport.
+ * @override
  */
 goog.net.xpc.FrameElementMethodTransport.prototype.connect = function() {
-  if (this.channel_.getRole() == goog.net.xpc.CrossPageChannel.Role.OUTER) {
+  if (this.channel_.getRole() == goog.net.xpc.CrossPageChannelRole.OUTER) {
     // get shortcut to iframe-element
-    this.iframeElm_ = this.channel_.iframeElement_;
+    this.iframeElm_ = this.channel_.getIframeElement();
 
     // add the gateway function to the iframe-element
     // (to be called by the peer)
@@ -136,7 +143,7 @@ goog.net.xpc.FrameElementMethodTransport.prototype.attemptSetup_ = function() {
   try {
     if (!this.iframeElm_) {
       // throws security exception when called too early
-      this.iframeElm_ = window.frameElement;
+      this.iframeElm_ = this.getWindow().frameElement;
     }
     // check if iframe-element and the gateway-function to the
     // outer-frame are present
@@ -152,11 +159,11 @@ goog.net.xpc.FrameElementMethodTransport.prototype.attemptSetup_ = function() {
       // notify outer frame
       this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP_ACK_);
       // notify channel that the transport is ready
-      this.channel_.notifyConnected_();
+      this.channel_.notifyConnected();
     }
   }
   catch (e) {
-    goog.net.xpc.logger.severe(
+    goog.log.error(goog.net.xpc.logger,
         'exception caught while attempting setup: ' + e);
   }
   // retry necessary?
@@ -164,7 +171,7 @@ goog.net.xpc.FrameElementMethodTransport.prototype.attemptSetup_ = function() {
     if (!this.attemptSetupCb_) {
       this.attemptSetupCb_ = goog.bind(this.attemptSetup_, this);
     }
-    window.setTimeout(this.attemptSetupCb_, 100);
+    this.getWindow().setTimeout(this.attemptSetupCb_, 100);
   }
 };
 
@@ -172,15 +179,16 @@ goog.net.xpc.FrameElementMethodTransport.prototype.attemptSetup_ = function() {
 /**
  * Handles transport service messages.
  * @param {string} payload The message content.
+ * @override
  */
 goog.net.xpc.FrameElementMethodTransport.prototype.transportServiceHandler =
     function(payload) {
-  if (this.channel_.getRole() == goog.net.xpc.CrossPageChannel.Role.OUTER &&
+  if (this.channel_.getRole() == goog.net.xpc.CrossPageChannelRole.OUTER &&
       !this.channel_.isConnected() && payload == goog.net.xpc.SETUP_ACK_) {
     // get a reference to the gateway function
     this.outgoing_ = this.iframeElm_['XPC_toOuter']['XPC_toInner'];
     // notify the channel we're ready
-    this.channel_.notifyConnected_();
+    this.channel_.notifyConnected();
   } else {
     throw Error('Got unexpected transport message.');
   }
@@ -197,12 +205,12 @@ goog.net.xpc.FrameElementMethodTransport.prototype.transportServiceHandler =
 goog.net.xpc.FrameElementMethodTransport.prototype.incoming_ =
     function(serviceName, payload) {
   if (!this.recursive_ && this.queue_.length == 0) {
-    this.channel_.deliver_(serviceName, payload);
+    this.channel_.xpcDeliver(serviceName, payload);
   }
   else {
     this.queue_.push({serviceName: serviceName, payload: payload});
     if (this.queue_.length == 1) {
-      this.timer_ = window.setTimeout(this.deliverQueuedCb_, 1);
+      this.timer_ = this.getWindow().setTimeout(this.deliverQueuedCb_, 1);
     }
   }
 };
@@ -216,7 +224,7 @@ goog.net.xpc.FrameElementMethodTransport.prototype.deliverQueued_ =
     function() {
   while (this.queue_.length) {
     var msg = this.queue_.shift();
-    this.channel_.deliver_(msg.serviceName, msg.payload);
+    this.channel_.xpcDeliver(msg.serviceName, msg.payload);
   }
 };
 
@@ -226,6 +234,7 @@ goog.net.xpc.FrameElementMethodTransport.prototype.deliverQueued_ =
  * @param {string} service The name off the service the message is to be
  * delivered to.
  * @param {string} payload The message content.
+ * @override
  */
 goog.net.xpc.FrameElementMethodTransport.prototype.send =
     function(service, payload) {
@@ -235,9 +244,7 @@ goog.net.xpc.FrameElementMethodTransport.prototype.send =
 };
 
 
-/**
- * Disposes of the transport.
- */
+/** @override */
 goog.net.xpc.FrameElementMethodTransport.prototype.disposeInternal =
     function() {
   goog.net.xpc.FrameElementMethodTransport.superClass_.disposeInternal.call(

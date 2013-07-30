@@ -15,9 +15,9 @@
 /**
  * @fileoverview Definition of the goog.ui.tree.BaseNode class.
  *
-*
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author eae@google.com (Emil A Eklund)
+ * @author jonp@google.com (Jon Perlow)
  *
  * This is a based on the webfx tree control. It since been updated to add
  * typeahead support, as well as accessibility support using ARIA framework.
@@ -28,8 +28,8 @@ goog.provide('goog.ui.tree.BaseNode');
 goog.provide('goog.ui.tree.BaseNode.EventType');
 
 goog.require('goog.Timer');
+goog.require('goog.a11y.aria');
 goog.require('goog.asserts');
-goog.require('goog.dom.a11y');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -141,7 +141,7 @@ goog.ui.tree.BaseNode.prototype.isUserCollapsible_ = true;
 goog.ui.tree.BaseNode.prototype.depth_ = -1;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.disposeInternal = function() {
   goog.ui.tree.BaseNode.superClass_.disposeInternal.call(this);
   if (this.tree_) {
@@ -165,41 +165,44 @@ goog.ui.tree.BaseNode.prototype.initAccessibility = function() {
       label.id = this.getId() + '.label';
     }
 
-    goog.dom.a11y.setRole(el, 'treeitem');
-    goog.dom.a11y.setState(el, 'selected', false);
-    goog.dom.a11y.setState(el, 'expanded', false);
-    goog.dom.a11y.setState(el, 'level', this.getDepth());
+    goog.a11y.aria.setRole(el, 'treeitem');
+    goog.a11y.aria.setState(el, 'selected', false);
+    goog.a11y.aria.setState(el, 'expanded', false);
+    goog.a11y.aria.setState(el, 'level', this.getDepth());
     if (label) {
-      goog.dom.a11y.setState(el, 'labelledby', label.id);
+      goog.a11y.aria.setState(el, 'labelledby', label.id);
     }
 
     var img = this.getIconElement();
     if (img) {
-      goog.dom.a11y.setRole(img, 'presentation');
+      goog.a11y.aria.setRole(img, 'presentation');
     }
     var ei = this.getExpandIconElement();
     if (ei) {
-      goog.dom.a11y.setRole(ei, 'presentation');
+      goog.a11y.aria.setRole(ei, 'presentation');
     }
 
     var ce = this.getChildrenElement();
-    goog.dom.a11y.setRole(ce, 'group');
+    if (ce) {
+      goog.a11y.aria.setRole(ce, 'group');
 
-    // In case the children will be created lazily.
-    if (ce.hasChildNodes()) {
-      // do setsize for each child
-      var count = this.getChildCount();
-      for (var i = 1; i <= count; i++) {
-        var child = this.getChildAt(i - 1).getElement();
-        goog.dom.a11y.setState(child, 'setsize', count);
-        goog.dom.a11y.setState(child, 'posinset', i);
+      // In case the children will be created lazily.
+      if (ce.hasChildNodes()) {
+        // do setsize for each child
+        var count = this.getChildCount();
+        for (var i = 1; i <= count; i++) {
+          var child = this.getChildAt(i - 1).getElement();
+          goog.asserts.assert(child, 'The child element cannot be null');
+          goog.a11y.aria.setState(child, 'setsize', count);
+          goog.a11y.aria.setState(child, 'posinset', i);
+        }
       }
     }
   }
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.createDom = function() {
   var sb = new goog.string.StringBuffer();
   this.toHtml(sb);
@@ -208,7 +211,7 @@ goog.ui.tree.BaseNode.prototype.createDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.enterDocument = function() {
   goog.ui.tree.BaseNode.superClass_.enterDocument.call(this);
   goog.ui.tree.BaseNode.allNodes[this.getId()] = this;
@@ -216,7 +219,7 @@ goog.ui.tree.BaseNode.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.exitDocument = function() {
   goog.ui.tree.BaseNode.superClass_.exitDocument.call(this);
   delete goog.ui.tree.BaseNode.allNodes[this.getId()];
@@ -278,7 +281,7 @@ goog.ui.tree.BaseNode.prototype.addChildAt = function(child, index,
         if (prevNode) {
           prevNode.updateExpandIcon();
         } else {
-          goog.style.showElement(el, true);
+          goog.style.setElementShown(el, true);
           this.setExpanded(this.getExpanded());
         }
       }
@@ -467,11 +470,12 @@ goog.ui.tree.BaseNode.prototype.setDepth_ = function(depth) {
  *    otherwise.
  */
 goog.ui.tree.BaseNode.prototype.contains = function(node) {
-  while (node) {
-    if (node == this) {
+  var current = node;
+  while (current) {
+    if (current == this) {
       return true;
     }
-    node = node.getParent();
+    current = current.getParent();
   }
   return false;
 };
@@ -493,13 +497,15 @@ goog.ui.tree.BaseNode.prototype.getChildAt;
 
 
 /**
- * Returns the children of this node. The caller must not modify the returned
- * collection.
+ * Returns the children of this node.
  * @return {!Array.<!goog.ui.tree.BaseNode>} The children.
  */
 goog.ui.tree.BaseNode.prototype.getChildren = function() {
-  // TODO: This breaks encapsulation, as children_ is private in the superclass.
-  return this.children_ || goog.ui.tree.BaseNode.EMPTY_CHILDREN_;
+  var children = [];
+  this.forEachChild(function(child) {
+    children.push(child);
+  });
+  return children;
 };
 
 
@@ -584,9 +590,13 @@ goog.ui.tree.BaseNode.prototype.setSelectedInternal = function(selected) {
 
   var el = this.getElement();
   if (el) {
-    goog.dom.a11y.setState(el, 'selected', selected);
+    goog.a11y.aria.setState(el, 'selected', selected);
     if (selected) {
-      goog.dom.a11y.setState(this.getTree().getElement(), 'activedescendant',
+      var treeElement = this.getTree().getElement();
+      goog.asserts.assert(treeElement,
+          'The DOM element for the tree cannot be null');
+      goog.a11y.aria.setState(treeElement,
+          'activedescendant',
           this.getId());
     }
   }
@@ -636,7 +646,7 @@ goog.ui.tree.BaseNode.prototype.setExpanded = function(expanded) {
     if (el) {
       ce = this.getChildrenElement();
       if (ce) {
-        goog.style.showElement(ce, expanded);
+        goog.style.setElementShown(ce, expanded);
 
         // Make sure we have the HTML for the children here.
         if (expanded && this.isInDocument() && !ce.hasChildNodes()) {
@@ -655,12 +665,12 @@ goog.ui.tree.BaseNode.prototype.setExpanded = function(expanded) {
   } else {
     ce = this.getChildrenElement();
     if (ce) {
-      goog.style.showElement(ce, false);
+      goog.style.setElementShown(ce, false);
     }
   }
   if (el) {
     this.updateIcon_();
-    goog.dom.a11y.setState(el, 'expanded', expanded);
+    goog.a11y.aria.setState(el, 'expanded', expanded);
   }
 
   if (isStateChange) {
@@ -677,6 +687,7 @@ goog.ui.tree.BaseNode.prototype.toggle = function() {
   this.setExpanded(!this.getExpanded());
 };
 
+
 /**
  * Expands the node.
  */
@@ -691,7 +702,6 @@ goog.ui.tree.BaseNode.prototype.expand = function() {
 goog.ui.tree.BaseNode.prototype.collapse = function() {
   this.setExpanded(false);
 };
-
 
 
 /**
@@ -814,7 +824,6 @@ goog.ui.tree.BaseNode.prototype.getPixelIndent_ = function() {
  * @protected
  */
 goog.ui.tree.BaseNode.prototype.getRowHtml = function() {
-  var tree = this.getTree();
   var sb = new goog.string.StringBuffer();
   sb.append('<div class="', this.getRowClassName(), '" style="padding-',
       this.isRightToLeft() ? 'right:' : 'left:',
@@ -834,7 +843,7 @@ goog.ui.tree.BaseNode.prototype.getRowHtml = function() {
 goog.ui.tree.BaseNode.prototype.getRowClassName = function() {
   var selectedClass;
   if (this.isSelected()) {
-    selectedClass = ' selected';
+    selectedClass = ' ' + this.config_.cssSelectedRow;
   } else {
     selectedClass = '';
   }
@@ -848,7 +857,6 @@ goog.ui.tree.BaseNode.prototype.getRowClassName = function() {
  */
 goog.ui.tree.BaseNode.prototype.getLabelHtml = function() {
   var toolTip = this.getToolTip();
-  var tree = this.getTree();
   var sb = new goog.string.StringBuffer();
   sb.append('<span class="', this.config_.cssItemLabel, '"',
       (toolTip ? ' title="' + goog.string.htmlEscape(toolTip) + '"' : ''),
@@ -887,16 +895,8 @@ goog.ui.tree.BaseNode.prototype.setAfterLabelHtml = function(html) {
  * @protected
  */
 goog.ui.tree.BaseNode.prototype.getIconHtml = function() {
-  // here we are not using textToHtml since the file names rarerly contains
-  // HTML...
-  var iconClass = this.getCalculatedIconClass();
-  if (iconClass) {
-    return goog.string.buildString('<img class="', iconClass,
-           '" src="', this.config_.cleardotPath, '">');
-  } else {
-    return goog.string.buildString('<img style="display:none"',
-           '" src="', this.config_.cleardotPath, '">');
-  }
+  return '<span style="display:inline-block" class="' +
+      this.getCalculatedIconClass() + '"></span>';
 };
 
 
@@ -912,10 +912,8 @@ goog.ui.tree.BaseNode.prototype.getCalculatedIconClass = goog.abstractMethod;
  * @protected
  */
 goog.ui.tree.BaseNode.prototype.getExpandIconHtml = function() {
-  // here we are not using textToHtml since the file names rarerly contains
-  // HTML...
-  return goog.string.buildString('<img type="expand" class="',
-      this.getExpandIconClass(), '" src="', this.config_.cleardotPath + '">');
+  return '<span type="expand" style="display:inline-block" class="' +
+      this.getExpandIconClass() + '"></span>';
 };
 
 
@@ -1003,8 +1001,7 @@ goog.ui.tree.BaseNode.prototype.getExpandIconClass = function() {
  * @return {string} The line style.
  */
 goog.ui.tree.BaseNode.prototype.getLineStyle = function() {
-  return goog.string.buildString(
-      'background-position:', this.getLineStyle2(), ';');
+  return 'background-position:' + this.getLineStyle2() + ';';
 };
 
 
@@ -1019,6 +1016,7 @@ goog.ui.tree.BaseNode.prototype.getLineStyle2 = function() {
 
 /**
  * @return {Element} The element for the tree node.
+ * @override
  */
 goog.ui.tree.BaseNode.prototype.getElement = function() {
   var el = goog.ui.tree.BaseNode.superClass_.getElement.call(this);

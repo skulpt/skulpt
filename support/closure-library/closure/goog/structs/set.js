@@ -15,8 +15,8 @@
 /**
  * @fileoverview Datastructure: Set.
  *
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author pallosp@google.com (Peter Pallos)
  *
  * This class implements a set data structure. Adding and removing is O(1). It
  * supports both object and primitive values. Be careful because you can add
@@ -28,7 +28,9 @@
 goog.provide('goog.structs.Set');
 
 goog.require('goog.structs');
+goog.require('goog.structs.Collection');
 goog.require('goog.structs.Map');
+
 
 
 /**
@@ -43,6 +45,7 @@ goog.require('goog.structs.Map');
  * identify objects, every object in the set will be mutated.
  * @param {Array|Object=} opt_values Initial values to start with.
  * @constructor
+ * @implements {goog.structs.Collection}
  */
 goog.structs.Set = function(opt_values) {
   this.map_ = new goog.structs.Map;
@@ -72,6 +75,7 @@ goog.structs.Set.getKey_ = function(val) {
 
 /**
  * @return {number} The number of elements in the set.
+ * @override
  */
 goog.structs.Set.prototype.getCount = function() {
   return this.map_.getCount();
@@ -81,6 +85,7 @@ goog.structs.Set.prototype.getCount = function() {
 /**
  * Add a primitive or an object to the set.
  * @param {*} element The primitive or object to add.
+ * @override
  */
 goog.structs.Set.prototype.add = function(element) {
   this.map_.set(goog.structs.Set.getKey_(element), element);
@@ -117,6 +122,7 @@ goog.structs.Set.prototype.removeAll = function(col) {
  * Removes the given element from this set.
  * @param {*} element The primitive or object to remove.
  * @return {boolean} Whether the element was found and removed.
+ * @override
  */
 goog.structs.Set.prototype.remove = function(element) {
   return this.map_.remove(goog.structs.Set.getKey_(element));
@@ -144,6 +150,7 @@ goog.structs.Set.prototype.isEmpty = function() {
  * Tests whether this set contains the given element.
  * @param {*} element The primitive or object to test for.
  * @return {boolean} True if this set contains the given element.
+ * @override
  */
 goog.structs.Set.prototype.contains = function(element) {
   return this.map_.containsKey(goog.structs.Set.getKey_(element));
@@ -165,7 +172,7 @@ goog.structs.Set.prototype.containsAll = function(col) {
 /**
  * Finds all values that are present in both this set and the given collection.
  * @param {Array|Object} col A collection.
- * @return {goog.structs.Set} A new set containing all the values (primitives
+ * @return {!goog.structs.Set} A new set containing all the values (primitives
  *     or objects) present in both this set and the given collection.
  */
 goog.structs.Set.prototype.intersection = function(col) {
@@ -184,8 +191,23 @@ goog.structs.Set.prototype.intersection = function(col) {
 
 
 /**
+ * Finds all values that are present in this set and not in the given
+ * collection.
+ * @param {Array|Object} col A collection.
+ * @return {!goog.structs.Set} A new set containing all the values
+ *     (primitives or objects) present in this set but not in the given
+ *     collection.
+ */
+goog.structs.Set.prototype.difference = function(col) {
+  var result = this.clone();
+  result.removeAll(col);
+  return result;
+};
+
+
+/**
  * Returns an array containing all the elements in this set.
- * @return {Array} An array containing all the elements in this set.
+ * @return {!Array} An array containing all the elements in this set.
  */
 goog.structs.Set.prototype.getValues = function() {
   return this.map_.getValues();
@@ -194,7 +216,7 @@ goog.structs.Set.prototype.getValues = function() {
 
 /**
  * Creates a shallow clone of this set.
- * @return {goog.structs.Set} A new set containing all the same elements as
+ * @return {!goog.structs.Set} A new set containing all the same elements as
  *     this set.
  */
 goog.structs.Set.prototype.clone = function() {
@@ -245,7 +267,7 @@ goog.structs.Set.prototype.isSubsetOf = function(col) {
 /**
  * Returns an iterator that iterates over the elements in this set.
  * @param {boolean=} opt_keys This argument is ignored.
- * @return {goog.iter.Iterator} An iterator over the elements in this set.
+ * @return {!goog.iter.Iterator} An iterator over the elements in this set.
  */
 goog.structs.Set.prototype.__iterator__ = function(opt_keys) {
   return this.map_.__iterator__(false);

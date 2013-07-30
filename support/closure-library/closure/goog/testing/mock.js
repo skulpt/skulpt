@@ -33,15 +33,18 @@
  *   Have the exceptions for LooseMock show the number of expected/actual calls
  *   loose and strict mocks share a lot of code - move it to the base class
  *
-*
  */
 
 goog.provide('goog.testing.Mock');
 goog.provide('goog.testing.MockExpectation');
 
 goog.require('goog.array');
+goog.require('goog.object');
 goog.require('goog.testing.JsUnitException');
+goog.require('goog.testing.MockInterface');
 goog.require('goog.testing.mockmatchers');
+
+
 
 /**
  * This is a class that represents an expectation.
@@ -148,6 +151,7 @@ goog.testing.MockExpectation.prototype.getErrorMessageCount = function() {
 };
 
 
+
 /**
  * The base class for a mock object.
  * @param {Object|Function} objectToMock The object that should be mocked, or
@@ -157,6 +161,7 @@ goog.testing.MockExpectation.prototype.getErrorMessageCount = function() {
  * @param {boolean=} opt_createProxy An optional argument denoting that
  *     a proxy for the target mock should be created.
  * @constructor
+ * @implements {goog.testing.MockInterface}
  */
 goog.testing.Mock = function(objectToMock, opt_mockStaticMethods,
     opt_createProxy) {
@@ -166,7 +171,7 @@ goog.testing.Mock = function(objectToMock, opt_mockStaticMethods,
   if (opt_createProxy && !opt_mockStaticMethods &&
       goog.isFunction(objectToMock)) {
     /** @constructor */
-    function tempCtor() {};
+    var tempCtor = function() {};
     goog.inherits(tempCtor, objectToMock);
     this.$proxy = new tempCtor();
   } else if (opt_createProxy && opt_mockStaticMethods &&
@@ -183,6 +188,45 @@ goog.testing.Mock = function(objectToMock, opt_mockStaticMethods,
   }
   this.$argumentListVerifiers_ = {};
 };
+
+
+/**
+ * Option that may be passed when constructing function, method, and
+ * constructor mocks. Indicates that the expected calls should be accepted in
+ * any order.
+ * @const
+ * @type {number}
+ */
+goog.testing.Mock.LOOSE = 1;
+
+
+/**
+ * Option that may be passed when constructing function, method, and
+ * constructor mocks. Indicates that the expected calls should be accepted in
+ * the recorded order only.
+ * @const
+ * @type {number}
+ */
+goog.testing.Mock.STRICT = 0;
+
+
+/**
+ * This array contains the name of the functions that are part of the base
+ * Object prototype.
+ * Basically a copy of goog.object.PROTOTYPE_FIELDS_.
+ * @const
+ * @type {!Array.<string>}
+ * @private
+ */
+goog.testing.Mock.PROTOTYPE_FIELDS_ = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
+];
 
 
 /**
@@ -232,8 +276,25 @@ goog.testing.Mock.prototype.$threwException_ = null;
  * @private
  */
 goog.testing.Mock.prototype.$initializeFunctions_ = function(objectToMock) {
-  // TODO (arv): Implement goog.object.getIterator and replace this loop.
-  for (var prop in objectToMock) {
+  // Gets the object properties.
+  var enumerableProperties = goog.object.getKeys(objectToMock);
+
+  // The non enumerable properties are added if they override the ones in the
+  // Object prototype. This is due to the fact that IE8 does not enumerate any
+  // of the prototype Object functions even when overriden and mocking these is
+  // sometimes needed.
+  for (var i = 0; i < goog.testing.Mock.PROTOTYPE_FIELDS_.length; i++) {
+    var prop = goog.testing.Mock.PROTOTYPE_FIELDS_[i];
+    // Look at b/6758711 if you're considering adding ALL properties to ALL
+    // mocks.
+    if (objectToMock[prop] !== Object.prototype[prop]) {
+      enumerableProperties.push(prop);
+    }
+  }
+
+  // Adds the properties to the mock.
+  for (var i = 0; i < enumerableProperties.length; i++) {
+    var prop = enumerableProperties[i];
     if (typeof objectToMock[prop] == 'function') {
       this[prop] = goog.bind(this.$mockMethod, this, prop);
       if (this.$proxy) {
@@ -418,6 +479,7 @@ goog.testing.Mock.prototype.$times = function(times) {
 
 /**
  * Switches from recording to replay mode.
+ * @override
  */
 goog.testing.Mock.prototype.$replay = function() {
   this.$recording_ = false;
@@ -427,6 +489,7 @@ goog.testing.Mock.prototype.$replay = function() {
 /**
  * Resets the state of this mock object. This clears all pending expectations
  * without verifying, and puts the mock in recording mode.
+ * @override
  */
 goog.testing.Mock.prototype.$reset = function() {
   this.$recording_ = true;
@@ -476,6 +539,7 @@ goog.testing.Mock.prototype.$recordAndThrow = function(ex) {
 /**
  * Verify that all of the expectations were met. Should be overridden by
  * subclasses.
+ * @override
  */
 goog.testing.Mock.prototype.$verify = function() {
   if (this.$threwException_) {
@@ -495,8 +559,11 @@ goog.testing.Mock.prototype.$verifyCall = function(expectation, name, args) {
   if (expectation.name != name) {
     return false;
   }
-  var verifierFn = this.$argumentListVerifiers_[expectation.name] ||
+  var verifierFn =
+      this.$argumentListVerifiers_.hasOwnProperty(expectation.name) ?
+      this.$argumentListVerifiers_[expectation.name] :
       goog.testing.mockmatchers.flexibleArrayMatcher;
+
   return verifierFn(expectation.argumentList, args, expectation);
 };
 

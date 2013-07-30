@@ -16,7 +16,7 @@
  * @fileoverview Menu where items can be filtered based on user keyboard input.
  * If a filter is specified only the items matching it will be displayed.
  *
-*
+ * @author eae@google.com (Emil A Eklund)
  * @see ../demos/filteredmenu.html
  */
 
@@ -24,11 +24,17 @@
 goog.provide('goog.ui.FilteredMenu');
 
 goog.require('goog.dom');
+goog.require('goog.events');
+goog.require('goog.events.EventType');
 goog.require('goog.events.InputHandler');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.string');
+goog.require('goog.style');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.FilterObservingMenuItem');
 goog.require('goog.ui.Menu');
+goog.require('goog.userAgent');
+
 
 
 /**
@@ -62,12 +68,14 @@ goog.ui.FilteredMenu.EventType = {
  */
 goog.ui.FilteredMenu.prototype.filterInput_;
 
+
 /**
  * The input handler that provides the input event.
  * @type {goog.events.InputHandler|undefined}
  * @private
  */
 goog.ui.FilteredMenu.prototype.inputHandler_;
+
 
 /**
  * Maximum number of characters for filter input.
@@ -76,12 +84,14 @@ goog.ui.FilteredMenu.prototype.inputHandler_;
  */
 goog.ui.FilteredMenu.prototype.maxLength_ = 0;
 
+
 /**
  * Label displayed in the filter input when no text has been entered.
  * @type {string}
  * @private
  */
 goog.ui.FilteredMenu.prototype.label_ = '';
+
 
 /**
  * Label element.
@@ -90,6 +100,7 @@ goog.ui.FilteredMenu.prototype.label_ = '';
  */
 goog.ui.FilteredMenu.prototype.labelEl_;
 
+
 /**
  * Whether multiple items can be entered comma separated.
  * @type {boolean}
@@ -97,12 +108,14 @@ goog.ui.FilteredMenu.prototype.labelEl_;
  */
 goog.ui.FilteredMenu.prototype.allowMultiple_ = false;
 
+
 /**
  * List of items entered in the search box if multiple entries are allowed.
  * @type {Array.<string>|undefined}
  * @private
  */
 goog.ui.FilteredMenu.prototype.enteredItems_;
+
 
 /**
  * Index of first item that should be affected by the filter. Menu items with
@@ -129,7 +142,7 @@ goog.ui.FilteredMenu.prototype.filterStr_;
 goog.ui.FilteredMenu.prototype.persistentChildren_;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.FilteredMenu.prototype.createDom = function() {
   goog.ui.FilteredMenu.superClass_.createDom.call(this);
 
@@ -209,10 +222,10 @@ goog.ui.FilteredMenu.prototype.tearDownFilterListeners_ = function() {
 };
 
 
-/** @inheritDoc */
-goog.ui.FilteredMenu.prototype.setVisible = function(show, opt_force) {
+/** @override */
+goog.ui.FilteredMenu.prototype.setVisible = function(show, opt_force, opt_e) {
   var visibilityChanged = goog.ui.FilteredMenu.superClass_.setVisible.call(this,
-      show, opt_force);
+      show, opt_force, opt_e);
   if (visibilityChanged && show && this.isInDocument()) {
     this.setFilter('');
     this.setUpFilterListeners_();
@@ -224,7 +237,7 @@ goog.ui.FilteredMenu.prototype.setVisible = function(show, opt_force) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.FilteredMenu.prototype.disposeInternal = function() {
   this.tearDownFilterListeners_();
   this.filterInput_ = undefined;
@@ -272,9 +285,8 @@ goog.ui.FilteredMenu.prototype.setFilter = function(str) {
  */
 goog.ui.FilteredMenu.prototype.getFilter = function() {
   return this.filterInput_ && goog.isString(this.filterInput_.value) ?
-    this.filterInput_.value : '';
+      this.filterInput_.value : '';
 };
-
 
 
 /**
@@ -325,8 +337,8 @@ goog.ui.FilteredMenu.prototype.getAllowMultiple = function() {
 /**
  * Sets whether the specified child should be affected (shown/hidden) by the
  * filter criteria.
- * @param {goog.ui.MenuItem} child Menu item to change.
- * @param {boolean} persistent Whether the menu item should be persistent.
+ * @param {goog.ui.Component} child Child to change.
+ * @param {boolean} persistent Whether the child should be persistent.
  */
 goog.ui.FilteredMenu.prototype.setPersistentVisibility = function(child,
                                                                   persistent) {
@@ -410,12 +422,12 @@ goog.ui.FilteredMenu.prototype.filterItems_ = function(str) {
 
     if (matches) {
       str = matches.length > 2 ? goog.string.trim(matches[2]) : '';
-   }
+    }
   }
 
   var matcher = new RegExp('(^|[- ,_/.:])' +
       goog.string.regExpEscape(str), 'i');
-  for (var child, i = this.filterFromIndex_; child = this.children_[i]; i++) {
+  for (var child, i = this.filterFromIndex_; child = this.getChildAt(i); i++) {
     if (child instanceof goog.ui.FilterObservingMenuItem) {
       child.callObserver(str);
     } else if (!this.hasPersistentVisibility(child)) {
@@ -463,8 +475,9 @@ goog.ui.FilteredMenu.prototype.filterItems_ = function(str) {
  * be given the opportunity to handle the key behavior.
  * @param {goog.events.KeyEvent} e A browser event.
  * @return {boolean} Whether the event was handled.
+ * @override
  */
-goog.ui.FilteredMenu.prototype.handleKeyEvent = function(e) {
+goog.ui.FilteredMenu.prototype.handleKeyEventInternal = function(e) {
   // Home, end and the arrow keys are normally used to change the selected menu
   // item. Return false here to prevent the menu from preventing the default
   // behavior for HOME, END and any key press with a modifier.
@@ -479,7 +492,7 @@ goog.ui.FilteredMenu.prototype.handleKeyEvent = function(e) {
     return true;
   }
 
-  return goog.ui.FilteredMenu.superClass_.handleKeyEvent.call(this, e);
+  return goog.ui.FilteredMenu.superClass_.handleKeyEventInternal.call(this, e);
 };
 
 
@@ -487,6 +500,7 @@ goog.ui.FilteredMenu.prototype.handleKeyEvent = function(e) {
  * Sets the highlighted index, unless the HIGHLIGHT event is intercepted and
  * cancelled.  -1 = no highlight. Also scrolls the menu item into view.
  * @param {number} index Index of menu item to highlight.
+ * @override
  */
 goog.ui.FilteredMenu.prototype.setHighlightedIndex = function(index) {
   goog.ui.FilteredMenu.superClass_.setHighlightedIndex.call(this, index);
@@ -494,15 +508,21 @@ goog.ui.FilteredMenu.prototype.setHighlightedIndex = function(index) {
   var el = this.getHighlighted() ? this.getHighlighted().getElement() : null;
 
   if (el && goog.dom.contains(contentEl, el)) {
-    var contTop = goog.userAgent.IE ? 0 : contentEl.offsetTop;
+    var contentTop = goog.userAgent.IE && !goog.userAgent.isVersionOrHigher(8) ?
+        0 : contentEl.offsetTop;
+
+    // IE (tested on IE8) sometime does not scroll enough by about
+    // 1px. So we add 1px to the scroll amount. This still looks ok in
+    // other browser except for the most degenerate case (menu height <=
+    // item height).
 
     // Scroll down if the highlighted item is below the bottom edge.
-    var diff = (el.offsetTop + el.offsetHeight - contTop) -
-        (contentEl.clientHeight + contentEl.scrollTop);
+    var diff = (el.offsetTop + el.offsetHeight - contentTop) -
+        (contentEl.clientHeight + contentEl.scrollTop) + 1;
     contentEl.scrollTop += Math.max(diff, 0);
 
     // Scroll up if the highlighted item is above the top edge.
-    diff = contentEl.scrollTop - (el.offsetTop - contTop);
+    diff = contentEl.scrollTop - (el.offsetTop - contentTop) + 1;
     contentEl.scrollTop -= Math.max(diff, 0);
   }
 };
@@ -518,7 +538,7 @@ goog.ui.FilteredMenu.prototype.onFilterLabelClick_ = function(e) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.FilteredMenu.prototype.getContentElement = function() {
   return this.contentElement_ || this.getElement();
 };
@@ -533,10 +553,10 @@ goog.ui.FilteredMenu.prototype.getFilterInputElement = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.FilteredMenu.prototype.decorateInternal = function(element) {
   this.setElementInternal(element);
-  
+
   // Decorate the menu content.
   this.decorateContent(element);
 

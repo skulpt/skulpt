@@ -44,8 +44,6 @@
  * body .highlighted { background-color: yellow; }
  * </p>
  *
-*
-*
  */
 
 
@@ -54,7 +52,9 @@ goog.provide('goog.cssom.iframe.style');
 goog.require('goog.cssom');
 goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
+goog.require('goog.dom.TagName');
 goog.require('goog.dom.classes');
+goog.require('goog.string');
 goog.require('goog.style');
 goog.require('goog.userAgent');
 
@@ -98,6 +98,7 @@ goog.cssom.iframe.style.DECLARATION_START_DELIMITER_ = '{';
  * @private
  */
 goog.cssom.iframe.style.DECLARATION_END_DELIMITER_ = '}\n';
+
 
 
 /**
@@ -244,14 +245,15 @@ goog.cssom.iframe.style.CssRuleSet_.prototype.writeToArray = function(array) {
     if (i < (selectorCount - 1)) {
       array.push(goog.cssom.iframe.style.SELECTOR_DELIMITER_);
     }
-    if (goog.userAgent.GECKO && !goog.userAgent.isVersion('1.9a')) {
+    if (goog.userAgent.GECKO &&
+        !goog.userAgent.isVersionOrHigher('1.9a')) {
       // In Gecko pre-1.9 (Firefox 2 and lower) we need to add !important
       // to rulesets that match "A" tags, otherwise Gecko's built-in
       // stylesheet will take precedence when designMode is on.
       matchesAnchorTag = matchesAnchorTag ||
           goog.cssom.iframe.style.selectorPartAnchorRegex_.test(
               selectorParts[partCount - 1].inputString_);
-      }
+    }
   }
   var declarationText = this.declarationText;
   if (matchesAnchorTag) {
@@ -284,6 +286,7 @@ goog.cssom.iframe.style.makeColorRuleImportant_ = function(cssText) {
   return cssText.replace(goog.cssom.iframe.style.colorImportantReplaceRegex_,
                          '$1 color: $2 ! important; ');
 };
+
 
 
 /**
@@ -406,6 +409,7 @@ goog.cssom.iframe.style.CssSelector_.prototype.matchElementAncestry =
 };
 
 
+
 /**
  * Represents one part of a CSS Selector. For example in the selector
  * 'body #foo .bar', body, #foo, and .bar would be considered selector parts.
@@ -492,15 +496,17 @@ goog.cssom.iframe.style.CssSelectorPart_.prototype.testElement =
 };
 
 
+
 /**
  * Represents an element and all its parent/ancestor nodes.
  * This class exists as an optimization so we run tests on an element
  * hierarchy multiple times without walking the dom each time.
- * @param {Element} node The DOM element whose ancestry should be stored.
+ * @param {Element} el The DOM element whose ancestry should be stored.
  * @constructor
  * @private
  */
-goog.cssom.iframe.style.NodeAncestry_ = function(node) {
+goog.cssom.iframe.style.NodeAncestry_ = function(el) {
+  var node = el;
   var nodeUid = goog.getUid(node);
 
   // Return an existing object from the cache if one exits for this node.
@@ -526,7 +532,7 @@ goog.cssom.iframe.style.NodeAncestry_ = function(node) {
     }
     nodeInfo.classNames = classNamesLookup;
     nodes.unshift(nodeInfo);
-  } while (node = node.parentNode)
+  } while (node = node.parentNode);
 
   /**
    * Array of nodes in order of hierarchy from the top of the document
@@ -677,19 +683,19 @@ goog.cssom.iframe.style.inheritedProperties_ = [
  * @private
  */
 goog.cssom.iframe.style.textProperties_ = [
-    'font-family',
-    'font-size',
-    'font-weight',
-    'font-variant',
-    'font-style',
-    'color',
-    'text-align',
-    'text-decoration',
-    'text-indent',
-    'text-transform',
-    'letter-spacing',
-    'white-space',
-    'word-spacing'
+  'font-family',
+  'font-size',
+  'font-weight',
+  'font-variant',
+  'font-style',
+  'color',
+  'text-align',
+  'text-decoration',
+  'text-indent',
+  'text-transform',
+  'letter-spacing',
+  'white-space',
+  'word-spacing'
 ];
 
 
@@ -765,8 +771,8 @@ goog.cssom.iframe.style.getElementContext = function(
           // New CSS selector: body ul
           selectorCopy = new goog.cssom.iframe.style.CssSelector_();
           selectorCopy.parts = [
-              bodySelectorPart,
-              selectorParts[lastSelectorPartIndex]
+            bodySelectorPart,
+            selectorParts[lastSelectorPartIndex]
           ];
           selectors.push(selectorCopy);
         }
@@ -788,7 +794,7 @@ goog.cssom.iframe.style.getElementContext = function(
   for (var i = 0, prop;
        prop = goog.cssom.iframe.style.inheritedProperties_[i];
        i++) {
-    defaultProperties[prop] = computedStyle[goog.style.toCamelCase(prop)];
+    defaultProperties[prop] = computedStyle[goog.string.toCamelCase(prop)];
   }
   defaultPropertiesRuleSet.setDeclarationTextFromObject(defaultProperties);
   ruleSets.push(defaultPropertiesRuleSet);
@@ -808,8 +814,8 @@ goog.cssom.iframe.style.getElementContext = function(
   };
   // Text formatting property values, to keep text nodes directly under BODY
   // looking right.
-  for (i = 0, prop; prop = goog.cssom.iframe.style.textProperties_[i]; i++) {
-    bodyProperties[prop] = computedStyle[goog.style.toCamelCase(prop)];
+  for (i = 0; prop = goog.cssom.iframe.style.textProperties_[i]; i++) {
+    bodyProperties[prop] = computedStyle[goog.string.toCamelCase(prop)];
   }
   if (opt_copyBackgroundContext &&
       goog.cssom.iframe.style.isTransparentValue_(
@@ -822,7 +828,7 @@ goog.cssom.iframe.style.getElementContext = function(
     var bgProperties =
         goog.cssom.iframe.style.getBackgroundContext(element);
     bodyProperties['background-color'] = bgProperties['backgroundColor'];
-    var elementBgImage = computedStyle['backgroundImage']
+    var elementBgImage = computedStyle['backgroundImage'];
     if (!elementBgImage || elementBgImage == 'none') {
       bodyProperties['background-image'] = bgProperties['backgroundImage'];
       bodyProperties['background-repeat'] = bgProperties['backgroundRepeat'];
@@ -897,7 +903,7 @@ goog.cssom.iframe.style.getBackgroundXYValues_ = function(styleObject) {
   // WebKit has both.
   if (styleObject['backgroundPositionY']) {
     return [styleObject['backgroundPositionX'],
-            styleObject['backgroundPositionY']]
+            styleObject['backgroundPositionY']];
   } else {
     return (styleObject['backgroundPosition'] || '0 0').split(' ');
   }

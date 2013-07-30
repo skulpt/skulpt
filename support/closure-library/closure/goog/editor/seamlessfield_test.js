@@ -16,19 +16,27 @@
  * @fileoverview Trogedit unit tests for goog.editor.SeamlessField.
  *
  * @author nicksantos@google.com (Nick Santos)
+ * @suppress {missingProperties} There are many mocks in this unit test,
+ *     and the mocks don't fit well in the type system.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('goog.editor.seamlessfield_test');
 
 goog.require('goog.dom');
+goog.require('goog.dom.DomHelper');
+goog.require('goog.dom.Range');
 goog.require('goog.editor.BrowserFeature');
+goog.require('goog.editor.Field');
 goog.require('goog.editor.SeamlessField');
 goog.require('goog.events');
+goog.require('goog.functions');
 goog.require('goog.style');
 goog.require('goog.testing.MockClock');
 goog.require('goog.testing.MockRange');
 goog.require('goog.testing.jsunit');
 
+goog.setTestOnly('seamlessfield_test');
 
 var fieldElem;
 var fieldElemClone;
@@ -39,6 +47,7 @@ function setUp() {
 }
 
 function tearDown() {
+  goog.events.removeAllNativeListeners();
   fieldElem.parentNode.replaceChild(fieldElemClone, fieldElem);
 }
 
@@ -140,6 +149,79 @@ function testIframeHeightGrowsOnWrap() {
   }
 }
 
+function testDispatchIframeResizedForWrapperHeight() {
+  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+    var clock = new goog.testing.MockClock(true);
+    var blendedField = initSeamlessField('Hi!', {'border': '2px 5px'});
+    var iframe = createSeamlessIframe();
+    blendedField.attachIframe(iframe);
+
+    var resizeCalled = false;
+    goog.events.listenOnce(
+        blendedField,
+        goog.editor.Field.EventType.IFRAME_RESIZED,
+        function() {
+          resizeCalled = true;
+        });
+
+    try {
+      blendedField.makeEditable();
+      blendedField.setHtml(false, 'Content that should wrap after resize.');
+
+      // Ensure that the field was fully loaded and sized before measuring.
+      clock.tick(1);
+
+      assertFalse('Iframe resize must not be dispatched yet', resizeCalled);
+
+      // Resize the field such that the text should wrap.
+      fieldElem.style.width = '200px';
+      blendedField.sizeIframeToWrapperGecko_();
+      assertTrue('Iframe resize must be dispatched for Wrapper', resizeCalled);
+    } finally {
+      blendedField.dispose();
+      clock.dispose();
+    }
+  }
+}
+
+function testDispatchIframeResizedForBodyHeight() {
+  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+    var clock = new goog.testing.MockClock(true);
+    var blendedField = initSeamlessField('Hi!', {'border': '2px 5px'});
+    var iframe = createSeamlessIframe();
+    blendedField.attachIframe(iframe);
+
+    var resizeCalled = false;
+    goog.events.listenOnce(
+        blendedField,
+        goog.editor.Field.EventType.IFRAME_RESIZED,
+        function() {
+          resizeCalled = true;
+        });
+
+    try {
+      blendedField.makeEditable();
+      blendedField.setHtml(false, 'Content that should wrap after resize.');
+
+      // Ensure that the field was fully loaded and sized before measuring.
+      clock.tick(1);
+
+      assertFalse('Iframe resize must not be dispatched yet', resizeCalled);
+
+      // Resize the field to a different body height.
+      var bodyHeight = blendedField.getIframeBodyHeightGecko_();
+      blendedField.getIframeBodyHeightGecko_ = function() {
+        return bodyHeight + 1;
+      };
+      blendedField.sizeIframeToBodyHeightGecko_();
+      assertTrue('Iframe resize must be dispatched for Body', resizeCalled);
+    } finally {
+      blendedField.dispose();
+      clock.dispose();
+    }
+  }
+}
+
 function testDispatchBlur() {
   if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &&
       !goog.editor.BrowserFeature.CLEARS_SELECTION_WHEN_FOCUS_LEAVES) {
@@ -167,7 +249,7 @@ function testDispatchBlur() {
       clearSelection(opt_window);
       cleared = true;
       clearedWindow = opt_window;
-    }
+    };
     var clock = new goog.testing.MockClock(true);
 
     mockRange.collapse(true);
@@ -223,12 +305,13 @@ function testSetMinHeight() {
       assertFalse('Setting min height must not cause delayed change event.',
           delayedChangeCalled);
     } finally {
-      goog.events.removeAll();
+      goog.events.removeAllNativeListeners();
       field.dispose();
       clock.dispose();
     }
   }
 }
+
 
 /**
  * @bug 1649967 This code used to throw a Javascript error.
@@ -241,7 +324,7 @@ function testSetMinHeightWithNoIframe() {
       field.setMinHeight(30);
     } finally {
       field.dispose();
-      goog.events.removeAll();
+      goog.events.removeAllNativeListeners();
     }
   }
 }
@@ -353,6 +436,7 @@ function createSeamlessIframe() {
       { 'frameBorder': '0', 'style': 'padding:0;' });
 }
 
+
 /**
  * Initialize a new editable field for the field id 'field', with the given
  * innerHTML and styles.
@@ -367,6 +451,7 @@ function initSeamlessField(innerHTML, styles) {
   goog.style.setStyle(fieldElem, styles);
   return field;
 }
+
 
 /**
  * Make sure that the original field element for the given goog.editor.Field has

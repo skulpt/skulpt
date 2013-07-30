@@ -3,13 +3,13 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
-  Author: Justin Voskuhl (justinv@google.com)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.serverchart</title>
 <script src="../base.js"></script>
 <script>
@@ -19,6 +19,34 @@ See the COPYING file for details.
 </head>
 <body>
 <script>
+
+function testSchemeIndependentBarChartRequest() {
+  var bar = new goog.ui.ServerChart(
+      goog.ui.ServerChart.ChartType.BAR,
+      180,
+      104,
+      null);
+  tryToCreateBarChart(bar);
+  var uri = bar.getUri();
+  var schemeIndependentUri = new goog.Uri(
+      goog.ui.ServerChart.CHART_SERVER_SCHEME_INDEPENDENT_URI);
+  assertEquals('', uri.getScheme());
+  assertEquals(schemeIndependentUri.getDomain(), uri.getDomain());
+}
+
+function testHttpBarChartRequest() {
+  var bar = new goog.ui.ServerChart(
+      goog.ui.ServerChart.ChartType.BAR,
+      180,
+      104,
+      null,
+      goog.ui.ServerChart.CHART_SERVER_HTTP_URI);
+  tryToCreateBarChart(bar);
+  var uri = bar.getUri();
+  var httpUri = new goog.Uri(goog.ui.ServerChart.CHART_SERVER_HTTP_URI);
+  assertEquals('http', uri.getScheme());
+  assertEquals(httpUri.getDomain(), uri.getDomain());
+}
 
 function testHttpsBarChartRequest() {
   var bar = new goog.ui.ServerChart(
@@ -44,6 +72,14 @@ function testMinValue() {
       180, 104);
   line.addDataSet([1, 2, 3], '000000');
   assertEquals(line.getMinValue(), 1);
+}
+
+function testMargins() {
+  var pie = new goog.ui.ServerChart(goog.ui.ServerChart.ChartType.PIE3D,
+      180, 104);
+  pie.setMargins(1, 2, 3, 4);
+  assertEquals('1,2,3,4',
+      pie.getUri().getParameterValue(goog.ui.ServerChart.UriParam.MARGINS));
 }
 
 function testSetParameterValue() {
@@ -136,11 +172,15 @@ function testClearDataSets() {
   var chart = new goog.ui.ServerChart(
       goog.ui.ServerChart.ChartType.BAR, 180, 104);
   tryToCreateBarChart(chart);
-  var uriBefore = chart.getUri().toString();
+  var uriBefore = chart.getUri();
   chart.clearDataSets();
+  var chart = new goog.ui.ServerChart(
+      goog.ui.ServerChart.ChartType.BAR, 180, 104);
   tryToCreateBarChart(chart);
-  var uriAfter = chart.getUri().toString();
-  assertEquals(uriBefore, uriAfter);
+  var uriAfter = chart.getUri();
+  assertEquals(uriBefore.getScheme(), uriAfter.getScheme());
+  assertEquals(uriBefore.getDomain(), uriAfter.getDomain());
+  assertEquals(uriBefore.getPath(), uriAfter.getPath());
 }
 
 function testMultipleDatasetsTextEncoding() {
@@ -528,11 +568,11 @@ function testUriLengthLimit() {
   assertEquals(
       'e:AAHHOOVVccjjqqxx44..AAHHOOVVccjjqqxx44..',
       chart.getUri().getParameterValue(goog.ui.ServerChart.UriParam.DATA));
-  chart.setUriLengthLimit(110);
+  chart.setUriLengthLimit(100);
   assertEquals(
       's:AHOUbipv29AHOUbipv29',
       chart.getUri().getParameterValue(goog.ui.ServerChart.UriParam.DATA));
-  chart.setUriLengthLimit(90);
+  chart.setUriLengthLimit(80);
   assertEquals(null, longUri)
   chart.getUri();
   assertNotEquals(null, longUri);

@@ -17,8 +17,8 @@
  * @fileoverview A thin wrapper around the DOM element returned from
  * the different draw methods of the graphics implementation, and
  * all interfaces that the various element types support.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 
@@ -26,6 +26,7 @@ goog.provide('goog.graphics.Element');
 
 goog.require('goog.events');
 goog.require('goog.events.EventTarget');
+goog.require('goog.events.Listenable');
 goog.require('goog.graphics.AffineTransform');
 goog.require('goog.math');
 
@@ -41,6 +42,9 @@ goog.require('goog.math');
  *     this element.
  * @constructor
  * @extends {goog.events.EventTarget}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.Element = function(element, graphics) {
   goog.events.EventTarget.call(this);
@@ -48,7 +52,7 @@ goog.graphics.Element = function(element, graphics) {
   this.graphics_ = graphics;
   // Overloading EventTarget field to state that this is not a custom event.
   // TODO(user) Should be handled in EventTarget.js (see bug 846824).
-  this.customEvent_ = false;
+  this[goog.events.Listenable.IMPLEMENTED_BY_PROP] = false;
 };
 goog.inherits(goog.graphics.Element, goog.events.EventTarget);
 
@@ -120,22 +124,11 @@ goog.graphics.Element.prototype.setTransformation = function(x, y, rotate,
  */
 goog.graphics.Element.prototype.getTransform = function() {
   return this.transform_ ? this.transform_.clone() :
-    new goog.graphics.AffineTransform();
+      new goog.graphics.AffineTransform();
 };
 
 
-/**
- * Adds an event listener to the element.
- *
- * @param {string} type The type of the event to listen for.
- * @param {Function} handler The function to handle the event. The handler can
- *     also be an object that implements the handleEvent method which takes the
- *     event object as argument.
- * @param {boolean=} opt_capture In DOM-compliant browsers, this determines
- *     whether the listener is fired during the capture or bubble phase of the
- *     event.
- * @param {Object=} opt_handlerScope Object in whose scope to call the listener.
- */
+/** @override */
 goog.graphics.Element.prototype.addEventListener = function(
     type, handler, opt_capture, opt_handlerScope) {
   goog.events.listen(this.element_, type, handler, opt_capture,
@@ -143,20 +136,7 @@ goog.graphics.Element.prototype.addEventListener = function(
 };
 
 
-/**
- * Removes an event listener from the element. The handler must be the
- * same object as the one added. If the handler has not been added then
- * nothing is done.
- *
- * @param {string} type The type of the event to listen for.
- * @param {Function} handler The function to handle the event. The handler can
- *     can also be an object that implements thehandleEvent method which takes
- *     the event obejct as argument.
- * @param {boolean=} opt_capture In DOM-compliant browsers, this determines
- *     whether the listener is fired during the capture or bubble phase of the
- *     event.
- * @param {Object=} opt_handlerScope Object in whose scope to call the listener.
- */
+/** @override */
 goog.graphics.Element.prototype.removeEventListener = function(
     type, handler, opt_capture, opt_handlerScope) {
   goog.events.unlisten(this.element_, type, handler, opt_capture,
@@ -164,9 +144,7 @@ goog.graphics.Element.prototype.removeEventListener = function(
 };
 
 
-/**
- * Unattaches listeners from this element.
- */
+/** @override */
 goog.graphics.Element.prototype.disposeInternal = function() {
   goog.graphics.Element.superClass_.disposeInternal.call(this);
   goog.events.removeAll(this.element_);

@@ -74,7 +74,7 @@
  * }
  * </pre>
  *
-*
+ * @author brenneman@google.com (Shawn Brenneman)
  */
 
 
@@ -87,6 +87,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.testing.TestCase');
 goog.require('goog.testing.TestCase.Test');
 goog.require('goog.testing.asserts');
+
 
 
 /**
@@ -155,21 +156,21 @@ goog.testing.ContinuationTestCase.prototype.enableWaitFunctions_ =
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.ContinuationTestCase.prototype.runTests = function() {
   this.enableWaitFunctions_(true);
   goog.testing.ContinuationTestCase.superClass_.runTests.call(this);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.ContinuationTestCase.prototype.finalize = function() {
   this.enableWaitFunctions_(false);
   goog.testing.ContinuationTestCase.superClass_.finalize.call(this);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.ContinuationTestCase.prototype.cycleTests = function() {
   // Get the next test in the queue.
   if (!this.currentTest_) {
@@ -217,7 +218,7 @@ goog.testing.ContinuationTestCase.prototype.createNextTest_ = function() {
 goog.testing.ContinuationTestCase.prototype.finishTest_ = function() {
   var err = this.currentTest_.getError();
   if (err) {
-    this.doError(this.currentTest_, err)
+    this.doError(this.currentTest_, err);
   } else {
     this.doSuccess(this.currentTest_);
   }
@@ -288,7 +289,13 @@ goog.testing.ContinuationTestCase.prototype.runNextStep_ = function() {
 
 
 /**
- * Creates a new test step that will run after a user-specified timeout.
+ * Creates a new test step that will run after a user-specified
+ * timeout.  No guarantee is made on the execution order of the
+ * continuation, except for those provided by each browser's
+ * window.setTimeout. In particular, if two continuations are
+ * registered at the same time with very small delta for their
+ * durations, this class can not guarantee that the continuation with
+ * the smaller duration will be executed first.
  * @param {Function} continuation The test function to invoke after the timeout.
  * @param {number=} opt_duration The length of the timeout in milliseconds.
  */
@@ -343,7 +350,7 @@ goog.testing.ContinuationTestCase.prototype.waitForCondition = function(
     opt_interval,
     opt_maxTimeout) {
 
-  var interval = opt_interval || 100
+  var interval = opt_interval || 100;
   var timeout = opt_maxTimeout || goog.testing.ContinuationTestCase.MAX_TIMEOUT;
 
   var step = this.addStep_(continuation);

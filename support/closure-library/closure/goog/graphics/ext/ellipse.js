@@ -24,6 +24,7 @@ goog.provide('goog.graphics.ext.Ellipse');
 goog.require('goog.graphics.ext.StrokeAndFillElement');
 
 
+
 /**
  * Wrapper for a graphics ellipse element.
  * @param {goog.graphics.ext.Group} group Parent for this element.
@@ -43,6 +44,7 @@ goog.inherits(goog.graphics.ext.Ellipse,
 /**
  * Redraw the ellipse.  Called when the coordinate system is changed.
  * @protected
+ * @override
  */
 goog.graphics.ext.Ellipse.prototype.redraw = function() {
   goog.graphics.ext.Ellipse.superClass_.redraw.call(this);

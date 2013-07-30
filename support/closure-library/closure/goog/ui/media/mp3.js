@@ -48,7 +48,6 @@
  *   mp3.setSelected(true);
  * </pre>
  *
-*
  *
  * @supported IE6, FF2+, Safari. Requires flash to actually work.
  *
@@ -61,6 +60,7 @@ goog.require('goog.string');
 goog.require('goog.ui.media.FlashObject');
 goog.require('goog.ui.media.Media');
 goog.require('goog.ui.media.MediaRenderer');
+
 
 
 /**
@@ -117,7 +117,7 @@ goog.ui.media.Mp3.CSS_CLASS = goog.getCssName('goog-ui-media-mp3');
  * @private
  */
 goog.ui.media.Mp3.flashUrl_ =
-    'http://www.google.com/reader/ui/3247397568-audio-player.swf';
+    'http://www.google.com/reader/ui/3523697345-audio-player.swf';
 
 
 /**
@@ -134,7 +134,7 @@ goog.ui.media.Mp3.flashUrl_ =
  * @type {RegExp}
  */
 goog.ui.media.Mp3.MATCHER =
-    /(https?:\/\/[a-zA-Z0-9-_%&\/.=:#\+~\(\)]+\.(mp3)+(\?[a-zA-Z0-9-_%&\/.=:#\+~\(\)]+)?)/i;
+    /(https?:\/\/[\w-%&\/.=:#\+~\(\)]+\.(mp3)+(\?[\w-%&\/.=:#\+~\(\)]+)?)/i;
 
 
 /**
@@ -195,10 +195,12 @@ goog.ui.media.Mp3.buildFlashUrl = function(mp3Url) {
  * Creates the initial DOM structure of a mp3 video, which is basically a
  * the flash object pointing to a flash mp3 player.
  *
- * @param {goog.ui.media.Media} control The media control.
+ * @param {goog.ui.Control} c The media control.
  * @return {Element} A DOM structure that represents the control.
+ * @override
  */
-goog.ui.media.Mp3.prototype.createDom = function(control) {
+goog.ui.media.Mp3.prototype.createDom = function(c) {
+  var control = /** @type {goog.ui.media.Media} */ (c);
   var div = goog.ui.media.Mp3.superClass_.createDom.call(this, control);
 
   var dataModel =
@@ -208,7 +210,7 @@ goog.ui.media.Mp3.prototype.createDom = function(control) {
       goog.string.urlEncode(dataModel.getUrl()));
   var flash = new goog.ui.media.FlashObject(
       dataModel.getPlayer().getUrl(), control.getDomHelper());
-  flash.setFlashVars('playerMode', 'embedded');
+  flash.setFlashVar('playerMode', 'embedded');
   flash.render(div);
 
   return div;
@@ -219,6 +221,7 @@ goog.ui.media.Mp3.prototype.createDom = function(control) {
  * Returns the CSS class to be applied to the root element of components
  * rendered using this renderer.
  * @return {string} Renderer-specific CSS class.
+ * @override
  */
 goog.ui.media.Mp3.prototype.getCssClass = function() {
   return goog.ui.media.Mp3.CSS_CLASS;

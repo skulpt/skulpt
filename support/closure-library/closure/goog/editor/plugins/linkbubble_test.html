@@ -8,10 +8,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>goog.editor.plugins.LinkBubble Tests</title>
 <script src="../../base.js"></script>
 <script>
@@ -21,6 +22,7 @@ See the COPYING file for details.
   goog.require('goog.events.BrowserEvent');
   goog.require('goog.events.Event');
   goog.require('goog.events.KeyCodes');
+  goog.require('goog.style');
   goog.require('goog.testing.FunctionMock');
   goog.require('goog.testing.editor.FieldMock');
   goog.require('goog.testing.editor.TestHelper');
@@ -95,7 +97,7 @@ function closeBox() {
       'tr_bubble_closebox');
   assertEquals('Should find only one close box', 1, closeBox.length);
   assertNotNull('Found close box', closeBox[0]);
-  goog.testing.events.fireClickSequence(closeBox[0]);  
+  goog.testing.events.fireClickSequence(closeBox[0]);
 }
 
 function testCloseBox() {
@@ -135,7 +137,10 @@ function testDeleteClicked() {
   FIELDMOCK.$times(1);
   FIELDMOCK.dispatchChange();
   FIELDMOCK.$times(1);
+  FIELDMOCK.focus();
+  FIELDMOCK.$times(1);
   FIELDMOCK.$replay();
+
   linkBubble.enable(FIELDMOCK);
 
   linkBubble.handleSelectionChange(createMouseEvent(link));
@@ -234,6 +239,68 @@ function testLinkTextClickedCustomUrlFn() {
   assertBubble();
   mockWindowOpen.$verify();
   FIELDMOCK.$verify();
+}
+
+/**
+ * Urls with invalid schemes shouldn't be linkified.
+ * @bug 2585360
+ */
+function testDontLinkifyInvalidScheme() {
+  mockWindowOpen.$replay();
+  FIELDMOCK.$replay();
+  linkBubble.enable(FIELDMOCK);
+
+  var badLink = document.createElement('a');
+  badLink.href = 'javascript:alert(1)';
+  badLink.innerHTML = 'bad link';
+
+  linkBubble.handleSelectionChange(createMouseEvent(badLink));
+  assertBubble();
+
+  // The link shouldn't exist at all
+  assertNull(goog.dom.$(goog.editor.plugins.LinkBubble.TEST_LINK_ID_));
+
+  assertBubble();
+  mockWindowOpen.$verify();
+  FIELDMOCK.$verify();
+}
+
+function testIsSafeSchemeToOpen() {
+  // Urls with no scheme at all are ok too since 'http://' will be prepended.
+  var good = [
+    'http://google.com', 'http://google.com/', 'https://google.com',
+    'null@google.com', 'http://www.google.com', 'http://site.com',
+    'google.com', 'google', 'http://google', 'HTTP://GOOGLE.COM',
+    'HtTp://www.google.com'
+  ];
+
+  var bad = [
+    'javascript:google.com', 'httpp://google.com', 'data:foo',
+    'javascript:alert(\'hi\');', 'abc:def'
+  ];
+
+  for (var i = 0; i < good.length; i++) {
+    assertTrue(good[i] + ' should have a safe scheme',
+        linkBubble.isSafeSchemeToOpen_(good[i]));
+  }
+
+  for (i = 0; i < bad.length; i++) {
+    assertFalse(bad[i] + ' should have an unsafe scheme',
+        linkBubble.isSafeSchemeToOpen_(bad[i]));
+  }
+}
+
+function testShouldOpenWithWhitelist() {
+  linkBubble.setSafeToOpenSchemes(['abc']);
+
+  assertTrue('Scheme should be safe',
+              linkBubble.shouldOpenUrl('abc://google.com'));
+  assertFalse('Scheme should be unsafe',
+              linkBubble.shouldOpenUrl('http://google.com'));
+
+  linkBubble.setBlockOpeningUnsafeSchemes(false);
+  assertTrue('Non-whitelisted should now be safe after disabling blocking',
+              linkBubble.shouldOpenUrl('http://google.com'));
 }
 
 /**

@@ -15,18 +15,24 @@
 /**
  * @fileoverview Renderer for {@link goog.ui.MenuButton}s and subclasses.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.MenuButtonRenderer');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.asserts');
 goog.require('goog.dom');
+goog.require('goog.string');
 goog.require('goog.style');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.CustomButtonRenderer');
 goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuRenderer');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -92,6 +98,7 @@ if (goog.userAgent.GECKO) {
  * @param {Element} element Root element of the button whose content element
  *     is to be returned.
  * @return {Element} The button's content element.
+ * @override
  */
 goog.ui.MenuButtonRenderer.prototype.getContentElement = function(element) {
   var content =
@@ -106,22 +113,53 @@ goog.ui.MenuButtonRenderer.prototype.getContentElement = function(element) {
 
 
 /**
+ * Updates the menu button's ARIA (accessibility) state so that aria-expanded
+ * does not appear when the button is "opened."
+ * @param {Element} element Element whose ARIA state is to be updated.
+ * @param {goog.ui.Component.State} state Component state being enabled or
+ *     disabled.
+ * @param {boolean} enable Whether the state is being enabled or disabled.
+ * @protected
+ * @override
+ */
+goog.ui.MenuButtonRenderer.prototype.updateAriaState = function(element, state,
+    enable) {
+  // If button has OPENED state, do not assign an ARIA state. Usually
+  // aria-expanded would be assigned, which does not mean anything for a menu
+  // button.
+  goog.asserts.assert(
+      element, 'The menu button DOM element cannot be null.');
+  goog.asserts.assert(
+      goog.string.isEmpty(
+      goog.a11y.aria.getState(element, goog.a11y.aria.State.EXPANDED)),
+      'Menu buttons do not support the ARIA expanded attribute. ' +
+      'Please use ARIA disabled instead.' +
+      goog.a11y.aria.getState(element, goog.a11y.aria.State.EXPANDED).length);
+  if (state != goog.ui.Component.State.OPENED) {
+    goog.base(this, 'updateAriaState', element, state, enable);
+  }
+};
+
+
+/**
  * Takes an element, decorates it with the menu button control, and returns
  * the element.  Overrides {@link goog.ui.CustomButtonRenderer#decorate} by
  * looking for a child element that can be decorated by a menu, and if it
  * finds one, decorates it and attaches it to the menu button.
- * @param {goog.ui.MenuButton} button Menu button to decorate the element.
+ * @param {goog.ui.Control} control goog.ui.MenuButton to decorate the element.
  * @param {Element} element Element to decorate.
  * @return {Element} Decorated element.
+ * @override
  */
-goog.ui.MenuButtonRenderer.prototype.decorate = function(button, element) {
-  // TODO(user):  Add more robust support for subclasses of goog.ui.Menu.
+goog.ui.MenuButtonRenderer.prototype.decorate = function(control, element) {
+  var button = /** @type {goog.ui.MenuButton} */ (control);
+  // TODO(attila):  Add more robust support for subclasses of goog.ui.Menu.
   var menuElem = goog.dom.getElementsByTagNameAndClass(
       '*', goog.ui.MenuRenderer.CSS_CLASS, element)[0];
   if (menuElem) {
     // Move the menu element directly under the body (but hide it first to
     // prevent flicker; see bug 1089244).
-    goog.style.showElement(menuElem, false);
+    goog.style.setElementShown(menuElem, false);
     goog.dom.appendChild(goog.dom.getOwnerDocument(menuElem).body, menuElem);
 
     // Decorate the menu and attach it to the button.
@@ -154,6 +192,7 @@ goog.ui.MenuButtonRenderer.prototype.decorate = function(button, element) {
  *     to wrap in a box.
  * @param {goog.dom.DomHelper} dom DOM helper, used for document interaction.
  * @return {Element} Pseudo-rounded-corner box containing the content.
+ * @override
  */
 goog.ui.MenuButtonRenderer.prototype.createButton = function(content, dom) {
   return goog.ui.MenuButtonRenderer.superClass_.createButton.call(this,
@@ -220,6 +259,7 @@ goog.ui.MenuButtonRenderer.prototype.createDropdown = function(dom) {
  * Returns the CSS class to be applied to the root element of components
  * rendered using this renderer.
  * @return {string} Renderer-specific CSS class.
+ * @override
  */
 goog.ui.MenuButtonRenderer.prototype.getCssClass = function() {
   return goog.ui.MenuButtonRenderer.CSS_CLASS;

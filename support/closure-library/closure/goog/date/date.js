@@ -15,8 +15,8 @@
 /**
  * @fileoverview Functions and objects for date representation and manipulation.
  *
-*
-*
+ * @author eae@google.com (Emil A Eklund)
+ * @author pallosp@google.com (Peter Pallos)
  */
 
 goog.provide('goog.date');
@@ -27,6 +27,9 @@ goog.provide('goog.date.month');
 goog.provide('goog.date.weekDay');
 
 goog.require('goog.asserts');
+/** @suppress {extraRequire} */
+goog.require('goog.date.DateLike');
+goog.require('goog.i18n.DateTimeSymbols');
 goog.require('goog.string');
 
 
@@ -181,8 +184,8 @@ goog.date.getNumberOfDaysInMonth = function(year, month) {
 
 /**
  * Returns true if the 2 dates are in the same day.
- * @param {Date} date The time to check.
- * @param {Date=} opt_now The current time.
+ * @param {goog.date.DateLike} date The time to check.
+ * @param {goog.date.DateLike=} opt_now The current time.
  * @return {boolean} Whether the dates are on the same day.
  */
 goog.date.isSameDay = function(date, opt_now) {
@@ -194,8 +197,8 @@ goog.date.isSameDay = function(date, opt_now) {
 
 /**
  * Returns true if the 2 dates are in the same month.
- * @param {Date} date The time to check.
- * @param {Date=} opt_now The current time.
+ * @param {goog.date.DateLike} date The time to check.
+ * @param {goog.date.DateLike=} opt_now The current time.
  * @return {boolean} Whether the dates are in the same calendar month.
  */
 goog.date.isSameMonth = function(date, opt_now) {
@@ -207,8 +210,8 @@ goog.date.isSameMonth = function(date, opt_now) {
 
 /**
  * Returns true if the 2 dates are in the same year.
- * @param {Date} date The time to check.
- * @param {Date=} opt_now The current time.
+ * @param {goog.date.DateLike} date The time to check.
+ * @param {goog.date.DateLike=} opt_now The current time.
  * @return {boolean} Whether the dates are in the same calendar year.
  */
 goog.date.isSameYear = function(date, opt_now) {
@@ -265,6 +268,28 @@ goog.date.getWeekNumber = function(year, month, date, opt_weekDay,
 
 
 /**
+ * @param {!T} date1 A datelike object.
+ * @param {!S} date2 Another datelike object.
+ * @return {!(T|S)} The earlier of them in time.
+ * @template T,S
+ */
+goog.date.min = function(date1, date2) {
+  return date1 < date2 ? date1 : date2;
+};
+
+
+/**
+ * @param {!T} date1 A datelike object.
+ * @param {!S} date2 Another datelike object.
+ * @return {!(T|S)} The later of them in time.
+ * @template T,S
+ */
+goog.date.max = function(date1, date2) {
+  return date1 > date2 ? date1 : date2;
+};
+
+
+/**
  * Creates a DateTime from a datetime string expressed in ISO 8601 format.
  *
  * @param {string} formatted A date or datetime expressed in ISO 8601 format.
@@ -308,13 +333,13 @@ goog.date.setIso8601DateOnly_ = function(d, formatted) {
     return false;
   }
 
-  var year = parts[1];
-  var month = parts[2];
-  var date = parts[3];
-  var dayOfYear = parts[4];
-  var week = parts[5];
+  var year = Number(parts[1]);
+  var month = Number(parts[2]);
+  var date = Number(parts[3]);
+  var dayOfYear = Number(parts[4]);
+  var week = Number(parts[5]);
   // ISO weekdays start with 1, native getDay() values start with 0
-  var dayOfWeek = parts[6] || 1;
+  var dayOfWeek = Number(parts[6]) || 1;
 
   d.setFullYear(year);
 
@@ -416,9 +441,9 @@ goog.date.setIso8601TimeOnly_ = function(d, formatted) {
     return false;
   }
 
-  d.setHours(parts[1]);
-  d.setMinutes(parts[2] || 0);
-  d.setSeconds(parts[3] || 0);
+  d.setHours(Number(parts[1]));
+  d.setMinutes(Number(parts[2]) || 0);
+  d.setSeconds(Number(parts[3]) || 0);
   d.setMilliseconds(parts[4] ? parts[4] * 1000 : 0);
 
   if (offset != 0) {
@@ -635,6 +660,19 @@ goog.date.Interval.SECONDS = 's';
 
 
 /**
+ * @return {boolean} Whether all fields of the interval are zero.
+ */
+goog.date.Interval.prototype.isZero = function() {
+  return this.years == 0 &&
+         this.months == 0 &&
+         this.days == 0 &&
+         this.hours == 0 &&
+         this.minutes == 0 &&
+         this.seconds == 0;
+};
+
+
+/**
  * @return {!goog.date.Interval} Negative of this interval.
  */
 goog.date.Interval.prototype.getInverse = function() {
@@ -690,7 +728,9 @@ goog.date.Interval.prototype.add = function(interval) {
  *
  * Implements most methods of the native js Date object (except the time related
  * ones, {@see goog.date.DateTime}) and can be used interchangeably with it just
- * as if goog.date.Date was a subclass of Date.
+ * as if goog.date.Date was a synonym of Date. To make this more transparent,
+ * Closure APIs should accept goog.date.DateLike instead of the real Date
+ * object.
  *
  * To allow goog.date.Date objects to be passed as arguments to methods
  * expecting Date objects this class is marked as extending the built in Date
@@ -702,7 +742,6 @@ goog.date.Interval.prototype.add = function(interval) {
  * @param {number=} opt_month Month, 0 = Jan, 11 = Dec.
  * @param {number=} opt_date Date of month, 1 - 31.
  * @constructor
- * @extends {Date}
  * @see goog.date.DateTime
  */
 goog.date.Date = function(opt_year, opt_month, opt_date) {
@@ -724,13 +763,13 @@ goog.date.Date = function(opt_year, opt_month, opt_date) {
 };
 
 
-// TODO(anatol): It should use DateTimeSymbols
 /**
  * First day of week. 0 = Mon, 6 = Sun.
  * @type {number}
  * @private
  */
-goog.date.Date.prototype.firstDayOfWeek_ = goog.date.weekDay.MON;
+goog.date.Date.prototype.firstDayOfWeek_ =
+    goog.i18n.DateTimeSymbols.FIRSTDAYOFWEEK;
 
 
 /**
@@ -738,7 +777,8 @@ goog.date.Date.prototype.firstDayOfWeek_ = goog.date.weekDay.MON;
  * @type {number}
  * @private
  */
-goog.date.Date.prototype.firstWeekCutOffDay_ = goog.date.weekDay.THU;
+goog.date.Date.prototype.firstWeekCutOffDay_ =
+    goog.i18n.DateTimeSymbols.FIRSTWEEKCUTOFFDAY;
 
 
 /**
@@ -773,10 +813,10 @@ goog.date.Date.prototype.getYear = function() {
 
 
 /**
- * @return {number} The month of date, 0 = Jan, 11 = Dec.
+ * @return {goog.date.month} The month of date, 0 = Jan, 11 = Dec.
  */
 goog.date.Date.prototype.getMonth = function() {
-  return this.date_.getMonth();
+  return /** @type {goog.date.month} */ (this.date_.getMonth());
 };
 
 
@@ -799,10 +839,10 @@ goog.date.Date.prototype.getTime = function() {
 
 
 /**
- * @return {number} The day of week, US style. 0 = Sun, 6 = Sat.
+ * @return {goog.date.weekDay} The day of week, US style. 0 = Sun, 6 = Sat.
  */
 goog.date.Date.prototype.getDay = function() {
-  return this.date_.getDay();
+  return /** @type {goog.date.weekDay} */ (this.date_.getDay());
 };
 
 
@@ -831,11 +871,11 @@ goog.date.Date.prototype.getUTCFullYear = function() {
 
 
 /**
- * @return {number} The month of date according to universal time,
+ * @return {goog.date.month} The month of date according to universal time,
  *     0 = Jan, 11 = Dec.
  */
 goog.date.Date.prototype.getUTCMonth = function() {
-  return this.date_.getUTCMonth();
+  return /** @type {goog.date.month} */ (this.date_.getUTCMonth());
 };
 
 
@@ -848,11 +888,11 @@ goog.date.Date.prototype.getUTCDate = function() {
 
 
 /**
- * @return {number} The day of week according to universal time, US style.
- *     0 = Sun, 1 = Mon, 6 = Sat.
+ * @return {goog.date.weekDay} The day of week according to universal time,
+ *     US style. 0 = Sun, 1 = Mon, 6 = Sat.
  */
 goog.date.Date.prototype.getUTCDay = function() {
-  return this.date_.getDay();
+  return /** @type {goog.date.weekDay} */ (this.date_.getDay());
 };
 
 
@@ -920,8 +960,8 @@ goog.date.Date.prototype.getNumberOfDaysInMonth = function() {
  */
 goog.date.Date.prototype.getWeekNumber = function() {
   return goog.date.getWeekNumber(
-    this.getFullYear(), this.getMonth(), this.getDate(),
-    this.firstWeekCutOffDay_, this.firstDayOfWeek_);
+      this.getFullYear(), this.getMonth(), this.getDate(),
+      this.firstWeekCutOffDay_, this.firstDayOfWeek_);
 };
 
 
@@ -1009,6 +1049,8 @@ goog.date.Date.prototype.setYear = function(year) {
 
 /**
  * Sets the month part of the date.
+ *
+ * TODO(nnaze): Update type to goog.date.month.
  *
  * @param {number} month The month, where 0 = Jan, 11 = Dec.
  */
@@ -1186,15 +1228,17 @@ goog.date.Date.prototype.toUTCIsoString = function(opt_verbose, opt_tz) {
  * @return {boolean} Whether the given date is equal to this one.
  */
 goog.date.Date.prototype.equals = function(other) {
-  return this.getYear() == other.getYear() &&
-         this.getMonth() == other.getMonth() &&
-         this.getDate() == other.getDate();
+  return !!(other &&
+            this.getYear() == other.getYear() &&
+            this.getMonth() == other.getMonth() &&
+            this.getDate() == other.getDate());
 };
 
 
 /**
  * Overloaded toString method for object.
  * @return {string} ISO 8601 string representation of date.
+ * @override
  */
 goog.date.Date.prototype.toString = function() {
   return this.toIsoString();
@@ -1217,9 +1261,23 @@ goog.date.Date.prototype.maybeFixDst_ = function(expected) {
 
 /**
  * @return {number} Value of wrapped date.
+ * @override
  */
 goog.date.Date.prototype.valueOf = function() {
   return this.date_.valueOf();
+};
+
+
+/**
+ * Compares two dates.  May be used as a sorting function.
+ * @see goog.array.sort
+ * @param {!goog.date.DateLike} date1 Date to compare.
+ * @param {!goog.date.DateLike} date2 Date to compare.
+ * @return {number} Comparison result. 0 if dates are the same, less than 0 if
+ *     date1 is earlier than date2, greater than 0 if date1 is later than date2.
+ */
+goog.date.Date.compare = function(date1, date2) {
+  return date1.getTime() - date2.getTime();
 };
 
 
@@ -1311,10 +1369,11 @@ goog.date.DateTime.prototype.getMilliseconds = function() {
 /**
  * Returns the day of week according to universal time, US style.
  *
- * @return {number} Day of week, 0 = Sun, 1 = Mon, 6 = Sat.
+ * @return {goog.date.weekDay} Day of week, 0 = Sun, 1 = Mon, 6 = Sat.
+ * @override
  */
 goog.date.DateTime.prototype.getUTCDay = function() {
-  return this.date_.getUTCDay();
+  return /** @type {goog.date.weekDay} */ (this.date_.getUTCDay());
 };
 
 
@@ -1322,6 +1381,7 @@ goog.date.DateTime.prototype.getUTCDay = function() {
  * Returns the hours part of the datetime according to universal time.
  *
  * @return {number} An integer between 0 and 23, representing the hour.
+ * @override
  */
 goog.date.DateTime.prototype.getUTCHours = function() {
   return this.date_.getUTCHours();
@@ -1332,6 +1392,7 @@ goog.date.DateTime.prototype.getUTCHours = function() {
  * Returns the minutes part of the datetime according to universal time.
  *
  * @return {number} An integer between 0 and 59, representing the minutes.
+ * @override
  */
 goog.date.DateTime.prototype.getUTCMinutes = function() {
   return this.date_.getUTCMinutes();
@@ -1439,9 +1500,19 @@ goog.date.DateTime.prototype.setUTCMilliseconds = function(ms) {
 
 
 /**
+ * @return {boolean} Whether the datetime is aligned to midnight.
+ */
+goog.date.DateTime.prototype.isMidnight = function() {
+  return this.getHours() == 0 && this.getMinutes() == 0 &&
+      this.getSeconds() == 0 && this.getMilliseconds() == 0;
+};
+
+
+/**
  * Performs date calculation by adding the supplied interval to the date.
  *
  * @param {goog.date.Interval} interval Date interval to add.
+ * @override
  */
 goog.date.DateTime.prototype.add = function(interval) {
   goog.date.Date.prototype.add.call(this, interval);
@@ -1466,6 +1537,7 @@ goog.date.DateTime.prototype.add = function(interval) {
  * @param {boolean=} opt_tz Whether the timezone offset should be included
  *     in the string.
  * @return {string} ISO 8601 string representation of date/time.
+ * @override
  */
 goog.date.DateTime.prototype.toIsoString = function(opt_verbose, opt_tz) {
   var dateString = goog.date.Date.prototype.toIsoString.call(this, opt_verbose);
@@ -1513,6 +1585,7 @@ goog.date.DateTime.prototype.toXmlDateTime = function(opt_timezone) {
  *     in the string.
  * @return {string} ISO 8601 string representation of date/time according to
  *     universal time.
+ * @override
  */
 goog.date.DateTime.prototype.toUTCIsoString = function(opt_verbose, opt_tz) {
   var dateStr = goog.date.Date.prototype.toUTCIsoString.call(this, opt_verbose);
@@ -1536,8 +1609,9 @@ goog.date.DateTime.prototype.toUTCIsoString = function(opt_verbose, opt_tz) {
 /**
  * Tests whether given datetime is exactly equal to this DateTime.
  *
- * @param {goog.date.DateTime} other The datetime to compare.
+ * @param {goog.date.Date} other The datetime to compare.
  * @return {boolean} Whether the given datetime is exactly equal to this one.
+ * @override
  */
 goog.date.DateTime.prototype.equals = function(other) {
   return this.getTime() == other.getTime();
@@ -1547,6 +1621,7 @@ goog.date.DateTime.prototype.equals = function(other) {
 /**
  * Overloaded toString method for object.
  * @return {string} ISO 8601 string representation of date/time.
+ * @override
  */
 goog.date.DateTime.prototype.toString = function() {
   return this.toIsoString();
@@ -1633,6 +1708,7 @@ goog.date.DateTime.prototype.toIsoTimeString = function(opt_showSeconds) {
 
 /**
  * @return {!goog.date.DateTime} A clone of the datetime object.
+ * @override
  */
 goog.date.DateTime.prototype.clone = function() {
   var date = new goog.date.DateTime(this.date_);

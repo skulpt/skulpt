@@ -18,14 +18,17 @@
  * Drag and drop implementation for sources/targets consisting of multiple
  * elements.
  *
-*
+ * @author eae@google.com (Emil A Eklund)
  * @see ../demos/dragdrop.html
  */
 
 goog.provide('goog.fx.DragDropGroup');
 
+goog.require('goog.dom');
 goog.require('goog.fx.AbstractDragDrop');
 goog.require('goog.fx.DragDropItem');
+
+
 
 /**
  * Drag/drop implementation for creating drag sources/drop targets consisting of
@@ -49,6 +52,7 @@ goog.inherits(goog.fx.DragDropGroup, goog.fx.AbstractDragDrop);
  * @param {Object=} opt_data Data associated with the source/target.
  * @throws Error If no element argument is provided or if the type is
  *     invalid
+ * @override
  */
 goog.fx.DragDropGroup.prototype.addItem = function(element, opt_data) {
   var item = new goog.fx.DragDropItem(element, opt_data);
@@ -74,13 +78,31 @@ goog.fx.DragDropGroup.prototype.addDragDropItem = function(item) {
 
 
 /**
+ * Remove item from drag object.
+ *
+ * @param {Element|string} element Dom Node, or string representation of node
+ *     id, that was previously added with addItem().
+ */
+goog.fx.DragDropGroup.prototype.removeItem = function(element) {
+  element = goog.dom.getElement(element);
+  for (var item, i = 0; item = this.items_[i]; i++) {
+    if (item.element == element) {
+      this.items_.splice(i, 1);
+      this.disposeItem(item);
+      break;
+    }
+  }
+};
+
+
+/**
  * Marks the supplied list of items as selected. A drag operation for any of the
  * selected items will affect all of them.
  *
  * @param {Array.<goog.fx.DragDropItem>} list List of items to select or null to
  *     clear selection.
  *
- * TODO(user): Not yet implemented.
+ * TODO(eae): Not yet implemented.
  */
 goog.fx.DragDropGroup.prototype.setSelection = function(list) {
 

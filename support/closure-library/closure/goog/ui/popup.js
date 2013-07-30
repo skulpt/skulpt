@@ -15,8 +15,6 @@
 /**
  * @fileoverview Definition of the Popup class.
  *
-*
-*
  * @see ../demos/popup.html
  */
 
@@ -31,14 +29,12 @@ goog.provide('goog.ui.Popup.ViewPortClientPosition');
 goog.provide('goog.ui.Popup.ViewPortPosition');
 
 goog.require('goog.math.Box');
-goog.require('goog.positioning');
 goog.require('goog.positioning.AbsolutePosition');
 goog.require('goog.positioning.AnchoredPosition');
 goog.require('goog.positioning.AnchoredViewportPosition');
 goog.require('goog.positioning.ClientPosition');
 goog.require('goog.positioning.Corner');
 goog.require('goog.positioning.Overflow');
-goog.require('goog.positioning.OverflowStatus');
 goog.require('goog.positioning.ViewportClientPosition');
 goog.require('goog.positioning.ViewportPosition');
 goog.require('goog.style');
@@ -198,6 +194,7 @@ goog.ui.Popup.prototype.setMargin = function(arg1, opt_arg2, opt_arg3,
 
 /**
  * Repositions the popup according to the current state.
+ * @override
  */
 goog.ui.Popup.prototype.reposition = function() {
   if (!this.position_) {
@@ -209,84 +206,18 @@ goog.ui.Popup.prototype.reposition = function() {
   var el = this.getElement();
   if (hideForPositioning) {
     el.style.visibility = 'hidden';
-    goog.style.showElement(el, true);
+    goog.style.setElementShown(el, true);
   }
 
   this.position_.reposition(el, this.popupCorner_, this.margin_);
 
   if (hideForPositioning) {
-    // NOTE(user): The visibility property is reset to 'visible' by the show_
+    // NOTE(eae): The visibility property is reset to 'visible' by the show_
     // method in PopupBase. Resetting it here causes flickering in some
     // situations, even if set to visible after the display property has been
     // set to none by the call below.
-    goog.style.showElement(el, false);
+    goog.style.setElementShown(el, false);
   }
-};
-
-
-/**
- * Positions a movable element relative to an anchorElement. The caller
- * specifies the corners that should touch. This functions then moves the
- * movable element accordingly.
- *
- * @param {Element} anchorElement The DOM element that is the anchor for where
- *    the movable element should position itself.
- * @param {goog.positioning.Corner} anchorElementCorner The corner of the
- *     anchorElement for positioning the movable element.
- * @param {Element} movableElement The DOM element to move.
- * @param {goog.positioning.Corner} movableElementCorner The corner of the
- *     movableElement that that should be positioned adjacent to the
- *     anchorElement.
- * @param {goog.math.Coordinate?=} opt_offset An offset specified in pixels.
- *    After the normal positioning algorithm is applied, the offset is then
- *    applied. Positive coordinates move the popup closer to the center of the
- *    anchor element. Negative coordinates move the popup away from the center
- *    of the anchor element.
- * @param {goog.math.Box?=} opt_margin A margin specified in pixels.
- *    After the normal positioning algorithm is applied and any offset, the
- *    margin is then applied. Positive coordinates move the popup away from the
- *    spot it was positioned towards its center. Negative coordiates move it
- *    towards the spot it was positioned away from its center.
- * @param {number=} opt_overflow Overflow handling mode. Defaults
- *    to goog.ui.Popup.Overflow.IGNORE if not specified. Bitmap.
- * @return {boolean} Returns true if the element was positioned or false if
- *     opt_overflow was set to FAIL and the element wouldn't fit inside the
- *     viewport.
- *
- * @deprecated Use {@link goog.positioning.positionAtAnchor} instead, this alias
- *     will be removed at the end of Q1 2009.
- */
-goog.ui.Popup.positionPopup = function(anchorElement, anchorElementCorner,
-                                       movableElement, movableElementCorner,
-                                       opt_offset, opt_margin, opt_overflow) {
-  return (goog.positioning.positionAtAnchor(anchorElement, anchorElementCorner,
-      movableElement, movableElementCorner, opt_offset, opt_margin,
-      opt_overflow) & goog.positioning.OverflowStatus.FAILED) == 0;
-};
-
-
-
-/**
- * Positions the specified corner of the movable element at the
- * specified coordinate.
- *
- * @param {goog.math.Coordinate} absolutePos The coordinate to position the
- *     element at.
- * @param {Element} movableElement The element to be positioned.
- * @param {goog.positioning.Corner} movableElementCorner The corner of the
- *     movableElement that that should be positioned.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @return {boolean} Always returns true.
- *
- * @deprecated Use {@link goog.positioning.positionAtCoordinate} instead, this
- *     alias will be removed at the end of Q1 2009.
- */
-goog.ui.Popup.positionAtCoordinate = function(absolutePos, movableElement,
-                                              movableElementCorner,
-                                              opt_margin) {
-  goog.positioning.positionAtCoordinate(absolutePos, movableElement,
-      movableElementCorner, opt_margin);
-  return true;
 };
 
 
@@ -309,6 +240,7 @@ goog.ui.Popup.positionAtCoordinate = function(absolutePos, movableElement,
  *     alias will be removed at the end of Q1 2009.
  */
 goog.ui.Popup.AnchoredPosition = goog.positioning.AnchoredPosition;
+
 
 
 /**
@@ -338,6 +270,7 @@ goog.ui.Popup.AnchoredViewPortPosition =
     goog.positioning.AnchoredViewportPosition;
 
 
+
 /**
  * Encapsulates a popup position where the popup absolutely positioned by
  * setting the left/top style elements directly to the specified values.
@@ -354,6 +287,7 @@ goog.ui.Popup.AnchoredViewPortPosition =
  *     will be removed at the end of Q1 2009.
  */
 goog.ui.Popup.AbsolutePosition = goog.positioning.AbsolutePosition;
+
 
 
 /**
@@ -373,6 +307,7 @@ goog.ui.Popup.AbsolutePosition = goog.positioning.AbsolutePosition;
 goog.ui.Popup.ViewPortPosition = goog.positioning.ViewportPosition;
 
 
+
 /**
  * Encapsulates a popup position where the popup is positioned relative to the
  * window (client) coordinates. This calculates the correct position to
@@ -390,6 +325,7 @@ goog.ui.Popup.ViewPortPosition = goog.positioning.ViewportPosition;
  *     will be removed at the end of Q1 2009.
  */
 goog.ui.Popup.ClientPosition = goog.positioning.ClientPosition;
+
 
 
 /**

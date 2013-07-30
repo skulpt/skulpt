@@ -15,13 +15,14 @@
 /**
  * @fileoverview Utilities for creating and working with iframes
  * cross-browser.
-*
+ * @author gboyer@google.com (Garry Boyer)
  */
 
 
 goog.provide('goog.dom.iframe');
 
 goog.require('goog.dom');
+goog.require('goog.userAgent');
 
 
 /**
@@ -33,6 +34,39 @@ goog.require('goog.dom');
  * @type {string}
  */
 goog.dom.iframe.BLANK_SOURCE = 'javascript:""';
+
+
+/**
+ * Safe source for a new blank iframe that may not cause a new load of the
+ * iframe. This is different from {@code goog.dom.iframe.BLANK_SOURCE} in that
+ * it will allow an iframe to be loaded synchronously in more browsers, notably
+ * Gecko, following the javascript protocol spec.
+ *
+ * NOTE: This should not be used to replace the source of an existing iframe.
+ * The new src value will be ignored, per the spec.
+ *
+ * Due to cross-browser differences, the load is not guaranteed  to be
+ * synchronous. If code depends on the load of the iframe,
+ * then {@code goog.net.IframeLoadMonitor} or a similar technique should be
+ * used.
+ *
+ * According to
+ * http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#javascript-protocol
+ * the 'javascript:""' URL should trigger a new load of the iframe, which may be
+ * asynchronous. A void src, such as 'javascript:undefined', does not change
+ * the browsing context document's, and thus should not trigger another load.
+ *
+ * Intentionally not about:blank, which also triggers a load.
+ *
+ * NOTE: 'javascript:' URL handling spec compliance varies per browser. IE
+ * throws an error with 'javascript:undefined'. Webkit browsers will reload the
+ * iframe when setting this source on an existing iframe.
+ *
+ * @type {string}
+ */
+goog.dom.iframe.BLANK_SOURCE_NEW_FRAME = goog.userAgent.IE ?
+    'javascript:""' :
+    'javascript:undefined';
 
 
 /**
@@ -86,7 +120,7 @@ goog.dom.iframe.writeContent = function(iframe, content) {
 };
 
 
-// TODO(user): Provide a higher-level API for the most common use case, so
+// TODO(gboyer): Provide a higher-level API for the most common use case, so
 // that you can just provide a list of stylesheets and some content HTML.
 /**
  * Creates a same-domain iframe containing preloaded content.

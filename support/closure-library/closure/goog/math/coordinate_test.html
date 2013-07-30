@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.math.Coordinate</title>
 <script src="../base.js"></script>
 <script>
@@ -64,6 +65,16 @@ function testCoordinateDistance() {
   assertEquals(5, goog.math.Coordinate.distance(a, b));
 }
 
+function testCoordinateMagnitude() {
+  var a = new goog.math.Coordinate(5, 5);
+  assertEquals(Math.sqrt(50), goog.math.Coordinate.magnitude(a));
+}
+
+function testCoordinateAzimuth() {
+  var a = new goog.math.Coordinate(5, 5);
+  assertEquals(45, goog.math.Coordinate.azimuth(a));
+}
+
 function testCoordinateClone() {
   var c = new goog.math.Coordinate();
   assertEquals(c.toString(), c.clone().toString());
@@ -84,6 +95,63 @@ function testCoordinateSum() {
       goog.math.Coordinate.sum(
           new goog.math.Coordinate(5, 10),
           new goog.math.Coordinate(2, 50)));
+}
+
+function testCoordinateCeil() {
+  var c = new goog.math.Coordinate(5.2, 7.6);
+  assertObjectEquals(new goog.math.Coordinate(6, 8), c.ceil());
+  c = new goog.math.Coordinate(-1.2, -3.9);
+  assertObjectEquals(new goog.math.Coordinate(-1, -3), c.ceil());
+}
+
+function testCoordinateFloor() {
+  var c = new goog.math.Coordinate(5.2, 7.6);
+  assertObjectEquals(new goog.math.Coordinate(5, 7), c.floor());
+  c = new goog.math.Coordinate(-1.2, -3.9);
+  assertObjectEquals(new goog.math.Coordinate(-2, -4), c.floor());
+}
+
+function testCoordinateRound() {
+  var c = new goog.math.Coordinate(5.2, 7.6);
+  assertObjectEquals(new goog.math.Coordinate(5, 8), c.round());
+  c = new goog.math.Coordinate(-1.2, -3.9);
+  assertObjectEquals(new goog.math.Coordinate(-1, -4), c.round());
+}
+
+function testCoordinateTranslateCoordinate() {
+  var c = new goog.math.Coordinate(10, 20);
+  var t = new goog.math.Coordinate(5, 10);
+  // The translate function modifies the coordinate instead of returning a new one.
+  assertEquals(c, c.translate(t));
+  assertObjectEquals(new goog.math.Coordinate(15, 30), c);
+}
+
+function testCoordinateTranslateXY() {
+  var c = new goog.math.Coordinate(10, 20);
+  // The translate function modifies the coordinate instead of returning a new one.
+  assertEquals(c, c.translate(25, 5));
+  assertObjectEquals(new goog.math.Coordinate(35, 25), c);
+}
+
+function testCoordinateTranslateX() {
+  var c = new goog.math.Coordinate(10, 20);
+  // The translate function modifies the coordinate instead of returning a new one.
+  assertEquals(c, c.translate(5));
+  assertObjectEquals(new goog.math.Coordinate(15, 20), c);
+}
+
+function testCoordinateScaleXY() {
+  var c = new goog.math.Coordinate(10, 15);
+  // The scale function modifies the coordinate instead of returning a new one.
+  assertEquals(c, c.scale(2, 3));
+  assertObjectEquals(new goog.math.Coordinate(20, 45), c);
+}
+
+function testCoordinateScaleFactor() {
+  var c = new goog.math.Coordinate(10, 15);
+  // The scale function modifies the coordinate instead of returning a new one.
+  assertEquals(c, c.scale(2));
+  assertObjectEquals(new goog.math.Coordinate(20, 30), c);
 }
 
 </script>

@@ -16,16 +16,18 @@
  * @fileoverview A class for representing a separator, with renderers for both
  * horizontal (menu) and vertical (toolbar) separators.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.Separator');
 
-goog.require('goog.dom.a11y');
-goog.require('goog.ui.Component.State');
+goog.require('goog.a11y.aria');
+goog.require('goog.asserts');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.MenuSeparatorRenderer');
 goog.require('goog.ui.registry');
+
 
 
 /**
@@ -58,10 +60,14 @@ goog.inherits(goog.ui.Separator, goog.ui.Control);
  * Configures the component after its DOM has been rendered.  Overrides
  * {@link goog.ui.Control#enterDocument} by making sure no event handler
  * is allocated.
+ * @override
  */
 goog.ui.Separator.prototype.enterDocument = function() {
   goog.ui.Separator.superClass_.enterDocument.call(this);
-  goog.dom.a11y.setRole(this.getElement(), 'separator');
+  var element = this.getElement();
+  goog.asserts.assert(element,
+      'The DOM element for the separator cannot be null.');
+  goog.a11y.aria.setRole(element, 'separator');
 };
 
 

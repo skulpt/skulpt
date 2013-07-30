@@ -9,10 +9,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.editor.Bubble</title>
 <script src="../../base.js"></script>
 <script>
@@ -59,7 +60,7 @@ function setUp() {
   testHelper = new goog.testing.editor.TestHelper(fieldDiv);
   testHelper.setUpEditableElement();
 
-  bubble = new goog.ui.editor.Bubble(document.body, window, 999);
+  bubble = new goog.ui.editor.Bubble(document.body, 999);
 
   fieldDiv.innerHTML = '<a href="http://www.google.com">Google</a>' +
       '<a href="http://www.google.com">Google2</a>';
@@ -104,7 +105,7 @@ function prepareTargetWithGivenDirection(dir, opt_preferTopPosition) {
  * default and align right if opt_alignRight is true. The expected Y is
  * unaffected by alignment.
  *
- * @param {boolean} opt_alignRight Sets the expected alignment to be right.
+ * @param {boolean=} opt_alignRight Sets the expected alignment to be right.
  */
 function getExpectedBubblePositionWithGivenAlignment(opt_alignRight) {
   var targetPosition = goog.style.getFramedPageOffset(link, window);

@@ -56,7 +56,6 @@
  *   picasa.setSelected(true);
  * </pre>
  *
-*
  *
  * @supported IE6, FF2+, Safari. Requires flash to actually work.
  *
@@ -66,12 +65,11 @@
 goog.provide('goog.ui.media.PicasaAlbum');
 goog.provide('goog.ui.media.PicasaAlbumModel');
 
-goog.require('goog.object');
 goog.require('goog.ui.media.FlashObject');
 goog.require('goog.ui.media.Media');
 goog.require('goog.ui.media.MediaModel');
-goog.require('goog.ui.media.MediaModel.Player');
 goog.require('goog.ui.media.MediaRenderer');
+
 
 
 /**
@@ -143,10 +141,12 @@ goog.ui.media.PicasaAlbum.newControl = function(dataModel, opt_domHelper) {
  * Creates the initial DOM structure of the picasa album, which is basically a
  * the flash object pointing to a flash picasa album player.
  *
- * @param {goog.ui.media.Media} control The media control.
+ * @param {goog.ui.Control} c The media control.
  * @return {Element} The DOM structure that represents the control.
+ * @override
  */
-goog.ui.media.PicasaAlbum.prototype.createDom = function(control) {
+goog.ui.media.PicasaAlbum.prototype.createDom = function(c) {
+  var control = /** @type {goog.ui.media.Media} */ (c);
   var div = goog.ui.media.PicasaAlbum.superClass_.createDom.call(this, control);
 
   var picasaAlbum =
@@ -156,9 +156,7 @@ goog.ui.media.PicasaAlbum.prototype.createDom = function(control) {
   var flash = new goog.ui.media.FlashObject(
       picasaAlbum.getPlayer().getUrl() || '',
       control.getDomHelper());
-  goog.object.forEach(picasaAlbum.getPlayer().getVars(), function(value, key) {
-    flash.setFlashVars(key, value);
-  });
+  flash.addFlashVars(picasaAlbum.getPlayer().getVars());
   flash.render(div);
 
   return div;
@@ -169,10 +167,12 @@ goog.ui.media.PicasaAlbum.prototype.createDom = function(control) {
  * Returns the CSS class to be applied to the root element of components
  * rendered using this renderer.
  * @return {string} Renderer-specific CSS class.
+ * @override
  */
 goog.ui.media.PicasaAlbum.prototype.getCssClass = function() {
   return goog.ui.media.PicasaAlbum.CSS_CLASS;
 };
+
 
 
 /**
@@ -186,6 +186,7 @@ goog.ui.media.PicasaAlbum.prototype.getCssClass = function() {
  *     albums.
  * @param {string=} opt_caption An optional caption of the picasa album.
  * @param {string=} opt_description An optional description of the picasa album.
+ * @param {boolean=} opt_autoplay Whether to autoplay the slideshow.
  * @constructor
  * @extends {goog.ui.media.MediaModel}
  */
@@ -193,7 +194,8 @@ goog.ui.media.PicasaAlbumModel = function(userId,
                                           albumId,
                                           opt_authKey,
                                           opt_caption,
-                                          opt_description) {
+                                          opt_description,
+                                          opt_autoplay) {
   goog.ui.media.MediaModel.call(
       this,
       goog.ui.media.PicasaAlbumModel.buildUrl(userId, albumId),
@@ -226,14 +228,14 @@ goog.ui.media.PicasaAlbumModel = function(userId,
 
   var flashVars = {
     'host': 'picasaweb.google.com',
-    'noautoplay': '1',
     'RGB': '0x000000',
     'feed': 'http://picasaweb.google.com/data/feed/api/user/' +
         userId + '/album/' + albumId + '?kind=photo&alt=rss' + authParam
   };
+  flashVars[opt_autoplay ? 'autoplay' : 'noautoplay'] = '1';
 
   var player = new goog.ui.media.MediaModel.Player(
-      'http://picasaweb.google.com/s/c/bin/slideshow.swf', flashVars)
+      'http://picasaweb.google.com/s/c/bin/slideshow.swf', flashVars);
 
   this.setPlayer(player);
 };
@@ -249,8 +251,9 @@ goog.inherits(goog.ui.media.PicasaAlbumModel, goog.ui.media.MediaModel);
  *
  * @type {RegExp}
  * @private
+ * @const
  */
-goog.ui.media.PicasaAlbumModel.matcher_ =
+goog.ui.media.PicasaAlbumModel.MATCHER_ =
     /https?:\/\/(?:www\.)?picasaweb\.(?:google\.)?com\/([\d\w\.]+)\/([\d\w_\-\.]+)(?:\?[\w\d\-_=&amp;;\.]*&?authKey=([\w\d\-_=;\.]+))?(?:#([\d]+)?)?/im;
 
 
@@ -260,17 +263,19 @@ goog.ui.media.PicasaAlbumModel.matcher_ =
  * @param {string} picasaUrl A picasa album URL.
  * @param {string=} opt_caption An optional caption of the picasa album.
  * @param {string=} opt_description An optional description of the picasa album.
+ * @param {boolean=} opt_autoplay Whether to autoplay the slideshow.
  * @return {goog.ui.media.PicasaAlbumModel} The picasa album data model that
  *     represents the picasa URL.
  * @throws exception in case the parsing fails
  */
 goog.ui.media.PicasaAlbumModel.newInstance = function(picasaUrl,
                                                       opt_caption,
-                                                      opt_description) {
-  if (goog.ui.media.PicasaAlbumModel.matcher_.test(picasaUrl)) {
-    var data = goog.ui.media.PicasaAlbumModel.matcher_.exec(picasaUrl);
+                                                      opt_description,
+                                                      opt_autoplay) {
+  if (goog.ui.media.PicasaAlbumModel.MATCHER_.test(picasaUrl)) {
+    var data = goog.ui.media.PicasaAlbumModel.MATCHER_.exec(picasaUrl);
     return new goog.ui.media.PicasaAlbumModel(
-        data[1], data[2], data[3], opt_caption, opt_description);
+        data[1], data[2], data[3], opt_caption, opt_description, opt_autoplay);
   }
   throw Error('failed to parse user and album from picasa url: ' + picasaUrl);
 };

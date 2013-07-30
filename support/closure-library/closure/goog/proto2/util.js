@@ -14,19 +14,20 @@
 
 /**
  * @fileoverview Utility methods for Protocol Buffer 2 implementation.
-*
  */
 
 goog.provide('goog.proto2.Util');
 
 goog.require('goog.asserts');
 
+
 /**
  * @define {boolean} Defines a PBCHECK constant that can be turned off by
  * clients of PB2. This for is clients that do not want assertion/checking
  * running even in non-COMPILED builds.
  */
-goog.proto2.Util.PBCHECK = !COMPILED;
+goog.define('goog.proto2.Util.PBCHECK', !COMPILED);
+
 
 /**
  * Asserts that the given condition is true, if and only if the PBCHECK

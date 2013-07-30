@@ -99,8 +99,8 @@
  * p:     undefined      80 undefined
  * P:     undefined      80 undefined
  *
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author eae@google.com (Emil A Eklund)
  * @see ../demos/keyhandler.html
  */
 
@@ -120,14 +120,16 @@ goog.require('goog.userAgent');
 /**
  * A wrapper around an element that you want to listen to keyboard events on.
  * @param {Element|Document=} opt_element The element or document to listen on.
+ * @param {boolean=} opt_capture Whether to listen for browser events in
+ *     capture phase (defaults to false).
  * @constructor
  * @extends {goog.events.EventTarget}
  */
-goog.events.KeyHandler = function(opt_element) {
+goog.events.KeyHandler = function(opt_element, opt_capture) {
   goog.events.EventTarget.call(this);
 
   if (opt_element) {
-    this.attach(opt_element);
+    this.attach(opt_element, opt_capture);
   }
 };
 goog.inherits(goog.events.KeyHandler, goog.events.EventTarget);
@@ -143,7 +145,7 @@ goog.events.KeyHandler.prototype.element_ = null;
 
 /**
  * The key for the key press listener.
- * @type {?number}
+ * @type {goog.events.Key}
  * @private
  */
 goog.events.KeyHandler.prototype.keyPressKey_ = null;
@@ -151,7 +153,7 @@ goog.events.KeyHandler.prototype.keyPressKey_ = null;
 
 /**
  * The key for the key down listener.
- * @type {?number}
+ * @type {goog.events.Key}
  * @private
  */
 goog.events.KeyHandler.prototype.keyDownKey_ = null;
@@ -159,7 +161,7 @@ goog.events.KeyHandler.prototype.keyDownKey_ = null;
 
 /**
  * The key for the key up listener.
- * @type {?number}
+ * @type {goog.events.Key}
  * @private
  */
 goog.events.KeyHandler.prototype.keyUpKey_ = null;
@@ -180,6 +182,15 @@ goog.events.KeyHandler.prototype.lastKey_ = -1;
  * @type {number}
  */
 goog.events.KeyHandler.prototype.keyCode_ = -1;
+
+
+/**
+ * Alt key recorded for key down events. FF on Mac does not report the alt key
+ * flag in the key press event, we need to record it in the key down phase.
+ * @type {boolean}
+ * @private
+ */
+goog.events.KeyHandler.prototype.altKey_ = false;
 
 
 /**
@@ -262,24 +273,24 @@ goog.events.KeyHandler.keyIdentifier_ = {
 
 
 /**
- * Map from Gecko specific key codes to cross browser key codes
- * @type {Object}
- * @private
- */
-goog.events.KeyHandler.mozKeyCodeToKeyCodeMap_ = {
-  61: 187,  // =, equals
-  59: 186   // ;, semicolon
-};
-
-
-/**
  * If true, the KeyEvent fires on keydown. Otherwise, it fires on keypress.
  *
  * @type {boolean}
  * @private
  */
 goog.events.KeyHandler.USES_KEYDOWN_ = goog.userAgent.IE ||
-    goog.userAgent.WEBKIT && goog.userAgent.isVersion('525');
+    goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525');
+
+
+/**
+ * If true, the alt key flag is saved during the key down and reused when
+ * handling the key press. FF on Mac does not set the alt flag in the key press
+ * event.
+ * @type {boolean}
+ * @private
+ */
+goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_ = goog.userAgent.MAC &&
+    goog.userAgent.GECKO;
 
 
 /**
@@ -290,18 +301,53 @@ goog.events.KeyHandler.USES_KEYDOWN_ = goog.userAgent.IE ||
  * @private
  */
 goog.events.KeyHandler.prototype.handleKeyDown_ = function(e) {
+  // Ctrl-Tab and Alt-Tab can cause the focus to be moved to another window
+  // before we've caught a key-up event.  If the last-key was one of these we
+  // reset the state.
+
+  if (goog.userAgent.WEBKIT) {
+    if (this.lastKey_ == goog.events.KeyCodes.CTRL && !e.ctrlKey ||
+        this.lastKey_ == goog.events.KeyCodes.ALT && !e.altKey ||
+        goog.userAgent.MAC &&
+        this.lastKey_ == goog.events.KeyCodes.META && !e.metaKey) {
+      this.lastKey_ = -1;
+      this.keyCode_ = -1;
+    }
+  }
+
+  if (this.lastKey_ == -1) {
+    if (e.ctrlKey && e.keyCode != goog.events.KeyCodes.CTRL) {
+      this.lastKey_ = goog.events.KeyCodes.CTRL;
+    } else if (e.altKey && e.keyCode != goog.events.KeyCodes.ALT) {
+      this.lastKey_ = goog.events.KeyCodes.ALT;
+    } else if (e.metaKey && e.keyCode != goog.events.KeyCodes.META) {
+      this.lastKey_ = goog.events.KeyCodes.META;
+    }
+  }
+
   if (goog.events.KeyHandler.USES_KEYDOWN_ &&
       !goog.events.KeyCodes.firesKeyPressEvent(e.keyCode,
           this.lastKey_, e.shiftKey, e.ctrlKey, e.altKey)) {
     this.handleEvent(e);
   } else {
-    if (goog.userAgent.GECKO &&
-        e.keyCode in goog.events.KeyHandler.mozKeyCodeToKeyCodeMap_) {
-      this.keyCode_ = goog.events.KeyHandler.mozKeyCodeToKeyCodeMap_[e.keyCode];
-    } else {
-      this.keyCode_ = e.keyCode;
+    this.keyCode_ = goog.userAgent.GECKO ?
+        goog.events.KeyCodes.normalizeGeckoKeyCode(e.keyCode) :
+        e.keyCode;
+    if (goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_) {
+      this.altKey_ = e.altKey;
     }
   }
+};
+
+
+/**
+ * Resets the stored previous values. Needed to be called for webkit which will
+ * not generate a key up for meta key operations. This should only be called
+ * when having finished with repeat key possiblities.
+ */
+goog.events.KeyHandler.prototype.resetState = function() {
+  this.lastKey_ = -1;
+  this.keyCode_ = -1;
 };
 
 
@@ -313,8 +359,8 @@ goog.events.KeyHandler.prototype.handleKeyDown_ = function(e) {
  * @private
  */
 goog.events.KeyHandler.prototype.handleKeyup_ = function(e) {
-  this.lastKey_ = -1;
-  this.keyCode_ = -1;
+  this.resetState();
+  this.altKey_ = e.altKey;
 };
 
 
@@ -326,6 +372,7 @@ goog.events.KeyHandler.prototype.handleKeyup_ = function(e) {
 goog.events.KeyHandler.prototype.handleEvent = function(e) {
   var be = e.getBrowserEvent();
   var keyCode, charCode;
+  var altKey = be.altKey;
 
   // IE reports the character code in the keyCode field for keypress events.
   // There are two exceptions however, Enter and Escape.
@@ -354,11 +401,14 @@ goog.events.KeyHandler.prototype.handleEvent = function(e) {
   } else {
     keyCode = be.keyCode || this.keyCode_;
     charCode = be.charCode || 0;
-    // On the Mac, shift-/ triggers a question mark char code and no key code,
-    // so we synthesize the latter
+    if (goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_) {
+      altKey = this.altKey_;
+    }
+    // On the Mac, shift-/ triggers a question mark char code and no key code
+    // (normalized to WIN_KEY), so we synthesize the latter.
     if (goog.userAgent.MAC &&
         charCode == goog.events.KeyCodes.QUESTION_MARK &&
-        !keyCode) {
+        keyCode == goog.events.KeyCodes.WIN_KEY) {
       keyCode = goog.events.KeyCodes.SLASH;
     }
   }
@@ -392,11 +442,8 @@ goog.events.KeyHandler.prototype.handleEvent = function(e) {
   this.lastKey_ = key;
 
   var event = new goog.events.KeyEvent(key, charCode, repeat, be);
-  try {
-    this.dispatchEvent(event);
-  } finally {
-    event.dispose();
-  }
+  event.altKey = altKey;
+  this.dispatchEvent(event);
 };
 
 
@@ -413,8 +460,10 @@ goog.events.KeyHandler.prototype.getElement = function() {
 /**
  * Adds the proper key event listeners to the element.
  * @param {Element|Document} element The element to listen on.
+ * @param {boolean=} opt_capture Whether to listen for browser events in
+ *     capture phase (defaults to false).
  */
-goog.events.KeyHandler.prototype.attach = function(element) {
+goog.events.KeyHandler.prototype.attach = function(element, opt_capture) {
   if (this.keyUpKey_) {
     this.detach();
   }
@@ -423,7 +472,8 @@ goog.events.KeyHandler.prototype.attach = function(element) {
 
   this.keyPressKey_ = goog.events.listen(this.element_,
                                          goog.events.EventType.KEYPRESS,
-                                         this);
+                                         this,
+                                         opt_capture);
 
   // Most browsers (Safari 2 being the notable exception) doesn't include the
   // keyCode in keypress events (IE has the char code in the keyCode field and
@@ -432,14 +482,14 @@ goog.events.KeyHandler.prototype.attach = function(element) {
   this.keyDownKey_ = goog.events.listen(this.element_,
                                         goog.events.EventType.KEYDOWN,
                                         this.handleKeyDown_,
-                                        false,
+                                        opt_capture,
                                         this);
 
 
   this.keyUpKey_ = goog.events.listen(this.element_,
                                       goog.events.EventType.KEYUP,
                                       this.handleKeyup_,
-                                      false,
+                                      opt_capture,
                                       this);
 };
 
@@ -462,9 +512,7 @@ goog.events.KeyHandler.prototype.detach = function() {
 };
 
 
-/**
- * Disposes of the key handler.
- */
+/** @override */
 goog.events.KeyHandler.prototype.disposeInternal = function() {
   goog.events.KeyHandler.superClass_.disposeInternal.call(this);
   this.detach();

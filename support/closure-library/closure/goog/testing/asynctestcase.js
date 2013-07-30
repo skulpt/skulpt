@@ -107,6 +107,7 @@ goog.require('goog.testing.TestCase.Test');
 goog.require('goog.testing.asserts');
 
 
+
 /**
  * A test case that is capable of running tests the contain asynchronous logic.
  * @param {string=} opt_name A descriptive name for the test case.
@@ -120,10 +121,26 @@ goog.inherits(goog.testing.AsyncTestCase, goog.testing.TestCase);
 
 
 /**
+ * Represents result of top stack function call.
+ * @typedef {{controlBreakingExceptionThrown: boolean, message: string}}
+ * @private
+ */
+goog.testing.AsyncTestCase.TopStackFuncResult_;
+
+
+
+/**
  * An exception class used solely for control flow.
+ * @param {string=} opt_message Error message.
  * @constructor
  */
-goog.testing.AsyncTestCase.ControlBreakingException = function() {};
+goog.testing.AsyncTestCase.ControlBreakingException = function(opt_message) {
+  /**
+   * The exception message.
+   * @type {string}
+   */
+  this.message = opt_message || '';
+};
 
 
 /**
@@ -142,7 +159,7 @@ goog.testing.AsyncTestCase.ControlBreakingException.prototype.
     isControlBreakingException = true;
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.AsyncTestCase.ControlBreakingException.prototype.toString =
     function() {
   // This shows up in the console when the exception is not caught.
@@ -231,10 +248,10 @@ goog.testing.AsyncTestCase.prototype.nextStepName_ = '';
 
 /**
  * The handle to the current setTimeout timer.
- * @type {number|undefined}
+ * @type {number}
  * @private
  */
-goog.testing.AsyncTestCase.prototype.timeoutHandle_;
+goog.testing.AsyncTestCase.prototype.timeoutHandle_ = 0;
 
 
 /**
@@ -249,9 +266,9 @@ goog.testing.AsyncTestCase.prototype.cleanedUp_ = false;
 /**
  * The currently active test.
  * @type {goog.testing.TestCase.Test|undefined}
- * @private
+ * @protected
  */
-goog.testing.AsyncTestCase.prototype.activeTest_;
+goog.testing.AsyncTestCase.prototype.activeTest;
 
 
 /**
@@ -291,21 +308,24 @@ goog.testing.AsyncTestCase.prototype.numControlExceptionsExpected_ = 0;
 
 
 /**
+ * The current step name.
+ * @return {!string} Step name.
+ * @protected
+ */
+goog.testing.AsyncTestCase.prototype.getCurrentStepName = function() {
+  return this.curStepName_;
+};
+
+
+/**
  * Preferred way of creating an AsyncTestCase. Creates one and initializes it
  * with the G_testRunner.
  * @param {string=} opt_name A descriptive name for the test case.
- * @return {goog.testing.AsyncTestCase} The created AsyncTestCase.
+ * @return {!goog.testing.AsyncTestCase} The created AsyncTestCase.
  */
 goog.testing.AsyncTestCase.createAndInstall = function(opt_name) {
   var asyncTestCase = new goog.testing.AsyncTestCase(opt_name);
-  asyncTestCase.autoDiscoverTests();
-  var gTestRunner = goog.global['G_testRunner'];
-  if (gTestRunner) {
-    gTestRunner.initialize(asyncTestCase);
-  } else {
-    throw Error('G_testRunner is undefined. Please ensure goog.testing.jsunit' +
-        'is included.');
-  }
+  goog.testing.TestCase.initializeTestRunner(asyncTestCase);
   return asyncTestCase;
 };
 
@@ -342,8 +362,8 @@ goog.testing.AsyncTestCase.prototype.continueTesting = function() {
 
 /**
  * Handles an exception thrown by a test.
- * @param {string|Error=} opt_e The exception object associated with the
- *     failure or a string.
+ * @param {*=} opt_e The exception object associated with the failure
+ *     or a string.
  * @throws Always throws a ControlBreakingException.
  */
 goog.testing.AsyncTestCase.prototype.doAsyncError = function(opt_e) {
@@ -361,13 +381,17 @@ goog.testing.AsyncTestCase.prototype.doAsyncError = function(opt_e) {
   // helpful name based on the step we're currently on.
   var fakeTestObj = new goog.testing.TestCase.Test(this.curStepName_,
                                                    goog.nullFunction);
-  if (this.activeTest_) {
-    fakeTestObj.name = this.activeTest_.name + ' [' + fakeTestObj.name + ']';
+  if (this.activeTest) {
+    fakeTestObj.name = this.activeTest.name + ' [' + fakeTestObj.name + ']';
   }
 
-  // Note: if the test has an error, and then tearDown has an error, they will
-  // both be reported.
-  this.doError(fakeTestObj, opt_e);
+  if (this.activeTest) {
+    // Note: if the test has an error, and then tearDown has an error, they will
+    // both be reported.
+    this.doError(fakeTestObj, opt_e);
+  } else {
+    this.exceptionBeforeTest = opt_e;
+  }
 
   // This is a potential entry point, so we pump. We also add in a bit of a
   // delay to try and prevent any async behavior from the failed test from
@@ -385,7 +409,14 @@ goog.testing.AsyncTestCase.prototype.doAsyncError = function(opt_e) {
         this.numControlExceptionsExpected_ + ' and throwing exception.');
   }
 
-  throw new goog.testing.AsyncTestCase.ControlBreakingException();
+  // Copy the error message to ControlBreakingException.
+  var message = '';
+  if (typeof opt_e == 'string') {
+    message = opt_e;
+  } else if (opt_e && opt_e.message) {
+    message = opt_e.message;
+  }
+  throw new goog.testing.AsyncTestCase.ControlBreakingException(message);
 };
 
 
@@ -410,7 +441,7 @@ goog.testing.AsyncTestCase.prototype.runTests = function() {
  */
 goog.testing.AsyncTestCase.prototype.cycleTests = function() {
   // We are an entry point, so we pump.
-  this.saveMessage('Start')
+  this.saveMessage('Start');
   this.setNextStep_(this.doIteration_, 'doIteration');
   this.pump_();
 };
@@ -492,7 +523,7 @@ goog.testing.AsyncTestCase.prototype.doAsyncErrorTearDown_ = function() {
     // setUpPage() or in setUp()/test*()/tearDown().
     var stepFuncAfterError = this.nextStepFunc_;
     var stepNameAfterError = 'TestCase.execute (after error)';
-    if (this.activeTest_) {
+    if (this.activeTest) {
       stepFuncAfterError = this.doIteration_;
       stepNameAfterError = 'doIteration (after error)';
     }
@@ -558,7 +589,8 @@ goog.testing.AsyncTestCase.prototype.hookOnError_ = function() {
       // Ignore exceptions that we threw on purpose.
       var cbe =
           goog.testing.AsyncTestCase.ControlBreakingException.TO_STRING;
-      if (error.indexOf(cbe) != -1 && self.numControlExceptionsExpected_) {
+      if (String(error).indexOf(cbe) != -1 &&
+          self.numControlExceptionsExpected_) {
         self.numControlExceptionsExpected_ -= 1;
         self.dbgLog_('window.onerror: numControlExceptionsExpected_ = ' +
             self.numControlExceptionsExpected_ + ' and ignoring exception. ' +
@@ -602,7 +634,7 @@ goog.testing.AsyncTestCase.prototype.startTimeoutTimer_ = function() {
   if (!this.timeoutHandle_ && this.stepTimeout > 0) {
     this.timeoutHandle_ = this.timeout(goog.bind(function() {
       this.dbgLog_('Timeout timer fired with id ' + this.timeoutHandle_);
-      this.timeoutHandle_ = null;
+      this.timeoutHandle_ = 0;
 
       this.doTopOfStackAsyncError_('Timed out while waiting for ' +
           'continueTesting() to be called.');
@@ -619,7 +651,7 @@ goog.testing.AsyncTestCase.prototype.startTimeoutTimer_ = function() {
 goog.testing.AsyncTestCase.prototype.stopTimeoutTimer_ = function() {
   if (this.timeoutHandle_) {
     this.dbgLog_('Clearing timeout timer with id ' + this.timeoutHandle_);
-    window.clearTimeout(this.timeoutHandle_);
+    this.clearTimeout(this.timeoutHandle_);
     this.timeoutHandle_ = 0;
   }
 };
@@ -640,26 +672,26 @@ goog.testing.AsyncTestCase.prototype.setNextStep_ = function(func, name) {
 /**
  * Calls the given function, redirecting any exceptions to doAsyncError.
  * @param {Function} func The function to call.
- * @return {boolean} Returns true iff the function threw a
- *     ControlBreakingException.
+ * @return {!goog.testing.AsyncTestCase.TopStackFuncResult_} Returns a
+ * TopStackFuncResult_.
  * @private
  */
 goog.testing.AsyncTestCase.prototype.callTopOfStackFunc_ = function(func) {
   /** @preserveTry */
   try {
     func.call(this);
-    return false;
+    return {controlBreakingExceptionThrown: false, message: ''};
   } catch (e) {
     this.dbgLog_('Caught exception in callTopOfStackFunc_');
     /** @preserveTry */
     try {
       this.doAsyncError(e);
-      return false;
+      return {controlBreakingExceptionThrown: false, message: ''};
     } catch (e2) {
       if (!e2.isControlBreakingException) {
         throw e2;
       }
-      return true;
+      return {controlBreakingExceptionThrown: true, message: e2.message};
     }
   }
 };
@@ -675,40 +707,34 @@ goog.testing.AsyncTestCase.prototype.pump_ = function(opt_doFirst) {
   // If this function is already above us in the call-stack, then we should
   // return rather than pumping in order to minimize call-stack depth.
   if (!this.returnWillPump_) {
-    this.batchTime_ = this.now_();
+    this.setBatchTime(this.now());
     this.returnWillPump_ = true;
-    // If we catch an exception in the step, we don't want to return control
-    // to our caller since there may be non-testcase code in our call stack.
-    // Eg)
-    //   asyncCallback() { fail(1); fail(2); }
-    //                       V
-    //   - ...
-    //   - pump_();
-    // We don't want fail(2) to ever be called.
-    var shouldThrowAndNotReturn = false;
+    var topFuncResult = {};
 
     if (opt_doFirst) {
-      shouldThrowAndNotReturn = this.callTopOfStackFunc_(opt_doFirst);
+      topFuncResult = this.callTopOfStackFunc_(opt_doFirst);
     }
     // Note: we don't check for this.running here because it is not set to true
     // while executing setUpPage and tearDownPage.
     // Also, if isReady_ is false, then one of two things will happen:
     // 1. Our timeout callback will be called.
     // 2. The tests will call continueTesting(), which will call pump_() again.
-    while (this.isReady_ && this.nextStepFunc_ && !shouldThrowAndNotReturn) {
+    while (this.isReady_ && this.nextStepFunc_ &&
+        !topFuncResult.controlBreakingExceptionThrown) {
       this.curStepFunc_ = this.nextStepFunc_;
       this.curStepName_ = this.nextStepName_;
       this.nextStepFunc_ = null;
       this.nextStepName_ = '';
 
       this.dbgLog_('Performing step: ' + this.curStepName_);
-      shouldThrowAndNotReturn =
+      topFuncResult =
           this.callTopOfStackFunc_(/** @type {Function} */(this.curStepFunc_));
 
       // If the max run time is exceeded call this function again async so as
       // not to block the browser.
-      if (this.now_() - this.batchTime_ > goog.testing.TestCase.MAX_RUN_TIME &&
-          !shouldThrowAndNotReturn) {
+      var delta = this.now() - this.getBatchTime();
+      if (delta > goog.testing.TestCase.MAX_RUN_TIME &&
+          !topFuncResult.controlBreakingExceptionThrown) {
         this.saveMessage('Breaking async');
         var self = this;
         this.timeout(function() { self.pump_(); }, 100);
@@ -716,13 +742,6 @@ goog.testing.AsyncTestCase.prototype.pump_ = function(opt_doFirst) {
       }
     }
     this.returnWillPump_ = false;
-    // See note at top of this function.
-    if (shouldThrowAndNotReturn) {
-      this.numControlExceptionsExpected_ += 1;
-      this.dbgLog_('pump: numControlExceptionsExpected_ = ' +
-          this.numControlExceptionsExpected_ + ' and throwing exception.');
-      throw new goog.testing.AsyncTestCase.ControlBreakingException();
-    }
   } else if (opt_doFirst) {
     opt_doFirst.call(this);
   }
@@ -745,10 +764,16 @@ goog.testing.AsyncTestCase.prototype.doSetUpPage_ = function() {
  * @private
  */
 goog.testing.AsyncTestCase.prototype.doIteration_ = function() {
-  this.activeTest_ = this.next();
-  if (this.activeTest_ && this.running) {
+  this.activeTest = this.next();
+  if (this.activeTest && this.running) {
     this.result_.runCount++;
-    this.setNextStep_(this.doSetUp_, 'setUp');
+    // If this test should be marked as having failed, doIteration will go
+    // straight to the next test.
+    if (this.maybeFailTestEarly(this.activeTest)) {
+      this.setNextStep_(this.doIteration_, 'doIteration');
+    } else {
+      this.setNextStep_(this.doSetUp_, 'setUp');
+    }
   } else {
     // All tests done.
     this.finalize();
@@ -761,9 +786,9 @@ goog.testing.AsyncTestCase.prototype.doIteration_ = function() {
  * @private
  */
 goog.testing.AsyncTestCase.prototype.doSetUp_ = function() {
-  this.log('Running test: ' + this.activeTest_.name);
+  this.log('Running test: ' + this.activeTest.name);
   this.cleanedUp_ = false;
-  this.setNextStep_(this.doExecute_, this.activeTest_.name);
+  this.setNextStep_(this.doExecute_, this.activeTest.name);
   this.setUp();
 };
 
@@ -774,7 +799,7 @@ goog.testing.AsyncTestCase.prototype.doSetUp_ = function() {
  */
 goog.testing.AsyncTestCase.prototype.doExecute_ = function() {
   this.setNextStep_(this.doTearDown_, 'tearDown');
-  this.activeTest_.execute();
+  this.activeTest.execute();
 };
 
 
@@ -795,5 +820,5 @@ goog.testing.AsyncTestCase.prototype.doTearDown_ = function() {
  */
 goog.testing.AsyncTestCase.prototype.doNext_ = function() {
   this.setNextStep_(this.doIteration_, 'doIteration');
-  this.doSuccess(/** @type {goog.testing.TestCase.Test} */(this.activeTest_));
+  this.doSuccess(/** @type {goog.testing.TestCase.Test} */(this.activeTest));
 };

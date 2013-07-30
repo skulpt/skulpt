@@ -3,13 +3,13 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
-  Author: pallosp@google.com (Peter Pallos)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.structs.TreeNode</title>
 <script src="../base.js"></script>
 <script>
@@ -76,6 +76,17 @@ function testIsLeaf() {
   assertTrue('leaf', node2.isLeaf());
 }
 
+function testIsLastChild() {
+  var node1 = new goog.structs.TreeNode(1, '1');
+  var node2 = new goog.structs.TreeNode(2, '2');
+  var node3 = new goog.structs.TreeNode(3, '3');
+  node1.addChild(node2);
+  node1.addChild(node3);
+  assertFalse('root', node1.isLastChild());
+  assertFalse('first child out of the two', node2.isLastChild());
+  assertTrue('second child out of the two', node3.isLastChild());
+}
+
 function testGetChildren() {
   var node1 = new goog.structs.TreeNode(1, null);
   var node2 = new goog.structs.TreeNode(2, null);
@@ -92,6 +103,14 @@ function testGetChildAt() {
   assertEquals('first child', node2, node1.getChildAt(0));
   assertNull('index too high', node1.getChildAt(1));
   assertNull('no children', node2.getChildAt(0));
+}
+
+function testGetChildCount() {
+  var node1 = new goog.structs.TreeNode(1, null);
+  var node2 = new goog.structs.TreeNode(2, null);
+  node1.addChild(node2);
+  assertEquals('child count of root node', 1, node1.getChildCount());
+  assertEquals('child count of leaf node', 0, node2.getChildCount());
 }
 
 function testGetDepth() {
@@ -123,6 +142,18 @@ function testGetRoot() {
   assertEquals('has ancestors', node1, node2.getRoot());
 }
 
+function testGetSubtreeKeys() {
+  var root = new goog.structs.TreeNode('root', null);
+  var child1 = new goog.structs.TreeNode('child1', null);
+  var child2 = new goog.structs.TreeNode('child2', null);
+  var grandchild = new goog.structs.TreeNode('grandchild', null);
+  root.addChild(child1);
+  root.addChild(child2);
+  child1.addChild(grandchild);
+  assertArrayEquals('node hierarchy', ['child1', ['grandchild'], 'child2'],
+      root.getSubtreeKeys());
+}
+
 function testContains() {
   var node1 = new goog.structs.TreeNode(1, null);
   var node2 = new goog.structs.TreeNode(2, null);
@@ -137,6 +168,28 @@ function testContains() {
   assertFalse('child', node2.contains(node1));
   assertFalse('grandchild', node3.contains(node1));
   assertFalse('sibling', node3.contains(node4));
+}
+
+function testFindCommonAncestor() {
+  var findCommonAncestor = goog.structs.TreeNode.findCommonAncestor;
+  var node1 = new goog.structs.TreeNode(1, null);
+  var node2 = new goog.structs.TreeNode(2, null);
+  var node3 = new goog.structs.TreeNode(3, null);
+  var node4 = new goog.structs.TreeNode(4, null);
+  var node5 = new goog.structs.TreeNode(5, null);
+  node1.addChild(node2);
+  node2.addChild(node3);
+  node1.addChild(node4);
+
+  assertNull('0 nodes', findCommonAncestor());
+  assertEquals('1 node', node2, findCommonAncestor(node2));
+  assertEquals('same nodes', node3, findCommonAncestor(node3, node3));
+  assertEquals('node and child node', node2, findCommonAncestor(node2, node3));
+  assertEquals('node and parent node', node1, findCommonAncestor(node2, node1));
+  assertEquals('siblings', node1, findCommonAncestor(node2, node4));
+  assertEquals('all nodes', node1,
+      findCommonAncestor(node2, node3, node4, node1));
+  assertNull('disconnected nodes', findCommonAncestor(node3, node5));
 }
 
 function testForEachChild() {
@@ -156,7 +209,7 @@ function testForEachChild() {
     assertArrayEquals('children argument', [node2, node3], children);
   }, thisContext);
   assertArrayEquals('visited nodes', [node2, node3], visitedNodes);
-  assertArrayEquals('index of visited nodes', [0, 1],  indices);
+  assertArrayEquals('index of visited nodes', [0, 1], indices);
 }
 
 function testForEachDescendant() {
@@ -175,6 +228,33 @@ function testForEachDescendant() {
     visitedNodes.push(node);
   }, thisContext);
   assertArrayEquals('visited nodes', [node2, node3, node4], visitedNodes);
+}
+
+function testTraverse() {
+  var node1 = new goog.structs.TreeNode(1, null);
+  var node2 = new goog.structs.TreeNode(2, null);
+  var node3 = new goog.structs.TreeNode(3, null);
+  var node4 = new goog.structs.TreeNode(4, null);
+  node1.addChild(node2);
+  node2.addChild(node3);
+  node2.addChild(node4);
+
+  var thisContext = {};
+  var visitedNodes = [];
+  node1.traverse(function(node) {
+    assertEquals('value of this', thisContext, this);
+    visitedNodes.push(node);
+  }, thisContext);
+  assertArrayEquals('callback returns nothing => all nodes are visited',
+      [node1, node2, node3, node4], visitedNodes);
+
+  visitedNodes = [];
+  node1.traverse(function(node) {
+    visitedNodes.push(node);
+    return node != node2;  // Cut off at node2.
+  });
+  assertArrayEquals('children of node2 are skipped',
+      [node1, node2], visitedNodes);
 }
 
 function testAddChild() {
@@ -207,6 +287,30 @@ function testAddChildAt() {
   node1.addChildAt(node5, 3);
   assertArrayEquals('add to the end', [node3, node4, node2, node5],
       node1.getChildren());
+}
+
+function testReplaceChildAt() {
+  var root = new goog.structs.TreeNode(0, null);
+  var node1 = new goog.structs.TreeNode(1, null);
+  root.addChild(node1);
+
+  var node2 = new goog.structs.TreeNode(2, null);
+  assertEquals('original node', node1, root.replaceChildAt(node2, 0));
+  assertEquals('parent is set', root, node2.getParent());
+  assertArrayEquals('children are updated', [node2], root.getChildren());
+  assertNull('old child node is detached', node1.getParent());
+}
+
+function testReplaceChild() {
+  var root = new goog.structs.TreeNode(0, null);
+  var node1 = new goog.structs.TreeNode(1, null);
+  root.addChild(node1);
+
+  var node2 = new goog.structs.TreeNode(2, null);
+  assertEquals('original node', node1, root.replaceChild(node2, node1));
+  assertEquals('parent is set', root, node2.getParent());
+  assertArrayEquals('children are updated', [node2], root.getChildren());
+  assertNull('old child node is detached', node1.getParent());
 }
 
 function testRemoveChildAt() {

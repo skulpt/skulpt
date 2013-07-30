@@ -16,7 +16,6 @@
  * @fileoverview Popup Date Picker implementation.  Pairs a goog.ui.DatePicker
  * with a goog.ui.Popup allowing the DatePicker to be attached to elements.
  *
-*
  * @see ../demos/popupdatepicker.html
  */
 
@@ -28,9 +27,9 @@ goog.require('goog.positioning.Corner');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.DatePicker');
-goog.require('goog.ui.DatePicker.Events');
 goog.require('goog.ui.Popup');
-goog.require('goog.ui.PopupBase.EventType');
+goog.require('goog.ui.PopupBase');
+
 
 
 /**
@@ -85,7 +84,7 @@ goog.ui.PopupDatePicker.prototype.lastTarget_ = null;
 goog.ui.PopupDatePicker.prototype.allowAutoFocus_ = true;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PopupDatePicker.prototype.createDom = function() {
   goog.ui.PopupDatePicker.superClass_.createDom.call(this);
   this.getElement().className = goog.getCssName('goog-popupdatepicker');
@@ -93,7 +92,7 @@ goog.ui.PopupDatePicker.prototype.createDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PopupDatePicker.prototype.enterDocument = function() {
   goog.ui.PopupDatePicker.superClass_.enterDocument.call(this);
   // Create the DatePicker, if it isn't already.
@@ -103,7 +102,7 @@ goog.ui.PopupDatePicker.prototype.enterDocument = function() {
     var el = this.getElement();
     // Make it initially invisible
     el.style.visibility = 'hidden';
-    goog.style.showElement(el, false);
+    goog.style.setElementShown(el, false);
     this.datePicker_.decorate(el);
   }
   this.getHandler().listen(this.datePicker_, goog.ui.DatePicker.Events.CHANGE,
@@ -111,7 +110,7 @@ goog.ui.PopupDatePicker.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PopupDatePicker.prototype.disposeInternal = function() {
   goog.ui.PopupDatePicker.superClass_.disposeInternal.call(this);
   if (this.popup_) {
@@ -129,6 +128,7 @@ goog.ui.PopupDatePicker.prototype.disposeInternal = function() {
  * not based on Components.
  * @param {Element} element Element to decorate.
  * @return {boolean} Returns always false.
+ * @override
  */
 goog.ui.PopupDatePicker.prototype.canDecorate = function(element) {
   return false;

@@ -15,7 +15,6 @@
 /**
  * @fileoverview Definition of the Bubble class.
  *
-*
  *
  * @see ../demos/bubble.html
  *
@@ -25,19 +24,18 @@
 goog.provide('goog.ui.Bubble');
 
 goog.require('goog.Timer');
-goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.events.Event');
+goog.require('goog.events.EventType');
 goog.require('goog.math.Box');
 goog.require('goog.positioning');
 goog.require('goog.positioning.AbsolutePosition');
-goog.require('goog.positioning.AbstractPosition');
 goog.require('goog.positioning.AnchoredPosition');
 goog.require('goog.positioning.Corner');
+goog.require('goog.positioning.CornerBit');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Popup');
-goog.require('goog.ui.Popup.AnchoredPosition');
+
 
 
 /**
@@ -99,6 +97,7 @@ goog.ui.Bubble = function(message, opt_config, opt_domHelper) {
 };
 goog.inherits(goog.ui.Bubble, goog.ui.Component);
 
+
 /**
  * In milliseconds, timeout after which the button auto-hides. Null means
  * infinite.
@@ -107,6 +106,7 @@ goog.inherits(goog.ui.Bubble, goog.ui.Component);
  */
 goog.ui.Bubble.prototype.timeout_ = null;
 
+
 /**
  * Key returned by the bubble timer.
  * @type {number}
@@ -114,12 +114,14 @@ goog.ui.Bubble.prototype.timeout_ = null;
  */
 goog.ui.Bubble.prototype.timerId_ = 0;
 
+
 /**
  * Key returned by the listen function for the close button.
- * @type {?number}
+ * @type {goog.events.Key}
  * @private
  */
 goog.ui.Bubble.prototype.listener_ = null;
+
 
 /**
  * Key returned by the listen function for the close button.
@@ -129,7 +131,7 @@ goog.ui.Bubble.prototype.listener_ = null;
 goog.ui.Bubble.prototype.anchor_ = null;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Bubble.prototype.createDom = function() {
   goog.ui.Bubble.superClass_.createDom.call(this);
 
@@ -227,7 +229,7 @@ goog.ui.Bubble.prototype.isVisible = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Bubble.prototype.disposeInternal = function() {
   this.unconfigureElement_();
   this.popup_.dispose();
@@ -256,7 +258,7 @@ goog.ui.Bubble.prototype.configureElement_ = function() {
   }
   var closeButton = this.getDomHelper().getElement(this.closeButtonId_);
   this.listener_ = goog.events.listen(closeButton,
-        goog.events.EventType.CLICK, this.hideBubble_, false, this);
+      goog.events.EventType.CLICK, this.hideBubble_, false, this);
 
   if (this.timeout_) {
     this.timerId_ = goog.Timer.callOnce(this.hideBubble_, this.timeout_, this);
@@ -423,7 +425,7 @@ goog.ui.Bubble.prototype.computeHtmlForCorner_ = function(corner) {
       '<tr>' +
       '<td class="' + this.config_.cssBubbleLeft + '">' +
       '<td class="' + this.config_.cssBubbleFont + '"' +
-      ' style="padding:0 4;background:white">' + message +
+      ' style="padding:0 4px;background:white">' + message +
       '<td id="' + this.closeButtonId_ + '"' +
       ' class="' + this.config_.cssCloseButton + '"/>' +
       '<td class="' + this.config_.cssBubbleRight + '">' +

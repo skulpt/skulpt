@@ -19,7 +19,6 @@
  *
  * For examples, please see the unit test.
  *
-*
  */
 
 
@@ -35,6 +34,7 @@ goog.provide('goog.testing.mockmatchers.TypeOf');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.testing.asserts');
+
 
 
 /**
@@ -96,6 +96,7 @@ goog.testing.mockmatchers.ArgumentMatcher.prototype.matches =
 };
 
 
+
 /**
  * A matcher that verifies that an argument is an instance of a given class.
  * @param {Function} ctor The class that will be used for verification.
@@ -106,14 +107,15 @@ goog.testing.mockmatchers.InstanceOf = function(ctor) {
   goog.testing.mockmatchers.ArgumentMatcher.call(this,
       function(obj) {
         return obj instanceof ctor;
-      // NOTE: Browser differences on ctor.toString() output
-      // make using that here problematic. So for now, just let
-      // people know the instanceOf() failed without providing
-      // browser specific details...
+        // NOTE: Browser differences on ctor.toString() output
+        // make using that here problematic. So for now, just let
+        // people know the instanceOf() failed without providing
+        // browser specific details...
       }, 'instanceOf()');
 };
 goog.inherits(goog.testing.mockmatchers.InstanceOf,
     goog.testing.mockmatchers.ArgumentMatcher);
+
 
 
 /**
@@ -132,6 +134,7 @@ goog.inherits(goog.testing.mockmatchers.TypeOf,
     goog.testing.mockmatchers.ArgumentMatcher);
 
 
+
 /**
  * A matcher that verifies that an argument matches a given RegExp.
  * @param {RegExp} regexp The regular expression that the argument must match.
@@ -146,6 +149,7 @@ goog.testing.mockmatchers.RegexpMatch = function(regexp) {
 };
 goog.inherits(goog.testing.mockmatchers.RegexpMatch,
     goog.testing.mockmatchers.ArgumentMatcher);
+
 
 
 /**
@@ -163,6 +167,7 @@ goog.testing.mockmatchers.IgnoreArgument = function() {
 };
 goog.inherits(goog.testing.mockmatchers.IgnoreArgument,
     goog.testing.mockmatchers.ArgumentMatcher);
+
 
 
 /**
@@ -185,7 +190,7 @@ goog.inherits(goog.testing.mockmatchers.ObjectEquals,
     goog.testing.mockmatchers.ArgumentMatcher);
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.mockmatchers.ObjectEquals.prototype.matches =
     function(toVerify, opt_expectation) {
   // Override the default matches implementation to capture the exception thrown
@@ -200,6 +205,7 @@ goog.testing.mockmatchers.ObjectEquals.prototype.matches =
     return false;
   }
 };
+
 
 
 /**
@@ -234,7 +240,7 @@ goog.inherits(goog.testing.mockmatchers.SaveArgument,
     goog.testing.mockmatchers.ArgumentMatcher);
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.mockmatchers.SaveArgument.prototype.matches = function(
     toVerify, opt_expectation) {
   this.arg = toVerify;
@@ -242,7 +248,7 @@ goog.testing.mockmatchers.SaveArgument.prototype.matches = function(
     return this.delegateMatcher_.matches(toVerify, opt_expectation);
   }
   return goog.testing.mockmatchers.SaveArgument.superClass_.matches.call(
-          this, toVerify, opt_expectation);
+      this, toVerify, opt_expectation);
 };
 
 
@@ -365,13 +371,10 @@ goog.testing.mockmatchers.flexibleArrayMatcher =
     var isamatch = a === b ||
         a instanceof goog.testing.mockmatchers.ArgumentMatcher &&
         a.matches(b, opt_expectation);
+    var failureMessage = null;
     if (!isamatch) {
-      try {
-        assertObjectEquals(a, b);
-        isamatch = true;
-      } catch (ex) {
-        isamatch = false;
-      }
+      failureMessage = goog.testing.asserts.findDifferences(a, b);
+      isamatch = !failureMessage;
     }
     if (!isamatch && opt_expectation) {
       // If the error count changed, the match sent out an error
@@ -380,17 +383,12 @@ goog.testing.mockmatchers.flexibleArrayMatcher =
       if (errCount == opt_expectation.getErrorMessageCount()) {
         // Use the _displayStringForValue() from assert.js
         // for consistency...
-        //
-        // TODO(user): Would be nice to expand this if
-        // we have an object or array miscompare so that
-        // the object properties (array values) were shown.
-        // This is done in assert.js, but would need to refactor
-        // assert.js to make the code that does it visible to this
-        // routine.
-        opt_expectation.addErrorMessage('Expected: ' +
-            _displayStringForValue(a) + ' but was: ' +
-            _displayStringForValue(b));
+        if (!failureMessage) {
+          failureMessage = 'Expected: ' + _displayStringForValue(a) +
+              ' but was: ' + _displayStringForValue(b);
         }
+        opt_expectation.addErrorMessage(failureMessage);
+      }
     }
     return isamatch;
   });

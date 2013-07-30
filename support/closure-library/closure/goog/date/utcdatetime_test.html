@@ -3,10 +3,11 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.date.UtcDateTime</title>
 <script src="../base.js"></script>
 <script>
@@ -111,6 +112,11 @@ function testToIsoString() {
                '03:04:05', date.toIsoTimeString(true));
   assertEquals('serialize date/time to XML',
                '2000-01-02T03:04:05', date.toXmlDateTime());
+}
+
+function testIsMidnight() {
+  assertTrue(new goog.date.UtcDateTime(2000, 0, 1).isMidnight());
+  assertFalse(new goog.date.UtcDateTime(2000, 0, 1, 0, 0, 0, 1).isMidnight());
 }
 
 </script>

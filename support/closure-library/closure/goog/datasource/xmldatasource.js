@@ -16,7 +16,6 @@
  * @fileoverview
  * Implementations of DataNode for wrapping XML data.
  *
-*
  */
 
 goog.provide('goog.ds.XmlDataSource');
@@ -33,6 +32,7 @@ goog.require('goog.net.XhrIo');
 goog.require('goog.string');
 
 
+
 /**
  * Data source whose backing is an xml node
  *
@@ -43,7 +43,7 @@ goog.require('goog.string');
  * @extends {goog.ds.DataNode}
  * @constructor
  */
-// TODO(user): Use interfaces when available.
+// TODO(arv): Use interfaces when available.
 goog.ds.XmlDataSource = function(node, parent, opt_name) {
   this.parent_ = parent;
   this.dataName_ = opt_name || (node ? node.nodeName : '');
@@ -109,6 +109,7 @@ goog.ds.XmlDataSource.prototype.createChildNodes_ = function() {
   this.childNodeList_ = childNodeList;
 };
 
+
 /**
  * Creates the DataNodeList with the attributes for the element
  * Allows for only building list as needed.
@@ -134,6 +135,7 @@ goog.ds.XmlDataSource.prototype.createAttributes_ = function() {
 /**
  * Get the value of the node
  * @return {Object} The value of the node, or null if no value.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.get = function() {
   this.createChildNodes_();
@@ -143,19 +145,15 @@ goog.ds.XmlDataSource.prototype.get = function() {
 
 /**
  * Set the value of the node
- * @param {Object} value The new value of the node.
+ * @param {*} value The new value of the node.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.set = function(value) {
   throw Error('Can\'t set on XmlDataSource yet');
 };
 
 
-/**
- * Gets all of the child nodes of the current node.
- * Should return an empty DataNode list if no child nodes.
- * @param {string=} opt_selector String selector to choose child nodes.
- * @return {goog.ds.DataNodeList} The child nodes.
- */
+/** @override */
 goog.ds.XmlDataSource.prototype.getChildNodes = function(opt_selector) {
   if (opt_selector && opt_selector ==
       goog.ds.XmlDataSource.ATTRIBUTE_SELECTOR_) {
@@ -177,13 +175,14 @@ goog.ds.XmlDataSource.prototype.getChildNodes = function(opt_selector) {
  * @param {string} name The node name.
  * @return {goog.ds.DataNode} The child node, or null if
  *   no node of this name exists.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.getChildNode = function(name) {
-  if (goog.string.startsWith(name, goog.ds.STR_ATTRIBUTE_START_)) {
+  if (goog.string.startsWith(name, goog.ds.STR_ATTRIBUTE_START)) {
     var att = this.node_.getAttributeNode(name.substring(1));
     return att ? new goog.ds.XmlDataSource(att, this) : null;
   } else {
-    return this.getChildNodes().get(name);
+    return /** @type {goog.ds.DataNode} */ (this.getChildNodes().get(name));
   }
 };
 
@@ -191,11 +190,12 @@ goog.ds.XmlDataSource.prototype.getChildNode = function(name) {
 /**
  * Gets the value of a child node
  * @param {string} name The node name.
- * @return {Object} The value of the node, or null if no value or the child node
+ * @return {*} The value of the node, or null if no value or the child node
  *    doesn't exist.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.getChildNodeValue = function(name) {
-  if (goog.string.startsWith(name, goog.ds.STR_ATTRIBUTE_START_)) {
+  if (goog.string.startsWith(name, goog.ds.STR_ATTRIBUTE_START)) {
     var node = this.node_.getAttributeNode(name.substring(1));
     return node ? node.nodeValue : null;
   } else {
@@ -208,14 +208,17 @@ goog.ds.XmlDataSource.prototype.getChildNodeValue = function(name) {
 /**
  * Get the name of the node relative to the parent node
  * @return {string} The name of the node.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.getDataName = function() {
   return this.dataName_;
 };
 
+
 /**
  * Setthe name of the node relative to the parent node
  * @param {string} name The name of the node.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.setDataName = function(name) {
   this.dataName_ = name;
@@ -225,6 +228,7 @@ goog.ds.XmlDataSource.prototype.setDataName = function(name) {
 /**
  * Gets the a qualified data path to this node
  * @return {string} The data path.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.getDataPath = function() {
   var parentPath = '';
@@ -240,6 +244,7 @@ goog.ds.XmlDataSource.prototype.getDataPath = function() {
 
 /**
  * Load or reload the backing data for this node
+ * @override
  */
 goog.ds.XmlDataSource.prototype.load = function() {
   // Nothing to do
@@ -249,6 +254,7 @@ goog.ds.XmlDataSource.prototype.load = function() {
 /**
  * Gets the state of the backing data for this node
  * @return {goog.ds.LoadState} The state.
+ * @override
  */
 goog.ds.XmlDataSource.prototype.getLoadState = function() {
   return this.node_ ? goog.ds.LoadState.LOADED : goog.ds.LoadState.NOT_LOADED;
@@ -281,6 +287,7 @@ goog.ds.XmlDataSource.createChildlessDocument_ = function() {
 };
 
 
+
 /**
  * Data source whose backing is an XMLHttpRequest,
  *
@@ -304,6 +311,7 @@ goog.ds.XmlHttpDataSource = function(uri, name) {
 };
 goog.inherits(goog.ds.XmlHttpDataSource, goog.ds.XmlDataSource);
 
+
 /**
  * Default load state is NOT_LOADED
  * @private
@@ -314,10 +322,11 @@ goog.ds.XmlHttpDataSource.prototype.loadState_ = goog.ds.LoadState.NOT_LOADED;
 /**
  * Load or reload the backing data for this node.
  * Fires the XMLHttpRequest
+ * @override
  */
 goog.ds.XmlHttpDataSource.prototype.load = function() {
   if (this.uri_) {
-    goog.ds.logger.info('Sending XML request for DataSource ' +
+    goog.log.info(goog.ds.logger, 'Sending XML request for DataSource ' +
         this.getDataName() + ' to ' + this.uri_);
     this.loadState_ = goog.ds.LoadState.LOADING;
 
@@ -332,6 +341,7 @@ goog.ds.XmlHttpDataSource.prototype.load = function() {
 /**
  * Gets the state of the backing data for this node
  * @return {goog.ds.LoadState} The state.
+ * @override
  */
 goog.ds.XmlHttpDataSource.prototype.getLoadState = function() {
   return this.loadState_;
@@ -362,7 +372,8 @@ goog.ds.XmlHttpDataSource.prototype.complete_ = function(e) {
  * @private
  */
 goog.ds.XmlHttpDataSource.prototype.success_ = function(xhr) {
-  goog.ds.logger.info('Got data for DataSource ' + this.getDataName());
+  goog.log.info(goog.ds.logger,
+      'Got data for DataSource ' + this.getDataName());
   var xml = xhr.getResponseXml();
 
   // Fix for case where IE returns valid XML as text but
@@ -392,7 +403,7 @@ goog.ds.XmlHttpDataSource.prototype.success_ = function(xhr) {
  * @private
  */
 goog.ds.XmlHttpDataSource.prototype.failure_ = function() {
-  goog.ds.logger.info('Data retrieve failed for DataSource ' +
+  goog.log.info(goog.ds.logger, 'Data retrieve failed for DataSource ' +
       this.getDataName());
 
   this.loadState_ = goog.ds.LoadState.FAILED;

@@ -3,7 +3,7 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
@@ -11,6 +11,11 @@ See the COPYING file for details.
   @author andybons@google.com (Andrew Boneventre)
 -->
 <head>
+<!--
+This test has not yet been updated to run on IE8. See http://b/hotlist?id=36311
+-->
+<!--meta http-equiv="X-UA-Compatible" content="IE=edge"-->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
 <title>Closure Unit Tests - goog.userAgent.product</title>
 <script src="../base.js"></script>
 <script>
@@ -104,6 +109,14 @@ See the COPYING file for details.
     });
   }
 
+  function assertBrowserAndVersion(userAgent, browser, version) {
+    mockAgent.setUserAgentString(userAgent);
+    updateUserAgentUtils();
+    assertIsBrowser(browser);
+    assertEquals('User agent should have this version',
+                 version, goog.userAgent.VERSION);
+  }
+
   /**
    * @param {Array.<{
    *           ua: string,
@@ -136,6 +149,14 @@ See the COPYING file for details.
          {num: '7.0', truth: true},
          {num: 7.1, truth: false},
          {num: 8, truth: false}
+       ]
+      },
+      {ua: 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv 11.0) like Gecko',
+       versions: [
+         {num: 10, truth: true},
+         {num: 11, truth: true},
+         {num: '11.0', truth: true},
+         {num: '12', truth: false}
        ]
       }
     ];
@@ -173,7 +194,7 @@ See the COPYING file for details.
 
   function testFirefox() {
     var userAgents = [
-      {ua: 'Mozilla/6.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; ' +
+     {ua: 'Mozilla/6.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; ' +
            'rv:2.0.0.0) Gecko/20061028 Firefox/3.0',
        versions: [
          {num: 2, truth: true},
@@ -187,9 +208,26 @@ See the COPYING file for details.
          {num: '2.0.4', truth: true},
          {num: 3, truth: false},
          {num: '3.5.3', truth: false}
+       ]},
+      {ua: 'Mozilla/5.0 (X11; Linux i686; rv:6.0) Gecko/6.0 Firefox/6.0',
+       versions: [
+         {num: 6, truth: true},
+         {num: '6.0', truth: true},
+         {num: 7, truth: false},
+         {num: '7.0', truth: false}
        ]}
     ];
+
     checkEachUserAgentDetected(userAgents, 'FIREFOX');
+
+    // Mozilla reported to us that they plan this UA format starting
+    // in Firefox 13.
+    // See bug at https://bugzilla.mozilla.org/show_bug.cgi?id=588909
+    // and thread at http://goto.google.com/pfltz
+    mockAgent.setNavigator({product: 'Gecko'});
+    assertBrowserAndVersion(
+        'Mozilla/5.0 (X11; Linux i686; rv:6.0) Gecko/6.0 Firefox/6.0',
+        'FIREFOX', '6.0');
   }
 
   function testCamino() {
@@ -237,17 +275,42 @@ See the COPYING file for details.
 
   function testSafari() {
     var userAgents = [
+      {ua: 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; de-de) ' +
+           'AppleWebKit/534.16+ (KHTML, like Gecko) Version/5.0.3 ' +
+           'Safari/533.19.4',
+       versions: [
+         {num: 5, truth: true},
+         {num: '5.0.3', truth: true},
+         {num: '5.0.4', truth: false},
+         {num: '533', truth: false}
+       ]},
       {ua: 'Mozilla/5.0 (Windows; U; Windows NT 6.0; pl-PL) ' +
            'AppleWebKit/525.19 (KHTML, like Gecko) Version/3.1.2 Safari/525.21',
        versions: [
-         {num: 525, truth: true},
-         {num: '532.3', truth: false}
+         {num: 3, truth: true},
+         {num: '3.0', truth: true},
+         {num: '3.1.2', truth: true}
        ]},
       {ua: 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_5_3; en-us) ' +
            'AppleWebKit/525.18 (KHTML, like Gecko) Version/3.1.1 Safari/525.20',
        versions: [
-         {num: '525.21', truth: false},
-         {num: 518, truth: true}
+         {num: 3, truth: true},
+         {num: '3.1.1', truth: true},
+         {num: '3.1.2', truth: false},
+         {num: '525.21', truth: false}
+       ]},
+
+       // Safari 1 and 2 do not report product version numbers in their
+       // user-agent strings. VERSION for these browsers will be set to ''.
+       {ua: 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X; ja-jp) ' +
+            'AppleWebKit/418.9.1 (KHTML, like Gecko) Safari/419.3',
+       versions: [
+         {num: 3, truth: false},
+         {num: 2, truth: false},
+         {num: 1, truth: false},
+         {num: 0, truth: true},
+         {num: '0', truth: true},
+         {num: '', truth: true}
        ]}
     ];
     checkEachUserAgentDetected(userAgents, 'SAFARI');
@@ -305,8 +368,8 @@ See the COPYING file for details.
            'Safari/523.12.2',
        versions: [
          {num: 0.5, truth: true},
-         {num: 3, truth: true},
-         {num: '3.0.4', truth: true},
+         {num: 1, truth: true},
+         {num: '1.0', truth: true},
          {num: '3.0.12', truth: false}
        ]}
     ];

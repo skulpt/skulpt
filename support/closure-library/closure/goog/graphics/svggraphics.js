@@ -15,8 +15,8 @@
 
 /**
  * @fileoverview SvgGraphics sub class that uses SVG to draw the graphics.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 goog.provide('goog.graphics.SvgGraphics');
@@ -24,9 +24,10 @@ goog.provide('goog.graphics.SvgGraphics');
 goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventType');
 goog.require('goog.graphics.AbstractGraphics');
-goog.require('goog.graphics.Font');
 goog.require('goog.graphics.LinearGradient');
+goog.require('goog.graphics.Path');
 goog.require('goog.graphics.SolidFill');
 goog.require('goog.graphics.Stroke');
 goog.require('goog.graphics.SvgEllipseElement');
@@ -35,8 +36,11 @@ goog.require('goog.graphics.SvgImageElement');
 goog.require('goog.graphics.SvgPathElement');
 goog.require('goog.graphics.SvgRectElement');
 goog.require('goog.graphics.SvgTextElement');
+goog.require('goog.math');
 goog.require('goog.math.Size');
+goog.require('goog.style');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -53,6 +57,9 @@ goog.require('goog.userAgent');
  *     document we want to render in.
  * @constructor
  * @extends {goog.graphics.AbstractGraphics}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.SvgGraphics = function(width, height,
                                      opt_coordWidth, opt_coordHeight,
@@ -79,7 +86,7 @@ goog.graphics.SvgGraphics = function(width, height,
    * @private
    */
   this.useManualViewbox_ = goog.userAgent.WEBKIT &&
-                           !goog.userAgent.isVersion(526);
+                           !goog.userAgent.isVersionOrHigher(526);
 
   /**
    * Event handler.
@@ -163,7 +170,7 @@ goog.graphics.SvgGraphics.prototype.setElementAttributes = function(element,
  * Appends an element.
  *
  * @param {goog.graphics.Element} element The element wrapper.
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  * @private
  */
@@ -177,6 +184,7 @@ goog.graphics.SvgGraphics.prototype.append_ = function(element, opt_group) {
  * Sets the fill of the given element.
  * @param {goog.graphics.StrokeAndFillElement} element The element wrapper.
  * @param {goog.graphics.Fill?} fill The fill object.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.setElementFill = function(element, fill) {
   var svgElement = element.getElement();
@@ -191,16 +199,24 @@ goog.graphics.SvgGraphics.prototype.setElementFill = function(element, fill) {
                  fill.getColor1() + '-' + fill.getColor2();
     // It seems that the SVG version accepts opacity where the VML does not
 
-    var id = this.getDef_(defKey);
+    var id = this.getDef(defKey);
 
     if (!id) { // No def for this yet, create it
       // Create the gradient def entry (only linear gradient are supported)
-      var gradient = this.createSvgElement_('linearGradient',
-          {'x1': fill.getX1(), 'y1': fill.getY1(), 'x2': fill.getX2(),
-           'y2': fill.getY2(), 'gradientUnits': 'userSpaceOnUse'});
+      var gradient = this.createSvgElement_('linearGradient', {
+        'x1': fill.getX1(),
+        'y1': fill.getY1(),
+        'x2': fill.getX2(),
+        'y2': fill.getY2(),
+        'gradientUnits': 'userSpaceOnUse'
+      });
 
-      var stop1 = this.createSvgElement_('stop',
-          {'offset': '0%', 'style': 'stop-color:' + fill.getColor1()});
+      var gstyle = 'stop-color:' + fill.getColor1();
+      if (goog.isNumber(fill.getOpacity1())) {
+        gstyle += ';stop-opacity:' + fill.getOpacity1();
+      }
+      var stop1 = this.createSvgElement_(
+          'stop', {'offset': '0%', 'style': gstyle});
       gradient.appendChild(stop1);
 
       // LinearGradients don't have opacity in VML so implement that before
@@ -208,9 +224,12 @@ goog.graphics.SvgGraphics.prototype.setElementFill = function(element, fill) {
       // if (fill.getOpacity() != null) {
       //   gstyles += 'opacity:' + fill.getOpacity() + ';'
       // }
-
-      var stop2 = this.createSvgElement_('stop',
-          {'offset': '100%', 'style': 'stop-color:' + fill.getColor2()});
+      gstyle = 'stop-color:' + fill.getColor2();
+      if (goog.isNumber(fill.getOpacity2())) {
+        gstyle += ';stop-opacity:' + fill.getOpacity2();
+      }
+      var stop2 = this.createSvgElement_(
+          'stop', {'offset': '100%', 'style': gstyle});
       gradient.appendChild(stop2);
 
       // LinearGradients don't have opacity in VML so implement that before
@@ -219,7 +238,7 @@ goog.graphics.SvgGraphics.prototype.setElementFill = function(element, fill) {
       //   gstyles += 'opacity:' + fill.getOpacity() + ';'
       // }
 
-      id = this.addDef_(defKey, gradient);
+      id = this.addDef(defKey, gradient);
     }
 
     // Link element to linearGradient definition
@@ -231,9 +250,10 @@ goog.graphics.SvgGraphics.prototype.setElementFill = function(element, fill) {
 
 
 /**
-* Sets the stroke of the given element.
+ * Sets the stroke of the given element.
  * @param {goog.graphics.StrokeAndFillElement} element The element wrapper.
  * @param {goog.graphics.Stroke?} stroke The stroke object.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.setElementStroke = function(element,
     stroke) {
@@ -262,6 +282,7 @@ goog.graphics.SvgGraphics.prototype.setElementStroke = function(element,
  * @param {number} angle The angle of the rotation transform.
  * @param {number} centerX The horizontal center of the rotation transform.
  * @param {number} centerY The vertical center of the rotation transform.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.setElementTransform = function(element, x,
     y, angle, centerX, centerY) {
@@ -272,11 +293,15 @@ goog.graphics.SvgGraphics.prototype.setElementTransform = function(element, x,
 
 /**
  * Creates the DOM representation of the graphics area.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.createDom = function() {
   // Set up the standard attributes.
-  var attributes = {'width': this.width, 'height': this.height,
-      'overflow': 'hidden'};
+  var attributes = {
+    'width': this.width,
+    'height': this.height,
+    'overflow': 'hidden'
+  };
 
   var svgElement = this.createSvgElement_('svg', attributes);
 
@@ -300,6 +325,7 @@ goog.graphics.SvgGraphics.prototype.createDom = function() {
  * Changes the coordinate system position.
  * @param {number} left The coordinate system left bound.
  * @param {number} top The coordinate system top bound.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.setCoordOrigin = function(left, top) {
   this.coordLeft = left;
@@ -313,6 +339,7 @@ goog.graphics.SvgGraphics.prototype.setCoordOrigin = function(left, top) {
  * Changes the coordinate size.
  * @param {number} coordWidth The coordinate width.
  * @param {number} coordHeight The coordinate height.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.setCoordSize = function(coordWidth,
     coordHeight) {
@@ -383,17 +410,20 @@ goog.graphics.SvgGraphics.prototype.updateManualViewBox_ = function() {
  * Change the size of the canvas.
  * @param {number} pixelWidth The width in pixels.
  * @param {number} pixelHeight The height in pixels.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.setSize = function(pixelWidth,
     pixelHeight) {
-  // TODO(user) implement
+  goog.style.setSize(this.getElement(), pixelWidth, pixelHeight);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.SvgGraphics.prototype.getPixelSize = function() {
   if (!goog.userAgent.GECKO) {
-    return goog.style.getSize(this.getElement());
+    return this.isInDocument() ?
+        goog.style.getSize(this.getElement()) :
+        goog.base(this, 'getPixelSize');
   }
 
   // In Gecko, goog.style.getSize does not work for SVG elements.  We have to
@@ -430,6 +460,7 @@ goog.graphics.SvgGraphics.prototype.getPixelSize = function() {
 
 /**
  * Remove all drawing elements from the graphics.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.clear = function() {
   this.canvasElement.clear();
@@ -448,10 +479,11 @@ goog.graphics.SvgGraphics.prototype.clear = function() {
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.EllipseElement} The newly created element.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.drawEllipse = function(
     cx, cy, rx, ry, stroke, fill, opt_group) {
@@ -474,10 +506,11 @@ goog.graphics.SvgGraphics.prototype.drawEllipse = function(
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.RectElement} The newly created element.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.drawRect = function(x, y, width, height,
     stroke, fill, opt_group) {
@@ -497,7 +530,7 @@ goog.graphics.SvgGraphics.prototype.drawRect = function(x, y, width, height,
  * @param {number} width Width of the image.
  * @param {number} height Height of the image.
  * @param {string} src The source fo the image.
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.ImageElement} The newly created image wrapped in a
@@ -505,9 +538,14 @@ goog.graphics.SvgGraphics.prototype.drawRect = function(x, y, width, height,
  */
 goog.graphics.SvgGraphics.prototype.drawImage = function(x, y, width, height,
     src, opt_group) {
-  var element = this.createSvgElement_('image',
-      {'x': x, 'y': y, 'width': width, 'height': height,
-          'image-rendering': 'optimizeQuality', 'preserveAspectRatio': 'none'});
+  var element = this.createSvgElement_('image', {
+    'x': x,
+    'y': y,
+    'width': width,
+    'height': height,
+    'image-rendering': 'optimizeQuality',
+    'preserveAspectRatio': 'none'
+  });
   element.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
   var wrapper = new goog.graphics.SvgImageElement(element, this);
   this.append_(wrapper, opt_group);
@@ -528,10 +566,11 @@ goog.graphics.SvgGraphics.prototype.drawImage = function(x, y, width, height,
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.TextElement} The newly created element.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.drawTextOnLine = function(
     text, x1, y1, x2, y2, align, font, stroke, fill, opt_group) {
@@ -589,14 +628,15 @@ goog.graphics.SvgGraphics.prototype.drawTextOnLine = function(
 /**
  * Draw a path.
  *
- * @param {goog.graphics.Path} path The path object to draw.
+ * @param {!goog.graphics.Path} path The path object to draw.
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.PathElement} The newly created element.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.drawPath = function(
     path, stroke, fill, opt_group) {
@@ -615,6 +655,7 @@ goog.graphics.SvgGraphics.prototype.drawPath = function(
  *
  * @param {goog.graphics.Path} path The logical path.
  * @return {string} The SVG path representation.
+ * @suppress {deprecated} goog.graphics is deprecated.
  */
 goog.graphics.SvgGraphics.getSvgPath = function(path) {
   var list = [];
@@ -651,10 +692,11 @@ goog.graphics.SvgGraphics.getSvgPath = function(path) {
 /**
  * Create an empty group of drawing elements.
  *
- * @param {goog.graphics.SvgGroupElement=} opt_group The group wrapper element
+ * @param {goog.graphics.GroupElement=} opt_group The group wrapper element
  *     to append to. If not specified, appends to the main canvas.
  *
  * @return {goog.graphics.GroupElement} The newly created group.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.createGroup = function(opt_group) {
   var element = this.createSvgElement_('g');
@@ -673,6 +715,7 @@ goog.graphics.SvgGraphics.prototype.createGroup = function(opt_group) {
  *
  * @param {string} text The text string to measure.
  * @param {goog.graphics.Font} font The font object describing the font style.
+ * @override
  */
 goog.graphics.SvgGraphics.prototype.getTextWidth = function(text, font) {
   // TODO(user) Implement
@@ -686,9 +729,8 @@ goog.graphics.SvgGraphics.prototype.getTextWidth = function(text, font) {
  * @param {Element} defElement DOM element to add as a definition. It must
  *     have an id attribute set.
  * @return {string} The assigned id of the defElement.
- * @private
  */
-goog.graphics.SvgGraphics.prototype.addDef_ = function(defKey, defElement) {
+goog.graphics.SvgGraphics.prototype.addDef = function(defKey, defElement) {
   if (defKey in this.defs_) {
     return this.defs_[defKey];
   }
@@ -708,16 +750,30 @@ goog.graphics.SvgGraphics.prototype.addDef_ = function(defKey, defElement) {
  * Returns the id of a definition element.
  * @param {string} defKey This is a key that should be unique in a way that
  *     if two definitions are equal the should have the same key.
- * @return {string} The id of the found definition element or null if
+ * @return {?string} The id of the found definition element or null if
  *     not found.
- * @private
  */
-goog.graphics.SvgGraphics.prototype.getDef_ = function(defKey) {
+goog.graphics.SvgGraphics.prototype.getDef = function(defKey) {
   return defKey in this.defs_ ? this.defs_[defKey] : null;
 };
 
 
-/** @inheritDoc */
+/**
+ * Removes a definition of an elemnt from the global definitions.
+ * @param {string} defKey This is a key that should be unique in a way that
+ *     if two definitions are equal they should have the same key.
+ */
+goog.graphics.SvgGraphics.prototype.removeDef = function(defKey) {
+  var id = this.getDef(defKey);
+  if (id) {
+    var element = this.dom_.getElement(id);
+    this.defsElement_.removeChild(element);
+    delete this.defs_[defKey];
+  }
+};
+
+
+/** @override */
 goog.graphics.SvgGraphics.prototype.enterDocument = function() {
   var oldPixelSize = this.getPixelSize();
   goog.graphics.SvgGraphics.superClass_.enterDocument.call(this);
@@ -746,7 +802,7 @@ goog.graphics.SvgGraphics.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.SvgGraphics.prototype.exitDocument = function() {
   goog.graphics.SvgGraphics.superClass_.exitDocument.call(this);
 
@@ -761,6 +817,8 @@ goog.graphics.SvgGraphics.prototype.exitDocument = function() {
 /**
  * Disposes of the component by removing event handlers, detacing DOM nodes from
  * the document body, and removing references to them.
+ * @override
+ * @protected
  */
 goog.graphics.SvgGraphics.prototype.disposeInternal = function() {
   delete this.defs_;
@@ -793,7 +851,7 @@ goog.graphics.SvgGraphics.getResizeCheckTimer_ = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.SvgGraphics.prototype.isDomClonable = function() {
   return true;
 };

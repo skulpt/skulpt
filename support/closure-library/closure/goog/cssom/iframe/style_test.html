@@ -2,10 +2,11 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <script src="../../base.js"></script>
   <script>
     goog.require('goog.cssom');
@@ -155,8 +156,8 @@ See the COPYING file for details.
         var newProps = recursivelyListCssProperties(doc.body);
 
         assertEquals(oldProps.length, newProps.length);
-        for (var j=0; j<oldProps.length; j++) {
-          for (var k=0; k<propertiesToTest.length; k++) {
+        for (var j = 0; j < oldProps.length; j++) {
+          for (var k = 0; k < propertiesToTest.length; k++) {
             assertEquals('testing property ' + propertiesToTest[k],
                          oldProps[j][0][propertiesToTest[k]],
                          newProps[j][0][propertiesToTest[k]]);
@@ -177,7 +178,7 @@ See the COPYING file for details.
       var color = standardizeCSSValue('color', 'red');
       var NORMAL_RULE = 'a{color:' + color;
       var FF_2_RULE = 'a{color:' + color + '!important';
-      if (goog.userAgent.GECKO && !goog.userAgent.isVersion('1.9a')) {
+      if (goog.userAgent.GECKO && !goog.userAgent.isVersionOrHigher('1.9a')) {
         assertContains(FF_2_RULE, cssText);
       } else {
         assertContains(NORMAL_RULE, cssText);
@@ -209,7 +210,7 @@ See the COPYING file for details.
           /body{[^{]*background-image:url\(/.test(normalizedCssText));
       // Background-position can't be calculated in FF2, due to this bug:
       // http://bugzilla.mozilla.org/show_bug.cgi?id=316981
-      if (!(goog.userAgent.GECKO && !goog.userAgent.isVersion('1.9'))) {
+      if (!(goog.userAgent.GECKO && !goog.userAgent.isVersionOrHigher('1.9'))) {
         // Expected x position is:
         // originalBackgroundPositionX - elementOffsetLeft
         // 40px - (1px + 8px) == 31px
@@ -250,7 +251,7 @@ See the COPYING file for details.
           /body{[^{]*background-image:url\(/.test(normalizedCssText));
       // Background-position can't be calculated in FF2, due to this bug:
       // http://bugzilla.mozilla.org/show_bug.cgi?id=316981
-      if (!(goog.userAgent.GECKO && !goog.userAgent.isVersion('1.9'))) {
+      if (!(goog.userAgent.GECKO && !goog.userAgent.isVersionOrHigher('1.9'))) {
         // Image offset should have been calculated to be the same as the
         // above example, but adding iframe offset and borderWidth.
         // Expected x position is:
@@ -270,7 +271,7 @@ See the COPYING file for details.
       var isFontFaceCssomSupported =
           goog.userAgent.WEBKIT ||
           goog.userAgent.OPERA ||
-          (goog.userAgent.GECKO && goog.userAgent.isVersion('1.9.1'));
+          (goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.9.1'));
       // We cannot use goog.testing.ExpectedFailures since it dynamically
       // brings in CSS which causes the background context tests to fail
       // in IE6.
@@ -301,7 +302,7 @@ See the COPYING file for details.
       background-color: rgb(128,0,128);
     }
     #backgroundTest-ancestor-0 {
-      background-image: url("../../demos/blank.gif");
+      background-image: url("../../images/blank.gif");
       background-position: 40px 70px;
       background-repeat: repeat;
       background-color: transparent;

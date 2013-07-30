@@ -12,13 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
+/**
+ * @fileoverview Logging and debugging utilities.
+ *
+ * @see ../demos/debug.html
+ */
 
 goog.provide('goog.debug');
 
 goog.require('goog.array');
 goog.require('goog.string');
 goog.require('goog.structs.Set');
+goog.require('goog.userAgent');
+
+
+/** @define {boolean} Whether logging should be enabled. */
+goog.define('goog.debug.LOGGING_ENABLED', goog.DEBUG);
 
 
 /**
@@ -32,17 +41,27 @@ goog.require('goog.structs.Set');
 goog.debug.catchErrors = function(logFunc, opt_cancel, opt_target) {
   var target = opt_target || goog.global;
   var oldErrorHandler = target.onerror;
+  var retVal = !!opt_cancel;
+
+  // Chrome interprets onerror return value backwards (http://crbug.com/92062)
+  // until it was fixed in webkit revision r94061 (Webkit 535.3). This
+  // workaround still needs to be skipped in Safari after the webkit change
+  // gets pushed out in Safari.
+  // See https://bugs.webkit.org/show_bug.cgi?id=67119
+  if (goog.userAgent.WEBKIT &&
+      !goog.userAgent.isVersionOrHigher('535.3')) {
+    retVal = !retVal;
+  }
   target.onerror = function(message, url, line) {
     if (oldErrorHandler) {
       oldErrorHandler(message, url, line);
     }
-    var file = String(url).split(/[\/\\]/).pop();
     logFunc({
       message: message,
-      fileName: file,
+      fileName: url,
       line: line
     });
-    return Boolean(opt_cancel);
+    return retVal;
   };
 };
 
@@ -195,28 +214,54 @@ goog.debug.exposeException = function(err, opt_fn) {
  */
 goog.debug.normalizeErrorObject = function(err) {
   var href = goog.getObjectByName('window.location.href');
-  return (typeof err == 'string') ?
-      {
-        'message': err,
-        'name': 'Unknown error',
-        'lineNumber': 'Not available',
-        'fileName': href,
-        'stack': 'Not available'
-      } :
+  if (goog.isString(err)) {
+    return {
+      'message': err,
+      'name': 'Unknown error',
+      'lineNumber': 'Not available',
+      'fileName': href,
+      'stack': 'Not available'
+    };
+  }
 
-      // The IE Error object contains only the name and the message
-      // The Safari Error object uses the line and sourceURL fields
-      (!err.lineNumber || !err.fileName || !err.stack) ?
-      {
-        'message': err.message,
-        'name': err.name,
-        'lineNumber': err.lineNumber || err.line || 'Not available',
-        'fileName': err.fileName || err.filename || err.sourceURL || href,
-        'stack': err.stack || 'Not available'
-      } :
+  var lineNumber, fileName;
+  var threwError = false;
 
-      // Standards error object
-      err;
+  try {
+    lineNumber = err.lineNumber || err.line || 'Not available';
+  } catch (e) {
+    // Firefox 2 sometimes throws an error when accessing 'lineNumber':
+    // Message: Permission denied to get property UnnamedClass.lineNumber
+    lineNumber = 'Not available';
+    threwError = true;
+  }
+
+  try {
+    fileName = err.fileName || err.filename || err.sourceURL ||
+        // $googDebugFname may be set before a call to eval to set the filename
+        // that the eval is supposed to present.
+        goog.global['$googDebugFname'] || href;
+  } catch (e) {
+    // Firefox 2 may also throw an error when accessing 'filename'.
+    fileName = 'Not available';
+    threwError = true;
+  }
+
+  // The IE Error object contains only the name and the message.
+  // The Safari Error object uses the line and sourceURL fields.
+  if (threwError || !err.lineNumber || !err.fileName || !err.stack ||
+      !err.message || !err.name) {
+    return {
+      'message': err.message || 'Not available',
+      'name': err.name || 'UnknownError',
+      'lineNumber': lineNumber,
+      'fileName': fileName,
+      'stack': err.stack || 'Not available'
+    };
+  }
+
+  // Standards error object
+  return err;
 };
 
 
@@ -382,11 +427,33 @@ goog.debug.getStacktraceHelper_ = function(fn, visited) {
 
 
 /**
+ * Set a custom function name resolver.
+ * @param {function(Function): string} resolver Resolves functions to their
+ *     names.
+ */
+goog.debug.setFunctionResolver = function(resolver) {
+  goog.debug.fnNameResolver_ = resolver;
+};
+
+
+/**
  * Gets a function name
  * @param {Function} fn Function to get name of.
  * @return {string} Function's name.
  */
 goog.debug.getFunctionName = function(fn) {
+  if (goog.debug.fnNameCache_[fn]) {
+    return goog.debug.fnNameCache_[fn];
+  }
+  if (goog.debug.fnNameResolver_) {
+    var name = goog.debug.fnNameResolver_(fn);
+    if (name) {
+      goog.debug.fnNameCache_[fn] = name;
+      return name;
+    }
+  }
+
+  // Heuristically determine function name based on code.
   var functionSource = String(fn);
   if (!goog.debug.fnNameCache_[functionSource]) {
     var matches = /function ([^\(]+)/.exec(functionSource);
@@ -411,10 +478,10 @@ goog.debug.getFunctionName = function(fn) {
  */
 goog.debug.makeWhitespaceVisible = function(string) {
   return string.replace(/ /g, '[_]')
-               .replace(/\f/g, '[f]')
-               .replace(/\n/g, '[n]\n')
-               .replace(/\r/g, '[r]')
-               .replace(/\t/g, '[t]');
+      .replace(/\f/g, '[f]')
+      .replace(/\n/g, '[n]\n')
+      .replace(/\r/g, '[r]')
+      .replace(/\t/g, '[t]');
 };
 
 
@@ -424,3 +491,11 @@ goog.debug.makeWhitespaceVisible = function(string) {
  * @private
  */
 goog.debug.fnNameCache_ = {};
+
+
+/**
+ * Resolves functions to their names.  Resolved function names will be cached.
+ * @type {function(Function):string}
+ * @private
+ */
+goog.debug.fnNameResolver_;

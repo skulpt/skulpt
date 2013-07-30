@@ -15,7 +15,6 @@
 /**
  * @fileoverview Datastructure: Priority Pool.
  *
-*
  *
  * An extending of Pool that handles queueing and prioritization.
  */
@@ -25,6 +24,7 @@ goog.provide('goog.structs.PriorityPool');
 
 goog.require('goog.structs.Pool');
 goog.require('goog.structs.PriorityQueue');
+
 
 
 /**
@@ -52,11 +52,38 @@ goog.inherits(goog.structs.PriorityPool, goog.structs.Pool);
 
 
 /**
+ * The key for the most recent timeout created.
+ * @type {number|undefined}
+ * @private
+ */
+goog.structs.PriorityPool.prototype.delayTimeout_;
+
+
+/**
  * Default priority for pool objects requests.
  * @type {number}
  * @private
  */
 goog.structs.PriorityPool.DEFAULT_PRIORITY_ = 100;
+
+
+/** @override */
+goog.structs.PriorityPool.prototype.setDelay = function(delay) {
+  goog.base(this, 'setDelay', delay);
+
+  // If the pool hasn't been accessed yet, no need to do anything.
+  if (!goog.isDefAndNotNull(this.lastAccess)) {
+    return;
+  }
+
+  goog.global.clearTimeout(this.delayTimeout_);
+  this.delayTimeout_ = goog.global.setTimeout(
+      goog.bind(this.handleQueueRequests_, this),
+      this.delay + this.lastAccess - goog.now());
+
+  // Handle all requests.
+  this.handleQueueRequests_();
+};
 
 
 /**
@@ -65,17 +92,26 @@ goog.structs.PriorityPool.DEFAULT_PRIORITY_ = 100;
  * @param {Function=} opt_callback The function to callback when an object is
  *     available. This could be immediately. If this is not present, then an
  *     object is immediately returned if available, or undefined if not.
- * @param {*=} opt_priority The priority of the request.
+ * @param {*=} opt_priority The priority of the request. A smaller value means a
+ *     higher priority.
  * @return {Object|undefined} The new object from the pool if there is one
  *     available and a callback is not given. Otherwise, undefined.
+ * @override
  */
 goog.structs.PriorityPool.prototype.getObject = function(opt_callback,
-                                                        opt_priority) {
+                                                         opt_priority) {
   if (!opt_callback) {
-    return goog.structs.PriorityPool.superClass_.getObject.call(this);
+    var result = goog.base(this, 'getObject');
+    if (result && this.delay) {
+      this.delayTimeout_ = goog.global.setTimeout(
+          goog.bind(this.handleQueueRequests_, this),
+          this.delay);
+    }
+    return result;
   }
 
-  var priority = opt_priority || goog.structs.PriorityPool.DEFAULT_PRIORITY_;
+  var priority = goog.isDef(opt_priority) ? opt_priority :
+      goog.structs.PriorityPool.DEFAULT_PRIORITY_;
   this.requestQueue_.enqueue(priority, opt_callback);
 
   // Handle all requests.
@@ -112,6 +148,7 @@ goog.structs.PriorityPool.prototype.handleQueueRequests_ = function() {
  * NOTE: This method does not remove the object from the in use collection.
  *
  * @param {Object} obj The object to add to the collection of free objects.
+ * @override
  */
 goog.structs.PriorityPool.prototype.addFreeObject = function(obj) {
   goog.structs.PriorityPool.superClass_.addFreeObject.call(this, obj);
@@ -128,6 +165,7 @@ goog.structs.PriorityPool.prototype.addFreeObject = function(obj) {
  * greater than the maximum count of objects allowed. This will be the case
  * if no more free objects can be disposed of to get below the minimum count
  * (i.e., all objects are in use).
+ * @override
  */
 goog.structs.PriorityPool.prototype.adjustForMinMax = function() {
   goog.structs.PriorityPool.superClass_.adjustForMinMax.call(this);
@@ -137,11 +175,10 @@ goog.structs.PriorityPool.prototype.adjustForMinMax = function() {
 };
 
 
-/**
- * Disposes of the pool.
- */
+/** @override */
 goog.structs.PriorityPool.prototype.disposeInternal = function() {
   goog.structs.PriorityPool.superClass_.disposeInternal.call(this);
+  goog.global.clearTimeout(this.delayTimeout_);
   this.requestQueue_.clear();
   this.requestQueue_ = null;
 };

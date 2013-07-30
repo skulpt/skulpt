@@ -15,15 +15,17 @@
 /**
  * @fileoverview Default renderer for {@link goog.ui.Button}s.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.ButtonRenderer');
 
-goog.require('goog.dom.a11y');
-goog.require('goog.dom.a11y.Role');
-goog.require('goog.dom.a11y.State');
-goog.require('goog.ui.Component.State');
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.asserts');
+goog.require('goog.ui.ButtonSide');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.ControlRenderer');
 
 
@@ -61,17 +63,18 @@ goog.ui.ButtonRenderer.CSS_CLASS = goog.getCssName('goog-button');
 
 /**
  * Returns the ARIA role to be applied to buttons.
- * @return {goog.dom.a11y.Role|undefined} ARIA role.
+ * @return {goog.a11y.aria.Role|undefined} ARIA role.
  * @override
  */
 goog.ui.ButtonRenderer.prototype.getAriaRole = function() {
-  return goog.dom.a11y.Role.BUTTON;
+  return goog.a11y.aria.Role.BUTTON;
 };
 
 
 /**
- * Updates the button's ARIA (accessibility) state on Gecko if the button
- * is being treated as a checkbox.
+ * Updates the button's ARIA (accessibility) state if the button is being
+ * treated as a checkbox. Also makes sure that attributes which aren't
+ * supported by buttons aren't being added.
  * @param {Element} element Element whose ARIA state is to be updated.
  * @param {goog.ui.Component.State} state Component state being enabled or
  *     disabled.
@@ -81,42 +84,44 @@ goog.ui.ButtonRenderer.prototype.getAriaRole = function() {
  */
 goog.ui.ButtonRenderer.prototype.updateAriaState = function(element, state,
     enable) {
-  if (goog.userAgent.GECKO) {
-    // If button has CHECKED state, assign ARIA atrribute aria-pressed
-    if (state == goog.ui.Component.State.CHECKED) {
-      goog.dom.a11y.setState(element, goog.dom.a11y.State.PRESSED, enable);
-    } else {
-      goog.ui.ButtonRenderer.superClass_.updateAriaState.call(this, element,
-          state, enable);
-    }
+  switch (state) {
+    // If button has CHECKED or SELECTED state, assign aria-pressed
+    case goog.ui.Component.State.SELECTED:
+    case goog.ui.Component.State.CHECKED:
+      goog.asserts.assert(element,
+          'The button DOM element cannot be null.');
+      goog.a11y.aria.setState(element, goog.a11y.aria.State.PRESSED, enable);
+      break;
+    default:
+    case goog.ui.Component.State.OPENED:
+    case goog.ui.Component.State.DISABLED:
+      goog.base(this, 'updateAriaState', element, state, enable);
+      break;
   }
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ButtonRenderer.prototype.createDom = function(button) {
-  var element = goog.ui.ButtonRenderer.superClass_.createDom.call(this, button);
-
-  var tooltip = button.getTooltip();
-  if (tooltip) {
-    this.setTooltip(element, tooltip);
-  }
+  var element = goog.base(this, 'createDom', button);
+  this.setTooltip(element, button.getTooltip());
 
   var value = button.getValue();
   if (value) {
     this.setValue(element, value);
   }
 
-  // Set aria-pressed to false initially.
+  // If this is a toggle button, set ARIA state
   if (button.isSupportedState(goog.ui.Component.State.CHECKED)) {
-    this.updateAriaState(element, goog.ui.Component.State.CHECKED, false);
+    this.updateAriaState(element, goog.ui.Component.State.CHECKED,
+                         button.isChecked());
   }
 
   return element;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ButtonRenderer.prototype.decorate = function(button, element) {
   // The superclass implementation takes care of common attributes; we only
   // need to set the value and the tooltip.
@@ -126,9 +131,10 @@ goog.ui.ButtonRenderer.prototype.decorate = function(button, element) {
   button.setValueInternal(this.getValue(element));
   button.setTooltipInternal(this.getTooltip(element));
 
-  // Set aria-pressed to false initially.
+  // If this is a toggle button, set ARIA state
   if (button.isSupportedState(goog.ui.Component.State.CHECKED)) {
-    this.updateAriaState(element, goog.ui.Component.State.CHECKED, false);
+    this.updateAriaState(element, goog.ui.Component.State.CHECKED,
+                         button.isChecked());
   }
 
   return element;
@@ -149,7 +155,6 @@ goog.ui.ButtonRenderer.prototype.getValue = goog.nullFunction;
  * the new value.  No-op in the base class.
  * @param {Element} element The button's root element.
  * @param {string} value New value.
- * @protected
  */
 goog.ui.ButtonRenderer.prototype.setValue = goog.nullFunction;
 
@@ -172,8 +177,10 @@ goog.ui.ButtonRenderer.prototype.getTooltip = function(element) {
  * @protected
  */
 goog.ui.ButtonRenderer.prototype.setTooltip = function(element, tooltip) {
-  if (element) {
-    element.title = tooltip || '';
+  // Don't set a title attribute if there isn't a tooltip. Blank title
+  // attributes can be interpreted incorrectly by screen readers.
+  if (element && tooltip) {
+    element.title = tooltip;
   }
 };
 
@@ -183,7 +190,7 @@ goog.ui.ButtonRenderer.prototype.setTooltip = function(element, tooltip) {
  * combined with the adjacent button(s), forming a single UI componenet with
  * multiple targets.
  * @param {goog.ui.Button} button Button to update.
- * @param {number} sides Bitmap of one or more {@link goog.ui.Button.Side}s for
+ * @param {number} sides Bitmap of one or more {@link goog.ui.ButtonSide}s for
  *     which borders should be collapsed.
  * @protected
  */
@@ -195,13 +202,13 @@ goog.ui.ButtonRenderer.prototype.setCollapsed = function(button, sides) {
       goog.getCssName(this.getStructuralCssClass(), 'collapse-right');
 
   button.enableClassName(isRtl ? collapseRightClassName : collapseLeftClassName,
-      !!(sides & goog.ui.Button.Side.START));
+      !!(sides & goog.ui.ButtonSide.START));
   button.enableClassName(isRtl ? collapseLeftClassName : collapseRightClassName,
-      !!(sides & goog.ui.Button.Side.END));
+      !!(sides & goog.ui.ButtonSide.END));
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ButtonRenderer.prototype.getCssClass = function() {
   return goog.ui.ButtonRenderer.CSS_CLASS;
 };

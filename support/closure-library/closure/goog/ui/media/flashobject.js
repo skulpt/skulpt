@@ -38,8 +38,6 @@
  * subclasses goog.ui.media.FlashObject to provide all the goodness of
  * http://go/browserinterface.as
  *
-*
-*
  */
 
 goog.provide('goog.ui.media.FlashObject');
@@ -47,15 +45,18 @@ goog.provide('goog.ui.media.FlashObject.ScriptAccessLevel');
 goog.provide('goog.ui.media.FlashObject.Wmodes');
 
 goog.require('goog.asserts');
-goog.require('goog.debug.Logger');
+goog.require('goog.events.Event');
 goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventType');
+goog.require('goog.log');
+goog.require('goog.object');
 goog.require('goog.string');
 goog.require('goog.structs.Map');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Component.Error');
 goog.require('goog.userAgent');
 goog.require('goog.userAgent.flash');
+
 
 
 /**
@@ -140,6 +141,7 @@ goog.ui.media.FlashObject.Wmodes = {
   WINDOW: 'window'
 };
 
+
 /**
  * The different levels of allowScriptAccess.
  *
@@ -166,6 +168,7 @@ goog.ui.media.FlashObject.ScriptAccessLevel = {
   NEVER: 'never'
 };
 
+
 /**
  * The component CSS namespace.
  *
@@ -191,18 +194,18 @@ goog.ui.media.FlashObject.FLASH_CSS_CLASS =
  */
 goog.ui.media.FlashObject.IE_HTML_ =
     '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"' +
-           ' id="%s"' +
-           ' name="%s"' +
-           ' class="%s"' +
-           '>' +
-      '<param name="movie" value="%s"/>' +
-      '<param name="quality" value="high"/>' +
-      '<param name="FlashVars" value="%s"/>' +
-      '<param name="bgcolor" value="%s"/>' +
-      '<param name="AllowScriptAccess" value="%s"/>' +
-      '<param name="allowFullScreen" value="true"/>' +
-      '<param name="SeamlessTabbing" value="false"/>' +
-      '%s' +
+    ' id="%s"' +
+    ' name="%s"' +
+    ' class="%s"' +
+    '>' +
+    '<param name="movie" value="%s"/>' +
+    '<param name="quality" value="high"/>' +
+    '<param name="FlashVars" value="%s"/>' +
+    '<param name="bgcolor" value="%s"/>' +
+    '<param name="AllowScriptAccess" value="%s"/>' +
+    '<param name="allowFullScreen" value="true"/>' +
+    '<param name="SeamlessTabbing" value="false"/>' +
+    '%s' +
     '</object>';
 
 
@@ -223,18 +226,18 @@ goog.ui.media.FlashObject.IE_WMODE_PARAMS_ = '<param name="wmode" value="%s"/>';
  */
 goog.ui.media.FlashObject.FF_HTML_ =
     '<embed quality="high"' +
-          ' id="%s"' +
-          ' name="%s"' +
-          ' class="%s"' +
-          ' src="%s"' +
-          ' FlashVars="%s"' +
-          ' bgcolor="%s"' +
-          ' AllowScriptAccess="%s"' +
-          ' allowFullScreen="true"' +
-          ' SeamlessTabbing="false"' +
-          ' type="application/x-shockwave-flash"' +
-          ' pluginspage="http://www.macromedia.com/go/getflashplayer"' +
-          ' %s>' +
+    ' id="%s"' +
+    ' name="%s"' +
+    ' class="%s"' +
+    ' src="%s"' +
+    ' FlashVars="%s"' +
+    ' bgcolor="%s"' +
+    ' AllowScriptAccess="%s"' +
+    ' allowFullScreen="true"' +
+    ' SeamlessTabbing="false"' +
+    ' type="application/x-shockwave-flash"' +
+    ' pluginspage="http://www.macromedia.com/go/getflashplayer"' +
+    ' %s>' +
     '</embed>';
 
 
@@ -250,11 +253,11 @@ goog.ui.media.FlashObject.FF_WMODE_PARAMS_ = 'wmode=%s';
 /**
  * A logger used for debugging.
  *
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @private
  */
 goog.ui.media.FlashObject.prototype.logger_ =
-    goog.debug.Logger.getLogger('goog.ui.media.FlashObject');
+    goog.log.getLogger('goog.ui.media.FlashObject');
 
 
 /**
@@ -485,7 +488,7 @@ goog.ui.media.FlashObject.prototype.hasRequiredVersion = function() {
 /**
  * Writes the Flash embedding {@code HTMLObjectElement} to this components root
  * element and adds listeners for all events to handle them consistently.
- * @inheritDoc
+ * @override
  */
 goog.ui.media.FlashObject.prototype.enterDocument = function() {
   goog.ui.media.FlashObject.superClass_.enterDocument.call(this);
@@ -529,13 +532,13 @@ goog.ui.media.FlashObject.prototype.enterDocument = function() {
 /**
  * Creates the DOM structure.
  *
- * @inheritDoc
+ * @override
  */
 goog.ui.media.FlashObject.prototype.createDom = function() {
   if (this.hasRequiredVersion() &&
       !goog.userAgent.flash.isVersion(
           /** @type {string} */ (this.getRequiredVersion()))) {
-    this.logger_.warning('Required flash version not found:' +
+    goog.log.warning(this.logger_, 'Required flash version not found:' +
         this.getRequiredVersion());
     throw Error(goog.ui.Component.Error.NOT_SUPPORTED);
   }
@@ -595,7 +598,7 @@ goog.ui.media.FlashObject.prototype.getFlashElement = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.media.FlashObject.prototype.disposeInternal = function() {
   goog.ui.media.FlashObject.superClass_.disposeInternal.call(this);
   this.flashVars_ = null;

@@ -15,7 +15,6 @@
 /**
  * @fileoverview Handles applying header styles to text.
  *
-*
  */
 
 goog.provide('goog.editor.plugins.HeaderFormatter');
@@ -23,6 +22,7 @@ goog.provide('goog.editor.plugins.HeaderFormatter');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Plugin');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -36,7 +36,7 @@ goog.editor.plugins.HeaderFormatter = function() {
 goog.inherits(goog.editor.plugins.HeaderFormatter, goog.editor.Plugin);
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.HeaderFormatter.prototype.getTrogClassId = function() {
   return 'HeaderFormatter';
 };
@@ -45,6 +45,7 @@ goog.editor.plugins.HeaderFormatter.prototype.getTrogClassId = function() {
 // here for headers.  I'm not doing this now because it depends on the
 // switch statements in basictextformatter and we'll need to abstract that out
 // in order to seperate out any of the functions from basictextformatter.
+
 
 /**
  * Commands that can be passed as the optional argument to execCommand.
@@ -59,7 +60,7 @@ goog.editor.plugins.HeaderFormatter.HEADER_COMMAND = {
 
 
 /**
- * @inheritDoc
+ * @override
  */
 goog.editor.plugins.HeaderFormatter.prototype.handleKeyboardShortcut = function(
     e, key, isModifierPressed) {
@@ -82,7 +83,7 @@ goog.editor.plugins.HeaderFormatter.prototype.handleKeyboardShortcut = function(
       break;
   }
   if (command) {
-    this.fieldObject.execCommand(
+    this.getFieldObject().execCommand(
         goog.editor.Command.FORMAT_BLOCK, command);
     // Prevent default isn't enough to cancel tab navigation in FF.
     if (goog.userAgent.GECKO) {

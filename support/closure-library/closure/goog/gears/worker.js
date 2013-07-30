@@ -15,7 +15,7 @@
 /**
  * @fileoverview This represents a Gears worker (background process).
  *
-*
+ * @author arv@google.com (Erik Arvidsson)
  */
 
 goog.provide('goog.gears.Worker');
@@ -91,7 +91,7 @@ goog.gears.Worker.prototype.id_ = null;
  */
 goog.gears.Worker.prototype.init = function(id) {
   if (this.id_ != null) {
-    throw Error('Can only set the worker id once')
+    throw Error('Can only set the worker id once');
   }
 
   this.id_ = id;
@@ -144,19 +144,16 @@ goog.gears.Worker.prototype.getId = function() {
  */
 goog.gears.Worker.isCommandLike = function(obj) {
   return goog.isArray(obj) && obj.length == 2 &&
-      goog.isNumber((/** @type {Array} */ obj)[0]);
+      goog.isNumber(/** @type {Array} */ (obj)[0]);
 };
 
 
-/**
- * Disposes of the object.
- */
+/** @override */
 goog.gears.Worker.prototype.disposeInternal = function() {
   goog.gears.Worker.superClass_.disposeInternal.call(this);
   this.workerPool_.unregisterWorker(this);
   this.workerPool_ = null;
 };
-
 
 
 /**

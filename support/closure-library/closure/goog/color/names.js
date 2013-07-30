@@ -14,7 +14,6 @@
 
 /**
  * @fileoverview Names of standard colors with their associated hex values.
-*
  */
 
 goog.provide('goog.color.names');
@@ -117,7 +116,7 @@ goog.color.names = {
   'mediumaquamarine': '#66cdaa',
   'mediumblue': '#0000cd',
   'mediumorchid': '#ba55d3',
-  'mediumpurple': '#9370d8',
+  'mediumpurple': '#9370db',
   'mediumseagreen': '#3cb371',
   'mediumslateblue': '#7b68ee',
   'mediumspringgreen': '#00fa9a',
@@ -138,7 +137,7 @@ goog.color.names = {
   'palegoldenrod': '#eee8aa',
   'palegreen': '#98fb98',
   'paleturquoise': '#afeeee',
-  'palevioletred': '#d87093',
+  'palevioletred': '#db7093',
   'papayawhip': '#ffefd5',
   'peachpuff': '#ffdab9',
   'peru': '#cd853f',

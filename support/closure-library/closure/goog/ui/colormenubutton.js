@@ -17,7 +17,7 @@
  * showing the currently selected color in the button caption.
  *
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.ColorMenuButton');
@@ -26,11 +26,11 @@ goog.require('goog.array');
 goog.require('goog.object');
 goog.require('goog.ui.ColorMenuButtonRenderer');
 goog.require('goog.ui.ColorPalette');
-goog.require('goog.ui.Component.EventType');
-goog.require('goog.ui.ControlContent');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.registry');
+
 
 
 /**
@@ -75,17 +75,17 @@ goog.ui.ColorMenuButton.PALETTES = {
   /** Default pastel colors. */
   PASTEL: [
     '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#cfe2f3', '#d9d2e9',
-      '#ead1dc',
+    '#ead1dc',
     '#ea9999', '#f9cb9c', '#ffe599', '#b6d7a8', '#a2c4c9', '#9fc5e8', '#b4a7d6',
-      '#d5a6bd',
+    '#d5a6bd',
     '#e06666', '#f6b26b', '#ffd966', '#93c47d', '#76a5af', '#6fa8dc', '#8e7cc3',
-      '#c27ba0',
+    '#c27ba0',
     '#cc0000', '#e69138', '#f1c232', '#6aa84f', '#45818e', '#3d85c6', '#674ea7',
-      '#a64d79',
+    '#a64d79',
     '#990000', '#b45f06', '#bf9000', '#38761d', '#134f5c', '#0b5394', '#351c75',
-      '#741b47',
+    '#741b47',
     '#660000', '#783f04', '#7f6000', '#274e13', '#0c343d', '#073763', '#20124d',
-      '#4c1130'
+    '#4c1130'
   ]
 };
 
@@ -151,9 +151,11 @@ goog.ui.ColorMenuButton.prototype.setSelectedColor = function(color) {
  * Sets the value associated with the color menu button.  Overrides
  * {@link goog.ui.Button#setValue} by interpreting the value as a color
  * spec string.
- * @param {?string} color New button value; should be a color spec string.
+ * @param {*} value New button value; should be a color spec string.
+ * @override
  */
-goog.ui.ColorMenuButton.prototype.setValue = function(color) {
+goog.ui.ColorMenuButton.prototype.setValue = function(value) {
+  var color = /** @type {?string} */ (value);
   for (var i = 0, item; item = this.getItemAt(i); i++) {
     if (typeof item.setSelectedColor == 'function') {
       // This menu item looks like a color palette.
@@ -171,6 +173,7 @@ goog.ui.ColorMenuButton.prototype.setValue = function(color) {
  * dispatches an ACTION event on behalf of the button itself.  Overrides
  * {@link goog.ui.MenuButton#handleMenuAction}.
  * @param {goog.events.Event} e Action event to handle.
+ * @override
  */
 goog.ui.ColorMenuButton.prototype.handleMenuAction = function(e) {
   if (typeof e.target.getSelectedColor == 'function') {
@@ -190,14 +193,17 @@ goog.ui.ColorMenuButton.prototype.handleMenuAction = function(e) {
  * Opens or closes the menu.  Overrides {@link goog.ui.MenuButton#setOpen} by
  * generating a default color menu on the fly if needed.
  * @param {boolean} open Whether to open or close the menu.
+ * @param {goog.events.Event=} opt_e Mousedown event that caused the menu to
+ *     be opened.
+ * @override
  */
-goog.ui.ColorMenuButton.prototype.setOpen = function(open) {
+goog.ui.ColorMenuButton.prototype.setOpen = function(open, opt_e) {
   if (open && this.getItemCount() == 0) {
     this.setMenu(
         goog.ui.ColorMenuButton.newColorMenu(null, this.getDomHelper()));
     this.setValue(/** @type {?string} */ (this.getValue()));
   }
-  goog.ui.ColorMenuButton.superClass_.setOpen.call(this, open);
+  goog.ui.ColorMenuButton.superClass_.setOpen.call(this, open, opt_e);
 };
 
 

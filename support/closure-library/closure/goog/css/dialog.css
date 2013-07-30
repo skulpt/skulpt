@@ -1,7 +1,7 @@
 /*
  * Copyright 2009 The Closure Library Authors. All Rights Reserved.
  *
- * Use of this source code is governed by an Apache 2.0 License.
+ * Use of this source code is governed by the Apache License, Version 2.0.
  * See the COPYING file for details.
  */
 
@@ -41,14 +41,17 @@
   cursor: pointer;
   font-size: 120%;
   font-weight: bold;
-  padding: 8px 15px 8px 8px;
+
+  /* Add padding on the right to ensure the close button has room. */
+  padding: 8px 31px 8px 8px;
+
   position: relative;
   _zoom: 1; /* Ensures proper width in IE6 RTL. */
 }
 
 .modal-dialog-title-close {
   /* Client apps may override the URL at which they serve the sprite. */
-  background: #e0edfe url(https://ssl.gstatic.com/editor/editortoolbar.png) no-repeat -528px 0;
+  background: #e0edfe url(//ssl.gstatic.com/editor/editortoolbar.png) no-repeat -528px 0;
   cursor: default;
   height: 15px;
   position: absolute;

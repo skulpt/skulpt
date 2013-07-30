@@ -16,7 +16,6 @@
  * @fileoverview Code for managing series of undo-redo actions in the form of
  * {@link goog.editor.plugins.UndoRedoState}s.
  *
-*
  */
 
 
@@ -25,6 +24,7 @@ goog.provide('goog.editor.plugins.UndoRedoManager.EventType');
 
 goog.require('goog.editor.plugins.UndoRedoState');
 goog.require('goog.events.EventTarget');
+
 
 
 /**
@@ -72,6 +72,7 @@ goog.editor.plugins.UndoRedoManager = function() {
 };
 goog.inherits(goog.editor.plugins.UndoRedoManager, goog.events.EventTarget);
 
+
 /**
  * Event types for the events dispatched by undo-redo manager.
  * @enum {string}
@@ -113,7 +114,7 @@ goog.editor.plugins.UndoRedoManager.EventType = {
 /**
  * The key for the listener for the completion of the asynchronous state whose
  * undo or redo action is in progress. Null if no action is in progress.
- * @type {?number}
+ * @type {goog.events.Key}
  * @private
  */
 goog.editor.plugins.UndoRedoManager.prototype.inProgressActionKey_ = null;

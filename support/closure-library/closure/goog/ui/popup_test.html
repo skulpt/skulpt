@@ -3,10 +3,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.Popup</title>
 <script src="../base.js"></script>
 <script>
@@ -41,7 +42,7 @@ See the COPYING file for details.
 function assertRoundedEquals(a, b, c) {
   function round(x) {
     return goog.userAgent.GECKO && (goog.userAgent.MAC || goog.userAgent.X11) &&
-        goog.userAgent.isVersion('1.9') ? Math.round(x) : x;
+        goog.userAgent.isVersionOrHigher('1.9') ? Math.round(x) : x;
   }
   if (arguments.length == 3) {
     assertEquals(a, round(b), round(c));

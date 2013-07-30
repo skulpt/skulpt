@@ -15,7 +15,7 @@
 /**
  * @fileoverview Detection of JScript version.
  *
-*
+ * @author arv@google.com (Erik Arvidsson)
  */
 
 
@@ -28,7 +28,7 @@ goog.require('goog.string');
  * @define {boolean} True if it is known at compile time that the runtime
  *     environment will not be using JScript.
  */
-goog.userAgent.jscript.ASSUME_NO_JSCRIPT = false;
+goog.define('goog.userAgent.jscript.ASSUME_NO_JSCRIPT', false);
 
 
 /**
@@ -64,6 +64,7 @@ goog.userAgent.jscript.init_ = function() {
 if (!goog.userAgent.jscript.ASSUME_NO_JSCRIPT) {
   goog.userAgent.jscript.init_();
 }
+
 
 /**
  * Whether we detect that the user agent is using Microsoft JScript.

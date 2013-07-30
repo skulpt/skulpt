@@ -3,10 +3,11 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>UrlCapture tests</title>
 <script src="../base.js"></script>
 <script>
@@ -52,6 +53,10 @@ function newStubResourceStore() {
 
   result.rename = function(oldUrl, newUrl) {
     goog.array.remove(capturedUrls, oldUrl);
+    capturedUrls.push(newUrl);
+  };
+
+  result.copy = function(oldUrl, newUrl) {
     capturedUrls.push(newUrl);
   };
 
@@ -177,7 +182,7 @@ function testEmptyCapture() {
 }
 
 /**
- * Tets successful capture.
+ * Test successful capture.
  */
 function testCaptureUrlSuccess() {
   // Create stubs and mocks.
@@ -214,7 +219,7 @@ function testCaptureUrlSuccess() {
 }
 
 /**
- * Tets successful capture.
+ * Test unsuccessful capture.
  */
 function testCaptureUrlFail() {
   // Create stubs and mocks.
@@ -290,7 +295,7 @@ function testAbortCapture() {
 }
 
 /**
- * Test remove captured URL.
+ * Test removing captured URL.
  */
 function testRemoveUrl() {
   // Create stubs and mocks.
@@ -320,7 +325,7 @@ function testRemoveUrl() {
 }
 
 /**
- * Test remove captured URL.
+ * Test renaming captured URL.
  */
 function testRenameUrl() {
   // Create stubs and mocks.
@@ -345,9 +350,40 @@ function testRenameUrl() {
   stubResourceStore.callbacks[id](url, true, id);
   assertIsCaptured([url], [renamedUrl], uut);
 
-  // Remove URL.
+  // Rename URL.
   uut.rename(url, renamedUrl);
   assertIsCaptured([renamedUrl], [url], uut);
+}
+
+/**
+ * Test copying captured URL.
+ */
+function testCopyUrl() {
+  // Create stubs and mocks.
+  var stubResourceStore = newStubResourceStore();
+  var mockLocalServer = newMockLocalServerCreateStore(stubResourceStore);
+
+  // Create url capturer.
+  var uut = new goog.gears.UrlCapture(STORE_NAME, COOKIE_NAME, mockLocalServer);
+
+  // Throw exception for removing with no URL.
+  assertThrows('should fail for no URL', function() { uut.copy(); });
+  assertThrows('should fail for null URL', function() { uut.copy(null); });
+
+  // Start capture.
+  var url = '/foo.html';
+  var copiedUrl = '/renamed.html';
+  var id = uut.capture([url]);
+  mockLocalServer.$verify();
+  assertIsCaptured([], [url, copiedUrl], uut);
+
+  // Callback capture success.
+  stubResourceStore.callbacks[id](url, true, id);
+  assertIsCaptured([url], [copiedUrl], uut);
+
+  // Copy URL.
+  uut.copy(url, copiedUrl);
+  assertIsCaptured([url, copiedUrl], [], uut);
 }
 
 </script>

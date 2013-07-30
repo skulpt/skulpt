@@ -3,13 +3,13 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
-  Author: Srinivas Annam (annams@google.com)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.tree.TypeAhead</title>
 <script src="../../base.js"></script>
 <script>
@@ -100,6 +100,34 @@ function testJumpTo() {
   selectedItem = tree.getSelectedItem();
   assertTrue(handled && selectedItem.html_ == 'eve3');
 };
+
+
+/**
+ * Test handleTypeAheadChar functionality.
+ */
+function testHandleTypeAheadChar() {
+  var tree = makeATree();
+  var typeAhead = tree.typeAhead_;
+  var e = new Object();
+
+  // Period character('.'): keyCode = 190, charCode = 46
+  // String.fromCharCode(190) = '3/4'  <-- incorrect
+  // String.fromCharCode(46) = '.'  <-- correct
+  e.keyCode = goog.events.KeyCodes.PERIOD;
+  e.charCode = 46;
+  e.preventDefault = function() {};
+  typeAhead.handleTypeAheadChar(e);
+  assertEquals('.', typeAhead.buffer_);
+
+  // charCode not supplied.
+  // This is expected to work only for alpha-num characters.
+  e.keyCode = goog.events.KeyCodes.A;
+  e.charCode = undefined;
+  typeAhead.buffer_ = '';
+  typeAhead.handleTypeAheadChar(e);
+  assertEquals('a', typeAhead.buffer_);
+}
+
 </script>
 </body>
 </html>

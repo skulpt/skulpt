@@ -16,17 +16,19 @@
  * @fileoverview Renderer for {@link goog.ui.Menu}s.
  *
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author pupius@google.com (Daniel Pupius)
  */
 
 goog.provide('goog.ui.MenuRenderer');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.a11y');
-goog.require('goog.dom.a11y.Role');
-goog.require('goog.dom.a11y.State');
 goog.require('goog.ui.ContainerRenderer');
 goog.require('goog.ui.Separator');
+
 
 
 /**
@@ -56,7 +58,7 @@ goog.ui.MenuRenderer.CSS_CLASS = goog.getCssName('goog-menu');
  * @override
  */
 goog.ui.MenuRenderer.prototype.getAriaRole = function() {
-  return goog.dom.a11y.Role.MENU;
+  return goog.a11y.aria.Role.MENU;
 };
 
 
@@ -64,6 +66,7 @@ goog.ui.MenuRenderer.prototype.getAriaRole = function() {
  * Returns whether the element is a UL or acceptable to our superclass.
  * @param {Element} element Element to decorate.
  * @return {boolean} Whether the renderer can decorate the element.
+ * @override
  */
 goog.ui.MenuRenderer.prototype.canDecorate = function(element) {
   return element.tagName == 'UL' ||
@@ -78,6 +81,7 @@ goog.ui.MenuRenderer.prototype.canDecorate = function(element) {
  * @param {Element} element Element to decorate.
  * @return {goog.ui.Control?} A new control suitable to decorate the element
  *     (null if none).
+ * @override
  */
 goog.ui.MenuRenderer.prototype.getDecoratorForChild = function(element) {
   return element.tagName == 'HR' ?
@@ -102,16 +106,18 @@ goog.ui.MenuRenderer.prototype.containsElement = function(menu, element) {
  * Returns the CSS class to be applied to the root element of containers
  * rendered using this renderer.
  * @return {string} Renderer-specific CSS class.
+ * @override
  */
 goog.ui.MenuRenderer.prototype.getCssClass = function() {
   return goog.ui.MenuRenderer.CSS_CLASS;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.MenuRenderer.prototype.initializeDom = function(container) {
   goog.ui.MenuRenderer.superClass_.initializeDom.call(this, container);
 
   var element = container.getElement();
-  goog.dom.a11y.setState(element, goog.dom.a11y.State.HASPOPUP, 'true');
+  goog.asserts.assert(element, 'The menu DOM element cannot be null.');
+  goog.a11y.aria.setState(element, goog.a11y.aria.State.HASPOPUP, 'true');
 };
