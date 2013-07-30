@@ -18,7 +18,7 @@ Sk.builtin.timSort = function(list, length){
 };
 
 Sk.builtin.timSort.prototype.lt = function(a, b){
-    return a < b;
+	return Sk.misceval.richCompareBool(a, b, "Lt");
 };
 
 Sk.builtin.timSort.prototype.le = function(a, b){
@@ -50,7 +50,9 @@ Sk.builtin.timSort.prototype.binary_sort = function(a, sorted) {
         // The second is vacuously true at the start.
         while(l < r){
             var p = l + ((r - l) >> 1);
+			console.log(l + '+' + '((' + r + '-' + l + ') >> 1) == ' + p);
             if (this.lt(pivot, a.getitem(p))){
+				console.log(pivot.v + " smaller " + a.getitem(p).v)
                 r = p;
             }
             else {
@@ -95,9 +97,9 @@ Sk.builtin.timSort.prototype.count_run = function(a){
 	}
 	else {
 		var n = 2;
-		if (this.lt(a.getitem(1), a.getitem(0))){
+		if (this.lt(a.getitem(a.base + 1), a.getitem(a.base))){
 			descending = true;
-			for (var p = 2; p < a.len; p++){
+			for (var p = a.base + 2; p < a.base + a.len; p++){
 				if (this.lt(a.getitem(p), a.getitem(p-1))){
 					n++;
 				}
