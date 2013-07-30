@@ -81,8 +81,8 @@ function numStmts(n)
 
 function forbiddenCheck(c, n, x, lineno)
 {
-    if (x === "None") throw new Sk.builtin.SyntaxError("assignment to None", "", lineno);
-    if (x === "True" || x === "False") throw new Sk.builtin.SyntaxError("assignment to True or False is forbidden", "", lineno);
+    if (x === "None") throw new Sk.builtin.SyntaxError("assignment to None", c.c_filename, lineno);
+    if (x === "True" || x === "False") throw new Sk.builtin.SyntaxError("assignment to True or False is forbidden", c.c_filename, lineno);
 }
 
 /**
@@ -113,7 +113,7 @@ function setContext(c, e, ctx, n)
             break;
         case Tuple:
             if (e.elts.length === 0)
-                throw new Sk.builtin.SyntaxError("can't assign to ()", "", n.lineno);
+                throw new Sk.builtin.SyntaxError("can't assign to ()", c.c_filename, n.lineno);
             e.ctx = ctx;
             s = e.elts;
             break;
@@ -153,7 +153,7 @@ function setContext(c, e, ctx, n)
     }
     if (exprName)
     {
-        throw new Sk.builtin.SyntaxError("can't " + (ctx === Store ? "assign to" : "delete") + " " + exprName, "", n.lineno);
+        throw new Sk.builtin.SyntaxError("can't " + (ctx === Store ? "assign to" : "delete") + " " + exprName, c.c_filename, n.lineno);
     }
 
     if (s)
@@ -338,7 +338,7 @@ function astForTryStmt(c, n)
     }
     else if (CHILD(n, nc - 3).type !== SYM.except_clause)
     {
-        throw new Sk.builtin.SyntaxError("malformed 'try' statement", "", n.lineno);
+        throw new Sk.builtin.SyntaxError("malformed 'try' statement", c.c_filename, n.lineno);
     }
 
     if (nexcept > 0)
@@ -614,7 +614,7 @@ function aliasForImportName(c, n)
             case TOK.T_STAR:
                 return new alias(strobj("*"), null);
             default:
-                throw new Sk.builtin.SyntaxError("unexpected import name", "", n.lineno);
+                throw new Sk.builtin.SyntaxError("unexpected import name", c.c_filename, n.lineno);
         }
     break; }
 }
@@ -676,10 +676,10 @@ function astForImportStmt(c, n)
                 n = CHILD(n, idx);
                 nchildren = NCH(n);
                 if (nchildren % 2 === 0)
-                    throw new Sk.builtin.SyntaxError("trailing comma not allowed without surrounding parentheses", "", n.lineno);
+                    throw new Sk.builtin.SyntaxError("trailing comma not allowed without surrounding parentheses", c.c_filename, n.lineno);
                 break;
             default:
-                throw new Sk.builtin.SyntaxError("Unexpected node-type in from-import", "", n.lineno);
+                throw new Sk.builtin.SyntaxError("Unexpected node-type in from-import", c.c_filename, n.lineno);
         }
         var aliases = [];
         if (n.type === TOK.T_STAR)
@@ -690,7 +690,7 @@ function astForImportStmt(c, n)
         var modname = mod ? mod.name.v : "";
         return new ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
     }
-    throw new Sk.builtin.SyntaxError("unknown import statement", "", n.lineno);
+    throw new Sk.builtin.SyntaxError("unknown import statement", c.c_filename, n.lineno);
 }
 
 function astForTestlistGexp(c, n)
@@ -879,9 +879,9 @@ function astForCall(c, n, func)
         }
     }
     if (ngens > 1 || (ngens && (nargs || nkeywords)))
-        throw new Sk.builtin.SyntaxError("Generator expression must be parenthesized if not sole argument", "", n.lineno);
+        throw new Sk.builtin.SyntaxError("Generator expression must be parenthesized if not sole argument", c.c_filename, n.lineno);
     if (nargs + nkeywords + ngens > 255)
-        throw new Sk.builtin.SyntaxError("more than 255 arguments", "", n.lineno);
+        throw new Sk.builtin.SyntaxError("more than 255 arguments", c.c_filename, n.lineno);
     var args = [];
     var keywords = [];
     nargs = 0;
@@ -895,8 +895,8 @@ function astForCall(c, n, func)
         {
             if (NCH(ch) === 1)
             {
-                if (nkeywords) throw new Sk.builtin.SyntaxError("non-keyword arg after keyword arg", "", n.lineno);
-                if (vararg) throw new Sk.builtin.SyntaxError("only named arguments may follow *expression", "", n.lineno);
+                if (nkeywords) throw new Sk.builtin.SyntaxError("non-keyword arg after keyword arg", c.c_filename, n.lineno);
+                if (vararg) throw new Sk.builtin.SyntaxError("only named arguments may follow *expression", c.c_filename, n.lineno);
                 args[nargs++] = astForExpr(c, CHILD(ch, 0));
             }
             else if (CHILD(ch, 1).type === SYM.gen_for)
@@ -904,14 +904,14 @@ function astForCall(c, n, func)
             else
             {
                 var e = astForExpr(c, CHILD(ch, 0));
-                if (e.constructor === Lambda) throw new Sk.builtin.SyntaxError("lambda cannot contain assignment", "", n.lineno);
-                else if (e.constructor !== Name) throw new Sk.builtin.SyntaxError("keyword can't be an expression", "", n.lineno);
+                if (e.constructor === Lambda) throw new Sk.builtin.SyntaxError("lambda cannot contain assignment", c.c_filename, n.lineno);
+                else if (e.constructor !== Name) throw new Sk.builtin.SyntaxError("keyword can't be an expression", c.c_filename, n.lineno);
                 var key = e.id;
                 forbiddenCheck(c, CHILD(ch, 0), key, n.lineno);
                 for (var k = 0; k < nkeywords; ++k)
                 {
                     var tmp = keywords[k].arg;
-                    if (tmp === key) throw new Sk.builtin.SyntaxError("keyword argument repeated", "", n.lineno);
+                    if (tmp === key) throw new Sk.builtin.SyntaxError("keyword argument repeated", c.c_filename, n.lineno);
                 }
                 keywords[nkeywords++] = new keyword(key, astForExpr(c, CHILD(ch, 2)));
             }
@@ -1074,8 +1074,8 @@ function astForArguments(c, n)
                         /* def f((x)=4): pass should raise an error.
                            def f((x, (y))): pass will just incur the tuple unpacking warning. */
                         if (parenthesized && !complexArgs)
-                            throw new Sk.builtin.SyntaxError("parenthesized arg with default", "", n.lineno);
-                        throw new Sk.builtin.SyntaxError("non-default argument follows default argument", "", n.lineno);
+                            throw new Sk.builtin.SyntaxError("parenthesized arg with default", c.c_filename, n.lineno);
+                        throw new Sk.builtin.SyntaxError("non-default argument follows default argument", c.c_filename, n.lineno);
                     }
 
                     if (NCH(ch) === 3)
@@ -1084,7 +1084,7 @@ function astForArguments(c, n)
                         // def foo((x)): is not complex, special case.
                         if (NCH(ch) !== 1)
                         {
-                            throw new Sk.builtin.SyntaxError("tuple parameter unpacking has been removed", this.c_filename, n.lineno);
+                            throw new Sk.builtin.SyntaxError("tuple parameter unpacking has been removed", c.c_filename, n.lineno);
                         }
                         else
                         {
@@ -1105,7 +1105,7 @@ function astForArguments(c, n)
                     }
                     i += 2;
                     if (parenthesized)
-                        throw new Sk.builtin.SyntaxError("parenthesized argument names are invalid", "", n.lineno);
+                        throw new Sk.builtin.SyntaxError("parenthesized argument names are invalid", c.c_filename, n.lineno);
                 break; }
                 break;
             case TOK.T_STAR:
@@ -1378,8 +1378,8 @@ function astForExprStmt(c, n)
         var expr1 = astForTestlist(c, ch);
         switch (expr1.constructor)
         {
-            case GeneratorExp: throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", "", n.lineno);
-            case Yield: throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", "", n.lineno);
+            case GeneratorExp: throw new Sk.builtin.SyntaxError("augmented assignment to generator expression not possible", c.c_filename, n.lineno);
+            case Yield: throw new Sk.builtin.SyntaxError("augmented assignment to yield expression not possible", c.c_filename, n.lineno);
             case Name:
                 var varName = expr1.id;
                 forbiddenCheck(c, ch, varName, n.lineno);
@@ -1388,7 +1388,7 @@ function astForExprStmt(c, n)
             case Subscript:
                 break;
             default:
-                throw new Sk.builtin.SyntaxError("illegal expression for augmented assignment", "", n.lineno);
+                throw new Sk.builtin.SyntaxError("illegal expression for augmented assignment", c.c_filename, n.lineno);
         }
         setContext(c, expr1, Store, ch);
 
@@ -1409,7 +1409,7 @@ function astForExprStmt(c, n)
         for (var i = 0; i < NCH(n) - 2; i += 2)
         {
             var ch = CHILD(n, i);
-            if (ch.type === SYM.yield_expr) throw new Sk.builtin.SyntaxError("assignment to yield expression not possible", "", n.lineno);
+            if (ch.type === SYM.yield_expr) throw new Sk.builtin.SyntaxError("assignment to yield expression not possible", c.c_filename, n.lineno);
             var e = astForTestlist(c, ch);
             setContext(c, e, Store, CHILD(n, i));
             targets[i / 2] = e;
@@ -1537,7 +1537,7 @@ function parsestrplus(c, n)
         try {
             ret = ret.sq$concat(parsestr(c, CHILD(n, i).value));
         } catch (x) {
-            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", "", CHILD(n, i).lineno);
+            throw new Sk.builtin.SyntaxError("invalid string (possibly contains a unicode character)", c.c_filename, CHILD(n, i).lineno);
         }
     }
     return ret;
@@ -1549,7 +1549,7 @@ function parsenumber(c, s, lineno)
 
     // todo; no complex support
     if (end === 'j' || end === 'J') {
-	throw new Sk.builtin.SyntaxError("complex numbers are currently unsupported", "", lineno);
+	throw new Sk.builtin.SyntaxError("complex numbers are currently unsupported", c.c_filename, lineno);
     }
 
     // Handle longs
@@ -1716,7 +1716,7 @@ function astForAtom(c, n)
             }
             return new Dict(keys, values, n.lineno, n.col_offset);
         case TOK.T_BACKQUOTE:
-            throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", "", n.lineno);
+            throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
         default:
             goog.asserts.fail("unhandled atom", ch.type);
     }
