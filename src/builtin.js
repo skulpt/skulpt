@@ -857,17 +857,19 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var list;
 	if (key !== undefined && key !== null) {
         if (cmp === null) {
-			compare_func = Sk.mergeSort.stdCmp.func_code;
+			compare_func = function(a,b){
+				return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? -1 : 0;
+			};
 		}
         else {
             compare_func = cmp.func_code;
 		}
-		var iter = iterable.tp$iter;
-		var next = iter.next();
+		var iter = iterable.tp$iter();
+		var next = iter.tp$iternext();
 		var arr = [];
 		while (next !== undefined){
-			arr.push([key(next), next]);
-			next = iter.next();
+			arr.push([key.func_code(next), next]);
+			next = iter.tp$iternext();
 		}
         list = new Sk.builtin.list(arr);
 	}
@@ -881,7 +883,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	}
 	
 	if (compare_func !== undefined) {
-		list.list_sort_(compare_func);
+		list.list_sort_(list, 	compare_func);
 	}
 	else {
 		list.list_sort_();
@@ -893,11 +895,11 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	
 	if (key !== undefined && key !== null) {
 		var iter = list.tp$iter();
-		var next = iter.next()
+		var next = iter.tp$iternext()
 		var arr = [];
 		while (next !== undefined){
-			arr.push(next.v[1]);
-			next = iter.next();
+			arr.push(next[1]);
+			next = iter.tp$iternext();
 		}
 		list = new Sk.builtin.list(arr);
 	}

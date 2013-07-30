@@ -353,7 +353,7 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
         }
     }
 
-    var mucked = this.sq$length() > 0;
+    var mucked = self.sq$length() > 0;
 
     self.v = timsort.list.v;
 

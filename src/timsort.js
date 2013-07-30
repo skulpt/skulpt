@@ -5,7 +5,7 @@
  * @extends Sk.builtin.object
  */
 Sk.builtin.timSort = function(list, length){
-    this.list = new Sk.builtin.list(list);
+    this.list = new Sk.builtin.list(list.v);
     // When we get into galloping mode, we stay there until both runs win less
     // often than MIN_GALLOP consecutive times.  See listsort.txt for more info.
     this.MIN_GALLOP = 7;
@@ -39,9 +39,8 @@ Sk.builtin.timSort.prototype.setitem = function(item ,value){
  # Even in case of error, the output slice will be some permutation of
  # the input (nothing is lost or duplicated)
 */
-Sk.builtin.timSort.prototype.binary_sort = function(a, sorted){
-    //todo: find index of first element this assumes a list starts with index 0
-    for(var start in Sk.builtin.range(a.base + sorted, a.base + a.len).v){
+Sk.builtin.timSort.prototype.binary_sort = function(a, sorted) {
+    for(var start = a.base + sorted; start < a.base + a.len; start++){
         var l = a.base;
         var r = start;
         var pivot = a.getitem(r);
@@ -58,13 +57,13 @@ Sk.builtin.timSort.prototype.binary_sort = function(a, sorted){
                 l = p + 1;
             }
         }
-        goog.asserts.assert(l == r);
+        goog.asserts.assert(l === r);
         // The invariants still hold, so pivot >= all in [base, l) and
         // pivot < all in [l, start), so pivot belongs at l.  Note
         // that if there are elements equal to pivot, l points to the
         // first slot after them -- that's why this sort is stable.
         // Slide over to make room.
-        for (var j in Sk.builtin.range(start, l,-1).v){
+        for (var p = start; start < l; p--) {
             a.setitem(p, a.getitem(p-1));
         }
         a.setitem(l, pivot);
@@ -98,10 +97,22 @@ Sk.builtin.timSort.prototype.count_run = function(a){
 		var n = 2;
 		if (this.lt(a.getitem(1), a.getitem(0))){
 			descending = true;
-			for (var p in Sk.builtin.range(2, a.len)){
+			for (var p = 2; p < a.len; p++){
 				if (this.lt(a.getitem(p), a.getitem(p-1))){
+					n++;
+				}
+				else {
 					break;
 				}
+			}
+		}	
+		else{
+			descending = false;
+			for (p = a.base + 2; p < a.base + a.len; p++){
+	        	if (this.lt(a.getitem(p), a.getitem(p-1)))
+				{
+			        break;
+			    }
 				else {
 					n++;
 				}
@@ -179,11 +190,12 @@ Sk.builtin.timSort.prototype.sort = function (){
 Sk.builtin.timSort.prototype.gallop = function(key, a, hint, rightmost){
 	goog.asserts.assert(0 <= hint < a.len);
 	var lower;
-    if (rightmost) {
-		lower = this.le // search for the largest k for which a[k] <= key
+	var self = this;
+ 	if (rightmost) {
+		lower = function (a,b) { self.le(a,b); } // search for the largest k for which a[k] <= key
 	} 
 	else {
-		lower = this.lt // search for the largest k for which a[k] < key
+		lower = function (a,b) { self.le(a,b); } // search for the largest k for which a[k] < key
 	}
 	var p = a.base + hint;
 	var lastofs = 0;
@@ -340,7 +352,7 @@ Sk.builtin.timSort.prototype.merge_lo= function(a, b) {
                 min_gallop -= min_gallop > 1;
                 this.min_gallop = min_gallop;
                 acount = this.gallop(b.getitem(b.base), a, 0, true);
-                for (var p in Sk.builtin.range(a.base, a.base + acount).v) {
+                for (var p = a.base; p < a.base + acount; p++) {
                     this.setitem(dest, a.getitem(p));
                     dest++;
                 }
@@ -359,7 +371,7 @@ Sk.builtin.timSort.prototype.merge_lo= function(a, b) {
 
                 bcount = this.gallop(a.getitem(a.base), b, 0, false);
 
-                for (var p in Sk.builtin.range(b.base, b.base + bcount).v) {
+                for (var p = b.base; p < b.base + bcount; p++) {
                     this.setitem(dest, b.getitem(p))
                     dest ++;
                 }
@@ -382,11 +394,11 @@ Sk.builtin.timSort.prototype.merge_lo= function(a, b) {
         // The last element of a belongs at the end of the merge, so we copy
         // the remaining elements of b before the remaining elements of a.
         goog.asserts.assert(a.len >= 0 && b.len >= 0);
-        for (var p in Sk.builtin.range(b.base, b.base + b.len).v) {
+        for (var p = b.base; p < b.base + b.len; p++) {
             this.setitem(dest, b.getitem(p))
             dest ++;
         }
-        for (var p in Sk.builtin.range(a.base, a.base + a.len).v){
+        for (var p = a.base; p < a.base + a.len; p++){
             this.setitem(dest, a.getitem(p))
             dest ++;
         }
@@ -452,7 +464,7 @@ Sk.builtin.timSort.prototype.merge_hi= function(a, b) {
                 nextb = b.getitem(b.base + b.len - 1);
                 var k = this.gallop(nextb, a, a.len - 1, true);
                 acount = a.len - k;
-                for (var p in Sk.builtin.range(a.base + a.len - 1, a.base + k - 1, -1).v) {
+                for (var p = a.base + a.len - 1; p < a.base + k - 1; p--) {
                     dest--;
                     this.setitem(dest, a.getitem(p));
                 }
@@ -466,7 +478,7 @@ Sk.builtin.timSort.prototype.merge_hi= function(a, b) {
                 nexta = a.getitem(a.base + a.len - 1);
                 k = this.gallop(nexta, b, b.len - 1, false);
                 bcount = b.len - k;
-                for (var p in Sk.builtin.range(b.base + b.len - 1, b.base + k - 1, -1).v) {
+                for (var p = b.base + b.len - 1; p < b.base + k - 1; p--) {
                     dest --;
                     this.setitem(dest, b.getitem(p));
                 }
@@ -492,11 +504,11 @@ Sk.builtin.timSort.prototype.merge_hi= function(a, b) {
         // The last element of a belongs at the end of the merge, so we copy
         // the remaining elements of b before the remaining elements of a.
         goog.asserts.assert(a.len >= 0 && b.len >= 0);
-        for (var p in Sk.builtin.range(a.base + a.len - 1, a.base - 1, -1).v){
+        for (var p = a.base + a.len - 1; p < a.base - 1; p--){
             dest --;
             this.setitem(dest, a.getitem(p))
         }
-        for (var p in Sk.builtin.range(b.base + b.len - 1, b.base - 1, -1).v) {
+        for (var p = b.base + b.len - 1; p < b.base - 1; p--) {
             dest--;
             this.setitem(dest, b.getitem(p))
         }
@@ -506,6 +518,10 @@ Sk.builtin.timSort.prototype.merge_hi= function(a, b) {
 // Merge the two runs at stack indices i and i+1.
 
 Sk.builtin.timSort.prototype.merge_at = function(i){
+	if (i < 0) {
+		i = this.pending.length + i;
+	}
+	
     var a = this.pending[i];
     var b = this.pending[i+1];
     goog.asserts.assert(a.len > 0 && b.len > 0);
@@ -517,7 +533,7 @@ Sk.builtin.timSort.prototype.merge_at = function(i){
 
     // Where does b start in a?  Elements in a before that can be
     // ignored (already in place).
-    var k = this.gallop(b.getitem(b.base), a, 0, true)     ;
+    var k = this.gallop(b.getitem(b.base), a, 0, true);
     a.advance(k);
     if (a.len == 0) { return; }
 
@@ -547,14 +563,14 @@ Sk.builtin.timSort.prototype.merge_collapse = function() {
     var p = this.pending;
     while (p.length > 1)
     {
-        if (p.length >= 3 && p[-3].len <= p[-2].len + p[-1].len) {
-            if (p[-3].len < p[-1].len) {
+        if (p.length >= 3 && p[p.length-3].len <= p[p.length-2].len + p[p.length-1].len) {
+            if (p[p.length-3].len < p[p.length-1].len) {
                 this.merge_at(-3);
             }
             else{
                 this.merge_at(-2);
             }
-        } else if(p[-2].len <= p[-1].len) {
+        } else if(p[p.length-2].len <= p[p.length-1].len) {
             this.merge_at(-2);
         }
         else{
@@ -569,7 +585,7 @@ Sk.builtin.timSort.prototype.merge_collapse = function() {
 Sk.builtin.timSort.prototype.merge_force_collapse = function(){
     var p = this.pending
     while (p.length > 1 ){
-        if (p.length >= 3 && p[-3].len < p[-1].len) {
+        if (p.length >= 3 && p[p.length-3].len < p[p.length-1].len) {
             this.merge_at(-3);
         }
         else{
@@ -590,10 +606,10 @@ Sk.builtin.timSort.prototype.merge_force_collapse = function(){
 Sk.builtin.timSort.prototype.merge_compute_minrun = function (n){
     var r = 0    // becomes 1 if any 1 bits are shifted off
     while (n >= 64){
-        r = r | (n & 1);
+        r = r | n & 1;
         n >>= 1;
-        return n + r;
     }
+    return n + r;
 };
 
 //ListSlice
@@ -615,11 +631,13 @@ Sk.builtin.listSlice.prototype.copyitems = function (){
     var start = this.base;
     var stop = this.base + this.len;
     goog.asserts.assert(0 <= start <= stop);
-    return new Sk.builtin.listSlice(this.list.v.slice(start, stop), 0, this.len);
+    return new Sk.builtin.listSlice(new Sk.builtin.list(this.list.v.slice(start, stop)), 0, this.len);
 };
 
 Sk.builtin.listSlice.prototype.advance = function (n){
     this.base += n;
+	this.len -= n;
+	goog.asserts.assert(this.base <= this.list.sq$length());
 };
 
 Sk.builtin.listSlice.prototype.getitem = function (item){
