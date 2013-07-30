@@ -16,7 +16,7 @@
  * @fileoverview Iframe shims, to protect controls on the underlying page
  * from bleeding through popups.
  *
-*
+ * @author gboyer@google.com (Garrett Boyer)
  * @author nicksantos@google.com (Nick Santos) (Ported to Closure)
  */
 
@@ -26,11 +26,10 @@ goog.provide('goog.ui.IframeMask');
 goog.require('goog.Disposable');
 goog.require('goog.Timer');
 goog.require('goog.dom');
-goog.require('goog.dom.DomHelper');
 goog.require('goog.dom.iframe');
 goog.require('goog.events.EventHandler');
-goog.require('goog.events.EventTarget');
 goog.require('goog.style');
+
 
 
 /**
@@ -46,6 +45,7 @@ goog.require('goog.style');
  * @extends {goog.Disposable}
  */
 goog.ui.IframeMask = function(opt_domHelper, opt_iframePool) {
+  goog.Disposable.call(this);
 
   /**
    * The DOM helper for this document.
@@ -107,6 +107,7 @@ goog.ui.IframeMask.prototype.opacity_ = 0;
 /**
  * Removes the iframe from the DOM.
  * @override
+ * @protected
  */
 goog.ui.IframeMask.prototype.disposeInternal = function() {
   if (this.iframePool_) {
@@ -123,13 +124,14 @@ goog.ui.IframeMask.prototype.disposeInternal = function() {
   goog.ui.IframeMask.superClass_.disposeInternal.call(this);
 };
 
+
 /**
  * CSS for a hidden iframe.
  * @type {string}
  * @private
  */
 goog.ui.IframeMask.HIDDEN_CSS_TEXT_ =
-    'position:absolute;display:none;z-index:1'
+    'position:absolute;display:none;z-index:1';
 
 
 /**

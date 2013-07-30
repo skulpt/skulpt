@@ -3,13 +3,15 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.math.Size</title>
 <script src="../base.js"></script>
 <script>
+goog.require('goog.math.Coordinate');
 goog.require('goog.math.Size');
 goog.require('goog.testing.jsunit');
 </script>
@@ -64,6 +66,11 @@ function testSizeArea() {
   assertEquals(20, s.area());
 }
 
+function testSizePerimeter() {
+  var s = new goog.math.Size(4, 5);
+  assertEquals(18, s.perimeter());
+}
+
 function testSizeAspectRatio() {
   var s = new goog.math.Size(undefined, undefined);
   assertNaN(s.aspectRatio());
@@ -116,7 +123,7 @@ function testSizeIsEmpty() {
   assertFalse(s.isEmpty());
 }
 
-function testSizeScale() {
+function testSizeScaleFactor() {
   var s = new goog.math.Size(4, 5);
   assertEquals('(8 x 10)', s.scale(2).toString());
   assertEquals('(0.8 x 1)', s.scale(0.1).toString());
@@ -161,6 +168,11 @@ function testSizeGetShortest() {
   assertEquals(2, s.getShortest());
 
   assertNaN(new goog.math.Size(undefined, undefined).getShortest());
+}
+
+function testSizeScaleXY() {
+  var s = new goog.math.Size(5, 10);
+  assertEquals('(20 x 30)', s.scale(4, 3).toString());
 }
 
 </script>

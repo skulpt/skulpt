@@ -59,7 +59,6 @@
  *     'http://www.youtube.com/watch?v=ddl5f44spwQ');
  * </pre>
  *
-*
  *
  * @supported IE6, FF2+, Safari. Requires flash to actually work.
  *
@@ -71,14 +70,12 @@ goog.provide('goog.ui.media.Youtube');
 goog.provide('goog.ui.media.YoutubeModel');
 
 goog.require('goog.string');
-goog.require('goog.ui.Component.Error');
-goog.require('goog.ui.Component.State');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.media.FlashObject');
 goog.require('goog.ui.media.Media');
 goog.require('goog.ui.media.MediaModel');
-goog.require('goog.ui.media.MediaModel.Player');
-goog.require('goog.ui.media.MediaModel.Thumbnail');
 goog.require('goog.ui.media.MediaRenderer');
+
 
 
 /**
@@ -151,11 +148,13 @@ goog.ui.media.Youtube.CSS_CLASS = goog.getCssName('goog-ui-media-youtube');
  * on the thumbnail), which means we have to embed the youtube flash video and
  * play it.
  *
- * @param {goog.ui.media.Media} control The media control.
+ * @param {goog.ui.Control} c The media control.
  * @param {goog.ui.Component.State} state The state to be set or cleared.
  * @param {boolean} enable Whether the state is enabled or disabled.
+ * @override
  */
-goog.ui.media.Youtube.prototype.setState = function(control, state, enable) {
+goog.ui.media.Youtube.prototype.setState = function(c, state, enable) {
+  var control = /** @type {goog.ui.media.Media} */ (c);
   goog.ui.media.Youtube.superClass_.setState.call(this, control, state, enable);
 
   // control.createDom has to be called before any state is set.
@@ -189,10 +188,12 @@ goog.ui.media.Youtube.prototype.setState = function(control, state, enable) {
  * rendered using this renderer.
  *
  * @return {string} Renderer-specific CSS class.
+ * @override
  */
 goog.ui.media.Youtube.prototype.getCssClass = function() {
   return goog.ui.media.Youtube.CSS_CLASS;
 };
+
 
 
 /**
@@ -233,12 +234,40 @@ goog.inherits(goog.ui.media.YoutubeModel, goog.ui.media.MediaModel);
 
 /**
  * A youtube regular expression matcher. It matches the VIDEOID of URLs like
- * http://www.youtube.com/watch?v=VIDEOID.
+ * http://www.youtube.com/watch?v=VIDEOID. Based on:
+ * googledata/contentonebox/opencob/specs/common/YTPublicExtractorCard.xml
  * @type {RegExp}
  * @private
+ * @const
  */
-goog.ui.media.YoutubeModel.matcher_ =
-    /https?:\/\/(?:[a-zA_Z]{2,3}.)?(?:youtube\.com\/watch\?)((?:[\w\d\-\_\=]+&amp;(?:amp;)?)*v(?:&lt;[A-Z]+&gt;)?=([0-9a-zA-Z\-\_]+))/i;
+// Be careful about the placement of the dashes in the character classes. Eg,
+// use "[\\w=-]" instead of "[\\w-=]" if you mean to include the dash as a
+// character and not create a character range like "[a-f]".
+goog.ui.media.YoutubeModel.MATCHER_ = new RegExp(
+    // Lead in.
+    'http://(?:[a-zA-Z]{2,3}\\.)?' +
+    // Watch URL prefix.  This should handle new URLs of the form:
+    // http://www.youtube.com/watch#!v=jqxENMKaeCU&feature=related
+    // where the parameters appear after "#!" instead of "?".
+    '(?:youtube\\.com/watch)' +
+    // Get the video id:
+    // The video ID is a parameter v=[videoid] either right after the "?"
+    // or after some other parameters.
+    '(?:\\?(?:[\\w=-]+&(?:amp;)?)*v=([\\w-]+)' +
+    '(?:&(?:amp;)?[\\w=-]+)*)?' +
+    // Get any extra arguments in the URL's hash part.
+    '(?:#[!]?(?:' +
+    // Video ID from the v=[videoid] parameter, optionally surrounded by other
+    // & separated parameters.
+    '(?:(?:[\\w=-]+&(?:amp;)?)*(?:v=([\\w-]+))' +
+    '(?:&(?:amp;)?[\\w=-]+)*)' +
+    '|' +
+    // Continue supporting "?" for the video ID
+    // and "#" for other hash parameters.
+    '(?:[\\w=&-]+)' +
+    '))?' +
+    // Should terminate with a non-word, non-dash (-) character.
+    '[^\\w-]?', 'i');
 
 
 /**
@@ -257,10 +286,11 @@ goog.ui.media.YoutubeModel.matcher_ =
 goog.ui.media.YoutubeModel.newInstance = function(youtubeUrl,
                                                   opt_caption,
                                                   opt_description) {
-  var extract = goog.ui.media.YoutubeModel.matcher_.exec(youtubeUrl);
+  var extract = goog.ui.media.YoutubeModel.MATCHER_.exec(youtubeUrl);
   if (extract) {
+    var videoId = extract[1] || extract[2];
     return new goog.ui.media.YoutubeModel(
-        extract[2], opt_caption, opt_description);
+        videoId, opt_caption, opt_description);
   }
 
   throw Error('failed to parse video id from youtube url: ' + youtubeUrl);

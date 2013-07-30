@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.i18n.NumberFormat</title>
 <meta charset="utf-8"/>
 <script src="../base.js"></script>
@@ -14,11 +15,34 @@ See the COPYING file for details.
   goog.require('goog.i18n.NumberFormat');
   goog.require('goog.i18n.NumberFormatSymbols');
   goog.require('goog.i18n.NumberFormatSymbols_fr');
+  goog.require('goog.i18n.CompactNumberFormatSymbols');
+  goog.require('goog.i18n.CompactNumberFormatSymbols_fr');
+  goog.require('goog.i18n.CompactNumberFormatSymbols_de');
+  goog.require('goog.testing.ExpectedFailures');
   goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.PropertyReplacer');
+  goog.require('goog.userAgent');
+  goog.require('goog.userAgent.product');
+  goog.require('goog.userAgent.product.isVersion');
 </script>
 </head>
 <body>
 <script>
+
+var expectedFailures = new goog.testing.ExpectedFailures();
+
+var stubs = new goog.testing.PropertyReplacer();
+
+function setUp() {
+  // Always switch back to English on startup.
+  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_en;
+  goog.i18n.CompactNumberFormatSymbols = goog.i18n.CompactNumberFormatSymbols_en;
+}
+
+function tearDown() {
+  expectedFailures.handleTearDown();
+  stubs.reset();
+}
 
 function veryBigNumberCompare(str1, str2) {
   return str1.length == str2.length &&
@@ -53,6 +77,17 @@ function testVeryBigNumber() {
       goog.i18n.NumberFormat.Format.SCIENTIFIC);
   str = fmt.format(1.3456E20);
   assertEquals('1E20', str);
+
+  fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.DECIMAL);
+  str = fmt.format(-1.234567890123456e306);
+  assertEquals(1 + 1 + 306 + 306 / 3, str.length);
+  assertEquals('-1,234,567,890,123,45', str.substr(0, 21));
+
+  str = fmt.format(Infinity);
+  assertEquals('\u221e', str);
+  str = fmt.format(-Infinity);
+  assertEquals('-\u221e', str);
 }
 
 function testStandardFormat() {
@@ -70,6 +105,10 @@ function testStandardFormat() {
   fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.SCIENTIFIC);
   str = fmt.format(1234.579);
   assertEquals('1E3', str);
+  // Math.log(1000000)/Math.LN10 is strictly less than 6. Make sure it gets
+  // formatted correctly.
+  str = fmt.format(1000000);
+  assertEquals('1E6', str);
 }
 
 function testNegativePercentage() {
@@ -81,6 +120,26 @@ function testNegativePercentage() {
   fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.PERCENT);
   str = fmt.format(-1234.579);
   assertEquals('-123,458%', str);
+}
+
+function testCustomPercentage() {
+  var fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.PERCENT);
+  fmt.setMaximumFractionDigits(1);
+  fmt.setMinimumFractionDigits(1);
+  var str = fmt.format(0.1291);
+  assertEquals('12.9%', str);
+  fmt.setMaximumFractionDigits(2);
+  fmt.setMinimumFractionDigits(1);
+  str = fmt.format(0.129);
+  assertEquals('12.9%', str);
+  fmt.setMaximumFractionDigits(2);
+  fmt.setMinimumFractionDigits(1);
+  str = fmt.format(0.12);
+  assertEquals('12.0%', str);
+  fmt.setMaximumFractionDigits(2);
+  fmt.setMinimumFractionDigits(1);
+  str = fmt.format(0.12911);
+  assertEquals('12.91%', str);
 }
 
 function testBasicParse() {
@@ -223,6 +282,26 @@ function testCurrency() {
   assertEquals('$1,234.56', str);
   str = fmt.format(-1234.56);
   assertEquals('-$1,234.56', str);
+
+  fmt = new goog.i18n.NumberFormat('\u00a4#,##0.00;-\u00a4#,##0.00', 'USD',
+      goog.i18n.NumberFormat.CurrencyStyle.LOCAL);
+  str = fmt.format(1234.56);
+  assertEquals('$1,234.56', str);
+  str = fmt.format(-1234.56);
+  assertEquals('-$1,234.56', str);
+  fmt = new goog.i18n.NumberFormat('\u00a4#,##0.00;-\u00a4#,##0.00', 'USD',
+      goog.i18n.NumberFormat.CurrencyStyle.PORTABLE);
+  str = fmt.format(1234.56);
+  assertEquals('US$1,234.56', str);
+  str = fmt.format(-1234.56);
+  assertEquals('-US$1,234.56', str);
+  fmt = new goog.i18n.NumberFormat('\u00a4#,##0.00;-\u00a4#,##0.00', 'USD',
+      goog.i18n.NumberFormat.CurrencyStyle.GLOBAL);
+  str = fmt.format(1234.56);
+  assertEquals('USD $1,234.56', str);
+  str = fmt.format(-1234.56);
+  assertEquals('-USD $1,234.56', str);
+
 
   fmt = new goog.i18n.NumberFormat(
       '\u00a4\u00a4 #,##0.00;-\u00a4\u00a4 #,##0.00');
@@ -414,7 +493,14 @@ function testExponential() {
 
   fmt = new goog.i18n.NumberFormat('##0.####E0');
   str = fmt.format(789.12345e-9);
-  assertEquals('789.1235E-9', str);
+  // Firefox 3.6.3 Linux is known to fail here with a rounding error.
+  // fmt.format will return '789.1234E-9'.
+  expectedFailures.expectFailureFor(isFirefox363Linux());
+  try {
+    assertEquals('789.1235E-9', str);
+  } catch (e) {
+    expectedFailures.handleException(e);
+  }
   fmt = new goog.i18n.NumberFormat('##0.####E0');
   str = fmt.format(780.e-9);
   assertEquals('780E-9', str);
@@ -472,6 +558,13 @@ function testExponential() {
   assertEquals('1E3', str);
 }
 
+function testPlusSignInExponentPart() {
+  var fmt;
+  fmt = new goog.i18n.NumberFormat('0E+0');
+  str = fmt.format(45678000);
+  assertEquals('5E+7', str);
+}
+
 function testGroupingParse2() {
   var value;
   var fmt;
@@ -514,6 +607,15 @@ function testApis() {
 function testLocaleSwitch() {
   goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_fr;
 
+  // When this test is performed in test cluster, 2 out of 60 machines have
+  // problem getting the symbol. It is likely to be caused by size of uncompiled
+  // symbol file. There will not be an issue after it is compiled.
+  if (goog.i18n.NumberFormatSymbols.DECIMAL_SEP ==
+      goog.i18n.NumberFormatSymbols_en.DECIMAL_SEP) {
+    // fails to load French symbols, skip the test.
+    return;
+  }
+
   var fmt = new goog.i18n.NumberFormat('#,###');
   var str = fmt.format(1234567890);
   assertEquals('1\u00a0234\u00a0567\u00a0890', str);
@@ -531,18 +633,26 @@ function testLocaleSwitch() {
   fmt = new goog.i18n.NumberFormat('\u00a4#,##0.00;(\u00a4#,##0.00)', 'SEK');
   str = fmt.format(-1234.56);
   assertEquals('(kr1\u00a0234,56)', str);
-  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_en;
 }
-
 
 function testFrenchParse() {
   goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_fr;
+
+  // When this test is performed in test cluster, 2 out of 60 machines have
+  // problem getting the symbol. It is likely to be caused by size of uncompiled
+  // symbol file. There will not be an issue after it is compiled.
+  if (goog.i18n.NumberFormatSymbols.DECIMAL_SEP ==
+      goog.i18n.NumberFormatSymbols_en.DECIMAL_SEP) {
+    // fails to load French symbols, skip the test.
+    return;
+  }
+
   var fmt = new goog.i18n.NumberFormat('0.0000');
   var value = fmt.parse('0,30');
   assertEquals(0.30, value);
 
   fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.CURRENCY);
-  value = fmt.parse('0,30 \u20AC');
+  value = fmt.parse('0,30\u00A0\u20AC');
   assertEquals(0.30, value);
   fmt = new goog.i18n.NumberFormat('#,##0.00');
   value = fmt.parse('123 456,99');
@@ -555,12 +665,10 @@ function testFrenchParse() {
   fmt = new goog.i18n.NumberFormat('#,##0.00');
   value = fmt.parse('8 123\u00a0456,99');
   assertEquals(8123456.99, value);
-  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_en;
 }
 
-function testFailParseShouldThrow() {
-  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_en;
 
+function testFailParseShouldThrow() {
   var fmt = new goog.i18n.NumberFormat('0.0000');
   var value = fmt.parse('x');
   assertNaN(value);
@@ -572,6 +680,304 @@ function testFailParseShouldThrow() {
   fmt = new goog.i18n.NumberFormat('x0.000');
   value = fmt.parse('y3');
   assertNaN(value);
+}
+
+/**
+ * @return {boolean} Whether we're on Linux Firefox 3.6.3.
+ */
+function isFirefox363Linux() {
+  return goog.userAgent.product.FIREFOX && goog.userAgent.LINUX &&
+      goog.userAgent.product.isVersion('3.6.3') &&
+      !goog.userAgent.product.isVersion('3.6.4');
+}
+
+
+function testEnforceAscii() {
+  try {
+    goog.i18n.NumberFormatSymbols.ZERO_DIGIT = 'A';
+    var fmt = new goog.i18n.NumberFormat('0.0000');
+    var str = fmt.format(123.45789179565757);
+    assertEquals('BCD.EFHJ', str);
+    goog.i18n.NumberFormat.setEnforceAsciiDigits(true);
+    str = fmt.format(123.45789179565757);
+    assertEquals('123.4579', str);
+    goog.i18n.NumberFormat.setEnforceAsciiDigits(false);
+    str = fmt.format(123.45789179565757);
+    assertEquals('BCD.EFHJ', str);
+  } finally {
+    goog.i18n.NumberFormatSymbols.ZERO_DIGIT = '0';
+  }
+}
+
+function testSignificantDigitsEqualToMax() {
+  var fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.DECIMAL);
+  fmt.setMinimumFractionDigits(0);
+  fmt.setMaximumFractionDigits(2);
+
+  fmt.setSignificantDigits(2);
+  assertEquals('123',  fmt.format(123.4));
+  assertEquals('12',   fmt.format(12.34));
+  assertEquals('1.2',  fmt.format(1.234));
+  assertEquals('0.12', fmt.format(0.1234));
+}
+
+function testSignificantDigitsLessThanMax() {
+  var fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.DECIMAL);
+  fmt.setMinimumFractionDigits(0);
+  fmt.setMaximumFractionDigits(4);
+  fmt.setSignificantDigits(1);
+
+  assertEquals('123', fmt.format(123.4));
+  assertEquals('12',  fmt.format(12.34));
+  assertEquals('1',   fmt.format(1.234));
+  assertEquals('0.1', fmt.format(0.1234));
+}
+
+function testSignificantDigitsMoreThanMax() {
+  // Max fractional digits should be absolute
+  var fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.DECIMAL);
+  fmt.setMinimumFractionDigits(0);
+  fmt.setMaximumFractionDigits(2);
+  fmt.setSignificantDigits(3);
+
+  assertEquals('123',  fmt.format(123.4));
+  assertEquals('12.3', fmt.format(12.34));
+  assertEquals('1.23', fmt.format(1.234));
+  assertEquals('0.12', fmt.format(0.1234));
+}
+
+function testSimpleCompactFrench() {
+  // Switch to French.
+  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_fr;
+  goog.i18n.CompactNumberFormatSymbols = goog.i18n.CompactNumberFormatSymbols_fr;
+
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  var str = fmt.format(123400000);
+  assertEquals('123\u00A0M', str);
+}
+
+function testSimpleCompactGerman() {
+  // Switch to German.
+  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_de;
+  goog.i18n.CompactNumberFormatSymbols = goog.i18n.CompactNumberFormatSymbols_de;
+
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  // The german short compact decimal has a simple '0' for 1000's, which is
+  // supposed to be interpreted as 'leave the number as-is'.
+  // (The number itself will still be formatted with the '.', but no rounding)
+  var str = fmt.format(1234);
+  assertEquals('1.234', str);
+}
+
+function testSimpleCompact1() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  var str = fmt.format(1234);
+  assertEquals('1.2K', str);
+}
+
+function testSimpleCompact2() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  var str = fmt.format(12345);
+  assertEquals('12K', str);
+}
+
+function testRoundingCompact() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  var str = fmt.format(999999);
+  assertEquals('1M', str); //as opposed to 1000k
+}
+
+function testRoundingCompactNegative() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  var str = fmt.format(-999999);
+  assertEquals('-1M', str);
+}
+
+function testCompactSmall() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  var str = fmt.format(0.1234);
+  assertEquals('0.12', str);
+}
+
+function testCompactLong() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_LONG);
+
+  var str = fmt.format(12345);
+  assertEquals('12 thousand', str);
+}
+
+function testCompactWithoutSignificant() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+  fmt.setSignificantDigits(0);
+  fmt.setMinimumFractionDigits(2);
+  fmt.setMaximumFractionDigits(2);
+
+  assertEquals('1.23K', fmt.format(1234));
+  assertEquals('1.00K', fmt.format(1000));
+  assertEquals('123.46K', fmt.format(123456.7));
+  assertEquals('999.99K', fmt.format(999994));
+  assertEquals('1.00M', fmt.format(999995));
+}
+
+function testCompactWithoutSignificant2() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+  fmt.setSignificantDigits(0);
+  fmt.setMinimumFractionDigits(0);
+  fmt.setMaximumFractionDigits(2);
+
+  assertEquals('1.23K', fmt.format(1234));
+  assertEquals('1K', fmt.format(1000));
+  assertEquals('123.46K', fmt.format(123456.7));
+  assertEquals('999.99K', fmt.format(999994));
+  assertEquals('1M', fmt.format(999995));
+}
+
+function testShowTrailingZerosWithSignificantDigits() {
+  var fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.DECIMAL);
+  fmt.setSignificantDigits(2);
+  fmt.setShowTrailingZeros(true);
+
+  assertEquals('2.0', fmt.format(2));
+  assertEquals('2,000', fmt.format(2000));
+  assertEquals('0.20', fmt.format(0.2));
+  assertEquals('0.02', fmt.format(0.02));
+  assertEquals('0.002', fmt.format(0.002));
+  assertEquals('0.00', fmt.format(0));
+
+  fmt.setShowTrailingZeros(false);
+  assertEquals('2', fmt.format(2));
+  assertEquals('0.2', fmt.format(0.2));
+}
+
+
+function testShowTrailingZerosWithSignificantDigitsCompactShort() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+  fmt.setSignificantDigits(2);
+  fmt.setShowTrailingZeros(true);
+
+  assertEquals('2.0', fmt.format(2));
+  assertEquals('2.0K', fmt.format(2000));
+  assertEquals('20', fmt.format(20));
+}
+
+function testCurrencyCodeOrder() {
+  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_fr;
+  goog.i18n.CompactNumberFormatSymbols = goog.i18n.CompactNumberFormatSymbols_fr;
+  var fmt = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.CURRENCY);
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+  goog.i18n.NumberFormatSymbols = goog.i18n.NumberFormatSymbols_en;
+  goog.i18n.CompactNumberFormatSymbols = goog.i18n.CompactNumberFormatSymbols_en;
+  var fmt1 = new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.CURRENCY);
+  assertTrue(fmt1.isCurrencyCodeBeforeValue());
+
+  // Check that we really have different formatters with different patterns
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+
+  // Using custom patterns instead of standard locale ones
+
+  fmt = new goog.i18n.NumberFormat("\u00A4 #0");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("\u00A4 0 and #");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("#0 \u00A4");
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("0 and # \u00A4");
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("\u00A4 0");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("0 \u00A4");
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("\u00A4 #");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("# \u00A4");
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+
+  // Edge cases, should never happen (like #0 separated by currency symbol,
+  // or missing currency symbol, or missing both # and 0, or missing all)
+  // We still make sure we get reasonable results (as much as possible)
+
+  fmt = new goog.i18n.NumberFormat("0 \u00A4 #");
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("# \u00A4 0");
+  assertFalse(fmt.isCurrencyCodeBeforeValue());
+
+  fmt = new goog.i18n.NumberFormat("\u00A4");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());  // currency first, en_US style
+
+  fmt = new goog.i18n.NumberFormat("0");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());  // currency first, en_US style
+
+  fmt = new goog.i18n.NumberFormat("#");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());  // currency first, en_US style
+
+  fmt = new goog.i18n.NumberFormat("#0");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());  // currency first, en_US style
+
+  fmt = new goog.i18n.NumberFormat("0 and #");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());  // currency first, en_US style
+
+  fmt = new goog.i18n.NumberFormat("nothing");
+  assertTrue(fmt.isCurrencyCodeBeforeValue());  // currency first, en_US style
+}
+
+function testCompactWithBaseFormattingNumber() {
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+
+  fmt.setBaseFormatting(1000);
+  assertEquals('0.8K', fmt.format(800, 1000));
+
+  fmt.setBaseFormatting(null);
+  assertEquals('800', fmt.format(800, 1000));
+  fmt.setBaseFormatting(1000);
+  assertEquals('1,200K', fmt.format(1200000, 1000));
+  assertEquals('0.01K', fmt.format(10, 1000));
+  fmt.setSignificantDigits(0);
+  fmt.setMinimumFractionDigits(2);
+  assertEquals('0.00K', fmt.format(1, 1000));
+}
+
+function testCompactWithBaseFormattingFrench() {
+  // Switch to French.
+  stubs.set(goog.i18n, 'NumberFormatSymbols', goog.i18n.NumberFormatSymbols_fr);
+  stubs.set(goog.i18n, 'CompactNumberFormatSymbols',
+            goog.i18n.CompactNumberFormatSymbols_fr);
+
+  var fmt = new goog.i18n.NumberFormat(
+      goog.i18n.NumberFormat.Format.COMPACT_SHORT);
+  assertEquals('123\u00A0M', fmt.format(123400000));
+  fmt.setBaseFormatting(1000);
+  assertEquals('123\u00A0400\u00A0K', fmt.format(123400000));
+
 }
 
 </script>

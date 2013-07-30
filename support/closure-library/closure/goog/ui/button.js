@@ -16,18 +16,22 @@
  * @fileoverview A button control. This implementation extends {@link
  * goog.ui.Control}.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  * @see ../demos/button.html
  */
 
 goog.provide('goog.ui.Button');
 goog.provide('goog.ui.Button.Side');
 
+goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.events.KeyHandler');
 goog.require('goog.ui.ButtonRenderer');
+goog.require('goog.ui.ButtonSide');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.Control');
-goog.require('goog.ui.ControlContent');
 goog.require('goog.ui.NativeButtonRenderer');
+goog.require('goog.ui.registry');
 
 
 
@@ -52,19 +56,12 @@ goog.inherits(goog.ui.Button, goog.ui.Control);
 
 /**
  * Constants for button sides, see {@link goog.ui.Button.prototype.setCollapsed}
- * for details.
+ * for details. Aliased from goog.ui.ButtonSide to support legacy users without
+ * creating a circular dependency in {@link goog.ui.ButtonRenderer}.
  * @enum {number}
+ * @deprecated use {@link goog.ui.ButtonSide} instead.
  */
-goog.ui.Button.Side = {
-  /** Neither side. */
-  NONE: 0,
-  /** Left for LTR, right for RTL. */
-  START: 1,
-  /** Right for LTR, left for RTL. */
-  END: 2,
-  /** Both sides. */
-  BOTH: 3
-};
+goog.ui.Button.Side = goog.ui.ButtonSide;
 
 
 /**
@@ -101,7 +98,8 @@ goog.ui.Button.prototype.getValue = function() {
  */
 goog.ui.Button.prototype.setValue = function(value) {
   this.value_ = value;
-  this.getRenderer().setValue(this.getElement(), value);
+  var renderer = /** @type {!goog.ui.ButtonRenderer} */ (this.getRenderer());
+  renderer.setValue(this.getElement(), /** @type {string} */ (value));
 };
 
 
@@ -132,7 +130,7 @@ goog.ui.Button.prototype.getTooltip = function() {
  */
 goog.ui.Button.prototype.setTooltip = function(tooltip) {
   this.tooltip_ = tooltip;
-  this.getRenderer().setTooltip(this. getElement(), tooltip);
+  this.getRenderer().setTooltip(this.getElement(), tooltip);
 };
 
 
@@ -152,7 +150,7 @@ goog.ui.Button.prototype.setTooltipInternal = function(tooltip) {
  * Collapses the border on one or both sides of the button, allowing it to be
  * combined with the adjancent button(s), forming a single UI componenet with
  * multiple targets.
- * @param {number} sides Bitmap of one or more {@link goog.ui.Button.Side}s for
+ * @param {number} sides Bitmap of one or more {@link goog.ui.ButtonSide}s for
  *     which borders should be collapsed.
  */
 goog.ui.Button.prototype.setCollapsed = function(sides) {
@@ -163,7 +161,7 @@ goog.ui.Button.prototype.setCollapsed = function(sides) {
 // goog.ui.Control & goog.ui.Component API implementation.
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Button.prototype.disposeInternal = function() {
   goog.ui.Button.superClass_.disposeInternal.call(this);
   delete this.value_;
@@ -171,7 +169,7 @@ goog.ui.Button.prototype.disposeInternal = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Button.prototype.enterDocument = function() {
   goog.ui.Button.superClass_.enterDocument.call(this);
   if (this.isSupportedState(goog.ui.Component.State.FOCUSED)) {

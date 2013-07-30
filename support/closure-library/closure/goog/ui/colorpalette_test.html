@@ -3,11 +3,12 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!-- Author:  attila@google.com (Attila Bodis) -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.ColorPalette</title>
   <script src="../base.js"></script>
   <script>
@@ -121,6 +122,14 @@ See the COPYING file for details.
           goog.color.parse(newNodes[1].style.backgroundColor).hex);
     }
 
+    function testSetColorsWithLabels() {
+      emptyPalette.setColors(['#00f', '#FFFFFF', 'black'], ['blue', 'white']);
+      var nodes = emptyPalette.getContent();
+      assertEquals('blue', nodes[0].title);
+      assertEquals('white', nodes[1].title);
+      assertEquals('black', nodes[2].title);
+    }
+
     function testRender() {
       samplePalette.render(document.getElementById('sandbox'));
 
@@ -134,10 +143,6 @@ See the COPYING file for details.
       var table = elem.firstChild;
       assertEquals('TABLE', table.tagName);
       assertEquals('goog-palette-table', table.className);
-
-      // TODO(user):  Each ColorPalette creates 12 listeners (13 on IE)!
-      assertEquals(goog.userAgent.IE ? 13 : 12,
-          goog.events.getTotalListenerCount());
     }
 
     function testGetSelectedColor() {

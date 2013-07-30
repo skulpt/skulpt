@@ -24,7 +24,6 @@
  * controlled mocks for common mocks: StrictMock, LooseMock,
  * FunctionMock, MethodMock, and GlobalFunctionMock.
  *
-*
  */
 
 
@@ -33,7 +32,9 @@ goog.provide('goog.testing.MockControl');
 goog.require('goog.array');
 goog.require('goog.testing');
 goog.require('goog.testing.LooseMock');
+goog.require('goog.testing.MockInterface');
 goog.require('goog.testing.StrictMock');
+
 
 
 /**
@@ -44,7 +45,7 @@ goog.require('goog.testing.StrictMock');
 goog.testing.MockControl = function() {
   /**
    * The list of mocks being controlled.
-   * @type {Array.<goog.testing.Mock>}
+   * @type {Array.<goog.testing.MockInterface>}
    * @private
    */
   this.mocks_ = [];
@@ -53,8 +54,9 @@ goog.testing.MockControl = function() {
 
 /**
  * Takes control of this mock.
- * @param {goog.testing.Mock} mock Mock to be controlled.
- * @return {goog.testing.Mock} The same mock passed in, for convenience.
+ * @param {goog.testing.MockInterface} mock Mock to be controlled.
+ * @return {goog.testing.MockInterface} The same mock passed in,
+ *     for convenience.
  */
 goog.testing.MockControl.prototype.addMock = function(mock) {
   this.mocks_.push(mock);
@@ -115,7 +117,7 @@ goog.testing.MockControl.prototype.$tearDown = function() {
  *     a mock should be constructed from the static functions of a class.
  * @param {boolean=} opt_createProxy An optional argument denoting that
  *     a proxy for the target mock should be created.
- * @return {goog.testing.StrictMock} The mock object.
+ * @return {!goog.testing.StrictMock} The mock object.
  */
 goog.testing.MockControl.prototype.createStrictMock = function(
     objectToMock, opt_mockStaticMethods, opt_createProxy) {
@@ -136,7 +138,7 @@ goog.testing.MockControl.prototype.createStrictMock = function(
  *     a mock should be constructed from the static functions of a class.
  * @param {boolean=} opt_createProxy An optional argument denoting that
  *     a proxy for the target mock should be created.
- * @return {goog.testing.LooseMock} The mock object.
+ * @return {!goog.testing.LooseMock} The mock object.
  */
 goog.testing.MockControl.prototype.createLooseMock = function(
     objectToMock, opt_ignoreUnexpectedCalls,
@@ -153,11 +155,13 @@ goog.testing.MockControl.prototype.createLooseMock = function(
  * FunctionMock constructor.
  * @param {string=} opt_functionName The optional name of the function to mock
  *     set to '[anonymous mocked function]' if not passed in.
- * @return {goog.testing.FunctionMock} The mocked function.
+ * @param {number=} opt_strictness One of goog.testing.Mock.LOOSE or
+ *     goog.testing.Mock.STRICT. The default is STRICT.
+ * @return {goog.testing.MockInterface} The mocked function.
  */
 goog.testing.MockControl.prototype.createFunctionMock = function(
-    opt_functionName) {
-  var m = goog.testing.createFunctionMock(opt_functionName);
+    opt_functionName, opt_strictness) {
+  var m = goog.testing.createFunctionMock(opt_functionName, opt_strictness);
   this.addMock(m);
   return m;
 };
@@ -168,11 +172,13 @@ goog.testing.MockControl.prototype.createFunctionMock = function(
  * MethodMock constructor.
  * @param {Object} scope The scope of the method to be mocked out.
  * @param {string} functionName The name of the function we're going to mock.
- * @return {goog.testing.MethodMock} The mocked method.
+ * @param {number=} opt_strictness One of goog.testing.Mock.LOOSE or
+ *     goog.testing.Mock.STRICT. The default is STRICT.
+ * @return {goog.testing.MockInterface} The mocked method.
  */
 goog.testing.MockControl.prototype.createMethodMock = function(
-    scope, functionName) {
-  var m = goog.testing.createMethodMock(scope, functionName);
+    scope, functionName, opt_strictness) {
+  var m = goog.testing.createMethodMock(scope, functionName, opt_strictness);
   this.addMock(m);
   return m;
 };
@@ -184,11 +190,14 @@ goog.testing.MockControl.prototype.createMethodMock = function(
  * {@link goog.testing.createConstructorMock} for details.
  * @param {Object} scope The scope of the constructor to be mocked out.
  * @param {string} constructorName The name of the function we're going to mock.
- * @return {goog.testing.MethodMock} The mocked method.
+ * @param {number=} opt_strictness One of goog.testing.Mock.LOOSE or
+ *     goog.testing.Mock.STRICT. The default is STRICT.
+ * @return {goog.testing.MockInterface} The mocked method.
  */
 goog.testing.MockControl.prototype.createConstructorMock = function(
-    scope, constructorName) {
-  var m = goog.testing.createConstructorMock(scope, constructorName);
+    scope, constructorName, opt_strictness) {
+  var m = goog.testing.createConstructorMock(scope, constructorName,
+                                             opt_strictness);
   this.addMock(m);
   return m;
 };
@@ -198,11 +207,13 @@ goog.testing.MockControl.prototype.createConstructorMock = function(
  * Creates a controlled GlobalFunctionMock.  Passes its arguments through to the
  * GlobalFunctionMock constructor.
  * @param {string} functionName The name of the function we're going to mock.
- * @return {goog.testing.GlobalFunctionMock} The mocked function.
+ * @param {number=} opt_strictness One of goog.testing.Mock.LOOSE or
+ *     goog.testing.Mock.STRICT. The default is STRICT.
+ * @return {goog.testing.MockInterface} The mocked function.
  */
 goog.testing.MockControl.prototype.createGlobalFunctionMock = function(
-    functionName) {
-  var m = goog.testing.createGlobalFunctionMock(functionName);
+    functionName, opt_strictness) {
+  var m = goog.testing.createGlobalFunctionMock(functionName, opt_strictness);
   this.addMock(m);
   return m;
 };

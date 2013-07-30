@@ -15,16 +15,16 @@
 /**
  * @fileoverview A toolbar color menu button control.
  *
-*
-*
+ * @author attila@google.com (Attila Bodis)
+ * @author ssaviano@google.com (Steven Saviano)
  */
 
 goog.provide('goog.ui.ToolbarColorMenuButton');
 
 goog.require('goog.ui.ColorMenuButton');
-goog.require('goog.ui.ControlContent');
 goog.require('goog.ui.ToolbarColorMenuButtonRenderer');
 goog.require('goog.ui.registry');
+
 
 
 /**

@@ -3,10 +3,11 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.i18n.bidi</title>
 <script src="../base.js"></script>
 <script>
@@ -29,13 +30,17 @@ See the COPYING file for details.
     assert(!goog.i18n.bidi.isRtlLanguage('fil'));
     assert(!goog.i18n.bidi.isRtlLanguage('az'));
     assert(!goog.i18n.bidi.isRtlLanguage('iw-Latn'));
+    assert(!goog.i18n.bidi.isRtlLanguage('iw-LATN'));
+    assert(!goog.i18n.bidi.isRtlLanguage('iw_latn'));
     assert(goog.i18n.bidi.isRtlLanguage('ar'));
+    assert(goog.i18n.bidi.isRtlLanguage('AR'));
     assert(goog.i18n.bidi.isRtlLanguage('iw'));
     assert(goog.i18n.bidi.isRtlLanguage('he'));
     assert(goog.i18n.bidi.isRtlLanguage('fa'));
     assert(goog.i18n.bidi.isRtlLanguage('ar-EG'));
     assert(goog.i18n.bidi.isRtlLanguage('az-Arab'));
-    assert(goog.i18n.bidi.isRtlLanguage('az-Arab-IR'));
+    assert(goog.i18n.bidi.isRtlLanguage('az-ARAB-IR'));
+    assert(goog.i18n.bidi.isRtlLanguage('az_arab_IR'));
   }
 
   function testIsLtrChar() {
@@ -105,6 +110,7 @@ See the COPYING file for details.
     assert(goog.i18n.bidi.endsWithLtr('http://www.google.com '));
     assert(goog.i18n.bidi.endsWithLtr('\u05e0a'));
     assert(goog.i18n.bidi.endsWithLtr(' \u05e0\u05e1a\u05e2\u05e3 a (!)'));
+    assert(goog.i18n.bidi.endsWithLtr('\u202b\u05d0!\u202c\u200e'));
     assert(!goog.i18n.bidi.endsWithLtr(''));
     assert(!goog.i18n.bidi.endsWithLtr(' '));
     assert(!goog.i18n.bidi.endsWithLtr('1'));
@@ -112,6 +118,7 @@ See the COPYING file for details.
     assert(!goog.i18n.bidi.endsWithLtr('\u05e0 1(!)'));
     assert(!goog.i18n.bidi.endsWithLtr('a\u05e0'));
     assert(!goog.i18n.bidi.endsWithLtr('a abc\u05e0\u05e1def\u05e2. 1'));
+    assert(!goog.i18n.bidi.endsWithLtr('\u200f\u202eArtielish\u202c\u200f'));
     assert(!goog.i18n.bidi.endsWithLtr(' \u05e0\u05e1a\u05e2 &lt;', true));
     assert(goog.i18n.bidi.endsWithLtr(' \u05e0\u05e1a\u05e2 &lt;', false));
   }
@@ -124,12 +131,14 @@ See the COPYING file for details.
     assert(goog.i18n.bidi.endsWithRtl('http://www.google.com/\u05e0 '));
     assert(goog.i18n.bidi.endsWithRtl('a\u05e0'));
     assert(goog.i18n.bidi.endsWithRtl(' a abc\u05e0def\u05e3. 1'));
+    assert(goog.i18n.bidi.endsWithRtl('\u200f\u202eArtielish\u202c\u200f'));
     assert(!goog.i18n.bidi.endsWithRtl(''));
     assert(!goog.i18n.bidi.endsWithRtl(' '));
     assert(!goog.i18n.bidi.endsWithRtl('1'));
     assert(!goog.i18n.bidi.endsWithRtl('a'));
     assert(!goog.i18n.bidi.endsWithRtl('a 1(!)'));
     assert(!goog.i18n.bidi.endsWithRtl('\u05e0a'));
+    assert(!goog.i18n.bidi.endsWithRtl('\u202b\u05d0!\u202c\u200e'));
     assert(!goog.i18n.bidi.endsWithRtl('\u05e0 \u05e0\u05e1ab\u05e2 a (!)'));
     assert(goog.i18n.bidi.endsWithRtl(' \u05e0\u05e1a\u05e2 &lt;', true));
     assert(!goog.i18n.bidi.endsWithRtl(' \u05e0\u05e1a\u05e2 &lt;', false));
@@ -313,6 +322,9 @@ See the COPYING file for details.
                  goog.i18n.bidi.estimateDirection(
                      '\u05d4\u05d3\u05dc\u05ea http://www.google.com ' +
                      'http://www.gmail.com', false));
+    assertEquals(goog.i18n.bidi.Dir.RTL,
+                 goog.i18n.bidi.estimateDirection(
+                     '\u200f\u202eArtielish\u202c\u200f'));
     assertEquals(goog.i18n.bidi.Dir.LTR,
                  goog.i18n.bidi.estimateDirection(
                      '\u05d4\u05d3\u05dc <some quite nasty html mark up>',

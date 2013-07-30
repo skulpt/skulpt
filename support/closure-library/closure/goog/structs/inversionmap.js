@@ -16,13 +16,12 @@
  * @fileoverview Provides inversion and inversion map functionality for storing
  * integer ranges and corresponding values.
  *
-*
-*
  */
 
 goog.provide('goog.structs.InversionMap');
 
 goog.require('goog.array');
+
 
 
 /**
@@ -98,7 +97,7 @@ goog.structs.InversionMap.prototype.spliceInversion = function(
   // Figure out where to splice those arrays.
   var startRange = otherMap.rangeArray[0];
   var endRange =
-      (/** @type {number} */ goog.array.peek(otherMap.rangeArray));
+      /** @type {number} */ (goog.array.peek(otherMap.rangeArray));
   var startSplice = this.getLeast(startRange);
   var endSplice = this.getLeast(endRange);
 

@@ -16,7 +16,10 @@
 /**
  * @fileoverview Component for generating chart PNGs using Google Chart Server.
  *
-*
+ * @deprecated Google Chart Images service (the server-side component of this
+ *     class) has been deprecated. See
+ *     https://developers.google.com/chart/ for alternatives.
+ *
  * @see ../demos/serverchart.html
  */
 
@@ -44,6 +47,7 @@ goog.require('goog.string');
 goog.require('goog.ui.Component');
 
 
+
 /**
  * Will construct a chart using Google's chartserver.
  *
@@ -52,9 +56,12 @@ goog.require('goog.ui.Component');
  * @param {number=} opt_height The height of the chart.
  * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM Helper.
  * @param {string=} opt_uri Optional uri used to connect to the chart server, if
- *     different than goog.ui.ServerChart.CHART_SERVER_URI.
+ *     different than goog.ui.ServerChart.CHART_SERVER_SCHEME_INDEPENDENT_URI.
  * @constructor
  * @extends {goog.ui.Component}
+ *
+ * @deprecated Google Chart Server has been deprecated. See
+ *     https://developers.google.com/chart/image/ for details.
  */
 goog.ui.ServerChart = function(type, opt_width, opt_height, opt_domHelper,
     opt_uri) {
@@ -65,7 +72,8 @@ goog.ui.ServerChart = function(type, opt_width, opt_height, opt_domHelper,
    * @type {goog.Uri}
    * @private
    */
-  this.uri_ = new goog.Uri(opt_uri || goog.ui.ServerChart.CHART_SERVER_URI);
+  this.uri_ = new goog.Uri(
+      opt_uri || goog.ui.ServerChart.CHART_SERVER_SCHEME_INDEPENDENT_URI);
 
   /**
    * Encoding method for the URI data format.
@@ -175,17 +183,39 @@ goog.inherits(goog.ui.ServerChart, goog.ui.Component);
 
 
 /**
- * Base URI for the chart renderer.
+ * Base scheme-independent URI for the chart renderer.
  * @type {string}
  */
-goog.ui.ServerChart.CHART_SERVER_URI = 'http://chart.apis.google.com/chart';
+goog.ui.ServerChart.CHART_SERVER_SCHEME_INDEPENDENT_URI =
+    '//chart.googleapis.com/chart';
+
+
+/**
+ * Base HTTP URI for the chart renderer.
+ * @type {string}
+ */
+goog.ui.ServerChart.CHART_SERVER_HTTP_URI =
+    'http://chart.googleapis.com/chart';
 
 
 /**
  * Base HTTPS URI for the chart renderer.
  * @type {string}
  */
-goog.ui.ServerChart.CHART_SERVER_HTTPS_URI = 'https://www.google.com/chart';
+goog.ui.ServerChart.CHART_SERVER_HTTPS_URI =
+    'https://chart.googleapis.com/chart';
+
+
+/**
+ * Base URI for the chart renderer.
+ * @type {string}
+ * @deprecated Use
+ *     {@link goog.ui.ServerChart.CHART_SERVER_SCHEME_INDEPENDENT_URI},
+ *     {@link goog.ui.ServerChart.CHART_SERVER_HTTP_URI} or
+ *     {@link goog.ui.ServerChart.CHART_SERVER_HTTPS_URI} instead.
+ */
+goog.ui.ServerChart.CHART_SERVER_URI =
+    goog.ui.ServerChart.CHART_SERVER_HTTP_URI;
 
 
 /**
@@ -239,6 +269,7 @@ goog.ui.ServerChart.prototype.maxValue_ = -Infinity;
  */
 goog.ui.ServerChart.prototype.title_ = null;
 
+
 /**
  * Chart title size.
  * @type {number}
@@ -246,12 +277,14 @@ goog.ui.ServerChart.prototype.title_ = null;
  */
 goog.ui.ServerChart.prototype.titleSize_ = 13.5;
 
+
 /**
  * Chart title color.
  * @type {string}
  * @private
  */
 goog.ui.ServerChart.prototype.titleColor_ = '333333';
+
 
 /**
  * Chart legend.
@@ -277,13 +310,14 @@ goog.ui.ServerChart.prototype.numVisibleDataSets_ = null;
 
 /**
  * Creates the DOM node (image) needed for the Chart
+ * @override
  */
 goog.ui.ServerChart.prototype.createDom = function() {
   var size = this.getSize();
   this.setElementInternal(this.getDomHelper().createDom(
       'img', {'src': this.getUri(),
-      'class': goog.getCssName('goog-serverchart-image'),
-      'width': size[0], 'height': size[1]}));
+        'class': goog.getCssName('goog-serverchart-image'),
+        'width': size[0], 'height': size[1]}));
 };
 
 
@@ -295,6 +329,7 @@ goog.ui.ServerChart.prototype.createDom = function() {
  * </pre>
  *
  * @param {Element} img Image to decorate.
+ * @override
  */
 goog.ui.ServerChart.prototype.decorateInternal = function(img) {
   img.src = this.getUri();
@@ -543,36 +578,37 @@ goog.ui.ServerChart.MaximumValue = {
  * @enum {string}
  */
 goog.ui.ServerChart.UriParam = {
-  TYPE: 'cht',
-  SIZE: 'chs',
-  DATA: 'chd',
-  X_LABELS: 'chl',
-  LEFT_Y_LABELS: 'chly',
-  DATA_LABELS: 'chld',
-  RIGHT_LABELS: 'chlr',
-  RIGHT_LABEL_POSITIONS: 'chlrp',
-  MISC_PARAMS: 'chp',
-  DATA_COLORS: 'chco',
-  DATA_SCALING: 'chds',
-  LEGEND_TEXTS: 'chdl',
-  LEGEND_POSITION: 'chdlp',
-  LABEL_COLORS: 'chlc',
-  BAR_HEIGHT: 'chbh',
-  LINE_STYLES: 'chls',
-  GRID: 'chg',
-  X_AXIS_STYLE: 'chx',
-  MARKERS: 'chm',
   BACKGROUND_FILL: 'chf',
+  BAR_HEIGHT: 'chbh',
+  DATA: 'chd',
+  DATA_COLORS: 'chco',
+  DATA_LABELS: 'chld',
+  DATA_SCALING: 'chds',
   DIGITAL_SIGNATURE: 'sig',
-  TITLE: 'chtt',
-  TITLE_FORMAT: 'chts',
+  GEOGRAPHICAL_REGION: 'chtm',
+  GRID: 'chg',
+  LABEL_COLORS: 'chlc',
+  LEFT_Y_LABELS: 'chly',
   LEGEND: 'chdl',
-  MULTI_AXIS_TYPES: 'chxt',
-  MULTI_AXIS_LABEL_TEXT: 'chxl',
+  LEGEND_POSITION: 'chdlp',
+  LEGEND_TEXTS: 'chdl',
+  LINE_STYLES: 'chls',
+  MARGINS: 'chma',
+  MARKERS: 'chm',
+  MISC_PARAMS: 'chp',
   MULTI_AXIS_LABEL_POSITION: 'chxp',
+  MULTI_AXIS_LABEL_TEXT: 'chxl',
   MULTI_AXIS_RANGE: 'chxr',
   MULTI_AXIS_STYLE: 'chxs',
-  GEOGRAPHICAL_REGION: 'chtm'
+  MULTI_AXIS_TYPES: 'chxt',
+  RIGHT_LABELS: 'chlr',
+  RIGHT_LABEL_POSITIONS: 'chlrp',
+  SIZE: 'chs',
+  TITLE: 'chtt',
+  TITLE_FORMAT: 'chts',
+  TYPE: 'cht',
+  X_AXIS_STYLE: 'chx',
+  X_LABELS: 'chl'
 };
 
 
@@ -614,9 +650,9 @@ goog.ui.ServerChart.prototype.getBackgroundFill = function() {
     var fillSpecifications = value.split('|');
     var valid = true;
     goog.array.forEach(fillSpecifications, function(spec) {
-      spec = spec.split(',');
-      if (valid && spec[1] == 's') {
-        result.push({area: spec[0], effect: spec[1], color: spec[2]});
+      var parts = spec.split(',');
+      if (valid && parts[1] == 's') {
+        result.push({area: parts[0], effect: parts[1], color: parts[2]});
       } else {
         // If the format is unsupported, return an empty array.
         result = [];
@@ -725,6 +761,22 @@ goog.ui.ServerChart.prototype.setMaxValue = function(maxValue) {
  */
 goog.ui.ServerChart.prototype.getMaxValue = function() {
   return this.maxValue_;
+};
+
+
+/**
+ * Sets the chart margins.
+ *
+ * @param {number} leftMargin The size in pixels of the left margin.
+ * @param {number} rightMargin The size in pixels of the right margin.
+ * @param {number} topMargin The size in pixels of the top margin.
+ * @param {number} bottomMargin The size in pixels of the bottom margin.
+ */
+goog.ui.ServerChart.prototype.setMargins = function(leftMargin, rightMargin,
+    topMargin, bottomMargin) {
+  var margins = [leftMargin, rightMargin, topMargin, bottomMargin].join(',');
+  var UriParam = goog.ui.ServerChart.UriParam;
+  this.uri_.setParameterValue(UriParam.MARGINS, margins);
 };
 
 
@@ -1383,11 +1435,8 @@ goog.ui.ServerChart.prototype.getMultiAxisRange = function(opt_axisNumber) {
  * @param {goog.ui.ServerChart.AxisDisplayType=} opt_axisDisplay The axis
  *     line and ticks.
  */
-goog.ui.ServerChart.prototype.setMultiAxisLabelStyle = function(axisNumber,
-                                                                color,
-                                                                opt_fontSize,
-                                                                opt_alignment,
-                                                             opt_axisDisplay) {
+goog.ui.ServerChart.prototype.setMultiAxisLabelStyle = function(
+    axisNumber, color, opt_fontSize, opt_alignment, opt_axisDisplay) {
   var style = [color];
   if (goog.isDef(opt_fontSize) || goog.isDef(opt_alignment)) {
     style.push(opt_fontSize || '');
@@ -1515,8 +1564,8 @@ goog.ui.ServerChart.prototype.computeDataString_ = function() {
     ok = this.computeDataStringForEncoding_(
         goog.ui.ServerChart.EncodingType.EXTENDED);
     if (!ok) {
-        ok = this.computeDataStringForEncoding_(
-            goog.ui.ServerChart.EncodingType.SIMPLE);
+      ok = this.computeDataStringForEncoding_(
+          goog.ui.ServerChart.EncodingType.SIMPLE);
     }
   }
   if (!ok) {
@@ -1606,6 +1655,7 @@ goog.ui.ServerChart.CHART_VALUES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
  */
 goog.ui.ServerChart.CHART_VALUES_EXTENDED = goog.ui.ServerChart.CHART_VALUES +
                                             '-.';
+
 
 /**
  * Upper bound for extended values
@@ -1731,7 +1781,7 @@ goog.ui.ServerChart.prototype.arrayMax_ = function(ary) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ServerChart.prototype.disposeInternal = function() {
   goog.ui.ServerChart.superClass_.disposeInternal.call(this);
   delete this.xLabels_;
@@ -1765,6 +1815,7 @@ goog.ui.ServerChart.Event = {
    */
   URI_TOO_LONG: 'uritoolong'
 };
+
 
 
 /**

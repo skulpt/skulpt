@@ -3,10 +3,11 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.dom.Range</title>
 <script src="../base.js"></script>
 <script>
@@ -40,8 +41,19 @@ See the COPYING file for details.
   <div id='breaksAroundNode'><br />abcde<br /></div>
   </div>
 
+  <!-- A focusable element to help restore focus to a sane state. -->
+  <input id="focusableElement">
+
 <script>
   var assertRangeEquals = goog.testing.dom.assertRangeEquals;
+
+  function setUp() {
+    // Reset the focus; some tests may invalidate the focus to exercise various
+    // browser bugs.
+    var focusableElement = goog.dom.getElement('focusableElement');
+    focusableElement.focus();
+    focusableElement.blur();
+  }
 
   function normalizeHtml(str) {
     return str.toLowerCase().replace(/[\n\r\f"]/g, '')
@@ -490,7 +502,12 @@ See the COPYING file for details.
     goog.dom.removeNode(node);
 
     var newRange = goog.dom.Range.createFromWindow(window);
-    if (goog.userAgent.WEBKIT) {
+
+    // In Chrome 14 and below (<= Webkit 535.1), newRange will be null.
+    // In Chrome 16 and above (>= Webkit 535.7), newRange will be collapsed
+    // like on other browsers.
+    // We didn't bother testing in between.
+    if (goog.userAgent.WEBKIT && !goog.userAgent.isVersionOrHigher('535.7')) {
       assertNull('Webkit supports rangeCount == 0', newRange);
     } else {
       assertTrue('The other browsers will just have an empty range.',
@@ -633,8 +650,13 @@ See the COPYING file for details.
     var range = goog.dom.Range.createFromWindow();
     assertFalse('Should not contain whole <br>',
         range.containsNode(br, false));
-    assertFalse('Should not contain partial <br>',
-        range.containsNode(br, true));
+    if (goog.userAgent.IE) {
+      assertTrue('Range over <br> is adjacent to the immediate range before it',
+          range.containsNode(br, true));
+    } else {
+      assertFalse('Should not contain partial <br>',
+          range.containsNode(br, true));
+    }
 
     assertEquals(offset, range.getStartOffset());
     assertEquals(text, range.getStartNode());
@@ -650,11 +672,17 @@ See the COPYING file for details.
     var range = goog.dom.Range.createFromWindow();
     assertFalse('Should not contain whole <br>',
         range.containsNode(br, false));
-    assertFalse('Should not contain partial <br>',
-        range.containsNode(br, true));
+    var isSafari3 = goog.userAgent.WEBKIT && !goog.userAgent.isVersionOrHigher('528');
 
-    if (goog.userAgent.WEBKIT &&
-        !goog.userAgent.isVersion('528') /* Safari 3 */) {
+    if (goog.userAgent.IE || isSafari3) {
+      assertTrue('Range over <br> is adjacent to the immediate range after it',
+          range.containsNode(br, true));
+    } else {
+      assertFalse('Should not contain partial <br>',
+          range.containsNode(br, true));
+    }
+
+    if (isSafari3) {
       assertEquals(2, range.getStartOffset());
       assertEquals(container, range.getStartNode());
     } else {
@@ -671,12 +699,29 @@ See the COPYING file for details.
     assertEquals(0, caret.getStartOffset());
 
     var range = goog.dom.Range.createFromWindow();
-    assertFalse('Should not contain partial <br>',
+    assertTrue('Range over <br> is adjacent to the immediate range before it',
         range.containsNode(br, true));
     assertFalse('Should not contain whole <br>',
         range.containsNode(br, false));
 
     assertRangeEquals(container, 0, container, 0, range);
+  }
+
+  function testFocusedElementDisappears() {
+    // This reproduces a failure case specific to Gecko, where an element is
+    // created, contentEditable is set, is focused, and removed.  After that
+    // happens, calling selection.collapse fails.
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=773137
+    var disappearingElement = goog.dom.createDom('div');
+    document.body.appendChild(disappearingElement);
+    disappearingElement.contentEditable = true;
+    disappearingElement.focus();
+    document.body.removeChild(disappearingElement);
+    var container = goog.dom.getElement('empty');
+    var caret = goog.dom.Range.createCaret(container, 0);
+    // This should not throw.
+    caret.select();
+    assertEquals(0, caret.getStartOffset());
   }
 
   function assertNodeEquals(expected, actual) {

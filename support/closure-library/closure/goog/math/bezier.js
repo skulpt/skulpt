@@ -24,13 +24,14 @@
  * curves of arbitrary degree.
  *
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author wcrosby@google.com (Wayne Crosby)
  */
 
 goog.provide('goog.math.Bezier');
 
 goog.require('goog.math');
 goog.require('goog.math.Coordinate');
+
 
 
 /**
@@ -105,7 +106,7 @@ goog.math.Bezier.KAPPA = 4 * (Math.sqrt(2) - 1) / 3;
 
 
 /**
- * @return {goog.math.Bezier} A copy of this curve.
+ * @return {!goog.math.Bezier} A copy of this curve.
  */
 goog.math.Bezier.prototype.clone = function() {
   return new goog.math.Bezier(this.x0, this.y0, this.x1, this.y1, this.x2,
@@ -148,7 +149,7 @@ goog.math.Bezier.prototype.flip = function() {
 /**
  * Computes the curve at a point between 0 and 1.
  * @param {number} t The point on the curve to find.
- * @return {goog.math.Coordinate} The computed coordinate.
+ * @return {!goog.math.Coordinate} The computed coordinate.
  */
 goog.math.Bezier.prototype.getPoint = function(t) {
   // Special case start and end
@@ -240,4 +241,71 @@ goog.math.Bezier.prototype.subdivideRight = function(t) {
 goog.math.Bezier.prototype.subdivide = function(s, t) {
   this.subdivideRight(s);
   this.subdivideLeft((t - s) / (1 - s));
+};
+
+
+/**
+ * Computes the position t of a point on the curve given its x coordinate.
+ * That is, for an input xVal, finds t s.t. getPoint(t).x = xVal.
+ * As such, the following should always be true up to some small epsilon:
+ * t ~ solvePositionFromXValue(getPoint(t).x) for t in [0, 1].
+ * @param {number} xVal The x coordinate of the point to find on the curve.
+ * @return {number} The position t.
+ */
+goog.math.Bezier.prototype.solvePositionFromXValue = function(xVal) {
+  // Desired precision on the computation.
+  var epsilon = 1e-6;
+
+  // Initial estimate of t using linear interpolation.
+  var t = (xVal - this.x0) / (this.x3 - this.x0);
+  if (t <= 0) {
+    return 0;
+  } else if (t >= 1) {
+    return 1;
+  }
+
+  // Try gradient descent to solve for t. If it works, it is very fast.
+  var tMin = 0;
+  var tMax = 1;
+  for (var i = 0; i < 8; i++) {
+    var value = this.getPoint(t).x;
+    var derivative = (this.getPoint(t + epsilon).x - value) / epsilon;
+    if (Math.abs(value - xVal) < epsilon) {
+      return t;
+    } else if (Math.abs(derivative) < epsilon) {
+      break;
+    } else {
+      if (value < xVal) {
+        tMin = t;
+      } else {
+        tMax = t;
+      }
+      t -= (value - xVal) / derivative;
+    }
+  }
+
+  // If the gradient descent got stuck in a local minimum, e.g. because
+  // the derivative was close to 0, use a Dichotomy refinement instead.
+  // We limit the number of interations to 8.
+  for (var i = 0; Math.abs(value - xVal) > epsilon && i < 8; i++) {
+    if (value < xVal) {
+      tMin = t;
+      t = (t + tMax) / 2;
+    } else {
+      tMax = t;
+      t = (t + tMin) / 2;
+    }
+    value = this.getPoint(t).x;
+  }
+  return t;
+};
+
+
+/**
+ * Computes the y coordinate of a point on the curve given its x coordinate.
+ * @param {number} xVal The x coordinate of the point on the curve.
+ * @return {number} The y coordinate of the point on the curve.
+ */
+goog.math.Bezier.prototype.solveYValueFromXValue = function(xVal) {
+  return this.getPoint(this.solvePositionFromXValue(xVal)).y;
 };

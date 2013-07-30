@@ -15,7 +15,7 @@
 /**
  * @fileoverview Constant declarations for common key codes.
  *
-*
+ * @author eae@google.com (Emil A Eklund)
  */
 
 goog.provide('goog.events.KeyNames');
@@ -61,6 +61,8 @@ goog.events.KeyNames = {
   55: '7',
   56: '8',
   57: '9',
+  59: 'semicolon',
+  61: 'equals',
   65: 'a',
   66: 'b',
   67: 'c',
@@ -115,10 +117,16 @@ goog.events.KeyNames = {
   121: 'f10',
   122: 'f11',
   123: 'f12',
+  186: 'semicolon',
   187: 'equals',
+  189: 'dash',
   188: ',',
   190: '.',
   191: '/',
+  192: '~',
+  219: 'open-square-bracket',
   220: '\\',
+  221: 'close-square-bracket',
+  222: 'single-quote',
   224: 'win'
 };

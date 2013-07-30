@@ -14,7 +14,6 @@
 
 /**
  * @fileoverview Currency code map.
-*
  */
 
 
@@ -22,6 +21,7 @@
  * Namespace for locale number format functions
  */
 goog.provide('goog.i18n.currencyCodeMap');
+goog.provide('goog.i18n.currencyCodeMapTier2');
 
 
 /**
@@ -208,4 +208,3 @@ goog.i18n.currencyCodeMapTier2 = {
   'ZMK': 'ZK',
   'ZWD': '$'
 };
-

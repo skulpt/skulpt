@@ -14,24 +14,27 @@
 
 /**
  * @fileoverview Base class for bubble plugins.
-*
- * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.editor.plugins.AbstractBubblePlugin');
 
 goog.require('goog.dom');
+goog.require('goog.dom.NodeType');
+goog.require('goog.dom.Range');
 goog.require('goog.dom.TagName');
 goog.require('goog.editor.Plugin');
 goog.require('goog.editor.style');
 goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.events.actionEventWrapper');
 goog.require('goog.functions');
 goog.require('goog.string.Unicode');
 goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.editor.Bubble');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -152,6 +155,27 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.panelId_ = null;
 
 
 /**
+ * Whether this bubble should support tabbing through the link elements. False
+ * by default.
+ * @type {boolean}
+ * @private
+ */
+goog.editor.plugins.AbstractBubblePlugin.prototype.keyboardNavigationEnabled_ =
+    false;
+
+
+/**
+ * Sets whether the bubble should support tabbing through the link elements.
+ * @param {boolean} keyboardNavigationEnabled Whether the bubble should support
+ *     tabbing through the link elements.
+ */
+goog.editor.plugins.AbstractBubblePlugin.prototype.enableKeyboardNavigation =
+    function(keyboardNavigationEnabled) {
+  this.keyboardNavigationEnabled_ = keyboardNavigationEnabled;
+};
+
+
+/**
  * Sets the bubble parent.
  * @param {Element} bubbleParent An element where the bubble will be
  *     anchored. If null, we will use the application document. This
@@ -171,7 +195,7 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.getBubbleDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.AbstractBubblePlugin.prototype.getTrogClassId =
     goog.functions.constant('AbstractBubblePlugin');
 
@@ -186,7 +210,7 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.getTargetElement =
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.AbstractBubblePlugin.prototype.handleKeyUp = function(e) {
   // For example, when an image is selected, pressing any key overwrites
   // the image and the panel should be hidden.
@@ -201,28 +225,39 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.handleKeyUp = function(e) {
 /**
  * Pops up a property bubble for the given selection if appropriate and closes
  * open property bubbles if no longer needed.  This should not be overridden.
- * @param {goog.events.Event=} opt_e Optional selectionchange event that
- *     initiated this handler.
- * @return {boolean} Whether we handled the selection change.
+ * @override
  */
 goog.editor.plugins.AbstractBubblePlugin.prototype.handleSelectionChange =
-    function(opt_e) {
+    function(opt_e, opt_target) {
   var selectedElement;
   if (opt_e) {
     selectedElement = /** @type {Element} */ (opt_e.target);
+  } else if (opt_target) {
+    selectedElement = /** @type {Element} */ (opt_target);
   } else {
-    var range = this.fieldObject.getRange();
-    // Sometimes in IE, the range will be collapsed, but think the end node
-    // and start node are different (although in the same visible position). In
-    // this case, favor the position IE thinks is the start node.
-    var startNode = range && range.getStartNode();
-    if (goog.userAgent.IE && range && range.isCollapsed() &&
-        startNode != range.getEndNode()) {
-      range = goog.dom.Range.createCaret(startNode, range.getStartOffset());
+    var range = this.getFieldObject().getRange();
+    if (range) {
+      var startNode = range.getStartNode();
+      var endNode = range.getEndNode();
+      var startOffset = range.getStartOffset();
+      var endOffset = range.getEndOffset();
+      // Sometimes in IE, the range will be collapsed, but think the end node
+      // and start node are different (although in the same visible position).
+      // In this case, favor the position IE thinks is the start node.
+      if (goog.userAgent.IE && range.isCollapsed() && startNode != endNode) {
+        range = goog.dom.Range.createCaret(startNode, startOffset);
+      }
+      if (startNode.nodeType == goog.dom.NodeType.ELEMENT &&
+          startNode == endNode && startOffset == endOffset - 1) {
+        var element = startNode.childNodes[startOffset];
+        if (element.nodeType == goog.dom.NodeType.ELEMENT) {
+          selectedElement = element;
+        }
+      }
     }
-    selectedElement = range && range.getContainerElement();
+    selectedElement = selectedElement || range && range.getContainerElement();
   }
-  return this.handleSelectionChangeInternal_(selectedElement);
+  return this.handleSelectionChangeInternal(selectedElement);
 };
 
 
@@ -232,10 +267,10 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.handleSelectionChange =
  * @param {Element?} selectedElement The selected element.
  * @return {boolean} Always false, allowing every bubble plugin to handle the
  *     event.
- * @private
+ * @protected
  */
 goog.editor.plugins.AbstractBubblePlugin.prototype.
-    handleSelectionChangeInternal_ = function(selectedElement) {
+    handleSelectionChangeInternal = function(selectedElement) {
   if (selectedElement) {
     var bubbleTarget = this.getBubbleTargetFromSelection(selectedElement);
     if (bubbleTarget) {
@@ -271,7 +306,7 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.
     getBubbleTargetFromSelection = goog.abstractMethod;
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.AbstractBubblePlugin.prototype.disable = function(field) {
   // When the field is made uneditable, dispose of the bubble.  We do this
   // because the next time the field is made editable again it may be in
@@ -294,17 +329,17 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.disable = function(field) {
 goog.editor.plugins.AbstractBubblePlugin.prototype.getSharedBubble_ =
     function() {
   var bubbleParent = /** @type {!Element} */ (this.bubbleParent_ ||
-      this.fieldObject.getAppWindow().document.body);
-  this.dom_ = new goog.dom.getDomHelper(bubbleParent);
+      this.getFieldObject().getAppWindow().document.body);
+  this.dom_ = goog.dom.getDomHelper(bubbleParent);
 
   var bubble = goog.editor.plugins.AbstractBubblePlugin.bubbleMap_[
-      this.fieldObject.id];
+      this.getFieldObject().id];
   if (!bubble) {
     bubble = goog.editor.plugins.AbstractBubblePlugin.bubbleFactory_.call(null,
         bubbleParent,
-        this.fieldObject.getBaseZindex());
-    goog.editor.plugins.AbstractBubblePlugin.bubbleMap_[this.fieldObject.id] =
-        bubble;
+        this.getFieldObject().getBaseZindex());
+    goog.editor.plugins.AbstractBubblePlugin.bubbleMap_[
+        this.getFieldObject().id] = bubble;
   }
   return bubble;
 };
@@ -326,7 +361,13 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createBubble = function(
         this.shouldPreferBubbleAboveElement());
     this.eventRegister.listen(bubble, goog.ui.Component.EventType.HIDE,
         this.handlePanelClosed_);
+
     this.onShow();
+
+    if (this.keyboardNavigationEnabled_) {
+      this.eventRegister.listen(bubble.getContentElement(),
+          goog.events.EventType.KEYDOWN, this.onBubbleKey_);
+    }
   }
 };
 
@@ -376,10 +417,25 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createBubbleContents =
  * @param {Element} target The event source element.
  * @param {Function} handler The event handler.
  * @protected
+ * @deprecated Use goog.editor.plugins.AbstractBubblePlugin.
+ *     registerActionHandler to register click and enter events.
  */
 goog.editor.plugins.AbstractBubblePlugin.prototype.registerClickHandler =
     function(target, handler) {
-  this.eventRegister.listen(target, goog.events.EventType.CLICK, handler);
+  this.registerActionHandler(target, handler);
+};
+
+
+/**
+ * Register the handler for the target's CLICK and ENTER key events.
+ * @param {Element} target The event source element.
+ * @param {Function} handler The event handler.
+ * @protected
+ */
+goog.editor.plugins.AbstractBubblePlugin.prototype.registerActionHandler =
+    function(target, handler) {
+  this.eventRegister.listenWithWrapper(target, goog.events.actionEventWrapper,
+      handler);
 };
 
 
@@ -412,6 +468,53 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.handlePanelClosed_ =
   this.targetElement_ = null;
   this.panelId_ = null;
   this.eventRegister.removeAll();
+};
+
+
+/**
+ * In case the keyboard navigation is enabled, this will focus to the first link
+ * element in the bubble when TAB is clicked. The user could still go through
+ * the rest of tabbable UI elements using shift + TAB.
+ * @override
+ */
+goog.editor.plugins.AbstractBubblePlugin.prototype.handleKeyDown = function(e) {
+  if (this.keyboardNavigationEnabled_ &&
+      this.isVisible() &&
+      e.keyCode == goog.events.KeyCodes.TAB && !e.shiftKey) {
+    var bubbleEl = this.getSharedBubble_().getContentElement();
+    var linkEl = goog.dom.getElementByClass(
+        goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_, bubbleEl);
+    if (linkEl) {
+      linkEl.focus();
+      e.preventDefault();
+      return true;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Handles a key event on the bubble. This ensures that the focus loops through
+ * the link elements found in the bubble and then the focus is got by the field
+ * element.
+ * @param {goog.events.BrowserEvent} e The event.
+ * @private
+ */
+goog.editor.plugins.AbstractBubblePlugin.prototype.onBubbleKey_ = function(e) {
+  if (this.isVisible() &&
+      e.keyCode == goog.events.KeyCodes.TAB) {
+    var bubbleEl = this.getSharedBubble_().getContentElement();
+    var links = goog.dom.getElementsByClass(
+        goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_, bubbleEl);
+    var tabbingOutOfBubble = e.shiftKey ?
+        links[0] == e.target :
+        links.length && links[links.length - 1] == e.target;
+    if (tabbingOutOfBubble) {
+      this.getFieldObject().focus();
+      e.preventDefault();
+    }
+  }
 };
 
 
@@ -459,9 +562,9 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createLinkOption = function(
  * wires up a listener for the CLICK event or the link.
  * @param {string} linkId The id of the link.
  * @param {string} linkText Text of the link.
- * @param {Function} opt_onClick Optional function to call when the link is
+ * @param {Function=} opt_onClick Optional function to call when the link is
  *     clicked.
- * @param {Element} opt_container If specified, location to insert link. If no
+ * @param {Element=} opt_container If specified, location to insert link. If no
  *     container is specified, the old link is removed and replaced.
  * @return {Element} The link element.
  * @protected
@@ -470,7 +573,7 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createLink = function(
     linkId, linkText, opt_onClick, opt_container) {
   var link = this.createLinkHelper(linkId, linkText, false, opt_container);
   if (opt_onClick) {
-    this.registerClickHandler(link, opt_onClick);
+    this.registerActionHandler(link, opt_onClick);
   }
   return link;
 };
@@ -483,7 +586,7 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createLink = function(
  * @param {boolean} isAnchor Set to true to create an actual anchor tag
  *     instead of a span.  Actual links are right clickable (e.g. to open in
  *     a new window) and also update window status on hover.
- * @param {Element} opt_container If specified, location to insert link. If no
+ * @param {Element=} opt_container If specified, location to insert link. If no
  *     container is specified, the old link is removed and replaced.
  * @return {Element} The link element.
  * @protected
@@ -494,6 +597,10 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createLinkHelper = function(
       isAnchor ? goog.dom.TagName.A : goog.dom.TagName.SPAN,
       {className: goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_},
       linkText);
+  if (this.keyboardNavigationEnabled_) {
+    link.setAttribute('tabindex', 0);
+  }
+  link.setAttribute('role', 'link');
   this.setupLink(link, linkId, opt_container);
   goog.editor.style.makeUnselectable(link, this.eventRegister);
   return link;
@@ -505,7 +612,7 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createLinkHelper = function(
  * the old link with this id and replaces it with the new link
  * @param {Element} link Html element to insert.
  * @param {string} linkId Id of the link.
- * @param {Element} opt_container If specified, location to insert link.
+ * @param {Element=} opt_container If specified, location to insert link.
  * @protected
  */
 goog.editor.plugins.AbstractBubblePlugin.prototype.setupLink = function(

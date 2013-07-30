@@ -23,21 +23,21 @@
  *
  * Tested and verified to work in Gecko 1.9.2+ and WebKit 528+.
  *
-*
-*
+ * @author eae@google.com (Emil A Eklund)
+ * @author slightlyoff@google.com (Alex Russell)
  * @see ../demos/css3button.html
  */
 
 goog.provide('goog.ui.Css3ButtonRenderer');
 
-goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classes');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.ButtonRenderer');
-goog.require('goog.ui.ControlContent');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
 goog.require('goog.ui.registry');
+
 
 
 /**
@@ -71,7 +71,7 @@ goog.addSingletonGetter(goog.ui.Css3ButtonRenderer);
 goog.ui.Css3ButtonRenderer.CSS_CLASS = goog.getCssName('goog-css3-button');
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Css3ButtonRenderer.prototype.getContentElement = function(element) {
   return /** @type {Element} */ (element);
 };
@@ -83,12 +83,15 @@ goog.ui.Css3ButtonRenderer.prototype.getContentElement = function(element) {
  *      Contents...
  *    </div>
  * Overrides {@link goog.ui.ButtonRenderer#createDom}.
- * @param {goog.ui.Button} button Button to render.
+ * @param {goog.ui.Control} control goog.ui.Button to render.
  * @return {Element} Root element for the button.
+ * @override
  */
-goog.ui.Css3ButtonRenderer.prototype.createDom = function(button) {
+goog.ui.Css3ButtonRenderer.prototype.createDom = function(control) {
+  var button = /** @type {goog.ui.Button} */ (control);
+  var classNames = this.getClassNames(button);
   var attr = {
-    'class': goog.ui.INLINE_BLOCK_CLASSNAME + ' ' + this.getCssClass(),
+    'class': goog.ui.INLINE_BLOCK_CLASSNAME + ' ' + classNames.join(' '),
     'title': button.getTooltip() || ''
   };
   return button.getDomHelper().createDom('div', attr, button.getContent());
@@ -101,13 +104,14 @@ goog.ui.Css3ButtonRenderer.prototype.createDom = function(button) {
  * element is a DIV, false otherwise.
  * @param {Element} element Element to decorate.
  * @return {boolean} Whether the renderer can decorate the element.
+ * @override
  */
 goog.ui.Css3ButtonRenderer.prototype.canDecorate = function(element) {
   return element.tagName == goog.dom.TagName.DIV;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Css3ButtonRenderer.prototype.decorate = function(button, element) {
   goog.dom.classes.add(element, goog.ui.INLINE_BLOCK_CLASSNAME,
       this.getCssClass());

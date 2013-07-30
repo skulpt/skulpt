@@ -1,13 +1,28 @@
 #!/usr/bin/env python
 #
 # Copyright 2006 The Closure Library Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS-IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
-"""Calculates Javascript dependencies without requiring Google3.
+"""Calculates JavaScript dependencies without requiring Google's build system.
+
+This tool is deprecated and is provided for legacy users.
+See build/closurebuilder.py and build/depswriter.py for the current tools.
 
 It iterates over a number of search paths and builds a dependency tree.  With
 the inputs provided, it walks the dependency tree and outputs all the files
-required for compilation.\n
+required for compilation.
 """
 
 
@@ -28,9 +43,9 @@ import subprocess
 import sys
 
 
-
-req_regex = re.compile('goog\.require\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
-prov_regex = re.compile('goog\.provide\s*\(\s*[\'\"]([^\)]+)[\'\"]\s*\)')
+_BASE_REGEX_STRING = '^\s*goog\.%s\(\s*[\'"](.+)[\'"]\s*\)'
+req_regex = re.compile(_BASE_REGEX_STRING % 'require')
+prov_regex = re.compile(_BASE_REGEX_STRING % 'provide')
 ns_regex = re.compile('^ns:((\w+\.)*(\w+))$')
 version_regex = re.compile('[\.0-9]+')
 
@@ -74,7 +89,7 @@ def ExpandDirectories(refs):
   for ref in refs:
     if IsDirectory(ref):
       # Disable 'Unused variable' for subdirs
-      # pylint: disable-msg=W0612
+      # pylint: disable=unused-variable
       for (directory, subdirs, filenames) in os.walk(ref):
         for filename in filenames:
           if IsJsFile(filename):
@@ -122,19 +137,35 @@ def BuildDependenciesFromFiles(files):
       file_handle = open(filename, 'r')
     else:
       file_handle = open(filename, 'r', encoding='utf8')
-    dep = DependencyInfo(filename)
+
     try:
-      for line in file_handle:
-        if re.match(req_regex, line):
-          dep.requires.append(re.search(req_regex, line).group(1))
-        if re.match(prov_regex, line):
-          dep.provides.append(re.search(prov_regex, line).group(1))
+      dep = CreateDependencyInfo(filename, file_handle)
+      result.append(dep)
     finally:
       file_handle.close()
-    result.append(dep)
+
     filenames.add(filename)
 
   return result
+
+
+def CreateDependencyInfo(filename, source):
+  """Create dependency info.
+
+  Args:
+    filename: Filename for source.
+    source: File-like object containing source.
+
+  Returns:
+    A DependencyInfo object with provides and requires filled.
+  """
+  dep = DependencyInfo(filename)
+  for line in source:
+    if re.match(req_regex, line):
+      dep.requires.append(re.search(req_regex, line).group(1))
+    if re.match(prov_regex, line):
+      dep.provides.append(re.search(prov_regex, line).group(1))
+  return dep
 
 
 def BuildDependencyHashFromDependencies(deps):
@@ -243,9 +274,10 @@ def FindClosureBasePath(paths):
       is_base = False
 
       # Sanity check that this is the Closure base file.  Check that this
-      # is where goog is defined.
+      # is where goog is defined.  This is determined by the @provideGoog
+      # flag.
       for line in f:
-        if line.startswith('var goog = goog || {};'):
+        if '@provideGoog' in line:
           is_base = True
           break
 
@@ -454,7 +486,7 @@ def main():
                     action='append',
                     help='The inputs to calculate dependencies for. Valid '
                     'values can be files, directories, or namespaces '
-                    '(ns:goog.net.XhrLite).  Only relevant to "list" and '
+                    '(ns:goog.net.XhrIo).  Only relevant to "list" and '
                     '"script" output.')
   parser.add_option('-p',
                     '--path',

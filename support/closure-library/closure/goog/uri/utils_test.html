@@ -3,36 +3,38 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
 
   Most of these tests were stolen from the original goog.Uri tests.
 
-  Author: msamuel@google.com (Mike Samuel)
-  Author: pupius@google.com (Daniel Pupius)
-  Author: micapolos@google.com (Michal Pociecha-Los)
-  Author: gboyer@google.com (Garrett Boyer)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.uri.utils</title>
 <script src="../base.js"></script>
 <script>
-  goog.require('goog.uri.utils');
   goog.require('goog.functions');
+  goog.require('goog.testing.PropertyReplacer');
   goog.require('goog.testing.jsunit');
+  goog.require('goog.uri.utils');
 </script>
 </head>
 <body>
 <script>
 var utils = goog.uri.utils;
+var stubs = new goog.testing.PropertyReplacer();
 
 
 function setUpPage() {
   goog.string.getRandomString = goog.functions.constant('RANDOM');
 }
 
+function tearDown() {
+  stubs.reset();
+}
 
 function testSplit() {
   var uri = 'http://www.google.com:80/path%20path+path?q=query&hl=en#fragment';
@@ -47,15 +49,39 @@ function testSplit() {
   assertEquals('q=query&hl=en', utils.getQueryData(uri));
   assertEquals('fragment', utils.getFragmentEncoded(uri));
   assertEquals('fragment', utils.getFragment(uri));
-  assertNull(utils.getDomain('http://!!!'));
-  assertNull(utils.getScheme('www.x.com:80'));
 
-  assertEquals('terer258+foo@gmail.com',
-      utils.getPath('mailto:terer258+foo@gmail.com'));
+  assertEquals(utils.getDomain('http://[2607:f8b0:4006:802::1006]'),
+      '[2607:f8b0:4006:802::1006]');
+  assertEquals(utils.getDomain('http://[2607:f8b0:4006:802::1006]:80'),
+      '[2607:f8b0:4006:802::1006]');
+  assertEquals(utils.getPort('http://[2607:f8b0:4006:802::1006]:80'), 80);
+  assertEquals(utils.getDomain('http://[2607]:80/?q=]'), '[2607]');
+  assertEquals(utils.getDomain('http://!!!'), '!!!');
+  assertNull(utils.getPath('http://!!!'));
+  assertNull(utils.getScheme('www.x.com:80'));
   assertEquals('Query data with no fragment identifier', 'foo=bar&baz=bin',
       utils.getQueryData('http://google.com?foo=bar&baz=bin'));
 }
 
+function testMailtoUri() {
+  var uri = 'mailto:joe+random@hominid.com';
+  assertNull(utils.getDomain(uri));
+  assertEquals('mailto', utils.getScheme(uri));
+  assertEquals('joe+random@hominid.com', utils.getPath(uri));
+}
+
+function testSplitRelativeUri() {
+  var uri = '/path%20path+path?q=query&hl=en#fragment';
+  assertNull(utils.getScheme(uri));
+  assertNull(utils.getDomain(uri));
+  assertNull(utils.getDomainEncoded(uri));
+  assertNull(utils.getPort(uri));
+  assertEquals('/path%20path+path', utils.getPathEncoded(uri));
+  assertEquals('/path path+path', utils.getPath(uri));
+  assertEquals('q=query&hl=en', utils.getQueryData(uri));
+  assertEquals('fragment', utils.getFragmentEncoded(uri));
+  assertEquals('fragment', utils.getFragment(uri));
+}
 
 function testSplitIntoHostAndPath() {
   // Splitting into host and path takes care of one of the major use cases
@@ -317,14 +343,28 @@ function testAppendParams() {
       utils.appendParams('http://foo.com',
           'q', new HasString('a'), 'r', [new HasString('b')]));
 
-  var failed = false;
-  try {
-    utils.appendParams('http://foo.com', 'a', 1, 'b');
-  } catch (ex) {
-    failed = true;
-  }
-  assertTrue('appendParams should have failed with an odd number of arguments.',
-      failed);
+  assertThrows('appendParams should fail with an odd number of arguments.',
+      function() {
+        utils.appendParams('http://foo.com', 'a', 1, 'b');
+      });
+}
+
+
+function testValuelessParam() {
+  assertEquals('http://foo.com?q',
+      utils.appendParam('http://foo.com', 'q'));
+  assertEquals('http://foo.com?q',
+      utils.appendParam('http://foo.com', 'q', null /* opt_value */));
+  assertEquals('http://foo.com?q#preserve',
+      utils.appendParam('http://foo.com#preserve', 'q'));
+  assertEquals('should tolerate a lone question mark',
+      'http://foo.com?q',
+      utils.appendParam('http://foo.com?', 'q'));
+  assertEquals('http://foo.com?q=1&r',
+      utils.appendParam('http://foo.com?q=1', 'r'));
+  assertEquals('http://foo.com?q=1&r=2&s#preserve',
+      utils.appendParam('http://foo.com?q=1&r=2#preserve', 's'));
+  assertTrue(utils.hasParam('http://foo.com?q=1&r=2&s#preserve', 's'));
 }
 
 
@@ -381,13 +421,6 @@ function testMultiParamSkipsNullParams() {
       utils.appendParams('foo.com', 'a', [null], 'b', null, 'c', undefined));
   assertEquals('empty strings should NOT be skipped', 'foo.com?a&b',
       utils.appendParams('foo.com', 'a', [''], 'b', ''));
-}
-
-
-function testAppendSingleParamDoesAppendNullParams() {
-  // For the single-param function, exactly 1 parameter will always be appended.
-  assertEquals('appendParam does not skip null params', 'foo.com?a=null',
-      utils.appendParam('foo.com', 'a', null));
 }
 
 
@@ -522,6 +555,7 @@ function testMakeUnique() {
   assertEquals('http://www.google.com?a=1&b=2&zx=RANDOM#blob',
       goog.uri.utils.makeUnique('http://www.google.com?zx=9&a=1&b=2#blob'));
 }
+
 
 </script>
 </body>

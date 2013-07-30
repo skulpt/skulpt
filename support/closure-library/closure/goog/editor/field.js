@@ -18,9 +18,6 @@
  * iframe to contain the editable area, never inherits the style of the
  * surrounding page, and is always a fixed height.
  *
-*
- * @author nicksantos@google.com (Nick Santos)
-*
  * @see ../demos/editor/editor.html
  * @see ../demos/editor/field_basic.html
  */
@@ -28,13 +25,14 @@
 goog.provide('goog.editor.Field');
 goog.provide('goog.editor.Field.EventType');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.async.Delay');
-goog.require('goog.debug.Logger');
 goog.require('goog.dom');
 goog.require('goog.dom.Range');
 goog.require('goog.dom.TagName');
-goog.require('goog.dom.classes');
 goog.require('goog.editor.BrowserFeature');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Plugin');
@@ -44,15 +42,19 @@ goog.require('goog.editor.icontent.FieldStyleInfo');
 goog.require('goog.editor.node');
 goog.require('goog.editor.range');
 goog.require('goog.events');
-goog.require('goog.events.BrowserEvent');
 goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.functions');
+goog.require('goog.log');
 goog.require('goog.string');
 goog.require('goog.string.Unicode');
 goog.require('goog.style');
 goog.require('goog.userAgent');
+goog.require('goog.userAgent.product');
+
+
 
 /**
  * This class encapsulates an editable field.
@@ -131,20 +133,6 @@ goog.editor.Field = function(id, opt_doc) {
    */
   this.cssStyles = '';
 
-  // Work around bug https://bugs.webkit.org/show_bug.cgi?id=19086 in affected
-  // versions of Webkit by specifying 1px right margin on all immediate children
-  // of the editable field. This works in most (but not all) cases.
-  // Note. The fix uses a CSS rule which may be quite expensive, especially
-  //       in BLENDED mode. Currently this is the only known wokraround.
-  // TODO(user): The bug was fixed in community Webkit but not included in
-  //       Safari yet. Verify that the next Safari release after 525.18 is
-  //       unaffected.
-  if (goog.userAgent.WEBKIT && goog.userAgent.isVersion('525.13') &&
-      goog.string.compareVersions(goog.userAgent.VERSION, '525.18') <= 0) {
-    this.workaroundClassName_ = goog.getCssName('tr-webkit-workaround');
-    this.cssStyles = '.' + this.workaroundClassName_ + '>*{padding-right:1}';
-  }
-
   // The field will not listen to change events until it has finished loading
   this.stoppedEvents_ = {};
   this.stopEvent(goog.editor.Field.EventType.CHANGE);
@@ -176,7 +164,17 @@ goog.editor.Field = function(id, opt_doc) {
   this.loadState_ = goog.editor.Field.LoadState_.UNEDITABLE;
 
   var doc = opt_doc || document;
+
+  /**
+   * @type {!goog.dom.DomHelper}
+   * @protected
+   */
   this.originalDomHelper = goog.dom.getDomHelper(doc);
+
+  /**
+   * @type {Element}
+   * @protected
+   */
   this.originalElement = this.originalDomHelper.getElement(this.id);
 
   // Default to the same window as the field is in.
@@ -204,11 +202,11 @@ goog.editor.Field.prototype.originalElement = null;
 
 /**
  * Logging object.
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @protected
  */
 goog.editor.Field.prototype.logger =
-    goog.debug.Logger.getLogger('goog.editor.Field');
+    goog.log.getLogger('goog.editor.Field');
 
 
 /**
@@ -257,10 +255,15 @@ goog.editor.Field.EventType = {
    */
   BLUR: 'blur',
   /**
-   * Dispach before tab is handled by the field.  This is a legacy way
+   * Dispatched before tab is handled by the field.  This is a legacy way
    * of controlling tab behavior.  Use trog.plugins.AbstractTabHandler now.
    */
   BEFORETAB: 'beforetab',
+  /**
+   * Dispatched after the iframe containing the field is resized, so that UI
+   * components which contain it can respond.
+   */
+  IFRAME_RESIZED: 'ifrsz',
   /**
    * Dispatched when the selection changes.
    * Use handleSelectionChange from plugin API instead of listening
@@ -328,6 +331,32 @@ goog.editor.Field.prototype.originalDomHelper;
 
 
 /**
+ * Target node to be used when dispatching SELECTIONCHANGE asynchronously on
+ * mouseup (to avoid IE quirk). Should be set just before starting the timer and
+ * nulled right after consuming.
+ * @type {Node}
+ * @private
+ */
+goog.editor.Field.prototype.selectionChangeTarget_;
+
+
+/**
+ * Flag controlling wether to capture mouse up events on the window or not.
+ * @type {boolean}
+ * @private
+ */
+goog.editor.Field.prototype.useWindowMouseUp_ = false;
+
+
+/**
+ * FLag indicating the handling of a mouse event sequence.
+ * @type {boolean}
+ * @private
+ */
+goog.editor.Field.prototype.waitingForMouseUp_ = false;
+
+
+/**
  * Sets the active field id.
  * @param {?string} fieldId The active field id.
  */
@@ -341,6 +370,18 @@ goog.editor.Field.setActiveFieldId = function(fieldId) {
  */
 goog.editor.Field.getActiveFieldId = function() {
   return goog.editor.Field.activeFieldId_;
+};
+
+
+/**
+ * Sets flag to control whether to use window mouse up after seeing
+ * a mouse down operation on the field.
+ * @param {boolean} flag True to track window mouse up.
+ */
+goog.editor.Field.prototype.setUseWindowMouseUp = function(flag) {
+  goog.asserts.assert(!flag || !this.usesIframe(),
+      'procssing window mouse up should only be enabled when not using iframe');
+  this.useWindowMouseUp_ = flag;
 };
 
 
@@ -412,15 +453,10 @@ goog.editor.Field.prototype.getOriginalElement = function() {
 goog.editor.Field.prototype.addListener = function(type, listener, opt_capture,
                                                    opt_handler) {
   var elem = this.getElement();
-  // Opera won't fire events on <body> in whitebox mode because we make
-  // <html> contentEditable to work around some visual issues.
-  // So, if the parent node is contentEditable, listen to events on it instead.
-  if (!goog.editor.BrowserFeature.FOCUSES_EDITABLE_BODY_ON_HTML_CLICK &&
-      elem.parentNode.contentEditable) {
-    elem = elem.parentNode;
-  }
-  // On Gecko, keyboard events only reliably fire on the document element.
-  if (elem && goog.editor.BrowserFeature.USE_DOCUMENT_FOR_KEY_EVENTS) {
+  // On Gecko, keyboard events only reliably fire on the document element when
+  // using an iframe.
+  if (goog.editor.BrowserFeature.USE_DOCUMENT_FOR_KEY_EVENTS && elem &&
+      this.usesIframe()) {
     elem = elem.ownerDocument;
   }
   this.eventRegister.listen(elem, type, listener, opt_capture, opt_handler);
@@ -444,7 +480,8 @@ goog.editor.Field.prototype.getPluginByClassId = function(classId) {
 goog.editor.Field.prototype.registerPlugin = function(plugin) {
   var classId = plugin.getTrogClassId();
   if (this.plugins_[classId]) {
-    this.logger.severe('Cannot register the same class of plugin twice.');
+    goog.log.error(this.logger,
+        'Cannot register the same class of plugin twice.');
   }
   this.plugins_[classId] = plugin;
 
@@ -473,7 +510,8 @@ goog.editor.Field.prototype.registerPlugin = function(plugin) {
 goog.editor.Field.prototype.unregisterPlugin = function(plugin) {
   var classId = plugin.getTrogClassId();
   if (!this.plugins_[classId]) {
-    this.logger.severe('Cannot unregister a plugin that isn\'t registered.');
+    goog.log.error(this.logger,
+        'Cannot unregister a plugin that isn\'t registered.');
   }
   delete this.plugins_[classId];
 
@@ -507,6 +545,7 @@ goog.editor.Field.prototype.resetOriginalElemProperties = function() {
   var field = this.getOriginalElement();
   field.removeAttribute('contentEditable');
   field.removeAttribute('g_editable');
+  field.removeAttribute('role');
 
   if (!this.id) {
     field.removeAttribute('id');
@@ -573,6 +612,15 @@ goog.editor.Field.prototype.isFixedHeight = goog.functions.TRUE;
 
 
 /**
+ * @return {boolean} Whether the field should be refocused on input.
+ *    This is a workaround for the iOS bug that text input doesn't work
+ *    when the main window listens touch events.
+ */
+goog.editor.Field.prototype.shouldRefocusOnInputMobileSafari =
+    goog.functions.FALSE;
+
+
+/**
  * Map of keyCodes (not charCodes) that cause changes in the field contents.
  * @type {Object}
  * @private
@@ -588,6 +636,7 @@ if (!goog.userAgent.IE) {
   goog.editor.Field.KEYS_CAUSING_CHANGES_[9] = true; // TAB
 }
 
+
 /**
  * Map of keyCodes (not charCodes) that when used in conjunction with the
  * Ctrl key cause changes in the field contents. These are the keys that are
@@ -600,9 +649,9 @@ goog.editor.Field.CTRL_KEYS_CAUSING_CHANGES_ = {
   88: true // X
 };
 
-if (goog.userAgent.IE) {
-  // In IE input from IME (Input Method Editor) does not generate keypress
-  // event so we have to rely on the keydown event. This way we have
+if (goog.userAgent.WINDOWS && !goog.userAgent.GECKO) {
+  // In IE and Webkit, input from IME (Input Method Editor) does not generate a
+  // keypress event so we have to rely on the keydown event. This way we have
   // false positives while the user is using keyboard to select the
   // character to input, but it is still better than the false negatives
   // that ignores user's final input at all.
@@ -703,6 +752,7 @@ goog.editor.Field.prototype.setupFieldObject = function(field) {
   this.isModified_ = false;
   this.isEverModified_ = false;
   field.setAttribute('g_editable', 'true');
+  goog.a11y.aria.setRole(field, goog.a11y.aria.Role.TEXTBOX);
 };
 
 
@@ -725,20 +775,37 @@ goog.editor.Field.prototype.tearDownFieldObject_ = function() {
   this.editableDomHelper = null;
 };
 
+
 /**
  * Initialize listeners on the field.
  * @private
  */
 goog.editor.Field.prototype.setupChangeListeners_ = function() {
+  if ((goog.userAgent.product.IPHONE || goog.userAgent.product.IPAD) &&
+      this.usesIframe() && this.shouldRefocusOnInputMobileSafari()) {
+    // This is a workaround for the iOS bug that text input doesn't work
+    // when the main window listens touch events.
+    var editWindow = this.getEditableDomHelper().getWindow();
+    this.boundRefocusListenerMobileSafari_ =
+        goog.bind(editWindow.focus, editWindow);
+    editWindow.addEventListener(goog.events.EventType.KEYDOWN,
+        this.boundRefocusListenerMobileSafari_, false);
+    editWindow.addEventListener(goog.events.EventType.TOUCHEND,
+        this.boundRefocusListenerMobileSafari_, false);
+  }
   if (goog.userAgent.OPERA && this.usesIframe()) {
-    // We can't use addListener here because we need to listen on
-    // the document, not the editable element.
-    this.eventRegister.listen(this.getEditableDomHelper().getDocument(),
-                              goog.events.EventType.FOCUS,
-                              this.dispatchFocusAndBeforeFocus_);
-    this.eventRegister.listen(this.getEditableDomHelper().getDocument(),
-                              goog.events.EventType.BLUR,
-                              this.dispatchBlur);
+    // We can't use addListener here because we need to listen on the window,
+    // and removing listeners on window objects from the event register throws
+    // an exception if the window is closed.
+    this.boundFocusListenerOpera_ =
+        goog.bind(this.dispatchFocusAndBeforeFocus_, this);
+    this.boundBlurListenerOpera_ =
+        goog.bind(this.dispatchBlur, this);
+    var editWindow = this.getEditableDomHelper().getWindow();
+    editWindow.addEventListener(goog.events.EventType.FOCUS,
+        this.boundFocusListenerOpera_, false);
+    editWindow.addEventListener(goog.events.EventType.BLUR,
+        this.boundBlurListenerOpera_, false);
   } else {
     if (goog.editor.BrowserFeature.SUPPORTS_FOCUSIN) {
       this.addListener(goog.events.EventType.FOCUS, this.dispatchFocus_);
@@ -790,7 +857,8 @@ goog.editor.Field.prototype.setupChangeListeners_ = function() {
     // handleDrop event for all browsers?
     this.addListener(['beforecut', 'beforepaste', 'drop', 'dragend'],
         this.dispatchBeforeChange);
-    this.addListener(['cut', 'paste'], this.dispatchChange);
+    this.addListener(['cut', 'paste'],
+        goog.functions.lock(this.dispatchChange));
     this.addListener('drop', this.handleDrop_);
   }
 
@@ -803,9 +871,9 @@ goog.editor.Field.prototype.setupChangeListeners_ = function() {
   this.addListener(goog.events.EventType.KEYPRESS, this.handleKeyPress_);
   this.addListener(goog.events.EventType.KEYUP, this.handleKeyUp_);
 
-  var selectionChange = goog.bind(this.dispatchSelectionChangeEvent, this);
-  this.selectionChangeTimer_ = new goog.async.Delay(selectionChange,
-      goog.editor.Field.SELECTION_CHANGE_FREQUENCY_);
+  this.selectionChangeTimer_ =
+      new goog.async.Delay(this.handleSelectionChangeTimer_,
+                           goog.editor.Field.SELECTION_CHANGE_FREQUENCY_, this);
 
   if (goog.editor.BrowserFeature.FOLLOWS_EDITABLE_LINKS) {
     this.addListener(
@@ -813,7 +881,13 @@ goog.editor.Field.prototype.setupChangeListeners_ = function() {
   }
 
   this.addListener(goog.events.EventType.MOUSEDOWN, this.handleMouseDown_);
-  this.addListener(goog.events.EventType.MOUSEUP, this.handleMouseUp_);
+  if (this.useWindowMouseUp_) {
+    this.eventRegister.listen(this.editableDomHelper.getDocument(),
+        goog.events.EventType.MOUSEUP, this.handleMouseUp_);
+    this.addListener(goog.events.EventType.DRAGSTART, this.handleDragStart_);
+  } else {
+    this.addListener(goog.events.EventType.MOUSEUP, this.handleMouseUp_);
+  }
 };
 
 
@@ -827,11 +901,42 @@ goog.editor.Field.SELECTION_CHANGE_FREQUENCY_ = 250;
 
 /**
  * Stops all listeners and timers.
- * @private
+ * @protected
  */
-goog.editor.Field.prototype.clearListeners_ = function() {
+goog.editor.Field.prototype.clearListeners = function() {
   if (this.eventRegister) {
     this.eventRegister.removeAll();
+  }
+
+  if ((goog.userAgent.product.IPHONE || goog.userAgent.product.IPAD) &&
+      this.usesIframe() && this.shouldRefocusOnInputMobileSafari()) {
+    try {
+      var editWindow = this.getEditableDomHelper().getWindow();
+      editWindow.removeEventListener(goog.events.EventType.KEYDOWN,
+          this.boundRefocusListenerMobileSafari_, false);
+      editWindow.removeEventListener(goog.events.EventType.TOUCHEND,
+          this.boundRefocusListenerMobileSafari_, false);
+    } catch (e) {
+      // The editWindow no longer exists, or has been navigated to a different-
+      // origin URL. Either way, the event listeners have already been removed
+      // for us.
+    }
+    delete this.boundRefocusListenerMobileSafari_;
+  }
+  if (goog.userAgent.OPERA && this.usesIframe()) {
+    try {
+      var editWindow = this.getEditableDomHelper().getWindow();
+      editWindow.removeEventListener(goog.events.EventType.FOCUS,
+          this.boundFocusListenerOpera_, false);
+      editWindow.removeEventListener(goog.events.EventType.BLUR,
+          this.boundBlurListenerOpera_, false);
+    } catch (e) {
+      // The editWindow no longer exists, or has been navigated to a different-
+      // origin URL. Either way, the event listeners have already been removed
+      // for us.
+    }
+    delete this.boundFocusListenerOpera_;
+    delete this.boundBlurListenerOpera_;
   }
 
   if (this.changeTimerGecko_) {
@@ -841,13 +946,10 @@ goog.editor.Field.prototype.clearListeners_ = function() {
 };
 
 
-/**
- * Removes all listeners and destroys the eventhandler object.
- * @override
- */
+/** @override */
 goog.editor.Field.prototype.disposeInternal = function() {
   if (this.isLoading() || this.isLoaded()) {
-    this.logger.warning('Disposing a field that is in use.');
+    goog.log.warning(this.logger, 'Disposing a field that is in use.');
   }
 
   if (this.getOriginalElement()) {
@@ -855,7 +957,8 @@ goog.editor.Field.prototype.disposeInternal = function() {
   }
 
   this.tearDownFieldObject_();
-  this.clearListeners_();
+  this.clearListeners();
+  this.clearFieldLoadListener_();
   this.originalDomHelper = null;
 
   if (this.eventRegister) {
@@ -921,9 +1024,12 @@ goog.editor.Field.MUTATION_EVENTS_GECKO = [
  * @protected
  */
 goog.editor.Field.prototype.setupMutationEventHandlersGecko = function() {
-  if (goog.editor.BrowserFeature.HAS_DOM_SUBTREE_MODIFIED_EVENT) {
+  // Always use DOMSubtreeModified on Gecko when not using an iframe so that
+  // DOM mutations outside the Field do not trigger handleMutationEventGecko_.
+  if (goog.editor.BrowserFeature.HAS_DOM_SUBTREE_MODIFIED_EVENT ||
+      !this.usesIframe()) {
     this.eventRegister.listen(this.getElement(), 'DOMSubtreeModified',
-    this.handleMutationEventGecko_);
+        this.handleMutationEventGecko_);
   } else {
     var doc = this.getEditableDomHelper().getDocument();
     this.eventRegister.listen(doc, goog.editor.Field.MUTATION_EVENTS_GECKO,
@@ -970,7 +1076,7 @@ goog.editor.Field.prototype.handleBeforeChangeKeyEvent_ = function(e) {
     // readable characters like a, b and c. However pressing ctrl+c and so on
     // also causes charCode to be set.
 
-    // TODO(user): Del at end of field or backspace at beginning should be
+    // TODO(arv): Del at end of field or backspace at beginning should be
     // ignored.
     this.gotGeneratingKey_ = e.charCode ||
         goog.editor.Field.isGeneratingKey_(e, goog.userAgent.GECKO);
@@ -1130,7 +1236,7 @@ goog.editor.Field.prototype.injectContents = function(contents, field) {
   var styles = {};
   var newHtml = this.getInjectableContents(contents, styles);
   goog.style.setStyle(field, styles);
-  field.innerHTML = newHtml;
+  goog.editor.node.replaceInnerHtml(field, newHtml);
 };
 
 
@@ -1249,7 +1355,7 @@ goog.editor.Field.prototype.handleKeyboardShortcut_ = function(e) {
 
     var stringKey = String.fromCharCode(key).toLowerCase();
     if (this.invokeShortCircuitingOp_(goog.editor.Plugin.Op.SHORTCUT,
-            e, stringKey, isModifierPressed)) {
+                                      e, stringKey, isModifierPressed)) {
       e.preventDefault();
       // We don't call stopPropagation as some other handler outside of
       // trogedit might need it.
@@ -1336,15 +1442,16 @@ goog.editor.Field.prototype.queryCommandValueInternal_ = function(command,
  * state change)
  * @param {Function} handler The function to call if this is not an internal
  *     browser event.
- * @param {goog.events.BrowserEvent} e The browser event.
+ * @param {goog.events.BrowserEvent} browserEvent The browser event.
  * @protected
  */
-goog.editor.Field.prototype.handleDomAttrChange = function(handler, e) {
+goog.editor.Field.prototype.handleDomAttrChange =
+    function(handler, browserEvent) {
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
   }
 
-  e = e.getBrowserEvent();
+  var e = browserEvent.getBrowserEvent();
 
   // For XUL elements, since we don't care what they are doing
   try {
@@ -1447,11 +1554,13 @@ goog.editor.Field.prototype.getRange = function() {
 
 /**
  * Dispatch a selection change event, optionally caused by the given browser
- * event.
+ * event or selecting the given target.
  * @param {goog.events.BrowserEvent=} opt_e Optional browser event causing this
  *     event.
+ * @param {Node=} opt_target The node the selection changed to.
  */
-goog.editor.Field.prototype.dispatchSelectionChangeEvent = function(opt_e) {
+goog.editor.Field.prototype.dispatchSelectionChangeEvent = function(
+    opt_e, opt_target) {
   if (this.isEventStopped(goog.editor.Field.EventType.SELECTIONCHANGE)) {
     return;
   }
@@ -1469,7 +1578,20 @@ goog.editor.Field.prototype.dispatchSelectionChangeEvent = function(opt_e) {
     originalType: opt_e && opt_e.type
   });
 
-  this.invokeShortCircuitingOp_(goog.editor.Plugin.Op.SELECTION, opt_e);
+  this.invokeShortCircuitingOp_(goog.editor.Plugin.Op.SELECTION,
+                                opt_e, opt_target);
+};
+
+
+/**
+ * Dispatch a selection change event using a browser event that was
+ * asynchronously saved earlier.
+ * @private
+ */
+goog.editor.Field.prototype.handleSelectionChangeTimer_ = function() {
+  var t = this.selectionChangeTarget_;
+  this.selectionChangeTarget_ = null;
+  this.dispatchSelectionChangeEvent(undefined, t);
 };
 
 
@@ -1842,7 +1964,8 @@ goog.editor.Field.prototype.isSelectionEditable = function() {
  * @private
  */
 goog.editor.Field.cancelLinkClick_ = function(e) {
-  if (goog.dom.getAncestorByTagNameAndClass(e.target, goog.dom.TagName.A)) {
+  if (goog.dom.getAncestorByTagNameAndClass(
+      /** @type {Node} */ (e.target), goog.dom.TagName.A)) {
     e.preventDefault();
   }
 };
@@ -1854,11 +1977,7 @@ goog.editor.Field.cancelLinkClick_ = function(e) {
  * @private
  */
 goog.editor.Field.prototype.handleMouseDown_ = function(e) {
-  // If the user clicks on an object (like an image) in the field
-  // and the activeField is not set, set it.
-  if (!goog.editor.Field.getActiveFieldId()) {
-    goog.editor.Field.setActiveFieldId(this.id);
-  }
+  goog.editor.Field.setActiveFieldId(this.id);
 
   // Open links in a new window if the user control + clicks.
   if (goog.userAgent.IE) {
@@ -1868,6 +1987,18 @@ goog.editor.Field.prototype.handleMouseDown_ = function(e) {
       this.originalDomHelper.getWindow().open(targetElement.href);
     }
   }
+  this.waitingForMouseUp_ = true;
+};
+
+
+/**
+ * Handle drag start. Needs to cancel listening for the mouse up event on the
+ * window.
+ * @param {goog.events.BrowserEvent} e The event.
+ * @private
+ */
+goog.editor.Field.prototype.handleDragStart_ = function(e) {
+  this.waitingForMouseUp_ = false;
 };
 
 
@@ -1877,6 +2008,11 @@ goog.editor.Field.prototype.handleMouseDown_ = function(e) {
  * @private
  */
 goog.editor.Field.prototype.handleMouseUp_ = function(e) {
+  if (this.useWindowMouseUp_ && !this.waitingForMouseUp_) {
+    return;
+  }
+  this.waitingForMouseUp_ = false;
+
   /*
    * We fire a selection change event immediately for listeners that depend on
    * the native browser event object (e).  On IE, a listener that tries to
@@ -1887,9 +2023,10 @@ goog.editor.Field.prototype.handleMouseUp_ = function(e) {
   if (goog.userAgent.IE) {
     /*
      * Fire a second selection change event for listeners that need an
-     * up-to-date selection range.  This event will not include a native
-     * event object.
+     * up-to-date selection range. Save the event's target to be sent with it
+     * (it's safer than saving a copy of the event itself).
      */
+    this.selectionChangeTarget_ = /** @type {Node} */ (e.target);
     this.selectionChangeTimer_.start();
   }
 };
@@ -1911,7 +2048,8 @@ goog.editor.Field.prototype.getCleanContents = function() {
     // The field is uneditable, so it's ok to read contents directly.
     var elem = this.getOriginalElement();
     if (!elem) {
-      this.logger.shout("Couldn't get the field element to read the contents");
+      goog.log.log(this.logger, goog.log.Level.SHOUT,
+          "Couldn't get the field element to read the contents");
     }
     return elem.innerHTML;
   }
@@ -1961,7 +2099,7 @@ goog.editor.Field.prototype.getFieldCopy = function() {
 goog.editor.Field.prototype.setHtml = function(
     addParas, html, opt_dontFireDelayedChange, opt_applyLorem) {
   if (this.isLoading()) {
-    this.logger.severe("Can't set html while loading Trogedit");
+    goog.log.error(this.logger, "Can't set html while loading Trogedit");
     return;
   }
 
@@ -2080,15 +2218,9 @@ goog.editor.Field.prototype.installStyles = function() {
 goog.editor.Field.prototype.dispatchLoadEvent_ = function() {
   var field = this.getElement();
 
-  // Apply workaround className if necessary, see goog.editor.Field constructor
-  // for more details.
-  if (this.workaroundClassName_) {
-    goog.dom.classes.add(field, this.workaroundClassName_);
-  }
-
   this.installStyles();
   this.startChangeEvents();
-  this.logger.info('Dispatching load ' + this.id);
+  goog.log.info(this.logger, 'Dispatching load ' + this.id);
   this.dispatchEvent(goog.editor.Field.EventType.LOAD);
 };
 
@@ -2121,12 +2253,9 @@ goog.editor.Field.prototype.isLoading = function() {
  * Gives the field focus.
  */
 goog.editor.Field.prototype.focus = function() {
-  // TODO(user): This is actually the wrong codepath for focusing in WebKit
-  // (WebKit doesn't focus when you do this), but putting WebKit on the "right"
-  // codepath seems to cause test failures. We should figure out what's going on
-  // so focus can work in WebKit and all the tests can pass.
-  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE ||
-      goog.userAgent.WEBKIT) {
+  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &&
+      this.usesIframe()) {
+    // In designMode, only the window itself can be focused; not the element.
     this.getEditableDomHelper().getWindow().focus();
   } else {
     if (goog.userAgent.OPERA) {
@@ -2138,16 +2267,7 @@ goog.editor.Field.prototype.focus = function() {
       var scrollX = this.appWindow_.pageXOffset;
       var scrollY = this.appWindow_.pageYOffset;
     }
-    var element = this.getElement();
-    // Opera won't focus <body> in whitebox mode because we actually make
-    // <html> contentEditable instead to work around some visual issues.
-    // So we must focus <html> instead if <html> is the contentEditable
-    // element.
-    if (!goog.editor.BrowserFeature.FOCUSES_EDITABLE_BODY_ON_HTML_CLICK &&
-        element.parentNode.contentEditable) {
-      element = element.parentNode;
-    }
-    element.focus();
+    this.getElement().focus();
     if (goog.userAgent.OPERA) {
       this.appWindow_.scrollTo(
           /** @type {number} */ (scrollX), /** @type {number} */ (scrollY));
@@ -2180,18 +2300,57 @@ goog.editor.Field.prototype.focusAndPlaceCursorAtStart = function() {
  * an existing selection in the field.
  */
 goog.editor.Field.prototype.placeCursorAtStart = function() {
+  this.placeCursorAtStartOrEnd_(true);
+};
+
+
+/**
+ * Place the cursor at the start of this field. It's recommended that you only
+ * use this method (and manipulate the selection in general) when there is not
+ * an existing selection in the field.
+ */
+goog.editor.Field.prototype.placeCursorAtEnd = function() {
+  this.placeCursorAtStartOrEnd_(false);
+};
+
+
+/**
+ * Helper method to place the cursor at the start or end of this field.
+ * @param {boolean} isStart True for start, false for end.
+ * @private
+ */
+goog.editor.Field.prototype.placeCursorAtStartOrEnd_ = function(isStart) {
   var field = this.getElement();
   if (field) {
-    var cursorPosition = goog.editor.node.getLeftMostLeaf(field);
+    var cursorPosition = isStart ? goog.editor.node.getLeftMostLeaf(field) :
+        goog.editor.node.getRightMostLeaf(field);
     if (field == cursorPosition) {
-      // The leftmost leaf we found was the field element itself (which likely
+      // The rightmost leaf we found was the field element itself (which likely
       // means the field element is empty). We can't place the cursor next to
       // the field element, so just place it at the beginning.
       goog.dom.Range.createCaret(field, 0).select();
     } else {
-      goog.editor.range.placeCursorNextTo(cursorPosition, true);
+      goog.editor.range.placeCursorNextTo(cursorPosition, isStart);
     }
     this.dispatchSelectionChangeEvent();
+  }
+};
+
+
+/**
+ * Restore a saved range, and set the focus on the field.
+ * If no range is specified, we simply set the focus.
+ * @param {goog.dom.SavedRange=} opt_range A previously saved selected range.
+ */
+goog.editor.Field.prototype.restoreSavedRange = function(opt_range) {
+  if (goog.userAgent.IE) {
+    this.focus();
+  }
+  if (opt_range) {
+    opt_range.restore();
+  }
+  if (!goog.userAgent.IE) {
+    this.focus();
   }
 };
 
@@ -2237,10 +2396,11 @@ goog.editor.Field.prototype.makeEditableInternal = function(opt_iframeSrc) {
  */
 goog.editor.Field.prototype.handleFieldLoad = function() {
   if (goog.userAgent.IE) {
-    // This must happen AFTER the browser has realized contentEditable is
-    // on.  This does not work if it directly follows the setting of the
-    // contentEditable attribute.  It seems that doing the getElemById
-    // above is enough to force IE to update its state.
+    // This sometimes fails if the selection is invalid. This can happen, for
+    // example, if you attach a CLICK handler to the field that causes the
+    // field to be removed from the DOM and replaced with an editor
+    // -- however, listening to another event like MOUSEDOWN does not have this
+    // issue since no mouse selection has happened at that time.
     goog.dom.Range.clearSelection(this.editableDomHelper.getWindow());
   }
 
@@ -2298,7 +2458,7 @@ goog.editor.Field.prototype.makeUneditable = function(opt_skipRestore) {
   // Clear all listeners before removing the nodes from the dom - if
   // there are listeners on the iframe window, Firefox throws errors trying
   // to unlisten once the iframe is no longer in the dom.
-  this.clearListeners_();
+  this.clearListeners();
 
   // For fields that have loaded, clean up anything that happened in
   // handleFieldOpen or later.
@@ -2306,7 +2466,7 @@ goog.editor.Field.prototype.makeUneditable = function(opt_skipRestore) {
   // so that the original node will have the same properties as it did before
   // it was made editable.
   if (goog.isString(html)) {
-    field.innerHTML = html;
+    goog.editor.node.replaceInnerHtml(field, html);
     this.resetOriginalElemProperties();
   }
 
@@ -2443,7 +2603,6 @@ goog.editor.Field.prototype.makeIframeField_ = function(opt_iframeSrc) {
  *
  * @param {HTMLIFrameElement} iframe The iframe element.
  * @protected
- * @notypecheck
  */
 goog.editor.Field.prototype.attachIframe = function(iframe) {
   var field = this.getOriginalElement();
@@ -2459,7 +2618,6 @@ goog.editor.Field.prototype.attachIframe = function(iframe) {
  * @return {goog.editor.icontent.FieldFormatInfo} The FieldFormatInfo object for
  *     this field's configuration.
  * @protected
- * @notypecheck
  */
 goog.editor.Field.prototype.getFieldFormatInfo = function(extraStyles) {
   var originalElement = this.getOriginalElement();
@@ -2520,7 +2678,8 @@ goog.editor.Field.prototype.iframeFieldLoadHandler = function(iframe,
   var body = doc.body;
   this.setupFieldObject(body);
 
-  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &&
+      this.usesIframe()) {
     this.turnOnDesignModeGecko();
   }
 

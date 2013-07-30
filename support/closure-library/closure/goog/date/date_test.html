@@ -3,26 +3,32 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.date</title>
 <script src="../base.js"></script>
 <script>
+  goog.require('goog.array')
   goog.require('goog.date');
   goog.require('goog.date.Date');
   goog.require('goog.date.DateTime');
   goog.require('goog.date.Interval');
   goog.require('goog.i18n.DateTimeSymbols');
+  goog.require('goog.testing.ExpectedFailures');
   goog.require('goog.testing.jsunit');
   goog.require('goog.userAgent');
   goog.require('goog.userAgent.platform');
   goog.require('goog.userAgent.product');
+  goog.require('goog.userAgent.product.isVersion');
 </script>
 </head>
 <body>
 <script>
+
+var expectedFailures = new goog.testing.ExpectedFailures();
 
 function shouldRunTests() {
 
@@ -34,6 +40,10 @@ function shouldRunTests() {
   }
 
   return true;
+}
+
+function tearDown() {
+  expectedFailures.handleTearDown();
 }
 
 /**
@@ -586,29 +596,37 @@ function test_setIso8601TimeOnly_() {
   assertEquals('Got 18 hours from ' + iso, 18, d.getHours());
   assertEquals('Got 46 minutes from ' + iso, 46, d.getMinutes());
   assertEquals('Got 39 seconds from ' + iso, 39, d.getSeconds());
-  if (goog.userAgent.WEBKIT && goog.userAgent.MAC) {
-    // Both Safari 3.1 and WebKit (on Mac) return floating-point values.
-    assertRoughlyEquals('Got roughly 994.2 milliseconds from ' + iso, 994.2,
-        d.getMilliseconds(), 0.01);
-  } else {
-    // Other browsers, including WebKit on Windows, return integers.
-    assertEquals('Got 994 milliseconds from ' + iso, 994, d.getMilliseconds());
+
+  // Fails in Safari4 Winxp, temporarily disabled
+  expectedFailures.expectFailureFor(isWinxpSafari4());
+  try {
+    if (goog.userAgent.WEBKIT && goog.userAgent.MAC) {
+      // Both Safari 3.1 and WebKit (on Mac) return floating-point values.
+      assertRoughlyEquals('Got roughly 994.2 milliseconds from ' + iso, 994.2,
+          d.getMilliseconds(), 0.01);
+    } else {
+      // Other browsers, including WebKit on Windows, return integers.
+      assertEquals('Got 994 milliseconds from ' + iso, 994, d.getMilliseconds());
+    }
+
+    d = new goog.date.DateTime(0, 0);
+    iso = '184639.9942';
+    assertTrue('parsed ' + iso, goog.date.setIso8601TimeOnly_(d, iso));
+    assertEquals('Got 18 hours from ' + iso, 18, d.getHours());
+    assertEquals('Got 46 minutes from ' + iso, 46, d.getMinutes());
+    assertEquals('Got 39 seconds from ' + iso, 39, d.getSeconds());
+    if (goog.userAgent.WEBKIT && goog.userAgent.MAC) {
+      // Both Safari 3.1 and WebKit (on Mac) return floating-point values.
+      assertRoughlyEquals('Got roughly 994.2 milliseconds from ' + iso, 994.2,
+          d.getMilliseconds(), 0.01);
+    } else {
+      // Other browsers, including WebKit on Windows, return integers.
+      assertEquals('Got 994 milliseconds from ' + iso, 994, d.getMilliseconds());
+    }
+  } catch (e) {
+      expectedFailures.handleException(e);
   }
 
-  d = new goog.date.DateTime(0, 0);
-  iso = '184639.9942';
-  assertTrue('parsed ' + iso, goog.date.setIso8601TimeOnly_(d, iso));
-  assertEquals('Got 18 hours from ' + iso, 18, d.getHours());
-  assertEquals('Got 46 minutes from ' + iso, 46, d.getMinutes());
-  assertEquals('Got 39 seconds from ' + iso, 39, d.getSeconds());
-  if (goog.userAgent.WEBKIT && goog.userAgent.MAC) {
-    // Both Safari 3.1 and WebKit (on Mac) return floating-point values.
-    assertRoughlyEquals('Got roughly 994.2 milliseconds from ' + iso, 994.2,
-        d.getMilliseconds(), 0.01);
-  } else {
-    // Other browsers, including WebKit on Windows, return integers.
-    assertEquals('Got 994 milliseconds from ' + iso, 994, d.getMilliseconds());
-  }
 
   // 1995-02-04 24:00 = 1995-02-05 00:00
   // timezone tests
@@ -756,6 +774,8 @@ function testDateIntervalAdd() {
 function testDateEquals() {
   var d1 = new goog.date.Date(2004, goog.date.month.MAR, 1);
   var d2 = new goog.date.Date(2004, goog.date.month.MAR, 1);
+  assertFalse('d1 != null', d1.equals(null));
+  assertFalse('d2 != undefined', d2.equals(undefined));
   assertTrue('d1 == d2', d1.equals(d2));
   assertTrue('d2 == d1', d2.equals(d1));
 
@@ -876,6 +896,13 @@ function testDateTimeEquals() {
   d1 = new goog.date.DateTime(2004, goog.date.month.MAR, 1, 0, 0, 0);
   d2 = new goog.date.Date(2004, goog.date.month.MAR, 1);
   assertTrue('using goog.date.Date, same time (midnight)', d1.equals(d2));
+}
+
+
+function testIntervalIsZero() {
+  assertTrue('zero interval', new goog.date.Interval().isZero());
+  var i = new goog.date.Interval(0, 0, 1, -24, 0, 0);
+  assertFalse('1 day minus 24 hours is not considered zero', i.isZero());
 }
 
 
@@ -1262,6 +1289,104 @@ function testValueOf() {
   assertTrue(date1 < date2);
   assertTrue(date2 > date3);
 }
+
+function isWinxpSafari4() {
+  return goog.userAgent.product.SAFARI &&
+      goog.userAgent.product.isVersion('4') &&
+      !goog.userAgent.product.isVersion('5') &&
+      goog.userAgent.WINDOWS &&
+      goog.userAgent.platform.isVersion('5.0') &&
+      !goog.userAgent.platform.isVersion('6.0');
+}
+
+function testDateCompare() {
+  // May 16th, 2011, 3:17:36.500
+  var date1 = new goog.date.DateTime(2011,
+      goog.date.month.MAY, 16, 15, 17, 36, 500);
+
+  // May 16th, 2011, 3:17:36.501
+  var date2 = new goog.date.DateTime(2011,
+      goog.date.month.MAY, 16, 15, 17, 36, 501);
+
+  // May 16th, 2011, 3:17:36.501
+  var date3 = new goog.date.DateTime(2011,
+      goog.date.month.MAY, 16, 15, 17, 36, 502);
+
+  assertEquals(0, goog.date.Date.compare(date1.clone(), date1.clone()));
+  assertEquals(-1, goog.date.Date.compare(date1, date2));
+  assertEquals(1, goog.date.Date.compare(date2, date1));
+
+  var dates = [date2, date3, date1];
+  goog.array.sort(dates, goog.date.Date.compare);
+  assertArrayEquals('Dates should be sorted in time.',
+      [date1, date2, date3], dates);
+
+  // Assert a known millisecond difference between two points in time.
+  assertEquals(-19129478,
+    goog.date.Date.compare(
+      new goog.date.DateTime(1982, goog.date.month.MAR, 12, 6, 48, 32, 354),
+      new goog.date.DateTime(1982, goog.date.month.MAR, 12, 12, 07, 21, 832)));
+
+  // Test dates before the year 0.  Dates are Talk Like a Pirate Day, and
+  // Towel Day, 300 B.C. (and before pirates).
+
+  var pirateDay = new goog.date.Date(-300, goog.date.month.SEP, 2);
+  var towelDay = new goog.date.Date(-300, goog.date.month.MAY, 12);
+
+  assertEquals('Dates should be 113 days apart.',
+    113 * 24 * 60 * 60 * 1000,
+    goog.date.Date.compare(pirateDay, towelDay));
+}
+
+function testDateCompareDateLikes() {
+  var nativeDate = new Date(2011, 4, 16, 15, 17, 36, 500);
+  var closureDate = new goog.date.DateTime(2011,
+      goog.date.month.MAY, 16, 15, 17, 36, 500);
+
+  assertEquals(0, goog.date.Date.compare(nativeDate, closureDate));
+
+  nativeDate.setMilliseconds(499);
+  assertEquals(-1, goog.date.Date.compare(nativeDate, closureDate));
+
+  nativeDate.setMilliseconds(501);
+  assertEquals(1, goog.date.Date.compare(nativeDate, closureDate));
+}
+
+function testIsMidnight() {
+  assertTrue(new goog.date.DateTime(2013, 0, 1).isMidnight());
+  assertFalse(new goog.date.DateTime(2013, 0, 1, 1).isMidnight());
+  assertFalse(new goog.date.DateTime(2013, 0, 1, 0, 1).isMidnight());
+  assertFalse(new goog.date.DateTime(2013, 0, 1, 0, 0, 1).isMidnight());
+  assertFalse(new goog.date.DateTime(2013, 0, 1, 0, 0, 0, 1).isMidnight());
+}
+
+function testMinMax() {
+  // Comparison of two goog.date.DateTimes
+  var dateTime1 = new goog.date.DateTime(2000, 0, 1);
+  var dateTime2 = new goog.date.DateTime(2000, 0, 1, 0, 0, 0, 1);
+  assertEquals(dateTime1, goog.date.min(dateTime1, dateTime2));
+  assertEquals(dateTime1, goog.date.min(dateTime2, dateTime1));
+  assertEquals(dateTime2, goog.date.max(dateTime1, dateTime2));
+  assertEquals(dateTime2, goog.date.max(dateTime2, dateTime1));
+
+  // Comparison of two goog.date.Dates
+  var date1 = new goog.date.Date(2000, 0, 1);
+  var date2 = new goog.date.Date(2000, 0, 2);
+  assertEquals(date1, goog.date.min(date1, date2));
+
+  // Comparison of native Dates.
+  var jsDate1 = new Date(2000, 0, 1);
+  var jsDate2 = new Date(2000, 0, 2);
+  assertEquals(jsDate1, goog.date.min(jsDate1, jsDate2));
+  assertEquals(jsDate2, goog.date.max(jsDate1, jsDate2));
+
+  // Comparison of different types.
+  assertEquals(date1, goog.date.min(date1, dateTime2));
+  assertEquals(dateTime2, goog.date.min(date2, dateTime2));
+  assertEquals(date1, goog.date.min(date1, jsDate2));
+  assertEquals(jsDate2, goog.date.max(dateTime1, jsDate2));
+}
+
 </script>
 </body>
 </html>

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview
+ * @suppress {checkTypes}
+ */
+
 /*
  * Basic JavaScript BN library - subset useful for RSA encryption.
  * 
@@ -33,6 +38,12 @@
 
 
 // (public) Constructor
+/**
+ * @constructor
+ * @param {number|string|null} a
+ * @param {number=} b
+ * @param {*=} c
+ */
 Sk.builtin.biginteger = function(a,b,c) {
   if(a != null)
     if("number" == typeof a) this.fromNumber(a,b,c);
@@ -438,6 +449,10 @@ Sk.builtin.biginteger.prototype.bnMod = function(a) {
 }
 
 // Modular reduction using "classic" algorithm
+/**
+ * @constructor
+ * @extends Sk.builtin.biginteger
+ */
 Sk.builtin.biginteger.Classic = function(m) { this.m = m; }
 Sk.builtin.biginteger.prototype.cConvert = function(x) {
   if(x.s < 0 || x.compareTo(this.m) >= 0) return x.mod(this.m);
@@ -480,6 +495,10 @@ Sk.builtin.biginteger.prototype.bnpInvDigit = function() {
 }
 
 // Sk.builtin.Montgomery reduction
+/**
+ * @constructor
+ * @extends Sk.builtin.biginteger
+ */
 Sk.builtin.biginteger.Montgomery = function(m) {
   this.m = m;
   this.mp = m.invDigit();
@@ -918,6 +937,10 @@ while(this[w] >= this.DV) {
 }
 
 //A "null" reducer
+/**
+ * @constructor
+ * @extends Sk.builtin.biginteger
+ */
 Sk.builtin.biginteger.NullExp = function() {}
 Sk.builtin.biginteger.prototype.nNop = function(x) { return x; }
 Sk.builtin.biginteger.prototype.nMulTo = function(x,y,r) { x.multiplyTo(y,r); }
@@ -958,6 +981,10 @@ r.drShiftTo(1,r);
 }
 
 //Barrett modular reduction
+/**
+ * @constructor
+ * @extends Sk.builtin.biginteger
+ */
 Sk.builtin.biginteger.Barrett = function(m) {
 // setup Barrett
 this.r2 = Sk.builtin.biginteger.nbi();

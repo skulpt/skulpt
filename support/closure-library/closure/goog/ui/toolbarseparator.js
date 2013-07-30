@@ -15,8 +15,8 @@
 /**
  * @fileoverview A toolbar separator control.
  *
-*
-*
+ * @author attila@google.com (Attila Bodis)
+ * @author ssaviano@google.com (Steven Saviano)
  */
 
 goog.provide('goog.ui.ToolbarSeparator');
@@ -24,6 +24,7 @@ goog.provide('goog.ui.ToolbarSeparator');
 goog.require('goog.ui.Separator');
 goog.require('goog.ui.ToolbarSeparatorRenderer');
 goog.require('goog.ui.registry');
+
 
 
 /**

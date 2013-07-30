@@ -24,6 +24,7 @@ goog.provide('goog.graphics.ext.Group');
 goog.require('goog.graphics.ext.Element');
 
 
+
 /**
  * Wrapper for a graphics group.
  * @param {goog.graphics.ext.Group} group Parent for this element. Can
@@ -38,17 +39,15 @@ goog.graphics.ext.Group = function(group, opt_wrapper) {
   opt_wrapper = opt_wrapper || group.getGraphicsImplementation().createGroup(
       group.getWrapper());
   goog.graphics.ext.Element.call(this, group, opt_wrapper);
+
+  /**
+   * Array of child elements this group contains.
+   * @type {Array.<goog.graphics.ext.Element>}
+   * @private
+   */
   this.children_ = [];
 };
 goog.inherits(goog.graphics.ext.Group, goog.graphics.ext.Element);
-
-
-/**
- * Array of child elements this group contains.
- * @type {Array.<goog.graphics.Element>}
- * @private
- */
-goog.graphics.ext.Group.prototype.children_;
 
 
 /**
@@ -81,7 +80,7 @@ goog.graphics.ext.Group.prototype.addChild = function(element, opt_chain) {
 
 /**
  * Remove an element from the group.
- * @param {goog.graphics.Element} element The element to remove.
+ * @param {goog.graphics.ext.Element} element The element to remove.
  */
 goog.graphics.ext.Group.prototype.removeChild = function(element) {
   goog.array.remove(this.children_, element);
@@ -117,6 +116,7 @@ goog.graphics.ext.Group.prototype.getWrapper;
 
 /**
  * Reset the element.
+ * @override
  */
 goog.graphics.ext.Group.prototype.reset = function() {
   goog.graphics.ext.Group.superClass_.reset.call(this);
@@ -129,6 +129,7 @@ goog.graphics.ext.Group.prototype.reset = function() {
  * Called from the parent class, this method resets any pre-computed positions
  * and sizes.
  * @protected
+ * @override
  */
 goog.graphics.ext.Group.prototype.redraw = function() {
   this.getWrapper().setSize(this.getWidth(), this.getHeight());
@@ -178,7 +179,7 @@ goog.graphics.ext.Group.prototype.growToFit_ = function(element) {
     transformed = true;
   }
 
-  var y = element.getMaxY()
+  var y = element.getMaxY();
   if (y > this.getHeight()) {
     this.setMinHeight(y);
     transformed = true;

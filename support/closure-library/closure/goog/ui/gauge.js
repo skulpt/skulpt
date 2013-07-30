@@ -15,7 +15,6 @@
 
 /**
  * @fileoverview Gauge UI component, using browser vector graphics.
-*
  * @see ../demos/gauge.html
  */
 
@@ -24,15 +23,20 @@ goog.provide('goog.ui.Gauge');
 goog.provide('goog.ui.GaugeColoredRange');
 
 
-goog.require('goog.dom');
-goog.require('goog.dom.a11y');
+goog.require('goog.a11y.aria');
+goog.require('goog.asserts');
+goog.require('goog.events');
 goog.require('goog.fx.Animation');
+goog.require('goog.fx.Transition');
 goog.require('goog.fx.easing');
 goog.require('goog.graphics');
 goog.require('goog.graphics.Font');
+goog.require('goog.graphics.Path');
 goog.require('goog.graphics.SolidFill');
+goog.require('goog.math');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.GaugeTheme');
+
 
 
 /**
@@ -65,6 +69,7 @@ goog.ui.GaugeColoredRange = function(fromValue, toValue, backgroundColor) {
    */
   this.backgroundColor = backgroundColor;
 };
+
 
 
 /**
@@ -446,9 +451,9 @@ goog.ui.Gauge.prototype.getMinimum = function() {
  */
 goog.ui.Gauge.prototype.setMinimum = function(min) {
   this.minValue_ = min;
-
-  if (this.getElement()) {
-    goog.dom.a11y.setState(this.getElement(), 'valuemin', min);
+  var element = this.getElement();
+  if (element) {
+    goog.a11y.aria.setState(element, 'valuemin', min);
   }
 };
 
@@ -468,8 +473,9 @@ goog.ui.Gauge.prototype.getMaximum = function() {
 goog.ui.Gauge.prototype.setMaximum = function(max) {
   this.maxValue_ = max;
 
-  if (this.getElement()) {
-    goog.dom.a11y.setState(this.getElement(), 'valuemax', max);
+  var element = this.getElement();
+  if (element) {
+    goog.a11y.aria.setState(element, 'valuemax', max);
   }
 };
 
@@ -500,19 +506,20 @@ goog.ui.Gauge.prototype.setValue = function(value, opt_formattedValue) {
         goog.ui.Gauge.NEEDLE_MOVE_TIME,
         goog.fx.easing.inAndOut);
 
-    var events = [goog.fx.Animation.EventType.BEGIN,
+    var events = [goog.fx.Transition.EventType.BEGIN,
                   goog.fx.Animation.EventType.ANIMATE,
-                  goog.fx.Animation.EventType.END];
+                  goog.fx.Transition.EventType.END];
     goog.events.listen(this.animation_, events, this.onAnimate_, false, this);
-    goog.events.listen(this.animation_, goog.fx.Animation.EventType.END,
+    goog.events.listen(this.animation_, goog.fx.Transition.EventType.END,
         this.onAnimateEnd_, false, this);
 
     // Start animation
     this.animation_.play(false);
   }
 
-  if (this.getElement()) {
-    goog.dom.a11y.setState(this.getElement(), 'valuenow', this.value_);
+  var element = this.getElement();
+  if (element) {
+    goog.a11y.aria.setState(element, 'valuenow', this.value_);
   }
 };
 
@@ -609,6 +616,7 @@ goog.ui.Gauge.prototype.addBackgroundColor = function(fromValue, toValue,
 
 /**
  * Creates the DOM representation of the graphics area.
+ * @override
  */
 goog.ui.Gauge.prototype.createDom = function() {
   this.setElementInternal(this.getDomHelper().createDom(
@@ -668,12 +676,22 @@ goog.ui.Gauge.prototype.draw_ = function() {
     var rangeColor = this.rangeColors_[i];
     var fromValue = rangeColor.fromValue;
     var toValue = rangeColor.toValue;
-    var path = graphics.createPath();
+    var path = new goog.graphics.Path();
     var fromAngle = this.valueToAngle_(fromValue);
     var toAngle = this.valueToAngle_(toValue);
-    path.arc(cx, cy, r, r, fromAngle, toAngle - fromAngle, false);
-    path.arc(cx, cy, rBackgroundInternal, rBackgroundInternal,
-        toAngle, fromAngle - toAngle, true);
+    // Move to outer point at "from" angle
+    path.moveTo(
+        cx + goog.math.angleDx(fromAngle, r),
+        cy + goog.math.angleDy(fromAngle, r));
+    // Arc to outer point at "to" angle
+    path.arcTo(r, r, fromAngle, toAngle - fromAngle);
+    // Line to inner point at "to" angle
+    path.lineTo(
+        cx + goog.math.angleDx(toAngle, rBackgroundInternal),
+        cy + goog.math.angleDy(toAngle, rBackgroundInternal));
+    // Arc to inner point at "from" angle
+    path.arcTo(
+        rBackgroundInternal, rBackgroundInternal, toAngle, fromAngle - toAngle);
     path.close();
     fill = new goog.graphics.SolidFill(rangeColor.backgroundColor);
     graphics.drawPath(path, null, fill);
@@ -711,8 +729,8 @@ goog.ui.Gauge.prototype.draw_ = function() {
   var ticks = majorTicks * minorTicks;
   var valueRange = this.maxValue_ - this.minValue_;
   var tickValueSpan = valueRange / ticks;
-  var majorTicksPath = graphics.createPath();
-  var minorTicksPath = graphics.createPath();
+  var majorTicksPath = new goog.graphics.Path();
+  var minorTicksPath = new goog.graphics.Path();
 
   var tickLabelFill = new goog.graphics.SolidFill(theme.getTickLabelColor());
   var tickLabelFont = this.tickLabelFont_;
@@ -726,7 +744,7 @@ goog.ui.Gauge.prototype.draw_ = function() {
   for (var i = 0; i <= ticks; i++) {
     var angle = this.valueToAngle_(i * tickValueSpan + this.minValue_);
     var isMajorTick = i % minorTicks == 0;
-    var rInternal = isMajorTick ? rMajorTickInternal: rMinorTickInternal;
+    var rInternal = isMajorTick ? rMajorTickInternal : rMinorTickInternal;
     var path = isMajorTick ? majorTicksPath : minorTicksPath;
     x = cx + goog.math.angleDx(angle, rInternal);
     y = cy + goog.math.angleDy(angle, rInternal);
@@ -900,7 +918,7 @@ goog.ui.Gauge.prototype.drawValue_ = function() {
   var controlPointMidDy = goog.math.angleDy(angleRight,
       distanceControlPointBase);
 
-  var path = graphics.createPath();
+  var path = new goog.graphics.Path();
   path.moveTo(cx + frontDx, cy + frontDy);
   path.curveTo(cx + controlPointMidDx, cy + controlPointMidDy,
       cx - backDx + (controlPointMidDx / 2),
@@ -912,7 +930,7 @@ goog.ui.Gauge.prototype.drawValue_ = function() {
       cx + frontDx, cy + frontDy);
 
   // Draw the needle hinge
-  var rh = Math.round(r * goog.ui.Gauge.FACTOR_NEEDLE_HINGE)
+  var rh = Math.round(r * goog.ui.Gauge.FACTOR_NEEDLE_HINGE);
 
   // Clean previous needle
   var needleGroup = this.needleGroup_;
@@ -958,35 +976,30 @@ goog.ui.Gauge.prototype.redraw = function() {
 };
 
 
-/**
- * Called when the component is added to the DOM.
- * Overrides {@link goog.ui.Component#enterDocument}.
- */
+/** @override */
 goog.ui.Gauge.prototype.enterDocument = function() {
   goog.ui.Gauge.superClass_.enterDocument.call(this);
 
   // set roles and states
   var el = this.getElement();
-  goog.dom.a11y.setRole(el, 'progressbar');
-  goog.dom.a11y.setState(el, 'live', 'polite');
-  goog.dom.a11y.setState(el, 'valuemin', this.minValue_);
-  goog.dom.a11y.setState(el, 'valuemax', this.maxValue_);
-  goog.dom.a11y.setState(el, 'valuenow', this.value_);
+  goog.asserts.assert(el, 'The DOM element for the gauge cannot be null.');
+  goog.a11y.aria.setRole(el, 'progressbar');
+  goog.a11y.aria.setState(el, 'live', 'polite');
+  goog.a11y.aria.setState(el, 'valuemin', this.minValue_);
+  goog.a11y.aria.setState(el, 'valuemax', this.maxValue_);
+  goog.a11y.aria.setState(el, 'valuenow', this.value_);
   this.draw_();
 };
 
 
-/**
- * Called when the component is removed from the DOM.
- * Overrides {@link goog.ui.Component#exitDocument}.
- */
+/** @override */
 goog.ui.Gauge.prototype.exitDocument = function() {
   goog.ui.Gauge.superClass_.exitDocument.call(this);
   this.stopAnimation_();
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Gauge.prototype.disposeInternal = function() {
   this.stopAnimation_();
   this.graphics_.dispose();

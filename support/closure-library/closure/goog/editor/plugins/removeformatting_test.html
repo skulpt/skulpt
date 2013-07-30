@@ -2,19 +2,21 @@
 
 <!--
   All Rights Reserved.
-  Author: jindal@google.com (Deepak Jindal)
-  Author: adinardi@google.com (Angelo DiNardi)
-  Author: jparent@google.com (Julie Parent)
 -->
 
 <html>
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<!--
+This test has not yet been updated to run on IE8. See http://b/hotlist?id=36311
+-->
+<!--meta http-equiv="X-UA-Compatible" content="IE=edge"-->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
 <title>goog.editor.plugins.RemoveFormatting Tests</title>
 <script type="text/javascript" src="../../base.js"></script>
 <script type="text/javascript">
@@ -30,7 +32,17 @@ See the COPYING file for details.
 </head>
 <body>
 
+<!--
+This wrapper table is outside the mock editor and only used ensure that it is
+ignored by the tests.
+-->
+<table>
+<tr>
+<td>
 <div id="html"></div>
+</td>
+</tr>
+</table>
 
 <div id="abcde">abcde</div>
 
@@ -39,6 +51,41 @@ See the COPYING file for details.
   var FIELDMOCK;
   var FORMATTER;
   var testHelper;
+
+  var WEBKIT_BEFORE_CHROME_8 = goog.userAgent.WEBKIT &&
+      !goog.userAgent.isVersionOrHigher('534.10');
+
+  var WEBKIT_AFTER_CHROME_16 = goog.userAgent.WEBKIT &&
+      goog.userAgent.isVersionOrHigher('535.7');
+
+  var WEBKIT_AFTER_CHROME_21 = goog.userAgent.WEBKIT &&
+      goog.userAgent.isVersionOrHigher('537.1');
+
+  // On Chrome 16, execCommand('insertImage') inserts a garbage BR
+  // after the image that we insert. We use this command to paste HTML
+  // in-place, because it has better paragraph-preserving semantics.
+  //
+  // TODO(nicksantos): Figure out if there are better chrome APIs that we
+  // should be using, or if insertImage should just be fixed.
+  var insertImageBoldGarbage = '';
+  var insertImageFontGarbage = '';
+  if (WEBKIT_AFTER_CHROME_21) {
+    insertImageBoldGarbage = '<br>';
+    insertImageFontGarbage = '<br>';
+  } else if (WEBKIT_AFTER_CHROME_16) {
+    insertImageBoldGarbage = '<b><br/></b>';
+    insertImageFontGarbage = '<font size="1"><br/></font>';
+  }
+
+  // Extra html to add to test html to make sure removeformatting is actually
+  // getting called when you're testing if it leaves certain styles alone
+  // (instead of not even running at all due to some other bug). However, adding
+  // this extra text into the node to be selected screws up IE.
+  // (e.g. <a><img></a><b>t</b> --> <a></a><a><img></a>t )
+  // TODO(user): Remove this special casing once http://b/3131117 is
+  // fixed.
+  var controlHtml = goog.userAgent.IE ? '' : '<u>control</u>';
+  var controlCleanHtml = goog.userAgent.IE ? '' : 'control';
 
   var expectedFailures = new goog.testing.ExpectedFailures();
 
@@ -155,7 +202,7 @@ See the COPYING file for details.
   }
 
   function testLinksAreNotRemoved() {
-    expectedFailures.expectFailureFor(goog.userAgent.WEBKIT,
+    expectedFailures.expectFailureFor(WEBKIT_BEFORE_CHROME_8,
         'WebKit\'s removeFormatting command removes links.');
 
     var anchor;
@@ -197,7 +244,7 @@ See the COPYING file for details.
     FORMATTER.removeFormatting_();
     // Webkit will change all tags to non-formatted ones anyway.
     // Make sure 'Foo' was changed to 'Bar'
-    if (goog.userAgent.WEBKIT) {
+    if (WEBKIT_BEFORE_CHROME_8) {
       assertHTMLEquals('regular cleaner should not have run',
           'StartBar<br>Bar<br>Baz',
           div.innerHTML);
@@ -397,7 +444,7 @@ See the COPYING file for details.
 
     expectedFailures.run(function() {
       FORMATTER.removeFormatting_();
-      assertHTMLEquals("bolditalic",
+      assertHTMLEquals("bolditalic" + insertImageBoldGarbage,
           div.innerHTML);
       FIELDMOCK.$verify();
     });
@@ -413,13 +460,112 @@ See the COPYING file for details.
     goog.dom.Range.createFromNodes(div.firstChild.firstChild, 2,
         div.firstChild.lastChild.firstChild, 3).select();
 
-    expectedFailures.expectFailureFor(goog.userAgent.WEBKIT,
+    expectedFailures.expectFailureFor(WEBKIT_BEFORE_CHROME_8,
         'WebKit just gets this all wrong.  Everything stays bold and ' +
         '"lditalic" gets italicised.');
 
     expectedFailures.run(function() {
       FORMATTER.removeFormatting_();
       assertHTMLEquals("<b>bo</b>ldita<b><i>lic</i></b>",
+          div.innerHTML);
+      FIELDMOCK.$verify();
+    });
+  }
+
+  /**
+   * @bug 3075557
+   */
+  function testRemoveFormattingLinkedImageBorderZero() {
+    var testHtml = '<a href="http://www.google.com/">' +
+        '<img src="http://www.google.com/images/logo.gif" border="0"></a>';
+    var div =  document.getElementById('html');
+    div.innerHTML = testHtml + controlHtml;
+    goog.dom.Range.createFromNodeContents(div).select();
+    FORMATTER.removeFormatting_();
+    
+    expectedFailures.expectFailureFor(goog.userAgent.WEBKIT,
+        'WebKit removes the image entirely, see ' +
+        'https://bugs.webkit.org/show_bug.cgi?id=13125 .');
+
+    expectedFailures.run(function() {
+      assertHTMLEquals(
+          'Image\'s border=0 should not be removed during remove formatting',
+          testHtml + controlCleanHtml, div.innerHTML);
+      FIELDMOCK.$verify();
+    });
+  }
+
+  /**
+   * @bug 3075557
+   */
+  function testRemoveFormattingLinkedImageBorderNonzero() {
+    var testHtml = '<a href="http://www.google.com/">' +
+        '<img src="http://www.google.com/images/logo.gif" border="1"></a>';
+    var div =  document.getElementById('html');
+    div.innerHTML = testHtml + controlHtml;
+    goog.dom.Range.createFromNodeContents(div).select();
+    FORMATTER.removeFormatting_();
+
+    expectedFailures.expectFailureFor(goog.userAgent.WEBKIT,
+        'WebKit removes the image entirely, see ' +
+        'https://bugs.webkit.org/show_bug.cgi?id=13125 .');
+
+    expectedFailures.run(function() {
+      assertHTMLEquals(
+          'Image\'s border should be removed during remove formatting' +
+          ' if non-zero',
+          testHtml.replace(' border="1"', '') + controlCleanHtml,
+          div.innerHTML);
+      FIELDMOCK.$verify();
+    });
+  }
+
+  /**
+   * @bug 3075557
+   */
+  function testRemoveFormattingUnlinkedImage() {
+    var testHtml =
+        '<img src="http://www.google.com/images/logo.gif" border="0">';
+    var div =  document.getElementById('html');
+    div.innerHTML = testHtml + controlHtml;
+    goog.dom.Range.createFromNodeContents(div).select();
+    FORMATTER.removeFormatting_();
+
+    expectedFailures.expectFailureFor(goog.userAgent.WEBKIT,
+        'WebKit removes the image entirely, see ' +
+        'https://bugs.webkit.org/show_bug.cgi?id=13125 .');
+
+    expectedFailures.run(function() {
+      assertHTMLEquals(
+          'Image\'s border=0 should not be removed during remove formatting' +
+          ' even if not wrapped by a link',
+          testHtml + controlCleanHtml, div.innerHTML);
+      FIELDMOCK.$verify();
+    });
+  }
+
+  /**
+   * @bug 3075557
+   */
+  function testRemoveFormattingLinkedImageDeep() {
+    var testHtml = '<a href="http://www.google.com/"><b>hello' +
+        '<img src="http://www.google.com/images/logo.gif" border="0">' +
+        'world</b></a>';
+    var div =  document.getElementById('html');
+    div.innerHTML = testHtml + controlHtml;
+    goog.dom.Range.createFromNodeContents(div).select();
+    FORMATTER.removeFormatting_();
+
+    expectedFailures.expectFailureFor(WEBKIT_BEFORE_CHROME_8,
+        'WebKit removes the image entirely, see ' +
+        'https://bugs.webkit.org/show_bug.cgi?id=13125 .');
+
+    expectedFailures.run(function() {
+      assertHTMLEquals(
+          'Image\'s border=0 should not be removed during remove formatting' +
+          ' even if deep inside anchor tag',
+          testHtml.replace(/<\/?b>/g, '') +
+          controlCleanHtml + insertImageBoldGarbage,
           div.innerHTML);
       FIELDMOCK.$verify();
     });
@@ -483,7 +629,7 @@ See the COPYING file for details.
     // Our workaround for the nbsp bug removes these, but causes worse problems.
     // See bugs.webkit.org/show_bug.cgi?id=29164 for more details.
     expectedFailures.expectFailureFor(
-         goog.userAgent.WEBKIT &&
+         WEBKIT_BEFORE_CHROME_8 &&
          !goog.editor.BrowserFeature.ADDS_NBSPS_IN_REMOVE_FORMAT,
          'Extra apple-style-spans');
 
@@ -492,7 +638,8 @@ See the COPYING file for details.
 
       // Only remove styling from inside tables.
       assertHTMLEquals(
-          "<table><tr><td>foo</td></tr><tr><td>ba</td></tr></table>",
+          '<table><tr><td>foo' + insertImageBoldGarbage +
+          '</td></tr><tr><td>ba</td></tr></table>',
           div.innerHTML);
       FIELDMOCK.$verify();
     });
@@ -674,7 +821,7 @@ function testRandomGoogleNewsSnippetRemoveFormatting() {
   // Select it all.
   goog.dom.Range.createFromNodeContents(div).select();
 
-  expectedFailures.expectFailureFor(goog.userAgent.WEBKIT,
+  expectedFailures.expectFailureFor(WEBKIT_BEFORE_CHROME_8,
       'WebKit barfs apple-style-spans all over the place, and removes links.');
 
   expectedFailures.run(function() {
@@ -702,7 +849,8 @@ function testRandomGoogleNewsSnippetRemoveFormatting() {
         'm/">Just Jared</a> - <a href="http://www.efluxmedia.com/news_Britne' +
         'y_Spears_Son_Released_from_Hospital_28696.html">eFluxMedia</a><br><' +
         'a href="http://news.google.com/news?ncl=1268233361&amp;hl=en">all 9' +
-        '50 news articles �</a>', div.innerHTML);
+        '50 news articles �</a>' +
+        insertImageFontGarbage, div.innerHTML);
     FIELDMOCK.$verify();
   });
 }
@@ -722,16 +870,18 @@ function testGetTableAncestor() {
 
   div.innerHTML = "foo<table><tr><td>foo</td></tr></table>bar";
   assertTrue('Full table is in table',
-      !!goog.editor.plugins.RemoveFormatting.getTableAncestor_(
-          div.childNodes[1]));
+      !!FORMATTER.getTableAncestor_(div.childNodes[1]));
 
   assertFalse('Outside of table',
-      !!goog.editor.plugins.RemoveFormatting.getTableAncestor_(div.firstChild));
+      !!FORMATTER.getTableAncestor_(div.firstChild));
 
   assertTrue('Table cell is in table',
-      !!goog.editor.plugins.RemoveFormatting.getTableAncestor_(
+      !!FORMATTER.getTableAncestor_(
           div.childNodes[1].firstChild.firstChild.firstChild));
 
+  div.innerHTML = "foo";
+  assertNull('No table inside field.',
+      FORMATTER.getTableAncestor_(div.childNodes[0]));
 }
 
 /**

@@ -8,10 +8,11 @@ goog.editor.plugins<!DOCTYPE html>
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Trogedit Unit Tests - goog.editor.plugins.UndoRedo</title>
 <script src="../../base.js"></script>
 <script>
@@ -98,7 +99,7 @@ function tearDown() {
   // it is lame. It manifests its lameness by throwing an exception.
   // Kudos to XT for helping me to figure this out.
   try {
-    goog.events.removeAll();
+    goog.events.removeAllNativeListeners();
   } catch (e) {}
 
   if (!editableField.isUneditable()) {

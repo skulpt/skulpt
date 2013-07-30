@@ -15,26 +15,27 @@
 /**
  * @fileoverview Plain text spell checker implementation.
  *
-*
-*
+ * @author eae@google.com (Emil A Eklund)
+ * @author sergeys@google.com (Sergey Solyanik)
  * @see ../demos/plaintextspellchecker.html
  */
 
 goog.provide('goog.ui.PlainTextSpellChecker');
 
 goog.require('goog.Timer');
+goog.require('goog.a11y.aria');
+goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.a11y');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.events.KeyHandler');
-goog.require('goog.events.KeyHandler.EventType');
+goog.require('goog.spell.SpellCheck');
 goog.require('goog.style');
 goog.require('goog.ui.AbstractSpellChecker');
-goog.require('goog.ui.AbstractSpellChecker.AsyncResult');
-goog.require('goog.ui.Component.EventType');
+goog.require('goog.ui.Component');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -75,6 +76,7 @@ goog.ui.PlainTextSpellChecker = function(handler, opt_domHelper) {
 };
 goog.inherits(goog.ui.PlainTextSpellChecker, goog.ui.AbstractSpellChecker);
 
+
 /**
  * Class name for invalid words.
  * @type {string}
@@ -82,12 +84,14 @@ goog.inherits(goog.ui.PlainTextSpellChecker, goog.ui.AbstractSpellChecker);
 goog.ui.PlainTextSpellChecker.prototype.invalidWordClassName =
     goog.getCssName('goog-spellcheck-invalidword');
 
+
 /**
  * Class name for corrected words.
  * @type {string}
  */
 goog.ui.PlainTextSpellChecker.prototype.correctedWordClassName =
-  goog.getCssName('goog-spellcheck-correctedword');
+    goog.getCssName('goog-spellcheck-correctedword');
+
 
 /**
  * Class name for correction pane.
@@ -96,12 +100,14 @@ goog.ui.PlainTextSpellChecker.prototype.correctedWordClassName =
 goog.ui.PlainTextSpellChecker.prototype.correctionPaneClassName =
     goog.getCssName('goog-spellcheck-correctionpane');
 
+
 /**
  * Number of words to scan to precharge the dictionary.
  * @type {number}
  * @private
  */
 goog.ui.PlainTextSpellChecker.prototype.dictionaryPreScanSize_ = 1000;
+
 
 /**
  * Size of window. Used to check if a resize operation actually changed the size
@@ -111,6 +117,7 @@ goog.ui.PlainTextSpellChecker.prototype.dictionaryPreScanSize_ = 1000;
  */
 goog.ui.PlainTextSpellChecker.prototype.winSize_;
 
+
 /**
  * Numeric Id of the element that has focus. 0 when not set.
  *
@@ -119,12 +126,14 @@ goog.ui.PlainTextSpellChecker.prototype.winSize_;
  */
 goog.ui.AbstractSpellChecker.prototype.focusedElementId_ = 0;
 
+
 /**
  * Event handler for listening to events without leaking.
  * @type {goog.events.EventHandler|undefined}
  * @private
  */
 goog.ui.PlainTextSpellChecker.prototype.eventHandler_;
+
 
 /**
  * The object handling keyboard events.
@@ -133,17 +142,17 @@ goog.ui.PlainTextSpellChecker.prototype.eventHandler_;
  */
 goog.ui.PlainTextSpellChecker.prototype.keyHandler_;
 
+
 /**
  * Creates the initial DOM representation for the component.
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.createDom = function() {
   this.setElementInternal(this.getDomHelper().createElement('textarea'));
 };
 
 
-/**
- * Called when the component's element is known to be in the document.
- */
+/** @override */
 goog.ui.PlainTextSpellChecker.prototype.enterDocument = function() {
   goog.ui.PlainTextSpellChecker.superClass_.enterDocument.call(this);
 
@@ -155,7 +164,7 @@ goog.ui.PlainTextSpellChecker.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PlainTextSpellChecker.prototype.exitDocument = function() {
   goog.ui.PlainTextSpellChecker.superClass_.exitDocument.call(this);
 
@@ -173,18 +182,18 @@ goog.ui.PlainTextSpellChecker.prototype.exitDocument = function() {
 /**
  * Initializes suggestions menu. Populates menu with separator and ignore option
  * that are always valid. Suggestions are later added above the separator.
- *
- * @protected
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.initSuggestionsMenu = function() {
   goog.ui.PlainTextSpellChecker.superClass_.initSuggestionsMenu.call(this);
-  this.eventHandler_.listen(/** @type {goog.ui.PopupMenu} */ (this.menu_),
+  this.eventHandler_.listen(/** @type {goog.ui.PopupMenu} */ (this.getMenu()),
       goog.ui.Component.EventType.BLUR, this.onCorrectionBlur_);
 };
 
 
 /**
  * Checks spelling for all text and displays correction UI.
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.check = function() {
   var text = this.getElement().value;
@@ -196,7 +205,7 @@ goog.ui.PlainTextSpellChecker.prototype.check = function() {
   if (this.getElement().parentNode != this.overlay_.parentNode) {
     this.getElement().parentNode.appendChild(this.overlay_);
   }
-  goog.style.showElement(this.overlay_, false);
+  goog.style.setElementShown(this.overlay_, false);
 
   this.preChargeDictionary_(text);
 };
@@ -209,8 +218,8 @@ goog.ui.PlainTextSpellChecker.prototype.check = function() {
 goog.ui.PlainTextSpellChecker.prototype.finishCheck_ = function() {
   // Show correction UI.
   this.positionOverlay_();
-  goog.style.showElement(this.getElement(), false);
-  goog.style.showElement(this.overlay_, true);
+  goog.style.setElementShown(this.getElement(), false);
+  goog.style.setElementShown(this.overlay_, true);
 
   var eh = this.eventHandler_;
   eh.listen(this.overlay_, goog.events.EventType.CLICK, this.onWordClick_);
@@ -234,7 +243,7 @@ goog.ui.PlainTextSpellChecker.prototype.finishCheck_ = function() {
  * @private
  */
 goog.ui.PlainTextSpellChecker.prototype.preChargeDictionary_ = function(text) {
-  this.eventHandler_.listen(this.handler_,
+  this.eventHandler_.listen(this.spellCheck,
       goog.spell.SpellCheck.EventType.READY, this.onDictionaryCharged_, true);
 
   this.populateDictionary(text, this.dictionaryPreScanSize_);
@@ -249,7 +258,7 @@ goog.ui.PlainTextSpellChecker.prototype.preChargeDictionary_ = function(text) {
  */
 goog.ui.PlainTextSpellChecker.prototype.onDictionaryCharged_ = function(e) {
   e.stopPropagation();
-  this.eventHandler_.unlisten(this.handler_,
+  this.eventHandler_.unlisten(this.spellCheck,
       goog.spell.SpellCheck.EventType.READY, this.onDictionaryCharged_, true);
   this.checkAsync_(this.getElement().value);
 };
@@ -371,11 +380,11 @@ goog.ui.PlainTextSpellChecker.prototype.continueAsync_ = function() {
  * @param {Node} node Node containing word.
  * @param {string} word Word to process.
  * @param {goog.spell.SpellCheck.WordStatus} status Status of word.
- * @protected
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.processWord = function(node, word,
-                                                                status) {
-  node.appendChild(this.createWordElement_(word, status));
+    status) {
+  node.appendChild(this.createWordElement(word, status));
 };
 
 
@@ -384,7 +393,7 @@ goog.ui.PlainTextSpellChecker.prototype.processWord = function(node, word,
  *
  * @param {Node} node Node containing separator.
  * @param {string} text text to process.
- * @protected
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.processRange = function(node, text) {
   this.endOfLineMatcher_.lastIndex = 0;
@@ -403,14 +412,15 @@ goog.ui.PlainTextSpellChecker.prototype.processRange = function(node, text) {
 
 /**
  * Hides correction UI.
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.resume = function() {
-  var wasVisible = this.isVisible_;
+  var wasVisible = this.isVisible();
 
   goog.ui.PlainTextSpellChecker.superClass_.resume.call(this);
 
-  goog.style.showElement(this.overlay_, false);
-  goog.style.showElement(this.getElement(), true);
+  goog.style.setElementShown(this.overlay_, false);
+  goog.style.setElementShown(this.getElement(), true);
   this.getElement().readOnly = false;
 
   if (wasVisible) {
@@ -433,7 +443,7 @@ goog.ui.PlainTextSpellChecker.prototype.resume = function() {
  *
  * @param {goog.spell.SpellCheck.WordStatus} status Status of word.
  * @return {Object} Properties to apply to word element.
- * @protected
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.getElementProperties =
     function(status) {
@@ -475,8 +485,8 @@ goog.ui.PlainTextSpellChecker.prototype.onWindowResize_ = function(event) {
 
   if (size.width != this.winSize_.width ||
       size.height != this.winSize_.height) {
-    goog.style.showElement(this.overlay_, false);
-    goog.style.showElement(this.getElement(), true);
+    goog.style.setElementShown(this.overlay_, false);
+    goog.style.setElementShown(this.getElement(), true);
 
     // IE requires a slight delay, allowing the resize operation to take effect.
     if (goog.userAgent.IE) {
@@ -496,9 +506,9 @@ goog.ui.PlainTextSpellChecker.prototype.onWindowResize_ = function(event) {
  * @private
  */
 goog.ui.PlainTextSpellChecker.prototype.resizeOverlay_ = function() {
-   this.positionOverlay_();
-   goog.style.showElement(this.getElement(), false);
-   goog.style.showElement(this.overlay_, true);
+  this.positionOverlay_();
+  goog.style.setElementShown(this.getElement(), false);
+  goog.style.setElementShown(this.overlay_, true);
 };
 
 
@@ -514,13 +524,13 @@ goog.ui.PlainTextSpellChecker.prototype.positionOverlay_ = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PlainTextSpellChecker.prototype.disposeInternal = function() {
-  goog.ui.PlainTextSpellChecker.superClass_.disposeInternal.call(this);
   this.getDomHelper().removeNode(this.overlay_);
   delete this.overlay_;
   delete this.boundContinueAsyncFn_;
   delete this.endOfLineMatcher_;
+  goog.ui.PlainTextSpellChecker.superClass_.disposeInternal.call(this);
 };
 
 
@@ -529,8 +539,10 @@ goog.ui.PlainTextSpellChecker.prototype.disposeInternal = function() {
  * @private
  */
 goog.ui.PlainTextSpellChecker.prototype.initAccessibility_ = function() {
-  goog.dom.a11y.setRole(this.overlay_, 'region');
-  goog.dom.a11y.setState(this.overlay_, 'live', 'assertive');
+  goog.asserts.assert(this.overlay_,
+      'The plain text spell checker DOM element cannot be null.');
+  goog.a11y.aria.setRole(this.overlay_, 'region');
+  goog.a11y.aria.setState(this.overlay_, 'live', 'assertive');
   this.overlay_.tabIndex = 0;
 
   /** @desc Title for Spell Checker's overlay.*/
@@ -596,7 +608,7 @@ goog.ui.PlainTextSpellChecker.prototype.handleOverlayKeyEvent = function(e) {
 goog.ui.PlainTextSpellChecker.prototype.navigate_ = function(direction) {
   var handled = false;
   var previous = direction == goog.ui.AbstractSpellChecker.Direction.PREVIOUS;
-  var lastId = goog.ui.AbstractSpellChecker.nextId_;
+  var lastId = goog.ui.AbstractSpellChecker.getNextId();
   var focusedId = this.focusedElementId_;
 
   var el;
@@ -622,7 +634,7 @@ goog.ui.PlainTextSpellChecker.prototype.navigate_ = function(direction) {
  * Handles correction menu actions.
  *
  * @param {goog.events.Event} event Action event.
- * @protected
+ * @override
  */
 goog.ui.PlainTextSpellChecker.prototype.onCorrectionAction = function(event) {
   goog.ui.PlainTextSpellChecker.superClass_.onCorrectionAction.call(this,
@@ -630,7 +642,7 @@ goog.ui.PlainTextSpellChecker.prototype.onCorrectionAction = function(event) {
 
   // In case of editWord base class has already set the focus (on the input),
   // otherwise set the focus back on the word.
-  if (event.target != this.menuEdit_) {
+  if (event.target != this.getMenuEdit()) {
     this.reFocus_();
   }
 };

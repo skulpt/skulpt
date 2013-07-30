@@ -1,4 +1,4 @@
-// Copyright 2010 Google Inc. All Rights Reserved
+// Copyright 2010 The Closure Library Authors. All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 /**
  * @fileoverview Behavior for combining two controls.
  *
-*
  * @see ../demos/split.html
  */
 
@@ -23,21 +22,16 @@ goog.provide('goog.ui.SplitBehavior');
 goog.provide('goog.ui.SplitBehavior.DefaultHandlers');
 
 goog.require('goog.Disposable');
-goog.require('goog.array');
 goog.require('goog.dispose');
 goog.require('goog.dom');
-goog.require('goog.dom.DomHelper');
+goog.require('goog.dom.NodeType');
 goog.require('goog.dom.classes');
-goog.require('goog.events');
 goog.require('goog.events.EventHandler');
-goog.require('goog.events.EventType');
-goog.require('goog.string');
-goog.require('goog.ui.Button.Side');
+goog.require('goog.ui.ButtonSide');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Component.Error');
-goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
 goog.require('goog.ui.decorate');
 goog.require('goog.ui.registry');
+
 
 
 /**
@@ -59,6 +53,7 @@ goog.require('goog.ui.registry');
  */
 goog.ui.SplitBehavior = function(first, second, opt_behaviorHandler,
     opt_eventType, opt_domHelper) {
+  goog.Disposable.call(this);
 
   /**
    * @type {goog.ui.Control}
@@ -138,17 +133,17 @@ goog.ui.SplitBehavior.CSS_CLASS = goog.getCssName('goog-split-behavior');
 goog.ui.SplitBehavior.DefaultHandlers = {
   NONE: goog.nullFunction,
   CAPTION: function(targetControl, e) {
-    var item = (/** @type {goog.ui.MenuItem} */e.target);
+    var item = /** @type {goog.ui.MenuItem} */ (e.target);
     var value = (/** @type {string} */((item && item.getValue()) || ''));
-    var button = (/** @type {goog.ui.Button} */targetControl);
+    var button = /** @type {goog.ui.Button} */ (targetControl);
     button.setCaption && button.setCaption(value);
-    button.setValue && button.setValue(value)
+    button.setValue && button.setValue(value);
   },
   VALUE: function(targetControl, e) {
-    var item = (/** @type {goog.ui.MenuItem} */e.target);
+    var item = /** @type {goog.ui.MenuItem} */ (e.target);
     var value = (/** @type {string} */(item && item.getValue()) || '');
-    var button = (/** @type {goog.ui.Button} */targetControl);
-    button.setValue && button.setValue(value)
+    var button = /** @type {goog.ui.Button} */ (targetControl);
+    button.setValue && button.setValue(value);
   }
 };
 
@@ -284,9 +279,7 @@ goog.ui.SplitBehavior.prototype.setActive = function(activate) {
 };
 
 
-/**
- * Disposes the behavior controls.
- */
+/** @override */
 goog.ui.SplitBehavior.prototype.disposeInternal = function() {
   this.setActive(false);
   goog.dispose(this.eventHandler_);
@@ -296,6 +289,7 @@ goog.ui.SplitBehavior.prototype.disposeInternal = function() {
   if (this.disposeSecond_) {
     goog.dispose(this.second_);
   }
+  goog.ui.SplitBehavior.superClass_.disposeInternal.call(this);
 };
 
 
@@ -313,9 +307,9 @@ goog.ui.SplitBehavior.prototype.decorateChildren_ = function(
     var child = childNodes[i];
     if (child.nodeType == goog.dom.NodeType.ELEMENT) {
       if (!this.first_) {
-        this.first_ = (/** @type {goog.ui.Control} */ goog.ui.decorate(child));
+        this.first_ = /** @type {goog.ui.Control} */ (goog.ui.decorate(child));
       } else if (!this.second_) {
-        this.second_ = (/** @type {goog.ui.Control} */ goog.ui.decorate(child));
+        this.second_ = /** @type {goog.ui.Control} */ (goog.ui.decorate(child));
         finished = true;
       }
     }
@@ -332,8 +326,8 @@ goog.ui.SplitBehavior.prototype.decorateChildren_ = function(
 goog.ui.SplitBehavior.prototype.collapseSides_ = function(first, second) {
   if (goog.isFunction(first.setCollapsed) &&
       goog.isFunction(second.setCollapsed)) {
-    first.setCollapsed(goog.ui.Button.Side.END);
-    second.setCollapsed(goog.ui.Button.Side.START);
+    first.setCollapsed(goog.ui.ButtonSide.END);
+    second.setCollapsed(goog.ui.ButtonSide.START);
   }
 };
 

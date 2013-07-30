@@ -27,6 +27,7 @@ goog.provide('goog.dom.browserrange.GeckoRange');
 goog.require('goog.dom.browserrange.W3cRange');
 
 
+
 /**
  * The constructor for Gecko specific browser ranges.
  * @param {Range} range The range object.
@@ -66,16 +67,20 @@ goog.dom.browserrange.GeckoRange.createFromNodes = function(startNode,
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.GeckoRange.prototype.selectInternal = function(
     selection, reversed) {
-  var anchorNode = reversed ? this.getEndNode() : this.getStartNode();
-  var anchorOffset = reversed ? this.getEndOffset() : this.getStartOffset();
-  var focusNode = reversed ? this.getStartNode() : this.getEndNode();
-  var focusOffset = reversed ? this.getStartOffset() : this.getEndOffset();
-
-  selection.collapse(anchorNode, anchorOffset);
-  if (anchorNode != focusNode || anchorOffset != focusOffset) {
-    selection.extend(focusNode, focusOffset);
+  if (!reversed || this.isCollapsed()) {
+    // The base implementation for select() is more robust, and works fine for
+    // collapsed and forward ranges.  This works around
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=773137, and is tested by
+    // range_test.html's testFocusedElementDisappears.
+    goog.base(this, 'selectInternal', selection, reversed);
+  } else {
+    // Reversed selection -- start with a caret on the end node, and extend it
+    // back to the start.  Unfortunately, collapse() fails when focus is
+    // invalid.
+    selection.collapse(this.getEndNode(), this.getEndOffset());
+    selection.extend(this.getStartNode(), this.getStartOffset());
   }
 };

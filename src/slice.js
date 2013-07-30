@@ -1,7 +1,7 @@
 /**
  * @constructor
- * @param {number} start
- * @param {number=} stop
+ * @param {null|number} start
+ * @param {null|number=} stop
  * @param {null|number=} step
  */
 Sk.builtin.slice = function slice(start, stop, step)

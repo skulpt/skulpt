@@ -23,8 +23,11 @@ goog.provide('goog.editor.plugins.Emoticons');
 
 goog.require('goog.dom.TagName');
 goog.require('goog.editor.Plugin');
+goog.require('goog.editor.range');
 goog.require('goog.functions');
 goog.require('goog.ui.emoji.Emoji');
+goog.require('goog.userAgent');
+
 
 
 /**
@@ -43,12 +46,12 @@ goog.inherits(goog.editor.plugins.Emoticons, goog.editor.Plugin);
 goog.editor.plugins.Emoticons.COMMAND = '+emoticon';
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.Emoticons.prototype.getTrogClassId =
     goog.functions.constant(goog.editor.plugins.Emoticons.COMMAND);
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.plugins.Emoticons.prototype.isSupportedCommand = function(
     command) {
   return command == goog.editor.plugins.Emoticons.COMMAND;
@@ -59,11 +62,13 @@ goog.editor.plugins.Emoticons.prototype.isSupportedCommand = function(
  * Inserts an emoticon into the editor at the cursor location. Places the
  * cursor to the right of the inserted emoticon.
  * @param {string} command Command to execute.
- * @param {goog.ui.emoji.Emoji} emoji Emoji to insert.
+ * @param {*=} opt_arg Emoji to insert.
  * @return {Object|undefined} The result of the command.
+ * @override
  */
 goog.editor.plugins.Emoticons.prototype.execCommandInternal = function(
-    command, emoji) {
+    command, opt_arg) {
+  var emoji = /** @type {goog.ui.emoji.Emoji} */ (opt_arg);
   var dom = this.getFieldDomHelper();
   var img = dom.createDom(goog.dom.TagName.IMG, {
     'src': emoji.getUrl(),
@@ -71,12 +76,13 @@ goog.editor.plugins.Emoticons.prototype.execCommandInternal = function(
   });
   img.setAttribute(goog.ui.emoji.Emoji.ATTRIBUTE, emoji.getId());
 
-  this.fieldObject.getRange().replaceContentsWithNode(img);
+  this.getFieldObject().getRange().replaceContentsWithNode(img);
 
-  // IE does the right thing with the cursor, and has a js error when we try
-  // to place the cursor manually
-  if (!goog.userAgent.IE) {
+  // IE8 does the right thing with the cursor, and has a js error when we try
+  // to place the cursor manually.
+  // IE9 loses the cursor when the window is focused, so focus first.
+  if (!goog.userAgent.IE || goog.userAgent.isDocumentModeOrHigher(9)) {
+    this.getFieldObject().focus();
     goog.editor.range.placeCursorNextTo(img, false);
-    dom.getWindow().focus();
   }
 };

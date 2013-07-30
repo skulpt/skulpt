@@ -17,13 +17,13 @@
  * must be a successfully loaded in order for the entire load to be considered
  * a success.
  *
-*
  */
 
 goog.provide('goog.net.BulkLoaderHelper');
 
 goog.require('goog.Disposable');
-goog.require('goog.debug.Logger');
+goog.require('goog.log');
+
 
 
 /**
@@ -54,11 +54,11 @@ goog.inherits(goog.net.BulkLoaderHelper, goog.Disposable);
 
 /**
  * A logger.
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @private
  */
 goog.net.BulkLoaderHelper.prototype.logger_ =
-    goog.debug.Logger.getLogger('goog.net.BulkLoaderHelper');
+    goog.log.getLogger('goog.net.BulkLoaderHelper');
 
 
 /**
@@ -118,9 +118,7 @@ goog.net.BulkLoaderHelper.prototype.isLoadComplete = function() {
 };
 
 
-/**
- * Disposes of the BulkLoaderHelper.
- */
+/** @override */
 goog.net.BulkLoaderHelper.prototype.disposeInternal = function() {
   goog.net.BulkLoaderHelper.superClass_.disposeInternal.call(this);
 

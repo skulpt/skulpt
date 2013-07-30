@@ -24,6 +24,7 @@ goog.provide('goog.graphics.ext.Image');
 goog.require('goog.graphics.ext.Element');
 
 
+
 /**
  * Wrapper for a graphics image element.
  * @param {goog.graphics.ext.Group} group Parent for this element.
@@ -43,6 +44,7 @@ goog.inherits(goog.graphics.ext.Image, goog.graphics.ext.Element);
 /**
  * Redraw the image.  Called when the coordinate system is changed.
  * @protected
+ * @override
  */
 goog.graphics.ext.Image.prototype.redraw = function() {
   goog.graphics.ext.Image.superClass_.redraw.call(this);

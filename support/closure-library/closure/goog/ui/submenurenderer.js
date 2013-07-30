@@ -15,18 +15,19 @@
 /**
  * @fileoverview Renderer for {@link goog.ui.SubMenu}s.
  *
-*
  */
 
 goog.provide('goog.ui.SubMenuRenderer');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.a11y');
-goog.require('goog.dom.a11y.State');
 goog.require('goog.dom.classes');
 goog.require('goog.style');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuItemRenderer');
+
 
 
 /**
@@ -57,14 +58,25 @@ goog.ui.SubMenuRenderer.CSS_CLASS = goog.getCssName('goog-submenu');
 
 
 /**
+ * The CSS class for submenus that displays the submenu arrow.
+ * @type {string}
+ * @private
+ */
+goog.ui.SubMenuRenderer.CSS_CLASS_SUBMENU_ =
+    goog.getCssName('goog-submenu-arrow');
+
+
+/**
  * Overrides {@link goog.ui.MenuItemRenderer#createDom} by adding
  * the additional class 'goog-submenu' to the created element,
  * and passes the element to {@link goog.ui.SubMenuItemRenderer#addArrow_}
  * to add an child element that can be styled to show an arrow.
- * @param {goog.ui.SubMenu} subMenu SubMenu to render.
+ * @param {goog.ui.Control} control goog.ui.SubMenu to render.
  * @return {Element} Root element for the item.
+ * @override
  */
-goog.ui.SubMenuRenderer.prototype.createDom = function(subMenu) {
+goog.ui.SubMenuRenderer.prototype.createDom = function(control) {
+  var subMenu = /** @type {goog.ui.SubMenu} */ (control);
   var element = goog.ui.SubMenuRenderer.superClass_.createDom.call(this,
                                                                    subMenu);
   goog.dom.classes.add(element, goog.ui.SubMenuRenderer.CSS_CLASS);
@@ -81,11 +93,13 @@ goog.ui.SubMenuRenderer.prototype.createDom = function(subMenu) {
  * Also searches the element for a child with the class goog-menu. If a
  * matching child element is found, creates a goog.ui.Menu, uses it to
  * decorate the child element, and passes that menu to subMenu.setMenu.
- * @param {goog.ui.SubMenu} subMenu SubMenu to render.
+ * @param {goog.ui.Control} control goog.ui.SubMenu to render.
  * @param {Element} element Element to decorate.
  * @return {Element} Root element for the item.
+ * @override
  */
-goog.ui.SubMenuRenderer.prototype.decorate = function(subMenu, element) {
+goog.ui.SubMenuRenderer.prototype.decorate = function(control, element) {
+  var subMenu = /** @type {goog.ui.SubMenu} */ (control);
   element = goog.ui.SubMenuRenderer.superClass_.decorate.call(
       this, subMenu, element);
   goog.dom.classes.add(element, goog.ui.SubMenuRenderer.CSS_CLASS);
@@ -99,12 +113,37 @@ goog.ui.SubMenuRenderer.prototype.decorate = function(subMenu, element) {
     var childMenuEl = childMenuEls[0];
     // Hide the menu element before attaching it to the document body; see
     // bug 1089244.
-    goog.style.showElement(childMenuEl, false);
+    goog.style.setElementShown(childMenuEl, false);
     subMenu.getDomHelper().getDocument().body.appendChild(childMenuEl);
     childMenu.decorate(childMenuEl);
     subMenu.setMenu(childMenu, true);
   }
   return element;
+};
+
+
+/**
+ * Takes a menu item's root element, and sets its content to the given text
+ * caption or DOM structure.  Overrides the superclass immplementation by
+ * making sure that the submenu arrow structure is preserved.
+ * @param {Element} element The item's root element.
+ * @param {goog.ui.ControlContent} content Text caption or DOM structure to be
+ *     set as the item's content.
+ * @override
+ */
+goog.ui.SubMenuRenderer.prototype.setContent = function(element, content) {
+  // Save the submenu arrow element, if present.
+  var contentElement = this.getContentElement(element);
+  var arrowElement = contentElement && contentElement.lastChild;
+  goog.ui.SubMenuRenderer.superClass_.setContent.call(this, element, content);
+  // If the arrowElement was there, is no longer there, and really was an arrow,
+  // reappend it.
+  if (arrowElement &&
+      contentElement.lastChild != arrowElement &&
+      goog.dom.classes.has(arrowElement,
+          goog.ui.SubMenuRenderer.CSS_CLASS_SUBMENU_)) {
+    contentElement.appendChild(arrowElement);
+  }
 };
 
 
@@ -116,19 +155,25 @@ goog.ui.SubMenuRenderer.prototype.decorate = function(subMenu, element) {
  * and the arrow will be moved up to be the first child in the SubMenu's
  * element. Otherwise the arrow will have the class goog-submenu-arrow-ltr,
  * and be kept as the last child of the SubMenu's element.
- * @param {goog.ui.SubMenu} subMenu SubMenu whose DOM is to be initialized
- *     as it enters the document.
+ * @param {goog.ui.Control} control goog.ui.SubMenu whose DOM is to be
+ *     initialized as it enters the document.
+ * @override
  */
-goog.ui.SubMenuRenderer.prototype.initializeDom = function(subMenu) {
+goog.ui.SubMenuRenderer.prototype.initializeDom = function(control) {
+  var subMenu = /** @type {goog.ui.SubMenu} */ (control);
   goog.ui.SubMenuRenderer.superClass_.initializeDom.call(this, subMenu);
   var element = subMenu.getContentElement();
   var arrow = subMenu.getDomHelper().getElementsByTagNameAndClass(
-      'span', goog.getCssName('goog-submenu-arrow'), element)[0];
+      'span', goog.ui.SubMenuRenderer.CSS_CLASS_SUBMENU_, element)[0];
   goog.ui.SubMenuRenderer.setArrowTextContent_(subMenu, arrow);
   if (arrow != element.lastChild) {
     element.appendChild(arrow);
   }
-  goog.dom.a11y.setState(subMenu.getElement(), goog.dom.a11y.State.HASPOPUP,
+  var subMenuElement = subMenu.getElement();
+  goog.asserts.assert(subMenuElement,
+      'The sub menu DOM element cannot be null.');
+  goog.a11y.aria.setState(subMenuElement,
+      goog.a11y.aria.State.HASPOPUP,
       'true');
 };
 
@@ -142,7 +187,7 @@ goog.ui.SubMenuRenderer.prototype.initializeDom = function(subMenu) {
  */
 goog.ui.SubMenuRenderer.prototype.addArrow_ = function(subMenu, element) {
   var arrow = subMenu.getDomHelper().createDom('span');
-  arrow.className = goog.getCssName('goog-submenu-arrow');
+  arrow.className = goog.ui.SubMenuRenderer.CSS_CLASS_SUBMENU_;
   goog.ui.SubMenuRenderer.setArrowTextContent_(subMenu, arrow);
   this.getContentElement(element).appendChild(arrow);
 };

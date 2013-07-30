@@ -3,10 +3,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.testing.ExpectedFailures</title>
 <script src="../base.js"></script>
 <script>
@@ -54,13 +55,11 @@ See the COPYING file for details.
 
   function testDoNotPreventException() {
     var ex = 'exception';
-    try {
-      expectedFailures.expectFailureFor(false);
+    expectedFailures.expectFailureFor(false);
+    var e = assertThrows('Should have rethrown exception', function() {
       expectedFailures.handleException(ex);
-      fail('Should have rethrown exception');
-    } catch (e) {
-      assertEquals('Should rethrow same exepction', e, ex);
-    }
+    });
+    assertEquals('Should rethrow same exception', ex, e);
   }
 
   function testExpectedFailureDidNotOccur() {
@@ -94,16 +93,14 @@ See the COPYING file for details.
   function testRunStrict() {
     expectedFailures.expectFailureFor(true);
 
-    try {
+    var ex = assertThrows(function() {
       expectedFailures.run(function() {
         // Doesn't fail!
       });
-
-      fail('Should have thrown exception');
-    } catch (ex) {
-      assertEquals(ex.message, 'Call to fail()\n' +
-          'Expected a test failure in \'testRunStrict\' but the test passed.');
-    }
+    });
+    assertContains(
+        "Expected a test failure in 'testRunStrict' but the test passed.",
+        ex.message);
   }
 
   function testRunLenient() {

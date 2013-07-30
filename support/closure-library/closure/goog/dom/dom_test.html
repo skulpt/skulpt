@@ -3,7 +3,7 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
@@ -11,6 +11,7 @@ See the COPYING file for details.
  When changing this, make sure that dom_quirks_test.html is kept in sync.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.dom</title>
 <script src="../base.js"></script>
 <script>
@@ -37,12 +38,14 @@ See the COPYING file for details.
 
   <div><div><div id="testEl2"></div></div></div>
 
+  <!-- classbefore and classafter are for making sure that getElementsByClass
+       works when multiple classes are specified. -->
   <div id="span-container">
-    <span id="span1" class="test1"></span>
+    <span id="span1" class="classbefore test1"></span>
     <span id="span2" class="test1"></span>
     <span id="span3" class="test2"></span>
     <span id="span4" class="test3"></span>
-    <span id="span5" class="test1"></span>
+    <span id="span5" class="test1 classafter"></span>
   </div>
 
   <div class="mixedCaseClass"></div>
@@ -97,6 +100,14 @@ See the COPYING file for details.
   <div id="myIframeDiv2" style="height:23px;font-size:1px;line-height:0;">hello world</div>
 
   <iframe id="myIframe" style="width:400px;height:200px;"></iframe>
+
+  <a id='link' href='foo.html'>Foo</a>
+
+  <svg id="testSvg" width="100" height="100" viewPort="0 0 100 100" version="1.0">
+    <g id="testG">
+      <rect id="testRect" x="10" y="10" width="50" height="50"/>
+    </g>
+  </svg>
 
 <script src="dom_test.js"></script></body>
 </html>

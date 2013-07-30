@@ -20,25 +20,32 @@
  * be used directly.
  *
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author tildahl@google.com (Michael Tildahl)
  */
 
 goog.provide('goog.ui.editor.Bubble');
 
-goog.require('goog.debug.Logger');
 goog.require('goog.dom');
+goog.require('goog.dom.TagName');
 goog.require('goog.dom.ViewportSizeMonitor');
+goog.require('goog.dom.classes');
 goog.require('goog.editor.style');
-goog.require('goog.events');
 goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
+goog.require('goog.log');
+goog.require('goog.math.Box');
+goog.require('goog.object');
 goog.require('goog.positioning');
+goog.require('goog.positioning.Corner');
+goog.require('goog.positioning.Overflow');
+goog.require('goog.positioning.OverflowStatus');
 goog.require('goog.string');
 goog.require('goog.style');
-goog.require('goog.ui.Component.EventType');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.PopupBase');
-goog.require('goog.ui.PopupBase.EventType');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -56,7 +63,7 @@ goog.ui.editor.Bubble = function(parent, zIndex) {
    * @type {!goog.dom.DomHelper}
    * @private
    */
-  this.dom_ = new goog.dom.getDomHelper(parent);
+  this.dom_ = goog.dom.getDomHelper(parent);
 
   /**
    * Event handler for this bubble.
@@ -90,7 +97,7 @@ goog.ui.editor.Bubble = function(parent, zIndex) {
       this.dom_.createDom(goog.dom.TagName.DIV,
           {'className': goog.ui.editor.Bubble.BUBBLE_CLASSNAME});
 
-  goog.style.showElement(this.bubbleContainer_, false);
+  goog.style.setElementShown(this.bubbleContainer_, false);
   goog.dom.appendChild(parent, this.bubbleContainer_);
   goog.style.setStyle(this.bubbleContainer_, 'zIndex', zIndex);
 
@@ -150,14 +157,14 @@ goog.ui.editor.Bubble.prototype.createBubbleDom = function(dom, container) {
 
 /**
  * A logger for goog.ui.editor.Bubble.
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @protected
  */
 goog.ui.editor.Bubble.prototype.logger =
-    goog.debug.Logger.getLogger('goog.ui.editor.Bubble');
+    goog.log.getLogger('goog.ui.editor.Bubble');
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.editor.Bubble.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
 
@@ -174,7 +181,6 @@ goog.ui.editor.Bubble.prototype.disposeInternal = function() {
 
 /**
  * @return {Element} The element that where the bubble's contents go.
- * @protected
  */
 goog.ui.editor.Bubble.prototype.getContentElement = function() {
   return this.bubbleContents_;
@@ -341,6 +347,8 @@ goog.ui.editor.Bubble.prototype.handlePopupHide = function() {
 
   // Update the state to reflect no panels.
   this.panels_ = {};
+  goog.dom.classes.remove(this.bubbleContainer_,
+      goog.getCssName('tr_multi_bubble'));
 
   this.eventHandler_.removeAll();
   this.dispatchEvent(goog.ui.Component.EventType.HIDE);
@@ -426,7 +434,7 @@ goog.ui.editor.Bubble.prototype.reposition = function() {
         goog.positioning.Overflow.ADJUST_X |
         goog.positioning.Overflow.ADJUST_Y);
     if (status & goog.positioning.OverflowStatus.FAILED) {
-      this.logger.warning(
+      goog.log.warning(this.logger,
           'reposition(): positionAtAnchor() failed with ' + status);
     }
   }
@@ -461,6 +469,7 @@ goog.ui.editor.Bubble.prototype.positionAtAnchor_ = function(
       targetElement, targetCorner, this.bubbleContainer_,
       bubbleCorner, null, goog.ui.editor.Bubble.MARGIN_BOX_, overflow);
 };
+
 
 
 /**

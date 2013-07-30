@@ -1,13 +1,24 @@
 #!/usr/bin/env python
 #
 # Copyright 2009 The Closure Library Authors. All Rights Reserved.
-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS-IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Utility for Closure Library dependency calculation.
 
 ClosureBuilder scans source files to build dependency info.  From the
-dependencies, the script can produce a deps.js file, a manifest in dependency
-order, a concatenated script, or compiled output from the Closure Compiler.
+dependencies, the script can produce a manifest in dependency order,
+a concatenated script, or compiled output from the Closure Compiler.
 
 Paths to files can be expressed as individual arguments to the tool (intended
 for use with find and xargs).  As a convenience, --root can be used to specify
@@ -16,7 +27,7 @@ all JS files below a directory.
 usage: %prog [options] [file1.js file2.js ...]
 """
 
-
+__author__ = 'nnaze@google.com (Nathan Naze)'
 
 
 import logging
@@ -57,6 +68,7 @@ def _GetOptionsParser():
   parser.add_option('--root',
                     dest='roots',
                     action='append',
+                    default=[],
                     help='The paths that should be traversed to build the '
                     'dependencies.')
   parser.add_option('-o',
@@ -81,7 +93,17 @@ def _GetOptionsParser():
                     dest='compiler_flags',
                     default=[],
                     action='append',
-                    help='Additional flags to pass to the Closure compiler.')
+                    help='Additional flags to pass to the Closure compiler. '
+                    'To pass multiple flags, --compiler_flags has to be '
+                    'specified multiple times.')
+  parser.add_option('-j',
+                    '--jvm_flags',
+                    dest='jvm_flags',
+                    default=[],
+                    action='append',
+                    help='Additional flags to pass to the JVM compiler. '
+                    'To pass multiple flags, --jvm_flags has to be '
+                    'specified multiple times.')
   parser.add_option('--output_file',
                     dest='output_file',
                     action='store',
@@ -120,27 +142,24 @@ def _GetClosureBaseFile(sources):
   Returns:
     The _PathSource representing the base Closure file.
   """
-  filtered_base_files = filter(_IsClosureBaseFile, sources)
-  if not filtered_base_files:
+  base_files = [
+      js_source for js_source in sources if _IsClosureBaseFile(js_source)]
+
+  if not base_files:
     logging.error('No Closure base.js file found.')
     sys.exit(1)
-  if len(filtered_base_files) > 1:
+  if len(base_files) > 1:
     logging.error('More than one Closure base.js files found at these paths:')
-    for base_file in filtered_base_files:
+    for base_file in base_files:
       logging.error(base_file.GetPath())
     sys.exit(1)
-  return filtered_base_files[0]
+  return base_files[0]
 
 
 def _IsClosureBaseFile(js_source):
   """Returns true if the given _PathSource is the Closure base.js source."""
-  if os.path.basename(js_source.GetPath()) == 'base.js':
-    # Sanity check that this is the Closure base file.  Check that this
-    # is where goog is defined.
-    for line in js_source.GetSource().splitlines():
-      if line.startswith('var goog = goog || {};'):
-        return True
-  return False
+  return (os.path.basename(js_source.GetPath()) == 'base.js' and
+          js_source.provides == set(['goog']))
 
 
 class _PathSource(source.Source):
@@ -181,8 +200,8 @@ def main():
       sources.add(_PathSource(js_path))
 
   # Add scripts specified on the command line.
-  for path in args:
-    sources.add(source.Source(_PathSource(path)))
+  for js_path in args:
+    sources.add(_PathSource(js_path))
 
   logging.info('%s sources scanned.', len(sources))
 
@@ -224,17 +243,15 @@ def main():
                     '"compiled"')
       sys.exit(2)
 
+    # Will throw an error if the compilation fails.
     compiled_source = jscompiler.Compile(
         options.compiler_jar,
         [js_source.GetPath() for js_source in deps],
-        options.compiler_flags)
+        jvm_flags=options.jvm_flags,
+        compiler_flags=options.compiler_flags)
 
-    if compiled_source is None:
-      logging.error('JavaScript compilation failed.')
-      sys.exit(1)
-    else:
-      logging.info('JavaScript compilation succeeded.')
-      out.write(compiled_source)
+    logging.info('JavaScript compilation succeeded.')
+    out.write(compiled_source)
 
   else:
     logging.error('Invalid value for --output flag.')

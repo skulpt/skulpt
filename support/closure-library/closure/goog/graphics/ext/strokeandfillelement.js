@@ -24,6 +24,7 @@ goog.provide('goog.graphics.ext.StrokeAndFillElement');
 goog.require('goog.graphics.ext.Element');
 
 
+
 /**
  * Interface for a graphics element that has a stroke and fill.
  * This is the base interface for ellipse, rectangle and other
@@ -62,6 +63,7 @@ goog.graphics.ext.StrokeAndFillElement.prototype.setStroke = function(stroke) {
 /**
  * Redraw the rectangle.  Called when the coordinate system is changed.
  * @protected
+ * @override
  */
 goog.graphics.ext.StrokeAndFillElement.prototype.redraw = function() {
   this.getWrapper().reapplyStroke();

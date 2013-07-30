@@ -177,10 +177,6 @@ Sk.builtin.lng.prototype.nb$multiply = function(other)
 		return new Sk.builtin.lng(this.biginteger.multiply(other.biginteger));
 	}
 
-	if (typeof(other) == 'float') {
-		return parseFloat(this.biginteger.toString()) * other;
-	}
-
 	if (other instanceof Sk.builtin.biginteger) {
 		return new Sk.builtin.lng(this.biginteger.multiply(other));
 	}

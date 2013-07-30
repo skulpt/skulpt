@@ -4,7 +4,7 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 
 Author: nicksantos@google.com (Nick Santos)
@@ -12,11 +12,13 @@ Author: nicksantos@google.com (Nick Santos)
 
 <html>
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>JsUnit tests for goog.module.ModuleLoadCallback</title>
 <script src="../base.js"></script>
 <script>
 
 goog.require('goog.debug.ErrorHandler');
+goog.require('goog.debug.entryPointRegistry');
 goog.require('goog.functions');
 goog.require('goog.module.ModuleLoadCallback');
 goog.require('goog.testing.jsunit');
@@ -35,7 +37,7 @@ function testProtectEntryPoint() {
 
   var errorFn = goog.testing.recordFunction();
   var errorHandler = new goog.debug.ErrorHandler(errorFn);
-  goog.module.ModuleLoadCallback.protectModuleLoadSequence(errorHandler);
+  goog.debug.entryPointRegistry.monitorAll(errorHandler);
 
   assertEquals(0, errorFn.getCallCount());
   assertThrows(goog.bind(callback1.execute, callback1));

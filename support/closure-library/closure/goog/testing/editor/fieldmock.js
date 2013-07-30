@@ -24,6 +24,9 @@ goog.require('goog.dom');
 goog.require('goog.dom.Range');
 goog.require('goog.editor.Field');
 goog.require('goog.testing.LooseMock');
+goog.require('goog.testing.mockmatchers');
+
+
 
 /**
  * Mock of goog.editor.Field.
@@ -37,6 +40,7 @@ goog.require('goog.testing.LooseMock');
  *     from the window every time getRange() is called.
  * @constructor
  * @extends {goog.testing.LooseMock}
+ * @suppress {missingProperties} Mocks do not fit in the type system well.
  */
 goog.testing.editor.FieldMock =
     function(opt_window, opt_appWindow, opt_range) {
@@ -65,6 +69,14 @@ goog.testing.editor.FieldMock =
   this.$anyTimes();
   this.$returns(0);
 
+  this.restoreSavedRange(goog.testing.mockmatchers.ignoreArgument);
+  this.$anyTimes();
+  this.$does(function(range) {
+    if (range) {
+      range.restore();
+    }
+    this.focus();
+  });
 
   // These methods cannot be set on the prototype, because the prototype
   // gets stepped on by the mock framework.

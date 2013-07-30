@@ -26,17 +26,20 @@
  * 0 = Clear (if supported)
  * 1 - 9 = nth star
  *
-*
  * @see ../demos/ratings.html
  */
 
 goog.provide('goog.ui.Ratings');
 goog.provide('goog.ui.Ratings.EventType');
 
-goog.require('goog.dom.a11y');
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.asserts');
 goog.require('goog.dom.classes');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
+
 
 
 /**
@@ -73,6 +76,7 @@ goog.inherits(goog.ui.Ratings, goog.ui.Component);
  */
 goog.ui.Ratings.CSS_CLASS = goog.getCssName('goog-ratings');
 
+
 /**
  * The last index to be highlighted
  * @type {number}
@@ -96,6 +100,7 @@ goog.ui.Ratings.prototype.selectedIndex_ = -1;
  */
 goog.ui.Ratings.prototype.attachedFormField_ = null;
 
+
 /**
  * Enums for Ratings event type.
  * @enum {string}
@@ -106,6 +111,7 @@ goog.ui.Ratings.EventType = {
   HIGHLIGHT: 'highlight',
   UNHIGHLIGHT: 'unhighlight'
 };
+
 
 /**
  * Decorate a HTML structure already in the document.  Expects the structure:
@@ -122,6 +128,7 @@ goog.ui.Ratings.EventType = {
  * hidden when the decoration occurs.
  *
  * @param {Element} el Div element to decorate.
+ * @override
  */
 goog.ui.Ratings.prototype.decorateInternal = function(el) {
   var select = el.getElementsByTagName('select')[0];
@@ -145,24 +152,26 @@ goog.ui.Ratings.prototype.decorateInternal = function(el) {
 /**
  * Render the rating widget inside the provided element. This will override the
  * current content of the element.
+ * @override
  */
 goog.ui.Ratings.prototype.enterDocument = function() {
   var el = this.getElement();
+  goog.asserts.assert(el, 'The DOM element for ratings cannot be null.');
   el.tabIndex = 0;
-  goog.dom.classes.add(el, goog.getCssName('goog-ratings'));
-  goog.dom.a11y.setRole(el, 'slider');
-  goog.dom.a11y.setState(el, 'valuemin', 0);
+  goog.dom.classes.add(el, this.getCssClass());
+  goog.a11y.aria.setRole(el, goog.a11y.aria.Role.SLIDER);
+  goog.a11y.aria.setState(el, goog.a11y.aria.State.VALUEMIN, 0);
   var max = this.ratings_.length - 1;
-  goog.dom.a11y.setState(el, 'valuemax', max);
+  goog.a11y.aria.setState(el, goog.a11y.aria.State.VALUEMAX, max);
   var handler = this.getHandler();
   handler.listen(el, 'keydown', this.onKeyDown_);
 
   // Create the elements for the stars
   for (var i = 0; i < this.ratings_.length; i++) {
     var star = this.getDomHelper().createDom('span', {
-        'title': this.ratings_[i],
-        'class': this.getClassName_(i, false),
-        'index': i});
+      'title': this.ratings_[i],
+      'class': this.getClassName_(i, false),
+      'index': i});
     this.stars_.push(star);
     el.appendChild(star);
   }
@@ -179,6 +188,7 @@ goog.ui.Ratings.prototype.enterDocument = function() {
  * Should be called when the widget is removed from the document but may be
  * reused.  This removes all the listeners the widget has attached and destroys
  * the DOM nodes it uses.
+ * @override
  */
 goog.ui.Ratings.prototype.exitDocument = function() {
   goog.ui.Ratings.superClass_.exitDocument.call(this);
@@ -189,7 +199,7 @@ goog.ui.Ratings.prototype.exitDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Ratings.prototype.disposeInternal = function() {
   goog.ui.Ratings.superClass_.disposeInternal.call(this);
   this.ratings_.length = 0;
@@ -223,9 +233,12 @@ goog.ui.Ratings.prototype.setSelectedIndex = function(index) {
         this.attachedFormField_.value =
             /** @type {string} */ (this.getValue());
       }
-      goog.dom.a11y.setState(this.getElement(),
-        'valuenow',
-        this.ratings_[index]);
+      var ratingsElement = this.getElement();
+      goog.asserts.assert(ratingsElement,
+          'The DOM ratings element cannot be null.');
+      goog.a11y.aria.setState(ratingsElement,
+          goog.a11y.aria.State.VALUENOW,
+          this.ratings_[index]);
     }
     this.dispatchEvent(goog.ui.Ratings.EventType.CHANGE);
   }

@@ -15,16 +15,31 @@
 /**
  * @fileoverview Utilities for manipulating arrays.
  *
-*
-*
-*
  */
 
 
 goog.provide('goog.array');
+goog.provide('goog.array.ArrayLike');
 
 goog.require('goog.asserts');
 
+
+/**
+ * @define {boolean} NATIVE_ARRAY_PROTOTYPES indicates whether the code should
+ * rely on Array.prototype functions, if available.
+ *
+ * The Array.prototype functions can be defined by external libraries like
+ * Prototype and setting this flag to false forces closure to use its own
+ * goog.array implementation.
+ *
+ * If your javascript can be loaded by a third party site and you are wary about
+ * relying on the prototype functions, specify
+ * "--define goog.NATIVE_ARRAY_PROTOTYPES=false" to the JSCompiler.
+ *
+ * Setting goog.TRUSTED_SITE to false will automatically set
+ * NATIVE_ARRAY_PROTOTYPES to false.
+ */
+goog.define('goog.NATIVE_ARRAY_PROTOTYPES', goog.TRUSTED_SITE);
 
 
 /**
@@ -50,7 +65,7 @@ goog.array.peek = function(array) {
 goog.array.ARRAY_PROTOTYPE_ = Array.prototype;
 
 
-// NOTE(user): Since most of the array functions are generic it allows you to
+// NOTE(arv): Since most of the array functions are generic it allows you to
 // pass an array-like object. Strings have a length and are considered array-
 // like. However, the 'in' operator does not work on strings so we cannot just
 // use the array path even if the browser supports indexing into strings. We
@@ -69,10 +84,10 @@ goog.array.ARRAY_PROTOTYPE_ = Array.prototype;
  *     omitted the search starts at index 0.
  * @return {number} The index of the first matching array element.
  */
-goog.array.indexOf = goog.array.ARRAY_PROTOTYPE_.indexOf ?
+goog.array.indexOf = goog.NATIVE_ARRAY_PROTOTYPES &&
+                     goog.array.ARRAY_PROTOTYPE_.indexOf ?
     function(arr, obj, opt_fromIndex) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       return goog.array.ARRAY_PROTOTYPE_.indexOf.call(arr, obj, opt_fromIndex);
     } :
@@ -109,10 +124,10 @@ goog.array.indexOf = goog.array.ARRAY_PROTOTYPE_.indexOf ?
  *     omitted the search starts at the end of the array.
  * @return {number} The index of the last matching array element.
  */
-goog.array.lastIndexOf = goog.array.ARRAY_PROTOTYPE_.lastIndexOf ?
+goog.array.lastIndexOf = goog.NATIVE_ARRAY_PROTOTYPES &&
+                         goog.array.ARRAY_PROTOTYPE_.lastIndexOf ?
     function(arr, obj, opt_fromIndex) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       // Firefox treats undefined and null as 0 in the fromIndex argument which
       // leads it to always return -1
@@ -143,25 +158,21 @@ goog.array.lastIndexOf = goog.array.ARRAY_PROTOTYPE_.lastIndexOf ?
 
 
 /**
- * Calls a function for each element in an array.
- *
+ * Calls a function for each element in an array. Skips holes in the array.
  * See {@link http://tinyurl.com/developer-mozilla-org-array-foreach}
  *
- * @param {goog.array.ArrayLike} arr Array or array like object over
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array like object over
  *     which to iterate.
- * @param {Function} f The function to call for every element. This function
- *     takes 3 arguments (the element, the index and the array). The return
- *     value is ignored. The function is called only for indexes of the array
- *     which have assigned values; it is not called for indexes which have
- *     been deleted or which have never been assigned values.
- *
- * @param {Object=} opt_obj The object to be used as the value of 'this'
- *     within f.
+ * @param {?function(this: S, T, number, ?): ?} f The function to call for every
+ *     element. This function takes 3 arguments (the element, the index and the
+ *     array). The return value is ignored.
+ * @param {S=} opt_obj The object to be used as the value of 'this' within f.
+ * @template T,S
  */
-goog.array.forEach = goog.array.ARRAY_PROTOTYPE_.forEach ?
+goog.array.forEach = goog.NATIVE_ARRAY_PROTOTYPES &&
+                     goog.array.ARRAY_PROTOTYPE_.forEach ?
     function(arr, f, opt_obj) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       goog.array.ARRAY_PROTOTYPE_.forEach.call(arr, f, opt_obj);
     } :
@@ -180,12 +191,15 @@ goog.array.forEach = goog.array.ARRAY_PROTOTYPE_.forEach ?
  * Calls a function for each element in an array, starting from the last
  * element rather than the first.
  *
- * @param {goog.array.ArrayLike} arr The array over which to iterate.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this: S, T, number, ?): ?} f The function to call for every
+ *     element. This function
  *     takes 3 arguments (the element, the index and the array). The return
  *     value is ignored.
- * @param {Object=} opt_obj The object to be used as the value of 'this'
+ * @param {S=} opt_obj The object to be used as the value of 'this'
  *     within f.
+ * @template T,S
  */
 goog.array.forEachRight = function(arr, f, opt_obj) {
   var l = arr.length;  // must be fixed during loop... see docs
@@ -204,20 +218,23 @@ goog.array.forEachRight = function(arr, f, opt_obj) {
  *
  * See {@link http://tinyurl.com/developer-mozilla-org-array-filter}
  *
- * @param {goog.array.ArrayLike} arr The array over which to iterate.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?):boolean} f The function to call for
+ *     every element. This function
  *     takes 3 arguments (the element, the index and the array) and must
  *     return a Boolean. If the return value is true the element is added to the
  *     result array. If it is false the element is not included.
- * @param {Object=} opt_obj The object to be used as the value of 'this'
+ * @param {S=} opt_obj The object to be used as the value of 'this'
  *     within f.
  * @return {!Array} a new array in which only elements that passed the test are
  *     present.
+ * @template T,S
  */
-goog.array.filter = goog.array.ARRAY_PROTOTYPE_.filter ?
+goog.array.filter = goog.NATIVE_ARRAY_PROTOTYPES &&
+                    goog.array.ARRAY_PROTOTYPE_.filter ?
     function(arr, f, opt_obj) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       return goog.array.ARRAY_PROTOTYPE_.filter.call(arr, f, opt_obj);
     } :
@@ -244,18 +261,21 @@ goog.array.filter = goog.array.ARRAY_PROTOTYPE_.filter ?
  *
  * See {@link http://tinyurl.com/developer-mozilla-org-array-map}
  *
- * @param {goog.array.ArrayLike} arr The array over which to iterate.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?):?} f The function to call for every
+ *     element. This function
  *     takes 3 arguments (the element, the index and the array) and should
  *     return something. The result will be inserted into a new array.
- * @param {Object=} opt_obj The object to be used as the value of 'this'
+ * @param {S=} opt_obj The object to be used as the value of 'this'
  *     within f.
  * @return {!Array} a new array with the results from f.
+ * @template T,S
  */
-goog.array.map = goog.array.ARRAY_PROTOTYPE_.map ?
+goog.array.map = goog.NATIVE_ARRAY_PROTOTYPES &&
+                 goog.array.ARRAY_PROTOTYPE_.map ?
     function(arr, f, opt_obj) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       return goog.array.ARRAY_PROTOTYPE_.map.call(arr, f, opt_obj);
     } :
@@ -282,16 +302,19 @@ goog.array.map = goog.array.ARRAY_PROTOTYPE_.map ?
  * goog.array.reduce(a, function(r, v, i, arr) {return r + v;}, 0);
  * returns 10
  *
- * @param {goog.array.ArrayLike} arr The array over which to iterate.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, R, T, number, ?) : R} f The function to call for
+ *     every element. This function
  *     takes 4 arguments (the function's previous result or the initial value,
  *     the value of the current array element, the current array index, and the
  *     array itself)
  *     function(previousValue, currentValue, index, array).
- * @param {*} val The initial value to pass into the function on the first call.
- * @param {Object=} opt_obj  The object to be used as the value of 'this'
+ * @param {?} val The initial value to pass into the function on the first call.
+ * @param {S=} opt_obj  The object to be used as the value of 'this'
  *     within f.
- * @return {*} Result of evaluating f repeatedly across the values of the array.
+ * @return {R} Result of evaluating f repeatedly across the values of the array.
+ * @template T,S,R
  */
 goog.array.reduce = function(arr, f, val, opt_obj) {
   if (arr.reduce) {
@@ -320,17 +343,20 @@ goog.array.reduce = function(arr, f, val, opt_obj) {
  * goog.array.reduceRight(a, function(r, v, i, arr) {return r + v;}, '');
  * returns 'cba'
  *
- * @param {goog.array.ArrayLike} arr The array over which to iterate.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, R, T, number, ?) : R} f The function to call for
+ *     every element. This function
  *     takes 4 arguments (the function's previous result or the initial value,
  *     the value of the current array element, the current array index, and the
  *     array itself)
  *     function(previousValue, currentValue, index, array).
- * @param {*} val The initial value to pass into the function on the first call.
- * @param {Object=} opt_obj The object to be used as the value of 'this'
+ * @param {?} val The initial value to pass into the function on the first call.
+ * @param {S=} opt_obj The object to be used as the value of 'this'
  *     within f.
- * @return {*} Object returned as a result of evaluating f repeatedly across the
+ * @return {R} Object returned as a result of evaluating f repeatedly across the
  *     values of the array.
+ * @template T,S,R
  */
 goog.array.reduceRight = function(arr, f, val, opt_obj) {
   if (arr.reduceRight) {
@@ -355,18 +381,20 @@ goog.array.reduceRight = function(arr, f, val, opt_obj) {
  *
  * See {@link http://tinyurl.com/developer-mozilla-org-array-some}
  *
- * @param {goog.array.ArrayLike} arr The array to check.
- * @param {Function} f The function to call for every element. This function
- *     takes 3 arguments (the element, the index and the array) and must
- *     return a Boolean.
- * @param {Object=} opt_obj  The object to be used as the value of 'this'
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call for
+ *     for every element. This function takes 3 arguments (the element, the
+ *     index and the array) and should return a boolean.
+ * @param {S=} opt_obj  The object to be used as the value of 'this'
  *     within f.
  * @return {boolean} true if any element passes the test.
+ * @template T,S
  */
-goog.array.some = goog.array.ARRAY_PROTOTYPE_.some ?
+goog.array.some = goog.NATIVE_ARRAY_PROTOTYPES &&
+                  goog.array.ARRAY_PROTOTYPE_.some ?
     function(arr, f, opt_obj) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       return goog.array.ARRAY_PROTOTYPE_.some.call(arr, f, opt_obj);
     } :
@@ -389,18 +417,20 @@ goog.array.some = goog.array.ARRAY_PROTOTYPE_.some ?
  *
  * See {@link http://tinyurl.com/developer-mozilla-org-array-every}
  *
- * @param {goog.array.ArrayLike} arr The array to check.
- * @param {Function} f The function to call for every element. This function
- *     takes 3 arguments (the element, the index and the array) and must
- *     return a Boolean.
- * @param {Object=} opt_obj The object to be used as the value of 'this'
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call for
+ *     for every element. This function takes 3 arguments (the element, the
+ *     index and the array) and should return a boolean.
+ * @param {S=} opt_obj The object to be used as the value of 'this'
  *     within f.
  * @return {boolean} false if any element fails the test.
+ * @template T,S
  */
-goog.array.every = goog.array.ARRAY_PROTOTYPE_.every ?
+goog.array.every = goog.NATIVE_ARRAY_PROTOTYPES &&
+                   goog.array.ARRAY_PROTOTYPE_.every ?
     function(arr, f, opt_obj) {
-      goog.asserts.assert(arr || goog.isString(arr));
-      goog.asserts.assertNumber(arr.length);
+      goog.asserts.assert(arr.length != null);
 
       return goog.array.ARRAY_PROTOTYPE_.every.call(arr, f, opt_obj);
     } :
@@ -417,15 +447,40 @@ goog.array.every = goog.array.ARRAY_PROTOTYPE_.every ?
 
 
 /**
+ * Counts the array elements that fulfill the predicate, i.e. for which the
+ * callback function returns true. Skips holes in the array.
+ *
+ * @param {!(Array.<T>|goog.array.ArrayLike)} arr Array or array like object
+ *     over which to iterate.
+ * @param {function(this: S, T, number, ?): boolean} f The function to call for
+ *     every element. Takes 3 arguments (the element, the index and the array).
+ * @param {S=} opt_obj The object to be used as the value of 'this' within f.
+ * @return {number} The number of the matching elements.
+ * @template T,S
+ */
+goog.array.count = function(arr, f, opt_obj) {
+  var count = 0;
+  goog.array.forEach(arr, function(element, index, arr) {
+    if (f.call(opt_obj, element, index, arr)) {
+      ++count;
+    }
+  }, opt_obj);
+  return count;
+};
+
+
+/**
  * Search an array for the first element that satisfies a given condition and
  * return that element.
- * @param {goog.array.ArrayLike} arr The array to search.
- * @param {Function} f The function to call for every element. This function
- *     takes 3 arguments (the element, the index and the array) and should
- *     return a boolean.
- * @param {Object=} opt_obj An optional "this" context for the function.
- * @return {*} The first array element that passes the test, or null if no
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call
+ *     for every element. This function takes 3 arguments (the element, the
+ *     index and the array) and should return a boolean.
+ * @param {S=} opt_obj An optional "this" context for the function.
+ * @return {T} The first array element that passes the test, or null if no
  *     element is found.
+ * @template T,S
  */
 goog.array.find = function(arr, f, opt_obj) {
   var i = goog.array.findIndex(arr, f, opt_obj);
@@ -436,13 +491,16 @@ goog.array.find = function(arr, f, opt_obj) {
 /**
  * Search an array for the first element that satisfies a given condition and
  * return its index.
- * @param {goog.array.ArrayLike} arr The array to search.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call for
+ *     every element. This function
  *     takes 3 arguments (the element, the index and the array) and should
  *     return a boolean.
- * @param {Object=} opt_obj An optional "this" context for the function.
+ * @param {S=} opt_obj An optional "this" context for the function.
  * @return {number} The index of the first array element that passes the test,
  *     or -1 if no element is found.
+ * @template T,S
  */
 goog.array.findIndex = function(arr, f, opt_obj) {
   var l = arr.length;  // must be fixed during loop... see docs
@@ -459,13 +517,16 @@ goog.array.findIndex = function(arr, f, opt_obj) {
 /**
  * Search an array (in reverse order) for the last element that satisfies a
  * given condition and return that element.
- * @param {goog.array.ArrayLike} arr The array to search.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call
+ *     for every element. This function
  *     takes 3 arguments (the element, the index and the array) and should
  *     return a boolean.
- * @param {Object=} opt_obj An optional "this" context for the function.
- * @return {*} The last array element that passes the test, or null if no
+ * @param {S=} opt_obj An optional "this" context for the function.
+ * @return {T} The last array element that passes the test, or null if no
  *     element is found.
+ * @template T,S
  */
 goog.array.findRight = function(arr, f, opt_obj) {
   var i = goog.array.findIndexRight(arr, f, opt_obj);
@@ -476,13 +537,16 @@ goog.array.findRight = function(arr, f, opt_obj) {
 /**
  * Search an array (in reverse order) for the last element that satisfies a
  * given condition and return its index.
- * @param {goog.array.ArrayLike} arr The array to search.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call
+ *     for every element. This function
  *     takes 3 arguments (the element, the index and the array) and should
  *     return a boolean.
  * @param {Object=} opt_obj An optional "this" context for the function.
  * @return {number} The index of the last array element that passes the test,
  *     or -1 if no element is found.
+ * @template T,S
  */
 goog.array.findIndexRight = function(arr, f, opt_obj) {
   var l = arr.length;  // must be fixed during loop... see docs
@@ -536,8 +600,9 @@ goog.array.clear = function(arr) {
 
 /**
  * Pushes an item into an array, if it's not already in the array.
- * @param {Array} arr Array into which to insert the item.
- * @param {*} obj Value to add.
+ * @param {Array.<T>} arr Array into which to insert the item.
+ * @param {T} obj Value to add.
+ * @template T
  */
 goog.array.insert = function(arr, obj) {
   if (!goog.array.contains(arr, obj)) {
@@ -572,10 +637,11 @@ goog.array.insertArrayAt = function(arr, elementsToAdd, opt_i) {
 
 /**
  * Inserts an object into an array before a specified object.
- * @param {Array} arr The array to modify.
- * @param {*} obj The object to insert.
- * @param {*=} opt_obj2 The object before which obj should be inserted. If obj2
+ * @param {Array.<T>} arr The array to modify.
+ * @param {T} obj The object to insert.
+ * @param {T=} opt_obj2 The object before which obj should be inserted. If obj2
  *     is omitted or not found, obj is inserted at the end of the array.
+ * @template T
  */
 goog.array.insertBefore = function(arr, obj, opt_obj2) {
   var i;
@@ -611,8 +677,7 @@ goog.array.remove = function(arr, obj) {
  * @return {boolean} True if an element was removed.
  */
 goog.array.removeAt = function(arr, i) {
-  goog.asserts.assert(arr || goog.isString(arr));
-  goog.asserts.assertNumber(arr.length);
+  goog.asserts.assert(arr.length != null);
 
   // use generic form of splice
   // splice returns the removed items and if successful the length of that
@@ -623,12 +688,15 @@ goog.array.removeAt = function(arr, i) {
 
 /**
  * Removes the first value that satisfies the given condition.
- * @param {goog.array.ArrayLike} arr Array from which to remove value.
- * @param {Function} f The function to call for every element. This function
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array
+ *     like object over which to iterate.
+ * @param {?function(this:S, T, number, ?) : boolean} f The function to call
+ *     for every element. This function
  *     takes 3 arguments (the element, the index and the array) and should
  *     return a boolean.
- * @param {Object=} opt_obj An optional "this" context for the function.
+ * @param {S=} opt_obj An optional "this" context for the function.
  * @return {boolean} True if an element was removed.
+ * @template T,S
  */
 goog.array.removeIf = function(arr, f, opt_obj) {
   var i = goog.array.findIndex(arr, f, opt_obj);
@@ -674,25 +742,6 @@ goog.array.concat = function(var_args) {
 
 
 /**
- * Does a shallow copy of an array.
- * @param {goog.array.ArrayLike} arr  Array or array-like object to clone.
- * @return {!Array} Clone of the input array.
- */
-goog.array.clone = function(arr) {
-  if (goog.isArray(arr)) {
-    return goog.array.concat(/** @type {!Array} */ (arr));
-  } else { // array like
-    // Concat does not work with non arrays.
-    var rv = [];
-    for (var i = 0, len = arr.length; i < len; i++) {
-      rv[i] = arr[i];
-    }
-    return rv;
-  }
-};
-
-
-/**
  * Converts an object to an array.
  * @param {goog.array.ArrayLike} object  The object to convert to an array.
  * @return {!Array} The object converted into an array. If object has a
@@ -701,15 +750,28 @@ goog.array.clone = function(arr) {
  *     have a length property, an empty array will be returned.
  */
 goog.array.toArray = function(object) {
-  if (goog.isArray(object)) {
-    // This fixes the JS compiler warning and forces the Object to an Array type
-    return goog.array.concat(/** @type {!Array} */ (object));
+  var length = object.length;
+
+  // If length is not a number the following it false. This case is kept for
+  // backwards compatibility since there are callers that pass objects that are
+  // not array like.
+  if (length > 0) {
+    var rv = new Array(length);
+    for (var i = 0; i < length; i++) {
+      rv[i] = object[i];
+    }
+    return rv;
   }
-  // Clone what we hope to be an array-like object to an array.
-  // We could check isArrayLike() first, but no check we perform would be as
-  // reliable as simply making the call.
-  return goog.array.clone(/** @type {Array} */ (object));
+  return [];
 };
+
+
+/**
+ * Does a shallow copy of an array.
+ * @param {goog.array.ArrayLike} arr  Array or array-like object to clone.
+ * @return {!Array} Clone of the input array.
+ */
+goog.array.clone = goog.array.toArray;
 
 
 /**
@@ -739,11 +801,10 @@ goog.array.extend = function(arr1, var_args) {
         (isArrayLike = goog.isArrayLike(arr2)) &&
             // The getter for callee throws an exception in strict mode
             // according to section 10.6 in ES5 so check for presence instead.
-            arr2.hasOwnProperty('callee')) {
+            Object.prototype.hasOwnProperty.call(arr2, 'callee')) {
       arr1.push.apply(arr1, arr2);
-
-    // Otherwise loop over arr2 to prevent copying the object.
     } else if (isArrayLike) {
+      // Otherwise loop over arr2 to prevent copying the object.
       var len1 = arr1.length;
       var len2 = arr2.length;
       for (var j = 0; j < len2; j++) {
@@ -772,8 +833,7 @@ goog.array.extend = function(arr1, var_args) {
  * @return {!Array} the removed elements.
  */
 goog.array.splice = function(arr, index, howMany, var_args) {
-  goog.asserts.assert(arr || goog.isString(arr));
-  goog.asserts.assertNumber(arr.length);
+  goog.asserts.assert(arr.length != null);
 
   return goog.array.ARRAY_PROTOTYPE_.splice.apply(
       arr, goog.array.slice(arguments, 1));
@@ -785,15 +845,16 @@ goog.array.splice = function(arr, index, howMany, var_args) {
  * Array slice. This means that it might work on other objects similar to
  * arrays, such as the arguments object.
  *
- * @param {goog.array.ArrayLike} arr The array from which to copy a segment.
+ * @param {Array.<T>|goog.array.ArrayLike} arr The array from
+ * which to copy a segment.
  * @param {number} start The index of the first element to copy.
  * @param {number=} opt_end The index after the last element to copy.
- * @return {!Array} A new array containing the specified segment of the original
- *     array.
+ * @return {!Array.<T>} A new array containing the specified segment of the
+ *     original array.
+ * @template T
  */
 goog.array.slice = function(arr, start, opt_end) {
-  goog.asserts.assert(arr || goog.isString(arr));
-  goog.asserts.assertNumber(arr.length);
+  goog.asserts.assert(arr.length != null);
 
   // passing 1 arg to slice is not the same as passing 2 where the second is
   // null or undefined (in that case the second argument is treated as 0).
@@ -824,17 +885,24 @@ goog.array.slice = function(arr, start, opt_end) {
  *     array will remain unchanged.
  */
 goog.array.removeDuplicates = function(arr, opt_rv) {
-  var rv = opt_rv || arr;
+  var returnArray = opt_rv || arr;
+
   var seen = {}, cursorInsert = 0, cursorRead = 0;
   while (cursorRead < arr.length) {
     var current = arr[cursorRead++];
-    var uid = goog.isObject(current) ? goog.getUid(current) : current;
-    if (!Object.prototype.hasOwnProperty.call(seen, uid)) {
-      seen[uid] = true;
-      rv[cursorInsert++] = current;
+
+    // Prefix each type with a single character representing the type to
+    // prevent conflicting keys (e.g. true and 'true').
+    var key = goog.isObject(current) ?
+        'o' + goog.getUid(current) :
+        (typeof current).charAt(0) + current;
+
+    if (!Object.prototype.hasOwnProperty.call(seen, key)) {
+      seen[key] = true;
+      returnArray[cursorInsert++] = current;
     }
   }
-  rv.length = cursorInsert;
+  returnArray.length = cursorInsert;
 };
 
 
@@ -855,7 +923,7 @@ goog.array.removeDuplicates = function(arr, opt_rv) {
  * @param {*} target The sought value.
  * @param {Function=} opt_compareFn Optional comparison function by which the
  *     array is ordered. Should take 2 arguments to compare, and return a
- *     negative integer, zero, or a positive integer depending on whether the
+ *     negative number, zero, or a positive number depending on whether the
  *     first argument is less than, equal to, or greater than the second.
  * @return {number} Lowest index of the target value if found, otherwise
  *     (-(insertion point) - 1). The insertion point is where the value should
@@ -880,9 +948,9 @@ goog.array.binarySearch = function(arr, target, opt_compareFn) {
  *
  * @param {goog.array.ArrayLike} arr The array to be searched.
  * @param {Function} evaluator Evaluator function that receives 3 arguments
- *     (the element, the index and the array).  Should return a negative
- *     integer, zero, or a positive integer depending on whether the
- *     desired index is before, at, or after the element passed to it.
+ *     (the element, the index and the array). Should return a negative number,
+ *     zero, or a positive number depending on whether the desired index is
+ *     before, at, or after the element passed to it.
  * @param {Object=} opt_obj The object to be used as the value of 'this'
  *     within evaluator.
  * @return {number} Index of the leftmost element matched by the evaluator, if
@@ -964,16 +1032,17 @@ goog.array.binarySearch_ = function(arr, compareFn, isEvaluator, opt_target,
  *
  * Runtime: Same as <code>Array.prototype.sort</code>
  *
- * @param {Array} arr The array to be sorted.
- * @param {Function=} opt_compareFn Optional comparison function by which the
+ * @param {Array.<T>} arr The array to be sorted.
+ * @param {?function(T,T):number=} opt_compareFn Optional comparison
+ *     function by which the
  *     array is to be ordered. Should take 2 arguments to compare, and return a
- *     negative integer, zero, or a positive integer depending on whether the
+ *     negative number, zero, or a positive number depending on whether the
  *     first argument is less than, equal to, or greater than the second.
+ * @template T
  */
 goog.array.sort = function(arr, opt_compareFn) {
-  // TODO(user): Update type annotation since null is not accepted.
-  goog.asserts.assert(arr || goog.isString(arr));
-  goog.asserts.assertNumber(arr.length);
+  // TODO(arv): Update type annotation since null is not accepted.
+  goog.asserts.assert(arr.length != null);
 
   goog.array.ARRAY_PROTOTYPE_.sort.call(
       arr, opt_compareFn || goog.array.defaultCompare);
@@ -990,12 +1059,13 @@ goog.array.sort = function(arr, opt_compareFn) {
  * Runtime: Same as <code>Array.prototype.sort</code>, plus an additional
  * O(n) overhead of copying the array twice.
  *
- * @param {Array} arr The array to be sorted.
- * @param {function(*, *): number=} opt_compareFn Optional comparison function
+ * @param {Array.<T>} arr The array to be sorted.
+ * @param {?function(T, T): number=} opt_compareFn Optional comparison function
  *     by which the array is to be ordered. Should take 2 arguments to compare,
- *     and return a negative integer, zero, or a positive integer depending on
+ *     and return a negative number, zero, or a positive number depending on
  *     whether the first argument is less than, equal to, or greater than the
  *     second.
+ * @template T
  */
 goog.array.stableSort = function(arr, opt_compareFn) {
   for (var i = 0; i < arr.length; i++) {
@@ -1028,6 +1098,30 @@ goog.array.sortObjectsByKey = function(arr, key, opt_compareFn) {
   goog.array.sort(arr, function(a, b) {
     return compare(a[key], b[key]);
   });
+};
+
+
+/**
+ * Tells if the array is sorted.
+ * @param {!Array.<T>} arr The array.
+ * @param {?function(T,T):number=} opt_compareFn Function to compare the
+ *     array elements.
+ *     Should take 2 arguments to compare, and return a negative number, zero,
+ *     or a positive number depending on whether the first argument is less
+ *     than, equal to, or greater than the second.
+ * @param {boolean=} opt_strict If true no equal elements are allowed.
+ * @return {boolean} Whether the array is sorted.
+ * @template T
+ */
+goog.array.isSorted = function(arr, opt_compareFn, opt_strict) {
+  var compare = opt_compareFn || goog.array.defaultCompare;
+  for (var i = 1; i < arr.length; i++) {
+    var compareResult = compare(arr[i - 1], arr[i]);
+    if (compareResult > 0 || compareResult == 0 && opt_strict) {
+      return false;
+    }
+  }
+  return true;
 };
 
 
@@ -1073,13 +1167,38 @@ goog.array.compare = function(arr1, arr2, opt_equalsFn) {
 
 
 /**
+ * 3-way array compare function.
+ * @param {!goog.array.ArrayLike} arr1 The first array to compare.
+ * @param {!goog.array.ArrayLike} arr2 The second array to compare.
+ * @param {?function(?, ?): number=} opt_compareFn Optional comparison function
+ *     by which the array is to be ordered. Should take 2 arguments to compare,
+ *     and return a negative number, zero, or a positive number depending on
+ *     whether the first argument is less than, equal to, or greater than the
+ *     second.
+ * @return {number} Negative number, zero, or a positive number depending on
+ *     whether the first argument is less than, equal to, or greater than the
+ *     second.
+ */
+goog.array.compare3 = function(arr1, arr2, opt_compareFn) {
+  var compare = opt_compareFn || goog.array.defaultCompare;
+  var l = Math.min(arr1.length, arr2.length);
+  for (var i = 0; i < l; i++) {
+    var result = compare(arr1[i], arr2[i]);
+    if (result != 0) {
+      return result;
+    }
+  }
+  return goog.array.defaultCompare(arr1.length, arr2.length);
+};
+
+
+/**
  * Compares its two arguments for order, using the built in < and >
  * operators.
  * @param {*} a The first object to be compared.
  * @param {*} b The second object to be compared.
- * @return {number} a negative integer, zero, or a positive integer
- *     as the first argument is less than, equal to, or greater than the
- *     second.
+ * @return {number} A negative number, zero, or a positive number as the first
+ *     argument is less than, equal to, or greater than the second.
  */
 goog.array.defaultCompare = function(a, b) {
   return a > b ? 1 : a < b ? -1 : 0;
@@ -1100,14 +1219,15 @@ goog.array.defaultCompareEquality = function(a, b) {
 /**
  * Inserts a value into a sorted array. The array is not modified if the
  * value is already present.
- * @param {Array} array The array to modify.
- * @param {*} value The object to insert.
- * @param {Function=} opt_compareFn Optional comparison function by which the
- *     array is ordered. Should take 2 arguments to compare, and
- *     return a negative integer, zero, or a positive integer depending on
- *     whether the first argument is less than, equal to, or greater than the
- *     second.
+ * @param {Array.<T>} array The array to modify.
+ * @param {T} value The object to insert.
+ * @param {?function(T,T):number=} opt_compareFn Optional comparison function by
+ *     which the
+ *     array is ordered. Should take 2 arguments to compare, and return a
+ *     negative number, zero, or a positive number depending on whether the
+ *     first argument is less than, equal to, or greater than the second.
  * @return {boolean} True if an element was inserted.
+ * @template T
  */
 goog.array.binaryInsert = function(array, value, opt_compareFn) {
   var index = goog.array.binarySearch(array, value, opt_compareFn);
@@ -1124,10 +1244,9 @@ goog.array.binaryInsert = function(array, value, opt_compareFn) {
  * @param {Array} array The array to modify.
  * @param {*} value The object to remove.
  * @param {Function=} opt_compareFn Optional comparison function by which the
- *     array is ordered. Should take 2 arguments to compare, and
- *     return a negative integer, zero, or a positive integer depending on
- *     whether the first argument is less than, equal to, or greater than the
- *     second.
+ *     array is ordered. Should take 2 arguments to compare, and return a
+ *     negative number, zero, or a positive number depending on whether the
+ *     first argument is less than, equal to, or greater than the second.
  * @return {boolean} True if an element was removed.
  */
 goog.array.binaryRemove = function(array, value, opt_compareFn) {
@@ -1138,21 +1257,24 @@ goog.array.binaryRemove = function(array, value, opt_compareFn) {
 
 /**
  * Splits an array into disjoint buckets according to a splitting function.
- * @param {Array} array The array.
- * @param {Function} sorter Function to call for every element.  This
- *     takes 3 arguments (the element, the index and the array) and must
- *     return a valid object key (a string, number, etc), or undefined, if
- *     that object should not be placed in a bucket.
+ * @param {Array.<T>} array The array.
+ * @param {function(this:S, T,number,Array.<T>):?} sorter Function to call for
+ *     every element.  This takes 3 arguments (the element, the index and the
+ *     array) and must return a valid object key (a string, number, etc), or
+ *     undefined, if that object should not be placed in a bucket.
+ * @param {S=} opt_obj The object to be used as the value of 'this' within
+ *     sorter.
  * @return {!Object} An object, with keys being all of the unique return values
  *     of sorter, and values being arrays containing the items for
  *     which the splitter returned that key.
+ * @template T,S
  */
-goog.array.bucket = function(array, sorter) {
+goog.array.bucket = function(array, sorter, opt_obj) {
   var buckets = {};
 
   for (var i = 0; i < array.length; i++) {
     var value = array[i];
-    var key = sorter(value, i, array);
+    var key = sorter.call(opt_obj, value, i, array);
     if (goog.isDef(key)) {
       // Push the value to the right bucket, creating it if necessary.
       var bucket = buckets[key] || (buckets[key] = []);
@@ -1165,11 +1287,84 @@ goog.array.bucket = function(array, sorter) {
 
 
 /**
+ * Creates a new object built from the provided array and the key-generation
+ * function.
+ * @param {Array.<T>|goog.array.ArrayLike} arr Array or array like object over
+ *     which to iterate whose elements will be the values in the new object.
+ * @param {?function(this:S, T, number, ?) : string} keyFunc The function to
+ *     call for every element. This function takes 3 arguments (the element, the
+ *     index and the array) and should return a string that will be used as the
+ *     key for the element in the new object. If the function returns the same
+ *     key for more than one element, the value for that key is
+ *     implementation-defined.
+ * @param {S=} opt_obj The object to be used as the value of 'this'
+ *     within keyFunc.
+ * @return {!Object.<T>} The new object.
+ * @template T,S
+ */
+goog.array.toObject = function(arr, keyFunc, opt_obj) {
+  var ret = {};
+  goog.array.forEach(arr, function(element, index) {
+    ret[keyFunc.call(opt_obj, element, index, arr)] = element;
+  });
+  return ret;
+};
+
+
+/**
+ * Creates a range of numbers in an arithmetic progression.
+ *
+ * Range takes 1, 2, or 3 arguments:
+ * <pre>
+ * range(5) is the same as range(0, 5, 1) and produces [0, 1, 2, 3, 4]
+ * range(2, 5) is the same as range(2, 5, 1) and produces [2, 3, 4]
+ * range(-2, -5, -1) produces [-2, -3, -4]
+ * range(-2, -5, 1) produces [], since stepping by 1 wouldn't ever reach -5.
+ * </pre>
+ *
+ * @param {number} startOrEnd The starting value of the range if an end argument
+ *     is provided. Otherwise, the start value is 0, and this is the end value.
+ * @param {number=} opt_end The optional end value of the range.
+ * @param {number=} opt_step The step size between range values. Defaults to 1
+ *     if opt_step is undefined or 0.
+ * @return {!Array.<number>} An array of numbers for the requested range. May be
+ *     an empty array if adding the step would not converge toward the end
+ *     value.
+ */
+goog.array.range = function(startOrEnd, opt_end, opt_step) {
+  var array = [];
+  var start = 0;
+  var end = startOrEnd;
+  var step = opt_step || 1;
+  if (opt_end !== undefined) {
+    start = startOrEnd;
+    end = opt_end;
+  }
+
+  if (step * (end - start) < 0) {
+    // Sign mismatch: start + step will never reach the end value.
+    return [];
+  }
+
+  if (step > 0) {
+    for (var i = start; i < end; i += step) {
+      array.push(i);
+    }
+  } else {
+    for (var i = start; i > end; i += step) {
+      array.push(i);
+    }
+  }
+  return array;
+};
+
+
+/**
  * Returns an array consisting of the given value repeated N times.
  *
  * @param {*} value The value to repeat.
  * @param {number} n The repeat count.
- * @return {!Array.<*>} An array with the repeated value.
+ * @return {!Array} An array with the repeated value.
  */
 goog.array.repeat = function(value, n) {
   var array = [];
@@ -1185,7 +1380,7 @@ goog.array.repeat = function(value, n) {
  * expanded in-place recursively.
  *
  * @param {...*} var_args The values to flatten.
- * @return {!Array.<*>} An array containing the flattened values.
+ * @return {!Array} An array containing the flattened values.
  */
 goog.array.flatten = function(var_args) {
   var result = [];
@@ -1210,13 +1405,13 @@ goog.array.flatten = function(var_args) {
  * For example, suppose list comprises [t, a, n, k, s]. After invoking
  * rotate(array, 1) (or rotate(array, -4)), array will comprise [s, t, a, n, k].
  *
- * @param {!Array.<*>} array The array to rotate.
+ * @param {!Array.<T>} array The array to rotate.
  * @param {number} n The amount to rotate.
- * @return {!Array.<*>} The array.
+ * @return {!Array.<T>} The array.
+ * @template T
  */
 goog.array.rotate = function(array, n) {
-  goog.asserts.assert(array || goog.isString(array));
-  goog.asserts.assertNumber(array.length);
+  goog.asserts.assert(array.length != null);
 
   if (array.length) {
     n %= array.length;
@@ -1227,6 +1422,28 @@ goog.array.rotate = function(array, n) {
     }
   }
   return array;
+};
+
+
+/**
+ * Moves one item of an array to a new position keeping the order of the rest
+ * of the items. Example use case: keeping a list of JavaScript objects
+ * synchronized with the corresponding list of DOM elements after one of the
+ * elements has been dragged to a new position.
+ * @param {!(Array|Arguments|{length:number})} arr The array to modify.
+ * @param {number} fromIndex Index of the item to move between 0 and
+ *     {@code arr.length - 1}.
+ * @param {number} toIndex Target index between 0 and {@code arr.length - 1}.
+ */
+goog.array.moveItem = function(arr, fromIndex, toIndex) {
+  goog.asserts.assert(fromIndex >= 0 && fromIndex < arr.length);
+  goog.asserts.assert(toIndex >= 0 && toIndex < arr.length);
+  // Remove 1 item at fromIndex.
+  var removedItems = goog.array.ARRAY_PROTOTYPE_.splice.call(arr, fromIndex, 1);
+  // Insert the removed item at toIndex.
+  goog.array.ARRAY_PROTOTYPE_.splice.call(arr, toIndex, 0, removedItems[0]);
+  // We don't use goog.array.insertAt and goog.array.removeAt, because they're
+  // significantly slower than splice.
 };
 
 
@@ -1258,5 +1475,33 @@ goog.array.zip = function(var_args) {
       value.push(arr[i]);
     }
     result.push(value);
+  }
+};
+
+
+/**
+ * Shuffles the values in the specified array using the Fisher-Yates in-place
+ * shuffle (also known as the Knuth Shuffle). By default, calls Math.random()
+ * and so resets the state of that random number generator. Similarly, may reset
+ * the state of the any other specified random number generator.
+ *
+ * Runtime: O(n)
+ *
+ * @param {!Array} arr The array to be shuffled.
+ * @param {function():number=} opt_randFn Optional random function to use for
+ *     shuffling.
+ *     Takes no arguments, and returns a random number on the interval [0, 1).
+ *     Defaults to Math.random() using JavaScript's built-in Math library.
+ */
+goog.array.shuffle = function(arr, opt_randFn) {
+  var randFn = opt_randFn || Math.random;
+
+  for (var i = arr.length - 1; i > 0; i--) {
+    // Choose a random array index in [0, i] (inclusive with i).
+    var j = Math.floor(randFn() * (i + 1));
+
+    var tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
   }
 };

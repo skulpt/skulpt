@@ -15,47 +15,46 @@
 /**
  * @fileoverview A utility class for representing three-dimensional points.
  *
-*
  * Based heavily on coordinate.js by:
-*
  */
 
 goog.provide('goog.math.Coordinate3');
 
 
+
 /**
  * Class for representing coordinates and positions in 3 dimensions.
  *
- * @param {number=} opt_x X.
- * @param {number=} opt_y Y.
- * @param {number=} opt_z Z.
+ * @param {number=} opt_x X coordinate, defaults to 0.
+ * @param {number=} opt_y Y coordinate, defaults to 0.
+ * @param {number=} opt_z Z coordinate, defaults to 0.
  * @constructor
  */
 goog.math.Coordinate3 = function(opt_x, opt_y, opt_z) {
   /**
    * X-value
-   * @type {number|undefined}
+   * @type {number}
    */
-  this.x = goog.isDef(opt_x) ? Number(opt_x) : undefined;
+  this.x = goog.isDef(opt_x) ? opt_x : 0;
 
   /**
    * Y-value
-   * @type {number|undefined}
+   * @type {number}
    */
-  this.y = goog.isDef(opt_y) ? Number(opt_y) : undefined;
+  this.y = goog.isDef(opt_y) ? opt_y : 0;
 
   /**
    * Z-value
-   * @type {number|undefined}
+   * @type {number}
    */
-  this.z = goog.isDef(opt_z) ? Number(opt_z) : undefined;
+  this.z = goog.isDef(opt_z) ? opt_z : 0;
 };
 
 
 /**
  * Returns a new copy of the coordinate.
  *
- * @return {goog.math.Coordinate3} A clone of this coordinate.
+ * @return {!goog.math.Coordinate3} A clone of this coordinate.
  */
 goog.math.Coordinate3.prototype.clone = function() {
   return new goog.math.Coordinate3(this.x, this.y, this.z);
@@ -67,6 +66,7 @@ if (goog.DEBUG) {
    * Returns a nice string representing the coordinate.
    *
    * @return {string} In the form (50, 73, 31).
+   * @override
    */
   goog.math.Coordinate3.prototype.toString = function() {
     return '(' + this.x + ', ' + this.y + ', ' + this.z + ')';
@@ -133,7 +133,7 @@ goog.math.Coordinate3.squaredDistance = function(a, b) {
  *
  * @param {goog.math.Coordinate3} a A Coordinate3.
  * @param {goog.math.Coordinate3} b A Coordinate3.
- * @return {goog.math.Coordinate3} A Coordinate3 representing the difference
+ * @return {!goog.math.Coordinate3} A Coordinate3 representing the difference
  *     between {@code a} and {@code b}.
  */
 goog.math.Coordinate3.difference = function(a, b) {
@@ -144,7 +144,7 @@ goog.math.Coordinate3.difference = function(a, b) {
 /**
  * Returns the contents of this coordinate as a 3 value Array.
  *
- * @return {Array.<number>} A new array.
+ * @return {!Array.<number>} A new array.
  */
 goog.math.Coordinate3.prototype.toArray = function() {
   return [this.x, this.y, this.z];
@@ -157,7 +157,7 @@ goog.math.Coordinate3.prototype.toArray = function() {
  * error is thrown.
  *
  * @param {Array.<number>} a Array of numbers to become a coordinate.
- * @return {goog.math.Coordinate3} A new coordinate from the array values.
+ * @return {!goog.math.Coordinate3} A new coordinate from the array values.
  * @throws {Error} When the oject passed in is not valid.
  */
 goog.math.Coordinate3.fromArray = function(a) {
@@ -167,4 +167,3 @@ goog.math.Coordinate3.fromArray = function(a) {
 
   throw Error('Conversion from an array requires an array of length 3');
 };
-

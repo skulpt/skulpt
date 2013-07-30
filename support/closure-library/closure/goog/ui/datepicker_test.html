@@ -3,17 +3,20 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
-Author: antman@google.com (Reuben Antman)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.DatePicker</title>
   <script src="../base.js"></script>
   <script>
     goog.require('goog.dom');
+    goog.require('goog.dom.classes');
+    goog.require('goog.a11y.aria');
+    goog.require('goog.a11y.aria.Role');
     goog.require('goog.events');
     goog.require('goog.i18n.DateTimeSymbols_en_US');
     goog.require('goog.i18n.DateTimeSymbols_zh_HK');
@@ -134,6 +137,39 @@ Author: antman@google.com (Reuben Antman)
     assertTrue(goog.style.isElementShown(tFoot))
   }
 
+  function testLongDateFormat() {
+    picker = new goog.ui.DatePicker();
+    picker.create(sandbox);
+    picker.setLongDateFormat(true);
+    var dates = $$('td', 'goog-date-picker-date');
+    for (var i = 0; i < dates.length; i++) {
+      assertEquals(2, goog.dom.getTextContent(dates[i]).length);
+    }
+  }
+
+  function testGetActiveMonth() {
+    picker = new goog.ui.DatePicker(new Date(2000, 5, 5));
+    var month = picker.getActiveMonth();
+    assertObjectEquals(new goog.date.Date(2000, 5, 1), month);
+
+    month.setMonth(10);
+    assertObjectEquals('modifying the returned object is safe',
+        new goog.date.Date(2000, 5, 1), picker.getActiveMonth());
+  }
+
+  function testGetDate() {
+    picker = new goog.ui.DatePicker(new Date(2000, 0, 1));
+    var date = picker.getDate();
+    assertObjectEquals(new goog.date.Date(2000, 0, 1), date);
+
+    date.setMonth(1);
+    assertObjectEquals('modifying the returned date is safe',
+        new goog.date.Date(2000, 0, 1), picker.getDate());
+
+    picker.setDate(null);
+    assertNull('no date is selected', picker.getDate());
+  }
+
   function testSetDate() {
     picker = new goog.ui.DatePicker();
     picker.createDom();
@@ -183,6 +219,32 @@ Author: antman@google.com (Reuben Antman)
     picker.exitDocument();
     assertEquals('exitDocument cleans up all listeners', listeners,
         goog.events.getTotalListenerCount());
+  }
+
+  function testUniqueCellIds() {
+    picker = new goog.ui.DatePicker();
+    picker.render();
+    var cells = goog.dom.getElementsByTagNameAndClass('td', undefined,
+        picker.getElement());
+    var existingIds = {};
+    var numCells = cells.length;
+    for (var i = 0; i < numCells; i++) {
+      assertNotNull(cells[i]);
+      if (goog.a11y.aria.getRole(cells[i]) == goog.a11y.aria.Role.GRIDCELL) {
+        assertNonEmptyString('cell id is non empty', cells[i].id);
+        assertUndefined('cell id is not unique',
+            existingIds[cells[i].id]);
+        existingIds[cells[i].id] = 1;
+      }
+    }
+  }
+
+  function testDecoratePreservesClasses() {
+    picker = new goog.ui.DatePicker();
+    var div = goog.dom.createDom('div', 'existing-class');
+    picker.decorate(div);
+    assertTrue(goog.dom.classes.has(div, picker.getBaseCssClass()));
+    assertTrue(goog.dom.classes.has(div, 'existing-class'));
   }
 
 </script>

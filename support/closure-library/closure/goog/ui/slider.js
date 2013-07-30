@@ -29,7 +29,7 @@
  * var slider = new goog.ui.Slider;
  * slider.decorate(document.getElementById('slider'));
  *
-*
+ * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/slider.html
  */
 
@@ -40,11 +40,11 @@
 goog.provide('goog.ui.Slider');
 goog.provide('goog.ui.Slider.Orientation');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
 goog.require('goog.dom');
-goog.require('goog.dom.a11y');
-goog.require('goog.dom.a11y.Role');
 goog.require('goog.ui.SliderBase');
-goog.require('goog.ui.SliderBase.Orientation');
+
 
 
 /**
@@ -89,6 +89,7 @@ goog.ui.Slider.THUMB_CSS_CLASS =
  * @param {goog.ui.SliderBase.Orientation} orient Orientation of the slider.
  * @return {string} The CSS class applied to the slider element.
  * @protected
+ * @override
  */
 goog.ui.Slider.prototype.getCssClass = function(orient) {
   return orient == goog.ui.SliderBase.Orientation.VERTICAL ?
@@ -97,7 +98,7 @@ goog.ui.Slider.prototype.getCssClass = function(orient) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Slider.prototype.createThumbs = function() {
   // find thumb
   var element = this.getElement();
@@ -119,7 +120,7 @@ goog.ui.Slider.prototype.createThumbs = function() {
 goog.ui.Slider.prototype.createThumb_ = function() {
   var thumb =
       this.getDomHelper().createDom('div', goog.ui.Slider.THUMB_CSS_CLASS);
-  goog.dom.a11y.setRole(thumb, goog.dom.a11y.Role.BUTTON);
+  goog.a11y.aria.setRole(thumb, goog.a11y.aria.Role.BUTTON);
   return /** @type {HTMLDivElement} */ (thumb);
 };
 

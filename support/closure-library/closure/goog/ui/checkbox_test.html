@@ -3,29 +3,37 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
-  Author: pallosp@google.com (Peter Pallos)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.Checkbox</title>
   <script src="../base.js"></script>
   <script>
-    goog.require('goog.array');
     goog.require('goog.dom');
+    goog.require('goog.a11y.aria');
+    goog.require('goog.a11y.aria.Role');
+    goog.require('goog.a11y.aria.State');
     goog.require('goog.dom.classes');
+    goog.require('goog.events');
     goog.require('goog.events.KeyCodes');
-    goog.require('goog.testing.asserts');
     goog.require('goog.testing.events');
     goog.require('goog.testing.jsunit');
     goog.require('goog.ui.Checkbox');
+    goog.require('goog.ui.Checkbox.State');
+    goog.require('goog.ui.CheckboxRenderer');
+    goog.require('goog.ui.Component.EventType');
+    goog.require('goog.ui.Component.State');
+    goog.require('goog.ui.ControlRenderer');
     goog.require('goog.ui.decorate');
   </script>
 </head>
 <body>
 <div>
+  <span id="decorate" class="goog-checkbox"></span>
   <span id="normal" class="goog-checkbox"></span>
   <span id="checked" class="goog-checkbox goog-checkbox-checked"></span>
   <span id="unchecked" class="goog-checkbox goog-checkbox-unchecked"></span>
@@ -97,12 +105,12 @@ See the COPYING file for details.
     assertFalse('checked -> unchecked', checkbox.getChecked());
     checkbox.toggle();
     assertTrue('unchecked -> checked', checkbox.getChecked());
-  };
+  }
 
   function testEvents() {
     checkbox.render();
 
-    var events = []
+    var events = [];
     goog.events.listen(checkbox,
         [goog.ui.Component.EventType.CHECK,
          goog.ui.Component.EventType.UNCHECK,
@@ -137,6 +145,30 @@ See the COPYING file for details.
     assertFalse('toggling has been prevented', checkbox.getChecked());
   }
 
+  function testCheckboxAriaLabelledby() {
+    var label = goog.dom.createElement('div');
+    var label2 = goog.dom.createElement('div',  {id: checkbox.makeId('foo')});
+    document.body.appendChild(label);
+    document.body.appendChild(label2);
+    try {
+      checkbox.setChecked(false);
+      checkbox.setLabel(label);
+      checkbox.render(label);
+      assertNotNull(checkbox.getElement());
+      assertEquals(label.id,
+          goog.a11y.aria.getState(checkbox.getElement(),
+              goog.a11y.aria.State.LABELLEDBY));
+
+      checkbox.setLabel(label2);
+      assertEquals(label2.id,
+          goog.a11y.aria.getState(checkbox.getElement(),
+              goog.a11y.aria.State.LABELLEDBY));
+    } finally {
+      document.body.removeChild(label);
+      document.body.removeChild(label2);
+    }
+  }
+
   function testLabel() {
     var label = goog.dom.createElement('div');
     document.body.appendChild(label);
@@ -145,12 +177,50 @@ See the COPYING file for details.
       checkbox.setLabel(label);
       checkbox.render(label);
 
+      // Clicking on label toggles checkbox.
       goog.testing.events.fireClickSequence(label);
       assertTrue('checkbox toggled if the label is clicked',
           checkbox.getChecked());
       goog.testing.events.fireClickSequence(checkbox.getElement());
       assertFalse('checkbox toggled if it is clicked', checkbox.getChecked());
 
+      // Test that mouse events on the label have the correct effect on the
+      // checkbox state when it is enabled.
+      checkbox.setEnabled(true);
+      goog.testing.events.fireMouseOverEvent(label);
+      assertTrue(checkbox.hasState(goog.ui.Component.State.HOVER));
+      assertContains('checkbox gets hover state on mouse over',
+          'goog-checkbox-hover', goog.dom.classes.get(checkbox.getElement()));
+      goog.testing.events.fireMouseDownEvent(label);
+      assertTrue(checkbox.hasState(goog.ui.Component.State.ACTIVE));
+      assertContains('checkbox gets active state on label mousedown',
+          'goog-checkbox-active', goog.dom.classes.get(checkbox.getElement()));
+      goog.testing.events.fireMouseOutEvent(checkbox.getElement());
+      assertFalse(checkbox.hasState(goog.ui.Component.State.HOVER));
+      assertNotContains('checkbox does not have hover state after mouse out',
+          'goog-checkbox-hover', goog.dom.classes.get(checkbox.getElement()));
+      assertFalse(checkbox.hasState(goog.ui.Component.State.ACTIVE));
+      assertNotContains('checkbox does not have active state after mouse out',
+          'goog-checkbox-active', goog.dom.classes.get(checkbox.getElement()));
+
+      // Test label mouse events on disabled checkbox.
+      checkbox.setEnabled(false);
+      goog.testing.events.fireMouseOverEvent(label);
+      assertFalse(checkbox.hasState(goog.ui.Component.State.HOVER));
+      assertNotContains(
+          'disabled checkbox does not get hover state on mouseover',
+          'goog-checkbox-hover', goog.dom.classes.get(checkbox.getElement()));
+      goog.testing.events.fireMouseDownEvent(label);
+      assertFalse(checkbox.hasState(goog.ui.Component.State.ACTIVE));
+      assertNotContains('disabled checkbox does not get active state mousedown',
+          'goog-checkbox-active', goog.dom.classes.get(checkbox.getElement()));
+      goog.testing.events.fireMouseOutEvent(checkbox.getElement());
+      assertFalse(checkbox.hasState(goog.ui.Component.State.ACTIVE));
+      assertNotContains('checkbox does not get stuck in hover state',
+          'goog-checkbox-hover', goog.dom.classes.get(checkbox.getElement()));
+
+      // Making the label null prevents it from affecting checkbox state.
+      checkbox.setEnabled(true);
       checkbox.setLabel(null);
       goog.testing.events.fireClickSequence(label);
       assertFalse('label element deactivated', checkbox.getChecked());
@@ -172,6 +242,82 @@ See the COPYING file for details.
         goog.ui.Checkbox.State.UNDETERMINED,
         testCheckboxWithState.getChecked());
     testCheckboxWithState.dispose();
+  }
+
+  function testCustomRenderer() {
+    var cssClass = 'my-custom-checkbox';
+    var renderer = goog.ui.ControlRenderer.getCustomRenderer(
+        goog.ui.CheckboxRenderer, cssClass);
+    var customCheckbox = new goog.ui.Checkbox(
+        undefined, undefined, renderer);
+    customCheckbox.createDom();
+    assertElementsEquals(
+        ['my-custom-checkbox', 'my-custom-checkbox-unchecked'],
+        goog.dom.classes.get(customCheckbox.getElement()));
+    customCheckbox.setChecked(true);
+    assertElementsEquals(
+        ['my-custom-checkbox', 'my-custom-checkbox-checked'],
+        goog.dom.classes.get(customCheckbox.getElement()));
+    customCheckbox.setChecked(null);
+    assertElementsEquals(
+        ['my-custom-checkbox', 'my-custom-checkbox-undetermined'],
+        goog.dom.classes.get(customCheckbox.getElement()));
+    customCheckbox.dispose();
+  }
+
+  function testGetAriaRole() {
+    checkbox.createDom();
+    assertNotNull(checkbox.getElement());
+    assertEquals("Checkbox's ARIA role should be 'checkbox'",
+        goog.a11y.aria.Role.CHECKBOX,
+        goog.a11y.aria.getRole(checkbox.getElement()));
+  }
+
+  function testCreateDomUpdateAriaState() {
+    checkbox.createDom();
+    assertNotNull(checkbox.getElement());
+    assertEquals('Checkbox must have default false ARIA state aria-checked',
+        'false', goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+
+    checkbox.setChecked(goog.ui.Checkbox.State.CHECKED);
+    assertEquals('Checkbox must have true ARIA state aria-checked', 'true',
+        goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+
+    checkbox.setChecked(goog.ui.Checkbox.State.UNCHECKED);
+    assertEquals('Checkbox must have false ARIA state aria-checked', 'false',
+        goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+
+    checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+    assertEquals('Checkbox must have mixed ARIA state aria-checked', 'mixed',
+        goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+  }
+
+  function testDecorateUpdateAriaState() {
+    var decorateSpan = goog.dom.getElement('decorate');
+    checkbox.decorate(decorateSpan);
+
+    assertEquals('Checkbox must have default false ARIA state aria-checked',
+        'false', goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+
+    checkbox.setChecked(goog.ui.Checkbox.State.CHECKED);
+    assertEquals('Checkbox must have true ARIA state aria-checked', 'true',
+        goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+
+    checkbox.setChecked(goog.ui.Checkbox.State.UNCHECKED);
+    assertEquals('Checkbox must have false ARIA state aria-checked', 'false',
+        goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
+
+    checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+    assertEquals('Checkbox must have mixed ARIA state aria-checked', 'mixed',
+        goog.a11y.aria.getState(checkbox.getElement(),
+            goog.a11y.aria.State.CHECKED));
   }
 
   function testSpaceKey() {
@@ -211,7 +357,7 @@ See the COPYING file for details.
     var testCheckbox = goog.ui.decorate(span);
     assertNotNull('checkbox created', testCheckbox);
     assertEquals('decorate was successful',
-        goog.ui.Checkbox, testCheckbox.constructor)
+        goog.ui.Checkbox, testCheckbox.constructor);
     assertEquals('checkbox state should be: ' + state, state,
         testCheckbox.getChecked());
     assertEquals('checkbox is ' + (!opt_disabled ? 'enabled' : 'disabled'),

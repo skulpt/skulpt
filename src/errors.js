@@ -10,7 +10,7 @@
 
 /**
  * @constructor
- * @param {...*} args
+ * @param {...Object|null} args
  */
 Sk.builtin.Exception = function(args)
 {

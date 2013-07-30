@@ -1,12 +1,13 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!--
 
   Author: nicksantos@google.com (Nick Santos)
@@ -16,39 +17,51 @@ See the COPYING file for details.
   <script>
     goog.require('goog.array');
     goog.require('goog.dom');
+    goog.require('goog.events.Listenable');
     goog.require('goog.math.Coordinate');
     goog.require('goog.string');
     goog.require('goog.testing.PropertyReplacer');
     goog.require('goog.testing.events');
     goog.require('goog.testing.jsunit');
+    goog.require('goog.testing.recordFunction');
     goog.require('goog.userAgent');
-
-
   </script>
 </head>
 <body>
 <div id="root"></div>
-<input id='testButton' type='input' value='Click Me' />
+<input id='testButton' type='input' value='Click Me'>
 <div id='input'>Prevent Default these events:<br/></div>
 <div id='log' style='position:absolute;right:0;top:0'>Logged events:</div>
-<script type="text/javascript">
+<div id='parentEl'><div id='childEl'>hello!</div></div>
+<script>
   var firedEventTypes;
   var firedEventCoordinates;
+  var firedScreenCoordinates;
   var firedShiftKeys;
   var firedKeyCodes;
   var root = goog.dom.getElement('root');
   var log = goog.dom.getElement('log');
   var input = goog.dom.getElement('input');
   var testButton = goog.dom.getElement('testButton');
+  var parentEl = goog.dom.getElement('parentEl');
+  var childEl = goog.dom.getElement('childEl');
   var coordinate = new goog.math.Coordinate(123, 456);
   var stubs = new goog.testing.PropertyReplacer();
+  var eventCount;
 
   function setUp() {
     stubs.reset();
-    goog.events.removeAll();
+    goog.events.removeAll(root);
+    goog.events.removeAll(log);
+    goog.events.removeAll(input);
+    goog.events.removeAll(testButton);
+    goog.events.removeAll(parentEl);
+    goog.events.removeAll(childEl);
+
     root.innerHTML = '';
     firedEventTypes = [];
     firedEventCoordinates = [];
+    firedScreenCoordinates = [];
     firedShiftKeys = [];
     firedKeyCodes = [];
 
@@ -57,10 +70,46 @@ See the COPYING file for details.
         firedEventTypes.push(e.type);
         var coord = new goog.math.Coordinate(e.clientX, e.clientY);
         firedEventCoordinates.push(coord);
+
+        firedScreenCoordinates.push(
+            new goog.math.Coordinate(e.screenX, e.screenY));
+
         firedShiftKeys.push(!!e.shiftKey);
         firedKeyCodes.push(e.keyCode);
       });
     }
+
+    eventCount = {
+      parentBubble: 0,
+      parentCapture: 0,
+      childCapture: 0,
+      childBubble: 0
+    };
+    // Event listeners for the capture/bubble test.
+    goog.events.listen(parentEl, goog.events.EventType.CLICK,
+        function(e) {
+          eventCount.parentCapture++;
+          assertEquals(parentEl, e.currentTarget);
+          assertEquals(childEl, e.target);
+        }, true);
+    goog.events.listen(childEl, goog.events.EventType.CLICK,
+        function(e) {
+          eventCount.childCapture++;
+          assertEquals(childEl, e.currentTarget);
+          assertEquals(childEl, e.target);
+        }, true);
+    goog.events.listen(childEl, goog.events.EventType.CLICK,
+        function(e) {
+          eventCount.childBubble++;
+          assertEquals(childEl, e.currentTarget);
+          assertEquals(childEl, e.target);
+        });
+    goog.events.listen(parentEl, goog.events.EventType.CLICK,
+        function(e) {
+          eventCount.parentBubble++;
+          assertEquals(parentEl, e.currentTarget);
+          assertEquals(childEl, e.target);
+        });
   }
 
   function tearDownPage() {
@@ -90,25 +139,60 @@ See the COPYING file for details.
     goog.testing.events.fireMouseOverEvent(root, null);
     goog.testing.events.fireMouseOverEvent(root, null, coordinate);
     assertEventTypes(['mouseover', 'mouseover']);
-    assertCoordinates([new goog.math.Coordinate(), coordinate]);
+    assertCoordinates([goog.style.getClientPosition(root), coordinate]);
   }
 
   function testMouseOut() {
     goog.testing.events.fireMouseOutEvent(root, null);
     goog.testing.events.fireMouseOutEvent(root, null, coordinate);
     assertEventTypes(['mouseout', 'mouseout']);
-    assertCoordinates([new goog.math.Coordinate(), coordinate]);
+    assertCoordinates([goog.style.getClientPosition(root), coordinate]);
   }
 
   function testClickSequence() {
     assertTrue(goog.testing.events.fireClickSequence(root));
     assertEventTypes(['mousedown', 'mouseup', 'click']);
+    var rootPosition = goog.style.getClientPosition(root);
+    assertCoordinates([rootPosition, rootPosition, rootPosition]);
   }
 
   function testClickSequenceWithCoordinate() {
     assertTrue(goog.testing.events.fireClickSequence(root, null, coordinate));
     assertCoordinates([coordinate, coordinate, coordinate]);
     assertArrayEquals([false, false, false], firedShiftKeys);
+  }
+
+  function testTouchStart() {
+    goog.testing.events.fireTouchStartEvent(root);
+    goog.testing.events.fireTouchStartEvent(root, coordinate);
+    assertEventTypes(['touchstart', 'touchstart']);
+    assertCoordinates([goog.style.getClientPosition(root), coordinate]);
+  }
+
+  function testTouchMove() {
+    goog.testing.events.fireTouchMoveEvent(root);
+    goog.testing.events.fireTouchMoveEvent(root, coordinate, {touches: []});
+    assertEventTypes(['touchmove', 'touchmove']);
+    assertCoordinates([goog.style.getClientPosition(root), coordinate]);
+  }
+
+  function testTouchEnd() {
+    goog.testing.events.fireTouchEndEvent(root);
+    goog.testing.events.fireTouchEndEvent(root, coordinate);
+    assertEventTypes(['touchend', 'touchend']);
+    assertCoordinates([goog.style.getClientPosition(root), coordinate]);
+  }
+
+  function testTouchSequence() {
+    assertTrue(goog.testing.events.fireTouchSequence(root));
+    assertEventTypes(['touchstart', 'touchend']);
+    var rootPosition = goog.style.getClientPosition(root);
+    assertCoordinates([rootPosition, rootPosition]);
+  }
+
+  function testTouchSequenceWithCoordinate() {
+    assertTrue(goog.testing.events.fireTouchSequence(root, coordinate));
+    assertCoordinates([coordinate, coordinate]);
   }
 
   function testClickSequenceWithEventProperty() {
@@ -264,7 +348,7 @@ See the COPYING file for details.
   function testKeySequenceWithEscapeKey() {
     assertTrue(goog.testing.events.fireKeySequence(
         root, goog.events.KeyCodes.ESC));
-    if (goog.userAgent.WEBKIT && goog.userAgent.isVersion('525')) {
+    if (goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525')) {
       assertEventTypes(['keydown', 'keyup']);
     } else {
       assertEventTypes(['keydown', 'keypress', 'keyup']);
@@ -356,7 +440,9 @@ See the COPYING file for details.
   var CONTEXTMENU_SEQ =
       goog.userAgent.WINDOWS ? ['mousedown', 'mouseup', 'contextmenu'] :
       goog.userAgent.GECKO ? ['mousedown', 'contextmenu', 'mouseup'] :
-      ['mousedown', 'contextmenu'];
+      goog.userAgent.WEBKIT && goog.userAgent.MAC ?
+          ['mousedown', 'contextmenu', 'mouseup', 'click'] :
+      ['mousedown', 'contextmenu', 'mouseup'];
 
   function testContextMenuSequence() {
     assertTrue(goog.testing.events.fireContextMenuSequence(root));
@@ -377,11 +463,7 @@ See the COPYING file for details.
 
   function testContextMenuSequenceCancellingMouseup() {
     preventDefaultEventType('mouseup');
-    if (goog.userAgent.WINDOWS || goog.userAgent.GECKO) {
-      assertFalse(goog.testing.events.fireContextMenuSequence(root));
-    } else {
-      assertTrue(goog.testing.events.fireContextMenuSequence(root));
-    }
+    assertFalse(goog.testing.events.fireContextMenuSequence(root));
     assertEventTypes(CONTEXTMENU_SEQ);
   }
 
@@ -389,6 +471,119 @@ See the COPYING file for details.
     preventDefaultEventType('contextmenu');
     assertFalse(goog.testing.events.fireContextMenuSequence(root));
     assertEventTypes(CONTEXTMENU_SEQ);
+  }
+
+  function testContextMenuSequenceFakeMacWebkit() {
+    stubs.set(goog.userAgent, 'WINDOWS', false);
+    stubs.set(goog.userAgent, 'MAC', true);
+    stubs.set(goog.userAgent, 'WEBKIT', true);
+    assertTrue(goog.testing.events.fireContextMenuSequence(root));
+    assertEventTypes(['mousedown', 'contextmenu', 'mouseup', 'click']);
+  }
+
+  function testCaptureBubble_simple() {
+    assertTrue(goog.testing.events.fireClickEvent(childEl));
+    assertObjectEquals({
+      parentCapture: 1,
+      childCapture: 1,
+      childBubble: 1,
+      parentBubble: 1
+    }, eventCount);
+  }
+
+  function testCaptureBubble_preventDefault() {
+    goog.events.listen(childEl, goog.events.EventType.CLICK,
+        function(e) {
+          e.preventDefault();
+        });
+    assertFalse(goog.testing.events.fireClickEvent(childEl));
+    assertObjectEquals({
+      parentCapture: 1,
+      childCapture: 1,
+      childBubble: 1,
+      parentBubble: 1
+    }, eventCount);
+  }
+
+  function testCaptureBubble_stopPropagationParentCapture() {
+    goog.events.listen(parentEl, goog.events.EventType.CLICK,
+        function(e) {
+          e.stopPropagation();
+        }, true /* capture */);
+    assertTrue(goog.testing.events.fireClickEvent(childEl));
+    assertObjectEquals({
+      parentCapture: 1,
+      childCapture: 0,
+      childBubble: 0,
+      parentBubble: 0
+    }, eventCount);
+  }
+
+  function testCaptureBubble_stopPropagationChildCapture() {
+    goog.events.listen(childEl, goog.events.EventType.CLICK,
+        function(e) {
+          e.stopPropagation();
+        }, true /* capture */);
+    assertTrue(goog.testing.events.fireClickEvent(childEl));
+    assertObjectEquals({
+      parentCapture: 1,
+      childCapture: 1,
+      childBubble: 0,
+      parentBubble: 0
+    }, eventCount);
+  }
+
+  function testCaptureBubble_stopPropagationChildBubble() {
+    goog.events.listen(childEl, goog.events.EventType.CLICK,
+        function(e) {
+          e.stopPropagation();
+        });
+    assertTrue(goog.testing.events.fireClickEvent(childEl));
+    assertObjectEquals({
+      parentCapture: 1,
+      childCapture: 1,
+      childBubble: 1,
+      parentBubble: 0
+    }, eventCount);
+  }
+
+  function testCaptureBubble_stopPropagationParentBubble() {
+    goog.events.listen(parentEl, goog.events.EventType.CLICK,
+        function(e) {
+          e.stopPropagation();
+        });
+    assertTrue(goog.testing.events.fireClickEvent(childEl));
+    assertObjectEquals({
+      parentCapture: 1,
+      childCapture: 1,
+      childBubble: 1,
+      parentBubble: 1
+    }, eventCount);
+  }
+
+  function testMixinListenable() {
+    var obj = {};
+    obj.doFoo = goog.testing.recordFunction();
+
+    goog.testing.events.mixinListenable(obj);
+
+    obj.doFoo();
+    assertEquals(1, obj.doFoo.getCallCount());
+
+    var handler = goog.testing.recordFunction();
+    goog.events.listen(obj, 'test', handler);
+    obj.dispatchEvent('test');
+    assertEquals(1, handler.getCallCount());
+    assertEquals(obj, handler.getLastCall().getArgument(0).target);
+
+    goog.events.unlisten(obj, 'test', handler);
+    obj.dispatchEvent('test');
+    assertEquals(1, handler.getCallCount());
+
+    goog.events.listen(obj, 'test', handler);
+    obj.dispose();
+    obj.dispatchEvent('test');
+    assertEquals(1, handler.getCallCount());
   }
 
   /**
@@ -403,6 +598,7 @@ See the COPYING file for details.
    */
   function assertCoordinates(list) {
     assertArrayEquals(list, firedEventCoordinates);
+    assertArrayEquals(list, firedScreenCoordinates);
   }
 
   /** Prevent default the event of the given type on the root element. */

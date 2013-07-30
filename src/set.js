@@ -12,11 +12,11 @@ Sk.builtin.set = function(S)
     }
 
     this.set_reset_();
-    S = new Sk.builtin.list(S);
+    var S_list = new Sk.builtin.list(S);
     // python sorts sets on init, but not thereafter.
     // Skulpt seems to init a new set each time you add/remove something
     //Sk.builtin.list.prototype['sort'].func_code(S);
-    for (var it = S.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+    for (var it = S_list.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
     {
         Sk.builtin.set.prototype['add'].func_code(this, i);
     }

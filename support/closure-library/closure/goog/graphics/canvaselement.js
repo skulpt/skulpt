@@ -16,7 +16,7 @@
 /**
  * @fileoverview Objects representing shapes drawn on a canvas.
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author wcrosby@google.com (Wayne Crosby)
  */
 
 goog.provide('goog.graphics.CanvasEllipseElement');
@@ -29,6 +29,7 @@ goog.provide('goog.graphics.CanvasTextElement');
 
 goog.require('goog.array');
 goog.require('goog.dom');
+goog.require('goog.dom.TagName');
 goog.require('goog.graphics.EllipseElement');
 goog.require('goog.graphics.GroupElement');
 goog.require('goog.graphics.ImageElement');
@@ -36,6 +37,9 @@ goog.require('goog.graphics.Path');
 goog.require('goog.graphics.PathElement');
 goog.require('goog.graphics.RectElement');
 goog.require('goog.graphics.TextElement');
+goog.require('goog.math');
+goog.require('goog.string');
+
 
 
 /**
@@ -47,6 +51,9 @@ goog.require('goog.graphics.TextElement');
  *     this element.
  * @constructor
  * @extends {goog.graphics.GroupElement}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.CanvasGroupElement = function(graphics) {
   goog.graphics.GroupElement.call(this, null, graphics);
@@ -64,6 +71,7 @@ goog.inherits(goog.graphics.CanvasGroupElement, goog.graphics.GroupElement);
 
 /**
  * Remove all drawing elements from the group.
+ * @override
  */
 goog.graphics.CanvasGroupElement.prototype.clear = function() {
   if (this.children_.length) {
@@ -77,6 +85,7 @@ goog.graphics.CanvasGroupElement.prototype.clear = function() {
  * Set the size of the group element.
  * @param {number|string} width The width of the group element.
  * @param {number|string} height The height of the group element.
+ * @override
  */
 goog.graphics.CanvasGroupElement.prototype.setSize = function(width, height) {
   // Do nothing.
@@ -101,6 +110,7 @@ goog.graphics.CanvasGroupElement.prototype.draw = function(ctx) {
     this.getGraphics().drawElement(this.children_[i]);
   }
 };
+
 
 
 /**
@@ -181,7 +191,9 @@ goog.inherits(goog.graphics.CanvasEllipseElement, goog.graphics.EllipseElement);
  */
 goog.graphics.CanvasEllipseElement.prototype.setUpPath_ = function() {
   this.path_.clear();
-  this.path_.arc(this.cx_, this.cy_, this.rx_, this.ry_, 0, 360, false);
+  this.path_.moveTo(this.cx_ + goog.math.angleDx(0, this.rx_),
+                    this.cy_ + goog.math.angleDy(0, this.ry_));
+  this.path_.arcTo(this.rx_, this.ry_, 0, 360);
   this.path_.close();
 };
 
@@ -190,6 +202,7 @@ goog.graphics.CanvasEllipseElement.prototype.setUpPath_ = function() {
  * Update the center point of the ellipse.
  * @param {number} cx Center X coordinate.
  * @param {number} cy Center Y coordinate.
+ * @override
  */
 goog.graphics.CanvasEllipseElement.prototype.setCenter = function(cx, cy) {
   this.cx_ = cx;
@@ -203,6 +216,7 @@ goog.graphics.CanvasEllipseElement.prototype.setCenter = function(cx, cy) {
  * Update the radius of the ellipse.
  * @param {number} rx Center X coordinate.
  * @param {number} ry Center Y coordinate.
+ * @override
  */
 goog.graphics.CanvasEllipseElement.prototype.setRadius = function(rx, ry) {
   this.rx_ = rx;
@@ -219,6 +233,7 @@ goog.graphics.CanvasEllipseElement.prototype.setRadius = function(rx, ry) {
 goog.graphics.CanvasEllipseElement.prototype.draw = function(ctx) {
   this.pathElement_.draw(ctx);
 };
+
 
 
 /**
@@ -280,6 +295,7 @@ goog.inherits(goog.graphics.CanvasRectElement, goog.graphics.RectElement);
  * Update the position of the rectangle.
  * @param {number} x X coordinate (left).
  * @param {number} y Y coordinate (top).
+ * @override
  */
 goog.graphics.CanvasRectElement.prototype.setPosition = function(x, y) {
   this.x_ = x;
@@ -302,6 +318,7 @@ goog.graphics.CanvasRectElement.prototype.drawn_ = false;
  * Update the size of the rectangle.
  * @param {number} width Width of rectangle.
  * @param {number} height Height of rectangle.
+ * @override
  */
 goog.graphics.CanvasRectElement.prototype.setSize = function(width, height) {
   this.w_ = width;
@@ -325,6 +342,7 @@ goog.graphics.CanvasRectElement.prototype.draw = function(ctx) {
   ctx.lineTo(this.x_ + this.w_, this.y_);
   ctx.closePath();
 };
+
 
 
 /**
@@ -369,6 +387,7 @@ goog.graphics.CanvasPathElement.prototype.path_;
 /**
  * Update the underlying path.
  * @param {!goog.graphics.Path} path The path object to draw.
+ * @override
  */
 goog.graphics.CanvasPathElement.prototype.setPath = function(path) {
   this.path_ = path.isSimple() ? path :
@@ -382,6 +401,7 @@ goog.graphics.CanvasPathElement.prototype.setPath = function(path) {
 /**
  * Draw the path.  Should be treated as package scope.
  * @param {CanvasRenderingContext2D} ctx The context to draw the element in.
+ * @suppress {deprecated} goog.graphics is deprecated.
  */
 goog.graphics.CanvasPathElement.prototype.draw = function(ctx) {
   this.drawn_ = true;
@@ -413,6 +433,7 @@ goog.graphics.CanvasPathElement.prototype.draw = function(ctx) {
 };
 
 
+
 /**
  * Thin wrapper for canvas text elements.
  * This is an implementation of the goog.graphics.TextElement interface.
@@ -434,7 +455,10 @@ goog.graphics.CanvasPathElement.prototype.draw = function(ctx) {
  */
 goog.graphics.CanvasTextElement = function(graphics, text, x1, y1, x2, y2,
     align, font, stroke, fill) {
-  goog.graphics.TextElement.call(this, null, graphics, stroke, fill);
+  var element = goog.dom.createDom(goog.dom.TagName.DIV, {
+    'style': 'display:table;position:absolute;padding:0;margin:0;border:0'
+  });
+  goog.graphics.TextElement.call(this, element, graphics, stroke, fill);
 
   /**
    * The text to draw.
@@ -486,29 +510,20 @@ goog.graphics.CanvasTextElement = function(graphics, text, x1, y1, x2, y2,
   this.font_ = font;
 
   /**
-   * The root element.
-   * @type {Element}
-   * @private
-   */
-  this.element_ = goog.dom.createDom('DIV', {'style':
-    'display:table;position:absolute;padding:0;margin:0;border:0'
-  });
-
-  /**
    * The inner element that contains the text.
    * @type {Element}
    * @private
    */
-  this.innerElement_ = goog.dom.createDom('DIV', {'style':
-    'display:table-cell;padding: 0;margin: 0;border: 0'
+  this.innerElement_ = goog.dom.createDom('DIV', {
+    'style': 'display:table-cell;padding: 0;margin: 0;border: 0'
   });
 
   this.updateStyle_();
   this.updateText_();
 
   // Append to the DOM.
-  graphics.getElement().appendChild(this.element_);
-  this.element_.appendChild(this.innerElement_);
+  graphics.getElement().appendChild(element);
+  element.appendChild(this.innerElement_);
 };
 goog.inherits(goog.graphics.CanvasTextElement, goog.graphics.TextElement);
 
@@ -516,6 +531,7 @@ goog.inherits(goog.graphics.CanvasTextElement, goog.graphics.TextElement);
 /**
  * Update the displayed text of the element.
  * @param {string} text The text to draw.
+ * @override
  */
 goog.graphics.CanvasTextElement.prototype.setText = function(text) {
   this.text_ = text;
@@ -526,11 +542,13 @@ goog.graphics.CanvasTextElement.prototype.setText = function(text) {
 /**
  * Sets the fill for this element.
  * @param {goog.graphics.Fill} fill The fill object.
+ * @override
  */
 goog.graphics.CanvasTextElement.prototype.setFill = function(fill) {
-  this.fill_ = fill;
-  if (this.element_) {
-    this.element_.style.color = fill.getColor() || fill.getColor1();
+  this.fill = fill;
+  var element = this.getElement();
+  if (element) {
+    element.style.color = fill.getColor() || fill.getColor1();
   }
 };
 
@@ -538,6 +556,7 @@ goog.graphics.CanvasTextElement.prototype.setFill = function(fill) {
 /**
  * Sets the stroke for this element.
  * @param {goog.graphics.Stroke} stroke The stroke object.
+ * @override
  */
 goog.graphics.CanvasTextElement.prototype.setStroke = function(stroke) {
   // Ignore stroke
@@ -564,7 +583,7 @@ goog.graphics.CanvasTextElement.prototype.updateStyle_ = function() {
   var y2 = this.y2_;
   var align = this.align_;
   var font = this.font_;
-  var style = this.element_.style;
+  var style = this.getElement().style;
   var scaleX = this.getGraphics().getPixelScaleX();
   var scaleY = this.getGraphics().getPixelScaleY();
 
@@ -614,12 +633,14 @@ goog.graphics.CanvasTextElement.prototype.updateText_ = function() {
   if (this.x1_ == this.x2_) {
     // Special case vertical text
     this.innerElement_.innerHTML =
-        goog.array.map(this.text_.split(''), goog.string.htmlEscape).
+        goog.array.map(this.text_.split(''),
+            function(entry) { return goog.string.htmlEscape(entry); }).
             join('<br>');
   } else {
     this.innerElement_.innerHTML = goog.string.htmlEscape(this.text_);
   }
 };
+
 
 
 /**
@@ -696,6 +717,7 @@ goog.graphics.CanvasImageElement.prototype.drawn_ = false;
  * Update the position of the image.
  * @param {number} x X coordinate (left).
  * @param {number} y Y coordinate (top).
+ * @override
  */
 goog.graphics.CanvasImageElement.prototype.setPosition = function(x, y) {
   this.x_ = x;
@@ -710,6 +732,7 @@ goog.graphics.CanvasImageElement.prototype.setPosition = function(x, y) {
  * Update the size of the image.
  * @param {number} width Width of rectangle.
  * @param {number} height Height of rectangle.
+ * @override
  */
 goog.graphics.CanvasImageElement.prototype.setSize = function(width, height) {
   this.w_ = width;
@@ -723,6 +746,7 @@ goog.graphics.CanvasImageElement.prototype.setSize = function(width, height) {
 /**
  * Update the source of the image.
  * @param {string} src Source of the image.
+ * @override
  */
 goog.graphics.CanvasImageElement.prototype.setSource = function(src) {
   this.src_ = src;

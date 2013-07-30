@@ -1,7 +1,7 @@
 /*
  * Copyright 2010 The Closure Library Authors. All Rights Reserved.
  *
- * Use of this source code is governed by an Apache 2.0 License.
+ * Use of this source code is governed by the Apache License, Version 2.0.
  * See the COPYING file for details.
  */
 
@@ -26,7 +26,7 @@
                 https://bugs.webkit.org/show_bug.cgi?id=28152 is resolved. */
   background: -webkit-gradient(linear, 0% 40%, 0% 70%, from(#f9f9f9),
       to(#e3e3e3));
-  background: -moz-linear-gradient(top, #f9f9f9, #e3e3e3);
+  /* @alternate */ background: -moz-linear-gradient(top, #f9f9f9, #e3e3e3);
 }
 
 
@@ -39,11 +39,11 @@
   border-color: #444;
 }
 
-.goog-css3-button-active, .goog-css3-button-open {
+.goog-css3-button-active, .goog-css3-button-open, .goog-css3-button-checked {
   border-color: #444 !important;
   background: -webkit-gradient(linear, 0% 40%, 0% 70%, from(#e3e3e3),
       to(#f9f9f9));
-  background: -moz-linear-gradient(top, #e3e3e3, #f9f9f9);
+  /* @alternate */ background: -moz-linear-gradient(top, #e3e3e3, #f9f9f9);
 }
 
 .goog-css3-button-disabled {

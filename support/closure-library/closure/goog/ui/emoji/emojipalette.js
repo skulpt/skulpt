@@ -22,17 +22,16 @@
  *
  * Based on goog.ui.ColorPicker (colorpicker.js).
  *
-*
  */
 
 goog.provide('goog.ui.emoji.EmojiPalette');
 
-goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.net.ImageLoader');
 goog.require('goog.ui.Palette');
 goog.require('goog.ui.emoji.Emoji');
 goog.require('goog.ui.emoji.EmojiPaletteRenderer');
+
 
 
 /**
@@ -77,7 +76,7 @@ goog.ui.emoji.EmojiPalette = function(emoji,
    * [HTMLDivElement, goog.ui.emoji.Emoji], and represents the palette item
    * for that animated emoji, and the Emoji object.
    *
-   * @type {Array.<Array.<HTMLDivElement, goog.ui.emoji.Emoji>>}
+   * @type {Array.<Array.<(HTMLDivElement|goog.ui.emoji.Emoji)>>}
    * @private
    */
   this.animatedEmoji_ = [];
@@ -92,14 +91,6 @@ goog.ui.emoji.EmojiPalette = function(emoji,
    * @private
    */
   this.emoji_ = this.getEmojiArrayFromProperties_(emoji);
-
-  /**
-   * The renderer for this emoji palette.
-   *
-   * @type {goog.ui.ControlRenderer|undefined}
-   * @private
-   */
-  this.renderer_ = this.getRenderer();
 
   this.setContent(this.emoji_);
 };
@@ -157,10 +148,8 @@ goog.ui.emoji.EmojiPalette.prototype.getEmojiArrayFromProperties_ =
     var displayUrl = spriteInfo ? spriteInfo.getUrl() :
                      this.urlPrefix_ + url;
 
-    var item = this.renderer_.createPaletteItem(this.getDomHelper(),
-                                                id,
-                                                spriteInfo,
-                                                displayUrl);
+    var item = this.getRenderer().createPaletteItem(
+        this.getDomHelper(), id, spriteInfo, displayUrl);
     emojiItems.push(item);
 
     var emoji = new goog.ui.emoji.Emoji(url, id);
@@ -191,8 +180,9 @@ goog.ui.emoji.EmojiPalette.prototype.getEmojiArrayFromProperties_ =
 goog.ui.emoji.EmojiPalette.prototype.loadAnimatedEmoji = function() {
   if (this.animatedEmoji_.length > 0) {
     for (var i = 0; i < this.animatedEmoji_.length; i++) {
-      var paletteItem = this.animatedEmoji_[i][0];
-      var emoji = this.animatedEmoji_[i][1];
+      var paletteItem = /** @type {Element} */ (this.animatedEmoji_[i][0]);
+      var emoji =
+          /** @type {goog.ui.emoji.Emoji} */ (this.animatedEmoji_[i][1]);
       var url = this.urlPrefix_ + emoji.getUrl();
 
       this.imageLoader_.addImage(emoji.getId(), url);
@@ -235,7 +225,7 @@ goog.ui.emoji.EmojiPalette.prototype.getImageLoader = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.emoji.EmojiPalette.prototype.disposeInternal = function() {
   goog.ui.emoji.EmojiPalette.superClass_.disposeInternal.call(this);
 

@@ -181,7 +181,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
 //	if (Sk.debugCode)
 //		Sk.debugout(finalcode);
 
-    var modlocs = goog.global.eval(finalcode);
+    var modlocs = goog.global['eval'](finalcode);
 
     // pass in __name__ so the module can set it (so that the code can access
     // it), but also set it after we're done so that builtins don't have to

@@ -34,7 +34,6 @@
  * large) will have many (empty) spots and thus, are inefficient.
  *
  *
-*
  */
 
 goog.provide('goog.proto2.PbLiteSerializer');
@@ -55,17 +54,42 @@ goog.inherits(goog.proto2.PbLiteSerializer, goog.proto2.LazyDeserializer);
 
 
 /**
+ * If true, fields will be serialized with 0-indexed tags (i.e., the proto
+ * field with tag id 1 will have index 0 in the array).
+ * @type {boolean}
+ * @private
+ */
+goog.proto2.PbLiteSerializer.prototype.zeroIndexing_ = false;
+
+
+/**
+ * By default, the proto tag with id 1 will have index 1 in the serialized
+ * array.
+ *
+ * If the serializer is set to use zero-indexing, the tag with id 1 will have
+ * index 0.
+ *
+ * @param {boolean} zeroIndexing Whether this serializer should deal with
+ *     0-indexed protos.
+ */
+goog.proto2.PbLiteSerializer.prototype.setZeroIndexed = function(zeroIndexing) {
+  this.zeroIndexing_ = zeroIndexing;
+};
+
+
+/**
  * Serializes a message to a PB-Lite object.
  *
  * @param {goog.proto2.Message} message The message to be serialized.
- *
- * @return {Object} The serialized form of the message.
+ * @return {!Array} The serialized form of the message.
+ * @override
  */
 goog.proto2.PbLiteSerializer.prototype.serialize = function(message) {
   var descriptor = message.getDescriptor();
   var fields = descriptor.getFields();
 
   var serialized = [];
+  var zeroIndexing = this.zeroIndexing_;
 
   // Add the known fields.
   for (var i = 0; i < fields.length; i++) {
@@ -76,56 +100,60 @@ goog.proto2.PbLiteSerializer.prototype.serialize = function(message) {
     }
 
     var tag = field.getTag();
+    var index = zeroIndexing ? tag - 1 : tag;
 
     if (field.isRepeated()) {
-      serialized[tag] = [];
+      serialized[index] = [];
 
       for (var j = 0; j < message.countOf(field); j++) {
-        serialized[tag][j] =
+        serialized[index][j] =
             this.getSerializedValue(field, message.get(field, j));
       }
     } else {
-      serialized[tag] = this.getSerializedValue(field, message.get(field));
+      serialized[index] = this.getSerializedValue(field, message.get(field));
     }
   }
 
   // Add any unknown fields.
   message.forEachUnknown(function(tag, value) {
-    serialized[tag] = value;
+    var index = zeroIndexing ? tag - 1 : tag;
+    serialized[index] = value;
   });
 
   return serialized;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.proto2.PbLiteSerializer.prototype.deserializeField =
-  function(message, field, value) {
+    function(message, field, value) {
 
-   if (value == null) {
-     return null;
-   }
+  if (value == null) {
+    // Since value double-equals null, it may be either null or undefined.
+    // Ensure we return the same one, since they have different meanings.
+    return value;
+  }
 
-   if (field.isRepeated()) {
-     var data = [];
+  if (field.isRepeated()) {
+    var data = [];
 
-     goog.proto2.Util.assert(goog.isArray(value));
+    goog.proto2.Util.assert(goog.isArray(value));
 
-     for (var i = 0; i < value.length; i++) {
-       data[i] = this.getDeserializedValue(field, value[i]);
-     }
+    for (var i = 0; i < value.length; i++) {
+      data[i] = this.getDeserializedValue(field, value[i]);
+    }
 
-     return data;
-   } else {
-     return this.getDeserializedValue(field, value);
-   }
+    return data;
+  } else {
+    return this.getDeserializedValue(field, value);
+  }
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.proto2.PbLiteSerializer.prototype.getSerializedValue =
-  function(field, value) {
-  if (field.getFieldType() == goog.proto2.Message.FieldType.BOOL) {
+    function(field, value) {
+  if (field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.BOOL) {
     // Booleans are serialized in numeric form.
     return value ? 1 : 0;
   }
@@ -134,15 +162,32 @@ goog.proto2.PbLiteSerializer.prototype.getSerializedValue =
                                                                    arguments);
 };
 
-/** @inheritDoc */
-goog.proto2.PbLiteSerializer.prototype.getDeserializedValue =
-  function(field, value) {
 
-  if (field.getFieldType() == goog.proto2.Message.FieldType.BOOL) {
+/** @override */
+goog.proto2.PbLiteSerializer.prototype.getDeserializedValue =
+    function(field, value) {
+
+  if (field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.BOOL) {
     // Booleans are serialized in numeric form.
     return value === 1;
   }
 
   return goog.proto2.Serializer.prototype.getDeserializedValue.apply(this,
                                                                      arguments);
+};
+
+
+/** @override */
+goog.proto2.PbLiteSerializer.prototype.deserialize =
+    function(descriptor, data) {
+  var toConvert = data;
+  if (this.zeroIndexing_) {
+    // Make the data align with tag-IDs (1-indexed) by shifting everything
+    // up one.
+    toConvert = [];
+    for (var key in data) {
+      toConvert[parseInt(key, 10) + 1] = data[key];
+    }
+  }
+  return goog.base(this, 'deserialize', descriptor, toConvert);
 };

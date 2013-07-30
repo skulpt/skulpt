@@ -15,11 +15,11 @@
 /**
  * @fileoverview Detects the Adobe Reader PDF browser plugin.
  *
-*
+ * @author chrisn@google.com (Chris Nokleberg)
  * @see ../demos/useragent.html
  */
 
-
+/** @suppress {extraProvide} */
 goog.provide('goog.userAgent.adobeReader');
 
 goog.require('goog.string');
@@ -29,7 +29,7 @@ goog.require('goog.userAgent');
 (function() {
   var version = '';
   if (goog.userAgent.IE) {
-    function detectOnIe(classId) {
+    var detectOnIe = function(classId) {
       /** @preserveTry */
       try {
         new ActiveXObject(classId);
@@ -37,13 +37,13 @@ goog.require('goog.userAgent');
       } catch (ex) {
         return false;
       }
-    }
+    };
     if (detectOnIe('AcroPDF.PDF.1')) {
       version = '7';
     } else if (detectOnIe('PDF.PdfCtrl.6')) {
       version = '6';
     }
-    // TODO(user): Add detection for previous versions if anyone needs them.
+    // TODO(chrisn): Add detection for previous versions if anyone needs them.
   } else {
     if (navigator.mimeTypes && navigator.mimeTypes.length > 0) {
       var mimeType = navigator.mimeTypes['application/pdf'];

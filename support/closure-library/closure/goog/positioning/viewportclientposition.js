@@ -16,7 +16,7 @@
  * @fileoverview Client viewport positioning class.
  *
  * @author robbyw@google.com (Robert Walker)
-*
+ * @author eae@google.com (Emil A Eklund)
  */
 
 goog.provide('goog.positioning.ViewportClientPosition');
@@ -46,6 +46,24 @@ goog.inherits(goog.positioning.ViewportClientPosition,
 
 
 /**
+ * The last-resort overflow strategy, if the popup fails to fit.
+ * @type {number}
+ * @private
+ */
+goog.positioning.ViewportClientPosition.prototype.lastResortOverflow_ = 0;
+
+
+/**
+ * Set the last-resort overflow strategy, if the popup fails to fit.
+ * @param {number} overflow A bitmask of goog.positioning.Overflow strategies.
+ */
+goog.positioning.ViewportClientPosition.prototype.setLastResortOverflow =
+    function(overflow) {
+  this.lastResortOverflow_ = overflow;
+};
+
+
+/**
  * Repositions the popup according to the current state.
  *
  * @param {Element} element The DOM element of the popup.
@@ -54,6 +72,7 @@ goog.inherits(goog.positioning.ViewportClientPosition,
  *     One of the goog.positioning.Corner constants.
  * @param {goog.math.Box=} opt_margin A margin specified in pixels.
  * @param {goog.math.Size=} opt_preferredSize Preferred size fo the element.
+ * @override
  */
 goog.positioning.ViewportClientPosition.prototype.reposition = function(
     element, popupCorner, opt_margin, opt_preferredSize) {
@@ -97,6 +116,6 @@ goog.positioning.ViewportClientPosition.prototype.reposition = function(
   // If that failed, the viewport is simply too small to contain the popup.
   // Revert to the original position.
   goog.positioning.positionAtCoordinate(
-      clientPos, element, popupCorner, opt_margin, viewport, undefined,
-      opt_preferredSize);
+      clientPos, element, popupCorner, opt_margin, viewport,
+      this.lastResortOverflow_, opt_preferredSize);
 };

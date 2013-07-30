@@ -3,13 +3,14 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
 Author: arv@google.com (Erik Arvidsson)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.dom.FontSizeMonitor</title>
 <script src="../base.js"></script>
 <script>
@@ -32,7 +33,7 @@ goog.require('goog.userAgent');
 <script>
 
 function isBuggyGecko() {
-  return goog.userAgent.GECKO && !goog.userAgent.isVersion('1.9');
+  return goog.userAgent.GECKO && !goog.userAgent.isVersionOrHigher('1.9');
 }
 
 var monitor;
@@ -204,7 +205,7 @@ function testFirefox2WorkAroundFirefox3() {
   try {
     // 1.9 should clear iframes
     pr.set(goog.userAgent, 'VERSION', '1.9');
-    goog.userAgent.isVersionCache_ = {};
+    goog.userAgent.isVersionOrHigherCache_ = {};
 
     var frameCount = window.frames.length;
     var iframeElementCount = document.getElementsByTagName('iframe').length;
@@ -238,7 +239,7 @@ function testFirefox2WorkAroundFirefox2() {
   try {
     // 1.8 should NOT clear iframes
     pr.set(goog.userAgent, 'VERSION', '1.8');
-    goog.userAgent.isVersionCache_ = {};
+    goog.userAgent.isVersionOrHigherCache_ = {};
 
     var frameCount = window.frames.length;
     var iframeElementCount = document.getElementsByTagName('iframe').length;

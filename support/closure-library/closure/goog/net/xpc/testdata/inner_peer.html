@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <!--
-  Author: bpearcy@google.com (Brandon Pearcy)
 
   This file is responsible for setting up the inner peer half of an XPC
   communication channel. It instantiates a CrossPageChannel and attempts to
@@ -11,22 +10,25 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 
 <head>
-<script src="../../../base.js"></script>
-<script>
+<title>XPC test inner frame</title>
+<script src="../../../base.js" type="text/javascript"></script>
+<script type="text/javascript">
 goog.require('goog.debug.Logger');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.net.xpc.CrossPageChannel');
 </script>
-<script>
+<script type="text/javascript">
 var channel;
 var queuedMessage;
+
+var OBJECT_RESULT_FROM_SERVICE = {'favorites': 'pie'};
 
 function clearDebug() {
   document.getElementById('debugDiv').innerHTML = '';
@@ -38,48 +40,34 @@ function instantiateChannel(cfg) {
   }
   window.channel = new goog.net.xpc.CrossPageChannel(cfg);
   window.channel.registerService('echo', echoHandler);
+  window.channel.registerService('response', responseHandler);
+  connectChannel(
+      parent.driver && parent.driver.innerFrameConnected ?
+      goog.bind(parent.driver.innerFrameConnected, parent.driver) : null);
 }
 
 function connectChannel(opt_callback) {
-  var callback = opt_callback || goog.nullFunction;
+  window.channel.connect(opt_callback || goog.nullFunction);
+}
 
-  window.channel.connect(function() {
-    callback();
+function sendEcho(payload) {
+  window.channel.send('echo', payload);
+}
 
-    var message = window.queuedMessage;
-    if (message) {
-      window.queuedMessage = null;
-      echoHandler(message);
-    }
-  });
+function echoHandler(payload) {
+  window.channel.send('response', payload);
+  return OBJECT_RESULT_FROM_SERVICE;
 }
 
 function isConnected() {
   return window.channel && window.channel.isConnected();
 }
 
-function echoHandler(payload) {
-  // TODO(user): Works around the bug where the parent
-  // can get the connect callback before the child is
-  // marked as connected.
-  if (isConnected()) {
-    window.channel.send('msg', payload);
-  } else {
-    window.queuedMessage = payload;
+function responseHandler(payload) {
+  if (parent.driver && parent.driver.innerFrameGotResponse) {
+    parent.driver.innerFrameGotResponse(payload);
   }
 }
-
-function handleLoad(evt) {
-  // Get the channel configuration passed by the containing document.
-  var xpc = (new goog.Uri(window.location.href)).getParameterValue('xpc');
-  if (xpc) {
-    var cfg = goog.json.parse(xpc);
-    instantiateChannel(cfg);
-    connectChannel();
-  }
-}
-
-goog.events.listen(window, goog.events.EventType.LOAD, handleLoad);
 
 </script>
 </head>
@@ -91,7 +79,7 @@ goog.events.listen(window, goog.events.EventType.LOAD, handleLoad);
   <div id=debugDiv style="border: 1px #000000 solid; font-size:xx-small"></div>
 </div>
 
-<script>
+<script type="text/javascript">
 var debugDiv = goog.dom.getElement('debugDiv');
 var logger = goog.debug.Logger.getLogger('goog.net.xpc');
 logger.setLevel(goog.debug.Logger.Level.ALL);
@@ -100,6 +88,7 @@ logger.addHandler(function(logRecord) {
   msgElm.innerHTML = logRecord.getMessage();
   goog.dom.appendChild(debugDiv, msgElm);
 });
+
 </script>
 
 </body>

@@ -15,13 +15,12 @@
 /**
  * @fileoverview A toolbar toggle button control.
  *
-*
-*
+ * @author attila@google.com (Attila Bodis)
+ * @author ssaviano@google.com (Steven Saviano)
  */
 
 goog.provide('goog.ui.ToolbarToggleButton');
 
-goog.require('goog.ui.ControlContent');
 goog.require('goog.ui.ToggleButton');
 goog.require('goog.ui.ToolbarButtonRenderer');
 goog.require('goog.ui.registry');

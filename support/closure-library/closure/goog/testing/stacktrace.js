@@ -15,7 +15,6 @@
 /**
  * @fileoverview Tools for parsing and pretty printing error stack traces.
  *
-*
  */
 
 goog.provide('goog.testing.stacktrace');
@@ -100,6 +99,18 @@ goog.testing.stacktrace.Frame.prototype.toCanonicalString = function() {
  * @private
  */
 goog.testing.stacktrace.MAX_DEPTH_ = 20;
+
+
+/**
+ * Maximum length of a string that can be matched with a RegExp on
+ * Firefox 3x. Exceeding this approximate length will cause string.match
+ * to exceed Firefox's stack quota. This situation can be encountered
+ * when goog.globalEval is invoked with a long argument; such as
+ * when loading a module.
+ * @type {number}
+ * @private
+ */
+goog.testing.stacktrace.MAX_FIREFOX_FRAMESTRING_LENGTH_ = 500000;
 
 
 /**
@@ -197,12 +208,75 @@ goog.testing.stacktrace.FIREFOX_STACK_FRAME_REGEXP_ = new RegExp('^' +
 
 
 /**
+ * RegExp pattern for an anonymous function call in an Opera stack frame.
+ * Creates 2 (optional) submatches: the context object and function name.
+ * @type {string}
+ * @const
+ * @private
+ */
+goog.testing.stacktrace.OPERA_ANONYMOUS_FUNCTION_NAME_PATTERN_ =
+    '<anonymous function(?:\\: ' +
+    '(?:(' + goog.testing.stacktrace.IDENTIFIER_PATTERN_ +
+    '(?:\\.' + goog.testing.stacktrace.IDENTIFIER_PATTERN_ + ')*)\\.)?' +
+    '(' + goog.testing.stacktrace.IDENTIFIER_PATTERN_ + '))?>';
+
+
+/**
+ * RegExp pattern for a function call in an Opera stack frame.
+ * Creates 4 (optional) submatches: the function name (if not anonymous),
+ * the aliased context object and function name (if anonymous), and the
+ * function call arguments.
+ * @type {string}
+ * @const
+ * @private
+ */
+goog.testing.stacktrace.OPERA_FUNCTION_CALL_PATTERN_ =
+    '(?:(?:(' + goog.testing.stacktrace.IDENTIFIER_PATTERN_ + ')|' +
+    goog.testing.stacktrace.OPERA_ANONYMOUS_FUNCTION_NAME_PATTERN_ +
+    ')(\\(.*\\)))?@';
+
+
+/**
+ * Regular expression for parsing on stack frame in Opera 11.68+
+ * @type {!RegExp}
+ * @const
+ * @private
+ */
+goog.testing.stacktrace.OPERA_STACK_FRAME_REGEXP_ = new RegExp('^' +
+    goog.testing.stacktrace.OPERA_FUNCTION_CALL_PATTERN_ +
+    goog.testing.stacktrace.URL_PATTERN_ + '?$');
+
+
+/**
  * Regular expression for finding the function name in its source.
  * @type {!RegExp}
  * @private
  */
 goog.testing.stacktrace.FUNCTION_SOURCE_REGEXP_ = new RegExp(
     '^function (' + goog.testing.stacktrace.IDENTIFIER_PATTERN_ + ')');
+
+
+/**
+ * RegExp pattern for function call in a IE stack trace. This expression allows
+ * for identifiers like 'Anonymous function', 'eval code', and 'Global code'.
+ * @type {string}
+ * @const
+ * @private
+ */
+goog.testing.stacktrace.IE_FUNCTION_CALL_PATTERN_ = '(' +
+    goog.testing.stacktrace.IDENTIFIER_PATTERN_ + '(?:\\s+\\w+)*)';
+
+
+/**
+ * Regular expression for parsing a stack frame in IE.
+ * @type {!RegExp}
+ * @const
+ * @private
+ */
+goog.testing.stacktrace.IE_STACK_FRAME_REGEXP_ = new RegExp('^   at ' +
+    goog.testing.stacktrace.IE_FUNCTION_CALL_PATTERN_ +
+    '\\s*\\((eval code:[^)]*|' + goog.testing.stacktrace.URL_PATTERN_ +
+    ')\\)?$');
 
 
 /**
@@ -277,13 +351,57 @@ goog.testing.stacktrace.parseStackFrame_ = function(frameStr) {
         '', m[4] || m[5] || '');
   }
 
+  if (frameStr.length >
+      goog.testing.stacktrace.MAX_FIREFOX_FRAMESTRING_LENGTH_) {
+    return goog.testing.stacktrace.parseLongFirefoxFrame_(frameStr);
+  }
+
   m = frameStr.match(goog.testing.stacktrace.FIREFOX_STACK_FRAME_REGEXP_);
   if (m) {
     return new goog.testing.stacktrace.Frame('', m[1] || '', '', m[2] || '',
         m[3] || '');
   }
 
+  m = frameStr.match(goog.testing.stacktrace.OPERA_STACK_FRAME_REGEXP_);
+  if (m) {
+    return new goog.testing.stacktrace.Frame(m[2] || '', m[1] || m[3] || '',
+        '', m[4] || '', m[5] || '');
+  }
+
+  m = frameStr.match(goog.testing.stacktrace.IE_STACK_FRAME_REGEXP_);
+  if (m) {
+    return new goog.testing.stacktrace.Frame('', m[1] || '', '', '',
+        m[2] || '');
+  }
+
   return null;
+};
+
+
+/**
+ * Parses a long firefox stack frame.
+ * @param {string} frameStr The stack frame as string.
+ * @return {!goog.testing.stacktrace.Frame} Stack frame object.
+ * @private
+ */
+goog.testing.stacktrace.parseLongFirefoxFrame_ = function(frameStr) {
+  var firstParen = frameStr.indexOf('(');
+  var lastAmpersand = frameStr.lastIndexOf('@');
+  var lastColon = frameStr.lastIndexOf(':');
+  var functionName = '';
+  if ((firstParen >= 0) && (firstParen < lastAmpersand)) {
+    functionName = frameStr.substring(0, firstParen);
+  }
+  var loc = '';
+  if ((lastAmpersand >= 0) && (lastAmpersand + 1 < lastColon)) {
+    loc = frameStr.substring(lastAmpersand + 1);
+  }
+  var args = '';
+  if ((firstParen >= 0 && lastAmpersand > 0) &&
+      (firstParen < lastAmpersand)) {
+    args = frameStr.substring(firstParen, lastAmpersand);
+  }
+  return new goog.testing.stacktrace.Frame('', functionName, '', args, loc);
 };
 
 
@@ -336,9 +454,9 @@ goog.testing.stacktrace.isClosureInspectorActive_ = function() {
  */
 goog.testing.stacktrace.htmlEscape_ = function(text) {
   return text.replace(/&/g, '&amp;').
-              replace(/</g, '&lt;').
-              replace(/>/g, '&gt;').
-              replace(/"/g, '&quot;');
+             replace(/</g, '&lt;').
+             replace(/>/g, '&gt;').
+             replace(/"/g, '&quot;');
 };
 
 
@@ -416,7 +534,17 @@ goog.testing.stacktrace.canonicalize = function(stack) {
  * @return {string} The stack trace in canonical format.
  */
 goog.testing.stacktrace.get = function() {
-  var stack = new Error().stack;
+  var stack = '';
+  // IE10 will only create a stack trace when the Error is thrown.
+  // We use null.x() to throw an exception because the closure compiler may
+  // replace "throw" with a function call in an attempt to minimize the binary
+  // size, which in turn has the side effect of adding an unwanted stack frame.
+  try {
+    null.x();
+  } catch (e) {
+    stack = e.stack;
+  }
+
   var frames = stack ? goog.testing.stacktrace.parse_(stack) :
       goog.testing.stacktrace.followCallChain_();
   return goog.testing.stacktrace.framesToString_(frames);

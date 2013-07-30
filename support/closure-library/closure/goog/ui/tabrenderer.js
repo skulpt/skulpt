@@ -16,13 +16,13 @@
  * @fileoverview Default renderer for {@link goog.ui.Tab}s.  Based on the
  * original {@code TabPane} code.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.TabRenderer');
 
-goog.require('goog.dom.a11y.Role');
-goog.require('goog.ui.Component.State');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.ControlRenderer');
 
 
@@ -61,11 +61,11 @@ goog.ui.TabRenderer.prototype.getCssClass = function() {
 /**
  * Returns the ARIA role to be applied to the tab element.
  * See http://wiki/Main/ARIA for more info.
- * @return {goog.dom.a11y.Role} ARIA role.
+ * @return {goog.a11y.aria.Role} ARIA role.
  * @override
  */
 goog.ui.TabRenderer.prototype.getAriaRole = function() {
-  return goog.dom.a11y.Role.TAB;
+  return goog.a11y.aria.Role.TAB;
 };
 
 

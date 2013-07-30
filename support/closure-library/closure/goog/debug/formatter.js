@@ -17,7 +17,6 @@
  * dependencies this file has on other closure classes as any dependency it
  * takes won't be able to use the logging infrastructure.
  *
-*
  */
 
 goog.provide('goog.debug.Formatter');
@@ -26,6 +25,8 @@ goog.provide('goog.debug.TextFormatter');
 
 goog.require('goog.debug.RelativeTimeProvider');
 goog.require('goog.string');
+
+
 
 /**
  * Base class for Formatters. A Formatter is used to format a LogRecord into
@@ -46,39 +47,44 @@ goog.debug.Formatter = function(opt_prefix) {
       goog.debug.RelativeTimeProvider.getDefaultInstance();
 };
 
+
 /**
- * Whether to show absolute time in the DebugWindow
+ * Whether to show absolute time in the DebugWindow.
  * @type {boolean}
  */
 goog.debug.Formatter.prototype.showAbsoluteTime = true;
 
+
 /**
- * Whether to show relative time in the DebugWindow
+ * Whether to show relative time in the DebugWindow.
  * @type {boolean}
  */
 goog.debug.Formatter.prototype.showRelativeTime = true;
 
+
 /**
- * Whether to show the logger name in the DebugWindow
+ * Whether to show the logger name in the DebugWindow.
  * @type {boolean}
  */
 goog.debug.Formatter.prototype.showLoggerName = true;
 
+
 /**
- * Whether to show the logger exception text
+ * Whether to show the logger exception text.
  * @type {boolean}
  */
 goog.debug.Formatter.prototype.showExceptionText = false;
 
+
 /**
- * Whether to show the severity level
+ * Whether to show the severity level.
  * @type {boolean}
  */
 goog.debug.Formatter.prototype.showSeverityLevel = false;
 
 
 /**
- * Formats a record
+ * Formats a record.
  * @param {goog.debug.LogRecord} logRecord the logRecord to format.
  * @return {string} The formatted string.
  */
@@ -131,6 +137,7 @@ goog.debug.Formatter.getDateTimeStamp_ = function(logRecord) {
              Math.floor(time.getMilliseconds() / 10));
 };
 
+
 /**
  * Returns the number as a two-digit string, meaning it prepends a 0 if the
  * number if less than 10.
@@ -157,7 +164,7 @@ goog.debug.Formatter.getTwoDigitString_ = function(n) {
  * @private
  */
 goog.debug.Formatter.getRelativeTime_ = function(logRecord,
-                                                  relativeTimeStart) {
+                                                 relativeTimeStart) {
   var ms = logRecord.getMillis() - relativeTimeStart;
   var sec = ms / 1000;
   var str = sec.toFixed(3);
@@ -177,6 +184,8 @@ goog.debug.Formatter.getRelativeTime_ = function(logRecord,
   return str;
 };
 
+
+
 /**
  * Formatter that returns formatted html. See formatRecord for the classes
  * it uses for various types of formatted output.
@@ -190,9 +199,11 @@ goog.debug.HtmlFormatter = function(opt_prefix) {
 };
 goog.inherits(goog.debug.HtmlFormatter, goog.debug.Formatter);
 
+
 /**
  * Whether to show the logger exception text
  * @type {boolean}
+ * @override
  */
 goog.debug.HtmlFormatter.prototype.showExceptionText = true;
 
@@ -201,6 +212,7 @@ goog.debug.HtmlFormatter.prototype.showExceptionText = true;
  * Formats a record
  * @param {goog.debug.LogRecord} logRecord the logRecord to format.
  * @return {string} The formatted string as html.
+ * @override
  */
 goog.debug.HtmlFormatter.prototype.formatRecord = function(logRecord) {
   var className;
@@ -240,6 +252,9 @@ goog.debug.HtmlFormatter.prototype.formatRecord = function(logRecord) {
   if (this.showLoggerName) {
     sb.push('[', goog.string.htmlEscape(logRecord.getLoggerName()), '] ');
   }
+  if (this.showSeverityLevel) {
+    sb.push('[', goog.string.htmlEscape(logRecord.getLevel().name), '] ');
+  }
   sb.push('<span class="', className, '">',
       goog.string.newLineToBr(goog.string.whitespaceEscape(
           goog.string.htmlEscape(logRecord.getMessage()))));
@@ -251,10 +266,9 @@ goog.debug.HtmlFormatter.prototype.formatRecord = function(logRecord) {
   }
   sb.push('</span><br>');
 
-  // If the logger is enabled, open window and write html message to log
-  // otherwise save it
   return sb.join('');
 };
+
 
 
 /**
@@ -274,6 +288,7 @@ goog.inherits(goog.debug.TextFormatter, goog.debug.Formatter);
  * Formats a record as text
  * @param {goog.debug.LogRecord} logRecord the logRecord to format.
  * @return {string} The formatted string.
+ * @override
  */
 goog.debug.TextFormatter.prototype.formatRecord = function(logRecord) {
   // Build message html
@@ -297,7 +312,5 @@ goog.debug.TextFormatter.prototype.formatRecord = function(logRecord) {
   if (this.showExceptionText && logRecord.getException()) {
     sb.push(logRecord.getExceptionText(), '\n');
   }
-  // If the logger is enabled, open window and write html message to log
-  // otherwise save it
   return sb.join('');
 };

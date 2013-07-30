@@ -16,20 +16,20 @@
  * @fileoverview Generic factory functions for creating the building blocks for
  * an editor toolbar.
  *
-*
-*
+ * @author attila@google.com (Attila Bodis)
+ * @author jparent@google.com (Julie Parent)
  */
 
 goog.provide('goog.ui.editor.ToolbarFactory');
 
 goog.require('goog.array');
 goog.require('goog.dom');
+goog.require('goog.dom.TagName');
 goog.require('goog.string');
 goog.require('goog.string.Unicode');
 goog.require('goog.style');
-goog.require('goog.ui.Component.State');
-goog.require('goog.ui.Container.Orientation');
-goog.require('goog.ui.ControlContent');
+goog.require('goog.ui.Component');
+goog.require('goog.ui.Container');
 goog.require('goog.ui.Option');
 goog.require('goog.ui.Toolbar');
 goog.require('goog.ui.ToolbarButton');
@@ -88,7 +88,7 @@ goog.ui.editor.ToolbarFactory.addFont = function(button, caption, value) {
   var id = goog.ui.editor.ToolbarFactory.getPrimaryFont(value);
 
   // Construct the option, and add it to the button.
-  var option = new goog.ui.Option(caption, value, button.dom_);
+  var option = new goog.ui.Option(caption, value, button.getDomHelper());
   option.setId(id);
   button.addItem(option);
 
@@ -125,8 +125,7 @@ goog.ui.editor.ToolbarFactory.addFontSizes = function(button, sizes) {
  */
 goog.ui.editor.ToolbarFactory.addFontSize = function(button, caption, value) {
   // Construct the option, and add it to the button.
-  var option = new goog.ui.Option(caption, value, button.dom_);
-  option.setId(caption);
+  var option = new goog.ui.Option(caption, value, button.getDomHelper());
   button.addItem(option);
 
   // Adjust the font size of the menu item and the height of the checkbox
@@ -149,6 +148,7 @@ goog.ui.editor.ToolbarFactory.getPxFromLegacySize = function(fontSize) {
   return goog.ui.editor.ToolbarFactory.LEGACY_SIZE_TO_PX_MAP_[fontSize] || 10;
 };
 
+
 /**
  * Converts a pixel font size specification into an equivalent legacy size.
  * For example, {@code font-size: 32px;} is {@code &lt;font size="6"&gt;}, etc.
@@ -164,6 +164,7 @@ goog.ui.editor.ToolbarFactory.getLegacySizeFromPx = function(px) {
   return goog.array.lastIndexOf(
       goog.ui.editor.ToolbarFactory.LEGACY_SIZE_TO_PX_MAP_, px);
 };
+
 
 /**
  * Map of legacy font sizes (0-7) to equivalent pixel sizes.
@@ -184,8 +185,8 @@ goog.ui.editor.ToolbarFactory.LEGACY_SIZE_TO_PX_MAP_ =
  *       'H4')
  * </ul>
  * @param {!goog.ui.Select} button "Format block" menu button.
- * @param {!Array.<{caption: string, command: string}>} formats Array of format
- *     option descriptors.
+ * @param {!Array.<{caption: string, command: goog.dom.TagName}>} formats Array
+ *     of format option descriptors.
  */
 goog.ui.editor.ToolbarFactory.addFormatOptions = function(button, formats) {
   goog.array.forEach(formats, function(format) {
@@ -203,9 +204,10 @@ goog.ui.editor.ToolbarFactory.addFormatOptions = function(button, formats) {
  */
 goog.ui.editor.ToolbarFactory.addFormatOption = function(button, caption, tag) {
   // Construct the option, and add it to the button.
-  // TODO(user): Create boring but functional menu item for now...
-  var option = new goog.ui.Option(button.dom_.createDom(goog.dom.TagName.DIV,
-      null, caption), tag, button.dom_);
+  // TODO(attila): Create boring but functional menu item for now...
+  var buttonDom = button.getDomHelper();
+  var option = new goog.ui.Option(buttonDom.createDom(goog.dom.TagName.DIV,
+      null, caption), tag, buttonDom);
   option.setId(tag);
   button.addItem(option);
 };
@@ -429,7 +431,7 @@ goog.ui.editor.ToolbarFactory.createContent_ = function(caption, opt_classNames,
     opt_domHelper) {
   // FF2 doesn't like empty DIVs, especially when rendered right-to-left.
   if ((!caption || caption == '') && goog.userAgent.GECKO &&
-      !goog.userAgent.isVersion('1.9a')) {
+      !goog.userAgent.isVersionOrHigher('1.9a')) {
     caption = goog.string.Unicode.NBSP;
   }
   return (opt_domHelper || goog.dom.getDomHelper()).createDom(

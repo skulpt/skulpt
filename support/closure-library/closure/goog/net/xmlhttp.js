@@ -14,8 +14,8 @@
 
 /**
  * @fileoverview Low level handling of XMLHttpRequest.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author dbk@google.com (David Barrett-Kahn)
  */
 
 goog.provide('goog.net.DefaultXmlHttpFactory');
@@ -27,7 +27,6 @@ goog.require('goog.net.WrapperXmlHttpFactory');
 goog.require('goog.net.XmlHttpFactory');
 
 
-
 /**
  * Static class for creating XMLHttpRequest objects.
  * @return {!(XMLHttpRequest|GearsHttpRequest)} A new XMLHttpRequest object.
@@ -35,6 +34,13 @@ goog.require('goog.net.XmlHttpFactory');
 goog.net.XmlHttp = function() {
   return goog.net.XmlHttp.factory_.createInstance();
 };
+
+
+/**
+ * @define {boolean} Whether to assume XMLHttpRequest exists. Setting this to
+ *     true strips the ActiveX probing code.
+ */
+goog.define('goog.net.XmlHttp.ASSUME_NATIVE_XHR', false);
 
 
 /**
@@ -117,8 +123,8 @@ goog.net.XmlHttp.factory_;
  */
 goog.net.XmlHttp.setFactory = function(factory, optionsFactory) {
   goog.net.XmlHttp.setGlobalFactory(new goog.net.WrapperXmlHttpFactory(
-      (/** @type {function() : !(XMLHttpRequest|GearsHttpRequest)} */ factory),
-      (/** @type {function() : !Object}*/ optionsFactory)));
+      /** @type {function() : !(XMLHttpRequest|GearsHttpRequest)} */ (factory),
+      /** @type {function() : !Object}*/ (optionsFactory)));
 };
 
 
@@ -129,6 +135,7 @@ goog.net.XmlHttp.setFactory = function(factory, optionsFactory) {
 goog.net.XmlHttp.setGlobalFactory = function(factory) {
   goog.net.XmlHttp.factory_ = factory;
 };
+
 
 
 /**
@@ -143,7 +150,7 @@ goog.net.DefaultXmlHttpFactory = function() {
 goog.inherits(goog.net.DefaultXmlHttpFactory, goog.net.XmlHttpFactory);
 
 
-/** @inheritDoc */
+/** @override */
 goog.net.DefaultXmlHttpFactory.prototype.createInstance = function() {
   var progId = this.getProgId_();
   if (progId) {
@@ -154,7 +161,7 @@ goog.net.DefaultXmlHttpFactory.prototype.createInstance = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.net.DefaultXmlHttpFactory.prototype.internalGetOptions = function() {
   var progId = this.getProgId_();
   var options = {};
@@ -168,10 +175,10 @@ goog.net.DefaultXmlHttpFactory.prototype.internalGetOptions = function() {
 
 /**
  * The ActiveX PROG ID string to use to create xhr's in IE. Lazily initialized.
- * @type {?string}
+ * @type {string|undefined}
  * @private
  */
-goog.net.DefaultXmlHttpFactory.prototype.ieProgId_ = null;
+goog.net.DefaultXmlHttpFactory.prototype.ieProgId_;
 
 
 /**
@@ -180,6 +187,10 @@ goog.net.DefaultXmlHttpFactory.prototype.ieProgId_ = null;
  * @private
  */
 goog.net.DefaultXmlHttpFactory.prototype.getProgId_ = function() {
+  if (goog.net.XmlHttp.ASSUME_NATIVE_XHR) {
+    return '';
+  }
+
   // The following blog post describes what PROG IDs to use to create the
   // XMLHTTP object in Internet Explorer:
   // http://blogs.msdn.com/xmlteam/archive/2006/10/23/using-the-right-version-of-msxml-in-internet-explorer.aspx

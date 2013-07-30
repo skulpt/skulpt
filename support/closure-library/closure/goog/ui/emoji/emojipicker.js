@@ -21,21 +21,20 @@
  *
  * Based on goog.ui.ColorPicker (colorpicker.js).
  *
-*
  * @see ../../demos/popupemojipicker.html
  */
 
 goog.provide('goog.ui.emoji.EmojiPicker');
 
-goog.require('goog.debug.Logger');
-goog.require('goog.dom');
+goog.require('goog.log');
+goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.TabPane');
-goog.require('goog.ui.TabPane.TabPage');
 goog.require('goog.ui.emoji.Emoji');
 goog.require('goog.ui.emoji.EmojiPalette');
 goog.require('goog.ui.emoji.EmojiPaletteRenderer');
 goog.require('goog.ui.emoji.ProgressiveEmojiPaletteRenderer');
+
 
 
 /**
@@ -409,11 +408,11 @@ goog.ui.emoji.EmojiPicker.prototype.setProgressiveRender =
 /**
  * Logger for the emoji picker.
  *
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @private
  */
 goog.ui.emoji.EmojiPicker.prototype.logger_ =
-    goog.debug.Logger.getLogger('goog.ui.emoji.EmojiPicker');
+    goog.log.getLogger('goog.ui.emoji.EmojiPicker');
 
 
 /**
@@ -452,7 +451,10 @@ goog.ui.emoji.EmojiPicker.prototype.loadImages = function() {
 };
 
 
-/** @inheritDoc */
+/**
+ * @override
+ * @suppress {deprecated} Using deprecated goog.ui.TabPane.
+ */
 goog.ui.emoji.EmojiPicker.prototype.createDom = function() {
   this.setElementInternal(this.getDomHelper().createDom('div'));
 
@@ -588,13 +590,17 @@ goog.ui.emoji.EmojiPicker.prototype.createPlaceholderEmojiPage_ =
  * structure they build is fairly complicated.
  * @param {Element} element Element to decorate.
  * @return {boolean} Returns always false.
+ * @override
  */
 goog.ui.emoji.EmojiPicker.prototype.canDecorate = function(element) {
   return false;
 };
 
 
-/** @inheritDoc */
+/**
+ * @override
+ * @suppress {deprecated} Using deprecated goog.ui.TabPane.
+ */
 goog.ui.emoji.EmojiPicker.prototype.enterDocument = function() {
   goog.ui.emoji.EmojiPicker.superClass_.enterDocument.call(this);
 
@@ -633,7 +639,7 @@ goog.ui.emoji.EmojiPicker.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.emoji.EmojiPicker.prototype.exitDocument = function() {
   goog.ui.emoji.EmojiPicker.superClass_.exitDocument.call(this);
   for (var i = 0; i < this.pages_.length; i++) {
@@ -642,7 +648,7 @@ goog.ui.emoji.EmojiPicker.prototype.exitDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.emoji.EmojiPicker.prototype.disposeInternal = function() {
   goog.ui.emoji.EmojiPicker.superClass_.disposeInternal.call(this);
 
@@ -768,6 +774,7 @@ goog.ui.emoji.EmojiPicker.prototype.onPageChanged_ = function(e) {
  *
  * @param {number} index Index of the page to load.
  * @private
+ * @suppress {deprecated} Using deprecated goog.ui.TabPane.
  */
 goog.ui.emoji.EmojiPicker.prototype.loadPage_ = function(index) {
   if (index < 0 || index > this.pages_.length) {

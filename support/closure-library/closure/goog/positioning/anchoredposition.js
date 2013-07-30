@@ -15,8 +15,6 @@
 /**
  * @fileoverview Client positioning class.
  *
-*
-*
  */
 
 goog.provide('goog.positioning.AnchoredPosition');
@@ -24,6 +22,7 @@ goog.provide('goog.positioning.AnchoredPosition');
 goog.require('goog.math.Box');
 goog.require('goog.positioning');
 goog.require('goog.positioning.AbstractPosition');
+
 
 
 /**
@@ -38,10 +37,14 @@ goog.require('goog.positioning.AbstractPosition');
  *     anchored against.
  * @param {goog.positioning.Corner} corner Corner of anchored element the
  *     movable element should be positioned at.
+ * @param {number=} opt_overflow Overflow handling mode. Defaults to IGNORE if
+ *     not specified. Bitmap, {@see goog.positioning.Overflow}.
  * @constructor
  * @extends {goog.positioning.AbstractPosition}
  */
-goog.positioning.AnchoredPosition = function(anchorElement, corner) {
+goog.positioning.AnchoredPosition = function(anchorElement,
+                                             corner,
+                                             opt_overflow) {
   /**
    * Element the movable element should be anchored against.
    * @type {Element}
@@ -53,6 +56,14 @@ goog.positioning.AnchoredPosition = function(anchorElement, corner) {
    * @type {goog.positioning.Corner}
    */
   this.corner = corner;
+
+  /**
+   * Overflow handling mode. Defaults to IGNORE if not specified.
+   * Bitmap, {@see goog.positioning.Overflow}.
+   * @type {number|undefined}
+   * @private
+   */
+  this.overflow_ = opt_overflow;
 };
 goog.inherits(goog.positioning.AnchoredPosition,
               goog.positioning.AbstractPosition);
@@ -67,6 +78,7 @@ goog.inherits(goog.positioning.AnchoredPosition,
  * @param {goog.math.Box=} opt_margin A margin specifin pixels.
  * @param {goog.math.Size=} opt_preferredSize PreferredSize of the
  *     movableElement (unused in this class).
+ * @override
  */
 goog.positioning.AnchoredPosition.prototype.reposition = function(
     movableElement, movableCorner, opt_margin, opt_preferredSize) {
@@ -75,5 +87,6 @@ goog.positioning.AnchoredPosition.prototype.reposition = function(
                                     movableElement,
                                     movableCorner,
                                     undefined,
-                                    opt_margin);
+                                    opt_margin,
+                                    this.overflow_);
 };

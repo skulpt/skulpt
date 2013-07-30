@@ -15,7 +15,7 @@
 /**
  * @fileoverview Generic keyboard shortcut handler.
  *
-*
+ * @author eae@google.com (Emil A Eklund)
  * @see ../demos/keyboardshortcuts.html
  */
 
@@ -27,9 +27,12 @@ goog.require('goog.Timer');
 goog.require('goog.events');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventTarget');
+goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.events.KeyNames');
 goog.require('goog.object');
+goog.require('goog.userAgent');
+
 
 
 /**
@@ -81,13 +84,21 @@ goog.ui.KeyboardShortcutHandler = function(keyTarget) {
       goog.ui.KeyboardShortcutHandler.DEFAULT_GLOBAL_KEYS_);
 
   /**
+   * List of input types that should only accept ENTER as a shortcut.
+   * @type {Object}
+   * @private
+   */
+  this.textInputs_ = goog.object.createSet(
+      goog.ui.KeyboardShortcutHandler.DEFAULT_TEXT_INPUTS_);
+
+  /**
    * Whether to always prevent the default action if a shortcut event is fired.
    * @type {boolean}
    * @private
    */
   this.alwaysPreventDefault_ = true;
 
-   /**
+  /**
    * Whether to always stop propagation if a shortcut event is fired.
    * @type {boolean}
    * @private
@@ -157,6 +168,30 @@ goog.ui.KeyboardShortcutHandler.DEFAULT_GLOBAL_KEYS_ = [
   goog.events.KeyCodes.F11,
   goog.events.KeyCodes.F12,
   goog.events.KeyCodes.PAUSE
+];
+
+
+/**
+ * Text input types to allow only ENTER shortcuts.
+ * Web Forms 2.0 for HTML5: Section 4.10.7 from 29 May 2012.
+ * @type {Array.<string>}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.DEFAULT_TEXT_INPUTS_ = [
+  'color',
+  'date',
+  'datetime',
+  'datetime-local',
+  'email',
+  'month',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'time',
+  'url',
+  'week'
 ];
 
 
@@ -494,17 +529,15 @@ goog.ui.KeyboardShortcutHandler.prototype.setGlobalKeys = function(keys) {
 
 
 /**
- * @return {Array.<number>} The global keys, i.e. keys that are safe to always
+ * @return {Array.<string>} The global keys, i.e. keys that are safe to always
  *     regard as shortcuts, even if entered in a textarea or input field.
  */
 goog.ui.KeyboardShortcutHandler.prototype.getGlobalKeys = function() {
-  return goog.object.getKeys(this.globalKeys_)
+  return goog.object.getKeys(this.globalKeys_);
 };
 
 
-/**
- * Removes all event listeners and clears shortcuts.
- */
+/** @override */
 goog.ui.KeyboardShortcutHandler.prototype.disposeInternal = function() {
   goog.ui.KeyboardShortcutHandler.superClass_.disposeInternal.call(this);
   this.unregisterAll();
@@ -583,7 +616,7 @@ goog.ui.KeyboardShortcutHandler.prototype.initializeKeyListener =
   // In this case we capture the keyup (which is fired) and fake as
   // if the user had pressed the key to begin with.
   if (goog.userAgent.MAC &&
-      goog.userAgent.GECKO && goog.userAgent.isVersion('1.8')) {
+      goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.8')) {
     goog.events.listen(this.keyTarget_, goog.events.EventType.KEYUP,
         this.handleMacGeckoKeyUp_, false, this);
   }
@@ -653,6 +686,7 @@ goog.ui.KeyboardShortcutHandler.prototype.isPossiblePrintableKey_ =
       e.ctrlKey && e.altKey && !e.shiftKey;
 };
 
+
 /**
  * Handler for when a keypress event is fired on Windows.
  * @param {goog.events.BrowserEvent} e The key event.
@@ -691,7 +725,7 @@ goog.ui.KeyboardShortcutHandler.prototype.clearKeyListener = function() {
   goog.events.unlisten(this.keyTarget_, goog.events.EventType.KEYDOWN,
       this.handleKeyDown_, false, this);
   if (goog.userAgent.MAC &&
-      goog.userAgent.GECKO && goog.userAgent.isVersion('1.8')) {
+      goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.8')) {
     goog.events.unlisten(this.keyTarget_, goog.events.EventType.KEYUP,
         this.handleMacGeckoKeyUp_, false, this);
   }
@@ -818,13 +852,17 @@ goog.ui.KeyboardShortcutHandler.prototype.handleKeyDown_ = function(event) {
     this.isPrintableKey_ = false;
     return;
   }
+
+  var keyCode = goog.userAgent.GECKO ?
+      goog.events.KeyCodes.normalizeGeckoKeyCode(event.keyCode) :
+      event.keyCode;
+
   var modifiers =
       (event.shiftKey ? goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT : 0) |
       (event.ctrlKey ? goog.ui.KeyboardShortcutHandler.Modifiers.CTRL : 0) |
       (event.altKey ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : 0) |
       (event.metaKey ? goog.ui.KeyboardShortcutHandler.Modifiers.META : 0);
-  var stroke = goog.ui.KeyboardShortcutHandler.makeKey_(event.keyCode,
-                                                        modifiers);
+  var stroke = goog.ui.KeyboardShortcutHandler.makeKey_(keyCode, modifiers);
 
   // Check if any previous strokes where entered within the acceptable time
   // period.
@@ -880,13 +918,14 @@ goog.ui.KeyboardShortcutHandler.prototype.handleKeyDown_ = function(event) {
     var types = goog.ui.KeyboardShortcutHandler.EventType;
 
     // Dispatch SHORTCUT_TRIGGERED event
+    var target = /** @type {Node} */ (event.target);
     var triggerEvent = new goog.ui.KeyboardShortcutEvent(
-        types.SHORTCUT_TRIGGERED, shortcut, event.target);
+        types.SHORTCUT_TRIGGERED, shortcut, target);
     var retVal = this.dispatchEvent(triggerEvent);
 
     // Dispatch SHORTCUT_PREFIX_<identifier> event
     var prefixEvent = new goog.ui.KeyboardShortcutEvent(
-        types.SHORTCUT_PREFIX + shortcut, shortcut, event.target);
+        types.SHORTCUT_PREFIX + shortcut, shortcut, target);
     retVal &= this.dispatchEvent(prefixEvent);
 
     // The default action is prevented if 'preventDefault' was
@@ -944,7 +983,7 @@ goog.ui.KeyboardShortcutHandler.prototype.isValidShortcut_ = function(event) {
     return true;
   }
   // Allow ENTER to be used as shortcut for text inputs.
-  if (el.tagName == 'INPUT' && (el.type == 'text' || el.type == 'password')) {
+  if (el.tagName == 'INPUT' && this.textInputs_[el.type]) {
     return keyCode == goog.events.KeyCodes.ENTER;
   }
   // Checkboxes, radiobuttons and buttons. Allow all but SPACE as shortcut.
@@ -954,6 +993,7 @@ goog.ui.KeyboardShortcutHandler.prototype.isValidShortcut_ = function(event) {
   // Don't allow any additional shortcut keys for textareas or selects.
   return false;
 };
+
 
 
 /**

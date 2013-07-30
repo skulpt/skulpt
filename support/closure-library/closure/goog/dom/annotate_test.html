@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.dom.annotate</title>
 <script src="../base.js"></script>
 <script>
@@ -29,6 +30,14 @@ See the COPYING file for details.
   <tr id="r">
     <td>This <b>little</b> piggy</td>
     <td class="s">That little <i>pig</i>gy</td>
+  </tr>
+  <tr id="t">
+    <td>This <b>little</b> piggy</td>
+    <td class="s">That little <i>Pig</i>gy</td>
+  </tr>
+  <tr id="u">
+    <td>This <b>little</b> piggy</td>
+    <td class="s">That little <i>Pig</i>gy</td>
   </tr>
 </table>
 
@@ -153,6 +162,26 @@ See the COPYING file for details.
     assertEquals(1, spans.length);
     assertEquals('pig', spans[0].innerHTML);
     assertEquals('gy', spans[0].nextSibling.nodeValue);
+  }
+
+  function testAnnotateTermsIgnoreCase() {
+    var terms1 = [['pig', false]];
+    assertTrue(goog.dom.annotate.annotateTerms(
+        $('t'), terms1, doAnnotation, true));
+    var spans = goog.dom.getElementsByTagNameAndClass('SPAN', 'c0', $('t'));
+    assertEquals(2, spans.length);
+    assertEquals('pig', spans[0].innerHTML);
+    assertEquals('gy', spans[0].nextSibling.nodeValue);
+    assertEquals('Pig', spans[1].innerHTML);
+
+    var terms2 = [['Pig', false]];
+    assertTrue(goog.dom.annotate.annotateTerms(
+        $('u'), terms2, doAnnotation, true));
+    var spans = goog.dom.getElementsByTagNameAndClass('SPAN', 'c0', $('u'));
+    assertEquals(2, spans.length);
+    assertEquals('pig', spans[0].innerHTML);
+    assertEquals('gy', spans[0].nextSibling.nodeValue);
+    assertEquals('Pig', spans[1].innerHTML);
   }
 
   function testAnnotateTermsInObject() {

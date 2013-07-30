@@ -19,8 +19,6 @@
  *
  *   <http://go/js_modules_design>
  *
-*
-*
  */
 
 goog.provide('goog.module.Loader');
@@ -29,6 +27,8 @@ goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.object');
+
+
 
 /**
  * The dynamic loading functionality is defined as a class. The class
@@ -147,7 +147,7 @@ goog.module.Loader.prototype.init = function(baseUrl, opt_urlFunction) {
   goog.exportSymbol(goog.module.Loader.LOAD_CALLBACK,
       goog.module.Loader.loaderEval_);
 
-  this.urlBase_ = baseUrl.replace('.js', '');
+  this.urlBase_ = baseUrl.replace(/\.js$/, '');
   if (opt_urlFunction) {
     this.getModuleUrl_ = opt_urlFunction;
   }
@@ -166,7 +166,7 @@ goog.module.Loader.prototype.init = function(baseUrl, opt_urlFunction) {
  *
  * @param {string} module The name of the module. Usually, the value
  *     is defined as a constant whose name starts with MOD_.
- * @param {number} symbol The ID of the symbol. Usually, the value is
+ * @param {number|string} symbol The ID of the symbol. Usually, the value is
  *     defined as a constant whose name starts with SYM_.
  * @param {Function} callback This function will be called with the
  *     resolved symbol as the argument once the module is loaded.
@@ -185,7 +185,7 @@ goog.module.Loader.prototype.require = function(module, symbol, callback) {
     pending[module] = [[symbol, callback]];  // Yes, really [[ ]].
     // Defer loading to initialization if Loader is not yet
     // initialized, otherwise load the module.
-    if (this.urlBase_) {
+    if (goog.isString(this.urlBase_)) {
       this.load_(module);
     } else {
       this.pendingBeforeInit_.push(module);
@@ -201,14 +201,14 @@ goog.module.Loader.prototype.require = function(module, symbol, callback) {
  *
  * @param {string} module The name of the module. Cf. parameter module
  *     of method require().
- * @param {number=} opt_symbol The symbol being defined, or nothing when all
- *     symbols of the module are defined. Cf. parameter symbol of method
+ * @param {number|string=} opt_symbol The symbol being defined, or nothing when
+ *     all symbols of the module are defined. Cf. parameter symbol of method
  *     require().
  * @param {Object=} opt_object The object bound to the symbol, or nothing when
  *     all symbols of the module are defined.
  */
 goog.module.Loader.prototype.provide = function(
-      module, opt_symbol, opt_object) {
+    module, opt_symbol, opt_object) {
   var modules = this.modules_;
   var pending = this.pending_;
   if (!modules[module]) {

@@ -20,7 +20,7 @@
  * size, the LRU version of the LinkedMap makes an effective object cache. This
  * data structure is similar to Java's LinkedHashMap.
  *
-*
+ * @author brenneman@google.com (Shawn Brenneman)
  */
 
 
@@ -240,7 +240,7 @@ goog.structs.LinkedMap.prototype.setMaxCount = function(maxCount) {
 
 
 /**
- * @return {Array.<string>} The list of the keys in the appropriate order for
+ * @return {!Array.<string>} The list of the keys in the appropriate order for
  *     this LinkedMap.
  */
 goog.structs.LinkedMap.prototype.getKeys = function() {

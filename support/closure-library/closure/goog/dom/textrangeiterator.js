@@ -27,6 +27,7 @@ goog.require('goog.dom.TagName');
 goog.require('goog.iter.StopIteration');
 
 
+
 /**
  * Subclass of goog.dom.TagIterator that iterates over a DOM range.  It
  * adds functions to determine the portion of each text node that is selected.
@@ -87,7 +88,7 @@ goog.dom.TextRangeIterator = function(startNode, startOffset, endNode,
 
   if (goNext) {
     try {
-      this.next()
+      this.next();
     } catch (e) {
       if (e != goog.iter.StopIteration) {
         throw e;
@@ -130,7 +131,7 @@ goog.dom.TextRangeIterator.prototype.startOffset_ = 0;
 goog.dom.TextRangeIterator.prototype.endOffset_ = 0;
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.TextRangeIterator.prototype.getStartTextOffset = function() {
   // Offsets only apply to text nodes.  If our current node is the start node,
   // return the saved offset.  Otherwise, return 0.
@@ -139,7 +140,7 @@ goog.dom.TextRangeIterator.prototype.getStartTextOffset = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.TextRangeIterator.prototype.getEndTextOffset = function() {
   // Offsets only apply to text nodes.  If our current node is the end node,
   // return the saved offset.  Otherwise, return the length of the node.
@@ -148,7 +149,7 @@ goog.dom.TextRangeIterator.prototype.getEndTextOffset = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.TextRangeIterator.prototype.getStartNode = function() {
   return this.startNode_;
 };
@@ -168,7 +169,7 @@ goog.dom.TextRangeIterator.prototype.setStartNode = function(node) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.TextRangeIterator.prototype.getEndNode = function() {
   return this.endNode_;
 };
@@ -184,7 +185,7 @@ goog.dom.TextRangeIterator.prototype.setEndNode = function(node) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.TextRangeIterator.prototype.isLast = function() {
   return this.isStarted() && this.node == this.endNode_ &&
       (!this.endOffset_ || !this.isStartTag());
@@ -195,6 +196,7 @@ goog.dom.TextRangeIterator.prototype.isLast = function() {
  * Move to the next position in the selection.
  * Throws {@code goog.iter.StopIteration} when it passes the end of the range.
  * @return {Node} The node at the next position.
+ * @override
  */
 goog.dom.TextRangeIterator.prototype.next = function() {
   if (this.isLast()) {
@@ -206,7 +208,7 @@ goog.dom.TextRangeIterator.prototype.next = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.TextRangeIterator.prototype.skipTag = function() {
   goog.dom.TextRangeIterator.superClass_.skipTag.apply(this);
 
@@ -218,11 +220,7 @@ goog.dom.TextRangeIterator.prototype.skipTag = function() {
 };
 
 
-/**
- * Replace this iterator's values with values from another.
- * @param {goog.dom.TextRangeIterator} other The iterator to copy.
- * @protected
- */
+/** @override */
 goog.dom.TextRangeIterator.prototype.copyFrom = function(other) {
   this.startNode_ = other.startNode_;
   this.endNode_ = other.endNode_;
@@ -236,6 +234,7 @@ goog.dom.TextRangeIterator.prototype.copyFrom = function(other) {
 
 /**
  * @return {goog.dom.TextRangeIterator} An identical iterator.
+ * @override
  */
 goog.dom.TextRangeIterator.prototype.clone = function() {
   var copy = new goog.dom.TextRangeIterator(this.startNode_,

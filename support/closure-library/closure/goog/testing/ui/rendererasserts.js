@@ -15,7 +15,7 @@
 /**
  * @fileoverview Additional asserts for testing ControlRenderers.
  *
-*
+ * @author mkretzschmar@google.com (Martin Kretzschmar)
  */
 
 goog.provide('goog.testing.ui.rendererasserts');
@@ -23,22 +23,26 @@ goog.provide('goog.testing.ui.rendererasserts');
 goog.require('goog.testing.asserts');
 
 
-
 /**
  * Assert that a control renderer constructor doesn't call getCssClass.
  *
- * @param {Function} rendererClassUnderTest The renderer constructor to test.
+ * @param {?function(new:goog.ui.ControlRenderer)} rendererClassUnderTest The
+ *     renderer constructor to test.
  */
 goog.testing.ui.rendererasserts.assertNoGetCssClassCallsInConstructor =
     function(rendererClassUnderTest) {
   var getCssClassCalls = 0;
 
-  /** @constructor */
+  /**
+   * @constructor
+   * @extends {goog.ui.ControlRenderer}
+   */
   function TestControlRenderer() {
     rendererClassUnderTest.call(this);
   }
   goog.inherits(TestControlRenderer, rendererClassUnderTest);
 
+  /** @override */
   TestControlRenderer.prototype.getCssClass = function() {
     getCssClassCalls++;
     return TestControlRenderer.superClass_.getCssClass.call(this);

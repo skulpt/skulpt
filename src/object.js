@@ -85,5 +85,8 @@ Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetA
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
 Sk.builtin.type.makeIntoTypeObj('object', Sk.builtin.object);
 
+/**
+ * @constructor
+ */
 Sk.builtin.NoneObj = function() {};
 Sk.builtin.NoneObj.prototype.ob$type = Sk.builtin.type.makeTypeObj('None', new Sk.builtin.NoneObj());

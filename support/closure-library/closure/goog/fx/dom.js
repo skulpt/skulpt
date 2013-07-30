@@ -15,7 +15,6 @@
 /**
  * @fileoverview Predefined DHTML animations such as slide, resize and fade.
  *
-*
  * @see ../demos/effects.html
  */
 
@@ -39,8 +38,10 @@ goog.provide('goog.fx.dom.Swipe');
 goog.require('goog.color');
 goog.require('goog.events');
 goog.require('goog.fx.Animation');
-goog.require('goog.fx.Animation.EventType');
+goog.require('goog.fx.Transition.EventType');
 goog.require('goog.style');
+goog.require('goog.style.bidi');
+
 
 
 /**
@@ -63,6 +64,14 @@ goog.fx.dom.PredefinedEffect = function(element, start, end, time, opt_acc) {
    * @type {Element}
    */
   this.element = element;
+
+  /**
+   * Whether the element is rendered right-to-left. We cache this here for
+   * efficiency.
+   * @type {boolean|undefined}
+   * @private
+   */
+  this.rightToLeft_;
 };
 goog.inherits(goog.fx.dom.PredefinedEffect, goog.fx.Animation);
 
@@ -74,21 +83,42 @@ goog.inherits(goog.fx.dom.PredefinedEffect, goog.fx.Animation);
 goog.fx.dom.PredefinedEffect.prototype.updateStyle = goog.nullFunction;
 
 
-/** @inheritDoc */
+/**
+ * Whether the element is rendered right-to-left. We initialize this lazily.
+ * @type {boolean|undefined}
+ * @private
+ */
+goog.fx.dom.PredefinedEffect.prototype.rightToLeft_;
+
+
+/**
+ * Whether the DOM element being manipulated is rendered right-to-left.
+ * @return {boolean} True if the DOM element is rendered right-to-left, false
+ *     otherwise.
+ */
+goog.fx.dom.PredefinedEffect.prototype.isRightToLeft = function() {
+  if (!goog.isDef(this.rightToLeft_)) {
+    this.rightToLeft_ = goog.style.isRightToLeft(this.element);
+  }
+  return this.rightToLeft_;
+};
+
+
+/** @override */
 goog.fx.dom.PredefinedEffect.prototype.onAnimate = function() {
   this.updateStyle();
   goog.fx.dom.PredefinedEffect.superClass_.onAnimate.call(this);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.PredefinedEffect.prototype.onEnd = function() {
   this.updateStyle();
   goog.fx.dom.PredefinedEffect.superClass_.onEnd.call(this);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.PredefinedEffect.prototype.onBegin = function() {
   this.updateStyle();
   goog.fx.dom.PredefinedEffect.superClass_.onBegin.call(this);
@@ -119,9 +149,11 @@ goog.fx.dom.Slide = function(element, start, end, time, opt_acc) {
 goog.inherits(goog.fx.dom.Slide, goog.fx.dom.PredefinedEffect);
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.Slide.prototype.updateStyle = function() {
-  this.element.style.left = Math.round(this.coords[0]) + 'px';
+  var pos = (this.isRightPositioningForRtlEnabled() && this.isRightToLeft()) ?
+      'right' : 'left';
+  this.element.style[pos] = Math.round(this.coords[0]) + 'px';
   this.element.style.top = Math.round(this.coords[1]) + 'px';
 };
 
@@ -138,15 +170,19 @@ goog.fx.dom.Slide.prototype.updateStyle = function() {
  * @constructor
  */
 goog.fx.dom.SlideFrom = function(element, end, time, opt_acc) {
-  var start = [element.offsetLeft, element.offsetTop];
+  var offsetLeft = this.isRightPositioningForRtlEnabled() ?
+      goog.style.bidi.getOffsetStart(element) : element.offsetLeft;
+  var start = [offsetLeft, element.offsetTop];
   goog.fx.dom.Slide.call(this, element, start, end, time, opt_acc);
 };
 goog.inherits(goog.fx.dom.SlideFrom, goog.fx.dom.Slide);
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.SlideFrom.prototype.onBegin = function() {
-  this.startPoint = [this.element.offsetLeft, this.element.offsetTop];
+  var offsetLeft = this.isRightPositioningForRtlEnabled() ?
+      goog.style.bidi.getOffsetStart(this.element) : this.element.offsetLeft;
+  this.startPoint = [offsetLeft, this.element.offsetTop];
   goog.fx.dom.SlideFrom.superClass_.onBegin.call(this);
 };
 
@@ -170,14 +206,14 @@ goog.fx.dom.Swipe = function(element, start, end, time, opt_acc) {
   }
   goog.fx.dom.PredefinedEffect.apply(this, arguments);
 
-  /*
+  /**
    * Maximum width for element.
    * @type {number}
    * @private
    */
   this.maxWidth_ = Math.max(this.endPoint[0], this.startPoint[0]);
 
-  /*
+  /**
    * Maximum height for element.
    * @type {number}
    * @private
@@ -197,8 +233,11 @@ goog.fx.dom.Swipe.prototype.updateStyle = function() {
   var x = this.coords[0];
   var y = this.coords[1];
   this.clip_(Math.round(x), Math.round(y), this.maxWidth_, this.maxHeight_);
-  this.element.style.width = Math.round(x) + 'px'
-  this.element.style.marginLeft = Math.round(x) - this.maxWidth_ + 'px';
+  this.element.style.width = Math.round(x) + 'px';
+  var marginX = (this.isRightPositioningForRtlEnabled() &&
+      this.isRightToLeft()) ? 'marginRight' : 'marginLeft';
+
+  this.element.style[marginX] = Math.round(x) - this.maxWidth_ + 'px';
   this.element.style.marginTop = Math.round(y) - this.maxHeight_ + 'px';
 };
 
@@ -246,7 +285,11 @@ goog.inherits(goog.fx.dom.Scroll, goog.fx.dom.PredefinedEffect);
  * @override
  */
 goog.fx.dom.Scroll.prototype.updateStyle = function() {
-  this.element.scrollLeft = Math.round(this.coords[0]);
+  if (this.isRightPositioningForRtlEnabled()) {
+    goog.style.bidi.setScrollOffset(this.element, Math.round(this.coords[0]));
+  } else {
+    this.element.scrollLeft = Math.round(this.coords[0]);
+  }
   this.element.scrollTop = Math.round(this.coords[1]);
 };
 
@@ -282,7 +325,7 @@ goog.inherits(goog.fx.dom.Resize, goog.fx.dom.PredefinedEffect);
  * @override
  */
 goog.fx.dom.Resize.prototype.updateStyle = function() {
-  this.element.style.width = Math.round(this.coords[0]) + 'px'
+  this.element.style.width = Math.round(this.coords[0]) + 'px';
   this.element.style.height = Math.round(this.coords[1]) + 'px';
 };
 
@@ -435,6 +478,7 @@ goog.fx.dom.FadeIn = function(element, time, opt_acc) {
 goog.inherits(goog.fx.dom.FadeIn, goog.fx.dom.Fade);
 
 
+
 /**
  * Fades an element out from full opacity to completely transparent and then
  * sets the display to 'none'
@@ -451,14 +495,14 @@ goog.fx.dom.FadeOutAndHide = function(element, time, opt_acc) {
 goog.inherits(goog.fx.dom.FadeOutAndHide, goog.fx.dom.Fade);
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.FadeOutAndHide.prototype.onBegin = function() {
   this.show();
   goog.fx.dom.FadeOutAndHide.superClass_.onBegin.call(this);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.FadeOutAndHide.prototype.onEnd = function() {
   this.hide();
   goog.fx.dom.FadeOutAndHide.superClass_.onEnd.call(this);
@@ -482,7 +526,7 @@ goog.fx.dom.FadeInAndShow = function(element, time, opt_acc) {
 goog.inherits(goog.fx.dom.FadeInAndShow, goog.fx.dom.Fade);
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.FadeInAndShow.prototype.onBegin = function() {
   this.show();
   goog.fx.dom.FadeInAndShow.superClass_.onBegin.call(this);
@@ -511,6 +555,7 @@ goog.fx.dom.BgColorTransform = function(element, start, end, time, opt_acc) {
 };
 goog.inherits(goog.fx.dom.BgColorTransform, goog.fx.dom.PredefinedEffect);
 
+
 /**
  * Animation event handler that will set the background-color of an element
  */
@@ -524,7 +569,7 @@ goog.fx.dom.BgColorTransform.prototype.setColor = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.fx.dom.BgColorTransform.prototype.updateStyle = function() {
   this.setColor();
 };
@@ -539,13 +584,15 @@ goog.fx.dom.BgColorTransform.prototype.updateStyle = function() {
  * @param {Element} element Dom Node to be used in the animation.
  * @param {Array.<number>} start 3D Array for RGB of start color.
  * @param {number} time Length of animation in milliseconds.
+ * @param {goog.events.EventHandler=} opt_eventHandler Optional event handler
+ *     to use when listening for events.
  */
-goog.fx.dom.bgColorFadeIn = function(element, start, time) {
+goog.fx.dom.bgColorFadeIn = function(element, start, time, opt_eventHandler) {
   var initialBgColor = element.style.backgroundColor || '';
   var computedBgColor = goog.style.getBackgroundColor(element);
   var end;
 
-  if (computedBgColor != 'transparent' &&
+  if (computedBgColor && computedBgColor != 'transparent' &&
       computedBgColor != 'rgba(0, 0, 0, 0)') {
     end = goog.color.hexToRgb(goog.color.parse(computedBgColor).hex);
   } else {
@@ -553,11 +600,22 @@ goog.fx.dom.bgColorFadeIn = function(element, start, time) {
   }
 
   var anim = new goog.fx.dom.BgColorTransform(element, start, end, time);
-  goog.events.listen(anim, goog.fx.Animation.EventType.END, function() {
+
+  function setBgColor() {
     element.style.backgroundColor = initialBgColor;
-  });
+  }
+
+  if (opt_eventHandler) {
+    opt_eventHandler.listen(
+        anim, goog.fx.Transition.EventType.END, setBgColor);
+  } else {
+    goog.events.listen(
+        anim, goog.fx.Transition.EventType.END, setBgColor);
+  }
+
   anim.play();
 };
+
 
 
 /**

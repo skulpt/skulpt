@@ -14,8 +14,6 @@
 
 /**
  * @fileoverview Commands that the editor can execute.
-*
-*
  * @see ../demos/editor/editor.html
  */
 goog.provide('goog.editor.Command');
@@ -47,6 +45,7 @@ goog.editor.Command = {
   FONT_FACE: '+fontName',
   FONT_COLOR: '+foreColor',
   EMOTICON: '+emoticon',
+  EQUATION: '+equation',
   BACKGROUND_COLOR: '+backColor',
   ORDERED_LIST: '+insertOrderedList',
   UNORDERED_LIST: '+insertUnorderedList',
@@ -60,6 +59,7 @@ goog.editor.Command = {
   DIR_RTL: 'rtl', // same here
   IMAGE: 'image',
   EDIT_HTML: 'editHtml',
+  UPDATE_LINK_BUBBLE: 'updateLinkBubble',
 
   // queryCommandValue only: returns the default tag name used in the field.
   // DIV should be considered the default if no plugin responds.

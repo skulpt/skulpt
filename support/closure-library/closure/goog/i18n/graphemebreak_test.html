@@ -3,10 +3,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.i18n.GraphemeBreak</title>
 <script type="text/javascript" src="../base.js"></script>
 <script type="text/javascript">
@@ -56,7 +57,7 @@ See the COPYING file for details.
   }
   
   function testBreakThaiPrependExtended() {
-    assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0E40, 0x0E01, true));
+    assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0E40, 0x0E01, true));
   }
   
   function testBreakDevaSpacingMarkLegacy() {
@@ -65,6 +66,14 @@ See the COPYING file for details.
   
   function testBreakDevaSpacingMarkExtended() {
     assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0915, 0x093E, true));
+  }
+
+  function testBreakDevaViramaSpace() {
+    assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x094D, 0x0020));
+  }
+
+  function testBreakDevaViramaConsonant() {
+    assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x094D, 0x0915));
   }
 </script>
 </body>

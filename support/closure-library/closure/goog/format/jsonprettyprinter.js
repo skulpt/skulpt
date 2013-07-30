@@ -16,7 +16,6 @@
  * @fileoverview Creates a string of a JSON object, properly indented for
  * display.
  *
-*
  */
 
 goog.provide('goog.format.JsonPrettyPrinter');
@@ -28,6 +27,7 @@ goog.require('goog.json.Serializer');
 goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
 goog.require('goog.string.format');
+
 
 
 /**
@@ -247,6 +247,7 @@ goog.format.JsonPrettyPrinter.prototype.printSpaces_ = function(indent,
 };
 
 
+
 /**
  * A container for the delimiting characters used to display the JSON string
  * to a text display.  Each delimiter is a publicly accessible property of
@@ -355,6 +356,7 @@ goog.format.JsonPrettyPrinter.TextDelimiters.prototype.postValue = '';
 goog.format.JsonPrettyPrinter.TextDelimiters.prototype.indent = 2;
 
 
+
 /**
  * A container for the delimiting characters used to display the JSON string
  * to an HTML <code>&lt;pre&gt;</code> or <code>&lt;code&gt;</code> element.
@@ -372,14 +374,18 @@ goog.inherits(goog.format.JsonPrettyPrinter.HtmlDelimiters,
  * A <code>span</code> tag thats placed before a property name.  Used to style
  * property names with CSS.
  * @type {string}
+ * @override
  */
 goog.format.JsonPrettyPrinter.HtmlDelimiters.prototype.preName =
-    '<span class="goog-jsonprettyprinter-propertyname">';
+    '<span class="' +
+    goog.getCssName('goog-jsonprettyprinter-propertyname') +
+    '">';
 
 
 /**
  * A closing <code>span</code> tag that's placed after a property name.
  * @type {string}
+ * @override
  */
 goog.format.JsonPrettyPrinter.HtmlDelimiters.prototype.postName = '</span>';
 
@@ -391,13 +397,17 @@ goog.format.JsonPrettyPrinter.HtmlDelimiters.prototype.postName = '</span>';
  * type of the object (the {TYPE} parameter is obtained from goog.typeOf).  This
  * can be used to style different value types.
  * @type {string}
+ * @override
  */
 goog.format.JsonPrettyPrinter.HtmlDelimiters.prototype.preValue =
-    '<span class="goog-jsonprettyprinter-propertyvalue-%s">';
+    '<span class="' +
+    goog.getCssName('goog-jsonprettyprinter-propertyvalue') +
+    '-%s">';
 
 
 /**
  * A closing <code>span</code> tag that's placed after a property value.
  * @type {string}
+ * @override
  */
 goog.format.JsonPrettyPrinter.HtmlDelimiters.prototype.postValue = '</span>';

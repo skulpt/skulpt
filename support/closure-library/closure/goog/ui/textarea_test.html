@@ -3,28 +3,32 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.Textarea</title>
   <script src="../base.js"></script>
   <script>
-    goog.require('goog.dom');
-    goog.require('goog.dom.classes');
     goog.require('goog.debug.DivConsole');
     goog.require('goog.debug.LogManager');
-    goog.require('goog.debug.Logger');
+    goog.require('goog.dom');
+    goog.require('goog.dom.classes');
     goog.require('goog.events');
+    goog.require('goog.log');
+    goog.require('goog.object');
     goog.require('goog.testing.ExpectedFailures');
     goog.require('goog.testing.events');
+    goog.require('goog.testing.events.EventObserver');
     goog.require('goog.testing.jsunit');
-    goog.require('goog.object');
     goog.require('goog.ui.Control');
     goog.require('goog.ui.ControlRenderer');
     goog.require('goog.ui.Textarea');
     goog.require('goog.ui.TextareaRenderer');
     goog.require('goog.userAgent');
+    goog.require('goog.userAgent.product');
+    goog.require('goog.userAgent.product.isVersion');
   </script>
   <style>
     textarea {
@@ -69,7 +73,14 @@ See the COPYING file for details.
      */
     function isMacSafari3() {
       return goog.userAgent.WEBKIT && goog.userAgent.MAC &&
-          !goog.userAgent.isVersion('527');
+          !goog.userAgent.isVersionOrHigher('527');
+    }
+
+    /**
+     * @return {boolean} Whether we're on Linux Firefox 3.6.3.
+     */
+    function isLinuxFirefox() {
+      return goog.userAgent.product.FIREFOX && goog.userAgent.LINUX;
     }
 
     /**
@@ -77,7 +88,7 @@ See the COPYING file for details.
      */
     function isFirefox3() {
       return goog.userAgent.GECKO &&
-          !goog.userAgent.isVersion('1.9.1');
+          !goog.userAgent.isVersionOrHigher('1.9.1');
     }
 
     function testConstructor() {
@@ -141,9 +152,13 @@ See the COPYING file for details.
     }
 
     function testBasicTextareaBehavior() {
+      var observer = new goog.testing.events.EventObserver();
+      goog.events.listen(textarea, goog.ui.Textarea.EventType.RESIZE, observer);
       textarea.render(sandbox);
       var el = textarea.getElement();
       var heightBefore = textarea.getHeight_();
+      assertTrue('One resize event should be fired during render',
+          observer.getEvents().length == 1);
       textarea.setContent('Lorem ipsum dolor sit amet, consectetuer ' +
           'elit. Aenean sollicitudin ultrices urna. Proin vehicula mauris ac ' +
           'est. Ut scelerisque, risus ut facilisis dictum, est massa lacinia ' +
@@ -151,11 +166,17 @@ See the COPYING file for details.
       var heightAfter = textarea.getHeight_();
       assertTrue('With this much content, height should have grown.',
           heightAfter > heightBefore);
+      assertTrue('With a height change, a resize event should have fired.',
+          observer.getEvents().length == 2);
 
       textarea.setContent('');
       heightAfter = textarea.getHeight_();
       assertTrue('Textarea should shrink with no content.',
           heightAfter <= heightBefore);
+      assertTrue('With a height change, a resize event should have fired.',
+          observer.getEvents().length == 3);
+      goog.events.unlisten(textarea, goog.ui.Textarea.EventType.RESIZE,
+          observer);
     }
 
     function testGetHorizontalScrollBarHeight() {
@@ -264,8 +285,8 @@ See the COPYING file for details.
 
 
       var height = textarea.getHeight_();
-      // For some reason Mac Safari 3 has 136 here.
-      expectedFailures.expectFailureFor(isMacSafari3());
+      // For some reason Mac Safari 3 has 136 and Linux FF has 146 here.
+      expectedFailures.expectFailureFor(isMacSafari3() || isLinuxFirefox());
       try {
         assertTrue('With lots of content, getHeight_() should be > 150 ' +
           '(it is ' + height + ')', height > 150);

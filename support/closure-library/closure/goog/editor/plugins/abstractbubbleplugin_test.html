@@ -9,26 +9,25 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.editor.plugins.AbstractBubblePlugin</title>
 <script src="../../base.js"></script>
 <script>
   goog.require('goog.dom');
-  goog.require('goog.dom.TagName');
   goog.require('goog.editor.plugins.AbstractBubblePlugin');
   goog.require('goog.events.BrowserEvent');
-  goog.require('goog.events.EventType');
   goog.require('goog.events.KeyCodes');
+  goog.require('goog.functions');
   goog.require('goog.style');
   goog.require('goog.testing.editor.FieldMock');
   goog.require('goog.testing.editor.TestHelper');
   goog.require('goog.testing.events');
   goog.require('goog.testing.jsunit');
-  goog.require('goog.testing.LooseMock');
-  goog.require('goog.userAgent');
+  goog.require('goog.ui.editor.Bubble');
 </script>
 <link rel="stylesheet" type="text/css" href="../../css/bubble.css">
 </head>
@@ -39,7 +38,7 @@ See the COPYING file for details.
 <script>
 
 var testHelper;
-var fieldDiv = goog.dom.$('field');
+var fieldDiv = goog.dom.getElement('field');
 var COMMAND = 'base';
 var FIELDMOCK;
 var bubblePlugin;
@@ -53,7 +52,7 @@ function setUpPage() {
     window.moveTo(0, 0);
     window.resizeTo(640, 480);
   }
-};
+}
 
 function setUp() {
   testHelper = new goog.testing.editor.TestHelper(fieldDiv);
@@ -108,7 +107,7 @@ function helpTestCreateBubble(opt_fn) {
   bubblePlugin.createBubbleContents = function(bubbleContainer) {
     numCalled++;
     assertNotNull('bubbleContainer should not be null', bubbleContainer);
-  }
+  };
   if (opt_fn) {
     opt_fn();
   }
@@ -163,27 +162,152 @@ function testZindexBehavior() {
 
 function testNoTwoBubblesOpenAtSameTime() {
   FIELDMOCK.$replay();
-  var origClose = goog.bind(bubblePlugin.closeBubble, bubblePlugin);;
+  var origClose = goog.bind(bubblePlugin.closeBubble, bubblePlugin);
   var numTimesCloseCalled = 0;
   bubblePlugin.closeBubble = function() {
     numTimesCloseCalled++;
     origClose();
   };
-  bubblePlugin.getBubbleTargetFromSelection = function(selectedElement) {
-    return selectedElement;
-  };
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
   bubblePlugin.createBubbleContents = goog.nullFunction;
 
-  bubblePlugin.handleSelectionChangeInternal_(link);
+  bubblePlugin.handleSelectionChangeInternal(link);
   assertEquals(0, numTimesCloseCalled);
   assertEquals(link, bubblePlugin.targetElement_);
   FIELDMOCK.$verify();
 
-  bubblePlugin.handleSelectionChangeInternal_(link2);
+  bubblePlugin.handleSelectionChangeInternal(link2);
   assertEquals(1, numTimesCloseCalled);
   assertEquals(link2, bubblePlugin.targetElement_);
   FIELDMOCK.$verify();
 }
+
+function testHandleSelectionChangeWithEvent() {
+  FIELDMOCK.$replay();
+  var fakeEvent =
+      new goog.events.BrowserEvent({type: 'mouseup', target: link});
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = goog.nullFunction;
+  bubblePlugin.handleSelectionChange(fakeEvent);
+  assertTrue('Bubble should have been opened', bubblePlugin.isVisible());
+  assertEquals('Bubble target should be provided event\'s target',
+               link, bubblePlugin.targetElement_);
+}
+
+function testHandleSelectionChangeWithTarget() {
+  FIELDMOCK.$replay();
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = goog.nullFunction;
+  bubblePlugin.handleSelectionChange(undefined, link2);
+  assertTrue('Bubble should have been opened', bubblePlugin.isVisible());
+  assertEquals('Bubble target should be provided target',
+               link2, bubblePlugin.targetElement_);
+}
+
+/**
+ * Regression test for @bug 2945341.
+ */
+function testSelectOneTextCharacterNoError() {
+  FIELDMOCK.$replay();
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = goog.nullFunction;
+  // Select first char of first link's text node.
+  testHelper.select(link.firstChild, 0, link.firstChild, 1);
+  // This should execute without js errors.
+  bubblePlugin.handleSelectionChange();
+  assertTrue('Bubble should have been opened', bubblePlugin.isVisible());
+  FIELDMOCK.$verify();
+}
+
+function testTabKeyEvents() {
+  FIELDMOCK.focus();
+  FIELDMOCK.$replay();
+  bubblePlugin.enableKeyboardNavigation(true /* enable link tabbing */);
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = function(container) {
+    this.createLink('linkInBubble0', 'Foo', false, container);
+    this.createLink('linkInBubble1', 'Bar', false, container);
+  };
+  bubblePlugin.handleSelectionChangeInternal(link);
+
+  goog.testing.events.fireKeySequence(fieldDiv,
+      goog.events.KeyCodes.TAB);
+  assertTrue('Bubble should be visible', bubblePlugin.isVisible());
+
+  var linkEls = goog.dom.getElementsByClass(
+      goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_,
+      bubblePlugin.getSharedBubble_().getContentElement());
+  goog.testing.events.fireKeySequence(linkEls[0], goog.events.KeyCodes.TAB);
+  goog.testing.events.fireKeySequence(linkEls[1], goog.events.KeyCodes.TAB);
+  FIELDMOCK.$verify();
+}
+
+function testTabKeyEventsWithShiftKey() {
+  FIELDMOCK.focus();
+  FIELDMOCK.$replay();
+  bubblePlugin.enableKeyboardNavigation(true /* enable link tabbing */);
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = function(container) {
+    this.createLink('linkInBubble0', 'Foo', false, container);
+    this.createLink('linkInBubble1', 'Bar', false, container);
+  };
+  bubblePlugin.handleSelectionChangeInternal(link);
+
+  goog.testing.events.fireKeySequence(fieldDiv,
+      goog.events.KeyCodes.TAB);
+  assertTrue('Bubble should be visible', bubblePlugin.isVisible());
+
+  var linkEls = goog.dom.getElementsByClass(
+      goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_,
+      bubblePlugin.getSharedBubble_().getContentElement());
+  goog.testing.events.fireKeySequence(linkEls[0], goog.events.KeyCodes.TAB,
+      {shiftKey: true});
+  FIELDMOCK.$verify();
+}
+
+function testTabKeyNoEffectKeyboardNavDisabled() {
+  FIELDMOCK.$replay();
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = function(container) {
+    this.createLink('linkInBubble0', 'Foo', false, container);
+    this.createLink('linkInBubble1', 'Bar', false, container);
+  };
+  bubblePlugin.handleSelectionChangeInternal(link);
+
+  assertFalse('The action should not be handled by the plugin',
+      bubblePlugin.handleKeyDown({
+        keyCode: goog.events.KeyCodes.TAB,
+        shiftKey: false
+      }));
+
+  FIELDMOCK.$verify();
+}
+
+function testOtherKeyEventNoEffectKeyboardNavEnabled() {
+  FIELDMOCK.$replay();
+  bubblePlugin.enableKeyboardNavigation(true /* enable link tabbing */);
+  bubblePlugin.getBubbleTargetFromSelection = goog.functions.identity;
+  bubblePlugin.createBubbleContents = function(container) {
+    this.createLink('linkInBubble0', 'Foo', false, container);
+    this.createLink('linkInBubble1', 'Bar', false, container);
+  };
+  bubblePlugin.handleSelectionChangeInternal(link);
+
+  // Test pressing CTRL + B: this should not have any effect.
+  goog.testing.events.fireKeySequence(fieldDiv,
+      goog.events.KeyCodes.B, {ctrlKey: true});
+  assertTrue('Bubble should be visible', bubblePlugin.isVisible());
+
+  assertFalse('The action should not be handled by the plugin',
+      bubblePlugin.handleKeyDown({
+        keyCode: goog.events.KeyCodes.B,
+        shiftKey: false,
+        ctrlKey: true
+      }));
+
+  FIELDMOCK.$verify();
+}
+</script>
 </script>
 </body>
 </html>

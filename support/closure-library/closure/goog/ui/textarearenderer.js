@@ -1,4 +1,4 @@
-// Copyright 2010 Google Inc. All Rights Reserved.
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
 
 /**
  * @fileoverview Native browser textarea renderer for {@link goog.ui.Textarea}s.
-*
  */
 
 goog.provide('goog.ui.TextareaRenderer');
 
-goog.require('goog.ui.Component.State');
+goog.require('goog.dom.TagName');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.ControlRenderer');
 
 
@@ -47,18 +47,19 @@ goog.addSingletonGetter(goog.ui.TextareaRenderer);
 goog.ui.TextareaRenderer.CSS_CLASS = goog.getCssName('goog-textarea');
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.TextareaRenderer.prototype.getAriaRole = function() {
   // textareas don't need ARIA roles to be recognized by screen readers.
   return undefined;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.TextareaRenderer.prototype.decorate = function(control, element) {
+  this.setUpTextarea_(control);
   goog.ui.TextareaRenderer.superClass_.decorate.call(this, control,
       element);
-  control.setContentInternal(element.value);
+  control.setContent(element.value);
   return element;
 };
 
@@ -95,14 +96,14 @@ goog.ui.TextareaRenderer.prototype.canDecorate = function(element) {
 
 /**
  * Textareas natively support right-to-left rendering.
- * @inheritDoc
+ * @override
  */
 goog.ui.TextareaRenderer.prototype.setRightToLeft = goog.nullFunction;
 
 
 /**
  * Textareas are always focusable as long as they are enabled.
- * @inheritDoc
+ * @override
  */
 goog.ui.TextareaRenderer.prototype.isFocusable = function(textarea) {
   return textarea.isEnabled();
@@ -111,7 +112,7 @@ goog.ui.TextareaRenderer.prototype.isFocusable = function(textarea) {
 
 /**
  * Textareas natively support keyboard focus.
- * @inheritDoc
+ * @override
  */
 goog.ui.TextareaRenderer.prototype.setFocusable = goog.nullFunction;
 
@@ -119,7 +120,7 @@ goog.ui.TextareaRenderer.prototype.setFocusable = goog.nullFunction;
 /**
  * Textareas also expose the DISABLED state in the HTML textarea's
  * {@code disabled} attribute.
- * @inheritDoc
+ * @override
  */
 goog.ui.TextareaRenderer.prototype.setState = function(textarea, state,
     enable) {
@@ -135,7 +136,7 @@ goog.ui.TextareaRenderer.prototype.setState = function(textarea, state,
 /**
  * Textareas don't need ARIA states to support accessibility, so this is
  * a no-op.
- * @inheritDoc
+ * @override
  */
 goog.ui.TextareaRenderer.prototype.updateAriaState = goog.nullFunction;
 
@@ -154,7 +155,7 @@ goog.ui.TextareaRenderer.prototype.setUpTextarea_ = function(textarea) {
 };
 
 
-/** @inheritDoc **/
+/** @override **/
 goog.ui.TextareaRenderer.prototype.setContent = function(element, value) {
   if (element) {
     element.value = value;
@@ -162,7 +163,7 @@ goog.ui.TextareaRenderer.prototype.setContent = function(element, value) {
 };
 
 
-/** @inheritDoc **/
+/** @override **/
 goog.ui.TextareaRenderer.prototype.getCssClass = function() {
   return goog.ui.TextareaRenderer.CSS_CLASS;
 };

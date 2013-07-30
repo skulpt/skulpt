@@ -3,10 +3,11 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.math.RangeSet</title>
 <script src="../base.js"></script>
 <script>
@@ -26,12 +27,12 @@ goog.require('goog.testing.jsunit');
  * two ranges are not equal, the error message will be in the format:
  * "Expected <[1, 2]> (Object) but was <[3, 4]> (Object)"
  *
- * @param {goog.math.Range|Array.<number>|string} a A descriptive string or the
- *     expected range.
- * @param {goog.math.Range|Array.<number>} b The expected range when a
+ * @param {!goog.math.Range|!Array.<number>|string} a A descriptive string or
+ *     the expected range.
+ * @param {!goog.math.Range|!Array.<number>} b The expected range when a
  *     descriptive string is present, or the range to compare.
- * @param {goog.math.Range} opt_c The range to compare when a descriptive string
- *     is present.
+ * @param {goog.math.Range=} opt_c The range to compare when a descriptive
+ *     string is present.
  */
 function assertRangesEqual(a, b, opt_c) {
   var message = opt_c ? a : '';
@@ -47,8 +48,8 @@ function assertRangesEqual(a, b, opt_c) {
     expected = new goog.math.Range(expected[0], expected[1]);
   }
 
-  if (!goog.math.Range.equals(/** @type {goog.math.Range} */(expected),
-                              /** @type {goog.math.Range} */(actual))) {
+  if (!goog.math.Range.equals(/** @type {!goog.math.Range} */ (expected),
+                              /** @type {!goog.math.Range} */ (actual))) {
     if (message) {
       assertEquals(message, expected, actual);
     } else {
@@ -68,7 +69,7 @@ function assertRangesEqual(a, b, opt_c) {
  * @param {Array.<goog.math.Range|Array.<number>>} b The list of
  *     expected ranges when a descriptive string is present, or the list of
  *     ranges to compare.
- * @param {Array.<goog.math.Range>} opt_c The list of ranges to compare when a
+ * @param {Array.<goog.math.Range>=} opt_c The list of ranges to compare when a
  *     descriptive string is present.
  */
 function assertRangeListsEqual(a, b, opt_c) {
@@ -461,6 +462,32 @@ function testUnion() {
 }
 
 
+function testDifference() {
+  var a = new goog.math.RangeSet();
+
+  a.add(new goog.math.Range(1, 5));
+  a.add(new goog.math.Range(10, 11));
+  a.add(new goog.math.Range(15, 20));
+
+  var b = new goog.math.RangeSet();
+
+  b.add(new goog.math.Range(0, 5));
+  b.add(new goog.math.Range(8, 18));
+
+  var test = a.difference(b);
+  assertRangeListsEqual([[18, 20]], test.ranges_);
+
+  var test = b.difference(a);
+  assertRangeListsEqual([[0, 1], [8, 10], [11, 15]], test.ranges_);
+
+  var test = a.difference(a);
+  assertRangeListsEqual([], test.ranges_);
+
+  var test = b.difference(b);
+  assertRangeListsEqual([], test.ranges_);
+}
+
+
 function testIntersection() {
   var a = new goog.math.RangeSet();
 
@@ -552,6 +579,25 @@ function testInverse() {
   test = r.inverse(badRange);
   assertRangeListsEqual('An invalid range should produce an empty set.',
                         [], test.ranges_);
+}
+
+
+function testCoveredLength() {
+  var r = new goog.math.RangeSet();
+  assertEquals(0, r.coveredLength());
+
+  r.add(new goog.math.Range(5, 9));
+  assertEquals(4, r.coveredLength());
+
+  r.add(new goog.math.Range(0, 3));
+  r.add(new goog.math.Range(12, 13));
+  assertEquals(8, r.coveredLength());
+
+  r.add(new goog.math.Range(-1, 13));
+  assertEquals(14, r.coveredLength());
+
+  r.add(new goog.math.Range(13, 13.5));
+  assertEquals(14.5, r.coveredLength());
 }
 
 

@@ -15,17 +15,18 @@
 /**
  * @fileoverview Data structure for set of strings.
  *
-*
  *
  * This class implements a set data structure for strings. Adding and removing
  * is O(1). It doesn't contain any bloat from {@link goog.structs.Set}, i.e.
  * it isn't optimized for IE6 garbage collector (see the description of
  * {@link goog.structs.Map#keys_} for details), and it distinguishes its
  * elements by their string value not by hash code.
+ * The implementation assumes that no new keys are added to Object.prototype.
  */
 
 goog.provide('goog.structs.StringSet');
 
+goog.require('goog.asserts');
 goog.require('goog.iter');
 
 
@@ -49,6 +50,8 @@ goog.structs.StringSet = function(opt_elements) {
       this.elements_[this.encode(opt_elements[i])] = null;
     }
   }
+
+  goog.asserts.assertObjectPrototypeIsIntact();
 };
 
 
@@ -119,8 +122,7 @@ goog.structs.StringSet.prototype.addArray = function(arr) {
  */
 goog.structs.StringSet.prototype.addDifference_ = function(set1, set2) {
   for (var key in set1.elements_) {
-    if (set1.elements_.hasOwnProperty(key) &&
-        !set2.elements_.hasOwnProperty(key)) {
+    if (!(key in set2.elements_)) {
       this.elements_[key] = null;
     }
   }
@@ -133,9 +135,7 @@ goog.structs.StringSet.prototype.addDifference_ = function(set1, set2) {
  */
 goog.structs.StringSet.prototype.addSet = function(stringSet) {
   for (var key in stringSet.elements_) {
-    if (stringSet.elements_.hasOwnProperty(key)) {
-      this.elements_[key] = null;
-    }
+    this.elements_[key] = null;
   }
 };
 
@@ -164,7 +164,7 @@ goog.structs.StringSet.prototype.clone = function() {
  * @return {boolean} Whether it is in the set.
  */
 goog.structs.StringSet.prototype.contains = function(element) {
-  return this.elements_.hasOwnProperty(this.encode(element));
+  return this.encode(element) in this.elements_;
 };
 
 
@@ -175,7 +175,7 @@ goog.structs.StringSet.prototype.contains = function(element) {
  */
 goog.structs.StringSet.prototype.containsArray = function(arr) {
   for (var i = 0; i < arr.length; i++) {
-    if (!this.elements_.hasOwnProperty(this.encode(arr[i]))) {
+    if (!(this.encode(arr[i]) in this.elements_)) {
       return false;
     }
   }
@@ -203,9 +203,7 @@ goog.structs.StringSet.prototype.equals = function(stringSet) {
  */
 goog.structs.StringSet.prototype.forEach = function(f, opt_obj) {
   for (var key in this.elements_) {
-    if (this.elements_.hasOwnProperty(key)) {
-      f.call(opt_obj, this.decode(key), undefined, this);
-    }
+    f.call(opt_obj, this.decode(key), undefined, this);
   }
 };
 
@@ -220,15 +218,17 @@ goog.structs.StringSet.prototype.forEach = function(f, opt_obj) {
  * <li>if getCount is not called, adding and removing elements have no overhead.
  * @return {number} The number of elements in the set.
  */
-goog.structs.StringSet.prototype.getCount = function() {
-  var count = 0;
-  for (var key in this.elements_) {
-    if (this.elements_.hasOwnProperty(key)) {
-      count++;
-    }
-  }
-  return count;
-};
+goog.structs.StringSet.prototype.getCount = Object.keys ?
+    function() {
+      return Object.keys(this.elements_).length;
+    } :
+    function() {
+      var count = 0;
+      for (var key in this.elements_) {
+        count++;
+      }
+      return count;
+    };
 
 
 /**
@@ -252,8 +252,7 @@ goog.structs.StringSet.prototype.getDifference = function(stringSet) {
 goog.structs.StringSet.prototype.getIntersection = function(stringSet) {
   var ret = new goog.structs.StringSet;
   for (var key in this.elements_) {
-    if (stringSet.elements_.hasOwnProperty(key) &&
-        this.elements_.hasOwnProperty(key)) {
+    if (key in stringSet.elements_) {
       ret.elements_[key] = null;
     }
   }
@@ -290,15 +289,18 @@ goog.structs.StringSet.prototype.getUnion = function(stringSet) {
 /**
  * @return {!Array.<string>} The elements of the set.
  */
-goog.structs.StringSet.prototype.getValues = function() {
-  var ret = [];
-  for (var key in this.elements_) {
-    if (this.elements_.hasOwnProperty(key)) {
-      ret.push(this.decode(key));
-    }
-  }
-  return ret;
-};
+goog.structs.StringSet.prototype.getValues = Object.keys ?
+    function() {
+      // Object.keys was introduced in JavaScript 1.8.5, Array#map in 1.6.
+      return Object.keys(this.elements_).map(this.decode, this);
+    } :
+    function() {
+      var ret = [];
+      for (var key in this.elements_) {
+        ret.push(this.decode(key));
+      }
+      return ret;
+    };
 
 
 /**
@@ -308,8 +310,7 @@ goog.structs.StringSet.prototype.getValues = function() {
  */
 goog.structs.StringSet.prototype.isDisjoint = function(stringSet) {
   for (var key in this.elements_) {
-    if (stringSet.elements_.hasOwnProperty(key) &&
-        this.elements_.hasOwnProperty(key)) {
+    if (key in stringSet.elements_) {
       return false;
     }
   }
@@ -322,9 +323,7 @@ goog.structs.StringSet.prototype.isDisjoint = function(stringSet) {
  */
 goog.structs.StringSet.prototype.isEmpty = function() {
   for (var key in this.elements_) {
-    if (this.elements_.hasOwnProperty(key)) {
-      return false;
-    }
+    return false;
   }
   return true;
 };
@@ -337,8 +336,7 @@ goog.structs.StringSet.prototype.isEmpty = function() {
  */
 goog.structs.StringSet.prototype.isSubsetOf = function(stringSet) {
   for (var key in this.elements_) {
-    if (!stringSet.elements_.hasOwnProperty(key) &&
-        this.elements_.hasOwnProperty(key)) {
+    if (!(key in stringSet.elements_)) {
       return false;
     }
   }
@@ -352,7 +350,7 @@ goog.structs.StringSet.prototype.isSubsetOf = function(stringSet) {
  * @return {boolean} Whether this set if the superset of that.
  */
 goog.structs.StringSet.prototype.isSupersetOf = function(stringSet) {
-  return this.isSubsetOf.call(stringSet, this);
+  return stringSet.isSubsetOf(this);
 };
 
 
@@ -363,7 +361,7 @@ goog.structs.StringSet.prototype.isSupersetOf = function(stringSet) {
  */
 goog.structs.StringSet.prototype.remove = function(element) {
   var key = this.encode(element);
-  if (this.elements_.hasOwnProperty(key)) {
+  if (key in this.elements_) {
     delete this.elements_[key];
     return true;
   }

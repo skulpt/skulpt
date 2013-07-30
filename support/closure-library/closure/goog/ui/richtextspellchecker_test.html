@@ -3,15 +3,15 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.RichTextSpellChecker</title>
 <script src="../base.js"></script>
 <script>
   goog.require('goog.dom');
-  goog.require('goog.string.StringBuffer');
   goog.require('goog.testing.jsunit');
   goog.require('goog.ui.RichTextSpellChecker');
 </script>
@@ -166,6 +166,30 @@ function testDocumentIntegrity() {
                el2.innerHTML, el.innerHTML);
   s.dispose();
 };
+
+function testExcludeMarkers() {
+  var handler = new goog.spell.SpellCheck(localSpellCheckingFunction);
+  var s = new goog.ui.RichTextSpellChecker(handler);
+  s.setExcludeMarker(['DIV.goog-quote', 'goog-comment', 'SPAN.goog-note']);
+  assertArrayEquals(['goog-quote', 'goog-comment', 'goog-note'],
+      s.excludeMarker);
+  assertArrayEquals(['DIV', undefined, 'SPAN'], s.excludeTags);
+  var el = document.getElementById('test1');
+  el.innerHTML = '<div class="goog-quote"></div>' +
+      '<div class="goog-yes">skip</div>' +
+      '<div class="goog-note"></div>' +
+      '<div class="goog-comment"></div>' +
+      '<br>';
+  var children = el.childNodes;
+  var length = children.length;
+  assertEquals(5, length);
+
+  assertTrue(s.isExcluded_(children[0]));
+  assertFalse(s.isExcluded_(children[1]));
+  assertFalse(s.isExcluded_(children[2]));
+  assertTrue(s.isExcluded_(children[3]));
+  assertFalse(s.isExcluded_(children[4]));
+}
 
 function testBiggerDocument() {
   var handler = new goog.spell.SpellCheck(localSpellCheckingFunction);

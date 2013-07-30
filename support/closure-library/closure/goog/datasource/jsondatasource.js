@@ -15,7 +15,6 @@
 /**
  * @fileoverview Implementation of DataNode for wrapping JSON data.
  *
-*
  */
 
 
@@ -27,6 +26,7 @@ goog.require('goog.ds.DataManager');
 goog.require('goog.ds.JsDataSource');
 goog.require('goog.ds.LoadState');
 goog.require('goog.ds.logger');
+
 
 
 /**
@@ -91,6 +91,7 @@ goog.ds.JsonDataSource['dataSources'] = {};
 /**
  * Load or reload the backing data for this node.
  * Fires the JsonDataSource
+ * @override
  */
 goog.ds.JsonDataSource.prototype.load = function() {
   if (this.uri_) {
@@ -98,7 +99,7 @@ goog.ds.JsonDataSource.prototype.load = function() {
     // renamed.  It should therefore be accessed via array notation here so
     // that it also doesn't get renamed and stops the compiler from complaining
     goog.ds.JsonDataSource['dataSources'][this.dataName_] = this;
-    goog.ds.logger.info('Sending JS request for DataSource ' +
+    goog.log.info(goog.ds.logger, 'Sending JS request for DataSource ' +
         this.getDataName() + ' to ' + this.uri_);
 
     this.loadState_ = goog.ds.LoadState.LOADING;
@@ -108,12 +109,10 @@ goog.ds.JsonDataSource.prototype.load = function() {
         'JsonReceive.' + this.dataName_);
 
     goog.global['JsonReceive'][this.dataName_] =
-       goog.bind(this.receiveData, this);
+        goog.bind(this.receiveData, this);
 
-    var scriptEl = goog.dom.createElement('script');
-    scriptEl.src = uriToCall;
-    goog.dom.getDocument().getElementsByTagNameAndClass('head')[0].appendChild(
-        scriptEl);
+    var scriptEl = goog.dom.createDom('script', {'src': uriToCall});
+    goog.dom.getElementsByTagNameAndClass('head')[0].appendChild(scriptEl);
   } else {
     this.root_ = {};
     this.loadState_ = goog.ds.LoadState.NOT_LOADED;
@@ -124,6 +123,7 @@ goog.ds.JsonDataSource.prototype.load = function() {
 /**
  * Gets the state of the backing data for this node
  * @return {goog.ds.LoadState} The state.
+ * @override
  */
 goog.ds.JsonDataSource.prototype.getLoadState = function() {
   return this.loadState_;

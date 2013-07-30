@@ -675,7 +675,7 @@ Sk.builtin.input = function(obj, name, default_)
 
 Sk.builtin.jseval = function jseval(evalcode)
 {
-    goog.global.eval(evalcode);
+    goog.global['eval'](evalcode);
 };
 
 Sk.builtin.jsmillis = function jsmillis()

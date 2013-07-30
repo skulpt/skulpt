@@ -3,7 +3,7 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
@@ -11,6 +11,7 @@ Author: nicksantos@google.com (Nick Santos)
 Author: attila@google.com (Attila Bodis)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.Button</title>
   <script src="../base.js"></script>
   <script>
@@ -19,6 +20,7 @@ Author: attila@google.com (Attila Bodis)
     goog.require('goog.testing.events');
     goog.require('goog.testing.jsunit');
     goog.require('goog.ui.Button');
+    goog.require('goog.ui.ButtonSide');
     goog.require('goog.ui.ButtonRenderer');
     goog.require('goog.ui.NativeButtonRenderer');
   </script>
@@ -103,14 +105,14 @@ Author: attila@google.com (Attila Bodis)
     function testSetCollapsed() {
       assertNull('Button must not have any collapsed styling by default',
           button.getExtraClassNames());
-      button.setCollapsed(goog.ui.Button.Side.START);
+      button.setCollapsed(goog.ui.ButtonSide.START);
       assertSameElements('Button must have the start side collapsed',
           ['goog-button-collapse-left'], button.getExtraClassNames());
       button.render(sandbox);
       assertSameElements('Button element must have the start side collapsed',
           ['goog-button', 'goog-button-collapse-left'],
           goog.dom.classes.get(button.getElement()));
-      button.setCollapsed(goog.ui.Button.Side.BOTH);
+      button.setCollapsed(goog.ui.ButtonSide.BOTH);
       assertSameElements('Button must have both sides collapsed',
           ['goog-button-collapse-left', 'goog-button-collapse-right'],
           button.getExtraClassNames());
@@ -178,7 +180,7 @@ Author: attila@google.com (Attila Bodis)
 
       dispatchedActionCount = 0;
       button.handleKeyEvent({keyCode: goog.events.KeyCodes.ENTER});
-      assertEquals('Disabled button must have dispatched ACTION on Enter key',
+      assertEquals('Disabled button must not dispatch ACTION on Enter key',
           0, dispatchedActionCount);
 
       dispatchedActionCount = 0;

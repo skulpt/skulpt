@@ -10,10 +10,11 @@ All Rights Reserved.
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>goog.editor.plugins.LoremIpsum Tests</title>
 <script type="text/javascript" src="../../base.js"></script>
 <script type="text/javascript">
@@ -159,7 +160,7 @@ function testLoremIpsumInClickToEditMode() {
 function getNbsp() {
   // On WebKit (pre-528) and Opera, &nbsp; shows up as its unicode character in
   // innerHTML under some circumstances.
-  return (goog.userAgent.WEBKIT && !goog.userAgent.isVersion('528')) ||
+  return (goog.userAgent.WEBKIT && !goog.userAgent.isVersionOrHigher('528')) ||
          goog.userAgent.OPERA ? '\u00a0' : '&nbsp;';
 }
 

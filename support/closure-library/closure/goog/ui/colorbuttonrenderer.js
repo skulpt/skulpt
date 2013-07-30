@@ -1,4 +1,4 @@
-// Copyright 2010 Google Inc. All Rights Reserved
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 /**
  * @fileoverview Renderer for {@link goog.ui.ColorButton}s.
  *
-*
  */
 
 goog.provide('goog.ui.ColorButtonRenderer');
@@ -23,6 +22,7 @@ goog.provide('goog.ui.ColorButtonRenderer');
 goog.require('goog.dom.classes');
 goog.require('goog.functions');
 goog.require('goog.ui.ColorMenuButtonRenderer');
+
 
 
 /**
@@ -36,7 +36,7 @@ goog.ui.ColorButtonRenderer = function() {
   goog.base(this);
 
   /**
-   * @inheritDoc
+   * @override
    */
   // TODO(user): enable disabling the dropdown in goog.ui.ColorMenuButton
   this.createDropdown = goog.functions.NULL;
@@ -54,7 +54,7 @@ goog.addSingletonGetter(goog.ui.ColorButtonRenderer);
 goog.ui.ColorButtonRenderer.CSS_CLASS = goog.getCssName('goog-color-button');
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ColorButtonRenderer.prototype.createCaption = function(content, dom) {
   var caption = goog.base(this, 'createCaption', content, dom);
   goog.dom.classes.add(caption, goog.ui.ColorButtonRenderer.CSS_CLASS);
@@ -62,7 +62,7 @@ goog.ui.ColorButtonRenderer.prototype.createCaption = function(content, dom) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ColorButtonRenderer.prototype.initializeDom = function(button) {
   goog.base(this, 'initializeDom', button);
   goog.dom.classes.add(button.getElement(),

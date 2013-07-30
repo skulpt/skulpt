@@ -15,14 +15,15 @@
 
 /**
  * @fileoverview A thin wrapper around the DOM element for text elements.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 
 goog.provide('goog.graphics.TextElement');
 
 goog.require('goog.graphics.StrokeAndFillElement');
+
 
 
 /**
@@ -37,6 +38,9 @@ goog.require('goog.graphics.StrokeAndFillElement');
  * @param {goog.graphics.Fill?} fill The fill to use for this element.
  * @constructor
  * @extends {goog.graphics.StrokeAndFillElement}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.TextElement = function(element, graphics, stroke, fill) {
   goog.graphics.StrokeAndFillElement.call(this, element, graphics, stroke,
