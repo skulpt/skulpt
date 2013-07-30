@@ -461,6 +461,8 @@ Sk.builtin.lng.prototype.nb$ispositive = function()
 	//return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) >= 0;
 };
 
+Sk.builtin.lng.prototype.nb$invert = function() { throw new Sk.builtin.AssertionError(); };
+
 Sk.builtin.lng.prototype.longCompare = function(other)
 {
 	if (typeof other === "boolean")
