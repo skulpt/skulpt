@@ -385,7 +385,7 @@ Sk.builtin.ord = function ord(x)
     {
         throw "ord() expected string of length 1";
     }
-    return (x.v).charCodeAt(0);
+    return new Sk.builtin.nmber((x.v).charCodeAt(0), Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.chr = function chr(x)
@@ -877,7 +877,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
 		if (cmp instanceof Sk.builtin.none) {
 			compare_func = { func_code: function(a,b){
-				return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? -1 : 0;
+			    return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
 			}};
 		}
         else {
