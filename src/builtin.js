@@ -51,6 +51,7 @@ Sk.builtin.range = function range(start, stop, step)
 Sk.builtin.asnum$ = function(a) {
 	if (a === undefined) return a;
 	if (a === null) return a;
+	if (a.constructor === Sk.builtin.none) return null;
 	if (typeof a === "number") return a;
 	if (typeof a === "string") return a;
 	if (a.constructor === Sk.builtin.nmber) return a.v;
@@ -80,6 +81,7 @@ goog.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
 Sk.builtin.asnum$nofloat = function(a) {
 	if (a === undefined) return a;
 	if (a === null) return a;
+	if (a.constructor === Sk.builtin.none) return null;
 	if (typeof a === "number") a = a.toString();
 	if (a.constructor === Sk.builtin.nmber) a = a.v.toString();
 	if (a.constructor === Sk.builtin.lng)   a = a.str$(10, true);
@@ -560,8 +562,8 @@ Sk.builtin.isinstance = function isinstance(obj, type)
         return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.float$); 
     }
 
-    if (type === Sk.builtin.NoneObj.prototype.ob$type) {
-        return obj === null;
+    if (type === Sk.builtin.none.prototype.ob$type) {
+        return (obj instanceof Sk.builtin.none);
     }
 
     if (type === Sk.builtin.bool.prototype.ob$type) {
@@ -614,6 +616,10 @@ Sk.builtin.hash = function hash(value)
     else if ((value instanceof Object) && (value.__hash__ !== undefined))
     {
         return Sk.misceval.callsim(value.__hash__, value);
+    }
+    else if (value instanceof Sk.builtin.none)
+    {
+	return 0;
     }
     else if (value instanceof Object)
     {
@@ -697,7 +703,7 @@ Sk.builtin.eval_ =  function eval_()
 Sk.builtin.map = function map(fun, seq) {
     Sk.builtin.pyCheckArgs("map", arguments, 2);
 
-    if (fun === null){
+    if (fun instanceof Sk.builtin.none){
         fun = { func_code: function (x) { return x; } }
     }
 
@@ -718,7 +724,7 @@ Sk.builtin.map = function map(fun, seq) {
             for (var i in iterables){
                 var next = iterables[i].tp$iternext()
                 if (next === undefined) {
-                    args.push(null);
+                    args.push(Sk.builtin.none.none$);
                     nones++;
                 }
                 else{
@@ -779,7 +785,7 @@ Sk.builtin.filter = function filter(fun, iterable) {
 	}
 	
 	//simulate default identity function
-	if (fun === null) {
+	if (fun instanceof Sk.builtin.none) {
 		fun = { func_code: function (x) { return Sk.builtin.bool(x); } } 
 	}
 	
@@ -856,8 +862,8 @@ Sk.builtin.quit = function quit(msg) {
 Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var compare_func;
 	var list;
-	if (key !== undefined && key !== null) {
-        if (cmp === null) {
+	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
+		if (cmp instanceof Sk.builtin.none) {
 			compare_func = { func_code: function(a,b){
 				return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? -1 : 0;
 			}};
@@ -875,7 +881,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
         list = new Sk.builtin.list(arr);
 	}
 	else {
-		if (cmp !== null && cmp !== undefined) {
+		if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
 			compare_func = cmp;
 		}
         list = new Sk.builtin.list(iterable);
@@ -892,7 +898,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 		list.list_reverse_(list);
 	}
 	
-	if (key !== undefined && key !== null) {
+	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
 		var iter = list.tp$iter();
 		var next = iter.tp$iternext()
 		var arr = [];

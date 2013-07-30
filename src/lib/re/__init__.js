@@ -209,7 +209,7 @@ var $builtinmodule = function(name)
     mod.search = new Sk.builtin.func(function(pattern, string, flags) {
         var res = "/"+pattern.v.replace("/","\\/")+"/";
         lst = mod._findre(res,string);
-        if ( lst.v.length < 1 ) return null;
+        if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     });
@@ -217,7 +217,7 @@ var $builtinmodule = function(name)
     mod.match = new Sk.builtin.func(function(pattern, string, flags) {
         var res = "/^"+pattern.v.replace("/","\\/")+"/";
         lst = mod._findre(res,string);
-        if ( lst.v.length < 1 ) return null;
+        if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     });

@@ -12,7 +12,7 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function(v) {
     var vtypename;
-    if (v === null) {
+    if (v instanceof Sk.builtin.none) {
         vtypename = "NoneType";
     } else if ((v === true) || (v === false)) {
         vtypename = "bool";

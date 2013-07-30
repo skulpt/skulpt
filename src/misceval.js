@@ -313,6 +313,22 @@ Sk.misceval.richCompareBool = function(v, w, op)
 
     }
 
+  if ((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none)) {
+      if (op === 'Eq')
+	  return v.v === w.v;
+      if (op === 'NotEq')
+	  return v.v !== w.v;
+      if (op === 'Gt')
+	  return v.v > w.v;
+      if (op === 'GtE')
+	  return v.v >= w.v;
+      if (op === 'Lt')
+	  return v.v < w.v;
+      if (op === 'LtE')
+	  return v.v <= w.v;
+    }
+
+
     // todo; some defaults, mostly to handle diff types -> false. are these ok?
     if (op === 'Eq') return v === w;
     if (op === 'NotEq') return v !== w;
@@ -326,7 +342,7 @@ goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 Sk.misceval.objectRepr = function(v)
 {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
-    if (v === null)
+    if ((v === null) || (v instanceof Sk.builtin.none))
         return new Sk.builtin.str("None"); // todo; these should be consts
     else if (v === true)
         return new Sk.builtin.str("True");
@@ -366,6 +382,7 @@ Sk.misceval.isTrue = function(x)
     if (x === true) return true;
     if (x === false) return false;
     if (x === null) return false;
+    if (x.constructor === Sk.builtin.none) return false;
     if (typeof x === "number") return x !== 0;
     if (x instanceof Sk.builtin.lng) return x.nb$nonzero();
     if (x.constructor === Sk.builtin.nmber) return x.v !== 0;
@@ -512,7 +529,7 @@ goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  */
 Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
 {
-    if (func === null)
+    if (func === null || func instanceof Sk.builtin.none)
     {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }

@@ -22,6 +22,17 @@ Sk.builtin.lng = function(x, base)	/* long is a reserved word */
     else if (x instanceof Sk.builtin.str)
 	return Sk.longFromStr(x.v, base);
     else {
+	if ((x !== undefined) && (!Sk.builtin.checkString(x)
+			      && !Sk.builtin.checkNumber(x)))
+	{
+	    if (x === true)
+		x = 1;
+	    else if (x === false)
+		x = 0;
+	    else
+		throw new Sk.builtin.TypeError("long() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
+	}
+
 	x = Sk.builtin.asnum$nofloat(x);
 	this.biginteger = new Sk.builtin.biginteger(x);
     }

@@ -616,6 +616,9 @@ Sk.builtin.nmber.prototype.numberCompare = function(other)
 		else
 			other = 0;
 
+	if (other instanceof Sk.builtin.none)
+		other = 0;
+
 	if (typeof other === "number") {
 		return this.v - other;
 	}

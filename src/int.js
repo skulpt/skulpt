@@ -107,6 +107,17 @@ Sk.str2number = function(s, base, parser, negater, fname)
 
 Sk.builtin.int_ = function(x, base)
 {
+    if ((x !== undefined) && (!Sk.builtin.checkString(x)
+			      && !Sk.builtin.checkNumber(x)))
+    {
+	if (x === true)
+	    x = 1;
+	else if (x === false)
+	    x = 0;
+	else
+	    throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
+    }
+
     if (x instanceof Sk.builtin.str)
     {
 		base = Sk.builtin.asnum$(base);

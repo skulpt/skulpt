@@ -1334,7 +1334,7 @@ Compiler.prototype.cfunction = function(s)
     var funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function(scopename)
             {
                 this.vseqstmt(s.body);
-                out("return null;"); // if we fall off the bottom, we want the ret to be None
+                out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
             });
     this.nameop(s.name, Store, funcorgen);
 };
@@ -1605,7 +1605,7 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None")
         throw new Sk.builtin.SyntaxError("can not assign to None");
 
-    if (name.v === "None") return "null";
+    if (name.v === "None") return "Sk.builtin.none.none$";
     if (name.v === "True") return "true";
     if (name.v === "False") return "false";
 

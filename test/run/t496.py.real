@@ -1,0 +1,62 @@
+None
+None
+<type 'NoneType'>
+True
+['hello']
+None
+
+in/not in with a list
+False
+True
+True
+False
+
+in/not in with a dict
+False
+True
+True
+False
+
+is/is not
+True
+False
+False
+False
+True
+True
+
+boolean comparisons with int
+False
+False
+True
+True
+True
+True
+False
+False
+False
+False
+True
+True
+
+boolean comparisons with long
+False
+False
+True
+True
+True
+True
+False
+False
+False
+False
+True
+True
+
+boolean comparisons with None
+True
+False
+False
+True
+False
+True

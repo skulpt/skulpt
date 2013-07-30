@@ -15,7 +15,7 @@ Sk.builtin.str = function(x)
     var ret;
     if (x === true) ret = "True";
     else if (x === false) ret = "False";
-    else if (x === null) ret = "None";
+    else if ((x === null) || (x instanceof Sk.builtin.none)) ret = "None";
     else if (typeof x === "number")
     {
         ret = x.toString();
@@ -292,7 +292,7 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
     Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
-    if (on === undefined) {
+    if ((on === undefined) || (on instanceof Sk.builtin.none)) {
         on = null;
     }
     if ((on !== null) && !Sk.builtin.checkString(on)) { 
