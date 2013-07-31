@@ -26,6 +26,11 @@ Sk.builtins = {
 'int_$rw$': Sk.builtin.int_,
 'hasattr': Sk.builtin.hasattr,
 
+'map' : Sk.builtin.map,
+'filter' : Sk.builtin.filter,
+'reduce' : Sk.builtin.reduce,
+'sorted' : Sk.builtin.sorted,
+
 'bool': Sk.builtin.bool,
 'any': Sk.builtin.any,
 'all': Sk.builtin.all,
@@ -46,6 +51,7 @@ Sk.builtins = {
 'NotImplementedError' : Sk.builtin.NotImplementedError,
 'SystemExit': Sk.builtin.SystemExit,
 'OverflowError' : Sk.builtin.OverflowError,
+'OperationError': Sk.builtin.OperationError,
 
 'dict': Sk.builtin.dict,
 'file': Sk.builtin.file,
@@ -67,6 +73,9 @@ Sk.builtins = {
 'jsmillis': Sk.builtin.jsmillis,
 'quit': Sk.builtin.quit,
 'exit': Sk.builtin.quit,
+//'timSort': Sk.builtin.timSort,
+//'listSlice': Sk.builtin.listSlice,
+
 
 // Functions below are not implemented
 'bytearray': Sk.builtin.bytearray,
@@ -76,7 +85,6 @@ Sk.builtins = {
 'divmod' : Sk.builtin.divmod,
 'eval_$rn$' : Sk.builtin.eval_,
 'execfile' : Sk.builtin.execfile,
-'filter' : Sk.builtin.filter,
 'format' : Sk.builtin.format,
 'frozenset' : Sk.builtin.frozenset,
 'globals' : Sk.builtin.globals,
@@ -84,15 +92,12 @@ Sk.builtins = {
 'issubclass' : Sk.builtin.issubclass,
 'iter': Sk.builtin.iter,
 'locals' : Sk.builtin.locals,
-'map' : Sk.builtin.map,
 'memoryview' : Sk.builtin.memoryview,
 'next' : Sk.builtin.next_,
 'pow' : Sk.builtin.pow,
 'property' : Sk.builtin.property,
-'reduce' : Sk.builtin.reduce,
 'reload' : Sk.builtin.reload,
 'reversed' : Sk.builtin.reversed,
-'sorted' : Sk.builtin.sorted,
 'super': Sk.builtin.superbi,
 'unichr' : Sk.builtin.unichr,
 'vars' : Sk.builtin.vars,

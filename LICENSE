@@ -22,8 +22,8 @@ THE SOFTWARE.
 
 
 Portions of the code were written with the benefit of viewing code that's in
-the official "CPython" distribution and/or translated from code that's in the
-official "CPython" distribution. As such, they are:
+the official "CPython" and "pypy" distribution and/or translated from code that's in the
+official "CPython" and "pypy" distribution. As such, they are:
 
     Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Python Software
     Foundation; All Rights Reserved"
@@ -32,3 +32,4 @@ per:
 
     http://www.python.org/psf/license/
     http://www.python.org/download/releases/2.6.2/license/
+    https://bitbucket.org/pypy/pypy/src/default/LICENSE
