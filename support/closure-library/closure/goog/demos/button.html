@@ -3,7 +3,7 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
@@ -13,11 +13,13 @@ See the COPYING file for details.
     goog.require('goog.array');
     goog.require('goog.debug.DivConsole');
     goog.require('goog.debug.LogManager');
-    goog.require('goog.debug.Logger');
     goog.require('goog.events');
+    goog.require('goog.events.EventType');
+    goog.require('goog.log');
     goog.require('goog.object');
     goog.require('goog.ui.Button');
     goog.require('goog.ui.ButtonRenderer');
+    goog.require('goog.ui.ButtonSide');
     goog.require('goog.ui.CustomButton');
     goog.require('goog.ui.CustomButtonRenderer');
     goog.require('goog.ui.FlatButtonRenderer');
@@ -186,16 +188,16 @@ See the COPYING file for details.
     var timer = goog.now();
 
     // Set up a logger.
-    goog.debug.LogManager.getRoot().setLevel(goog.debug.Logger.Level.ALL);
-    var logger = goog.debug.Logger.getLogger('demo');
+    goog.debug.LogManager.getRoot().setLevel(goog.log.Level.ALL);
+    var logger = goog.log.getLogger('demo');
     var logconsole = new goog.debug.DivConsole(goog.dom.getElement('log'));
     logconsole.setCapturing(true);
 
     var EVENTS = goog.object.getValues(goog.ui.Component.EventType);
-    logger.fine('Listening for: ' + EVENTS.join(', ') + '.');
+    goog.log.fine(logger, 'Listening for: ' + EVENTS.join(', ') + '.');
 
     function logEvent(e) {
-      logger.info('"' + e.target.getCaption() + '" dispatched: ' + e.type);
+      goog.log.info(logger, '"' + e.target.getCaption() + '" dispatched: ' + e.type);
     }
 
     // Create the first button programmatically.
@@ -306,9 +308,9 @@ See the COPYING file for details.
         rightButton = new goog.ui.CustomButton('Right'),
     ];
     disabledButton.setEnabled(false);
-    leftButton.setCollapsed(goog.ui.Button.Side.END);
-    centerButton.setCollapsed(goog.ui.Button.Side.BOTH);
-    rightButton.setCollapsed(goog.ui.Button.Side.START);
+    leftButton.setCollapsed(goog.ui.ButtonSide.END);
+    centerButton.setCollapsed(goog.ui.ButtonSide.BOTH);
+    rightButton.setCollapsed(goog.ui.ButtonSide.START);
     goog.array.forEach(customButtons, function(b) {
       b.render(goog.dom.getElement('cb1'));
       goog.events.listen(b, goog.ui.Component.EventType.ACTION,

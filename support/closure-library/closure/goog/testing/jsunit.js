@@ -19,7 +19,6 @@
  * Testing code should not have dependencies outside of goog.testing so as to
  * reduce the chance of masking missing dependencies.
  *
-*
  */
 
 goog.provide('goog.testing.jsunit');
@@ -48,13 +47,25 @@ goog.testing.jsunit.CORE_SCRIPT =
  * @define {boolean} If this code is being parsed by JsTestC, we let it disable
  * the onload handler to avoid running the test in JsTestC.
  */
-goog.testing.jsunit.AUTO_RUN_ONLOAD = true;
+goog.define('goog.testing.jsunit.AUTO_RUN_ONLOAD', true);
+
+
+/**
+ * @define {number} Sets a delay in milliseconds after the window onload event
+ * and running the tests. Used to prevent interference with Selenium and give
+ * tests with asynchronous operations time to finish loading.
+ */
+goog.define('goog.testing.jsunit.AUTO_RUN_DELAY_IN_MS', 500);
 
 
 (function() {
+  // Increases the maximum number of stack frames in Google Chrome from the
+  // default 10 to 50 to get more useful stack traces.
+  Error.stackTraceLimit = 50;
 
   // Store a reference to the window's timeout so that it can't be overridden
   // by tests.
+  /** @type {!Function} */
   var realTimeout = window.setTimeout;
 
   // Check for JsUnit's test runner (need to check for >2.2 and <=2.2)
@@ -62,7 +73,7 @@ goog.testing.jsunit.AUTO_RUN_ONLOAD = true;
     // Running inside JsUnit so add support code.
     var path = goog.basePath + goog.testing.jsunit.CORE_SCRIPT;
     document.write('<script type="text/javascript" src="' +
-                  path + '"></' + 'script>');
+                   path + '"></' + 'script>');
 
   } else {
 
@@ -101,7 +112,7 @@ goog.testing.jsunit.AUTO_RUN_ONLOAD = true;
     window.onerror = function(error, url, line) {
       // Call any existing onerror handlers.
       if (onerror) {
-        onerror();
+        onerror(error, url, line);
       }
       if (typeof error == 'object') {
         // Webkit started passing an event object as the only argument to
@@ -124,12 +135,12 @@ goog.testing.jsunit.AUTO_RUN_ONLOAD = true;
     // onload handler to avoid running the test in JsTestC.
     if (goog.testing.jsunit.AUTO_RUN_ONLOAD) {
       var onload = window.onload;
-      window.onload = function() {
+      window.onload = function(e) {
         // Call any existing onload handlers.
         if (onload) {
-          onload();
+          onload(e);
         }
-        // Wait 500ms longer so that we don't interfere with Selenium.
+        // Wait so that we don't interfere with WebDriver.
         realTimeout(function() {
           if (!tr.initialized) {
             var test = new goog.testing.TestCase(document.title);
@@ -137,7 +148,7 @@ goog.testing.jsunit.AUTO_RUN_ONLOAD = true;
             tr.initialize(test);
           }
           tr.execute();
-        }, 500);
+        }, goog.testing.jsunit.AUTO_RUN_DELAY_IN_MS);
         window.onload = null;
       };
     }

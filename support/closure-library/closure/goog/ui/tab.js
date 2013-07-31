@@ -15,15 +15,14 @@
 /**
  * @fileoverview A tab control, designed to be used in {@link goog.ui.TabBar}s.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  * @see ../demos/tabbar.html
  */
 
 goog.provide('goog.ui.Tab');
 
-goog.require('goog.ui.Component.State');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.Control');
-goog.require('goog.ui.ControlContent');
 goog.require('goog.ui.TabRenderer');
 goog.require('goog.ui.registry');
 

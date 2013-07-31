@@ -19,11 +19,11 @@
  * TODO(user): There should really be a history interface and multiple
  * implementations.
  *
-*
  */
 
 
 goog.provide('goog.history.Html5History');
+goog.provide('goog.history.Html5History.TokenTransformer');
 
 goog.require('goog.asserts');
 goog.require('goog.events');
@@ -39,10 +39,13 @@ goog.require('goog.history.EventType');
  * history APIs.
  *
  * @param {Window=} opt_win The window to listen/dispatch history events on.
+ * @param {goog.history.Html5History.TokenTransformer=} opt_transformer
+ *     The token transformer that is used to create URL from the token
+ *     when storing token without using hash fragment.
  * @constructor
  * @extends {goog.events.EventTarget}
  */
-goog.history.Html5History = function(opt_win) {
+goog.history.Html5History = function(opt_win, opt_transformer) {
   goog.events.EventTarget.call(this);
   goog.asserts.assert(goog.history.Html5History.isSupported(opt_win),
       'HTML5 history is not supported.');
@@ -53,6 +56,14 @@ goog.history.Html5History = function(opt_win) {
    * @private
    */
   this.window_ = opt_win || window;
+
+  /**
+   * The token transformer that is used to create URL from the token
+   * when storing token without using hash fragment.
+   * @type {goog.history.Html5History.TokenTransformer}
+   * @private
+   */
+  this.transformer_ = opt_transformer || null;
 
   goog.events.listen(this.window_, goog.events.EventType.POPSTATE,
       this.onHistoryEvent_, false, this);
@@ -91,11 +102,11 @@ goog.history.Html5History.prototype.useFragment_ = true;
 
 /**
  * If useFragment is false the path will be used, the path prefix will be
- * prepended to all tokens.
+ * prepended to all tokens. Defaults to '/'.
  * @type {string}
  * @private
  */
-goog.history.Html5History.prototype.pathPrefix_ = '';
+goog.history.Html5History.prototype.pathPrefix_ = '/';
 
 
 /**
@@ -114,7 +125,7 @@ goog.history.Html5History.prototype.setEnabled = function(enable) {
   this.enabled_ = enable;
 
   if (enable) {
-    this.dispatchEvent(new goog.history.Event(this.getToken()));
+    this.dispatchEvent(new goog.history.Event(this.getToken(), false));
   }
 };
 
@@ -129,7 +140,10 @@ goog.history.Html5History.prototype.getToken = function() {
     var index = loc.indexOf('#');
     return index < 0 ? '' : loc.substring(index + 1);
   } else {
-    return this.window_.location.pathname.substring(this.pathPrefix_.length);
+    return this.transformer_ ?
+        this.transformer_.retrieveToken(
+            this.pathPrefix_, this.window_.location) :
+        this.window_.location.pathname.substr(this.pathPrefix_.length);
   }
 };
 
@@ -140,10 +154,14 @@ goog.history.Html5History.prototype.getToken = function() {
  * @param {string=} opt_title Optional title to associate with history entry.
  */
 goog.history.Html5History.prototype.setToken = function(token, opt_title) {
+  if (token == this.getToken()) {
+    return;
+  }
+
   // Per externs/gecko_dom.js document.title can be null.
   this.window_.history.pushState(null,
       opt_title || this.window_.document.title || '', this.getUrl_(token));
-  this.dispatchEvent(new goog.history.Event(token));
+  this.dispatchEvent(new goog.history.Event(token, false));
 };
 
 
@@ -157,11 +175,11 @@ goog.history.Html5History.prototype.replaceToken = function(token, opt_title) {
   // Per externs/gecko_dom.js document.title can be null.
   this.window_.history.replaceState(null,
       opt_title || this.window_.document.title || '', this.getUrl_(token));
-  this.dispatchEvent(new goog.history.Event(token));
+  this.dispatchEvent(new goog.history.Event(token, false));
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.history.Html5History.prototype.disposeInternal = function() {
   goog.events.unlisten(this.window_, goog.events.EventType.POPSTATE,
       this.onHistoryEvent_, false, this);
@@ -191,7 +209,8 @@ goog.history.Html5History.prototype.setUseFragment = function(useFragment) {
 
 
 /**
- * Sets the path prefix to use if storing tokens in the path.
+ * Sets the path prefix to use if storing tokens in the path. The path
+ * prefix should start and end with slash.
  * @param {string} pathPrefix Sets the path prefix.
  */
 goog.history.Html5History.prototype.setPathPrefix = function(pathPrefix) {
@@ -218,7 +237,10 @@ goog.history.Html5History.prototype.getUrl_ = function(token) {
   if (this.useFragment_) {
     return '#' + token;
   } else {
-    return this.pathPrefix_ + token;
+    return this.transformer_ ?
+        this.transformer_.createUrl(
+            token, this.pathPrefix_, this.window_.location) :
+        this.pathPrefix_ + token + this.window_.location.search;
   }
 };
 
@@ -230,6 +252,52 @@ goog.history.Html5History.prototype.getUrl_ = function(token) {
  */
 goog.history.Html5History.prototype.onHistoryEvent_ = function(e) {
   if (this.enabled_) {
-    this.dispatchEvent(new goog.history.Event(this.getToken()));
+    this.dispatchEvent(new goog.history.Event(this.getToken(), true));
   }
 };
+
+
+
+/**
+ * A token transformer that can create a URL from a history
+ * token. This is used by {@code goog.history.Html5History} to create
+ * URL when storing token without the hash fragment.
+ *
+ * Given a {@code window.location} object containing the location
+ * created by {@code createUrl}, the token transformer allows
+ * retrieval of the token back via {@code retrieveToken}.
+ *
+ * @interface
+ */
+goog.history.Html5History.TokenTransformer = function() {};
+
+
+/**
+ * Retrieves a history token given the path prefix and
+ * {@code window.location} object.
+ *
+ * @param {string} pathPrefix The path prefix to use when storing token
+ *     in a path; always begin with a slash.
+ * @param {Location} location The {@code window.location} object.
+ *     Treat this object as read-only.
+ * @return {string} token The history token.
+ */
+goog.history.Html5History.TokenTransformer.prototype.retrieveToken = function(
+    pathPrefix, location) {};
+
+
+/**
+ * Creates a URL to be pushed into HTML5 history stack when storing
+ * token without using hash fragment.
+ *
+ * @param {string} token The history token.
+ * @param {string} pathPrefix The path prefix to use when storing token
+ *     in a path; always begin with a slash.
+ * @param {Location} location The {@code window.location} object.
+ *     Treat this object as read-only.
+ * @return {string} url The complete URL string from path onwards
+ *     (without {@code protocol://host:port} part); must begin with a
+ *     slash.
+ */
+goog.history.Html5History.TokenTransformer.prototype.createUrl = function(
+    token, pathPrefix, location) {};

@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 #
 # Copyright 2009 The Closure Library Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS-IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 """Generates out a Closure deps.js file given a list of JavaScript sources.
 
@@ -21,7 +34,7 @@ import source
 import treescan
 
 
-
+__author__ = 'nnaze@google.com (Nathan Naze)'
 
 
 def MakeDepsFile(source_map):
@@ -35,20 +48,25 @@ def MakeDepsFile(source_map):
   """
 
   # Write in path alphabetical order
-  paths = source_map.keys()
-  paths.sort()
-  lines = [_GetDepsLine(path, source_map[path]) for path in paths]
+  paths = sorted(source_map.keys())
+
+  lines = []
+
+  for path in paths:
+    js_source = source_map[path]
+
+    # We don't need to add entries that don't provide anything.
+    if js_source.provides:
+      lines.append(_GetDepsLine(path, js_source))
+
   return ''.join(lines)
 
 
 def _GetDepsLine(path, js_source):
   """Get a deps.js file string for a source."""
 
-  provides = list(js_source.provides)
-  provides.sort()
-
-  requires = list(js_source.requires)
-  requires.sort()
+  provides = sorted(js_source.provides)
+  requires = sorted(js_source.requires)
 
   return 'goog.addDependency(\'%s\', %s, %s);\n' % (path, provides, requires)
 
@@ -78,7 +96,7 @@ def _GetOptionsParser():
                     help='A root directory to scan for JS source files, plus '
                     'a prefix (if either contains a space, surround with '
                     'quotes).  Paths in generated deps file will be relative '
-                    'to the root, but preceeded by the prefix.  This flag '
+                    'to the root, but preceded by the prefix.  This flag '
                     'may be specified multiple times.')
   parser.add_option('--path_with_depspath',
                     dest='paths_with_depspath',
@@ -87,7 +105,7 @@ def _GetOptionsParser():
                     help='A path to a source file and an alternate path to '
                     'the file in the generated deps file (if either contains '
                     'a space, surround with whitespace). This flag may be '
-                    'specifified multiple times.')
+                    'specified multiple times.')
   return parser
 
 

@@ -17,7 +17,6 @@
  * goog.ui.PopupDatePicker with an input element and handles the input from
  * either.
  *
-*
  * @see ../demos/inputdatepicker.html
  */
 
@@ -25,10 +24,12 @@ goog.provide('goog.ui.InputDatePicker');
 
 goog.require('goog.date.DateTime');
 goog.require('goog.dom');
-goog.require('goog.i18n.DateTimeParse');
 goog.require('goog.string');
 goog.require('goog.ui.Component');
+goog.require('goog.ui.DatePicker');
+goog.require('goog.ui.PopupBase');
 goog.require('goog.ui.PopupDatePicker');
+
 
 
 /**
@@ -146,7 +147,8 @@ goog.ui.InputDatePicker.prototype.setDate = function(date) {
 goog.ui.InputDatePicker.prototype.setInputValue = function(value) {
   var el = this.getElement();
   if (el.labelInput_) {
-    el.labelInput_.setValue(value);
+    var labelInput = /** @type {goog.ui.LabelInput} */ (el.labelInput_);
+    labelInput.setValue(value);
   } else {
     el.value = value;
   }
@@ -162,7 +164,8 @@ goog.ui.InputDatePicker.prototype.setInputValue = function(value) {
 goog.ui.InputDatePicker.prototype.getInputValue = function() {
   var el = this.getElement();
   if (el.labelInput_) {
-    return el.labelInput_.getValue();
+    var labelInput = /** @type {goog.ui.LabelInput} */ (el.labelInput_);
+    return labelInput.getValue();
   } else {
     return el.value;
   }
@@ -193,6 +196,7 @@ goog.ui.InputDatePicker.prototype.getInputValueAsDate_ = function() {
 
 /**
  * Creates an input element for use with the popup date picker.
+ * @override
  */
 goog.ui.InputDatePicker.prototype.createDom = function() {
   this.setElementInternal(
@@ -212,9 +216,7 @@ goog.ui.InputDatePicker.prototype.setPopupParentElement = function(el) {
 };
 
 
-/**
- * Called when the DOM for the component is for sure in the document.
- */
+/** @override */
 goog.ui.InputDatePicker.prototype.enterDocument = function() {
   goog.ui.InputDatePicker.superClass_.enterDocument.call(this);
   var el = this.getElement();
@@ -235,10 +237,7 @@ goog.ui.InputDatePicker.prototype.enterDocument = function() {
 };
 
 
-/**
- * Called when the DOM for the component is removed from the document or
- * when the component no longer is managing the DOM.
- */
+/** @override */
 goog.ui.InputDatePicker.prototype.exitDocument = function() {
   goog.ui.InputDatePicker.superClass_.exitDocument.call(this);
   var el = this.getElement();
@@ -249,7 +248,7 @@ goog.ui.InputDatePicker.prototype.exitDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.InputDatePicker.prototype.decorateInternal = function(element) {
   goog.ui.InputDatePicker.superClass_.decorateInternal.call(this, element);
 
@@ -257,7 +256,7 @@ goog.ui.InputDatePicker.prototype.decorateInternal = function(element) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.InputDatePicker.prototype.disposeInternal = function() {
   goog.ui.InputDatePicker.superClass_.disposeInternal.call(this);
   this.popupDatePicker_.dispose();

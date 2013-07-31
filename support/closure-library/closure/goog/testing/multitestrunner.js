@@ -18,7 +18,6 @@
  * results aggregated.  The main usecase for the MultiTestRunner is to allow
  * the testing of all tests in a project locally.
  *
-*
  */
 
 goog.provide('goog.testing.MultiTestRunner');
@@ -33,8 +32,8 @@ goog.require('goog.functions');
 goog.require('goog.string');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.ServerChart');
-goog.require('goog.ui.ServerChart.ChartType');
 goog.require('goog.ui.TableSorter');
+
 
 
 /**
@@ -534,6 +533,7 @@ goog.testing.MultiTestRunner.prototype.getTestsThatFailed = function() {
   return failedTests;
 };
 
+
 /**
  * Deletes and re-creates the progress table inside the progess element.
  * @private
@@ -553,7 +553,7 @@ goog.testing.MultiTestRunner.prototype.resetProgressDom_ = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.MultiTestRunner.prototype.createDom = function() {
   goog.testing.MultiTestRunner.superClass_.createDom.call(this);
   var el = this.getElement();
@@ -592,8 +592,8 @@ goog.testing.MultiTestRunner.prototype.createDom = function() {
   el.appendChild(this.statsEl_);
 
   this.logTabEl_ = this.dom_.createDom('div', null, 'Log');
-  this.logTabEl_.className =
-      goog.getCssName('goog-testrunner-logtab goog-testrunner-activetab');
+  this.logTabEl_.className = goog.getCssName('goog-testrunner-logtab') + ' ' +
+      goog.getCssName('goog-testrunner-activetab');
   el.appendChild(this.logTabEl_);
 
   this.reportTabEl_ = this.dom_.createDom('div', null, 'Report');
@@ -611,7 +611,7 @@ goog.testing.MultiTestRunner.prototype.createDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.MultiTestRunner.prototype.disposeInternal = function() {
   goog.testing.MultiTestRunner.superClass_.disposeInternal.call(this);
   this.tableSorter_.dispose();
@@ -763,7 +763,7 @@ goog.testing.MultiTestRunner.prototype.finish_ = function() {
 
   // Remove all the test frames
   while (this.getChildCount() > 0) {
-    this.removeChildAt(0, true).disposeInternal();
+    this.removeChildAt(0, true).dispose();
   }
 
   // Compute tests that did not finish before the stop button was hit.
@@ -844,8 +844,8 @@ goog.testing.MultiTestRunner.prototype.drawTimeHistogram_ = function() {
  * Draws a stats histogram.
  * @param {string} statsField Field of the stats object to graph.
  * @param {number} bucketSize The size for the histogram's buckets.
- * @param {function(*, ...[*]): *} valueTransformFn Function for transforming
- *     the x-labels value for display.
+ * @param {function(number, ...[*]): *} valueTransformFn Function for
+ *     transforming the x-labels value for display.
  * @param {number} width The width in pixels of the graph.
  * @param {string} title The graph's title.
  * @private
@@ -910,8 +910,8 @@ goog.testing.MultiTestRunner.prototype.drawRunTimePie_ = function() {
   pie.setMaxValue(totalTime);
   pie.addDataSet([runTime, loadTime], 'ff9900');
   pie.setXLabels([
-      'Test execution (' + runTime + 'ms)',
-      'Loading (' + loadTime + 'ms)']);
+    'Test execution (' + runTime + 'ms)',
+    'Loading (' + loadTime + 'ms)']);
   pie.render(this.statsEl_);
 };
 
@@ -996,7 +996,7 @@ goog.testing.MultiTestRunner.prototype.writeCurrentSummary_ = function() {
  * @private
  */
 goog.testing.MultiTestRunner.prototype.drawProgressSegment_ =
-      function(title, success) {
+    function(title, success) {
   var part = this.progressRow_.cells[this.resultCount_ - 1];
   part.title = title + ' : ' + (success ? 'SUCCESS' : 'FAILURE');
   part.style.backgroundColor = success ? '#090' : '#900';
@@ -1279,9 +1279,7 @@ goog.testing.MultiTestRunner.TestFrame.prototype.lastStateTime_ = 0;
 goog.testing.MultiTestRunner.TestFrame.prototype.currentState_ = 0;
 
 
-/**
- * Disposes the test frame.
- */
+/** @override */
 goog.testing.MultiTestRunner.TestFrame.prototype.disposeInternal = function() {
   goog.testing.MultiTestRunner.TestFrame.superClass_.disposeInternal.call(this);
   this.dom_.removeNode(this.iframeEl_);
@@ -1378,7 +1376,7 @@ goog.testing.MultiTestRunner.TestFrame.prototype.finish_ = function() {
  */
 goog.testing.MultiTestRunner.TestFrame.prototype.createIframe_ = function() {
   this.iframeEl_ =
-      (/** @type {HTMLIFrameElement} */ this.dom_.createDom('iframe'));
+      /** @type {HTMLIFrameElement} */ (this.dom_.createDom('iframe'));
   this.getElement().appendChild(this.iframeEl_);
   this.eh_.listen(this.iframeEl_, 'load', this.onIframeLoaded_);
 };

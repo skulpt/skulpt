@@ -14,18 +14,18 @@
 
 /**
  * @fileoverview Namespace with crypto related helper functions.
-*
  */
 
 goog.provide('goog.crypt');
 
+goog.require('goog.array');
 
 
 /**
  * Turns a string into an array of bytes; a "byte" being a JS number in the
  * range 0-255.
  * @param {string} str String value to arrify.
- * @return {Array.<number>} Array of numbers corresponding to the
+ * @return {!Array.<number>} Array of numbers corresponding to the
  *     UCS character codes of each character in str.
  */
 goog.crypt.stringToByteArray = function(str) {
@@ -50,6 +50,37 @@ goog.crypt.stringToByteArray = function(str) {
  */
 goog.crypt.byteArrayToString = function(array) {
   return String.fromCharCode.apply(null, array);
+};
+
+
+/**
+ * Turns an array of numbers into the hex string given by the concatenation of
+ * the hex values to which the numbers correspond.
+ * @param {Array} array Array of numbers representing characters.
+ * @return {string} Hex string.
+ */
+goog.crypt.byteArrayToHex = function(array) {
+  return goog.array.map(array, function(numByte) {
+    var hexByte = numByte.toString(16);
+    return hexByte.length > 1 ? hexByte : '0' + hexByte;
+  }).join('');
+};
+
+
+/**
+ * Converts a hex string into an integer array.
+ * @param {string} hexString Hex string of 16-bit integers (two characters
+ *     per integer).
+ * @return {!Array.<number>} Array of {0,255} integers for the given string.
+ */
+goog.crypt.hexToByteArray = function(hexString) {
+  goog.asserts.assert(hexString.length % 2 == 0,
+                      'Key string length must be multiple of 2');
+  var arr = [];
+  for (var i = 0; i < hexString.length; i += 2) {
+    arr.push(parseInt(hexString.substring(i, i + 2), 16));
+  }
+  return arr;
 };
 
 
@@ -102,4 +133,23 @@ goog.crypt.utf8ByteArrayToString = function(bytes) {
     }
   }
   return out.join('');
+};
+
+
+/**
+ * XOR two byte arrays.
+ * @param {!Array.<number>} bytes1 Byte array 1.
+ * @param {!Array.<number>} bytes2 Byte array 2.
+ * @return {!Array.<number>} Resulting XOR of the two byte arrays.
+ */
+goog.crypt.xorByteArray = function(bytes1, bytes2) {
+  goog.asserts.assert(
+      bytes1.length == bytes2.length,
+      'XOR array lengths must match');
+
+  var result = [];
+  for (var i = 0; i < bytes1.length; i++) {
+    result.push(bytes1[i] ^ bytes2[i]);
+  }
+  return result;
 };

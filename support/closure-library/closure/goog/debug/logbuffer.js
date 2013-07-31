@@ -40,25 +40,27 @@ goog.debug.LogBuffer = function() {
   this.clear();
 };
 
+
 /**
  * A static method that always returns the same instance of LogBuffer.
  * @return {!goog.debug.LogBuffer} The LogBuffer singleton instance.
  */
 goog.debug.LogBuffer.getInstance = function() {
   if (!goog.debug.LogBuffer.instance_) {
-  // This function is written with the return statement after the assignment to
-  // avoid the jscompiler StripCode bug described in http://b/issue?id=2608064
-  // After that bug is fixed this can be refactored.
+    // This function is written with the return statement after the assignment
+    // to avoid the jscompiler StripCode bug described in http://b/2608064.
+    // After that bug is fixed this can be refactored.
     goog.debug.LogBuffer.instance_ = new goog.debug.LogBuffer();
   }
   return goog.debug.LogBuffer.instance_;
 };
 
+
 /**
  * @define {number} The number of log records to buffer. 0 means disable
  * buffering.
  */
-goog.debug.LogBuffer.CAPACITY = 0;
+goog.define('goog.debug.LogBuffer.CAPACITY', 0);
 
 
 /**

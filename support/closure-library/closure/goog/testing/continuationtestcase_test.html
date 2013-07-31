@@ -3,13 +3,14 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
 Author: brenneman@google.com (Shawn Brenneman)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.testing.ContinuationTestCase</title>
 <script src="../base.js"></script>
 <script>
@@ -17,6 +18,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventTarget');
 goog.require('goog.testing.ContinuationTestCase');
 goog.require('goog.testing.MockClock');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.TestCase.Test');
 goog.require('goog.testing.jsunit');
 </script>
@@ -42,6 +44,7 @@ if (typeof G_testRunner != 'undefined') {
 
 var clock = new goog.testing.MockClock();
 var count = 0;
+var stubs = new goog.testing.PropertyReplacer();
 
 
 function setUpPage() {
@@ -58,6 +61,7 @@ function setUp() {
     // Pointless assertion to verify that setUp methods can contain waits.
     assertEquals(count, testCase.getCount());
   }, 0);
+
   clock.reset();
 }
 
@@ -68,11 +72,11 @@ function setUp() {
  */
 function tearDown() {
   clock.uninstall();
-  reassignStepTimeouts();
+  stubs.reset();
 
   waitForTimeout(function() {
     // Pointless assertion to verify that tearDown methods can contain waits.
-    assertTrue(testCase.now_() >= testCase.startTime_);
+    assertTrue(testCase.now() >= testCase.startTime_);
   }, 0);
 }
 
@@ -83,23 +87,16 @@ function tearDown() {
  */
 function installMockClock() {
   clock.install();
-  reassignStepTimeouts();
+
+  // Overwrite the "protected" setTimeout and clearTimeout with the versions
+  // replaced by MockClock. Normal tests should never do this, but we need to
+  // test the ContinuationTest itself.
+  stubs.set(goog.testing.ContinuationTestCase.Step, 'protectedClearTimeout_',
+            window.clearTimeout);
+  stubs.set(goog.testing.ContinuationTestCase.Step, 'protectedSetTimeout_',
+            window.setTimeout);
 }
 
-
-/**
- * Overwrites the normally protected setTimeout and clearTimeout methods with
- * the current window.setTimeout and window.clearTimeout. This is used both to
- * replace the methods with MockClock versions, and to restore the regular
- * versions after the MockClock is uninstalled.
- */
-function reassignStepTimeouts() {
-  // Not that well protected, were they.
-  goog.testing.ContinuationTestCase.Step.protectedClearTimeout_ =
-      window.clearTimeout;
-  goog.testing.ContinuationTestCase.Step.protectedSetTimeout_ =
-      window.setTimeout;
-}
 
 /**
  * @return {goog.testing.ContinuationTestCase.Step} A generic step in a
@@ -282,22 +279,23 @@ function testWaitForCondition() {
   var counter = 0;
 
   waitForCondition(function() {
-    return ++counter >= 3;
+    return ++counter >= 2;
   }, function() {
-    assertEquals(3, counter);
-  }, 10, 100);
+    assertEquals(2, counter);
+  }, 10, 200);
 }
 
 
 function testOutOfOrderWaits() {
   var counter = 0;
-  waitForTimeout(function() {assertEquals(5, ++counter);}, 50);
-  waitForTimeout(function() {assertEquals(1, ++counter);}, 10);
-  waitForTimeout(function() {assertEquals(3, ++counter);}, 30);
-  waitForTimeout(function() {assertEquals(2, ++counter);}, 20);
-  waitForTimeout(function() {assertEquals(4, ++counter);}, 40);
-}
 
+  // Note that if the delta between the timeout is too small, two
+  // continuation may be invoked at the same timer tick, using the
+  // registration order.
+  waitForTimeout(function() {assertEquals(3, ++counter);}, 200);
+  waitForTimeout(function() {assertEquals(1, ++counter);}, 0);
+  waitForTimeout(function() {assertEquals(2, ++counter);}, 100);
+}
 
 
 /*
@@ -306,13 +304,16 @@ function testOutOfOrderWaits() {
  * test steps should be possible, in any configuration.
  */
 
-var testObj = {
-  lock: true,
-  et: new goog.events.EventTarget(),
-  steps: 0
-}
+var testObj;
+
 
 function testCrazyNestedWaitFunction() {
+  testObj = {
+    lock: true,
+    et: new goog.events.EventTarget(),
+    steps: 0
+  }
+
   waitForTimeout(handleTimeout, 10);
   waitForEvent(testObj.et, 'test', handleEvent);
   waitForCondition(condition, handleCondition, 1);

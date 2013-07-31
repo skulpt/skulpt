@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.events.EventHandler</title>
 <script src="../base.js"></script>
 <script>
@@ -14,6 +15,7 @@ See the COPYING file for details.
   goog.require('goog.events.EventHandler');
   goog.require('goog.events.EventTarget');
   goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.recordFunction');
 </script>
 </head>
 <body>
@@ -29,20 +31,21 @@ See the COPYING file for details.
   var b = document.getElementById('b');
   var c = document.getElementById('c');
   var d = document.getElementById('d');
+  var eh;
 
+  var eh;
+  function tearDown() {
+    goog.dispose(eh);
+  }
 
   function testEventHandlerClearsListeners() {
-    assertEquals('No event listeners should be registered at the start', 0,
-        goog.object.getCount(goog.events.listeners_));
-
     function tmp() {}
 
     goog.events.listen(a, 'click', tmp);
 
-    assertEquals('1 listener should be registered now', 1,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(1, goog.events.getListeners(a, 'click', false).length);
 
-    var eh = new goog.events.EventHandler();
+    eh = new goog.events.EventHandler();
     eh.listen(a, 'click');
     eh.listen(a, 'keypress');
     eh.listen(b, 'mouseover');
@@ -50,179 +53,201 @@ See the COPYING file for details.
     eh.listen(d, 'click');
     eh.listen(d, 'mousedown');
 
-    assertEquals('7 listeners should be registered now', 7,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(2, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(1, goog.events.getListeners(a, 'keypress', false).length);
+    assertEquals(1, goog.events.getListeners(b, 'mouseover', false).length);
+    assertEquals(1, goog.events.getListeners(c, 'mousedown', false).length);
+    assertEquals(1, goog.events.getListeners(d, 'click', false).length);
+    assertEquals(1, goog.events.getListeners(d, 'mousedown', false).length);
 
     eh.unlisten(d, 'mousedown');
 
-    assertEquals('6 listeners should be registered now', 6,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(2, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(1, goog.events.getListeners(a, 'keypress', false).length);
+    assertEquals(1, goog.events.getListeners(b, 'mouseover', false).length);
+    assertEquals(1, goog.events.getListeners(c, 'mousedown', false).length);
+    assertEquals(1, goog.events.getListeners(d, 'click', false).length);
+    assertEquals(0, goog.events.getListeners(d, 'mousedown', false).length);
 
     eh.dispose();
 
-    assertEquals('1 listener should be left', 1,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(1, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(0, goog.events.getListeners(a, 'keypress', false).length);
+    assertEquals(0, goog.events.getListeners(b, 'mouseover', false).length);
+    assertEquals(0, goog.events.getListeners(c, 'mousedown', false).length);
+    assertEquals(0, goog.events.getListeners(d, 'click', false).length);
+    assertEquals(0, goog.events.getListeners(d, 'mousedown', false).length);
 
     goog.events.unlisten(a, 'click', tmp);
-
-    assertEquals('No event listeners should be registered at the end', 0,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(0, goog.events.getListeners(a, 'click', false).length);
   }
 
   function testListenArray() {
-    var eh = new goog.events.EventHandler();
+    eh = new goog.events.EventHandler();
 
     eh.listen(a, ['click', 'mousedown', 'mouseup']);
 
-    assertEquals('3 listeners should be registered', 3,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(1, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(1, goog.events.getListeners(a, 'mousedown', false).length);
+    assertEquals(1, goog.events.getListeners(a, 'mouseup', false).length);
 
     eh.unlisten(a, ['click', 'mousedown', 'mouseup']);
 
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(0, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(0, goog.events.getListeners(a, 'mousedown', false).length);
+    assertEquals(0, goog.events.getListeners(a, 'mouseup', false).length);
 
     eh.listen(a, ['click', 'mousedown', 'mouseup']);
 
-    assertEquals('3 listeners should be registered', 3,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(1, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(1, goog.events.getListeners(a, 'mousedown', false).length);
+    assertEquals(1, goog.events.getListeners(a, 'mouseup', false).length);
 
     eh.removeAll();
 
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals(0, goog.events.getListeners(a, 'click', false).length);
+    assertEquals(0, goog.events.getListeners(a, 'mousedown', false).length);
+    assertEquals(0, goog.events.getListeners(a, 'mouseup', false).length);
   }
 
   function testListenOnceRemovesListenerWhenFired() {
-    var events = [];
-    assertEquals('No listeners registered yet', 0,
-        goog.object.getCount(goog.events.listeners_));
     var target = new goog.events.EventTarget();
-    var eh = new goog.events.EventHandler();
-    eh.listenOnce(target, 'click', function(e) { events.push(e); });
-    assertEquals('1 listener should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
-    target.dispatchEvent('click');
-    assertEquals('One event should have been dispatched', 1, events.length);
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
-    target.dispatchEvent('click');
-    assertEquals('No event should have been dispatched', 1, events.length);
+    eh = new goog.events.EventHandler();
+    var handler = goog.testing.recordFunction();
+    eh.listenOnce(target, 'click', handler);
 
+    target.dispatchEvent('click');
+    assertEquals('One event should have been dispatched',
+        1, handler.getCallCount());
+
+    target.dispatchEvent('click');
+    assertEquals('No event should have been dispatched',
+        1, handler.getCallCount());
   }
 
   function testListenOnceListenerIsCleanedUp() {
-    var events = [];
-    assertEquals('No listeners registered yet', 0,
-        goog.object.getCount(goog.events.listeners_));
     var target = new goog.events.EventTarget();
-    var eh = new goog.events.EventHandler();
-    eh.listenOnce(target, 'click', function(e) { events.push(e); });
-    assertEquals('1 listener should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
+    eh = new goog.events.EventHandler();
+    var handler = goog.testing.recordFunction();
+    eh.listenOnce(target, 'click', handler);
+
     eh.removeAll();
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
+
     target.dispatchEvent('click');
-    assertEquals('No event should have been dispatched', 0, events.length);
+    assertEquals(0, handler.getCallCount());
   }
 
   function testClearListenersWithListenOnceListenerRemoved() {
-    var events = [];
-    assertEquals('No listeners registered yet', 0,
-        goog.object.getCount(goog.events.listeners_));
     var target = new goog.events.EventTarget();
-    var eh = new goog.events.EventHandler();
-    eh.listenOnce(target, 'click', function(e) { events.push(e); });
-    assertEquals('1 listener should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
+    eh = new goog.events.EventHandler();
+
+    var handler = goog.testing.recordFunction();
+    eh.listenOnce(target, 'click', handler);
+
+    assertNotNull(goog.events.getListener(target, 'click', handler, false, eh));
+
     target.dispatchEvent('click');
-    assertEquals('One event should have been dispatched', 1, events.length);
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals('One event should have been dispatched',
+        1, handler.getCallCount());
+
+    assertNull(goog.events.getListener(target, 'click', handler, false, eh));
+
     eh.removeAll();
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
+
     target.dispatchEvent('click');
-    assertEquals('No event should have been dispatched', 1, events.length);
+    assertEquals('No event should have been dispatched',
+        1, handler.getCallCount());
   }
 
   function testListenOnceArray() {
-    var events = [];
-    assertEquals('No listeners registered yet', 0,
-        goog.object.getCount(goog.events.listeners_));
     var target = new goog.events.EventTarget();
-    var eh = new goog.events.EventHandler();
-    eh.listenOnce(target, ['click', 'mousedown', 'mouseup'],
-    function(e) { events.push(e); });
-    assertEquals('3 listeners should be registered', 3,
-        goog.object.getCount(goog.events.listeners_));
+
+    eh = new goog.events.EventHandler();
+    var handler = goog.testing.recordFunction();
+    eh.listenOnce(target, ['click', 'mousedown', 'mouseup'], handler);
+
     target.dispatchEvent('click');
-    assertEquals('1 event should have been dispatched', 1, events.length);
-    assertEquals('Should be a click event', 'click', events[0].type)
-    assertEquals('2 listeners should be registered', 2,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals('1 event should have been dispatched',
+        1, handler.getCallCount());
+    assertEquals('Should be a click event',
+        'click', handler.getLastCall().getArgument(0).type)
+
+    target.dispatchEvent('click');
+    assertEquals('No event should be dispatched',
+        1, handler.getCallCount());
+
     target.dispatchEvent('mouseup');
-    assertEquals('1 event should have been dispatched', 2, events.length);
-    assertEquals('Should be a click event', 'mouseup', events[1].type)
-    assertEquals('1 listeners should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals('1 event should have been dispatched',
+        2, handler.getCallCount());
+    assertEquals('Should be a mouseup event',
+        'mouseup', handler.getLastCall().getArgument(0).type);
+
+    target.dispatchEvent('mouseup');
+    assertEquals('No event should be dispatched',
+        2, handler.getCallCount());
+
     target.dispatchEvent('mousedown');
-    assertEquals('1 event should have been dispatched', 3, events.length);
-    assertEquals('Should be a click event', 'mousedown', events[2].type)
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
-    target.dispatchEvent('click');
-    assertEquals('No events should have been dispatched', 3, events.length);
+    assertEquals('1 event should have been dispatched',
+        3, handler.getCallCount());
+    assertEquals('Should be a mousedown event',
+        'mousedown', handler.getLastCall().getArgument(0).type);
+
+    target.dispatchEvent('mousedown');
+    assertEquals('No event should be dispatched',
+        3, handler.getCallCount());
   }
 
   function testListenUnlistenWithObjectHandler() {
-    var events = [];
-    assertEquals('No listeners registered yet', 0,
-        goog.object.getCount(goog.events.listeners_));
     var target = new goog.events.EventTarget();
-    var eh = new goog.events.EventHandler();
+    eh = new goog.events.EventHandler();
     var handlerObj = {
-      handleEvent: function(e) {
-        events.push(e);
-      }
+      handleEvent: goog.testing.recordFunction()
     };
     eh.listen(target, 'click', handlerObj);
-    assertEquals('1 listener should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
+
     target.dispatchEvent('click');
-    assertEquals('1 listener should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
-    assertEquals('One event should have been dispatched', 1, events.length);
+    assertEquals('One event should have been dispatched',
+        1, handlerObj.handleEvent.getCallCount());
+
+    target.dispatchEvent('click');
+    assertEquals('One event should have been dispatched',
+        2, handlerObj.handleEvent.getCallCount());
+
     eh.unlisten(target, 'click', handlerObj);
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
     target.dispatchEvent('click');
-    assertEquals('No event should have been dispatched', 1, events.length);
+    assertEquals('No event should have been dispatched',
+        2, handlerObj.handleEvent.getCallCount());
   }
 
   function testListenOnceWithObjectHandler() {
-    var events = [];
-    assertEquals('No listeners registered yet', 0,
-        goog.object.getCount(goog.events.listeners_));
     var target = new goog.events.EventTarget();
-    var eh = new goog.events.EventHandler();
+    eh = new goog.events.EventHandler();
     var handlerObj = {
-      handleEvent: function(e) {
-        events.push(e);
-      }
+      handleEvent: goog.testing.recordFunction()
     };
     eh.listenOnce(target, 'click', handlerObj);
-    assertEquals('1 listener should be registered', 1,
-        goog.object.getCount(goog.events.listeners_));
+
     target.dispatchEvent('click');
-    assertEquals('One event should have been dispatched', 1, events.length);
-    assertEquals('no listeners should be registered', 0,
-        goog.object.getCount(goog.events.listeners_));
+    assertEquals('One event should have been dispatched',
+        1, handlerObj.handleEvent.getCallCount());
+
     target.dispatchEvent('click');
-    assertEquals('No event should have been dispatched', 1, events.length);
+    assertEquals('No event should have been dispatched',
+        1, handlerObj.handleEvent.getCallCount());
   }
 
+  function testGetListenerCount() {
+    eh = new goog.events.EventHandler();
+    assertEquals('0 listeners registered initially', 0, eh.getListenerCount());
+    var target = new goog.events.EventTarget();
+    eh.listen(target, 'click', goog.nullFunction, false);
+    eh.listen(target, 'click', goog.nullFunction, true);
+    assertEquals('2 listeners registered', 2, eh.getListenerCount());
+    eh.unlisten(target, 'click', goog.nullFunction, true);
+    assertEquals('1 listener removed, 1 left', 1, eh.getListenerCount());
+    eh.removeAll();
+    assertEquals('all listeners removed', 0, eh.getListenerCount());
+  }
 
 </script>
 </body>

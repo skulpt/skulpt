@@ -1,7 +1,7 @@
 /*
  * Copyright 2007 The Closure Library Authors. All Rights Reserved.
  *
- * Use of this source code is governed by an Apache 2.0 License.
+ * Use of this source code is governed by the Apache License, Version 2.0.
  * See the COPYING file for details.
  */
 
@@ -31,13 +31,13 @@
 }
 
 .goog-tristatemenuitem-partially-checked {
-  background-image: url(../images/check-outline.gif);
+  background-image: url(//ssl.gstatic.com/closure/check-outline.gif);
   background-position: 4px 50%;
   background-repeat: no-repeat;
 }
 
 .goog-tristatemenuitem-fully-checked {
-  background-image: url(../images/check.gif);
+  background-image: url(//ssl.gstatic.com/closure/check.gif);
   background-position: 4px 50%;
   background-repeat: no-repeat;
 }

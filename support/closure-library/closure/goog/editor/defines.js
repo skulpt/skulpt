@@ -15,11 +15,9 @@
 /**
  * @fileoverview Text editor constants for compile time feature selection.
  *
-*
  */
 
 goog.provide('goog.editor.defines');
-
 
 
 /**
@@ -33,4 +31,4 @@ goog.provide('goog.editor.defines');
  * it through a QA run. If we can file the bugs with Mozilla, there's a chance
  * they'll fix them for a dot release of Firefox 3.
  */
-goog.editor.defines.USE_CONTENTEDITABLE_IN_FIREFOX_3 = false;
+goog.define('goog.editor.defines.USE_CONTENTEDITABLE_IN_FIREFOX_3', false);

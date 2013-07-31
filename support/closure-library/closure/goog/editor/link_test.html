@@ -7,10 +7,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Editor Unit Tests - goog.editor.Link</title>
 <script src="../base.js"></script>
 <script>
@@ -125,7 +126,7 @@ function testPlaceCursorRightOf() {
   assertTrue('Range should be collapsed', range.isCollapsed());
   var startNode = range.getStartNode();
 
-  if (goog.userAgent.WEBKIT && !goog.userAgent.isVersion('528')) {
+  if (goog.userAgent.WEBKIT && !goog.userAgent.isVersionOrHigher('528')) {
     assertEquals('Selection should be to the right of the anchor',
         anchor, startNode.previousSibling);
   } else {
@@ -226,6 +227,24 @@ function testIsMailToLink() {
   assertTrue(goog.editor.Link.isMailto('mailto:'));
   assertTrue(goog.editor.Link.isMailto('mailto://'));
   assertTrue(goog.editor.Link.isMailto('mailto://ptucker@gmail.com'));
+}
+
+function testGetValidLinkFromText() {
+  var textLinkPairs = [
+      // input text, expected link output
+      'www.foo.com', 'http://www.foo.com',
+      'user@gmail.com', 'mailto:user@gmail.com',
+      'http://www.foo.com', 'http://www.foo.com',
+      'https://this.that.edu', 'https://this.that.edu',
+      'nothing to see here', null
+  ]
+  var link = new goog.editor.Link(anchor, true);
+
+  for (var i = 0; i < textLinkPairs.length; i += 2) {
+    link.currentText_ = textLinkPairs[i];
+    var result = link.getValidLinkFromText();
+    assertEquals(textLinkPairs[i+1], result);
+  }
 }
 
 </script>

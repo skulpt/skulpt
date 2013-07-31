@@ -15,8 +15,6 @@
 /**
  * @fileoverview Provides functions to parse and pretty-print HTML strings.
  *
-*
-*
  */
 
 goog.provide('goog.format.HtmlPrettyPrinter');
@@ -24,6 +22,7 @@ goog.provide('goog.format.HtmlPrettyPrinter.Buffer');
 
 goog.require('goog.object');
 goog.require('goog.string.StringBuffer');
+
 
 
 /**
@@ -186,6 +185,7 @@ goog.format.HtmlPrettyPrinter.EMPTY_TAGS_ = goog.object.createSet(
     'hr',
     'isindex');
 
+
 /**
  * Breaks up HTML so it's easily readable by the user.
  * @param {string} html The HTML text to pretty print.
@@ -312,6 +312,7 @@ goog.format.HtmlPrettyPrinter.prototype.format = function(html) {
 };
 
 
+
 /**
  * This class is a buffer to which we push our output. It tracks line breaks to
  * make sure we don't add unnecessary ones.
@@ -399,6 +400,7 @@ goog.format.HtmlPrettyPrinter.Buffer.prototype.lineBreak = function() {
 
 /**
  * @return {string} String representation of tokens.
+ * @override
  */
 goog.format.HtmlPrettyPrinter.Buffer.prototype.toString = function() {
   return this.out_.toString();

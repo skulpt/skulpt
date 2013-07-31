@@ -15,8 +15,7 @@
 /**
  * @fileoverview Functions for dealing with Date formatting & Parsing,
  * County and language name, TimeZone list.
-*
-*
+ * @suppress {deprecated} Use goog.i18n instead.
  */
 
 
@@ -26,6 +25,7 @@
 goog.provide('goog.locale');
 
 goog.require('goog.locale.nativeNameConstants');
+
 
 /**
  * Set currnet locale to the specified one.
@@ -42,6 +42,7 @@ goog.locale.setLocale = function(localeName) {
 /**
  * Retrieve the currnet locale
  * @return {string} Current locale name string.
+ * @deprecated Use goog.LOCALE and goog.i18n instead.
  */
 goog.locale.getLocale = function() {
   if (!goog.locale.activeLocale_) {
@@ -149,8 +150,8 @@ goog.locale.getVariantSubTag = function(languageCode) {
 goog.locale.getNativeCountryName = function(countryCode) {
   var key = goog.locale.getLanguageSubTag(countryCode) + '_' +
             goog.locale.getRegionSubTag(countryCode);
-  return key in goog.locale.nativeNameConstants.COUNTRY ?
-      goog.locale.nativeNameConstants.COUNTRY[key] : countryCode;
+  return key in goog.locale.nativeNameConstants['COUNTRY'] ?
+      goog.locale.nativeNameConstants['COUNTRY'][key] : countryCode;
 };
 
 
@@ -159,8 +160,8 @@ goog.locale.getNativeCountryName = function(countryCode) {
  * current or provided locale symbols set.
  *
  * This method depends on goog.locale.LocaleNameConstants__<locale> available
- * from //javascript/googledata/i18n/js_locale_data. User of this method
- * has to add dependency to this.
+ * from http://go/js_locale_data. User of this method has to add dependency to
+ * this.
  *
  * @param {string} languageCode Language code to lookup the country name for.
  * @param {Object=} opt_localeSymbols If omitted the current locale symbol
@@ -175,8 +176,8 @@ goog.locale.getLocalizedCountryName = function(languageCode,
         goog.locale.getLocale());
   }
   var code = goog.locale.getRegionSubTag(languageCode);
-  return code in opt_localeSymbols.COUNTRY ?
-      opt_localeSymbols.COUNTRY[code] : languageCode;
+  return code in opt_localeSymbols['COUNTRY'] ?
+      opt_localeSymbols['COUNTRY'][code] : languageCode;
 };
 
 
@@ -192,9 +193,11 @@ goog.locale.getLocalizedCountryName = function(languageCode,
  * @return {string} Language name for the provided language code.
  */
 goog.locale.getNativeLanguageName = function(languageCode) {
+  if (languageCode in goog.locale.nativeNameConstants['LANGUAGE'])
+    return goog.locale.nativeNameConstants['LANGUAGE'][languageCode];
   var code = goog.locale.getLanguageSubTag(languageCode);
-  return code in goog.locale.nativeNameConstants.LANGUAGE ?
-      goog.locale.nativeNameConstants.LANGUAGE[code] : languageCode;
+  return code in goog.locale.nativeNameConstants['LANGUAGE'] ?
+      goog.locale.nativeNameConstants['LANGUAGE'][code] : languageCode;
 };
 
 
@@ -203,8 +206,8 @@ goog.locale.getNativeLanguageName = function(languageCode) {
  * the current or provided locale symbols set.
  *
  * This method depends on goog.locale.LocaleNameConstants__<locale> available
- * from //javascript/googledata/i18n/js_locale_data. User of this method
- * has to add dependency to this.
+ * from http://go/js_locale_data. User of this method has to add dependency to
+ * this.
  *
  * @param {string} languageCode Language code to lookup the language name for.
  * @param {Object=} opt_localeSymbols locale symbol set if given.
@@ -217,9 +220,11 @@ goog.locale.getLocalizedLanguageName = function(languageCode,
     opt_localeSymbols = goog.locale.getResource('LocaleNameConstants',
         goog.locale.getLocale());
   }
+  if (languageCode in opt_localeSymbols['LANGUAGE'])
+    return opt_localeSymbols['LANGUAGE'][languageCode];
   var code = goog.locale.getLanguageSubTag(languageCode);
-  return code in opt_localeSymbols.LANGUAGE ?
-      opt_localeSymbols.LANGUAGE[code] : languageCode;
+  return code in opt_localeSymbols['LANGUAGE'] ?
+      opt_localeSymbols['LANGUAGE'][code] : languageCode;
 };
 
 

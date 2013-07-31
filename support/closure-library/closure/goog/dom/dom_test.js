@@ -16,32 +16,61 @@
  * @fileoverview Shared code for dom_test.html and dom_quirks_test.html.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('goog.dom.dom_test');
 
 goog.require('goog.dom');
+goog.require('goog.dom.BrowserFeature');
 goog.require('goog.dom.DomHelper');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.TagName');
+goog.require('goog.object');
+goog.require('goog.string.Unicode');
 goog.require('goog.testing.asserts');
 goog.require('goog.userAgent');
+goog.require('goog.userAgent.product');
+goog.require('goog.userAgent.product.isVersion');
+
+goog.setTestOnly('dom_test');
 
 var $ = goog.dom.getElement;
 
-// Setup for the iframe
-var myIframe = $('myIframe');
-var myIframeDoc = goog.dom.getFrameContentDocument(
-    /** @type {HTMLIFrameElement} */ (myIframe));
+var divForTestingScrolling;
+var myIframe;
+var myIframeDoc;
 
-// Set up document for iframe: total height of elements in document is 65
-// If the elements are not create like below, IE will get a wrong height for
-// the document.
-myIframeDoc.open();
-// Make sure we progate the compat mode
-myIframeDoc.write((goog.dom.isCss1CompatMode() ? '<!DOCTYPE html>' : '') +
-    '<style>body{margin:0;padding:0}</style>' +
-    '<div style="height:42px;font-size:1px;line-height:0;">hello world</div>' +
-    '<div style="height:23px;font-size:1px;line-height:0;">hello world</div>');
-myIframeDoc.close();
+function setUpPage() {
+  divForTestingScrolling = document.createElement('div');
+  divForTestingScrolling.style.width = '5000px';
+  divForTestingScrolling.style.height = '5000px';
+  document.body.appendChild(divForTestingScrolling);
+
+  // Setup for the iframe
+  myIframe = $('myIframe');
+  myIframeDoc = goog.dom.getFrameContentDocument(
+      /** @type {HTMLIFrameElement} */ (myIframe));
+
+  // Set up document for iframe: total height of elements in document is 65
+  // If the elements are not create like below, IE will get a wrong height for
+  // the document.
+  myIframeDoc.open();
+  // Make sure we progate the compat mode
+  myIframeDoc.write((goog.dom.isCss1CompatMode() ? '<!DOCTYPE html>' : '') +
+      '<style>body{margin:0;padding:0}</style>' +
+      '<div style="height:42px;font-size:1px;line-height:0;">' +
+          'hello world</div>' +
+      '<div style="height:23px;font-size:1px;line-height:0;">' +
+          'hello world</div>');
+  myIframeDoc.close();
+}
+
+function tearDownPage() {
+  document.body.removeChild(divForTestingScrolling);
+}
+
+function tearDown() {
+  window.scrollTo(0, 0);
+}
 
 function testDom() {
   assert('Dom library exists', typeof goog.dom != 'undefined');
@@ -115,7 +144,7 @@ function testGetElementByClass() {
 }
 
 function testSetProperties() {
-  var attrs = { 'name': 'test3', 'title': 'A title', 'random': 'woop' };
+  var attrs = {'name': 'test3', 'title': 'A title', 'random': 'woop'};
   var el = $('testEl');
 
   var res = goog.dom.setProperties(el, attrs);
@@ -130,6 +159,35 @@ function testSetPropertiesDirectAttributeMap() {
 
   var res = goog.dom.setProperties(el, attrs);
   assertEquals('Should be equal', '#myMap', el.getAttribute('usemap'));
+}
+
+function testSetPropertiesAria() {
+  var attrs = {
+    'aria-hidden': 'true',
+    'aria-label': 'This is a label',
+    'role': 'presentation'
+  };
+  var el = goog.dom.createDom('div');
+
+  goog.dom.setProperties(el, attrs);
+  assertEquals('Should be equal', 'true', el.getAttribute('aria-hidden'));
+  assertEquals('Should be equal',
+      'This is a label', el.getAttribute('aria-label'));
+  assertEquals('Should be equal', 'presentation', el.getAttribute('role'));
+}
+
+function testSetPropertiesData() {
+  var attrs = {
+    'data-tooltip': 'This is a tooltip',
+    'data-tooltip-delay': '100'
+  };
+  var el = goog.dom.createDom('div');
+
+  goog.dom.setProperties(el, attrs);
+  assertEquals('Should be equal', 'This is a tooltip',
+      el.getAttribute('data-tooltip'));
+  assertEquals('Should be equal', '100',
+      el.getAttribute('data-tooltip-delay'));
 }
 
 function testSetTableProperties() {
@@ -170,29 +228,31 @@ function testGetDocumentHeightInIframe() {
   var doc = goog.dom.getDomHelper(myIframeDoc).getDocument();
   var height = goog.dom.getDomHelper(myIframeDoc).getDocumentHeight();
 
-  // Broken in webkit quirks mode.
-  if (goog.dom.isCss1CompatMode_(doc) || !goog.userAgent.WEBKIT) {
+  // Broken in webkit quirks mode and in IE8+
+  if ((goog.dom.isCss1CompatMode_(doc) || !goog.userAgent.WEBKIT) &&
+      !isIE8OrHigher()) {
     assertEquals('height should be 65', 42 + 23, height);
   }
 }
 
 function testCreateDom() {
-  var el = goog.dom.$dom('div',
+  var el = goog.dom.createDom('div',
       {
         style: 'border: 1px solid black; width: 50%; background-color: #EEE;',
         onclick: "alert('woo')"
       },
-      goog.dom.$dom('p', {style: 'font: normal 12px arial; color: red; '},
-                    'Para 1'),
-      goog.dom.$dom('p', {style: 'font: bold 18px garamond; color: blue; '},
-                    'Para 2'),
-      goog.dom.$dom('p', {style: 'font: normal 24px monospace; color: green'},
-                    'Para 3 ',
-                    goog.dom.$dom('a', {
-                      name: 'link', href: 'http://bbc.co.uk'
-                    },
-                    'has a link'),
-                    ', how cool is this?'));
+      goog.dom.createDom(
+          'p', {style: 'font: normal 12px arial; color: red; '}, 'Para 1'),
+      goog.dom.createDom(
+          'p', {style: 'font: bold 18px garamond; color: blue; '}, 'Para 2'),
+      goog.dom.createDom(
+          'p', {style: 'font: normal 24px monospace; color: green'},
+          'Para 3 ',
+          goog.dom.createDom('a', {
+            name: 'link', href: 'http://bbc.co.uk'
+          },
+          'has a link'),
+          ', how cool is this?'));
 
   assertEquals('Tagname should be a DIV', 'DIV', el.tagName);
   assertEquals('Style width should be 50%', '50%', el.style.width);
@@ -200,31 +260,31 @@ function testCreateDom() {
   assertEquals('second child .innerHTML', 'Para 2',
                el.childNodes[1].innerHTML);
 
-  assertEquals(goog.dom.$dom, goog.dom.createDom);
+  assertEquals(goog.dom.createDom, goog.dom.createDom);
 }
 
 function testCreateDomNoChildren() {
   var el;
 
   // Test unspecified children.
-  el = goog.dom.$dom('div');
+  el = goog.dom.createDom('div');
   assertNull('firstChild should be null', el.firstChild);
 
   // Test null children.
-  el = goog.dom.$dom('div', null, null);
+  el = goog.dom.createDom('div', null, null);
   assertNull('firstChild should be null', el.firstChild);
 
   // Test empty array of children.
-  el = goog.dom.$dom('div', null, []);
+  el = goog.dom.createDom('div', null, []);
   assertNull('firstChild should be null', el.firstChild);
 }
 
 function testCreateDomAcceptsArray() {
   var items = [
-    goog.dom.$dom('li', {}, 'Item 1'),
-    goog.dom.$dom('li', {}, 'Item 2')
+    goog.dom.createDom('li', {}, 'Item 1'),
+    goog.dom.createDom('li', {}, 'Item 2')
   ];
-  var ul = goog.dom.$dom('ul', {}, items);
+  var ul = goog.dom.createDom('ul', {}, items);
   assertEquals('List should have two children', 2, ul.childNodes.length);
   assertEquals('First child should be an LI tag',
       'LI', ul.firstChild.tagName);
@@ -236,14 +296,14 @@ function testCreateDomStringArg() {
   var el;
 
   // Test string arg.
-  el = goog.dom.$dom('div', null, 'Hello');
+  el = goog.dom.createDom('div', null, 'Hello');
   assertEquals('firstChild should be a text node', goog.dom.NodeType.TEXT,
       el.firstChild.nodeType);
   assertEquals('firstChild should have node value "Hello"', 'Hello',
       el.firstChild.nodeValue);
 
   // Test text node arg.
-  el = goog.dom.$dom('div', null, goog.dom.createTextNode('World'));
+  el = goog.dom.createDom('div', null, goog.dom.createTextNode('World'));
   assertEquals('firstChild should be a text node', goog.dom.NodeType.TEXT,
       el.firstChild.nodeType);
   assertEquals('firstChild should have node value "World"', 'World',
@@ -252,25 +312,24 @@ function testCreateDomStringArg() {
 
 function testCreateDomNodeListArg() {
   var el;
-  var emptyElem = goog.dom.$dom('div');
-  var simpleElem = goog.dom.$dom('div', null, 'Hello, world!');
-  var complexElem = goog.dom.$dom('div', null, 'Hello, ',
-                                  goog.dom.$dom('b', null, 'world'),
-      goog.dom.createTextNode('!'));
+  var emptyElem = goog.dom.createDom('div');
+  var simpleElem = goog.dom.createDom('div', null, 'Hello, world!');
+  var complexElem = goog.dom.createDom('div', null, 'Hello, ',
+      goog.dom.createDom('b', null, 'world'), goog.dom.createTextNode('!'));
 
   // Test empty node list.
-  el = goog.dom.$dom('div', null, emptyElem.childNodes);
+  el = goog.dom.createDom('div', null, emptyElem.childNodes);
   assertNull('emptyElem.firstChild should be null', emptyElem.firstChild);
   assertNull('firstChild should be null', el.firstChild);
 
   // Test simple node list.
-  el = goog.dom.$dom('div', null, simpleElem.childNodes);
+  el = goog.dom.createDom('div', null, simpleElem.childNodes);
   assertNull('simpleElem.firstChild should be null', simpleElem.firstChild);
   assertEquals('firstChild should be a text node with value "Hello, world!"',
       'Hello, world!', el.firstChild.nodeValue);
 
   // Test complex node list.
-  el = goog.dom.$dom('div', null, complexElem.childNodes);
+  el = goog.dom.createDom('div', null, complexElem.childNodes);
   assertNull('complexElem.firstChild should be null', complexElem.firstChild);
   assertEquals('Element should have 3 child nodes', 3, el.childNodes.length);
   assertEquals('childNodes[0] should be a text node with value "Hello, "',
@@ -303,7 +362,7 @@ function testContains() {
   assertTrue('Document should contain BODY', goog.dom.contains(
       document, document.body));
 
-  var d = goog.dom.$dom('p', null, 'A paragraph');
+  var d = goog.dom.createDom('p', null, 'A paragraph');
   var t = d.firstChild;
   assertTrue('Same element', goog.dom.contains(d, d));
   assertTrue('Same text', goog.dom.contains(t, t));
@@ -318,12 +377,12 @@ function testContains() {
 }
 
 function testCreateDomWithClassName() {
-  var el = goog.dom.$dom('div', 'cls');
+  var el = goog.dom.createDom('div', 'cls');
   assertNull('firstChild should be null', el.firstChild);
   assertEquals('Tagname should be a DIV', 'DIV', el.tagName);
   assertEquals('ClassName should be cls', 'cls', el.className);
 
-  el = goog.dom.$dom('div', '');
+  el = goog.dom.createDom('div', '');
   assertEquals('ClassName should be empty', '', el.className);
 }
 
@@ -404,6 +463,11 @@ function testCompareNodeOrder() {
       goog.dom.compareNodeOrder(text2, text1) > 0);
   assertTrue('Late text node is after b1',
       goog.dom.compareNodeOrder(text1, $('b1')) > 0);
+
+  assertTrue('Document node is before non-document node',
+      goog.dom.compareNodeOrder(document, b1) < 0);
+  assertTrue('Non-document node is after document node',
+      goog.dom.compareNodeOrder(b1, document) > 0);
 }
 
 function testFindCommonAncestor() {
@@ -453,6 +517,35 @@ function testReplaceNode() {
   assertNull('badNode should not be in the DOM tree', $('badReplaceNode'));
 }
 
+function testAppendChildAt() {
+  var parent = $('p2');
+  var origNumChildren = parent.childNodes.length;
+
+  var child1 = document.createElement('div');
+  goog.dom.insertChildAt(parent, child1, origNumChildren);
+  assertEquals(origNumChildren + 1, parent.childNodes.length);
+
+  var child2 = document.createElement('div');
+  goog.dom.insertChildAt(parent, child2, origNumChildren + 42);
+  assertEquals(origNumChildren + 2, parent.childNodes.length);
+
+  var child3 = document.createElement('div');
+  goog.dom.insertChildAt(parent, child3, 0);
+  assertEquals(origNumChildren + 3, parent.childNodes.length);
+
+  var child4 = document.createElement('div');
+  goog.dom.insertChildAt(parent, child3, 2);
+  assertEquals(origNumChildren + 3, parent.childNodes.length);
+
+  parent.removeChild(child1);
+  parent.removeChild(child2);
+  parent.removeChild(child3);
+
+  var emptyParentNotInDocument = document.createElement('div');
+  goog.dom.insertChildAt(emptyParentNotInDocument, child1, 0);
+  assertEquals(1, emptyParentNotInDocument.childNodes.length);
+}
+
 function testFlattenElement() {
   var text = document.createTextNode('Text');
   var br = document.createElement('br');
@@ -493,6 +586,53 @@ function testIsNodeLike() {
              goog.dom.isNodeLike({nodeType: 1}));
 }
 
+function testIsElement() {
+  assertFalse('document is not an element', goog.dom.isElement(document));
+  assertTrue('document.body is an element',
+             goog.dom.isElement(document.body));
+  assertFalse('a text node is not an element', goog.dom.isElement(
+      document.createTextNode('')));
+  assertTrue('an element created with createElement() is an element',
+      goog.dom.isElement(document.createElement('a')));
+
+  assertFalse('null is not an element', goog.dom.isElement(null));
+  assertFalse('a string is not an element', goog.dom.isElement('abcd'));
+
+  assertTrue('custom object is an element',
+             goog.dom.isElement({nodeType: 1}));
+  assertFalse('custom non-element object is a not an element',
+              goog.dom.isElement({someProperty: 'somevalue'}));
+}
+
+function testIsWindow() {
+  var global = goog.global;
+  var frame = window.frames['frame'];
+  var otherWindow = window.open('', 'blank');
+  var object = {window: goog.global};
+  var nullVar = null;
+  var notDefined;
+
+  try {
+    // Use try/finally to ensure that we clean up the window we open, even if an
+    // assertion fails or something else goes wrong.
+    assertTrue('global object in HTML context should be a window',
+               goog.dom.isWindow(goog.global));
+    assertTrue('iframe window should be a window', goog.dom.isWindow(frame));
+    if (otherWindow) {
+      assertTrue('other window should be a window',
+                 goog.dom.isWindow(otherWindow));
+    }
+    assertFalse('object should not be a window', goog.dom.isWindow(object));
+    assertFalse('null should not be a window', goog.dom.isWindow(nullVar));
+    assertFalse('undefined should not be a window',
+                goog.dom.isWindow(notDefined));
+  } finally {
+    if (otherWindow) {
+      otherWindow.close();
+    }
+  }
+}
+
 function testGetOwnerDocument() {
   assertEquals(goog.dom.getOwnerDocument($('p1')), document);
   assertEquals(goog.dom.getOwnerDocument(document.body), document);
@@ -513,6 +653,18 @@ function testGetFirstElementChild() {
 
   var c = goog.dom.getFirstElementChild(b1);
   assertNull('First element child of b1 should be null', c);
+
+  // Test with an undefined firstElementChild attribute.
+  var b2 = $('b2');
+  var mockP2 = {
+    childNodes: [b1, b2],
+    firstChild: b1,
+    firstElementChild: undefined
+  };
+
+  b1 = goog.dom.getFirstElementChild(mockP2);
+  assertNotNull('First element child of mockP2 should not be null', b1);
+  assertEquals('First element child is b1', 'b1', b1.id);
 }
 
 function testGetLastElementChild() {
@@ -523,6 +675,18 @@ function testGetLastElementChild() {
 
   var c = goog.dom.getLastElementChild(b2);
   assertNull('Last element child of b2 should be null', c);
+
+  // Test with an undefined lastElementChild attribute.
+  var b1 = $('b1');
+  var mockP2 = {
+    childNodes: [b1, b2],
+    lastChild: b2,
+    lastElementChild: undefined
+  };
+
+  b2 = goog.dom.getLastElementChild(mockP2);
+  assertNotNull('Last element child of mockP2 should not be null', b2);
+  assertEquals('Last element child is b2', 'b2', b2.id);
 }
 
 function testGetNextElementSibling() {
@@ -533,6 +697,16 @@ function testGetNextElementSibling() {
 
   var c = goog.dom.getNextElementSibling(b2);
   assertNull('Next element sibling of b2 should be null', c);
+
+  // Test with an undefined nextElementSibling attribute.
+  var mockB1 = {
+    nextSibling: b2,
+    nextElementSibling: undefined
+  };
+
+  b2 = goog.dom.getNextElementSibling(mockB1);
+  assertNotNull('Next element sibling of mockB1 should not be null', b1);
+  assertEquals('Next element sibling is b2', 'b2', b2.id);
 }
 
 function testGetPreviousElementSibling() {
@@ -543,6 +717,48 @@ function testGetPreviousElementSibling() {
 
   var c = goog.dom.getPreviousElementSibling(b1);
   assertNull('Previous element sibling of b1 should be null', c);
+
+  // Test with an undefined previousElementSibling attribute.
+  var mockB2 = {
+    previousSibling: b1,
+    previousElementSibling: undefined
+  };
+
+  b1 = goog.dom.getPreviousElementSibling(mockB2);
+  assertNotNull('Previous element sibling of mockB2 should not be null', b1);
+  assertEquals('Previous element sibling is b1', 'b1', b1.id);
+}
+
+function testGetChildren() {
+  var p2 = $('p2');
+  var children = goog.dom.getChildren(p2);
+  assertNotNull('Elements array should not be null', children);
+  assertEquals('List of element children should be length two.', 2,
+      children.length);
+
+  var b1 = $('b1');
+  var b2 = $('b2');
+  assertObjectEquals('First element child should be b1.', b1, children[0]);
+  assertObjectEquals('Second element child should be b2.', b2, children[1]);
+
+  var noChildren = goog.dom.getChildren(b1);
+  assertNotNull('Element children array should not be null', noChildren);
+  assertEquals('List of element children should be length zero.', 0,
+      noChildren.length);
+
+  // Test with an undefined children attribute.
+  var mockP2 = {
+    childNodes: [b1, b2],
+    children: undefined
+  };
+
+  children = goog.dom.getChildren(mockP2);
+  assertNotNull('Elements array should not be null', children);
+  assertEquals('List of element children should be length two.', 2,
+      children.length);
+
+  assertObjectEquals('First element child should be b1.', b1, children[0]);
+  assertObjectEquals('Second element child should be b2.', b2, children[1]);
 }
 
 function testGetNextNode() {
@@ -698,7 +914,7 @@ function testIsFocusableTabIndex() {
 
   // WebKit on Mac doesn't support focusable DIVs until version 526 and later.
   if (!goog.userAgent.WEBKIT || !goog.userAgent.MAC ||
-      goog.userAgent.isVersion('526')) {
+      goog.userAgent.isVersionOrHigher('526')) {
     assertTrue('isFocusableTabIndex() must be true for tab index 0',
         goog.dom.isFocusableTabIndex(goog.dom.getElement('tabIndex0')));
     assertTrue('isFocusableTabIndex() must be true for tab index 1',
@@ -711,7 +927,7 @@ function testIsFocusableTabIndex() {
 function testSetFocusableTabIndex() {
   // WebKit on Mac doesn't support focusable DIVs until version 526 and later.
   if (!goog.userAgent.WEBKIT || !goog.userAgent.MAC ||
-      goog.userAgent.isVersion('526')) {
+      goog.userAgent.isVersionOrHigher('526')) {
     // Test enabling focusable tab index.
     goog.dom.setFocusableTabIndex(goog.dom.getElement('noTabIndex'), true);
     assertTrue('isFocusableTabIndex() must be true after enabling tab index',
@@ -764,6 +980,9 @@ function testGetTextContent() {
   t(' \n&shy;<b>abcde &shy; </b>   \n\n\n&shy;', 'abcde ');
   t(' \n&shy;\n\n&shy;\na   ', 'a ');
   t(' \n<wbr></wbr><b>abcde <wbr></wbr> </b>   \n\n\n<wbr></wbr>', 'abcde ');
+  t('a&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b',
+      goog.dom.BrowserFeature.CAN_USE_INNER_TEXT ?
+      'a     b' : 'a\xA0\xA0\xA0\xA0\xA0b');
 }
 
 function testGetNodeTextLength() {
@@ -900,37 +1119,51 @@ function testGetFrameContentWindow() {
 }
 
 function testCanHaveChildren() {
+  var EMPTY_ELEMENTS = goog.object.createSet(
+      goog.dom.TagName.APPLET,
+      goog.dom.TagName.AREA,
+      goog.dom.TagName.BASE,
+      goog.dom.TagName.BR,
+      goog.dom.TagName.COL,
+      goog.dom.TagName.COMMAND,
+      goog.dom.TagName.EMBED,
+      goog.dom.TagName.FRAME,
+      goog.dom.TagName.HR,
+      goog.dom.TagName.IMG,
+      goog.dom.TagName.INPUT,
+      goog.dom.TagName.IFRAME,
+      goog.dom.TagName.ISINDEX,
+      goog.dom.TagName.KEYGEN,
+      goog.dom.TagName.LINK,
+      goog.dom.TagName.NOFRAMES,
+      goog.dom.TagName.NOSCRIPT,
+      goog.dom.TagName.META,
+      goog.dom.TagName.OBJECT,
+      goog.dom.TagName.PARAM,
+      goog.dom.TagName.SCRIPT,
+      goog.dom.TagName.SOURCE,
+      goog.dom.TagName.STYLE,
+      goog.dom.TagName.TRACK,
+      goog.dom.TagName.WBR);
+
+  // IE opens a dialog warning about using Java content if an EMBED is created.
+  var IE_ILLEGAL_ELEMENTS = goog.object.createSet(goog.dom.TagName.EMBED);
+
   for (var tag in goog.dom.TagName) {
-    var expected = true;
-    switch (tag) {
-      case goog.dom.TagName.BASE:
-        // Before version 8, IE incorrectly reports that BASE can have children.
-        expected = goog.userAgent.IE && !goog.userAgent.isVersion('8');
-        break;
-      case goog.dom.TagName.APPLET:
-      case goog.dom.TagName.AREA:
-      case goog.dom.TagName.BR:
-      case goog.dom.TagName.COL:
-      case goog.dom.TagName.FRAME:
-      case goog.dom.TagName.HR:
-      case goog.dom.TagName.IMG:
-      case goog.dom.TagName.INPUT:
-      case goog.dom.TagName.IFRAME:
-      case goog.dom.TagName.ISINDEX:
-      case goog.dom.TagName.LINK:
-      case goog.dom.TagName.NOFRAMES:
-      case goog.dom.TagName.NOSCRIPT:
-      case goog.dom.TagName.META:
-      case goog.dom.TagName.OBJECT:
-      case goog.dom.TagName.PARAM:
-      case goog.dom.TagName.SCRIPT:
-      case goog.dom.TagName.STYLE:
-        expected = false;
-        break;
+    if (goog.userAgent.IE && tag in IE_ILLEGAL_ELEMENTS) {
+      continue;
     }
-    var node = goog.dom.createDom(tag);
+
+    var expected = !(tag in EMPTY_ELEMENTS);
+    var node = goog.dom.createElement(tag);
     assertEquals(tag + ' should ' + (expected ? '' : 'not ') +
         'have children', expected, goog.dom.canHaveChildren(node));
+
+    // Make sure we can _actually_ add a child if we identify the node as
+    // allowing children.
+    if (goog.dom.canHaveChildren(node)) {
+      node.appendChild(goog.dom.createDom('div', null, 'foo'));
+    }
   }
 }
 
@@ -992,14 +1225,14 @@ function testGetAncestorByTagNameOnly() {
 function testGetAncestorByClassNameNoMatch() {
   var elem = goog.dom.getElement('nestedElement');
   assertNull(
-      goog.dom.getAncestorByTagNameAndClass(elem, null, 'bogusClassName'));
+      goog.dom.getAncestorByClass(elem, 'bogusClassName'));
 }
 
 function testGetAncestorByClassName() {
   var elem = goog.dom.getElement('nestedElement');
   var expected = goog.dom.getElement('testAncestorP');
   assertEquals(expected,
-      goog.dom.getAncestorByTagNameAndClass(elem, null, 'testAncestor'));
+      goog.dom.getAncestorByClass(elem, 'testAncestor'));
 }
 
 function testGetAncestorByTagNameAndClass() {
@@ -1008,6 +1241,9 @@ function testGetAncestorByTagNameAndClass() {
   assertEquals(expected,
       goog.dom.getAncestorByTagNameAndClass(elem, goog.dom.TagName.DIV,
           'testAncestor'));
+  assertNull(
+      'Should return null if no search criteria are given',
+      goog.dom.getAncestorByTagNameAndClass(elem));
 }
 
 function testCreateTable() {
@@ -1036,7 +1272,10 @@ function testHtmlToDocumentFragment() {
   var div = goog.dom.htmlToDocumentFragment('<div>3</div>');
   assertEquals('DIV', div.tagName);
 
-  if (goog.userAgent.IE) {
+  var script = goog.dom.htmlToDocumentFragment('<script></script>');
+  assertEquals('SCRIPT', script.tagName);
+
+  if (goog.userAgent.IE && !goog.userAgent.isDocumentModeOrHigher(9)) {
     // Removing an Element from a DOM tree in IE sets its parentNode to a new
     // DocumentFragment. Bizarre!
     assertEquals(goog.dom.NodeType.DOCUMENT_FRAGMENT,
@@ -1077,4 +1316,106 @@ function testAppend4() {
   goog.dom.append(div, div2.childNodes);
   assertEqualsCaseAndLeadingWhitespaceInsensitive('a<b></b>c', div.innerHTML);
   assertFalse(div2.hasChildNodes());
+}
+
+function testGetDocumentScroll() {
+  // setUpPage added divForTestingScrolling to the DOM. It's not init'd here so
+  // it can be shared amonst other tests.
+  window.scrollTo(100, 100);
+
+  assertEquals(100, goog.dom.getDocumentScroll().x);
+  assertEquals(100, goog.dom.getDocumentScroll().y);
+}
+
+function testGetDocumentScrollOfFixedViewport() {
+  // iOS and perhaps other environments don't actually support scrolling.
+  // Instead, you view the document's fixed layout through a screen viewport.
+  // We need getDocumentScroll to handle this case though.
+  // In case of IE10 though, we do want to use scrollLeft/scrollTop
+  // because the rest of the positioning is done off the scrolled away origin.
+  var fakeDocumentScrollElement = {scrollLeft: 0, scrollTop: 0};
+  var fakeDocument = {
+    defaultView: {pageXOffset: 100, pageYOffset: 100},
+    documentElement: fakeDocumentScrollElement,
+    body: fakeDocumentScrollElement
+  };
+  var dh = goog.dom.getDomHelper(document);
+  dh.setDocument(fakeDocument);
+  if (goog.userAgent.IE && goog.userAgent.isVersionOrHigher(10)) {
+    assertEquals(0, dh.getDocumentScroll().x);
+    assertEquals(0, dh.getDocumentScroll().y);
+  } else {
+    assertEquals(100, dh.getDocumentScroll().x);
+    assertEquals(100, dh.getDocumentScroll().y);
+  }
+}
+
+function testActiveElementIE() {
+  if (!goog.userAgent.IE) {
+    return;
+  }
+
+  var link = goog.dom.getElement('link');
+  link.focus();
+
+  assertEquals(link.tagName, goog.dom.getActiveElement(document).tagName);
+  assertEquals(link, goog.dom.getActiveElement(document));
+}
+
+function testParentElement() {
+  var testEl = $('testEl');
+  var bodyEl = goog.dom.getParentElement(testEl);
+  assertNotNull(bodyEl);
+  var htmlEl = goog.dom.getParentElement(bodyEl);
+  assertNotNull(htmlEl);
+  var documentNotAnElement = goog.dom.getParentElement(htmlEl);
+  assertNull(documentNotAnElement);
+
+  var tree = goog.dom.htmlToDocumentFragment(
+      '<div>' +
+      '<p>Some text</p>' +
+      '<blockquote>Some <i>special</i> <b>text</b></blockquote>' +
+      '<address><!-- comment -->Foo</address>' +
+      '</div>');
+  assertNull(goog.dom.getParentElement(tree));
+  pEl = goog.dom.getNextNode(tree);
+  var fragmentRootEl = goog.dom.getParentElement(pEl);
+  assertEquals(tree, fragmentRootEl);
+
+  var detachedEl = goog.dom.createDom('div');
+  var detachedHasNoParent = goog.dom.getParentElement(detachedEl);
+  assertNull(detachedHasNoParent);
+
+  if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9')) {
+    // svg is not supported in IE8 and below.
+    return;
+  }
+
+  var svg = $('testSvg');
+  assertNotNull(svg);
+  var rect = $('testRect');
+  assertNotNull(rect);
+  var g = $('testG');
+  assertNotNull(g);
+
+  if (goog.userAgent.IE && goog.userAgent.isVersionOrHigher('9')) {
+    // test to make sure IE9 is returning undefined for .parentElement
+    assertUndefined(g.parentElement);
+    assertUndefined(rect.parentElement);
+    assertUndefined(svg.parentElement);
+  }
+  var shouldBeG = goog.dom.getParentElement(rect);
+  assertEquals(g, shouldBeG);
+  var shouldBeSvg = goog.dom.getParentElement(g);
+  assertEquals(svg, shouldBeSvg);
+  var shouldBeBody = goog.dom.getParentElement(svg);
+  assertEquals(bodyEl, shouldBeBody);
+}
+
+
+/**
+ * @return {boolean} Returns true if the userAgent is IE8 or higher.
+ */
+function isIE8OrHigher() {
+  return goog.userAgent.IE && goog.userAgent.product.isVersion('8');
 }

@@ -17,15 +17,13 @@
  * that works on any similar DOM structure regardless of whether it is the same
  * actual nodes.
  *
-*
-*
- * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.dom.NodeOffset');
 
 goog.require('goog.Disposable');
 goog.require('goog.dom.TagName');
+
 
 
 /**
@@ -37,6 +35,8 @@ goog.require('goog.dom.TagName');
  * @constructor
  */
 goog.dom.NodeOffset = function(node, baseNode) {
+  goog.Disposable.call(this);
+
   /**
    * A stack of childNode offsets.
    * @type {Array.<number>}
@@ -70,6 +70,7 @@ goog.inherits(goog.dom.NodeOffset, goog.Disposable);
 
 /**
  * @return {string} A string representation of this object.
+ * @override
  */
 goog.dom.NodeOffset.prototype.toString = function() {
   var strs = [];
@@ -104,7 +105,7 @@ goog.dom.NodeOffset.prototype.findTargetNode = function(baseNode) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.NodeOffset.prototype.disposeInternal = function() {
   delete this.offsetStack_;
   delete this.nameStack_;

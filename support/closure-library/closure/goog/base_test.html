@@ -3,17 +3,26 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.*</title>
+<script>
+  var CLOSURE_DEFINES = {
+    'SOME_DEFINE': 456,
+    'ns.SOME_DEFINE': 456
+  };
+</script>
 <script src="base.js"></script>
 <script>
+goog.require('goog.functions');
 // Used to test dynamic loading works, see testRequire*
 goog.require('goog.Timer');
-goog.require('goog.testing.jsunit');
 goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.recordFunction');
 goog.require('goog.userAgent');
 </script>
 </head>
@@ -66,13 +75,32 @@ iframeElement.parentNode.removeChild(iframeElement);
 <script>
 
 var stubs = new goog.testing.PropertyReplacer();
+var originalGoogBind = goog.bind;
 
 function tearDown() {
+  goog.setCssNameMapping(undefined);
   stubs.reset();
+  goog.bind = originalGoogBind;
 }
 
 function testLibrary() {
   assertNotUndefined("'goog' not loaded", goog);
+}
+
+function testDefine() {
+  goog.define('SOME_DEFINE', 123); // overridden by 456
+  assertEquals(SOME_DEFINE, 456);
+
+  goog.define('SOME_OTHER_DEFINE', 123); // not overridden
+  assertEquals(SOME_OTHER_DEFINE, 123);
+
+  goog.provide('ns');
+
+  goog.define('ns.SOME_DEFINE', 123); // overridden by 456
+  assertEquals(SOME_DEFINE, 456);
+
+  goog.define('ns.SOME_OTHER_DEFINE', 123); // not overridden
+  assertEquals(SOME_OTHER_DEFINE, 123);
 }
 
 function testProvide() {
@@ -85,25 +113,35 @@ function testProvide() {
   // ensure that providing 'goog.test.name' doesn't throw an exception
   goog.provide('goog.test');
   goog.provide('goog.test.name');
+
+  delete goog.test;
 }
 
 function testProvideStrictness() {
   goog.provide('goog.xy');
   assertProvideFails('goog.xy');
 
+  goog.provide('goog.xy.z');
+  assertProvideFails('goog.xy');
+
   window['goog']['xyz'] = 'Bob';
   assertProvideFails('goog.xyz');
+
+  delete goog.xy;
+  delete goog.xyz;
 }
 
 function assertProvideFails(namespace) {
-  var failed = false;
-  try {
-    goog.provide(namespace);
-  } catch (e) {
-    failed = true;
-  }
-  assert('goog.provide should have failed, but succeeded: ' + namespace,
-      failed);
+  assertThrows('goog.provide(' + namespace + ') should have failed',
+      goog.partial(goog.provide, namespace));
+}
+
+function testIsProvided() {
+  goog.provide('goog.explicit');
+  assertTrue(goog.isProvided_('goog.explicit'));
+  goog.provide('goog.implicit.explicit');
+  assertFalse(goog.isProvided_('goog.implicit'));
+  assertTrue(goog.isProvided_('goog.implicit.explicit'));
 }
 
 function testGlobalize() {
@@ -124,15 +162,18 @@ function testExportSymbol() {
   assertTrue(typeof nodots == 'undefined');
   goog.exportSymbol('nodots', date);
   assertEquals(date, nodots);
+  nodots = undefined;
 
   assertTrue(typeof gotcher == 'undefined');
   goog.exportSymbol('gotcher.dots.right.Here', date);
   assertEquals(date, gotcher.dots.right.Here);
+  gotcher = undefined;
 
   goog.provide('an.existing.path');
   assertNotNull(an.existing.path);
   goog.exportSymbol('an.existing.path', date);
   assertEquals(date, an.existing.path);
+  an = undefined;
 
   var foo = {foo: 'foo'};
   var bar = {bar: 'bar'};
@@ -150,6 +191,7 @@ function testExportSymbol() {
   assertEquals(fooBar, win.one.two.four);
   assertTrue('four' in win.one.two);
   assertFalse('four' in one.two);
+  one = undefined;
 }
 
 goog.exportSymbol('exceptionTest', function() {
@@ -157,19 +199,9 @@ goog.exportSymbol('exceptionTest', function() {
 });
 
 function testExportSymbolExceptions() {
-  var thrown = false;
-  try {
-    exceptionTest();
-  } catch (e) {
-    thrown = true;
-    if (e.message != 'ERROR') {
-      fail('Unexpected error thrown', e);
-    }
-  }
-
-  if (!thrown) {
-    fail('Exception wasn\'t thrown by exported function');
-  }
+  var e = assertThrows('Exception wasn\'t thrown by exported function',
+      exceptionTest);
+  assertEquals('Unexpected error thrown', 'ERROR', e.message);
 }
 
 //=== tests for Require logic ===
@@ -179,6 +211,30 @@ function testRequireClosure() {
   assertNotUndefined('goog.events.EventTarget should be available', goog.events.EventTarget);
 }
 
+function testRequireWithExternalDuplicate() {
+  // Do a provide without going via goog.require. Then goog.require it
+  // indirectly and ensure it doesn't cause a duplicate script.
+  goog.addDependency('dup.js', ['dup.base'], []);
+  goog.addDependency('dup-child.js', ['dup.base.child'], ['dup.base']);
+  goog.provide('dup.base');
+
+  stubs.set(goog, 'isDocumentFinishedLoading_', false);
+  stubs.set(goog.global, 'CLOSURE_IMPORT_SCRIPT', function(src) {
+    if (src == goog.basePath + 'dup.js') {
+      fail('Duplicate script written!');
+    } else if (src == goog.basePath + 'dup-child.js') {
+      // Allow expected script.
+      return true;
+    } else {
+      // Avoid affecting other state.
+      return false;
+    }
+  });
+
+  // To differentiate this call from the real one.
+  var require = goog.require;
+  require('dup.base.child');
+}
 
 //=== tests for language enhancements ===
 
@@ -346,7 +402,7 @@ function testIsArrayLike() {
       goog.isArrayLike(notDefined));
   assertTrue('NodeList should be array-like',
       goog.isArrayLike(elem.childNodes));
-  // TODO(user): Fix isArrayLike to return false for text nodes!
+  // TODO(attila): Fix isArrayLike to return false for text nodes!
   // assertFalse('TextNode should not be array-like', goog.isArrayLike(text));
   assertTrue('Array of nodes should be array-like',
       goog.isArrayLike([elem.firstChild, elem.lastChild]));
@@ -471,11 +527,8 @@ function testRemoveUidFromPlainObject() {
 
 function testRemoveUidFromObjectWithoutUid() {
   var a = {};
-  try {
-    goog.removeUid(a);
-  } catch (e) {
-    fail('Removing a unique ID should not fail even if it did not exist');
-  }
+  // Removing a unique ID should not fail even if it did not exist
+  goog.removeUid(a);
 }
 
 function testRemoveUidFromNode() {
@@ -500,6 +553,13 @@ function testConstructorUid() {
       typeof subClassUid == 'number');
   assertNotEquals('Unique IDs of BaseClass and SubClass must differ',
       baseClassUid, subClassUid);
+  assertNotEquals('Unique IDs of BaseClass and SubClass instances must differ',
+      goog.getUid(new BaseClass), goog.getUid(new SubClass));
+
+  assertEquals('Unique IDs of BaseClass.prototype and SubClass.prototype ' +
+      'should differ, but to keep the implementation simple, we do not ' +
+      'handle this edge case.',
+      goog.getUid(BaseClass.prototype), goog.getUid(SubClass.prototype));
 }
 
 /**
@@ -516,6 +576,15 @@ function testUidNotUndefinedOnReusedElement() {
   div.innerHTML = '<form id="form"></form>';
   var span2 = div.getElementsByTagName('FORM')[0];
   assertNotUndefined(goog.getUid(span2));
+}
+
+function testWindowUid() {
+  var uid = goog.getUid(window);
+  assertTrue('window unique id is a number', goog.isNumber(uid));
+  assertEquals('returns the same id second time', uid, goog.getUid(window));
+  goog.removeUid(window);
+  assertNotEquals('generates new id after the old one is removed',
+      goog.getUid(window));
 }
 
 //=== tests for clone method ===
@@ -655,6 +724,38 @@ function testBindWithCall() {
   var b = goog.bind(f, obj);
   b.call(null);
   b.call(obj2);
+}
+
+function testBindJs() {
+  assertEquals(1, goog.bindJs_(add, {valueOf: function() { return 1; }})());
+  assertEquals(3, goog.bindJs_(add, null, 1, 2)());
+}
+
+function testBindNative() {
+  if (Function.prototype.bind &&
+      Function.prototype.bind.toString().indexOf('native code') != -1) {
+    assertEquals(
+        1, goog.bindNative_(add, {valueOf: function() { return 1; }})());
+    assertEquals(3, goog.bindNative_(add, null, 1, 2)());
+
+    assertThrows(function() {
+      goog.bindNative_(null, null);
+    });
+  }
+}
+
+function testBindDefault() {
+  assertEquals(
+      1, goog.bind(add, {valueOf: function() { return 1; }})());
+  assertEquals(3, goog.bind(add, null, 1, 2)());
+}
+
+function add(var_args) {
+  var sum = Number(this) || 0;
+  for (var i = 0; i < arguments.length; i++) {
+    sum += arguments[i];
+  }
+  return sum;
 }
 
 function testPartial() {
@@ -831,6 +932,24 @@ function testLoadInNonHtmlNotThrows() {
   }
 }
 
+function testLoadBaseWithQueryParamOk() {
+  var savedGoogGlobal = goog.global;
+  try {
+    goog.global = {};
+    goog.global.document = {
+      write: goog.nullFunction,
+      getElementsByTagName: goog.functions.constant(
+          [{src: '/path/to/base.js?zx=5'}])
+    };
+    assertTrue(goog.inHtmlDocument_());
+    goog.findBasePath_();
+    assertEquals('/path/to/', goog.basePath);
+  } finally {
+    // Restore context to respect other tests.
+    goog.global = savedGoogGlobal;
+  }
+}
+
 //=== tests for getmsg ===
 function testGetMsgWithDollarSigns() {
   var msg = goog.getMsg('{$amount} per minute',
@@ -861,69 +980,14 @@ function testIdentity() {
   assertTrue(goog.identityFunction() === undefined);
 }
 
-function testPropertyIsEnumerable_() {
-  function A() {}
-  A.prototype.x = 1;
-
-  var a = new A;
-  a.y = 2;
-
-  assertFalse('Properties on the prototype should not be enumerable',
-              goog.propertyIsEnumerable_(a, 'x'))
-  assertTrue('Properties on the instance should be enumerable',
-             goog.propertyIsEnumerable_(a, 'y'))
-
-  // TODO(user): This test failed on the farm in FF3 Linux and I no one was
-  // able to reproduce locally. Error:
-  // Permission denied to get property Window.document
-  // For now get the Closure build green by skipping for FF3, and look into
-  // what is causing this to be a problem for the tests running on the farm.
-  if (!(goog.userAgent.GECKO && goog.userAgent.isVersion('1.9'))) {
-    var childWindow;
-    try {
-       childWindow = window.open('', '_blank');
-    } catch (e) {
-      // NOTE(user): For some reason this line errors in Safari 3 on the farm,
-      // "Undefined value".  This only recently started happening (2008/10/21).
-      return;
-    }
-    // TODO(user): Find a way to test this behavior even when pop ups are
-    // blocked, i.e., when childWindow doesn't exist. Using an iframe doesn't
-    // seem to have the same problem.
-    if (childWindow) {
-      var doc = childWindow.document;
-      doc.open();
-      doc.write('<script>' +
-                'function A() {}' +
-                'A.prototype.x = 1;' +
-                'var c = new A;' +
-                'c.y = 2;' +
-                '</' + 'script>');
-      doc.close();
-      try {
-        if (goog.userAgent.IE) {
-          assertTrue('Properties on the prototype of an object from another ' +
-              'window are enumerable in IE.',
-              goog.propertyIsEnumerable_(childWindow.c, 'x'));
-        } else {
-          assertFalse('Properties on the prototype of an object from another ' +
-              'window should not be enumerable.',
-              goog.propertyIsEnumerable_(childWindow.c, 'x'));
-        }
-        assertTrue('Properties on the instance should be enumerable.',
-            goog.propertyIsEnumerable_(childWindow.c, 'y'));
-      } finally {
-        // Even in the case where an assert fails, we want to close the child
-        // window so it's easy to see the test results.
-        childWindow.close();
-      }
-    }
-  }
-}
-
-
 function testGetObjectByName() {
   var m = {
+    'undefined': undefined,
+    'null': null,
+    emptyString: '',
+    'false': false,
+    'true': true,
+    zero: 0,
     one: 1,
     two: {
       three: 3,
@@ -936,6 +1000,12 @@ function testGetObjectByName() {
   };
   goog.global.m = m;
 
+  assertNull(goog.getObjectByName('m.undefined'));
+  assertNull(goog.getObjectByName('m.null'));
+  assertEquals(goog.getObjectByName('m.emptyString'), '');
+  assertEquals(goog.getObjectByName('m.false'), false);
+  assertEquals(goog.getObjectByName('m.true'), true);
+  assertEquals(goog.getObjectByName('m.zero'), 0);
   assertEquals(goog.getObjectByName('m.one'), 1);
   assertEquals(goog.getObjectByName('m.two.three'), 3);
   assertEquals(goog.getObjectByName('m.two.four.five'), 5);
@@ -956,10 +1026,31 @@ function testGetCssName() {
   assertEquals('classname', goog.getCssName('classname'));
   assertEquals('random-classname', goog.getCssName('random-classname'));
   assertEquals('control-modifier', goog.getCssName('control', 'modifier'));
+
+  goog.setCssNameMapping({
+    'goog': 'a',
+    'disabled': 'b'
+  }, 'BY_PART');
+  var g = goog.getCssName('goog');
+  assertEquals('a', g);
+  assertEquals('a-b', goog.getCssName(g, 'disabled'));
+  assertEquals('a-b', goog.getCssName('goog-disabled'));
+  assertEquals('a-button', goog.getCssName('goog-button'));
+
+  goog.setCssNameMapping({
+    'goog-button': 'a',
+    'active': 'b'
+  }, 'BY_WHOLE');
+
+  g = goog.getCssName('goog-button');
+  assertEquals('a', g);
+  assertEquals('a-b', goog.getCssName(g, 'active'));
+  assertEquals('goog-disabled', goog.getCssName('goog-disabled'));
 }
 
 function testAddDependency() {
   stubs.set(goog, 'writeScriptTag_', goog.nullFunction);
+  stubs.set(goog, 'isDocumentFinishedLoading_', false);
 
   goog.addDependency(
       'foo.js',
@@ -968,10 +1059,16 @@ function testAddDependency() {
 
   goog.provide('testDep.bar');
 
-  // this used to throw an exception
-  goog.require('testDep.foo');
+  // To differentiate this call from the real one.
+  var require = goog.require;
 
-  assert(goog.isObject(testDep.bar));
+  // this used to throw an exception
+  require('testDep.foo');
+
+  assertTrue(goog.isObject(testDep.bar));
+
+  // Unset provided namespace so the test can be re-run.
+  testDep = undefined;
 }
 
 function testBaseMethod() {
@@ -1013,6 +1110,28 @@ function testBaseMethod() {
   assertEquals(9, d.foo(1, 0));
 }
 
+function testBaseMethodAndBaseCtor() {
+  // This will fail on FF4.0 if the following bug is not fixed:
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=586482
+  function A(x, y) {
+    this.foo(x, y);
+  }
+  A.prototype.foo = function(x, y) {
+    this.bar = x + y;
+  };
+
+  function B(x, y) {
+    goog.base(this, x, y);
+  }
+  goog.inherits(B, A);
+  B.prototype.foo = function(x, y) {
+    goog.base(this, 'foo', x, y);
+    this.bar = this.bar * 2;
+  };
+
+  assertEquals(14, new B(3, 4).bar);
+}
+
 function testBaseClass() {
   function A(x, y) {
     this.foo = x + y;
@@ -1041,6 +1160,45 @@ function testBaseClass() {
   assertEquals(16, (new D(2, 0)).foo);
   assertEquals(7, (new C(1, 0)).foo);
   assertEquals(3, (new B(1, 0)).foo);
+}
+
+function testGoogRequireCheck() {
+  stubs.set(goog, 'ENABLE_DEBUG_LOADER', false);
+  stubs.set(goog, 'useStrictRequires', true);
+  stubs.set(goog, 'implicitNamespaces_', {});
+
+  // Aliased so that build tools do not mistake this for an actual call.
+  var require = goog.require;
+  assertThrows('Requiring non-required namespace should fail',
+    function() {
+      require('far.out');
+    });
+
+  assertUndefined(goog.global.far );
+  assertEvaluatesToFalse(goog.getObjectByName('far.out'));
+  assertObjectEquals({}, goog.implicitNamespaces_);
+  assertFalse(goog.isProvided_('far.out'));
+
+  goog.provide('far.out');
+
+  assertNotUndefined(far.out);
+  assertEvaluatesToTrue(goog.getObjectByName('far.out'));
+  assertObjectEquals({'far': true}, goog.implicitNamespaces_);
+  assertTrue(goog.isProvided_('far.out'));
+
+  stubs.reset();
+  delete far;
+}
+
+function testLateRequireProtection() {
+  if (!document.readyState) return;
+  var e = assertThrows(function() {
+    // To differentiate this call from the real one.
+    var require = goog.require;
+    require('goog.ui.Component');
+  });
+
+  assertContains('after document load', e.message);
 }
 
 </script>

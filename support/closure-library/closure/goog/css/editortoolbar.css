@@ -1,7 +1,7 @@
 /*
  * Copyright 2008 The Closure Library Authors. All Rights Reserved.
  *
- * Use of this source code is governed by an Apache 2.0 License.
+ * Use of this source code is governed by the Apache License, Version 2.0.
  * See the COPYING file for details.
  */
 
@@ -16,7 +16,7 @@
 .tr-icon {
   width: 16px;
   height: 16px;
-  background: url(https://ssl.gstatic.com/editor/editortoolbar.png) no-repeat;
+  background: url(//ssl.gstatic.com/editor/editortoolbar.png) no-repeat;
   vertical-align: middle;
 }
 

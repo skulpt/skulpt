@@ -3,13 +3,15 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.object</title>
 <script src="../base.js"></script>
 <script>
+  goog.require('goog.functions');
   goog.require('goog.object');
   goog.require('goog.testing.jsunit');
 </script>
@@ -127,6 +129,59 @@ function testClone() {
   assertFalse('clone so it should not be empty', goog.object.isEmpty(m2));
   assertTrue("clone so it should contain 'c' key",
              goog.object.containsKey(m2, 'c'));
+}
+
+function testUnsafeClonePrimitive() {
+  assertEquals('cloning a primitive should return an equal primitive',
+      5, goog.object.unsafeClone(5));
+}
+
+function testUnsafeCloneObjectThatHasACloneMethod() {
+  var original = {
+    name: 'original',
+    clone: goog.functions.constant({name: 'clone'})
+  };
+
+  var clone = goog.object.unsafeClone(original);
+  assertEquals('original', original.name);
+  assertEquals('clone', clone.name);
+}
+
+function testUnsafeCloneFlatObject() {
+  var original = {a: 1, b: 2, c: 3};
+  var clone = goog.object.unsafeClone(original);
+  assertNotEquals(original, clone);
+  assertObjectEquals(original, clone);
+}
+
+function testUnsafeCloneDeepObject() {
+  var original = {
+    a: 1,
+    b: {c: 2, d: 3},
+    e: {f: {g: 4, h: 5}}
+  };
+  var clone = goog.object.unsafeClone(original);
+
+  assertNotEquals(original, clone);
+  assertNotEquals(original.b, clone.b);
+  assertNotEquals(original.e, clone.e);
+
+  assertEquals(1, clone.a);
+  assertEquals(2, clone.b.c);
+  assertEquals(3, clone.b.d);
+  assertEquals(4, clone.e.f.g);
+  assertEquals(5, clone.e.f.h);
+}
+
+function testUnsafeCloneFunctions() {
+  var original = {
+    f: goog.functions.constant('hi')
+  };
+  var clone = goog.object.unsafeClone(original);
+
+  assertNotEquals(original, clone);
+  assertEquals('hi', clone.f());
+  assertEquals(original.f, clone.f);
 }
 
 function testForEach() {
@@ -330,6 +385,80 @@ function testCreateSet() {
                      {}, goog.object.createSet());
   assertObjectEquals('With an ampty array argument',
                      {}, goog.object.createSet([]));
+}
+
+function createTestDeepObject() {
+  var obj = {};
+  obj.a = {};
+  obj.a.b = {};
+  obj.a.b.c = {};
+  obj.a.b.c.fooArr = [5, 6, 7, 8];
+  obj.a.b.c.knownNull = null;
+  return obj;
+}
+
+function testGetValueByKeys() {
+  var obj = createTestDeepObject();
+  assertEquals(obj, goog.object.getValueByKeys(obj));
+  assertEquals(obj.a, goog.object.getValueByKeys(obj, 'a'));
+  assertEquals(obj.a.b, goog.object.getValueByKeys(obj, 'a', 'b'));
+  assertEquals(obj.a.b.c, goog.object.getValueByKeys(obj, 'a', 'b', 'c'));
+  assertEquals(obj.a.b.c.d,
+               goog.object.getValueByKeys(obj, 'a', 'b', 'c', 'd'));
+  assertEquals(8, goog.object.getValueByKeys(obj, 'a', 'b', 'c', 'fooArr', 3));
+  assertNull(goog.object.getValueByKeys(obj, 'a', 'b', 'c', 'knownNull'));
+  assertUndefined(goog.object.getValueByKeys(obj, 'e', 'f', 'g'));
+}
+
+function testGetValueByKeysArraySyntax() {
+  var obj = createTestDeepObject();
+  assertEquals(obj, goog.object.getValueByKeys(obj, []));
+  assertEquals(obj.a, goog.object.getValueByKeys(obj, ['a']));
+
+  assertEquals(obj.a.b, goog.object.getValueByKeys(obj, ['a', 'b']));
+  assertEquals(obj.a.b.c, goog.object.getValueByKeys(obj, ['a', 'b', 'c']));
+  assertEquals(obj.a.b.c.d,
+      goog.object.getValueByKeys(obj, ['a', 'b', 'c', 'd']));
+  assertEquals(8,
+      goog.object.getValueByKeys(obj, ['a', 'b', 'c', 'fooArr', 3]));
+  assertNull(goog.object.getValueByKeys(obj, ['a', 'b', 'c', 'knownNull']));
+  assertUndefined(goog.object.getValueByKeys(obj, 'e', 'f', 'g'));
+}
+
+function testImmutableView() {
+  if (!Object.isFrozen) return;
+  var x = {propA: 3};
+  var y = goog.object.createImmutableView(x);
+  x.propA = 4;
+  x.propB = 6;
+  y.propA = 5;
+  y.propB = 7;
+  assertEquals(4, x.propA);
+  assertEquals(6, x.propB);
+  assertFalse(goog.object.isImmutableView(x));
+
+  assertEquals(4, y.propA);
+  assertEquals(6, y.propB);
+  assertTrue(goog.object.isImmutableView(y));
+
+  assertFalse('x and y should be different references', x == y);
+  assertTrue(
+      'createImmutableView should not create a new view of an immutable object',
+      y == goog.object.createImmutableView(y));
+}
+
+function testImmutableViewStrict() {
+  'use strict';
+
+  if (!Object.isFrozen) return;
+  var x = {propA: 3};
+  var y = goog.object.createImmutableView(x);
+  assertThrows(function() {
+    y.propA = 4;
+  });
+  assertThrows(function() {
+    y.propB = 4;
+  });
 }
 
 </script>

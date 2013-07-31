@@ -14,13 +14,12 @@
 
 /**
  * @fileoverview JSON utility functions.
-*
+ * @author arv@google.com (Erik Arvidsson)
  */
 
 
 goog.provide('goog.json');
 goog.provide('goog.json.Serializer');
-
 
 
 /**
@@ -62,7 +61,7 @@ goog.json.isValid_ = function(s) {
   // Don't make these static since they have the global flag.
   var backslashesRe = /\\["\\\/bfnrtu]/g;
   var simpleValuesRe =
-      /"[^"\\\n\r\u2028\u2029\x00-\x08\x10-\x1f\x80-\x9f]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+      /"[^"\\\n\r\u2028\u2029\x00-\x08\x0a-\x1f]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
   var openBracketsRe = /(?:^|:|,)(?:[\s\u2028\u2029]*\[)+/g;
   var remainderRe = /^[\],:{}\s\u2028\u2029]*$/;
 
@@ -87,7 +86,7 @@ goog.json.parse = function(s) {
   if (goog.json.isValid_(o)) {
     /** @preserveTry */
     try {
-      return eval('(' + o + ')');
+      return /** @type {Object} */ (eval('(' + o + ')'));
     } catch (ex) {
     }
   }
@@ -103,27 +102,65 @@ goog.json.parse = function(s) {
  * @return {Object} The object generated from the JSON string.
  */
 goog.json.unsafeParse = function(s) {
-  return eval('(' + s + ')');
+  return /** @type {Object} */ (eval('(' + s + ')'));
 };
+
+
+/**
+ * JSON replacer, as defined in Section 15.12.3 of the ES5 spec.
+ *
+ * TODO(nicksantos): Array should also be a valid replacer.
+ *
+ * @typedef {function(this:Object, string, *): *}
+ */
+goog.json.Replacer;
+
+
+/**
+ * JSON reviver, as defined in Section 15.12.2 of the ES5 spec.
+ *
+ * @typedef {function(this:Object, string, *): *}
+ */
+goog.json.Reviver;
+
 
 /**
  * Serializes an object or a value to a JSON string.
  *
  * @param {*} object The object to serialize.
+ * @param {?goog.json.Replacer=} opt_replacer A replacer function
+ *     called for each (key, value) pair that determines how the value
+ *     should be serialized. By defult, this just returns the value
+ *     and allows default serialization to kick in.
  * @throws Error if there are loops in the object graph.
  * @return {string} A JSON string representation of the input.
  */
-goog.json.serialize = function(object) {
-  return new goog.json.Serializer().serialize(object);
+goog.json.serialize = function(object, opt_replacer) {
+  // NOTE(nicksantos): Currently, we never use JSON.stringify.
+  //
+  // The last time I evaluated this, JSON.stringify had subtle bugs and behavior
+  // differences on all browsers, and the performance win was not large enough
+  // to justify all the issues. This may change in the future as browser
+  // implementations get better.
+  //
+  // assertSerialize in json_test contains if branches for the cases
+  // that fail.
+  return new goog.json.Serializer(opt_replacer).serialize(object);
 };
 
 
 
 /**
  * Class that is used to serialize JSON objects to a string.
+ * @param {?goog.json.Replacer=} opt_replacer Replacer.
  * @constructor
  */
-goog.json.Serializer = function() {
+goog.json.Serializer = function(opt_replacer) {
+  /**
+   * @type {goog.json.Replacer|null|undefined}
+   * @private
+   */
+  this.replacer_ = opt_replacer;
 };
 
 
@@ -151,10 +188,10 @@ goog.json.Serializer.prototype.serialize = function(object) {
 goog.json.Serializer.prototype.serialize_ = function(object, sb) {
   switch (typeof object) {
     case 'string':
-      this.serializeString_((/** @type {string} */ object), sb);
+      this.serializeString_(/** @type {string} */ (object), sb);
       break;
     case 'number':
-      this.serializeNumber_((/** @type {number} */ object), sb);
+      this.serializeNumber_(/** @type {number} */ (object), sb);
       break;
     case 'boolean':
       sb.push(object);
@@ -168,13 +205,13 @@ goog.json.Serializer.prototype.serialize_ = function(object, sb) {
         break;
       }
       if (goog.isArray(object)) {
-        this.serializeArray_((/** @type {!Array} */ object), sb);
+        this.serializeArray(/** @type {!Array} */ (object), sb);
         break;
       }
       // should we allow new String, new Number and new Boolean to be treated
       // as string, number and boolean? Most implementations do not and the
       // need is not very big
-      this.serializeObject_((/** @type {Object} */ object), sb);
+      this.serializeObject_(/** @type {Object} */ (object), sb);
       break;
     case 'function':
       // Skip functions.
@@ -259,17 +296,22 @@ goog.json.Serializer.prototype.serializeNumber_ = function(n, sb) {
 
 /**
  * Serializes an array to a JSON string
- * @private
  * @param {Array} arr The array to serialize.
  * @param {Array} sb Array used as a string builder.
+ * @protected
  */
-goog.json.Serializer.prototype.serializeArray_ = function(arr, sb) {
+goog.json.Serializer.prototype.serializeArray = function(arr, sb) {
   var l = arr.length;
   sb.push('[');
   var sep = '';
   for (var i = 0; i < l; i++) {
-    sb.push(sep)
-    this.serialize_(arr[i], sb);
+    sb.push(sep);
+
+    var value = arr[i];
+    this.serialize_(
+        this.replacer_ ? this.replacer_.call(arr, String(i), value) : value,
+        sb);
+
     sep = ',';
   }
   sb.push(']');
@@ -286,7 +328,7 @@ goog.json.Serializer.prototype.serializeObject_ = function(obj, sb) {
   sb.push('{');
   var sep = '';
   for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       var value = obj[key];
       // Skip functions.
       // TODO(ptucker) Should we return something for function properties?
@@ -294,7 +336,11 @@ goog.json.Serializer.prototype.serializeObject_ = function(obj, sb) {
         sb.push(sep);
         this.serializeString_(key, sb);
         sb.push(':');
-        this.serialize_(value, sb);
+
+        this.serialize_(
+            this.replacer_ ? this.replacer_.call(obj, key, value) : value,
+            sb);
+
         sep = ',';
       }
     }

@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.math.Vec2</title>
 <script src="../base.js"></script>
 <script>
@@ -24,17 +25,9 @@ function assertVectorEquals(a, b) {
 
 
 function testVec2() {
-  var a = new goog.math.Vec2();
-  assertEquals(0, a.x);
-  assertEquals(0, a.y);
-
-  var b = new goog.math.Vec2(4);
-  assertEquals(4, b.x);
-  assertEquals(0, b.y);
-
-  var c = new goog.math.Vec2(3.14, 2.78);
-  assertEquals(3.14, c.x);
-  assertEquals(2.78, c.y);
+  var v = new goog.math.Vec2(3.14, 2.78);
+  assertEquals(3.14, v.x);
+  assertEquals(2.78, v.y);
 }
 
 
@@ -74,12 +67,23 @@ function testSquaredMagnitude() {
 }
 
 
-function testScale() {
+function testScaleFactor() {
   var a = new goog.math.Vec2(1, 2);
-  a.scale(0.5);
+  var scaled = a.scale(0.5);
 
-  assertEquals(0.5, a.x);
-  assertEquals(1, a.y);
+  assertTrue('The type of the return value should be goog.math.Vec2',
+    scaled instanceof goog.math.Vec2);
+  assertVectorEquals(new goog.math.Vec2(0.5, 1), a);
+}
+
+
+function testScaleXY() {
+  var a = new goog.math.Vec2(10, 15);
+  var scaled = a.scale(2, 3);
+  assertEquals('The function should return the target instance', a, scaled);
+  assertTrue('The type of the return value should be goog.math.Vec2',
+    scaled instanceof goog.math.Vec2);
+  assertVectorEquals(new goog.math.Vec2(20, 45), a);
 }
 
 
@@ -110,6 +114,25 @@ function testSubtract() {
   var a = new goog.math.Vec2(1, -1);
   a.subtract(new goog.math.Vec2(3, 3));
   assertVectorEquals(new goog.math.Vec2(-2, -4), a);
+}
+
+
+function testRotate() {
+  var a = new goog.math.Vec2(1, -1);
+  a.rotate(Math.PI / 2);
+  assertRoughlyEquals(1, a.x, 0.000001);
+  assertRoughlyEquals(1, a.y, 0.000001);
+  a.rotate(-Math.PI);
+  assertRoughlyEquals(-1, a.x, 0.000001);
+  assertRoughlyEquals(-1, a.y, 0.000001);
+}
+
+
+function testRotateAroundPoint() {
+  var a = goog.math.Vec2.rotateAroundPoint(
+      new goog.math.Vec2(1, -1), new goog.math.Vec2(1, 0), Math.PI / 2);
+  assertRoughlyEquals(2, a.x, 0.000001);
+  assertRoughlyEquals(0, a.y, 0.000001);
 }
 
 

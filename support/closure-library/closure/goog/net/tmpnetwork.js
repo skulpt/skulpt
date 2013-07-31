@@ -17,6 +17,7 @@
  * for browserchannel which will be moved at a later date.
  */
 
+
 /**
  * Namespace for BrowserChannel
  */
@@ -27,29 +28,24 @@ goog.require('goog.net.ChannelDebug');
 
 
 /**
- * HTTP status code for OK.
- * @type {number}
- * @private
- */
-goog.net.HTTP_STATUS_OK_ = 200;
-
-
-/**
- * HTTP status code returned for cached item.
- * @type {number}
- * @private
- */
-goog.net.HTTP_STATUS_CACHED_ = 304;
-
-/**
  * Default timeout to allow for google.com pings.
  * @type {number}
  */
-goog.net.GOOGLECOM_TIMEOUT = 10000;
+goog.net.tmpnetwork.GOOGLECOM_TIMEOUT = 10000;
 
 
-
-goog.net.testGoogleCom = function(callback, opt_imageUri) {
+/**
+ * Pings the network to check if an error is a server error or user's network
+ * error.
+ *
+ * @param {Function} callback The function to call back with results.
+ * @param {goog.Uri?=} opt_imageUri The URI of an image to use for the network
+ *     test. You *must* provide an image URI; the default behavior is provided
+ *     for compatibility with existing code, but the search team does not want
+ *     people using images served off of google.com for this purpose. The
+ *     default will go away when all usages have been changed.
+ */
+goog.net.tmpnetwork.testGoogleCom = function(callback, opt_imageUri) {
   // We need to add a 'rand' to make sure the response is not fulfilled
   // by browser cache.
   var uri = opt_imageUri;
@@ -57,7 +53,8 @@ goog.net.testGoogleCom = function(callback, opt_imageUri) {
     uri = new goog.Uri('//www.google.com/images/cleardot.gif');
     uri.makeUnique();
   }
-  goog.net.testLoadImage(uri.toString(), goog.net.GOOGLECOM_TIMEOUT, callback);
+  goog.net.tmpnetwork.testLoadImage(uri.toString(),
+      goog.net.tmpnetwork.GOOGLECOM_TIMEOUT, callback);
 };
 
 
@@ -70,8 +67,8 @@ goog.net.testGoogleCom = function(callback, opt_imageUri) {
  * @param {number=} opt_pauseBetweenRetriesMS Optional number of milliseconds
  *     between retries - defaults to 0.
  */
-goog.net.testLoadImageWithRetries = function(url, timeout, callback, retries,
-    opt_pauseBetweenRetriesMS) {
+goog.net.tmpnetwork.testLoadImageWithRetries = function(url, timeout, callback,
+    retries, opt_pauseBetweenRetriesMS) {
   var channelDebug = new goog.net.ChannelDebug();
   channelDebug.debug('TestLoadImageWithRetries: ' + opt_pauseBetweenRetriesMS);
   if (retries == 0) {
@@ -82,15 +79,15 @@ goog.net.testLoadImageWithRetries = function(url, timeout, callback, retries,
 
   var pauseBetweenRetries = opt_pauseBetweenRetriesMS || 0;
   retries--;
-  goog.net.testLoadImage(url, timeout, function(succeeded) {
+  goog.net.tmpnetwork.testLoadImage(url, timeout, function(succeeded) {
     if (succeeded) {
       callback(true);
     } else {
       // try again
       goog.global.setTimeout(function() {
-        goog.net.testLoadImageWithRetries(url, timeout, callback, retries,
-            pauseBetweenRetries);
-        }, pauseBetweenRetries);
+        goog.net.tmpnetwork.testLoadImageWithRetries(url, timeout, callback,
+            retries, pauseBetweenRetries);
+      }, pauseBetweenRetries);
     }
   });
 };
@@ -102,14 +99,14 @@ goog.net.testLoadImageWithRetries = function(url, timeout, callback, retries,
  * @param {number} timeout Milliseconds before giving up.
  * @param {Function} callback Function to call with results.
  */
-goog.net.testLoadImage = function(url, timeout, callback) {
+goog.net.tmpnetwork.testLoadImage = function(url, timeout, callback) {
   var channelDebug = new goog.net.ChannelDebug();
   channelDebug.debug('TestLoadImage: loading ' + url);
   var img = new Image();
   img.onload = function() {
     try {
       channelDebug.debug('TestLoadImage: loaded');
-      goog.net.clearImageCallbacks_(img);
+      goog.net.tmpnetwork.clearImageCallbacks_(img);
       callback(true);
     } catch (e) {
       channelDebug.dumpException(e);
@@ -118,7 +115,7 @@ goog.net.testLoadImage = function(url, timeout, callback) {
   img.onerror = function() {
     try {
       channelDebug.debug('TestLoadImage: error');
-      goog.net.clearImageCallbacks_(img);
+      goog.net.tmpnetwork.clearImageCallbacks_(img);
       callback(false);
     } catch (e) {
       channelDebug.dumpException(e);
@@ -127,7 +124,7 @@ goog.net.testLoadImage = function(url, timeout, callback) {
   img.onabort = function() {
     try {
       channelDebug.debug('TestLoadImage: abort');
-      goog.net.clearImageCallbacks_(img);
+      goog.net.tmpnetwork.clearImageCallbacks_(img);
       callback(false);
     } catch (e) {
       channelDebug.dumpException(e);
@@ -136,7 +133,7 @@ goog.net.testLoadImage = function(url, timeout, callback) {
   img.ontimeout = function() {
     try {
       channelDebug.debug('TestLoadImage: timeout');
-      goog.net.clearImageCallbacks_(img);
+      goog.net.tmpnetwork.clearImageCallbacks_(img);
       callback(false);
     } catch (e) {
       channelDebug.dumpException(e);
@@ -157,7 +154,7 @@ goog.net.testLoadImage = function(url, timeout, callback) {
  * @param {Image} img The image to clear handlers from.
  * @private
  */
-goog.net.clearImageCallbacks_ = function(img) {
+goog.net.tmpnetwork.clearImageCallbacks_ = function(img) {
   // NOTE(user): Nullified individually to avoid compiler warnings
   // (BUG 658126)
   img.onload = null;

@@ -15,15 +15,15 @@
 /**
  * @fileoverview Definition of the GcDiagnostics class.
  *
-*
-*
  */
 
 goog.provide('goog.debug.GcDiagnostics');
 
-goog.require('goog.debug.Logger');
 goog.require('goog.debug.Trace');
+goog.require('goog.log');
 goog.require('goog.userAgent');
+
+
 
 /**
  * Class used for singleton goog.debug.GcDiagnostics.  Used to hook into
@@ -39,11 +39,12 @@ goog.require('goog.userAgent');
  */
 goog.debug.GcDiagnostics_ = function() {};
 
+
 /**
  * Install the GcDiagnostics tool.
  */
 goog.debug.GcDiagnostics_.prototype.install = function() {
- if (goog.userAgent.IE) {
+  if (goog.userAgent.IE) {
     /** @preserveTry */
     try {
       var l2Helper = new ActiveXObject('L2.NativeHelper');
@@ -64,20 +65,22 @@ goog.debug.GcDiagnostics_.prototype.install = function() {
           goog.debug.Trace.setGcTracer(this.gcTracer_);
         }
       }
-      this.logger_.info('Installed L2 native helper');
+      goog.log.info(this.logger_, 'Installed L2 native helper');
     } catch (e) {
-      this.logger_.info('Failed to install L2 native helper: ' + e);
+      goog.log.info(this.logger_, 'Failed to install L2 native helper: ' + e);
     }
   }
 };
 
+
 /**
  * Logger for the gcDiagnotics
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @private
  */
 goog.debug.GcDiagnostics_.prototype.logger_ =
-    goog.debug.Logger.getLogger('goog.debug.GcDiagnostics');
+    goog.log.getLogger('goog.debug.GcDiagnostics');
+
 
 /**
  * Starts recording garbage collection information.  If a trace is already in
@@ -92,6 +95,7 @@ goog.debug.GcDiagnostics_.prototype.start = function() {
   }
 };
 
+
 /**
  * Stops recording garbage collection information.  Logs details on the garbage
  * collections that occurred between start and stop.  If tracers are in use,
@@ -103,8 +107,8 @@ goog.debug.GcDiagnostics_.prototype.stop = function() {
     this.gcTracer_['endGcTracing']();
 
     var numGCs = gcTracer['getNumTraces']();
-    this.logger_.info('*********GC TRACE*********');
-    this.logger_.info('GC ran ' + numGCs + ' times.');
+    goog.log.info(this.logger_, '*********GC TRACE*********');
+    goog.log.info(this.logger_, 'GC ran ' + numGCs + ' times.');
     var totalTime = 0;
     for (var i = 0; i < numGCs; i++) {
       var trace = gcTracer['getTrace'](i);
@@ -114,20 +118,20 @@ goog.debug.GcDiagnostics_.prototype.stop = function() {
 
       var msRounded = Math.round(msElapsed * 10) / 10;
       var s = 'GC ' + i + ': ' + msRounded + ' ms, ' +
-            'numVValAlloc=' + trace['numVValAlloc'] + ', ' +
-            'numVarAlloc=' + trace['numVarAlloc'] + ', ' +
-            'numBytesSysAlloc=' + trace['numBytesSysAlloc'];
+          'numVValAlloc=' + trace['numVValAlloc'] + ', ' +
+          'numVarAlloc=' + trace['numVarAlloc'] + ', ' +
+          'numBytesSysAlloc=' + trace['numBytesSysAlloc'];
       if (goog.debug.Trace) {
         goog.debug.Trace.addComment(s, null, msStart);
       }
-      this.logger_.info(s);
+      goog.log.info(this.logger_, s);
       totalTime += msElapsed;
     }
     if (goog.debug.Trace) {
       goog.debug.Trace.addComment('Total GC time was ' + totalTime + ' ms.');
     }
-    this.logger_.info('Total GC time was ' + totalTime + ' ms.');
-    this.logger_.info('*********GC TRACE*********');
+    goog.log.info(this.logger_, 'Total GC time was ' + totalTime + ' ms.');
+    goog.log.info(this.logger_, '*********GC TRACE*********');
   }
 };
 
@@ -136,4 +140,4 @@ goog.debug.GcDiagnostics_.prototype.stop = function() {
  * Singleton GcDiagnostics object
  * @type {goog.debug.GcDiagnostics_}
  */
- goog.debug.GcDiagnostics = new goog.debug.GcDiagnostics_();
+goog.debug.GcDiagnostics = new goog.debug.GcDiagnostics_();

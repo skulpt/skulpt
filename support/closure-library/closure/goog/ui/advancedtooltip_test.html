@@ -3,15 +3,16 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
-<!-- Author:  larrypo@google.com (Larry Powelson) -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.AdvancedTooltip</title>
   <script src="../base.js"></script>
   <script>
     goog.require('goog.dom');
+    goog.require('goog.events.EventType');
     goog.require('goog.math.Box');
     goog.require('goog.math.Coordinate');
     goog.require('goog.style');
@@ -192,6 +193,28 @@ See the COPYING file for details.
     if (!isWindowTooSmall()) {
       checkNestedTooltips(true);
     }
+  }
+
+  function testResizingTooltipWhileShown() {
+    fireMouseEvents(elsewhere, anchor);
+    clock.tick(SHOWDELAY);
+    popup.style.height = '100px';
+    var attBounds = goog.style.getBounds(popup);
+    var inPadding = new goog.math.Coordinate(
+        attBounds.left + 5, attBounds.top + attBounds.height + 5);
+    var outOfPadding = new goog.math.Coordinate(
+        attBounds.left + 5, attBounds.top + attBounds.height + 15);
+
+    fireMouseEvents(anchor, popup);
+    goog.testing.events.fireMouseOutEvent(popup, elsewhere);
+    goog.testing.events.fireMouseMoveEvent(document, inPadding);
+    clock.tick(HIDEDELAY);
+    assertVisible("Mouse out of popup but within padding shouldn't hide it",
+                  popup);
+
+    goog.testing.events.fireMouseMoveEvent(document, outOfPadding);
+    clock.tick(HIDEDELAY);
+    assertHidden("Mouse move beyond popup padding should hide it", popup);
   }
 
   function checkNestedTooltips(useAdvancedTooltip) {

@@ -40,7 +40,6 @@
  *  // Stop the deferred function call (does nothing if it's not active).
  *  deferredCall.stop();
  *
-*
  */
 
 
@@ -124,10 +123,7 @@ goog.async.ConditionalDelay.prototype.runUntil_ = 0;
 goog.async.ConditionalDelay.prototype.isDone_ = false;
 
 
-/**
- * @inheritDoc
- * @protected
- */
+/** @override */
 goog.async.ConditionalDelay.prototype.disposeInternal = function() {
   this.delay_.dispose();
   delete this.listener_;

@@ -19,9 +19,6 @@
  * This is a goog.editor.Field, but with blending and sizing capabilities,
  * and avoids using an iframe whenever possible.
  *
-*
- * @author nicksantos@google.com (Nick Santos)
-*
  * @see ../demos/editor/seamlessfield.html
  */
 
@@ -29,20 +26,20 @@
 goog.provide('goog.editor.SeamlessField');
 
 goog.require('goog.cssom.iframe.style');
-goog.require('goog.debug.Logger');
 goog.require('goog.dom');
 goog.require('goog.dom.Range');
 goog.require('goog.dom.TagName');
 goog.require('goog.editor.BrowserFeature');
 goog.require('goog.editor.Field');
-goog.require('goog.editor.Field.EventType');
 goog.require('goog.editor.icontent');
 goog.require('goog.editor.icontent.FieldFormatInfo');
 goog.require('goog.editor.icontent.FieldStyleInfo');
 goog.require('goog.editor.node');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
+goog.require('goog.log');
 goog.require('goog.style');
+
 
 
 /**
@@ -67,9 +64,26 @@ goog.inherits(goog.editor.SeamlessField, goog.editor.Field);
  * @override
  */
 goog.editor.SeamlessField.prototype.logger =
-    goog.debug.Logger.getLogger('goog.editor.SeamlessField');
+    goog.log.getLogger('goog.editor.SeamlessField');
 
 // Functions dealing with field sizing.
+
+
+/**
+ * The key used for listening for the "dragover" event.
+ * @type {goog.events.Key}
+ * @private
+ */
+goog.editor.SeamlessField.prototype.listenForDragOverEventKey_;
+
+
+/**
+ * The key used for listening for the iframe "load" event.
+ * @type {goog.events.Key}
+ * @private
+ */
+goog.editor.SeamlessField.prototype.listenForIframeLoadEventKey_;
+
 
 /**
  * Sets the min height of this editable field's iframe. Only used in growing
@@ -110,6 +124,7 @@ goog.editor.SeamlessField.prototype.isFixedHeightOverridden_ = false;
 /**
  * @return {boolean} Whether the field should be rendered with a fixed
  *    height, or should expand to fit its contents.
+ * @override
  */
 goog.editor.SeamlessField.prototype.isFixedHeight = function() {
   return this.isFixedHeight_;
@@ -159,17 +174,23 @@ goog.editor.SeamlessField.prototype.handleOuterDocChange_ = function() {
  */
 goog.editor.SeamlessField.prototype.sizeIframeToBodyHeightGecko_ = function() {
   if (this.acquireSizeIframeLockGecko_()) {
+    var resized = false;
     var ifr = this.getEditableIframe();
-    var fieldHeight = this.getIframeBodyHeightGecko_();
+    if (ifr) {
+      var fieldHeight = this.getIframeBodyHeightGecko_();
 
-    if (this.minHeight_) {
-      fieldHeight = Math.max(fieldHeight, this.minHeight_);
+      if (this.minHeight_) {
+        fieldHeight = Math.max(fieldHeight, this.minHeight_);
+      }
+      if (parseInt(goog.style.getStyle(ifr, 'height'), 10) != fieldHeight) {
+        ifr.style.height = fieldHeight + 'px';
+        resized = true;
+      }
     }
-    if (parseInt(goog.style.getStyle(ifr, 'height'), 10) != fieldHeight) {
-      ifr.style.height = fieldHeight + 'px';
-    }
-
     this.releaseSizeIframeLockGecko_();
+    if (resized) {
+      this.dispatchEvent(goog.editor.Field.EventType.IFRAME_RESIZED);
+    }
   }
 };
 
@@ -214,7 +235,7 @@ goog.editor.SeamlessField.prototype.getIframeBodyHeightGecko_ = function() {
     // If there is a horizontal scroll, add in the thickness of the
     // scrollbar.
     if (htmlElement.clientHeight != htmlElement.offsetHeight) {
-      fieldHeight += goog.editor.SeamlessField.getScrollbarThickness_();
+      fieldHeight += goog.editor.SeamlessField.getScrollbarWidth_();
     }
   }
 
@@ -223,25 +244,15 @@ goog.editor.SeamlessField.prototype.getIframeBodyHeightGecko_ = function() {
 
 
 /**
- * Grabs the width of a scrollbar from the browser and caches
- * the result. This needs to be dynamic because the width is OS/browser
- * specific.
- * @private
- *
+ * Grabs the width of a scrollbar from the browser and caches the result.
  * @return {number} The scrollbar width in pixels.
+ * @private
  */
-goog.editor.SeamlessField.getScrollbarThickness_ = function() {
-  if (!goog.editor.SeamlessField.scrollbarThickness_) {
-    var div = goog.dom.createDom('div',
-        {'style': 'overflow:scroll;position:absolute;visibility:hidden;'});
-    goog.dom.appendChild(goog.dom.getDocument().body, div);
-    goog.editor.SeamlessField.scrollbarThickness_ =
-        div.offsetWidth - div.clientWidth;
-    goog.dom.removeNode(div);
-  }
-  return goog.editor.SeamlessField.scrollbarThickness_;
+goog.editor.SeamlessField.getScrollbarWidth_ = function() {
+  return goog.editor.SeamlessField.scrollbarWidth_ ||
+      (goog.editor.SeamlessField.scrollbarWidth_ =
+          goog.style.getScrollbarWidth());
 };
-
 
 
 /**
@@ -254,26 +265,36 @@ goog.editor.SeamlessField.prototype.sizeIframeToWrapperGecko_ = function() {
   if (this.acquireSizeIframeLockGecko_()) {
     var ifr = this.getEditableIframe();
     var field = this.getElement();
-    if (field) {
-      var fieldPaddingBox = goog.style.getPaddingBox(field);
+    var resized = false;
+    if (ifr && field) {
+      var fieldPaddingBox;
       var widthDiv = ifr.parentNode;
 
       var width = widthDiv.offsetWidth;
       if (parseInt(goog.style.getStyle(ifr, 'width'), 10) != width) {
+        fieldPaddingBox = goog.style.getPaddingBox(field);
         ifr.style.width = width + 'px';
         field.style.width =
             width - fieldPaddingBox.left - fieldPaddingBox.right + 'px';
+        resized = true;
       }
 
       var height = widthDiv.offsetHeight;
       if (this.isFixedHeight() &&
           parseInt(goog.style.getStyle(ifr, 'height'), 10) != height) {
+        if (!fieldPaddingBox) {
+          fieldPaddingBox = goog.style.getPaddingBox(field);
+        }
         ifr.style.height = height + 'px';
         field.style.height =
             height - fieldPaddingBox.top - fieldPaddingBox.bottom + 'px';
+        resized = true;
       }
 
-      this.releaseSizeIframeLockGecko_();
+    }
+    this.releaseSizeIframeLockGecko_();
+    if (resized) {
+      this.dispatchEvent(goog.editor.Field.EventType.IFRAME_RESIZED);
     }
   }
 };
@@ -327,6 +348,7 @@ goog.editor.SeamlessField.prototype.releaseSizeIframeLockGecko_ = function() {
 
 
 // Functions dealing with blending in with the surrounding page.
+
 
 /**
  * String containing the css rules that, if applied to a document's body,
@@ -413,7 +435,8 @@ goog.editor.SeamlessField.prototype.inheritBlendedCSS = function() {
 
 // Overridden methods.
 
-/** @inheritDoc */
+
+/** @override */
 goog.editor.SeamlessField.prototype.usesIframe = function() {
   // TODO(user): Switch Firefox to using contentEditable
   // rather than designMode iframe once contentEditable support
@@ -422,7 +445,7 @@ goog.editor.SeamlessField.prototype.usesIframe = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.setupMutationEventHandlersGecko =
     function() {
   goog.editor.SeamlessField.superClass_.setupMutationEventHandlersGecko.call(
@@ -437,19 +460,20 @@ goog.editor.SeamlessField.prototype.setupMutationEventHandlersGecko =
 
     // If the images load after we do the initial sizing, then this will
     // force a field resize.
-    this.eventRegister.listen(this.getEditableDomHelper().getWindow(),
-        goog.events.EventType.LOAD, this.sizeIframeToBodyHeightGecko_, true);
+    this.listenForIframeLoadEventKey_ = goog.events.listenOnce(
+        this.getEditableDomHelper().getWindow(),
+        goog.events.EventType.LOAD, this.sizeIframeToBodyHeightGecko_,
+        true, this);
 
     this.eventRegister.listen(outerDoc,
         'DOMAttrModified',
         goog.bind(this.handleDomAttrChange, this, this.handleOuterDocChange_),
         true);
   }
-
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.handleChange = function() {
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
@@ -463,7 +487,7 @@ goog.editor.SeamlessField.prototype.handleChange = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.dispatchBlur = function() {
   if (this.isEventStopped(goog.editor.Field.EventType.BLUR)) {
     return;
@@ -484,7 +508,9 @@ goog.editor.SeamlessField.prototype.dispatchBlur = function() {
       !goog.editor.BrowserFeature.CLEARS_SELECTION_WHEN_FOCUS_LEAVES) {
     var win = this.getEditableDomHelper().getWindow();
     var dragging = false;
-    goog.events.listenOnce(win.document.body, 'dragover',
+    goog.events.unlistenByKey(this.listenForDragOverEventKey_);
+    this.listenForDragOverEventKey_ = goog.events.listenOnce(
+        win.document.body, 'dragover',
         function() {
           dragging = true;
         });
@@ -520,7 +546,7 @@ goog.editor.SeamlessField.prototype.dispatchBlur = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.turnOnDesignModeGecko = function() {
   goog.editor.SeamlessField.superClass_.turnOnDesignModeGecko.call(this);
   var doc = this.getEditableDomHelper().getDocument();
@@ -530,7 +556,7 @@ goog.editor.SeamlessField.prototype.turnOnDesignModeGecko = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.installStyles = function() {
   if (!this.usesIframe()) {
     if (!goog.editor.SeamlessField.haveInstalledCss_) {
@@ -546,7 +572,7 @@ goog.editor.SeamlessField.prototype.installStyles = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.makeEditableInternal = function(
     opt_iframeSrc) {
   if (this.usesIframe()) {
@@ -566,7 +592,7 @@ goog.editor.SeamlessField.prototype.makeEditableInternal = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.handleFieldLoad = function() {
   if (this.usesIframe()) {
     // If the CSS inheriting code screws up (e.g. makes fonts too large) and
@@ -583,13 +609,13 @@ goog.editor.SeamlessField.prototype.handleFieldLoad = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.getIframeAttributes = function() {
   return { 'frameBorder': 0, 'style': 'padding:0;' };
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
   this.autoDetectFixedHeight_();
   var field = this.getOriginalElement();
@@ -641,7 +667,7 @@ goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
     goog.style.setStyle(field, 'lineHeight', '0');
   }
 
-  field.innerHTML = html;
+  goog.editor.node.replaceInnerHtml(field, html);
   // Set the initial size
   goog.style.setSize(iframe, width, height);
   goog.style.setSize(field, oldWidth, oldHeight);
@@ -660,7 +686,7 @@ goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.getFieldFormatInfo = function(
     extraStyles) {
   var originalElement = this.getOriginalElement();
@@ -676,7 +702,7 @@ goog.editor.SeamlessField.prototype.getFieldFormatInfo = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.writeIframeContent = function(
     iframe, innerHtml, extraStyles) {
   // For seamless iframes, hide the iframe while we're laying it out to
@@ -693,11 +719,20 @@ goog.editor.SeamlessField.prototype.writeIframeContent = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.SeamlessField.prototype.restoreDom = function() {
   // TODO(user): Consider only removing the iframe if we are
   // restoring the original node.
   if (this.usesIframe()) {
     goog.dom.removeNode(this.getEditableIframe());
   }
+};
+
+
+/** @override */
+goog.editor.SeamlessField.prototype.clearListeners = function() {
+  goog.events.unlistenByKey(this.listenForDragOverEventKey_);
+  goog.events.unlistenByKey(this.listenForIframeLoadEventKey_);
+
+  goog.base(this, 'clearListeners');
 };

@@ -16,13 +16,13 @@
  * @fileoverview MockUserAgent overrides goog.userAgent.getUserAgentString()
  *     depending on a specified configuration.
  *
-*
  */
 
 goog.provide('goog.testing.MockUserAgent');
 
 goog.require('goog.Disposable');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -130,9 +130,7 @@ goog.testing.MockUserAgent.prototype.uninstall = function() {
 };
 
 
-/**
- * Disposes of the MockUserAgent.
- */
+/** @override */
 goog.testing.MockUserAgent.prototype.disposeInternal = function() {
   this.uninstall();
   delete this.userAgent_;

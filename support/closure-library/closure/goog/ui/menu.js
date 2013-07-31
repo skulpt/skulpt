@@ -37,7 +37,6 @@
  * TODO(user): Rename all references of "item" to child since menu is
  * essentially very generic and could, in theory, host a date or color picker.
  *
-*
  * @see ../demos/menu.html
  * @see ../demos/menus.html
  */
@@ -45,18 +44,22 @@
 goog.provide('goog.ui.Menu');
 goog.provide('goog.ui.Menu.EventType');
 
+goog.require('goog.math.Coordinate');
 goog.require('goog.string');
 goog.require('goog.style');
 goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.Component.State');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Container.Orientation');
-// The following dependencies (MenuItem & MenuSeparator) are implicit.
-// There are no references in the code, but we need to load these
-// classes before goog.ui.Menu.
+goog.require('goog.ui.MenuHeader');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuRenderer');
 goog.require('goog.ui.MenuSeparator');
+
+// The dependencies MenuHeader, MenuItem, and MenuSeparator are implicit.
+// There are no references in the code, but we need to load these
+// classes before goog.ui.Menu.
+
 
 
 // TODO(robbyw): Reverse constructor argument order for consistency.
@@ -109,6 +112,16 @@ goog.ui.Menu.EventType = {
  * @deprecated Use goog.ui.MenuRenderer.CSS_CLASS.
  */
 goog.ui.Menu.CSS_CLASS = goog.ui.MenuRenderer.CSS_CLASS;
+
+
+/**
+ * Coordinates of the mousedown event that caused this menu to be made visible.
+ * Used to prevent the consequent mouseup event due to a simple click from
+ * activating a menu item immediately. Considered protected; should only be used
+ * within this package or by subclasses.
+ * @type {goog.math.Coordinate|undefined}
+ */
+goog.ui.Menu.prototype.openingCoords;
 
 
 /**
@@ -169,9 +182,9 @@ goog.ui.Menu.prototype.containsElement = function(element) {
 
 /**
  * Adds a new menu item at the end of the menu.
- * @param {goog.ui.MenuItem|goog.ui.MenuSeparator} item Menu item to add to
- *     the menu.
- * @deprecated Use {@link #addChild} instead.
+ * @param {goog.ui.MenuHeader|goog.ui.MenuItem|goog.ui.MenuSeparator} item Menu
+ *     item to add to the menu.
+ * @deprecated Use {@link #addChild} instead, with true for the second argument.
  */
 goog.ui.Menu.prototype.addItem = function(item) {
   this.addChild(item, true);
@@ -180,10 +193,11 @@ goog.ui.Menu.prototype.addItem = function(item) {
 
 /**
  * Adds a new menu item at a specific index in the menu.
- * @param {goog.ui.MenuItem|goog.ui.MenuSeparator} item Menu item to add to the
- *     menu.
+ * @param {goog.ui.MenuHeader|goog.ui.MenuItem|goog.ui.MenuSeparator} item Menu
+ *     item to add to the menu.
  * @param {number} n Index at which to insert the menu item.
- * @deprecated Use {@link #addChildAt} instead.
+ * @deprecated Use {@link #addChildAt} instead, with true for the third
+ *     argument.
  */
 goog.ui.Menu.prototype.addItemAt = function(item, n) {
   this.addChildAt(item, n, true);
@@ -192,7 +206,8 @@ goog.ui.Menu.prototype.addItemAt = function(item, n) {
 
 /**
  * Removes an item from the menu and disposes of it.
- * @param {goog.ui.MenuItem|goog.ui.MenuSeparator} item The menu item to remove.
+ * @param {goog.ui.MenuHeader|goog.ui.MenuItem|goog.ui.MenuSeparator} item The
+ *     menu item to remove.
  * @deprecated Use {@link #removeChild} instead.
  */
 goog.ui.Menu.prototype.removeItem = function(item) {
@@ -219,8 +234,8 @@ goog.ui.Menu.prototype.removeItemAt = function(n) {
 /**
  * Returns a reference to the menu item at a given index.
  * @param {number} n Index of menu item.
- * @return {goog.ui.MenuItem|goog.ui.MenuSeparator|null} Reference to the menu
- *     item.
+ * @return {goog.ui.MenuHeader|goog.ui.MenuItem|goog.ui.MenuSeparator|null}
+ *     Reference to the menu item.
  * @deprecated Use {@link #getChildAt} instead.
  */
 goog.ui.Menu.prototype.getItemAt = function(n) {
@@ -239,14 +254,18 @@ goog.ui.Menu.prototype.getItemCount = function() {
 
 
 /**
- * Returns the menu items contained in the menu.
+ * Returns an array containing the menu items contained in the menu.
  * @return {Array.<goog.ui.MenuItem>} An array of menu items.
  * @deprecated Use getChildAt, forEachChild, and getChildCount.
  */
 goog.ui.Menu.prototype.getItems = function() {
   // TODO(user): Remove reference to getItems and instead use getChildAt,
   // forEachChild, and getChildCount
-  return this.children_ || [];
+  var children = [];
+  this.forEachChild(function(child) {
+    children.push(child);
+  });
+  return children;
 };
 
 
@@ -260,11 +279,11 @@ goog.ui.Menu.prototype.setPosition = function(x, opt_y) {
   // that the position gets set correctly.
   var visible = this.isVisible();
   if (!visible) {
-    goog.style.showElement(this.getElement(), true);
+    goog.style.setElementShown(this.getElement(), true);
   }
   goog.style.setPageOffset(this.getElement(), x, opt_y);
   if (!visible) {
-    goog.style.showElement(this.getElement(), false);
+    goog.style.setElementShown(this.getElement(), false);
   }
 };
 
@@ -322,19 +341,28 @@ goog.ui.Menu.prototype.getAllowHighlightDisabled = function() {
 };
 
 
-/** @inheritDoc */
-goog.ui.Menu.prototype.setVisible = function(show, opt_force) {
+/**
+ * @override
+ * @param {goog.events.Event=} opt_e Mousedown event that caused this menu to
+ *     be made visible (ignored if show is false).
+ */
+goog.ui.Menu.prototype.setVisible = function(show, opt_force, opt_e) {
   var visibilityChanged = goog.ui.Menu.superClass_.setVisible.call(this, show,
       opt_force);
   if (visibilityChanged && show && this.isInDocument() &&
       this.allowAutoFocus_) {
     this.getKeyEventTarget().focus();
   }
+  if (show && opt_e && goog.isNumber(opt_e.clientX)) {
+    this.openingCoords = new goog.math.Coordinate(opt_e.clientX, opt_e.clientY);
+  } else {
+    this.openingCoords = null;
+  }
   return visibilityChanged;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Menu.prototype.handleEnterItem = function(e) {
   if (this.allowAutoFocus_) {
     this.getKeyEventTarget().focus();
@@ -378,17 +406,52 @@ goog.ui.Menu.prototype.highlightNextPrefix = function(charStr) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Menu.prototype.canHighlightItem = function(item) {
   return (this.allowHighlightDisabled_ || item.isEnabled()) &&
       item.isVisible() && item.isSupportedState(goog.ui.Component.State.HOVER);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.Menu.prototype.decorateInternal = function(element) {
   this.decorateContent(element);
   goog.ui.Menu.superClass_.decorateInternal.call(this, element);
+};
+
+
+/** @override */
+goog.ui.Menu.prototype.handleKeyEventInternal = function(e) {
+  var handled = goog.base(this, 'handleKeyEventInternal', e);
+  if (!handled) {
+    // Loop through all child components, and for each menu item call its
+    // key event handler so that keyboard mnemonics can be handled.
+    this.forEachChild(function(menuItem) {
+      if (!handled && menuItem.getMnemonic &&
+          menuItem.getMnemonic() == e.keyCode) {
+        if (this.isEnabled()) {
+          this.setHighlighted(menuItem);
+        }
+        // We still delegate to handleKeyEvent, so that it can handle
+        // enabled/disabled state.
+        handled = menuItem.handleKeyEvent(e);
+      }
+    }, this);
+  }
+  return handled;
+};
+
+
+/** @override */
+goog.ui.Menu.prototype.setHighlightedIndex = function(index) {
+  goog.base(this, 'setHighlightedIndex', index);
+
+  // Bring the highlighted item into view. This has no effect if the menu is not
+  // scrollable.
+  var child = this.getChildAt(index);
+  if (child) {
+    goog.style.scrollIntoContainerView(child.getElement(), this.getElement());
+  }
 };
 
 
@@ -402,7 +465,12 @@ goog.ui.Menu.prototype.decorateContent = function(element) {
   var renderer = this.getRenderer();
   var contentElements = this.getDomHelper().getElementsByTagNameAndClass('div',
       goog.getCssName(renderer.getCssClass(), 'content'), element);
-  for (var el, i = 0; el = contentElements[i]; i++) {
-    renderer.decorateChildren(this, el);
+
+  // Some versions of IE do not like it when you access this nodeList
+  // with invalid indices. See
+  // http://code.google.com/p/closure-library/issues/detail?id=373
+  var length = contentElements.length;
+  for (var i = 0; i < length; i++) {
+    renderer.decorateChildren(this, contentElements[i]);
   }
-}
+};

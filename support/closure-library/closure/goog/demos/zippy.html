@@ -3,7 +3,7 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
@@ -11,6 +11,10 @@ See the COPYING file for details.
   <meta charset="utf-8">
   <script src="../base.js"></script>
   <script>
+    goog.require('goog.debug.DivConsole');
+    goog.require('goog.debug.LogManager');
+    goog.require('goog.events');
+    goog.require('goog.log');
     goog.require('goog.ui.AnimatedZippy');
     goog.require('goog.ui.Zippy');
     goog.require('goog.ui.ZippyEvent');
@@ -42,10 +46,10 @@ See the COPYING file for details.
       height: 16px;
     }
     .goog-zippy-expanded img {
-      background-image: url('minus.png');
+      background-image: url('../images/minus.png');
     }
     .goog-zippy-collapsed img {
-      background-image: url('plus.png');
+      background-image: url('../images/plus.png');
     }
   </style>
 </head>
@@ -67,7 +71,7 @@ See the COPYING file for details.
   </p>
 
   <div style="width: 400px; float: left;">
-    <h2 id="header2"><img src="blank.gif" />Zippy 2</h2>
+    <h2 id="header2"><img src="../images/blank.gif" />Zippy 2</h2>
     <p id="content2">
       Nunc et eros. Aliquam felis lectus, sagittis ac, sagittis eu, accumsan
       vitae, leo. Maecenas suscipit, arcu eget elementum tincidunt, erat ligula
@@ -86,7 +90,7 @@ See the COPYING file for details.
   </div>
 
   <div style="width: 400px; float: left; margin-left: 5px; ">
-    <h2 id="header3"><img src="blank.gif" />Zippy 3</h2>
+    <h2 id="header3"><img src="../images/blank.gif" />Zippy 3</h2>
     <p id="content3">
       Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas commodo
       convallis nisi. Cras rhoncus elit non dolor. Vivamus gravida ultricies arcu.
@@ -109,11 +113,29 @@ See the COPYING file for details.
     Zippy 2 and 3 are animated, zippy 1 is not.
   </div>
 
-
+  <hr>
+  <div id="log"></div>
   <script>
+    // Set up a logger.
+    goog.debug.LogManager.getRoot().setLevel(goog.log.Level.ALL);
+    var logger = goog.log.getLogger('zippy');
+    var logconsole = new goog.debug.DivConsole(goog.dom.getElement('log'));
+    logconsole.setCapturing(true);
+
+    var EVENTS = goog.object.getValues(goog.ui.Zippy.Events);
+    goog.log.fine(logger, 'Listening for: ' + EVENTS.join(', ') + '.');
+
+    function logEvent(e) {
+      var caption = e.target.elHeader_.id;
+      goog.log.info(logger, '"' + caption + '" dispatched: ' + e.type);
+    }
+
     var z1 = new goog.ui.Zippy('header1', 'content1');
+    goog.events.listen(z1, EVENTS, logEvent);
     var z2 = new goog.ui.AnimatedZippy('header2', 'content2', true);
+    goog.events.listen(z2, EVENTS, logEvent);
     var z3 = new goog.ui.AnimatedZippy('header3', 'content3', false);
+    goog.events.listen(z3, EVENTS, logEvent);
 
     z1.expand();
 

@@ -3,13 +3,14 @@
 <!--
 Copyright 2009 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
   Author: dgajda@google.com (Damian Gajda)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.style.cursor</title>
 <script src="../base.js"></script>
 <script>
@@ -50,14 +51,14 @@ function testGetCursorStylesWebkit() {
       'url("/images/2/openhand.cur") 7 5, default',
       goog.style.cursor.getDraggableCursorStyle(baseCursorUrl));
   assertEquals('Webkit should get a cursor style with moved hot-spot.',
-      'url("/images/2/openhand.cur") 7 5, default !important',
+      'url("/images/2/openhand.cur") 7 5, default',
       goog.style.cursor.getDraggableCursorStyle(baseCursorUrl, true));
 
   assertEquals('Webkit should get a cursor style with moved hot-spot.',
       'url("/images/2/closedhand.cur") 7 5, move',
       goog.style.cursor.getDraggingCursorStyle(baseCursorUrl));
   assertEquals('Webkit should get a cursor style with moved hot-spot.',
-      'url("/images/2/closedhand.cur") 7 5, move !important',
+      'url("/images/2/closedhand.cur") 7 5, move',
       goog.style.cursor.getDraggingCursorStyle(baseCursorUrl, true));
 }
 
@@ -116,14 +117,14 @@ function testGetCursorStylesOther() {
       'url("/images/2/openhand.cur"), default',
       goog.style.cursor.getDraggableCursorStyle(baseCursorUrl));
   assertEquals('Other browsers (IE) should get a cursor style with URL.',
-      'url("/images/2/openhand.cur"), default !important',
+      'url("/images/2/openhand.cur"), default',
       goog.style.cursor.getDraggableCursorStyle(baseCursorUrl, true));
 
   assertEquals('Other browsers (IE) should get a cursor style with URL.',
       'url("/images/2/closedhand.cur"), move',
       goog.style.cursor.getDraggingCursorStyle(baseCursorUrl));
   assertEquals('Other browsers (IE) should get a cursor style with URL.',
-      'url("/images/2/closedhand.cur"), move !important',
+      'url("/images/2/closedhand.cur"), move',
       goog.style.cursor.getDraggingCursorStyle(baseCursorUrl, true));
 }
 </script>

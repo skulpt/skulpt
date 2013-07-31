@@ -10,7 +10,7 @@
 
 /**
  * @constructor
- * @param {...*} args
+ * @param {...Object|null} args
  */
 Sk.builtin.Exception = function(args)
 {
@@ -27,7 +27,7 @@ Sk.builtin.Exception = function(args)
     {
         this.filename = Sk.currFilename;
     }
-    else if (this.args.sq$length() >= 4)
+    else if (this.args.sq$length() >= 3)
     {
         if (this.args.v[1].v)
         {
@@ -44,14 +44,14 @@ Sk.builtin.Exception = function(args)
     {
         // Unknown, this is an error, and the exception that causes it
         // probably needs to be fixed.
-        this.lineno = "<unknown>";
+        this.filename = "<unknown>";
     }
 
     if (Sk.currLineNo > 0) 
     {
         this.lineno = Sk.currLineNo;
     }
-    else if (this.args.sq$length() >= 4)
+    else if (this.args.sq$length() >= 3)
     {
         this.lineno = this.args.v[2];
     }
@@ -276,8 +276,20 @@ goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedErr
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.NegativePowerError = function(args) { Sk.builtin.Exception.apply(this, arguments); }goog.inherits(Sk.builtin.NegativePowerError, Sk.builtin.Exception);Sk.builtin.NegativePowerError.prototype.tp$name = "NegativePowerError";
+Sk.builtin.NegativePowerError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.NegativePowerError, Sk.builtin.Exception);
+Sk.builtin.NegativePowerError.prototype.tp$name = "NegativePowerError";
 goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.OperationError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.OperationError, Sk.builtin.Exception);
+Sk.builtin.OperationError.prototype.tp$name = "OperationError";
+goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
 
 Sk.currLineNo = -1;
 Sk.currColNo = -1;

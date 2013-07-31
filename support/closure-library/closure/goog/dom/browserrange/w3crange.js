@@ -18,8 +18,8 @@
  * DO NOT USE THIS FILE DIRECTLY.  Use goog.dom.Range instead.
  *
  * @author robbyw@google.com (Robby Walker)
-*
-*
+ * @author ojan@google.com (Ojan Vafai)
+ * @author jparent@google.com (Julie Parent)
  */
 
 
@@ -30,6 +30,7 @@ goog.require('goog.dom.NodeType');
 goog.require('goog.dom.RangeEndpoint');
 goog.require('goog.dom.browserrange.AbstractRange');
 goog.require('goog.string');
+
 
 
 /**
@@ -58,18 +59,27 @@ goog.dom.browserrange.W3cRange.getBrowserRangeForNode = function(node) {
     nodeRange.setStart(node, 0);
     nodeRange.setEnd(node, node.length);
   } else {
-    var tempNode, leaf = node;
-    while (tempNode = leaf.firstChild) {
-      leaf = tempNode;
-    }
-    nodeRange.setStart(leaf, 0);
+    if (!goog.dom.browserrange.canContainRangeEndpoint(node)) {
+      var rangeParent = node.parentNode;
+      var rangeStartOffset = goog.array.indexOf(rangeParent.childNodes, node);
+      nodeRange.setStart(rangeParent, rangeStartOffset);
+      nodeRange.setEnd(rangeParent, rangeStartOffset + 1);
+    } else {
+      var tempNode, leaf = node;
+      while ((tempNode = leaf.firstChild) &&
+          goog.dom.browserrange.canContainRangeEndpoint(tempNode)) {
+        leaf = tempNode;
+      }
+      nodeRange.setStart(leaf, 0);
 
-    leaf = node;
-    while (tempNode = leaf.lastChild) {
-      leaf = tempNode;
+      leaf = node;
+      while ((tempNode = leaf.lastChild) &&
+          goog.dom.browserrange.canContainRangeEndpoint(tempNode)) {
+        leaf = tempNode;
+      }
+      nodeRange.setEnd(leaf, leaf.nodeType == goog.dom.NodeType.ELEMENT ?
+          leaf.childNodes.length : leaf.length);
     }
-    nodeRange.setEnd(leaf, leaf.nodeType == goog.dom.NodeType.ELEMENT ?
-        leaf.childNodes.length : leaf.length);
   }
 
   return nodeRange;
@@ -124,49 +134,50 @@ goog.dom.browserrange.W3cRange.createFromNodes = function(startNode,
 
 /**
  * @return {goog.dom.browserrange.W3cRange} A clone of this range.
+ * @override
  */
 goog.dom.browserrange.W3cRange.prototype.clone = function() {
   return new this.constructor(this.range_.cloneRange());
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getBrowserRange = function() {
   return this.range_;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getContainer = function() {
   return this.range_.commonAncestorContainer;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getStartNode = function() {
   return this.range_.startContainer;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getStartOffset = function() {
   return this.range_.startOffset;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getEndNode = function() {
   return this.range_.endContainer;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getEndOffset = function() {
   return this.range_.endOffset;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.compareBrowserRangeEndpoints =
     function(range, thisEndpoint, otherEndpoint) {
   return this.range_.compareBoundaryPoints(
@@ -181,28 +192,28 @@ goog.dom.browserrange.W3cRange.prototype.compareBrowserRangeEndpoints =
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.isCollapsed = function() {
   return this.range_.collapsed;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getText = function() {
   return this.range_.toString();
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.getValidHtml = function() {
   var div = goog.dom.getDomHelper(this.range_.startContainer).createDom('div');
   div.appendChild(this.range_.cloneContents());
   var result = div.innerHTML;
 
   if (goog.string.startsWith(result, '<') ||
-      !this.isCollapsed() && this.getStartNode() == this.getEndNode()) {
+      !this.isCollapsed() && !goog.string.contains(result, '<')) {
     // We attempt to mimic IE, which returns no containing element when a
-    // single text node is selected, does return the containing element when
+    // only text nodes are selected, does return the containing element when
     // the selection is empty, and does return the element when multiple nodes
     // are selected.
     return result;
@@ -221,7 +232,7 @@ goog.dom.browserrange.W3cRange.prototype.getValidHtml = function() {
 // SELECTION MODIFICATION
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.select = function(reverse) {
   var win = goog.dom.getWindow(goog.dom.getOwnerDocument(this.getStartNode()));
   this.selectInternal(win.getSelection(), reverse);
@@ -244,7 +255,7 @@ goog.dom.browserrange.W3cRange.prototype.selectInternal = function(selection,
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.removeContents = function() {
   var range = this.range_;
   range.extractContents();
@@ -268,14 +279,14 @@ goog.dom.browserrange.W3cRange.prototype.removeContents = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.surroundContents = function(element) {
   this.range_.surroundContents(element);
   return element;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.insertNode = function(node, before) {
   var range = this.range_.cloneRange();
   range.collapse(before);
@@ -286,7 +297,7 @@ goog.dom.browserrange.W3cRange.prototype.insertNode = function(node, before) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.surroundWithNodes = function(
     startNode, endNode) {
   var win = goog.dom.getWindow(
@@ -348,7 +359,7 @@ goog.dom.browserrange.W3cRange.prototype.surroundWithNodes = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.collapse = function(toStart) {
   this.range_.collapse(toStart);
 };

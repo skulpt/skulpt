@@ -8,10 +8,11 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Trogedit Unit Tests - goog.editor.icontent</title>
 <script src='../base.js'></script>
 <script>
@@ -23,6 +24,16 @@ See the COPYING file for details.
 
   goog.require('goog.editor.icontent');
 </script>
+
+<!--
+NOTE(user): This style is set to test the bugfix for http://b/5674613.
+See the comments in icontent.js for details about the workaround.
+-->
+<style type='text/css'>
+  html, body {
+    min-width: 700px;
+  }
+</style>
 </head>
 <body>
 <script>
@@ -141,17 +152,30 @@ function testGetInitialIframeContent() {
   assertEquals(/contentEditable/i.test(htmlOut), false);
   propertyReplacer.set(goog.editor.BrowserFeature,
       'HAS_CONTENT_EDITABLE', true);
-  propertyReplacer.set(goog.editor.BrowserFeature,
-      'FOCUSES_EDITABLE_BODY_ON_HTML_CLICK', false);
-  htmlOut = goog.editor.icontent.getInitialIframeContent_(
-      info, html, styleInfo);
-  assertEquals(/<html[^>]+?contentEditable/i.test(htmlOut), true);
-  propertyReplacer.set(goog.editor.BrowserFeature,
-      'FOCUSES_EDITABLE_BODY_ON_HTML_CLICK', true);
   htmlOut = goog.editor.icontent.getInitialIframeContent_(
       info, html, styleInfo);
   assertEquals(/<body[^>]+?contentEditable/i.test(htmlOut), true);
-};
+  assertEquals(/<html[^>]+?style="[^>"]*min-width:\s*0/i.test(htmlOut), true);
+  assertEquals(/<body[^>]+?style="[^>"]*min-width:\s*0/i.test(htmlOut), true);
+}
+
+function testIframeMinWidthOverride() {
+  if (goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+    return; // only executes when using an iframe
+  }
+
+  var info = new goog.editor.icontent.FieldFormatInfo('id', true, true, false);
+  var styleInfo = new goog.editor.icontent.FieldStyleInfo(wrapperDiv,
+      '.MyClass { position: absolute; top: 500px; }');
+  var doc = realIframeDoc;
+  var html = '<div class="MyClass">Some Html</div>';
+  goog.editor.icontent.writeNormalInitialBlendedIframe(info, html,
+      styleInfo, realIframe);
+
+  // Make sure that the minimum width isn't being inherited from the parent
+  // document's style.
+  assertTrue(doc.body.offsetWidth < 700);
+}
 
 function testBlendedStandardsGrowingMatchesComparisonDiv() {
   // TODO(nicksantos): If we ever move
@@ -167,7 +191,7 @@ function testBlendedStandardsGrowingMatchesComparisonDiv() {
  * @param {Element} body The actual body element
  * @param {string} id The expected id
  * @param {string} bodyHTML The expected innerHTML
- * @param {boolean} opt_rtl If true, expect RTL directionality
+ * @param {boolean=} opt_rtl If true, expect RTL directionality
  */
 function assertBodyCorrect(body, id, bodyHTML, opt_rtl) {
   assertEquals(bodyHTML, body.innerHTML);
@@ -182,7 +206,11 @@ function assertBodyCorrect(body, id, bodyHTML, opt_rtl) {
   }
   assert(goog.dom.classes.has(body, 'editable'));
   assertEquals('true', String(body.getAttribute('g_editable')));
-  assertEquals('true', String(body.getAttribute('hideFocus')));
+  assertEquals('true',
+      // IE has bugs with getAttribute('hideFocus'), and
+      // Webkit has bugs with normal .hideFocus access.
+      String(goog.userAgent.IE ? body.hideFocus :
+          body.getAttribute('hideFocus')));
   assertEquals(id, body.id);
 }
 

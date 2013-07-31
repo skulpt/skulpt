@@ -16,7 +16,6 @@
  * @fileoverview Protocol Buffer 2 Serializer which serializes messages
  *  into anonymous, simplified JSON objects.
  *
-*
  */
 
 goog.provide('goog.proto2.ObjectSerializer');
@@ -33,7 +32,6 @@ goog.require('goog.string');
  *
  * @param {goog.proto2.ObjectSerializer.KeyOption=} opt_keyOption If specified,
  *     which key option to use when serializing/deserializing.
- *
  * @constructor
  * @extends {goog.proto2.Serializer}
  */
@@ -67,8 +65,8 @@ goog.proto2.ObjectSerializer.KeyOption = {
  * Serializes a message to an object.
  *
  * @param {goog.proto2.Message} message The message to be serialized.
- *
  * @return {Object} The serialized form of the message.
+ * @override
  */
 goog.proto2.ObjectSerializer.prototype.serialize = function(message) {
   var descriptor = message.getDescriptor();
@@ -115,7 +113,8 @@ goog.proto2.ObjectSerializer.prototype.serialize = function(message) {
  *
  * @param {goog.proto2.Message} message The message in which to
  *     place the information.
- * @param {Object} data The data of the message.
+ * @param {*} data The data of the message.
+ * @override
  */
 goog.proto2.ObjectSerializer.prototype.deserializeTo = function(message, data) {
   var descriptor = message.getDescriptor();
@@ -150,7 +149,7 @@ goog.proto2.ObjectSerializer.prototype.deserializeTo = function(message, data) {
     } else {
       if (isNumeric) {
         // We have an unknown field.
-        message.setUnknown(/** @type {number} */ (key), value);
+        message.setUnknown(Number(key), value);
       } else {
         // Named fields must be present.
         goog.proto2.Util.assert(field);

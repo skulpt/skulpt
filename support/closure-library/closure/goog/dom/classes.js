@@ -13,10 +13,15 @@
 // limitations under the License.
 
 /**
- * @fileoverview Utilities for adding, removing and setting classes.
+ * @fileoverview Utilities for adding, removing and setting classes.  Prefer
+ * {@link goog.dom.classlist} over these utilities since goog.dom.classlist
+ * conforms closer to the semantics of Element.classList, is faster (uses
+ * native methods rather than parsing strings on every call) and compiles
+ * to smaller code as a result.
  *
-*
-*
+ * Note: these utilities are meant to operate on HTMLElements and
+ * will not work on elements with differing interfaces (such as SVGElements).
+ *
  */
 
 
@@ -38,15 +43,15 @@ goog.dom.classes.set = function(element, className) {
 /**
  * Gets an array of class names on an element
  * @param {Node} element DOM node to get class of.
- * @return {Array} Class names on {@code element}.
+ * @return {!Array} Class names on {@code element}. Some browsers add extra
+ *     properties to the array. Do not depend on any of these!
  */
 goog.dom.classes.get = function(element) {
   var className = element.className;
   // Some types of elements don't have a className in IE (e.g. iframes).
   // Furthermore, in Firefox, className is not a string when the element is
   // an SVG element.
-  return className && typeof className.split == 'function' ?
-      className.split(/\s+/) : [];
+  return goog.isString(className) && className.match(/\S+/g) || [];
 };
 
 
@@ -59,11 +64,10 @@ goog.dom.classes.get = function(element) {
 goog.dom.classes.add = function(element, var_args) {
   var classes = goog.dom.classes.get(element);
   var args = goog.array.slice(arguments, 1);
-
-  var b = goog.dom.classes.add_(classes, args);
-  element.className = classes.join(' ');
-
-  return b;
+  var expectedCount = classes.length + args.length;
+  goog.dom.classes.add_(classes, args);
+  goog.dom.classes.set(element, classes.join(' '));
+  return classes.length == expectedCount;
 };
 
 
@@ -77,11 +81,9 @@ goog.dom.classes.add = function(element, var_args) {
 goog.dom.classes.remove = function(element, var_args) {
   var classes = goog.dom.classes.get(element);
   var args = goog.array.slice(arguments, 1);
-
-  var b = goog.dom.classes.remove_(classes, args);
-  element.className = classes.join(' ');
-
-  return b;
+  var newClasses = goog.dom.classes.getDifference_(classes, args);
+  goog.dom.classes.set(element, newClasses.join(' '));
+  return newClasses.length == classes.length - args.length;
 };
 
 
@@ -92,40 +94,30 @@ goog.dom.classes.remove = function(element, var_args) {
  * @param {Array.<string>} classes All class names for the element, will be
  *     updated to have the classes supplied in {@code args} added.
  * @param {Array.<string>} args Class names to add.
- * @return {boolean} Whether all classes in were added.
  * @private
  */
 goog.dom.classes.add_ = function(classes, args) {
-  var rv = 0;
   for (var i = 0; i < args.length; i++) {
     if (!goog.array.contains(classes, args[i])) {
       classes.push(args[i]);
-      rv++;
     }
   }
-  return rv == args.length;
 };
 
 
 /**
  * Helper method for {@link goog.dom.classes.remove} and
- * {@link goog.dom.classes.addRemove}. Removes one or more classes from the
- * supplied classes array.
- * @param {Array.<string>} classes All class names for the element, will be
- *     updated to have the classes supplied in {@code args} removed.
- * @param {Array.<string>} args Class names to remove.
- * @return {boolean} Whether all classes in were found and removed.
+ * {@link goog.dom.classes.addRemove}. Calculates the difference of two arrays.
+ * @param {!Array.<string>} arr1 First array.
+ * @param {!Array.<string>} arr2 Second array.
+ * @return {!Array.<string>} The first array without the elements of the second
+ *     array.
  * @private
  */
-goog.dom.classes.remove_ = function(classes, args) {
-  var rv = 0;
-  for (var i = 0; i < classes.length; i++) {
-    if (goog.array.contains(args, classes[i])) {
-      goog.array.splice(classes, i--, 1);
-      rv++;
-    }
-  }
-  return rv == args.length;
+goog.dom.classes.getDifference_ = function(arr1, arr2) {
+  return goog.array.filter(arr1, function(item) {
+    return !goog.array.contains(arr2, item);
+  });
 };
 
 
@@ -150,7 +142,7 @@ goog.dom.classes.swap = function(element, fromClass, toClass) {
 
   if (removed) {
     classes.push(toClass);
-    element.className = classes.join(' ');
+    goog.dom.classes.set(element, classes.join(' '));
   }
 
   return removed;
@@ -168,9 +160,9 @@ goog.dom.classes.swap = function(element, fromClass, toClass) {
  * more than two class names that you want to swap.
  *
  * @param {Node} element DOM node to swap classes on.
- * @param {string|Array.<string>|null} classesToRemove Class or classes to
+ * @param {?(string|Array.<string>)} classesToRemove Class or classes to
  *     remove, if null no classes are removed.
- * @param {string|Array.<string>|null} classesToAdd Class or classes to add, if
+ * @param {?(string|Array.<string>)} classesToAdd Class or classes to add, if
  *     null no classes are added.
  */
 goog.dom.classes.addRemove = function(element, classesToRemove, classesToAdd) {
@@ -178,7 +170,7 @@ goog.dom.classes.addRemove = function(element, classesToRemove, classesToAdd) {
   if (goog.isString(classesToRemove)) {
     goog.array.remove(classes, classesToRemove);
   } else if (goog.isArray(classesToRemove)) {
-    goog.dom.classes.remove_(classes, classesToRemove);
+    classes = goog.dom.classes.getDifference_(classes, classesToRemove);
   }
 
   if (goog.isString(classesToAdd) &&
@@ -188,7 +180,7 @@ goog.dom.classes.addRemove = function(element, classesToRemove, classesToAdd) {
     goog.dom.classes.add_(classes, classesToAdd);
   }
 
-  element.className = classes.join(' ');
+  goog.dom.classes.set(element, classes.join(' '));
 };
 
 

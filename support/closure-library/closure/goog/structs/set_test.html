@@ -3,10 +3,11 @@
 <!--
 Copyright 2006 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.structs.Set</title>
 <script src="../base.js"></script>
 <script>
@@ -135,7 +136,8 @@ function testIntersection() {
 
   assertTrue('intersection of populated set and [] should be empty',
       abcdSet.intersection([]).isEmpty());
-  assertIntersection('intersection of 2 empty sets should be empty',
+  assertIntersection(
+      'intersection of populated set and empty set should be empty',
       abcdSet, new Set(), new Set());
 
   var bcSet = new Set(['b', 'c']);
@@ -145,6 +147,35 @@ function testIntersection() {
   var bceSet = new Set(['b', 'c', 'e']);
   assertIntersection('intersection of [a,b,c,d] and [b,c,e]',
       abcdSet, bceSet, bcSet);
+}
+
+function testDifference() {
+  var emptySet = new Set;
+
+  assertTrue('difference of empty set and [] should be empty',
+      emptySet.difference([]).isEmpty());
+  assertTrue('difference of 2 empty sets should be empty',
+      emptySet.difference(new Set()).isEmpty());
+
+  var abcdSet = new Set(['a', 'b', 'c', 'd']);
+
+  assertTrue('difference of populated set and [] should be the populated set',
+      abcdSet.difference([]).equals(abcdSet));
+  assertTrue(
+      'difference of populated set and empty set should be the populated set',
+      abcdSet.difference(new Set()).equals(abcdSet));
+  assertTrue('difference of two identical sets should be the empty set',
+      abcdSet.difference(abcdSet).equals(new Set()));
+
+  var bcSet = new Set(['b', 'c']);
+  assertTrue('difference of [a,b,c,d] and [b,c] shoule be [a,d]',
+      abcdSet.difference(bcSet).equals(new Set(['a', 'd'])));
+  assertTrue('difference of [b,c] and [a,b,c,d] should be the empty set',
+      bcSet.difference(abcdSet).equals(new Set()));
+
+  var xyzSet = new Set(['x', 'y', 'z']);
+  assertTrue('difference of [a,b,c,d] and [x,y,z] should be the [a,b,c,d]',
+      abcdSet.difference(xyzSet).equals(abcdSet));
 }
 
 /**

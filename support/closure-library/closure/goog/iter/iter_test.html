@@ -3,10 +3,11 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.iter</title>
 <script src="../base.js"></script>
 <script>
@@ -103,14 +104,7 @@ function testRange() {
   assertEquals('', goog.iter.join(iter, ''));
 
   // a step of 0 is not allowed
-  try {
-    iter = goog.iter.range(0, 5, 0);
-    fail('Step 0 is not allowed');
-  } catch(ex) {
-    if (ex === goog.iter.StopIteration) {
-      fail('Invalid exception thrown');
-    }
-  }
+  goog.iter.range(0, 5, 0);
 
   // test the opt args
   iter = goog.iter.range(0, 5);
@@ -382,6 +376,102 @@ function testNextOrValue() {
       goog.iter.nextOrValue(iter, null));
   assertEquals('Should return given default when iterator is (still) empty',
       -1, goog.iter.nextOrValue(iter, -1));
+}
+
+// Return the product of several arrays as an array
+function productAsArray(var_args) {
+  var iter = goog.iter.product.apply(null, arguments);
+  return goog.iter.toArray(iter);
+}
+
+function testProduct() {
+  assertArrayEquals([[1, 3], [1, 4], [2, 3], [2, 4]],
+      productAsArray([1, 2], [3, 4]));
+
+  assertArrayEquals([
+    [1, 3, 5], [1, 3, 6], [1, 4, 5], [1, 4, 6],
+    [2, 3, 5], [2, 3, 6], [2, 4, 5], [2, 4, 6]
+  ], productAsArray([1, 2], [3, 4], [5, 6]));
+
+  assertArrayEquals([[1]],  productAsArray([1]));
+  assertArrayEquals([],  productAsArray([1], []));
+  assertArrayEquals([], productAsArray());
+
+  var expectedResult = [];
+  var a = [1, 2, 3];
+  var b = [4, 5, 6];
+  var c = [7, 8, 9];
+  for (var i = 0; i < a.length; i ++) {
+    for (var j = 0; j < b.length; j ++) {
+      for (var k = 0; k < c.length; k ++) {
+        expectedResult.push([a[i], b[j], c[k]]);
+      }
+    }
+  }
+
+  assertArrayEquals(expectedResult, productAsArray(a, b, c));
+}
+
+function testProductIteration() {
+  var iter = goog.iter.product([1, 2], [3, 4]);
+
+  assertArrayEquals([1, 3], iter.next());
+  assertArrayEquals([1, 4], iter.next());
+  assertArrayEquals([2, 3], iter.next());
+  assertArrayEquals([2, 4], iter.next());
+
+  var ex = assertThrows(function() { iter.next() });
+  assertEquals(goog.iter.StopIteration, ex);
+
+  // Ensure the iterator forever throws StopIteration.
+  for (var i = 0; i < 5; i++) {
+    var ex = assertThrows(function() { iter.next() });
+    assertEquals(goog.iter.StopIteration, ex);
+  }
+
+  iter = goog.iter.product();
+  var ex = assertThrows(function() { iter.next() });
+  assertEquals(goog.iter.StopIteration, ex);
+
+  iter = goog.iter.product([]);
+  var ex = assertThrows(function() { iter.next() });
+  assertEquals(goog.iter.StopIteration, ex);
+}
+
+function testCycle() {
+
+  var regularArray = [1, 2, 3];
+  var iter = goog.iter.cycle(regularArray);
+
+  // Test 3 cycles to ensure proper cache behavior
+  var values = [];
+  for (var i = 0; i < 9; i++) {
+    values.push(iter.next());
+  }
+
+  assertArrayEquals([1, 2, 3, 1, 2, 3, 1, 2, 3], values);
+}
+
+function testCycleSingleItemIterable() {
+  var singleItemArray = [1];
+
+  var iter = goog.iter.cycle(singleItemArray);
+  var values = [];
+
+  for (var i = 0; i < 5; i++) {
+    values.push(iter.next());
+  }
+
+  assertArrayEquals([1, 1, 1, 1, 1], values);
+}
+
+function testCycleEmptyIterable() {
+
+  var emptyArray = [];
+
+  var iter = goog.iter.cycle(emptyArray);
+  var ex = assertThrows(function(){ iter.next(); });
+  assertEquals(goog.iter.StopIteration, ex);
 }
 
 </script>

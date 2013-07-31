@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <!--
-  -->
+<!--
+Copyright 2008 The Closure Library Authors. All Rights Reserved.
+
+Use of this source code is governed by the Apache License, Version 2.0.
+See the COPYING file for details.
+-->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.testing.editor.TestHelper</title>
   <script src="../../base.js"></script>
   <script>
@@ -21,7 +26,7 @@
   var helper;
 
   function setUp() {
-    root.innerHTML = '';
+    goog.dom.removeChildren(root);
     helper = new goog.testing.editor.TestHelper(root);
   }
 
@@ -40,6 +45,9 @@
   }
 
   function testTearDownEditableElement() {
+    helper.setUpEditableElement();
+    assertTrue(goog.editor.node.isEditableContainer(root));
+
     helper.tearDownEditableElement();
     assertFalse(goog.editor.node.isEditableContainer(root));
   }
@@ -120,64 +128,50 @@
   function testAssertHtmlMismatchText() {
     setUpAssertHtmlMatches();
 
-    try {
+    var e = assertThrows('Should fail due to mismatched text', function() {
       helper.assertHtmlMatches('<div style="display: none; font-size: 2em">' +
-        '[[IE GECKO]]NonWebKitText<div class="IE"><p class="WEBKIT">' +
-        '<span class="GECKO"><br class="GECKO WEBKIT">Bad</span></p></div>' +
-        '</div>[[WEBKIT]]Extra');
-      fail('Should have failed due to mismatched text');
-    } catch (e) {
-      assertContains('Text should match', e.message);
-    }
+          '[[IE GECKO]]NonWebKitText<div class="IE"><p class="WEBKIT">' +
+          '<span class="GECKO"><br class="GECKO WEBKIT">Bad</span></p></div>' +
+          '</div>[[WEBKIT]]Extra');
+    });
+    assertContains('Text should match', e.message);
   }
 
   function testAssertHtmlMismatchTag() {
     setUpAssertHtmlMatches();
 
-    try {
+    var e = assertThrows('Should fail due to mismatched tag', function() {
       helper.assertHtmlMatches('<span style="display: none; font-size: 2em">' +
-        '[[IE GECKO]]NonWebKitText<div class="IE"><p class="WEBKIT">' +
-        '<span class="GECKO"><br class="GECKO WEBKIT">Text</span></p></div>' +
-        '</span>[[WEBKIT]]Extra');
-      fail('Should have failed due to mismatched tag');
-    } catch (e) {
-      assertContains('Tag names should match', e.message);
-    }
+          '[[IE GECKO]]NonWebKitText<div class="IE"><p class="WEBKIT">' +
+          '<span class="GECKO"><br class="GECKO WEBKIT">Text</span></p></div>' +
+          '</span>[[WEBKIT]]Extra');
+    });
+    assertContains('Tag names should match', e.message);
   }
 
   function testAssertHtmlMismatchStyle() {
     setUpAssertHtmlMatches();
 
-    try {
+    var e = assertThrows('Should fail due to mismatched style', function() {
       helper.assertHtmlMatches('<div style="display: none; font-size: 3em">' +
-        '[[IE GECKO]]NonWebKitText<div class="IE"><p class="WEBKIT">' +
-        '<span class="GECKO"><br class="GECKO WEBKIT">Text</span></p></div>' +
-        '</div>[[WEBKIT]]Extra');
-      fail('Should have failed due to mismatched style');
-    } catch (e) {
-      assertContains('Should have same styles', e.message);
-    }
+          '[[IE GECKO]]NonWebKitText<div class="IE"><p class="WEBKIT">' +
+          '<span class="GECKO"><br class="GECKO WEBKIT">Text</span></p></div>' +
+          '</div>[[WEBKIT]]Extra');
+    });
+    assertContains('Should have same styles', e.message);
   }
 
   function testAssertHtmlMismatchOptionalText() {
     setUpAssertHtmlMatches();
 
-    try {
+    var e = assertThrows('Should fail due to mismatched style', function() {
       helper.assertHtmlMatches('<div style="display: none; font-size: 2em">' +
-        '[[IE GECKO]]Bad<div class="IE"><p class="WEBKIT">' +
-        '<span class="GECKO"><br class="GECKO WEBKIT">Text</span></p></div>' +
-        '</div>[[WEBKIT]]Bad');
-      fail('Should have failed due to mismatched style');
-    } catch (e) {
-      assertContains('Text should match', e.message);
-    }
+          '[[IE GECKO]]Bad<div class="IE"><p class="WEBKIT">' +
+          '<span class="GECKO"><br class="GECKO WEBKIT">Text</span></p></div>' +
+          '</div>[[WEBKIT]]Bad');
+    });
+    assertContains('Text should match', e.message);
   }
 </script>
 </body>
 </html>
-<!--
-Copyright 2008 The Closure Library Authors. All Rights Reserved.
-
-Use of this source code is governed by an Apache 2.0 License.
-See the COPYING file for details.
--->

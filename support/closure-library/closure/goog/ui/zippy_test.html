@@ -3,22 +3,27 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
-Author: hedger@google.com (Hedger Wang)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.Zippy</title>
   <script src="../base.js"></script>
   <script>
     goog.require('goog.dom');
+    goog.require('goog.a11y.aria');
+    goog.require('goog.a11y.aria.State');
+    goog.require('goog.dom.classes');
     goog.require('goog.events');
+    goog.require('goog.object');
     goog.require('goog.testing.events');
     goog.require('goog.testing.jsunit');
     goog.require('goog.ui.Zippy');
     goog.require('goog.ui.ZippyEvent');
+    goog.require('goog.ui.Zippy.Events');
   </script>
   <style type="text/css">
 
@@ -113,13 +118,13 @@ Author: hedger@google.com (Hedger Wang)
   }
 
   function tearDown() {
-    zippy.disposeInternal();
-    fakeZippy1.disposeInternal();
-    fakeZippy2.disposeInternal();
-    contentlessZippy.disposeInternal();
-    headerlessZippy.disposeInternal();
-    lazyZippy.disposeInternal();
-    dualHeaderZippy.disposeInternal();
+    zippy.dispose();
+    fakeZippy1.dispose();
+    fakeZippy2.dispose();
+    contentlessZippy.dispose();
+    headerlessZippy.dispose();
+    lazyZippy.dispose();
+    dualHeaderZippy.dispose();
   }
 
   function testExpandCollapse() {
@@ -161,23 +166,51 @@ Author: hedger@google.com (Hedger Wang)
   function testExpandCollapse_dualHeaderZippy() {
     dualHeaderZippy.expand();
     assertEquals("expanded must be true", true, dualHeaderZippy.isExpanded());
-    assertEquals("collapsed header should not have a class name #1", "",
-        dualHeaderZippyCollapsedHeaderEl.className);
-    assertEquals("expanded header should not have a class name #1", "",
-        dualHeaderZippyExpandedHeaderEl.className);
+    assertFalse("collapsed header should not have state class name #1",
+        hasCollapseOrExpandClasses(dualHeaderZippyCollapsedHeaderEl));
+    assertFalse("expanded header should not have state class name #1",
+        hasCollapseOrExpandClasses(dualHeaderZippyExpandedHeaderEl));
 
     dualHeaderZippy.collapse();
     assertEquals("expanded must be false", false, dualHeaderZippy.isExpanded());
-    assertEquals("collapsed header should not have a class name #2", "",
-        dualHeaderZippyCollapsedHeaderEl.className);
-    assertEquals("expanded header should not have a class name #2", "",
-        dualHeaderZippyExpandedHeaderEl.className);
+    assertFalse("collapsed header should not have state class name #2",
+        hasCollapseOrExpandClasses(dualHeaderZippyCollapsedHeaderEl));
+    assertFalse("expanded header should not have state class name #2",
+        hasCollapseOrExpandClasses(dualHeaderZippyExpandedHeaderEl));
   }
 
   function testSetExpand() {
     var expanded = !zippy.isExpanded();
     zippy.setExpanded(expanded);
     assertEquals("expanded must be " + expanded, expanded, zippy.isExpanded());
+  }
+
+  function testCssClassesAndAria() {
+    assertTrue('goog-zippy-header is enabled',
+        goog.dom.classes.has(zippy.elHeader_, 'goog-zippy-header'));
+    assertNotNull(zippy.elHeader_);
+    assertEquals('header aria-expanded is false', 'false',
+        goog.a11y.aria.getState(zippy.elHeader_, 'expanded'));
+    zippy.setExpanded(true);
+    assertTrue('goog-zippy-content is enabled',
+        goog.dom.classes.has(zippy.getContentElement(), 'goog-zippy-content'));
+    assertEquals('header aria role is TAB', 'tab',
+        goog.a11y.aria.getRole(zippy.elHeader_));
+    assertEquals('header aria-expanded is true', 'true',
+        goog.a11y.aria.getState(zippy.elHeader_, 'expanded'));
+  }
+
+  function testHeaderTabIndex() {
+    assertEquals('Header tabIndex is 0', 0, zippy.elHeader_.tabIndex);
+  }
+
+  function testGetVisibleHeaderElement() {
+    dualHeaderZippy.setExpanded(false);
+    assertEquals(dualHeaderZippyCollapsedHeaderEl,
+        dualHeaderZippy.getVisibleHeaderElement());
+    dualHeaderZippy.setExpanded(true);
+    assertEquals(dualHeaderZippyExpandedHeaderEl,
+        dualHeaderZippy.getVisibleHeaderElement())
   }
 
   function testToggle() {
@@ -190,14 +223,14 @@ Author: hedger@google.com (Hedger Wang)
     var dispatchedActionCount;
     var handleAction = function() {
       dispatchedActionCount++;
-    }
+    };
 
     var doTest = function (zippyObj) {
       dispatchedActionCount = 0;
       goog.events.listen(zippyObj, goog.ui.Zippy.Events.TOGGLE, handleAction);
       zippy.toggle();
       assertEquals("Custom Event must be called ", 1, dispatchedActionCount);
-    }
+    };
 
     doTest(zippy);
     doTest(fakeZippy1);
@@ -205,11 +238,34 @@ Author: hedger@google.com (Hedger Wang)
     doTest(headerlessZippy);
   }
 
+  function testActionEvent() {
+    var actionEventCount = 0;
+    var toggleEventCount = 0;
+    var handleEvent = function(e) {
+      if (e.type == goog.ui.Zippy.Events.TOGGLE) {
+        toggleEventCount++;
+      } else if (e.type == goog.ui.Zippy.Events.ACTION) {
+        actionEventCount++;
+        assertTrue('toggle must have been called first',
+            toggleEventCount >= actionEventCount);
+      }
+    };
+    goog.events.listen(zippy, goog.object.getValues(goog.ui.Zippy.Events),
+        handleEvent);
+    goog.testing.events.fireClickSequence(zippy.elHeader_);
+    assertEquals('Zippy ACTION event fired', 1, actionEventCount);
+    assertEquals('Zippy TOGGLE event fired', 1, toggleEventCount);
+
+    zippy.toggle();
+    assertEquals('Zippy ACTION event NOT fired', 1, actionEventCount);
+    assertEquals('Zippy TOGGLE event fired', 2, toggleEventCount);
+  }
+
   function testBasicZippyBehavior() {
     var dispatchedActionCount = 0;
     var handleAction = function() {
       dispatchedActionCount++;
-    }
+    };
 
     goog.events.listen(zippy, goog.ui.Zippy.Events.TOGGLE, handleAction);
     goog.testing.events.fireClickSequence(zippy.elHeader_);
@@ -217,6 +273,42 @@ Author: hedger@google.com (Hedger Wang)
         dispatchedActionCount);
 
   }
+
+  function hasCollapseOrExpandClasses(el) {
+    var isCollapsed =  goog.dom.classes.has(el, 'goog-zippy-collapsed');
+    var isExpanded =  goog.dom.classes.has(el, 'goog-zippy-expanded');
+    return isCollapsed || isExpanded;
+  }
+
+  function testIsHandleKeyEvent() {
+    zippy.setHandleKeyboardEvents(false);
+    assertFalse('Zippy is not handling key events', zippy.isHandleKeyEvents());
+    assertTrue('Zippy setHandleKeyEvents does not affect handling mouse events',
+        zippy.isHandleMouseEvents());
+    assertEquals(0, zippy.keyboardEventHandler_.getListenerCount());
+
+    zippy.setHandleKeyboardEvents(true);
+    assertTrue('Zippy is handling key events', zippy.isHandleKeyEvents());
+    assertTrue('Zippy setHandleKeyEvents does not affect handling mouse events',
+        zippy.isHandleMouseEvents());
+    assertNotEquals(0, zippy.keyboardEventHandler_.getListenerCount());
+  }
+
+  function testIsHandleMouseEvent() {
+    zippy.setHandleMouseEvents(false);
+    assertFalse('Zippy is not handling mouse events',
+        zippy.isHandleMouseEvents());
+    assertTrue('Zippy setHandleMouseEvents does not affect handling key events',
+        zippy.isHandleKeyEvents());
+    assertEquals(0, zippy.mouseEventHandler_.getListenerCount());
+
+    zippy.setHandleMouseEvents(true);
+    assertTrue('Zippy is handling mouse events', zippy.isHandleMouseEvents());
+    assertTrue('Zippy setHandleMouseEvents does not affect handling key events',
+        zippy.isHandleKeyEvents());
+    assertNotEquals(0, zippy.mouseEventHandler_.getListenerCount());
+  }
+
 </script>
 
 </body>

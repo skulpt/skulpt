@@ -19,9 +19,6 @@
  * strings and document.write instead of DOM manipulation, because
  * iframe-loading is a performance bottleneck.
  *
-*
-*
- * @author nicksantos@google.com (Nick Santos)
  */
 
 goog.provide('goog.editor.icontent');
@@ -31,6 +28,7 @@ goog.provide('goog.editor.icontent.FieldStyleInfo');
 goog.require('goog.editor.BrowserFeature');
 goog.require('goog.style');
 goog.require('goog.userAgent');
+
 
 
 /**
@@ -55,6 +53,7 @@ goog.editor.icontent.FieldFormatInfo = function(fieldId, standards, blended,
 };
 
 
+
 /**
  * A data structure for storing simple info about the styles of a field.
  * Only needed in Firefox/Blended mode.
@@ -75,12 +74,14 @@ goog.editor.icontent.FieldStyleInfo = function(wrapper, css) {
  */
 goog.editor.icontent.useStandardsModeIframes_ = false;
 
+
 /**
  * Sets up goog.editor.icontent to always use standards-mode iframes.
  */
 goog.editor.icontent.forceStandardsModeIframes = function() {
   goog.editor.icontent.useStandardsModeIframes_ = true;
 };
+
 
 /**
  * Generate the initial iframe content.
@@ -102,21 +103,17 @@ goog.editor.icontent.getInitialIframeContent_ =
   }
 
   // <HTML>
-  html.push('<html ');
-
-  if (goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &&
-      !goog.editor.BrowserFeature.FOCUSES_EDITABLE_BODY_ON_HTML_CLICK) {
-    html.push('contentEditable ');
-  }
-
-  html.push('style="background:none transparent;');
-
-  if (goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &&
-      !goog.editor.BrowserFeature.FOCUSES_EDITABLE_BODY_ON_HTML_CLICK) {
-    // Make sure the HTML element fills the full height of the page so that
-    // it can be clicked to place the caret.
-    html.push('min-height:100%;');
-  }
+  // NOTE(user): Override min-widths that may be set for all
+  // HTML/BODY nodes. A similar workaround is below for the <body> tag. This
+  // can happen if the host page includes a rule like this in its CSS:
+  //
+  // html, body {min-width: 500px}
+  //
+  // In this case, the iframe's <html> and/or <body> may be affected. This was
+  // part of the problem observed in http://b/5674613. (The other part of that
+  // problem had to do with the presence of a spurious horizontal scrollbar,
+  // which caused the editor height to be computed incorrectly.)
+  html.push('<html style="background:none transparent;min-width:0;');
 
   // Make sure that the HTML element's height has the
   // correct value as the body element's percentage height is made relative
@@ -156,8 +153,7 @@ goog.editor.icontent.getInitialIframeContent_ =
   // Hidefocus is needed to ensure that IE7 doesn't show the dotted, focus
   // border when you tab into the field.
   html.push('<body g_editable="true" hidefocus="true" ');
-  if (goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &&
-      goog.editor.BrowserFeature.FOCUSES_EDITABLE_BODY_ON_HTML_CLICK) {
+  if (goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
     html.push('contentEditable ');
   }
 
@@ -166,7 +162,7 @@ goog.editor.icontent.getInitialIframeContent_ =
   // TODO: put the field's original ID on the body and stop using ID as a
   // way of getting the pointer to the field in the iframe now that it's
   // always the body.
-  html.push('" id="', info.fieldId_, '" style="');
+  html.push('" id="', info.fieldId_, '" style="min-width:0;');
 
   if (goog.userAgent.GECKO && info.blended_) {
     // IMPORTANT: Apply the css from the body then all of the clearing
@@ -199,6 +195,11 @@ goog.editor.icontent.getInitialIframeContent_ =
     }
   }
 
+  // Hide the native focus rect in Opera.
+  if (goog.userAgent.OPERA) {
+    html.push(';outline:hidden');
+  }
+
   for (var key in info.extraStyles_) {
     html.push(';' + key + ':' + info.extraStyles_[key]);
   }
@@ -207,6 +208,7 @@ goog.editor.icontent.getInitialIframeContent_ =
 
   return html.join('');
 };
+
 
 /**
  * Write the initial iframe content in normal mode.
@@ -243,6 +245,7 @@ goog.editor.icontent.writeNormalInitialBlendedIframe =
   goog.editor.icontent.writeNormalInitialIframe(
       info, bodyHtml, style, iframe);
 };
+
 
 /**
  * Write the initial iframe content in normal mode.

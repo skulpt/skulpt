@@ -67,7 +67,7 @@ goog.testing.dom.assertNodesMatch = function(it, array) {
       assertEquals('Nodes should match at position ' + i, expected, node);
     } else if (goog.isNumber(expected)) {
       assertEquals('Node types should match at position ' + i, expected,
-        node.nodeType);
+          node.nodeType);
     } else if (expected.charAt(0) == '#') {
       assertEquals('Expected element at position ' + i,
           goog.dom.NodeType.ELEMENT, node.nodeType);
@@ -157,7 +157,7 @@ goog.testing.dom.checkUserAgents_ = function(userAgents) {
 /**
  * Map function that converts end tags to a specific object.
  * @param {Node} node The node to map.
- * @param {Object} ignore Always undefined.
+ * @param {undefined} ignore Always undefined.
  * @param {goog.dom.TagIterator} iterator The iterator.
  * @return {Node|Object} The resulting iteration item.
  * @private
@@ -209,6 +209,7 @@ goog.testing.dom.getExpectedText_ = function(node) {
   // Strip off the browser specifications.
   return node.nodeValue.match(/^(\[\[.+\]\])?(.*)/)[2];
 };
+
 
 /**
  * Describes the given node.
@@ -272,13 +273,16 @@ goog.testing.dom.assertHtmlContentsMatch = function(htmlPattern, actual,
     }
   };
 
-  // HACK(user): IE has unique ideas about whitespace handling when setting
+  // HACK(brenneman): IE has unique ideas about whitespace handling when setting
   // innerHTML. This results in elision of leading whitespace in the expected
   // nodes where doing so doesn't affect visible rendering. As a workaround, we
   // remove the leading whitespace in the actual nodes where necessary.
   //
   // The collapsible variable tracks whether we should collapse the whitespace
   // in the next Text node we encounter.
+  var IE_TEXT_COLLAPSE =
+      goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9');
+
   var collapsible = true;
 
   var number = 0;
@@ -310,7 +314,7 @@ goog.testing.dom.assertHtmlContentsMatch = function(htmlPattern, actual,
       goog.testing.dom.assertAttributesEqual_(errorSuffix, expectedNode,
           actualNode, !!opt_strictAttributes);
 
-      if (goog.userAgent.IE &&
+      if (IE_TEXT_COLLAPSE &&
           goog.style.getCascadedStyle(
               /** @type {Element} */ (actualNode), 'display') != 'inline') {
         // Text may be collapsed after any non-inline element.
@@ -326,7 +330,7 @@ goog.testing.dom.assertHtmlContentsMatch = function(htmlPattern, actual,
         actualText += actualNode.nodeValue;
       }
 
-      if (goog.userAgent.IE) {
+      if (IE_TEXT_COLLAPSE) {
         // Collapse the leading whitespace, unless the string consists entirely
         // of whitespace.
         if (collapsible && !goog.string.isEmpty(actualText)) {
@@ -475,6 +479,14 @@ goog.testing.dom.assertAttributesEqual_ = function(errorSuffix,
         expectedName);
 
     var actualAttribute = actualAttributes[expectedName];
+    var actualValue = goog.testing.dom.getAttributeValue_(actualNode,
+        expectedName);
+
+    // IE enumerates attribute names in the expected node that are not present,
+    // causing an undefined actualAttribute.
+    if (!expectedValue && !actualValue) {
+      continue;
+    }
 
     if (expectedName == 'id' && goog.userAgent.IE) {
       goog.testing.dom.compareIdAttributeForIe_(
@@ -500,8 +512,9 @@ goog.testing.dom.assertAttributesEqual_ = function(errorSuffix,
   if (strictAttributes) {
     for (i = 0; i < actualAttributes.length; i++) {
       var actualName = actualAttributes[i].name;
+      var actualAttribute = actualAttributes.getNamedItem(actualName);
 
-      if (goog.testing.dom.ignoreAttribute_(actualName)) {
+      if (!actualAttribute || goog.testing.dom.ignoreAttribute_(actualName)) {
         continue;
       }
 

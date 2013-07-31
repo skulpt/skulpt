@@ -21,7 +21,7 @@
  * This may be used, for example, to track the availability of sparse elements
  * in an array without iterating over the entire array.
  *
-*
+ * @author brenneman@google.com (Shawn Brenneman)
  */
 
 goog.provide('goog.math.RangeSet');
@@ -30,6 +30,7 @@ goog.require('goog.array');
 goog.require('goog.iter.Iterator');
 goog.require('goog.iter.StopIteration');
 goog.require('goog.math.Range');
+
 
 
 /**
@@ -46,7 +47,7 @@ goog.require('goog.math.Range');
 goog.math.RangeSet = function() {
   /**
    * A sorted list of ranges that represent the values in the set.
-   * @type {Array.<goog.math.Range>}
+   * @type {!Array.<!goog.math.Range>}
    * @private
    */
   this.ranges_ = [];
@@ -56,6 +57,7 @@ goog.math.RangeSet = function() {
 if (goog.DEBUG) {
   /**
    * @return {string} A debug string in the form [[1, 5], [8, 9], [15, 30]].
+   * @override
    */
   goog.math.RangeSet.prototype.toString = function() {
     return '[' + this.ranges_.join(', ') + ']';
@@ -78,7 +80,7 @@ goog.math.RangeSet.equals = function(a, b) {
 
 
 /**
- * @return {goog.math.RangeSet} A new RangeSet containing the same values as
+ * @return {!goog.math.RangeSet} A new RangeSet containing the same values as
  *      this one.
  */
 goog.math.RangeSet.prototype.clone = function() {
@@ -164,7 +166,7 @@ goog.math.RangeSet.prototype.remove = function(a) {
     b.end = a.start;
   }
 
-  for (i = insertionPoint, b; b = this.ranges_[i]; i++) {
+  for (i = insertionPoint; b = this.ranges_[i]; i++) {
     b.start = Math.max(a.end, b.start);
     if (a.end < b.end) {
       break;
@@ -222,11 +224,11 @@ goog.math.RangeSet.prototype.containsValue = function(value) {
  * Returns the union of this RangeSet with another.
  *
  * @param {goog.math.RangeSet} set Another RangeSet.
- * @return {goog.math.RangeSet} A new RangeSet containing all values from either
- *     set.
+ * @return {!goog.math.RangeSet} A new RangeSet containing all values from
+ *     either set.
  */
 goog.math.RangeSet.prototype.union = function(set) {
-  // TODO(user): A linear-time merge would be preferable if it is ever a
+  // TODO(brenneman): A linear-time merge would be preferable if it is ever a
   // bottleneck.
   set = set.clone();
 
@@ -239,25 +241,37 @@ goog.math.RangeSet.prototype.union = function(set) {
 
 
 /**
+ * Subtracts the ranges of another set from this one, returning the result
+ * as a new RangeSet.
+ *
+ * @param {!goog.math.RangeSet} set The RangeSet to subtract.
+ * @return {!goog.math.RangeSet} A new RangeSet containing all values in this
+ *     set minus the values of the input set.
+ */
+goog.math.RangeSet.prototype.difference = function(set) {
+  var ret = this.clone();
+
+  for (var i = 0, a; a = set.ranges_[i]; i++) {
+    ret.remove(a);
+  }
+
+  return ret;
+};
+
+
+/**
  * Intersects this RangeSet with another.
  *
  * @param {goog.math.RangeSet} set The RangeSet to intersect with.
- * @return {goog.math.RangeSet} A new RangeSet containing all values set in both
- *     this and the input set.
+ * @return {!goog.math.RangeSet} A new RangeSet containing all values set in
+ *     both this and the input set.
  */
 goog.math.RangeSet.prototype.intersection = function(set) {
   if (this.isEmpty() || set.isEmpty()) {
     return new goog.math.RangeSet();
   }
 
-  set = set.inverse(this.getBounds());
-  var r = this.clone();
-
-  for (var i = 0, a; a = set.ranges_[i]; i++) {
-    r.remove(a);
-  }
-
-  return r;
+  return this.difference(set.inverse(this.getBounds()));
 };
 
 
@@ -265,7 +279,7 @@ goog.math.RangeSet.prototype.intersection = function(set) {
  * Creates a subset of this set over the input range.
  *
  * @param {goog.math.Range} range The range to copy into the slice.
- * @return {goog.math.RangeSet} A new RangeSet with a copy of the values in the
+ * @return {!goog.math.RangeSet} A new RangeSet with a copy of the values in the
  *     input range.
  */
 goog.math.RangeSet.prototype.slice = function(range) {
@@ -294,7 +308,7 @@ goog.math.RangeSet.prototype.slice = function(range) {
  * Creates an inverted slice of this set over the input range.
  *
  * @param {goog.math.Range} range The range to copy into the slice.
- * @return {goog.math.RangeSet} A new RangeSet containing inverted values from
+ * @return {!goog.math.RangeSet} A new RangeSet containing inverted values from
  *     the original over the input range.
  */
 goog.math.RangeSet.prototype.inverse = function(range) {
@@ -313,6 +327,18 @@ goog.math.RangeSet.prototype.inverse = function(range) {
   }
 
   return set;
+};
+
+
+/**
+ * @return {number} The sum of the lengths of ranges covered in the set.
+ */
+goog.math.RangeSet.prototype.coveredLength = function() {
+  return /** @type {number} */ (goog.array.reduce(
+      this.ranges_,
+      function(res, range) {
+        return res + range.end - range.start;
+      }, 0));
 };
 
 
@@ -350,7 +376,7 @@ goog.math.RangeSet.prototype.clear = function() {
  * Returns an iterator that iterates over the ranges in the RangeSet.
  *
  * @param {boolean=} opt_keys Ignored for RangeSets.
- * @return {goog.iter.Iterator} An iterator over the values in the set.
+ * @return {!goog.iter.Iterator} An iterator over the values in the set.
  */
 goog.math.RangeSet.prototype.__iterator__ = function(opt_keys) {
   var i = 0;

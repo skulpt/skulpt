@@ -16,16 +16,16 @@
  * @fileoverview A custom button renderer that uses CSS voodoo to render a
  * button-like object with fake rounded corners.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.CustomButtonRenderer');
 
-goog.require('goog.dom');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.dom.NodeType');
 goog.require('goog.dom.classes');
 goog.require('goog.string');
 goog.require('goog.ui.ButtonRenderer');
-goog.require('goog.ui.ControlContent');
 goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
 
 
@@ -63,17 +63,33 @@ goog.ui.CustomButtonRenderer.CSS_CLASS = goog.getCssName('goog-custom-button');
  *      </div>
  *    </div>
  * Overrides {@link goog.ui.ButtonRenderer#createDom}.
- * @param {goog.ui.Button} button Button to render.
+ * @param {goog.ui.Control} control goog.ui.Button to render.
  * @return {Element} Root element for the button.
+ * @override
  */
-goog.ui.CustomButtonRenderer.prototype.createDom = function(button) {
+goog.ui.CustomButtonRenderer.prototype.createDom = function(control) {
+  var button = /** @type {goog.ui.Button} */ (control);
   var classNames = this.getClassNames(button);
   var attributes = {
-    'class': goog.ui.INLINE_BLOCK_CLASSNAME + ' ' + classNames.join(' '),
-    'title': button.getTooltip() || ''
+    'class': goog.ui.INLINE_BLOCK_CLASSNAME + ' ' + classNames.join(' ')
   };
-  return button.getDomHelper().createDom('div', attributes,
+  var buttonElement = button.getDomHelper().createDom('div', attributes,
       this.createButton(button.getContent(), button.getDomHelper()));
+  this.setTooltip(
+      buttonElement, /** @type {!string}*/ (button.getTooltip()));
+  this.setAriaStates(button, buttonElement);
+
+  return buttonElement;
+};
+
+
+/**
+ * Returns the ARIA role to be applied to custom buttons.
+ * @return {goog.a11y.aria.Role|undefined} ARIA role.
+ * @override
+ */
+goog.ui.CustomButtonRenderer.prototype.getAriaRole = function() {
+  return goog.a11y.aria.Role.BUTTON;
 };
 
 
@@ -84,6 +100,7 @@ goog.ui.CustomButtonRenderer.prototype.createDom = function(button) {
  * @param {Element} element Root element of the button whose content
  *     element is to be returned.
  * @return {Element} The button's content element (if any).
+ * @override
  */
 goog.ui.CustomButtonRenderer.prototype.getContentElement = function(element) {
   return element && /** @type {Element} */ (element.firstChild.firstChild);
@@ -121,6 +138,7 @@ goog.ui.CustomButtonRenderer.prototype.createButton = function(content, dom) {
  * element is a DIV, false otherwise.
  * @param {Element} element Element to decorate.
  * @return {boolean} Whether the renderer can decorate the element.
+ * @override
  */
 goog.ui.CustomButtonRenderer.prototype.canDecorate = function(element) {
   return element.tagName == 'DIV';
@@ -138,11 +156,12 @@ goog.ui.CustomButtonRenderer.prototype.canDecorate = function(element) {
 goog.ui.CustomButtonRenderer.prototype.hasBoxStructure = function(
     button, element) {
   var outer = button.getDomHelper().getFirstElementChild(element);
-  if (outer && outer.className.indexOf(goog.getCssName(this.getCssClass(),
-          'outer-box')) != -1) {
+  var outerClassName = goog.getCssName(this.getCssClass(), 'outer-box');
+  if (outer && goog.dom.classes.has(outer, outerClassName)) {
+
     var inner = button.getDomHelper().getFirstElementChild(outer);
-    if (inner && inner.className.indexOf(goog.getCssName(this.getCssClass(),
-            'inner-box')) != -1) {
+    var innerClassName = goog.getCssName(this.getCssClass(), 'inner-box');
+    if (inner && goog.dom.classes.has(inner, innerClassName)) {
       // We have a proper box structure.
       return true;
     }
@@ -156,11 +175,13 @@ goog.ui.CustomButtonRenderer.prototype.hasBoxStructure = function(
  * Initializes the control's ID, content, tooltip, value, and state based
  * on the ID of the element, its child nodes, and its CSS classes, respectively.
  * Returns the element.  Overrides {@link goog.ui.ButtonRenderer#decorate}.
- * @param {goog.ui.Button} button Button instance to decorate the element.
+ * @param {goog.ui.Control} control Button instance to decorate the element.
  * @param {Element} element Element to decorate.
  * @return {Element} Decorated element.
+ * @override
  */
-goog.ui.CustomButtonRenderer.prototype.decorate = function(button, element) {
+goog.ui.CustomButtonRenderer.prototype.decorate = function(control, element) {
+  var button = /** @type {goog.ui.Button} */ (control);
   // Trim text nodes in the element's child node list; otherwise madness
   // ensues (i.e. on Gecko, buttons will flicker and shift when moused over).
   goog.ui.CustomButtonRenderer.trimTextNodes_(element, true);
@@ -183,6 +204,7 @@ goog.ui.CustomButtonRenderer.prototype.decorate = function(button, element) {
  * Returns the CSS class to be applied to the root element of components
  * rendered using this renderer.
  * @return {string} Renderer-specific CSS class.
+ * @override
  */
 goog.ui.CustomButtonRenderer.prototype.getCssClass = function() {
   return goog.ui.CustomButtonRenderer.CSS_CLASS;

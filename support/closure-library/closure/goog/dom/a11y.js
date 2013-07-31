@@ -15,181 +15,115 @@
 /**
  * @fileoverview Utilities for adding, removing and setting ARIA roles
  * as defined by W3C ARIA Working Draft:
- *     http://www.w3.org/TR/2008/WD-wai-aria-20080806/
- * At this time Firefox 3.0 is the only browser that has good support for ARIA;
- * IE8 (beta) has partial support, while Opera and WebKit implementations
- * are forthcoming. An application could call
- * <code>goog.dom.a11y.setNoBrowserCheck</code> with true to turn on ARIA
- * support for all browsers.
+ *     http://www.w3.org/TR/2010/WD-wai-aria-20100916/
+ * All modern browsers have some form of ARIA support, so no browser checks are
+ * performed when adding ARIA to components.
  *
-*
+ *
+ * @deprecated Use {@link goog.a11y.aria} instead.
+ *     This file will be removed on 1 Apr 2013.
+ *
  */
 goog.provide('goog.dom.a11y');
+goog.provide('goog.dom.a11y.Announcer');
+goog.provide('goog.dom.a11y.LivePriority');
 goog.provide('goog.dom.a11y.Role');
 goog.provide('goog.dom.a11y.State');
 
-goog.require('goog.dom');
-goog.require('goog.userAgent');
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Announcer');
+goog.require('goog.a11y.aria.LivePriority');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.a11y.aria.State');
 
 
 /**
- * Enumeration of ARIA states.
- * More will be added later.
+ * Enumeration of ARIA states and properties.
  * @enum {string}
+ * @deprecated Use {@link goog.a11y.aria.State} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
-goog.dom.a11y.State = {
-  // ARIA state for setting the currently active descendant of an element.
-  ACTIVEDESCENDANT: 'activedescendant',
-  // ARIA state to specify how input completion is provided.
-  AUTOCOMPLETE: 'autocomplete',
-  // ARIA state for a checked item.
-  CHECKED: 'checked',
-  // ARIA state for a disabled item.
-  DISABLED: 'disabled',
-  // ARIA state for setting whether the element like a tree node is expanded.
-  EXPANDED: 'expanded',
-  // ARIA state for whether the element has a popup
-  HASPOPUP: 'haspopup',
-  // ARIA state for setting the element which labels another element.
-  LABELLEDBY: 'labelledby',
-  // ARIA state for setting the level of an element in the hierarchy
-  LEVEL: 'level',
-  // ARIA state for a pressed item.
-  PRESSED: 'pressed',
-  // ARIA state for setting the currently selected item in the list.
-  SELECTED: 'selected',
-  // ARIA state for slider maximum value.
-  VALUEMAX: 'valuemax',
-  // ARIA state for slider minimum value.
-  VALUEMIN: 'valuemin',
-  // ARIA state for slider active value.
-  VALUENOW: 'valuenow',
-  // ARIA state for slider active value represented as text.
-  VALUETEXT: 'valuetext'
-};
+goog.dom.a11y.State = goog.a11y.aria.State;
 
 
 /**
  * Enumeration of ARIA roles.
  * @enum {string}
+ * @deprecated Use {@link goog.a11y.aria.Role} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
-goog.dom.a11y.Role = {
-  // ARIA role for a button element.
-  BUTTON: 'button',
-  // ARIA role for a checkbox button element.
-  CHECKBOX: 'checkbox',
-  // ARIA role for a combobox element.
-  COMBOBOX: 'combobox',
-  // ARIA role for a dialog element.
-  DIALOG: 'dialog',
-  // ARIA role for link.
-  LINK: 'link',
-  // ARIA role for listbox.
-  LISTBOX: 'listbox',
-  // ARIA role for popup menu, submenu elements etc.
-  MAIN: 'main',
-  // ARIA role for main content in a document.
-  MENU: 'menu',
-  // ARIA role for a menubar element containing menu elements.
-  MENUBAR: 'menubar',
-  // ARIA role for menu item elements.
-  MENU_ITEM: 'menuitem',
-  // ARIA role for a checkbox box element inside a menu.
-  MENU_ITEM_CHECKBOX: 'menuitemcheckbox',
-  // ARIA role for a radio button element inside a menu.
-  MENU_ITEM_RADIO: 'menuitemradio',
-  // ARIA role for option items, generally used with a parent of listbox.
-  NAVIGATION: 'navigation',
-  // ARIA role for a collection of links suitable for use when navigating
-  // the document or related documents.
-  OPTION: 'option',
-  // ARIA role for a group of elements like a group of radio buttons,
-  // a form, etc.
-  GROUP: 'group',
-  // ARIA role for a slider.
-  SLIDER: 'slider',
-  // ARIA role for a tab button.
-  TAB: 'tab',
-  // ARIA role for a tab bar (i.e. a list of tab buttons).
-  TAB_LIST: 'tablist',
-  // ARIA role for a tab page (i.e. the element holding tab contents).
-  TAB_PANEL: 'tabpanel',
-  // ARIA role for a toolbar element.
-  TOOLBAR: 'toolbar'
-};
+goog.dom.a11y.Role = goog.a11y.aria.Role;
 
 
 /**
- * Flag for skipping browser check while adding ARIA roles and states.
- * @private
- * @type {boolean}
+ * Enumeration of ARIA state values for live regions.
+ *
+ * See http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
+ * for more information.
+ * @enum {string}
+ * @deprecated Use {@link goog.a11y.aria.LivePriority} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
-goog.dom.a11y.noBrowserCheck_;
+goog.dom.a11y.LivePriority = goog.a11y.aria.LivePriority;
 
 
 /**
  * Sets the role of an element.
  * @param {Element} element DOM node to set role of.
- * @param {string} roleName role name(s).
+ * @param {goog.dom.a11y.Role|string} roleName role name(s).
+ * @deprecated Use {@link goog.a11y.aria.setRole} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
 goog.dom.a11y.setRole = function(element, roleName) {
-  if (goog.userAgent.GECKO || goog.dom.a11y.noBrowserCheck_) {
-    element.setAttribute('role', roleName);
-    element.roleName = roleName;
-  }
+  goog.a11y.aria.setRole(
+      /** @type {!Element} */ (element),
+      /** @type {!goog.dom.a11y.Role} */ (roleName));
 };
 
 
 /**
  * Gets role of an element.
  * @param {Element} element DOM node to get role of.
- * @return {string} rolename.
+ * @return {?(goog.dom.a11y.Role|string)} rolename.
+ * @deprecated Use {@link goog.a11y.aria.getRole} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
 goog.dom.a11y.getRole = function(element) {
-  return element.roleName || '';
+  return /** @type {?(goog.dom.a11y.Role|string)} */ (
+      goog.a11y.aria.getRole(/** @type {!Element} */ (element)));
 };
 
 
 /**
- * Sets the state of an element.
+ * Sets the state or property of an element.
  * @param {Element} element DOM node where we set state.
- * @param {string} state State attribute being set. Automatically adds prefix
- *     'aria-' to the state name.
- * @param {string|boolean|number} value Value for the state attribute.
+ * @param {goog.dom.a11y.State|string} state State attribute being set.
+ *     Automatically adds prefix 'aria-' to the state name.
+ * @param {boolean|number|string} value Value for the
+ *     state attribute.
+ * @deprecated Use {@link goog.a11y.aria.setState} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
 goog.dom.a11y.setState = function(element, state, value) {
-  if (goog.userAgent.GECKO || goog.dom.a11y.noBrowserCheck_) {
-    element.setAttribute('aria-' + state, value);
-  }
+  goog.a11y.aria.setState(
+      /** @type {!Element} */ (element),
+      /** @type {!goog.dom.a11y.State} */ (state),
+      /** @type {boolean|number|string} */ (value));
 };
 
 
 /**
- * Gets value of specified state property.
+ * Gets value of specified state or property.
  * @param {Element} element DOM node to get state from.
- * @param {string} stateName State name.
+ * @param {goog.dom.a11y.State|string} stateName State name.
  * @return {string} Value of the state attribute.
+ * @deprecated Use {@link goog.a11y.aria.getState} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
 goog.dom.a11y.getState = function(element, stateName) {
-  return element.getAttribute('aria-' + stateName) || '';
-};
-
-
-/**
- * Getter for noBrowserCheck_ flag.
- * @return {boolean} Value of the noBrowserCheck_ flag.
- */
-goog.dom.a11y.getNoBrowserCheck = function() {
-  return !!goog.dom.a11y.noBrowserCheck_;
-};
-
-
-/**
- * Sets a flag to skip browser check while adding ARIA roles and states.
- * @param {boolean} noBrowserCheck True if no browser check should be performed.
- */
-goog.dom.a11y.setNoBrowserCheck = function(noBrowserCheck) {
-  goog.dom.a11y.noBrowserCheck_ = noBrowserCheck;
+  return goog.a11y.aria.getState(
+      /** @type {!Element} */ (element),
+      /** @type {!goog.dom.a11y.State} */ (stateName));
 };
 
 
@@ -197,11 +131,12 @@ goog.dom.a11y.setNoBrowserCheck = function(noBrowserCheck) {
  * Gets the activedescendant of the given element.
  * @param {Element} element DOM node to get activedescendant from.
  * @return {Element} DOM node of the activedescendant.
+ * @deprecated Use {@link goog.a11y.aria.getActiveDescendant} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
 goog.dom.a11y.getActiveDescendant = function(element) {
-  var id = goog.dom.a11y.getState(
-      element, goog.dom.a11y.State.ACTIVEDESCENDANT);
-  return goog.dom.getOwnerDocument(element).getElementById(id);
+  return goog.a11y.aria.getActiveDescendant(
+      /** @type {!Element} */ (element));
 };
 
 
@@ -209,8 +144,26 @@ goog.dom.a11y.getActiveDescendant = function(element) {
  * Sets the activedescendant value for an element.
  * @param {Element} element DOM node to set activedescendant to.
  * @param {Element} activeElement DOM node being set as activedescendant.
+ * @deprecated Use {@link goog.a11y.aria.setActiveDescendant} instead.
+ *     This alias will be removed on 1 Apr 2013.
  */
 goog.dom.a11y.setActiveDescendant = function(element, activeElement) {
-  goog.dom.a11y.setState(element, goog.dom.a11y.State.ACTIVEDESCENDANT,
-      activeElement ? activeElement.id : '');
+  goog.a11y.aria.setActiveDescendant(
+      /** @type {!Element} */ (element),
+      activeElement);
 };
+
+
+
+/**
+ * Class that allows messages to be spoken by assistive technologies that the
+ * user may have active.
+ *
+ * @param {goog.dom.DomHelper} domHelper DOM helper.
+ * @constructor
+ * @extends {goog.Disposable}
+ * @deprecated Use {@link goog.a11y.aria.Announcer} instead.
+ *     This alias will be removed on 1 Apr 2013.
+ */
+goog.dom.a11y.Announcer = goog.a11y.aria.Announcer;
+

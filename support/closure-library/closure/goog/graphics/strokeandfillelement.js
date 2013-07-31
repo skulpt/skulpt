@@ -16,14 +16,15 @@
 /**
  * @fileoverview A thin wrapper around the DOM element for elements with a
  * stroke and fill.
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 
 goog.provide('goog.graphics.StrokeAndFillElement');
 
 goog.require('goog.graphics.Element');
+
 
 
 /**
@@ -40,6 +41,9 @@ goog.require('goog.graphics.Element');
  * @param {goog.graphics.Fill?} fill The fill to use for this element.
  * @constructor
  * @extends {goog.graphics.Element}
+ * @deprecated goog.graphics is deprecated. It existed to abstract over browser
+ *     differences before the canvas tag was widely supported.  See
+ *     http://en.wikipedia.org/wiki/Canvas_element for details.
  */
 goog.graphics.StrokeAndFillElement = function(element, graphics, stroke, fill) {
   goog.graphics.Element.call(this, element, graphics);
@@ -52,9 +56,9 @@ goog.inherits(goog.graphics.StrokeAndFillElement, goog.graphics.Element);
 /**
  * The latest fill applied to this element.
  * @type {goog.graphics.Fill?}
- * @private
+ * @protected
  */
-goog.graphics.StrokeAndFillElement.prototype.fill_ = null;
+goog.graphics.StrokeAndFillElement.prototype.fill = null;
 
 
 /**
@@ -70,7 +74,7 @@ goog.graphics.StrokeAndFillElement.prototype.stroke_ = null;
  * @param {goog.graphics.Fill?} fill The fill object.
  */
 goog.graphics.StrokeAndFillElement.prototype.setFill = function(fill) {
-  this.fill_ = fill;
+  this.fill = fill;
   this.getGraphics().setElementFill(this, fill);
 };
 
@@ -79,7 +83,7 @@ goog.graphics.StrokeAndFillElement.prototype.setFill = function(fill) {
  * @return {goog.graphics.Fill?} fill The fill object.
  */
 goog.graphics.StrokeAndFillElement.prototype.getFill = function() {
-  return this.fill_;
+  return this.fill;
 };
 
 

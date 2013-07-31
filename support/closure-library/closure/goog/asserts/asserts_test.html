@@ -3,10 +3,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.asserts.assert</title>
 <script src="../base.js"></script>
 <script>
@@ -60,7 +61,9 @@ function testNumber() {
       goog.partial(goog.asserts.assertNumber, null));
   // Test error messages.
   doTestMessage(goog.partial(goog.asserts.assertNumber, null),
-                'Assertion failed: Expected number but got null.');
+                'Assertion failed: Expected number but got null: null.');
+  doTestMessage(goog.partial(goog.asserts.assertNumber, '1234'),
+                'Assertion failed: Expected number but got string: 1234.');
   doTestMessage(goog.partial(goog.asserts.assertNumber, null, 'ouch %s', 1),
                 'Assertion failed: ouch 1');
 }
@@ -71,7 +74,9 @@ function testString() {
       goog.partial(goog.asserts.assertString, null));
   // Test error messages.
   doTestMessage(goog.partial(goog.asserts.assertString, null),
-                'Assertion failed: Expected string but got null.');
+                'Assertion failed: Expected string but got null: null.');
+  doTestMessage(goog.partial(goog.asserts.assertString, 1234),
+                'Assertion failed: Expected string but got number: 1234.');
   doTestMessage(goog.partial(goog.asserts.assertString, null, 'ouch %s', 1),
                 'Assertion failed: ouch 1');
 }
@@ -83,7 +88,9 @@ function testFunction() {
       goog.partial(goog.asserts.assertFunction, null));
   // Test error messages.
   doTestMessage(goog.partial(goog.asserts.assertFunction, null),
-                'Assertion failed: Expected function but got null.');
+                'Assertion failed: Expected function but got null: null.');
+  doTestMessage(goog.partial(goog.asserts.assertFunction, 1234),
+                'Assertion failed: Expected function but got number: 1234.');
   doTestMessage(goog.partial(goog.asserts.assertFunction, null, 'ouch %s', 1),
                 'Assertion failed: ouch 1');
 }
@@ -95,7 +102,9 @@ function testObject() {
       goog.partial(goog.asserts.assertObject, null));
   // Test error messages.
   doTestMessage(goog.partial(goog.asserts.assertObject, null),
-                'Assertion failed: Expected object but got null.');
+                'Assertion failed: Expected object but got null: null.');
+  doTestMessage(goog.partial(goog.asserts.assertObject, 1234),
+                'Assertion failed: Expected object but got number: 1234.');
   doTestMessage(goog.partial(goog.asserts.assertObject, null, 'ouch %s', 1),
                 'Assertion failed: ouch 1');
 }
@@ -107,8 +116,25 @@ function testArray() {
       goog.partial(goog.asserts.assertArray, {}));
   // Test error messages.
   doTestMessage(goog.partial(goog.asserts.assertArray, null),
-                'Assertion failed: Expected array but got null.');
+                'Assertion failed: Expected array but got null: null.');
+  doTestMessage(goog.partial(goog.asserts.assertArray, 1234),
+                'Assertion failed: Expected array but got number: 1234.');
   doTestMessage(goog.partial(goog.asserts.assertArray, null, 'ouch %s', 1),
+                'Assertion failed: ouch 1');
+}
+
+function testBoolean() {
+  assertEquals(true, goog.asserts.assertBoolean(true));
+  assertEquals(false, goog.asserts.assertBoolean(false));
+  assertThrows(goog.partial(goog.asserts.assertBoolean, null));
+  assertThrows(goog.partial(goog.asserts.assertBoolean, 'foo'));
+
+  // Test error messages.
+  doTestMessage(goog.partial(goog.asserts.assertBoolean, null),
+                'Assertion failed: Expected boolean but got null: null.');
+  doTestMessage(goog.partial(goog.asserts.assertBoolean, 1234),
+                'Assertion failed: Expected boolean but got number: 1234.');
+  doTestMessage(goog.partial(goog.asserts.assertBoolean, null, 'ouch %s', 1),
                 'Assertion failed: ouch 1');
 }
 
@@ -124,6 +150,21 @@ function testInstanceof() {
   doTestMessage(goog.partial(goog.asserts.assertInstanceof, {}, F, 'a %s', 1),
                 'Assertion failed: a 1');
 
+}
+
+function testObjectPrototypeIsIntact() {
+  goog.asserts.assertObjectPrototypeIsIntact();
+  var originalToString = Object.prototype.toString;
+  Object.prototype.toString = goog.nullFunction;
+  try {
+    goog.asserts.assertObjectPrototypeIsIntact();
+    Object.prototype.foo = 1;
+    doTestMessage(goog.asserts.assertObjectPrototypeIsIntact,
+        'Failure: foo should not be enumerable in Object.prototype.');
+  } finally {
+    Object.prototype.toString = originalToString;
+    delete Object.prototype.foo;
+  }
 }
 
 function testAssertionError() {

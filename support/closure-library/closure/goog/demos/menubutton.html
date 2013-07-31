@@ -3,7 +3,7 @@
 <!--
 Copyright 2010 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
@@ -11,11 +11,13 @@ See the COPYING file for details.
   <script src="../base.js"></script>
   <script>
     goog.require('goog.array');
-    goog.require('goog.events');
-    goog.require('goog.object');
     goog.require('goog.debug.DivConsole');
-    goog.require('goog.debug.Logger');
     goog.require('goog.debug.LogManager');
+    goog.require('goog.events');
+    goog.require('goog.events.EventType');
+    goog.require('goog.log');
+    goog.require('goog.object');
+    goog.require('goog.ui.CustomButton');
     goog.require('goog.ui.Menu');
     goog.require('goog.ui.MenuButton');
     goog.require('goog.ui.MenuItem');
@@ -23,6 +25,7 @@ See the COPYING file for details.
     goog.require('goog.ui.decorate');
   </script>
   <link rel="stylesheet" href="css/demo.css">
+  <link rel="stylesheet" href="../css/custombutton.css">
   <link rel="stylesheet" href="../css/menu.css">
   <link rel="stylesheet" href="../css/menuitem.css">
   <link rel="stylesheet" href="../css/menuseparator.css">
@@ -39,8 +42,14 @@ See the COPYING file for details.
     }
 
     /* "Format" icon. */
-    .format-icon{
+    .format-icon {
       background-position: -64px;
+    }
+
+    .positioning-frame {
+      height: 250px;
+      overflow: auto;
+      width: 100%;
     }
   </style>
 </head>
@@ -119,6 +128,36 @@ See the COPYING file for details.
             </label>
             <br>
           </fieldset>
+          <fieldset>
+            <legend>
+              This <strong>MenuButton</strong> accompanies a
+              <strong>CustomButton</strong> to form a combo button:
+              &nbsp;
+            </legend>
+            <div id="comboButtons"></div>
+            <label>
+            </label>
+            <br>
+          </fieldset>
+          <fieldset>
+            <legend>
+              These <strong>MenuButtons</strong> demonstrate
+              menu positioning options:
+              &nbsp;
+            </legend>
+            <div></div>
+
+            <input type="checkbox" id="pos_option_scroll">
+            <label for="pos_option_scroll">
+              Scroll on overflow
+            </label>
+            <iframe class="positioning-frame" id="positioning-frame"
+                src="menubutton_frame.html">
+            </iframe>
+            <label>
+            </label>
+            <br>
+          </fieldset>
         </td>
         <td width="33%">
           <!-- Event log. -->
@@ -136,19 +175,19 @@ See the COPYING file for details.
     var timer = goog.now();
 
     // Set up a logger.
-    goog.debug.LogManager.getRoot().setLevel(goog.debug.Logger.Level.ALL);
-    var logger = goog.debug.Logger.getLogger('demo');
+    goog.debug.LogManager.getRoot().setLevel(goog.log.Level.ALL);
+    var logger = goog.log.getLogger('demo');
     var logconsole = new goog.debug.DivConsole(goog.dom.getElement('log'));
     logconsole.setCapturing(true);
 
     var EVENTS = goog.object.getValues(goog.ui.Component.EventType);
-    logger.fine('Listening for: ' + EVENTS.join(', ') + '.');
+    goog.log.fine(logger, 'Listening for: ' + EVENTS.join(', ') + '.');
 
     function logEvent(e) {
       var component = e.target;
       var caption = (typeof component.getCaption == 'function') ?
           component.getCaption() : component.getId();
-      logger.info('"' + caption + '" dispatched: ' + e.type);
+      goog.log.info(logger, '"' + caption + '" dispatched: ' + e.type);
     }
 
     // Create a sample menu.
@@ -270,6 +309,69 @@ See the COPYING file for details.
         });
 
     goog.events.listen(formatButton, EVENTS, logEvent);
+
+
+    // Create a combo button with a custom button and a menu button.
+    // Create a sample menu.
+    var cbb1 = new goog.ui.CustomButton('Add to Family');
+    cbb1.render(goog.dom.getElement('comboButtons'));
+    cbb1.addClassName('goog-custom-button-collapse-right');
+    var cbm1 = new goog.ui.Menu();
+    cbm1.setId('ComboMenu');
+    goog.array.forEach(['Friends', 'Family', 'Coworkers'],
+        function(label) {
+          var item = new goog.ui.MenuItem(label);
+          item.setId(label);
+          item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+          cbm1.addItem(item);
+        });
+    var cb1 = new goog.ui.Button('Take action', cbm1);
+    var cbmb1 = new goog.ui.MenuButton(null, cbm1);
+    cbmb1.setPositionElement(cbb1.getElement());
+    cbmb1.addClassName('goog-menu-button-collapse-left');
+    cbmb1.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+    cbmb1.setId('ComboMenuButton');
+    cbmb1.render(goog.dom.getElement('comboButtons'));
+    cbmb1.setTooltip('Combo button');
+    goog.events.listen(cbmb1, EVENTS, logEvent);
+
+
+    // Create two buttons with menus for the positioning demo inside the
+    // positioning iframe.
+    var positioningFrame = goog.dom.getElement('positioning-frame');
+    var shortPosButton, longPosButton;
+    goog.events.listen(positioningFrame, 'load', function() {
+      var frameDocument = goog.dom.getFrameContentDocument(positioningFrame);
+      var frameDomHelper = new goog.dom.DomHelper(frameDocument);
+
+      var shortMenu = new goog.ui.Menu(frameDomHelper);
+      shortMenu.setId('PositionMenuShort');
+      for (var i = 1; i <= 5; i++) {
+        shortMenu.addItem(new goog.ui.MenuItem('Item ' + i + '...'));
+      }
+      shortPosButton = new goog.ui.MenuButton('Short Menu', shortMenu);
+      shortPosButton.setId('PositingButtonShort');
+      shortPosButton.render(frameDocument.body);
+      shortMenu.getElement().style.overflowY = 'auto';
+
+      var longMenu = new goog.ui.Menu(frameDomHelper);
+      longMenu.setId('PositionMenuLong');
+      for (var i = 1; i <= 15; i++) {
+        longMenu.addItem(new goog.ui.MenuItem('Item ' + i + '...'));
+      }
+      longPosButton = new goog.ui.MenuButton('Long Menu', longMenu);
+      longPosButton.setId('PositingButtonLong');
+      longPosButton.render(frameDocument.body);
+      longMenu.getElement().style.overflowY = 'auto';
+    });
+    function updateScrollOption() {
+      var checked = goog.dom.getElement('pos_option_scroll').checked;
+      shortPosButton.setScrollOnOverflow(checked);
+      longPosButton.setScrollOnOverflow(checked);
+    }
+    goog.events.listen(goog.dom.getElement('pos_option_scroll'), 'click',
+        updateScrollOption);
+
 
     goog.dom.setTextContent(goog.dom.getElement('perf'),
         (goog.now() - timer) + 'ms');

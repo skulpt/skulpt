@@ -14,10 +14,10 @@ Sk.builtin.range = function range(start, stop, step)
     Sk.builtin.pyCheckType("start", "integer", Sk.builtin.checkInt(start));
     if (stop !== undefined) {
         Sk.builtin.pyCheckType("stop", "integer", Sk.builtin.checkInt(stop));
-    };
+    }
     if (step !== undefined) {
         Sk.builtin.pyCheckType("step", "integer", Sk.builtin.checkInt(step));
-    };
+    }
 
     start = Sk.builtin.asnum$(start);
     stop = Sk.builtin.asnum$(stop);
@@ -29,21 +29,21 @@ Sk.builtin.range = function range(start, stop, step)
         step = 1;
     } else if (step === undefined) {
         step = 1;
-    };
+    }
 
     if (step === 0) {
         throw new Sk.builtin.ValueError("range() step argument must not be zero");
-    };
+    }
 
     if (step > 0) {
         for (i=start; i<stop; i+=step) {
             ret.push(new Sk.builtin.nmber(i, Sk.builtin.nmber.int$));
-        };
+        }
     } else {
         for (i=start; i>stop; i+=step) {
             ret.push(new Sk.builtin.nmber(i, Sk.builtin.nmber.int$));
-        };        
-    };
+        }
+    }
 
     return new Sk.builtin.list(ret);
 };
@@ -68,7 +68,8 @@ Sk.builtin.asnum$ = function(a) {
 	}
 
 	return a;
-}
+};
+
 goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
 
 Sk.builtin.assk$ = function(a, b) {
@@ -596,7 +597,6 @@ Sk.builtin.isinstance = function isinstance(obj, type)
 
     return issubclass(obj.ob$type, type);
 };
-
 Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash(value)
 {
@@ -675,7 +675,7 @@ Sk.builtin.input = function(obj, name, default_)
 
 Sk.builtin.jseval = function jseval(evalcode)
 {
-    goog.global.eval(evalcode);
+    goog.global['eval'](evalcode);
 };
 
 Sk.builtin.jsmillis = function jsmillis()
@@ -853,6 +853,62 @@ Sk.builtin.quit = function quit(msg) {
     throw new Sk.builtin.SystemExit(s);
 }
 
+Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
+	var compare_func;
+	var list;
+	if (key !== undefined && key !== null) {
+        if (cmp === null) {
+			compare_func = { func_code: function(a,b){
+				return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? -1 : 0;
+			}};
+		}
+        else {
+            compare_func = cmp.func_code;
+		}
+		var iter = iterable.tp$iter();
+		var next = iter.tp$iternext();
+		var arr = [];
+		while (next !== undefined){
+			arr.push([key.func_code(next), next]);
+			next = iter.tp$iternext();
+		}
+        list = new Sk.builtin.list(arr);
+	}
+	else {
+		if (cmp !== null && cmp !== undefined) {
+			compare_func = cmp;
+		}
+		else {
+			list = new Sk.builtin.list(iterable);
+		}
+	}
+	
+	if (compare_func !== undefined) {
+		list.list_sort_(list, 	compare_func);
+	}
+	else {
+		list.list_sort_();
+	}
+	
+	if (reverse) {
+		list.list_reverse_();
+	}
+	
+	if (key !== undefined && key !== null) {
+		var iter = list.tp$iter();
+		var next = iter.tp$iternext()
+		var arr = [];
+		while (next !== undefined){
+			arr.push(next[1]);
+			next = iter.tp$iternext();
+		}
+		list = new Sk.builtin.list(arr);
+	}
+	
+	return list;
+}
+
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
@@ -871,7 +927,6 @@ Sk.builtin.next_ = function next_() { throw new Sk.builtin.NotImplementedError("
 Sk.builtin.property = function property() { throw new Sk.builtin.NotImplementedError("property is not yet implemented")}
 Sk.builtin.reload = function reload() { throw new Sk.builtin.NotImplementedError("reload is not yet implemented")}
 Sk.builtin.reversed = function reversed() { throw new Sk.builtin.NotImplementedError("reversed is not yet implemented")}
-Sk.builtin.sorted = function sorted() { throw new Sk.builtin.NotImplementedError("sorted is not yet implemented")}
 Sk.builtin.unichr = function unichr() { throw new Sk.builtin.NotImplementedError("unichr is not yet implemented")}
 Sk.builtin.vars = function vars() { throw new Sk.builtin.NotImplementedError("vars is not yet implemented")}
 Sk.builtin.xrange = Sk.builtin.range;

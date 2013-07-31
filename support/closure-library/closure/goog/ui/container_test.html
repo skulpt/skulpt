@@ -3,17 +3,19 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
 Author:  attila@google.com (Attila Bodis)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.Container</title>
   <script src="../base.js"></script>
   <script>
     goog.require('goog.Disposable');
+    goog.require('goog.a11y.aria');
     goog.require('goog.dom');
     goog.require('goog.dom.classes');
     goog.require('goog.testing.events');
@@ -39,8 +41,8 @@ Author:  attila@google.com (Attila Bodis)
 
       sandbox.innerHTML =
           '<div id="containerElement" class="goog-container">\n' +
-          '  <div class="goog-control">Hello</div>\n' +
-          '  <div class="goog-control">World</div>\n' +
+          '  <div class="goog-control" id="hello">Hello</div>\n' +
+          '  <div class="goog-control" id="world">World</div>\n' +
           '</div>';
       containerElement = goog.dom.getElement('containerElement');
     }
@@ -48,7 +50,7 @@ Author:  attila@google.com (Attila Bodis)
     function tearDown() {
       goog.dom.removeChildren(sandbox);
       container.dispose();
-      goog.events.removeAll();
+      goog.events.removeAllNativeListeners();
       goog.dispose(keyContainer);
       goog.dispose(listContainer);
     }
@@ -114,6 +116,9 @@ Author:  attila@google.com (Attila Bodis)
           container.getChildAt(0).getElement(), sandbox);
       assertTrue('Child 0 should become highlighted after a mouse over',
           container.getChildAt(0).isHighlighted());
+      assertEquals('Child 0 should be the active descendant',
+          container.getChildAt(0).getElement(),
+          goog.a11y.aria.getActiveDescendant(container.getElement()));
 
       goog.testing.events.fireMouseOverEvent(
           container.getChildAt(1).getElement(),
@@ -123,6 +128,9 @@ Author:  attila@google.com (Attila Bodis)
           container.getChildAt(0).isHighlighted());
       assertTrue('Child 1 should now be highlighted.',
           container.getChildAt(1).isHighlighted());
+      assertEquals('Child 1 should be the active descendant',
+          container.getChildAt(1).getElement(),
+          goog.a11y.aria.getActiveDescendant(container.getElement()));
     }
 
     function testHighlightOnEnterPreventable() {
@@ -228,7 +236,7 @@ Author:  attila@google.com (Attila Bodis)
     }
     goog.inherits(ListContainer, goog.ui.Container);
 
-    /** @inheritDoc */
+    /** @override */
     ListContainer.prototype.createDom = function() {
       ListContainer.superClass_.createDom.call(this);
       var ul = this.getDomHelper().createDom('ul');
@@ -262,7 +270,7 @@ Author:  attila@google.com (Attila Bodis)
     }
     goog.inherits(KeyHandlingContainer, goog.ui.Container);
 
-    /** @inheritDoc */
+    /** @override */
     KeyHandlingContainer.prototype.handleKeyEventInternal = function() {
       this.keyEventsHandled++;
       return false;
@@ -312,7 +320,6 @@ Author:  attila@google.com (Attila Bodis)
       keyContainer.handleKeyEvent(new goog.events.Event());
       assertEquals('One key event should be handled',
           1, keyContainer.keyEventsHandled);
-
     }
 
     function testHandleKeyEvent_alwaysHandlesWithKeyEventTarget() {
@@ -324,6 +331,29 @@ Author:  attila@google.com (Attila Bodis)
       keyContainer.handleKeyEvent(new goog.events.Event());
       assertEquals('One key events should be handled',
           1, keyContainer.keyEventsHandled);
+    }
+
+    function testHandleKeyEventInternal_onlyHandlesUnmodified() {
+      container.setKeyEventTarget(sandbox);
+      var event = new goog.events.KeyEvent(
+          goog.events.KeyCodes.ESC, 0, false, null);
+
+      var propertyNames = [
+        'shiftKey',
+        'altKey',
+        'ctrlKey',
+        'metaKey'
+      ];
+
+      // Verify that the event is not handled whenever a modifier key is true.
+      for (var i = 0, propertyName; propertyName = propertyNames[i]; i++) {
+        assertTrue('Event should be handled when modifer key is not pressed.',
+            container.handleKeyEventInternal(event));
+        event[propertyName] = true;
+        assertFalse('Event should not be handled when modifer key is pressed.',
+            container.handleKeyEventInternal(event));
+        event[propertyName] = false;
+      }
     }
 
     function testOpenFollowsHighlight() {

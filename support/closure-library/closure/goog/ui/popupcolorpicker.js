@@ -17,7 +17,6 @@
  * less general than goog.ui.ColorPicker and presents a default set of colors
  * that CCC apps currently use in their color pickers.
  *
-*
  * @see ../demos/popupcolorpicker.html
  */
 
@@ -28,9 +27,9 @@ goog.require('goog.events.EventType');
 goog.require('goog.positioning.AnchoredPosition');
 goog.require('goog.positioning.Corner');
 goog.require('goog.ui.ColorPicker');
-goog.require('goog.ui.ColorPicker.EventType');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Popup');
+
 
 
 /**
@@ -130,7 +129,7 @@ goog.ui.PopupColorPicker.prototype.focusable_ = true;
 goog.ui.PopupColorPicker.prototype.toggleMode_ = true;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PopupColorPicker.prototype.createDom = function() {
   goog.ui.PopupColorPicker.superClass_.createDom.call(this);
   this.popup_ = new goog.ui.Popup(this.getElement());
@@ -141,7 +140,7 @@ goog.ui.PopupColorPicker.prototype.createDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PopupColorPicker.prototype.disposeInternal = function() {
   goog.ui.PopupColorPicker.superClass_.disposeInternal.call(this);
   this.colorPicker_ = null;
@@ -159,6 +158,7 @@ goog.ui.PopupColorPicker.prototype.disposeInternal = function() {
  * structure they build is fairly complicated.
  * @param {Element} element Element to decorate.
  * @return {boolean} Returns always false.
+ * @override
  */
 goog.ui.PopupColorPicker.prototype.canDecorate = function(element) {
   return false;

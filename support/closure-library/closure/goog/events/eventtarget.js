@@ -13,85 +13,101 @@
 // limitations under the License.
 
 /**
- * @fileoverview Implementation of EventTarget as defined by W3C DOM 2/3.
+ * @fileoverview A disposable implementation of a custom
+ * listenable/event target. See also: documentation for
+ * {@code goog.events.Listenable}.
  *
-*
-*
+ * @author arv@google.com (Erik Arvidsson) [Original implementation]
+ * @author pupius@google.com (Daniel Pupius) [Port to use goog.events]
  * @see ../demos/eventtarget.html
+ * @see goog.events.Listenable
  */
 
-/**
- * Namespace for events
- */
 goog.provide('goog.events.EventTarget');
 
 goog.require('goog.Disposable');
+goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.events');
+goog.require('goog.events.Event');
+goog.require('goog.events.Listenable');
+goog.require('goog.events.ListenerMap');
+goog.require('goog.object');
+
 
 
 /**
- * This implements the EventTarget interface as defined by W3C DOM 2/3. The
- * main difference from the spec is that the this does not know about event
- * propagation and therefore the flag whether to use bubbling or capturing is
- * not used.
+ * An implementation of {@code goog.events.Listenable} with full W3C
+ * EventTarget-like support (capture/bubble mechanism, stopping event
+ * propagation, preventing default actions).
  *
- * Another difference is that event objects do not really have to implement
- * the Event interface. An object is treated as an event object if it has a
- * type property.
+ * You may subclass this class to turn your class into a Listenable.
  *
- * It also allows you to pass a string instead of an event object and in that
- * case an event like object is created with the type set to the string value.
- *
- * Unless propagation is stopped, events dispatched by an EventTarget bubble
- * to its parent event target, returned by <code>getParentEventTarget</code>.
- * To set the parent event target, call <code>setParentEventTarget</code> or
- * override <code>getParentEventTarget</code> in a subclass.  Subclasses that
- * don't support changing the parent event target should override the setter
- * to throw an error.
+ * Unless propagation is stopped, an event dispatched by an
+ * EventTarget will bubble to the parent returned by
+ * {@code getParentEventTarget}. To set the parent, call
+ * {@code setParentEventTarget}. Subclasses that don't support
+ * changing the parent can override the setter to throw an error.
  *
  * Example usage:
  * <pre>
- *   var et = new goog.events.EventTarget;
- *   function f(e) {
- *      alert("Type: " + e.type + "\nTarget: " + e.target);
+ *   var source = new goog.events.EventTarget();
+ *   function handleEvent(e) {
+ *     alert('Type: ' + e.type + '; Target: ' + e.target);
  *   }
- *   et.addEventListener("foo", f);
+ *   source.listen('foo', handleEvent);
+ *   // Or: goog.events.listen(source, 'foo', handleEvent);
  *   ...
- *   et.dispatchEvent({type: "foo"}); // will call f
- *   // or et.dispatchEvent("foo");
+ *   source.dispatchEvent('foo');  // will call handleEvent
  *   ...
- *   et.removeEventListener("foo", f);
- *
- *  // You can also use the EventHandler interface:
- *  var eh = {
- *    handleEvent: function(e) {
- *      ...
- *    }
- *  };
- *  et.addEventListener("bar", eh);
+ *   source.unlisten('foo', handleEvent);
+ *   // Or: goog.events.unlisten(source, 'foo', handleEvent);
  * </pre>
+ *
+ * TODO(user): Consider writing a parallel class to this that
+ * does not implement goog.Disposable.
  *
  * @constructor
  * @extends {goog.Disposable}
+ * @implements {goog.events.Listenable}
  */
 goog.events.EventTarget = function() {
   goog.Disposable.call(this);
+
+  /**
+   * Maps of event type to an array of listeners.
+   * @private {!goog.events.ListenerMap}
+   */
+  this.eventTargetListeners_ = new goog.events.ListenerMap(this);
+
+  /**
+   * The object to use for event.target. Useful when mixing in an
+   * EventTarget to another object.
+   * @private {!Object}
+   */
+  this.actualEventTarget_ = this;
 };
 goog.inherits(goog.events.EventTarget, goog.Disposable);
+goog.events.Listenable.addImplementation(goog.events.EventTarget);
 
 
 /**
- * Used to tell if an event is a real event in goog.events.listen() so we don't
- * get listen() calling addEventListener() and vice-versa.
- * @type {boolean}
+ * An artificial cap on the number of ancestors you can have. This is mainly
+ * for loop detection.
+ * @const {number}
  * @private
  */
-goog.events.EventTarget.prototype.customEvent_ = true;
+goog.events.EventTarget.MAX_ANCESTORS_ = 1000;
 
 
 /**
  * Parent event target, used during event bubbling.
- * @type {goog.events.EventTarget?}
+ *
+ * TODO(user): Change this to goog.events.Listenable. This
+ * currently breaks people who expect getParentEventTarget to return
+ * goog.events.EventTarget.
+ *
+ * @type {goog.events.EventTarget}
  * @private
  */
 goog.events.EventTarget.prototype.parentEventTarget_ = null;
@@ -100,8 +116,9 @@ goog.events.EventTarget.prototype.parentEventTarget_ = null;
 /**
  * Returns the parent of this event target to use for bubbling.
  *
- * @return {goog.events.EventTarget} The parent EventTarget or null if there
- * is no parent.
+ * @return {goog.events.EventTarget} The parent EventTarget or null if
+ *     there is no parent.
+ * @override
  */
 goog.events.EventTarget.prototype.getParentEventTarget = function() {
   return this.parentEventTarget_;
@@ -109,9 +126,9 @@ goog.events.EventTarget.prototype.getParentEventTarget = function() {
 
 
 /**
- * Sets the parent of this event target to use for bubbling.
- *
- * @param {goog.events.EventTarget?} parent Parent EventTarget (null if none).
+ * Sets the parent of this event target to use for capture/bubble
+ * mechanism.
+ * @param {goog.events.EventTarget} parent Parent listenable (null if none).
  */
 goog.events.EventTarget.prototype.setParentEventTarget = function(parent) {
   this.parentEventTarget_ = parent;
@@ -126,6 +143,8 @@ goog.events.EventTarget.prototype.setParentEventTarget = function(parent) {
  *
  * Supported for legacy but use goog.events.listen(src, type, handler) instead.
  *
+ * TODO(user): Deprecate this.
+ *
  * @param {string} type The type of the event to listen for.
  * @param {Function|Object} handler The function to handle the event. The
  *     handler can also be an object that implements the handleEvent method
@@ -133,7 +152,8 @@ goog.events.EventTarget.prototype.setParentEventTarget = function(parent) {
  * @param {boolean=} opt_capture In DOM-compliant browsers, this determines
  *     whether the listener is fired during the capture or bubble phase
  *     of the event.
- * @param {Object=} opt_handlerScope Object in whose scope to call the listener.
+ * @param {Object=} opt_handlerScope Object in whose scope to call
+ *     the listener.
  */
 goog.events.EventTarget.prototype.addEventListener = function(
     type, handler, opt_capture, opt_handlerScope) {
@@ -145,6 +165,9 @@ goog.events.EventTarget.prototype.addEventListener = function(
  * Removes an event listener from the event target. The handler must be the
  * same object as the one added. If the handler has not been added then
  * nothing is done.
+ *
+ * TODO(user): Deprecate this.
+ *
  * @param {string} type The type of the event to listen for.
  * @param {Function|Object} handler The function to handle the event. The
  *     handler can also be an object that implements the handleEvent method
@@ -152,7 +175,8 @@ goog.events.EventTarget.prototype.addEventListener = function(
  * @param {boolean=} opt_capture In DOM-compliant browsers, this determines
  *     whether the listener is fired during the capture or bubble phase
  *     of the event.
- * @param {Object=} opt_handlerScope Object in whose scope to call the listener.
+ * @param {Object=} opt_handlerScope Object in whose scope to call
+ *     the listener.
  */
 goog.events.EventTarget.prototype.removeEventListener = function(
     type, handler, opt_capture, opt_handlerScope) {
@@ -160,38 +184,218 @@ goog.events.EventTarget.prototype.removeEventListener = function(
 };
 
 
-/**
- * Dispatches an event (or event like object) and calls all listeners
- * listening for events of this type. The type of the event is decided by the
- * type property on the event object.
- *
- * If any of the listeners returns false OR calls preventDefault then this
- * function will return false.  If one of the capture listeners calls
- * stopPropagation, then the bubble listeners won't fire.
- *
- * @param {string|Object|goog.events.Event} e Event object.
- * @return {boolean} If anyone called preventDefault on the event object (or
- *     if any of the handlers returns false this will also return false.
- */
+/** @override */
 goog.events.EventTarget.prototype.dispatchEvent = function(e) {
-  return goog.events.dispatchEvent(this, e);
+  this.assertInitialized_();
+
+  var ancestorsTree, ancestor = this.getParentEventTarget();
+  if (ancestor) {
+    ancestorsTree = [];
+    var ancestorCount = 1;
+    for (; ancestor; ancestor = ancestor.getParentEventTarget()) {
+      ancestorsTree.push(ancestor);
+      goog.asserts.assert(
+          (++ancestorCount < goog.events.EventTarget.MAX_ANCESTORS_),
+          'infinite loop');
+    }
+  }
+
+  return goog.events.EventTarget.dispatchEventInternal_(
+      this.actualEventTarget_, e, ancestorsTree);
 };
 
 
 /**
- * Unattach listeners from this object.  Classes that extend EventTarget may
+ * Removes listeners from this object.  Classes that extend EventTarget may
  * need to override this method in order to remove references to DOM Elements
- * and additional listeners, it should be something like this:
- * <pre>
- * MyClass.prototype.disposeInternal = function() {
- *   MyClass.superClass_.disposeInternal.call(this);
- *   // Dispose logic for MyClass
- * };
- * </pre>
- * @protected
+ * and additional listeners.
+ * @override
  */
 goog.events.EventTarget.prototype.disposeInternal = function() {
   goog.events.EventTarget.superClass_.disposeInternal.call(this);
-  goog.events.removeAll(this);
+
+  this.removeAllListeners();
   this.parentEventTarget_ = null;
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.listen = function(
+    type, listener, opt_useCapture, opt_listenerScope) {
+  this.assertInitialized_();
+  return this.eventTargetListeners_.add(
+      type, listener, false /* callOnce */, opt_useCapture, opt_listenerScope);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.listenOnce = function(
+    type, listener, opt_useCapture, opt_listenerScope) {
+  return this.eventTargetListeners_.add(
+      type, listener, true /* callOnce */, opt_useCapture, opt_listenerScope);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.unlisten = function(
+    type, listener, opt_useCapture, opt_listenerScope) {
+  return this.eventTargetListeners_.remove(
+      type, listener, opt_useCapture, opt_listenerScope);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.unlistenByKey = function(key) {
+  return this.eventTargetListeners_.removeByKey(key);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.removeAllListeners = function(opt_type) {
+  // TODO(user): Previously, removeAllListeners can be called on
+  // uninitialized EventTarget, so we preserve that behavior. We
+  // should remove this when usages that rely on that fact are purged.
+  if (!this.eventTargetListeners_) {
+    return 0;
+  }
+  return this.eventTargetListeners_.removeAll(opt_type);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.fireListeners = function(
+    type, capture, eventObject) {
+  // TODO(user): Original code avoids array creation when there
+  // is no listener, so we do the same. If this optimization turns
+  // out to be not required, we can replace this with
+  // getListeners(type, capture) instead, which is simpler.
+  var listenerArray = this.eventTargetListeners_.listeners[type];
+  if (!listenerArray) {
+    return true;
+  }
+  listenerArray = goog.array.clone(listenerArray);
+
+  var rv = true;
+  for (var i = 0; i < listenerArray.length; ++i) {
+    var listener = listenerArray[i];
+    // We might not have a listener if the listener was removed.
+    if (listener && !listener.removed && listener.capture == capture) {
+      var listenerFn = listener.listener;
+      var listenerHandler = listener.handler || listener.src;
+
+      if (listener.callOnce) {
+        this.unlistenByKey(listener);
+      }
+      rv = listenerFn.call(listenerHandler, eventObject) !== false && rv;
+    }
+  }
+
+  return rv && eventObject.returnValue_ != false;
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.getListeners = function(type, capture) {
+  return this.eventTargetListeners_.getListeners(type, capture);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.getListener = function(
+    type, listener, capture, opt_listenerScope) {
+  return this.eventTargetListeners_.getListener(
+      type, listener, capture, opt_listenerScope);
+};
+
+
+/** @override */
+goog.events.EventTarget.prototype.hasListener = function(
+    opt_type, opt_capture) {
+  return this.eventTargetListeners_.hasListener(opt_type, opt_capture);
+};
+
+
+/**
+ * Sets the target to be used for {@code event.target} when firing
+ * event. Mainly used for testing. For example, see
+ * {@code goog.testing.events.mixinListenable}.
+ * @param {!Object} target The target.
+ */
+goog.events.EventTarget.prototype.setTargetForTesting = function(target) {
+  this.actualEventTarget_ = target;
+};
+
+
+/**
+ * Asserts that the event target instance is initialized properly.
+ * @private
+ */
+goog.events.EventTarget.prototype.assertInitialized_ = function() {
+  goog.asserts.assert(
+      this.eventTargetListeners_,
+      'Event target is not initialized. Did you call the superclass ' +
+      '(goog.events.EventTarget) constructor?');
+};
+
+
+/**
+ * Dispatches the given event on the ancestorsTree.
+ *
+ * TODO(user): Look for a way to reuse this logic in
+ * goog.events, if possible.
+ *
+ * @param {!Object} target The target to dispatch on.
+ * @param {goog.events.Event|Object|string} e The event object.
+ * @param {Array.<goog.events.Listenable>=} opt_ancestorsTree The ancestors
+ *     tree of the target, in reverse order from the closest ancestor
+ *     to the root event target. May be null if the target has no ancestor.
+ * @return {boolean} If anyone called preventDefault on the event object (or
+ *     if any of the listeners returns false) this will also return false.
+ * @private
+ */
+goog.events.EventTarget.dispatchEventInternal_ = function(
+    target, e, opt_ancestorsTree) {
+  var type = e.type || /** @type {string} */ (e);
+
+  // If accepting a string or object, create a custom event object so that
+  // preventDefault and stopPropagation work with the event.
+  if (goog.isString(e)) {
+    e = new goog.events.Event(e, target);
+  } else if (!(e instanceof goog.events.Event)) {
+    var oldEvent = e;
+    e = new goog.events.Event(type, target);
+    goog.object.extend(e, oldEvent);
+  } else {
+    e.target = e.target || target;
+  }
+
+  var rv = true, currentTarget;
+
+  // Executes all capture listeners on the ancestors, if any.
+  if (opt_ancestorsTree) {
+    for (var i = opt_ancestorsTree.length - 1; !e.propagationStopped_ && i >= 0;
+         i--) {
+      currentTarget = e.currentTarget = opt_ancestorsTree[i];
+      rv = currentTarget.fireListeners(type, true, e) && rv;
+    }
+  }
+
+  // Executes capture and bubble listeners on the target.
+  if (!e.propagationStopped_) {
+    currentTarget = e.currentTarget = target;
+    rv = currentTarget.fireListeners(type, true, e) && rv;
+    if (!e.propagationStopped_) {
+      rv = currentTarget.fireListeners(type, false, e) && rv;
+    }
+  }
+
+  // Executes all bubble listeners on the ancestors, if any.
+  if (opt_ancestorsTree) {
+    for (i = 0; !e.propagationStopped_ && i < opt_ancestorsTree.length; i++) {
+      currentTarget = e.currentTarget = opt_ancestorsTree[i];
+      rv = currentTarget.fireListeners(type, false, e) && rv;
+    }
+  }
+
+  return rv;
 };

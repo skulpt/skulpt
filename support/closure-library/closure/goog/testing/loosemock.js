@@ -14,7 +14,6 @@
 
 /**
  * @fileoverview This file defines a loose mock implementation.
-*
  */
 
 goog.provide('goog.testing.LooseExpectationCollection');
@@ -23,6 +22,7 @@ goog.provide('goog.testing.LooseMock');
 goog.require('goog.array');
 goog.require('goog.structs.Map');
 goog.require('goog.testing.Mock');
+
 
 
 /**
@@ -120,7 +120,7 @@ goog.testing.LooseMock.prototype.$setIgnoreUnexpectedCalls = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.LooseMock.prototype.$recordExpectation = function() {
   if (!this.$expectations_.containsKey(this.$pendingExpectation.name)) {
     this.$expectations_.set(this.$pendingExpectation.name,
@@ -132,7 +132,7 @@ goog.testing.LooseMock.prototype.$recordExpectation = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.LooseMock.prototype.$recordCall = function(name, args) {
   if (!this.$expectations_.containsKey(name)) {
     if (this.$ignoreUnexpectedCalls_) {
@@ -172,7 +172,7 @@ goog.testing.LooseMock.prototype.$recordCall = function(name, args) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.LooseMock.prototype.$reset = function() {
   goog.testing.LooseMock.superClass_.$reset.call(this);
 
@@ -181,7 +181,7 @@ goog.testing.LooseMock.prototype.$reset = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.LooseMock.prototype.$replay = function() {
   goog.testing.LooseMock.superClass_.$replay.call(this);
 
@@ -205,9 +205,9 @@ goog.testing.LooseMock.prototype.$replay = function() {
             var name = expectation.name;
             var argsString = this.$argumentsAsString(expectation.argumentList);
             this.$throwException([
-                'Expected call to ', name, ' with arguments ', argsString,
-                ' has an infinite max number of calls; can\'t expect an',
-                ' identical call later with a positive min number of calls'
+              'Expected call to ', name, ' with arguments ', argsString,
+              ' has an infinite max number of calls; can\'t expect an',
+              ' identical call later with a positive min number of calls'
             ].join(''));
           }
         }
@@ -217,7 +217,7 @@ goog.testing.LooseMock.prototype.$replay = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.LooseMock.prototype.$verify = function() {
   goog.testing.LooseMock.superClass_.$verify.call(this);
   var collections = this.$expectations_.getValues();

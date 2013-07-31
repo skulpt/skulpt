@@ -15,17 +15,19 @@
 
 /**
  * @fileoverview Graphics utility functions and factory methods.
-*
+ * @author arv@google.com (Erik Arvidsson)
  */
 
 
 goog.provide('goog.graphics.AbstractGraphics');
 
+goog.require('goog.dom');
 goog.require('goog.graphics.Path');
 goog.require('goog.math.Coordinate');
 goog.require('goog.math.Size');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
+
 
 
 /**
@@ -364,7 +366,7 @@ goog.graphics.AbstractGraphics.prototype.drawTextOnLine = goog.abstractMethod;
 /**
  * Draw a path.
  *
- * @param {goog.graphics.Path} path The path object to draw.
+ * @param {!goog.graphics.Path} path The path object to draw.
  * @param {goog.graphics.Stroke?} stroke Stroke object describing the
  *    stroke.
  * @param {goog.graphics.Fill?} fill Fill object describing the fill.

@@ -3,7 +3,7 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
@@ -11,6 +11,7 @@ See the COPYING file for details.
   @author nicksantos@google.com (Nick Santos)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.ui.MenuButton</title>
 <style type='text/css'>
 .goog-menu {
@@ -21,28 +22,41 @@ See the COPYING file for details.
 <script src="../base.js"></script>
 <script>
   goog.require('goog.Timer');
+  goog.require('goog.a11y.aria');
+  goog.require('goog.a11y.aria.State');
   goog.require('goog.dom');
   goog.require('goog.events');
   goog.require('goog.events.Event');
+  goog.require('goog.events.EventType');
   goog.require('goog.events.KeyCodes');
   goog.require('goog.positioning');
+  goog.require('goog.positioning.MenuAnchoredPosition');
   goog.require('goog.positioning.Overflow');
   goog.require('goog.style');
+  goog.require('goog.testing.ExpectedFailures');
   goog.require('goog.testing.PropertyReplacer');
   goog.require('goog.testing.events');
   goog.require('goog.testing.jsunit');
   goog.require('goog.testing.recordFunction');
   goog.require('goog.ui.Menu');
   goog.require('goog.ui.MenuButton');
+  goog.require('goog.ui.MenuItem');
+  goog.require('goog.userAgent');
+  goog.require('goog.userAgent.product');
+  goog.require('goog.userAgent.product.isVersion');
+
+
 </script>
 </head>
 <body>
 <iframe id="iframe1" src="menubutton_test_frame.html" width="400" height="400">
 </iframe>
+<div id="positionElement" style="position: absolute; left: 205px"></div>
 <script>
 
 var menuButton;
 var clonedMenuButtonDom;
+var expectedFailures = new goog.testing.ExpectedFailures();
 
 // Mock out goog.positioning.positionAtCoordinate to always ignore failure when
 // the window is too small, since we don't care about the viewport size on
@@ -66,12 +80,22 @@ function MyFakeEvent(keyCode) {
 }
 
 function setUp() {
+  window.scrollTo(0, 0);
+
+  var viewportSize = goog.dom.getViewportSize();
+  // Some tests need enough size viewport.
+  if (viewportSize.width < 600 || viewportSize.height < 600) {
+    window.moveTo(0, 0);
+    window.resizeTo(640, 640);
+  }
+
   clonedMenuButtonDom = goog.dom.getElement('demoMenuButton').cloneNode(true);
 
   menuButton = new goog.ui.MenuButton();
 }
 
 function tearDown() {
+  expectedFailures.handleTearDown();
   menuButton.dispose();
 
   var element = goog.dom.getElement('demoMenuButton');
@@ -79,11 +103,37 @@ function tearDown() {
 }
 
 /**
+ * Check if the aria-haspopup property is set correctly.
+ */
+function checkHasPopUp() {
+  menuButton.enterDocument();
+  assertFalse('Menu button must have aria-haspopup attribute set to false',
+      goog.a11y.aria.getState(menuButton.getElement(),
+      goog.a11y.aria.State.HASPOPUP));
+  var menu = new goog.ui.Menu();
+  menu.createDom();
+  menuButton.setMenu(menu);
+  assertTrue('Menu button must have aria-haspopup attribute set to true',
+      goog.a11y.aria.getState(menuButton.getElement(),
+      goog.a11y.aria.State.HASPOPUP));
+  menuButton.setMenu(null);
+  assertFale('Menu button must have aria-haspopup attribute set to false',
+      goog.a11y.aria.getState(menuButton.getElement(),
+      goog.a11y.aria.State.HASPOPUP));
+}
+
+/**
  * Open the menu and click on the menu item inside.
+ * Check if the aria-haspopup property is set correctly.
  */
 function testBasicButtonBehavior() {
   var node = goog.dom.getElement('demoMenuButton');
   menuButton.decorate(node);
+
+  assertEquals('Menu button must have aria-haspopup attribute set to true',
+      'true', goog.a11y.aria.getState(menuButton.getElement(),
+      goog.a11y.aria.State.HASPOPUP));
+
   goog.testing.events.fireClickSequence(node);
 
   assertTrue('Menu must open after click', menuButton.isOpen());
@@ -94,7 +144,7 @@ function testBasicButtonBehavior() {
     goog.ui.Component.EventType.ACTION,
     function(e) {
       menuItemClicked++;
-      lastMenuItemClicked = e.target
+      lastMenuItemClicked = e.target;
     });
 
   var menuItem2 = goog.dom.getElement('menuItem2');
@@ -110,7 +160,6 @@ function testBasicButtonBehavior() {
  * Check if the aria-activedescendant property is set correctly.
  */
 function testHighlightItemBehavior() {
-  if (goog.userAgent.GECKO) {
     var node = goog.dom.getElement('demoMenuButton');
     menuButton.decorate(node);
     goog.testing.events.fireClickSequence(node);
@@ -118,15 +167,25 @@ function testHighlightItemBehavior() {
     assertTrue('Menu must open after click', menuButton.isOpen());
 
     menuButton.handleKeyEvent(new MyFakeEvent(goog.events.KeyCodes.DOWN));
+    assertNotNull(menuButton.getElement());
     assertEquals('First menuitem must be the aria-activedescendant',
-        'menuItem1', goog.dom.a11y.getState(menuButton.getElement(),
-        goog.dom.a11y.State.ACTIVEDESCENDANT));
+        'menuItem1', goog.a11y.aria.getState(menuButton.getElement(),
+            goog.a11y.aria.State.ACTIVEDESCENDANT));
 
     menuButton.handleKeyEvent(new MyFakeEvent(goog.events.KeyCodes.DOWN));
     assertEquals('Second menuitem must be the aria-activedescendant',
-        'menuItem2', goog.dom.a11y.getState(menuButton.getElement(),
-        goog.dom.a11y.State.ACTIVEDESCENDANT));
-  }
+        'menuItem2', goog.a11y.aria.getState(menuButton.getElement(),
+            goog.a11y.aria.State.ACTIVEDESCENDANT));
+}
+
+/**
+ * Make sure the menu opens when enter is pressed.
+ */
+function testEnterOpensMenu() {
+  var node = goog.dom.getElement('demoMenuButton');
+  menuButton.decorate(node);
+  menuButton.handleKeyEvent(new MyFakeEvent(goog.events.KeyCodes.ENTER));
+  assertTrue('Menu must open after enter', menuButton.isOpen());
 }
 
 /**
@@ -262,6 +321,97 @@ function testOpenedMenuPositionCorrection() {
 }
 
 /**
+ * Use a different button to position the menu and make sure it does so
+ * correctly.
+ */
+function testAlternatePositioningElement() {
+  var node = goog.dom.getElement('demoMenuButton');
+  menuButton.decorate(node);
+
+  var posElement = goog.dom.getElement('positionElement');
+  menuButton.setPositionElement(posElement);
+
+  // Show the menu.
+  menuButton.setOpen(true);
+
+  // Confirm the menu position
+  var menuNode = menuButton.getMenu().getElement();
+  assertRoughlyEquals(menuNode.offsetTop, posElement.offsetTop
+      + posElement.offsetHeight, 20);
+  assertRoughlyEquals(menuNode.offsetLeft, posElement.offsetLeft, 20);
+}
+
+/**
+ * Test forced positioning above the button.
+ */
+function testPositioningAboveAnchor() {
+  var node = goog.dom.getElement('demoMenuButton');
+  menuButton.decorate(node);
+
+  // Show the menu.
+  menuButton.setAlignMenuToStart(true);  // Should get overridden below
+  menuButton.setScrollOnOverflow(true);  // Should get overridden below
+
+  var position = new goog.positioning.MenuAnchoredPosition(
+      menuButton.getElement(),
+      goog.positioning.Corner.TOP_START,
+      /* opt_adjust */ false, /* opt_resize */ false);
+  menuButton.setMenuPosition(position);
+  menuButton.setOpen(true);
+
+  // Confirm the menu position
+  var buttonBounds = goog.style.getBounds(node);
+  var menuNode = menuButton.getMenu().getElement();
+  var menuBounds = goog.style.getBounds(menuNode);
+
+  assertRoughlyEquals(menuBounds.top + menuBounds.height,
+      buttonBounds.top, 3);
+  assertRoughlyEquals(menuBounds.left, buttonBounds.left, 3);
+  // For this test to be valid, the node must have non-trival height.
+  assertRoughlyEquals(node.offsetHeight, 19, 3);
+}
+
+/**
+ * Test forced positioning below the button.
+ */
+function testPositioningBelowAnchor() {
+  var node = goog.dom.getElement('demoMenuButton');
+  menuButton.decorate(node);
+
+  // Show the menu.
+  menuButton.setAlignMenuToStart(true);  // Should get overridden below
+  menuButton.setScrollOnOverflow(true);  // Should get overridden below
+
+  var position = new goog.positioning.MenuAnchoredPosition(
+      menuButton.getElement(),
+      goog.positioning.Corner.BOTTOM_START,
+      /* opt_adjust */ false, /* opt_resize */ false);
+  menuButton.setMenuPosition(position);
+  menuButton.setOpen(true);
+
+  // Confirm the menu position
+  var buttonBounds = goog.style.getBounds(node);
+  var menuNode = menuButton.getMenu().getElement();
+  var menuBounds = goog.style.getBounds(menuNode);
+
+  expectedFailures.expectFailureFor(isWinSafariBefore5());
+  try {
+    assertRoughlyEquals(menuBounds.top,
+        buttonBounds.top + buttonBounds.height, 3);
+    assertRoughlyEquals(menuBounds.left, buttonBounds.left, 3);
+  } catch (e) {
+    expectedFailures.handleException(e);
+  }
+  // For this test to be valid, the node must have non-trival height.
+  assertRoughlyEquals(node.offsetHeight, 19, 3);
+}
+
+function isWinSafariBefore5() {
+  return goog.userAgent.WINDOWS && goog.userAgent.product.SAFARI &&
+    goog.userAgent.product.isVersion(4) && !goog.userAgent.product.isVersion(5);
+}
+
+/**
  * Tests that space, and only space, fire on key up.
  */
 function testSpaceFireOnKeyUp() {
@@ -281,7 +431,6 @@ function testSpaceFireOnKeyUp() {
   menuButton.handleKeyEvent(e);
   assertTrue('Menu must have been triggered by Space keyup',
       menuButton.isOpen());
-
   menuButton.getMenu().setHighlightedIndex(0);
   e = new goog.events.Event(goog.events.KeyHandler.EventType.KEY, menuButton);
   e.keyCode = goog.events.KeyCodes.DOWN;
@@ -383,12 +532,98 @@ function testResizeOnItemAddOrRemove() {
   menuButton.addItem(item);
 }
 
+/**
+ * Tests that adding and removing items from a menu with scrollOnOverflow is on
+ * correctly resizes the menu.
+ */
+function testResizeOnItemAddOrRemoveWithScrollOnOverflow() {
+  var node = goog.dom.getElement('demoMenuButton');
+  menuButton.decorate(node);
+  var menu = menuButton.getMenu();
 
+  // Show the menu.
+  menuButton.setScrollOnOverflow(true);
+  menuButton.setOpen(true);
+  var originalSize = goog.style.getSize(menu.getElement());
+
+  // Check that removing an item while the menu is left open correctly changes
+  // the size of the menu.
+  // Remove an item using a method on Menu.
+  var item = menu.removeChildAt(0, true);
+  menuButton.invalidateMenuSize();
+  menuButton.positionMenu();
+
+  // Confirm size of menu changed.
+  var afterRemoveSize = goog.style.getSize(menu.getElement());
+  assertTrue('Height of menu must decrease after removing a menu item.',
+      afterRemoveSize.height < originalSize.height);
+
+  var item2 = menu.removeChildAt(0, true);
+  menuButton.invalidateMenuSize();
+  menuButton.positionMenu();
+
+  // Confirm size of menu changed.
+  var afterRemoveAgainSize = goog.style.getSize(menu.getElement());
+  assertTrue('Height of menu must decrease after removing a second menu item.',
+      afterRemoveAgainSize.height < afterRemoveSize.height);
+
+  // Check that adding an item while the menu is opened correctly changes the
+  // size of the menu.
+  menuButton.addItem(item2);
+  menuButton.invalidateMenuSize();
+  menuButton.positionMenu();
+
+  // Confirm size of menu changed.
+  var afterAddSize = goog.style.getSize(menu.getElement());
+  assertTrue('Height of menu must increase after adding a menu item.',
+      afterRemoveAgainSize.height < afterAddSize.height);
+  assertEquals(
+      'Removing and adding back items must not change the height of a menu.',
+      afterRemoveSize.height, afterAddSize.height);
+}
+
+/**
+ * Try rendering the menu as a sibling rather than as a child of the dom.
+ */
+function testRenderMenuAsSibling() {
+  menuButton.setRenderMenuAsSibling(true);
+  menuButton.addItem(new goog.ui.MenuItem('Menu item 1'));
+  menuButton.addItem(new goog.ui.MenuItem('Menu item 2'));
+  // By default the menu is rendered into the top level dom and the button
+  // is rendered into whatever parent we provide.  If we don't provide a
+  // parent then we aren't really testing anything, since both would be, by
+  // default, rendered into the top level dom, and therefore siblings.
+  menuButton.render(goog.dom.getElement('siblingTest'));
+  menuButton.setOpen(true);
+  assertEquals(
+      menuButton.getElement().parentNode,
+      menuButton.getMenu().getElement().parentNode);
+}
+
+function testAlignToStartSetter() {
+  assertTrue(menuButton.isAlignMenuToStart());
+
+  menuButton.setAlignMenuToStart(false);
+  assertFalse(menuButton.isAlignMenuToStart());
+
+  menuButton.setAlignMenuToStart(true);
+  assertTrue(menuButton.isAlignMenuToStart());
+}
+
+function testScrollOnOverflowSetter() {
+  assertFalse(menuButton.isScrollOnOverflow());
+
+  menuButton.setScrollOnOverflow(true);
+  assertTrue(menuButton.isScrollOnOverflow());
+
+  menuButton.setScrollOnOverflow(false);
+  assertFalse(menuButton.isScrollOnOverflow());
+}
 </script>
-
 <p>
   Here's a menubutton defined in markup:
 </p>
+<div id="siblingTest"></div>
 <div id="demoMenuButton" class="goog-menu-button">
   <div id="demoMenu" class="goog-menu">
     <div id='menuItem1' class="goog-menuitem">Annual Report.pdf</div>

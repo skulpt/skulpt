@@ -31,7 +31,7 @@ goog.testing.benchmark.run_ = function() {
   var search = window.location.search;
   var timesMatch = search.match(/(?:\?|&)times=([^?&]+)/i);
   if (timesMatch) {
-    times = timesMatch[1];
+    times = Number(timesMatch[1]);
   }
 
   var prefix = 'benchmark';
@@ -46,7 +46,7 @@ goog.testing.benchmark.run_ = function() {
     try {
       var ref = testSource[name];
     } catch (ex) {
-      // NOTE(user): When running tests from a file:// URL on Firefox 3.5
+      // NOTE(brenneman): When running tests from a file:// URL on Firefox 3.5
       // for Windows, any reference to window.sessionStorage raises
       // an "Operation is not supported" exception. Ignore any exceptions raised
       // by simply accessing global properties.
@@ -81,7 +81,8 @@ goog.testing.benchmark.run_ = function() {
 
 /**
  * Onload handler that runs the benchmarks.
+ * @param {Event} e The event object.
  */
-window.onload = function() {
+window.onload = function(e) {
   goog.testing.benchmark.run_();
 };

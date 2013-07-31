@@ -25,6 +25,7 @@ goog.require('goog.dom.pattern.AllChildren');
 goog.require('goog.dom.pattern.MatchType');
 
 
+
 /**
  * Pattern object that matches any nodes at or below the current tree depth.
  *
@@ -60,6 +61,7 @@ goog.dom.pattern.ChildMatches.prototype.matches;
  */
 goog.dom.pattern.ChildMatches.prototype.minimumMatches_ = 0;
 
+
 /**
  * The child pattern to collect matches from.
  *
@@ -86,6 +88,7 @@ goog.dom.pattern.ChildMatches.prototype.needsReset_ = false;
  * @param {goog.dom.TagWalkType} type The type of token.
  * @return {goog.dom.pattern.MatchType} {@code MATCHING} if the token is on the
  *     same level or deeper and {@code BACKTRACK_MATCH} if not.
+ * @override
  */
 goog.dom.pattern.ChildMatches.prototype.matchToken = function(token, type) {
   // Defer resets so we maintain our matches array until the last possible time.
@@ -141,6 +144,7 @@ goog.dom.pattern.ChildMatches.prototype.matchToken = function(token, type) {
 
 /**
  * Reset any internal state this pattern keeps.
+ * @override
  */
 goog.dom.pattern.ChildMatches.prototype.reset = function() {
   this.needsReset_ = false;

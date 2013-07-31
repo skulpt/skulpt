@@ -3,18 +3,20 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
 Author:  attila@google.com (Attila Bodis)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.ContainerRenderer</title>
   <script src="../base.js"></script>
   <script>
     goog.require('goog.dom');
     goog.require('goog.testing.ExpectedFailures');
+    goog.require('goog.testing.PropertyReplacer');
     goog.require('goog.testing.jsunit');
     goog.require('goog.testing.ui.rendererasserts');
     goog.require('goog.ui.Container');
@@ -29,32 +31,13 @@ Author:  attila@google.com (Attila Bodis)
   <script>
     var renderer;
     var expectedFailures = new goog.testing.ExpectedFailures();
+    var stubs = new goog.testing.PropertyReplacer();
 
     function setUp() {
       var sandbox = goog.dom.getElement('sandbox');
 
       sandbox.appendChild(goog.dom.createDom('span', {
         id: 'noTabIndex'
-      }, 'Test'));
-      sandbox.appendChild(goog.dom.createDom('span', {
-        id: 'tabIndexNegative2',
-        tabIndex: -2
-      }, 'Test'));
-      sandbox.appendChild(goog.dom.createDom('span', {
-        id: 'tabIndexNegative1',
-        tabIndex: -1
-      }, 'Test'));
-      sandbox.appendChild(goog.dom.createDom('span', {
-        id: 'tabIndex0',
-        tabIndex: 0
-      }, 'Test'));
-      sandbox.appendChild(goog.dom.createDom('span', {
-        id: 'tabIndex1',
-        tabIndex: 1
-      }, 'Test'));
-      sandbox.appendChild(goog.dom.createDom('span', {
-        id: 'tabIndex2',
-        tabIndex: 2
       }, 'Test'));
       sandbox.appendChild(goog.dom.createDom('div', {
         id: 'container',
@@ -69,6 +52,7 @@ Author:  attila@google.com (Attila Bodis)
 
     function tearDown() {
       goog.dom.getElement('sandbox').innerHTML = '';
+      stubs.reset();
       expectedFailures.handleTearDown();
     }
 
@@ -93,50 +77,24 @@ Author:  attila@google.com (Attila Bodis)
       assertUndefined('ARIA role must be undefined', renderer.getAriaRole());
     }
 
-    function testHasTabIndex() {
-      assertFalse('hasTabIndex() must return false for null argument',
-          renderer.hasTabIndex(null));
-      assertFalse('hasTabIndex() must return false for no tab index',
-          renderer.hasTabIndex(goog.dom.getElement('noTabIndex')));
-      assertFalse('hasTabIndex() must return false for tab index -2',
-          renderer.hasTabIndex(goog.dom.getElement('tabIndexNegative2')));
-      assertFalse('hasTabIndex() must return false for tab index -1',
-          renderer.hasTabIndex(goog.dom.getElement('tabIndexNegative1')));
-
-      // WebKit on Mac doesn't support tabIndex for arbitrary DOM elements
-      // until version 527 or later.
-      expectedFailures.expectFailureFor(goog.userAgent.WEBKIT &&
-          goog.userAgent.MAC && !goog.userAgent.isVersion('527'));
-      try {
-        assertTrue('hasTabIndex() must return true for tab index 0',
-            renderer.hasTabIndex(goog.dom.getElement('tabIndex0')));
-        assertTrue('hasTabIndex() must return true for tab index 1',
-            renderer.hasTabIndex(goog.dom.getElement('tabIndex1')));
-        assertTrue('hasTabIndex() must return true for tab index 2',
-            renderer.hasTabIndex(goog.dom.getElement('tabIndex2')));
-      } catch (e) {
-        expectedFailures.handleException(e);
-      }
-    }
-
     function testEnableTabIndex() {
       var container = goog.dom.getElement('container');
       assertFalse('Container must not have any tab index',
-          renderer.hasTabIndex(container));
+          goog.dom.isFocusableTabIndex(container));
 
       // WebKit on Mac doesn't support tabIndex for arbitrary DOM elements
       // until version 527 or later.
       expectedFailures.expectFailureFor(goog.userAgent.WEBKIT &&
-          goog.userAgent.MAC && !goog.userAgent.isVersion('527'));
+          goog.userAgent.MAC && !goog.userAgent.isVersionOrHigher('527'));
       try {
         renderer.enableTabIndex(container, true);
         assertTrue('Container must have a tab index',
-            renderer.hasTabIndex(container));
+            goog.dom.isFocusableTabIndex(container));
         assertEquals('Container\'s tab index must be 0', 0, container.tabIndex);
 
         renderer.enableTabIndex(container, false);
         assertFalse('Container must not have a tab index',
-            renderer.hasTabIndex(container));
+            goog.dom.isFocusableTabIndex(container));
         assertEquals('Container\'s tab index must be -1', -1,
             container.tabIndex);
       } catch (e) {
@@ -195,6 +153,34 @@ Author:  attila@google.com (Attila Bodis)
           container.getChildCount());
       assertEquals('Child component\'s ID must be as expected', 'control',
           container.getChildAt(0).getId());
+
+      assertThrows('Redecorating must throw error', function() {
+        container.decorate(element);
+      });
+    }
+    
+    function testDecorateWithCustomContainerElement() {
+      var element = goog.dom.getElement('container');
+      var alternateContainerElement = goog.dom.createElement('div');
+      element.appendChild(alternateContainerElement);
+      
+      var container = new goog.ui.Container();
+      stubs.set(renderer, 'getContentElement', function() {
+        return alternateContainerElement;
+      });
+
+      assertFalse('Container must not be in the document',
+          container.isInDocument());
+      container.decorate(element);
+      assertTrue('Container must be in the document',
+          container.isInDocument());
+
+      assertEquals('Container\'s ID must match the decorated element\'s ID',
+          element.id, container.getId());
+      assertEquals('Element must have the expected class name',
+          'goog-container-horizontal goog-container', element.className);
+      assertEquals('Container must have 0 children', 0,
+          container.getChildCount());
 
       assertThrows('Redecorating must throw error', function() {
         container.decorate(element);

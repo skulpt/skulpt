@@ -16,10 +16,10 @@
  * @fileoverview Definition of the goog.ui.tree.TreeControl class, which
  * provides a way to view a hierarchical set of data.
  *
-*
-*
-*
-*
+ * @author arv@google.com (Erik Arvidsson)
+ * @author eae@google.com (Emil A Eklund)
+ * @author jonp@google.com (Jon Perlow)
+ * @author annams@google.com (Srinivas Annam)
  *
  * This is a based on the webfx tree control. It since been updated to add
  * typeahead support, as well as accessibility support using ARIA framework.
@@ -29,13 +29,13 @@
 
 goog.provide('goog.ui.tree.TreeControl');
 
-goog.require('goog.debug.Logger');
-goog.require('goog.dom.a11y');
+goog.require('goog.a11y.aria');
+goog.require('goog.asserts');
 goog.require('goog.dom.classes');
 goog.require('goog.events.EventType');
 goog.require('goog.events.FocusHandler');
 goog.require('goog.events.KeyHandler');
-goog.require('goog.events.KeyHandler.EventType');
+goog.require('goog.log');
 goog.require('goog.ui.tree.BaseNode');
 goog.require('goog.ui.tree.TreeNode');
 goog.require('goog.ui.tree.TypeAhead');
@@ -48,7 +48,7 @@ goog.require('goog.userAgent');
  * view a hierarchical set of data.
  * @param {string} html The HTML content of the node label.
  * @param {Object=} opt_config The configuration for the tree. See
- *    goog.ui.tree.TreeControl.DefaultConfig. If not specified, a default config
+ *    goog.ui.tree.TreeControl.defaultConfig. If not specified, a default config
  *    will be used.
  * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
  * @constructor
@@ -74,9 +74,9 @@ goog.ui.tree.TreeControl = function(html, opt_config, opt_domHelper) {
     /** @preserveTry */
     try {
       // works since IE6SP1
-      document.execCommand('BackgroundImageCache', false, true)
+      document.execCommand('BackgroundImageCache', false, true);
     } catch (e) {
-      this.logger_.warning('Failed to enable background image cache');
+      goog.log.warning(this.logger_, 'Failed to enable background image cache');
     }
   }
 };
@@ -101,11 +101,11 @@ goog.ui.tree.TreeControl.prototype.focusHandler_ = null;
 
 /**
  * Logger
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @private
  */
 goog.ui.tree.TreeControl.prototype.logger_ =
-    goog.debug.Logger.getLogger('goog.ui.tree.TreeControl');
+    goog.log.getLogger('goog.ui.tree.TreeControl');
 
 
 /**
@@ -156,13 +156,13 @@ goog.ui.tree.TreeControl.prototype.showRootNode_ = true;
 goog.ui.tree.TreeControl.prototype.showRootLines_ = true;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getTree = function() {
   return this;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getDepth = function() {
   return 0;
 };
@@ -170,6 +170,7 @@ goog.ui.tree.TreeControl.prototype.getDepth = function() {
 
 /**
  * Expands the parent chain of this node so that it is visible.
+ * @override
  */
 goog.ui.tree.TreeControl.prototype.reveal = function() {
   // always expanded by default
@@ -212,51 +213,51 @@ goog.ui.tree.TreeControl.prototype.hasFocus = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getExpanded = function() {
   return !this.showRootNode_ ||
       goog.ui.tree.TreeControl.superClass_.getExpanded.call(this);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.setExpanded = function(expanded) {
   if (!this.showRootNode_) {
-    this.expanded_ = expanded;
+    this.setExpandedInternal(expanded);
   } else {
     goog.ui.tree.TreeControl.superClass_.setExpanded.call(this, expanded);
   }
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getExpandIconHtml = function() {
   // no expand icon for root element
   return '';
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getIconElement = function() {
   var el = this.getRowElement();
   return el ? /** @type {Element} */ (el.firstChild) : null;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getExpandIconElement = function() {
   // no expand icon for root element
   return null;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.updateExpandIcon = function() {
   // no expand icon
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.getRowClassName = function() {
   return goog.ui.tree.TreeControl.superClass_.getRowClassName.call(this) +
       (this.showRootNode_ ? '' : ' ' + this.getConfig().cssHideRoot);
@@ -266,6 +267,7 @@ goog.ui.tree.TreeControl.prototype.getRowClassName = function() {
 /**
  * Returns the source for the icon.
  * @return {string} Src for the icon.
+ * @override
  */
 goog.ui.tree.TreeControl.prototype.getCalculatedIconClass = function() {
   var expanded = this.getExpanded();
@@ -451,17 +453,19 @@ goog.ui.tree.TreeControl.prototype.getShowRootNode = function() {
 /**
  * Add roles and states.
  * @protected
+ * @override
  */
 goog.ui.tree.TreeControl.prototype.initAccessibility = function() {
   goog.ui.tree.TreeControl.superClass_.initAccessibility.call(this);
 
   var elt = this.getElement();
-  goog.dom.a11y.setRole(elt, 'tree');
-  goog.dom.a11y.setState(elt, 'labelledby', this.getLabelElement().id);
+  goog.asserts.assert(elt, 'The DOM element for the tree cannot be null.');
+  goog.a11y.aria.setRole(elt, 'tree');
+  goog.a11y.aria.setState(elt, 'labelledby', this.getLabelElement().id);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.enterDocument = function() {
   goog.ui.tree.TreeControl.superClass_.enterDocument.call(this);
   var el = this.getElement();
@@ -472,7 +476,7 @@ goog.ui.tree.TreeControl.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.TreeControl.prototype.exitDocument = function() {
   goog.ui.tree.TreeControl.superClass_.exitDocument.call(this);
   this.detachEvents_();
@@ -518,7 +522,7 @@ goog.ui.tree.TreeControl.prototype.detachEvents_ = function() {
  * @private
  */
 goog.ui.tree.TreeControl.prototype.handleMouseEvent_ = function(e) {
-  this.logger_.fine('Received event ' + e.type);
+  goog.log.fine(this.logger_, 'Received event ' + e.type);
   var node = this.getNodeFromEvent_(e);
   if (node) {
     switch (e.type) {
@@ -630,7 +634,6 @@ goog.ui.tree.TreeControl.prototype.clearTypeAhead = function() {
  * A default configuration for the tree.
  */
 goog.ui.tree.TreeControl.defaultConfig = {
-  cleardotPath: 'images/cleardot.gif',
   indentWidth: 19,
   cssRoot: goog.getCssName('goog-tree-root') + ' ' +
       goog.getCssName('goog-tree-item'),
@@ -655,5 +658,6 @@ goog.ui.tree.TreeControl.defaultConfig = {
   cssCollapsedFolderIcon: goog.getCssName('goog-tree-collapsed-folder-icon'),
   cssFileIcon: goog.getCssName('goog-tree-file-icon'),
   cssExpandedRootIcon: goog.getCssName('goog-tree-expanded-folder-icon'),
-  cssCollapsedRootIcon: goog.getCssName('goog-tree-collapsed-folder-icon')
+  cssCollapsedRootIcon: goog.getCssName('goog-tree-collapsed-folder-icon'),
+  cssSelectedRow: goog.getCssName('selected')
 };

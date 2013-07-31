@@ -3,10 +3,11 @@
 <!--
 Copyright 2007 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.dom.browserrange</title>
 <script src="../../base.js"></script>
 <script>
@@ -15,17 +16,23 @@ See the COPYING file for details.
   goog.require('goog.dom.Range');
 
   goog.require('goog.userAgent');
+  goog.require('goog.testing.dom');
   goog.require('goog.testing.jsunit');
 </script>
 </head>
 <body>
+  <div id="sandbox"></div>
   <div id="test1">Text</div><div id="test2">abc<br id="br">def</div>
-  <div id="cetest" contentEditable="true"><div>abc<br id="br2"/></div></div>
+  <div id="cetest" contentEditable="true"><div>abc<br id="br2"></div></div>
   <div id="empty"></div>
   <div id="removeTest"><div>Text that<br>will be deleted</div></div>
+  <div id="removeTestEmptyNode"></div>
+  <div id="removeTestSingleNode"><div>Text Text</div></div>
+  <div id="removeTestMidNode"><div>0123456789</div></div>
+  <div id="removeTestMidMultipleNodes"><div>0123456789</div><div>0123456789</div></div>
   <div id="outer">outer<div id="inner">inner</div>outer2</div>
   <div id="dynamic"></div>
-
+  <div id="onlybr"><br/></div>
 
 <script>
   var test1 = goog.dom.getElement('test1');
@@ -33,6 +40,8 @@ See the COPYING file for details.
   var cetest = goog.dom.getElement('cetest');
   var empty = goog.dom.getElement('empty');
   var dynamic = goog.dom.getElement('dynamic');
+  var onlybrdiv = goog.dom.getElement('onlybr');
+
 
   function testCreate() {
     assertNotNull('Browser range object can be created for node',
@@ -62,6 +71,11 @@ See the COPYING file for details.
       assertEquals('Start offset should be 2', 2, startOffset);
       assertEquals('End offset should be 2', 2, endOffset);
     }
+  }
+
+  function testCreateFromNodeContents() {
+    var range = goog.dom.Range.createFromNodeContents(onlybrdiv);
+    goog.testing.dom.assertRangeEquals(onlybrdiv, 0, onlybrdiv, 1, range);
   }
 
   function normalizeHtml(str) {
@@ -152,7 +166,7 @@ See the COPYING file for details.
     assertEquals('Should contain correct html fragment', 'Part1Part2',
         range.getHtmlFragment());
     assertEquals('Should contain correct valid html',
-        '<div id=dynamic>part1part2</div>',
+        'part1part2',
         normalizeHtml(range.getValidHtml()));
 
   }
@@ -183,6 +197,14 @@ See the COPYING file for details.
     assertFalse('Div range is not collapsed', range.isCollapsed());
   }
 
+  function testEmptyNodeHtmlInsert() {
+    var range = goog.dom.browserrange.createRangeFromNodeContents(empty);
+    var html = '<b>hello</b>';
+    range.insertNode(goog.dom.htmlToDocumentFragment(html));
+    assertEquals('Html is not inserted correctly', html,
+      normalizeHtml(empty.innerHTML));
+    goog.dom.removeChildren(empty);
+  }
 
   function testEmptyNode() {
     var range = goog.dom.browserrange.createRangeFromNodeContents(empty);
@@ -220,6 +242,78 @@ See the COPYING file for details.
     assertTrue('Removed range is now collapsed', range.isCollapsed());
     assertEquals('Outer div has 1 child now', 1, outer.childNodes.length);
     assertEquals('Inner div is empty', 0, outer.firstChild.childNodes.length);
+  }
+
+
+  function testRemoveContentsEmptyNode() {
+    var outer = goog.dom.getElement('removeTestEmptyNode');
+    var range = goog.dom.browserrange.createRangeFromNodeContents(
+        outer);
+
+    range.removeContents();
+
+    assertEquals('Removed range content should be ""', '', range.getText());
+    assertTrue('Removed range is now collapsed', range.isCollapsed());
+    assertEquals('Outer div should have 0 children now',
+        0, outer.childNodes.length);
+  }
+
+
+  function testRemoveContentsSingleNode() {
+    var outer = goog.dom.getElement('removeTestSingleNode');
+    var range = goog.dom.browserrange.createRangeFromNodeContents(
+        outer.firstChild);
+
+    range.removeContents();
+
+    assertEquals('Removed range content should be ""', '', range.getText());
+    assertTrue('Removed range is now collapsed', range.isCollapsed());
+    assertEquals('', goog.dom.getTextContent(outer));
+  }
+
+
+  function testRemoveContentsMidNode() {
+    var outer = goog.dom.getElement('removeTestMidNode');
+    var textNode = outer.firstChild.firstChild;
+    var range = goog.dom.browserrange.createRangeFromNodes(
+        textNode, 1, textNode, 4);
+
+    assertEquals('Previous range content should be "123"', '123',
+        range.getText());
+    range.removeContents();
+
+    assertEquals('Removed range content should be "0456789"', '0456789',
+        goog.dom.getTextContent(outer));
+  }
+
+
+  function testRemoveContentsMidMultipleNodes() {
+    var outer = goog.dom.getElement('removeTestMidMultipleNodes');
+    var firstTextNode = outer.firstChild.firstChild;
+    var lastTextNode = outer.lastChild.firstChild;
+    var range = goog.dom.browserrange.createRangeFromNodes(
+        firstTextNode, 1, lastTextNode, 4);
+
+    assertEquals('Previous range content', '1234567890123',
+        range.getText().replace(/\s/g, ''));
+    range.removeContents();
+
+    assertEquals('Removed range content should be "0456789"', '0456789',
+        goog.dom.getTextContent(outer).replace(/\s/g, ''));
+  }
+
+
+  function testRemoveDivCaretRange() {
+    var outer = goog.dom.getElement('sandbox');
+    outer.innerHTML = '<div>Test1</div><div></div>';
+    var range = goog.dom.browserrange.createRangeFromNodes(
+        outer.lastChild, 0, outer.lastChild, 0);
+
+    range.removeContents();
+    range.insertNode(goog.dom.createDom('span', undefined, 'Hello'), true);
+
+    assertEquals('Resulting contents', 'Test1Hello',
+        goog.dom.getTextContent(outer).replace(/\s/g, ''));
   }
 
 
@@ -291,7 +385,8 @@ See the COPYING file for details.
 
     var selRange = goog.dom.Range.createFromWindow();
     var startNode = selRange.getStartNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Start node should be span', spanElem, startNode);
     } else {
       assertEquals('Startnode should have text:123',
@@ -316,7 +411,8 @@ See the COPYING file for details.
 
     var selRange = goog.dom.Range.createFromWindow();
     var startNode = selRange.getStartNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Start node should be span', spanElem, startNode);
     } else {
       assertEquals('Start node should have text:123',
@@ -345,7 +441,8 @@ See the COPYING file for details.
 
     var selRange = goog.dom.Range.createFromWindow();
     var startNode = selRange.getStartNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Start node should be span', spanElem, startNode);
     } else {
       assertEquals('Startnode should have text:123',
@@ -353,7 +450,8 @@ See the COPYING file for details.
     }
     assertEquals('Startoffset should be 0', 0, selRange.getStartOffset());
     var endNode = selRange.getEndNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Endnode should be span', spanElem, endNode);
       assertEquals('Endoffset should be 1', 1, selRange.getEndOffset());
     } else {
@@ -378,7 +476,8 @@ See the COPYING file for details.
     assertEquals('Start node should be span', spanElem, startNode);
     assertEquals('Startoffset should be 1', 1, selRange.getStartOffset());
     var endNode = selRange.getEndNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Endnode should be span', spanElem, endNode);
       assertEquals('Endoffset should be 3', 3, selRange.getEndOffset());
     } else {
@@ -400,7 +499,8 @@ See the COPYING file for details.
 
     var selRange = goog.dom.Range.createFromWindow();
     var startNode = selRange.getStartNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Start node should be span', spanElem, startNode);
       assertEquals('Startoffset should be 2', 2, selRange.getStartOffset());
     } else {
@@ -409,7 +509,8 @@ See the COPYING file for details.
       assertEquals('Startoffset should be 0', 0, selRange.getStartOffset());
     }
     var endNode = selRange.getEndNode();
-    if (goog.userAgent.GECKO) {
+    if (goog.userAgent.GECKO ||
+        (goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9))) {
       assertEquals('Endnode should be span', spanElem, endNode);
       assertEquals('Endoffset should be 3', 3, selRange.getEndOffset());
     } else {
@@ -485,10 +586,8 @@ See the COPYING file for details.
    */
   function testInsertNodeNonElement() {
     dynamic.innerHTML = 'beforeafter';
-    var range = goog.dom.browserrange.createRangeFromNodes(dynamic.firstChild,
-                                                           6,
-                                                           dynamic.firstChild,
-                                                           6);
+    var range = goog.dom.browserrange.createRangeFromNodes(
+            dynamic.firstChild, 6, dynamic.firstChild, 6);
     var newNode = goog.dom.createTextNode('INSERTED');
     var inserted = range.insertNode(newNode, false);
 
@@ -506,6 +605,32 @@ See the COPYING file for details.
     goog.dom.browserrange.createRangeFromNodes(test2, 0, test2, 1).select();
     assertEquals('The old selection must be replaced with the new one',
                  'abc', goog.dom.Range.createFromWindow().getText());
+  }
+
+  // Following testcase is special for IE. The comparison of ranges created in
+  // testcases with a range over empty span using native inRange fails. So the
+  // fallback mechanism is needed.
+  function testGetContainerInTextNodesAroundEmptySpan() {
+      dynamic.innerHTML = 'abc<span></span>def';
+      var abc = dynamic.firstChild;
+      var def = dynamic.lastChild;
+
+      var range;
+      range = goog.dom.browserrange.createRangeFromNodes(abc, 1, abc, 1);
+      assertEquals('textNode abc should be the range container',
+              abc, range.getContainer());
+      assertEquals('textNode abc should be the range start node',
+              abc, range.getStartNode());
+      assertEquals('textNode abc should be the range end node',
+              abc, range.getEndNode());
+
+      range = goog.dom.browserrange.createRangeFromNodes(def, 1, def, 1);
+      assertEquals('textNode def should be the range container',
+              def, range.getContainer());
+      assertEquals('textNode def should be the range start node',
+              def, range.getStartNode());
+      assertEquals('textNode def should be the range end node',
+              def, range.getEndNode());
   }
 
 </script>

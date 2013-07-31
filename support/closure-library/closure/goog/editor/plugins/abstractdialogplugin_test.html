@@ -7,10 +7,11 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Closure Unit Tests - goog.editor.plugins.AbstractDialogPlugin</title>
 <script src="../../base.js"></script>
 <script>
@@ -157,7 +158,7 @@ See the COPYING file for details.
   /**
    * Tests the simple flow of calling execCommand (which opens the
    * dialog) and immediately disposing of the plugin (which closes the dialog).
-   * @param {boolean} opt_reuse Whether to set the plugin to reuse its dialog.
+   * @param {boolean=} opt_reuse Whether to set the plugin to reuse its dialog.
    */
   function testExecAndDispose(opt_reuse) {
     setUpMockRange();
@@ -291,6 +292,11 @@ See the COPYING file for details.
    * Tests execCommand twice while reusing the dialog.
    */
   function testExecTwiceReuse() {
+    // Test is failing with an out-of-memory error in IE7.
+    if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('8')) {
+      return;
+    }
+
     testExecTwice(true);
   }
 

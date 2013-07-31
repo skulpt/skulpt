@@ -25,6 +25,8 @@ goog.require('goog.dom.pattern');
 goog.require('goog.dom.pattern.AbstractPattern');
 goog.require('goog.dom.pattern.MatchType');
 
+
+
 /**
  * Pattern object that matches text by exact matching or regular expressions.
  *
@@ -46,6 +48,7 @@ goog.inherits(goog.dom.pattern.Text, goog.dom.pattern.AbstractPattern);
  */
 goog.dom.pattern.Text.prototype.match_;
 
+
 /**
  * Test whether the given token is a text token which matches the string or
  * regular expression provided in the constructor.
@@ -54,6 +57,7 @@ goog.dom.pattern.Text.prototype.match_;
  * @param {goog.dom.TagWalkType} type The type of token.
  * @return {goog.dom.pattern.MatchType} <code>MATCH</code> if the pattern
  *     matches, <code>NO_MATCH</code> otherwise.
+ * @override
  */
 goog.dom.pattern.Text.prototype.matchToken = function(token, type) {
   if (token.nodeType == goog.dom.NodeType.TEXT &&

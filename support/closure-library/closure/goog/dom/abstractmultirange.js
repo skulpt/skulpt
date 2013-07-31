@@ -17,7 +17,7 @@
  * sub-ranges.
  *
  * @author robbyw@google.com (Robby Walker)
-*
+ * @author jparent@google.com (Julie Parent)
  */
 
 
@@ -26,6 +26,7 @@ goog.provide('goog.dom.AbstractMultiRange');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.AbstractRange');
+
 
 
 /**
@@ -39,7 +40,7 @@ goog.dom.AbstractMultiRange = function() {
 goog.inherits(goog.dom.AbstractMultiRange, goog.dom.AbstractRange);
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.AbstractMultiRange.prototype.containsRange = function(
     otherRange, opt_allowPartial) {
   // TODO(user): This will incorrectly return false if two (or more) adjacent
@@ -57,7 +58,7 @@ goog.dom.AbstractMultiRange.prototype.containsRange = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.AbstractMultiRange.prototype.insertNode = function(node, before) {
   if (before) {
     goog.dom.insertSiblingBefore(node, this.getStartNode());
@@ -68,7 +69,7 @@ goog.dom.AbstractMultiRange.prototype.insertNode = function(node, before) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.AbstractMultiRange.prototype.surroundWithNodes = function(startNode,
     endNode) {
   this.insertNode(startNode, true);

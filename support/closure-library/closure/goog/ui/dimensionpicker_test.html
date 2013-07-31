@@ -3,13 +3,14 @@
 <!--
 Copyright 2008 The Closure Library Authors. All Rights Reserved.
 
-Use of this source code is governed by an Apache 2.0 License.
+Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <!--
   Author: robbyw@google.com (Robby Walker)
 -->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Closure Unit Tests - goog.ui.DimensionPicker</title>
   <script src="../base.js"></script>
   <script>
@@ -65,19 +66,62 @@ See the COPYING file for details.
       picker.render(render);
 
       var size = picker.getValue();
-      assertEquals('Should have 0 columns highlighted', 0, size.width);
-      assertEquals('Should have 0 rows highlighted', 0, size.height);
+      assertEquals('Should have 1 column highlighted initially.',
+          1, size.width);
+      assertEquals('Should have 1 row highlighted initially.',
+          1, size.height);
 
       picker.setValue(1, 2);
-
       size = picker.getValue();
-      assertEquals('Should have 1 column highlighted', 1, size.width);
-      assertEquals('Should have 2 rows highlighted', 2, size.height);
+      assertEquals('Should have 1 column highlighted.', 1, size.width);
+      assertEquals('Should have 2 rows highlighted.', 2, size.height);
 
       picker.setValue(new goog.math.Size(3, 4));
       size = picker.getValue();
-      assertEquals('Should have 3 columns highlighted', 3, size.width);
-      assertEquals('Should have 4 rows highlighted', 4, size.height);
+      assertEquals('Should have 3 columns highlighted.', 3, size.width);
+      assertEquals('Should have 4 rows highlighted.', 4, size.height);
+
+      picker.setValue(new goog.math.Size(-3, 0));
+      size = picker.getValue();
+      assertEquals('Should have 1 column highlighted when passed a negative ' +
+          'column value.', 1, size.width);
+      assertEquals('Should have 1 row highlighted when passed 0 as the row ' +
+          'value.', 1, size.height);
+
+      picker.setValue(picker.maxColumns+10, picker.maxRows+2);
+      size = picker.getValue();
+      assertEquals('Column value should be decreased to match max columns ' +
+          'if it is too high.', picker.maxColumns, size.width);
+      assertEquals('Row value should be decreased to match max rows ' +
+          'if it is too high.', picker.maxRows, size.height);
+    }
+
+    function testSizeShown() {
+      picker.render(render);
+
+      var size = picker.getSize();
+      assertEquals('Should have 5 columns visible', 5, size.width);
+      assertEquals('Should have 5 rows visible', 5, size.height);
+
+      picker.setValue(4, 4);
+      size = picker.getSize();
+      assertEquals('Should have 5 columns visible', 5, size.width);
+      assertEquals('Should have 5 rows visible', 5, size.height);
+
+      picker.setValue(12, 13);
+      size = picker.getSize();
+      assertEquals('Should have 13 columns visible', 13, size.width);
+      assertEquals('Should have 14 rows visible', 14, size.height);
+
+      picker.setValue(20, 20);
+      size = picker.getSize();
+      assertEquals('Should have 20 columns visible', 20, size.width);
+      assertEquals('Should have 20 rows visible', 20, size.height);
+
+      picker.setValue(2, 3);
+      size = picker.getSize();
+      assertEquals('Should have 5 columns visible', 5, size.width);
+      assertEquals('Should have 5 rows visible', 5, size.height);
     }
 
     function testHandleMove() {

@@ -24,6 +24,7 @@ goog.provide('goog.testing.ui.RendererHarness');
 goog.require('goog.Disposable');
 goog.require('goog.dom.NodeType');
 goog.require('goog.testing.asserts');
+goog.require('goog.testing.dom');
 
 
 
@@ -144,8 +145,7 @@ goog.testing.ui.RendererHarness.prototype.attachControlAndDecorate =
 goog.testing.ui.RendererHarness.prototype.assertDomMatches = function() {
   assert('Both elements were not generated',
          !!(this.renderControl_ && this.decorateControl_));
-  assertHTMLEquals(
-      'Rendered control and decorated control produced different HTML',
+  goog.testing.dom.assertHtmlMatches(
       this.renderControl_.getElement().innerHTML,
       this.decorateControl_.getElement().innerHTML);
   this.verified_ = true;
@@ -155,6 +155,7 @@ goog.testing.ui.RendererHarness.prototype.assertDomMatches = function() {
 /**
  * Destroy the harness, verifying that all assertions had been checked.
  * @override
+ * @protected
  */
 goog.testing.ui.RendererHarness.prototype.disposeInternal = function() {
   // If the harness was not verified appropriately, throw an exception.

@@ -14,7 +14,6 @@
 
 /**
  * @fileoverview Contains the iframe relay tranport.
-*
  */
 
 
@@ -27,6 +26,7 @@ goog.require('goog.net.xpc.Transport');
 goog.require('goog.userAgent');
 
 
+
 /**
  * Iframe relay transport. Creates hidden iframes containing a document
  * from the peer's origin. Data is transferred in the fragment identifier.
@@ -35,10 +35,14 @@ goog.require('goog.userAgent');
  *
  * @param {goog.net.xpc.CrossPageChannel} channel The channel this
  *     transport belongs to.
+ * @param {goog.dom.DomHelper=} opt_domHelper The dom helper to use for finding
+ *     the correct window.
  * @constructor
  * @extends {goog.net.xpc.Transport}
  */
-goog.net.xpc.IframeRelayTransport = function(channel) {
+goog.net.xpc.IframeRelayTransport = function(channel, opt_domHelper) {
+  goog.base(this, opt_domHelper);
+
   /**
    * The channel this transport belongs to.
    * @type {goog.net.xpc.CrossPageChannel}
@@ -52,14 +56,15 @@ goog.net.xpc.IframeRelayTransport = function(channel) {
    * @private
    */
   this.peerRelayUri_ =
-      this.channel_.cfg_[goog.net.xpc.CfgFields.PEER_RELAY_URI];
+      this.channel_.getConfig()[goog.net.xpc.CfgFields.PEER_RELAY_URI];
 
   /**
    * The id of the iframe the peer page lives in.
    * @type {string}
    * @private
    */
-  this.peerIframeId_ = this.channel_.cfg_[goog.net.xpc.CfgFields.IFRAME_ID];
+  this.peerIframeId_ =
+      this.channel_.getConfig()[goog.net.xpc.CfgFields.IFRAME_ID];
 
   if (goog.userAgent.WEBKIT) {
     goog.net.xpc.IframeRelayTransport.startCleanupTimer_();
@@ -89,6 +94,7 @@ if (goog.userAgent.WEBKIT) {
 
   /**
    * Time after which a relay-iframe is destroyed.
+   * @type {number}
    * @private
    */
   goog.net.xpc.IframeRelayTransport.IFRAME_MAX_AGE_ = 3000;
@@ -131,7 +137,8 @@ if (goog.userAgent.WEBKIT) {
       var ifr = goog.net.xpc.IframeRelayTransport.iframeRefs_.
           shift().iframeElement;
       goog.dom.removeNode(ifr);
-      goog.net.xpc.logger.finest('iframe removed');
+      goog.log.log(goog.net.xpc.logger, goog.log.Level.FINEST,
+          'iframe removed');
     }
 
     goog.net.xpc.IframeRelayTransport.cleanupTimer_ = window.setTimeout(
@@ -151,24 +158,114 @@ if (goog.userAgent.WEBKIT) {
 
 
 /**
+ * Maximum sendable size of a payload via a single iframe in IE.
+ * @type {number}
+ * @private
+ */
+goog.net.xpc.IframeRelayTransport.IE_PAYLOAD_MAX_SIZE_ = 1800;
+
+
+/**
+ * @typedef {{fragments: !Array.<string>, received: number, expected: number}}
+ */
+goog.net.xpc.IframeRelayTransport.FragmentInfo;
+
+
+/**
+ * Used to track incoming payload fragments. The implementation can process
+ * incoming fragments from several channels at a time, even if data is
+ * out-of-order or interleaved.
+ *
+ * @type {!Object.<string, !goog.net.xpc.IframeRelayTransport.FragmentInfo>}
+ * @private
+ */
+goog.net.xpc.IframeRelayTransport.fragmentMap_ = {};
+
+
+/**
  * The transport type.
  * @type {number}
+ * @override
  */
 goog.net.xpc.IframeRelayTransport.prototype.transportType =
-  goog.net.xpc.TransportTypes.IFRAME_RELAY;
+    goog.net.xpc.TransportTypes.IFRAME_RELAY;
 
 
 /**
  * Connects this transport.
+ * @override
  */
 goog.net.xpc.IframeRelayTransport.prototype.connect = function() {
+  if (!this.getWindow()['xpcRelay']) {
+    this.getWindow()['xpcRelay'] =
+        goog.net.xpc.IframeRelayTransport.receiveMessage_;
+  }
+
   this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP);
+};
+
+
+/**
+ * Processes an incoming message.
+ *
+ * @param {string} channelName The name of the channel.
+ * @param {string} frame The raw frame content.
+ * @private
+ */
+goog.net.xpc.IframeRelayTransport.receiveMessage_ =
+    function(channelName, frame) {
+  var pos = frame.indexOf(':');
+  var header = frame.substr(0, pos);
+  var payload = frame.substr(pos + 1);
+
+  if (!goog.userAgent.IE || (pos = header.indexOf('|')) == -1) {
+    // First, the easy case.
+    var service = header;
+  } else {
+    // There was a fragment id in the header, so this is a message
+    // fragment, not a whole message.
+    var service = header.substr(0, pos);
+    var fragmentIdStr = header.substr(pos + 1);
+
+    // Separate the message id string and the fragment number. Note that
+    // there may be a single leading + in the argument to parseInt, but
+    // this is harmless.
+    pos = fragmentIdStr.indexOf('+');
+    var messageIdStr = fragmentIdStr.substr(0, pos);
+    var fragmentNum = parseInt(fragmentIdStr.substr(pos + 1), 10);
+    var fragmentInfo =
+        goog.net.xpc.IframeRelayTransport.fragmentMap_[messageIdStr];
+    if (!fragmentInfo) {
+      fragmentInfo =
+          goog.net.xpc.IframeRelayTransport.fragmentMap_[messageIdStr] =
+          {fragments: [], received: 0, expected: 0};
+    }
+
+    if (goog.string.contains(fragmentIdStr, '++')) {
+      fragmentInfo.expected = fragmentNum + 1;
+    }
+    fragmentInfo.fragments[fragmentNum] = payload;
+    fragmentInfo.received++;
+
+    if (fragmentInfo.received != fragmentInfo.expected) {
+      return;
+    }
+
+    // We've received all outstanding fragments; combine what we've received
+    // into payload and fall out to the call to xpcDeliver.
+    payload = fragmentInfo.fragments.join('');
+    delete goog.net.xpc.IframeRelayTransport.fragmentMap_[messageIdStr];
+  }
+
+  goog.net.xpc.channels[channelName].
+      xpcDeliver(service, decodeURIComponent(payload));
 };
 
 
 /**
  * Handles transport service messages (internal signalling).
  * @param {string} payload The message content.
+ * @override
  */
 goog.net.xpc.IframeRelayTransport.prototype.transportServiceHandler =
     function(payload) {
@@ -176,10 +273,10 @@ goog.net.xpc.IframeRelayTransport.prototype.transportServiceHandler =
     // TODO(user) Safari swallows the SETUP_ACK from the iframe to the
     // container after hitting reload.
     this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP_ACK_);
-    this.channel_.notifyConnected_();
+    this.channel_.notifyConnected();
   }
   else if (payload == goog.net.xpc.SETUP_ACK_) {
-    this.channel_.notifyConnected_();
+    this.channel_.notifyConnected();
   }
 };
 
@@ -189,18 +286,55 @@ goog.net.xpc.IframeRelayTransport.prototype.transportServiceHandler =
  *
  * @param {string} service Name of service this the message has to be delivered.
  * @param {string} payload The message content.
+ * @override
  */
 goog.net.xpc.IframeRelayTransport.prototype.send = function(service, payload) {
+  // If we're on IE and the post-encoding payload is large, split it
+  // into multiple payloads and send each one separately. Otherwise,
+  // just send the whole thing.
+  var encodedPayload = encodeURIComponent(payload);
+  var encodedLen = encodedPayload.length;
+  var maxSize = goog.net.xpc.IframeRelayTransport.IE_PAYLOAD_MAX_SIZE_;
+
+  if (goog.userAgent.IE && encodedLen > maxSize) {
+    // A probabilistically-unique string used to link together all fragments
+    // in this message.
+    var messageIdStr = goog.string.getRandomString();
+
+    for (var startIndex = 0, fragmentNum = 0; startIndex < encodedLen;
+         fragmentNum++) {
+      var payloadFragment = encodedPayload.substr(startIndex, maxSize);
+      startIndex += maxSize;
+      var fragmentIdStr =
+          messageIdStr + (startIndex >= encodedLen ? '++' : '+') + fragmentNum;
+      this.send_(service, payloadFragment, fragmentIdStr);
+    }
+  } else {
+    this.send_(service, encodedPayload);
+  }
+};
+
+
+/**
+ * Sends an encoded message or message fragment.
+ * @param {string} service Name of service this the message has to be delivered.
+ * @param {string} encodedPayload The message content, URI encoded.
+ * @param {string=} opt_fragmentIdStr If sending a fragment, a string that
+ *     identifies the fragment.
+ * @private
+ */
+goog.net.xpc.IframeRelayTransport.prototype.send_ =
+    function(service, encodedPayload, opt_fragmentIdStr) {
   // IE requires that we create the onload attribute inline, otherwise the
   // handler is not triggered
   if (goog.userAgent.IE) {
-    var div = document.createElement('div');
+    var div = this.getWindow().document.createElement('div');
     div.innerHTML = '<iframe onload="this.xpcOnload()"></iframe>';
     var ifr = div.childNodes[0];
     div = null;
-    ifr.xpcOnload = goog.net.xpc.IframeRelayTransport.iframeLoadHandler_;
+    ifr['xpcOnload'] = goog.net.xpc.IframeRelayTransport.iframeLoadHandler_;
   } else {
-    var ifr = document.createElement('iframe');
+    var ifr = this.getWindow().document.createElement('iframe');
 
     if (goog.userAgent.WEBKIT) {
       // safari doesn't fire load-events on iframes.
@@ -220,21 +354,22 @@ goog.net.xpc.IframeRelayTransport.prototype.send = function(service, payload) {
   style.width = ifr.style.height = '0px';
   style.position = 'absolute';
 
-  // TODO(user) Split payload in multiple parts (frames) in case we are
-  // in IE and the constructed URL exceeds IE's 4K-limit.
-
   var url = this.peerRelayUri_;
   url += '#' + this.channel_.name;
   if (this.peerIframeId_) {
     url += ',' + this.peerIframeId_;
   }
-  url += '|' + service + ':' + encodeURIComponent(payload);
+  url += '|' + service;
+  if (opt_fragmentIdStr) {
+    url += '|' + opt_fragmentIdStr;
+  }
+  url += ':' + encodedPayload;
 
   ifr.src = url;
 
-  document.body.appendChild(ifr);
+  this.getWindow().document.body.appendChild(ifr);
 
-  goog.net.xpc.logger.finest('msg sent: ' + url);
+  goog.log.log(goog.net.xpc.logger, goog.log.Level.FINEST, 'msg sent: ' + url);
 };
 
 
@@ -244,34 +379,15 @@ goog.net.xpc.IframeRelayTransport.prototype.send = function(service, payload) {
  * @this Element
  */
 goog.net.xpc.IframeRelayTransport.iframeLoadHandler_ = function() {
-  goog.net.xpc.logger.finest('iframe-load');
+  goog.log.log(goog.net.xpc.logger, goog.log.Level.FINEST, 'iframe-load');
   goog.dom.removeNode(this);
   this.xpcOnload = null;
 };
 
 
-/**
- * Processes an incoming message.
- *
- * @param {string} channelName The name of the channel.
- * @param {string} frame The raw frame content.
- */
-window['xpcRelay'] =
-    function(channelName, frame) {
-  var pos = frame.indexOf(':');
-  var service = frame.substring(0, pos);
-  var payload = frame.substring(pos + 1);
-
-  goog.net.xpc.channels_[channelName].deliver_(service,
-                                               decodeURIComponent(payload));
-};
-
-
-/**
- * Disposes of the transport.
- */
+/** @override */
 goog.net.xpc.IframeRelayTransport.prototype.disposeInternal = function() {
-  goog.net.xpc.IframeRelayTransport.superClass_.disposeInternal.call(this);
+  goog.base(this, 'disposeInternal');
   if (goog.userAgent.WEBKIT) {
     goog.net.xpc.IframeRelayTransport.cleanup_(0);
   }

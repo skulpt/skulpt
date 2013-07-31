@@ -34,16 +34,16 @@
  *
  * TODO(user): add a11y once we know what this element is
  *
-*
  * @see ../demos/twothumbslider.html
  */
 
 goog.provide('goog.ui.TwoThumbSlider');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
 goog.require('goog.dom');
-goog.require('goog.dom.a11y');
-goog.require('goog.dom.a11y.Role');
 goog.require('goog.ui.SliderBase');
+
 
 
 /**
@@ -85,12 +85,23 @@ goog.ui.TwoThumbSlider.EXTENT_THUMB_CSS_CLASS =
 
 
 /**
+ * CSS class name for the range highlight element.
+ * @type {string}
+ */
+goog.ui.TwoThumbSlider.RANGE_HIGHLIGHT_CSS_CLASS =
+    goog.getCssName(goog.ui.TwoThumbSlider.CSS_CLASS_PREFIX, 'rangehighlight');
+
+
+/**
  * @param {goog.ui.SliderBase.Orientation} orient orientation of the slider.
  * @return {string} The CSS class applied to the twothumbslider element.
  * @protected
+ * @override
  */
 goog.ui.TwoThumbSlider.prototype.getCssClass = function(orient) {
-  return goog.ui.TwoThumbSlider.CSS_CLASS_PREFIX + '-' + orient;
+  return orient == goog.ui.SliderBase.Orientation.VERTICAL ?
+      goog.getCssName(goog.ui.TwoThumbSlider.CSS_CLASS_PREFIX, 'vertical') :
+      goog.getCssName(goog.ui.TwoThumbSlider.CSS_CLASS_PREFIX, 'horizontal');
 };
 
 
@@ -102,7 +113,7 @@ goog.ui.TwoThumbSlider.prototype.getCssClass = function(orient) {
  */
 goog.ui.TwoThumbSlider.prototype.createThumb_ = function(cs) {
   var thumb = this.getDomHelper().createDom('div', cs);
-  goog.dom.a11y.setRole(thumb, goog.dom.a11y.Role.BUTTON);
+  goog.a11y.aria.setRole(thumb, goog.a11y.aria.Role.BUTTON);
   return /** @type {HTMLDivElement} */ (thumb);
 };
 
@@ -111,14 +122,19 @@ goog.ui.TwoThumbSlider.prototype.createThumb_ = function(cs) {
  * Creates the thumb members for a twothumbslider. If the
  * element contains a child with a class name 'goog-twothumbslider-value-thumb'
  * (or 'goog-twothumbslider-extent-thumb', respectively), then that will be used
- * as the valueThumb (or as the extentThumb, respectively)
+ * as the valueThumb (or as the extentThumb, respectively). If the element
+ * contains a child with a class name 'goog-twothumbslider-rangehighlight',
+ * then that will be used as the range highlight.
+ * @override
  */
 goog.ui.TwoThumbSlider.prototype.createThumbs = function() {
-  // find thumbs
+  // find range highlight and thumbs
   var valueThumb = goog.dom.getElementsByTagNameAndClass(
       null, goog.ui.TwoThumbSlider.VALUE_THUMB_CSS_CLASS, this.getElement())[0];
   var extentThumb = goog.dom.getElementsByTagNameAndClass(null,
       goog.ui.TwoThumbSlider.EXTENT_THUMB_CSS_CLASS, this.getElement())[0];
+  var rangeHighlight = goog.dom.getElementsByTagNameAndClass(null,
+      goog.ui.TwoThumbSlider.RANGE_HIGHLIGHT_CSS_CLASS, this.getElement())[0];
   if (!valueThumb) {
     valueThumb =
         this.createThumb_(goog.ui.TwoThumbSlider.VALUE_THUMB_CSS_CLASS);
@@ -129,6 +145,13 @@ goog.ui.TwoThumbSlider.prototype.createThumbs = function() {
         this.createThumb_(goog.ui.TwoThumbSlider.EXTENT_THUMB_CSS_CLASS);
     this.getElement().appendChild(extentThumb);
   }
+  if (!rangeHighlight) {
+    rangeHighlight = this.getDomHelper().createDom('div',
+        goog.ui.TwoThumbSlider.RANGE_HIGHLIGHT_CSS_CLASS);
+    // Insert highlight before value thumb so that it renders under the thumbs.
+    this.getDomHelper().insertSiblingBefore(rangeHighlight, valueThumb);
+  }
   this.valueThumb = valueThumb;
   this.extentThumb = extentThumb;
+  this.rangeHighlight = rangeHighlight;
 };

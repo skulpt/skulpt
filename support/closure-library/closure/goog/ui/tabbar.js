@@ -15,7 +15,7 @@
 /**
  * @fileoverview Tab bar UI component.
  *
-*
+ * @author attila@google.com (Attila Bodis)
  * @see ../demos/tabbar.html
  */
 
@@ -65,16 +65,7 @@ goog.ui.TabBar = function(opt_location, opt_renderer, opt_domHelper) {
       opt_renderer || goog.ui.TabBarRenderer.getInstance(),
       opt_domHelper);
 
-  // Listen for SELECT, UNSELECT, DISABLE, and HIDE events dispatched by tabs.
-  var handler = this.getHandler();
-  handler.listen(this, goog.ui.Component.EventType.SELECT,
-      this.handleTabSelect);
-  handler.listen(this, goog.ui.Component.EventType.UNSELECT,
-      this.handleTabUnselect);
-  handler.listen(this, goog.ui.Component.EventType.DISABLE,
-      this.handleTabDisable);
-  handler.listen(this, goog.ui.Component.EventType.HIDE,
-      this.handleTabHide);
+  this.listenToTabEvents_();
 };
 goog.inherits(goog.ui.TabBar, goog.ui.Container);
 
@@ -120,7 +111,17 @@ goog.ui.TabBar.prototype.autoSelectTabs_ = true;
 goog.ui.TabBar.prototype.selectedTab_ = null;
 
 
-/** @inheritDoc */
+/**
+ * @override
+ */
+goog.ui.TabBar.prototype.enterDocument = function() {
+  goog.ui.TabBar.superClass_.enterDocument.call(this);
+
+  this.listenToTabEvents_();
+};
+
+
+/** @override */
 goog.ui.TabBar.prototype.disposeInternal = function() {
   goog.ui.TabBar.superClass_.disposeInternal.call(this);
   this.selectedTab_ = null;
@@ -131,7 +132,7 @@ goog.ui.TabBar.prototype.disposeInternal = function() {
  * Removes the tab from the tab bar.  Overrides the superclass implementation
  * by deselecting the tab being removed.  Since {@link #removeChildAt} uses
  * {@link #removeChild} internally, we only need to override this method.
- * @param {string|goog.ui.Control} tab Tab to remove.
+ * @param {string|goog.ui.Component} tab Tab to remove.
  * @param {boolean=} opt_unrender Whether to call {@code exitDocument} on the
  *     removed tab, and detach its DOM from the document (defaults to false).
  * @return {goog.ui.Control} The removed tab, if any.
@@ -353,6 +354,22 @@ goog.ui.TabBar.prototype.handleFocus = function(e) {
     this.setHighlighted(this.getSelectedTab() ||
         /** @type {goog.ui.Tab} */ (this.getChildAt(0)));
   }
+};
+
+
+/**
+ * Subscribes to events dispatched by tabs.
+ * @private
+ */
+goog.ui.TabBar.prototype.listenToTabEvents_ = function() {
+  // Listen for SELECT, UNSELECT, DISABLE, and HIDE events dispatched by tabs.
+  this.getHandler().
+      listen(this, goog.ui.Component.EventType.SELECT, this.handleTabSelect).
+      listen(this,
+             goog.ui.Component.EventType.UNSELECT,
+             this.handleTabUnselect).
+      listen(this, goog.ui.Component.EventType.DISABLE, this.handleTabDisable).
+      listen(this, goog.ui.Component.EventType.HIDE, this.handleTabHide);
 };
 
 

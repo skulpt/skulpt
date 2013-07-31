@@ -15,7 +15,6 @@
 
 /**
  * @fileoverview The color theme used by a gauge (goog.ui.Guage).
-*
  */
 
 
@@ -25,6 +24,7 @@ goog.provide('goog.ui.GaugeTheme');
 goog.require('goog.graphics.LinearGradient');
 goog.require('goog.graphics.SolidFill');
 goog.require('goog.graphics.Stroke');
+
 
 
 /**
@@ -147,7 +147,7 @@ goog.ui.GaugeTheme.prototype.getNeedleFill = function(cx, cy, r) {
  * @return {string} The color to use.
  */
 goog.ui.GaugeTheme.prototype.getTitleColor = function() {
-    return '#333333';
+  return '#333333';
 };
 
 
@@ -156,7 +156,7 @@ goog.ui.GaugeTheme.prototype.getTitleColor = function() {
  * @return {string} The color to use.
  */
 goog.ui.GaugeTheme.prototype.getValueColor = function() {
-    return 'black';
+  return 'black';
 };
 
 
@@ -165,5 +165,5 @@ goog.ui.GaugeTheme.prototype.getValueColor = function() {
  * @return {string} The color to use.
  */
 goog.ui.GaugeTheme.prototype.getTickLabelColor = function() {
-    return '#333333';
+  return '#333333';
 };

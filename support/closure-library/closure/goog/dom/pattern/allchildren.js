@@ -24,6 +24,7 @@ goog.require('goog.dom.pattern.AbstractPattern');
 goog.require('goog.dom.pattern.MatchType');
 
 
+
 /**
  * Pattern object that matches any nodes at or below the current tree depth.
  *
@@ -51,6 +52,7 @@ goog.dom.pattern.AllChildren.prototype.depth_ = 0;
  * @param {goog.dom.TagWalkType} type The type of token.
  * @return {goog.dom.pattern.MatchType} {@code MATCHING} if the token is on the
  *     same level or deeper and {@code BACKTRACK_MATCH} if not.
+ * @override
  */
 goog.dom.pattern.AllChildren.prototype.matchToken = function(token, type) {
   this.depth_ += type;
@@ -66,6 +68,7 @@ goog.dom.pattern.AllChildren.prototype.matchToken = function(token, type) {
 
 /**
  * Reset any internal state this pattern keeps.
+ * @override
  */
 goog.dom.pattern.AllChildren.prototype.reset = function() {
   this.depth_ = 0;

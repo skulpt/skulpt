@@ -16,20 +16,21 @@
 /**
  * @fileoverview Abstract API for TrogEdit plugins.
  *
-*
  * @see ../demos/editor/editor.html
  */
 
 goog.provide('goog.editor.Plugin');
 
-goog.require('goog.debug.Logger');
 // TODO(user): Remove the dependency on goog.editor.Command asap. Currently only
 // needed for execCommand issues with links.
 goog.require('goog.editor.Command');
 goog.require('goog.events.EventTarget');
 goog.require('goog.functions');
+goog.require('goog.log');
 goog.require('goog.object');
 goog.require('goog.reflect');
+
+
 
 /**
  * Abstract API for trogedit plugins.
@@ -53,6 +54,8 @@ goog.inherits(goog.editor.Plugin, goog.events.EventTarget);
  * The field object this plugin is attached to.
  * @type {goog.editor.Field}
  * @protected
+ * @deprecated Use goog.editor.Plugin.getFieldObject and
+ *     goog.editor.Plugin.setFieldObject.
  */
 goog.editor.Plugin.prototype.fieldObject = null;
 
@@ -62,7 +65,7 @@ goog.editor.Plugin.prototype.fieldObject = null;
  *     currently active field.
  */
 goog.editor.Plugin.prototype.getFieldDomHelper = function() {
-  return this.fieldObject && this.fieldObject.getEditableDomHelper();
+  return this.getFieldObject() && this.getFieldObject().getEditableDomHelper();
 };
 
 
@@ -78,11 +81,33 @@ goog.editor.Plugin.prototype.autoDispose_ = true;
 
 /**
  * The logger for this plugin.
- * @type {goog.debug.Logger}
+ * @type {goog.log.Logger}
  * @protected
  */
 goog.editor.Plugin.prototype.logger =
-    goog.debug.Logger.getLogger('goog.editor.Plugin');
+    goog.log.getLogger('goog.editor.Plugin');
+
+
+/**
+ * Sets the field object for use with this plugin.
+ * @return {goog.editor.Field} The editable field object.
+ * @protected
+ * @suppress {deprecated} Until fieldObject can be made private.
+ */
+goog.editor.Plugin.prototype.getFieldObject = function() {
+  return this.fieldObject;
+};
+
+
+/**
+ * Sets the field object for use with this plugin.
+ * @param {goog.editor.Field} fieldObject The editable field object.
+ * @protected
+ * @suppress {deprecated} Until fieldObject can be made private.
+ */
+goog.editor.Plugin.prototype.setFieldObject = function(fieldObject) {
+  this.fieldObject = fieldObject;
+};
 
 
 /**
@@ -90,7 +115,7 @@ goog.editor.Plugin.prototype.logger =
  * @param {goog.editor.Field} fieldObject The editable field object.
  */
 goog.editor.Plugin.prototype.registerFieldObject = function(fieldObject) {
-  this.fieldObject = fieldObject;
+  this.setFieldObject(fieldObject);
 };
 
 
@@ -100,9 +125,9 @@ goog.editor.Plugin.prototype.registerFieldObject = function(fieldObject) {
  *     plugins, this parameter is ignored.
  */
 goog.editor.Plugin.prototype.unregisterFieldObject = function(fieldObj) {
-  if (this.fieldObject) {
-    this.disable(this.fieldObject);
-    this.fieldObject = null;
+  if (this.getFieldObject()) {
+    this.disable(this.getFieldObject());
+    this.setFieldObject(null);
   }
 };
 
@@ -113,10 +138,10 @@ goog.editor.Plugin.prototype.unregisterFieldObject = function(fieldObj) {
  * @param {goog.editor.Field} fieldObject The field object.
  */
 goog.editor.Plugin.prototype.enable = function(fieldObject) {
-  if (this.fieldObject == fieldObject) {
+  if (this.getFieldObject() == fieldObject) {
     this.enabled_ = true;
   } else {
-    this.logger.severe('Trying to enable an unregistered field with ' +
+    goog.log.error(this.logger, 'Trying to enable an unregistered field with ' +
         'this plugin.');
   }
 };
@@ -127,10 +152,10 @@ goog.editor.Plugin.prototype.enable = function(fieldObject) {
  * @param {goog.editor.Field} fieldObject The field object.
  */
 goog.editor.Plugin.prototype.disable = function(fieldObject) {
-  if (this.fieldObject == fieldObject) {
+  if (this.getFieldObject() == fieldObject) {
     this.enabled_ = false;
   } else {
-    this.logger.severe('Trying to disable an unregistered field ' +
+    goog.log.error(this.logger, 'Trying to disable an unregistered field ' +
         'with this plugin.');
   }
 };
@@ -143,7 +168,7 @@ goog.editor.Plugin.prototype.disable = function(fieldObject) {
  * @return {boolean} Whether this plugin is enabled for the field object.
  */
 goog.editor.Plugin.prototype.isEnabled = function(fieldObject) {
-  return this.fieldObject == fieldObject ? this.enabled_ : false;
+  return this.getFieldObject() == fieldObject ? this.enabled_ : false;
 };
 
 
@@ -182,10 +207,10 @@ goog.editor.Plugin.prototype.activeOnUneditableFields = goog.functions.FALSE;
 goog.editor.Plugin.prototype.isSilentCommand = goog.functions.FALSE;
 
 
-/** @inheritDoc */
+/** @override */
 goog.editor.Plugin.prototype.disposeInternal = function() {
-  if (this.fieldObject) {
-    this.unregisterFieldObject(this.fieldObject);
+  if (this.getFieldObject()) {
+    this.unregisterFieldObject(this.getFieldObject());
   }
 
   goog.editor.Plugin.superClass_.disposeInternal.call(this);
@@ -273,9 +298,11 @@ goog.editor.Plugin.prototype.handleKeyPress;
  */
 goog.editor.Plugin.prototype.handleKeyUp;
 
+
 /**
  * Handles selection change.
  * @param {!goog.events.BrowserEvent=} opt_e The browser event.
+ * @param {!Node=} opt_target The node the selection changed to.
  * @return {boolean} Whether the event was handled and thus should *not* be
  *     propagated to other plugins.
  */
@@ -333,10 +360,10 @@ goog.editor.Plugin.prototype.execCommand = function(command, var_args) {
     // the dom.  Note that change events get turned back on by
     // fieldObj.dispatchChange.
     if (goog.userAgent.GECKO) {
-      this.fieldObject.stopChangeEvents(true, true);
+      this.getFieldObject().stopChangeEvents(true, true);
     }
 
-    this.fieldObject.dispatchBeforeChange();
+    this.getFieldObject().dispatchBeforeChange();
   }
 
   try {
@@ -350,13 +377,8 @@ goog.editor.Plugin.prototype.execCommand = function(command, var_args) {
     if (!silent) {
       // dispatchChange includes a call to startChangeEvents, which unwinds the
       // call to stopChangeEvents made before the try block.
-      this.fieldObject.dispatchChange();
-      // TODO(user): Remove this conditional.  We should always dispatch a
-      // a selection change event here, but link creation is wierd.  See
-      // TR_Editor.prototype.execute for more details
-      if (command != goog.editor.Command.LINK) {
-        this.fieldObject.dispatchSelectionChangeEvent();
-      }
+      this.getFieldObject().dispatchChange();
+      this.getFieldObject().dispatchSelectionChangeEvent();
     }
   }
 

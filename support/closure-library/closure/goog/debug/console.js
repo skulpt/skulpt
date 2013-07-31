@@ -18,7 +18,6 @@
  * Has an autoInstall option which can be put into initialization code, which
  * will start logging if "Debug=true" is in document.location.href
  *
-*
  */
 
 goog.provide('goog.debug.Console');
@@ -28,23 +27,38 @@ goog.require('goog.debug.Logger.Level');
 goog.require('goog.debug.TextFormatter');
 
 
+
 /**
  * Create and install a log handler that logs to window.console if available
  * @constructor
  */
 goog.debug.Console = function() {
   this.publishHandler_ = goog.bind(this.addLogRecord, this);
+
+  /**
+   * Formatter for formatted output.
+   * @type {!goog.debug.TextFormatter}
+   * @private
+   */
   this.formatter_ = new goog.debug.TextFormatter();
   this.formatter_.showAbsoluteTime = false;
   this.formatter_.showExceptionText = false;
+
   this.isCapturing_ = false;
   this.logBuffer_ = '';
+
+  /**
+   * Loggers that we shouldn't output.
+   * @type {!Object.<boolean>}
+   * @private
+   */
+  this.filteredLoggers_ = {};
 };
 
 
 /**
  * Returns the text formatter used by this console
- * @return {goog.debug.TextFormatter} The text formatter.
+ * @return {!goog.debug.TextFormatter} The text formatter.
  */
 goog.debug.Console.prototype.getFormatter = function() {
   return this.formatter_;
@@ -77,27 +91,29 @@ goog.debug.Console.prototype.setCapturing = function(capturing) {
  * @param {goog.debug.LogRecord} logRecord The log entry.
  */
 goog.debug.Console.prototype.addLogRecord = function(logRecord) {
+
+  // Check to see if the log record is filtered or not.
+  if (this.filteredLoggers_[logRecord.getLoggerName()]) {
+    return;
+  }
+
   var record = this.formatter_.formatRecord(logRecord);
-  if (window.console && window.console['firebug']) {
-    // NOTE(user): info, error, warn and debug aren't in the externs and are
-    // only available to FireBug, so we need to reference them by array
-    // notation to stop the compiler complaining.
+  var console = goog.debug.Console.console_;
+  if (console) {
     switch (logRecord.getLevel()) {
       case goog.debug.Logger.Level.SHOUT:
-        window.console['info'](record);
+        goog.debug.Console.logToConsole_(console, 'info', record);
         break;
       case goog.debug.Logger.Level.SEVERE:
-        window.console['error'](record);
+        goog.debug.Console.logToConsole_(console, 'error', record);
         break;
       case goog.debug.Logger.Level.WARNING:
-        window.console['warn'](record);
+        goog.debug.Console.logToConsole_(console, 'warn', record);
         break;
       default:
-        window.console['debug'](record);
+        goog.debug.Console.logToConsole_(console, 'debug', record);
         break;
     }
-  } else if (window.console) {
-    window.console.log(record);
   } else if (window.opera) {
     // window.opera.postError is considered an undefined property reference
     // by JSCompiler, so it has to be referenced using array notation instead.
@@ -109,10 +125,46 @@ goog.debug.Console.prototype.addLogRecord = function(logRecord) {
 
 
 /**
+ * Adds a logger name to be filtered.
+ * @param {string} loggerName the logger name to add.
+ */
+goog.debug.Console.prototype.addFilter = function(loggerName) {
+  this.filteredLoggers_[loggerName] = true;
+};
+
+
+/**
+ * Removes a logger name to be filtered.
+ * @param {string} loggerName the logger name to remove.
+ */
+goog.debug.Console.prototype.removeFilter = function(loggerName) {
+  delete this.filteredLoggers_[loggerName];
+};
+
+
+/**
  * Global console logger instance
  * @type {goog.debug.Console}
  */
 goog.debug.Console.instance = null;
+
+
+/**
+ * The console to which to log.  This is a property so it can be mocked out in
+ * this unit test for goog.debug.Console.
+ * @type {Object}
+ * @private
+ */
+goog.debug.Console.console_ = window.console;
+
+
+/**
+ * Sets the console to which to log.
+ * @param {!Object} console The console to which to log.
+ */
+goog.debug.Console.setConsole = function(console) {
+  goog.debug.Console.console_ = console;
+};
 
 
 /**
@@ -135,4 +187,21 @@ goog.debug.Console.autoInstall = function() {
  */
 goog.debug.Console.show = function() {
   alert(goog.debug.Console.instance.logBuffer_);
+};
+
+
+/**
+ * Logs the record to the console using the given function.  If the function is
+ * not available on the console object, the log function is used instead.
+ * @param {!Object} console The console object.
+ * @param {string} fnName The name of the function to use.
+ * @param {string} record The record to log.
+ * @private
+ */
+goog.debug.Console.logToConsole_ = function(console, fnName, record) {
+  if (console[fnName]) {
+    console[fnName](record);
+  } else {
+    console.log(record);
+  }
 };
