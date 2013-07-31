@@ -14,10 +14,10 @@ Sk.builtin.range = function range(start, stop, step)
     Sk.builtin.pyCheckType("start", "integer", Sk.builtin.checkInt(start));
     if (stop !== undefined) {
         Sk.builtin.pyCheckType("stop", "integer", Sk.builtin.checkInt(stop));
-    };
+    }
     if (step !== undefined) {
         Sk.builtin.pyCheckType("step", "integer", Sk.builtin.checkInt(step));
-    };
+    }
 
     start = Sk.builtin.asnum$(start);
     stop = Sk.builtin.asnum$(stop);
@@ -29,21 +29,21 @@ Sk.builtin.range = function range(start, stop, step)
         step = 1;
     } else if (step === undefined) {
         step = 1;
-    };
+    }
 
     if (step === 0) {
         throw new Sk.builtin.ValueError("range() step argument must not be zero");
-    };
+    }
 
     if (step > 0) {
         for (i=start; i<stop; i+=step) {
             ret.push(new Sk.builtin.nmber(i, Sk.builtin.nmber.int$));
-        };
+        }
     } else {
         for (i=start; i>stop; i+=step) {
             ret.push(new Sk.builtin.nmber(i, Sk.builtin.nmber.int$));
-        };        
-    };
+        }
+    }
 
     return new Sk.builtin.list(ret);
 };
@@ -68,7 +68,8 @@ Sk.builtin.asnum$ = function(a) {
 	}
 
 	return a;
-}
+};
+
 goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
 
 Sk.builtin.assk$ = function(a, b) {
@@ -857,9 +858,9 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var list;
 	if (key !== undefined && key !== null) {
         if (cmp === null) {
-			compare_func = function(a,b){
+			compare_func = { func_code: function(a,b){
 				return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? -1 : 0;
-			};
+			}};
 		}
         else {
             compare_func = cmp.func_code;

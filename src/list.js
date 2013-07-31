@@ -324,7 +324,7 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
 
     if (has_cmp) {
         timsort.lt = function(a, b){
-            return cmp(a, b) < 0;
+            return Sk.misceval.richCompareBool(cmp.func_code(a, b), 0, "Lt");
         };
     }
 
@@ -337,13 +337,13 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
     }
 
     if (reverse){
-        timsort.list.list_reverse_();
+        timsort.list.list_reverse_(timsort.list);
     }
 
     timsort.sort();
 
     if (reverse){
-        timsort.list.list_reverse_();
+        timsort.list.list_reverse_(timsort.list);
     }
 
     if (has_key){
