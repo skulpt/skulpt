@@ -322,18 +322,26 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
 
     self.v = [];
 
-    if (has_cmp) {
+    if (has_key){
+        if (has_cmp) {
+            timsort.lt = function(a, b){
+                return Sk.misceval.richCompareBool(cmp.func_code(a[0], b[0]), 0, "Lt");
+            };
+        }
+        else{
+            timsort.lt = function(a, b) {
+                return Sk.misceval.richCompareBool(a[0], b[0], "Lt");
+            }
+        }
+        for (var i =0; i < timsort.listlength; i++){
+            var item = timsort.list.v[i];
+            var keyvalue = key.func_code(item);
+            timsort.list.v[i] = [keyvalue, item];
+        }
+    } else if (has_cmp) {
         timsort.lt = function(a, b){
             return Sk.misceval.richCompareBool(cmp.func_code(a, b), 0, "Lt");
         };
-    }
-
-    if (has_key){
-        for (var i in timsort.listlength){
-            var item = timsort.list.v[i];
-            var keyvalue = key(item);
-            timsort.list.v[i] = [keyvalue, item];
-        }
     }
 
     if (reverse){
@@ -347,8 +355,8 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
     }
 
     if (has_key){
-        for (var j in timsort.listlength){
-            item = timsort.list.v[j][0];
+        for (var j = 0; j < timsort.listlength; j++){
+            item = timsort.list.v[j][1];
             timsort.list.v[j] = item;
         }
     }

@@ -863,7 +863,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 			}};
 		}
         else {
-            compare_func = cmp.func_code;
+            compare_func = { func_code: function(a,b) { return cmp.func_code(a[0], b[0]); } };
 		}
 		var iter = iterable.tp$iter();
 		var next = iter.tp$iternext();
@@ -878,20 +878,18 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 		if (cmp !== null && cmp !== undefined) {
 			compare_func = cmp;
 		}
-		else {
-			list = new Sk.builtin.list(iterable);
-		}
+        list = new Sk.builtin.list(iterable);
 	}
-	
+
 	if (compare_func !== undefined) {
-		list.list_sort_(list, 	compare_func);
+		list.list_sort_(list, compare_func);
 	}
 	else {
-		list.list_sort_();
+		list.list_sort_(list);
 	}
 	
 	if (reverse) {
-		list.list_reverse_();
+		list.list_reverse_(list);
 	}
 	
 	if (key !== undefined && key !== null) {
