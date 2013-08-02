@@ -10,7 +10,7 @@
 (4, 2)
 (5, 'abc')
 (6, -7)
-<class 'enumerate'>
+<type 'enumerate'>
 <enumerate object>
 <enumerate object>
 (-3, 4)

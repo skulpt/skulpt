@@ -577,6 +577,9 @@ Sk.builtin.open = function open(filename, mode, bufsize)
 Sk.builtin.isinstance = function isinstance(obj, type)
 {
     Sk.builtin.pyCheckArgs("isinstance", arguments, 2, 2);
+    if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
+	throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
+    }
 
     if (type === Sk.builtin.int_.prototype.ob$type) {
 	return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.int$);

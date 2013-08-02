@@ -1,0 +1,8 @@
+Module(body=[Expr(value=Call(func=Name(id='filter',
+                                       ctx=Load()),
+                             args=[Name(id='None',
+                                        ctx=Load()),
+                                   Num(n=8)],
+                             keywords=[],
+                             starargs=None,
+                             kwargs=None))])

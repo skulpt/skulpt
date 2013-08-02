@@ -78,6 +78,11 @@ Sk.builtin.checkString = function (arg) {
 };
 goog.exportSymbol("Sk.builtin.checkString", Sk.builtin.checkString);
 
+Sk.builtin.checkClass = function (arg) {
+    return (arg !== null && arg.sk$type);
+};
+goog.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
+
 Sk.builtin.checkFunction = function (arg) {
     return (arg !== null && arg.tp$call !== undefined);  
 };
