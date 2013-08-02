@@ -308,7 +308,7 @@ Sk.builtin.list.prototype.__getitem__ = new Sk.builtin.func(function(self, index
 });
 
 /**
- * @param {?=} self optional
+ * @param {?=} self
  * @param {?=} cmp optional
  * @param {?=} key optional
  * @param {?=} reverse optional
