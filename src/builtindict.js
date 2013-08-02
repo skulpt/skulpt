@@ -73,9 +73,6 @@ Sk.builtins = {
 'jsmillis': Sk.builtin.jsmillis,
 'quit': Sk.builtin.quit,
 'exit': Sk.builtin.quit,
-//'timSort': Sk.builtin.timSort,
-//'listSlice': Sk.builtin.listSlice,
-
 
 // Functions below are not implemented
 'bytearray': Sk.builtin.bytearray,
