@@ -119,14 +119,6 @@ Sk.abstr.binary_op_ = function(v, w, opname)
 		}
         if (ret !== undefined) return ret;
     }
-
-    if (opname === "Add" && v && v.sq$concat)
-        return v.sq$concat(w);
-    else if (opname === "Mult" && v && v.sq$repeat)
-        return Sk.abstr.sequenceRepeat(v.sq$repeat, v, w);
-    else if (opname === "Mult" && w && w.sq$repeat)
-        return Sk.abstr.sequenceRepeat(w.sq$repeat, w, v);
-
     Sk.abstr.binop_type_error(v, w, opname);
 };
 
@@ -153,25 +145,6 @@ Sk.abstr.binary_iop_ = function(v, w, opname)
 		}
         if (ret !== undefined) return ret;
     }
-
-    if (opname === "Add")
-    {
-        if (v.sq$inplace_concat)
-            return v.sq$inplace_concat(w);
-        else if (v.sq$concat)
-            return v.sq$concat(w);
-    }
-    else if (opname === "Mult")
-    {
-        if (v.sq$inplace_repeat)
-            return Sk.abstr.sequenceRepeat(v.sq$inplace_repeat, v, w);
-        else if (v.sq$repeat)
-            return Sk.abstr.sequenceRepeat(v.sq$repeat, v, w);
-        // note, don't use w inplace_repeat because we don't want to mutate rhs
-        else if (w.sq$repeat)
-            return Sk.abstr.sequenceRepeat(w.sq$repeat, w, v);
-    }
-
     Sk.abstr.binop_type_error(v, w, opname);
 };
 

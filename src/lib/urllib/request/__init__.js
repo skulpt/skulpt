@@ -100,19 +100,11 @@ var $builtinmodule = function(name)
    * constructs a Response.
    */
   request.urlopen = new Sk.builtin.func(function(url, data, timeout) {
-    return Sk.future(function(continueWith) {
-      options = {
-        url:  Sk.transformUrl(Sk.ffi.remapToJs(url)),
-        type: 'GET',
-      }
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET",url.v,false);
+    xmlhttp.send(null);
 
-      if (data) options.data = data;
-      if (timeout) options.timeout = data.timeout * 1000;
-
-      var xhr = $.ajax(options).always(function() {
-        continueWith(Sk.misceval.callsim(request.Response, xhr));
-      });
-    });
+    return Sk.misceval.callsim(request.Response,xmlhttp)
   });
 
 

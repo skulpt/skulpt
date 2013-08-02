@@ -4,12 +4,14 @@ bugs = [-0.5,-0.025,-0.055,0.045,-0.0025,-0.0035,0.0045,0.0055,-250,-350,-450,-5
 def helper(iterable,expect,n=None):
     if n:
         for i in iterable:
-            if round(i,n) != expect and i not in bugs:
-                print False,i,"  expected: ",expect,"  result: ",round(i,n)
+            r = round(i,n)
+            if abs(r-expect) > (1/10.0**(n+1)) and i not in bugs:
+                print False,i,"  expected: ",expect,"  result: ",r,abs(r-expect)
     else:
         for i in iterable:
-            if round(i) != expect and i not in bugs:
-                print False,i,"  expected: ",expect,"  result: ",round(i)
+            r = round(i)
+            if abs(r-expect) > 0.000001 and i not in bugs:
+                print False,i,"  expected: ",expect,"  result: ",r,abs(r-expect)
 
 print "\n-1.4 to 1.4, no ndigit"
 helper([x/10.0 for x in range(-5,-15,-1)],-1)

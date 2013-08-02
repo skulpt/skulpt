@@ -91,6 +91,8 @@ Sk.builtin.str.prototype.sq$concat = function(other)
     }
     return new Sk.builtin.str(this.v + other.v); 
 };
+Sk.builtin.str.prototype.nb$add = Sk.builtin.str.prototype.sq$concat;
+Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
 Sk.builtin.str.prototype.sq$repeat = function(n)
 {
 	n = Sk.builtin.asnum$(n);
@@ -99,6 +101,8 @@ Sk.builtin.str.prototype.sq$repeat = function(n)
         ret += this.v;
     return new Sk.builtin.str(ret);
 };
+Sk.builtin.str.prototype.nb$multiply = Sk.builtin.str.prototype.sq$repeat;
+Sk.builtin.str.prototype.nb$inplace_multiply = Sk.builtin.str.prototype.sq$repeat;
 Sk.builtin.str.prototype.sq$item = function() { goog.asserts.fail(); };
 Sk.builtin.str.prototype.sq$slice = function(i1, i2)
 {
