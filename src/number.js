@@ -610,11 +610,11 @@ Sk.builtin.nmber.prototype.nb$ispositive = function() { return this.v >= 0 };
 
 Sk.builtin.nmber.prototype.numberCompare = function(other)
 {
-	if (typeof other === "boolean")
-		if (other)
-			other = 1;
-		else
-			other = 0;
+	if (other instanceof Sk.builtin.bool)
+	    other = Sk.builtin.asnum$(other);
+
+	if (other instanceof Sk.builtin.none)
+		other = 0;
 
 	if (typeof other === "number") {
 		return this.v - other;

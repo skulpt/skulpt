@@ -15,7 +15,12 @@ Sk.builtin.str = function(x)
     var ret;
     if (x === true) ret = "True";
     else if (x === false) ret = "False";
-    else if (x === null) ret = "None";
+    else if ((x === null) || (x instanceof Sk.builtin.none)) ret = "None";
+    else if (x instanceof Sk.builtin.bool)
+    {
+	if (x.v) ret = "True";
+	else ret = "False";
+    }
     else if (typeof x === "number")
     {
         ret = x.toString();
@@ -112,7 +117,6 @@ Sk.builtin.str.prototype.sq$contains = function(ob) {
     } else {
         return false;
     }
-
 }
 
 Sk.builtin.str.prototype.tp$name = "str";
@@ -292,7 +296,7 @@ Sk.builtin.str.prototype['join'] = new Sk.builtin.func(function(self, seq)
 Sk.builtin.str.prototype['split'] = new Sk.builtin.func(function(self, on, howmany)
 {
     Sk.builtin.pyCheckArgs("split", arguments, 1, 3);
-    if (on === undefined) {
+    if ((on === undefined) || (on instanceof Sk.builtin.none)) {
         on = null;
     }
     if ((on !== null) && !Sk.builtin.checkString(on)) { 
@@ -632,14 +636,14 @@ Sk.builtin.str.prototype['rindex'] = new Sk.builtin.func(function(self, tgt, sta
 Sk.builtin.str.prototype['startswith'] = new Sk.builtin.func(function(self, tgt) {
     Sk.builtin.pyCheckArgs("startswith", arguments, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-   return 0 == self.v.indexOf(tgt.v);
+    return Sk.builtin.bool(0 == self.v.indexOf(tgt.v));
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
 Sk.builtin.str.prototype['endswith'] = new Sk.builtin.func(function(self, tgt) {
     Sk.builtin.pyCheckArgs("endswith", arguments, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1;
+    return Sk.builtin.bool(self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
 });
 
 Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, newS, count)
@@ -671,15 +675,15 @@ Sk.builtin.str.prototype['replace'] = new Sk.builtin.func(function(self, oldS, n
 
 Sk.builtin.str.prototype['isdigit'] = new Sk.builtin.func(function(self) {
     Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 1);
-    if (self.v.length === 0) { return false; }
+    if (self.v.length === 0) { return Sk.builtin.bool(false); }
     var i;
     for (i=0; i<self.v.length; i++) {
         var ch = self.v.charAt(i);
         if (ch < '0' || ch > '9') {
-            return false;
+            return Sk.builtin.bool(false);
         };
     };
-    return true;
+    return Sk.builtin.bool(true);
 });
 
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('str', Sk.builtin.str);

@@ -12,9 +12,9 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function(v) {
     var vtypename;
-    if (v === null) {
+    if (v instanceof Sk.builtin.none) {
         vtypename = "NoneType";
-    } else if ((v === true) || (v === false)) {
+    } else if (v instanceof Sk.builtin.bool) {
         vtypename = "bool";
     } else if (typeof v === "number") {
         vtypename = "number";
@@ -344,14 +344,8 @@ goog.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
 Sk.abstr.numberUnaryOp = function(v, op)
 {
-    if (op === "Not") return Sk.misceval.isTrue(v) ? false : true;
-    else if (typeof v === "number" || typeof v === "boolean")
-    {
-        if (op === "USub") return -v;
-        if (op === "UAdd") return v;
-        if (op === "Invert") return ~v;
-    }
-    else if (v instanceof Sk.builtin.nmber) {
+    if (op === "Not") return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
+    else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
 	var value = Sk.builtin.asnum$(v);
 	if (op === "USub") return new Sk.builtin.nmber(-value, value.skType);
         if (op === "UAdd") return new Sk.builtin.nmber(value, value.skType);

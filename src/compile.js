@@ -337,7 +337,7 @@ Compiler.prototype.ccompare = function(e)
     for (var i = 0; i < n; ++i)
     {
         var rhs = this.vexpr(e.comparators[i]);
-        var res = this._gr('compare', "Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "')");
+        var res = this._gr('compare', "Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "'))");
         out(fres, '=', res, ';');
         this._jumpfalse(res, done);
         cur = rhs;
@@ -1334,7 +1334,7 @@ Compiler.prototype.cfunction = function(s)
     var funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function(scopename)
             {
                 this.vseqstmt(s.body);
-                out("return null;"); // if we fall off the bottom, we want the ret to be None
+                out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
             });
     this.nameop(s.name, Store, funcorgen);
 };
@@ -1605,9 +1605,9 @@ Compiler.prototype.nameop = function(name, ctx, dataToStore)
     if ((ctx === Store || ctx === AugStore || ctx === Del) && name.v === "None")
         throw new Sk.builtin.SyntaxError("can not assign to None");
 
-    if (name.v === "None") return "null";
-    if (name.v === "True") return "true";
-    if (name.v === "False") return "false";
+    if (name.v === "None") return "Sk.builtin.none.none$";
+    if (name.v === "True") return "Sk.builtin.bool.true$";
+    if (name.v === "False") return "Sk.builtin.bool.false$";
 
     var mangled = mangleName(this.u.private_, name).v;
     // Have to do this before looking it up in the scope

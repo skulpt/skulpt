@@ -36,13 +36,10 @@ Sk.builtin.float_ = function(x)
     }
 
     // Convert booleans
-    if (x === true) 
+    if (x instanceof Sk.builtin.bool)
     {
-        return new Sk.builtin.nmber(1.0, Sk.builtin.nmber.float$);
-    }
-    if (x === false)
-    {
-        return new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
+	x = Sk.builtin.asnum$(x);
+	return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
