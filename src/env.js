@@ -39,7 +39,10 @@ Sk.configure = function(options)
 
     Sk.python3 = options["python3"] || Sk.python3;
     goog.asserts.assert(typeof Sk.python3 === "boolean");
-    
+
+    Sk.inputfun = options["inputfun"] || Sk.inputfun;
+    goog.asserts.assert(typeof Sk.inputfun === "function")
+
     if (options["syspath"])
     {
         Sk.syspath = options["syspath"];
@@ -119,7 +122,9 @@ if (!Sk.inBrowser)
 
 
 Sk.python3 = false;
+Sk.inputfun = function(args) { return prompt(args); };
 goog.exportSymbol("Sk.python3",Sk.python3)
+goog.exportSymbol("Sk.inputfun",Sk.inputfun)
 
 goog.require("goog.asserts");
 
