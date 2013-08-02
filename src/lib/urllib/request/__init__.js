@@ -17,10 +17,9 @@ var $builtinmodule = function(name)
     // ------------------------------------------------------------
     $loc.__init__ = new Sk.builtin.func(function(self, xhr) {
       self.data$ = xhr.responseText;
-
       self.lineList = self.data$.split("\n");
       self.lineList = self.lineList.slice(0,-1);
-      for(var i in this.lineList) {
+      for(var i =0 ; i < self.lineList.length; i++) {
         self.lineList[i] = self.lineList[i]+'\n';
       }
       self.currentLine = 0;
