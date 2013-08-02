@@ -6,7 +6,7 @@ var $builtinmodule = function(name) {
         if (result) {
             return Sk.misceval.callsim(mod.Element,result);
         }
-        return null;
+        return Sk.builtin.none.none$;
     });
 
     mod.createElement = new Sk.builtin.func(function(eName) {
@@ -123,7 +123,7 @@ var $builtinmodule = function(name) {
             if (res) {
                 return new Sk.builtin.str(res)
             } else {
-                return null;
+                return Sk.builtin.none.none$;
             }
         });
 

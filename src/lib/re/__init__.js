@@ -207,17 +207,43 @@ var $builtinmodule = function(name)
     }
 
     mod.search = new Sk.builtin.func(function(pattern, string, flags) {
+	Sk.builtin.pyCheckArgs('search', arguments, 2, 3);
+        if (!Sk.builtin.checkString(pattern)) {
+            throw new Sk.builtin.TypeError("pattern must be a string");
+        };
+        if (!Sk.builtin.checkString(string)) {
+            throw new Sk.builtin.TypeError("string must be a string");
+        };
+	if (flags === undefined) {
+            flags = 0;
+        };
+        if (!Sk.builtin.checkNumber(flags)) {
+            throw new Sk.builtin.TypeError("flags must be a number");
+        };
         var res = "/"+pattern.v.replace("/","\\/")+"/";
         lst = mod._findre(res,string);
-        if ( lst.v.length < 1 ) return null;
+        if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     });
 
     mod.match = new Sk.builtin.func(function(pattern, string, flags) {
+	Sk.builtin.pyCheckArgs('match', arguments, 2, 3);
+        if (!Sk.builtin.checkString(pattern)) {
+            throw new Sk.builtin.TypeError("pattern must be a string");
+        };
+        if (!Sk.builtin.checkString(string)) {
+            throw new Sk.builtin.TypeError("string must be a string");
+        };
+	if (flags === undefined) {
+            flags = 0;
+        };
+        if (!Sk.builtin.checkNumber(flags)) {
+            throw new Sk.builtin.TypeError("flags must be a number");
+        };
         var res = "/^"+pattern.v.replace("/","\\/")+"/";
         lst = mod._findre(res,string);
-        if ( lst.v.length < 1 ) return null;
+        if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
         return mob;
     });
