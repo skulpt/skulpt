@@ -169,149 +169,131 @@ Sk.misceval.richCompareBool = function(v, w, op)
             return v !== w;
     }
 
-    if ((typeof v === "number" || typeof v === "boolean") && (typeof w === "number" || typeof w === "boolean"))
+    if (op === "In") return Sk.abstr.sequenceContains(w, v);
+    if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
+
+
+    var res;
+    //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
+    if (v && w && v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
     {
-        switch (op)
-        {
-            case 'Lt': return v < w;
-            case 'LtE': return v <= w;
-            case 'Gt': return v > w;
-            case 'GtE': return v >= w;
-            case 'NotEq': return v != w;
-            case 'Eq': return v == w;
-            case 'In':
-            case 'NotIn':  {
-                throw new Sk.builtin.TypeError("argument of type '" + Sk.abstr.typeName(w) + "' is not iterable");
-            };
-            default: throw "assert";
-        }
+        return res;
+    }
+    else if (w && v && w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
+    {
+        return res;
     }
     else
     {
-
-        if (op === "In") return Sk.abstr.sequenceContains(w, v);
-        if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
-
-
-        var res;
-        //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
-        if (v && w && v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
-        {
-            return res;
+        // depending on the op, try left:op:right, and if not, then
+        // right:reversed-top:left
+        // yeah, a macro or 3 would be nice...
+        if (op === 'Eq') {
+            if (v && v['__eq__']) 
+                return Sk.misceval.callsim(v['__eq__'], v, w);
+            else if (w && w['__eq__'])
+                return Sk.misceval.callsim(w['__eq__'], w, v);
         }
-        else if (w && v && w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
-        {
-            return res;
+        else if (op === 'NotEq') {
+            if (v && v['__ne__'])
+                return Sk.misceval.callsim(v['__ne__'], v, w);
+            else if (w && w['__ne__'])
+                return Sk.misceval.callsim(w['__ne__'], w, v);
         }
-        else
-        {
-            // depending on the op, try left:op:right, and if not, then
-            // right:reversed-top:left
-            // yeah, a macro or 3 would be nice...
-            if (op === 'Eq') {
-                if (v && v['__eq__']) 
-                    return Sk.misceval.callsim(v['__eq__'], v, w);
-                else if (w && w['__eq__'])
-                    return Sk.misceval.callsim(w['__eq__'], w, v);
-                }
-            else if (op === 'NotEq') {
-                if (v && v['__ne__'])
-                    return Sk.misceval.callsim(v['__ne__'], v, w);
-                else if (w && w['__ne__'])
-                    return Sk.misceval.callsim(w['__ne__'], w, v);
-                }
-            else if (op === 'Gt') {
-                if (v && v['__gt__'])
-                    return Sk.misceval.callsim(v['__gt__'], v, w);
-                else if (w && w['__le__'])
-                    return Sk.misceval.callsim(w['__le__'], w, v);
-                }
-            else if (op === 'Lt') {
-                if (v && v['__lt__'])
-                    return Sk.misceval.callsim(v['__lt__'], v, w);
-                else if (w && w['__ge__'])
-                    return Sk.misceval.callsim(w['__ge__'], w, v);
-                }
-            else if (op === 'GtE') {
-                if (v && v['__ge__'])
-                    return Sk.misceval.callsim(v['__ge__'], v, w);
-                else if (w && w['__lt__'])
-                    return Sk.misceval.callsim(w['__lt__'], w, v);
-                }
-            else if (op === 'LtE') {
-                if (v && v['__le__'])
-                    return Sk.misceval.callsim(v['__le__'], v, w);
-                else if (w && w['__gt__'])
-                    return Sk.misceval.callsim(w['__gt__'], w, v);
-                }
-
-/*	Fix by BM -- old version
-            if (op === 'Eq')
-                if (v && v['__eq__'])
-                    return Sk.misceval.callsim(v['__eq__'], v, w);
-                else if (w && w['__ne__'])
-                    return Sk.misceval.callsim(w['__ne__'], w, v);
-            else if (op === 'NotEq')
-                if (v && v['__ne__'])
-                    return Sk.misceval.callsim(v['__ne__'], v, w);
-                else if (w && w['__eq__'])
-                    return Sk.misceval.callsim(w['__eq__'], w, v);
-            else if (op === 'Gt')
-                if (v && v['__gt__'])
-                    return Sk.misceval.callsim(v['__gt__'], v, w);
-                else if (w && w['__lt__'])
-                    return Sk.misceval.callsim(w['__lt__'], w, v);
-            else if (op === 'Lt')
-                if (v && v['__lt__'])
-                    return Sk.misceval.callsim(v['__lt__'], v, w);
-                else if (w && w['__gt__'])
-                    return Sk.misceval.callsim(w['__gt__'], w, v);
-            else if (op === 'GtE')
-                if (v && v['__ge__'])
-                    return Sk.misceval.callsim(v['__ge__'], v, w);
-                else if (w && w['__le__'])
-                    return Sk.misceval.callsim(w['__le__'], w, v);
-            else if (op === 'LtE')
-                if (v && v['__le__'])
-                    return Sk.misceval.callsim(v['__le__'], v, w);
-                else if (w && w['__ge__'])
-                    return Sk.misceval.callsim(w['__ge__'], w, v);
-*/
-
-            // if those aren't defined, fallback on the __cmp__ method if it
-            // exists
-            if (v && v['__cmp__'])
-            {
-                var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
-		ret = Sk.builtin.asnum$(ret);
-                if (op === 'Eq') return ret === 0;
-                else if (op === 'NotEq') return ret !== 0;
-                else if (op === 'Lt') return ret < 0;
-                else if (op === 'Gt') return ret > 0;
-                else if (op === 'LtE') return ret <= 0;
-                else if (op === 'GtE') return ret >= 0;
-            }
-            else if (w && w['__cmp__'])
-            {
-                // note, flipped on return value and call
-                var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
-		ret = Sk.builtin.asnum$(ret);
-                if (op === 'Eq') return ret === 0;
-                else if (op === 'NotEq') return ret !== 0;
-                else if (op === 'Lt') return ret > 0;
-                else if (op === 'Gt') return ret < 0;
-                else if (op === 'LtE') return ret >= 0;
-                else if (op === 'GtE') return ret <= 0;
-            }
-
+        else if (op === 'Gt') {
+            if (v && v['__gt__'])
+                return Sk.misceval.callsim(v['__gt__'], v, w);
+            else if (w && w['__le__'])
+                return Sk.misceval.callsim(w['__le__'], w, v);
         }
-        if (typeof v !== typeof w) {
-            if (op === 'NotEq') return true;
-            else
-                return false;
+        else if (op === 'Lt') {
+            if (v && v['__lt__'])
+                return Sk.misceval.callsim(v['__lt__'], v, w);
+            else if (w && w['__ge__'])
+                return Sk.misceval.callsim(w['__ge__'], w, v);
+        }
+        else if (op === 'GtE') {
+            if (v && v['__ge__'])
+                return Sk.misceval.callsim(v['__ge__'], v, w);
+            else if (w && w['__lt__'])
+                return Sk.misceval.callsim(w['__lt__'], w, v);
+        }
+        else if (op === 'LtE') {
+            if (v && v['__le__'])
+                return Sk.misceval.callsim(v['__le__'], v, w);
+            else if (w && w['__gt__'])
+                return Sk.misceval.callsim(w['__gt__'], w, v);
+        }
+
+        if (v && v['__cmp__'])
+        {
+            var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
+	    ret = Sk.builtin.asnum$(ret);
+            if (op === 'Eq') return ret === 0;
+            else if (op === 'NotEq') return ret !== 0;
+            else if (op === 'Lt') return ret < 0;
+            else if (op === 'Gt') return ret > 0;
+            else if (op === 'LtE') return ret <= 0;
+            else if (op === 'GtE') return ret >= 0;
+        }
+        else if (w && w['__cmp__'])
+        {
+            // note, flipped on return value and call
+            var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
+	    ret = Sk.builtin.asnum$(ret);
+            if (op === 'Eq') return ret === 0;
+            else if (op === 'NotEq') return ret !== 0;
+            else if (op === 'Lt') return ret > 0;
+            else if (op === 'Gt') return ret < 0;
+            else if (op === 'LtE') return ret >= 0;
+            else if (op === 'GtE') return ret <= 0;
         }
 
     }
+    if (typeof v !== typeof w) {
+        if (op === 'NotEq') return true;
+        else
+            return false;
+    }
+
+    if (((v instanceof Sk.builtin.none) || (v instanceof Sk.builtin.bool))
+	&& ((w instanceof Sk.builtin.none) || (w instanceof Sk.builtin.bool)))
+    {
+
+	if ((v.v === false) && (w.v === null))
+	{
+	    if (op === 'Gt')
+		return true;
+	    if (op === 'LtE')
+		return false;
+	}
+
+	if ((v.v === null) && (w.v === false))
+	{
+	    if (op === 'GtE')
+		return false;
+	    if (op === 'Lt')
+		return true;
+	}
+
+	// Except for the above special case with None and False,
+	// Javascript happens to return the same values when comparing null,
+	// true, and false as Python does when comparing None, True, and False
+
+	if (op === 'Eq')
+	    return v.v === w.v;
+	if (op === 'NotEq')
+	    return v.v !== w.v;
+	if (op === 'Gt')
+	    return v.v > w.v;
+	if (op === 'GtE')
+	    return v.v >= w.v;
+	if (op === 'Lt')
+	    return v.v < w.v;
+	if (op === 'LtE')
+	    return v.v <= w.v;
+    }
+
 
     // todo; some defaults, mostly to handle diff types -> false. are these ok?
     if (op === 'Eq') return v === w;
@@ -326,7 +308,7 @@ goog.exportSymbol("Sk.misceval.richCompareBool", Sk.misceval.richCompareBool);
 Sk.misceval.objectRepr = function(v)
 {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
-    if (v === null)
+    if ((v === null) || (v instanceof Sk.builtin.none))
         return new Sk.builtin.str("None"); // todo; these should be consts
     else if (v === true)
         return new Sk.builtin.str("True");
@@ -366,6 +348,8 @@ Sk.misceval.isTrue = function(x)
     if (x === true) return true;
     if (x === false) return false;
     if (x === null) return false;
+    if (x.constructor === Sk.builtin.none) return false;
+    if (x.constructor === Sk.builtin.bool) return x.v;
     if (typeof x === "number") return x !== 0;
     if (x instanceof Sk.builtin.lng) return x.nb$nonzero();
     if (x.constructor === Sk.builtin.nmber) return x.v !== 0;
@@ -512,7 +496,7 @@ goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  */
 Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
 {
-    if (func === null)
+    if (func === null || func instanceof Sk.builtin.none)
     {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }

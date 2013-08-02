@@ -24,7 +24,8 @@ Sk.builtin.type = function(name, bases, dict)
         // 1 arg version of type()
         var obj = name;
         if (obj === true || obj === false) return Sk.builtin.bool.prototype.ob$type;
-        if (obj === null) return Sk.builtin.NoneObj.prototype.ob$type;
+        if ((obj === null) || (obj instanceof Sk.builtin.none))
+	    return Sk.builtin.none.prototype.ob$type;
         if (typeof obj === "number")
         {
 	    if (Math.floor(obj) === obj)
@@ -195,7 +196,7 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
         if (mod) cname = mod.v + ".";
 		var ctype = "class";
 		if (!mod)
-			if (name === 'float' || name === 'int' || name === 'long' || name === 'bool' || name === 'str')
+			if (name === 'float' || name === 'int' || name === 'long' || name === 'bool' || name === 'str' || name === 'NoneType')
 				ctype = "type";
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
     };
