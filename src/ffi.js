@@ -40,12 +40,12 @@ goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
  *
  * This is used in conjuction with invocations of Sk.misceval.callsim.
  */
-Sk.ffi.referenceToPy = function(obj) {
-  if (typeof obj === 'object') {
-    return {"v": obj};
+Sk.ffi.referenceToPy = function(obj, name) {
+  if (typeof obj === 'object' && typeof name === 'string') {
+    return {"v": obj, "tp$name": name};
   }
   else {
-    goog.asserts.fail("unhandled reference type " + typeof(obj));
+    goog.asserts.fail("unhandled reference");
   }
 };
 goog.exportSymbol("Sk.ffi.referenceToPy", Sk.ffi.referenceToPy);
