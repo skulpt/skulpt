@@ -52,20 +52,22 @@ Sk.builtin.type = function(name, bases, dict)
         /**
          * @constructor
          */
-        var klass = (function(args)
+        var klass = (function(kwdict, varargseq, kws, args)
                 {
-                    if (!(this instanceof klass)) return new klass(Array.prototype.slice.call(arguments, 0));
+                    if (!(this instanceof klass))
+		    {
+			return new klass(kwdict, varargseq, kws, args);
+		    }
 
                     args = args || [];
-                    goog.asserts.assert(Sk.builtin.dict !== undefined);
                     this['$d'] = new Sk.builtin.dict([]);
 
                     var init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
                     if (init !== undefined)
                     {
-                        // return ignored I guess?
+                        // return should be None or throw a TypeError otherwise
                         args.unshift(this);
-                        Sk.misceval.apply(init, undefined, undefined, undefined, args);
+                        Sk.misceval.apply(init, kwdict, varargseq, kws, args);
                     }
 
                     return this;
@@ -77,6 +79,7 @@ Sk.builtin.type = function(name, bases, dict)
             klass[v] = dict[v];
         }
         klass['__class__'] = klass;
+        klass.sk$klass = true;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function() { goog.asserts.fail("in type tp$descr_get"); };
@@ -194,16 +197,16 @@ Sk.builtin.type.makeIntoTypeObj = function(name, t)
         var mod = t.__module__;
         var cname = "";
         if (mod) cname = mod.v + ".";
-		var ctype = "class";
-		if (!mod)
-			if (name === 'float' || name === 'int' || name === 'long' || name === 'bool' || name === 'str' || name === 'NoneType')
-				ctype = "type";
+	var ctype = "class";
+	if (!mod && !t.sk$klass)
+	    ctype = "type";
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
     };
     t.tp$str = undefined;
     t.tp$getattr = Sk.builtin.type.prototype.tp$getattr;
     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
-	t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
+    t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
+    t.sk$type = true;
     return t;
 };
 

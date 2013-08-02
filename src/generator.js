@@ -93,3 +93,25 @@ Sk.builtin.generator.prototype['send'] = new Sk.builtin.func(function(self, valu
     return self.tp$iternext(value);
 });
 
+/**
+ * Creates a generator with the specified next function and additional
+ * instance data. Useful in Javascript-implemented modules to implement
+ * the __iter__ method.
+ */
+Sk.builtin.makeGenerator = function(next, data)
+{
+  var gen = new Sk.builtin.generator(null,null,null);
+  gen.tp$iternext = next;
+
+  for (var key in data)
+  {
+    if (data.hasOwnProperty(key))
+    {
+      gen[key] = data[key];
+    }
+  }
+
+  return gen;
+};
+goog.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);
+
