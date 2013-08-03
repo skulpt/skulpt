@@ -35,7 +35,8 @@ var $builtinmodule = function(name)
         };
 
         newpattern = pattern.replace('/\\/g', '\\\\');
-        
+        newpattern = pattern.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
+
         return newpattern;
     };
 
@@ -143,6 +144,11 @@ var $builtinmodule = function(name)
 
         var regex = new RegExp(pat, jsflags);
 
+	var newline_at_end = new RegExp(/\n$/);
+	if (str.match(newline_at_end)) {
+	    str = str.slice(0,-1);
+	}
+
         var result = [];
         var match;
         while ((match = regex.exec(str)) != null) {
@@ -195,8 +201,13 @@ var $builtinmodule = function(name)
     // Internal function to return a Python list of strings 
     // From a JS regular expression string
     mod._findre = function(res, string) {
+	res = res.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
         var re = eval(res);
-        var matches = string.v.match(re);
+	var patt = new RegExp('\n$');
+	if (string.v.match(patt))
+	    var matches = string.v.slice(0,-1).match(re);
+	else
+            var matches = string.v.match(re);
         retval = new Sk.builtin.list();
         if ( matches == null ) return retval;
         for (var i = 0; i < matches.length; ++i) {
@@ -220,7 +231,7 @@ var $builtinmodule = function(name)
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         };
-        var res = "/"+pattern.v.replace("/","\\/")+"/";
+        var res = "/"+pattern.v.replace(/\//g,"\\/")+"/";
         lst = mod._findre(res,string);
         if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);
@@ -241,7 +252,7 @@ var $builtinmodule = function(name)
         if (!Sk.builtin.checkNumber(flags)) {
             throw new Sk.builtin.TypeError("flags must be a number");
         };
-        var res = "/^"+pattern.v.replace("/","\\/")+"/";
+        var res = "/^"+pattern.v.replace(/\//g,"\\/")+"/";
         lst = mod._findre(res,string);
         if ( lst.v.length < 1 ) return Sk.builtin.none.none$;
         var mob = Sk.misceval.callsim(mod.MatchObject, lst, pattern, string);

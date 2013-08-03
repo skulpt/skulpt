@@ -1,0 +1,128 @@
+
+Syntax: .
+[]
+['a']
+[]
+['a']
+[]
+['ba']
+
+Syntax: ^
+['']
+[]
+[]
+['a']
+[]
+[]
+
+Syntax: $
+['']
+[]
+['a']
+[]
+[]
+['a']
+
+Syntax: *
+['']
+['a']
+['ab']
+['abbbbb']
+['a']
+[]
+
+Syntax: +
+[]
+[]
+['ab']
+['abbbbb']
+[]
+[]
+
+Syntax: ?
+['']
+['a']
+['ab']
+['ab']
+['a']
+[]
+
+Syntax: *?
+['', '']
+['a']
+['a']
+[]
+
+Syntax: +?
+['a']
+['ab']
+[]
+[]
+
+Syntax: ??
+['', '']
+['a']
+['a']
+[]
+
+Syntax: {m}
+[]
+['aa']
+['aa']
+
+Syntax: {m,n}
+[]
+['ab']
+['aab']
+['aab']
+['b']
+['ab']
+['aab']
+['aab']
+[]
+[]
+['aab']
+['aaab']
+['aaaaa', 'aaaaa']
+['aaaaa', 'aaaaa', '']
+['aaaaaaaaaa']
+
+Syntax: {m,n}?
+[]
+['ab']
+['aab']
+['aab']
+['b']
+['ab']
+['aab']
+['aab']
+[]
+[]
+['aab']
+['aaab']
+['aaa', 'aaa', 'aaa']
+['', '', '', '', '', '', '', '', '', '', '']
+['aaa', 'aaa', 'aaa']
+
+Syntax: []
+['a', 'b', 'c']
+['b', 'c']
+[]
+['a']
+['*']
+
+Syntax: |
+['']
+['']
+['b', 'a']
+['h', 'ello']
+
+Syntax: (...)
+['bbbb', '', '']
+
+Syntax: (?...)
+['bbbb', '', '']
+[]
+['a']
+['a']
+[]
