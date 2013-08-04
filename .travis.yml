@@ -1,5 +1,28 @@
 language: python
-python:
-  - "2.6"
-# command to run tests
-script: "m dist"
+python: 
+- "2.6"
+install:
+- pip install GitPython --use-mirrors
+#uncomment these lines to rebuild v8
+- sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
+- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E1FAD0C
+- sudo apt-get update
+- echo set -e >> ./travis.sh
+- echo set -o pipefail >> ./travis.sh
+- echo git clone git://github.com/v8/v8.git v8 >> ./travis.sh
+- echo cd v8 >> ./travis.sh
+- echo git checkout 3.19 >> ./travis.sh
+- echo make dependencies >> ./travis.sh
+- echo make x64.release >> ./travis.sh
+- echo cd .. >> ./travis.sh
+- echo rm support/d8/d8 >> ./travis.sh
+- echo cp v8/out/x64.release/d8 support/d8/d8 >> ./travis.sh
+- echo cp v8/out/x64.release/d8 $HOME/build/albertjan/d8 >> ./travis.sh
+- chmod +x ./travis.sh
+script:
+- ./travis.sh
+- ./v8-update.sh
+- ./m dist
+env: 
+  global: 
+    secure: Y0/gVLy6WpqqJhOCyY2ZvdZm31owkgs2XoI9zAGlP4cZtXHBv7NibAfZqettq98nkdgONHoTY9OHCM9nqb7Eqis3juFKnmRRyMeXYSj7wFLOG1mzUuKhoS+NoT9leGtnoN0VbemP7e7J2bLYzTFcEgmXKHF+lk7BpsBpj6cx3i4=
