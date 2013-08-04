@@ -410,13 +410,13 @@ function testsMain()
     {
         print("closure: skipped");
     }
-return;
-    for (i = 0; i <= 100; ++i)
-    {
-        testInteractive(sprintf("test/interactive/t%02d", i));
-    }
-    print(sprintf("interactive: %d/%d (+%d disabled)", interactivepass, interactivepass + interactivefail, interactivedisabled));
-
+//return;
+//    for (i = 0; i <= 100; ++i)
+//    {
+//        testInteractive(sprintf("test/interactive/t%02d", i));
+//    }
+//    print(sprintf("interactive: %d/%d (+%d disabled)", interactivepass, interactivepass + interactivefail, interactivedisabled));
+    //print('exiting with: ' + tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail);
     quit(tokenizefail + parsefail + transformfail + symtabfail + runfail + interactivefail);
 }
 

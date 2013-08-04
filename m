@@ -367,7 +367,7 @@ def dist():
     ret = test()
     if ret != 0:
         print "Tests failed on uncompressed version."
-        raise SystemExit()
+        sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
@@ -383,24 +383,24 @@ def dist():
     #
     if ret != 0:
         print "closure-compiler failed."
-        raise SystemExit()
+        sys.exit(1)
 
     # run tests on compressed
     print ". Running tests on compressed..."
     ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
-        raise SystemExit()
+        sys.exit(1)
 
     ret = os.system("cp %s dist/tmp.js" % compfn)
     if ret != 0:
         print "Couldn't copy for gzip test."
-        raise SystemExit()
+        sys.exit(1)
 
     ret = os.system("gzip -9 dist/tmp.js")
     if ret != 0:
         print "Couldn't gzip to get final size."
-        raise SystemExit()
+        sys.exit(1)
 
     size = os.path.getsize("dist/tmp.js.gz")
     os.unlink("dist/tmp.js.gz")
@@ -414,7 +414,7 @@ def dist():
     ret |= os.system("cp %s doc/static/builtin.js" % builtinfn)
     if ret != 0:
         print "Couldn't copy to docs dir."
-        raise SystemExit()
+        sys.exit(1)
     print ". Updated doc dir"
 
     # all good!
