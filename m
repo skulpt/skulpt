@@ -121,11 +121,13 @@ elif sys.platform == "darwin":
     #jsengine = "support/d8/d8"
     nul = "/dev/null"
     crlfprog = None
+elif os.environ["CI"] == "true":
+    jsengine = "support/d8/d8x64 --trace_exception"
+    nul = "/dev/null"
 else:
-    print os.access("support/d8/d8", os.X_OK)
-    os.system("test -f support/d8/d8 && echo \"found\" || echo \"not found\"")
-    jsengine = "sudo -E support/d8/d8 --trace_exception"
-    #jsengine = "support/d8/d8"
+    #print os.access("support/d8/d8", os.X_OK)
+    #os.system("test -f support/d8/d8 && echo \"found\" || echo \"not found\"")
+    jsengine = "support/d8/d8 --trace_exception --debugger"
     nul = "/dev/null"
     crlfprog = None
 
