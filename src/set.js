@@ -133,7 +133,7 @@ Sk.builtin.set.prototype['isdisjoint'] = new Sk.builtin.func(function(self, othe
         var isIn = Sk.abstr.sequenceContains(other, item);
         if (isIn)
         {
-            return Sk.builtin.bool(false);
+            return Sk.builtin.bool.false$;
         }
     }
     return Sk.builtin.bool(true);
@@ -146,17 +146,17 @@ Sk.builtin.set.prototype['issubset'] = new Sk.builtin.func(function(self, other)
     if (selfLength > otherLength)
     {
         // every item in this set can't be in other if it's shorter!
-        return Sk.builtin.bool(false);
+        return Sk.builtin.bool.false$;
     }
     for (var it = self.tp$iter(), item = it.tp$iternext(); item !== undefined; item = it.tp$iternext())
     {
         var isIn = Sk.abstr.sequenceContains(other, item);
         if (!isIn)
         {
-            return Sk.builtin.bool(false);
+            return Sk.builtin.bool.false$;
         }
     }
-    return Sk.builtin.bool(true);
+    return Sk.builtin.bool.true$;
 });
 
 Sk.builtin.set.prototype['issuperset'] = new Sk.builtin.func(function(self, other)
