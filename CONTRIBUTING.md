@@ -1,8 +1,10 @@
 # Contributing to Skulpt
 
-## How to update the accept a pull request and update the version.
+## How to accept a pull request and update the version.
 
 TODO: Brad. Please update these to conform to the steps you actually take.
+            I'd be interested to know who checks in the built files?
+            I'm assuming that you alone control the version.
             I have supplied the new Bower steps.
 
 1. Pull the latest code into your local repository.
@@ -43,7 +45,7 @@ TODO: Brad. Please update these to conform to the steps you actually take.
    git tag -a x.y.z -m 'skulpt version x.y.z'
    ```
 
-6. Push the changes, along wuth the tag.
+6. Push the changes, along with the tag.
 
    ```
    git push origin master --tags
