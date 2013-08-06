@@ -39,54 +39,67 @@ Sk.abstr.binop_type_error = function(v, w, name)
             + vtypename + "' and '" + wtypename + "'");
 };
 
-// this can't be a table for closure
-// bnm -- this seems like the most logical place to add support for user defined
-//        operators. (__xxx__ that I've defined in my own class)
-Sk.abstr.boNameToSlotFunc_ = function(obj, name)
-{
-    if (obj === null) {
-        return undefined;
-    };
-
-    switch (name)
-    {
-        case "Add": return obj.nb$add ? obj.nb$add : obj['__add__'];
-        case "Sub": return obj.nb$subtract ? obj.nb$subtract : obj['__sub__'];
-        case "Mult": return obj.nb$multiply ? obj.nb$multiply : obj['__mul__'];
-        case "Div": return obj.nb$divide ? obj.nb$divide : obj['__div__'];
-        case "FloorDiv": return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__floordiv__'];
-        case "Mod": return obj.nb$remainder ? obj.nb$remainder : obj['__mod__'];
-        case "Pow": return obj.nb$power ? obj.nb$power : obj['__pow__'];
-        case "LShift": return obj.nb$lshift;
-        case "RShift": return obj.nb$rshift;
-        case "BitAnd": return obj.nb$and;
-        case "BitOr": return obj.nb$or;
-        case "BitXor": return obj.nb$xor;
-    }
+Sk.abstr.boNameToSlotFuncLhs_ = function(obj, name) {
+  if (obj === null) {
+    return undefined;
+  };
+  switch (name) {
+    case "Add":      return obj.nb$add          ? obj.nb$add :          obj['__add__'];
+    case "Sub":      return obj.nb$subtract     ? obj.nb$subtract :     obj['__sub__'];
+    case "Mult":     return obj.nb$multiply     ? obj.nb$multiply :     obj['__mul__'];
+    case "Div":      return obj.nb$divide       ? obj.nb$divide :       obj['__div__'];
+    case "FloorDiv": return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__floordiv__'];
+    case "Mod":      return obj.nb$remainder    ? obj.nb$remainder :    obj['__mod__'];
+    case "Pow":      return obj.nb$power        ? obj.nb$power :        obj['__pow__'];
+    case "LShift":   return obj.nb$lshift       ? obj.nb$lshift :       obj['__lshift__'];
+    case "RShift":   return obj.nb$rshift       ? obj.nb$rshift :       obj['__rshift__'];
+    case "BitAnd":   return obj.nb$and          ? obj.nb$and :          obj['__and__'];
+    case "BitXor":   return obj.nb$xor          ? obj.nb$xor :          obj['__xor__'];
+    case "BitOr":    return obj.nb$or           ? obj.nb$or :           obj['__or__'];
+  }
 };
-Sk.abstr.iboNameToSlotFunc_ = function(obj, name)
-{
-    switch (name)
-    {
-        case "Add": return obj.nb$inplace_add;
-        case "Sub": return obj.nb$inplace_subtract;
-        case "Mult": return obj.nb$inplace_multiply;
-        case "Div": return obj.nb$inplace_divide;
-        case "FloorDiv": return obj.nb$inplace_floor_divide;
-        case "Mod": return obj.nb$inplace_remainder;
-        case "Pow": return obj.nb$inplace_power;
-        case "LShift": return obj.nb$inplace_lshift;
-        case "RShift": return obj.nb$inplace_rshift;
-        case "BitAnd": return obj.nb$inplace_and;
-        case "BitOr": return obj.nb$inplace_or;
-        case "BitXor": return obj.nb$inplace_xor;
-    }
+
+Sk.abstr.boNameToSlotFuncRhs_ = function(obj, name) {
+  if (obj === null) {
+    return undefined;
+  };
+  switch (name) {
+    case "Add":      return obj.nb$add          ? obj.nb$add :          obj['__radd__'];
+    case "Sub":      return obj.nb$subtract     ? obj.nb$subtract :     obj['__rsub__'];
+    case "Mult":     return obj.nb$multiply     ? obj.nb$multiply :     obj['__rmul__'];
+    case "Div":      return obj.nb$divide       ? obj.nb$divide :       obj['__rdiv__'];
+    case "FloorDiv": return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__rfloordiv__'];
+    case "Mod":      return obj.nb$remainder    ? obj.nb$remainder :    obj['__rmod__'];
+    case "Pow":      return obj.nb$power        ? obj.nb$power :        obj['__rpow__'];
+    case "LShift":   return obj.nb$lshift       ? obj.nb$lshift :       obj['__rlshift__'];
+    case "RShift":   return obj.nb$rshift       ? obj.nb$rshift :       obj['__rrshift__'];
+    case "BitAnd":   return obj.nb$and          ? obj.nb$and :          obj['__rand__'];
+    case "BitXor":   return obj.nb$xor          ? obj.nb$xor :          obj['__rxor__'];
+    case "BitOr":    return obj.nb$or           ? obj.nb$or :           obj['__ror__'];
+  }
+};
+
+Sk.abstr.iboNameToSlotFunc_ = function(obj, name) {
+  switch (name) {
+    case "Add":      return obj.nb$inplace_add          ? obj.nb$inplace_add          : obj['__iadd__'];
+    case "Sub":      return obj.nb$inplace_subtract     ? obj.nb$inplace_subtract     : obj['__isub__'];
+    case "Mult":     return obj.nb$inplace_multiply     ? obj.nb$inplace_multiply     : obj['__imul__'];
+    case "Div":      return obj.nb$inplace_divide       ? obj.nb$inplace_divide       : obj['__idiv__'];
+    case "FloorDiv": return obj.nb$inplace_floor_divide ? obj.nb$inplace_floor_divide : obj['__ifloordiv__'];
+    case "Mod":      return obj.nb$inplace_remainder;
+    case "Pow":      return obj.nb$inplace_power;
+    case "LShift":   return obj.nb$inplace_lshift       ? obj.nb$inplace_lshift       : obj['__ilshift__'];
+    case "RShift":   return obj.nb$inplace_rshift       ? obj.nb$inplace_rshift       : obj['__irshift__'];
+    case "BitAnd":   return obj.nb$inplace_and;
+    case "BitOr":    return obj.nb$inplace_or;
+    case "BitXor":   return obj.nb$inplace_xor          ? obj.nb$inplace_xor          : obj['__ixor__'];
+  }
 };
 
 Sk.abstr.binary_op_ = function(v, w, opname)
 {
     var ret;
-    var vop = Sk.abstr.boNameToSlotFunc_(v, opname);
+    var vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined)
     {	
 		if (vop.call) {
@@ -96,7 +109,7 @@ Sk.abstr.binary_op_ = function(v, w, opname)
 		}
         if (ret !== undefined) return ret;
     }
-    var wop = Sk.abstr.boNameToSlotFunc_(w, opname);
+    var wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
     if (wop !== undefined)
     {
 		if (wop.call) {
@@ -315,7 +328,7 @@ Sk.abstr.numberUnaryOp = function(v, op)
     {
         if (op === "USub" && v.nb$negative) return v.nb$negative();
         if (op === "UAdd" && v.nb$positive) return v.nb$positive();
-        //todo; if (op === "Invert" && v.nb$positive) return v.nb$invert();
+        if (op === "Invert" && v.nb$invert) return v.nb$invert();
     }
 
     var vtypename = Sk.abstr.typeName(v);

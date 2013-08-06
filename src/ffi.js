@@ -28,12 +28,27 @@ Sk.ffi.remapToPy = function(obj)
     else if (typeof obj === "string")
         return new Sk.builtin.str(obj);
     else if (typeof obj === "number")
-		return new Sk.builtin.nmber(obj, undefined);
-	else if (typeof obj === "boolean")
+        return new Sk.builtin.nmber(obj, undefined);
+    else if (typeof obj === "boolean")
         return obj;
     goog.asserts.fail("unhandled remap type " + typeof(obj));
 };
 goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
+
+/*
+ * Wraps a JavaScript object in the standard wrapper so the initializers by referemce work correctly.
+ *
+ * This is used in conjuction with invocations of Sk.misceval.callsim.
+ */
+Sk.ffi.referenceToPy = function(obj, name) {
+  if (typeof obj === 'object' && typeof name === 'string') {
+    return {"v": obj, "tp$name": name};
+  }
+  else {
+    goog.asserts.fail("unhandled reference");
+  }
+};
+goog.exportSymbol("Sk.ffi.referenceToPy", Sk.ffi.referenceToPy);
 
 /**
  * maps from Python dict/list/str to Javascript Object/Array/string.
@@ -63,18 +78,26 @@ Sk.ffi.remapToJs = function(obj)
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         return ret;
     }
-	else if (obj instanceof Sk.builtin.nmber)
-	{
-		return Sk.builtin.asnum$(obj);
-	}
-	else if (obj instanceof Sk.builtin.lng)
-	{
-		return Sk.builtin.asnum$(obj);
-	}
+    else if (obj instanceof Sk.builtin.nmber)
+    {
+        return Sk.builtin.asnum$(obj);
+    }
+    else if (obj instanceof Sk.builtin.lng)
+    {
+        return Sk.builtin.asnum$(obj);
+    }
     else if (typeof obj === "number" || typeof obj === "boolean")
+    {
         return obj;
+    }
+    else if (typeof obj === "undefined")
+    {
+        return obj;
+    }
     else
+    {
         return obj.v;
+    }
 };
 goog.exportSymbol("Sk.ffi.remapToJs", Sk.ffi.remapToJs);
 
@@ -101,10 +124,10 @@ goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
  */
 Sk.ffi.basicwrap = function(obj)
 {
-	if (obj instanceof Sk.builtin.nmber)
-		return Sk.builtin.asnum$(obj);
-	if (obj instanceof Sk.builtin.lng)
-		return Sk.builtin.asnum$(obj);
+    if (obj instanceof Sk.builtin.nmber)
+        return Sk.builtin.asnum$(obj);
+    if (obj instanceof Sk.builtin.lng)
+        return Sk.builtin.asnum$(obj);
     if (typeof obj === "number" || typeof obj === "boolean")
         return obj;
     if (typeof obj === "string")
