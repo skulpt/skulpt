@@ -12,20 +12,12 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function(v) {
     var vtypename;
-    if (v instanceof Sk.builtin.none) {
-        vtypename = "NoneType";
-    } else if (v instanceof Sk.builtin.bool) {
-        vtypename = "bool";
-    } else if (typeof v === "number") {
-        vtypename = "number";
-    } else if (v instanceof Sk.builtin.nmber) {
+    if (v instanceof Sk.builtin.nmber) {
 	vtypename = v.skType;
     } else if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
-    } else if (v.ob$type && (v.ob$type.tp$name !== undefined)) {
-        vtypename = v.ob$type.tp$name;
     } else {
-        vtypename = "unknown";
+        vtypename = "<invalid type>";
     };
     return vtypename;
 };

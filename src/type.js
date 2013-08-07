@@ -150,7 +150,7 @@ Sk.builtin.type = function(name, bases, dict)
 	    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
 	}
 
-        klass.tp$name = name;
+        klass.prototype.tp$name = name;
 
         if (bases)
         {

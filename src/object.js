@@ -90,7 +90,7 @@ Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('object', 
  */
 Sk.builtin.none = function() {};
 Sk.builtin.none.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('NoneType', Sk.builtin.none);
-Sk.builtin.none.prototype.tp$name = "None";
+Sk.builtin.none.prototype.tp$name = "NoneType";
 Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {v: {value: null, enumerable: true}});
 
 goog.exportSymbol("Sk.builtin.none", Sk.builtin.none);

@@ -388,6 +388,7 @@ Sk.builtin.dict.prototype['values'] = new Sk.builtin.func(function(self)
     return new Sk.builtin.list(ret);
 });
 
+Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
