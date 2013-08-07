@@ -324,7 +324,14 @@ Sk.misceval.objectRepr = function(v)
         };
     }
     else if (v.constructor === Sk.builtin.nmber)
-        return new Sk.builtin.str("" + v.v);
+    {
+        if (v.v === Infinity)
+            return new Sk.builtin.str('inf');
+        else if (v.v === -Infinity)
+            return new Sk.builtin.str('-inf');
+        else
+            return new Sk.builtin.str("" + v.v);
+    }
     else
         return v['$r']();
 };
