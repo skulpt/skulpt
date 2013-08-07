@@ -127,6 +127,101 @@ Sk.misceval.swappedOp_ = {
 
 Sk.misceval.richCompareBool = function(v, w, op)
 {
+    // v and w must be Python objects. will return Javascript true or false for internal use only
+    // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
+
+    goog.asserts.assert((v !== null) && (v !== undefined), "passed undefined or null parameter to Sk.misceval.richCompareBool");
+    goog.asserts.assert((w !== null) && (w !== undefined), "passed undefined or null parameter to Sk.misceval.richCompareBool");
+
+    var v_type = new Sk.builtin.type(v);
+    var w_type = new Sk.builtin.type(w);
+
+    // Python has specific rules when comparing two different builtin types
+    // currently, this code will execute even if the objects are not builtin types
+    // but will fall through and not return anything in this section
+    if ((v_type !== w_type)
+        && (op === 'GtE' || op === 'Gt' || op === 'LtE' || op === 'Lt'))
+    {
+        // note: sets are omitted here because they can only be compared to other sets
+        var numeric_types = [Sk.builtin.float_.prototype.ob$type,
+                             Sk.builtin.int_.prototype.ob$type,
+                             Sk.builtin.lng.prototype.ob$type,
+                             Sk.builtin.bool.prototype.ob$type];
+        var sequence_types = [Sk.builtin.dict.prototype.ob$type,
+                              Sk.builtin.enumerate.prototype.ob$type,
+                              Sk.builtin.list.prototype.ob$type,
+                              Sk.builtin.str.prototype.ob$type,
+                              Sk.builtin.tuple.prototype.ob$type];
+
+        var v_num_type = numeric_types.indexOf(v_type);
+        var v_seq_type = sequence_types.indexOf(v_type);
+        var w_num_type = numeric_types.indexOf(w_type);
+        var w_seq_type = sequence_types.indexOf(w_type);
+
+        // NoneTypes are considered less than any other type in Python
+        // note: this only handles comparing NoneType with any non-NoneType.
+        // Comparing NoneType with NoneType is handled further down.
+        if (v_type === Sk.builtin.none.prototype.ob$type)
+        {
+            switch (op)
+            {
+                case 'Lt':  return true;
+                case 'LtE': return true;
+                case 'Gt':  return false;
+                case 'GtE': return false;
+            }
+        }
+
+        if (w_type === Sk.builtin.none.prototype.ob$type)
+        {
+            switch (op)
+            {
+                case 'Lt':  return false;
+                case 'LtE': return false;
+                case 'Gt':  return true;
+                case 'GtE': return true;
+            }
+        }
+
+        // numeric types are always considered smaller than sequence types in Python
+        if (v_num_type !== -1 && w_seq_type !== -1)
+        {
+            switch (op)
+            {
+                case 'Lt':  return true;
+                case 'LtE': return true;
+                case 'Gt':  return false;
+                case 'GtE': return false;
+            }
+        }
+
+        if (v_seq_type !== -1 && w_num_type !== -1)
+        {
+            switch (op)
+            {
+                case 'Lt':  return false;
+                case 'LtE': return false;
+                case 'Gt':  return true;
+                case 'GtE': return true;
+            }
+        }
+
+        // in Python, different sequence types are ordered alphabetically
+        // by name so that dict < list < str < tuple
+        if (v_seq_type !== -1 && w_seq_type !== -1)
+        {
+            switch (op)
+            {
+                case 'Lt':  return v_seq_type < w_seq_type;
+                case 'LtE': return v_seq_type <= w_seq_type;
+                case 'Gt':  return v_seq_type > w_seq_type;
+                case 'GtE': return v_seq_type >= w_seq_type;
+            }
+        }
+    }
+
+
+    // handle identity and membership comparisons
     if (op === 'Is') {
 	if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber)
 	{
@@ -153,132 +248,81 @@ Sk.misceval.richCompareBool = function(v, w, op)
         return v !== w;
     }
 
-    if (v === w)
-    {
-        if (op === 'Eq')
-            return true;
-        else if (op === 'NotEq')
-            return false;
-    }
-
-    if (v instanceof Sk.builtin.str && w instanceof Sk.builtin.str)
-    {
-        if (op === 'Eq')
-            return v === w;
-        else if (op === 'NotEq')
-            return v !== w;
-    }
-
-    if (op === "In") return Sk.abstr.sequenceContains(w, v);
-    if (op === "NotIn") return !Sk.abstr.sequenceContains(w, v);
+    if (op === "In")
+        return Sk.abstr.sequenceContains(w, v);
+    if (op === "NotIn")
+        return !Sk.abstr.sequenceContains(w, v);
 
 
+    // use comparison methods if they are given for either object
     var res;
-    //print("  -- rcb:", JSON.stringify(v), JSON.stringify(w), op);
-    if (v && w && v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
+    if (v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined)
     {
         return res;
     }
-    else if (w && v && w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
+
+    if (w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined)
     {
         return res;
     }
-    else
+
+
+    // depending on the op, try left:op:right, and if not, then
+    // right:reversed-top:left
+
+    var op2method = {
+        'Eq': '__eq__',
+        'NotEq': '__ne__',
+        'Gt': '__gt__',
+        'GtE': '__ge__',
+        'Lt': '__lt__',
+        'LtE': '__le__'
+    };
+
+    var method = op2method[op];
+    var swapped_method = op2method[Sk.misceval.swappedOp_[op]];
+
+    if (v[method])
     {
-        // depending on the op, try left:op:right, and if not, then
-        // right:reversed-top:left
-        // yeah, a macro or 3 would be nice...
-        if (op === 'Eq') {
-            if (v && v['__eq__']) 
-                return Sk.misceval.callsim(v['__eq__'], v, w);
-            else if (w && w['__eq__'])
-                return Sk.misceval.callsim(w['__eq__'], w, v);
-        }
-        else if (op === 'NotEq') {
-            if (v && v['__ne__'])
-                return Sk.misceval.callsim(v['__ne__'], v, w);
-            else if (w && w['__ne__'])
-                return Sk.misceval.callsim(w['__ne__'], w, v);
-        }
-        else if (op === 'Gt') {
-            if (v && v['__gt__'])
-                return Sk.misceval.callsim(v['__gt__'], v, w);
-            else if (w && w['__le__'])
-                return Sk.misceval.callsim(w['__le__'], w, v);
-        }
-        else if (op === 'Lt') {
-            if (v && v['__lt__'])
-                return Sk.misceval.callsim(v['__lt__'], v, w);
-            else if (w && w['__ge__'])
-                return Sk.misceval.callsim(w['__ge__'], w, v);
-        }
-        else if (op === 'GtE') {
-            if (v && v['__ge__'])
-                return Sk.misceval.callsim(v['__ge__'], v, w);
-            else if (w && w['__lt__'])
-                return Sk.misceval.callsim(w['__lt__'], w, v);
-        }
-        else if (op === 'LtE') {
-            if (v && v['__le__'])
-                return Sk.misceval.callsim(v['__le__'], v, w);
-            else if (w && w['__gt__'])
-                return Sk.misceval.callsim(w['__gt__'], w, v);
-        }
-
-        if (v && v['__cmp__'])
-        {
-            var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
-	    ret = Sk.builtin.asnum$(ret);
-            if (op === 'Eq') return ret === 0;
-            else if (op === 'NotEq') return ret !== 0;
-            else if (op === 'Lt') return ret < 0;
-            else if (op === 'Gt') return ret > 0;
-            else if (op === 'LtE') return ret <= 0;
-            else if (op === 'GtE') return ret >= 0;
-        }
-        else if (w && w['__cmp__'])
-        {
-            // note, flipped on return value and call
-            var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
-	    ret = Sk.builtin.asnum$(ret);
-            if (op === 'Eq') return ret === 0;
-            else if (op === 'NotEq') return ret !== 0;
-            else if (op === 'Lt') return ret > 0;
-            else if (op === 'Gt') return ret < 0;
-            else if (op === 'LtE') return ret >= 0;
-            else if (op === 'GtE') return ret <= 0;
-        }
-
+        return Sk.misceval.callsim(v[method], v, w);
     }
-    if (typeof v !== typeof w) {
-        if (op === 'NotEq') return true;
-        else
-            return false;
+    else if (w[swapped_method])
+    {
+        return Sk.misceval.callsim(w[swapped_method], w, v);
     }
 
-    if (((v instanceof Sk.builtin.none) || (v instanceof Sk.builtin.bool))
-	&& ((w instanceof Sk.builtin.none) || (w instanceof Sk.builtin.bool)))
+    if (v['__cmp__'])
     {
+        var ret = Sk.misceval.callsim(v['__cmp__'], v, w);
+	ret = Sk.builtin.asnum$(ret);
+        if (op === 'Eq') return ret === 0;
+        else if (op === 'NotEq') return ret !== 0;
+        else if (op === 'Lt') return ret < 0;
+        else if (op === 'Gt') return ret > 0;
+        else if (op === 'LtE') return ret <= 0;
+        else if (op === 'GtE') return ret >= 0;
+    }
 
-	if ((v.v === false) && (w.v === null))
-	{
-	    if (op === 'Gt')
-		return true;
-	    if (op === 'LtE')
-		return false;
-	}
+    if (w['__cmp__'])
+    {
+        // note, flipped on return value and call
+        var ret = Sk.misceval.callsim(w['__cmp__'], w, v);
+	ret = Sk.builtin.asnum$(ret);
+        if (op === 'Eq') return ret === 0;
+        else if (op === 'NotEq') return ret !== 0;
+        else if (op === 'Lt') return ret > 0;
+        else if (op === 'Gt') return ret < 0;
+        else if (op === 'LtE') return ret >= 0;
+        else if (op === 'GtE') return ret <= 0;
+    }
 
-	if ((v.v === null) && (w.v === false))
-	{
-	    if (op === 'GtE')
-		return false;
-	    if (op === 'Lt')
-		return true;
-	}
-
-	// Except for the above special case with None and False,
-	// Javascript happens to return the same values when comparing null,
-	// true, and false as Python does when comparing None, True, and False
+    // handle special cases for comparing None with None or Bool with Bool
+    if (((v instanceof Sk.builtin.none) && (w instanceof Sk.builtin.none))
+	|| ((v instanceof Sk.builtin.bool) && (w instanceof Sk.builtin.bool)))
+    {
+	// Javascript happens to return the same values when comparing null
+        // with null or true/false with true/false as Python does when
+        // comparing None with None or True/False with True/False
 
 	if (op === 'Eq')
 	    return v.v === w.v;
@@ -295,9 +339,19 @@ Sk.misceval.richCompareBool = function(v, w, op)
     }
 
 
-    // todo; some defaults, mostly to handle diff types -> false. are these ok?
-    if (op === 'Eq') return v === w;
-    if (op === 'NotEq') return v !== w;
+    // handle equality comparisons for any remaining objects
+    if (op === 'Eq')
+    {
+        if ((v instanceof Sk.builtin.str) && (w instanceof Sk.builtin.str))
+            return v.v === w.v;
+        return v === w;
+    }
+    if (op === 'NotEq')
+    {
+        if ((v instanceof Sk.builtin.str) && (w instanceof Sk.builtin.str))
+            return v.v !== w.v;
+        return v !== w;
+    }
 
     var vname = Sk.abstr.typeName(v);
     var wname = Sk.abstr.typeName(w);
