@@ -916,7 +916,8 @@ Sk.builtin.pow = function pow(a, b, c) {
 	    throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
 	}
 
-	if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng)
+	if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng)
+            || (Math.pow(a_num, b_num) === Infinity))
 	{
 	    // convert a to a long so that we can use biginteger's modPowInt method
 	    a = new Sk.builtin.lng(a);
