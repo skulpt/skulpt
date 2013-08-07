@@ -104,7 +104,14 @@ goog.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.AssertionError = function(args) { Sk.builtin.Exception.apply(this, arguments); };
+Sk.builtin.AssertionError = function(args) {
+    if (!(this instanceof Sk.builtin.AssertionError)) {
+        var o = Object.create(Sk.builtin.AssertionError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.AssertionError, Sk.builtin.Exception);
 Sk.builtin.AssertionError.prototype.tp$name = "AssertionError";
 goog.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
@@ -114,7 +121,14 @@ goog.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.AttributeError = function(args) { Sk.builtin.Exception.apply(this, arguments); };
+Sk.builtin.AttributeError = function(args) {
+    if (!(this instanceof Sk.builtin.AttributeError)) {
+        var o = Object.create(Sk.builtin.AttributeError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.AttributeError, Sk.builtin.Exception);
 Sk.builtin.AttributeError.prototype.tp$name = "AttributeError";
 
@@ -123,7 +137,14 @@ Sk.builtin.AttributeError.prototype.tp$name = "AttributeError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.ImportError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.ImportError = function(args) {
+    if (!(this instanceof Sk.builtin.ImportError)) {
+        var o = Object.create(Sk.builtin.ImportError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.ImportError, Sk.builtin.Exception);
 Sk.builtin.ImportError.prototype.tp$name = "ImportError";
 
@@ -132,7 +153,14 @@ Sk.builtin.ImportError.prototype.tp$name = "ImportError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.IndentationError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.IndentationError = function(args) {
+    if (!(this instanceof Sk.builtin.IndentationError)) {
+        var o = Object.create(Sk.builtin.IndentationError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.IndentationError, Sk.builtin.Exception);
 Sk.builtin.IndentationError.prototype.tp$name = "IndentationError";
 
@@ -141,7 +169,14 @@ Sk.builtin.IndentationError.prototype.tp$name = "IndentationError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.IndexError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.IndexError = function(args) {
+    if (!(this instanceof Sk.builtin.IndexError)) {
+        var o = Object.create(Sk.builtin.IndexError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.IndexError, Sk.builtin.Exception);
 Sk.builtin.IndexError.prototype.tp$name = "IndexError";
 
@@ -150,7 +185,14 @@ Sk.builtin.IndexError.prototype.tp$name = "IndexError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.KeyError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.KeyError = function(args) {
+    if (!(this instanceof Sk.builtin.KeyError)) {
+        var o = Object.create(Sk.builtin.KeyError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.KeyError, Sk.builtin.Exception);
 Sk.builtin.KeyError.prototype.tp$name = "KeyError";
 
@@ -159,7 +201,14 @@ Sk.builtin.KeyError.prototype.tp$name = "KeyError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.NameError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.NameError = function(args) {
+    if (!(this instanceof Sk.builtin.NameError)) {
+        var o = Object.create(Sk.builtin.NameError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.NameError, Sk.builtin.Exception);
 Sk.builtin.NameError.prototype.tp$name = "NameError";
 
@@ -168,7 +217,14 @@ Sk.builtin.NameError.prototype.tp$name = "NameError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.OverflowError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.OverflowError = function(args) {
+    if (!(this instanceof Sk.builtin.OverflowError)) {
+        var o = Object.create(Sk.builtin.OverflowError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.OverflowError, Sk.builtin.Exception);
 Sk.builtin.OverflowError.prototype.tp$name = "OverflowError";
 
@@ -178,7 +234,14 @@ Sk.builtin.OverflowError.prototype.tp$name = "OverflowError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.ParseError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.ParseError = function(args) {
+    if (!(this instanceof Sk.builtin.ParseError)) {
+        var o = Object.create(Sk.builtin.ParseError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.ParseError, Sk.builtin.Exception);
 Sk.builtin.ParseError.prototype.tp$name = "ParseError";
 
@@ -188,7 +251,14 @@ Sk.builtin.ParseError.prototype.tp$name = "ParseError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.SystemExit = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.SystemExit = function(args) {
+    if (!(this instanceof Sk.builtin.SystemExit)) {
+        var o = Object.create(Sk.builtin.SystemExit.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.SystemExit, Sk.builtin.Exception);
 Sk.builtin.SystemExit.prototype.tp$name = "SystemExit";
 goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
@@ -199,7 +269,14 @@ goog.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.SyntaxError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.SyntaxError = function(args) {
+    if (!(this instanceof Sk.builtin.SyntaxError)) {
+        var o = Object.create(Sk.builtin.SyntaxError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.SyntaxError, Sk.builtin.Exception);
 Sk.builtin.SyntaxError.prototype.tp$name = "SyntaxError";
 
@@ -208,7 +285,14 @@ Sk.builtin.SyntaxError.prototype.tp$name = "SyntaxError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.TokenError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.TokenError = function(args) {
+    if (!(this instanceof Sk.builtin.TokenError)) {
+        var o = Object.create(Sk.builtin.TokenError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.TokenError, Sk.builtin.Exception);
 Sk.builtin.TokenError.prototype.tp$name = "TokenError";
 
@@ -217,7 +301,14 @@ Sk.builtin.TokenError.prototype.tp$name = "TokenError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.TypeError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.TypeError = function(args) {
+    if (!(this instanceof Sk.builtin.TypeError)) {
+        var o = Object.create(Sk.builtin.TypeError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.TypeError, Sk.builtin.Exception);
 Sk.builtin.TypeError.prototype.tp$name = "TypeError";
 goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
@@ -226,7 +317,14 @@ goog.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.ValueError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.ValueError = function(args) {
+    if (!(this instanceof Sk.builtin.ValueError)) {
+        var o = Object.create(Sk.builtin.ValueError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.ValueError, Sk.builtin.Exception);
 Sk.builtin.ValueError.prototype.tp$name = "ValueError";
 goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
@@ -236,7 +334,14 @@ goog.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.ZeroDivisionError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.ZeroDivisionError = function(args) {
+    if (!(this instanceof Sk.builtin.ZeroDivisionError)) {
+        var o = Object.create(Sk.builtin.ZeroDivisionError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.ZeroDivisionError, Sk.builtin.Exception);
 Sk.builtin.ZeroDivisionError.prototype.tp$name = "ZeroDivisionError";
 
@@ -245,7 +350,14 @@ Sk.builtin.ZeroDivisionError.prototype.tp$name = "ZeroDivisionError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.TimeLimitError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.TimeLimitError = function(args) {
+    if (!(this instanceof Sk.builtin.TimeLimitError)) {
+        var o = Object.create(Sk.builtin.TimeLimitError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.TimeLimitError, Sk.builtin.Exception);
 Sk.builtin.TimeLimitError.prototype.tp$name = "TimeLimitError";
 goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
@@ -255,7 +367,14 @@ goog.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.IOError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.IOError = function(args) {
+    if (!(this instanceof Sk.builtin.IOError)) {
+        var o = Object.create(Sk.builtin.IOError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.IOError, Sk.builtin.Exception);
 Sk.builtin.IOError.prototype.tp$name = "IOError";
 goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
@@ -266,7 +385,14 @@ goog.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.NotImplementedError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.NotImplementedError = function(args) {
+    if (!(this instanceof Sk.builtin.NotImplementedError)) {
+        var o = Object.create(Sk.builtin.NotImplementedError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.NotImplementedError, Sk.builtin.Exception);
 Sk.builtin.NotImplementedError.prototype.tp$name = "NotImplementedError";
 goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
@@ -276,7 +402,14 @@ goog.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedErr
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.NegativePowerError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.NegativePowerError = function(args) {
+    if (!(this instanceof Sk.builtin.NegativePowerError)) {
+        var o = Object.create(Sk.builtin.NegativePowerError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.NegativePowerError, Sk.builtin.Exception);
 Sk.builtin.NegativePowerError.prototype.tp$name = "NegativePowerError";
 goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
@@ -286,7 +419,14 @@ goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.OperationError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.OperationError = function(args) {
+    if (!(this instanceof Sk.builtin.OperationError)) {
+        var o = Object.create(Sk.builtin.OperationError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+}
 goog.inherits(Sk.builtin.OperationError, Sk.builtin.Exception);
 Sk.builtin.OperationError.prototype.tp$name = "OperationError";
 goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);

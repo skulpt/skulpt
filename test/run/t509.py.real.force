@@ -1,0 +1,4 @@
+caught TypeError: abc on line 2
+caught TypeError: abc on line 8
+caught re-raise:  TypeError: abc on line 8
+caught TypeError:  on line 16
