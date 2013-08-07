@@ -3,27 +3,8 @@ python:
 - "2.6"
 install:
 - pip install GitPython --use-mirrors
-#uncomment these lines to rebuild v8
-# get a token from github: curl -X POST -u {username} -H "Content-Type: application/json" -d "{\"scopes\":[\"public_repo\"],\"note\":\"token for pushing from travis\"}" https://api.github.com/authorizations
-# replace {username} with your username
-# gem install travis
-# travis encrypt -r {username or org}/skulpt GH_TOKEN={token from curl request} --add env.global
-#- sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
-#- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E1FAD0C
-#- sudo apt-get update
-#- echo set -e >> ./travis.sh
-#- echo set -o pipefail >> ./travis.sh
-#- echo git clone git://github.com/v8/v8.git v8 >> ./travis.sh
-#- echo cd v8 >> ./travis.sh
-#- echo git checkout 3.19 >> ./travis.sh
-#- echo make dependencies >> ./travis.sh
-#- echo make x64.release >> ./travis.sh
-#- echo cd .. >> ./travis.sh
-#- echo rm support/d8/d8 >> ./travis.sh
-#- echo cp v8/out/x64.release/d8 support/d8/d8 >> ./travis.sh
-#- echo cp v8/out/x64.release/d8 $HOME/build/albertjan/d8 >> ./travis.sh
-#- chmod +x ./travis.sh
 script:
-#- ./travis.sh
-#- ./v8-update.sh
 - ./m dist
+after_succes:
+- ./dist-update.sh
+- ./site-update.sh
