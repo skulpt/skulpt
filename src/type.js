@@ -22,23 +22,19 @@ Sk.builtin.type = function(name, bases, dict)
     if (bases === undefined && dict === undefined)
     {
         // 1 arg version of type()
+        // the argument is an object, not a name and returns a type object
         var obj = name;
-        if (obj === true || obj === false) return Sk.builtin.bool.prototype.ob$type;
-        if ((obj === null) || (obj instanceof Sk.builtin.none))
-	    return Sk.builtin.none.prototype.ob$type;
-        if (typeof obj === "number")
+        if (obj.constructor === Sk.builtin.nmber)
         {
-	    if (Math.floor(obj) === obj)
-                return Sk.builtin.int_.prototype.ob$type;
-            else
+	    if (obj.skType === Sk.builtin.nmber.int$)
+            {
+		return Sk.builtin.int_.prototype.ob$type;
+            }
+	    else
+            {
                 return Sk.builtin.float_.prototype.ob$type;
-        }
-		if (obj.constructor === Sk.builtin.nmber) {
-			if (obj.skType === "int")
-				return Sk.builtin.int_.prototype.ob$type;
-			else // if (obj.skType === "float")
-                return Sk.builtin.float_.prototype.ob$type;
-		}
+            }
+	}
         return obj.ob$type;
     }
     else
