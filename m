@@ -17,6 +17,7 @@ import shutil
 import re
 import pprint
 import json
+nogit = False
 try:
     from git import *
 except:
@@ -25,6 +26,7 @@ except:
     print "dist will not work without it.  Get it using pip or easy_install"
     print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
     print "+----------------------------------------------------------------------------+"
+    nogit = True
 
 # order is important!
 Files = [
@@ -111,17 +113,21 @@ def getFileList(type):
     return ret
 
 if sys.platform == "win32":
-    jsengine = "support\\d8\\d8.exe --trace_exception --debugger"
+    jsengine = ".\\support\\d8\\d8.exe --trace_exception --debugger"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "support/d8/d8m --trace_exception --debugger"
+    jsengine = "./support/d8/d8m --trace_exception --debugger"
     #jsengine = "support/d8/d8"
     nul = "/dev/null"
     crlfprog = None
+elif os.environ["CI"] == "true":
+    jsengine = "support/d8/d8x64 --trace_exception"
+    nul = "/dev/null"
 else:
+    #print os.access("support/d8/d8", os.X_OK)
+    #os.system("test -f support/d8/d8 && echo \"found\" || echo \"not found\"")
     jsengine = "support/d8/d8 --trace_exception --debugger"
-    #jsengine = "support/d8/d8"
     nul = "/dev/null"
     crlfprog = None
 
@@ -327,7 +333,7 @@ def dist():
     this is all combined into one file, tests run, jslint'd, compressed.
     """
 
-    if not isClean():
+    if not nogit and not isClean():
         print "WARNING: working directory not clean (according to 'git status')"
         #raise SystemExit()
 
@@ -367,7 +373,7 @@ def dist():
     ret = test()
     if ret != 0:
         print "Tests failed on uncompressed version."
-        raise SystemExit()
+        sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
@@ -383,24 +389,24 @@ def dist():
     #
     if ret != 0:
         print "closure-compiler failed."
-        raise SystemExit()
+        sys.exit(1)
 
     # run tests on compressed
     print ". Running tests on compressed..."
     ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
-        raise SystemExit()
+        sys.exit(1)
 
     ret = os.system("cp %s dist/tmp.js" % compfn)
     if ret != 0:
         print "Couldn't copy for gzip test."
-        raise SystemExit()
+        sys.exit(1)
 
     ret = os.system("gzip -9 dist/tmp.js")
     if ret != 0:
         print "Couldn't gzip to get final size."
-        raise SystemExit()
+        sys.exit(1)
 
     size = os.path.getsize("dist/tmp.js.gz")
     os.unlink("dist/tmp.js.gz")
@@ -414,7 +420,7 @@ def dist():
     ret |= os.system("cp %s doc/static/builtin.js" % builtinfn)
     if ret != 0:
         print "Couldn't copy to docs dir."
-        raise SystemExit()
+        sys.exit(1)
     print ". Updated doc dir"
 
     # all good!

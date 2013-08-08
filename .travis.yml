@@ -1,0 +1,13 @@
+language: python
+python:
+- '2.6'
+install:
+- pip install GitPython --use-mirrors
+script:
+- ./m dist
+after_succes:
+- ./dist-update.sh
+- ./site-update.sh
+env:
+  global:
+    secure: wOs3pE4/hXWhXjNTIEGOeca4dpn/gIxpBvmrzWsqaeEQdQ6c7q87iPBilQTCg3ET/ADOMUq1ZqL1yDZIOB7HfmNjR266aUxRz2cfYXi0bBnPlsOvO2QRcQRHRythroFTSu2eKFxHj2F+ea756I+xws1vc+2JiNqmWN/4zccuiwY=
