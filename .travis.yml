@@ -5,7 +5,7 @@ install:
 - pip install GitPython --use-mirrors
 script:
 - ./skulpt.py dist
-after_succes:
+after_script:
 - ./dist-update.sh
 #- ./site-update.sh
 env:
