@@ -2,6 +2,8 @@
 
 Skulpt is a Javascript implementation of Python 2.x.  Python that runs in your browser!  Python that runs on your iPad!  Its being used several projects including, [Interactive Python Textbooks](http://interactivepython.org) -- You can see skulpt in action there.  Try out [some turtle graphics examples](http://interactivepython.org/courselib/static/thinkcspy/PythonTurtle/helloturtle.html) to see Skulpt in action.
 
+[![Build Status](https://travis-ci.org/bnmnetp/skulpt.png)](https://travis-ci.org/bnmnetp/skulpt)
+
 ## Origins
 
 Skulpt is the brainchild of Scott Graham.  See [Skulpt.org](http://skulpt.org) for some early demos of skulpt in action.
