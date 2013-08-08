@@ -740,7 +740,7 @@ Compiler.prototype.outputAllUnits = function()
             ret += "case " + i + ": /* --- " + blocks[i]._name + " --- */";
             ret += blocks[i].join('');
 
-            ret += "goog.asserts.fail('unterminated block');";
+            ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');";
         }
         ret += unit.suffixCode;
     }

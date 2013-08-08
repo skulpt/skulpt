@@ -291,6 +291,16 @@ goog.inherits(Sk.builtin.OperationError, Sk.builtin.Exception);
 Sk.builtin.OperationError.prototype.tp$name = "OperationError";
 goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
 
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.SystemError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+goog.inherits(Sk.builtin.SystemError, Sk.builtin.Exception);
+Sk.builtin.SystemError.prototype.tp$name = "SystemError";
+goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
+
 Sk.currLineNo = -1;
 Sk.currColNo = -1;
 Sk.currFilename = '';
