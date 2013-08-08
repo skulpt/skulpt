@@ -1,5 +1,5 @@
 if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-  echo -e "Starting to update v8\n"
+  echo -e "Starting to update of dist folder\n"
   git config --global user.email "travis@travis-ci.org"
   git config --global user.name "Travis"
   #using token clone gh-pages branch
@@ -9,8 +9,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
   ./m dist
   cd dist
   #add, commit and push files
-  git add skulpt.js
-  git add builtin.js
+  git add -u
   git commit -m "Travis build $TRAVIS_BUILD_NUMBER pushed [ci skip]"
   git push -fq origin master > /dev/null
   echo -e "Done magic with coverage\n"
