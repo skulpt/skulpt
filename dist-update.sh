@@ -13,4 +13,6 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
   git commit -m "Travis build $TRAVIS_BUILD_NUMBER pushed [ci skip]"
   git push -fq origin master > /dev/null
   echo -e "Done magic with coverage\n"
+else
+  echo -e "Not updating dist folder because TRAVIS_PULL_REQUEST = $TRAVIS_PULL_REQUEST"
 fi
