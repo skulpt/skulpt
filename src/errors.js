@@ -79,7 +79,7 @@ Sk.builtin.Exception.prototype.tp$str = function()
 
     ret += this.tp$name;
     if (this.args)
-        ret += ": " + this.args.v[0].v;
+        ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : '');
     ret += " on line " + this.lineno;
 
     if (this.args.v.length > 4)
