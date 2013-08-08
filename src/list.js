@@ -325,11 +325,12 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
     var timsort = new Sk.builtin.timSort(self);
 
     self.v = [];
+    var zero = new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
 
     if (has_key){
         if (has_cmp) {
             timsort.lt = function(a, b){
-                return Sk.misceval.richCompareBool(cmp.func_code(a[0], b[0]), 0, "Lt");
+                return Sk.misceval.richCompareBool(cmp.func_code(a[0], b[0]), zero, "Lt");
             };
         }
         else{
@@ -344,7 +345,7 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
         }
     } else if (has_cmp) {
         timsort.lt = function(a, b){
-            return Sk.misceval.richCompareBool(cmp.func_code(a, b), 0, "Lt");
+            return Sk.misceval.richCompareBool(cmp.func_code(a, b), zero, "Lt");
         };
     }
 
