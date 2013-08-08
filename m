@@ -121,7 +121,7 @@ elif sys.platform == "darwin":
     #jsengine = "support/d8/d8"
     nul = "/dev/null"
     crlfprog = None
-elif os.environ["CI"] == "true":
+elif os.environ.get("CI") == "true":
     jsengine = "support/d8/d8x64 --trace_exception"
     nul = "/dev/null"
 else:
