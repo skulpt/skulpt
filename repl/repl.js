@@ -1,23 +1,24 @@
-Sk.configure({
-    output: write,
-    read: read
-});
+Sk.configure({ output: write, read: read });
 
 var compilableLines = [];
+//finds lines starting with "print"
 var re = new RegExp("\s*print");
 
 print ("Python 2.6(ish) (skulpt, " + new Date() + ")");
 print ("[v8: " + version() + "] on a system");
 print ('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
 
+//Loop
 while (true){
     var lines = [];
     write('>>> ');
 
     var removePrints = false;
 
+    //Read
     lines.push(readline());
 
+    //if line ends with a colon it's a block
     if (lines[0][lines[0].length - 1] === ':'){
         var additionallines = [];
         var curline = "";
@@ -36,6 +37,7 @@ while (true){
 
     if (lines.length == 1){
         if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
+            //Print
             linesToCompile[linesToCompile.length - 1] = "print " + lines[0];
             lines.pop();
         } else if (lines[0].indexOf("quit()") != -1){
@@ -44,7 +46,9 @@ while (true){
     }
 
     try{
+        //Evaluate
         Sk.importMainWithBody("repl", false, linesToCompile.join('\n'));
+        //remove print statements when a block is created that doesn't define anything
         compilableLines = compilableLines.concat(lines.map(function(str){
             if(re.test(str) && removePrints) {
                 return str.replace(/print.*/g, "pass");
@@ -55,10 +59,13 @@ while (true){
     } catch (err) {
         print(err);
         var index = -1;
+        //find the line number
         if ((index = err.toString().indexOf("on line")) != -1){
             index = parseInt(err.toString().substr(index + 8), 10);
         }
         var line = 0;
+        //print the accumulated code with a ">" before the broken line.
+        //Don't add the last statement to the accumulated code
         print (linesToCompile.map(function(str){
             return ++line + (index == line ? ">" : " ") + ": " + str;
         }).join('\n'));
