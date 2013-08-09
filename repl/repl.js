@@ -36,12 +36,15 @@ while (true){
     var linesToCompile = compilableLines.concat(lines);
 
     if (lines.length == 1){
+
+        if (lines[0] == "quit()"){
+            quit(0);
+        }
+
         if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
             //Print
             linesToCompile[linesToCompile.length - 1] = re.test(lines[0]) ? lines[0] : "print " + lines[0];
             lines.pop();
-        } else if (lines[0].indexOf("quit()") != -1){
-            quit(0);
         }
     }
 
@@ -58,6 +61,7 @@ while (true){
         }));
     } catch (err) {
         print(err);
+
         var index = -1;
         //find the line number
         if ((index = err.toString().indexOf("on line")) != -1){
