@@ -43,6 +43,9 @@ Sk.configure = function(options)
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function")
 
+    Sk.throwSystemExit = options["systemexit"] || false;
+    goog.asserts.assert(typeof Sk.throwSystemExit === "boolean")
+
     if (options["syspath"])
     {
         Sk.syspath = options["syspath"];
