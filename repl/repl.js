@@ -1,15 +1,17 @@
 Sk.configure({
-    output: print(str),
-    sysargv: [ name + '.py' ],
+    output: write,
     read: read
 });
 
+var compilableLines = [];
+
 while (true){
-    print('>>>');
+    write('>>> ');
     var lines = [];
     lines.push(readline());
-    if (line[line.length - 1] === ':'){
-        print('...');
+    if (lines[0][lines[0].length - 1] === ':'){
+
+        write('... ');
         var additionallines = [];
         var curline = "";
         do{
@@ -18,12 +20,22 @@ while (true){
         } while (curline != "");
     }
 
+    var linesToCompile = compilableLines.concat(lines);
+
     if (lines.length == 1){
-        lines[0] = "print " + lines[0];
-        if (lines[0].indexOf("quit") != -1){
-            break;
+        if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
+            linesToCompile[linesToCompile.length - 1] = "print " + lines[0];
+        }
+        if (lines[0].indexOf("quit()") != -1){
+            quit(0);
         }
     }
 
-    Sk.importMain(lines.join('\n'), false);
+    try{
+        Sk.importMainWithBody("repl", false, linesToCompile.join('\n'));
+        compilableLines = compilableLines.concat(lines);
+    } catch (err) {
+        print(err);
+        print (linesToCompile);
+    }
 }
