@@ -3,6 +3,7 @@ Sk.configure({ output: write, read: read });
 var compilableLines = [];
 //finds lines starting with "print"
 var re = new RegExp("\s*print");
+var quitre = new RegExp("quit\(.*\)|exit\(.*\)");
 
 print ("Python 2.6(ish) (skulpt, " + new Date() + ")");
 print ("[v8: " + version() + "] on a system");
@@ -18,6 +19,7 @@ while (true){
     //Read
     lines.push(readline());
 
+    if (lines[0] == "") { continue; }
     //if line ends with a colon it's a block
     if (lines[0][lines[0].length - 1] === ':'){
         var additionallines = [];
@@ -36,14 +38,17 @@ while (true){
     var linesToCompile = compilableLines.concat(lines);
 
     if (lines.length == 1){
-
-        if (lines[0] == "quit()"){
+        if (quitre.test(lines[0])){
             quit(0);
         }
 
         if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
             //Print
-            linesToCompile[linesToCompile.length - 1] = re.test(lines[0]) ? lines[0] : "print " + lines[0];
+            if (!re.test(lines[0])){
+                linesToCompile.pop();
+                linesToCompile.push( "evaluationresult = " + lines[0]);
+                linesToCompile.push("if not evaluationresult == None: print evaluationresult");
+            }
             lines.pop();
         }
     }
