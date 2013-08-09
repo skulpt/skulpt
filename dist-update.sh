@@ -1,4 +1,4 @@
-if [ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == 0 ]; then
+if [[ "$TRAVIS_PULL_REQUEST" == "false"] && ["$TRAVIS_TEST_RESULT" == 0 ]]; then
   echo -e "Starting to update of dist folder\n"
   git config --global user.email "travis@travis-ci.org"
   git config --global user.name "Travis"
@@ -14,5 +14,5 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == 0 ]; then
   git push -fq origin master > /dev/null
   echo -e "Done magic with coverage\n"
 else
-  echo -e "Not updating dist folder because TRAVIS_PULL_REQUEST = $TRAVIS_PULL_REQUEST"
+  echo -e "Not updating dist folder because TRAVIS_PULL_REQUEST = $TRAVIS_PULL_REQUEST and TRAVIS_TEST_RESULT = $TRAVIS_TEST_RESULT"
 fi
