@@ -436,7 +436,14 @@ goog.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
-Sk.builtin.SystemError = function(args) { Sk.builtin.Exception.apply(this, arguments); }
+Sk.builtin.SystemError = function(args) { 
+    if (!(this instanceof Sk.builtin.SystemError)) {
+        var o = Object.create(Sk.builtin.SystemError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments); 
+}
 goog.inherits(Sk.builtin.SystemError, Sk.builtin.Exception);
 Sk.builtin.SystemError.prototype.tp$name = "SystemError";
 goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
