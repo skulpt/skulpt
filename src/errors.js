@@ -46,14 +46,13 @@ Sk.builtin.Exception = function(args)
         // probably needs to be fixed.
         this.filename = "<unknown>";
     }
-
-    if (Sk.currLineNo > 0) 
-    {
-        this.lineno = Sk.currLineNo;
-    }
-    else if (this.args.sq$length() >= 3)
+    if (this.args.sq$length() >= 3)
     {
         this.lineno = this.args.v[2];
+    }
+    else if (Sk.currLineNo > 0) 
+    {
+        this.lineno = Sk.currLineNo;
     }
     else
     {
