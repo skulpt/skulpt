@@ -880,17 +880,25 @@ Compiler.prototype.craise = function(s)
     }
     else
     {
-        // todo;
         var inst = '';
         if (s.inst)
         {
+            // handles: raise Error, arguments
             inst = this.vexpr(s.inst);
-            out("throw new ", this.vexpr(s.type), "(", inst, ");");
+            out("throw ", this.vexpr(s.type), "(", inst, ");");
         }
-
-        if (s.type)
+        else if (s.type)
         {
-            out("throw ", this.vexpr(s.type), ";");
+            if (s.type.func)
+            {
+                // handles: raise Error(arguments)
+                out("throw ", this.vexpr(s.type), ";");
+            }
+            else
+            {
+                // handles: raise Error
+                out("throw ", this.vexpr(s.type), "('');");
+            }
         }
         else
         {
