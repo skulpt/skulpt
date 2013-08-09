@@ -5,16 +5,20 @@ Sk.configure({
 
 var compilableLines = [];
 
+print ("Python 2.6(ish) (skulpt, " + new Date() + ")");
+print ("[v8: " + version() + "] on a system");
+print ('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
+
 while (true){
     write('>>> ');
     var lines = [];
     lines.push(readline());
     if (lines[0][lines[0].length - 1] === ':'){
 
-        write('... ');
         var additionallines = [];
         var curline = "";
         do{
+            write('... ');
             curline = readline()
             lines.push(curline);
         } while (curline != "");
