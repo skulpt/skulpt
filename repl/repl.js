@@ -38,7 +38,7 @@ while (true){
     if (lines.length == 1){
         if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
             //Print
-            linesToCompile[linesToCompile.length - 1] = "print " + lines[0];
+            linesToCompile[linesToCompile.length - 1] = re.test(lines[0]) ? lines[0] : "print " + lines[0];
             lines.pop();
         } else if (lines[0].indexOf("quit()") != -1){
             quit(0);
