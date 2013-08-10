@@ -60,7 +60,7 @@ while (true){
             }
         }));
     } catch (err) {
-        if (err instanceof Sk.builtin.SystemError)
+        if (err instanceof Sk.builtin.SystemExit)
         {
             quit();
         }
