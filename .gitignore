@@ -7,3 +7,6 @@ doc/static/skulpt.js
 
 /.d8_history
 /.idea
+/.vagrant
+
+Vagrantfile
