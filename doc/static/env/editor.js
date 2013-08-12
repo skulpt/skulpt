@@ -1,5 +1,4 @@
 $(document).ready(function () {
-    var running = false;
     var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
         parserfile: ["parsepython.js"],
         autofocus: true,
@@ -13,7 +12,7 @@ $(document).ready(function () {
         autoMatchParens: true,
         parserConfig: {'pythonVersion': 2, 'strictErrors': true},
         onKeyEvent: function (editor, e) {
-            if (e.keyCode === 13) {
+            if (e.keyCode === 13 && e.type === "keydown") {
                 var output = $('#edoutput');
                 var outf = function (text) {
                     output.text(output.text() + text);
