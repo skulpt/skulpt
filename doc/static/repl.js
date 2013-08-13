@@ -7,6 +7,7 @@ $(function () {
     var compilableLines = [];
 //finds lines starting with "print"
     var re = new RegExp("\s*print");
+    var importre = new RegExp("\s*import");
 
     repl.print("Python 2.6(ish) (skulpt, " + new Date() + ")");
     repl.print("[" + navigator.userAgent + "] on " + navigator.platform);
@@ -49,7 +50,7 @@ $(function () {
         var linesToCompile = compilableLines.concat(lines);
 
         if (lines.length == 1) {
-            if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
+            if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1 && !importre.test(lines[0])) {
                 //Print
                 if (!re.test(lines[0])) {
                     linesToCompile.pop();
