@@ -8,6 +8,7 @@ $(function () {
 //finds lines starting with "print"
     var re = new RegExp("\s*print");
     var importre = new RegExp("\s*import");
+    var mls = new RegExp("'''");
 
     repl.print("Python 2.6(ish) (skulpt, " + new Date() + ")");
     repl.print("[" + navigator.userAgent + "] on " + navigator.platform);
@@ -15,16 +16,20 @@ $(function () {
 
     repl.isBalanced = function (code) {
         var lines = code.split('\n');
-        depth = 0;
+        var depth = 0;
+        var mlsopened = false
         for (var l in lines){
-            if (lines[l].substr(lines[l].length -1) == ":") {
+            if (lines[l].match(/'''/) !== null && lines[l].match(/'''/).length == 1) {
+                mlsopened = !mlsopened;
+            }
+            if (!mlsopened && lines[l].substr(lines[l].length -1) == ":") {
                 depth++;
             }
-            if (lines[l] == "" && depth > 0){
+            if (!mlsopened && lines[l] == "" && depth > 0){
                 depth--;
             }
         }
-        return depth == 0;
+        return depth == 0 && !mlsopened;
     }
 
 //Loop
