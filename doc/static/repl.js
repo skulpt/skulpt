@@ -29,11 +29,18 @@ $(function () {
 //Loop
     repl.eval = function (code) {
 
-        Sk.configure({ output: function(str) {
-            if (str.replace(/\n/g, "") != ""){
-                repl.print(str);
+        Sk.configure({ 
+            output: function(str) {
+                if (str.replace(/\n/g, "") != ""){
+                    repl.print(str);
+                }
+            }, 
+            read: function (x) {
+                if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                    throw "File not found: '" + x + "'";
+                return Sk.builtinFiles["files"][x];
             }
-        } });
+        });
 
         var lines = code.split('\n');
 
