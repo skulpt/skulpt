@@ -1,0 +1,23 @@
+{
+  "name": "skulpt",
+  "version": "0.1.0",
+  "main": "./dist/skulpt.js",
+  "description": "Skulpt is a Javascript implementation of the Python programming language",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bnmnetp/skulpt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bnmnetp/skulpt/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/bnmnetp/skulpt/LICENSE"
+    }
+  ],
+  "dependencies": {
+  },
+  "ignore": [
+  ]
+}
