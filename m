@@ -73,6 +73,7 @@ Files = [
         'src/import.js',
         'src/timsort.js',
         'src/builtindict.js',
+        'src/e2ga.js',
         ("support/jsbeautify/beautify.js", 'test'),
         ]
 
