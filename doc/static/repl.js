@@ -5,10 +5,12 @@ $(function () {
     });
 
     var compilableLines = [];
-//finds lines starting with "print"
+    //finds lines starting with "print"
+
     var re = new RegExp("\s*print");
     var importre = new RegExp("\s*import");
     var mls = new RegExp("'''");
+    var defre = new RegExp("def.*|class.*");
 
     repl.print("Python 2.6(ish) (skulpt, " + new Date() + ")");
     repl.print("[" + navigator.userAgent + "] on " + navigator.platform);
@@ -32,7 +34,7 @@ $(function () {
         return depth == 0 && !mlsopened;
     }
 
-//Loop
+    //Loop
     repl.eval = function (code) {
 
         Sk.configure({ 
@@ -49,8 +51,6 @@ $(function () {
         });
 
         var lines = code.split('\n');
-
-        var removePrints = false;
 
         var linesToCompile = compilableLines.concat(lines);
 
@@ -70,8 +70,22 @@ $(function () {
             //Evaluate
             Sk.importMainWithBody("repl", false, linesToCompile.join('\n'));
             //remove print statements when a block is created that doesn't define anything
+            var removePrints = false;
             compilableLines = compilableLines.concat(lines.map(function (str) {
+                //non defining block statement
+                if (str.substr(str.length -1) == ":" && !defre.test(str)) {
+                    removePrints = true;
+                    return str;
+                }
+            
+                //end of non defining block statement
+                if(str == "" && removePrints){
+                    removePrints = false;
+                    return str;
+                }
+                
                 if (re.test(str) && removePrints) {
+                    //strip prints from non defining block statements.
                     return str.replace(/print.*/g, "pass");
                 } else {
                     return str;
