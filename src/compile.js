@@ -144,7 +144,7 @@ var reservedNames_ = { '__defineGetter__': true, '__defineSetter__': true,
     '__lookupGetter__': true, '__lookupSetter__': true, 
     '__noSuchMethod__': true, 'propertyIsEnumerable': true,
     'toSource': true, 'toLocaleString': true, 'toString': true,
-    'unwatch': true, 'valueOf': true, 'watch': true
+    'unwatch': true, 'valueOf': true, 'watch': true, 'length': true
 };
 
 function fixReservedNames(name)
