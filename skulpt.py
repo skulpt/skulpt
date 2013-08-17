@@ -7,6 +7,7 @@
 #          If you do not have python 2.6 and you ARE NOT creating new tests
 #          then all should be well for you to use 2.7 or whatever you have around
 
+from optparse import OptionParser
 from subprocess import Popen, PIPE
 import os
 import sys
@@ -17,24 +18,51 @@ import shutil
 import re
 import pprint
 import json
-nogit = False
+
+# Assume that the GitPython module is available until proven otherwise.
+GIT_MODULE_AVAILABLE = True
 try:
     from git import *
 except:
-    print "+-----------------------------------------------------------------------------+"
-    print "GitPython is not installed for Python 2.6"
-    print "dist will not work without it.  Get it using pip or easy_install"
-    print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
-    print "+----------------------------------------------------------------------------+"
-    nogit = True
+    GIT_MODULE_AVAILABLE = False
 
-# order is important!
+def bowerFileName():
+    file = open(".bowerrc")
+    data = json.load(file)
+    fileName = data["json"]
+    file.close()
+    return fileName
+
+def bowerProperty(name):
+    file = open(bowerFileName())
+    data = json.load(file)
+    value = data[name]
+    file.close()
+    return value
+
+# Symbolic constants for the project structure.
+DIST_DIR        = 'dist'
+TEST_DIR        = 'test'
+
+# Symbolic constants for the naming of distribution files.
+STANDARD_NAMING = False
+PRODUCT_NAME    = bowerProperty("name")
+OUTFILE_REG     = "{0}.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt-uncomp.js"
+OUTFILE_MIN     = "{0}.min.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt.js"
+OUTFILE_LIB     = "{0}Lib.js".format(PRODUCT_NAME) if STANDARD_NAMING else "builtin.js"
+OUTFILE_MAP     = "{0}LineMap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else "linemap.txt"
+
+# Symbolic constants for file types.
+FILE_TYPE_DIST = 'dist'
+FILE_TYPE_TEST = 'test'
+
+# Order is important!
 Files = [
         'support/closure-library/closure/goog/base.js',
         'support/closure-library/closure/goog/deps.js',
-        ('support/closure-library/closure/goog/string/string.js', 'dist'),
-        ('support/closure-library/closure/goog/debug/error.js', 'dist'),
-        ('support/closure-library/closure/goog/asserts/asserts.js', 'dist'),
+        ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
+        ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
+        ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -73,7 +101,7 @@ Files = [
         'src/import.js',
         'src/timsort.js',
         'src/builtindict.js',
-        ("support/jsbeautify/beautify.js", 'test'),
+        ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
 TestFiles = [
@@ -84,9 +112,9 @@ TestFiles = [
         'support/closure-library/closure/goog/math/vec2.js',
         'support/closure-library/closure/goog/json/json.js',
         'support/jsbeautify/beautify.js',
-        'test/sprintf.js',
-        "test/json2.js",
-        "test/test.js"
+        "{0}/sprintf.js".format(TEST_DIR),
+        "{0}/json2.js".format(TEST_DIR),
+        "{0}/test.js".format(TEST_DIR)
         ]
 
 def isClean():
@@ -112,6 +140,9 @@ def getFileList(type):
                 ret.append(f)
     return ret
 
+def is64bit():
+    return sys.maxsize > 2**32
+
 if sys.platform == "win32":
     jsengine = ".\\support\\d8\\d8.exe --trace_exception --debugger"
     nul = "nul"
@@ -120,7 +151,15 @@ elif sys.platform == "darwin":
     jsengine = "./support/d8/d8m --trace_exception --debugger"
     nul = "/dev/null"
     crlfprog = None
-else:   #sys.platform == "linux2":
+elif sys.platform == "linux2":
+    if is64bit():
+        jsengine = "support/d8/d8x64 --trace_exception --debugger"
+    else:
+        jsengine = "support/d8/d8 --trace_exception --debugger"
+    nul = "/dev/null"
+    crlfprog = None
+else:
+    # You're on your own...
     jsengine = "support/d8/d8 --trace_exception --debugger"
     nul = "/dev/null"
     crlfprog = None
@@ -133,10 +172,7 @@ if os.environ.get("CI",False):
 
 def test():
     """runs the unit tests."""
-    return os.system("%s %s %s" % (
-        jsengine,
-        ' '.join(getFileList('test')),
-        ' '.join(TestFiles)))
+    return os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
 
 def debugbrowser():
     tmpl = """
@@ -180,7 +216,7 @@ def debugbrowser():
         os.mkdir("support/tmp")
     buildVFS()
     scripts = []
-    for f in getFileList('test') + ["test/browser-stubs.js", "support/tmp/vfs.js" ] + TestFiles:
+    for f in getFileList(FILE_TYPE_TEST) + ["{0}/browser-stubs.js".format(TEST_DIR), "support/tmp/vfs.js" ] + TestFiles:
         scripts.append('<script type="text/javascript" src="%s"></script>' %
                 os.path.join('../..', f))
 
@@ -200,7 +236,7 @@ def buildVFS():
     with open("support/tmp/vfs.js", "w") as out:
         print >>out, "VFSData = {"
         all = []
-        for root in ("test", "src/builtin", "src/lib"):
+        for root in (TEST_DIR, "src/builtin", "src/lib"):
             for dirpath, dirnames, filenames in os.walk(root):
                 for filename in filenames:
                     f = os.path.join(dirpath, filename)
@@ -301,7 +337,7 @@ function quit(rc)
 }
 """ % getTip()
 
-    for f in ["test/browser-detect.js"] + getFileList('test') + TestFiles:
+    for f in ["{0}/browser-detect.js".format(TEST_DIR)] + getFileList(FILE_TYPE_TEST) + TestFiles:
         print >>out, open(f).read()
 
     print >>out, """
@@ -311,7 +347,7 @@ function quit(rc)
     print ". Built %s" % outfn
 
 
-def getBuiltinsAsJson():
+def getBuiltinsAsJson(options):
     ret = {}
     ret['files'] = {}
     for root in ["src/builtin", "src/lib"]:
@@ -320,68 +356,78 @@ def getBuiltinsAsJson():
                 f = os.path.join(dirpath, filename)
                 ext = os.path.splitext(f)[1]
                 if ext == ".py" or ext == ".js":
-                    print "reading", f
+                    if options.verbose:
+                        print "reading", f
                     f = f.replace("\\", "/")
                     ret['files'][f] = open(f).read()
     return "Sk.builtinFiles=" + json.dumps(ret)
 
-def dist():
+def dist(options):
     """builds a 'shippable' version of Skulpt.
 
     this is all combined into one file, tests run, jslint'd, compressed.
     """
+    if GIT_MODULE_AVAILABLE:
+        if not isClean():
+            print "WARNING: working directory not clean (according to 'git status')"
+        else:
+            print "Working directory is clean (according to 'git status')"
+    else:
+        print "+----------------------------------------------------------------------------+"
+        print "GitPython is not installed for Python 2.6"
+        print "The 'dist' command will not work without it.  Get it using pip or easy_install"
+        print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
+        print "+----------------------------------------------------------------------------+"
 
-    if not nogit and not isClean():
-        print "WARNING: working directory not clean (according to 'git status')"
-        #raise SystemExit()
+    if options.verbose:
+        print ". Removing distribution directory, '{0}/'.".format(DIST_DIR)
 
+    os.system("rm -rf {0}/".format(DIST_DIR))
+    if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
-    print ". Nuking old dist/"
-    os.system("rm -rf dist/")
-    if not os.path.exists("dist"): os.mkdir("dist")
-
-
-    if len(sys.argv) > 2 and sys.argv[2] == '-u':
-        print ". Writing combined version..."
+    if options.uncompressed:
+        if options.verbose:
+            print ". Writing combined version..."
         combined = ''
-        linemap = open("dist/linemap.txt", "w")
+        linemap = open("{0}/{1}".format(DIST_DIR, OUTFILE_MAP), "w")
         curline = 1
-        for file in getFileList('dist'):
+        for file in getFileList(FILE_TYPE_DIST):
             curfiledata = open(file).read()
             combined += curfiledata
             print >>linemap, "%d:%s" % (curline, file)
             curline += len(curfiledata.split("\n")) - 1
         linemap.close()
-        uncompfn = "dist/skulpt-uncomp.js"
+        uncompfn = "{0}/{1}".format(DIST_DIR, OUTFILE_REG)
         open(uncompfn, "w").write(combined)
-        os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
+        # Prevent accidental editing of the uncompressed distribution file. 
+        os.system("chmod 444 {0}/{1}".format(DIST_DIR, OUTFILE_REG))
 
 
-    # make combined version
-    #uncompfn = "dist/skulpt-uncomp.js"
-    compfn = "dist/skulpt.js"
-    builtinfn = "dist/builtin.js"
-    #open(uncompfn, "w").write(combined)
-    #os.system("chmod 444 dist/skulpt-uncomp.js") # just so i don't mistakenly edit it all the time
+    # Make the compressed distribution.
+    compfn = "{0}/{1}".format(DIST_DIR, OUTFILE_MIN)
+    builtinfn = "{0}/{1}".format(DIST_DIR, OUTFILE_LIB)
 
-    #buildBrowserTests()
+    # Run tests on uncompressed.
+    if options.verbose:
+        print ". Running tests on uncompressed..."
 
-    # run tests on uncompressed
-    print ". Running tests on uncompressed..."
     ret = test()
     if ret != 0:
         print "Tests failed on uncompressed version."
         sys.exit(1);
 
     # compress
-    uncompfiles = ' '.join(['--js ' + x for x in getFileList('dist')])
-    print ". Compressing..."
+    uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST)])
+
+    if options.verbose:
+        print ". Compressing..."
+
     ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn))
     # to disable asserts
     # --define goog.DEBUG=false
     #
     # to make a file that for ff plugin, not sure of format
-    # --create_source_map dist/srcmap.txt
+    # --create_source_map <distribution-dir>/srcmap.txt
     #
     # --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_error fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility
     #
@@ -389,41 +435,45 @@ def dist():
         print "closure-compiler failed."
         sys.exit(1)
 
-    # run tests on compressed
-    print ". Running tests on compressed..."
-    ret = os.system("%s %s %s" % (jsengine, compfn, ' '.join(TestFiles)))
+    # Run tests on compressed.
+    if options.verbose:
+        print ". Running tests on compressed..."
+    ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
         sys.exit(1)
 
-    ret = os.system("cp %s dist/tmp.js" % compfn)
+    ret = os.system("cp {0} {1}/tmp.js".format(compfn, DIST_DIR))
     if ret != 0:
         print "Couldn't copy for gzip test."
         sys.exit(1)
 
-    ret = os.system("gzip -9 dist/tmp.js")
+    ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
     if ret != 0:
         print "Couldn't gzip to get final size."
         sys.exit(1)
 
-    size = os.path.getsize("dist/tmp.js.gz")
-    os.unlink("dist/tmp.js.gz")
+    size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
+    os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
 
     with open(builtinfn, "w") as f:
-        f.write(getBuiltinsAsJson())
-        print ". Wrote %s" % builtinfn
+        f.write(getBuiltinsAsJson(options))
+        if options.verbose:
+            print ". Wrote {0}".format(builtinfn)
 
-    # update doc copy
-    ret = os.system("cp %s doc/static/skulpt.js" % compfn)
-    ret |= os.system("cp %s doc/static/builtin.js" % builtinfn)
+    # Update documentation folder copies of the distribution.
+    ret  = os.system("cp {0} doc/static/{1}".format(compfn,    OUTFILE_MIN))
+    ret |= os.system("cp {0} doc/static/{1}".format(builtinfn, OUTFILE_LIB))
     if ret != 0:
         print "Couldn't copy to docs dir."
         sys.exit(1)
-    print ". Updated doc dir"
+    if options.verbose:
+        print ". Updated doc dir"
 
-    # all good!
-    print ". Wrote %s." % compfn
-    print ". gzip of compressed: %d bytes" % size
+    # All good!
+    if options.verbose:
+        print ". Wrote {0}.".format(compfn)
+        print ". gzip of compressed: %d bytes" % size
 
 def regenparser():
     """regenerate the parser/ast source code"""
@@ -436,28 +486,28 @@ def regenparser():
     # sanity check that they at least parse
     #os.system(jsengine + " support/closure-library/closure/goog/base.js src/env.js src/tokenize.js gen/parse_tables.js gen/astnodes.js")
 
-def regenasttests(togen="test/run/*.py"):
+def regenasttests(togen="{0}/run/*.py".format(TEST_DIR)):
     """regenerate the ast test files by running our helper script via real python"""
     for f in glob.glob(togen):
         transname = f.replace(".py", ".trans")
-        os.system("python test/astppdump.py %s > %s" % (f, transname))
+        os.system("python {0}/astppdump.py {1} > {2}".format(TEST_DIR, f, transname))
         forcename = f.replace(".py", ".trans.force")
         if os.path.exists(forcename):
             shutil.copy(forcename, transname)
         if crlfprog:
-            os.system("python %s %s" % (crlfprog, transname))
+            os.system("python {0} {1}".format(crlfprog, transname))
 
 
-def regenruntests(togen="test/run/*.py"):
+def regenruntests(togen="{0}/run/*.py".format(TEST_DIR)):
     """regenerate the test data by running the tests on real python"""
     for f in glob.glob(togen):
-        os.system("python %s > %s.real 2>&1" % (f, f))
+        os.system("python {0} > {1}.real 2>&1".format(f, f))
         forcename = f + ".real.force"
         if os.path.exists(forcename):
             shutil.copy(forcename, "%s.real" % f)
         if crlfprog:
             os.system("python %s %s.real" % (crlfprog, f))
-    for f in glob.glob("test/interactive/*.py"):
+    for f in glob.glob("{0}/interactive/*.py".format(TEST_DIR)):
         p = Popen("python -i > %s.real 2>%s" % (f, nul), shell=True, stdin=PIPE)
         p.communicate(open(f).read() + "\004")
         forcename = f + ".real.force"
@@ -516,7 +566,7 @@ def symtabdump(fn):
         return ret
     return getidents(mod)
 
-def regensymtabtests(togen="test/run/*.py"):
+def regensymtabtests(togen="{0}/run/*.py".format(TEST_DIR)):
     """regenerate the test data by running the symtab dump via real python"""
     for fn in glob.glob(togen):
         outfn = "%s.symtab" % fn
@@ -534,11 +584,12 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
-def docbi():
-    builtinfn = "doc/static/builtin.js"
+def docbi(options):
+    builtinfn = "doc/static/{0}".format(OUTFILE_LIB)
     with open(builtinfn, "w") as f:
-        f.write(getBuiltinsAsJson())
-        print ". Wrote %s" % builtinfn
+        f.write(getBuiltinsAsJson(options))
+        if options.verbose:
+            print ". Wrote {fileName}".format(fileName=builtinfn)
 
 def run(fn, shell="", opt=False, p3=False):
     if not os.path.exists(fn):
@@ -563,12 +614,9 @@ print("-----");
     """ % (fn, os.path.split(fn)[0], p3on, modname))
     f.close()
     if opt:
-        os.system("%s dist/skulpt.js support/tmp/run.js" % jsengine)
+        os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
     else:
-        os.system("%s %s %s support/tmp/run.js" %
-                (jsengine,
-                    shell,
-                    ' '.join(getFileList('test'))))
+        os.system("{0} {1} {2} support/tmp/run.js".format(jsengine, shell, ' '.join(getFileList(FILE_TYPE_TEST))))
 
 def runopt(fn):
     run(fn, "", True)
@@ -581,12 +629,12 @@ def shell(fn):
 
 
 def repl():
-    os.system("%s dist/skulpt.js repl/repl.js" % jsengine)
+    os.system("{0} {1}/{2} repl/repl.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
 
 def nrt():
     """open a new run test"""
     for i in range(100000):
-        fn = "test/run/t%02d.py" % i
+        fn = "{0}/run/t%02d.py".format(TEST_DIR) % i
         disfn = fn + ".disabled"
         if not os.path.exists(fn) and not os.path.exists(disfn):
             if 'EDITOR' in os.environ:
@@ -680,7 +728,7 @@ class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(getBuiltinsAsJson())
+            self.wfile.write(getBuiltinsAsJson(None))
         else:
             SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
@@ -692,57 +740,80 @@ def host():
     print "serving at port", PORT
     httpd.serve_forever()
 
+def usageString(program):
+    return '''
 
-if __name__ == "__main__":
-    if sys.platform == 'win32':
-        os.system("cls")
-    else:
-        os.system("clear")
-    def usage():
-        print '''USAGE: m [command] [options] [.py file]
-Where command is one of:
+    {program} <command> [<options>] [script.py]
 
-        run   -- given a .py file run it using skulpt  ./m run myprog.py
-        test  -- run all test cases in test/run
-        dist  -- create skulpt.js and builtin.js  with -u also build
-                 uncompressed skulpt for debugging
-        docbi -- regenerate builtin.js only and copy to doc/static
+Commands:
 
-        regenparser      -- regenerate parser tests
-        regenasttests    -- regen abstract symbol table tests
-        regenruntests    -- regenerate runtime unit tests
-        regensymtabtests -- regenerate symbol table tests
-        regentests       -- regenerate all of the above
+    run              Run a Python file using Skulpt
+    test             Run all test cases
+    dist             Build core and library distribution files
+    docbi            Build library distribution file only and copy to doc/static
 
-        host    -- start a simple HTTP server for testing
-        upload  -- run appcfg.py to upload doc to live GAE site
-        doctest -- run the GAE development server for doc testing
-        nrt     -- generate a file for a new test case
-        runopt  -- run a .py file optimized
-        browser -- run all tests in the browser
-        shell   -- run a python program but keep a shell open (like python -i)
-                   ./m shell myprog.py
-        vfs -- Build a virtual file system to support skulpt read tests
+    regenparser      Regenerate parser tests
+    regenasttests    Regen abstract symbol table tests
+    regenruntests    Regenerate runtime unit tests
+    regensymtabtests Regenerate symbol table tests
+    regentests       Regenerate all of the above
 
-        debugbrowser  -- debug in the browser -- open your javascript console
-        '''
-        sys.exit(1)
+    help             Display help information about Skulpt
+    host             Start a simple HTTP server for testing
+    upload           Run appcfg.py to upload doc to live GAE site
+    doctest          Run the GAE development server for doc testing
+    nrt              Generate a file for a new test case
+    runopt           Run a Python file optimized
+    browser          Run all tests in the browser
+    shell            Run a Python program but keep a shell open (like python -i)
+    vfs              Build a virtual file system to support Skulpt read tests
+
+    debugbrowser     Debug in the browser -- open your javascript console
+
+Options:
+
+    -q, --quiet        Only output important information
+    -s, --silent       Do not output anything, besides errors
+    -u, --uncompressed Makes uncompressed core distribution file for debugging
+    -v, --verbose      Make output more verbose [default]
+    --version          Returns the version string in Bower configuration file.
+'''.format(program=program)
+
+def main():
+    parser = OptionParser(usageString("%prog"), version="%prog {0}".format(bowerProperty("version")))
+    parser.add_option("-q", "--quiet",        action="store_false", dest="verbose")
+    parser.add_option("-s", "--silent",       action="store_true",  dest="silent",       default=False)
+    parser.add_option("-u", "--uncompressed", action="store_true",  dest="uncompressed", default=False)
+    parser.add_option("-v", "--verbose",
+        action="store_true",
+        dest="verbose",
+        default=True,
+        help="Make output more verbose [default]")
+    (options, args) = parser.parse_args()
+
+    # This is rather aggressive. Do we really want it?
+    if options.verbose:
+        if sys.platform == 'win32':
+            os.system("cls")
+        else:
+            os.system("clear")
 
     if len(sys.argv) < 2:
-        cmd = "test"
+        cmd = "help"
     else:
         cmd = sys.argv[1]
+
     if cmd == "test":
         test()
     elif cmd == "dist":
-        dist()
+        dist(options)
     elif cmd == "regengooglocs":
         regengooglocs()
     elif cmd == "regentests":
         if len(sys.argv) > 2:
-            togen = "test/run/"+sys.argv[2]
+            togen = "{0}/run/".format(TEST_DIR) + sys.argv[2]
         else:
-            togen = "test/run/*.py"
+            togen = "{0}/run/*.py".format(TEST_DIR)
         print "generating tests for ", togen
         regensymtabtests(togen)
         regenasttests(togen)
@@ -768,7 +839,7 @@ Where command is one of:
     elif cmd == "doctest":
         doctest()
     elif cmd == "docbi":
-        docbi()
+        docbi(options)
     elif cmd == "nrt":
         nrt()
     elif cmd == "browser":
@@ -784,4 +855,8 @@ Where command is one of:
     elif cmd == "repl":
         repl()
     else:
-        usage()
+        print usageString(os.path.basename(sys.argv[0]))
+        sys.exit(2)
+
+if __name__ == "__main__":
+    main()
