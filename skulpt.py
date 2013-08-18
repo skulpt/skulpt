@@ -49,8 +49,8 @@ STANDARD_NAMING = False
 PRODUCT_NAME    = bowerProperty("name")
 OUTFILE_REG     = "{0}.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt-uncomp.js"
 OUTFILE_MIN     = "{0}.min.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt.js"
-OUTFILE_LIB     = "{0}Lib.js".format(PRODUCT_NAME) if STANDARD_NAMING else "builtin.js"
-OUTFILE_MAP     = "{0}LineMap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else "linemap.txt"
+OUTFILE_LIB     = "{0}-stdlib.js".format(PRODUCT_NAME) if STANDARD_NAMING else "builtin.js"
+OUTFILE_MAP     = "{0}-linemap.txt".format(PRODUCT_NAME) if STANDARD_NAMING else "linemap.txt"
 
 # Symbolic constants for file types.
 FILE_TYPE_DIST = 'dist'
