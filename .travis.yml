@@ -3,11 +3,13 @@ python:
 - '2.6'
 install:
 - pip install GitPython --use-mirrors
+- curl -O https://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip
+- unzip -q -d $HOME google_appengine_1.8.3.zip
 script:
 - ./skulpt.py dist
 after_script:
 - ./dist-update.sh
-#- ./site-update.sh
+- ./site-update.sh
 env:
   global:
     secure: wOs3pE4/hXWhXjNTIEGOeca4dpn/gIxpBvmrzWsqaeEQdQ6c7q87iPBilQTCg3ET/ADOMUq1ZqL1yDZIOB7HfmNjR266aUxRz2cfYXi0bBnPlsOvO2QRcQRHRythroFTSu2eKFxHj2F+ea756I+xws1vc+2JiNqmWN/4zccuiwY=
