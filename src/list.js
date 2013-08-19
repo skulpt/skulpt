@@ -394,6 +394,13 @@ Sk.builtin.list.prototype.list_reverse_ = function(self)
 }
 
 //Sk.builtin.list.prototype.__reversed__ = todo;
+Sk.builtin.list.prototype['__iter__'] = new Sk.builtin.func(function(self)
+{
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
+
+    return self.list_iter_();
+});
+
 Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
 {
     Sk.builtin.pyCheckArgs("append", arguments, 2, 2);

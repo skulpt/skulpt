@@ -119,8 +119,9 @@ Sk.builtin.type = function(name, bases, dict)
             if (iterf)
             {
                  var ret = Sk.misceval.callsim(iterf);
-                 if (ret.tp$getattr("next") === undefined)
-                    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + tname + "'");
+                 // This check does not work for builtin iterators 
+                 // if (ret.tp$getattr("next") === undefined)
+                 //    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + tname + "'");
                  return ret;
             }
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
