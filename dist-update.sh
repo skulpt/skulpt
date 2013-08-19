@@ -1,13 +1,19 @@
 if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
+
+  if [ ! -f $HOME/google-appengine/appcfg.py ]; then
+      echo "can't find appcfg.py"
+      exit 1
+  fi
+  
   echo -e "Starting to update of dist folder\n"
   git config --global user.email "travis@travis-ci.org"
   git config --global user.name "Travis"
   cd $HOME
   
   #clone skulpt
-  git clone --quiet https://${GH_TOKEN_TEST}@github.com/skulpt/skulpt.git skulpt # > /dev/null
+  git clone --quiet https://${GH_TOKEN}@github.com/skulpt/skulpt.git skulpt # > /dev/null
   #clone dist
-  git clone --quiet https://${GH_TOKEN_TEST}@github.com/skulpt/skulpt-dist.git dist # > /dev/null
+  git clone --quiet https://${GH_TOKEN}@github.com/skulpt/skulpt-dist.git dist # > /dev/null
   
   #compare tags
   cd $HOME  
@@ -61,6 +67,14 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   git add -u
   git commit -m "Travis build $TRAVIS_BUILD_NUMBER pushed"
   git push -fq origin master > /dev/null
+  
+  if [[ "$NEWTAG" == "true" ]]; then
+    echo "Updating site"
+    cd $HOME/skulpt/doc
+    python $HOME/google-appengine/appcfg.py --oauth2_refresh_token=${GAE_REFRESH} update ./
+    echo "Successfully updated skulpt.org"
+  fi
+  
   echo -e "Done magic with coverage\n"
 else
   echo -e "Not updating dist folder because TRAVIS_PULL_REQUEST = $TRAVIS_PULL_REQUEST and TRAVIS_TEST_RESULT = $TRAVIS_TEST_RESULT"

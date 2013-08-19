@@ -9,7 +9,6 @@ script:
 - ./skulpt.py dist
 after_script: 
 - ./dist-update.sh
-- ./site-update.sh
 env: 
   global: 
   - secure: M5aY+7llDEEX9aadZCP3VXxxUphE/GAruB3VWugFHfX32v3TwEAlqwifKUbHVZSCgwZWDaX2T3EkKxHExHQdo6/N7IVeg5Axv1i/ahUYU3DRPCXhtA62LiIxkXyRIegDZxX8v7KrihUc/g2JLfysH/DQnSMKThcKJ/Bzoe7sez4=
