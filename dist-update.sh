@@ -1,4 +1,4 @@
-if [[ "$TRAVIS_PULL_REQUEST" == "false"] && ["$TRAVIS_TEST_RESULT" == 0 ]]; then
+if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   echo -e "Starting to update of dist folder\n"
   git config --global user.email "travis@travis-ci.org"
   git config --global user.name "Travis"
