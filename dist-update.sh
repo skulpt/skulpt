@@ -1,6 +1,6 @@
 if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
 
-  if [ ! -f $HOME/google-appengine/appcfg.py ]; then
+  if [ ! -f ~/vendors/google_appengine/appcfg.py ]; then
       echo "can't find appcfg.py"
       exit 1
   fi
@@ -71,7 +71,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   if [[ "$NEWTAG" == "true" ]]; then
     echo "Updating site"
     cd $HOME/skulpt/doc
-    python $HOME/google-appengine/appcfg.py --oauth2_refresh_token=${GAE_REFRESH} update ./
+    ~/vendors/google_appengine/appcfg.py --oauth2_refresh_token=${GAE_REFRESH} update ./
     echo "Successfully updated skulpt.org"
   fi
   

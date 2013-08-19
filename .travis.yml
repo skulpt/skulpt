@@ -5,7 +5,7 @@ install:
 - pip install GitPython --use-mirrors
 - mkdir -p vendors
 - wget http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip  -nv
-- unzip -qd vendors google_appengine_1.7.4.zip
+- unzip -qd ~/vendors google_appengine_1.8.3.zip
 script: 
 - ./skulpt.py dist
 after_script: 
