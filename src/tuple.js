@@ -127,6 +127,13 @@ Sk.builtin.tuple.prototype.tp$iter = function()
     return ret;
 };
 
+Sk.builtin.tuple.prototype['__iter__'] = new Sk.builtin.func(function(self)
+{
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
+
+    return self.tp$iter();
+});
+
 Sk.builtin.tuple.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)

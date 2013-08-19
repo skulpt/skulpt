@@ -230,6 +230,13 @@ Sk.builtin.dict.prototype.tp$iter = function()
     return ret;
 };
 
+Sk.builtin.dict.prototype['__iter__'] = new Sk.builtin.func(function(self)
+{
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
+
+    return self.tp$iter();
+});
+
 Sk.builtin.dict.prototype['$r'] = function()
 {
     var ret = [];

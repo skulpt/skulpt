@@ -36,3 +36,31 @@ class Counter:
 
 for c in Counter(9, 12):
     print c
+
+# class SillyDictIter:
+# not reliable because order isn't guaranteed
+#     def __init__(self):
+#         self.w = {'f':1, 'o':2, 'g':3}
+
+
+#     def __iter__(self):
+#         return self.w.__iter__()
+
+# x = SillyDictIter()
+
+# for i in x:
+#    print i
+
+
+class SillyTupleIter:
+    def __init__(self,s):
+        self.w = tuple(s)
+
+
+    def __iter__(self):
+        return self.w.__iter__()
+
+x = SillyTupleIter("foo")
+
+for i in x:
+   print i
