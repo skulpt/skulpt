@@ -1,13 +1,15 @@
 if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
-
+  #stop if google appengine isn't installed.
   if [ ! -f ~/vendors/google_appengine/appcfg.py ]; then
       echo "can't find appcfg.py"
       exit 1
   fi
   
   echo -e "Starting to update of dist folder\n"
+  #configure git to commit as Travis
   git config --global user.email "travis@travis-ci.org"
   git config --global user.name "Travis"
+  
   cd $HOME
   
   #clone skulpt
@@ -22,6 +24,16 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   cd ../dist  
   git tag > ../tags-dist  
   cd ..  
+  
+  #compare two files per line.
+  #-F, --fixed-strings
+  #              Interpret PATTERN as a list of fixed strings, separated by newlines, any of which is to be matched.    
+  #-x, --line-regexp
+  #              Select only those matches that exactly match the whole line.
+  #-v, --invert-match
+  #              Invert the sense of matching, to select non-matching lines.
+  #-f FILE, --file=FILE
+  #            Obtain patterns from FILE, one per line. The empty file contains zero patterns, and therefore matches nothing.
   grep -Fxvf tags-dist tags-skulpt > new-tags
   
   for TAG in $(cut -d, -f2 < new-tags)
@@ -60,11 +72,11 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   git reset HEAD --hard
   ./skulpt.py dist
   cd dist
+  cp *.js ../../dist/
   
   #add, commit and push files to the dist repository
-  cp *.js ../../dist/
   cd ../../dist
-  git add -u
+  git add .
   git commit -m "Travis build $TRAVIS_BUILD_NUMBER pushed"
   git push -fq origin master > /dev/null
   
