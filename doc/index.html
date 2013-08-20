@@ -8,7 +8,6 @@
     <link rel="stylesheet" type="text/css" media="all" href="static/solarized.css">
     <link rel="stylesheet" type="text/css" media="all" href="static/main.css">
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-    <!--<script src="static/env/codemirror/js/codemirror.js" type="text/javascript"></script>-->
     <script src="static/codemirrorepl.js" type="text/javascript"></script>
     <script src="static/repl.js" type="text/javascript"></script>
     <script src="static/python.js" type="text/javascript"></script>
@@ -86,11 +85,12 @@ for c in ['red', 'green', 'yellow', 'blue']:
     </textarea>
 
     <p>Output: (<a href="#" id="clearoutput">clear</a>)</p>
-<pre id="edoutput">
-</pre>
+    
+    <pre id="edoutput">
+    </pre>
+    
     <canvas id="mycanvas" height="400" width="400"
             style="border-style: solid; display: none"></canvas>
-
 
     <h2>Interactive:</h2>
     <p>This is a very cool new feature that is just getting off the ground.  This would be a great project to jump in and help out on!</p>
@@ -100,18 +100,23 @@ for c in ['red', 'green', 'yellow', 'blue']:
 
     <h2>Your Very Own Copy</h2>
 
-    <p>Want to give it a shot? Grab it with a:</p>
-<pre>
-    git clone https://github.com/skulpt/skulpt.git
-</pre>
-
+    <p>Want to give it a shot? Grab it with git:</p>
+    <pre>
+        git clone https://github.com/skulpt/skulpt.git
+    </pre>
+    <p>
+        Or download it like this: <a href="/static/dist/skulpt-latest.tar.gz">skulpt-latest.tar.gz</a> or like this: <a href="/static/dist/skulpt-latest.zip">skulpt-latest.zip</a>
+    </p>
+    
+    <h2>Helping out!</h2>
+    
     <p>Skulpt surely isn't done yet.</p>
 
     <p>If you want to check out a list of bugs, or add to it, or see what's been
         fixed recently, you can head over to the always-euphemistic-sounding <a
-                href="http://github.com/skulpt/skulpt/issues">issues page</a>.
+                href="http://github.com/skulpt/skulpt/issues">issues page</a>.</p>
 
-    <p>If you are interested in contributing to skulpt in any way, check out this new <a href="https://github.com/skulpt/skulpt/blob/master/CONTRIBUTING.md">how to contribute</a> document.
+    <p>If you are interested in contributing to skulpt in any way, check out this new <a href="https://github.com/skulpt/skulpt/blob/master/CONTRIBUTING.md">how to contribute</a> document.</p>
 
 
     <p>If you'd like to chit-chat, <a href="http://groups.google.com/group/skulpt">there's a list for
@@ -147,67 +152,10 @@ for c in ['red', 'green', 'yellow', 'blue']:
 
     <h2>Getting Started</h2>
 
-    Getting started with skulpt on your own page can seem a little intimidating, but here's a really simple example that
-    gets you going. You can copy and paste or grab the code from <a href="https://gist.github.com/4650616">this gist</a>.
-<pre>
-&lt;html&gt;
-&lt;head&gt;
-&lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"&gt;&lt;/script&gt;
-&lt;script src="skulpt.js" type="text/javascript"&gt;&lt;/script&gt;
-&lt;script src="builtin.js" type="text/javascript"&gt;&lt;/script&gt;
+    <p>Getting started with skulpt on your own page can seem a little intimidating, but here's a really simple example that
+    gets you going. You can copy and paste or grab the code from <a href="https://gist.github.com/4650616">this gist</a>.</p>
 
-&lt;/head&gt;
-
-&lt;body&gt;
-
-&lt;script type="text/javascript"&gt;
-// output functions are configurable.  This one just appends some text
-// to a pre element.
-function outf(text) {
-    var mypre = document.getElementById("output");
-    mypre.innerHTML = mypre.innerHTML + text;
-}
-function builtinRead(x) {
-    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-            throw "File not found: '" + x + "'";
-    return Sk.builtinFiles["files"][x];
-}
-
-// Here's everything you need to run a python program in skulpt
-// grab the code from your textarea
-// get a reference to your pre element for output
-// configure the output function
-// call Sk.importMainWithBody()
-function runit() {
-   var prog = document.getElementById("yourcode").value;
-   var mypre = document.getElementById("output");
-   mypre.innerHTML = '';
-   Sk.canvas = "mycanvas";
-   Sk.pre = "output";
-   Sk.configure({output:outf, read:builtinRead});
-   eval(Sk.importMainWithBody("&lt;stdin&gt;",false,prog));
-}
-&lt;/script&gt;
-
-&lt;h3&gt;Try This&lt;/h3&gt;
-&lt;form&gt;
-&lt;textarea id="yourcode" cols="40" rows="10" &gt;import turtle
-
-t = turtle.Turtle()
-t.forward(100)
-
-print "Hello World"
-&lt;/textarea&gt;&lt;br /&gt;
-&lt;button type="button" onclick="runit()"&gt;Run&lt;/button&gt;
-&lt;/form&gt;
-&lt;pre id="output" &gt;&lt;/pre&gt;
-&lt;!-- If you want turtle graphics include a canvas --&gt;
-&lt;canvas id="mycanvas" &gt;&lt;/mycanvas&gt;
-
-&lt;/body&gt;
-
-&lt;/html&gt;
-</pre>
+    <script src="https://gist.github.com/bnmnetp/4650616.js"></script>
 
     <h2>License</h2>
 
