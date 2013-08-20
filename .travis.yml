@@ -1,18 +1,19 @@
 language: python
-python: 
-- "2.6"
-install: 
+python:
+- '2.6'
+install:
 - pip install GitPython --use-mirrors
 - mkdir -p vendors
 - wget http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip  -nv
 - unzip -qd ~/vendors google_appengine_1.8.3.zip
-script: 
+script:
 - ./skulpt.py dist
-after_script: 
+after_script:
 - ./dist-update.sh
-env: 
-  global: 
+env:
+  global:
   - secure: M5aY+7llDEEX9aadZCP3VXxxUphE/GAruB3VWugFHfX32v3TwEAlqwifKUbHVZSCgwZWDaX2T3EkKxHExHQdo6/N7IVeg5Axv1i/ahUYU3DRPCXhtA62LiIxkXyRIegDZxX8v7KrihUc/g2JLfysH/DQnSMKThcKJ/Bzoe7sez4=
   - secure: 1OLhFwKIVYk7DbQ3mAN5ABrrNiRzOVEWWtaRMGa3jES1qeujVhcUGMKx3ykvUPaYA5QEIPBtXbFSkNk+hBI8b0wae21+jZJ7pxr6HdX9LBpUG4T9AxVF9L/UM0/qEkFxTBkFqBUj67j1SjLrhgdR1vNdk5agS2MrbuVU2ftAsOQ=
   - secure: c4X6Fg9g3Z27vweDsb6q4Is7cwt4TdKX/H0T9MaGRZEcBvA2ke05B2m7jcwz0Ml0JfwBq1fWzOEj+VNOkXD1CqtzQwKgd7hO094Jk/tXYtfSSHD4nmJ0HyrKMBZfic/Q9eYQoTfhuKez34dzxBiwI818q5B6oedo9ayzK3M7k6w=
   - secure: xIEeuis86u3Jm2TL1ifo8EccPQxKG6ixQs/7uTwQsrHJ0D31Ht34G8mOu4YU6CmSMuO/4Won+SMpit/aRzWIbKTCFl1ByqpMk2htx0tSbkxBjEmFzNwdpdWPlvN6MRZ3dZqLn9EKARThEutR/uVvOGA2lVOQWHr5h8BRAuNwKHA=
+  - secure: UEg/9heIZjo2Jws047OO07T+MurWyDiQ3Hp7ow1jgfhYitntsEzJwJrs/UFsZDP01QWAviLFtEY/JDBPEUzPyEbWJe2YE65CSt4AM9Kt5sMADEnFF9ButNMCg5oKRB1neqotuGy6U+lzUQsZN0rzsTuVqxK1ODHz+2LwyvpgpZ8=
