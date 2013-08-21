@@ -52,6 +52,9 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
     mkdir -p ../doc/static/dist
     mv *.zip ../doc/static/dist/
     mv *.tar.gz ../doc/static/dist/
+    #update skulpt for the site.
+    cp skulpt.min.js ../doc/static/
+    cp skulpt-stdlib.js ../doc/static/
     cp *.js ../../dist/
     cd ..
     cp bower.json ../dist
