@@ -44,7 +44,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
     #build skulpt at this tag
     cd $HOME/skulpt
     git checkout tags/$TAG
-    ./skulpt.py dist
+    ./skulpt.py dist -u
     #create zip and tarbals
     cd dist
     tar -czf skulpt-latest.tar.gz *.js 
@@ -73,7 +73,7 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   #build skulpt
   cd skulpt
   git reset HEAD --hard
-  ./skulpt.py dist
+  ./skulpt.py dist -u
   cd dist
   cp *.js ../../dist/
   
