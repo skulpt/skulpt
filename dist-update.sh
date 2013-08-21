@@ -53,8 +53,11 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
     mv *.zip ../doc/static/dist/
     mv *.tar.gz ../doc/static/dist/
     cp *.js ../../dist/
+    cd ..
+    cp bower.json ../dist
+    cp .bowerrc ../dist
     #put the new version in the dist repository
-    cd ../../dist
+    cd ../dist
     git add .
     git commit -m "Skulpt version: $TAG"
     git tag $TAG
@@ -74,8 +77,13 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   cd dist
   cp *.js ../../dist/
   
+  cd ..
+  cp bower.json ../dist
+  cp .bowerrc ../dist
+  
+  
   #add, commit and push files to the dist repository
-  cd ../../dist
+  cd ../dist
   git add .
   git commit -m "Travis build $TRAVIS_BUILD_NUMBER pushed"
   git push -fq origin master > /dev/null
