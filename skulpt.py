@@ -45,7 +45,7 @@ DIST_DIR        = 'dist'
 TEST_DIR        = 'test'
 
 # Symbolic constants for the naming of distribution files.
-STANDARD_NAMING = False
+STANDARD_NAMING = True
 PRODUCT_NAME    = bowerProperty("name")
 OUTFILE_REG     = "{0}.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt-uncomp.js"
 OUTFILE_MIN     = "{0}.min.js".format(PRODUCT_NAME) if STANDARD_NAMING else "skulpt.js"
