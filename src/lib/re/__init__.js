@@ -72,9 +72,9 @@ var $builtinmodule = function(name)
             throw new Sk.builtin.TypeError("flags must be a number");
         };
 
-	maxsplit = Sk.builtin.asnum$(maxsplit);
-        var pat = Sk.ffi.unwrapo(pattern);
-        var str = Sk.ffi.unwrapo(string);
+        maxsplit = Sk.builtin.asnum$(maxsplit);
+        var pat = Sk.ffi.remapToJs(pattern);
+        var str = Sk.ffi.remapToJs(string);
         
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
@@ -131,8 +131,8 @@ var $builtinmodule = function(name)
             throw new Sk.builtin.TypeError("flags must be a number");
         };
 
-        var pat = Sk.ffi.unwrapo(pattern);
-        var str = Sk.ffi.unwrapo(string);
+        var pat = Sk.ffi.remapToJs(pattern);
+        var str = Sk.ffi.remapToJs(string);
         
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
@@ -144,10 +144,10 @@ var $builtinmodule = function(name)
 
         var regex = new RegExp(pat, jsflags);
 
-	var newline_at_end = new RegExp(/\n$/);
-	if (str.match(newline_at_end)) {
-	    str = str.slice(0,-1);
-	}
+    var newline_at_end = new RegExp(/\n$/);
+    if (str.match(newline_at_end)) {
+        str = str.slice(0,-1);
+    }
 
         var result = [];
         var match;
@@ -178,26 +178,26 @@ var $builtinmodule = function(name)
     var matchobj = function($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function(self,thematch, pattern, string) {
             self.thematch = thematch;
-	    self.re = pattern;
-	    self.string = string;
+        self.re = pattern;
+        self.string = string;
         });
 
-	$loc.groups = new Sk.builtin.func(function(self) {
-	    return new Sk.builtin.tuple(self.thematch.v.slice(1))
-	});
+    $loc.groups = new Sk.builtin.func(function(self) {
+        return new Sk.builtin.tuple(self.thematch.v.slice(1))
+    });
 
-	$loc.group = new Sk.builtin.func(function(self,grpnum) {
-	    if (grpnum === undefined) {
+    $loc.group = new Sk.builtin.func(function(self,grpnum) {
+        if (grpnum === undefined) {
                 grpnum = 0;
             }
             else {
                 grpnum = Sk.builtin.asnum$(grpnum);
             }
-	    if(grpnum >= self.thematch.v.length) {
-		throw new Sk.builtin.IndexError("Index out of range: " + grpnum);
-		}
-	    return self.thematch.v[grpnum]
-	});
+        if(grpnum >= self.thematch.v.length) {
+        throw new Sk.builtin.IndexError("Index out of range: " + grpnum);
+        }
+        return self.thematch.v[grpnum]
+    });
 
     }
 
@@ -206,12 +206,12 @@ var $builtinmodule = function(name)
     // Internal function to return a Python list of strings 
     // From a JS regular expression string
     mod._findre = function(res, string) {
-	res = res.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
+    res = res.replace(/([^\\]){,(?![^\[]*\])/g, '$1{0,');
         var re = eval(res);
-	var patt = new RegExp('\n$');
-	if (string.v.match(patt))
-	    var matches = string.v.slice(0,-1).match(re);
-	else
+    var patt = new RegExp('\n$');
+    if (string.v.match(patt))
+        var matches = string.v.slice(0,-1).match(re);
+    else
             var matches = string.v.match(re);
         retval = new Sk.builtin.list();
         if ( matches == null ) return retval;
@@ -223,14 +223,14 @@ var $builtinmodule = function(name)
     }
 
     mod.search = new Sk.builtin.func(function(pattern, string, flags) {
-	Sk.builtin.pyCheckArgs('search', arguments, 2, 3);
+    Sk.builtin.pyCheckArgs('search', arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         };
         if (!Sk.builtin.checkString(string)) {
             throw new Sk.builtin.TypeError("string must be a string");
         };
-	if (flags === undefined) {
+    if (flags === undefined) {
             flags = 0;
         };
         if (!Sk.builtin.checkNumber(flags)) {
@@ -244,14 +244,14 @@ var $builtinmodule = function(name)
     });
 
     mod.match = new Sk.builtin.func(function(pattern, string, flags) {
-	Sk.builtin.pyCheckArgs('match', arguments, 2, 3);
+    Sk.builtin.pyCheckArgs('match', arguments, 2, 3);
         if (!Sk.builtin.checkString(pattern)) {
             throw new Sk.builtin.TypeError("pattern must be a string");
         };
         if (!Sk.builtin.checkString(string)) {
             throw new Sk.builtin.TypeError("string must be a string");
         };
-	if (flags === undefined) {
+    if (flags === undefined) {
             flags = 0;
         };
         if (!Sk.builtin.checkNumber(flags)) {
