@@ -644,11 +644,11 @@ Sk.builtin.nmber.prototype.numberCompare = function(other)
 }
 
 Sk.builtin.nmber.prototype.__eq__ = function(me, other) {
-	return me.numberCompare(other) == 0;
+	return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none);
 };
 
 Sk.builtin.nmber.prototype.__ne__ = function(me, other) {
-	return me.numberCompare(other) != 0;
+	return (me.numberCompare(other) != 0) || (other instanceof Sk.builtin.none);
 };
 
 Sk.builtin.nmber.prototype.__lt__ = function(me, other) {
