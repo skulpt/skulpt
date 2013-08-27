@@ -1,10 +1,4 @@
 if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
-  #stop if google appengine isn't installed.
-  if [ ! -f ~/vendors/google_appengine/appcfg.py ]; then
-      echo "can't find appcfg.py"
-      exit 1
-  fi
-  
   echo -e "Starting to update of dist folder\n"
   #configure git to commit as Travis
   git config --global user.email "travis@travis-ci.org"
@@ -95,6 +89,11 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
     echo "Download GAE"
     wget http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip  -nv
     unzip -qd ~/vendors google_appengine_1.8.3.zip
+      #stop if google appengine isn't installed.
+    if [ ! -f ~/vendors/google_appengine/appcfg.py ]; then
+        echo "can't find appcfg.py"
+        exit 1
+    fi
     echo "Updating site"
     cd $HOME/skulpt/doc
     ~/vendors/google_appengine/appcfg.py --oauth2_refresh_token=${GAE_REFRESH} update ./
