@@ -92,6 +92,9 @@ if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TRAVIS_TEST_RESULT" == "0" ]]; then
   git push -fq origin master > /dev/null
   
   if [[ "$NEWTAG" == "true" ]]; then
+    echo "Download GAE"
+    wget http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip  -nv
+    unzip -qd ~/vendors google_appengine_1.8.3.zip
     echo "Updating site"
     cd $HOME/skulpt/doc
     ~/vendors/google_appengine/appcfg.py --oauth2_refresh_token=${GAE_REFRESH} update ./
