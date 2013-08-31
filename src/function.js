@@ -61,7 +61,8 @@ goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number"
 			     || arg instanceof Sk.builtin.nmber
-			     || arg instanceof Sk.builtin.lng));
+			     || arg instanceof Sk.builtin.lng
+                             || arg instanceof Sk.builtin.bool));
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
