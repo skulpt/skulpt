@@ -42,21 +42,21 @@ You should make sure that these tests run cleanly in addition to the Python suit
 
 You will need three terminals open as you develop.
 
-In the terminal where you submit your Skulpt build and test commands,
+Open the terminal where you submit your Skulpt build and test commands.
 
-1. Update the Lineman dependencies for the Skulpt project.
+Update the Lineman dependencies for the Skulpt project. You will only need to do this once and update periodically.
 
 ```sh
 $ npm install
 ```
 
-2. Clean the Skulpt project.
+Clean the Skulpt project. This is optional.
 
 ```sh
 $ lineman clean
 ```
 
-3. Build the Skulpt distribution.
+Build the Skulpt distribution.
 
 ```sh
 $ ./skulpt.py dist -u
@@ -64,7 +64,7 @@ $ ./skulpt.py dist -u
 
 Open another terminal which will be used to watch the Jasmine test specifications.
 
-4. Run Lineman so that it watches the test source.
+Run Lineman so that it watches for changes to the test source.
 
 ```sh
 $ lineman run
@@ -75,7 +75,7 @@ Note: You may see a Warning: Unable to write "dist/skulpt.js" file (Error code: 
 
 Open another terminal which will be used to run the Jasmine framework.
 
-5. Run the Jasmine specification testing framework.
+Run the Jasmine specification testing framework.
 
 ```sh
 $ lineman spec
@@ -83,7 +83,11 @@ $ lineman spec
 
 The framework should open a browser at localhost:7357/3856 showing the results of the test specifications.
 
-6. Make code changes and re-build the Skulpt distribution.
+Leave the browser window open. Leave the all the terminal windows open.
+
+The tests should all be passing. Notice that the specification window has the options [Press ENTER to run tests; q to quit]. You should not need to press ENTER because the source code for the tests is being monitored.
+
+Make your code changes to the Skulpt and re-build the Skulpt distribution.
 
 ```sh
 $ ./skulpt.py dist -u
@@ -91,9 +95,9 @@ $ ./skulpt.py dist -u
 
 The test results should alternate from green to red to green as the Skulpt output is deleted and rebuilt.
 
-7. Re-build the Skulpt distribution or update the test specifications in the spec folder.
+Update the test specifications in the spec folder.
 
-The specification ruunner should automatically track specification changes and update the results window.
+The specification runner should automatically track specification changes and update the results window.
 
 # Documentation
 
