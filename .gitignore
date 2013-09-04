@@ -12,3 +12,12 @@ dist/*
 /.vagrant
 
 Vagrantfile
+
+# Ignore node_modules, as the node project is not "deployed" per se: http://www.mikealrogers.com/posts/nodemodules-in-git.html
+/node_modules
+
+# Ignore the files generated for Jasmine testing.
+/generated
+
+# Ignore this log file which makes an appearance due to Google Chrome being used to inspect the Jasmine results.
+libpeerconnection.log

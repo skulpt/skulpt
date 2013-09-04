@@ -1,0 +1,25 @@
+{
+  "name": "skulpt",
+  "version": "0.9.1",
+  "main": [ "./skulpt.js", "./skulpt-stdlib.js" ],
+  "description": "Skulpt is a Javascript implementation of the Python programming language",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/skulpt/skulpt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skulpt/skulpt/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/skulpt/skulpt/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "lineman": "~0.11.6"
+  },
+  "devDependencies": {
+  },
+  "keywords": []
+}
