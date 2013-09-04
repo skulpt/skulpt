@@ -32,9 +32,68 @@ This section includes advice on how to build new features for the project & what
 * Before submitting a pull request please make sure you run ``m test`` and ``m dist`` this checks that there are no regressions.  We have an automatic system to do regression testing, but if your pull request fails it is certain that it will not be accepted.
 * push your changes to your fork and then use github to submit a pull request.
 
-
 We try to get to pull requests in a very timely way so they don't languish.  Nothing is more frustrating than a project that just leaves pull requests sitting there for ages.  Usually we get to them in a one or two days.
 
+## Using the Jasmine testing framework.
+
+This framework is used to perform unit testing on the exported Skulpt APIs.
+
+You should make sure that these tests run cleanly in addition to the Python suite tests.
+
+You will need three terminals open as you develop.
+
+In the terminal where you submit your Skulpt build and test commands,
+
+1. Update the Lineman dependencies for the Skulpt project.
+
+```sh
+$ npm install
+```
+
+2. Clean the Skulpt project.
+
+```sh
+$ lineman clean
+```
+
+3. Build the Skulpt distribution.
+
+```sh
+$ ./skulpt.py dist -u
+```
+
+Open another terminal which will be used to watch the Jasmine test specifications.
+
+4. Run Lineman so that it watches the test source.
+
+```sh
+$ lineman run
+```
+
+This terminal is now commited to watching the test source. Leave it running on your desktop.
+Note: You may see a Warning: Unable to write "dist/skulpt.js" file (Error code: EACCES). This is normal.
+
+Open another terminal which will be used to run the Jasmine framework.
+
+5. Run the Jasmine specification testing framework.
+
+```sh
+$ lineman spec
+```
+
+The framework should open a browser at localhost:7357/3856 showing the results of the test specifications.
+
+6. Make code changes and re-build the Skulpt distribution.
+
+```sh
+$ ./skulpt.py dist -u
+```
+
+The test results should alternate from green to red to green as the Skulpt output is deleted and rebuilt.
+
+7. Re-build the Skulpt distribution or update the test specifications in the spec folder.
+
+The specification ruunner should automatically track specification changes and update the results window.
 
 # Documentation
 
