@@ -44,19 +44,19 @@ You will need three terminals open as you develop.
 
 Open the terminal where you submit your Skulpt build and test commands.
 
-Update the Lineman dependencies for the Skulpt project. You will only need to do this once and update periodically.
+Update the Lineman dependencies for the Skulpt project (You will only need to do this once and update periodically):
 
 ```sh
 $ npm install
 ```
 
-Clean the Skulpt project. This is optional.
+Clean the Skulpt project (This is optional):
 
 ```sh
 $ lineman clean
 ```
 
-Build the Skulpt distribution.
+Build the Skulpt distribution:
 
 ```sh
 $ ./skulpt.py dist -u
@@ -64,7 +64,7 @@ $ ./skulpt.py dist -u
 
 Open another terminal which will be used to watch the Jasmine test specifications.
 
-Run Lineman so that it watches for changes to the test source.
+Run Lineman so that it watches for changes to the test source:
 
 ```sh
 $ lineman run
@@ -75,7 +75,7 @@ Note: You may see a Warning: Unable to write "dist/skulpt.js" file (Error code: 
 
 Open another terminal which will be used to run the Jasmine framework.
 
-Run the Jasmine specification testing framework.
+Run the Jasmine specification testing framework:
 
 ```sh
 $ lineman spec
@@ -83,17 +83,17 @@ $ lineman spec
 
 The framework should open a browser at localhost:7357/3856 showing the results of the test specifications.
 
-Leave the browser window open. Leave the all the terminal windows open.
+Leave the browser window open. Leave all the terminal windows open.
 
 The tests should all be passing. Notice that the specification window has the options [Press ENTER to run tests; q to quit]. You should not need to press ENTER because the source code for the tests is being monitored.
 
-Make your code changes to the Skulpt and re-build the Skulpt distribution.
+Make your changes to the Skulpt product code and re-build the Skulpt distribution:
 
 ```sh
 $ ./skulpt.py dist -u
 ```
 
-The test results should alternate from green to red to green as the Skulpt output is deleted and rebuilt.
+The test results in the browser should alternate from green to red to green as the Skulpt output is deleted and rebuilt.
 
 Update the test specifications in the spec folder.
 
