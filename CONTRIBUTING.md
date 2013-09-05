@@ -102,7 +102,7 @@ Update the test specifications in the spec folder.
 
 The specification runner should automatically track specification changes and update the results window.
 
-If you want to change the browser used for testing, you must update the launcher in config/spec.json
+If you want to change the browser used for testing, you must update the launcher in `config/spec.json`.
 Your launcher options are IE7, IE8, IE9, Firefox, Chrome, and PhantomJS.
 
 If you would like to run the Jasmine test headless (not a conventional browser) then you must install PhantomJS:
@@ -111,7 +111,7 @@ If you would like to run the Jasmine test headless (not a conventional browser) 
 $ sudo apt-get install phantomjs
 ```
 
-You can verify the istallation with:
+You can verify the installation with:
 
 ```sh
 $ phantomjs --version
@@ -123,7 +123,7 @@ Once you have PhantomJS installed, you may run the tests in headless mode:
 $ lineman spec-ci
 ```
 
-Note: You can get more information on Lineman operation by adding the _--vebose_ option to Lineman commands.
+Note: You can get more information on Lineman operation by adding the _--verbose_ option to Lineman commands.
 
 # Documentation
 
