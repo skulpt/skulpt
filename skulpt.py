@@ -387,7 +387,7 @@ def dist(options):
     os.system("rm -rf {0}/{1}".format(DIST_DIR, OUTFILE_MIN))
     os.system("rm -rf {0}/{1}".format(DIST_DIR, OUTFILE_LIB))
     os.system("rm -rf {0}/{1}".format(DIST_DIR, OUTFILE_MAP))
-#   os.system("rm -rf {0}/".format(DIST_DIR))
+
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
     if options.uncompressed:
