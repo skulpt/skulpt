@@ -47,13 +47,13 @@ You will need three terminals open as you develop.
 
 Open the terminal where you submit your Skulpt build and test commands.
 
-Update the Lineman dependencies for the Skulpt project (You will only need to do this once and update periodically):
+Update the Lineman dependencies for the Skulpt project (you will only need to do this once and update periodically):
 
 ```sh
 $ npm install
 ```
 
-Clean the Skulpt project (This is optional):
+Clean the Skulpt project (optional):
 
 ```sh
 $ lineman clean
@@ -74,7 +74,7 @@ $ lineman run
 ```
 
 This terminal is now commited to watching the test source. Leave it running on your desktop.
-Note: You may see a Warning: Unable to write "dist/skulpt.js" file (Error code: EACCES). This is normal.
+Note: You may see a `Warning: Unable to write "dist/skulpt.js" file (Error code: EACCES)`. This is normal.
 
 Open another terminal which will be used to run the Jasmine framework.
 
@@ -84,11 +84,11 @@ Run the Jasmine specification testing framework:
 $ lineman spec
 ```
 
-The framework should open a browser at localhost:7357/3856 showing the results of the test specifications.
+The framework should open a browser at `localhost:7357` showing the results of the test specifications.
 
 Leave the browser window open. Leave all the terminal windows open.
 
-The tests should all be passing. Notice that the specification window has the options [Press ENTER to run tests; q to quit]. You should not need to press ENTER because the source code for the tests is being monitored.
+The tests should all be passing. Notice that the specification window has the options `[Press ENTER to run tests; q to quit]`. You should not need to press ENTER because the source code for the tests is being monitored.
 
 Make your changes to the Skulpt product code and re-build the Skulpt distribution:
 
@@ -98,12 +98,12 @@ $ ./skulpt.py dist -u
 
 The test results in the browser should alternate from green to red to green as the Skulpt output is deleted and rebuilt.
 
-Update the test specifications in the spec folder.
+Update the test specifications in the `spec/` folder.
 
 The specification runner should automatically track specification changes and update the results window.
 
 If you want to change the browser used for testing, you must update the launcher in `config/spec.json`.
-Your launcher options are IE7, IE8, IE9, Firefox, Chrome, and PhantomJS.
+Your launcher options are `IE7`, `IE8`, `IE9`, `Firefox`, `Chrome`, and `PhantomJS`.
 
 If you would like to run the Jasmine test headless (not a conventional browser) then you must install PhantomJS:
 
@@ -123,7 +123,7 @@ Once you have PhantomJS installed, you may run the tests in headless mode:
 $ lineman spec-ci
 ```
 
-Note: You can get more information on Lineman operation by adding the _--verbose_ option to Lineman commands.
+Note: You can get more information on Lineman operation by adding the `--verbose` option to Lineman commands.
 
 # Documentation
 
