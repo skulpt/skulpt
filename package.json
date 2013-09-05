@@ -1,7 +1,7 @@
 {
-  "name": "skulpt",
+  "name": "skulpt-tools",
   "version": "0.9.1",
-  "main": [ "./skulpt.js", "./skulpt-stdlib.js" ],
+  "main": [ "./skulpt-tools.js", "./skulpt-tools.min.js" ],
   "description": "Skulpt is a Javascript implementation of the Python programming language",
   "repository": {
     "type": "git",

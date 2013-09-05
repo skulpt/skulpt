@@ -49,10 +49,10 @@ describe "Sk.ffi", ->
     it "false => False", -> expect(Sk.ffi.booleanToPy false).toBe Sk.ffi.bool.False
     it "null => None", -> expect(Sk.ffi.booleanToPy null).toBe Sk.ffi.none.None
     it "undefined => undefined", -> expect(Sk.ffi.booleanToPy undefined).toBeUndefined()
-    it "getType booleanToPy undefined, true => getType booleanToPy(true)", -> expect(Sk.ffi.getType Sk.ffi.booleanToPy undefined, true).toBe Sk.ffi.getType Sk.ffi.booleanToPy true
-    it "remapToPy booleanToJs undefined, true => remapToJs booleanToPy(true)", -> expect(Sk.ffi.remapToJs Sk.ffi.booleanToPy undefined, true).toBe Sk.ffi.remapToJs Sk.ffi.booleanToPy true
-    it "getType booleanToPy undefined, false => getType booleanToPy(false)", -> expect(Sk.ffi.getType Sk.ffi.booleanToPy undefined, false).toBe Sk.ffi.getType Sk.ffi.booleanToPy false
-    it "remapToPy booleanToJs undefined, false => remapToJs booleanToPy(false)", -> expect(Sk.ffi.remapToJs Sk.ffi.booleanToPy undefined, false).toBe Sk.ffi.remapToJs Sk.ffi.booleanToPy false
+    it "getType booleanToPy undefined, true => getType booleanToPy true", -> expect(Sk.ffi.getType Sk.ffi.booleanToPy undefined, true).toBe Sk.ffi.getType Sk.ffi.booleanToPy true
+    it "remapToPy booleanToJs undefined, true => remapToJs booleanToPy true", -> expect(Sk.ffi.remapToJs Sk.ffi.booleanToPy undefined, true).toBe Sk.ffi.remapToJs Sk.ffi.booleanToPy true
+    it "getType booleanToPy undefined, false => getType booleanToPy false", -> expect(Sk.ffi.getType Sk.ffi.booleanToPy undefined, false).toBe Sk.ffi.getType Sk.ffi.booleanToPy false
+    it "remapToPy booleanToJs undefined, false => remapToJs booleanToPy false", -> expect(Sk.ffi.remapToJs Sk.ffi.booleanToPy undefined, false).toBe Sk.ffi.remapToJs Sk.ffi.booleanToPy false
     it "string throws TypeError", ->
       foo = () -> Sk.ffi.booleanToPy("s")
       expect(foo).toThrow()
@@ -67,8 +67,8 @@ describe "Sk.ffi", ->
     it "typeName numberToPy number => 'float'", -> expect(Sk.ffi.typeName Sk.ffi.numberToPy 6).toBe 'float'
     it "null => None", -> expect(Sk.ffi.numberToPy null).toBe Sk.ffi.none.None
     it "undefined => undefined", -> expect(Sk.ffi.numberToPy undefined).toBeUndefined()
-    it "getType numberToPy undefined, number => getType numberToPy(number)", -> expect(Sk.ffi.getType Sk.ffi.numberToPy undefined, 23).toBe Sk.ffi.getType Sk.ffi.numberToPy 23
-    it "remapToJs numberToPy undefined, number => remapToJs numberToPy(number)", -> expect(Sk.ffi.remapToJs Sk.ffi.numberToPy undefined, 23).toBe Sk.ffi.remapToJs Sk.ffi.numberToPy 23
+    it "getType numberToPy undefined, number => getType numberToPy number", -> expect(Sk.ffi.getType Sk.ffi.numberToPy undefined, 23).toBe Sk.ffi.getType Sk.ffi.numberToPy 23
+    it "remapToJs numberToPy undefined, number => remapToJs numberToPy number", -> expect(Sk.ffi.remapToJs Sk.ffi.numberToPy undefined, 23).toBe Sk.ffi.remapToJs Sk.ffi.numberToPy 23
     it "undefined, null => None", -> expect(Sk.ffi.numberToPy undefined, null).toBe Sk.ffi.none.None
     it "string throws TypeError", ->
       foo = () -> Sk.ffi.numberToPy("s")
@@ -84,8 +84,8 @@ describe "Sk.ffi", ->
     it "typeName numberToIntPy number => 'int'", -> expect(Sk.ffi.typeName Sk.ffi.numberToIntPy 6).toBe 'int'
     it "null => None", -> expect(Sk.ffi.numberToIntPy null).toBe Sk.ffi.none.None
     it "undefined => undefined", -> expect(Sk.ffi.numberToIntPy undefined).toBeUndefined()
-    it "getType numberToIntPy undefined, number => getType numberToIntPy(number)", -> expect(Sk.ffi.getType Sk.ffi.numberToIntPy undefined, 23).toBe Sk.ffi.getType Sk.ffi.numberToIntPy 23
-    it "remapToJs numberToIntPy undefined, number => remapToJs numberToIntPy(number)", -> expect(Sk.ffi.remapToJs Sk.ffi.numberToIntPy undefined, 23).toBe Sk.ffi.remapToJs Sk.ffi.numberToPy 23
+    it "getType numberToIntPy undefined, number => getType numberToIntPy number", -> expect(Sk.ffi.getType Sk.ffi.numberToIntPy undefined, 23).toBe Sk.ffi.getType Sk.ffi.numberToIntPy 23
+    it "remapToJs numberToIntPy undefined, number => remapToJs numberToIntPy number", -> expect(Sk.ffi.remapToJs Sk.ffi.numberToIntPy undefined, 23).toBe Sk.ffi.remapToJs Sk.ffi.numberToPy 23
     it "undefined, null => None", -> expect(Sk.ffi.numberToIntPy undefined, null).toBe Sk.ffi.none.None
     it "string throws TypeError", ->
       foo = () -> Sk.ffi.numberToPy("s")
@@ -141,7 +141,7 @@ describe "Sk.ffi", ->
     it "getType functionPy doubleMe => PyType.FUNCTION", ->
       doubleMePy = Sk.ffi.functionPy(doubleMe)
       expect(Sk.ffi.getType doubleMePy).toBe Sk.ffi.PyType.FUNCTION
-    it "remapToJs functionPy doubleMe => ???", ->
+    it "remapToJs functionPy function", ->
       # The Pythonized version of the function has to be mapped back to JavaScript.
       # This involves a wrapper that automatically converts JavaScript arguments to Python.
       doubleMePy = Sk.ffi.functionPy(doubleMe)

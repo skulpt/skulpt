@@ -34,9 +34,11 @@ This section includes advice on how to build new features for the project & what
 
 We try to get to pull requests in a very timely way so they don't languish.  Nothing is more frustrating than a project that just leaves pull requests sitting there for ages.  Usually we get to them in a one or two days.
 
-## Using the Jasmine testing framework.
+## How to use the Jasmine testing framework.
 
 This framework is used to perform unit testing on the exported Skulpt APIs.
+
+The test may be launched in many browsers and in headless mode.
 
 You should make sure that these tests run cleanly in addition to the Python suite tests.
 
@@ -98,6 +100,29 @@ The test results in the browser should alternate from green to red to green as t
 Update the test specifications in the spec folder.
 
 The specification runner should automatically track specification changes and update the results window.
+
+If you want to change the browser used for testing, you must update the launcher in config/spec.json
+Your launcher options are IE7, IE8, IE9, Firefox, Chrome, and PhantomJS.
+
+If you would like to run the Jasmine test headless (not a conventional browser) then you must install PhantomJS:
+
+```sh
+$ sudo apt-get install phantomjs
+```
+
+You can verify the istallation with:
+
+```sh
+$ phantomjs --version
+```
+
+Once you have PhantomJS installed, you may run the tests in headless mode:
+
+```sh
+$ lineman spec-ci
+```
+
+Note: You can get more information on Lineman operation by adding the _--vebose_ option to Lineman commands.
 
 # Documentation
 
