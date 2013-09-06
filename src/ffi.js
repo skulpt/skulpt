@@ -1,6 +1,47 @@
 Sk.ffi = Sk.ffi || {};
 
 /**
+ * AssertionError
+ * @typedef {!Sk.builtin.AssertionError}
+ */
+Sk.ffi.AssertionError
+goog.exportSymbol("Sk.ffi.AssertionError", Sk.ffi.AssertionError);
+/**
+ * Returns a new AssertionError.
+ * @param {string} message The message string.
+ * @return {Sk.ffi.AssertionError} The AssertionError.
+ */
+Sk.ffi.assertionError = function(message) {return new Sk.builtin.AssertionError(message);};
+goog.exportSymbol("Sk.ffi.assertionError", Sk.ffi.assertionError);
+
+/**
+ * AttributeError
+ * @typedef {!Sk.builtin.AttributeError}
+ */
+Sk.ffi.AttributeError
+goog.exportSymbol("Sk.ffi.AttributeError", Sk.ffi.AttributeError);
+/**
+ * Returns a new AttributeError.
+ * @param {string} message The message string.
+ * @return {Sk.ffi.AttributeError}
+ */
+Sk.ffi.attributeError = function(message) {return new Sk.builtin.AttributeError(message);};
+goog.exportSymbol("Sk.ffi.attributeError", Sk.ffi.attributeError);
+
+/**
+ * @typedef {!Sk.builtin.TypeError}
+ */
+Sk.ffi.TypeError
+goog.exportSymbol("Sk.ffi.TypeError", Sk.ffi.TypeError);
+/**
+ * Returns a new TypeError.
+ * @param {string} message The message string.
+ * @return {Sk.ffi.TypeError} The TypeError.
+ */
+Sk.ffi.typeError = function(message) {return new Sk.builtin.TypeError(message);};
+goog.exportSymbol("Sk.ffi.typeError", Sk.ffi.typeError);
+
+/**
  * Enumeration for JavaScript types.
  *
  * These are string constants for comparing with the result of the typeof operator.
@@ -68,17 +109,17 @@ Sk.ffi.booleanToPy = function(valueJs, defaultJs)
         else
         {
             throw Sk.ffi.err.
-                expectArg("defaultJs").
+                argument("defaultJs").
                 inFunction("Sk.ffi.booleanToPy").
-                toHaveType([Sk.ffi.JsType.BOOLEAN, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+                mustHaveType([Sk.ffi.JsType.BOOLEAN, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
         }
     }
     else
     {
         throw Sk.ffi.err.
-            expectArg("valueJs").
+            argument("valueJs").
             inFunction("Sk.ffi.booleanToPy").
-            toHaveType([Sk.ffi.JsType.BOOLEAN, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+            mustHaveType([Sk.ffi.JsType.BOOLEAN, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
     }
 };
 goog.exportSymbol("Sk.ffi.booleanToPy", Sk.ffi.booleanToPy);
@@ -119,17 +160,17 @@ Sk.ffi.numberToPy = function(valueJs, defaultJs)
         else
         {
             throw Sk.ffi.err.
-                expectArg("defaultJs").
+                argument("defaultJs").
                 inFunction("Sk.ffi.numberToPy").
-                toHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+                mustHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
         }
     }
     else
     {
         throw Sk.ffi.err.
-            expectArg("valueJs").
+            argument("valueJs").
             inFunction("Sk.ffi.numberToPy").
-            toHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+            mustHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
     }
 };
 goog.exportSymbol("Sk.ffi.numberToPy", Sk.ffi.numberToPy);
@@ -170,17 +211,17 @@ Sk.ffi.numberToIntPy = function(valueJs, defaultJs)
         else
         {
             throw Sk.ffi.err.
-                expectArg("defaultJs").
+                argument("defaultJs").
                 inFunction("Sk.ffi.numberToIntPy").
-                toHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+                mustHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
         }
     }
     else
     {
         throw Sk.ffi.err.
-            expectArg("valueJs").
+            argument("valueJs").
             inFunction("Sk.ffi.numberToIntPy").
-            toHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+            mustHaveType([Sk.ffi.JsType.NUMBER, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
     }
 };
 goog.exportSymbol("Sk.ffi.numberToIntPy", Sk.ffi.numberToIntPy);
@@ -227,17 +268,17 @@ Sk.ffi.stringToPy = function(valueJs, defaultJs)
         else
         {
             throw Sk.ffi.err.
-                expectArg("defaultJs").
+                argument("defaultJs").
                 inFunction("Sk.ffi.stringToPy").
-                toHaveType([Sk.ffi.JsType.STRING, Sk.ffi.JsType.UNDEFINED, 'null'].join(" or "));
+                mustHaveType([Sk.ffi.JsType.STRING, Sk.ffi.JsType.UNDEFINED, 'null'].join(" or "));
         }
     }
     else
     {
         throw Sk.ffi.err.
-            expectArg("valueJs").
+            argument("valueJs").
             inFunction("Sk.ffi.stringToPy").
-            toHaveType([Sk.ffi.JsType.STRING, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
+            mustHaveType([Sk.ffi.JsType.STRING, 'null', Sk.ffi.JsType.UNDEFINED].join(" or "));
     }
 };
 goog.exportSymbol("Sk.ffi.stringToPy", Sk.ffi.stringToPy);
@@ -383,6 +424,14 @@ Sk.ffi.remapToPy = function(valueJs, className, custom)
 };
 goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
 
+/**
+ * @nosideeffects
+ * @param {Object} valuePy
+ * @return {boolean}
+ */
+Sk.ffi.isBoolean = function(valuePy) {return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.BOOL;};
+goog.exportSymbol("Sk.ffi.isBoolean", Sk.ffi.isBoolean);
+
 Sk.ffi.isDictionary = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.DICTIONARY; };
 goog.exportSymbol("Sk.ffi.isDictionary", Sk.ffi.isDictionary);
 
@@ -454,7 +503,7 @@ Sk.ffi.checkFunctionArgs = function(name, args, minargs, maxargs, kwargs, free)
             msg = name + "() takes at most " + maxargs + " arguments";
         }
         msg += " (" + nargs + " given)";
-        throw new Sk.builtin.AssertionError(msg);
+        throw Sk.ffi.assertionError(msg);
     }
     else
     {
@@ -488,17 +537,27 @@ Sk.ffi.checkMethodArgs = function(name, args, minargs, maxargs, kwargs, free)
 goog.exportSymbol("Sk.ffi.checkMethodArgs", Sk.ffi.checkMethodArgs);
 
 /**
+ * @typedef {(string|!Array.<string>|Sk.ffi.PyType)}
+ */
+Sk.ffi.ExpectedType
+
+/**
+ * @typedef {function(Sk.ffi.ExpectedType): Sk.ffi.TypeError}
+ */
+Sk.ffi.FunctionReturningTypeError
+
+/**
  * Convenience function for asserting the type of an argument.
  *
  * @param {string} name The argument name.
- * @param {string} expectedType A string representation of the expected type.
+ * @param {Sk.ffi.ExpectedType} expectedType A string representation of the expected type or types.
  * @param {boolean} condition The condition that must be true for the check to pass.
  */
 Sk.ffi.checkArgType = function(name, expectedType, condition)
 {
     if (!condition)
     {
-        throw Sk.ffi.err.argument(name).mustBeA(expectedType);
+        throw Sk.ffi.err.argument(name).mustHaveType(expectedType);
     }
 };
 goog.exportSymbol("Sk.ffi.checkArgType", Sk.ffi.checkArgType);
@@ -561,7 +620,7 @@ Sk.ffi.getType = function(valuePy)
         }
         else
         {
-            throw new Sk.builtin.AssertionError("typeofPy(" + valuePy + ") (Sk.builtin.nmber) skType=" + valuePy.skType);
+            throw Sk.ffi.assertionError("typeofPy(" + valuePy + ") (Sk.builtin.nmber) skType=" + valuePy.skType);
         }
     }
     else if (valuePy instanceof Sk.builtin.lng)
@@ -597,7 +656,7 @@ Sk.ffi.getType = function(valuePy)
                 }
                 else
                 {
-                    throw new Sk.builtin.AssertionError("0a459acc-9540-466b-ba1a-333f8215b61e");
+                    throw Sk.ffi.assertionError("0a459acc-9540-466b-ba1a-333f8215b61e");
                 }
             }
             else if (x === Sk.ffi.JsType.FUNCTION)
@@ -606,7 +665,7 @@ Sk.ffi.getType = function(valuePy)
             }
             else
             {
-                throw new Sk.builtin.AssertionError("bb971bb0-3751-49bb-ac24-8dab8a4bcd29 (x:'" + x + "')");
+                throw Sk.ffi.assertionError("bb971bb0-3751-49bb-ac24-8dab8a4bcd29 (x:'" + x + "')");
             }
         }
         else
@@ -660,7 +719,14 @@ Sk.ffi.booleanToJs = function(valuePy, message)
     }
     else
     {
-        throw new Sk.builtin.AssertionError(message);
+        if (typeof message === Sk.ffi.JsType.STRING)
+        {
+            throw Sk.ffi.typeError(String(message));
+        }
+        else
+        {
+            throw Sk.ffi.err.attribute("value").mustHaveType(Sk.ffi.PyType.BOOL);
+        }
     }
 };
 goog.exportSymbol("Sk.ffi.booleanToJs", Sk.ffi.booleanToJs);
@@ -680,11 +746,11 @@ Sk.ffi.numberToJs = function(valuePy, message)
     {
         if (typeof message === Sk.ffi.JsType.STRING)
         {
-            throw new Sk.builtin.AssertionError(message);
+            throw Sk.ffi.typeError(String(message));
         }
         else
         {
-            goog.asserts.fail("e55f4353-0403-42f5-bd12-ec48459b3d2c");
+            throw Sk.ffi.err.attribute("value").mustHaveType([Sk.ffi.PyType.FLOAT, Sk.ffi.PyType.INT, Sk.ffi.PyType.LONG]);
         }
     }
 };
@@ -751,7 +817,7 @@ Sk.ffi.remapToJs = function(valuePy, defaultJs)
             }
             else
             {
-                throw new Sk.builtin.AssertionError("5fd1f529-f9b2-4d0c-9775-36e782973986");
+                throw Sk.ffi.assertionError("5fd1f529-f9b2-4d0c-9775-36e782973986");
             }
         }
         case Sk.ffi.PyType.FLOAT:
@@ -786,7 +852,7 @@ Sk.ffi.remapToJs = function(valuePy, defaultJs)
         }
         default:
         {
-            throw new Sk.builtin.AssertionError("20be4da2-63e8-4fff-9359-7ab46eba4702 " + Sk.ffi.getType(valuePy));
+            throw Sk.ffi.assertionError("20be4da2-63e8-4fff-9359-7ab46eba4702 " + Sk.ffi.getType(valuePy));
         }
     }
 };
@@ -852,26 +918,6 @@ goog.exportSymbol("Sk.ffi.gattr", Sk.ffi.gattr);
 
 /**
  * @param {...*} args
- * @return {!Sk.builtin.AssertionError}
- */
-Sk.ffi.assertionError = function(args)
-{
-    return new Sk.builtin.AssertionError(args);
-};
-goog.exportSymbol("Sk.ffi.assertionError", Sk.ffi.assertionError);
-
-/**
- * @param {...*} args
- * @return {!Sk.builtin.AttributeError}
- */
-Sk.ffi.attributeError = function(args)
-{
-    return new Sk.builtin.AttributeError(args);
-};
-goog.exportSymbol("Sk.ffi.attributeError", Sk.ffi.attributeError);
-
-/**
- * @param {...*} args
  * @return {!Sk.builtin.IndexError}
  */
 Sk.ffi.indexError = function(args)
@@ -879,16 +925,6 @@ Sk.ffi.indexError = function(args)
     return new Sk.builtin.IndexError(args);
 };
 goog.exportSymbol("Sk.ffi.indexError", Sk.ffi.indexError);
-
-/**
- * @param {...*} args
- * @return {!Sk.builtin.TypeError}
- */
-Sk.ffi.typeError = function(args)
-{
-    return new Sk.builtin.TypeError(args);
-};
-goog.exportSymbol("Sk.ffi.typeError", Sk.ffi.typeError);
 
 /**
  * @param {...*} args
@@ -903,38 +939,87 @@ goog.exportSymbol("Sk.ffi.valueError", Sk.ffi.valueError);
 /**
  * Fluid API for building messages.
  *
- * TODO: Localization.
+ * @type
+ * {
+ *   {
+ *     argument: function (string): {
+ *       inFunction: function (string): {
+ *         mustHaveType: function ((!Array.<string>|Sk.ffi.PyType|string)): Sk.ffi.TypeError
+ *       },
+ *       mustHaveType: function ((!Array.<string>|Sk.ffi.PyType|string)): Sk.ffi.TypeError
+ *     },
+ *     attribute: function (string): {
+ *       isNotGetableOnType: function (string): Sk.ffi.AttributeError,
+ *       isNotSetableOnType: function (string): Sk.ffi.AttributeError
+ *     }
+ *   }
+ * }
  */
 Sk.ffi.err =
 {
+    /**
+     * @param {string} name The name of the attribute.
+     * @return
+     * {
+     *   {
+     *     isNotGetableOnType: function(string): Sk.ffi.AttributeError,
+     *     isNotSetableOnType: function(string): Sk.ffi.AttributeError
+     *   }
+     * }
+     */
     attribute: function(name) {
         return {
+            /**
+             * @param {string} targetType The name of the type.
+             * @return {Sk.ffi.AttributeError}
+             */
             isNotGetableOnType: function(targetType) {
-                return Sk.ffi.attributeError(name + " is not a getable attribute of " + targetType);
+                return Sk.ffi.attributeError(name + " is not an attribute of " + targetType);
             },
+            /**
+             * @param {string} targetType The name of the type.
+             * @return {Sk.ffi.AttributeError}
+             */
             isNotSetableOnType: function(targetType) {
-                return Sk.ffi.attributeError(name + " is not a setable attribute of " + targetType);
+                return Sk.ffi.attributeError(name + " is not an attribute of " + targetType);
             }
         };
     },
+    /**
+     * @param {string} name The name of the argument.
+     * @return
+     * {
+     *   {
+     *     inFunction: function(string):{
+     *       mustHaveType: function(Sk.ffi.ExpectedType): Sk.ffi.TypeError
+     *     },
+     *     mustHaveType: function(Sk.ffi.ExpectedType): Sk.ffi.TypeError
+     *   }
+     * }
+     */
     argument: function(name) {
         return {
-            mustBeA: function(expectedType) {
-                return Sk.ffi.typeError(name + " must be a " + expectedType);
-            }
-        };
-    },
-    expectArg: function(name) {
-        return {
+            /**
+             * @param {string} functionName The name of the function.
+             * @return {{mustHaveType: Sk.ffi.FunctionReturningTypeError}}
+             */
             inFunction: function(functionName) {
                 return {
-                    toHaveType: function(expectedType) {
+                    /**
+                     * @param {Sk.ffi.ExpectedType} expectedType The name of the type.
+                     * @return {Sk.ffi.TypeError}
+                     */
+                    mustHaveType: function(expectedType) {
                         return Sk.ffi.typeError("Expecting argument '" + name + "' in function '" + functionName + "' to have type '" + expectedType + "'.");
                     }
                 };
             },
-            toHaveType: function(expectedType) {
-                return Sk.ffi.typeError("Expecting argument '" + name + "' to have type '" + expectedType + "'.");
+            /**
+             * @param {Sk.ffi.ExpectedType} expectedType The name of the type.
+             * @return {Sk.ffi.TypeError}
+             */
+            mustHaveType: function(expectedType) {
+                return Sk.ffi.typeError(name + " must be a " + expectedType);
             }
         };
     }

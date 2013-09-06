@@ -5,26 +5,26 @@ describe "Sk.ffi", ->
 
   describe "err", ->
 
-    it "expectArg.toHaveType when Sk.currLineNo is defined.", ->
-      expect(Sk.ffi.err.expectArg("x").toHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' to have type 'T'. on line #{Sk.currLineNo}"
+    it "argument.mustHaveType when Sk.currLineNo is defined.", ->
+      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line #{Sk.currLineNo}"
 
-    it "expectArg.toHaveType when Sk.currLineNo is zero.", ->
+    it "argument.mustHaveType when Sk.currLineNo is zero.", ->
       Sk.currLineNo = 0
-      expect(Sk.ffi.err.expectArg("x").toHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' to have type 'T'. on line <unknown>"
+      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line <unknown>"
 
-    it "expectArg.inFunction.toHaveType when Sk.currLineNo is defined.", ->
-      expect(Sk.ffi.err.expectArg("x").inFunction('foo').toHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' in function 'foo' to have type 'T'. on line #{Sk.currLineNo}"
+    it "argument.inFunction.mustHaveType when Sk.currLineNo is defined.", ->
+      expect(Sk.ffi.err.argument("x").inFunction('foo').mustHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' in function 'foo' to have type 'T'. on line #{Sk.currLineNo}"
 
-    it "expectArg.inFunction.toHaveType when Sk.currLineNo is zero.", ->
+    it "argument.inFunction.mustHaveType when Sk.currLineNo is zero.", ->
       Sk.currLineNo = 0
-      expect(Sk.ffi.err.expectArg("x").inFunction('foo').toHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' in function 'foo' to have type 'T'. on line <unknown>"
+      expect(Sk.ffi.err.argument("x").inFunction('foo').mustHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' in function 'foo' to have type 'T'. on line <unknown>"
 
-    it "argument.mustBeA when Sk.currLineNo is defined.", ->
-      expect(Sk.ffi.err.argument("x").mustBeA("T").toString()).toBe "TypeError: x must be a T on line #{Sk.currLineNo}"
+    it "argument.mustHaveType when Sk.currLineNo is defined.", ->
+      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line #{Sk.currLineNo}"
 
-    it "argument.mustBeA when Sk.currLineNo is zero.", ->
+    it "argument.mustHaveType when Sk.currLineNo is zero.", ->
       Sk.currLineNo = 0
-      expect(Sk.ffi.err.argument("x").mustBeA("T").toString()).toBe "TypeError: x must be a T on line <unknown>"
+      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line <unknown>"
 
   describe "bool", ->
     it "getType True => PyType.BOOL", -> expect(Sk.ffi.getType Sk.ffi.bool.True).toBe Sk.ffi.PyType.BOOL
@@ -59,7 +59,7 @@ describe "Sk.ffi", ->
       try
         foo()
       catch e
-        expect(e.toString()).toBe Sk.ffi.err.expectArg('valueJs').inFunction('Sk.ffi.booleanToPy').toHaveType("boolean or null or undefined").toString()
+        expect(e.toString()).toBe Sk.ffi.err.argument('valueJs').inFunction('Sk.ffi.booleanToPy').mustHaveType("boolean or null or undefined").toString()
 
   describe "numberToPy", ->
     it "getType numberToPy number => PyType.FLOAT", -> expect(Sk.ffi.getType Sk.ffi.numberToPy 6) .toBe Sk.ffi.PyType.FLOAT
@@ -76,7 +76,7 @@ describe "Sk.ffi", ->
       try
         foo()
       catch e
-        expect(e.toString()).toBe Sk.ffi.err.expectArg('valueJs').inFunction('Sk.ffi.numberToPy').toHaveType("number or null or undefined").toString()
+        expect(e.toString()).toBe Sk.ffi.err.argument('valueJs').inFunction('Sk.ffi.numberToPy').mustHaveType("number or null or undefined").toString()
 
   describe "numberToIntPy", ->
     it "getType numberToIntPy number => PyType.INT", -> expect(Sk.ffi.getType Sk.ffi.numberToIntPy 6) .toBe Sk.ffi.PyType.INT
@@ -93,7 +93,7 @@ describe "Sk.ffi", ->
       try
         foo()
       catch e
-        expect(e.toString()).toBe Sk.ffi.err.expectArg('valueJs').inFunction('Sk.ffi.numberToPy').toHaveType("number or null or undefined").toString()
+        expect(e.toString()).toBe Sk.ffi.err.argument('valueJs').inFunction('Sk.ffi.numberToPy').mustHaveType("number or null or undefined").toString()
 
   describe "stringToPy", ->
     it "getType stringToPy 'Hello' => Sk.ffi.PyType.STRING", -> expect(Sk.ffi.getType Sk.ffi.stringToPy 'Hello').toBe Sk.ffi.PyType.STRING
@@ -109,7 +109,7 @@ describe "Sk.ffi", ->
       try
         foo()
       catch e
-        expect(e.toString()).toBe Sk.ffi.err.expectArg('valueJs').inFunction('Sk.ffi.stringToPy').toHaveType("string or null or undefined").toString()
+        expect(e.toString()).toBe Sk.ffi.err.argument('valueJs').inFunction('Sk.ffi.stringToPy').mustHaveType("string or null or undefined").toString()
 
   describe "referenceToPy", ->
     obj = name:"xyz"
