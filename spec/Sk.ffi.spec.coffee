@@ -5,26 +5,43 @@ describe "Sk.ffi", ->
 
   describe "err", ->
 
+    withLineNo = (message) -> "#{message} on line #{if Sk.currLineNo > 0 then "#{Sk.currLineNo}" else "<unknown>"}"
+
     it "argument.mustHaveType when Sk.currLineNo is defined.", ->
-      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line #{Sk.currLineNo}"
+      expect(Sk.ffi.err.argument("x").mustHaveType(Sk.ffi.PyType.STR).toString()).toBe withLineNo "TypeError: x must be a <type 'str'>"
 
     it "argument.mustHaveType when Sk.currLineNo is zero.", ->
       Sk.currLineNo = 0
-      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line <unknown>"
+      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe withLineNo "TypeError: x must be a <class 'T'>"
 
     it "argument.inFunction.mustHaveType when Sk.currLineNo is defined.", ->
-      expect(Sk.ffi.err.argument("x").inFunction('foo').mustHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' in function 'foo' to have type 'T'. on line #{Sk.currLineNo}"
+      expect(Sk.ffi.err.argument("x").inFunction('foo').mustHaveType(Sk.ffi.PyType.STR).toString()).toBe withLineNo "TypeError: Expecting argument 'x' in function 'foo' to have type <type 'str'>."
 
     it "argument.inFunction.mustHaveType when Sk.currLineNo is zero.", ->
       Sk.currLineNo = 0
-      expect(Sk.ffi.err.argument("x").inFunction('foo').mustHaveType("T").toString()).toBe "TypeError: Expecting argument 'x' in function 'foo' to have type 'T'. on line <unknown>"
+      expect(Sk.ffi.err.argument("x").inFunction('foo').mustHaveType("T").toString()).toBe withLineNo "TypeError: Expecting argument 'x' in function 'foo' to have type <class 'T'>."
 
     it "argument.mustHaveType when Sk.currLineNo is defined.", ->
-      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line #{Sk.currLineNo}"
+      expect(Sk.ffi.err.argument("x").mustHaveType(Sk.ffi.PyType.STR).toString()).toBe withLineNo "TypeError: x must be a <type 'str'>"
 
     it "argument.mustHaveType when Sk.currLineNo is zero.", ->
       Sk.currLineNo = 0
-      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe "TypeError: x must be a T on line <unknown>"
+      expect(Sk.ffi.err.argument("x").mustHaveType("T").toString()).toBe withLineNo "TypeError: x must be a <class 'T'>"
+
+  describe "typeString", ->
+    it "typeString PyType.DICT     => <type 'dict'>",     -> expect(Sk.ffi.typeString Sk.ffi.PyType.DICT).toBe          "<type 'dict'>"
+    it "typeString PyType.LIST     => <type 'list'>",     -> expect(Sk.ffi.typeString Sk.ffi.PyType.LIST).toBe          "<type 'list'>"
+    it "typeString PyType.TUPLE    => <type 'tuple'>",    -> expect(Sk.ffi.typeString Sk.ffi.PyType.TUPLE).toBe         "<type 'tuple'>"
+    it "typeString PyType.FLOAT    => <type 'float'>",    -> expect(Sk.ffi.typeString(Sk.ffi.PyType.FLOAT)).toBe        "<type 'float'>"
+    it "typeString PyType.INT      => <type 'int'>",      -> expect(Sk.ffi.typeString(Sk.ffi.PyType.INT)).toBe          "<type 'int'>"
+    it "typeString PyType.LONG     => <type 'long'>",     -> expect(Sk.ffi.typeString(Sk.ffi.PyType.LONG)).toBe         "<type 'long'>"
+    it "typeString PyType.STR      => <type 'str'>",      -> expect(Sk.ffi.typeString(Sk.ffi.PyType.STR)).toBe          "<type 'str'>"
+    it "typeString PyType.NONE     => <type 'NoneType'>", -> expect(Sk.ffi.typeString(Sk.ffi.PyType.NONE)).toBe         "<type 'NoneType'>"
+    it "typeString PyType.FUNCTION => <type 'function'>", -> expect(Sk.ffi.typeString Sk.ffi.PyType.FUNCTION).toBe      "<type 'function'>"
+    it "typeString PyType.CLASS    => <class 'Foo'>",     -> expect(Sk.ffi.typeString Sk.ffi.PyType.CLASS, 'Foo').toBe  "<class 'Foo'>"
+    it "typeString 'Foo'           => <class 'Foo'>",     -> expect(Sk.ffi.typeString 'Foo').toBe  "<class 'Foo'>"
+    it "typeString [PyType.FLOAT, PyType.INT] => <type 'float'> or <type 'int'>",
+      -> expect(Sk.ffi.typeString([Sk.ffi.PyType.FLOAT, Sk.ffi.PyType.INT])).toBe "<type 'float'> or <type 'int'>"
 
   describe "bool", ->
     it "getType True => PyType.BOOL", -> expect(Sk.ffi.getType Sk.ffi.bool.True).toBe Sk.ffi.PyType.BOOL
@@ -96,7 +113,7 @@ describe "Sk.ffi", ->
         expect(e.toString()).toBe Sk.ffi.err.argument('valueJs').inFunction('Sk.ffi.numberToPy').mustHaveType("number or null or undefined").toString()
 
   describe "stringToPy", ->
-    it "getType stringToPy 'Hello' => Sk.ffi.PyType.STRING", -> expect(Sk.ffi.getType Sk.ffi.stringToPy 'Hello').toBe Sk.ffi.PyType.STRING
+    it "getType stringToPy 'Hello' => Sk.ffi.PyType.STRING", -> expect(Sk.ffi.getType Sk.ffi.stringToPy 'Hello').toBe Sk.ffi.PyType.STR
     it "remapToJs stringToPy 'Hello' => 'Hello'", -> expect(Sk.ffi.remapToJs Sk.ffi.stringToPy 'Hello').toBe 'Hello'
     it "typeName stringToPy 'Hello' => 'str'", -> expect(Sk.ffi.typeName Sk.ffi.stringToPy 'Hello').toBe 'str'
     it "null => None", -> expect(Sk.ffi.stringToPy null).toBe Sk.ffi.none.None
@@ -114,12 +131,12 @@ describe "Sk.ffi", ->
   describe "referenceToPy", ->
     obj = name:"xyz"
     targetPy = {}
-    it "getType referenceToPy obj, 'Foo' => PyType.OBJREF", -> expect(Sk.ffi.getType Sk.ffi.referenceToPy obj, 'Foo').toBe Sk.ffi.PyType.OBJREF
+    it "getType referenceToPy obj, 'Foo' => PyType.CLASS", -> expect(Sk.ffi.getType Sk.ffi.referenceToPy obj, 'Foo').toBe Sk.ffi.PyType.CLASS
     it "remapToJs referenceToPy obj, 'Foo' => obj", -> expect(Sk.ffi.remapToJs Sk.ffi.referenceToPy obj, 'Foo').toBe obj
     it "typeName referenceToPy obj, 'Foo' => 'Foo'", -> expect(Sk.ffi.typeName Sk.ffi.referenceToPy obj, 'Foo').toBe 'Foo'
     xit "getType targetJs", ->
       Sk.ffi.referenceToPy obj, 'Foo', undefined, targetPy
-      expect(Sk.ffi.getType targetPy).toBe Sk.ffi.PyType.OBJREF
+      expect(Sk.ffi.getType targetPy).toBe Sk.ffi.PyType.CLASS
     it "remapToJs targetJs", ->
       Sk.ffi.referenceToPy obj, 'Foo', undefined, targetPy
       expect(Sk.ffi.remapToJs targetPy).toBe obj

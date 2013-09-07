@@ -1,3 +1,15 @@
+/**
+ * Sk.ffi is the Foreign Function Interface.
+ *
+ * Extension builders should use this interface to protect their code from changes.
+ *
+ * @type
+ * {
+ *   {
+ *     remapToJs: function(Object, Object=)
+ *   }
+ * }
+ */
 Sk.ffi = Sk.ffi || {};
 
 /**
@@ -429,11 +441,11 @@ goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
  * @param {Object} valuePy
  * @return {boolean}
  */
-Sk.ffi.isBoolean = function(valuePy) {return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.BOOL;};
-goog.exportSymbol("Sk.ffi.isBoolean", Sk.ffi.isBoolean);
+Sk.ffi.isBool = function(valuePy) {return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.BOOL;};
+goog.exportSymbol("Sk.ffi.isBool", Sk.ffi.isBool);
 
-Sk.ffi.isDictionary = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.DICTIONARY; };
-goog.exportSymbol("Sk.ffi.isDictionary", Sk.ffi.isDictionary);
+Sk.ffi.isDict = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.DICT; };
+goog.exportSymbol("Sk.ffi.isDict", Sk.ffi.isDict);
 
 Sk.ffi.isFunction = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.FUNCTION; };
 goog.exportSymbol("Sk.ffi.isFunction", Sk.ffi.isFunction);
@@ -447,13 +459,13 @@ goog.exportSymbol("Sk.ffi.isNone", Sk.ffi.isNone);
 Sk.ffi.isNumber = function(valuePy) { return Sk.builtin.checkNumber(valuePy); };
 goog.exportSymbol("Sk.ffi.isNumber", Sk.ffi.isNumber);
 
-Sk.ffi.isObjectRef = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.OBJREF; };
-goog.exportSymbol("Sk.ffi.isObjectRef", Sk.ffi.isObjectRef);
+Sk.ffi.isClass = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.CLASS; };
+goog.exportSymbol("Sk.ffi.isClass", Sk.ffi.isClass);
 
 Sk.ffi.isFunctionRef = function(valuePy) { return Sk.ffi.getType(valuePy) === Sk.ffi.PyType.FUNREF; };
 goog.exportSymbol("Sk.ffi.isFunctionRef", Sk.ffi.isFunctionRef);
 
-Sk.ffi.isReference = function(valuePy) { return Sk.ffi.isObjectRef(valuePy) || Sk.ffi.isFunctionRef(valuePy); };
+Sk.ffi.isReference = function(valuePy) { return Sk.ffi.isClass(valuePy) || Sk.ffi.isFunctionRef(valuePy); };
 goog.exportSymbol("Sk.ffi.isReference", Sk.ffi.isReference);
 
 Sk.ffi.isString = function(valuePy) { return Sk.builtin.checkString(valuePy); };
@@ -537,12 +549,19 @@ Sk.ffi.checkMethodArgs = function(name, args, minargs, maxargs, kwargs, free)
 goog.exportSymbol("Sk.ffi.checkMethodArgs", Sk.ffi.checkMethodArgs);
 
 /**
- * @typedef {(string|!Array.<string>|Sk.ffi.PyType)}
+ * @typedef {(string|Sk.ffi.PyType)}
  */
-Sk.ffi.ExpectedType
+Sk.ffi.SimpleType
+goog.exportSymbol("Sk.ffi.SimpleType", Sk.ffi.SimpleType);
 
 /**
- * @typedef {function(Sk.ffi.ExpectedType): Sk.ffi.TypeError}
+ * @typedef {(Sk.ffi.SimpleType|!Array.<Sk.ffi.SimpleType>)}
+ */
+Sk.ffi.UnionType
+goog.exportSymbol("Sk.ffi.UnionType", Sk.ffi.UnionType);
+
+/**
+ * @typedef {function(Sk.ffi.UnionType): Sk.ffi.TypeError}
  */
 Sk.ffi.FunctionReturningTypeError
 
@@ -550,7 +569,7 @@ Sk.ffi.FunctionReturningTypeError
  * Convenience function for asserting the type of an argument.
  *
  * @param {string} name The argument name.
- * @param {Sk.ffi.ExpectedType} expectedType A string representation of the expected type or types.
+ * @param {Sk.ffi.UnionType} expectedType A string representation of the expected type or types.
  * @param {boolean} condition The condition that must be true for the check to pass.
  */
 Sk.ffi.checkArgType = function(name, expectedType, condition)
@@ -568,22 +587,103 @@ goog.exportSymbol("Sk.ffi.checkArgType", Sk.ffi.checkArgType);
  * @enum {number}
  */
 Sk.ffi.PyType = {
-    'UNDEFINED':  0,
-    'DICTIONARY': 1,
+    'DICT':       1,
     'LIST':       2,
     'TUPLE':      3,
     'BOOL':       4,
     'FLOAT':      5,
     'INT':        6,
     'LONG':       7,
-    'STRING':     8,
-    'OBJREF':     9,
-    'FUNREF':    10,
-    'NONE':      11,
-    'FUNCTION':  12
+    'STR':        8,
+    'NONE':       9,
+    'FUNCTION':  10,
+    'CLASS':     11,
+    'UNDEFINED': -1,
+    'FUNREF':    -2
 };
 
+/**
+ * @param {Sk.ffi.UnionType} kind
+ * @param {string=} name
+ * @return {string}
+ */
+Sk.ffi.typeString = function(kind, name)
+{
+    /**
+     * @param {string} s
+     * @return {string}
+     */
+    function typeBrackets(s) {
+        return "<type '" + s + "'>"
+    }
+    /**
+     * @param {Sk.ffi.PyType} kind
+     * @return {string}
+     */
+    function typePy(kind) {
+        switch(kind)
+        {
+            case Sk.ffi.PyType.DICT:        {return typeBrackets('dict');}
+            case Sk.ffi.PyType.LIST:        {return typeBrackets('list');}
+            case Sk.ffi.PyType.TUPLE:       {return typeBrackets('tuple');}
+            case Sk.ffi.PyType.BOOL:        {return typeBrackets('bool');}
+            case Sk.ffi.PyType.FLOAT:       {return typeBrackets('float');}
+            case Sk.ffi.PyType.LONG:        {return typeBrackets('long');}
+            case Sk.ffi.PyType.INT:         {return typeBrackets('int');}
+            case Sk.ffi.PyType.STR:         {return typeBrackets('str');}
+            case Sk.ffi.PyType.NONE:        {return typeBrackets('NoneType');}
+            case Sk.ffi.PyType.FUNCTION:    {return typeBrackets('function');}
+            default:
+            {
+                throw Sk.ffi.assertionError("fe2aed99-3b81-4a55-b3e8-61da7e734ac1, kind => " + kind);
+            }
+        }
+    }
+    /**
+     * @param {string} name
+     * @return {string}
+     */
+    function classBrackets(name) {
+        return "<class '" + name + "'>"
+    }
 
+    if (typeof kind === Sk.ffi.JsType.STRING) {
+        return classBrackets(String(kind));
+    }
+    else if (typeof kind === Sk.ffi.JsType.NUMBER) {
+        switch(kind)
+        {
+            case Sk.ffi.PyType.DICT:
+            case Sk.ffi.PyType.LIST:
+            case Sk.ffi.PyType.TUPLE:
+            case Sk.ffi.PyType.BOOL:
+            case Sk.ffi.PyType.FLOAT:
+            case Sk.ffi.PyType.LONG:
+            case Sk.ffi.PyType.INT:
+            case Sk.ffi.PyType.STR:
+            case Sk.ffi.PyType.NONE:
+            case Sk.ffi.PyType.FUNCTION:
+            {
+                return typePy(kind)
+            }
+            case Sk.ffi.PyType.CLASS:
+            {
+                return classBrackets(String(name));
+            }
+            default:
+            {
+                throw Sk.ffi.assertionError("b15da19c-b080-4695-a157-cfcb740b265b, kind => " + kind);
+            }
+        }
+    }
+    else if (Object.prototype.toString.call(kind) === '[object Array]') {
+        return kind.map(function(x) {return Sk.ffi.typeString(x);}).join(" or ");
+    }
+    else {
+        throw Sk.ffi.assertionError("c32e2f75-a391-49aa-b567-b376955b4b4c, typeof kind => " + typeof kind);
+    }
+}
+goog.exportSymbol("Sk.ffi.typeString", Sk.ffi.typeString);
 
 /**
  * Computes the internal Python representation type for the provided value.
@@ -598,7 +698,7 @@ Sk.ffi.getType = function(valuePy)
     }
     else if (valuePy instanceof Sk.builtin.dict)
     {
-        return Sk.ffi.PyType.DICTIONARY;
+        return Sk.ffi.PyType.DICT;
     }
     else if (valuePy instanceof Sk.builtin.list)
     {
@@ -646,13 +746,13 @@ Sk.ffi.getType = function(valuePy)
         {
             if (x === Sk.ffi.JsType.STRING)
             {
-                return Sk.ffi.PyType.STRING;
+                return Sk.ffi.PyType.STR;
             }
             else if (x === Sk.ffi.JsType.OBJECT)
             {
                 if (valuePy.tp$name)
                 {
-                    return Sk.ffi.PyType.OBJREF;
+                    return Sk.ffi.PyType.CLASS;
                 }
                 else
                 {
@@ -681,11 +781,11 @@ Sk.ffi.typeName = function(valuePy)
 {
     switch(Sk.ffi.getType(valuePy))
     {
-        case Sk.ffi.PyType.OBJREF:
+        case Sk.ffi.PyType.CLASS:
         case Sk.ffi.PyType.BOOL:
         case Sk.ffi.PyType.FLOAT:
         case Sk.ffi.PyType.INT:
-        case Sk.ffi.PyType.STRING:
+        case Sk.ffi.PyType.STR:
         {
             return Sk.abstr.typeName(valuePy);
         }
@@ -769,11 +869,11 @@ Sk.ffi.remapToJs = function(valuePy, defaultJs)
     Sk.ffi.checkFunctionArgs("Sk.ffi.remapToJs", arguments, 1, 2);
     switch(Sk.ffi.getType(valuePy))
     {
-        case Sk.ffi.PyType.STRING:
+        case Sk.ffi.PyType.STR:
         {
             return valuePy.v;
         }
-        case Sk.ffi.PyType.DICTIONARY:
+        case Sk.ffi.PyType.DICT:
         {
             var ret = {};
             for (var iter = valuePy.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext())
@@ -826,7 +926,7 @@ Sk.ffi.remapToJs = function(valuePy, defaultJs)
         {
             return Sk.builtin.asnum$(valuePy);
         }
-        case Sk.ffi.PyType.OBJREF:
+        case Sk.ffi.PyType.CLASS:
         {
             // TODO: This is being exercised, but we should assert the tp$name.
             // I think the pattern here suggests that we have a Sk.builtin.something
@@ -864,6 +964,13 @@ Sk.ffi.buildClass = function(globals, func, name, bases)
 };
 goog.exportSymbol("Sk.ffi.buildClass", Sk.ffi.buildClass);
 
+// TODO: This requires exposing in compile.js
+//Sk.ffi.mangleName = function(name)
+//{
+//    return Sk.mangleName(name);
+//}
+//goog.exportSymbol("Sk.ffi.mangleName", Sk.ffi.mangleName);
+
 /**
  * 
  * @param {Object} func the thing to call
@@ -878,31 +985,19 @@ goog.exportSymbol("Sk.ffi.callsim", Sk.ffi.callsim);
 
 /**
  * Convenience function for implementing callable attributes.
+ *
+ * @param {Object} mod The module object.
+ * @param {string} nameJs The name of the attribute.
+ * @param {function()} functionJs A JavaScript function in which the arguments and return type are in the Python value space.
  */
-Sk.ffi.callableToPy = function(mod, targetJs, nameJs, functionJs)
+Sk.ffi.callableToPy = function(mod, nameJs, functionJs)
 {
     return Sk.ffi.callsim(Sk.ffi.buildClass(mod, function($gbl, $loc)
     {
-      $loc.__init__ = Sk.ffi.functionPy(function(selfPy)
-      {
-        // Tucking away the reference is not critical. Other approaches are possible.
-        // Would be nice to have a default implementation that maps the arguments.
-        if (targetJs[nameJs]) {
-            Sk.ffi.referenceToPy(targetJs[nameJs], nameJs, undefined, selfPy);
-        }
-        else {
-            throw Sk.ffi.assertionError("c308ee41-f856-41a4-9aef-abd302b6a5aa nameJs => " + nameJs);
-        }
-      });
-      $loc.__call__ = Sk.ffi.functionPy(functionJs);
-      $loc.__str__ = Sk.ffi.functionPy(function(self)
-      {
-        return Sk.ffi.stringToPy(nameJs);
-      });
-      $loc.__repr__ = Sk.ffi.functionPy(function(self)
-      {
-        return Sk.ffi.stringToPy(nameJs);
-      });
+        $loc.__init__ = Sk.ffi.functionPy(function(selfPy) {});
+        $loc.__call__ = Sk.ffi.functionPy(functionJs);
+        $loc.__str__ = Sk.ffi.functionPy(function(selfPy) {return Sk.ffi.stringToPy(nameJs);});
+        $loc.__repr__ = Sk.ffi.functionPy(function(selfPy) {return Sk.ffi.stringToPy(nameJs);});
     }, nameJs, []));
 };
 goog.exportSymbol("Sk.ffi.callableToPy", Sk.ffi.callableToPy);
@@ -970,18 +1065,18 @@ Sk.ffi.err =
     attribute: function(name) {
         return {
             /**
-             * @param {string} targetType The name of the type.
+             * @param {Sk.ffi.UnionType} targetType The name of the type.
              * @return {Sk.ffi.AttributeError}
              */
             isNotGetableOnType: function(targetType) {
-                return Sk.ffi.attributeError(name + " is not an attribute of " + targetType);
+                return Sk.ffi.attributeError(name + " is not an attribute of " + Sk.ffi.typeString(targetType));
             },
             /**
              * @param {string} targetType The name of the type.
              * @return {Sk.ffi.AttributeError}
              */
             isNotSetableOnType: function(targetType) {
-                return Sk.ffi.attributeError(name + " is not an attribute of " + targetType);
+                return Sk.ffi.attributeError(name + " is not an attribute of " + Sk.ffi.typeString(targetType));
             }
         };
     },
@@ -991,9 +1086,9 @@ Sk.ffi.err =
      * {
      *   {
      *     inFunction: function(string):{
-     *       mustHaveType: function(Sk.ffi.ExpectedType): Sk.ffi.TypeError
+     *       mustHaveType: function(Sk.ffi.UnionType): Sk.ffi.TypeError
      *     },
-     *     mustHaveType: function(Sk.ffi.ExpectedType): Sk.ffi.TypeError
+     *     mustHaveType: function(Sk.ffi.UnionType): Sk.ffi.TypeError
      *   }
      * }
      */
@@ -1006,25 +1101,25 @@ Sk.ffi.err =
             inFunction: function(functionName) {
                 return {
                     /**
-                     * @param {Sk.ffi.ExpectedType} expectedType The name of the type.
+                     * @param {Sk.ffi.UnionType} expectedType The name of the type.
                      * @return {Sk.ffi.TypeError}
                      */
                     mustHaveType: function(expectedType) {
-                        return Sk.ffi.typeError("Expecting argument '" + name + "' in function '" + functionName + "' to have type '" + expectedType + "'.");
+                        return Sk.ffi.typeError("Expecting argument '" + name + "' in function '" + functionName + "' to have type " + Sk.ffi.typeString(expectedType) + ".");
                     }
                 };
             },
             /**
-             * @param {Sk.ffi.ExpectedType} expectedType The name of the type.
+             * @param {Sk.ffi.UnionType} expectedType The name of the type.
              * @return {Sk.ffi.TypeError}
              */
             mustHaveType: function(expectedType) {
-                return Sk.ffi.typeError(name + " must be a " + expectedType);
+                return Sk.ffi.typeError(name + " must be a " + Sk.ffi.typeString(expectedType));
             }
         };
     }
 }
-goog.exportSymbol("Sk.ffi.message", Sk.ffi.message);
+goog.exportSymbol("Sk.ffi.err", Sk.ffi.err);
 
 /**
  * @deprecated Use Sk.ffi.remapToJs
