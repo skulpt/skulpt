@@ -5,7 +5,7 @@ describe "Sk.ffi", ->
 
   describe "err", ->
 
-    withLineNo = (message) -> "#{message} on line #{if Sk.currLineNo > 0 then "#{Sk.currLineNo}" else "<unknown>"}"
+    withLineNo = (message) -> message + " on line " + if Sk.currLineNo > 0 then "#{Sk.currLineNo}" else "<unknown>"
 
     it "argument.mustHaveType when Sk.currLineNo is defined.", ->
       expect(Sk.ffi.err.argument("x").mustHaveType(Sk.ffi.PyType.STR).toString()).toBe withLineNo "TypeError: x must be a <type 'str'>"
