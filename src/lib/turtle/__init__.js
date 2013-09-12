@@ -1753,11 +1753,12 @@ var $builtinmodule = function(name) {
         });
 
         $loc.window_width = new Sk.builtin.func(function(self) {
-            return self.theScreen.window_width();
+                
+            return Sk.builtin.assk$(self.theScreen.window_width(), Sk.builtin.nmber.int$);
         });
 
         $loc.window_height = new Sk.builtin.func(function(self) {
-            return self.theScreen.window_height();
+            return Sk.builtin.assk$(self.theScreen.window_height(), Sk.builtin.nmber.int$);
         });
 
         $loc.turtles = new Sk.builtin.func(function(self) {
