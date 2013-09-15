@@ -54,7 +54,7 @@ $(function () {
 
         var linesToCompile = compilableLines.concat(lines);
 
-        if (lines.length == 1) {
+        if (lines.length == 1 && lines[0].length > 0) {
             if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1 && !importre.test(lines[0])) {
                 //Print
                 if (!re.test(lines[0])) {
@@ -64,7 +64,10 @@ $(function () {
                 }
                 lines.pop();
             }
+        } else {
+            return;
         }
+        
 
         try {
             //Evaluate
