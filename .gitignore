@@ -1,6 +1,7 @@
 support/tmp/
-doc/static/builtin.js
-doc/static/skulpt.js
+doc/static/skulpt-stdlib.js
+doc/static/skulpt.min.js
+doc/static/dist/*
 vendor/
 dist/*
 
