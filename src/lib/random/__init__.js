@@ -237,7 +237,8 @@ var $builtinmodule = function(name)
 
         if (stop === undefined) {
             // Random in [0, start)
-            return toInt(myGenerator.genrand_res53() * start);
+            ret = toInt(myGenerator.genrand_res53() * start);
+	    return new Sk.builtin.nmber(ret, Sk.builtin.nmber.int$);
         };
 
         if (!Sk.builtin.checkInt(stop)) {
