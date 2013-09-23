@@ -502,7 +502,7 @@ Sk.builtin.list.prototype['count'] = new Sk.builtin.func(function(self, item)
             count += 1;
         }
     }
-    return count;
+    return new Sk.builtin.nmber(count, Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.list.prototype['reverse'] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);
