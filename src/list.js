@@ -373,6 +373,8 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
     if (mucked) {
         throw new Sk.builtin.OperationError("list modified during sort");
     }
+
+    return Sk.builtin.none.none$;
 }
 
 /**
@@ -390,7 +392,7 @@ Sk.builtin.list.prototype.list_reverse_ = function(self)
         newarr.push(old[i]);
     }
     self.v = newarr;
-    return null;
+    return Sk.builtin.none.none$;
 }
 
 //Sk.builtin.list.prototype.__reversed__ = todo;
@@ -406,7 +408,7 @@ Sk.builtin.list.prototype['append'] = new Sk.builtin.func(function(self, item)
     Sk.builtin.pyCheckArgs("append", arguments, 2, 2);
 
     self.v.push(item);
-    return null;
+    return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
@@ -416,10 +418,11 @@ Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
         throw new Sk.builtin.TypeError("an integer is required");
     };
 
-	i = Sk.builtin.asnum$(i);
+    i = Sk.builtin.asnum$(i);
     if (i < 0) i = 0;
     else if (i > self.v.length) i = self.v.length;
     self.v.splice(i, 0, x);
+    return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
@@ -438,11 +441,11 @@ Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
         // Concatenate
         self.v.push.apply(self.v, newb);
 
-        return null;
+        return Sk.builtin.none.none$;
     };
     for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
         self.v.push(i);
-    return null;
+    return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
@@ -470,8 +473,8 @@ Sk.builtin.list.prototype['remove'] = new Sk.builtin.func(function(self, item)
     Sk.builtin.pyCheckArgs("remove", arguments, 2, 2);
 
     var idx = Sk.builtin.list.prototype['index'].func_code(self, item);
-    self.v.splice(idx, 1);
-    return null;
+    self.v.splice(Sk.builtin.asnum$(idx), 1);
+    return Sk.builtin.none.none$;
 });
 
 Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
@@ -483,7 +486,7 @@ Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
     for (var i = 0; i < len; ++i)
     {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
-            return i;
+            return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);
     }
     throw new Sk.builtin.ValueError("list.index(x): x not in list");
 });
