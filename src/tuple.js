@@ -224,7 +224,7 @@ Sk.builtin.tuple.prototype['count'] = new Sk.builtin.func(function(self, item)
             count += 1;
         }
     }
-    return Sk.builtin.assk$(count, Sk.builtin.nmber.int$);
+    return  new Sk.builtin.nmber(count, Sk.builtin.nmber.int$);
 });
 
 goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);

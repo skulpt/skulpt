@@ -466,9 +466,9 @@ Sk.builtin.str.prototype['count'] = new Sk.builtin.func(function(self, pat, star
     var slice = self.v.slice(start,end);
     var ctl = slice.match(m)
     if (! ctl) {
-        return Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
+        return  new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     } else {
-        return Sk.builtin.assk$(ctl.length, Sk.builtin.nmber.int$);
+        return new Sk.builtin.nmber(ctl.length, Sk.builtin.nmber.int$);
     }
     
 });
