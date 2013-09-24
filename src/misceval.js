@@ -384,7 +384,7 @@ Sk.misceval.objectRepr = function(v)
         else if (v.v === -Infinity)
             return new Sk.builtin.str('-inf');
         else
-            return new Sk.builtin.str("" + v.v);
+            return v['$r']();
     }
     else
         return v['$r']();
