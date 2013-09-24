@@ -207,7 +207,7 @@ Sk.builtin.tuple.prototype['index'] = new Sk.builtin.func(function(self, item)
     for (var i = 0; i < len; ++i)
     {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
-            return i;
+            return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);
     }
     throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
 });

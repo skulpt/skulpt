@@ -1,0 +1,36 @@
+<type 'bool'>
+<type 'bool'>
+<type 'bool'>
+<type 'NoneType'>
+<type 'NoneType'>
+<type 'NoneType'>
+<type 'NoneType'>
+<type 'NoneType'>
+<type 'int'>
+<type 'int'>
+<type 'NoneType'>
+<type 'bool'>
+set([1, 2, 3])
+<type 'bool'>
+set([1, 2, 3])
+<type 'NoneType'>
+set([1, 2, 3])
+<type 'NoneType'>
+set([2, 3])
+<type 'NoneType'>
+set([])
+<type 'NoneType'>
+set([2, 3])
+<type 'NoneType'>
+set([2, 3, 4])
+<type 'NoneType'>
+set([2, 3])
+<type 'NoneType'>
+set([2])
+<type 'int'>
+<type 'int'>
+<type 'int'>
+<type 'int'>
+<type 'int'>
+<type 'int'>
+<type 'int'>
