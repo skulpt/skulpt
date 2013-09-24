@@ -207,7 +207,7 @@ Sk.builtin.tuple.prototype['index'] = new Sk.builtin.func(function(self, item)
     for (var i = 0; i < len; ++i)
     {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
-            return i;
+            return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);
     }
     throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
 });
@@ -224,7 +224,7 @@ Sk.builtin.tuple.prototype['count'] = new Sk.builtin.func(function(self, item)
             count += 1;
         }
     }
-    return count;
+    return Sk.builtin.assk$(count, Sk.builtin.nmber.int$);
 });
 
 goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
