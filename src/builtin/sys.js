@@ -15,12 +15,12 @@ var $builtinmodule = function(name)
     sys.path = Sk.realsyspath;
 
     sys.getExecutionLimit = new Sk.builtin.func(function() {
-        return Sk.execLimit
+        return Sk.builtin.assk$(Sk.execLimit, Sk.builtin.nmber.int$);
     });
 
     sys.setExecutionLimit = new Sk.builtin.func(function(t) {
         if (t !==  undefined) {
-            Sk.execLimit = t
+            Sk.execLimit = Sk.builtin.asnum$(t);
         }
     });
 
