@@ -384,6 +384,16 @@ Compiler.prototype.cslice = function(s)
     return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
 
+Compiler.prototype.eslice = function(dims)
+{
+    goog.asserts.assert(dims instanceof Array);
+    var dimSubs = [], subs;
+    for(var i = 0; i < dims.length; i++) {
+        dimSubs.push(this.vslicesub(dims[i]));
+    }
+    return this._gr('extslice', "new Sk.builtins['tuple']([", dimSubs, "])");
+};
+
 Compiler.prototype.vslicesub = function(s)
 {
     var subs;
@@ -401,8 +411,10 @@ Compiler.prototype.vslicesub = function(s)
             subs = this.cslice(s);
             break;
         case Ellipsis:
+            goog.asserts.fail("todo compile.js Ellipsis;");
+            break;
         case ExtSlice:
-            goog.asserts.fail("todo;");
+            subs = this.eslice(s.dims);
             break;
         default:
             goog.asserts.fail("invalid subscript kind");
@@ -537,7 +549,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
                     out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     break;
                 case Del:
-                    goog.asserts.fail("todo;");
+                    goog.asserts.fail("todo Del;");
                     break;
                 case Param:
                 default:

@@ -1,0 +1,4 @@
+1
+slice(0, 2, None)
+(0, slice(1, 2, None))
+(slice(0, 2, None), slice(2, 30, 1))

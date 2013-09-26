@@ -20,7 +20,7 @@ Sk.misceval.asIndex = function(o)
     if (typeof o === "number") return o;
 	if (o.constructor === Sk.builtin.nmber) return o.v;
 	if (o.constructor === Sk.builtin.lng) return o.tp$index();
-    goog.asserts.fail("todo;");
+    goog.asserts.fail("todo asIndex;");
 };
 
 /**
@@ -130,8 +130,16 @@ Sk.misceval.richCompareBool = function(v, w, op)
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
 
-    goog.asserts.assert((v !== null) && (v !== undefined), "passed undefined or null parameter to Sk.misceval.richCompareBool");
-    goog.asserts.assert((w !== null) && (w !== undefined), "passed undefined or null parameter to Sk.misceval.richCompareBool");
+    goog.asserts.assert(v !== undefined, "passed undefined parameter to Sk.misceval.richCompareBool");
+    goog.asserts.assert(w !== undefined, "passed undefined parameter to Sk.misceval.richCompareBool");
+    
+    // Compare null as if it was None.
+    if (v === null) v = new Sk.builtin.none();
+    if (w === null) w = new Sk.builtin.none();
+    
+    // Compare numbers as nmbers.
+    if (typeof v === "number") v = new Sk.builtin.nmber(v, undefined);
+    if (typeof w === "number") w = new Sk.builtin.nmber(w, undefined);
 
     var v_type = new Sk.builtin.type(v);
     var w_type = new Sk.builtin.type(w);
@@ -352,7 +360,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             return v.v !== w.v;
         return v !== w;
     }
-
+    
     var vname = Sk.abstr.typeName(v);
     var wname = Sk.abstr.typeName(w);
     throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
