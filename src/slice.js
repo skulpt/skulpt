@@ -16,7 +16,7 @@ Sk.builtin.slice = function slice(start, stop, step)
         stop = start;
         start = null;
     }
-    if (!start) start = null;
+    if (start === undefined) start = null;
     if (stop === undefined) stop = null;
     if (step === undefined) step = null;
     this.start = start;
@@ -34,7 +34,7 @@ Sk.builtin.slice = function slice(start, stop, step)
     return this;
 };
 
-Sk.builtin.slice.prototype.tp$str = function()
+Sk.builtin.slice.prototype['$r'] = function()
 {
     var a = Sk.builtin.repr(this.start).v;
     var b = Sk.builtin.repr(this.stop).v;

@@ -378,8 +378,8 @@ Compiler.prototype.ccall = function(e)
 Compiler.prototype.cslice = function(s)
 {
     goog.asserts.assert(s instanceof Slice);
-    var low = s.lower ? this.vexpr(s.lower) : 'null';
-    var high = s.upper ? this.vexpr(s.upper) : 'null';
+    var low = s.lower ? this.vexpr(s.lower) : s.step ? 'null' : '0';
+    var high = s.upper ? this.vexpr(s.upper) : s.step ? 'null' : '2147483647';
     var step = s.step ? this.vexpr(s.step) : 'null';
     return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
