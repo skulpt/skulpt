@@ -378,9 +378,9 @@ Compiler.prototype.ccall = function(e)
 Compiler.prototype.cslice = function(s)
 {
     goog.asserts.assert(s instanceof Slice);
-    var low = s.lower ? this.vexpr(s.lower) : s.step ? 'null' : '0';
-    var high = s.upper ? this.vexpr(s.upper) : s.step ? 'null' : '2147483647';
-    var step = s.step ? this.vexpr(s.step) : 'null';
+    var low = s.lower ? this.vexpr(s.lower) : s.step ? 'Sk.builtin.none.none$' : 'new Sk.builtin.nmber(0)'; // todo;ideally, these numbers would be constants
+    var high = s.upper ? this.vexpr(s.upper) : s.step ? 'Sk.builtin.none.none$' : 'new Sk.builtin.nmber(2147483647)';
+    var step = s.step ? this.vexpr(s.step) : 'Sk.builtin.none.none$';
     return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
 };
 

@@ -247,9 +247,17 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
     }
     else if (index instanceof Sk.builtin.slice)
     {
-        var step = index.step !== null ? index.step : 1;
+	    var start = Sk.builtin.asnum$(index.start), 
+	        stop  = Sk.builtin.asnum$(index.stop),
+	        step  = Sk.builtin.asnum$(index.step);
+        step = step === null ? 1 : step;
+        if (((start !== null) && !Sk.builtin.checkInt(start))
+            || ((stop !== null) && !Sk.builtin.checkInt(stop))
+            || ((step !== null) && !Sk.builtin.checkInt(step))) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        }
         if (step === 1)
-            this.list_ass_slice_(index.start, index.stop, value);
+            this.list_ass_slice_(start, stop, value);
         else
         {
             var tosub = [];
@@ -282,13 +290,21 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
     }
     else if (index instanceof Sk.builtin.slice)
     {
-        if (index.step === 1)
-            this.list_del_slice_(index.start, index.stop);
+	    var start = Sk.builtin.asnum$(index.start), 
+	        stop  = Sk.builtin.asnum$(index.stop),
+	        step  = Sk.builtin.asnum$(index.step);
+        step = step === null ? 1 : step;
+        if (((start !== null) && !Sk.builtin.checkInt(start))
+            || ((stop !== null) && !Sk.builtin.checkInt(stop))
+            || ((step !== null) && !Sk.builtin.checkInt(step))) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        }
+        if (step === 1)
+            this.list_del_slice_(start, stop);
         else
         {
             var self = this;
             var dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
-            var step = index.step === null ? 1 : index.step;
             var offdir = step > 0 ? 1 : 0;
             index.sssiter$(this, function(i, wrt)
                            {

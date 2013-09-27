@@ -29,3 +29,7 @@ assert(slice(1,2,3) < slice(1,2,4))
 assert(slice(1,-1) < slice(1,1))
 assert(slice(0,1) < slice(1,-1))
 
+assert(a["foo"] == "foo")
+assert(a["foo":(1,2):True].start == "foo")
+assert(a["foo":(1,2):True].stop == (1,2))
+assert(a["foo":(1,2):True].step == True)

@@ -130,16 +130,8 @@ Sk.misceval.richCompareBool = function(v, w, op)
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
 
-    goog.asserts.assert(v !== undefined, "passed undefined parameter to Sk.misceval.richCompareBool");
-    goog.asserts.assert(w !== undefined, "passed undefined parameter to Sk.misceval.richCompareBool");
-    
-    // Compare null as if it was None.
-    if (v === null) v = new Sk.builtin.none();
-    if (w === null) w = new Sk.builtin.none();
-    
-    // Compare numbers as nmbers.
-    if (typeof v === "number") v = new Sk.builtin.nmber(v, undefined);
-    if (typeof w === "number") w = new Sk.builtin.nmber(w, undefined);
+    goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
+    goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
     var v_type = new Sk.builtin.type(v);
     var w_type = new Sk.builtin.type(w);

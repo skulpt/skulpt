@@ -7,32 +7,26 @@
 Sk.builtin.slice = function slice(start, stop, step)
 {
     if (!(this instanceof Sk.builtin.slice)) return new Sk.builtin.slice(start, stop, step);
-	start = Sk.builtin.asnum$(start);
-	stop  = Sk.builtin.asnum$(stop);
-	step  = Sk.builtin.asnum$(step);
 
     if (stop === undefined && step === undefined)
     {
         stop = start;
-        start = null;
+        start = undefined;
     }
-    if (start === undefined) start = null;
-    if (stop === undefined) stop = null;
-    if (step === undefined) step = null;
+    if (start === undefined) start = Sk.builtin.none.none$;
+    if (stop === undefined) stop = Sk.builtin.none.none$;
+    if (step === undefined) step = Sk.builtin.none.none$;
     this.start = start;
     this.stop = stop;
     this.step = step;
-    
-    if (((this.start !== null) && !Sk.builtin.checkInt(this.start))
-        || ((this.stop !== null) && !Sk.builtin.checkInt(this.stop))
-        || ((this.step !== null) && !Sk.builtin.checkInt(this.step))) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
-    }
 
     this.__class__ = Sk.builtin.slice;
 
     return this;
 };
+
+Sk.builtin.slice.prototype.tp$name = 'slice';
+Sk.builtin.slice.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('slice', Sk.builtin.slice);
 
 Sk.builtin.slice.prototype['$r'] = function()
 {
@@ -40,6 +34,12 @@ Sk.builtin.slice.prototype['$r'] = function()
     var b = Sk.builtin.repr(this.stop).v;
     var c = Sk.builtin.repr(this.step).v;
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
+};
+
+// todo;this is currently the only way I can find to make the start, step and stop attributes accessible, but I'm not sure it's the best.
+Sk.builtin.slice.prototype.tp$getattr = function(name)
+{
+    return this[name] || Sk.builtin.object.prototype.GenericGetAttr.call(this, name); // Maybe not very pretty, but very direct, and I don't think there is much you would be able to access in this way that you shouldn't.
 };
 
 Sk.builtin.slice.prototype.tp$richcompare = function(w, op)
@@ -65,9 +65,19 @@ Sk.builtin.slice.prototype.tp$richcompare = function(w, op)
 
 Sk.builtin.slice.prototype.indices = function(length)
 {
+	var start = Sk.builtin.asnum$(this.start), 
+	    stop  = Sk.builtin.asnum$(this.stop),
+	    step  = Sk.builtin.asnum$(this.step);
+
+    if (((start !== null) && !Sk.builtin.checkInt(start))
+        || ((stop !== null) && !Sk.builtin.checkInt(stop))
+        || ((step !== null) && !Sk.builtin.checkInt(step))) {
+        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+    }
+
 	length = Sk.builtin.asnum$(length);
     // this seems ugly, better way?
-    var start = this.start, stop = this.stop, step = this.step, i;
+    var i;
     if (step === null) step = 1;
     if (step > 0)
     {
@@ -104,7 +114,7 @@ Sk.builtin.slice.prototype.indices = function(length)
 };
 
 Sk.builtin.slice.prototype.sssiter$ = function(wrt, f)
-{
+{   
 	var wrtv = Sk.builtin.asnum$(wrt);
     var sss = this.indices(typeof wrtv === "number" ? wrtv : wrt.v.length);
     if (sss[2] > 0)
