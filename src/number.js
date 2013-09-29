@@ -288,7 +288,7 @@ Sk.builtin.nmber.prototype.nb$divide = function(other)
 			else
 				return new Sk.builtin.nmber(-Infinity, Sk.builtin.nmber.float$);
 
-		if (this.skType === Sk.builtin.nmber.float$) {  // float / long --> float
+		if (this.skType === Sk.builtin.nmber.float$ || Sk.python3) {  // float / long --> float
 			result = new Sk.builtin.nmber(this.v / parseFloat(other.str$(10, true)), Sk.builtin.nmber.float$);
 		} else {	//	int - long --> long
 			var thisAsLong = new Sk.builtin.lng(this.v);
