@@ -212,3 +212,7 @@ sup {
     overflow: auto;
     height: 300px;
 }
+
+.CodeMirror{
+    height: 300px;    
+}
