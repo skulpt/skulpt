@@ -245,7 +245,7 @@ function testRun(name, nocatch)
                 got = "EXCEPTION: " + Sk.builtins['str'](e).v + "\n";
             }
         }
-        if (expect !== got && (expectalt !== undefined || expectalt !== got))
+        if (expect !== got && (expectalt === undefined || expectalt !== got))
         {
             print("FAILED: (" + name + ".py)\n-----");
             print(input);

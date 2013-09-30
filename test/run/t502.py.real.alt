@@ -1,0 +1,10 @@
+1
+slice(0, 2, None)
+slice(0, 2, None)
+slice(None, 2, None)
+slice(1, 2147483647, None)
+slice(0, 2147483647, None)
+slice(None, None, None)
+slice(None, None, -1)
+(0, slice(1, 2, None))
+(slice(0, 2, None), slice(2, 30, 1))
