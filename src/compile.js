@@ -378,10 +378,20 @@ Compiler.prototype.ccall = function(e)
 Compiler.prototype.cslice = function(s)
 {
     goog.asserts.assert(s instanceof Slice);
-    var low = s.lower ? this.vexpr(s.lower) : 'null';
-    var high = s.upper ? this.vexpr(s.upper) : 'null';
-    var step = s.step ? this.vexpr(s.step) : 'null';
+    var low = s.lower ? this.vexpr(s.lower) : s.step ? 'Sk.builtin.none.none$' : 'new Sk.builtin.nmber(0)'; // todo;ideally, these numbers would be constants
+    var high = s.upper ? this.vexpr(s.upper) : s.step ? 'Sk.builtin.none.none$' : 'new Sk.builtin.nmber(2147483647)';
+    var step = s.step ? this.vexpr(s.step) : 'Sk.builtin.none.none$';
     return this._gr('slice', "new Sk.builtins['slice'](", low, ",", high, ",", step, ")");
+};
+
+Compiler.prototype.eslice = function(dims)
+{
+    goog.asserts.assert(dims instanceof Array);
+    var dimSubs = [], subs;
+    for(var i = 0; i < dims.length; i++) {
+        dimSubs.push(this.vslicesub(dims[i]));
+    }
+    return this._gr('extslice', "new Sk.builtins['tuple']([", dimSubs, "])");
 };
 
 Compiler.prototype.vslicesub = function(s)
@@ -401,8 +411,10 @@ Compiler.prototype.vslicesub = function(s)
             subs = this.cslice(s);
             break;
         case Ellipsis:
+            goog.asserts.fail("todo compile.js Ellipsis;");
+            break;
         case ExtSlice:
-            goog.asserts.fail("todo;");
+            subs = this.eslice(s.dims);
             break;
         default:
             goog.asserts.fail("invalid subscript kind");
@@ -537,7 +549,7 @@ Compiler.prototype.vexpr = function(e, data, augstoreval)
                     out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
                     break;
                 case Del:
-                    goog.asserts.fail("todo;");
+                    goog.asserts.fail("todo Del;");
                     break;
                 case Param:
                 default:
