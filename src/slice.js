@@ -1,8 +1,8 @@
 /**
  * @constructor
- * @param {null|number} start
- * @param {null|number=} stop
- * @param {null|number=} step
+ * @param {Object} start
+ * @param {Object=} stop
+ * @param {Object=} step
  */
 Sk.builtin.slice = function slice(start, stop, step)
 {
@@ -11,9 +11,8 @@ Sk.builtin.slice = function slice(start, stop, step)
     if (stop === undefined && step === undefined)
     {
         stop = start;
-        start = undefined;
+        start = Sk.builtin.none.none$;
     }
-    if (start === undefined) start = Sk.builtin.none.none$;
     if (stop === undefined) stop = Sk.builtin.none.none$;
     if (step === undefined) step = Sk.builtin.none.none$;
     this.start = start;
@@ -39,7 +38,9 @@ Sk.builtin.slice.prototype['$r'] = function()
 // todo;this is currently the only way I can find to make the start, step and stop attributes accessible, but I'm not sure it's the best.
 Sk.builtin.slice.prototype.tp$getattr = function(name)
 {
-    return this[name] || Sk.builtin.object.prototype.GenericGetAttr.call(this, name); // Maybe not very pretty, but very direct, and I don't think there is much you would be able to access in this way that you shouldn't.
+    // Maybe not very pretty, but very direct, and I don't think there is much you would be able to access in this way that you shouldn't.
+    // todo;Should we call the generic get attribute function? (If so, Closure needs to be told it's okay.)
+    return this[name];// || Sk.builtin.object.prototype.GenericGetAttr.call(this, name);
 };
 
 Sk.builtin.slice.prototype.tp$richcompare = function(w, op)
