@@ -51,6 +51,7 @@ $(function () {
                 return Sk.builtinFiles["files"][x];
             }
         });
+            
         //split lines on linefeed
         var lines = code.split('\n'),
             //concatenate them to the lines collected up till now

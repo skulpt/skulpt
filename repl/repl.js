@@ -1,59 +1,98 @@
 Sk.configure({ output: write, read: read, systemexit: true });
 
-var compilableLines = [];
-//finds lines starting with "print"
-var re = new RegExp("\s*print");
+var compilableLines = [],
+    //finds lines starting with "print"
+    re = new RegExp("\s*print"),
+    //finds import statements
+    importre = new RegExp("\\s*import"),
+    //finds multuline string constants
+    mls = new RegExp("'''"),
+    //finds defining statements
+    defre = new RegExp("def.*|class.*"),
+    lines = [];
 
 print ("Python 2.6(ish) (skulpt, " + new Date() + ")");
 print ("[v8: " + version() + "] on a system");
 print ('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
 
+function isBalanced(lines){
+    var lines = code.split('\n'),
+        depth = 0,
+        mlsopened = false;
+    
+    for (var l in lines){
+        if (lines[l].match(/'''/) !== null && lines[l].match(/'''/).length == 1) {
+            mlsopened = !mlsopened;
+        }
+        if (!mlsopened && lines[l].substr(lines[l].length -1) == ":") {
+            depth++;
+        }
+        if (!mlsopened && lines[l] == "" && depth > 0){
+            depth--;
+        }
+    }
+    return depth == 0 && !mlsopened;
+}
+
 //Loop
 while (true){
-    var lines = [];
-    write('>>> ');
-
     var removePrints = false;
+   
+    write(isBalanced(lines) ? '>>> ' : '... ');
 
     //Read
     lines.push(readline());
-
-    if (lines[0] == "") { continue; }
-    //if line ends with a colon it's a block
-    if (lines[0][lines[0].length - 1] === ':') {
-        var additionallines = [];
-        var curline = "";
-        do{
-            if (curline == "" && lines[0].indexOf("def") == "-1" && lines[0].indexOf("class") == "-1"){
-                //remove print statements in blocks when they don't define something.
-                removePrints = true;
-            }
-            write('... ');
-            curline = readline()
-            lines.push(curline);
-        } while (curline != "");
-    }
-
+    
+    //See if it is ready to be evaluated;
+    if (!isBalanced(lines)) { continue; }
+    
     var linesToCompile = compilableLines.concat(lines);
 
-    if (lines.length == 1){
-        if (lines[0].indexOf('=') == -1 && lines[0].indexOf(':') == -1) {
-            //Print
-            if (!re.test(lines[0])){
+    //it's a onliner
+    if (lines.length == 1) {
+        //if it's a statement that should be printed (not containing an = or def or class or an empty line)
+        if (lines[0].indexOf('=') == -1 && !defre.test(lines[0]) && !importre.test(lines[0]) && lines[0].length > 0) {
+            //if it doesn't contain print make sure it doesn't print None
+            if (!re.test(lines[0])) {
+                //remove the statement
                 linesToCompile.pop();
-                linesToCompile.push( "evaluationresult = " + lines[0]);
+                //evaluate it if nessecary
+                linesToCompile.push("evaluationresult = " + lines[0]);
+                //print the result if not None
                 linesToCompile.push("if not evaluationresult == None: print evaluationresult");
             }
-            lines.pop();
         }
-    }
-
+    }  
+    
+    //filter out empty lines
+    linesToCompile.filter(function(l){ return (!str || /^\s*$/.test(str)); });
+        
+    //don't compile if there isn't anything to compile.
+    if (linesToCompile.count === 0) { return; }
+    
+    //reset collected lines
+    lines = [];
+    
     try{
         //Evaluate
         Sk.importMainWithBody("repl", false, linesToCompile.join('\n'));
         //remove print statements when a block is created that doesn't define anything
-        compilableLines = compilableLines.concat(lines.map(function(str){
-            if(re.test(str) && removePrints) {
+        var removePrints = false;
+        compilableLines = compilableLines.concat(lines.map(function (str) {
+            //non defining block statement
+            if (str.substr(str.length -1) == ":" && !defre.test(str)) {
+                removePrints = true;
+                return str;
+            }
+        
+            //end of non defining block statement
+            if(str == "" && removePrints){
+                removePrints = false;
+                return str;
+            }
+            
+            if (re.test(str) && removePrints) {
+                //strip prints from non defining block statements.
                 return str.replace(/print.*/g, "pass");
             } else {
                 return str;
@@ -68,13 +107,13 @@ while (true){
 
         var index = -1;
         //find the line number
-        if ((index = err.toString().indexOf("on line")) != -1){
+        if ((index = err.toString().indexOf("on line")) != -1) {
             index = parseInt(err.toString().substr(index + 8), 10);
         }
         var line = 0;
         //print the accumulated code with a ">" before the broken line.
         //Don't add the last statement to the accumulated code
-        print (linesToCompile.map(function(str){
+        repl.print(linesToCompile.map(function (str) {
             return ++line + (index == line ? ">" : " ") + ": " + str;
         }).join('\n'));
     }
