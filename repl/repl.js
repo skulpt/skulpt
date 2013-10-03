@@ -2,13 +2,15 @@ Sk.configure({ output: write, read: read, systemexit: true });
 
 var compilableLines = [],
     //finds lines starting with "print"
-    re = new RegExp("\s*print"),
+    re = new RegExp("\\s*print"),
     //finds import statements
     importre = new RegExp("\\s*import"),
     //finds multuline string constants
     mls = new RegExp("'''"),
     //finds defining statements
     defre = new RegExp("def.*|class.*"),
+    //test for empty line.
+    emptyline = new RegExp("^\\s*$"),
     lines = [];
 
 print ("Python 2.6(ish) (skulpt, " + new Date() + ")");
@@ -16,8 +18,7 @@ print ("[v8: " + version() + "] on a system");
 print ('Don\'t type "help", "copyright", "credits" or "license" unless you\'ve assigned something to them');
 
 function isBalanced(lines){
-    var lines = code.split('\n'),
-        depth = 0,
+    var depth = 0,
         mlsopened = false;
     
     for (var l in lines){
@@ -45,7 +46,11 @@ while (true){
     
     //See if it is ready to be evaluated;
     if (!isBalanced(lines)) { continue; }
+
+    //strip empty lines
+    lines = lines.filter(function(str) { return !emptyline.test(str); });
     
+    //concat that to the lines we allready have.
     var linesToCompile = compilableLines.concat(lines);
 
     //it's a onliner
@@ -61,17 +66,13 @@ while (true){
                 //print the result if not None
                 linesToCompile.push("if not evaluationresult == None: print evaluationresult");
             }
+            //make sure it doesnt' end up in the list with lines to compile the next run
+            lines.pop();
         }
     }  
     
-    //filter out empty lines
-    linesToCompile.filter(function(l){ return (!str || /^\s*$/.test(str)); });
-        
     //don't compile if there isn't anything to compile.
-    if (linesToCompile.count === 0) { return; }
-    
-    //reset collected lines
-    lines = [];
+    if (linesToCompile.length === 0) { continue; }
     
     try{
         //Evaluate
@@ -98,6 +99,8 @@ while (true){
                 return str;
             }
         }));
+        //reset collected lines
+        lines = [];
     } catch (err) {
         if (err instanceof Sk.builtin.SystemExit)
         {
@@ -113,7 +116,7 @@ while (true){
         var line = 0;
         //print the accumulated code with a ">" before the broken line.
         //Don't add the last statement to the accumulated code
-        repl.print(linesToCompile.map(function (str) {
+        print(linesToCompile.map(function (str) {
             return ++line + (index == line ? ">" : " ") + ": " + str;
         }).join('\n'));
     }

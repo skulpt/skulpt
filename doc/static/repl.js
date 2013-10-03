@@ -11,7 +11,9 @@ $(function () {
         //finds multuline string constants
         mls = new RegExp("'''"),
         //finds defining statements
-        defre = new RegExp("def.*|class.*");
+        defre = new RegExp("def.*|class.*"),
+        //test for empty line.
+        emptyline = new RegExp("^\\s*$");
 
     repl.print("Python 2.6(ish) (skulpt, " + new Date() + ")");
     repl.print("[" + navigator.userAgent + "] on " + navigator.platform);
@@ -54,6 +56,7 @@ $(function () {
             
         //split lines on linefeed
         var lines = code.split('\n'),
+            lines = lines.filter(function(str) { return !emptyline.test(str); }),
             //concatenate them to the lines collected up till now
             linesToCompile = compilableLines.concat(lines);
 
@@ -70,14 +73,16 @@ $(function () {
                     //print the result if not None
                     linesToCompile.push("if not evaluationresult == None: print evaluationresult");
                 }
+                //make sure it doesnt' end up in the list with lines to compile the next run
+                lines.pop();
             }
         }        
         
         //filter out empty lines
-        linesToCompile.filter(function(l){ return (!str || /^\s*$/.test(str)); });
+        lines = lines.filter(function(str){ return !emptyline.test(str); });
         
         //don't compile if there isn't anything to compile.
-        if (linesToCompile.count === 0) { return; }
+        if (linesToCompile.length === 0) { return; }
         
         try {
             //Evaluate
