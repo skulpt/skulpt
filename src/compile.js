@@ -1445,7 +1445,7 @@ Compiler.prototype.cgenexpgen = function(generators, genIndex, elt)
     this.setBlock(end);
 
     if (genIndex === 1)
-        out("return null;");
+        out("return Sk.builtin.none.none$;");
 };
 
 Compiler.prototype.cgenexp = function(e)
@@ -1536,7 +1536,7 @@ Compiler.prototype.vstmt = function(s)
             if (s.value)
                 out("return ", this.vexpr(s.value), ";");
             else
-                out("return null;");
+                out("return Sk.builtin.none.none$;");
             break;
         case Delete_:
             this.vseqexpr(s.targets);
