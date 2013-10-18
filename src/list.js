@@ -251,9 +251,11 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
     }
     else if (index instanceof Sk.builtin.slice)
     {
-        var step = index.step !== null ? index.step : 1;
-        if (step === 1)
-            this.list_ass_slice_(index.start, index.stop, value);
+        var indices = index.indices(this.v.length);
+        if (indices[2] === 1) 
+        {
+            this.list_ass_slice_(indices[0], indices[1], value);
+        }
         else
         {
             var tosub = [];
@@ -286,8 +288,11 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
     }
     else if (index instanceof Sk.builtin.slice)
     {
-        if (index.step === 1)
-            this.list_del_slice_(index.start, index.stop);
+        var indices = index.indices(this.v.length);
+        if (indices[2] === 1)
+        {
+            this.list_del_slice_(indices[0], indices[1]);
+        }
         else
         {
             var self = this;
