@@ -428,8 +428,15 @@ Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
     };
 
     i = Sk.builtin.asnum$(i);
-    if (i < 0) i = 0;
-    else if (i > self.v.length) i = self.v.length;
+    if (i < 0) {
+	i = i + self.v.length;
+    }
+    if (i < 0) {
+	i = 0;
+    }
+    else if (i > self.v.length) {
+	i = self.v.length;
+    }
     self.v.splice(i, 0, x);
     return Sk.builtin.none.none$;
 });
