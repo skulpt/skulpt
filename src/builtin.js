@@ -742,7 +742,7 @@ Sk.builtin.map = function map(fun, seq) {
         var iterables = Array.prototype.slice.apply(arguments).slice(1);
         for (var i in iterables)
         {
-            if (iterables[i].tp$iter === undefined)
+            if (!Sk.builtin.checkIterable(iterables[i]))
             {
                 var argnum = parseInt(i,10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
@@ -780,7 +780,8 @@ Sk.builtin.map = function map(fun, seq) {
         seq = new Sk.builtin.list(combined);
     }
 
-    if (seq.tp$iter === undefined){
+    if (!Sk.builtin.checkIterable(seq))
+    {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
@@ -835,46 +836,52 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 }
 
 Sk.builtin.filter = function filter(fun, iterable) { 
-	Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
+    Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
 	
-	//todo: need to find a proper way to tell what type it is.
-	if (iterable.tp$iter === undefined){
-		throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
-	}
+    if (!Sk.builtin.checkIterable(iterable))
+    {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+    }
 	
-	//simulate default identity function
-	if (fun instanceof Sk.builtin.none) {
-		fun = { func_code: function (x) { return Sk.builtin.bool(x); } } 
-	}
-	
-	var ctor = function () { return []; }
-	var add = function (iter, item) { iter.push(item); return iter; } 
-	var ret = function (iter) { return new Sk.builtin.list(iter); }
-	
-	if (iterable.__class__ === Sk.builtin.str){
-		ctor = function () { return new Sk.builtin.str(''); }
-		add = function (iter, item) { return iter.sq$concat(item); }
-		ret = function (iter) { return iter; }
-	} else if (iterable.__class__ === Sk.builtin.tuple) {
-		ret = function (iter) { return new Sk.builtin.tuple(iter); }
-	}
-	
-	var iter = iterable.tp$iter(),
-		next = iter.tp$iternext(),
-		retval = ctor();
-	
-	if (next === undefined){
-		return ret(retval);
-	}
-	
-	while (next !== undefined){
-		if (Sk.misceval.isTrue(fun.func_code(next))){
-			retval = add(retval, next);
-		}
-		next = iter.tp$iternext();
-	}
-	
-	return ret(retval);
+    var ctor = function () { return []; }
+    var add = function (iter, item) { iter.push(item); return iter; } 
+    var ret = function (iter) { return new Sk.builtin.list(iter); }
+    
+    if (iterable.__class__ === Sk.builtin.str)
+    {
+	ctor = function () { return new Sk.builtin.str(''); }
+	add = function (iter, item) { return iter.sq$concat(item); }
+	ret = function (iter) { return iter; }
+    } 
+    else if (iterable.__class__ === Sk.builtin.tuple) 
+    {
+	ret = function (iter) { return new Sk.builtin.tuple(iter); }
+    }
+    
+    var retval = ctor();
+    var iter, item;
+    var result;
+
+    for (iter = iterable.tp$iter(), item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext())
+    {
+        if (fun === Sk.builtin.none.none$)
+        {
+            result = Sk.builtin.bool(item);
+        }
+        else
+        {
+            result = Sk.misceval.callsim(fun, item);
+        }
+
+        if (Sk.misceval.isTrue(result))
+        {
+            retval = add(retval, item);
+        }
+    }
+
+    return ret(retval);
 }
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {

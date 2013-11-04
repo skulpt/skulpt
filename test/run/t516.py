@@ -11,3 +11,7 @@ def outer():
 outer()
 
 print map(None, lst, lst2)
+
+#filter with builtin functions
+print filter(bool, [0,1,"",False,42,[1]])
+
