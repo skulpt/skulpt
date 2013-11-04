@@ -734,38 +734,46 @@ Sk.builtin.eval_ =  function eval_()
 Sk.builtin.map = function map(fun, seq) {
     Sk.builtin.pyCheckArgs("map", arguments, 2);
 
-    if (fun instanceof Sk.builtin.none){
-        fun = { func_code: function (x) { return x; } }
-    }
+    if (arguments.length > 2)
+    {
+        // Pack sequences into one list of Javascript Arrays
 
-    if (arguments.length > 2){
         var combined = [];
         var iterables = Array.prototype.slice.apply(arguments).slice(1);
-        for (var i in iterables){
-            if (iterables[i].tp$iter === undefined){
+        for (var i in iterables)
+        {
+            if (iterables[i].tp$iter === undefined)
+            {
                 var argnum = parseInt(i,10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
             }
             iterables[i] = iterables[i].tp$iter()
         }
 
-        while(true) {
+        while(true) 
+        {
             var args = [];
             var nones = 0;
-            for (var i in iterables){
+            for (var i in iterables)
+            {
                 var next = iterables[i].tp$iternext()
-                if (next === undefined) {
+                if (next === undefined) 
+                {
                     args.push(Sk.builtin.none.none$);
                     nones++;
                 }
-                else{
+                else
+                {
                     args.push(next);
                 }
             }
-            if (nones !== iterables.length) {
+            if (nones !== iterables.length) 
+            {
                 combined.push(args);
             }
-            else {
+            else 
+            {
+                // All iterables are done
                 break;
             }
         }
@@ -776,17 +784,36 @@ Sk.builtin.map = function map(fun, seq) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    var retval = [],
-        iter = seq.tp$iter(),
-        next = iter.tp$iternext();
+    var retval = [];
+    var iter, item;
 
-    while (next !== undefined){
-        if (!(next instanceof Array)){ next = [next]; }
-        retval.push(fun.func_code.apply(this, next));
-        next = iter.tp$iternext();
+    for (iter = seq.tp$iter(), item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext())
+    {
+        if (fun === Sk.builtin.none.none$)
+        {
+            if (item instanceof Array)
+            {
+                // With None function and multiple sequences, 
+                // map should return a list of tuples
+                item = new Sk.builtin.tuple(item);
+            }
+            retval.push(item);
+        }
+        else
+        {
+            if (!(item instanceof Array))
+            {
+                // If there was only one iterable, convert to Javascript
+                // Array for call to apply.
+                item = [item];
+            }
+            retval.push(Sk.misceval.apply(fun, undefined, undefined, undefined, item));
+        }
     }
-
-	return new Sk.builtin.list(retval);
+    
+    return new Sk.builtin.list(retval);
 }
 
 Sk.builtin.reduce = function reduce(fun, seq, initializer) {
