@@ -834,7 +834,7 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 	}
     }
     var accum_value = initializer;
-
+    var item;
     for (item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext())
