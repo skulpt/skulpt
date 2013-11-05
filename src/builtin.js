@@ -818,21 +818,31 @@ Sk.builtin.map = function map(fun, seq) {
 }
 
 Sk.builtin.reduce = function reduce(fun, seq, initializer) {
-	Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
-	var iter = seq.tp$iter();
-	if (initializer === undefined){
-		initializer = iter.tp$iternext();
-		if (initializer === undefined){
-			throw new Sk.builtin.TypeError('reduce() of empty sequence with no initial value');
-		}
+    Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
+    if (!Sk.builtin.checkIterable(seq))
+    {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+    }
+
+    var iter = seq.tp$iter();
+    if (initializer === undefined)
+    {
+	initializer = iter.tp$iternext();
+	if (initializer === undefined)
+        {
+	    throw new Sk.builtin.TypeError('reduce() of empty sequence with no initial value');
 	}
-	var accum_value = initializer;
-	var next = iter.tp$iternext();
-	while (next !== undefined){
-		accum_value = fun.func_code(accum_value, next)
-		next = iter.tp$iternext();
-	}
-	return accum_value;
+    }
+    var accum_value = initializer;
+
+    for (item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext())
+    {
+        accum_value = Sk.misceval.callsim(fun, accum_value, item);
+    }
+
+    return accum_value;
 }
 
 Sk.builtin.filter = function filter(fun, iterable) { 
