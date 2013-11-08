@@ -311,9 +311,9 @@ Sk.abstr.numberUnaryOp = function(v, op)
     if (op === "Not") return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
     else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
     var value = Sk.builtin.asnum$(v);
-    if (op === "USub") return new Sk.builtin.nmber(-value, value.skType);
-        if (op === "UAdd") return new Sk.builtin.nmber(value, value.skType);
-        if (op === "Invert") return new Sk.builtin.nmber(~value, value.skType);
+    if (op === "USub") return new Sk.builtin.nmber(-value, v.skType);
+        if (op === "UAdd") return new Sk.builtin.nmber(value, v.skType);
+        if (op === "Invert") return new Sk.builtin.nmber(~value, v.skType);
     }
     else
     {
