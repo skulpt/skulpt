@@ -9,6 +9,11 @@ Sk.builtin.slice = function slice(start, stop, step)
 	start = Sk.builtin.asnum$(start);
 	stop  = Sk.builtin.asnum$(stop);
 	step  = Sk.builtin.asnum$(step);
+
+    if (step === 0) {
+	throw new Sk.builtin.ValueError("slice step cannot be zero");
+    }
+
     if (!(this instanceof Sk.builtin.slice)) return new Sk.builtin.slice(start, stop, step);
 
     if (stop === undefined && step === undefined)
