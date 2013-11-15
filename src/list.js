@@ -493,13 +493,30 @@ Sk.builtin.list.prototype['remove'] = new Sk.builtin.func(function(self, item)
     return Sk.builtin.none.none$;
 });
 
-Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item)
+Sk.builtin.list.prototype['index'] = new Sk.builtin.func(function(self, item, start, stop)
 {
-    Sk.builtin.pyCheckArgs("index", arguments, 2, 2);
+    Sk.builtin.pyCheckArgs("index", arguments, 2, 4);
+    if (start !== undefined && !Sk.builtin.checkInt(start)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers");
+    }
+    if (stop !== undefined && !Sk.builtin.checkInt(stop)) {
+        throw new Sk.builtin.TypeError("slice indices must be integers");
+    }
 
     var len = self.v.length;
     var obj = self.v;
-    for (var i = 0; i < len; ++i)
+
+    start = (start === undefined) ? 0 : start.v;
+    if (start < 0) {
+        start = ((start + len) >= 0) ? start + len : 0;
+    }
+
+    stop = (stop === undefined) ? len : stop.v;
+    if (stop < 0) {
+        stop = ((stop + len) >= 0) ? stop + len : 0;
+    }
+
+    for (var i = start; i < stop; ++i)
     {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq"))
             return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);

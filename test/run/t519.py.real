@@ -1,0 +1,16 @@
+2
+2
+3
+2
+3
+2
+2
+3
+ValueError: list.index(x): x not in list on line 13
+ValueError: list.index(x): x not in list on line 18
+ValueError: list.index(x): x not in list on line 23
+ValueError: list.index(x): x not in list on line 28
+ValueError: list.index(x): x not in list on line 33
+ValueError: list.index(x): x not in list on line 38
+TypeError: slice indices must be integers on line 43
+TypeError: slice indices must be integers on line 48
