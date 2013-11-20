@@ -256,11 +256,11 @@ Sk.builtin.any = function any(iter)
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.isTrue(i)) {
-            return true;
+            return Sk.builtin.bool.true$;
         }
     }
 
-    return false;
+    return Sk.builtin.bool.false$;
 }
 
 Sk.builtin.all = function all(iter)
@@ -276,11 +276,11 @@ Sk.builtin.all = function all(iter)
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (!Sk.misceval.isTrue(i)) {
-            return false;
+            return Sk.builtin.bool.false$;
         }
     }
 
-    return true;
+    return Sk.builtin.bool.true$;
 }
 
 Sk.builtin.sum = function sum(iter,start)
@@ -582,42 +582,57 @@ Sk.builtin.isinstance = function isinstance(obj, type)
     }
 
     if (type === Sk.builtin.int_.prototype.ob$type) {
-	return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.int$);
+	if ((obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.int$)) {
+            return Sk.builtin.bool.true$;
+        }
+        else {
+            return Sk.builtin.bool.false$;
+        }
     }
 
     if (type === Sk.builtin.float_.prototype.ob$type) {
-        return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.float$); 
+        if ((obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.float$)) {
+            return Sk.builtin.bool.true$;
+        }
+        else {
+            return Sk.builtin.bool.false$;
+        }
     }
 
     if (type === Sk.builtin.none.prototype.ob$type) {
-        return (obj instanceof Sk.builtin.none);
+        if (obj instanceof Sk.builtin.none) {
+            return Sk.builtin.bool.true$;
+        }
+        else {
+            return Sk.builtin.bool.false$;
+        }
     }
 
     // Normal case
-    if (obj.ob$type === type) return true;
+    if (obj.ob$type === type) return Sk.builtin.bool.true$;
 
     // Handle tuple type argument
     if (type instanceof Sk.builtin.tuple)
     {
         for (var i = 0; i < type.v.length; ++i)
         {
-            if (Sk.builtin.isinstance(obj, type.v[i]))
-                return true;
+            if (Sk.misceval.isTrue(Sk.builtin.isinstance(obj, type.v[i])))
+                return Sk.builtin.bool.true$;
         }
-        return false;
+        return Sk.builtin.bool.false$;
     }
 
     var issubclass = function(klass, base)
     {
-        if (klass === base) return true;
-        if (klass['$d'] === undefined) return false;
+        if (klass === base) return Sk.builtin.bool.true$;
+        if (klass['$d'] === undefined) return Sk.builtin.bool.false$;
         var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
         for (var i = 0; i < bases.v.length; ++i)
         {
-            if (issubclass(bases.v[i], base))
-                return true;
+            if (Sk.misceval.isTrue(issubclass(bases.v[i], base)))
+                return Sk.builtin.bool.true$;
         }
-        return false;
+        return Sk.builtin.bool.false$;
     };
 
     return issubclass(obj.ob$type, type);
@@ -643,12 +658,12 @@ Sk.builtin.hash = function hash(value)
     else if (value instanceof Sk.builtin.bool)
     {
 	if (value.v)
-	    return 1;
-	return 0;
+	    return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Sk.builtin.none)
     {
-	return 0;
+	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Object)
     {
@@ -657,26 +672,15 @@ Sk.builtin.hash = function hash(value)
             Sk.builtin.hashCount += 1;
             value.__id = Sk.builtin.hashCount;
         }
-        return value.__id;
+        return new Sk.builtin.nmber(value.__id, Sk.builtin.nmber.int$);
     }
-    else if (typeof value === "number")
+    else if (typeof value === "number" || value === null
+             || value === true || value === false)
     {
-        return value;
-    }
-    else if (value === null)
-    {
-	return 0;  // what should this be?
-    }
-    else if (value === true)
-    {
-	return 1;
-    }
-    else if (value === false)
-    {
-	return 0;
+	throw new Sk.builtin.TypeError("unsupported Javascript type");
     }
 
-    return (typeof value) + ' ' + String(value);
+    return new Sk.builtin.str((typeof value) + ' ' + String(value));
     // todo; throw properly for unhashable types
 };
 
@@ -902,9 +906,9 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
 
     if (obj.tp$getattr) {
         if (obj.tp$getattr(attr.v)) {
-            return true;
+            return Sk.builtin.bool.true$;
         } else
-            return false;
+            return Sk.builtin.bool.false$;
     } else
         throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
 }
