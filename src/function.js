@@ -70,7 +70,8 @@ Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg|0))
 			      || (arg instanceof Sk.builtin.nmber
 				  && arg.skType === Sk.builtin.nmber.int$)
-			      || arg instanceof Sk.builtin.lng);
+			      || arg instanceof Sk.builtin.lng
+                              || arg instanceof Sk.builtin.bool);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
