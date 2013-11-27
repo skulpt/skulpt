@@ -266,18 +266,8 @@ Sk.builtin.set.prototype['add'] = new Sk.builtin.func(function(self, item)
 
 Sk.builtin.set.prototype['discard'] = new Sk.builtin.func(function(self, item)
 {
-    // This needs to be some function in dict.js,
-    // this is exploiting dictionary internals
-    if (self.v.mp$lookup(item) !== undefined)
-    {
-        var kf = Sk.builtin.hash;
-        var k = kf(item);
-	var bucket = self.v[k];
-
-	if (bucket !== undefined) {
-	    self.v.key$pop(bucket, item);
-	}
-    }
+    Sk.builtin.dict.prototype['pop'].func_code(self.v, item, 
+					       Sk.builtin.none.none$);
     return Sk.builtin.none.none$;
 });
 

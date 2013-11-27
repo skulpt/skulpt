@@ -340,6 +340,30 @@ Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
     return ret;
 });
 
+Sk.builtin.dict.prototype['pop'] = new Sk.builtin.func(function(self, key, d)
+{
+    var bucket = self[kf(key)];
+    var item;
+    var s;
+
+    // todo; does this need to go through mp$ma_lookup
+    if (bucket !== undefined)
+    {
+        item = self.key$pop(bucket, key);
+        if (item !== undefined) {
+            return item;
+        };
+    }
+
+    // Not found in dictionary     
+    if (d !== undefined) {
+	return d;
+    }
+
+    s = new Sk.builtin.str(key);
+    throw new Sk.builtin.KeyError(s.v);    
+});
+
 Sk.builtin.dict.prototype['has_key'] = new Sk.builtin.func(function(self, k)
 {
     return Sk.builtin.bool(self.sq$contains(k));
