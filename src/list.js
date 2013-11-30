@@ -475,6 +475,9 @@ Sk.builtin.list.prototype['pop'] = new Sk.builtin.func(function(self, i)
     };
 
     i = Sk.builtin.asnum$(i);
+    if (i < 0) {
+	i = i + self.v.length;
+    }
     if ((i < 0) || (i >= self.v.length)) {
         throw new Sk.builtin.IndexError("pop index out of range");
     };
