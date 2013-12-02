@@ -284,11 +284,11 @@ Sk.misceval.richCompareBool = function(v, w, op)
 
     if (v[method])
     {
-        return Sk.misceval.callsim(v[method], v, w);
+        return Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
     }
     else if (w[swapped_method])
     {
-        return Sk.misceval.callsim(w[swapped_method], w, v);
+        return Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
     }
 
     if (v['__cmp__'])
