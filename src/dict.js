@@ -351,7 +351,7 @@ Sk.builtin.dict.prototype['pop'] = new Sk.builtin.func(function(self, key, d)
     {
         item = self.key$pop(bucket, key);
         if (item !== undefined) {
-            return item;
+            return item.rhs;
         };
     }
 
