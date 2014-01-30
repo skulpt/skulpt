@@ -106,7 +106,8 @@ Sk.builtin.dict.prototype.key$pop = function(bucket, key)
 // Perform dictionary lookup, either return value or undefined if key not in dictionary
 Sk.builtin.dict.prototype.mp$lookup = function(key)
 {
-    var bucket = this[kf(key)];
+    var k = kf(key);
+    var bucket = this[k.v];
     var item;
 
     // todo; does this need to go through mp$ma_lookup
@@ -150,14 +151,14 @@ Sk.builtin.dict.prototype.sq$contains = function(ob)
 Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 {
     var k = kf(key);
-    var bucket = this[k];
+    var bucket = this[k.v];
     var item;
 
     if (bucket === undefined)
     {
         // New bucket
         bucket = {$hash: k, items: [{lhs: key, rhs: w}]};
-        this[k] = bucket;
+        this[k.v] = bucket;
         this.size += 1;
         return;
     }
@@ -175,7 +176,8 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
 
 Sk.builtin.dict.prototype.mp$del_subscript = function(key)
 {
-    var bucket = this[kf(key)];
+    var k = kf(key);
+    var bucket = this[k.v];
     var item;
     var s;
 
@@ -342,7 +344,8 @@ Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
 
 Sk.builtin.dict.prototype['pop'] = new Sk.builtin.func(function(self, key, d)
 {
-    var bucket = self[kf(key)];
+    var k = kf(key);
+    var bucket = self[k.v];
     var item;
     var s;
 
