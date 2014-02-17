@@ -101,6 +101,7 @@ Files = [
         'src/import.js',
         'src/timsort.js',
         'src/builtindict.js',
+        'src/requirejs_interop.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
 
