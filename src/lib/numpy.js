@@ -135,6 +135,18 @@ var $builtinmodule = function(name)
       return Sk.misceval.callsim(mod.add, self, other);
     });
     
+    $loc.__sub__ = new Sk.builtin.func(function(self, other) {
+      return Sk.misceval.callsim(mod.sub, self, other);
+    });
+    
+    $loc.__mul__ = new Sk.builtin.func(function(self, other) {
+      return Sk.misceval.callsim(mod.mul, self, other);
+    });
+    
+    $loc.__div__ = new Sk.builtin.func(function(self, other) {
+      return Sk.misceval.callsim(mod.div, self, other);
+    });
+
     $loc.__str__ = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.array_str, self);
     });
@@ -165,6 +177,82 @@ var $builtinmodule = function(name)
     }
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
+  
+  mod.sub = new Sk.builtin.func(function(array1, array2) {
+    Sk.builtin.pyCheckArgs('sub', arguments, 2);
+    
+    var result;
+    try {
+      result = math.subtract(array1.matrix, array2.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+  mod.mul = new Sk.builtin.func(function(array1, array2) {
+    Sk.builtin.pyCheckArgs('mul', arguments, 2);
+    
+    var result;
+    try {
+      result = math.multiply(array1.matrix, array2.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+  mod.div = new Sk.builtin.func(function(array1, array2) {
+    Sk.builtin.pyCheckArgs('div', arguments, 2);
+    
+    var result;
+    try {
+      result = math.divide(array1.matrix, array2.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+/** TODO
+
+  mod.cross = new Sk.builtin.func(function(vector1, vector2) {
+    Sk.builtin.pyCheckArgs('cross', arguments, 2);
+    
+    var result;
+    try {
+	  // TODO: implement cross product 
+      //result = math.cross(array1.matrix, array2.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+  mod.transpose = new Sk.builtin.func(function(array1.matrix) {
+    Sk.builtin.pyCheckArgs('transpose', arguments, 1);
+    
+    var result;
+    try {
+      result = math.transpose(array1.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result); //cannot read property v of undefined
+  });
+  
+  mod.inv = new Sk.builtin.func(function(array1.matrix) {
+    Sk.builtin.pyCheckArgs('inv', arguments, 1);
+    
+    var result;
+    try {
+      result = math.inv(array1.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result); //cannot read property v of undefined
+  });
+*/
   
   /**
    * output functions
