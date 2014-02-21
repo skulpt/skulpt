@@ -78,6 +78,8 @@ var $builtinmodule = function(name)
   
   /**
    * ndarray class
+   TODO:can we make it iterable? Why doesnt transpose and invert work?
+   
    */
   var ndarray = function($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function(self, shape, data) {
@@ -146,6 +148,14 @@ var $builtinmodule = function(name)
     $loc.__div__ = new Sk.builtin.func(function(self, other) {
       return Sk.misceval.callsim(mod.div, self, other);
     });
+    
+    $loc.transpose = new Sk.builtin.func(function(self) { //TODO: No idea why this doesnt work
+      return Sk.misceval.callsim(mod.transpose, self);
+    });
+    
+    $loc.inv = new Sk.builtin.func(function(self) {
+      return Sk.misceval.callsim(mod.inv, self);
+    });
 
     $loc.__str__ = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.array_str, self);
@@ -161,6 +171,12 @@ var $builtinmodule = function(name)
     Sk.builtin.pyCheckArgs('array', arguments, 1);
     
     return Sk.misceval.callsim(mod.ndarray, Sk.builtin.tuple(), data);
+  });
+  
+  mod.zeros = new Sk.builtin.func(function(size) {
+    Sk.builtin.pyCheckArgs('array', arguments, 1);
+    var result=math.zeros(size.v[0].v,size.v[1].v);
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
   
   /**
@@ -214,22 +230,34 @@ var $builtinmodule = function(name)
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
   
-/** TODO
+  mod.dot = new Sk.builtin.func(function(array1, array2) {
+    Sk.builtin.pyCheckArgs('dot', arguments, 2);
+    
+    var result;
+    try {
+      result = math.multiply(array1.matrix, array2.matrix);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
 
-  mod.cross = new Sk.builtin.func(function(vector1, vector2) {
+  mod.cross = new Sk.builtin.func(function(x, y) {
     Sk.builtin.pyCheckArgs('cross', arguments, 2);
     
     var result;
     try {
-	  // TODO: implement cross product 
-      //result = math.cross(array1.matrix, array2.matrix);
+	  result=math.zeros(3,1);
+	  result.subset(math.index(0,0), x.matrix._data[1]*y.matrix._data[2]-x.matrix._data[2]*y.matrix._data[1]);
+	  result.subset(math.index(1,0), x.matrix._data[2]*y.matrix._data[0]-x.matrix._data[0]*y.matrix._data[2]); 
+	  result.subset(math.index(2,0), x.matrix._data[0]*y.matrix._data[1]-x.matrix._data[1]*y.matrix._data[0]); 
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
   
-  mod.transpose = new Sk.builtin.func(function(array1.matrix) {
+  mod.transpose = new Sk.builtin.func(function(array1) {
     Sk.builtin.pyCheckArgs('transpose', arguments, 1);
     
     var result;
@@ -238,10 +266,10 @@ var $builtinmodule = function(name)
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
-    return Sk.misceval.callsim(mod.ndarray, undefined, result); //cannot read property v of undefined
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
   
-  mod.inv = new Sk.builtin.func(function(array1.matrix) {
+  mod.inv = new Sk.builtin.func(function(array1) {
     Sk.builtin.pyCheckArgs('inv', arguments, 1);
     
     var result;
@@ -250,9 +278,35 @@ var $builtinmodule = function(name)
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
-    return Sk.misceval.callsim(mod.ndarray, undefined, result); //cannot read property v of undefined
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
-*/
+  
+    mod.arange = new Sk.builtin.func(function(start,end,step) {
+    Sk.builtin.pyCheckArgs('arange', arguments, 3);
+    
+    var result;
+    try {
+      result = math.range(start.v,end.v,step.v);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+    mod.random = new Sk.builtin.func(function(rows,cols) {
+    Sk.builtin.pyCheckArgs('random', arguments, 2);
+    
+    var result;
+    try {
+         var mat=math.zeros(rows.v, cols.v);
+		 result = mat.map(function (value, index, matrix) {
+         return math.random(0, 1);
+      });
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
   
   /**
    * output functions
