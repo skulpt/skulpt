@@ -78,7 +78,7 @@ var $builtinmodule = function(name)
   
   /**
    * ndarray class
-   TODO:can we make it iterable? Why doesnt transpose and invert work?
+   TODO:can we make it iterable? 
    
    */
   var ndarray = function($gbl, $loc) {
@@ -146,6 +146,10 @@ var $builtinmodule = function(name)
     });
     
     $loc.transpose = new Sk.builtin.func(function(self) {
+      return Sk.misceval.callsim(mod.transpose, self);
+    });
+        
+    $loc.T = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.transpose, self);
     });
     
@@ -245,8 +249,8 @@ var $builtinmodule = function(name)
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
 
-  mod.cross = new Sk.builtin.func(function(x, y) {
-    Sk.builtin.pyCheckArgs('cross', arguments, 2);
+  mod.cross = new Sk.builtin.func(function(x, y, axis) {
+    Sk.builtin.pyCheckArgs('cross', arguments, 3);
     
     var result;
     try {
