@@ -88,7 +88,7 @@ var $builtinmodule = function(name)
       if(shape !== undefined) {
       
         try {
-          self.matrix = math.matrix(toNativeArray(data));
+          self.v = math.matrix(toNativeArray(data));
         } catch(e) {
           throw new Sk.builtin.Exception(e.message);
         }
@@ -96,23 +96,18 @@ var $builtinmodule = function(name)
         // TODO: check shape
       } else {
         // TODO: better implementation of wrapping mathjs object in python ndarray
-        self.matrix = data;
+        self.v = data;
       }
     });
     
-    $loc.__getattr__ = new Sk.builtin.func(function(self, attr) {
-      if(attr == 'ndim') return Sk.builtin.nmber(self.matrix.size().length, Sk.builtin.nmber.int$)
-      if(attr == 'shape') return Sk.builtin.tuple(self.matrix.size())
-    });
-    
     $loc.__getitem__ = new Sk.builtin.func(function(self, key) {
-      var idx = normalizeNativeIndex(self.matrix.size(), toNativeIndex(key));
+      var idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
     
       try {
         if(idx.submatrix) {
-          return Sk.misceval.callsim(mod.ndarray, undefined, self.matrix.subset(math.type.Index.create(idx.indices)));
+          return Sk.misceval.callsim(mod.ndarray, undefined, self.v.subset(math.type.Index.create(idx.indices)));
         } else {
-          return Sk.builtin.nmber(self.matrix.get(idx.indices), Sk.builtin.nmber.float$);
+          return Sk.builtin.nmber(self.v.get(idx.indices), Sk.builtin.nmber.float$);
         }
       } catch(e) {
         throw new Sk.builtin.Exception(e.message);
@@ -120,13 +115,13 @@ var $builtinmodule = function(name)
     });
     
     $loc.__setitem__ = new Sk.builtin.func(function(self, key, value) { 
-      var idx = normalizeNativeIndex(self.matrix.size(), toNativeIndex(key));
+      var idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
     
       if(idx.submatrix) {
         // TODO: implement submatrix assignment      
       } else {
         try {   
-          self.matrix.set(idx.indices, value.v);
+          self.v.set(idx.indices, value.v);
         } catch(e) {
           throw new Sk.builtin.Exception(e.message);
         }
@@ -144,19 +139,27 @@ var $builtinmodule = function(name)
     $loc.__mul__ = new Sk.builtin.func(function(self, other) {
       return Sk.misceval.callsim(mod.mul, self, other);
     });
+    $loc.__rmul__ = $loc.__mul__;
     
     $loc.__div__ = new Sk.builtin.func(function(self, other) {
       return Sk.misceval.callsim(mod.div, self, other);
     });
     
-    $loc.transpose = new Sk.builtin.func(function(self) { //TODO: No idea why this doesnt work
+    $loc.transpose = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.transpose, self);
     });
     
     $loc.inv = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.inv, self);
     });
-
+    
+    $loc.__getattr__ = new Sk.builtin.func(function(self, attr) {
+      if(attr == 'ndim') return Sk.builtin.nmber(self.v.size().length, Sk.builtin.nmber.int$)
+      if(attr == 'shape') return Sk.builtin.tuple(self.v.size())
+      
+      return self.tp$getattr(attr);
+    });
+    
     $loc.__str__ = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.array_str, self);
     });
@@ -187,7 +190,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.add(array1.matrix, array2.matrix);
+      result = math.add(array1.v, array2.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -199,7 +202,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.subtract(array1.matrix, array2.matrix);
+      result = math.subtract(array1.v, array2.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -211,7 +214,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.multiply(array1.matrix, array2.matrix);
+      result = math.multiply(array1.v, array2.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -223,7 +226,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.divide(array1.matrix, array2.matrix);
+      result = math.divide(array1.v, array2.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -235,7 +238,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.multiply(array1.matrix, array2.matrix);
+      result = math.multiply(array1.v, array2.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -248,9 +251,9 @@ var $builtinmodule = function(name)
     var result;
     try {
 	  result=math.zeros(3,1);
-	  result.subset(math.index(0,0), x.matrix._data[1]*y.matrix._data[2]-x.matrix._data[2]*y.matrix._data[1]);
-	  result.subset(math.index(1,0), x.matrix._data[2]*y.matrix._data[0]-x.matrix._data[0]*y.matrix._data[2]); 
-	  result.subset(math.index(2,0), x.matrix._data[0]*y.matrix._data[1]-x.matrix._data[1]*y.matrix._data[0]); 
+	  result.subset(math.index(0,0), x.v._data[1]*y.v._data[2]-x.v._data[2]*y.v._data[1]);
+	  result.subset(math.index(1,0), x.v._data[2]*y.v._data[0]-x.v._data[0]*y.v._data[2]); 
+	  result.subset(math.index(2,0), x.v._data[0]*y.v._data[1]-x.v._data[1]*y.v._data[0]); 
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -262,7 +265,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.transpose(array1.matrix);
+      result = math.transpose(array1.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -274,7 +277,7 @@ var $builtinmodule = function(name)
     
     var result;
     try {
-      result = math.inv(array1.matrix);
+      result = math.inv(array1.v);
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
@@ -299,7 +302,7 @@ var $builtinmodule = function(name)
     var result;
     try {
          var mat=math.zeros(rows.v, cols.v);
-		 result = mat.map(function (value, index, matrix) {
+		 result = mat.map(function (value, index, v) {
          return math.random(0, 1);
       });
     } catch(e) {
@@ -314,7 +317,7 @@ var $builtinmodule = function(name)
   mod.array_str = new Sk.builtin.func(function(array) {
     Sk.builtin.pyCheckArgs('array_str', arguments, 1);
     
-    return Sk.builtin.str(math.format(array.matrix));
+    return Sk.builtin.str(math.format(array.v));
   });
   
   return mod;
