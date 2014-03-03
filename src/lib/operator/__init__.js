@@ -32,5 +32,44 @@ var $builtinmodule = function(name) {
     mod.abs = new Sk.builtin.func(function(obj) { return Sk.misceval.callsim(Sk.builtin.abs, obj); });
     mod.__abs__ = mod.abs;
 
+    mod.add = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$add'].call(a, b); });
+    mod.__add__ = mod.add;
+
+    mod.mod = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$remainder'].call(a, b); });
+    mod.__mod__ = mod.mod;
+
+    mod.mul = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$multiply'].call(a, b); });
+    mod.__mul__ = mod.mul;
+
+    mod.pow = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$power'].call(a, b); });
+    mod.__pow__ = mod.pow;
+
+    mod.sub = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$subtract'].call(a, b); });
+    mod.__sub__ = mod.sub;
+
+    mod.truediv = mod.div;
+    mod.__truediv__ = mod.div;
+
+    mod.concat = new Sk.builtin.func(function(a, b) {
+        var a_type = Sk.abstr.typeName(a);
+
+        var func;
+        switch (a_type) {
+            case "list":
+                func = Sk.builtin.list.prototype['sq$concat'];
+                break;
+            case "str":
+                func = Sk.builtin.str.prototype['sq$concat'];
+                break;
+            case "tuple":
+                func = Sk.builtin.tuple.prototype['sq$concat'];
+                break;
+            default:
+                throw new Sk.builtin.TypeError("concat not defined for type " + a_type);
+                break;
+        }
+        return func.call(a, b);
+    });
+
     return mod;
 };
