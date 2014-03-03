@@ -1,7 +1,7 @@
 /*
-    __author__: Isaac Dontje Lindell (i@isaacdontjelindell.com)
-
-    Implementation of the Python string module.
+ *  __author__: Isaac Dontje Lindell (i@isaacdontjelindell.com)
+ *
+ *  Implementation of the Python string module.
  */
 
 
@@ -59,7 +59,6 @@ var $builtinmodule = function(name) {
         }
 
         var words = Sk.misceval.callsim(mod.split, s);
-
         var capWords = [];
         for (var i=0; i<words.v.length; i++) {
             var word = Sk.builtin.list.prototype['list_subscript_'].call(words, i);
