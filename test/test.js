@@ -342,6 +342,9 @@ var doTestSymtab = false
 var doTestRun = true
 function testsMain()
 {
+    // hack to enable mathjs
+    Sk.interop['mathjs'] = mathjs;
+
     var i;
 
     if (doTestToken) {

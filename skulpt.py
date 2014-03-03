@@ -103,6 +103,7 @@ Files = [
         'src/builtindict.js',
         'src/requirejs_interop.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
+        ("support/mathjs/math.js", FILE_TYPE_TEST),
         ]
 
 TestFiles = [
