@@ -360,18 +360,55 @@ Sk.abstr.sequenceContains = function(seq, ob)
     return false;
 };
 
-Sk.abstr.sequenceGetItem = function(seq, i)
-{
-    goog.asserts.fail();
+Sk.abstr.sequenceGetItem = function(seq, i) {
+    // TODO what is enumerate type?
+
+    var seq_type = Sk.abstr.typeName(seq);
+    var func;
+    switch (seq_type) {
+        case "dict":
+            func = Sk.builtin.dict.prototype['mp$subscript'];
+            break;
+        case "list":
+            func = Sk.builtin.list.prototype['mp$subscript'];
+            break;
+        case "str":
+            func = Sk.builtin.str.prototype['mp$subscript'];
+            break;
+        case "tuple":
+            func = Sk.builtin.tuple.prototype['mp$subscript'];
+            break;
+        default:
+            throw new Sk.builtin.TypeError("'" + seq_type + "' object is unsubscriptable");
+            break;
+    }
+    return func.call(seq, i);
 };
 
-Sk.abstr.sequenceSetItem = function(seq, i, x)
-{
-    goog.asserts.fail();
+Sk.abstr.sequenceSetItem = function(seq, i, x) {
+    // TODO what is enumerate type?
+
+    var seq_type = Sk.abstr.typeName(seq);
+    var func;
+    switch (seq_type) {
+        case "dict":
+            func = Sk.builtin.dict.prototype['mp$ass_subscript'];
+            break;
+        case "list":
+            func = Sk.builtin.list.prototype['mp$ass_subscript'];
+            break;
+        case "tuple":
+            func = Sk.builtin.tuple.prototype['mp$ass_subscript'];
+            break;
+        default:
+            throw new Sk.builtin.TypeError("'" + seq_type + "' object does not support item assignment");
+            break;
+
+        return func.call(seq, i, x);
+    }
 };
 
-Sk.abstr.sequenceDelItem = function(seq, i)
-{
+Sk.abstr.sequenceDelItem = function(seq, i) {
     if (seq.sq$del_item)
     {
         i = Sk.abstr.fixSeqIndex_(seq, i);
