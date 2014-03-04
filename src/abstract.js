@@ -360,6 +360,28 @@ Sk.abstr.sequenceContains = function(seq, ob)
     return false;
 };
 
+Sk.abstr.sequenceGetCountOf = function(seq, ob) {
+    // TODO what is enumerate type?
+
+    var seq_type = Sk.abstr.typeName(seq);
+    var func;
+    switch (seq_type) {
+        case "list":
+            func = Sk.builtin.list.prototype['count'];
+            break;
+        case "str":
+            func = Sk.builtin.str.prototype['count'];
+            break;
+        case "tuple":
+            func = Sk.builtin.tuple.prototype['count'];
+            break;
+        default:
+            throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+            break;
+    }
+    return Sk.misceval.callsim(func, seq, ob);
+};
+
 Sk.abstr.sequenceGetItem = function(seq, i) {
     // TODO what is enumerate type?
 

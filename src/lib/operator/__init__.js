@@ -70,6 +70,23 @@ var $builtinmodule = function(name) {
         }
         return func.call(a, b);
     });
+    mod.__concat__ = mod.concat;
+
+    mod.contains = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.abstr.sequenceContains(a, b)); });
+    mod.__contains__ = mod.contains;
+
+    // indexOf(a, b) - Return the index of the first of occurrence of b in a.
+
+    mod.countOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetCountOf(a, b); });
+
+    mod.getitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetItem(a, b); });
+    mod.__getitem__ = mod.getitem;
+
+    mod.setitem = new Sk.builtin.func(function(a, b, c) { return Sk.abstr.sequenceSetItem(a, b, c); });
+    mod.__setitem__ = mod.setitem;
+
+    mod.delitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceDelItem(a, b); });
+    mod.__delitem__ = mod.delitem;
 
     return mod;
 };
