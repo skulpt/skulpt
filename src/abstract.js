@@ -504,12 +504,26 @@ Sk.abstr.objectNegative = function(obj) {
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
     if (typeof obj_asnum === 'number') {
-        // call the number negative function
         return Sk.builtin.nmber.prototype['nb$negative'].call(obj);
     }
 
     var objtypename = Sk.abstr.typeName(obj);
     throw new Sk.builtin.TypeError("bad operand type for unary -: '" + objtypename + "'");
+};
+
+// in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
+Sk.abstr.objectPositive = function(obj) {
+    var objtypename = Sk.abstr.typeName(obj);
+    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+
+    if (objtypename === 'bool') {
+        return Sk.builtin.nmber(obj_asnum);
+    }
+    if (typeof obj_asnum === 'number') {
+        return Sk.builtin.nmber.prototype['nb$positive'].call(obj);
+    }
+
+    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");
 };
 
 Sk.abstr.objectDelItem = function(o, key) {

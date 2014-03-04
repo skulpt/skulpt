@@ -64,14 +64,17 @@ var $builtinmodule = function(name) {
     mod.neg = new Sk.builtin.func(function(obj) { return Sk.abstr.objectNegative(obj); });
     mod.__neg__ = mod.neg;
 
-    // operator.or_(a,b) - return the bitwise or of a and b
+    mod.or_ = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$or'].call(a, b); });
+    mod.__or__ = mod.or_;
 
-    // operator.pos(obj) - return obj positive (+obj)
+    mod.pos = new Sk.builtin.func(function(obj) { return Sk.abstr.objectPositive(obj); });
+    mod.__pos__ = mod.pos;
 
     mod.pow = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$power'].call(a, b); });
     mod.__pow__ = mod.pow;
 
-    // operator.rshift(a,b) - return a shifted right by b
+    mod.rshift = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$rshift'].call(a, b); });
+    mod.__rshift__ = mod.rshift;
 
     mod.sub = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$subtract'].call(a, b); });
     mod.__sub__ = mod.sub;
@@ -79,7 +82,8 @@ var $builtinmodule = function(name) {
     mod.truediv = mod.div;
     mod.__truediv__ = mod.div;
 
-    // operator.xor(a,b) - return the bitwise exclusive or of a and b
+    mod.xor = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$xor'].call(a, b); });
+    mod.__xor__ = mod.xor;
 
     mod.concat = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceConcat(a, b); });
     mod.__concat__ = mod.concat;
