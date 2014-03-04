@@ -360,6 +360,22 @@ Sk.abstr.sequenceContains = function(seq, ob)
     return false;
 };
 
+Sk.abstr.sequenceGetIndexOf = function(seq, ob) {
+    // TODO what is enumerate type?
+    if (seq.index) {
+        return Sk.misceval.callsim(seq.index, seq, ob);
+    }
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    if (seqtypename === "dict") {
+        // TODO implement index function for dict
+        throw new Sk.builtin.NotImplementedError("looking up key from value is not yet implemented (supported in Python 2.6)");
+    }
+    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+};
+
+
+
 Sk.abstr.sequenceGetCountOf = function(seq, ob) {
     // TODO what is enumerate type?
 

@@ -75,7 +75,7 @@ var $builtinmodule = function(name) {
     mod.contains = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.abstr.sequenceContains(a, b)); });
     mod.__contains__ = mod.contains;
 
-    // indexOf(a, b) - Return the index of the first of occurrence of b in a.
+    mod.indexOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetIndexOf(a, b); });
 
     mod.countOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetCountOf(a, b); });
 
