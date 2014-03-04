@@ -363,71 +363,34 @@ Sk.abstr.sequenceContains = function(seq, ob)
 Sk.abstr.sequenceGetCountOf = function(seq, ob) {
     // TODO what is enumerate type?
 
-    var seq_type = Sk.abstr.typeName(seq);
-    var func;
-    switch (seq_type) {
-        case "list":
-            func = Sk.builtin.list.prototype['count'];
-            break;
-        case "str":
-            func = Sk.builtin.str.prototype['count'];
-            break;
-        case "tuple":
-            func = Sk.builtin.tuple.prototype['count'];
-            break;
-        default:
-            throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
-            break;
+    if (seq.count) {
+        return Sk.misceval.callsim(seq.count, seq, ob);
     }
-    return Sk.misceval.callsim(func, seq, ob);
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
 Sk.abstr.sequenceGetItem = function(seq, i) {
     // TODO what is enumerate type?
 
-    var seq_type = Sk.abstr.typeName(seq);
-    var func;
-    switch (seq_type) {
-        case "dict":
-            func = Sk.builtin.dict.prototype['mp$subscript'];
-            break;
-        case "list":
-            func = Sk.builtin.list.prototype['mp$subscript'];
-            break;
-        case "str":
-            func = Sk.builtin.str.prototype['mp$subscript'];
-            break;
-        case "tuple":
-            func = Sk.builtin.tuple.prototype['mp$subscript'];
-            break;
-        default:
-            throw new Sk.builtin.TypeError("'" + seq_type + "' object is unsubscriptable");
-            break;
+    if (seq.mp$subscript) {
+        return seq.mp$subscript(i);
     }
-    return func.call(seq, i);
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
 };
 
 Sk.abstr.sequenceSetItem = function(seq, i, x) {
     // TODO what is enumerate type?
 
-    var seq_type = Sk.abstr.typeName(seq);
-    var func;
-    switch (seq_type) {
-        case "dict":
-            func = Sk.builtin.dict.prototype['mp$ass_subscript'];
-            break;
-        case "list":
-            func = Sk.builtin.list.prototype['mp$ass_subscript'];
-            break;
-        case "tuple":
-            func = Sk.builtin.tuple.prototype['mp$ass_subscript'];
-            break;
-        default:
-            throw new Sk.builtin.TypeError("'" + seq_type + "' object does not support item assignment");
-            break;
-
-        return func.call(seq, i, x);
+    if (seq.mp$ass_subscript) {
+        return seq.mp$ass_subscript(i, x);
     }
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item assignment");
 };
 
 Sk.abstr.sequenceDelItem = function(seq, i) {
