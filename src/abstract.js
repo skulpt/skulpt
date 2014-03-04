@@ -360,6 +360,14 @@ Sk.abstr.sequenceContains = function(seq, ob)
     return false;
 };
 
+Sk.abstr.sequenceConcat = function(seq1, seq2) {
+    if (seq1.sq$concat) {
+            return seq1.sq$concat(seq2)
+    }
+    var seq1typename = Sk.abstr.typeName(seq1);
+    throw new Sk.builtin.TypeError("'" + seq1typename + "' object can't be concatenated");
+};
+
 Sk.abstr.sequenceGetIndexOf = function(seq, ob) {
     // TODO what is enumerate type?
     if (seq.index) {

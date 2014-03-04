@@ -13,17 +13,20 @@ var $builtinmodule = function(name) {
     mod.le = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'LtE')); });
     mod.__le__ = mod.le;
 
-    mod.gt = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'Gt')); });
-    mod.__gt__ = mod.gt;
-
-    mod.ge = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'GtE')); });
-    mod.__ge__ = mod.ge;
-
     mod.eq = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'Eq')); });
     mod.__eq__ = mod.eq;
 
     mod.ne = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'NotEq')); });
     mod.__ne__ = mod.ne;
+
+    mod.ge = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'GtE')); });
+    mod.__ge__ = mod.ge;
+
+    mod.gt = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'Gt')); });
+    mod.__gt__ = mod.gt;
+
+    // operator.not_(obj)
+    // operator.truth(obj)
 
     mod.is_ = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'Is')); });
 
@@ -35,14 +38,37 @@ var $builtinmodule = function(name) {
     mod.add = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$add'].call(a, b); });
     mod.__add__ = mod.add;
 
+    // operator.and_(a,b) - return the bitwise and of a and b
+
+    mod.div = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$divide'].call(a, b); });
+    mod.__div__ = mod.div;
+
+    // operator.floordiv(a,b) - return a // b
+    mod.floordiv = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$floor_divide'].call(a, b); });
+    mod.__floordiv__ = mod.floordiv;
+
+    // operator.index(a) - return a converted to an integer. Equivalent to a.__index__()
+
+    // operator.inv/operator.invert(obj) - Return the bitwise inverse of the number obj. This is equivalent to ~obj
+
+    // operator.lshift(a,b) - return a shifted left by b
+
     mod.mod = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$remainder'].call(a, b); });
     mod.__mod__ = mod.mod;
 
     mod.mul = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$multiply'].call(a, b); });
     mod.__mul__ = mod.mul;
 
+    // operator.net(obj) - return obj negated (-obj)
+
+    // operator.or_(a,b) - return the bitwise or of a and b
+
+    // operator.pos(obj) - return obj positive (+obj)
+
     mod.pow = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$power'].call(a, b); });
     mod.__pow__ = mod.pow;
+
+    // operator.rshift(a,b) - return a shifted right by b
 
     mod.sub = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$subtract'].call(a, b); });
     mod.__sub__ = mod.sub;
@@ -50,43 +76,26 @@ var $builtinmodule = function(name) {
     mod.truediv = mod.div;
     mod.__truediv__ = mod.div;
 
-    mod.concat = new Sk.builtin.func(function(a, b) {
-        var a_type = Sk.abstr.typeName(a);
+    // operator.xor(a,b) - return the bitwise exclusive or of a and b
 
-        var func;
-        switch (a_type) {
-            case "list":
-                func = Sk.builtin.list.prototype['sq$concat'];
-                break;
-            case "str":
-                func = Sk.builtin.str.prototype['sq$concat'];
-                break;
-            case "tuple":
-                func = Sk.builtin.tuple.prototype['sq$concat'];
-                break;
-            default:
-                throw new Sk.builtin.TypeError("concat not defined for type " + a_type);
-                break;
-        }
-        return func.call(a, b);
-    });
+    mod.concat = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceConcat(a, b); });
     mod.__concat__ = mod.concat;
 
     mod.contains = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.abstr.sequenceContains(a, b)); });
     mod.__contains__ = mod.contains;
 
-    mod.indexOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetIndexOf(a, b); });
-
     mod.countOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetCountOf(a, b); });
+
+    mod.delitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceDelItem(a, b); });
+    mod.__delitem__ = mod.delitem;
 
     mod.getitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetItem(a, b); });
     mod.__getitem__ = mod.getitem;
 
+    mod.indexOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetIndexOf(a, b); });
+
     mod.setitem = new Sk.builtin.func(function(a, b, c) { return Sk.abstr.sequenceSetItem(a, b, c); });
     mod.__setitem__ = mod.setitem;
-
-    mod.delitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceDelItem(a, b); });
-    mod.__delitem__ = mod.delitem;
 
     return mod;
 };
