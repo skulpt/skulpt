@@ -329,8 +329,7 @@ Sk.builtin.dict.prototype['get'] = new Sk.builtin.func(function(self, k, d)
     var ret;
 
     if (d === undefined) {
-        //d = new Sk.builtin.NoneObj();
-        d = null;
+        d = Sk.builtin.none.none$;
     }
 
     ret = self.mp$lookup(k);
