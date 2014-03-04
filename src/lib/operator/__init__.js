@@ -25,7 +25,7 @@ var $builtinmodule = function(name) {
     mod.gt = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'Gt')); });
     mod.__gt__ = mod.gt;
 
-    // operator.not_(obj)
+    mod.not_ = new Sk.builtin.func(function (obj) { throw new Sk.builtin.NotImplementedError("operator.not_() is not yet implemented in Skulpt"); });
 
     mod.truth = new Sk.builtin.func(function(obj) { return Sk.builtin.bool(obj); });
 
@@ -48,9 +48,18 @@ var $builtinmodule = function(name) {
     mod.floordiv = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$floor_divide'].call(a, b); });
     mod.__floordiv__ = mod.floordiv;
 
-    // operator.index(a) - return a converted to an integer. Equivalent to a.__index__()
+    // Doesn't look like anything has the __index__ magic function anyway
+    mod.index = new Sk.builtin.func(function (a) { throw new Sk.builtin.NotImplementedError("operator.index() is not yet implemented in Skulpt"); });
+    mod.__index__ = mod.index;
 
-    // operator.inv/operator.invert(obj) - Return the bitwise inverse of the number obj. This is equivalent to ~obj
+    // Note: Sk.abstr.numberUnaryOp(obj, 'Invert') looks for the function nb$invert() on obj.
+    // However, it doesn't look like that function has been implemented for any existing object types.
+    // I've gone ahead and created this function for completeness' sake, but expect any use of it to
+    // result in an error.
+    mod.inv = new Sk.builtin.func(function (obj) { return Sk.abstr.numberUnaryOp(obj, 'Invert'); });
+    mod.__inv__ = mod.inv;
+    mod.invert = mod.inv;
+    mod.__invert__ = mod.inv;
 
     mod.lshift = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$lshift'].call(a, b); });
     mod.__lshift__ = mod.lshift;
