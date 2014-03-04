@@ -377,12 +377,10 @@ Sk.abstr.sequenceGetIndexOf = function(seq, ob) {
     var seqtypename = Sk.abstr.typeName(seq);
     if (seqtypename === "dict") {
         // TODO implement index function for dict
-        throw new Sk.builtin.NotImplementedError("looking up key from value is not yet implemented (supported in Python 2.6)");
+        throw new Sk.builtin.NotImplementedError("looking up dict key from value is not yet implemented (supported in Python 2.6)");
     }
     throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
-
-
 
 Sk.abstr.sequenceGetCountOf = function(seq, ob) {
     // TODO what is enumerate type?
@@ -501,8 +499,20 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 //
 //
 
-Sk.abstr.objectDelItem = function(o, key)
-{
+// in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
+Sk.abstr.objectNegative = function(obj) {
+    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+
+    if (typeof obj_asnum === 'number') {
+        // call the number negative function
+        return Sk.builtin.nmber.prototype['nb$negative'].call(obj);
+    }
+
+    var objtypename = Sk.abstr.typeName(obj);
+    throw new Sk.builtin.TypeError("bad operand type for unary -: '" + objtypename + "'");
+};
+
+Sk.abstr.objectDelItem = function(o, key) {
     if (o !== null)
     {
         if (o.mp$del_subscript) {

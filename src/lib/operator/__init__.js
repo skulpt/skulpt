@@ -26,7 +26,8 @@ var $builtinmodule = function(name) {
     mod.__gt__ = mod.gt;
 
     // operator.not_(obj)
-    // operator.truth(obj)
+
+    mod.truth = new Sk.builtin.func(function(obj) { return Sk.builtin.bool(obj); });
 
     mod.is_ = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, 'Is')); });
 
@@ -38,12 +39,12 @@ var $builtinmodule = function(name) {
     mod.add = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$add'].call(a, b); });
     mod.__add__ = mod.add;
 
-    // operator.and_(a,b) - return the bitwise and of a and b
+    mod.and_ = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$and'].call(a, b); });
+    mod.__and__ = mod.and_;
 
     mod.div = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$divide'].call(a, b); });
     mod.__div__ = mod.div;
 
-    // operator.floordiv(a,b) - return a // b
     mod.floordiv = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$floor_divide'].call(a, b); });
     mod.__floordiv__ = mod.floordiv;
 
@@ -51,7 +52,8 @@ var $builtinmodule = function(name) {
 
     // operator.inv/operator.invert(obj) - Return the bitwise inverse of the number obj. This is equivalent to ~obj
 
-    // operator.lshift(a,b) - return a shifted left by b
+    mod.lshift = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$lshift'].call(a, b); });
+    mod.__lshift__ = mod.lshift;
 
     mod.mod = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$remainder'].call(a, b); });
     mod.__mod__ = mod.mod;
@@ -59,7 +61,8 @@ var $builtinmodule = function(name) {
     mod.mul = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$multiply'].call(a, b); });
     mod.__mul__ = mod.mul;
 
-    // operator.net(obj) - return obj negated (-obj)
+    mod.neg = new Sk.builtin.func(function(obj) { return Sk.abstr.objectNegative(obj); });
+    mod.__neg__ = mod.neg;
 
     // operator.or_(a,b) - return the bitwise or of a and b
 
