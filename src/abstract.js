@@ -527,7 +527,7 @@ Sk.abstr.objectPositive = function(obj) {
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
     if (objtypename === 'bool') {
-        return Sk.builtin.nmber(obj_asnum);
+        return new Sk.builtin.nmber(obj_asnum, 'int');
     }
     if (typeof obj_asnum === 'number') {
         return Sk.builtin.nmber.prototype['nb$positive'].call(obj);
