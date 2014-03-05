@@ -499,6 +499,16 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 //
 //
 
+Sk.abstr.objectAdd = function(a, b) {
+    if (a.nb$add) {
+        return a.nb$add(b);
+    }
+
+    var atypename = Sk.abstr.typeName(a);
+    var btypename = Sk.abstr.typeName(b);
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
+};
+
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectNegative = function(obj) {
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int

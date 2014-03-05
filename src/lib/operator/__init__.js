@@ -36,10 +36,12 @@ var $builtinmodule = function(name) {
     mod.abs = new Sk.builtin.func(function(obj) { return Sk.misceval.callsim(Sk.builtin.abs, obj); });
     mod.__abs__ = mod.abs;
 
-    mod.add = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$add'].call(a, b); });
+    // The documentation says that operator.add() is defined for a and b numbers, but
+    // CPython (2.6) allows a and b to be other types (e.g. str)
+    mod.add = new Sk.builtin.func(function (a, b) { return Sk.abstr.objectAdd(a, b); });
     mod.__add__ = mod.add;
 
-    mod.and_ = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$and'].call(a, b); });
+    mod.and_ = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$and'].call(a, b); });
     mod.__and__ = mod.and_;
 
     mod.div = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$divide'].call(a, b); });
@@ -61,56 +63,56 @@ var $builtinmodule = function(name) {
     mod.invert = mod.inv;
     mod.__invert__ = mod.inv;
 
-    mod.lshift = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$lshift'].call(a, b); });
+    mod.lshift = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$lshift'].call(a, b); });
     mod.__lshift__ = mod.lshift;
 
-    mod.mod = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$remainder'].call(a, b); });
+    mod.mod = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$remainder'].call(a, b); });
     mod.__mod__ = mod.mod;
 
-    mod.mul = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$multiply'].call(a, b); });
+    mod.mul = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$multiply'].call(a, b); });
     mod.__mul__ = mod.mul;
 
-    mod.neg = new Sk.builtin.func(function(obj) { return Sk.abstr.objectNegative(obj); });
+    mod.neg = new Sk.builtin.func(function (obj) { return Sk.abstr.objectNegative(obj); });
     mod.__neg__ = mod.neg;
 
-    mod.or_ = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$or'].call(a, b); });
+    mod.or_ = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$or'].call(a, b); });
     mod.__or__ = mod.or_;
 
-    mod.pos = new Sk.builtin.func(function(obj) { return Sk.abstr.objectPositive(obj); });
+    mod.pos = new Sk.builtin.func(function (obj) { return Sk.abstr.objectPositive(obj); });
     mod.__pos__ = mod.pos;
 
-    mod.pow = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$power'].call(a, b); });
+    mod.pow = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$power'].call(a, b); });
     mod.__pow__ = mod.pow;
 
-    mod.rshift = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$rshift'].call(a, b); });
+    mod.rshift = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$rshift'].call(a, b); });
     mod.__rshift__ = mod.rshift;
 
-    mod.sub = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$subtract'].call(a, b); });
+    mod.sub = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$subtract'].call(a, b); });
     mod.__sub__ = mod.sub;
 
     mod.truediv = mod.div;
     mod.__truediv__ = mod.div;
 
-    mod.xor = new Sk.builtin.func(function(a, b) { return Sk.builtin.nmber.prototype['nb$xor'].call(a, b); });
+    mod.xor = new Sk.builtin.func(function (a, b) { return Sk.builtin.nmber.prototype['nb$xor'].call(a, b); });
     mod.__xor__ = mod.xor;
 
-    mod.concat = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceConcat(a, b); });
+    mod.concat = new Sk.builtin.func(function (a, b) { return Sk.abstr.sequenceConcat(a, b); });
     mod.__concat__ = mod.concat;
 
-    mod.contains = new Sk.builtin.func(function(a, b) { return Sk.builtin.bool(Sk.abstr.sequenceContains(a, b)); });
+    mod.contains = new Sk.builtin.func(function (a, b) { return Sk.builtin.bool(Sk.abstr.sequenceContains(a, b)); });
     mod.__contains__ = mod.contains;
 
-    mod.countOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetCountOf(a, b); });
+    mod.countOf = new Sk.builtin.func(function (a, b) { return Sk.abstr.sequenceGetCountOf(a, b); });
 
-    mod.delitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceDelItem(a, b); });
+    mod.delitem = new Sk.builtin.func(function (a, b) { return Sk.abstr.sequenceDelItem(a, b); });
     mod.__delitem__ = mod.delitem;
 
-    mod.getitem = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetItem(a, b); });
+    mod.getitem = new Sk.builtin.func(function (a, b) { return Sk.abstr.sequenceGetItem(a, b); });
     mod.__getitem__ = mod.getitem;
 
-    mod.indexOf = new Sk.builtin.func(function(a, b) { return Sk.abstr.sequenceGetIndexOf(a, b); });
+    mod.indexOf = new Sk.builtin.func(function (a, b) { return Sk.abstr.sequenceGetIndexOf(a, b); });
 
-    mod.setitem = new Sk.builtin.func(function(a, b, c) { return Sk.abstr.sequenceSetItem(a, b, c); });
+    mod.setitem = new Sk.builtin.func(function (a, b, c) { return Sk.abstr.sequenceSetItem(a, b, c); });
     mod.__setitem__ = mod.setitem;
 
     return mod;
