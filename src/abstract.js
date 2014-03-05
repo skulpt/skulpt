@@ -369,22 +369,18 @@ Sk.abstr.sequenceConcat = function(seq1, seq2) {
 };
 
 Sk.abstr.sequenceGetIndexOf = function(seq, ob) {
-    // TODO what is enumerate type?
     if (seq.index) {
         return Sk.misceval.callsim(seq.index, seq, ob);
     }
 
     var seqtypename = Sk.abstr.typeName(seq);
     if (seqtypename === "dict") {
-        // TODO implement index function for dict
         throw new Sk.builtin.NotImplementedError("looking up dict key from value is not yet implemented (supported in Python 2.6)");
     }
     throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
 Sk.abstr.sequenceGetCountOf = function(seq, ob) {
-    // TODO what is enumerate type?
-
     if (seq.count) {
         return Sk.misceval.callsim(seq.count, seq, ob);
     }
@@ -394,8 +390,6 @@ Sk.abstr.sequenceGetCountOf = function(seq, ob) {
 };
 
 Sk.abstr.sequenceGetItem = function(seq, i) {
-    // TODO what is enumerate type?
-
     if (seq.mp$subscript) {
         return seq.mp$subscript(i);
     }
@@ -405,8 +399,6 @@ Sk.abstr.sequenceGetItem = function(seq, i) {
 };
 
 Sk.abstr.sequenceSetItem = function(seq, i, x) {
-    // TODO what is enumerate type?
-
     if (seq.mp$ass_subscript) {
         return seq.mp$ass_subscript(i, x);
     }
