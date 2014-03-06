@@ -320,8 +320,9 @@ var $builtinmodule = function(name)
    */
   mod.array_str = new Sk.builtin.func(function(array) {
     Sk.builtin.pyCheckArgs('array_str', arguments, 1);
-    
-    return Sk.builtin.str(math.format(array.v));
+    var str =math.format(array.v,1).replace(/\], \[/g, ']\n [');
+    return Sk.builtin.str(str.replace(/,/g, ''));
+    //return Sk.builtin.str(math.format(array.v));
   });
   
   return mod;

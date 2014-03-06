@@ -114,6 +114,7 @@ TestFiles = [
         'support/closure-library/closure/goog/math/vec2.js',
         'support/closure-library/closure/goog/json/json.js',
         'support/jsbeautify/beautify.js',
+        'support/mathjs/math.js',
         "{0}/sprintf.js".format(TEST_DIR),
         "{0}/json2.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
