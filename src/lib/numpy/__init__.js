@@ -158,8 +158,27 @@ var $builtinmodule = function(name)
     });
     
     $loc.item = new Sk.builtin.func(function(self, key) {
-      var idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
-    
+      var idx = { submatrix: false, indices: [] };
+      // TODO: handle if key is undefined
+      console.log(key)
+      if(key.tp$name === 'number' && key.skType == 'int') {
+        var i, size = self.v.size(), remainder = key.v, total = 1;
+        
+        for(i = size.length - 1; i >= 0 ; --i) {
+          idx.indices[i] = remainder % size[i];
+          remainder = Math.floor(remainder / size[i]);
+          total *= size[i];
+        }
+        
+        if(key.v < 0 || key.v >= total) {
+          throw new Sk.builtin.ValueError('index out of bounds');
+        }
+      } else if(key.tp$name === 'tuple') {
+        idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
+      } else {
+        throw new Sk.builtin.Exception('Invalid index argument of type "' + key.tp$name + '" for ndarray.item()!');
+      }
+      
       try {
         if(idx.submatrix) {
           return Sk.misceval.callsim(mod.ndarray, undefined, self.v.subset(math.type.Index.create(idx.indices)));
