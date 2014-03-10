@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2
 
 #
 #   Note:  python2.6 is specified because that is what the skulpt parser
