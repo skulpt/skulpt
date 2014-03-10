@@ -3,10 +3,13 @@ Created on 07.02.2014
 
 @author: tatsch
 '''
+import sys
 import math
 import numpy as np  # for cross, inv, random, arange
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+
+if(sys.platform != "skulpt"):
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
 
 class Simulator():
     
@@ -33,7 +36,8 @@ class Simulator():
         thetadotDesired = np.array([[0], [0], [0]])
         thetadoubledotDesired = np.array([[0], [0], [0]])
         # Step through the simulation, updating the drone state.
-        for t in np.arange(self.start_time, self.end_time, self.dt):
+        t=self.start_time
+        while t <= self.end_time:
             # inputCurrents = [1.1,1.1,1.1,1.1]# try simply setting a motor current
             inputCurrents = self.controller.calculate_control_command(thetaDesired, thetadotDesired, thetadoubledotDesired)
             print("Input Currents: {}").format(inputCurrents)
@@ -55,23 +59,25 @@ class Simulator():
             self.roll.append(self.drone.theta.item(0))
             self.pitch.append(self.drone.theta.item(1))
             self.yaw.append(self.drone.theta.item(2))
+            t += self.dt
         
-        fig1 = plt.figure(1)
-        fig1.suptitle('Position x,y,z')
-        # fig1.add_title('Position x,y,z')
-        ax = fig1.add_subplot(111, projection='3d')
-        ax.plot(self.x, self.y, self.z)
-        fig1.show()
+        if(sys.platform != "skulpt"):
+            fig1 = plt.figure(1)
+            fig1.suptitle('Position x,y,z')
+            # fig1.add_title('Position x,y,z')
+            ax = fig1.add_subplot(111, projection='3d')
+            ax.plot(self.x, self.y, self.z)
+            fig1.show()
+            fig2, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True)
+            ax1.plot(self.roll)
+            fig2.suptitle('Position roll, pitch, yaw')
+            ax2.plot(self.pitch)
+            ax3.plot(self.yaw)
+            fig2.show()
+            raw_input()
         
-        fig2, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True)
-        ax1.plot(self.roll)
-        fig2.suptitle('Position roll, pitch, yaw')
-        ax2.plot(self.pitch)
-        ax3.plot(self.yaw)
-        fig2.show()
-        
-        raw_input()
-        
+    def deg2rad(self,degrees):
+        return np.array(map(math.radians, degrees))
         
     def rotation(self, angles):  # translate angles to intertial/world frame
         phi = angles.item(0)

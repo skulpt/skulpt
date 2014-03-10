@@ -157,6 +157,21 @@ var $builtinmodule = function(name)
       return Sk.misceval.callsim(mod.inv, self);
     });
     
+    $loc.item = new Sk.builtin.func(function(self, key) {
+      var idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
+    
+      try {
+        if(idx.submatrix) {
+          return Sk.misceval.callsim(mod.ndarray, undefined, self.v.subset(math.type.Index.create(idx.indices)));
+        } else {
+          return Sk.builtin.nmber(self.v.get(idx.indices), Sk.builtin.nmber.float$);
+        }
+      } catch(e) {
+        throw new Sk.builtin.Exception(e.message);
+      }
+    });
+    
+    
     $loc.__getattr__ = new Sk.builtin.func(function(self, attr) {
       if(attr == 'ndim') return Sk.builtin.nmber(self.v.size().length, Sk.builtin.nmber.int$)
       if(attr == 'shape') return Sk.builtin.tuple(self.v.size())
@@ -287,6 +302,8 @@ var $builtinmodule = function(name)
     }
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
+  
+
   
     mod.arange = new Sk.builtin.func(function(start,end,step) {
     Sk.builtin.pyCheckArgs('arange', arguments, 3);
