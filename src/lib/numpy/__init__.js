@@ -171,7 +171,6 @@ var $builtinmodule = function(name)
     
     $loc.item = new Sk.builtin.func(function(self, key) {
       var idx = { submatrix: false, indices: [] };
-      console.log(key)
       
       if(key === undefined) {
         var tmp = linearToNativeIndex(self.v.size(), 0)
