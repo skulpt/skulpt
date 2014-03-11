@@ -30,35 +30,41 @@ class Simulator():
         self.pitch = []
         self.yaw = []
     
+    def reset(self):
+        self.thetaDesired = np.array([[0], [0], [0]])
+        self.thetadotDesired = np.array([[0], [0], [0]])
+        self.thetadoubledotDesired = np.array([[0], [0], [0]])
+        
+    def simulate_step(self, t, dt):
+        # inputCurrents = [1.1,1.1,1.1,1.1]# try simply setting a motor current
+        inputCurrents = self.controller.calculate_control_command(self.thetaDesired, self.thetadotDesired, self.thetadoubledotDesired)
+        print("Input Currents: {}").format(inputCurrents)
+        linearAcceleration = self.linear_acceleration(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
+        omega = self.thetadot2omega(self.drone.thetadot, self.drone.theta)  # calculate current angular velocity
+        omegadot = self.angular_acceleration(inputCurrents, omega)  # calculate resulting angular acceleration
+    
+        omega = omega + dt * omegadot  # integrate up new angular velocity
+        thetadotOld = self.drone.thetadot
+        self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll,pitch,yaw velocities
+        # self.drone.thetadoubledot=(self.drone.thetadoubledot-thetadotOld)/dt
+        self.drone.theta = self.drone.theta + dt * self.drone.thetadot  # integrate up to roll,pitch,yaw
+        self.drone.xdot = self.drone.xdot + dt * linearAcceleration  # integrate up to drone speed
+        self.drone.x = self.drone.x + dt * self.drone.xdot  # integrate up to drone position
+        print("Step {}:\n {}").format(t, self.drone.x)
+        self.x.append(self.drone.x.item(0))
+        self.y.append(self.drone.x.item(1))
+        self.z.append(self.drone.x.item(2))
+        self.roll.append(self.drone.theta.item(0))
+        self.pitch.append(self.drone.theta.item(1))
+        self.yaw.append(self.drone.theta.item(2))
+    
     def simulate(self, duration):
         self.end_time = duration
-        thetaDesired = np.array([[0], [0], [0]])
-        thetadotDesired = np.array([[0], [0], [0]])
-        thetadoubledotDesired = np.array([[0], [0], [0]])
+        self.reset();
         # Step through the simulation, updating the drone state.
         t=self.start_time
         while t <= self.end_time:
-            # inputCurrents = [1.1,1.1,1.1,1.1]# try simply setting a motor current
-            inputCurrents = self.controller.calculate_control_command(thetaDesired, thetadotDesired, thetadoubledotDesired)
-            print("Input Currents: {}").format(inputCurrents)
-            linearAcceleration = self.linear_acceleration(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
-            omega = self.thetadot2omega(self.drone.thetadot, self.drone.theta)  # calculate current angular velocity
-            omegadot = self.angular_acceleration(inputCurrents, omega)  # calculate resulting angular acceleration
-    
-            omega = omega + self.dt * omegadot  # integrate up new angular velocity
-            thetadotOld = self.drone.thetadot
-            self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll,pitch,yaw velocities
-            # self.drone.thetadoubledot=(self.drone.thetadoubledot-thetadotOld)/self.dt
-            self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # integrate up to roll,pitch,yaw
-            self.drone.xdot = self.drone.xdot + self.dt * linearAcceleration  # integrate up to drone speed
-            self.drone.x = self.drone.x + self.dt * self.drone.xdot  # integrate up to drone position
-            print("Step {}:\n {}").format(t, self.drone.x)
-            self.x.append(self.drone.x.item(0))
-            self.y.append(self.drone.x.item(1))
-            self.z.append(self.drone.x.item(2))
-            self.roll.append(self.drone.theta.item(0))
-            self.pitch.append(self.drone.theta.item(1))
-            self.yaw.append(self.drone.theta.item(2))
+            self.simulate_step(t, self.dt)
             t += self.dt
         
         if(sys.platform != "skulpt"):
