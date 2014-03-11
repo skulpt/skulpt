@@ -360,18 +360,54 @@ Sk.abstr.sequenceContains = function(seq, ob)
     return false;
 };
 
-Sk.abstr.sequenceGetItem = function(seq, i)
-{
-    goog.asserts.fail();
+Sk.abstr.sequenceConcat = function(seq1, seq2) {
+    if (seq1.sq$concat) {
+            return seq1.sq$concat(seq2)
+    }
+    var seq1typename = Sk.abstr.typeName(seq1);
+    throw new Sk.builtin.TypeError("'" + seq1typename + "' object can't be concatenated");
 };
 
-Sk.abstr.sequenceSetItem = function(seq, i, x)
-{
-    goog.asserts.fail();
+Sk.abstr.sequenceGetIndexOf = function(seq, ob) {
+    if (seq.index) {
+        return Sk.misceval.callsim(seq.index, seq, ob);
+    }
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    if (seqtypename === "dict") {
+        throw new Sk.builtin.NotImplementedError("looking up dict key from value is not yet implemented (supported in Python 2.6)");
+    }
+    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
-Sk.abstr.sequenceDelItem = function(seq, i)
-{
+Sk.abstr.sequenceGetCountOf = function(seq, ob) {
+    if (seq.count) {
+        return Sk.misceval.callsim(seq.count, seq, ob);
+    }
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
+};
+
+Sk.abstr.sequenceGetItem = function(seq, i) {
+    if (seq.mp$subscript) {
+        return seq.mp$subscript(i);
+    }
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
+};
+
+Sk.abstr.sequenceSetItem = function(seq, i, x) {
+    if (seq.mp$ass_subscript) {
+        return seq.mp$ass_subscript(i, x);
+    }
+
+    var seqtypename = Sk.abstr.typeName(seq);
+    throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item assignment");
+};
+
+Sk.abstr.sequenceDelItem = function(seq, i) {
     if (seq.sq$del_item)
     {
         i = Sk.abstr.fixSeqIndex_(seq, i);
@@ -455,8 +491,44 @@ Sk.abstr.sequenceSetSlice = function(seq, i1, i2, x)
 //
 //
 
-Sk.abstr.objectDelItem = function(o, key)
-{
+Sk.abstr.objectAdd = function(a, b) {
+    if (a.nb$add) {
+        return a.nb$add(b);
+    }
+
+    var atypename = Sk.abstr.typeName(a);
+    var btypename = Sk.abstr.typeName(b);
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
+};
+
+// in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
+Sk.abstr.objectNegative = function(obj) {
+    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+
+    if (typeof obj_asnum === 'number') {
+        return Sk.builtin.nmber.prototype['nb$negative'].call(obj);
+    }
+
+    var objtypename = Sk.abstr.typeName(obj);
+    throw new Sk.builtin.TypeError("bad operand type for unary -: '" + objtypename + "'");
+};
+
+// in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
+Sk.abstr.objectPositive = function(obj) {
+    var objtypename = Sk.abstr.typeName(obj);
+    var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
+
+    if (objtypename === 'bool') {
+        return new Sk.builtin.nmber(obj_asnum, 'int');
+    }
+    if (typeof obj_asnum === 'number') {
+        return Sk.builtin.nmber.prototype['nb$positive'].call(obj);
+    }
+
+    throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");
+};
+
+Sk.abstr.objectDelItem = function(o, key) {
     if (o !== null)
     {
         if (o.mp$del_subscript) {
