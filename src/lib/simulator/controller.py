@@ -39,11 +39,6 @@ class Controller():
         I_xx=self.drone.I.item((0, 0))
         I_yy=self.drone.I.item((1, 1))
         I_zz=self.drone.I.item((2, 2))
-        print("Type should be")
-        print(type(1.3))
-        print("Type is")
-        print(type(self.drone.theta.item(1)))
-        print(math.cos(self.drone.theta.item(1)))
     
         qtt=(self.drone.m*self.drone.g)/(4*self.drone.k*math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0)))
         gamma1=qtt-(2*self.drone.b*e_phi*I_xx+e_psi*I_zz*self.drone.k*self.drone.L)/4*self.drone.b*self.drone.k*self.drone.L
@@ -51,6 +46,4 @@ class Controller():
         gamma3=qtt-(-2*self.drone.b*e_phi*I_xx+e_psi*I_zz*self.drone.k*self.drone.L)/4*self.drone.b*self.drone.k*self.drone.L
         gamma4=qtt+e_psi*I_zz/4*self.drone.b+e_theta*I_yy/2*self.drone.k*self.drone.L
         
-        print(gamma1,gamma2,gamma3,gamma4)
-
         return [gamma1,gamma2,gamma3,gamma4]

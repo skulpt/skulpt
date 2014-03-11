@@ -79,7 +79,6 @@ var $builtinmodule = function(name)
   /**
    * ndarray class
    TODO:can we make it iterable? 
-   
    */
   var ndarray = function($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function(self, shape, data) {
@@ -202,8 +201,18 @@ var $builtinmodule = function(name)
       return Sk.misceval.callsim(mod.array_str, self);
     });
   };
-  
   mod.ndarray = Sk.misceval.buildClass(mod, ndarray, 'ndarray', []);
+  
+    /**
+   * linalg class
+   */
+   
+  var linalg = function($gbl, $loc) {
+    $loc.inv = new Sk.builtin.func(function(self) {
+      return Sk.misceval.callsim(mod.inv, self);
+    });
+  };
+  mod.linalg = Sk.misceval.buildClass(mod, linalg, 'linalg', []);  
   
   /**
    * creation functions
@@ -284,14 +293,21 @@ var $builtinmodule = function(name)
   });
 
   mod.cross = new Sk.builtin.func(function(x, y, axis) {
-    Sk.builtin.pyCheckArgs('cross', arguments, 3);
-    
+    Sk.builtin.pyCheckArgs('cross', arguments, 2);
+
     var result;
     try {
-	  result=math.zeros(3,1);
-	  result.subset(math.index(0,0), x.v._data[1]*y.v._data[2]-x.v._data[2]*y.v._data[1]);
-	  result.subset(math.index(1,0), x.v._data[2]*y.v._data[0]-x.v._data[0]*y.v._data[2]); 
-	  result.subset(math.index(2,0), x.v._data[0]*y.v._data[1]-x.v._data[1]*y.v._data[0]); 
+    	if(!axis || axis.v==1){//expect row vectors
+    	result=math.zeros(1,3);
+	  		result.subset(math.index(0,0), x.v._data[0][1]*y.v._data[0][2]-x.v._data[0][2]*y.v._data[0][1]);
+	  		result.subset(math.index(0,1), x.v._data[0][2]*y.v._data[0][0]-x.v._data[0][0]*y.v._data[0][2]); 
+	  		result.subset(math.index(0,2), x.v._data[0][0]*y.v._data[0][1]-x.v._data[0][1]*y.v._data[0][0] );
+    	} else { //col vectors
+    	    result=math.zeros(3,1);
+	  		result.subset(math.index(0,0), x.v._data[1]*y.v._data[2]-x.v._data[2]*y.v._data[1]);
+	  		result.subset(math.index(1,0), x.v._data[2]*y.v._data[0]-x.v._data[0]*y.v._data[2]); 
+	  		result.subset(math.index(2,0), x.v._data[0]*y.v._data[1]-x.v._data[1]*y.v._data[0]);
+    	}
     } catch(e) {
       throw new Sk.builtin.Exception(e.message);
     }
