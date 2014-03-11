@@ -1,5 +1,5 @@
 {
-  "name": "edx_visnav_skulpt",
+  "name": "visnav_edx_skulpt",
   "version": "0.9.2",
   "main": [ "./dist/skulpt.js", "./dist/skulpt-stdlib.js" ],
   "description": "Skulpt is a Javascript implementation of the Python programming language",
