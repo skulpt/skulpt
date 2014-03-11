@@ -43,6 +43,19 @@ var $builtinmodule = function(name)
     }
   }
   
+  // convert a linear index to a mathjs index array
+  function linearToNativeIndex(size, idx) {
+    var i, remainder = idx, total = 1, indices = [];
+     
+    for(i = size.length - 1; i >= 0 ; --i) {
+      indices[i] = remainder % size[i];
+      remainder = Math.floor(remainder / size[i]);
+      total *= size[i];
+    }
+    
+    return { 'indices': indices, 'total': total };
+  }
+  
   // translate negative indices/add missing dimensions
   function normalizeNativeIndex(size, idx) {
     if(size.length < idx.indices.length) {
@@ -158,32 +171,36 @@ var $builtinmodule = function(name)
     
     $loc.item = new Sk.builtin.func(function(self, key) {
       var idx = { submatrix: false, indices: [] };
-      // TODO: handle if key is undefined
       console.log(key)
-      if(key.tp$name === 'number' && key.skType == 'int') {
-        var i, size = self.v.size(), remainder = key.v, total = 1;
+      
+      if(key === undefined) {
+        var tmp = linearToNativeIndex(self.v.size(), 0)
         
-        for(i = size.length - 1; i >= 0 ; --i) {
-          idx.indices[i] = remainder % size[i];
-          remainder = Math.floor(remainder / size[i]);
-          total *= size[i];
+        if(tmp.total !== 1) {
+          throw new Sk.builtin.ValueError('can only convert an array  of size 1 to a Python scalar');
         }
         
-        if(key.v < 0 || key.v >= total) {
+        idx.indices = tmp.indices;
+      } else if(key.tp$name === 'number' && key.skType == 'int') {
+        var tmp = linearToNativeIndex(self.v.size(), key.v)
+        
+        if(key.v < 0 || key.v >= tmp.total) {
           throw new Sk.builtin.ValueError('index out of bounds');
         }
+        
+        idx.indices = tmp.indices;
       } else if(key.tp$name === 'tuple') {
         idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
       } else {
-        throw new Sk.builtin.Exception('Invalid index argument of type "' + key.tp$name + '" for ndarray.item()!');
+        throw new Sk.builtin.Exception('invalid index argument of type "' + key.tp$name + '" for ndarray.item()!');
+      }
+      
+      if(idx.submatrix) {
+        throw new Sk.builtin.Exception('ndarray.item() can only be used to access scalar values!');
       }
       
       try {
-        if(idx.submatrix) {
-          return Sk.misceval.callsim(mod.ndarray, undefined, self.v.subset(math.type.Index.create(idx.indices)));
-        } else {
-          return Sk.builtin.nmber(self.v.get(idx.indices), Sk.builtin.nmber.float$);
-        }
+        return Sk.builtin.nmber(self.v.get(idx.indices), Sk.builtin.nmber.float$);
       } catch(e) {
         throw new Sk.builtin.Exception(e.message);
       }
