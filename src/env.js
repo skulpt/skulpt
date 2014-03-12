@@ -96,7 +96,7 @@ goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
  */
 Sk.syspath = [];
 
-Sk.inBrowser = goog.global['document'] !== undefined;
+Sk.inBrowser = goog.global['document'] !== undefined || typeof goog.global['importScripts'] !== 'undefined';
 
 /**
  * Internal function used for debug output.
