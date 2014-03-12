@@ -15,57 +15,65 @@ class Simulator():
     
     start_time = 0  # in secs
     end_time = 10
-    dt = 0.005
+    dt = 0.1
 
     
     def __init__(self, drone, controller):
         self.drone = drone
         self.controller = controller
-
-        self.x = []
-        self.y = []
-        self.z = []
         
-        self.roll = []
-        self.pitch = []
-        self.yaw = []
+        if(sys.platform != "skulpt"):
+            self.x = []
+            self.y = []
+            self.z = []
+            self.roll = []
+            self.pitch = []
+            self.yaw = []
+            self.cmd1 =[]
+            self.cmd2 =[]
+            self.cmd3 =[]
+            self.cmd4 =[]
+            self.e_phi=[]
+            self.e_theta=[]
+            self.e_psi=[]
     
     def reset(self):
         self.thetaDesired = np.array([[0], [0], [0]])
         self.thetadotDesired = np.array([[0], [0], [0]])
         self.thetadoubledotDesired = np.array([[0], [0], [0]])
-        self.drone.x = np.array([0,0,0])
+        self.drone.x = np.array([[0],[0],[0]])
         # TODO: reset all states
     
     def get_drone_pose(self):
         return [self.drone.x.item(0), self.drone.x.item(1), self.drone.x.item(2), self.drone.theta.item(0), self.drone.theta.item(1), self.drone.theta.item(2)];
     
     def simulate_step(self, t, dt):
-        inputCurrents = self.controller.calculate_control_command(self.thetaDesired, self.thetadotDesired, self.thetadoubledotDesired)
-        #print("inputCurrents:")
-        #print(inputCurrents)
-        linearAcceleration = self.linear_acceleration(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
+
+        inputCurrents,e_phi, e_theta, e_psi = self.controller.calculate_control_command(self.thetaDesired, self.thetadotDesired, self.thetadoubledotDesired)
+
+        linear_acceleration = self.linear_acceleration(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
         omega = self.thetadot2omega(self.drone.thetadot, self.drone.theta)  # calculate current angular velocity
-        
         omegadot = self.angular_acceleration(inputCurrents, omega)  # calculate resulting angular acceleration
-        
         omega = omega + self.dt * omegadot  # integrate up new angular velocity
-        thetadotOld = self.drone.thetadot
-        self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll,pitch,yaw velocities
-        # self.drone.thetadoubledot=(self.drone.thetadoubledot-thetadotOld)/self.dt
-        self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # integrate up to roll,pitch,yaw
-        self.drone.xdot = self.drone.xdot + self.dt * linearAcceleration  # integrate up to drone speed
-        self.drone.x = self.drone.x + self.dt * self.drone.xdot  # integrate up to drone position
-        #print("Position at step ")
-        #print(t)
-        #print(self.drone.x)
+        self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll, pitch, yaw velocities
+        self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
+        self.drone.xdot = self.drone.xdot + self.dt * linear_acceleration  # calculate new linear drone speed
+        self.drone.x = self.drone.x + self.dt * self.drone.xdot  # calculate new drone position
         
-        #self.x.append(self.drone.x.item(0))
-        #self.y.append(self.drone.x.item(1))
-        #self.z.append(self.drone.x.item(2))
-        #self.roll.append(self.drone.theta.item(0))
-        #self.pitch.append(self.drone.theta.item(1))
-        #self.yaw.append(self.drone.theta.item(2))
+        if(sys.platform != "skulpt"):#save trajectory for plotting
+            self.x.append(self.drone.x.item(0))
+            self.y.append(self.drone.x.item(1))
+            self.z.append(self.drone.x.item(2))
+            self.roll.append(self.drone.theta.item(0))
+            self.pitch.append(self.drone.theta.item(1))
+            self.yaw.append(self.drone.theta.item(2))
+            self.cmd1.append(inputCurrents[0])
+            self.cmd2.append(inputCurrents[1])
+            self.cmd3.append(inputCurrents[2])
+            self.cmd4.append(inputCurrents[3])
+            self.e_phi.append(e_phi)
+            self.e_theta.append(e_theta)
+            self.e_psi.append(e_psi)
     
     def simulate(self, duration):
         self.end_time = duration
@@ -79,7 +87,6 @@ class Simulator():
         if(sys.platform != "skulpt"):
             fig1 = plt.figure(1)
             fig1.suptitle('Position x,y,z')
-            # fig1.add_title('Position x,y,z')
             ax = fig1.add_subplot(111, projection='3d')
             ax.plot(self.x, self.y, self.z)
             fig1.show()
@@ -89,6 +96,20 @@ class Simulator():
             ax2.plot(self.pitch)
             ax3.plot(self.yaw)
             fig2.show()
+            fig3 = plt.figure()
+            plt.title('Errors * gain')
+            plt.plot(self.e_phi)
+            plt.plot(self.e_theta)
+            plt.plot(self.e_psi)
+            plt.legend(['e_phi', 'e_theta', 'e_psi'], loc='upper left')
+            fig3.show()
+            fig4, (ax4, ax5, ax6, ax7) = plt.subplots(4, sharex=True, sharey=True)
+            ax4.plot(self.cmd1)
+            fig4.suptitle('Control Commands')
+            ax5.plot(self.cmd2)
+            ax6.plot(self.cmd3)
+            ax7.plot(self.cmd4)
+            fig4.show()
             raw_input()
         
     def deg2rad(self,degrees):

@@ -11,11 +11,11 @@ class Controller():
     '''
     Implements a PIDController
     '''
-    #Controller gains, tuned by hand and intuition.
-    Kd = 4 #4
-    Kp = 3 #3
-    Ki = 3.5 #5.5
-    dt = 0.005
+    #Controller gains, tuned by hand and intuition (4,3,5.5)
+    Kd = 10000 #TODO: gains are orders of magnitude too high!
+    Kp = 8000 #3
+    Ki = 0 #5.5
+    dt = 0.1
     
     def __init__(self, drone):
         self.drone=drone
@@ -23,18 +23,12 @@ class Controller():
         
     def calculate_control_command(self,thetaDesired,thetadotDesired,thetadoubledotDesired):
 
-        print("P: %s" % (self.Kp*(thetaDesired-self.drone.theta)))
-        print("I: %s" % (self.Ki*self.errorIntegral))
-        print("D: %s" % (self.Kd*(self.drone.thetadot-thetadotDesired)))
-
-        error=self.Kp*(thetaDesired-self.drone.theta)+self.Kd*(self.drone.thetadot-thetadotDesired)-self.Ki*self.errorIntegral
+        error=self.Kp*(thetaDesired-self.drone.theta)+self.Kd*(thetadotDesired-self.drone.thetadot)+self.Ki*self.errorIntegral
         self.errorIntegral=self.errorIntegral+self.dt*error
-        print("Error: %s" % (error))
-        print("ErrorIntegral: %s" % (self.errorIntegral))
         
-        e_phi=error.item(0)
-        e_theta=error.item(1)
-        e_psi=error.item(2)        
+        e_phi=-error.item(0)
+        e_theta=-error.item(1)
+        e_psi=-error.item(2)        
 
         I_xx=self.drone.I.item((0, 0))
         I_yy=self.drone.I.item((1, 1))
@@ -46,4 +40,4 @@ class Controller():
         gamma3=qtt-(-2*self.drone.b*e_phi*I_xx+e_psi*I_zz*self.drone.k*self.drone.L)/4*self.drone.b*self.drone.k*self.drone.L
         gamma4=qtt+e_psi*I_zz/4*self.drone.b+e_theta*I_yy/2*self.drone.k*self.drone.L
         
-        return [gamma1,gamma2,gamma3,gamma4]
+        return [gamma1,gamma2,gamma3,gamma4],e_phi,e_theta,e_psi
