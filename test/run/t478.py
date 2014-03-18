@@ -46,3 +46,6 @@ print map(mapy, b, c)
 
 #map with default identity func
 print map(None, [0, 1, {}, "", "hello", False, True]);
+
+#map over a builtin
+print map(sum, [[1,2,3],[4,5,6,7],[-5,1,12]])
