@@ -33,7 +33,7 @@ the more I think about it the more I wonder...
         <script type="text/javascript">
             //on dom loaded    
             $(document).ready(function(){
-                var editor1 = CodeMirror.fromTextArea(document.getElementById('example2_code'), {
+                var editor2 = CodeMirror.fromTextArea(document.getElementById('example2_code'), {
                     parserfile: ["parsepython.js"],
                     autofocus: true,
                     theme: "solarized dark",
@@ -47,7 +47,7 @@ the more I think about it the more I wonder...
                     parserConfig: {'pythonVersion': 2, 'strictErrors': true},
                 });
                 
-                var editor2= CodeMirror.fromTextArea(document.getElementById('example1_code'), {
+                var editor1= CodeMirror.fromTextArea(document.getElementById('example1_code'), {
                     parserfile: ["parsepython.js"],
                     autofocus: true,
                     theme: "solarized dark",
@@ -60,6 +60,9 @@ the more I think about it the more I wonder...
                     autoMatchParens: true,
                     parserConfig: {'pythonVersion': 2, 'strictErrors': true},
                 });
+                editors = {}
+                editors['example2_code'] = editor2;
+                editors['example1_code'] = editor1;
             });    
                 
             function outf(text) {
@@ -75,7 +78,8 @@ the more I think about it the more I wonder...
             }
             
             function runit(myDiv) {
-               var prog = document.getElementById(myDiv+"_code").value;
+//               var prog = document.getElementById(myDiv+"_code").value;
+               var prog = editors[myDiv+'_code'].getValue();
                var mypre = document.getElementById(myDiv+"_pre");
                mypre.innerHTML = '';
                Sk.canvas = myDiv+"_canvas";
