@@ -3,15 +3,16 @@ Some things you need to know to hack on Skulpt
 
 Skulpt is a pretty complex system, and there is very little documentation about the core concepts in skulpt. This document is an attempt to create document answers to important questions developers might have who want to start hacking on skulpt.
 
-I started this document in response to issue #182.  Please check that issue and feel free to contribute to the discussion there.
+I started this document in response to issue #182 (thanks @mseddon).  Please check that issue and feel free to contribute to the discussion there.
 
 The Source
 ----------
 
-The src directory contains the javascript that implements skulpt as well as parts of the standard library.  library modules are in src/lib.  The source files could roughly be divided into two pieces.  The compiler and the runtime.  The compiler files are:  ``abstract.js, ast.js, parser.js, symtable.js, compile.js, and tokenize.js``  The compiler part of skulpt reads python code and generates a Javascript program.  If you want to change the syntax of Python these are the files to look at.  The syntax used in skulpt is taken right from the Python 2.6.5 distribution.
+The src directory contains the javascript that implements skulpt as well as parts of the standard library.  library modules are in src/lib.  The source files could roughly be divided into two pieces.  The compiler and the runtime.  The compiler files are:  ``ast.js, parser.js, symtable.js, compile.js, and tokenize.js``  The compiler part of skulpt reads python code and generates a Javascript program.  If you want to change the syntax of Python these are the files to look at.  The syntax used in skulpt is taken right from the Python 2.6.5 distribution.
 
 When you run the program in the browser the javascript part is 'evaled' by javascript.  The runtime files roughly correspond to all of the major object types in Python plus builtins:
 
+* abstract.js  -- contains lots of abstract function defs 
 * biginteger.js  -- implements Python's long integer type
 * bool.js
 * builtin.js  -- builtin functions: range, min, max, etc. are defined here
@@ -33,7 +34,7 @@ When you run the program in the browser the javascript part is 'evaled' by javas
 * module.js
 * native.js
 * number.js
-* object.js
+* object.js  -- most things "inherit" from object this contains source for GenericXxx functions
 * set.js
 * slice.js
 * str.js
@@ -150,12 +151,24 @@ For now lets concentrate on the parts of the code that were generated specifical
 Naming Conventions
 ------------------
 
+* ``Sk``   The ``Sk`` object contains all of the core Skulpt objects and functions.  Its pretty easy to get from Sk.blah to its source.  Usually you will see something like ``Sk.builtin.foo``  which indicates that you should look in ``builtin.js`` to find the source for foo.  Similarly ``Sk.misceval.callsim`` tells you that you should look in ``misceval.js`` for the callsim function.
 * $xxx  represents a compiler generated variable
 * tp$xxx   These things represent the ``magic methods`` for an object that are defined by the Skulpt system itself.  So for example ``__str__`` is called ``tp$str``.  I always think of tp as a mnemonic for type.
 * mp$xxx  similar to tp but for sequences.  As best as I know these are almost always related to subscripts.
 
 
 Ok, lets look at a slightly more complex example:
+
+Python
+~~~~~~
+
+.. code-block:: python
+
+   x = 1
+   y = 2
+   z = x + y
+   print z
+
 
 Javascript
 ~~~~~~~~~~
@@ -253,7 +266,38 @@ Javascript
    /*    89 */ });
    
    
-Analysis to come...
+So, here we create some local variables.  x, y, do some math to create a third local variable z, and then print it.  Line 26 illustrates creating a local variable ``x`` (stored as an attribute of $loc)  ``new Sk.builtin.nmber(2, 'int');``  By now you can probably guess that ``Sk.builtin.nmber`` is a constructor that creates a Python number object that is of type int, and has the value of 2.  The same thing happens for ``y``.  
+
+Next,  on lines 40 -- 53 we see what happens in an assignment statement. first we load the values of x and  y into temporary variables $loadname1 and $loadname2.  Why not just use $loc.x ??  Well, we need to use Python's scoping rules.   If $loc.x is undefined then we should check the outer scope to see if it exists there.  ``Sk.misceval.loadname``  If loadname does not find a name ``x`` or ``y`` it throws a NameError, and execution would abort.    You can see where this works by changing the assignment statement to ``z = x + t`` to purposely cause the error.  The compiler blindly first tries $loc.t and then again calls loadname, which in this case does abort with an error!
+
+On lines 52 and 53 we perform the addition using ``Sk.abstr.numberBinOp($loadname1, $loadname2, 'Add');``  Note the abstract (see abstract.js) nature of ``numberBinOp`` -- two parameters for the operands, and one parameter ``'Add'`` that indicates the operator.  Finally the temporary result returned by numberBinOp is stored in $loc.z.  Its important to note that $loc.z contains a Python number object.  Down in the bowels of numberBinOp, the the javascript numeric values for x and y are retrieved and result of adding two javascript numbers is converted to the appropriate type of Python object. 
+
+
+Function Calls, Conditionals, and Loops
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+
+Oh my!  so what is the deal with this while(true)/try/switch thing?  To understand this we need a bit more complicated example, so lets look at a program that contains an if/else conditional. We'll see that we now have a much more interesting switch statement.
+
+Without showing all of the generated code, lets consider a simple python program like the one below.  There will be two scope functions generated by the compiler for this example.  $scope0 is for the main program where foo is defined and there is an if statement.  The second $scope1 is for when the foo function is actually called.  The $scope1 while/switch combo contains four cases: 0, 1, 2, and 3.  You can imagine this python code consisting of four blocks.  The first block starts at the beginning and goes through the evaluation of the if condition.  The second block is the if true block of the if.  The third block is the else block of the if statement, and the final block is the rest of the program after the if/else is all done.  You can verify this for yourself by putting this program into a file ``simple.py`` and runing ``./skulpt.py run simple.py`` If you examine the output you will see that the ``$blk`` variable is manipulated to control which ``case`` is executed the next time through the while loop.  Very clever!  If Javascript had ``goto statements`` this would probably look a lot different.
+
+.. code-block:: python
+
+    # <--- $blk 0 starts
+   def foo(bar):
+       print bar
+
+   x = 2
+
+   if x % 2 == 0:         # <---- end of $blk 0
+       foo("hello")        # <---- $blk 3
+   else:
+       foo("goodbye")  # <---- $blk 2
+   # <--- $blk 1   end of if
+
+
+   When foo is called, it has its own scope $scope1 created and called using Sk.misceval.callsim.
+   
+
 
 
 Development Tools
