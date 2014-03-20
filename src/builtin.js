@@ -782,7 +782,8 @@ Sk.builtin.map = function map(fun, seq) {
 
     while (next !== undefined){
         if (!(next instanceof Array)){ next = [next]; }
-        retval.push(fun.func_code.apply(this, next));
+	var func_code = fun.func_code || fun;
+        retval.push(func_code.apply(this, next));
         next = iter.tp$iternext();
     }
 
