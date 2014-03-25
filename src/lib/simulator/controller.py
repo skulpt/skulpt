@@ -16,12 +16,12 @@ class Controller():
     Kd_xy = 1 
     Ki_xy = 0
     
-    Kp_roll = 1
-    Kd_roll = 1 
+    Kp_roll = 3
+    Kd_roll = 9 
     Ki_roll = 0
     
-    Kp_pitch = 1
-    Kd_pitch = 1 
+    Kp_pitch = 3
+    Kd_pitch = 9 
     Ki_pitch = 0
     
     Kp_yaw = 1 
@@ -41,7 +41,7 @@ class Controller():
         self.drone=drone
         self.errorIntegral=np.array([[0], [0], [0]])
         
-    def calculate_control_command(self,theta_desired,thetadot_desired,x_desired,xdot_desired):
+    def calculate_control_command(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
 
 
         #xy control
@@ -62,9 +62,10 @@ class Controller():
         #yaw control
         e_yaw=theta_desired.item(2)-self.drone.theta.item(2);#+thetadot_desired.item(2)-self.drone.thetadot.item(2)
         u_yaw=self.Kp_yaw*(theta_desired.item(2)-self.drone.theta.item(2))+self.Kd_yaw*(thetadot_desired.item(2)-self.drone.thetadot.item(2))
-        theta_desired[2] = 0#math.atan2(math.sin(u_yaw), math.cos(u_yaw));
-        e_yaw_norm=0;#-math.atan2(math.sin(u_yaw), math.cos(u_yaw));
-
+        #theta_desired[2] = math.atan2(math.sin(u_yaw), math.cos(u_yaw));
+        e_yaw_norm=-u_yaw#-math.atan2(math.sin(u_yaw), math.cos(u_yaw));
+        # TODO: handle flips from +pi to -pi
+        
         #altitude control
         e_altitude=self.Kp_z*(x_desired.item(2)-self.drone.x.item(2))+self.Kd_z*(xdot_desired.item(2)-self.drone.xdot.item(2))
         e_z=x_desired.item(2)-self.drone.x.item(2)+xdot_desired.item(2)-self.drone.xdot.item(2)
@@ -75,6 +76,9 @@ class Controller():
         e_roll=-e_roll
         e_pitch=self.Kp_pitch*(theta_desired.item(1)-self.drone.theta.item(1))+self.Kd_pitch*(thetadot_desired.item(1)-self.drone.thetadot.item(1))
         e_pitch = -e_pitch
+        
+        print "errors", e_roll, e_pitch, e_yaw_norm
+        
         I_xx=self.drone.I.item((0, 0))
         I_yy=self.drone.I.item((1, 1))
         I_zz=self.drone.I.item((2, 2))
@@ -82,11 +86,15 @@ class Controller():
         #roll hat irgendwie keine wirkung
         
         #gamma = angular_velocity_motor^2
-        gamma1=qtt-((2*self.drone.k_b*e_roll*I_xx+e_yaw_norm*I_zz*self.drone.k_t*self.drone.L)/(4*self.drone.k_b*self.drone.k_t*self.drone.L))
-        gamma2=qtt+((e_yaw_norm*I_zz)/(4*self.drone.k_b))-((e_pitch*I_yy)/(2*self.drone.k_t*self.drone.L))
-        gamma3=qtt-((-2*self.drone.k_b*e_roll*I_xx+e_yaw_norm*I_zz*self.drone.k_t*self.drone.L)/(4*self.drone.k_b*self.drone.k_t*self.drone.L))
-        gamma4=qtt+((e_yaw_norm*I_zz)/(4*self.drone.k_b))+((e_pitch*I_yy)/(2*self.drone.k_t*self.drone.L))
-        print gamma1, gamma2, gamma3, gamma4
+        b = self.drone.k_b
+        t = self.drone.k_t
+        L = self.drone.L
+        
+        gamma1=qtt - ((2 * b * e_roll * I_xx + e_yaw_norm * I_zz * t * L) / (4 * b * t * L))
+        gamma2=qtt + ((e_yaw_norm * I_zz) / (4 * b)) - ((e_pitch * I_yy) / (2 * t * L))
+        gamma3=qtt - ((-2 * b * e_roll * I_xx + e_yaw_norm * I_zz * t * L) / (4 * b * t * L))
+        gamma4=qtt + ((e_yaw_norm * I_zz) / (4 * b)) + ((e_pitch * I_yy) / (2 * t * L))
+
         #Make sure we don't get above 10 Ampere in total, the rating of the Ardrone 2.0 Battery
         #@ Hovering 5.95A
 #         control_commands=[abs(gamma1),abs(gamma2),abs(gamma3),abs(gamma4)]
@@ -100,5 +108,4 @@ class Controller():
 #             print("New controls:")
 #             print(gamma1,gamma2,gamma3,gamma4)
 
-        print theta_desired.item(2)
         return [gamma1,gamma2,gamma3,gamma4],e_x, e_y, e_z,e_yaw,theta_desired.item(0),theta_desired.item(1),theta_desired.item(2)

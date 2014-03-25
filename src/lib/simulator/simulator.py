@@ -18,7 +18,7 @@ class Simulator():
     
     start_time = 0  # in secs
     end_time = 10
-    dt = 0.05
+    dt = 0.001
 
     
     def __init__(self, drone, controller):
@@ -47,7 +47,7 @@ class Simulator():
     
     def reset(self):
         # TODO: reset all states
-        self.theta_desired = np.array([[0.2], [0.0], [0.0]])
+        self.theta_desired = np.array([[0.2], [0.2], [0.0]])
         self.thetadot_desired = np.array([[0.0], [0.0], [0.0]])
         self.x_desired = np.array([[0.0], [0.0], [0.0]])
         self.xdot_desired = np.array([[0.0], [0.0], [0.0]])
@@ -74,19 +74,21 @@ class Simulator():
     
     def simulate_step(self, t, dt):
 
-        inputCurrents,e_x,e_y,e_z,e_yaw,roll_des,pitch_des,yaw_des = self.controller.calculate_control_command(self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
+        inputCurrents,e_x,e_y,e_z,e_yaw,roll_des,pitch_des,yaw_des = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
         omega = self.thetadot2omega(self.drone.thetadot, self.drone.theta)  # calculate current angular velocity
         linear_acceleration = self.linear_acceleration(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
         omegadot = self.angular_acceleration(inputCurrents, omega)  # calculate resulting angular acceleration
         omega = omega + self.dt * omegadot  # integrate up new angular velocity in the body frame
+        print "inputs:", inputCurrents
+        print "omega:", omega.transpose(), "omegadot:", omegadot.transpose()
         self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll, pitch, yaw velocities
         self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
         #print("New theta",self.drone.theta)
         self.drone.xdoubledot=linear_acceleration
         self.drone.xdot = self.drone.xdot + self.dt * linear_acceleration  # calculate new linear drone speed
         self.drone.x = self.drone.x + self.dt * self.drone.xdot  # calculate new drone position
-        print "acc", linear_acceleration
-        print "theta", self.drone.theta
+        #print "acc", linear_acceleration
+        #print "theta", self.drone.theta
         #print("Position",self.drone.x.transpose())
         
         if(sys.platform != "skulpt"):#save trajectory for plotting
@@ -96,7 +98,7 @@ class Simulator():
             self.roll.append(self.drone.theta.item(0))
             self.pitch.append(self.drone.theta.item(1))
             self.yaw.append(self.drone.theta.item(2))
-            print self.theta_desired.item(2)
+            #print self.theta_desired.item(2)
             self.cmd1.append(inputCurrents[0])
             self.cmd2.append(inputCurrents[1])
             self.cmd3.append(inputCurrents[2])
@@ -126,7 +128,7 @@ class Simulator():
             self.simulate_step(t, self.dt)
             t += self.dt
         
-            if(sys.platform != "skulpt"):
+            if((t*2 - int(t*2)) < 0.0001 and sys.platform != "skulpt"):
                 #ion()
                 ###########################################
                 plt.figure(1)
@@ -189,7 +191,7 @@ class Simulator():
                 ax_4=fig4.add_subplot(414,sharey=ax_1)
                 ax_4.plot(self.cmd4)
                 fig4.show()
-                pause(1)
+                pause(0.1)
         
     def deg2rad(self,degrees):
         return np.array(map(math.radians, degrees))
@@ -197,21 +199,35 @@ class Simulator():
     def rotation(self, angles):  # translate angles to intertial/world frame
         phi = angles.item(0)
         theta = angles.item(1)
-        psi = angles.item(0)
+        psi = angles.item(2)
+        
+        c_phi = math.cos(phi);
+        s_phi = math.sin(phi);
+        c_theta = math.cos(theta);
+        s_theta = math.sin(theta);
+        c_psi = math.cos(psi)
+        s_psi = math.sin(psi)
+        
         #ZYZ Euler nach Paper
-        R = np.array([[math.cos(phi) * math.cos(psi) - math.cos(theta) * math.sin(phi) * math.sin(psi), -math.cos(psi) * math.sin(phi) - math.cos(phi) * math.cos(theta) * math.sin(psi), math.sin(theta) * math.sin(psi)],
-                      [math.cos(theta) * math.cos(psi) * math.sin(phi) + math.cos(phi) * math.sin(psi), math.cos(phi) * math.cos(theta) * math.cos(psi) - math.sin(phi) * math.sin(psi), -math.cos(psi) * math.sin(theta)],
-                      [math.sin(phi) * math.sin(theta), math.cos(phi) * math.sin(theta), math.cos(theta)]])
+        #R = np.array([[c_phi * c_psi - c_theta * s_phi * s_psi, -c_psi * s_phi - c_phi * c_theta * s_psi, s_theta * s_psi],
+        #              [c_theta * c_psi * s_phi + c_phi * s_psi, c_phi * c_theta * c_psi - s_phi * s_psi,  -c_psi * s_theta],
+        #              [s_phi * s_theta, c_phi * s_theta, c_theta]])
+        # Master thesis
+        R = np.array([[c_psi * c_theta, c_psi * s_theta * s_phi - s_psi * c_phi, c_psi * s_theta * c_phi + s_psi * s_phi],
+                      [s_psi * c_theta, s_psi * s_theta * s_phi + c_psi * c_phi, s_psi * s_theta * c_phi - c_psi * s_phi],
+                      [-s_theta, c_theta * s_phi, c_theta * c_phi]])
+        
         #ZYZ Euler nach craig
-        R = np.array([[math.cos(psi)*math.cos(theta)*math.cos(phi)-math.sin(psi)*math.sin(phi), -math.cos(psi)*math.cos(theta)*math.sin(phi)-math.sin(psi)*math.cos(phi), math.cos(psi)*math.sin(theta) ],
-                      [math.sin(psi)*math.cos(theta)*math.cos(phi)+math.cos(psi)*math.sin(phi), -math.sin(psi)*math.cos(theta)*math.sin(phi)+math.cos(psi)*math.cos(phi), math.sin(psi)*math.sin(theta) ],
-                      [-math.sin(theta)*math.cos(phi), math.sin(theta)*math.sin(phi), math.cos(theta)]])
+        #R = np.array([[math.cos(psi)*math.cos(theta)*math.cos(phi)-math.sin(psi)*math.sin(phi), -math.cos(psi)*math.cos(theta)*math.sin(phi)-math.sin(psi)*math.cos(phi), math.cos(psi)*math.sin(theta) ],
+        #              [math.sin(psi)*math.cos(theta)*math.cos(phi)+math.cos(psi)*math.sin(phi), -math.sin(psi)*math.cos(theta)*math.sin(phi)+math.cos(psi)*math.cos(phi), math.sin(psi)*math.sin(theta) ],
+        #              [-math.sin(theta)*math.cos(phi), math.sin(theta)*math.sin(phi), math.cos(theta)]])
 
         return R.transpose()
     
     def linear_acceleration(self, inputs, angles, xdot):
         gravity = np.array([[0], [0], [-self.drone.g]])
         R = self.rotation(angles)
+
         T = np.dot(R, self.drone.thrust(inputs))
         F_drag = -self.drone.kd * xdot
         a = gravity + (T + F_drag) / self.drone.m
@@ -219,19 +235,29 @@ class Simulator():
         
     def angular_acceleration(self, inputs, omega):
         tau = self.drone.torques(inputs);
+
         omegaddot = np.dot(np.linalg.inv(self.drone.I), (tau - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose()).transpose()));
         return omegaddot
     
     def thetadot2omega(self, thetadot, theta):
-        R = np.array([[1, -math.sin(theta.item(1)), 0],
+        R = np.array([[1, 0, -math.sin(theta.item(1))],
                       [0, math.cos(theta.item(0)), math.cos(theta.item(1)) * math.sin(theta.item(0))],
                       [0, -math.sin(theta.item(0)), math.cos(theta.item(1)) * math.cos(theta.item(0))]])
         omega = np.dot(R, thetadot)
         return omega
     
-    def omega2thetadot(self, omega, theta):
-        R = np.array([[1, -math.sin(theta.item(1)), 0],
-                      [0, math.cos(theta.item(0)), math.cos(theta.item(1)) * math.sin(theta.item(0))],
-                      [0, -math.sin(theta.item(0)), math.cos(theta.item(1)) * math.cos(theta.item(0))]])
-        thetadot = np.dot(R.transpose(), omega)
+    def omega2thetadot(self, omega, angles):
+        from math import sin, cos, tan
+        #R = np.array([[1, 0, -math.sin(theta.item(1))],
+        #              [0, math.cos(theta.item(0)), math.cos(theta.item(1)) * math.sin(theta.item(0))],
+        #              [0, -math.sin(theta.item(0)), math.cos(theta.item(1)) * math.cos(theta.item(0))]])
+        #thetadot = np.dot(np.linalg.inv(R), omega)
+        
+        phi = angles.item(0);
+        theta = angles.item(1);
+        
+        R = np.array([[1, sin(phi) * tan(theta), cos(phi) * tan(theta)],
+                      [0, cos(phi), -sin(phi)],
+                      [0, sin(phi) / cos(theta), cos(phi) / cos(theta)]])
+        thetadot = np.dot(R, omega)
         return thetadot
