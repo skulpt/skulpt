@@ -24,7 +24,7 @@ class Simulator():
     def __init__(self, drone, controller):
         self.drone = drone
         self.controller = controller
-        
+        self.step_count = 0
         if(sys.platform != "skulpt"):
             self.x = []
             self.y = []
@@ -47,7 +47,7 @@ class Simulator():
     
     def reset(self):
         # TODO: reset all states
-        self.theta_desired = np.array([[0.2], [0.2], [0.0]])
+        self.theta_desired = np.array([[0.0], [0.0], [0.0]])
         self.thetadot_desired = np.array([[0.0], [0.0], [0.0]])
         self.x_desired = np.array([[0.0], [0.0], [0.0]])
         self.xdot_desired = np.array([[0.0], [0.0], [0.0]])
@@ -73,16 +73,34 @@ class Simulator():
         return navdata;
     
     def simulate_step(self, t, dt):
+        if t < 8:
+            self.theta_desired[0] = 0.01
+            self.theta_desired[2] = -0.1
+        elif t < 16:
+            self.theta_desired[0] = -0.01
+            self.theta_desired[2] = 0.1
+        else:
+            self.theta_desired[0] = 0.0
+            self.theta_desired[2] = 0.0
 
+        self.step_count += 1
         inputCurrents,e_x,e_y,e_z,e_yaw,roll_des,pitch_des,yaw_des = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
         omega = self.thetadot2omega(self.drone.thetadot, self.drone.theta)  # calculate current angular velocity
-        linear_acceleration = self.linear_acceleration(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
-        omegadot = self.angular_acceleration(inputCurrents, omega)  # calculate resulting angular acceleration
+        
+        #torques_thrust = self.drone.torques_thrust(np.array([inputCurrents]).transpose())
+        torques_thrust = self.drone.torques_thrust(inputCurrents)
+
+        linear_acceleration = self.linear_acceleration(torques_thrust[3], self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
+        omegadot = self.angular_acceleration(torques_thrust[0:3,0], omega)  # calculate resulting angular acceleration
+        #linear_acceleration = self.linear_acceleration2(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
+        #omegadot = self.angular_acceleration2(inputCurrents, omega)  # calculate resulting angular acceleration
+        
         omega = omega + self.dt * omegadot  # integrate up new angular velocity in the body frame
-        print "inputs:", inputCurrents
-        print "omega:", omega.transpose(), "omegadot:", omegadot.transpose()
+        #print "inputs:", inputCurrents
+        #print "omega:", omega.transpose(), "omegadot:", omegadot.transpose()
         self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll, pitch, yaw velocities
         self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
+        #print "thetadot:",self.drone.thetadot
         #print("New theta",self.drone.theta)
         self.drone.xdoubledot=linear_acceleration
         self.drone.xdot = self.drone.xdot + self.dt * linear_acceleration  # calculate new linear drone speed
@@ -91,7 +109,7 @@ class Simulator():
         #print "theta", self.drone.theta
         #print("Position",self.drone.x.transpose())
         
-        if(sys.platform != "skulpt"):#save trajectory for plotting
+        if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
             self.x.append(self.drone.x.item(0))
             self.y.append(self.drone.x.item(1))
             self.z.append(self.drone.x.item(2))
@@ -128,7 +146,10 @@ class Simulator():
             self.simulate_step(t, self.dt)
             t += self.dt
         
-            if((t*2 - int(t*2)) < 0.0001 and sys.platform != "skulpt"):
+            # only plot every
+            frac = 5.0 * t + self.dt * 0.1;
+            
+            if((frac - int(frac)) < (self.dt * 0.5) and sys.platform != "skulpt"):
                 #ion()
                 ###########################################
                 plt.figure(1)
@@ -140,10 +161,15 @@ class Simulator():
                 #ax.set_xlabel('x')
                 #ax.set_ylabel('y')
                 #ax.set_zlabel('z')
-                plt.ylim(-1.5,+1.5)
-                plt.xlim(-1.5,+1.5)               
-                ax=fig1.add_subplot(111)
-                ax.plot(self.x, self.y)
+                #plt.ylim(-1.5,+1.5)
+                #plt.xlim(-1.5,+1.5)               
+                ax_x=fig1.add_subplot(311)
+                ax_y=fig1.add_subplot(312)
+                ax_z=fig1.add_subplot(313)
+                #ax_z.ylim(-2.0, 2)
+                ax_x.plot(self.x)
+                ax_y.plot(self.y)
+                ax_z.plot(self.z)
                 draw()
                 fig1.show()
 
@@ -191,7 +217,7 @@ class Simulator():
                 ax_4=fig4.add_subplot(414,sharey=ax_1)
                 ax_4.plot(self.cmd4)
                 fig4.show()
-                pause(0.1)
+                #pause(0.1)
         
     def deg2rad(self,degrees):
         return np.array(map(math.radians, degrees))
@@ -224,7 +250,21 @@ class Simulator():
 
         return R.transpose()
     
-    def linear_acceleration(self, inputs, angles, xdot):
+    def linear_acceleration(self, thrust, angles, xdot):
+        gravity = np.array([[0], [0], [-self.drone.g]])
+        R = self.rotation(angles)
+
+        T = np.dot(R, np.array([[0], [0], [thrust]]))
+        F_drag = -self.drone.kd * xdot
+        a = gravity + (T + F_drag) / self.drone.m
+        return a
+        
+    def angular_acceleration(self, torques, omega):
+        # this transpose stuff really sucks
+        omegaddot = np.dot(self.drone.I_inv, (torques - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose())).transpose());
+        return omegaddot
+    
+    def linear_acceleration2(self, inputs, angles, xdot):
         gravity = np.array([[0], [0], [-self.drone.g]])
         R = self.rotation(angles)
 
@@ -233,25 +273,26 @@ class Simulator():
         a = gravity + (T + F_drag) / self.drone.m
         return a
         
-    def angular_acceleration(self, inputs, omega):
+    def angular_acceleration2(self, inputs, omega):
         tau = self.drone.torques(inputs);
-
-        omegaddot = np.dot(np.linalg.inv(self.drone.I), (tau - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose()).transpose()));
+        #print "tau", tau.shape
+        omegaddot = np.dot(self.drone.I_inv, (tau - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose()).transpose()));
         return omegaddot
     
-    def thetadot2omega(self, thetadot, theta):
-        R = np.array([[1, 0, -math.sin(theta.item(1))],
-                      [0, math.cos(theta.item(0)), math.cos(theta.item(1)) * math.sin(theta.item(0))],
-                      [0, -math.sin(theta.item(0)), math.cos(theta.item(1)) * math.cos(theta.item(0))]])
+    def thetadot2omega(self, thetadot, angles):
+        from math import sin, cos
+        
+        phi = angles.item(0);
+        theta = angles.item(1);
+        
+        R = np.array([[1, 0, -sin(theta)],
+                      [0, cos(phi), cos(theta) * sin(phi)],
+                      [0, -sin(phi), cos(theta) * cos(phi)]])
         omega = np.dot(R, thetadot)
         return omega
     
     def omega2thetadot(self, omega, angles):
         from math import sin, cos, tan
-        #R = np.array([[1, 0, -math.sin(theta.item(1))],
-        #              [0, math.cos(theta.item(0)), math.cos(theta.item(1)) * math.sin(theta.item(0))],
-        #              [0, -math.sin(theta.item(0)), math.cos(theta.item(1)) * math.cos(theta.item(0))]])
-        #thetadot = np.dot(np.linalg.inv(R), omega)
         
         phi = angles.item(0);
         theta = angles.item(1);

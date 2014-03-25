@@ -17,6 +17,7 @@ class Drone():
     I = np.array([[2.04016E-2, 0, 0],
                   [0, 1.56771E-2, 0],
                   [0, 0, 3.51779E-2]])  # inertia matrix of the drone in gm3
+    
     k_b = 3.29E-11 # drag coefficient Nm/rpm2
     k_t =  1.27E-7  # torque coefficient
     kd = 0.1  # air friction coefficent of the whole ardrone,
@@ -55,7 +56,29 @@ class Drone():
     thetadoubledot = np.zeros((3, 1))
     
     def __init__(self):
+        self.I_inv = np.linalg.inv(self.I)
+        
+        # K matrix is diagonal containing constants
+        # A matrix is allocation matrix describing configuration of quadrotor 
+        
+        k = self.k_t
+        kL = k * self.L
+        b = self.k_b
+        m = self.m
+        Ixx = self.I.item((0, 0))
+        Iyy = self.I.item((1, 1))
+        Izz = self.I.item((2, 2))
+        
+        # matrix to compute torques/moments and thrust from motor inputs
+        self.KA = np.array([[kL,0,-kL,0],[0,kL,0,-kL],[b,-b,b,-b],[k,k,k,k]])
+        
+        # matrix to compute motor inputs from desired angular acceleration and thrust
+        self.AinvKinvI = np.array([[Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),-Izz/(4*b),m/(4*k)]])
+        
         pass
+    
+    def torques_thrust(self, inputs):
+        return np.dot(self.KA, inputs)
     
     # Compute motor torques, given the current input currents, length, drag coefficient, and thrust coefficients
     def torques(self, inputs):

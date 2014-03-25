@@ -42,6 +42,27 @@ class Controller():
         self.errorIntegral=np.array([[0], [0], [0]])
         
     def calculate_control_command(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
+        
+        # TODO: implement angular rate P controllers
+        # TODO: implement z velocity controller feeding to desired thrust
+        # TODO: implement attitude PI controller feeding angular rates to angular rate controller
+        
+        e_roll=self.Kp_roll*(theta_desired.item(0)-self.drone.theta.item(0))+self.Kd_roll*(thetadot_desired.item(0)-self.drone.thetadot.item(0))
+        e_pitch=self.Kp_pitch*(theta_desired.item(1)-self.drone.theta.item(1))+self.Kd_pitch*(thetadot_desired.item(1)-self.drone.thetadot.item(1))
+        e_yaw=self.Kp_yaw*(theta_desired.item(2)-self.drone.theta.item(2))+self.Kd_yaw*(thetadot_desired.item(2)-self.drone.thetadot.item(2))
+        
+        T_des = self.drone.g / (math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0)));
+        
+        ctrl = np.dot(self.drone.AinvKinvI, np.array([[e_roll], [e_pitch], [e_yaw], [T_des]]));
+        #print ctrl.shape
+        #gamma1 = ctrl.item(0)
+        #gamma2 = ctrl.item(1)
+        #gamma3 = ctrl.item(2)
+        #gamma4 = ctrl.item(3)
+        #[gamma1,gamma2,gamma3,gamma4]
+        return ctrl,0, 0, 0, 0,theta_desired.item(0),theta_desired.item(1),theta_desired.item(2)
+    
+    def calculate_control_command2(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
 
 
         #xy control
@@ -69,8 +90,9 @@ class Controller():
         #altitude control
         e_altitude=self.Kp_z*(x_desired.item(2)-self.drone.x.item(2))+self.Kd_z*(xdot_desired.item(2)-self.drone.xdot.item(2))
         e_z=x_desired.item(2)-self.drone.x.item(2)+xdot_desired.item(2)-self.drone.xdot.item(2)
+        print "z err:", e_altitude, x_desired.item(2), self.drone.x.item(2)
         qtt=(self.drone.m*self.drone.g)/(4*self.drone.k_t*math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0))) 
-        #qtt=(1+e_altitude*self.agressiveness_z)*qtt
+        qtt=(1+e_altitude*self.agressiveness_z)*qtt
         
         e_roll=self.Kp_roll*(theta_desired.item(0)-self.drone.theta.item(0))+self.Kd_roll*(thetadot_desired.item(0)-self.drone.thetadot.item(0))
         e_roll=-e_roll
