@@ -12,7 +12,7 @@ def setup():
     
     drone = Drone()
     angular_disturbance = np.array([[0.03], [0.02], [0.1]])
-    drone.thetadot = angular_disturbance  # Simulate some disturbance in the angular velocity.
+    #drone.thetadot = angular_disturbance  # Simulate some disturbance in the angular velocity.
     controller = Controller(drone)
     simulator = Simulator(drone,controller)
     
