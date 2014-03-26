@@ -74,20 +74,20 @@ class Simulator():
     
     def simulate_step(self, t, dt):
         if t > 1 and t < 8:
-            self.theta_desired[0] = 0.1
-            self.theta_desired[1] = -0.1
-            self.theta_desired[2] = 0.0
+            self.theta_desired[0] = 0.0
+            self.theta_desired[1] = 0.0
+            self.theta_desired[2] = 0.1
         elif t >= 8 and t < 16:
-            self.theta_desired[0] = -0.1
+            self.theta_desired[0] = 0.0
             self.theta_desired[1] = 0.1
-            self.theta_desired[2] = 0.0
+            self.theta_desired[2] = 0.1
         else:
             self.theta_desired[0] = 0.0
             self.theta_desired[1] = 0.0
-            self.theta_desired[2] = 0.0
+            self.theta_desired[2] = 0.1
 
         self.step_count += 1
-        inputCurrents,e_x,e_y,e_z,e_yaw,roll_des,pitch_des,yaw_des = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
+        inputCurrents = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
         omega = self.drone.thetadot_in_body()  # calculate current angular velocity in body frame
         
         #torques_thrust = self.drone.torques_thrust(np.array([inputCurrents]).transpose())
@@ -102,7 +102,7 @@ class Simulator():
 
         #print "inputs:", inputCurrents
         #print "omega:", omega.transpose(), "omegadot:", omegadot.transpose()
-        self.drone.thetadot = self.omega2thetadot(omega, self.drone.theta)  # calculate roll, pitch, yaw velocities
+        self.drone.thetadot = np.dot(self.drone.angle_rotation_to_world(), omega)  # calculate roll, pitch, yaw velocities
         self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
                 
         #print "thetadot:",self.drone.thetadot
@@ -115,21 +115,22 @@ class Simulator():
         #print("Position",self.drone.x.transpose())
         
         if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
-            self.x.append(self.drone.x.item(0))
-            self.y.append(self.drone.x.item(1))
-            self.z.append(self.drone.x.item(2))
-            self.roll.append(self.drone.theta.item(0))
-            self.pitch.append(self.drone.theta.item(1))
-            self.yaw.append(self.drone.theta.item(2))
+            vel = np.dot(self.rotation(self.drone.theta).transpose(), self.drone.xdot)
+            #vel = self.drone.xdot
+            self.x.append(vel.item(0))
+            self.y.append(vel.item(1))
+            self.z.append(vel.item(2))
+            
+            ang = self.drone.theta_in_body()
+            
+            self.roll.append( ang.item(0))
+            self.pitch.append(ang.item(1))
+            self.yaw.append(  ang.item(2))
             #print self.theta_desired.item(2)
             self.cmd1.append(inputCurrents[0] - inputCurrents[2])
             self.cmd2.append(inputCurrents[1] - inputCurrents[3])
             self.cmd3.append(inputCurrents[2])
             self.cmd4.append(inputCurrents[3])
-            self.e_yaw.append(e_yaw)
-            self.e_x.append(e_x)
-            self.e_y.append(e_y)
-            self.e_z.append(e_z)
             self.roll_des.append(self.theta_desired[0])
             self.pitch_des.append(self.theta_desired[1])
             self.yaw_des.append(self.theta_desired[2])
@@ -269,23 +270,3 @@ class Simulator():
         omegaddot = np.dot(self.drone.I_inv, (torques - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose())).transpose());
         return omegaddot
     
-    def linear_acceleration2(self, inputs, angles, xdot):
-        gravity = np.array([[0], [0], [-self.drone.g]])
-        R = self.rotation(angles)
-
-        T = np.dot(R, self.drone.thrust(inputs))
-        F_drag = -self.drone.kd * xdot
-        a = gravity + (T + F_drag) / self.drone.m
-        return a
-    
-    def omega2thetadot(self, omega, angles):
-        from math import sin, cos, tan
-        
-        phi = angles.item(0);
-        theta = angles.item(1);
-        
-        R = np.array([[1, sin(phi) * tan(theta), cos(phi) * tan(theta)],
-                      [0, cos(phi), -sin(phi)],
-                      [0, sin(phi) / cos(theta), cos(phi) / cos(theta)]])
-        thetadot = np.dot(R, omega)
-        return thetadot

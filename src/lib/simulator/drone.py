@@ -84,15 +84,16 @@ class Drone():
         Izz = self.I.item((2, 2))
         
         # matrix to compute torques/moments and thrust from motor inputs
-        #self.KA = np.array([[kL,0,-kL,0],[0,kL,0,-kL],[b,-b,b,-b],[k,k,k,k]])
         self.KA = np.array([[0,kL,0,-kL],[kL,0,-kL,0],[b,-b,b,-b],[k,k,k,k]])
         
         # matrix to compute motor inputs from desired angular acceleration and thrust
-        #self.AinvKinvI = np.array([[Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),-Izz/(4*b),m/(4*k)]])
         self.AinvKinvI = np.array([[0,Iyy/(2*kL),Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)]])
         pass
     
-    def rotation_to_body(self):
+    def angle_rotation_to_body(self):
+        '''
+        compute rotation matrix to convert angular velocities to body frame
+        '''
         from math import sin, cos
         
         phi = self.theta.item(0);
@@ -102,7 +103,10 @@ class Drone():
                       [0, cos(phi), cos(theta) * sin(phi)],
                       [0, -sin(phi), cos(theta) * cos(phi)]])
     
-    def rotation_to_world(self):
+    def angle_rotation_to_world(self):
+        '''
+        compute rotation matrix to convert angular velocities to world frame
+        '''
         from math import sin, cos, tan
         
         phi = self.theta.item(0);
@@ -113,10 +117,10 @@ class Drone():
                       [0, sin(phi) / cos(theta), cos(phi) / cos(theta)]])
     
     def theta_in_body(self):
-        return np.dot(self.rotation_to_body(), self.theta)
+        return np.dot(self.angle_rotation_to_body(), self.theta)
     
     def thetadot_in_body(self):
-        return np.dot(self.rotation_to_body(), self.thetadot)
+        return np.dot(self.angle_rotation_to_body(), self.thetadot)
     
     def torques_thrust(self, inputs):
         return np.dot(self.KA, inputs)
