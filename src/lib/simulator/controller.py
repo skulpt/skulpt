@@ -42,23 +42,30 @@ class Controller():
         self.errorIntegral=np.array([[0], [0], [0]])
         
         # TODO: tune gains
-        self.Kp_angular_rate = np.array([[10], [10], [5]]);
-        self.Kp_attitude = np.array([[5], [5], [1]]);
+        self.Kp_angular_rate = np.array([[10.0], [10.0], [5.0]]);
+        self.Kp_attitude = np.array([[5.0], [5.0], [1.0]]);
         
     def calculate_control_command(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
         # TODO: implement z velocity controller feeding to desired thrust
         
         T_des = self.drone.g / (math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0)));
-        
+        #print "T_des",T_des
         # attitude controller
         thetadot_desired = self.Kp_attitude * (theta_desired - self.drone.theta_in_body());
         
         # angular rate controller
         rates = self.Kp_angular_rate * (thetadot_desired - self.drone.thetadot_in_body())
+        #print "theta_desired", theta_desired
+        #print "self.drone.theta_in_body()", self.drone.theta_in_body()
+        #print "thetadot_desired",thetadot_desired
+        #print "self.drone.thetadot",self.drone.thetadot
+        #print "self.drone.thetadot_in_body()",self.drone.thetadot_in_body()
         rates = np.vstack((rates, T_des))
-        
+        #print "rates1",type(rates.item(3)),rates.item(3)
+        #print "rates2",rates
+        #print "self.drone.AinvKinvI", self.drone.AinvKinvI
         ctrl = np.dot(self.drone.AinvKinvI, rates);
-        
+        #print "ctrl", ctrl
         return ctrl
     
     def calculate_control_command2(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):

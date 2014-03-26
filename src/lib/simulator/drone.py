@@ -84,10 +84,10 @@ class Drone():
         Izz = self.I.item((2, 2))
         
         # matrix to compute torques/moments and thrust from motor inputs
-        self.KA = np.array([[0,kL,0,-kL],[kL,0,-kL,0],[b,-b,b,-b],[k,k,k,k]])
+        self.KA = np.array([[0.0,kL,0.0,-kL],[kL,0.0,-kL,0.0],[b,-b,b,-b],[k,k,k,k]])
         
         # matrix to compute motor inputs from desired angular acceleration and thrust
-        self.AinvKinvI = np.array([[0,Iyy/(2*kL),Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)]])
+        self.AinvKinvI = np.array([[0.0,Iyy/(2.0*kL),Izz/(4.0*b),m/(4.0*k)],[Ixx/(2.0*kL),0.0,-Izz/(4.0*b),m/(4.0*k)],[0.0,-Iyy/(2.0*kL),Izz/(4.0*b),m/(4.0*k)],[-Ixx/(2.0*kL),0.0,-Izz/(4.0*b),m/(4.0*k)]])
         pass
     
     def angle_rotation_to_body(self):

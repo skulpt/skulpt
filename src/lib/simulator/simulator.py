@@ -6,7 +6,7 @@ Created on 07.02.2014
 import sys
 import math
 import numpy as np  # for cross, inv, random, arange
-from navdata import Navdata
+#from simulator.navdata import Navdata
 
 if(sys.platform != "skulpt"):
     import matplotlib.pyplot as plt
@@ -17,8 +17,8 @@ if(sys.platform != "skulpt"):
 class Simulator():
     
     start_time = 0  # in secs
-    end_time = 10
-    dt = 0.001
+    end_time = 60
+    dt = 0.005
 
     
     def __init__(self, drone, controller):
@@ -76,16 +76,17 @@ class Simulator():
         if t > 1 and t < 8:
             self.theta_desired[0] = 0.0
             self.theta_desired[1] = 0.0
-            self.theta_desired[2] = 0.1
+            self.theta_desired[2] = 0.3
         elif t >= 8 and t < 16:
             self.theta_desired[0] = 0.0
-            self.theta_desired[1] = 0.1
-            self.theta_desired[2] = 0.1
-        else:
+            self.theta_desired[1] = -0.0
+            self.theta_desired[2] = 0.6
+        elif t >= 16:
             self.theta_desired[0] = 0.0
             self.theta_desired[1] = 0.0
-            self.theta_desired[2] = 0.1
-
+            self.theta_desired[2] = 1.2
+        #print self.theta_desired
+        #print t
         self.step_count += 1
         inputCurrents = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
         omega = self.drone.thetadot_in_body()  # calculate current angular velocity in body frame
@@ -98,18 +99,21 @@ class Simulator():
         #linear_acceleration = self.linear_acceleration2(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
         #omegadot = self.angular_acceleration2(inputCurrents, omega)  # calculate resulting angular acceleration
         
-        omega = omega + self.dt * omegadot  # integrate up new angular velocity in the body frame
+        omega = omega + dt * omegadot  # integrate up new angular velocity in the body frame
 
         #print "inputs:", inputCurrents
         #print "omega:", omega.transpose(), "omegadot:", omegadot.transpose()
         self.drone.thetadot = np.dot(self.drone.angle_rotation_to_world(), omega)  # calculate roll, pitch, yaw velocities
-        self.drone.theta = self.drone.theta + self.dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
-                
+        self.drone.theta = self.drone.theta + dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
+        
+        #print "d", inputCurrents
+        #print "a", torques_thrust[0:3,0], "b", omega, "c", omegadot
+        
         #print "thetadot:",self.drone.thetadot
         #print("New theta",self.drone.theta)
         self.drone.xdoubledot=linear_acceleration
-        self.drone.xdot = self.drone.xdot + self.dt * linear_acceleration  # calculate new linear drone speed
-        self.drone.x = self.drone.x + self.dt * self.drone.xdot  # calculate new drone position
+        self.drone.xdot = self.drone.xdot + dt * linear_acceleration  # calculate new linear drone speed
+        self.drone.x = self.drone.x + dt * self.drone.xdot  # calculate new drone position
         #print "acc", linear_acceleration
         #print "theta", self.drone.theta
         #print("Position",self.drone.x.transpose())
@@ -117,6 +121,7 @@ class Simulator():
         if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
             vel = np.dot(self.rotation(self.drone.theta).transpose(), self.drone.xdot)
             #vel = self.drone.xdot
+            vel = self.drone.x
             self.x.append(vel.item(0))
             self.y.append(vel.item(1))
             self.z.append(vel.item(2))
@@ -267,6 +272,6 @@ class Simulator():
         
     def angular_acceleration(self, torques, omega):
         # this transpose stuff really sucks
-        omegaddot = np.dot(self.drone.I_inv, (torques - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose())).transpose());
+        omegaddot = np.dot(self.drone.I_inv, (torques.transpose() - np.cross(omega.transpose(), np.dot(self.drone.I, omega).transpose())).transpose());
         return omegaddot
     
