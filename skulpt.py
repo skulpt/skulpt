@@ -377,7 +377,7 @@ def dist(options):
     os.system("rm -rf {0}/".format(DIST_DIR))
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
-    if options.uncompressed:
+    if options.uncompressed or options.only_uncompressed:
         if options.verbose:
             print ". Writing combined version..."
         combined = ''
@@ -391,22 +391,25 @@ def dist(options):
         linemap.close()
         uncompfn = "{0}/{1}".format(DIST_DIR, OUTFILE_REG)
         open(uncompfn, "w").write(combined)
-        # Prevent accidental editing of the uncompressed distribution file. 
+        # Prevent accidental editing of the uncompressed distribution file.
         os.system("chmod 444 {0}/{1}".format(DIST_DIR, OUTFILE_REG))
 
+        if options.only_uncompressed:
+            return
 
     # Make the compressed distribution.
     compfn = "{0}/{1}".format(DIST_DIR, OUTFILE_MIN)
     builtinfn = "{0}/{1}".format(DIST_DIR, OUTFILE_LIB)
 
-    # Run tests on uncompressed.
-    if options.verbose:
-        print ". Running tests on uncompressed..."
+    if not options.no_tests:
+        # Run tests on uncompressed.
+        if options.verbose:
+            print ". Running tests on uncompressed..."
 
-    ret = test()
-    if ret != 0:
-        print "Tests failed on uncompressed version."
-        sys.exit(1);
+        ret = test()
+        if ret != 0:
+            print "Tests failed on uncompressed version."
+            sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST)])
@@ -427,13 +430,14 @@ def dist(options):
         print "closure-compiler failed."
         sys.exit(1)
 
-    # Run tests on compressed.
-    if options.verbose:
-        print ". Running tests on compressed..."
-    ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
-    if ret != 0:
-        print "Tests failed on compressed version."
-        sys.exit(1)
+    if not options.no_tests:
+        # Run tests on compressed.
+        if options.verbose:
+            print ". Running tests on compressed..."
+        ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
+        if ret != 0:
+            print "Tests failed on compressed version."
+            sys.exit(1)
 
     ret = os.system("cp {0} {1}/tmp.js".format(compfn, DIST_DIR))
     if ret != 0:
@@ -764,11 +768,13 @@ Commands:
 
 Options:
 
-    -q, --quiet        Only output important information
-    -s, --silent       Do not output anything, besides errors
-    -u, --uncompressed Makes uncompressed core distribution file for debugging
-    -v, --verbose      Make output more verbose [default]
-    --version          Returns the version string in Bower configuration file.
+    -q, --quiet          Only output important information
+    -s, --silent         Do not output anything, besides errors
+    -u, --uncompressed   Makes uncompressed core distribution file for debugging
+    --only-uncompressed  Don't generate packed distribution files
+    --no-tests           Don't run tests
+    -v, --verbose        Make output more verbose [default]
+    --version            Returns the version string in Bower configuration file.
 '''.format(program=program)
 
 def main():
@@ -776,19 +782,12 @@ def main():
     parser.add_option("-q", "--quiet",        action="store_false", dest="verbose")
     parser.add_option("-s", "--silent",       action="store_true",  dest="silent",       default=False)
     parser.add_option("-u", "--uncompressed", action="store_true",  dest="uncompressed", default=False)
-    parser.add_option("-v", "--verbose",
-        action="store_true",
-        dest="verbose",
-        default=True,
-        help="Make output more verbose [default]")
-    (options, args) = parser.parse_args()
+    parser.add_option("--only-uncompressed",  action="store_true",  dest="only_uncompressed", default=False)
+    parser.add_option("--no-tests",           action="store_true",  dest="no_tests", default=False)
+    parser.add_option("-v", "--verbose",      action="store_true",  dest="verbose",  default=True,
+                      help="Make output more verbose [default]")
 
-    # This is rather aggressive. Do we really want it?
-    if options.verbose:
-        if sys.platform == 'win32':
-            os.system("cls")
-        else:
-            os.system("clear")
+    (options, args) = parser.parse_args()
 
     if len(sys.argv) < 2:
         cmd = "help"
