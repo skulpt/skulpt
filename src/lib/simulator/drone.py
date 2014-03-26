@@ -5,6 +5,20 @@ Created on 07.02.2014
 '''
 import numpy as np
 
+#Drone layout
+#
+#          1 O
+#            |
+#        x ^ |
+#          | |           
+#            |          4
+# O----------+----------O
+# 2   <--    |
+#      y     |
+#            |
+#            |
+#            O 3
+
 class Drone():
     '''
     Model the drone
@@ -70,12 +84,39 @@ class Drone():
         Izz = self.I.item((2, 2))
         
         # matrix to compute torques/moments and thrust from motor inputs
-        self.KA = np.array([[kL,0,-kL,0],[0,kL,0,-kL],[b,-b,b,-b],[k,k,k,k]])
+        #self.KA = np.array([[kL,0,-kL,0],[0,kL,0,-kL],[b,-b,b,-b],[k,k,k,k]])
+        self.KA = np.array([[0,kL,0,-kL],[kL,0,-kL,0],[b,-b,b,-b],[k,k,k,k]])
         
         # matrix to compute motor inputs from desired angular acceleration and thrust
-        self.AinvKinvI = np.array([[Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),-Izz/(4*b),m/(4*k)]])
-        
+        #self.AinvKinvI = np.array([[Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),-Izz/(4*b),m/(4*k)]])
+        self.AinvKinvI = np.array([[0,Iyy/(2*kL),Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)]])
         pass
+    
+    def rotation_to_body(self):
+        from math import sin, cos
+        
+        phi = self.theta.item(0);
+        theta = self.theta.item(1);
+        
+        return np.array([[1, 0, -sin(theta)],
+                      [0, cos(phi), cos(theta) * sin(phi)],
+                      [0, -sin(phi), cos(theta) * cos(phi)]])
+    
+    def rotation_to_world(self):
+        from math import sin, cos, tan
+        
+        phi = self.theta.item(0);
+        theta = self.theta.item(1);
+        
+        return np.array([[1, sin(phi) * tan(theta), cos(phi) * tan(theta)],
+                      [0, cos(phi), -sin(phi)],
+                      [0, sin(phi) / cos(theta), cos(phi) / cos(theta)]])
+    
+    def theta_in_body(self):
+        return np.dot(self.rotation_to_body(), self.theta)
+    
+    def thetadot_in_body(self):
+        return np.dot(self.rotation_to_body(), self.thetadot)
     
     def torques_thrust(self, inputs):
         return np.dot(self.KA, inputs)

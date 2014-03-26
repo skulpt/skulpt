@@ -41,9 +41,12 @@ class Controller():
         self.drone=drone
         self.errorIntegral=np.array([[0], [0], [0]])
         
+        self.Kp_angular_rate = np.array([[10], [10], [5]]);
+        self.Kp_attitude = np.array([[5], [5], [1]]);
+        
     def calculate_control_command(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
         
-        # TODO: implement angular rate P controllers
+        # TODO: implement angular rate P controllers -> gets desired thetadot outputs thetadotdot, i.e, (thetadot_des - thetadot) * Kp 
         # TODO: implement z velocity controller feeding to desired thrust
         # TODO: implement attitude PI controller feeding angular rates to angular rate controller
         
@@ -53,7 +56,14 @@ class Controller():
         
         T_des = self.drone.g / (math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0)));
         
-        ctrl = np.dot(self.drone.AinvKinvI, np.array([[e_roll], [e_pitch], [e_yaw], [T_des]]));
+        # attitude controller
+        thetadot_desired = self.Kp_attitude * (theta_desired - self.drone.theta_in_body());
+        
+        # angular rate controller
+        rates = self.Kp_angular_rate * (thetadot_desired - self.drone.thetadot_in_body())
+        rates = np.vstack((rates, T_des))
+        
+        ctrl = np.dot(self.drone.AinvKinvI, rates);
         #print ctrl.shape
         #gamma1 = ctrl.item(0)
         #gamma2 = ctrl.item(1)
