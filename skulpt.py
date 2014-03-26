@@ -370,17 +370,6 @@ def dist(options):
 
     this is all combined into one file, tests run, jslint'd, compressed.
     """
-    if GIT_MODULE_AVAILABLE:
-        if not isClean():
-            print "WARNING: working directory not clean (according to 'git status')"
-        else:
-            print "Working directory is clean (according to 'git status')"
-    else:
-        print "+----------------------------------------------------------------------------+"
-        print "GitPython is not installed for Python 2.6"
-        print "The 'dist' command will not work without it.  Get it using pip or easy_install"
-        print "or see:  http://packages.python.org/GitPython/0.3.1/intro.html#getting-started"
-        print "+----------------------------------------------------------------------------+"
 
     if options.verbose:
         print ". Removing distribution directory, '{0}/'.".format(DIST_DIR)
