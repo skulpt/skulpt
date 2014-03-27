@@ -54,6 +54,8 @@ class Simulator():
         self.drone.x = np.array([[0.0],[0.0],[0.0]])
         self.drone.xdot = np.array([[0.0],[0.0],[0.0]])
         self.drone.xdoubledot = np.array([[0.0],[0.0],[0.0]])
+        self.drone.theta = np.array([[0.0],[0.0],[0.0]])
+        self.drone.thetadot = np.array([[0.0],[0.0],[0.0]])
     
     def get_drone_pose(self):
         return [self.drone.x.item(0), self.drone.x.item(1), self.drone.x.item(2), self.drone.theta.item(0), self.drone.theta.item(1), self.drone.theta.item(2)];
@@ -72,19 +74,24 @@ class Simulator():
         navdata.rotX=self.drone.theta.item(2)
         return navdata;
     
+    def set_input(self, sim_input):
+        self.theta_desired[0] = sim_input[0];
+        self.theta_desired[1] = sim_input[1];
+        self.theta_desired[2] = sim_input[2];
+    
     def simulate_step(self, t, dt):
-        if t > 1 and t < 8:
-            self.theta_desired[0] = 0.0
-            self.theta_desired[1] = 0.0
-            self.theta_desired[2] = 0.3
-        elif t >= 8 and t < 16:
-            self.theta_desired[0] = 0.0
-            self.theta_desired[1] = -0.0
-            self.theta_desired[2] = 0.6
-        elif t >= 16:
-            self.theta_desired[0] = 0.0
-            self.theta_desired[1] = 0.0
-            self.theta_desired[2] = 1.2
+        #if t > 1 and t < 8:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = 0.1
+        #    self.theta_desired[2] = 0.0
+        #elif t >= 8 and t < 16:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = -0.1
+        #    self.theta_desired[2] = 0.0
+        #elif t >= 16:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = 0.0
+        #    self.theta_desired[2] = 0.0
         #print self.theta_desired
         #print t
         self.step_count += 1
