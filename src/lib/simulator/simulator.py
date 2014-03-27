@@ -78,20 +78,24 @@ class Simulator():
         self.theta_desired[0] = sim_input[0];
         self.theta_desired[1] = sim_input[1];
         self.theta_desired[2] = sim_input[2];
+        self.xdot_desired[2] = sim_input[3];
     
     def simulate_step(self, t, dt):
         #if t > 1 and t < 8:
         #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.1
+        #    self.theta_desired[1] = 0.0
         #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.2
         #elif t >= 8 and t < 16:
         #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = -0.1
+        #    self.theta_desired[1] = 0.0
         #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = -0.2
         #elif t >= 16:
         #    self.theta_desired[0] = 0.0
         #    self.theta_desired[1] = 0.0
         #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
         #print self.theta_desired
         #print t
         self.step_count += 1
@@ -127,8 +131,8 @@ class Simulator():
         
         if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
             vel = np.dot(self.rotation(self.drone.theta).transpose(), self.drone.xdot)
-            #vel = self.drone.xdot
-            vel = self.drone.x
+            vel = self.drone.xdot
+            #vel = self.drone.x
             self.x.append(vel.item(0))
             self.y.append(vel.item(1))
             self.z.append(vel.item(2))

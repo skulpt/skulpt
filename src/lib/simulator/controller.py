@@ -45,10 +45,13 @@ class Controller():
         self.Kp_angular_rate = np.array([[10.0], [10.0], [5.0]]);
         self.Kp_attitude = np.array([[5.0], [5.0], [1.0]]);
         
+        self.Kp_zvelocity = 5.0
+        
     def calculate_control_command(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
         # TODO: implement z velocity controller feeding to desired thrust
         
         T_des = self.drone.g / (math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0)));
+        T_des += self.Kp_zvelocity * (xdot_desired.item(2) - self.drone.xdot.item(2))
         #print "T_des",T_des
         # attitude controller
         thetadot_desired = self.Kp_attitude * (theta_desired - self.drone.theta_in_body());
