@@ -35,14 +35,14 @@ class Controller():
     agressiveness_xy=0.3
     agressiveness_z=0.3
     
-    dt = 0.05
+    dt = 0.005
     
     def __init__(self, drone):
         self.drone=drone
         self.errorIntegral=np.array([[0], [0], [0]])
         
         # TODO: tune gains
-        self.Kp_angular_rate = np.array([[10.0], [10.0], [5.0]]);
+        self.Kp_angular_rate = np.array([[5.0], [5.0], [1.0]]);
         self.Kp_attitude = np.array([[5.0], [5.0], [1.0]]);
         
         self.Kp_zvelocity = 5.0
@@ -54,20 +54,31 @@ class Controller():
         T_des += self.Kp_zvelocity * (xdot_desired.item(2) - self.drone.xdot.item(2))
         #print "T_des",T_des
         # attitude controller
-        thetadot_desired = self.Kp_attitude * (theta_desired - self.drone.theta_in_body());
-        
+        thetadot_desired = self.Kp_attitude * (theta_desired - self.drone.theta);
+        #print (theta_desired - self.drone.theta_in_body()).transpose(), thetadot_desired.transpose()
+        thetadot_desired[2] = theta_desired.item(2);
+        #print self.drone.theta.transpose(), self.drone.theta_in_body().transpose(), thetadot_desired.transpose(), self.drone.thetadot.transpose(), self.drone.thetadot_in_body().transpose();
+        #print "err",(theta_desired - self.drone.theta_in_body()).transpose(), theta_desired.transpose(), self.drone.theta_in_body().transpose(), self.drone.theta.transpose()
         # angular rate controller
-        rates = self.Kp_angular_rate * (thetadot_desired - self.drone.thetadot_in_body())
+        rates = self.Kp_angular_rate * (np.dot(self.drone.angle_rotation_to_body(), thetadot_desired) - self.drone.thetadot_in_body())
+        #print (thetadot_desired - self.drone.thetadot_in_body()).transpose(), rates.transpose()
         #print "theta_desired", theta_desired
         #print "self.drone.theta_in_body()", self.drone.theta_in_body()
         #print "thetadot_desired",thetadot_desired
         #print "self.drone.thetadot",self.drone.thetadot
         #print "self.drone.thetadot_in_body()",self.drone.thetadot_in_body()
         rates = np.vstack((rates, T_des))
+        #rates[0] = (rates[0] if rates[0] <= 1 else 1) if rates[0] >= -1 else -1;
+        #rates[1] = (rates[1] if rates[1] <= 1 else 1) if rates[1] >= -1 else -1;
+        #rates[2] = (rates[2] if rates[2] <= 1 else 1) if rates[2] >= -1 else -1;
+        #rates[3] = (rates[3] if rates[3] <= 12 else 12) if rates[2] >= 8 else 8;
         #print "rates1",type(rates.item(3)),rates.item(3)
         #print "rates2",rates
         #print "self.drone.AinvKinvI", self.drone.AinvKinvI
         ctrl = np.dot(self.drone.AinvKinvI, rates);
+        #print rates.transpose(), np.dot(self.drone.KA, ctrl).transpose(), ctrl.transpose();
+        #ctrl = np.min(np.hstack((ctrl, np.array([[8.0], [8.0], [8.0], [8.0]]))), 1)[:,None];
+        #print "r", rates.transpose(), ctrl.transpose();
         #print "ctrl", ctrl
         return ctrl
     

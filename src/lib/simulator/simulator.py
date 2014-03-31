@@ -17,7 +17,7 @@ if(sys.platform != "skulpt"):
 class Simulator():
     
     start_time = 0  # in secs
-    end_time = 60
+    end_time = 120
     dt = 0.005
 
     
@@ -81,21 +81,48 @@ class Simulator():
         self.xdot_desired[2] = sim_input[3];
     
     def simulate_step(self, t, dt):
-        #if t > 1 and t < 8:
+        #if t > 0 and t < 2:
         #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.0
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.2
-        #elif t >= 8 and t < 16:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.0
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = -0.2
-        #elif t >= 16:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.0
+        #    self.theta_desired[1] = 0.1
         #    self.theta_desired[2] = 0.0
         #    self.xdot_desired[2] = 0.0
+        #elif t >= 2 and t < 6:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = -0.1
+        #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
+        #elif t >= 6 and t < 10:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = 0.1
+        #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
+        #elif t >= 10 and t < 14:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = -0.1
+        #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
+        #elif t >= 14 and t < 18:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = 0.1
+        #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
+        #elif t >= 18 and t < 22:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = -0.1
+        #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
+        #elif t >= 22:
+        #    self.theta_desired[0] = 0.0
+        #    self.theta_desired[1] = 0.1
+        #    self.theta_desired[2] = 0.0
+        #    self.xdot_desired[2] = 0.0
+        
+        #if((int(t / 4) % 2) == 0):
+        #    self.theta_desired[1] = 0.1
+        #    self.theta_desired[2] = 0.01
+        #else:
+        #    self.theta_desired[1] = -0.1
+        #    self.theta_desired[2] = -0.01
         #print self.theta_desired
         #print t
         self.step_count += 1
@@ -104,8 +131,8 @@ class Simulator():
         
         #torques_thrust = self.drone.torques_thrust(np.array([inputCurrents]).transpose())
         torques_thrust = self.drone.torques_thrust(inputCurrents)
-
-        linear_acceleration = self.linear_acceleration(torques_thrust[3], self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
+        # print omega.transpose()
+        linear_acceleration = self.linear_acceleration(torques_thrust[3], self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration       
         omegadot = self.angular_acceleration(torques_thrust[0:3,0], omega)  # calculate resulting angular acceleration
         #linear_acceleration = self.linear_acceleration2(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
         #omegadot = self.angular_acceleration2(inputCurrents, omega)  # calculate resulting angular acceleration
@@ -117,6 +144,7 @@ class Simulator():
         self.drone.thetadot = np.dot(self.drone.angle_rotation_to_world(), omega)  # calculate roll, pitch, yaw velocities
         self.drone.theta = self.drone.theta + dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
         
+        #print self.drone.xdot.transpose(), self.drone.theta.transpose(), omega.transpose(), omegadot.transpose()
         #print "d", inputCurrents
         #print "a", torques_thrust[0:3,0], "b", omega, "c", omegadot
         
@@ -132,20 +160,23 @@ class Simulator():
         if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
             vel = np.dot(self.rotation(self.drone.theta).transpose(), self.drone.xdot)
             vel = self.drone.xdot
-            #vel = self.drone.x
+            vel = self.drone.x
+            vel = self.drone.thetadot_in_body();
+            #vel = self.drone.xdot;
+            
             self.x.append(vel.item(0))
             self.y.append(vel.item(1))
             self.z.append(vel.item(2))
             
-            ang = self.drone.theta_in_body()
-            
+            ang = self.drone.theta
+
             self.roll.append( ang.item(0))
             self.pitch.append(ang.item(1))
             self.yaw.append(  ang.item(2))
             #print self.theta_desired.item(2)
             self.cmd1.append(inputCurrents[0] - inputCurrents[2])
             self.cmd2.append(inputCurrents[1] - inputCurrents[3])
-            self.cmd3.append(inputCurrents[2])
+            self.cmd3.append(inputCurrents[0] - inputCurrents[1])
             self.cmd4.append(inputCurrents[3])
             self.roll_des.append(self.theta_desired[0])
             self.pitch_des.append(self.theta_desired[1])
@@ -234,8 +265,8 @@ class Simulator():
                 ax_1.plot(self.cmd1)
                 ax_2=fig4.add_subplot(412,sharey=ax_1)
                 ax_2.plot(self.cmd2)
-                #ax_3=fig4.add_subplot(413,sharey=ax_1)
-                #ax_3.plot(self.cmd3)
+                ax_3=fig4.add_subplot(413,sharey=ax_1)
+                ax_3.plot(self.cmd3)
                 #ax_4=fig4.add_subplot(414,sharey=ax_1)
                 #ax_4.plot(self.cmd4)
                 fig4.show()

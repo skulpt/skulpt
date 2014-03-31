@@ -55,6 +55,9 @@ class Drone():
     I = np.array([[2.5730480633e-8, 0, 0],
                   [0, 2.573048063300000e-8, 0],
                   [0, 0, 2.573048063300000e-5]])  # inertia matrix of the drone in gm3
+    I = np.array([[0.007, 0, 0],
+                  [0, 0.007, 0],
+                  [0, 0, 0.012]])  # inertia matrix of the drone in gm3
     k_b = 0.1 # drag coefficient Nm/rpm2
     k_t =  0.73  # thrust coefficient in g/
     kd = 0.12  # air friction coefficent of the whole ardrone,
@@ -85,9 +88,15 @@ class Drone():
         
         # matrix to compute torques/moments and thrust from motor inputs
         self.KA = np.array([[0.0,kL,0.0,-kL],[kL,0.0,-kL,0.0],[b,-b,b,-b],[k,k,k,k]])
-        
+        #self.KA = np.array([[0,-kL,0,kL],[kL,0,-kL,0],[b,-b,b,-b],[k,k,k,k]]);
         # matrix to compute motor inputs from desired angular acceleration and thrust
         self.AinvKinvI = np.array([[0.0,Iyy/(2.0*kL),Izz/(4.0*b),m/(4.0*k)],[Ixx/(2.0*kL),0.0,-Izz/(4.0*b),m/(4.0*k)],[0.0,-Iyy/(2.0*kL),Izz/(4.0*b),m/(4.0*k)],[-Ixx/(2.0*kL),0.0,-Izz/(4.0*b),m/(4.0*k)]])
+        #self.AinvKinvI = np.array([[0,Iyy/(2*kL),Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)]]);
+        
+        # corke tutorial
+        #self.KA = np.array([[0,kL,0,-kL],[-kL,0,kL,0],[-b,b,-b,b],[k,k,k,k]]);
+        #self.AinvKinvI = np.array([[0,-Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,Izz/(4*b),m/(4*k)]]);
+        
         pass
     
     def angle_rotation_to_body(self):
@@ -100,20 +109,20 @@ class Drone():
         theta = self.theta.item(1);
         
         return np.array([[1, 0, -sin(theta)],
-                      [0, cos(phi), cos(theta) * sin(phi)],
-                      [0, -sin(phi), cos(theta) * cos(phi)]])
+                      [0, -cos(phi), cos(theta) * sin(phi)],
+                      [0, sin(phi), cos(theta) * cos(phi)]])
     
     def angle_rotation_to_world(self):
         '''
         compute rotation matrix to convert angular velocities to world frame
         '''
-        from math import sin, cos, tan
+        from math import sin, cos, tan, fabs
         
         phi = self.theta.item(0);
         theta = self.theta.item(1);
         
         return np.array([[1, sin(phi) * tan(theta), cos(phi) * tan(theta)],
-                      [0, cos(phi), -sin(phi)],
+                      [0, -cos(phi), sin(phi)],
                       [0, sin(phi) / cos(theta), cos(phi) / cos(theta)]])
     
     def theta_in_body(self):
