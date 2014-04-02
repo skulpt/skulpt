@@ -297,8 +297,7 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
         {
             var self = this;
             var dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
-            var step = index.step === null ? 1 : index.step;
-            var offdir = step > 0 ? 1 : 0;
+            var offdir = indices[2] > 0 ? 1 : 0;
             index.sssiter$(this, function(i, wrt)
                            {
                                self.v.splice(i - dec, 1);
