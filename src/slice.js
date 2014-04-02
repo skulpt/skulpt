@@ -66,15 +66,18 @@ Sk.builtin.slice.prototype.tp$richcompare = function(w, op)
 
 Sk.builtin.slice.prototype.indices = function(length)
 {
-	var start = Sk.builtin.asnum$(this.start), 
-	    stop  = Sk.builtin.asnum$(this.stop),
-	    step  = Sk.builtin.asnum$(this.step);
-
-    if (((start !== null) && !Sk.builtin.checkInt(start))
-        || ((stop !== null) && !Sk.builtin.checkInt(stop))
-        || ((step !== null) && !Sk.builtin.checkInt(step))) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+    if ((!Sk.builtin.checkInt(this.start)
+             && !Sk.builtin.checkNone(this.start))
+            || (!Sk.builtin.checkInt(this.stop)
+                && !Sk.builtin.checkNone(this.stop))
+            || (!Sk.builtin.checkInt(this.step)
+                && !Sk.builtin.checkNone(this.step))) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None");
     }
+
+	    var start = Sk.builtin.asnum$(this.start),
+	        stop  = Sk.builtin.asnum$(this.stop),
+	        step  = Sk.builtin.asnum$(this.step);
 
 	length = Sk.builtin.asnum$(length);
     // this seems ugly, better way?

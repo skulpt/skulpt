@@ -247,15 +247,21 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function(index, value)
     }
     else if (index instanceof Sk.builtin.slice)
     {
+
+        if ((!Sk.builtin.checkInt(index.start)
+             && !Sk.builtin.checkNone(index.start))
+            || (!Sk.builtin.checkInt(index.stop)
+                && !Sk.builtin.checkNone(index.stop))
+            || (!Sk.builtin.checkInt(index.step)
+                && !Sk.builtin.checkNone(index.step))) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        }
+
 	    var start = Sk.builtin.asnum$(index.start), 
 	        stop  = Sk.builtin.asnum$(index.stop),
 	        step  = Sk.builtin.asnum$(index.step);
         step = step === null ? 1 : step;
-        if (((start !== null) && !Sk.builtin.checkInt(start))
-            || ((stop !== null) && !Sk.builtin.checkInt(stop))
-            || ((step !== null) && !Sk.builtin.checkInt(step))) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None");
-        }
+
         if (step === 1)
             this.list_ass_slice_(start, stop, value);
         else
@@ -290,15 +296,20 @@ Sk.builtin.list.prototype.list_del_subscript_ = function(index)
     }
     else if (index instanceof Sk.builtin.slice)
     {
+        if ((!Sk.builtin.checkInt(index.start)
+             && !Sk.builtin.checkNone(index.start))
+            || (!Sk.builtin.checkInt(index.stop)
+                && !Sk.builtin.checkNone(index.stop))
+            || (!Sk.builtin.checkInt(index.step)
+                && !Sk.builtin.checkNone(index.step))) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None");
+        }
+
 	    var start = Sk.builtin.asnum$(index.start), 
 	        stop  = Sk.builtin.asnum$(index.stop),
 	        step  = Sk.builtin.asnum$(index.step);
         step = step === null ? 1 : step;
-        if (((start !== null) && !Sk.builtin.checkInt(start))
-            || ((stop !== null) && !Sk.builtin.checkInt(stop))
-            || ((step !== null) && !Sk.builtin.checkInt(step))) {
-            throw new Sk.builtin.TypeError("slice indices must be integers or None");
-        }
+
         if (step === 1)
             this.list_del_slice_(start, stop);
         else

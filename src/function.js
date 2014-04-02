@@ -88,6 +88,11 @@ Sk.builtin.checkBool = function (arg) {
 };
 goog.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
 
+Sk.builtin.checkNone = function (arg) {
+    return (arg instanceof Sk.builtin.none);
+};
+goog.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
+
 Sk.builtin.checkFunction = function (arg) {
     return (arg !== null && arg.tp$call !== undefined);  
 };
