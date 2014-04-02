@@ -157,6 +157,12 @@ class Simulator():
         #print "theta", self.drone.theta
         #print("Position",self.drone.x.transpose())
         
+        if(sys.platform == "skulpt"):
+            import plot;
+            
+            plot.plot_pose("ardrone", self.drone.x, self.drone.theta)
+            plot.plot_trajectory("ardrone", self.drone.x)
+        
         if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
             vel = np.dot(self.rotation(self.drone.theta).transpose(), self.drone.xdot)
             vel = self.drone.xdot
