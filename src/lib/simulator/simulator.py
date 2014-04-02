@@ -159,7 +159,7 @@ class Simulator():
         
         if(sys.platform == "skulpt"):
             import plot;
-            
+            plot.plot("phi", self.drone.theta)
             plot.plot_pose("ardrone", self.drone.x, self.drone.theta)
             plot.plot_trajectory("ardrone", self.drone.x)
         
