@@ -88,7 +88,10 @@ function CodeMirrorREPL(textareaId, options) {
         ch = 0;
         buffer.push(input);
         n = history.push(input);
-        mirror.replaceRange(text + '\n', { line: line++, ch: 0 });
+        
+        mirror.replaceRange(text + '\n', { line: line++, ch: 0 }, { line: line, ch: text.length + 1 });
+        console.log("line: " + line)
+        
         var code = buffer.join('\n').replace(/\r/g, '\n');
         var balanced = repl.isBalanced(code);
 
@@ -154,11 +157,11 @@ function CodeMirrorREPL(textareaId, options) {
                 text[0] = ln.slice(0, from.ch) + text[0];
 
                 for (var i = 0; i < length; i++) {
-                    mirror.replaceRange(text[i], { line: line, ch: 0 });
+                    mirror.replaceRange(text[i], { line: line, ch: 0 }, { line: line, ch: text[i].length });
                     enter();
                 }
-
-                mirror.setLine(text[length] + ln.slice(to.ch), { line: line, ch: 0 });
+                var l = text[length] + ln.slice(to.ch);
+                mirror.replaceRange(l, { line: line, ch: 0 }, { line: line, ch: l.length });
             }
         }
 
@@ -183,7 +186,7 @@ function CodeMirrorREPL(textareaId, options) {
         if (className) mirror.markText({line: ln, ch: 0}, {line: ln, ch: message.length}, className);
 
         if (text) {
-            mirror.replaceRange(text, { line: line, ch: 0 });
+            mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: text.length });
             mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
             mirror.setCursor({line: line, ch: cursor});
         }
