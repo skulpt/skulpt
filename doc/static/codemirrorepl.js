@@ -103,7 +103,7 @@ function CodeMirrorREPL(textareaId, options) {
             if (balanced === null) {
                 buffer.pop();
                 code = buffer.join('\n').replace('\r', '\n');
-                mirror.setGutterMarker(line, "note-gutter", repl.isBalanced(code) ? document.createTextNode(">>>") : document.createTextNode(".."));
+                mirror.setGutterMarker(line, "note-gutter", repl.isBalanced(code) ? document.createTextNode(">>>") : document.createTextNode("..."));
             } else mirror.setGutterMarker(line, "note-gutter", document.createTextNode("..."));
         }
 
