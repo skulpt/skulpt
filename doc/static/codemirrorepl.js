@@ -33,8 +33,8 @@ function CodeMirrorREPL(textareaId, options) {
         indentUnit: 4,
         undoDepth: 1,
         //gutter: true,
-        gutters: ["note-gutter", "CodeMirror-linenumbers"],
-        lineNumbers: true
+        gutters: ["note-gutter"],
+        lineNumbers: false
     };
 
     var mirror  = CodeMirror.fromTextArea(textarea, options);
@@ -64,7 +64,7 @@ function CodeMirrorREPL(textareaId, options) {
                 text = mirror.getLine(line).slice(ch);
         }
 
-        mirror.replaceRange(history[n], { line: line, ch: 0 });
+        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: history[n].length });
     }
 
     function down() {
@@ -73,11 +73,11 @@ function CodeMirrorREPL(textareaId, options) {
                 n--;
                 return;
             case history.length - 1:
-                mirror.replaceRange(text, { line: line, ch: 0 });
+                mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: text.length });
                 return;
         }
 
-        mirror.replaceRange(history[n], { line: line, ch: 0 });
+        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: history[n].length });
     }
 
     function enter(cm) {

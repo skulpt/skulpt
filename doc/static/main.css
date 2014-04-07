@@ -216,3 +216,7 @@ sup {
 .CodeMirror{
     height: 300px;    
 }
+
+.note-gutter {
+    width: 30px;
+}
