@@ -32,13 +32,12 @@ function CodeMirrorREPL(textareaId, options) {
         onChange: change,
         indentUnit: 4,
         undoDepth: 1,
-        gutter: true
+        //gutter: true,
+        gutters: ["note-gutter", "CodeMirror-linenumbers"],
+        lineNumbers: true
     };
 
-    var mirror  = new CodeMirror(document.body, {
-        gutters: ["note-gutter"],
-        lineNumbers: true
-    });
+    var mirror  = CodeMirror.fromTextArea(textarea, options);
 
     var history = [];
     var buffer = [];
@@ -81,7 +80,7 @@ function CodeMirrorREPL(textareaId, options) {
         mirror.replaceRange(history[n], { line: line, ch: 0 });
     }
 
-    function enter() {
+    function enter(cm) {
         var text = mirror.getLine(line);
         var input = text.slice(ch);
         user = false;
@@ -89,14 +88,14 @@ function CodeMirrorREPL(textareaId, options) {
         ch = 0;
         buffer.push(input);
         n = history.push(input);
-        mirror.setLine(line++, text + '\n');
+        mirror.replaceRange(text + '\n', { line: line++, ch: 0 });
         var code = buffer.join('\n').replace(/\r/g, '\n');
         var balanced = repl.isBalanced(code);
 
         if (balanced) {
             repl.eval(code);
             buffer.length = 0;
-            mirror.setMarker(line, ">>>");
+            mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
         } else {
             if (balanced === null) {
                 buffer.pop();
@@ -155,11 +154,11 @@ function CodeMirrorREPL(textareaId, options) {
                 text[0] = ln.slice(0, from.ch) + text[0];
 
                 for (var i = 0; i < length; i++) {
-                    mirror.setLine(line, text[i]);
+                    mirror.replaceRange(text[i], { line: line, ch: 0 });
                     enter();
                 }
 
-                mirror.setLine(line, text[length] + ln.slice(to.ch));
+                mirror.setLine(text[length] + ln.slice(to.ch), { line: line, ch: 0 });
             }
         }
 
@@ -176,15 +175,15 @@ function CodeMirrorREPL(textareaId, options) {
         message = message.replace(/\n/g, '\r') + '\n';
 
         if (text) {
-            mirror.setMarker(line, "");
+            mirror.setGutterMarker(line, "note-gutter", document.createTextNode(""));
             var cursor = mirror.getCursor().ch;
         }
 
-        mirror.setLine(line++, message);
+        mirror.replaceRange(message, { line: line++, ch: 0 });
         if (className) mirror.markText({line: ln, ch: 0}, {line: ln, ch: message.length}, className);
 
         if (text) {
-            mirror.setLine(line, text);
+            mirror.replaceRange(text, { line: line, ch: 0 });
             mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
             mirror.setCursor({line: line, ch: cursor});
         }
