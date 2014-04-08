@@ -55,6 +55,14 @@ function CodeMirrorREPL(textareaId, options) {
 
     function undo() {}
 
+    function to(line) {
+        return { line: line, ch: mirror.getLine(line).length };
+    }
+    
+    function from(line) {
+        return { line: line, ch: 0 };
+    }
+    
     function up() {
         switch (n--) {
             case 0:
@@ -64,7 +72,7 @@ function CodeMirrorREPL(textareaId, options) {
                 text = mirror.getLine(line).slice(ch);
         }
 
-        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length});
+        mirror.replaceRange(history[n], from(line), to(line));
     }
 
     function down() {
@@ -73,11 +81,11 @@ function CodeMirrorREPL(textareaId, options) {
                 n--;
                 return;
             case history.length - 1:
-                mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
+                mirror.replaceRange(text, from(line), to(line));
                 return;
         }
 
-        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
+        mirror.replaceRange(history[n], from(line), to(line));
     }
 
     function enter(cm) {
@@ -106,6 +114,8 @@ function CodeMirrorREPL(textareaId, options) {
             } else mirror.setGutterMarker(line, "note-gutter", document.createTextNode("..."));
         }
 
+        mirror.scrollIntoView(from(line));
+        
         setTimeout(function () {
             user = true;
         }, 0);
@@ -113,7 +123,7 @@ function CodeMirrorREPL(textareaId, options) {
 
     function select() {
         var length = mirror.getLine(line).slice(ch).length;
-        mirror.setSelection({line: line, ch: 0}, {line: line, ch: length});
+        mirror.setSelection(from(line), {line: line, ch: length});
     }
 
     function backspace() {
@@ -138,7 +148,7 @@ function CodeMirrorREPL(textareaId, options) {
             mirror.replaceSelection("");
         }
     }
-
+    
     function change(mirror, changes) {
         var to = changes.to;
         var from = changes.from;
@@ -155,11 +165,11 @@ function CodeMirrorREPL(textareaId, options) {
                 text[0] = ln.slice(0, from.ch) + text[0];
 
                 for (var i = 0; i < length; i++) {
-                    mirror.replaceRange(text[i], { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
+                    mirror.replaceRange(text[i],from(line), to(line));
                     enter();
                 }
                 var l = text[length] + ln.slice(to.ch);
-                mirror.replaceRange(l, { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
+                mirror.replaceRange(l, from(line), to(line));
             }
         }
 
@@ -180,16 +190,16 @@ function CodeMirrorREPL(textareaId, options) {
             var cursor = mirror.getCursor().ch;
         }
 
-        mirror.replaceRange(message, { line: line++, ch: 0 });
+        mirror.replaceRange(message, { line: line++, ch: 0 }, { line:line, ch:0 });
         if (className) mirror.markText({line: ln, ch: 0}, {line: ln, ch: message.length}, className);
 
         if (text) {
-            mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
+            mirror.replaceRange(text, from(line), to(line));
             mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
             mirror.setCursor({line: line, ch: cursor});
         }
         
-        mirror.scrollIntoView({ line: line, ch: 0});
+        mirror.scrollIntoView(from(line));
         
         setTimeout(function () {
             user = mode;
