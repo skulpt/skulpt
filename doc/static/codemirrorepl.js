@@ -64,7 +64,7 @@ function CodeMirrorREPL(textareaId, options) {
                 text = mirror.getLine(line).slice(ch);
         }
 
-        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: history[n].length });
+        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length});
     }
 
     function down() {
@@ -73,11 +73,11 @@ function CodeMirrorREPL(textareaId, options) {
                 n--;
                 return;
             case history.length - 1:
-                mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: text.length });
+                mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
                 return;
         }
 
-        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: history[n].length });
+        mirror.replaceRange(history[n], { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
     }
 
     function enter(cm) {
@@ -89,7 +89,7 @@ function CodeMirrorREPL(textareaId, options) {
         buffer.push(input);
         n = history.push(input);
         
-        mirror.replaceRange(text + '\n', { line: line++, ch: 0 }, { line: line, ch: text.length + 1 });
+        mirror.replaceRange(text + '\n', { line: line++, ch: 0 }, { line: line, ch: 0 });
         console.log("line: " + line)
         
         var code = buffer.join('\n').replace(/\r/g, '\n');
@@ -157,11 +157,11 @@ function CodeMirrorREPL(textareaId, options) {
                 text[0] = ln.slice(0, from.ch) + text[0];
 
                 for (var i = 0; i < length; i++) {
-                    mirror.replaceRange(text[i], { line: line, ch: 0 }, { line: line, ch: text[i].length });
+                    mirror.replaceRange(text[i], { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
                     enter();
                 }
                 var l = text[length] + ln.slice(to.ch);
-                mirror.replaceRange(l, { line: line, ch: 0 }, { line: line, ch: l.length });
+                mirror.replaceRange(l, { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
             }
         }
 
@@ -186,7 +186,7 @@ function CodeMirrorREPL(textareaId, options) {
         if (className) mirror.markText({line: ln, ch: 0}, {line: ln, ch: message.length}, className);
 
         if (text) {
-            mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: text.length });
+            mirror.replaceRange(text, { line: line, ch: 0 }, { line: line, ch: mirror.getLine(line).length });
             mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
             mirror.setCursor({line: line, ch: cursor});
         }
