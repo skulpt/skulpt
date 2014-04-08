@@ -90,7 +90,6 @@ function CodeMirrorREPL(textareaId, options) {
         n = history.push(input);
         
         mirror.replaceRange(text + '\n', { line: line++, ch: 0 }, { line: line, ch: 0 });
-        console.log("line: " + line)
         
         var code = buffer.join('\n').replace(/\r/g, '\n');
         var balanced = repl.isBalanced(code);
@@ -106,7 +105,6 @@ function CodeMirrorREPL(textareaId, options) {
                 mirror.setGutterMarker(line, "note-gutter", repl.isBalanced(code) ? document.createTextNode(">>>") : document.createTextNode("..."));
             } else mirror.setGutterMarker(line, "note-gutter", document.createTextNode("..."));
         }
-
 
         setTimeout(function () {
             user = true;
@@ -190,7 +188,9 @@ function CodeMirrorREPL(textareaId, options) {
             mirror.setGutterMarker(line, "note-gutter", document.createTextNode(">>>"));
             mirror.setCursor({line: line, ch: cursor});
         }
-
+        
+        mirror.scrollIntoView({ line: line, ch: 0});
+        
         setTimeout(function () {
             user = mode;
         }, 0);
