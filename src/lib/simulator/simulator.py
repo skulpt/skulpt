@@ -61,17 +61,18 @@ class Simulator():
         return [self.drone.x.item(0), self.drone.x.item(1), self.drone.x.item(2), self.drone.theta.item(0), self.drone.theta.item(1), self.drone.theta.item(2)];
     
     def get_drone_navdata(self):
-        navdata=Navdata(self)
+        import simulator.navdata
+        navdata=simulator.navdata.Navdata()
         navdata.vx=self.drone.xdot.item(0)
         navdata.vy=self.drone.xdot.item(1)
         navdata.vz=self.drone.xdot.item(2)
-        navdata.ax=self.drone.xdoubledot(0)
-        navdata.ay=self.drone.xdoubledot(1)
-        navdata.az=self.drone.xdoubledot(2)
+        navdata.ax=self.drone.xdoubledot.item(0)
+        navdata.ay=self.drone.xdoubledot.item(1)
+        navdata.az=self.drone.xdoubledot.item(2)
         navdata.altd=self.drone.x.item(2)
         navdata.rotX=self.drone.theta.item(0)
-        navdata.rotX=self.drone.theta.item(1)
-        navdata.rotX=self.drone.theta.item(2)
+        navdata.rotY=self.drone.theta.item(1)
+        navdata.rotZ=self.drone.theta.item(2)
         return navdata;
     
     def set_input(self, sim_input):
@@ -159,7 +160,7 @@ class Simulator():
         
         if(sys.platform == "skulpt"):
             import plot;
-            plot.plot("phi", self.drone.theta)
+            plot.plot("phi", self.drone.theta.item(0))
             plot.plot_pose("ardrone", self.drone.x, self.drone.theta)
             plot.plot_trajectory("ardrone", self.drone.x)
         
