@@ -735,7 +735,7 @@ Sk.builtin.map = function map(fun, seq) {
     Sk.builtin.pyCheckArgs("map", arguments, 2);
 
     if (fun instanceof Sk.builtin.none){
-        fun = { func_code: function (x) { return x; } }
+        fun = function (x) { return x; };
     }
 
     if (arguments.length > 2){
@@ -781,8 +781,13 @@ Sk.builtin.map = function map(fun, seq) {
         next = iter.tp$iternext();
 
     while (next !== undefined){
+        // make sure next is an array because we don't knot howmany args the map function takes
+        // we might be able to do this a bit more efficient.
         if (!(next instanceof Array)){ next = [next]; }
-        retval.push(fun.func_code.apply(this, next));
+        // add the function to call at the beginning
+        next.unshift(fun);
+        var res = Sk.misceval.callsim.apply(this, next);
+        retval.push(res);
         next = iter.tp$iternext();
     }
 
@@ -801,7 +806,8 @@ Sk.builtin.reduce = function reduce(fun, seq, initializer) {
 	var accum_value = initializer;
 	var next = iter.tp$iternext();
 	while (next !== undefined){
-		accum_value = fun.func_code(accum_value, next)
+        var res = Sk.misceval.callsim(fun, accum_value, next);
+		accum_value = res;
 		next = iter.tp$iternext();
 	}
 	return accum_value;
@@ -817,7 +823,7 @@ Sk.builtin.filter = function filter(fun, iterable) {
 	
 	//simulate default identity function
 	if (fun instanceof Sk.builtin.none) {
-		fun = { func_code: function (x) { return Sk.builtin.bool(x); } } 
+		fun = function (x) { return Sk.builtin.bool(x); };
 	}
 	
 	var ctor = function () { return []; }
@@ -841,7 +847,7 @@ Sk.builtin.filter = function filter(fun, iterable) {
 	}
 	
 	while (next !== undefined){
-		if (Sk.misceval.isTrue(fun.func_code(next))){
+		if (Sk.misceval.isTrue(Sk.misceval.callsim(fun, next))){
 			retval = add(retval, next);
 		}
 		next = iter.tp$iternext();
@@ -942,18 +948,18 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var list;
 	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
 		if (cmp instanceof Sk.builtin.none) {
-			compare_func = { func_code: function(a,b){
+			compare_func = function(a,b){
 			    return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-			}};
+			};
 		}
         else {
-            compare_func = { func_code: function(a,b) { return cmp.func_code(a[0], b[0]); } };
+            compare_func = function(a,b) { return Sk.misceval.callsim(cmp, a[0], b[0]); };
 		}
 		var iter = iterable.tp$iter();
 		var next = iter.tp$iternext();
 		var arr = [];
 		while (next !== undefined){
-			arr.push([key.func_code(next), next]);
+			arr.push([Sk.misceval.callsim(key, next), next]);
 			next = iter.tp$iternext();
 		}
         list = new Sk.builtin.list(arr);
