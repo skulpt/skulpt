@@ -191,7 +191,7 @@ Javascript
    /*    14 */                     /* --- module entry --- */
    /*    15 */                     //
    /*    16 */                     // line 1:
-   /*    17 */                     // x = 2
+   /*    17 */                     // x = 1
    /*    18 */                     // ^
    /*    19 */                     //
    /*    20 */                     Sk.currLineNo = 1;
@@ -200,10 +200,10 @@ Javascript
    /*    23 */
    /*    24 */                     Sk.currFilename = './simple.py';
    /*    25 */
-   /*    26 */                     $loc.x = new Sk.builtin.nmber(2, 'int');
+   /*    26 */                     $loc.x = new Sk.builtin.nmber(1, 'int');
    /*    27 */                     //
    /*    28 */                     // line 2:
-   /*    29 */                     // y = 3
+   /*    29 */                     // y = 2
    /*    30 */                     // ^
    /*    31 */                     //
    /*    32 */                     Sk.currLineNo = 2;
@@ -212,7 +212,7 @@ Javascript
    /*    35 */
    /*    36 */                     Sk.currFilename = './simple.py';
    /*    37 */
-   /*    38 */                     $loc.y = new Sk.builtin.nmber(3, 'int');
+   /*    38 */                     $loc.y = new Sk.builtin.nmber(2, 'int');
    /*    39 */                     //
    /*    40 */                     // line 3:
    /*    41 */                     // z = x + y
@@ -266,11 +266,11 @@ Javascript
    /*    89 */ });
    
    
-So, here we create some local variables.  x, y, do some math to create a third local variable z, and then print it.  Line 26 illustrates creating a local variable ``x`` (stored as an attribute of $loc)  ``new Sk.builtin.nmber(2, 'int');``  By now you can probably guess that ``Sk.builtin.nmber`` is a constructor that creates a Python number object that is of type int, and has the value of 2.  The same thing happens for ``y``.  
+So, here we create some local variables.  x, y, do some math to create a third local variable z, and then print it.  Line 26 illustrates creating a local variable ``x`` (stored as an attribute of $loc)  ``new Sk.builtin.nmber(1, 'int');``  By now you can probably guess that ``Sk.builtin.nmber`` is a constructor that creates a Python number object that is of type int, and has the value of 1.  The same thing happens for ``y``.  
 
-Next,  on lines 40 -- 53 we see what happens in an assignment statement. first we load the values of x and  y into temporary variables $loadname1 and $loadname2.  Why not just use $loc.x ??  Well, we need to use Python's scoping rules.   If $loc.x is undefined then we should check the outer scope to see if it exists there.  ``Sk.misceval.loadname``  If loadname does not find a name ``x`` or ``y`` it throws a NameError, and execution would abort.    You can see where this works by changing the assignment statement to ``z = x + t`` to purposely cause the error.  The compiler blindly first tries $loc.t and then again calls loadname, which in this case does abort with an error!
+Next,  on lines 40 -- 53 we see what happens in an assignment statement. first we load the values of x and y into temporary variables $loadname1 and $loadname2.  Why not just use $loc.x ??  Well, we need to use Python's scoping rules.   If $loc.x is undefined then we should check the outer scope to see if it exists there.  ``Sk.misceval.loadname``  If loadname does not find a name ``x`` or ``y`` it throws a NameError, and execution would abort.    You can see where this works by changing the assignment statement to ``z = x + t`` to purposely cause the error.  The compiler blindly first tries $loc.t and then again calls loadname, which in this case does abort with an error!
 
-On lines 52 and 53 we perform the addition using ``Sk.abstr.numberBinOp($loadname1, $loadname2, 'Add');``  Note the abstract (see abstract.js) nature of ``numberBinOp`` -- two parameters for the operands, and one parameter ``'Add'`` that indicates the operator.  Finally the temporary result returned by numberBinOp is stored in $loc.z.  Its important to note that $loc.z contains a Python number object.  Down in the bowels of numberBinOp, the the javascript numeric values for x and y are retrieved and result of adding two javascript numbers is converted to the appropriate type of Python object. 
+On lines 52 and 53 we perform the addition using ``Sk.abstr.numberBinOp($loadname1, $loadname2, 'Add');``  Note the abstract (see abstract.js) nature of ``numberBinOp`` -- two parameters for the operands, and one parameter ``'Add'`` that indicates the operator.  Finally the temporary result returned by numberBinOp is stored in $loc.z.  Its important to note that $loc.z contains a Python number object.  Down in the bowels of numberBinOp, the javascript numeric values for x and y are retrieved and result of adding two javascript numbers is converted to the appropriate type of Python object. 
 
 
 Function Calls, Conditionals, and Loops
