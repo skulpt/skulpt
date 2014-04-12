@@ -91,7 +91,7 @@ Sk.misceval.arrayFromArguments = function(args)
     {
         // this is a Sk.builtin.str
         var res = [];
-        for (var it = arg.tp$iter(), i = it.tp$iternext(); 
+        for (var it = arg.tp$iter(), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext())
         {
             res.push(i);
@@ -352,7 +352,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             return v.v !== w.v;
         return v !== w;
     }
-    
+
     var vname = Sk.abstr.typeName(v);
     var wname = Sk.abstr.typeName(w);
     throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
@@ -587,12 +587,29 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
                 args.push(i);
             }
         }
-	   
+
         if (kwdict)
         {
             goog.asserts.fail("kwdict not implemented;");
         }
-        goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
+        //goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
+        //print('kw args location: '+ kws + ' args ' + args.length)
+        if(kws !== undefined && kws.length > 0 ) {
+            print(kws.constructor)
+            if (func.co_varnames) {
+                for(var i = 0; i < func.co_varnames.length; i++) {
+                    var kwix = kws.indexOf(func.co_varnames[i]);
+                    if(kwix >= 0) {
+                        args.push(kws[kwix+1]);
+                    } else {
+                        args.push(func.$defaults[i])
+                    }
+                }
+            } else {
+                throw new Sk.builtin.ValueError("Keyword arguments are not supported by this function")
+            }
+        }
+        //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
     }
     else
