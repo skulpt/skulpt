@@ -947,7 +947,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var compare_func;
 	var list;
 	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
-		if (cmp instanceof Sk.builtin.none) {
+		if (cmp instanceof Sk.builtin.none || cmp === undefined) {
 			compare_func = function(a,b){
 			    return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
 			};
@@ -997,6 +997,7 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 }
 Sk.builtin.sorted.co_varnames = ['cmp', 'key', 'reverse'];
 Sk.builtin.sorted.$defaults = [Sk.builtin.none, Sk.builtin.none, false];
+Sk.builtin.sorted.co_numargs = 4;
 
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
