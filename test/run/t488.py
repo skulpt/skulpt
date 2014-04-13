@@ -49,3 +49,7 @@ print(sorted(L, None, lambda x: myabs(x)))
 print(sorted(L, None, lambda x: abs(x)))
 
 print(sorted(L, None, abs))
+
+print(sorted(L, key=lambda x: -x, reverse=True))
+
+print(sorted(L, key=lambda x: -x))
