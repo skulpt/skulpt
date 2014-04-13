@@ -1,4 +1,24 @@
 $(document).ready(function () {
+    var output = $('#edoutput');
+    var outf = function (text) {
+        output.text(output.text() + text);
+    };
+    
+    var keymap = {
+        "Ctrl-Enter" : function (editor) {
+            Sk.configure({output: outf, read: builtinRead});
+            Sk.canvas = "mycanvas";
+            Sk.pre = "edoutput";
+            Sk.importMainWithBody("<stdin>", false, editor.getValue());
+        },
+        "Shift-Enter": function (editor) {
+            Sk.configure({output: outf, read: builtinRead});
+            Sk.canvas = "mycanvas";
+            Sk.pre = "edoutput";
+            Sk.importMainWithBody("<stdin>", false, editor.getSelection());
+        }
+    }
+    
     var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
         parserfile: ["parsepython.js"],
         autofocus: true,
@@ -10,28 +30,9 @@ $(document).ready(function () {
         height: "160px",
         fontSize: "9pt",
         autoMatchParens: true,
-        parserConfig: {'pythonVersion': 2, 'strictErrors': true},
-        onKeyEvent: function (editor, e) {
-            if (e.keyCode === 13 && e.type === "keydown") {
-                var output = $('#edoutput');
-                var outf = function (text) {
-                    output.text(output.text() + text);
-                };
-                Sk.configure({output: outf, read: builtinRead});
-                if (e.ctrlKey) {
-                    e.stop();
-                    Sk.canvas = "mycanvas";
-                    Sk.pre = "edoutput";
-                    Sk.importMainWithBody("<stdin>", false, editor.getValue());
-                }
-                else if (e.shiftKey) {
-                    e.stop();
-                    Sk.importMainWithBody("<stdin>", false, editor.selection());
-                }
-            }
-        }
+        extraKeys: keymap,
+        parserConfig: {'pythonVersion': 2, 'strictErrors': true}
     });
-
     $("#toggledocs").click(function (e) {
         $("#quickdocs").toggle();
     });

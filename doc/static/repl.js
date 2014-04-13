@@ -120,9 +120,9 @@ $(function () {
             var line = 0;
             //print the accumulated code with a ">" before the broken line.
             //Don't add the last statement to the accumulated code
-            repl.print(linesToCompile.map(function (str) {
-                return ++line + (index == line ? ">" : " ") + ": " + str;
-            }).join('\n'));
+            linesToCompile.forEach(function (str) {
+                repl.print(++line + (index == line ? ">" : " ") + ": " + str);
+            });
         }
     }
 });

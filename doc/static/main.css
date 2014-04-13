@@ -186,19 +186,6 @@ sup {
     width: 8px;
 }
 
-
-/*.CodeMirror-line-numbers {*/
-  /*width: 2.2em;*/
-  /*color: #aaa;*/
-  /*background-color: #eee;*/
-  /*text-align: right;*/
-  /*padding: .4em;*/
-  /*margin: 0;*/
-  /*font-family: "Consolas","Lucida Console","Monaco",monospace;*/
-  /*font-size: 9pt;*/
-  /*line-height: 1.1em;*/
-/*}*/
-
 #edoutput {
     background: #ccc;
     color: #black;
@@ -208,11 +195,6 @@ sup {
     font-size: 9pt;
 }
 
-.CodeMirror-scroll{
-    overflow: auto;
-    height: 300px;
-}
-
-.CodeMirror{
-    height: 300px;    
+.note-gutter {
+    width: 30px;
 }
