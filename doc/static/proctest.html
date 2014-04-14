@@ -34,10 +34,8 @@ the more I think about it the more I wonder...
             //on dom loaded    
             $(document).ready(function(){
                 var editor2 = CodeMirror.fromTextArea(document.getElementById('example2_code'), {
-                    parserfile: ["parsepython.js"],
                     autofocus: true,
                     theme: "solarized dark",
-                    //path: "static/env/codemirror/js/",
                     lineNumbers: true,
                     textWrapping: false,
                     indentUnit: 4,
@@ -48,10 +46,8 @@ the more I think about it the more I wonder...
                 });
                 
                 var editor1= CodeMirror.fromTextArea(document.getElementById('example1_code'), {
-                    parserfile: ["parsepython.js"],
                     autofocus: true,
                     theme: "solarized dark",
-                    //path: "static/env/codemirror/js/",
                     lineNumbers: true,
                     textWrapping: false,
                     indentUnit: 4,
@@ -162,23 +158,23 @@ delay = 16
 radius = 30
 
 def setup():
-   strokeWeight(10)
-   frameRate(20)
-   size(300,300)
+    strokeWeight(10)
+    frameRate(20)
+    size(300,300)
 
 def ellipseFun():
-     global X, Y, radius
-     background(100)
-     fill(0,121,184)
-     stroke(255)
-     fc = environment.frameCount
+    global X, Y, radius
+    background(100)
+    fill(0,121,184)
+    stroke(255)
+    fc = environment.frameCount
 
-     X += (mouse.x-X)/delay;
-     Y += (mouse.y-Y)/delay;
+    X += (mouse.x-X)/delay;
+    Y += (mouse.y-Y)/delay;
 
-     radius = radius + sin(fc / 4)
+    radius = radius + sin(fc / 4)
 
-     ellipse(X,Y,radius,radius)
+    ellipse(X,Y,radius,radius)
 
 def colorFun():
     noStroke()
@@ -199,9 +195,9 @@ def distanceFun():
     strokeWeight(1)
     for i in range(0,environment.width,20):
         for j in range(0,environment.width,20):
-           size = dist(mouse.x,mouse.y,i,j)
-           size = size/dist(0,0,environment.height,environment.width) * 100
-           ellipse(i,j,size,size)
+            size = dist(mouse.x,mouse.y,i,j)
+            size = size/dist(0,0,environment.height,environment.width) * 100
+            ellipse(i,j,size,size)
 
 draw = distanceFun    # try colorFun or ellipseFun
 run()
