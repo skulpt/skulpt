@@ -296,8 +296,41 @@ Without showing all of the generated code, lets consider a simple python program
 
 
    When foo is called, it has its own scope $scope1 created and called using Sk.misceval.callsim.
-   
 
+   
+How do I add Feature X or Fix bug Y
+-----------------------------------
+
+Probably the biggest hurdle in working with skulpt is, "where do I start?"  So, let me take you through a recent scenario, that is pretty illustrative of how I go about doing development on Skulpt.
+
+The question was "how do I add keyword parameters (cmp, key, and reverse)" to the builtin sorted function.  This is pretty tricky as Javascript does not support keyword parameters so there is no real straightforward path.  So start as follows:
+
+::
+
+   x = [1,2,3]
+   print(sorted(x,reverse=True))
+   
+Now run this using ``skulpt.py run test.py`` and you will get a compiled program.  With a little bit of sleuthing you find:
+
+::
+
+    /*    35 */                     // line 2:
+    /*    36 */                     // print(sorted(x,reverse=True))
+    /*    37 */                     // ^
+    /*    38 */                     //
+    /*    39 */                     Sk.currLineNo = 2;
+    /*    40 */                     Sk.currColNo = 0
+    /*    41 */ 
+    /*    42 */ 
+    /*    43 */                     Sk.currFilename = './sd.py';
+    /*    44 */ 
+    /*    45 */                     var $loadname8 = $loc.sorted !== undefined ? $loc.sorted : Sk.misceval.loadname('sorted', $gbl);
+    /*    46 */                     var $loadname9 = $loc.x !== undefined ? $loc.x : Sk.misceval.loadname('x', $gbl);
+    /*    47 */                     var $call10 = Sk.misceval.call($loadname8, undefined, undefined, ['reverse', Sk.builtin.bool.true$], $loadname9);
+    
+Where the important thing is to notice how the call is formatted after it is compiled.  The fourth parameter to ``Sk.misceval.call`` is ``['reverse', Sk.builtin.bool.true$]``  Now if you check the source for misceval, you will see that these parameters are passed on to the apply function.  In the apply function you will see that there is an assertion that the fourth parameter should be empty.  Ok, here's our starting point to add in what's needed to actually process these key value parameters successfully.
+
+In the case of a bug fix, you would do a similar thing, except that the line where your get an exception is likely to be closer to helping you figure out your next steps.
 
 
 Development Tools
