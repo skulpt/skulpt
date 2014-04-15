@@ -69,6 +69,7 @@ class Drone():
     xdoubledot = np.zeros((3, 1))
 
     theta = np.zeros((3, 1))
+    theta_body = np.zeros((3, 1))
     thetadot = np.zeros((3, 1))
     thetadoubledot = np.zeros((3, 1))
     
@@ -93,6 +94,29 @@ class Drone():
         self.AinvKinvI = np.array([[0.0,Iyy/(2.0*kL),Izz/(4.0*b),m/(4.0*k)],[Ixx/(2.0*kL),0.0,-Izz/(4.0*b),m/(4.0*k)],[0.0,-Iyy/(2.0*kL),Izz/(4.0*b),m/(4.0*k)],[-Ixx/(2.0*kL),0.0,-Izz/(4.0*b),m/(4.0*k)]])
         #self.AinvKinvI = np.array([[0,Iyy/(2*kL),Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)],[0,-Iyy/(2*kL),Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,-Izz/(4*b),m/(4*k)]]);
         
+        
+        # H configuration
+        #self.KA = np.array([[kL,kL,-kL,-kL],[kL,-kL,-kL,kL],[-b,b,-b,b],[k,k,k,k]])
+        #self.AinvKinvI = np.array([[Ixx/(4*kL),Iyy/(4*kL),-Izz/(4*b),m/(4*k)],[Ixx/(4*kL),-Iyy/(4*kL),Izz/(4*b),m/(4*k)],[-Ixx/(4*kL),-Iyy/(4*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(4*kL),Iyy/(4*kL),Izz/(4*b),m/(4*k)]])
+        
+        self.K = np.array([[kL, 0, 0, 0],
+                           [0, kL, 0, 0],
+                           [0,  0, b, 0],
+                           [0,  0, 0, k]])
+        
+        self.A = np.array([[ 1, 1,-1,-1], 
+                           [ 1,-1,-1, 1],
+                           [-1, 1,-1, 1], 
+                           [ 1, 1, 1, 1]])
+        
+        tmp = np.array([[Ixx, 0, 0, 0], 
+                        [0, Iyy, 0, 0],
+                        [0, 0, Izz, 0],
+                        [0, 0, 0, m  ]])
+        
+        self.KA = np.dot(self.K, self.A);
+        self.AinvKinvI = np.dot(np.dot(np.linalg.inv(self.A), np.linalg.inv(self.K)), tmp)
+                
         # corke tutorial
         #self.KA = np.array([[0,kL,0,-kL],[-kL,0,kL,0],[-b,b,-b,b],[k,k,k,k]]);
         #self.AinvKinvI = np.array([[0,-Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[Ixx/(2*kL),0,Izz/(4*b),m/(4*k)],[0,Iyy/(2*kL),-Izz/(4*b),m/(4*k)],[-Ixx/(2*kL),0,Izz/(4*b),m/(4*k)]]);
@@ -108,10 +132,26 @@ class Drone():
         phi = self.theta.item(0);
         theta = self.theta.item(1);
         
+        #return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        
         return np.array([[1, 0, -sin(theta)],
                       [0, -cos(phi), cos(theta) * sin(phi)],
                       [0, sin(phi), cos(theta) * cos(phi)]])
     
+    
+    def yaw_rotation(self):
+        '''
+        compute rotation matrix to convert angular velocities to body frame
+        '''
+        from math import sin, cos
+        
+        psi = self.theta.item(2);
+        cpsi = cos(psi)
+        spsi = sin(psi)
+        return np.array([[cpsi, -spsi, 0],
+                      [spsi, cpsi, 0],
+                      [0, 0, 1]])
+        
     def angle_rotation_to_world(self):
         '''
         compute rotation matrix to convert angular velocities to world frame
@@ -120,9 +160,10 @@ class Drone():
         
         phi = self.theta.item(0);
         theta = self.theta.item(1);
+        #return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         
         return np.array([[1, sin(phi) * tan(theta), cos(phi) * tan(theta)],
-                      [0, -cos(phi), sin(phi)],
+                      [0, cos(phi), -sin(phi)],
                       [0, sin(phi) / cos(theta), cos(phi) / cos(theta)]])
     
     def theta_in_body(self):
@@ -148,3 +189,32 @@ class Drone():
     def thrust(self, inputs):
         T = np.array([[0], [0], [self.k_t * sum(inputs)]])
         return T
+    
+    def rotation(self):  # translate angles to intertial/world frame
+        import math
+        phi = self.theta.item(0)
+        theta = self.theta.item(1)
+        psi = self.theta.item(2)
+        
+        c_phi = math.cos(phi);
+        s_phi = math.sin(phi);
+        c_theta = math.cos(theta);
+        s_theta = math.sin(theta);
+        c_psi = math.cos(psi)
+        s_psi = math.sin(psi)
+        
+        #ZYZ Euler nach Paper
+        #R = np.array([[c_phi * c_psi - c_theta * s_phi * s_psi, -c_psi * s_phi - c_phi * c_theta * s_psi, s_theta * s_psi],
+        #              [c_theta * c_psi * s_phi + c_phi * s_psi, c_phi * c_theta * c_psi - s_phi * s_psi,  -c_psi * s_theta],
+        #              [s_phi * s_theta, c_phi * s_theta, c_theta]])
+        # Master thesis XYZ
+        R = np.array([[c_psi * c_theta, c_psi * s_theta * s_phi - s_psi * c_phi, c_psi * s_theta * c_phi + s_psi * s_phi],
+                      [s_psi * c_theta, s_psi * s_theta * s_phi + c_psi * c_phi, s_psi * s_theta * c_phi - c_psi * s_phi],
+                      [-s_theta, c_theta * s_phi, c_theta * c_phi]])
+        
+        #ZYZ Euler nach craig
+        #R = np.array([[math.cos(psi)*math.cos(theta)*math.cos(phi)-math.sin(psi)*math.sin(phi), -math.cos(psi)*math.cos(theta)*math.sin(phi)-math.sin(psi)*math.cos(phi), math.cos(psi)*math.sin(theta) ],
+        #              [math.sin(psi)*math.cos(theta)*math.cos(phi)+math.cos(psi)*math.sin(phi), -math.sin(psi)*math.cos(theta)*math.sin(phi)+math.cos(psi)*math.cos(phi), math.sin(psi)*math.sin(theta) ],
+        #              [-math.sin(theta)*math.cos(phi), math.sin(theta)*math.sin(phi), math.cos(theta)]])
+
+        return R

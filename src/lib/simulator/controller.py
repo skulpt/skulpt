@@ -42,10 +42,38 @@ class Controller():
         self.errorIntegral=np.array([[0], [0], [0]])
         
         # TODO: tune gains
-        self.Kp_angular_rate = np.array([[5.0], [5.0], [1.0]]);
+        self.Kp_angular_rate = np.array([[3.0], [3.0], [1.0]]);
         self.Kp_attitude = np.array([[5.0], [5.0], [1.0]]);
-        
+        self.Kd_attitude = np.array([[0.0], [0.0], [0.0]]);
         self.Kp_zvelocity = 5.0
+        
+        self.Kp_lin_vel = np.array([[5.0], [5.0], [5.0]])
+        self.Kd_lin_vel = np.array([[2.5], [2.5], [0.0]])
+        
+        self.Kp_ang_vel = 10.0
+        self.Kd_ang_vel = 5.0
+        
+        self.Kp_yaw_vel = 1.0
+        
+        
+    def calculate_control_command3(self,dt,xdot_desired, yawdot_desired):
+        
+        world_acc_cmd = self.Kp_lin_vel * (xdot_desired - self.drone.xdot) - self.Kd_lin_vel * self.drone.xdoubledot;
+        world_acc_cmd[2] = world_acc_cmd.item(2) + self.drone.g# / (math.cos(self.drone.theta.item(1))*math.cos(self.drone.theta.item(0)));
+        #print "world", world_acc_cmd.transpose()
+        body_acc_cmd = np.dot(self.drone.rotation().transpose(), world_acc_cmd);
+        body_angular_vel = self.drone.omega#np.dot(self.drone.angle_rotation_to_body(), self.drone.thetadot);
+        #print "body", body_angular_vel.transpose()
+        rates = np.array([
+            [self.Kp_ang_vel * (-body_acc_cmd.item(1) / self.drone.g) - self.Kd_ang_vel * body_angular_vel.item(0)],
+            [self.Kp_ang_vel * (body_acc_cmd.item(0) / self.drone.g) - self.Kd_ang_vel * body_angular_vel.item(1)],
+            [self.Kp_yaw_vel * (yawdot_desired - self.drone.thetadot.item(2))]
+        ]);
+    
+        T_des = world_acc_cmd.item(2);
+        rates = np.vstack((rates, T_des))
+        ctrl = np.dot(self.drone.AinvKinvI, rates);
+        return ctrl, world_acc_cmd;
         
     def calculate_control_command(self,dt,theta_desired,thetadot_desired,x_desired,xdot_desired):
         # TODO: implement z velocity controller feeding to desired thrust
@@ -54,12 +82,19 @@ class Controller():
         T_des += self.Kp_zvelocity * (xdot_desired.item(2) - self.drone.xdot.item(2))
         #print "T_des",T_des
         # attitude controller
+        
+        
+        # angular loop 
+        #thetadot_desired = self.Kp_attitude * (np.dot(self.drone.yaw_rotation(), theta_desired) - self.drone.theta)# - self.Kd_attitude * self.drone.thetadot;
         thetadot_desired = self.Kp_attitude * (theta_desired - self.drone.theta);
         #print (theta_desired - self.drone.theta_in_body()).transpose(), thetadot_desired.transpose()
-        thetadot_desired[2] = theta_desired.item(2);
+        
+        thetadot_desired[2] = theta_desired.item(2)
+         
         #print self.drone.theta.transpose(), self.drone.theta_in_body().transpose(), thetadot_desired.transpose(), self.drone.thetadot.transpose(), self.drone.thetadot_in_body().transpose();
         #print "err",(theta_desired - self.drone.theta_in_body()).transpose(), theta_desired.transpose(), self.drone.theta_in_body().transpose(), self.drone.theta.transpose()
         # angular rate controller
+        #rates = self.Kp_angular_rate * (thetadot_desired - self.drone.thetadot)
         rates = self.Kp_angular_rate * (np.dot(self.drone.angle_rotation_to_body(), thetadot_desired) - self.drone.thetadot_in_body())
         #print (thetadot_desired - self.drone.thetadot_in_body()).transpose(), rates.transpose()
         #print "theta_desired", theta_desired

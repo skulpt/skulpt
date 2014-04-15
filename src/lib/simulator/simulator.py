@@ -17,7 +17,7 @@ if(sys.platform != "skulpt"):
 class Simulator():
     
     start_time = 0  # in secs
-    end_time = 120
+    end_time = 1
     dt = 0.005
 
     
@@ -55,6 +55,7 @@ class Simulator():
         self.drone.xdot = np.array([[0.0],[0.0],[0.0]])
         self.drone.xdoubledot = np.array([[0.0],[0.0],[0.0]])
         self.drone.theta = np.array([[0.0],[0.0],[0.0]])
+        self.drone.omega = np.array([[0.0],[0.0],[0.0]])
         self.drone.thetadot = np.array([[0.0],[0.0],[0.0]])
     
     def get_drone_pose(self):
@@ -76,65 +77,39 @@ class Simulator():
         return navdata;
     
     def set_input(self, sim_input):
-        self.theta_desired[0] = sim_input[0];
-        self.theta_desired[1] = sim_input[1];
-        self.theta_desired[2] = sim_input[2];
+        #self.theta_desired[0] = sim_input[0];
+        #self.theta_desired[1] = sim_input[1];
+        #self.theta_desired[2] = sim_input[2];
+        #self.xdot_desired[2] = sim_input[3];
+        self.xdot_desired[0] = sim_input[0];
+        self.xdot_desired[1] = sim_input[1];
+        self.thetadot_desired[2] = sim_input[2];
         self.xdot_desired[2] = sim_input[3];
+        self.xdot_desired = np.dot(self.drone.yaw_rotation(), self.xdot_desired)
     
     def simulate_step(self, t, dt):
-        #if t > 0 and t < 2:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        #elif t >= 2 and t < 6:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = -0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        #elif t >= 6 and t < 10:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        #elif t >= 10 and t < 14:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = -0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        #elif t >= 14 and t < 18:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        #elif t >= 18 and t < 22:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = -0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        #elif t >= 22:
-        #    self.theta_desired[0] = 0.0
-        #    self.theta_desired[1] = 0.1
-        #    self.theta_desired[2] = 0.0
-        #    self.xdot_desired[2] = 0.0
-        
-        #if((int(t / 4) % 2) == 0):
-        #    self.theta_desired[1] = 0.1
-        #    self.theta_desired[2] = 0.01
-        #else:
-        #    self.theta_desired[1] = -0.1
-        #    self.theta_desired[2] = -0.01
-        #print self.theta_desired
-        #print t
         self.step_count += 1
-        inputCurrents = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
-        omega = self.drone.thetadot_in_body()  # calculate current angular velocity in body frame
+        
+        #if(int(t / 8.0) % 2 == 0):
+        #    self.xdot_desired[0] = 0.75;
+        #    self.xdot_desired[1] = 0.1;
+        #else:
+        #    self.xdot_desired[0] = -0.75;
+        #    self.xdot_desired[1] = -0.1;
+        #self.xdot_desired = np.dot(self.drone.yaw_rotation(), self.xdot_desired)
+        
+        
+        #inputCurrents = self.controller.calculate_control_command(dt, self.theta_desired, self.thetadot_desired,self.x_desired,self.xdot_desired)
+        inputCurrents, acc = self.controller.calculate_control_command3(dt, self.xdot_desired, self.thetadot_desired.item(2))
+        omega = self.drone.omega;#thetadot_in_body()  # calculate current angular velocity in body frame
         
         #torques_thrust = self.drone.torques_thrust(np.array([inputCurrents]).transpose())
         torques_thrust = self.drone.torques_thrust(inputCurrents)
+        #print acc.transpose();
         # print omega.transpose()
         linear_acceleration = self.linear_acceleration(torques_thrust[3], self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration       
         omegadot = self.angular_acceleration(torques_thrust[0:3,0], omega)  # calculate resulting angular acceleration
+        #print "angular acc", omegadot.transpose()
         #linear_acceleration = self.linear_acceleration2(inputCurrents, self.drone.theta, self.drone.xdot)  # calculate the resulting linear acceleration
         #omegadot = self.angular_acceleration2(inputCurrents, omega)  # calculate resulting angular acceleration
         
@@ -142,7 +117,8 @@ class Simulator():
 
         #print "inputs:", inputCurrents
         #print "omega:", omega.transpose(), "omegadot:", omegadot.transpose()
-        self.drone.thetadot = np.dot(self.drone.angle_rotation_to_world(), omega)  # calculate roll, pitch, yaw velocities
+        self.drone.omega = omega;
+        self.drone.thetadot = np.dot(self.drone.angle_rotation_to_world().transpose(), omega)  # calculate roll, pitch, yaw velocities
         self.drone.theta = self.drone.theta + dt * self.drone.thetadot  # calculate new roll, pitch, yaw angles
         
         #print self.drone.xdot.transpose(), self.drone.theta.transpose(), omega.transpose(), omegadot.transpose()
@@ -163,12 +139,15 @@ class Simulator():
             plot.plot("phi", self.drone.theta.item(0))
             plot.plot_pose("ardrone", self.drone.x, self.drone.theta)
             plot.plot_trajectory("ardrone", self.drone.x)
+            plot.plot_motor_command("ardrone", inputCurrents)
+            
         
         if(sys.platform != "skulpt" and self.step_count % 50 == 0):#save trajectory for plotting
             vel = np.dot(self.rotation(self.drone.theta).transpose(), self.drone.xdot)
             vel = self.drone.xdot
-            vel = self.drone.x
-            vel = self.drone.thetadot_in_body();
+            #vel = self.drone.x
+            #vel = acc
+            #vel = self.drone.thetadot_in_body();
             #vel = self.drone.xdot;
             
             self.x.append(vel.item(0))
@@ -298,7 +277,7 @@ class Simulator():
         #R = np.array([[c_phi * c_psi - c_theta * s_phi * s_psi, -c_psi * s_phi - c_phi * c_theta * s_psi, s_theta * s_psi],
         #              [c_theta * c_psi * s_phi + c_phi * s_psi, c_phi * c_theta * c_psi - s_phi * s_psi,  -c_psi * s_theta],
         #              [s_phi * s_theta, c_phi * s_theta, c_theta]])
-        # Master thesis
+        # Master thesis XYZ
         R = np.array([[c_psi * c_theta, c_psi * s_theta * s_phi - s_psi * c_phi, c_psi * s_theta * c_phi + s_psi * s_phi],
                       [s_psi * c_theta, s_psi * s_theta * s_phi + c_psi * c_phi, s_psi * s_theta * c_phi - c_psi * s_phi],
                       [-s_theta, c_theta * s_phi, c_theta * c_phi]])
@@ -308,7 +287,7 @@ class Simulator():
         #              [math.sin(psi)*math.cos(theta)*math.cos(phi)+math.cos(psi)*math.sin(phi), -math.sin(psi)*math.cos(theta)*math.sin(phi)+math.cos(psi)*math.cos(phi), math.sin(psi)*math.sin(theta) ],
         #              [-math.sin(theta)*math.cos(phi), math.sin(theta)*math.sin(phi), math.cos(theta)]])
 
-        return R.transpose()
+        return R
     
     def linear_acceleration(self, thrust, angles, xdot):
         gravity = np.array([[0], [0], [-self.drone.g]])
