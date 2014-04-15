@@ -4,6 +4,7 @@ var $builtinmodule = function(name)
     'data': {
       'scalar': {},
       'pose': {},
+      'motor_command': {},
       'trajectory': {},
       'covariance_2d': {},
       'covariance_3d': {},
@@ -42,6 +43,13 @@ var $builtinmodule = function(name)
     Sk.builtin.pyCheckType('name', 'string', Sk.builtin.checkString(name));
     
     addPlotValue('pose', name.v, [position.v.get([0, 0]), position.v.get([1, 0]), position.v.get([2, 0]), orientation.v.get([0, 0]), orientation.v.get([1, 0]), orientation.v.get([2, 0])]);
+  });
+  
+  mod.plot_motor_command = new Sk.builtin.func(function(name, value) {
+    Sk.builtin.pyCheckArgs('plot_motor_command', arguments, 2);
+    Sk.builtin.pyCheckType('name', 'string', Sk.builtin.checkString(name));
+    
+    addPlotValue('motor_command', name.v, [value.v.get([0, 0]), value.v.get([1, 0]), value.v.get([2, 0]), value.v.get([3, 0])]);
   });
   
   mod.plot_trajectory = new Sk.builtin.func(function(name, position) {
