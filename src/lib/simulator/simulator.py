@@ -87,6 +87,12 @@ class Simulator():
         self.xdot_desired[2] = sim_input[3];
         self.xdot_desired = np.dot(self.drone.yaw_rotation(), self.xdot_desired)
     
+    def set_input_world(self, lin_vel, yaw_vel):
+        self.xdot_desired[0] = lin_vel[0]
+        self.xdot_desired[1] = lin_vel[1]
+        self.xdot_desired[2] = lin_vel[2]
+        self.thetadot_desired[2] = yaw_vel;
+    
     def simulate_step(self, t, dt):
         self.step_count += 1
         
