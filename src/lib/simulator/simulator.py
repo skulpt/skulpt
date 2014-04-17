@@ -64,9 +64,12 @@ class Simulator():
     def get_drone_navdata(self):
         import simulator.navdata
         navdata=simulator.navdata.Navdata()
-        navdata.vx=self.drone.xdot.item(0)
-        navdata.vy=self.drone.xdot.item(1)
-        navdata.vz=self.drone.xdot.item(2)
+        
+        local_velocity = np.dot(self.drone.yaw_rotation().transpose(), self.drone.xdot);
+        
+        navdata.vx=local_velocity.item(0)
+        navdata.vy=local_velocity.item(1)
+        navdata.vz=local_velocity.item(2)
         navdata.ax=self.drone.xdoubledot.item(0)
         navdata.ay=self.drone.xdoubledot.item(1)
         navdata.az=self.drone.xdoubledot.item(2)
