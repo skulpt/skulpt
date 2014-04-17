@@ -91,7 +91,7 @@ Sk.misceval.arrayFromArguments = function(args)
     {
         // this is a Sk.builtin.str
         var res = [];
-        for (var it = arg.tp$iter(), i = it.tp$iternext(); 
+        for (var it = arg.tp$iter(), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext())
         {
             res.push(i);
@@ -352,7 +352,7 @@ Sk.misceval.richCompareBool = function(v, w, op)
             return v.v !== w.v;
         return v !== w;
     }
-    
+
     var vname = Sk.abstr.typeName(v);
     var wname = Sk.abstr.typeName(w);
     throw new Sk.builtin.ValueError("don't know how to compare '" + vname + "' and '" + wname + "'");
@@ -588,11 +588,11 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
         // builtin.js, for example) as they are javascript functions,
         // not Sk.builtin.func objects.
 
-	if (func.sk$klass)
-	{
-	    // klass wrapper around __init__ requires special handling
-	    return func.apply(null, [kwdict, varargseq, kws, args]);
-	}
+        if (func.sk$klass)
+        {
+            // klass wrapper around __init__ requires special handling
+            return func.apply(null, [kwdict, varargseq, kws, args]);
+        }
 
         if (varargseq)
         {
@@ -601,11 +601,40 @@ Sk.misceval.apply = function(func, kwdict, varargseq, kws, args)
                 args.push(i);
             }
         }
-	if (kwdict)
+
+        if (kwdict)
         {
             goog.asserts.fail("kwdict not implemented;");
         }
-        goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
+        //goog.asserts.assert(((kws === undefined) || (kws.length === 0)));
+        //print('kw args location: '+ kws + ' args ' + args.length)
+        if(kws !== undefined && kws.length > 0 ) {
+            if (!func.co_varnames) {
+                throw new Sk.builtin.ValueError("Keyword arguments are not supported by this function")
+            }
+    
+            //number of positionally placed optional parameters
+            var numNonOptParams = func.co_numargs - func.co_varnames.length;
+            var numPosParams = args.length - numNonOptParams;
+            
+            //add defaults
+            args = args.concat(func.$defaults.slice(numPosParams));
+            
+            for(var i = 0; i < kws.length; i = i + 2) {
+                var kwix = func.co_varnames.indexOf(kws[i]);
+                
+                if(kwix === -1) {
+                    throw new Sk.builtin.TypeError("'" + kws[i] + "' is an invalid keyword argument for this function");
+                } 
+                
+                if (kwix < numPosParams) {
+                    throw new Sk.builtin.TypeError("Argument given by name ('" + kws[i] + "') and position (" + (kwix + numNonOptParams + 1) + ")");
+                }
+                
+                args[kwix + numNonOptParams] = kws[i + 1];  
+            }  
+        }
+        //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
     }
     else

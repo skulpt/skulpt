@@ -205,7 +205,7 @@ Sk.builtin.len = function len(item)
 
     if (item.sq$length)
         return new Sk.builtin.nmber(item.sq$length(), Sk.builtin.nmber.int$);
-    
+
     if (item.mp$length)
         return new Sk.builtin.nmber(item.mp$length(), Sk.builtin.nmber.int$);
 
@@ -334,7 +334,7 @@ Sk.builtin.zip = function zip()
 {
     if (arguments.length === 0)
     {
-        return new Sk.builtin.list([]);        
+        return new Sk.builtin.list([]);
     }
 
     var iters = [];
@@ -346,7 +346,7 @@ Sk.builtin.zip = function zip()
         }
         else
         {
-            throw "TypeError: argument " + i + " must support iteration";    
+            throw "TypeError: argument " + i + " must support iteration";
         }
     }
     var res = [];
@@ -366,7 +366,7 @@ Sk.builtin.zip = function zip()
         }
         if (!done)
         {
-            res.push(new Sk.builtin.tuple(tup));    
+            res.push(new Sk.builtin.tuple(tup));
         }
     }
     return new Sk.builtin.list(res);
@@ -496,7 +496,7 @@ Sk.builtin.dir = function dir(x)
     }
 
     // Add all attributes
-    if (x['$d']) 
+    if (x['$d'])
     {
         if (x['$d'].tp$iter)
         {
@@ -540,7 +540,7 @@ Sk.builtin.dir = function dir(x)
             }
         }
     }
-        
+
     // Sort results
     names.sort(function(a, b) { return (a.v > b.v) - (a.v < b.v); });
 
@@ -989,19 +989,19 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	var compare_func;
 	var list;
 	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
-		if (cmp instanceof Sk.builtin.none) {
-			compare_func = { func_code: function(a,b){
+		if (cmp instanceof Sk.builtin.none || cmp === undefined) {
+			compare_func = function(a,b){
 			    return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-			}};
+			};
 		}
         else {
-            compare_func = { func_code: function(a,b) { return cmp.func_code(a[0], b[0]); } };
+            compare_func = function(a,b) { return Sk.misceval.callsim(cmp, a[0], b[0]); };
 		}
 		var iter = iterable.tp$iter();
 		var next = iter.tp$iternext();
 		var arr = [];
 		while (next !== undefined){
-			arr.push([key.func_code(next), next]);
+			arr.push([Sk.misceval.callsim(key, next), next]);
 			next = iter.tp$iternext();
 		}
         list = new Sk.builtin.list(arr);
@@ -1019,11 +1019,11 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 	else {
 		list.list_sort_(list);
 	}
-	
+
 	if (reverse) {
 		list.list_reverse_(list);
 	}
-	
+
 	if (key !== undefined && !(key instanceof Sk.builtin.none)) {
 		var iter = list.tp$iter();
 		var next = iter.tp$iternext()
@@ -1034,10 +1034,12 @@ Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
 		}
 		list = new Sk.builtin.list(arr);
 	}
-	
+
 	return list;
 }
-
+Sk.builtin.sorted.co_varnames = ['cmp', 'key', 'reverse'];
+Sk.builtin.sorted.$defaults = [Sk.builtin.none, Sk.builtin.none, false];
+Sk.builtin.sorted.co_numargs = 4;
 
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}

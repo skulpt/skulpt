@@ -338,7 +338,8 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
     if (has_key){
         if (has_cmp) {
             timsort.lt = function(a, b){
-                return Sk.misceval.richCompareBool(cmp.func_code(a[0], b[0]), zero, "Lt");
+                var res = Sk.misceval.callsim(cmp, a[0], b[0])
+                return Sk.misceval.richCompareBool(res, zero, "Lt");
             };
         }
         else{
@@ -348,12 +349,13 @@ Sk.builtin.list.prototype.list_sort_ = function(self, cmp, key, reverse) {
         }
         for (var i =0; i < timsort.listlength; i++){
             var item = timsort.list.v[i];
-            var keyvalue = key.func_code(item);
+            var keyvalue = Sk.misceval.callsim(key, item);
             timsort.list.v[i] = [keyvalue, item];
         }
     } else if (has_cmp) {
         timsort.lt = function(a, b){
-            return Sk.misceval.richCompareBool(cmp.func_code(a, b), zero, "Lt");
+            var res = Sk.misceval.callsim(cmp, a, b);
+            return Sk.misceval.richCompareBool(res, zero, "Lt");
         };
     }
 

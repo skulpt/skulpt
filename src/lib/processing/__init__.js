@@ -37,6 +37,10 @@ var $builtinmodule = function(name)
         
     });
 
+    mod.text = new Sk.builtin.func(function(theText, x, y) {
+        mod.processing.text(theText.v, x.v, y.v);
+    });
+
     mod.point = new Sk.builtin.func(function(x1,y1) {
         mod.processing.point(x1.v,y1.v)
     });

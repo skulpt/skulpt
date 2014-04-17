@@ -33,11 +33,9 @@ the more I think about it the more I wonder...
         <script type="text/javascript">
             //on dom loaded    
             $(document).ready(function(){
-                var editor1 = CodeMirror.fromTextArea(document.getElementById('example2_code'), {
-                    parserfile: ["parsepython.js"],
+                var editor2 = CodeMirror.fromTextArea(document.getElementById('example2_code'), {
                     autofocus: true,
                     theme: "solarized dark",
-                    //path: "static/env/codemirror/js/",
                     lineNumbers: true,
                     textWrapping: false,
                     indentUnit: 4,
@@ -47,11 +45,9 @@ the more I think about it the more I wonder...
                     parserConfig: {'pythonVersion': 2, 'strictErrors': true},
                 });
                 
-                var editor2= CodeMirror.fromTextArea(document.getElementById('example1_code'), {
-                    parserfile: ["parsepython.js"],
+                var editor1= CodeMirror.fromTextArea(document.getElementById('example1_code'), {
                     autofocus: true,
                     theme: "solarized dark",
-                    //path: "static/env/codemirror/js/",
                     lineNumbers: true,
                     textWrapping: false,
                     indentUnit: 4,
@@ -60,6 +56,9 @@ the more I think about it the more I wonder...
                     autoMatchParens: true,
                     parserConfig: {'pythonVersion': 2, 'strictErrors': true},
                 });
+                editors = {}
+                editors['example2_code'] = editor2;
+                editors['example1_code'] = editor1;
             });    
                 
             function outf(text) {
@@ -75,7 +74,8 @@ the more I think about it the more I wonder...
             }
             
             function runit(myDiv) {
-               var prog = document.getElementById(myDiv+"_code").value;
+//               var prog = document.getElementById(myDiv+"_code").value;
+               var prog = editors[myDiv+'_code'].getValue();
                var mypre = document.getElementById(myDiv+"_pre");
                mypre.innerHTML = '';
                Sk.canvas = myDiv+"_canvas";
@@ -158,23 +158,23 @@ delay = 16
 radius = 30
 
 def setup():
-   strokeWeight(10)
-   frameRate(20)
-   size(300,300)
+    strokeWeight(10)
+    frameRate(20)
+    size(300,300)
 
 def ellipseFun():
-     global X, Y, radius
-     background(100)
-     fill(0,121,184)
-     stroke(255)
-     fc = environment.frameCount
+    global X, Y, radius
+    background(100)
+    fill(0,121,184)
+    stroke(255)
+    fc = environment.frameCount
 
-     X += (mouse.x-X)/delay;
-     Y += (mouse.y-Y)/delay;
+    X += (mouse.x-X)/delay;
+    Y += (mouse.y-Y)/delay;
 
-     radius = radius + sin(fc / 4)
+    radius = radius + sin(fc / 4)
 
-     ellipse(X,Y,radius,radius)
+    ellipse(X,Y,radius,radius)
 
 def colorFun():
     noStroke()
@@ -195,9 +195,9 @@ def distanceFun():
     strokeWeight(1)
     for i in range(0,environment.width,20):
         for j in range(0,environment.width,20):
-           size = dist(mouse.x,mouse.y,i,j)
-           size = size/dist(0,0,environment.height,environment.width) * 100
-           ellipse(i,j,size,size)
+            size = dist(mouse.x,mouse.y,i,j)
+            size = size/dist(0,0,environment.height,environment.width) * 100
+            ellipse(i,j,size,size)
 
 draw = distanceFun    # try colorFun or ellipseFun
 run()

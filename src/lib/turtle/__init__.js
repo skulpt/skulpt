@@ -238,7 +238,7 @@ if (! TurtleGraphics) {
     // check if all turtles are done
     allDone = function() {
         var allDone = true;
-        for (var tix in TurtleGraphics.turtleList) {
+        for (var tix = 0; tix < TurtleGraphics.turtleList.length; tix++) {
             var theT = TurtleGraphics.turtleList[tix];
             allDone = allDone && (theT.aCount >= theT.drawingEvents.length);
         }
@@ -259,7 +259,7 @@ if (! TurtleGraphics) {
 
             TurtleGraphics.renderClock += incr;
 
-            for (var tix in TurtleGraphics.turtleList) {
+            for (var tix = 0; tix < TurtleGraphics.turtleList.length; tix++) {
                 var t = TurtleGraphics.turtleList[tix]
                 lastCanvas = t.turtleCanvas 
                 if (t.aCount >= t.drawingEvents.length)
@@ -680,7 +680,7 @@ if (! TurtleGraphics) {
                         closePath();
                 } else {
                     var r = segmentLine(position, newposition, turtleCanvas.getSegmentLength(), pen);
-                    for (var s in r) {
+                    for (var s = 0; s < r.length; s++) {
                         r[s].push(penStyle);
                         addDrawingEvent(r[s]);
                     }
@@ -1163,7 +1163,7 @@ if (! TurtleGraphics) {
             head = this.heading.toAngle() - 90.0;
         if (! position)
             position = this.position
-        for (p in plist) {
+        for (p = 0; p < plist.length; p++) {
             rtPoints.push(plist[p].scale(this.turtleCanvas.xptscale,this.turtleCanvas.yptscale).rotate(head).add(position));
         }
         this.context.beginPath();
