@@ -55,6 +55,9 @@ class PositionController:
     Kp_yaw = 1.0
     Kd_yaw = 2.0
     
+    Limit_xy = 2.0
+    Limit_z = 0.5
+    
     def __init__(self, drone, commands):
         self.drone = drone
         self.command_queue = commands;
@@ -70,6 +73,9 @@ class PositionController:
         world_delta = np.dot(self.drone.yaw_rotation(), np.array([[delta['dx']], [delta['dy']], [delta['dz']]]))
         self.setpoint_position = self.setpoint_position + world_delta
         self.setpoint_yaw += delta['dyaw']
+    
+    def clamp(self, value, limit):
+        return max(min(value, limit), -limit)
     
     def compute_input(self):
         if self.done:
@@ -88,7 +94,7 @@ class PositionController:
         lin_vel_cmd = self.Kp_pos * (self.setpoint_position - self.drone.x) - self.Kd_pos * self.drone.xdot; 
         yaw_vel_cmd = self.Kp_yaw * (self.setpoint_yaw - self.drone.theta.item(2)) - self.Kd_yaw * self.drone.thetadot.item(2)
         
-        return [lin_vel_cmd.item(0), lin_vel_cmd.item(1), lin_vel_cmd.item(2)], yaw_vel_cmd
+        return [self.clamp(lin_vel_cmd.item(0), self.Limit_xy), self.clamp(lin_vel_cmd.item(1), self.Limit_xy), self.clamp(lin_vel_cmd.item(2), self.Limit_z)], yaw_vel_cmd
 
 
 class Controller():
