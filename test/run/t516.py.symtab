@@ -1,0 +1,252 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: False
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: None
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: add
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: add
+    Sym_lineno: 21
+    Sym_nested: False
+    Sym_haschildren: False
+    Func_params: ['x', 'y']
+    Func_locals: ['x', 'y']
+    Func_globals: ['adder']
+    Func_frees: []
+    -- Identifiers --
+    name: adder
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: x
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: y
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: adder
+  is_referenced: False
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: bool
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: filter
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: lst
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: lst2
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: map
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: outer
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: outer
+    Sym_lineno: 6
+    Sym_nested: False
+    Sym_haschildren: True
+    Func_params: []
+    Func_locals: ['inner']
+    Func_globals: ['lst', 'map']
+    Func_frees: []
+    -- Identifiers --
+    name: inner
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: inner
+        Sym_lineno: 7
+        Sym_nested: True
+        Sym_haschildren: False
+        Func_params: ['item']
+        Func_locals: ['item']
+        Func_globals: []
+        Func_frees: []
+        -- Identifiers --
+        name: item
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: lst
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: map
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: True
+      is_declared_global: False
+      is_local: False
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: reduce
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]

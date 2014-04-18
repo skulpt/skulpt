@@ -86,13 +86,13 @@ Sk.builtin.tuple.prototype.tp$hash = function()
     for (var i = 0; i < len; ++i)
     {
         var y = Sk.builtin.hash(this.v[i]);
-        if (y === -1) return -1;
+        if (y === -1) return new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$);
         x = (x ^ y) * mult;
         mult += 82520 + len + len;
     }
     x += 97531;
     if (x === -1) x = -2;
-    return x;
+    return new Sk.builtin.nmber(x, Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.tuple.prototype.sq$repeat = function(n)

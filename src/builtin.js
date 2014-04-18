@@ -256,11 +256,11 @@ Sk.builtin.any = function any(iter)
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.isTrue(i)) {
-            return true;
+            return Sk.builtin.bool.true$;
         }
     }
 
-    return false;
+    return Sk.builtin.bool.false$;
 }
 
 Sk.builtin.all = function all(iter)
@@ -276,11 +276,11 @@ Sk.builtin.all = function all(iter)
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (!Sk.misceval.isTrue(i)) {
-            return false;
+            return Sk.builtin.bool.false$;
         }
     }
 
-    return true;
+    return Sk.builtin.bool.true$;
 }
 
 Sk.builtin.sum = function sum(iter,start)
@@ -582,42 +582,57 @@ Sk.builtin.isinstance = function isinstance(obj, type)
     }
 
     if (type === Sk.builtin.int_.prototype.ob$type) {
-	return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.int$);
+	if ((obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.int$)) {
+            return Sk.builtin.bool.true$;
+        }
+        else {
+            return Sk.builtin.bool.false$;
+        }
     }
 
     if (type === Sk.builtin.float_.prototype.ob$type) {
-        return (obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.float$);
+        if ((obj.tp$name === 'number') && (obj.skType === Sk.builtin.nmber.float$)) {
+            return Sk.builtin.bool.true$;
+        }
+        else {
+            return Sk.builtin.bool.false$;
+        }
     }
 
     if (type === Sk.builtin.none.prototype.ob$type) {
-        return (obj instanceof Sk.builtin.none);
+        if (obj instanceof Sk.builtin.none) {
+            return Sk.builtin.bool.true$;
+        }
+        else {
+            return Sk.builtin.bool.false$;
+        }
     }
 
     // Normal case
-    if (obj.ob$type === type) return true;
+    if (obj.ob$type === type) return Sk.builtin.bool.true$;
 
     // Handle tuple type argument
     if (type instanceof Sk.builtin.tuple)
     {
         for (var i = 0; i < type.v.length; ++i)
         {
-            if (Sk.builtin.isinstance(obj, type.v[i]))
-                return true;
+            if (Sk.misceval.isTrue(Sk.builtin.isinstance(obj, type.v[i])))
+                return Sk.builtin.bool.true$;
         }
-        return false;
+        return Sk.builtin.bool.false$;
     }
 
     var issubclass = function(klass, base)
     {
-        if (klass === base) return true;
-        if (klass['$d'] === undefined) return false;
+        if (klass === base) return Sk.builtin.bool.true$;
+        if (klass['$d'] === undefined) return Sk.builtin.bool.false$;
         var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
         for (var i = 0; i < bases.v.length; ++i)
         {
-            if (issubclass(bases.v[i], base))
-                return true;
+            if (Sk.misceval.isTrue(issubclass(bases.v[i], base)))
+                return Sk.builtin.bool.true$;
         }
-        return false;
+        return Sk.builtin.bool.false$;
     };
 
     return issubclass(obj.ob$type, type);
@@ -643,12 +658,12 @@ Sk.builtin.hash = function hash(value)
     else if (value instanceof Sk.builtin.bool)
     {
 	if (value.v)
-	    return 1;
-	return 0;
+	    return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Sk.builtin.none)
     {
-	return 0;
+	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Object)
     {
@@ -657,26 +672,15 @@ Sk.builtin.hash = function hash(value)
             Sk.builtin.hashCount += 1;
             value.__id = Sk.builtin.hashCount;
         }
-        return value.__id;
+        return new Sk.builtin.nmber(value.__id, Sk.builtin.nmber.int$);
     }
-    else if (typeof value === "number")
+    else if (typeof value === "number" || value === null
+             || value === true || value === false)
     {
-        return value;
-    }
-    else if (value === null)
-    {
-	return 0;  // what should this be?
-    }
-    else if (value === true)
-    {
-	return 1;
-    }
-    else if (value === false)
-    {
-	return 0;
+	throw new Sk.builtin.TypeError("unsupported Javascript type");
     }
 
-    return (typeof value) + ' ' + String(value);
+    return new Sk.builtin.str((typeof value) + ' ' + String(value));
     // todo; throw properly for unhashable types
 };
 
@@ -734,126 +738,164 @@ Sk.builtin.eval_ =  function eval_()
 Sk.builtin.map = function map(fun, seq) {
     Sk.builtin.pyCheckArgs("map", arguments, 2);
 
-    if (fun instanceof Sk.builtin.none){
-        fun = function (x) { return x; };
-    }
+    if (arguments.length > 2)
+    {
+        // Pack sequences into one list of Javascript Arrays
 
-    if (arguments.length > 2){
         var combined = [];
         var iterables = Array.prototype.slice.apply(arguments).slice(1);
-        for (var i in iterables){
-            if (iterables[i].tp$iter === undefined){
+        for (var i in iterables)
+        {
+            if (!Sk.builtin.checkIterable(iterables[i]))
+            {
                 var argnum = parseInt(i,10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
             }
             iterables[i] = iterables[i].tp$iter()
         }
 
-        while(true) {
+        while(true) 
+        {
             var args = [];
             var nones = 0;
-            for (var i in iterables){
+            for (var i in iterables)
+            {
                 var next = iterables[i].tp$iternext()
-                if (next === undefined) {
+                if (next === undefined) 
+                {
                     args.push(Sk.builtin.none.none$);
                     nones++;
                 }
-                else{
+                else
+                {
                     args.push(next);
                 }
             }
-            if (nones !== iterables.length) {
+            if (nones !== iterables.length) 
+            {
                 combined.push(args);
             }
-            else {
+            else 
+            {
+                // All iterables are done
                 break;
             }
         }
         seq = new Sk.builtin.list(combined);
     }
 
-    if (seq.tp$iter === undefined){
+    if (!Sk.builtin.checkIterable(seq))
+    {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    var retval = [],
-        iter = seq.tp$iter(),
-        next = iter.tp$iternext();
+    var retval = [];
+    var iter, item;
 
-    while (next !== undefined){
-        // make sure next is an array because we don't knot howmany args the map function takes
-        // we might be able to do this a bit more efficient.
-        if (!(next instanceof Array)){ next = [next]; }
-        // add the function to call at the beginning
-        next.unshift(fun);
-        var res = Sk.misceval.callsim.apply(this, next);
-        retval.push(res);
-        next = iter.tp$iternext();
+    for (iter = seq.tp$iter(), item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext())
+    {
+        if (fun === Sk.builtin.none.none$)
+        {
+            if (item instanceof Array)
+            {
+                // With None function and multiple sequences, 
+                // map should return a list of tuples
+                item = new Sk.builtin.tuple(item);
+            }
+            retval.push(item);
+        }
+        else
+        {
+            if (!(item instanceof Array))
+            {
+                // If there was only one iterable, convert to Javascript
+                // Array for call to apply.
+                item = [item];
+            }
+            retval.push(Sk.misceval.apply(fun, undefined, undefined, undefined, item));
+        }
     }
-
-	return new Sk.builtin.list(retval);
+    
+    return new Sk.builtin.list(retval);
 }
 
 Sk.builtin.reduce = function reduce(fun, seq, initializer) {
-	Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
-	var iter = seq.tp$iter();
-	if (initializer === undefined){
-		initializer = iter.tp$iternext();
-		if (initializer === undefined){
-			throw new Sk.builtin.TypeError('reduce() of empty sequence with no initial value');
-		}
+    Sk.builtin.pyCheckArgs("reduce", arguments, 2, 3);
+    if (!Sk.builtin.checkIterable(seq))
+    {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+    }
+
+    var iter = seq.tp$iter();
+    if (initializer === undefined)
+    {
+	initializer = iter.tp$iternext();
+	if (initializer === undefined)
+        {
+	    throw new Sk.builtin.TypeError('reduce() of empty sequence with no initial value');
 	}
-	var accum_value = initializer;
-	var next = iter.tp$iternext();
-	while (next !== undefined){
-        var res = Sk.misceval.callsim(fun, accum_value, next);
-		accum_value = res;
-		next = iter.tp$iternext();
-	}
-	return accum_value;
+    }
+    var accum_value = initializer;
+    var item;
+    for (item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext())
+    {
+        accum_value = Sk.misceval.callsim(fun, accum_value, item);
+    }
+
+    return accum_value;
 }
 
-Sk.builtin.filter = function filter(fun, iterable) {
-	Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
+Sk.builtin.filter = function filter(fun, iterable) { 
+    Sk.builtin.pyCheckArgs("filter", arguments, 2, 2);
+	
+    if (!Sk.builtin.checkIterable(iterable))
+    {
+	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
+    }
+	
+    var ctor = function () { return []; }
+    var add = function (iter, item) { iter.push(item); return iter; } 
+    var ret = function (iter) { return new Sk.builtin.list(iter); }
+    
+    if (iterable.__class__ === Sk.builtin.str)
+    {
+	ctor = function () { return new Sk.builtin.str(''); }
+	add = function (iter, item) { return iter.sq$concat(item); }
+	ret = function (iter) { return iter; }
+    } 
+    else if (iterable.__class__ === Sk.builtin.tuple) 
+    {
+	ret = function (iter) { return new Sk.builtin.tuple(iter); }
+    }
+    
+    var retval = ctor();
+    var iter, item;
+    var result;
 
-	//todo: need to find a proper way to tell what type it is.
-	if (iterable.tp$iter === undefined){
-		throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iterable) + "' object is not iterable");
-	}
+    for (iter = iterable.tp$iter(), item = iter.tp$iternext();
+         item !== undefined;
+         item = iter.tp$iternext())
+    {
+        if (fun === Sk.builtin.none.none$)
+        {
+            result = Sk.builtin.bool(item);
+        }
+        else
+        {
+            result = Sk.misceval.callsim(fun, item);
+        }
 
-	//simulate default identity function
-	if (fun instanceof Sk.builtin.none) {
-		fun = function (x) { return Sk.builtin.bool(x); };
-	}
+        if (Sk.misceval.isTrue(result))
+        {
+            retval = add(retval, item);
+        }
+    }
 
-	var ctor = function () { return []; }
-	var add = function (iter, item) { iter.push(item); return iter; }
-	var ret = function (iter) { return new Sk.builtin.list(iter); }
-
-	if (iterable.__class__ === Sk.builtin.str){
-		ctor = function () { return new Sk.builtin.str(''); }
-		add = function (iter, item) { return iter.sq$concat(item); }
-		ret = function (iter) { return iter; }
-	} else if (iterable.__class__ === Sk.builtin.tuple) {
-		ret = function (iter) { return new Sk.builtin.tuple(iter); }
-	}
-
-	var iter = iterable.tp$iter(),
-		next = iter.tp$iternext(),
-		retval = ctor();
-
-	if (next === undefined){
-		return ret(retval);
-	}
-
-	while (next !== undefined){
-		if (Sk.misceval.isTrue(Sk.misceval.callsim(fun, next))){
-			retval = add(retval, next);
-		}
-		next = iter.tp$iternext();
-	}
-
-	return ret(retval);
+    return ret(retval);
 }
 
 Sk.builtin.hasattr = function hasattr(obj,attr) {
@@ -864,9 +906,9 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
 
     if (obj.tp$getattr) {
         if (obj.tp$getattr(attr.v)) {
-            return true;
+            return Sk.builtin.bool.true$;
         } else
-            return false;
+            return Sk.builtin.bool.false$;
     } else
         throw new Sk.builtin.AttributeError('Object has no tp$getattr method')
 }
@@ -874,6 +916,9 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
 
 Sk.builtin.pow = function pow(a, b, c) {
     Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
+
+    if (c instanceof Sk.builtin.none)
+        c = undefined;
 
     var a_num = Sk.builtin.asnum$(a);
     var b_num = Sk.builtin.asnum$(b);

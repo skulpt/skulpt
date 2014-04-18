@@ -416,6 +416,20 @@ Sk.misceval.isTrue = function(x)
     if (x.constructor === Sk.builtin.nmber) return x.v !== 0;
     if (x.mp$length) return x.mp$length() !== 0;
     if (x.sq$length) return x.sq$length() !== 0;
+    if (x['__nonzero__']) {
+        var ret = Sk.misceval.callsim(x['__nonzero__'], x);
+        if (!Sk.builtin.checkInt(ret)) {
+            throw new Sk.builtin.TypeError ("__nonzero__ should return an int");
+        }
+        return Sk.builtin.asnum$(ret) !== 0;
+    }
+    if (x['__len__']) {
+        var ret = Sk.misceval.callsim(x['__len__'], x);
+        if (!Sk.builtin.checkInt(ret)) {
+            throw new Sk.builtin.TypeError ("__len__ should return an int");
+        }
+        return Sk.builtin.asnum$(ret) !== 0;
+    }
     return true;
 };
 goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);

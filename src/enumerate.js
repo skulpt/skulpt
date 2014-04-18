@@ -31,7 +31,8 @@ Sk.builtin.enumerate = function(iterable, start)
         // todo; StopIteration
         var next = it.tp$iternext();
         if (next === undefined) return undefined;
-        return new Sk.builtin.tuple([this.$index++, next]);
+	var idx = Sk.builtin.assk$(this.$index++, Sk.builtin.nmber.int$);
+        return new Sk.builtin.tuple([idx, next]);
     };
 
     this.__class__ = Sk.builtin.enumerate;
