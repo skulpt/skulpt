@@ -917,6 +917,9 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
 Sk.builtin.pow = function pow(a, b, c) {
     Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
 
+    if (c instanceof Sk.builtin.none)
+        c = undefined;
+
     var a_num = Sk.builtin.asnum$(a);
     var b_num = Sk.builtin.asnum$(b);
     var c_num = Sk.builtin.asnum$(c);
