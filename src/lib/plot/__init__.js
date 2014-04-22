@@ -20,6 +20,11 @@ var $builtinmodule = function(name)
       });
     });
   };
+  plot['reset'] = function() {
+    Object.keys(plot.data).forEach(function(type) {
+      plot.data[type] = {};
+    });
+  };
   
   var addPlotValue = function(type, name, value) {
     var data = plot.data[type][name] || [];
@@ -56,7 +61,9 @@ var $builtinmodule = function(name)
     Sk.builtin.pyCheckArgs('plot_trajectory', arguments, 2);
     Sk.builtin.pyCheckType('name', 'string', Sk.builtin.checkString(name));
     
-    addPlotValue('trajectory', name.v, [position.v.get([0, 0]), position.v.get([1, 0]), position.v.get([2, 0])]);
+    var size = position.v.size();
+    
+    addPlotValue('trajectory', name.v, [position.v.get([0, 0]), position.v.get([1, 0]), size[0] > 2 ? position.v.get([2, 0]) : 0]);
   });
   
   mod.plot_covariance_2d = new Sk.builtin.func(function(name, cov) {
