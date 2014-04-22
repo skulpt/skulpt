@@ -52,15 +52,16 @@ class PositionController:
     Kp_pos = 1.0
     Kd_pos = 1.0
     
-    Kp_yaw = 1.0
-    Kd_yaw = 2.0
+    Kp_yaw = 2.0
+    Kd_yaw = 4.0
     
     Limit_xy = 2.0
     Limit_z = 0.5
     
-    def __init__(self, drone, commands):
+    def __init__(self, drone, commands, do_log):
         self.drone = drone
         self.command_queue = commands;
+        self.do_log = do_log;
         pass
     
     def distance_to_setpoint(self):
@@ -86,10 +87,12 @@ class PositionController:
             
             if self.command_queue_idx < len(self.command_queue):
                 self.update_setpoint(self.command_queue[self.command_queue_idx])
-                print "updating setpoint, position:", self.setpoint_position.transpose(), "yaw:", self.setpoint_yaw
+                if self.do_log:
+                    print "updating setpoint, position:", self.setpoint_position.transpose(), "yaw:", self.setpoint_yaw
             else:
                 self.done = True
-                print "done"
+                if self.do_log:
+                    print "done"
         
         lin_vel_cmd = self.Kp_pos * (self.setpoint_position - self.drone.x) - self.Kd_pos * self.drone.xdot; 
         yaw_vel_cmd = self.Kp_yaw * (self.setpoint_yaw - self.drone.theta.item(2)) - self.Kd_yaw * self.drone.thetadot.item(2)
