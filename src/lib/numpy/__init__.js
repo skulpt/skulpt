@@ -160,6 +160,24 @@ var $builtinmodule = function(name)
     $loc.__div__ = new Sk.builtin.func(function(self, other) {
       return Sk.misceval.callsim(mod.div, self, other);
     });
+    /*
+     * TODO: Skulpt doesn't call __pos__
+    $loc.__pos__ = new Sk.builtin.func(function(self) {
+      return self;
+    });
+    */
+    $loc.nb$positive = function() {
+      return this;
+    };
+    /*
+     * TODO: Skulpt doesn't call __neg__
+    $loc.__neg__ = new Sk.builtin.func(function(self) {
+      return Sk.misceval.callsim(mod.ndarray, undefined, math.unary(self.v));
+    });
+    */
+    $loc.nb$negative = function() {
+      return Sk.misceval.callsim(mod.ndarray, undefined, math.unary(this.v));
+    };
     
     $loc.transpose = new Sk.builtin.func(function(self) {
       return Sk.misceval.callsim(mod.transpose, self);
