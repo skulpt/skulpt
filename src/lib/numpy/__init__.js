@@ -417,7 +417,7 @@ var $builtinmodule = function(name)
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
   
-    mod.random = new Sk.builtin.func(function(rows,cols) {
+  mod.random = new Sk.builtin.func(function(rows,cols) {
     Sk.builtin.pyCheckArgs('random', arguments, 2);
     
     var result;
@@ -430,6 +430,32 @@ var $builtinmodule = function(name)
       throw new Sk.builtin.Exception(e.message);
     }
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+  /**
+   * logic functions
+   */
+  mod.allclose = new Sk.builtin.func(function(a, b) {
+    Sk.builtin.pyCheckArgs('allclose', arguments, 2, 4);
+    
+    var rtol = 1e-5, atol = 1e-8;
+    
+    if(arguments.length > 2) {
+      Sk.builtin.pyCheckType('rtol', 'number', Sk.builtin.checkNumber(arguments[2]));
+      rtol = arguments[2].v
+    }
+    if(arguments.length > 3) {
+      Sk.builtin.pyCheckType('atol', 'number', Sk.builtin.checkNumber(arguments[3]));
+      atol = arguments[3].v
+    }
+    
+    var result = true;
+    
+    math.collection.deepMap2(a.v, b.v, function(v1, v2) {
+    	result = result && (Math.abs(v1 - v2) <= (atol + rtol * Math.abs(v2)));
+    });
+    
+    return Sk.builtin.bool(result)
   });
   
   /**
