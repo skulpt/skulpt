@@ -432,6 +432,42 @@ var $builtinmodule = function(name)
     return Sk.misceval.callsim(mod.ndarray, undefined, result);
   });
   
+  mod.mean = new Sk.builtin.func(function(array1) {
+    Sk.builtin.pyCheckArgs('mean', arguments, 1);
+    
+    var result;
+    try {
+      result = math.mean(array1.v);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+  mod.var = new Sk.builtin.func(function(array1) {
+    Sk.builtin.pyCheckArgs('var', arguments, 1);
+    
+    var result;
+    try {
+      result = math.var(array1.v);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
+  mod.std = new Sk.builtin.func(function(array1) {
+    Sk.builtin.pyCheckArgs('std', arguments, 1);
+    
+    var result;
+    try {
+      result = math.std(array1.v);
+    } catch(e) {
+      throw new Sk.builtin.Exception(e.message);
+    }
+    return Sk.misceval.callsim(mod.ndarray, undefined, result);
+  });
+  
   /**
    * logic functions
    */
