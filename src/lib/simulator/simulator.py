@@ -145,9 +145,6 @@ class Simulator():
         
         if(sys.platform == "skulpt"):
             import plot;
-            plot.plot("phi", self.drone.theta.item(0))
-            plot.plot("theta", self.drone.theta.item(1))
-            plot.plot("psi", self.drone.theta.item(2))
             plot.plot_pose("ardrone", self.drone.x, self.drone.theta)
             plot.plot_trajectory("ardrone", self.drone.x)
             plot.plot_motor_command("ardrone", inputCurrents)
