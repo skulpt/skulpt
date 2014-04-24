@@ -1,80 +1,77 @@
-'''
-Created on 17.03.2014
-
-@author: tatsch
-'''
-
 class Navdata(object):
     '''
-    Navdata
+    drone navdata storage.
+
+    this represents the current state of the drone.
     '''
 
-    # 0 means no battery, 100 means full battery
-    battery = 50
+    def __init__(self):
+        # 0 means no battery, 100 means full battery
+        self.battery = 50
 
-    # 0: Unknown, 1: Init, 2: Landed, 3: Flying, 4: Hovering, 5: Test
-    # 6: Taking off, 7: Goto Fix Point, 8: Landing, 9: Looping
-    # Note: 3,7 seems to discriminate type of flying (isFly = 3 | 7)
-    state = 0
+        # 0: Unknown, 1: Init, 2: Landed, 3: Flying, 4: Hovering, 5: Test
+        # 6: Taking off, 7: Goto Fix Point, 8: Landing, 9: Looping
+        # Note: 3,7 seems to discriminate type of flying (isFly = 3 | 7)
+        self.state = 0
 
-    # magnetometer
+        # magnetometer
 
-    magX = 0
-    magY = 0
-    magZ = 0
+        self.magX = 0
+        self.magY = 0
+        self.magZ = 0
 
-    # pressure sensor
-    pressure = 0
+        # pressure sensor
+        self.pressure = 0
 
-    # apparently, there was a temperature sensor added as well.
-    temp = 0
+        # apparently, there was a temperature sensor added as well.
+        self.temp = 0
 
-    # wind sensing...
-    wind_speed      = 0
-    wind_angle      = 0
-    wind_comp_angle = 0
+        # wind sensing...
+        self.wind_speed      = 0
+        self.wind_angle      = 0
+        self.wind_comp_angle = 0
 
-    # left/right tilt in degrees (rotation about the X axis)
-    rotX = 0
+        # left/right tilt in degrees (rotation about the X axis)
+        self.rotX = 0
 
-    # forward/backward tilt in degrees (rotation about the Y axis)
-    rotY = 0
+        # forward/backward tilt in degrees (rotation about the Y axis)
+        self.rotY = 0
 
-    # orientation in degrees (rotation about the Z axis)
-    rotZ = 0
+        # orientation in degrees (rotation about the Z axis)
+        self.rotZ = 0
 
-    # estimated altitude (cm)
-    altd = 0
+        # estimated altitude (cm)
+        self.altd = 0
 
-    # linear velocity (mm/sec)
-    vx = 0
+        # linear velocity (mm/sec)
+        self.vx = 0
 
-    # linear velocity (mm/sec)
-    vy = 0
+        # linear velocity (mm/sec)
+        self.vy = 0
 
-    # linear velocity (mm/sec)
-    vz = 0
+        # linear velocity (mm/sec)
+        self.vz = 0
 
-    #linear accelerations (unit: g)
-    ax = 0
-    ay = 0
-    az = 0
+        #linear accelerations (unit: g)
+        self.ax = 0
+        self.ay = 0
+        self.az = 0
 
-    #motor commands (unit 0 to 255)
-    motor1 = 0
-    motor2 = 0
-    motor3 = 0
-    motor4 = 0
+        #motor commands (unit 0 to 255)
+        self.motor1 = 0
+        self.motor2 = 0
+        self.motor3 = 0
+        self.motor4 = 0
 
-    #Tags in Vision Detectoion
-    tags_count       = 0
-    tags_type        = []
-    tags_xc          = []
-    tags_yc          = []
-    tags_width       = []
-    tags_height      = []
-    tags_orientation = []
-    tags_distance    = []
+        #Tags in Vision Detectoion
+        self.tags_count       = 0
+        self.tags_type        = []
+        self.tags_xc          = []
+        self.tags_yc          = []
+        self.tags_width       = []
+        self.tags_height      = []
+        self.tags_orientation = []
+        self.tags_distance    = []
 
-    #time stamp
-    tm = 0
+        #time stamp
+        self.tm = 0
