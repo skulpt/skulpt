@@ -47,7 +47,7 @@ Sk.builtin.lng.prototype.tp$index = function()
 
 Sk.builtin.lng.prototype.tp$hash = function()
 {
-    return this.tp$index();
+    return Sk.builtin.nmber(this.tp$index(), Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.lng.prototype.tp$name = "long";

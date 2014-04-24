@@ -62,7 +62,9 @@ Sk.builtin.nmber.prototype.tp$index = function()
 
 Sk.builtin.nmber.prototype.tp$hash = function()
 {
-    return this.v;
+    //the hash of all numbers should be an int and since javascript doesn't really 
+    //care every number can be an int.
+    return Sk.builtin.nmber(this.v, Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.nmber.prototype.tp$name = "number";

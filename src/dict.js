@@ -80,6 +80,12 @@ Sk.builtin.dict.prototype.key$lookup = function(bucket, key)
             return item;
         }
     }
+    
+    if (Sk.misceval.richCompareBool(bucket.$hash, kf(key), 'Eq'))
+    {
+        //is it possible that buckets have more than one item?
+        return bucket.items[0];
+    }
     return null;
 }   
 
@@ -167,7 +173,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function(key, w)
     if (item) {
         item.rhs = w;
         return;
-    };
+    }
 
     // Not found in dictionary
     bucket.items.push({lhs: key, rhs: w});
