@@ -38,27 +38,27 @@ Sk.str2number = function(s, base, parser, negater, fname)
     }
 
     if ( s.substring(0,2).toLowerCase() == '0x' ) {
-	if (base != 16 && base != 0) {
-	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
-	} else {
+        if (base == 16 || base == 0) {
 	    s = s.substring(2);
 	    base = 16;
+        } else if (base < 34) {
+	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
 	}
     }
     else if ( s.substring(0,2).toLowerCase() == '0b' ) { 
-	if (base != 2 && base != 0) {
+        if (base == 2 || base == 0) {
+            s = s.substring(2);
+            base = 2;
+        } else if (base < 12) {
 	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
-	} else {
-	    s = s.substring(2);
-	    base = 2;
-	}
+        }        
     }
     else if ( s.substring(0,2).toLowerCase() == '0o' ) {
-	if (base != 8 && base != 0) {
-	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
-	} else {
+        if (base == 8 || base == 0) {
 	    s = s.substring(2);
 	    base = 8;
+        } else if (base < 25) {
+	    throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
 	}
     }
     else if ( s.charAt(0) == '0' ) {

@@ -1,0 +1,2 @@
+ValueError: slice step cannot be zero on line 3
+ValueError: slice step cannot be zero on line 8

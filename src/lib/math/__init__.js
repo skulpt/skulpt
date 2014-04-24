@@ -162,7 +162,7 @@ var $builtinmodule = function(name)
         Sk.builtin.pyCheckArgs("trunc", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-        return new Sk.builtin.nmber(Sk.builtin.asnum$(x)|0, Sk.builtin.nmber.float$);
+        return new Sk.builtin.nmber(Sk.builtin.asnum$(x)|0, Sk.builtin.nmber.int$);
     });
 
     mod.log = new Sk.builtin.func(function(x, base) {

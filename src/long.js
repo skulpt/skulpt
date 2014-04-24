@@ -124,6 +124,10 @@ Sk.builtin.lng.prototype.clone = function()
 
 Sk.builtin.lng.prototype.nb$add = function(other)
 {
+	if (other instanceof Sk.builtin.bool) {
+		other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
+	}
+
 	if (other instanceof Sk.builtin.nmber) {
 		if (other.skType === Sk.builtin.nmber.float$) {
 			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
@@ -149,6 +153,10 @@ Sk.builtin.lng.prototype.nb$inplace_add = Sk.builtin.lng.prototype.nb$add;
 
 Sk.builtin.lng.prototype.nb$subtract = function(other)
 {
+	if (other instanceof Sk.builtin.bool) {
+		other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
+	}
+
 	if (other instanceof Sk.builtin.nmber) {
 		if (other.skType === Sk.builtin.nmber.float$) {
 			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
@@ -174,6 +182,10 @@ Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtr
 
 Sk.builtin.lng.prototype.nb$multiply = function(other)
 {
+	if (other instanceof Sk.builtin.bool) {
+		other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
+	}
+
 	if (other instanceof Sk.builtin.nmber) {
 		if (other.skType === Sk.builtin.nmber.float$) {
 			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
@@ -199,6 +211,10 @@ Sk.builtin.lng.prototype.nb$inplace_multiply = Sk.builtin.lng.prototype.nb$multi
 
 Sk.builtin.lng.prototype.nb$divide = function(other)
 {
+	if (other instanceof Sk.builtin.bool) {
+		other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
+	}
+
 	if (other instanceof Sk.builtin.nmber) {
 		if (other.skType === Sk.builtin.nmber.float$) {
 			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
@@ -262,6 +278,10 @@ Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
 
 Sk.builtin.lng.prototype.nb$floor_divide = function(other)
 {
+	if (other instanceof Sk.builtin.bool) {
+		other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
+	}
+
 	if (other instanceof Sk.builtin.nmber) {
 		if (other.skType === Sk.builtin.nmber.float$) {
 			var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
@@ -276,6 +296,10 @@ Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$f
 
 Sk.builtin.lng.prototype.nb$remainder = function(other)
 {
+	if (other instanceof Sk.builtin.bool) {
+		other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
+	}
+
 	if (this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) === 0)
 		if (other instanceof Sk.builtin.nmber && other.skType === Sk.builtin.nmber.float$)
 			return new Sk.builtin.nmber(0, Sk.builtin.nmber.float$);
@@ -330,6 +354,10 @@ Sk.builtin.lng.prototype.nb$power = function(n, mod)
 			return thisAsFloat.nb$power(n);
 		} else
 			return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(n)));
+	}
+
+	if (n instanceof Sk.builtin.bool) {
+	    return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(Sk.builtin.asnum$(n))));
 	}
 
 	if (n instanceof Sk.builtin.nmber) {

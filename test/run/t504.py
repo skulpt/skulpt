@@ -1,37 +1,37 @@
-import numpy as np
+## test string module ##
 
-a=np.array([[1,0,0],[0,1,0],[0,0,1]])
-b=np.array([[0,2,0],[-3,-1,-2],[0,3,10]])
-c=np.zeros([3,1])
-d=np.array([[1],[2],[3]])
-e=np.array([[2],[3],[1]])
-print("c all zeros")
-print(c)
-print("a+b:")
-print(a+b)
-print("a-b:")
-print(a-b)
-print("2*a:")
-print(2*a)
-print("a*2:")
-print(a*2)
-print("Muliply matrices a*b:")
-print(np.dot(np.transpose(a),b))
-print("Transpose a:")
-print(np.transpose(a))
-print(a.transpose())
-#print("Invert b:")
-#print(np.inv(b))
-print("Vectors d & e:")
-print(d)
-print(e)
-print("Shape d:")
-print(d.shape)
-print("Dot product d * e:")
-print(np.dot(np.transpose(d),e))
-#print("Cross product d x e:")
-#print(np.cross(d,e,axis=0))
-print("Create range from [1-10[:")
-print(np.arange(1,10,0.5))
-#print("random 3x2:")
-#print(np.random(3,2))
+import string
+
+print string.ascii_lowercase
+print string.ascii_uppercase
+print string.ascii_letters
+
+print string.lowercase
+print string.uppercase
+print string.letters
+
+print string.digits
+print string.hexdigits
+print string.octdigits
+
+print string.punctuation
+print string.whitespace
+
+print string.printable
+
+s = "I frequently eat pizza; however, I don't particularly like it"
+print string.split(s)
+print string.split(s, ';')
+
+s = "capitalize"
+print string.capitalize(s)
+s = "Capitalize"
+print string.capitalize(s)
+
+l = ["this", "will", "become", "a", "sentence"]
+print string.join(l)
+print string.join(l, "_")
+
+s = "i frequently eat pizza; however, i don't particularly like it"
+print string.capwords(s)
+print string.capwords(s, '; ')

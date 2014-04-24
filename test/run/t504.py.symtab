@@ -4,7 +4,7 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: False
 -- Identifiers --
-name: a
+name: l
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -16,7 +16,7 @@ name: a
   is_namespace: False
   namespaces: [
   ]
-name: b
+name: s
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -28,43 +28,7 @@ name: b
   is_namespace: False
   namespaces: [
   ]
-name: c
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
-name: d
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
-name: e
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
-name: np
+name: string
   is_referenced: True
   is_imported: True
   is_parameter: False

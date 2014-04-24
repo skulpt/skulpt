@@ -1,44 +1,22 @@
-c all zeros
-[[0]
- [0]
- [0]]
-a+b:
-[[1 2 0]
- [-3 0 -2]
- [0 3 11]]
-a-b:
-[[1 -2 0]
- [3 2 2]
- [0 -3 -9]]
-2*a:
-[[2 0 0]
- [0 2 0]
- [0 0 2]]
-a*2:
-[[2 0 0]
- [0 2 0]
- [0 0 2]]
-Muliply matrices a*b:
-[[0 2 0]
- [-3 -1 -2]
- [0 3 10]]
-Transpose a:
-[[1 0 0]
- [0 1 0]
- [0 0 1]]
-[[1 0 0]
- [0 1 0]
- [0 0 1]]
-Vectors d & e:
-[[1]
- [2]
- [3]]
-[[2]
- [3]
- [1]]
-Shape d:
-(3, 1)
-Dot product d * e:
-[[11]]
-Create range from [1-10[:
-[1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5]
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+0123456789
+0123456789abcdefABCDEF
+01234567
+!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+	
+ 
+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ 	
+
+['I', 'frequently', 'eat', 'pizza;', 'however,', 'I', "don't", 'particularly', 'like', 'it']
+['I frequently eat pizza', " however, I don't particularly like it"]
+Capitalize
+Capitalize
+this will become a sentence
+this_will_become_a_sentence
+I Frequently Eat Pizza; However, I Don't Particularly Like It
+I frequently eat pizza; However, i don't particularly like it

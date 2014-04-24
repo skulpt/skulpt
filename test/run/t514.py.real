@@ -1,0 +1,5 @@
+TypeError: can't multiply sequence by non-int of type 'str' on line 2
+TypeError: can't multiply sequence by non-int of type 'float' on line 7
+TypeError: can't multiply sequence by non-int of type 'float' on line 12
+TypeError: can't multiply sequence by non-int of type 'list' on line 17
+TypeError: can't multiply sequence by non-int of type 'str' on line 22

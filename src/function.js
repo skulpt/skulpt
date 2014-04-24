@@ -61,7 +61,8 @@ goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number"
 			     || arg instanceof Sk.builtin.nmber
-			     || arg instanceof Sk.builtin.lng));
+			     || arg instanceof Sk.builtin.lng
+                             || arg instanceof Sk.builtin.bool));
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
@@ -69,7 +70,8 @@ Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg|0))
 			      || (arg instanceof Sk.builtin.nmber
 				  && arg.skType === Sk.builtin.nmber.int$)
-			      || arg instanceof Sk.builtin.lng);
+			      || arg instanceof Sk.builtin.lng
+                              || arg instanceof Sk.builtin.bool);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
@@ -87,6 +89,11 @@ Sk.builtin.checkBool = function (arg) {
     return (arg instanceof Sk.builtin.bool);
 };
 goog.exportSymbol("Sk.builtin.checkBool", Sk.builtin.checkBool);
+
+Sk.builtin.checkNone = function (arg) {
+    return (arg instanceof Sk.builtin.none);
+};
+goog.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
     return (arg !== null && arg.tp$call !== undefined);  

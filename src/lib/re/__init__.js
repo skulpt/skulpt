@@ -144,10 +144,12 @@ var $builtinmodule = function(name)
 
         var regex = new RegExp(pat, jsflags);
 
-	var newline_at_end = new RegExp(/\n$/);
-	if (str.match(newline_at_end)) {
-	    str = str.slice(0,-1);
-	}
+        if (pat.match(/\$/)) {
+	    var newline_at_end = new RegExp(/\n$/);
+	    if (str.match(newline_at_end)) {
+	        str = str.slice(0,-1);
+	    }
+        }
 
         var result = [];
         var match;

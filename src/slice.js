@@ -6,6 +6,10 @@
  */
 Sk.builtin.slice = function slice(start, stop, step)
 {
+    if (Sk.builtin.asnum$(step) === 0) {
+	throw new Sk.builtin.ValueError("slice step cannot be zero");
+    }
+
     if (!(this instanceof Sk.builtin.slice)) return new Sk.builtin.slice(start, stop, step);
 
     if (stop === undefined && step === undefined)
@@ -21,6 +25,10 @@ Sk.builtin.slice = function slice(start, stop, step)
 
     this.__class__ = Sk.builtin.slice;
 
+    this['$d'] = new Sk.builtin.dict([Sk.builtin.slice$start, this.start,
+                                      Sk.builtin.slice$stop, this.stop,
+                                      Sk.builtin.slice$step, this.step]);
+
     return this;
 };
 
@@ -35,13 +43,7 @@ Sk.builtin.slice.prototype['$r'] = function()
     return new Sk.builtin.str("slice(" + a + ", " + b + ", " + c + ")");
 };
 
-// todo;this is currently the only way I can find to make the start, step and stop attributes accessible, but I'm not sure it's the best.
-Sk.builtin.slice.prototype.tp$getattr = function(name)
-{
-    // Maybe not very pretty, but very direct, and I don't think there is much you would be able to access in this way that you shouldn't.
-    // todo;Should we call the generic get attribute function? (If so, Closure needs to be told it's okay.)
-    return this[name];// || Sk.builtin.object.prototype.GenericGetAttr.call(this, name);
-};
+Sk.builtin.slice.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 Sk.builtin.slice.prototype.tp$richcompare = function(w, op)
 {
@@ -66,15 +68,18 @@ Sk.builtin.slice.prototype.tp$richcompare = function(w, op)
 
 Sk.builtin.slice.prototype.indices = function(length)
 {
-	var start = Sk.builtin.asnum$(this.start), 
-	    stop  = Sk.builtin.asnum$(this.stop),
-	    step  = Sk.builtin.asnum$(this.step);
-
-    if (((start !== null) && !Sk.builtin.checkInt(start))
-        || ((stop !== null) && !Sk.builtin.checkInt(stop))
-        || ((step !== null) && !Sk.builtin.checkInt(step))) {
-        throw new Sk.builtin.TypeError("slice indices must be integers or None");
+    if ((!Sk.builtin.checkInt(this.start)
+             && !Sk.builtin.checkNone(this.start))
+            || (!Sk.builtin.checkInt(this.stop)
+                && !Sk.builtin.checkNone(this.stop))
+            || (!Sk.builtin.checkInt(this.step)
+                && !Sk.builtin.checkNone(this.step))) {
+            throw new Sk.builtin.TypeError("slice indices must be integers or None");
     }
+
+	    var start = Sk.builtin.asnum$(this.start),
+	        stop  = Sk.builtin.asnum$(this.stop),
+	        step  = Sk.builtin.asnum$(this.step);
 
 	length = Sk.builtin.asnum$(length);
     // this seems ugly, better way?
@@ -131,3 +136,7 @@ Sk.builtin.slice.prototype.sssiter$ = function(wrt, f)
 
     }
 };
+
+Sk.builtin.slice$start = new Sk.builtin.str("start");
+Sk.builtin.slice$stop = new Sk.builtin.str("stop");
+Sk.builtin.slice$step = new Sk.builtin.str("step");
