@@ -1,6 +1,17 @@
 import math
 import numpy as np
 
+#when more order types are needed, a 'Order' superclass should be used
+
+class RelativeOrder(object):
+    def __init__(self, dx, dy, dz, dyaw):
+        #relative movements
+        self.dx = dx
+        self.dy = dy
+        self.dz = dz
+
+        self.dyaw = (dyaw / 180.0) * math.pi
+
 class MissionPlanner:
     def __init__(self):
         self.commands = []
@@ -30,15 +41,8 @@ class MissionPlanner:
         return self._add_relative_command(0, 0, 0, -angle)
 
     def _add_relative_command(self, dx, dy, dz, dyaw):
-        self.commands.append({
-            'dx': dx,
-            'dy': dy,
-            'dz': dz,
-            'dyaw': dyaw / 180.0 * math.pi
-        })
-
+        self.commands.append(RelativeOrder(dx, dy, dz, dyaw))
         return self
-
 
 class PositionController:
     command_queue     = []
@@ -69,9 +73,9 @@ class PositionController:
         return math.sqrt(np.dot(pos_diff.transpose(), pos_diff).item(0) + yaw_diff * yaw_diff)
 
     def update_setpoint(self, delta):
-        world_delta            = np.dot(self.drone.yaw_rotation(), np.array([[delta['dx']], [delta['dy']], [delta['dz']]]))
+        world_delta            = np.dot(self.drone.yaw_rotation(), np.array([[delta.dx]], [delta.dy], [delta.dz]]))
         self.setpoint_position = self.setpoint_position + world_delta
-        self.setpoint_yaw     += delta['dyaw']
+        self.setpoint_yaw     += delta.dyaw
 
     def clamp(self, value, limit):
         return max(min(value, limit), -limit)
