@@ -44,6 +44,14 @@ class MissionPlanner:
         self.commands.append(RelativeOrder(dx, dy, dz, dyaw))
         return self
 
+    def add_commands(self, commands):
+        #perform typecheck of appended commands
+        for command in commands:
+            if not isinstance(command, RelativeOrder):
+                raise Exception("you can only add relative movement orders to the mission.")
+        self.commands += commands
+
+
 class PositionController:
     command_queue     = []
     command_queue_idx = -1
@@ -73,7 +81,7 @@ class PositionController:
         return math.sqrt(np.dot(pos_diff.transpose(), pos_diff).item(0) + yaw_diff * yaw_diff)
 
     def update_setpoint(self, delta):
-        world_delta            = np.dot(self.drone.yaw_rotation(), np.array([[delta.dx]], [delta.dy], [delta.dz]]))
+        world_delta            = np.dot(self.drone.yaw_rotation(), np.array([[delta.dx], [delta.dy], [delta.dz]]))
         self.setpoint_position = self.setpoint_position + world_delta
         self.setpoint_yaw     += delta.dyaw
 
