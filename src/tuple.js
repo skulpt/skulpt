@@ -85,8 +85,7 @@ Sk.builtin.tuple.prototype.tp$hash = function()
     var len = this.v.length;
     for (var i = 0; i < len; ++i)
     {
-        //hash returns a skulpt number nowadays
-        var y = Sk.builtin.hash(this.v[i]).v;
+        var y = Sk.builtin.hash(this.v[i]);
         if (y === -1) return new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$);
         x = (x ^ y) * mult;
         mult += 82520 + len + len;
