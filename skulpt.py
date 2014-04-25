@@ -629,7 +629,7 @@ def shell(fn):
 
 
 def repl():
-    os.system("{0} {1}/{2} repl/repl.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
+    os.system("{0} {1} repl/repl.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
 
 def nrt():
     """open a new run test"""
