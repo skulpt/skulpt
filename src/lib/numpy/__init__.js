@@ -448,12 +448,13 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.var = new Sk.builtin.func(function(array1) {
+	mod.var_$rw$ = new Sk.builtin.func(function(array1) {
 		Sk.builtin.pyCheckArgs('var', arguments, 1);
 
 		var result;
 		try {
-			result = math.var(array1.v);
+			console.log(math)
+			result = math['var'](array1.v);
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
 		}
