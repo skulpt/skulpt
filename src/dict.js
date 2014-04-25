@@ -81,11 +81,11 @@ Sk.builtin.dict.prototype.key$lookup = function(bucket, key)
         }
     }
     
-    if (Sk.misceval.richCompareBool(bucket.$hash, kf(key), 'Eq'))
-    {
-        //is it possible that buckets have more than one item?
-        return bucket.items[0];
-    }
+//    if (Sk.misceval.richCompareBool(bucket.$hash, kf(key), 'Eq'))
+//    {
+//        //is it possible that buckets have more than one item?
+//        return bucket.items[0];
+//    }
     return null;
 }   
 
