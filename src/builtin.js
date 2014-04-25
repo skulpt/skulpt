@@ -657,13 +657,14 @@ Sk.builtin.hash = function hash(value)
     }
     else if (value instanceof Sk.builtin.bool)
     {
-	if (value.v)
-	    return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
-	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+	   if (value.v){
+	       return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+       }
+	   return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Sk.builtin.none)
     {
-	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+	   return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Object)
     {
@@ -677,7 +678,7 @@ Sk.builtin.hash = function hash(value)
     else if (typeof value === "number" || value === null
              || value === true || value === false)
     {
-	throw new Sk.builtin.TypeError("unsupported Javascript type");
+	   throw new Sk.builtin.TypeError("unsupported Javascript type");
     }
 
     return new Sk.builtin.str((typeof value) + ' ' + String(value));
