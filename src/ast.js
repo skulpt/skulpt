@@ -465,8 +465,11 @@ function astForDecorated (c, n) {
     return thing;
 }
 
+//note: with statements need to be updated to 2.7
+//see: ast.c lines: 3127 -> 3185
+
 function astForWithVar (c, n) {
-    REQ(n, SYM.with_var);
+    REQ(n, SYM.with_item);
     return astForExpr(c, CHILD(n, 1));
 }
 
@@ -1928,9 +1931,9 @@ function astForAtom(c, n) {
             REQ(ch, SYM.listmaker);
             if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA) {
                 return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
-            } else {
-                return astForListcomp(c, ch);
-            }
+            } 
+            return astForListcomp(c, ch);
+            
         case TOK.T_LBRACE:
             /* dictorsetmaker: 
              *     (test ':' test (comp_for : (',' test ':' test)* [','])) |
@@ -1941,8 +1944,9 @@ function astForAtom(c, n) {
             ch = CHILD(n, 1);
             if (n.type === TOK.T_RBRACE) {
                 //it's an empty dict
-                return Dict([], null, n.lineno, n.col_offset);
-            } else if (NCH(ch) === 1 || (NCH(ch) !== 0 && CHILD(ch, 1).type === TOK.T_COMMA)) {
+                return new Dict([], null, n.lineno, n.col_offset);
+            } 
+            else if (NCH(ch) === 1 || (NCH(ch) !== 0 && CHILD(ch, 1).type === TOK.T_COMMA)) {
                 //it's a simple set
                 elts = [];
                 size = Math.floor((NCH(ch) + 1) / 2);
@@ -1951,13 +1955,16 @@ function astForAtom(c, n) {
                     elts[i / 2] = expression;
                 }
                 return new Set(elts, n.lineno, n.col_offset);
-            } else if (NCH(ch) !== 0 && CHILD(ch, 1).type == SYM.comp_for) {
+            } 
+            else if (NCH(ch) !== 0 && CHILD(ch, 1).type == SYM.comp_for) {
                 //it's a set comprehension
                 return astForSetComp(c, ch);
-            } else if (NCH(ch) > 3 && CHILD(ch, 3).type === SYM.comp_for) {
+            } 
+            else if (NCH(ch) > 3 && CHILD(ch, 3).type === SYM.comp_for) {
                 //it's a dict compr. I think.
                 return astForDictComp(c, ch);
-            } else {
+            } 
+            else {
                 size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
                 for (i = 0; i < NCH(ch); i += 4) {
                     keys[i / 4] = astForExpr(c, CHILD(ch, i));
@@ -1967,8 +1974,7 @@ function astForAtom(c, n) {
             }
         case TOK.T_BACKQUOTE:
             //throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
-            return Repr(astForTestlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
-
+            return new Repr(astForTestlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
         default:
             goog.asserts.fail("unhandled atom", ch.type);
 
