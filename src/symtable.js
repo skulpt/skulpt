@@ -625,6 +625,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.SEQExpr(e.values);
             break;
         case DictComp:
+        case SetComp:    
             this.visitComprehension(e.generators, 0);
             break;
         case ListComp:

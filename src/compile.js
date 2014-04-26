@@ -381,6 +381,55 @@ Compiler.prototype.cdictcomp = function(e) {
     return this.cdictcompgen(tmp, e.generators, 0, e.key, e.value);
 };
 
+Compiler.prototype.csetcomp = function(e) {
+    goog.asserts.assert(e instanceof SetComp);
+    var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
+    return this.csetcompgen(tmp, e.generators, 0, e.elt);
+}
+
+Compiler.prototype.csetcompgen = function (tmpname, generators, genIndex, elt) {
+    var start = this.newBlock('set comp start');
+    var skip = this.newBlock('set comp skip');
+    var anchor = this.newBlock('set comp anchor');
+
+    var l = generators[genIndex];
+    var toiter = this.vexpr(l.iter);
+    var iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
+    this._jump(start);
+    this.setBlock(start);
+
+    // load targets
+    var nexti = this._gr('next', "Sk.abstr.iternext(", iter, ")");
+    this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
+    var target = this.vexpr(l.target, nexti);
+
+    var n = l.ifs.length;
+    for (var i = 0; i < n; ++i)
+    {
+        var ifres = this.vexpr(l.ifs[i]);
+        this._jumpfalse(ifres, start);
+    }
+
+    if (++genIndex < generators.length)
+    {
+        this.csetcompgen(tmpname, generators, genIndex, elt);
+    }
+
+    if (genIndex >= generators.length)
+    {
+        var velt = this.vexpr(elt);
+        out(tmpname, ".v.mp$ass_subscript(", velt, ", true);");
+        this._jump(skip);
+        this.setBlock(skip);
+    }
+
+    this._jump(start);
+
+    this.setBlock(anchor);
+
+    return tmpname;
+}
+
 Compiler.prototype.cdictcompgen = function(tmpname, generators, genIndex, key, value){
     var start = this.newBlock('dict gen start');
     var skip = this.newBlock('dict gen skip');
@@ -657,6 +706,8 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
             return this.clistcomp(e);
         case DictComp:
             return this.cdictcomp(e);
+        case SetComp:
+            return this.csetcomp(e);
         case GeneratorExp:
             return this.cgenexp(e);
         case Yield:
