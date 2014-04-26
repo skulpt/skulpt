@@ -679,6 +679,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             break;
         case List:
         case Tuple:
+        case Set:
             this.SEQExpr(e.elts);
             break;
         default:

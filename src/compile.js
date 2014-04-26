@@ -290,16 +290,16 @@ Compiler.prototype._jump = function (block) {
     out("$blk=", block, ";/* jump */continue;");
 };
 
-Compiler.prototype.ctupleorlist = function (e, data, tuporlist) {
-    var items;
+Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
-    goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list");
+    var items;
+    goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
     if (e.ctx === Store) {
         for (i = 0; i < e.elts.length; ++i) {
             this.vexpr(e.elts[i], "Sk.abstr.objectGetItem(" + data + "," + i + ")");
         }
     }
-    else if (e.ctx === Load) {
+    else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to. 
         items = [];
         for (i = 0; i < e.elts.length; ++i) {
             items.push(this._gr("elem", this.vexpr(e.elts[i])));
@@ -783,9 +783,17 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Name:
             return this.nameop(e.id, e.ctx, data);
         case List:
+<<<<<<< HEAD
             return this.ctupleorlist(e, data, "list");
         case Tuple:
             return this.ctupleorlist(e, data, "tuple");
+=======
+            return this.ctuplelistorset(e, data, 'list');
+        case Tuple:
+            return this.ctuplelistorset(e, data, 'tuple');
+        case Set:
+            return this.ctuplelistorset(e, data, 'set');
+>>>>>>> Adds set literals
         default:
             goog.asserts.fail("unhandled case in vexpr");
     }
