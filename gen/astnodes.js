@@ -398,6 +398,14 @@ function Continue_(/* {int} */ lineno, /* {int} */ col_offset)
 }
 
 /** @constructor */
+function Debugger_(/* {int} */ lineno, /* {int} */ col_offset)
+{
+    this.lineno = lineno;
+    this.col_offset = col_offset;
+    return this;
+}
+
+/** @constructor */
 function BoolOp(/* {boolop_ty} */ op, /* {asdl_seq *} */ values, /* {int} */
                      lineno, /* {int} */ col_offset)
 {
@@ -897,6 +905,9 @@ Break_.prototype._fields = [
 ];
 Continue_.prototype._astname = "Continue";
 Continue_.prototype._fields = [
+];
+Debugger_.prototype._astname = "Debugger";
+Debugger_.prototype._fields = [
 ];
 BoolOp.prototype._astname = "BoolOp";
 BoolOp.prototype._fields = [

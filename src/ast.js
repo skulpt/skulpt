@@ -2182,6 +2182,8 @@ function astForStmt (c, n) {
                 return astForExecStmt(c, n);
             case SYM.assert_stmt:
                 return astForAssertStmt(c, n);
+            case SYM.debugger_stmt:
+                return new Debugger_(n.lineno, n.col_offset);
             default:
                 goog.asserts.fail("unhandled small_stmt");
         }

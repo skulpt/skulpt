@@ -45,7 +45,7 @@ fplist: fpdef (',' fpdef)* [',']
 stmt: simple_stmt | compound_stmt
 simple_stmt: small_stmt (';' small_stmt)* [';'] NEWLINE
 small_stmt: (expr_stmt | print_stmt  | del_stmt | pass_stmt | flow_stmt |
-             import_stmt | global_stmt | exec_stmt | assert_stmt)
+             import_stmt | global_stmt | exec_stmt | assert_stmt | debugger_stmt)
 expr_stmt: testlist (augassign (yield_expr|testlist) |
                      ('=' (yield_expr|testlist))*)
 augassign: ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' |
@@ -152,3 +152,6 @@ testlist1: test (',' test)*
 encoding_decl: NAME
 
 yield_expr: 'yield' [testlist]
+
+#skulpt specific debugger statement
+debugger_stmt: 'debugger'

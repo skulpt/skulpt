@@ -44,7 +44,7 @@ module Python version "$Revision$"
 
 	      | Global(identifier* names)
 	      | Expr(expr value)
-	      | Pass | Break_ | Continue_
+	      | Pass | Break_ | Continue_ | Debugger_
 
 	      -- XXX Jython will be different
 	      -- col_offset is the byte offset in the utf8 string the parser uses

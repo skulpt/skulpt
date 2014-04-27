@@ -1929,6 +1929,9 @@ Compiler.prototype.vstmt = function (s) {
         case Continue_:
             this.ccontinue(s);
             break;
+        case Debugger_:
+            out("debugger;");
+            break;
         default:
             goog.asserts.fail("unhandled case in vstmt");
     }

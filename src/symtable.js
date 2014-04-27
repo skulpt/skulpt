@@ -572,6 +572,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             break;
         case Pass:
         case Break_:
+        case Debugger_:
         case Continue_:
             // nothing
             break;
