@@ -289,7 +289,7 @@ var $builtinmodule = function(name) {
 
 		return Sk.misceval.callsim(mod.ndarray, Sk.builtin.tuple(), data);
 	});
-
+	
 	function toValidShape(size) {
 		var rows = 1, cols = 1;
 		
@@ -349,6 +349,17 @@ var $builtinmodule = function(name) {
 			result = mat.map(function (value, index, v) {
 				return math.random(0, 1);
 			});
+		} catch(e) {
+			throw new Sk.builtin.Exception(e.message);
+		}
+		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	});
+
+	mod.copy = new Sk.builtin.func(function(other) {
+		Sk.builtin.pyCheckArgs('copy', arguments, 1, 1);
+		var result;
+		try {
+			result=math.clone(other.v);
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
 		}
