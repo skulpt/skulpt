@@ -330,12 +330,25 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.cross = Sk.nativejs.func(function(x, y, axis) {
+	mod.cross = Sk.nativejs.func(function(x, y, axisa, axisb, axisc, axis) {
 		Sk.builtin.pyCheckArgs('cross', arguments, 2);
-		// TODO: better error reporting!
+
+		if(axisa) throw new Sk.builtin.Exception("argument axisa is not supported");
+		if(axisb) throw new Sk.builtin.Exception("argument axisb is not supported");
+		if(axisc) throw new Sk.builtin.Exception("argument axisc is not supported");
+
+		axis = axis ? axis.v : 1;
+
+		var size_x = x.v.size()
+		var size_y = y.v.size()
+
+		if(size_x[axis] != 3 || size_y[axis] != 3) {
+			throw new Sk.builtin.Exception("incompatible dimensions for cross product (dimension must be 3)");
+		}
+
 		var result;
 		try {
-			if(!axis || axis.v==1){//expect row vectors
+			if(axis == 1) {//expect row vectors
 				result=math.zeros(1,3);
 				result.subset(math.index(0,0), x.v._data[0][1]*y.v._data[0][2]-x.v._data[0][2]*y.v._data[0][1]);
 				result.subset(math.index(0,1), x.v._data[0][2]*y.v._data[0][0]-x.v._data[0][0]*y.v._data[0][2]);
