@@ -147,18 +147,38 @@ var $builtinmodule = function(name) {
 			return Sk.misceval.callsim(mod.add, self, other);
 		});
 
+		$loc.__iadd__ = new Sk.builtin.func(function(self, other) {
+			self.v = Sk.misceval.callsim(mod.add, self, other).v;
+			return self
+		});
+
 		$loc.__sub__ = new Sk.builtin.func(function(self, other) {
-			return Sk.misceval.callsim(mod.sub, self, other);
+			return Sk.misceval.callsim(mod.subtract, self, other);
+		});
+
+		$loc.__isub__ = new Sk.builtin.func(function(self, other) {
+			self.v = Sk.misceval.callsim(mod.subtract, self, other).v;
+			return self
 		});
 
 		$loc.__mul__ = new Sk.builtin.func(function(self, other) {
 			return Sk.misceval.callsim(mod.multiply, self, other);
 		});
 
+		$loc.__imul__ = new Sk.builtin.func(function(self, other) {
+			self.v = Sk.misceval.callsim(mod.multiply, self, other).v;
+			return self
+		});
+
 		$loc.__rmul__ = $loc.__mul__;
 
 		$loc.__div__ = new Sk.builtin.func(function(self, other) {
-			return Sk.misceval.callsim(mod.div, self, other);
+			return Sk.misceval.callsim(mod.divide, self, other);
+		});
+
+		$loc.__idiv__ = new Sk.builtin.func(function(self, other) {
+			self.v = Sk.misceval.callsim(mod.divide, self, other).v;
+			return self
 		});
 
 		/*
@@ -282,8 +302,8 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.sub = new Sk.builtin.func(function(array1, array2) {
-		Sk.builtin.pyCheckArgs('sub', arguments, 2);
+	mod.subtract = new Sk.builtin.func(function(array1, array2) {
+		Sk.builtin.pyCheckArgs('subtract', arguments, 2);
 
 		var result;
 		try {
@@ -306,12 +326,12 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.div = new Sk.builtin.func(function(array1, array2) {
+	mod.divide = new Sk.builtin.func(function(array1, array2) {
 		Sk.builtin.pyCheckArgs('div', arguments, 2);
 
 		var result;
 		try {
-			result = math.divide(array1.v, array2.v);
+			result = math.edivide(array1.v, array2.v);
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
 		}
