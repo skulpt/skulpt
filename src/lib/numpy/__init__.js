@@ -187,10 +187,6 @@ var $builtinmodule = function(name) {
 			return Sk.misceval.callsim(mod.transpose, self);
 		});
 
-		$loc.T = new Sk.builtin.func(function(self) {
-			return Sk.misceval.callsim(mod.transpose, self);
-		});
-
 		$loc.inv = new Sk.builtin.func(function(self) {
 			return Sk.misceval.callsim(mod.inv, self);
 		});
@@ -235,7 +231,7 @@ var $builtinmodule = function(name) {
 		$loc.__getattr__ = new Sk.builtin.func(function(self, attr) {
 			if(attr == 'ndim') return Sk.builtin.nmber(self.v.size().length, Sk.builtin.nmber.int$)
 			if(attr == 'shape') return Sk.builtin.tuple(self.v.size())
-
+			if(attr == 'T') return Sk.misceval.callsim(mod.transpose, self);
 			return self.tp$getattr(attr);
 		});
 
@@ -334,9 +330,9 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.cross = new Sk.builtin.func(function(x, y, axis) {
+	mod.cross = Sk.nativejs.func(function(x, y, axis) {
 		Sk.builtin.pyCheckArgs('cross', arguments, 2);
-
+		// TODO: better error reporting!
 		var result;
 		try {
 			if(!axis || axis.v==1){//expect row vectors
@@ -346,9 +342,9 @@ var $builtinmodule = function(name) {
 				result.subset(math.index(0,2), x.v._data[0][0]*y.v._data[0][1]-x.v._data[0][1]*y.v._data[0][0]);
 			} else { //col vectors
 				result=math.zeros(3,1);
-				result.subset(math.index(0,0), x.v._data[1]*y.v._data[2]-x.v._data[2]*y.v._data[1]);
-				result.subset(math.index(1,0), x.v._data[2]*y.v._data[0]-x.v._data[0]*y.v._data[2]);
-				result.subset(math.index(2,0), x.v._data[0]*y.v._data[1]-x.v._data[1]*y.v._data[0]);
+				result.subset(math.index(0,0), x.v._data[1][0]*y.v._data[2][0]-x.v._data[2][0]*y.v._data[1][0]);
+				result.subset(math.index(1,0), x.v._data[2][0]*y.v._data[0][0]-x.v._data[0][0]*y.v._data[2][0]);
+				result.subset(math.index(2,0), x.v._data[0][0]*y.v._data[1][0]-x.v._data[1][0]*y.v._data[0][0]);
 			}
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
