@@ -280,6 +280,29 @@ var $builtinmodule = function(name) {
 			return Sk.misceval.callsim(mod.ndarray, undefined, result);
 		}),
 	};
+	
+	/**
+	 * random package
+	 */
+	mod.random = new Sk.builtin.module();
+	mod.random['$d'] = {
+		__name__:  Sk.builtin.str('numpy.linalg'),
+		random: new Sk.builtin.func(function(shape) {
+			Sk.builtin.pyCheckArgs('random', arguments, 1, 1);
+			var s = toValidShape(shape);
+
+			var result;
+			try {
+				var mat=math.zeros(s.rows, s.cols);
+				result = mat.map(function (value, index, v) {
+					return math.random(0, 1);
+				});
+			} catch(e) {
+				throw new Sk.builtin.Exception(e.message);
+			}
+			return Sk.misceval.callsim(mod.ndarray, undefined, result);
+		}),
+	};
 
 	/**
 	 * creation functions
@@ -314,10 +337,10 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.ones = new Sk.builtin.func(function(size) {
+	mod.ones = new Sk.builtin.func(function(shape) {
 		Sk.builtin.pyCheckArgs('ones', arguments, 1);
 		var s = toValidShape(shape);
-		var result = math.zeros(s.rows, s.cols);
+		var result = math.ones(s.rows, s.cols);
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
@@ -334,21 +357,6 @@ var $builtinmodule = function(name) {
 		var result;
 		try {
 			result = math.range(start.v,end.v,step.v);
-		} catch(e) {
-			throw new Sk.builtin.Exception(e.message);
-		}
-		return Sk.misceval.callsim(mod.ndarray, undefined, result);
-	});
-
-	mod.random = new Sk.builtin.func(function(rows,cols) {
-		Sk.builtin.pyCheckArgs('random', arguments, 2);
-
-		var result;
-		try {
-			var mat=math.zeros(rows.v, cols.v);
-			result = mat.map(function (value, index, v) {
-				return math.random(0, 1);
-			});
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
 		}
