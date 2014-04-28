@@ -290,9 +290,41 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, Sk.builtin.tuple(), data);
 	});
 
-	mod.zeros = new Sk.builtin.func(function(size) {
-		Sk.builtin.pyCheckArgs('array', arguments, 1);
-		var result = math.zeros(size.v[0].v,size.v[1].v);
+	function toValidShape(size) {
+		var rows = 1, cols = 1;
+		
+		if(size.tp$name === 'number') {
+			rows = size.v
+		} else {
+			if(size.v.length > 0) {
+				rows = size.v[0].v
+			}
+			if(size.v.length > 1) {
+				cols = size.v[1].v
+			}
+		}
+		return { 'rows': rows, 'cols': cols };
+	}
+
+	mod.zeros = new Sk.builtin.func(function(shape) {
+		Sk.builtin.pyCheckArgs('zeros', arguments, 1);
+		var s = toValidShape(shape);
+		
+		var result = math.zeros(s.rows, s.cols);
+		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	});
+
+	mod.ones = new Sk.builtin.func(function(size) {
+		Sk.builtin.pyCheckArgs('ones', arguments, 1);
+		var s = toValidShape(shape);
+		var result = math.zeros(s.rows, s.cols);
+		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	});
+
+	mod.identity = new Sk.builtin.func(function(n) {
+		Sk.builtin.pyCheckArgs('identity', arguments, 1);
+
+		var result = math.eye(n.v);
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
