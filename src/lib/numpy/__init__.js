@@ -547,7 +547,6 @@ var $builtinmodule = function(name) {
 
 		var result;
 		try {
-			console.log(math)
 			result = math['var'](array1.v);
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
@@ -561,6 +560,25 @@ var $builtinmodule = function(name) {
 		var result;
 		try {
 			result = math.std(array1.v);
+		} catch(e) {
+			throw new Sk.builtin.Exception(e.message);
+		}
+		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	});
+	
+	mod.cov = new Sk.builtin.func(function(array1, array2) {
+		Sk.builtin.pyCheckArgs('cov', arguments, 2);
+		
+		if(array1.v.length != array2.v.length) {
+			throw new Sk.builtin.Exception("time series must be equally long for covariance calculation");
+		}
+
+		var product, mean1, mean2, result;
+		try {
+			product = math.emultiply(array1.v, array2.v);
+			mean1 = math.mean(array1.v);
+			mean2 = math.mean(array2.v);
+			result = (1/(array1.v._data.length-1))*(math.sum(product)-array1.v._data.length*mean1*mean2);
 		} catch(e) {
 			throw new Sk.builtin.Exception(e.message);
 		}
