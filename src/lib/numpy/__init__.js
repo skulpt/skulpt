@@ -132,14 +132,14 @@ var $builtinmodule = function(name) {
 		$loc.__setitem__ = new Sk.builtin.func(function(self, key, value) {
 			var idx = normalizeNativeIndex(self.v.size(), toNativeIndex(key));
 
-			if(idx.submatrix) {
-				// TODO: implement submatrix assignment
-			} else {
-				try {
+			try {
+				if(idx.submatrix) {
+					self.v.subset(math.type.Index.create(idx.indices), value.v);
+				} else {
 					self.v.set(idx.indices, value.v);
-				} catch(e) {
-					throw new Sk.builtin.Exception(e.message);
 				}
+			} catch(e) {
+				throw new Sk.builtin.Exception(e.message);
 			}
 		});
 
@@ -262,15 +262,24 @@ var $builtinmodule = function(name) {
 	mod.ndarray = Sk.misceval.buildClass(mod, ndarray, 'ndarray', []);
 
 	/**
-	linalg class
-	*/
+	 * linalg package
+	 */
+	// TODO: this is still not the right way
+	mod.linalg = new Sk.builtin.module();
+	mod.linalg['$d'] = {
+		__name__:  Sk.builtin.str('numpy.linalg'),
+		inv: new Sk.builtin.func(function(array1) {
+			Sk.builtin.pyCheckArgs('inv', arguments, 1);
 
-	var linalg = function($gbl, $loc) {
-		$loc.inv = new Sk.builtin.func(function(self) {
-			return Sk.misceval.callsim(mod.inv, self);
-		});
+			var result;
+			try {
+				result = math.inv(array1.v);
+			} catch(e) {
+				throw new Sk.builtin.Exception(e.message);
+			}
+			return Sk.misceval.callsim(mod.ndarray, undefined, result);
+		}),
 	};
-	mod.linalg = Sk.misceval.buildClass(mod, linalg, 'linalg', []);
 
 	/**
 	 * creation functions
@@ -283,13 +292,40 @@ var $builtinmodule = function(name) {
 
 	mod.zeros = new Sk.builtin.func(function(size) {
 		Sk.builtin.pyCheckArgs('array', arguments, 1);
-		var result=math.zeros(size.v[0].v,size.v[1].v);
+		var result = math.zeros(size.v[0].v,size.v[1].v);
+		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	});
+
+	mod.arange = new Sk.builtin.func(function(start,end,step) {
+		Sk.builtin.pyCheckArgs('arange', arguments, 3);
+
+		var result;
+		try {
+			result = math.range(start.v,end.v,step.v);
+		} catch(e) {
+			throw new Sk.builtin.Exception(e.message);
+		}
+		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	});
+
+	mod.random = new Sk.builtin.func(function(rows,cols) {
+		Sk.builtin.pyCheckArgs('random', arguments, 2);
+
+		var result;
+		try {
+			var mat=math.zeros(rows.v, cols.v);
+			result = mat.map(function (value, index, v) {
+				return math.random(0, 1);
+			});
+		} catch(e) {
+			throw new Sk.builtin.Exception(e.message);
+		}
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
 	/**
-	arithmetic functions
-	*/
+	 * arithmetic functions
+	 */
 	mod.add = new Sk.builtin.func(function(array1, array2) {
 		Sk.builtin.pyCheckArgs('add', arguments, 2);
 
@@ -315,7 +351,7 @@ var $builtinmodule = function(name) {
 	});
 
 	mod.multiply = new Sk.builtin.func(function(array1, array2) {
-		Sk.builtin.pyCheckArgs('mul', arguments, 2);
+		Sk.builtin.pyCheckArgs('multiply', arguments, 2);
 
 		var result;
 		try {
@@ -327,7 +363,7 @@ var $builtinmodule = function(name) {
 	});
 
 	mod.divide = new Sk.builtin.func(function(array1, array2) {
-		Sk.builtin.pyCheckArgs('div', arguments, 2);
+		Sk.builtin.pyCheckArgs('divide', arguments, 2);
 
 		var result;
 		try {
@@ -397,20 +433,10 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.inv = new Sk.builtin.func(function(array1) {
-		Sk.builtin.pyCheckArgs('inv', arguments, 1);
-
-		var result;
-		try {
-			result = math.inv(array1.v);
-		} catch(e) {
-			throw new Sk.builtin.Exception(e.message);
-		}
-		return Sk.misceval.callsim(mod.ndarray, undefined, result);
-	});
-
-	mod.vstack = new Sk.builtin.func(function(array_tuple) {
-		Sk.builtin.pyCheckArgs('vstack', arguments, 1);
+	mod.concatenate = Sk.nativejs.func(function(array_tuple, axis) {
+		Sk.builtin.pyCheckArgs('concatenate', arguments, 1, 2);
+		
+		axis = axis ? axis.v : 0;
 
 		var args = [], idx, value;
 
@@ -426,7 +452,7 @@ var $builtinmodule = function(name) {
 		}
 
 		// dimension argument
-		args.push(0);
+		args.push(axis);
 
 		var result;
 		try {
@@ -438,33 +464,21 @@ var $builtinmodule = function(name) {
 		return Sk.misceval.callsim(mod.ndarray, undefined, result);
 	});
 
-	mod.arange = new Sk.builtin.func(function(start,end,step) {
-		Sk.builtin.pyCheckArgs('arange', arguments, 3);
-
-		var result;
-		try {
-			result = math.range(start.v,end.v,step.v);
-		} catch(e) {
-			throw new Sk.builtin.Exception(e.message);
-		}
-		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	mod.hstack = new Sk.builtin.func(function(array_tuple) {
+		Sk.builtin.pyCheckArgs('hstack', arguments, 1, 1);
+		
+		return Sk.misceval.callsim(mod.concatenate, array_tuple, Sk.builtin.nmber(1, Sk.builtin.nmber.int$));
 	});
 
-	mod.random = new Sk.builtin.func(function(rows,cols) {
-		Sk.builtin.pyCheckArgs('random', arguments, 2);
-
-		var result;
-		try {
-			var mat=math.zeros(rows.v, cols.v);
-			result = mat.map(function (value, index, v) {
-				return math.random(0, 1);
-			});
-		} catch(e) {
-			throw new Sk.builtin.Exception(e.message);
-		}
-		return Sk.misceval.callsim(mod.ndarray, undefined, result);
+	mod.vstack = new Sk.builtin.func(function(array_tuple) {
+		Sk.builtin.pyCheckArgs('vstack', arguments, 1, 1);
+		
+		return Sk.misceval.callsim(mod.concatenate, array_tuple, Sk.builtin.nmber(0, Sk.builtin.nmber.int$));
 	});
 
+	/**
+	 * statistic functions
+	 */
 	mod.mean = new Sk.builtin.func(function(array1) {
 		Sk.builtin.pyCheckArgs('mean', arguments, 1);
 
