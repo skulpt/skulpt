@@ -1,6 +1,7 @@
 var $builtinmodule = function(name) {
 	var math = Sk.interop['mathjs']();
 	var mod = {};
+	var printPrecision=5;
 
 	function toNativeArray(value) {
 		if(Object.prototype.toString.call(value.v) === '[object Array]') {
@@ -608,15 +609,25 @@ var $builtinmodule = function(name) {
 			result = result && (Math.abs(v1 - v2) <= (atol + rtol * Math.abs(v2)));
 		});
 
-		return Sk.builtin.bool(result)
+		return Sk.builtin.bool(result);
 	});
 
 	/**
 	 * output functions
 	 */
+	 
+	mod.set_printoptions = new Sk.builtin.func(function(precision,suppress) {
+		Sk.builtin.pyCheckArgs('set_printoptions', arguments, 0);
+		precision = typeof precision !== 'undefined' ? precision : 4;
+   		suppress = typeof suppress !== 'undefined' ? suppress : true;
+   		printPrecision = precision;
+   		//TODO: implement suppress small numbers
+   		return undefined;
+	});
+
 	mod.array_str = new Sk.builtin.func(function(array) {
 		Sk.builtin.pyCheckArgs('array_str', arguments, 1);
-		var str =math.format(array.v,5).replace(/\], \[/g, ']\n [');
+		var str =math.format(array.v,printPrecision).replace(/\], \[/g, ']\n [');
 		return Sk.builtin.str(str.replace(/,/g, ''));
 		//return Sk.builtin.str(math.format(array.v));
 	});
