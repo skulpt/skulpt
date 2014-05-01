@@ -23,13 +23,14 @@ if (!TurtleGraphics) {
 
     // Create a 3d Vector class for manipulating turtle heading, and position.
     function Vector(x, y, z) {
+        //debugger;
         var i;
         if ((typeof x).toLowerCase() === 'number') {
             Array.prototype.push.call(this, x);
             Array.prototype.push.call(this, y);
             Array.prototype.push.call(this, z);
         } else {
-            for (i = 0; i < x.length; x = x + 1) {
+            for (i = 0; i < x.length; i = i + 1) {
                 Array.prototype.push.call(this, x[i]);
             }
         }
@@ -400,7 +401,7 @@ if (!TurtleGraphics) {
         this.canvas = document.getElementById(this.canvasID);
         this.context = this.canvas.getContext('2d');
         this.canvas.style.display = 'block';
-        this.canvas.style.opacity = 0;
+        this.canvas.style.opacity = 1;
         //$(this.canvas).fadeIn();
         this.lineScale = 1;
         this.xptscale = 1;
@@ -422,7 +423,7 @@ if (!TurtleGraphics) {
         this.renderCounter = 1;
         this.clearPoint = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
-        Sk.tg.fadeOnExit = true; //This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
+        //Sk.tg.fadeOnExit = true; //This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
     }
     TurtleCanvas.prototype.setup = function (width, height) {
         this.canvas.width = width;
@@ -610,6 +611,130 @@ if (!TurtleGraphics) {
         this.normal = new Vector([0, 0, -1]); // in z- direction
     };
     Turtle.prototype.initialize = function (opt) {
+        function turtleShapePoints() {
+            var pl = [
+                    [ 0, 16 ],
+                    [ -2, 14 ],
+                    [ -1, 10 ],
+                    [ -4, 7 ],
+                    [ -7, 9 ],
+                    [ -9, 8 ],
+                    [ -6, 5 ],
+                    [ -7, 1 ],
+                    [ -5, -3 ],
+                    [ -8, -6 ],
+                    [ -6, -8 ],
+                    [ -4, -5 ],
+                    [ 0, -7 ],
+                    [ 4, -5 ],
+                    [ 6, -8 ],
+                    [ 8, -6 ],
+                    [ 5, -3 ],
+                    [ 7, 1 ],
+                    [ 6, 5 ],
+                    [ 9, 8 ],
+                    [ 7, 9 ],
+                    [ 4, 7 ],
+                    [ 1, 10 ],
+                    [ 2, 14 ]
+                ],
+                res = [],
+                p;
+            for (p = 0; p < pl.length; p = p + 1) {
+                res.push(new Vector(pl[p]));
+            }
+            return res;
+        }
+
+        function defaultShapePoints() {
+            var pl = [
+                    [ -10, 0 ],
+                    [ 10, 0 ],
+                    [ 0, 10 ]
+                ],
+                res = [],
+                p;
+            for (p = 0; p < pl.length; p = p + 1) {
+                res.push(new Vector(pl[p]));
+            }
+            return res;
+        }
+
+        function circleShapePoints() {
+            var pl = [
+                    [ 10, 0 ],
+                    [ 9.51, 3.09 ],
+                    [ 8.09, 5.88 ],
+                    [ 5.88, 8.09 ],
+                    [ 3.09, 9.51 ],
+                    [ 0, 10 ],
+                    [ -3.09, 9.51 ],
+                    [ -5.88, 8.09 ],
+                    [ -8.09, 5.88 ],
+                    [ -9.51, 3.09 ],
+                    [ -10, 0 ],
+                    [ -9.51, -3.09 ],
+                    [ -8.09, -5.88 ],
+                    [ -5.88, -8.09 ],
+                    [ -3.09, -9.51 ],
+                    [ -0, -10 ],
+                    [ 3.09, -9.51 ],
+                    [ 5.88, -8.09 ],
+                    [ 8.09, -5.88 ],
+                    [ 9.51, -3.09 ]
+                ],
+                res = [],
+                p;
+            for (p = 0; p < pl.length; p = p + 1) {
+                res.push(new Vector(pl[p]));
+            }
+            return res;
+        }
+
+        function triangleShapePoints() {
+            var pl = [
+                    [ 10, -5.77 ],
+                    [ 0, 11.55 ],
+                    [ -10, -5.77 ]
+                ],
+                res = [],
+                p;
+            for (p = 0; p < pl.length; p = p + 1) {
+                res.push(new Vector(pl[p]));
+            }
+            return res;
+        }
+
+        function squareShapePoints() {
+            var pl = [
+                    [ 10, -10 ],
+                    [ 10, 10 ],
+                    [ -10, 10 ],
+                    [ -10, -10 ]
+                ],
+                res = [],
+                p;
+            for (p = 0; p < pl.length; p = p + 1) {
+                res.push(new Vector(pl[p]));
+            }
+            return res;
+        }
+
+        function classicShapePoints() {
+            var pl = [
+                    [ 0, 0 ],
+                    [ -5, -9 ],
+                    [ 0, -7 ],
+                    [ 5, -9 ]
+                ],
+                res = [],
+                p;
+            for (p = 0; p < pl.length; p = p + 1) {
+                res.push(new Vector(pl[p]));
+            }
+            return res;
+        }
+        
         // Initialize the turtle.
         var options = {}, ctx = null;
         if (arguments.length >= 1) {
@@ -641,13 +766,13 @@ if (!TurtleGraphics) {
         this.home = new Vector([0, 0, 0]);
         this.visible = true;
         this.shapeStore = {};
-        this.shapeStore.turtle = ctx.turtleShapePoints();
-        this.shapeStore.arrow = ctx.defaultShapePoints();
-        this.shapeStore.circle = ctx.circleShapePoints();
-        this.shapeStore.square = ctx.squareShapePoints();
-        this.shapeStore.triangle = ctx.triangleShapePoints();
+        this.shapeStore.turtle = turtleShapePoints();
+        this.shapeStore.arrow = defaultShapePoints();
+        this.shapeStore.circle = circleShapePoints();
+        this.shapeStore.square = squareShapePoints();
+        this.shapeStore.triangle = triangleShapePoints();
         this.shapeStore.blank = [new Vector(0, 0)];
-        this.shapeStore.classic = ctx.classicShapePoints();
+        this.shapeStore.classic = classicShapePoints();
         this.currentShape = 'classic';
         this.drawingEvents = [];
         this.filling = false;
@@ -662,130 +787,6 @@ if (!TurtleGraphics) {
         this.aCount = 0;
         this.clearPoint = 0; // RNL for clear/clearScreen
     };
-
-    function turtleShapePoints() {
-        var pl = [
-                [ 0, 16 ],
-                [ -2, 14 ],
-                [ -1, 10 ],
-                [ -4, 7 ],
-                [ -7, 9 ],
-                [ -9, 8 ],
-                [ -6, 5 ],
-                [ -7, 1 ],
-                [ -5, -3 ],
-                [ -8, -6 ],
-                [ -6, -8 ],
-                [ -4, -5 ],
-                [ 0, -7 ],
-                [ 4, -5 ],
-                [ 6, -8 ],
-                [ 8, -6 ],
-                [ 5, -3 ],
-                [ 7, 1 ],
-                [ 6, 5 ],
-                [ 9, 8 ],
-                [ 7, 9 ],
-                [ 4, 7 ],
-                [ 1, 10 ],
-                [ 2, 14 ]
-            ],
-            res = [],
-            p;
-        for (p = 0; p < pl.length; p = p + 1) {
-            res.push(new Vector(pl[p]));
-        }
-        return res;
-    }
-
-    function defaultShapePoints() {
-        var pl = [
-                [ -10, 0 ],
-                [ 10, 0 ],
-                [ 0, 10 ]
-            ],
-            res = [],
-            p;
-        for (p = 0; p < pl.length; p = p + 1) {
-            res.push(new Vector(pl[p]));
-        }
-        return res;
-    }
-
-    function circleShapePoints() {
-        var pl = [
-                [ 10, 0 ],
-                [ 9.51, 3.09 ],
-                [ 8.09, 5.88 ],
-                [ 5.88, 8.09 ],
-                [ 3.09, 9.51 ],
-                [ 0, 10 ],
-                [ -3.09, 9.51 ],
-                [ -5.88, 8.09 ],
-                [ -8.09, 5.88 ],
-                [ -9.51, 3.09 ],
-                [ -10, 0 ],
-                [ -9.51, -3.09 ],
-                [ -8.09, -5.88 ],
-                [ -5.88, -8.09 ],
-                [ -3.09, -9.51 ],
-                [ -0, -10 ],
-                [ 3.09, -9.51 ],
-                [ 5.88, -8.09 ],
-                [ 8.09, -5.88 ],
-                [ 9.51, -3.09 ]
-            ],
-            res = [],
-            p;
-        for (p = 0; p < pl.length; p = p + 1) {
-            res.push(new Vector(pl[p]));
-        }
-        return res;
-    }
-
-    function triangleShapePoints() {
-        var pl = [
-                [ 10, -5.77 ],
-                [ 0, 11.55 ],
-                [ -10, -5.77 ]
-            ],
-            res = [],
-            p;
-        for (p = 0; p < pl.length; p = p + 1) {
-            res.push(new Vector(pl[p]));
-        }
-        return res;
-    }
-
-    function squareShapePoints() {
-        var pl = [
-                [ 10, -10 ],
-                [ 10, 10 ],
-                [ -10, 10 ],
-                [ -10, -10 ]
-            ],
-            res = [],
-            p;
-        for (p = 0; p < pl.length; p = p + 1) {
-            res.push(new Vector(pl[p]));
-        }
-        return res;
-    }
-
-    function classicShapePoints() {
-        var pl = [
-                [ 0, 0 ],
-                [ -5, -9 ],
-                [ 0, -7 ],
-                [ 5, -9 ]
-            ],
-            res = [],
-            p;
-        for (p = 0; p < pl.length; p = p + 1) {
-            res.push(new Vector(pl[p]));
-        }
-        return res;
-    }
     Turtle.prototype.clean = function (color) {
         // Clean the canvas
         // Optional second argument is color
@@ -808,19 +809,19 @@ if (!TurtleGraphics) {
         if (!ctx.animate) {
             if (!ctx.filling) {
                 ctx.beginPath();
-                ctx.moveTo(ctx.position[0], ctx.position[1]);
+                ctx.moveTo(this.position[0], this.position[1]);
             }
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.lineWidth = ctx.get_pen_width();
-            ctx.strokeStyle = ctx.penStyle;
+            ctx.lineWidth = this.get_pen_width();
+            ctx.strokeStyle = this.penStyle;
             ctx.lineTo(newposition[0], newposition[1]);
             ctx.stroke();
             if (!ctx.filling) {
                 ctx.closePath();
             }
         } else {
-            r = ctx.segmentLine(ctx.position, newposition, ctx.turtleCanvas.getSegmentLength(), ctx.pen);
+            r = ctx.segmentLine(this.position, newposition, ctx.turtleCanvas.getSegmentLength(), ctx.pen);
             for (s = 0; s < r.length; s = s + 1) {
                 r[s].push(ctx.penStyle);
                 ctx.addDrawingEvent(r[s]);
