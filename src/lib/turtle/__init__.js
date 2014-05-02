@@ -165,7 +165,6 @@ if (!TurtleGraphics) {
         var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext('2d'),
             canvasLib = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID],
             incr = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID].getCounter(),
-            lastCanvas,
             t,
             tix,
             i,
@@ -223,14 +222,14 @@ if (!TurtleGraphics) {
                         context.lineTo(oper[3], oper[4]);
                         context.strokeStyle = oper[5];
                         context.stroke();
-                        context.currentPos = new Vector(oper[3], oper[4], 0);
+                        currentPos = new Vector(oper[3], oper[4], 0);
                         if (!context.filling) {
                             context.closePath();
                         }
                     } else if (oper[0] === 'MT') {
                         //move to
                         context.moveTo(oper[3], oper[4]);
-                        context.currentPos = new Vector(oper[3], oper[4], 0);
+                        currentPos = new Vector(oper[3], oper[4], 0);
                     } else if (oper[0] === 'BF') {
                         //begin fill
                         context.beginPath();
@@ -338,13 +337,13 @@ if (!TurtleGraphics) {
             // && allDone() ){
             //  t.turtleCanvas.doneAnimating(t);
             //  console.log("done animating")
-            if (lastCanvas) {
-                lastCanvas.doneAnimating(t);
+            if (context.lastCanvas) {
+                context.lastCanvas.doneAnimating(t);
             }
         } else {
             //t.turtleCanvas.intervalId = setTimeout(render, t.turtleCanvas.delay)
-            if (lastCanvas) {
-                lastCanvas.intervalId = setTimeout(render, lastCanvas.delay);
+            if (context.lastCanvas) {
+                context.lastCanvas.intervalId = setTimeout(render, context.lastCanvas.delay);
             }
         }
     };
@@ -484,7 +483,7 @@ if (!TurtleGraphics) {
     TurtleCanvas.prototype.doneAnimating = function () {
         this.tlist.splice(0, this.tlist.length);
         clearTimeout(this.intervalId);
-        Sk.runButton.removeAttribute('disabled');
+        //Sk.runButton.removeAttribute('disabled');
     };
     TurtleCanvas.prototype.cancelAnimation = function () {
         var t;
@@ -821,7 +820,7 @@ if (!TurtleGraphics) {
                 ctx.closePath();
             }
         } else {
-            r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), ctx.pen);
+            r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
             for (s = 0; s < r.length; s = s + 1) {
                 r[s].push(this.penStyle);
                 this.addDrawingEvent(r[s]);
