@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <script type="application/ecmascript" src="../../src/lib/turtle/__init__.js"></script>
+    </head>
+    <body>
+        <canvas id="mycanvas" width="500" height="500"/>
+        <script type="application/ecmascript">
+            TurtleGraphics.defaults = {
+                canvasID: "mycanvas",
+                animate: true,
+                degrees: true
+            };
+            var t = new TurtleGraphics.Turtle();
+            t.set_fill_color("red");
+            t.set_pen_color("red");
+            t.set_pen_width(10);
+            t.forward(90);
+            t.left(90);
+            t.forward(90);
+            t.shape('square')
+            t.backward(10);
+            t.clear();
+            t.left(-10);
+            t.forward(100);
+            t.hideturtle();
+            t.circle(200, 360);
+            t.showturtle();
+        </script>
+    </body>
+</html>
