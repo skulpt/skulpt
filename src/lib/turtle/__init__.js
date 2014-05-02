@@ -175,11 +175,9 @@ if (!TurtleGraphics) {
             filling,
             oper,
             ts,
-            col,
+            tmpColor,
             size,
-            df1,
-            df2,
-            s;
+            speed;
 
         context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly); //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
         TurtleGraphics.renderClock += incr;
@@ -215,8 +213,8 @@ if (!TurtleGraphics) {
                         TurtleGraphics.renderClock = ts;
                     }
                     //console.log("<==")
-                    if (oper[0] === 'LT') {
-                        //line to
+                    switch (oper[0]) {
+                    case 'LT': //line To
                         if (!context.filling) {
                             context.beginPath();
                             context.moveTo(oper[1], oper[2]);
@@ -225,53 +223,54 @@ if (!TurtleGraphics) {
                         context.strokeStyle = oper[5];
                         context.stroke();
                         currentPos = new Vector(oper[3], oper[4], 0);
-                        if (!context.filling) {
+                        if (!filling) {
                             context.closePath();
                         }
-                    } else if (oper[0] === 'MT') {
-                        //move to
+                        break;
+                    case 'MT': //move to
                         context.moveTo(oper[3], oper[4]);
                         currentPos = new Vector(oper[3], oper[4], 0);
-                    } else if (oper[0] === 'BF') {
-                        //begin fill
+                        break;
+                    case 'BF': //begin fill
                         context.beginPath();
                         context.moveTo(oper[1], oper[2]);
-                        context.filling = true;
-                    } else if (oper[0] === 'EF') {
-                        //end fill
+                        filling = true;
+                        break;
+                    case 'EF': //end fill
                         context.fillStyle = oper[3];
                         context.stroke();
                         context.fill();
                         context.closePath();
-                        context.filling = false;
-                    } else if (oper[0] === 'FC') {
-                        // fill color
+                        filling = false;
+                        break;
+                    case 'FC': // fill color
                         context.fillStyle = oper[1];
-                    } else if (oper[0] === 'TC') {
-                        // turtle color
+                        break;
+                    case 'TC': // turtle color
                         context.strokeStyle = oper[1];
-                    } else if (oper[0] === 'PW') {
-                        // Pen width
+                        break;
+                    case 'PW': // Pen width
                         context.lineWidth = oper[1];
-                    } else if (oper[0] === 'DT') {
-                        // Dot
-                        col = context.fillStyle;
+                        break;
+                    case 'DT': // Dot
+                        tmpColor = context.fillStyle;
                         context.fillStyle = oper[2];
                         size = oper[1];
                         context.fillRect(oper[3] - size / 2, oper[4] - size / 2, size, size);
-                        context.fillStyle = col;
-                    } else if (oper[0] === 'CI') {
-                        // Circle
-                        if (!context.filling) {
+                        context.fillStyle = tmpColor;
+                        break;
+                    case 'CI': // Circle
+                        if (!filling) {
                             context.beginPath();
                         }
                         context.arc(oper[1], oper[2], oper[3], oper[4], oper[5], oper[6]);
                         context.currentPos = new Vector(oper[1] + Math.cos(oper[5]) * oper[3], oper[2] + Math.sin(oper[5]) * oper[3], 0);
                         context.stroke();
-                        if (!context.filling) {
+                        if (!filling) {
                             context.closePath();
                         }
-                    } else if (oper[0] === 'WT') {
+                        break;
+                    case 'WT':
                         // write
                         if (context.font) {
                             context.font = oper[2];
@@ -279,47 +278,47 @@ if (!TurtleGraphics) {
                         context.scale(1, -1);
                         context.fillText(oper[1], oper[3], -oper[4]);
                         context.scale(1, -1);
-                    } else if (oper[0] === 'ST') {
+                        break;
+                    case 'ST':
                         // stamp
                         t.drawturtle(oper[3], new Vector(oper[1], oper[2], 0));
-                    } else if (oper[0] === 'HT') {
-                        // hide turtle
+                        break;
+                    case 'HT': // hide turtle
                         t.visible = false;
-                    } else if (oper[0] === 'SH') {
-                        // show turtle
+                        break;
+                    case 'SH': // show turtle
                         t.visible = true;
-                    } else if (oper[0] === 'TT') {
+                        break;
+                    case 'TT': // turn
                         currentHead = oper[1];
-                    } else if (oper[0] === 'CL') {
-                        // RNL clear
+                        break;
+                    case 'CL': // clear
                         context.clear_canvas(t.canvasID);
                         t.clearPoint = i; // Different from reset that calls clear because it leaves the turtles where they are
-                    } else if (oper[0] === 'DL') {
-                        // RNL delay
-                        df1 = oper[1];
-                        //console.log("animated delay set " + df)
-                        t.turtleCanvas.delay = context.df;
-                    } else if (oper[0] === 'SC') {
-                        // RNL speed change
-                        s = oper[1];
-                        if (s < 0) {
-                            s = 0;
+                        break;
+                    case 'DL':  // delay
+                        t.turtleCanvas.delay = oper[1];
+                        break;
+                    case 'SC': // speed change
+                        speed = oper[1];
+                        
+                        if (speed < 0) {
+                            t.turtleCanvas.delay = 0;
+                        } else {
+                            if (speed > 10) {
+                                speed = 10;
+                            }
+                            t.turtleCanvas.delay = (10 - speed % 11 + 1) * t.turtleCanvas.timeFactor; //10
                         }
-                        if (s > 10) {
-                            s = 10;
-                        }
-                        df2 = (10 - s % 11 + 1) * t.turtleCanvas.timeFactor;
-                        //10
-                        if (s === 0) {
-                            context.df = 0;
-                        }
+
                         //t.turtleCanvas.intervalId = clearInterval(t.turtleCanvas.intervalId);
-                        t.turtleCanvas.delay = context.df;
                         //t.turtleCanvas.intervalId = setInterval(render, t.turtleCanvas.delay)
                         if (oper[2]) {
                             t.turtleCanvas.setSegmentLength(oper[2]);
                         }
-                    //} else if (oper[0] === 'NO') {}
+                        break;
+                    case 'NO':
+                        break;
                     } //else {
                         //console.log('unknown op: ' + oper[0]);
                     //} // end of oper[0] test
@@ -1321,7 +1320,7 @@ if (!TurtleGraphics) {
         if (!pos) {
             pos = this.position;
         }
-        console.log(head);
+        
         for (p = 0; p < plist.length; p = p + 1) {
             rtPoints.push(plist[p]
                           .scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale)
