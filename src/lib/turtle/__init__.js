@@ -876,7 +876,7 @@ if (!TurtleGraphics) {
             if (!this.animate) {
                 this.context.moveTo(newposition[0], newposition[1]);
             } else {
-                r = this.segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
+                r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
                 for (s = 0; s < r.lenght; s = s + 1) {
                     this.addDrawingEvent(r[s]);
                 }
@@ -1006,15 +1006,15 @@ if (!TurtleGraphics) {
 
         if (!ctx.animate) {
             ctx.fillStyle = nc;
-            ctx.fillRect(ctx.position[0] - size / 2, ctx.position[1] - size / 2, size, size);
+            ctx.fillRect(this.position[0] - size / 2, this.position[1] - size / 2, size, size);
             ctx.fillStyle = color;
         } else {
             ctx.addDrawingEvent([
                 'DT',
                 size,
                 nc,
-                ctx.position[0],
-                ctx.position[1]
+                this.position[0],
+                this.position[1]
             ]);
         }
     };
