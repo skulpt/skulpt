@@ -294,7 +294,7 @@ if (!TurtleGraphics) {
                         currentHead = oper[1];
                         break;
                     case 'CL': // clear
-                        context.clear_canvas(t.canvasID);
+                        clear_canvas(t.canvasID);
                         t.clearPoint = i; // Different from reset that calls clear because it leaves the turtles where they are
                         break;
                     case 'DL':  // delay
