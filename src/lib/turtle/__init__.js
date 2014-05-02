@@ -52,21 +52,23 @@ if (!TurtleGraphics) {
         Array.prototype.push.call(this, item);
     };
     Vector.prototype.linear = function (a, b, v) {
-        var result = [],
-            c;
-        for (c = 0; c <= 2; c = c + 1) {
-            result[c] = a * this[c] + b * v[c];
+        if (this.length !== 3 || v.length !== 3) {
+            return;
         }
-        return new Vector(result);
+        return new Vector([a * this[0] + b * v[0],
+                           a * this[1] + b * v[1],
+                           a * this[2] + b * v[2]]);
+
+        
     };
     Vector.prototype.cross = function (v) {
-        // Return cross product of this and v
-        var result = [],
-            c;
-        for (c = 0; c <= 2; c = c + 1) {
-            result[c] = this[(c + 1) % 3] * v[(c + 2) % 3] - this[(c + 2) % 3] * v[(c + 1) % 3];
+        if (this.length !== 3 || v.length !== 3) {
+            return;
         }
-        return new Vector(result);
+ 
+        return new Vector([this[1] * v[2] - this[2] * v[1],
+                    this[2] * v[0] - this[0] * v[2],
+                    this[0] * v[1] - this[1] * v[0]]);
     };
     Vector.prototype.rotate = function (angle) {
         // Rotate this counter clockwise by angle.
@@ -287,7 +289,7 @@ if (!TurtleGraphics) {
                         // show turtle
                         t.visible = true;
                     } else if (oper[0] === 'TT') {
-                        context.currentHead = oper[1];
+                        currentHead = oper[1];
                     } else if (oper[0] === 'CL') {
                         // RNL clear
                         context.clear_canvas(t.canvasID);
@@ -318,9 +320,9 @@ if (!TurtleGraphics) {
                             t.turtleCanvas.setSegmentLength(oper[2]);
                         }
                     //} else if (oper[0] === 'NO') {}
-                    } else {
-                        console.log('unknown op: ' + oper[0]);
-                    } // end of oper[0] test
+                    } //else {
+                        //console.log('unknown op: ' + oper[0]);
+                    //} // end of oper[0] test
                 } // end of if ts < render clock
             }
             // end of for
@@ -928,7 +930,7 @@ if (!TurtleGraphics) {
         return this.turtleCanvas.getCounter();
     };
     Turtle.prototype.turn = function (phi) {
-        var alpha = phi * this.Degree2Rad,
+        var alpha = phi * Degree2Rad,
             left = this.normal.cross(this.heading),
             newheading = this.heading.rotateNormal(left, alpha);
         this.heading = newheading;
@@ -1303,22 +1305,28 @@ if (!TurtleGraphics) {
             this.currentShape = s;
         }
     };
-    Turtle.prototype.drawturtle = function (heading, position) {
+    Turtle.prototype.drawturtle = function (pHeading, pos) {
         var rtPoints = [],
             plist = this.shapeStore[this.currentShape],
             head,
             p,
             i;
-        if (heading !== undefined) {
-            head = heading - 90;
+
+        if (pHeading !== undefined) {
+            head = pHeading - 90;
         } else {
             head = this.heading.toAngle() - 90;
         }
-        if (!position) {
-            position = this.position;
+
+        if (!pos) {
+            pos = this.position;
         }
+        console.log(head);
         for (p = 0; p < plist.length; p = p + 1) {
-            rtPoints.push(plist[p].scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale).rotate(head).add(position));
+            rtPoints.push(plist[p]
+                          .scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale)
+                          .rotate(head)
+                          .add(pos));
         }
         this.context.beginPath();
         this.context.moveTo(rtPoints[0][0], rtPoints[0][1]);
