@@ -19,7 +19,8 @@ if (!TurtleGraphics) {
         Rad2Degree = 180 / Math.PI,
         render,
         allDone,
-        segmentLine;
+        segmentLine,
+        clear_canvas;
 
     // Create a 3d Vector class for manipulating turtle heading, and position.
     function Vector(x, y, z) {
@@ -390,6 +391,15 @@ if (!TurtleGraphics) {
         }
         return res;
     };
+
+    clear_canvas = function (canId) {
+        var ctx = document.getElementById(canId).getContext('2d');
+        //if (arguments.length >= 2) {
+        //    fillStyle = arguments[1];
+        //    fillRect(0, 0, canvas.width, canvas.height);
+        //}
+        ctx.clearRect(-ctx.canvas.width / 2, -ctx.canvas.height / 2, ctx.canvas.width, ctx.canvas.height);
+    }
     //
     // Define TurtleCanvas
     // 
@@ -760,7 +770,7 @@ if (!TurtleGraphics) {
             }
             TurtleGraphics.canvasInit = true;
         } else {
-            ctx.clear_canvas(this.canvasID);
+            clear_canvas(this.canvasID);
         }
         this.turtleCanvas = TurtleGraphics.canvasLib[this.canvasID];
         this.home = new Vector([0, 0, 0]);
@@ -791,9 +801,9 @@ if (!TurtleGraphics) {
         // Clean the canvas
         // Optional second argument is color
         if (arguments.length >= 1) {
-            this.clear_canvas(this.canvasID, color);
+            clear_canvas(this.canvasID, color);
         } else {
-            this.clear_canvas(this.canvasID);
+            clear_canvas(this.canvasID);
         }
         this.initialize();
     };
@@ -1363,18 +1373,9 @@ if (!TurtleGraphics) {
         if (this.animate) {
             this.addDrawingEvent(['CL']);
         } else {
-            this.clear_canvas(this.canvasID);
+            clear_canvas(this.canvasID);
         }
     };
-
-    function clear_canvas(canId) {
-        var ctx = document.getElementById(canId).getContext('2d');
-        //if (arguments.length >= 2) {
-        //    fillStyle = arguments[1];
-        //    fillRect(0, 0, canvas.width, canvas.height);
-        //}
-        ctx.clearRect(-ctx.canvas.width / 2, -ctx.canvas.height / 2, ctx.canvas.width, ctx.canvas.height);
-    }
     TurtleGraphics.defaults = {
         canvasID: 'mycanvas',
         degrees: true,
