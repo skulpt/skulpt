@@ -264,7 +264,7 @@ if (!TurtleGraphics) {
                             context.beginPath();
                         }
                         context.arc(oper[1], oper[2], oper[3], oper[4], oper[5], oper[6]);
-                        context.currentPos = new Vector(oper[1] + Math.cos(oper[5]) * oper[3], oper[2] + Math.sin(oper[5]) * oper[3], 0);
+                        currentPos = new Vector(oper[1] + Math.cos(oper[5]) * oper[3], oper[2] + Math.sin(oper[5]) * oper[3], 0);
                         context.stroke();
                         if (!filling) {
                             context.closePath();
@@ -959,8 +959,9 @@ if (!TurtleGraphics) {
     Turtle.prototype.set_heading = function (newhead) {
         if ((typeof newhead).toLowerCase() === 'number') {
             this.heading = Vector.angle2vec(newhead);
+        } else {
+            this.heading = newhead;
         }
-        this.heading = newhead;
     };
     Turtle.prototype.towards = function (to, y) {
         // set heading vector to point towards another point.
@@ -1027,6 +1028,13 @@ if (!TurtleGraphics) {
                 }
                 if (Math.abs(extentLeft) > 0.01) {
                     this.arc(radius, extentLeft);
+                }
+            }
+            if (!this.turtleCanvas.isAnimating()) {
+                this.turtleCanvas.startAnimating(this);
+            } else {
+                if (!this.turtleCanvas.onCanvas(this)) {
+                    this.turtleCanvas.addToCanvas(this);
                 }
             }
         } else {
