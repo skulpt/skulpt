@@ -1004,12 +1004,12 @@ if (!TurtleGraphics) {
         }
         size = size * this.turtleCanvas.lineScale;
 
-        if (!ctx.animate) {
+        if (!this.animate) {
             ctx.fillStyle = nc;
             ctx.fillRect(this.position[0] - size / 2, this.position[1] - size / 2, size, size);
             ctx.fillStyle = color;
         } else {
-            ctx.addDrawingEvent([
+            this.addDrawingEvent([
                 'DT',
                 size,
                 nc,
