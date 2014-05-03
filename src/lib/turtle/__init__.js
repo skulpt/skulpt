@@ -216,7 +216,7 @@ if (!TurtleGraphics) {
                     //console.log("<==")
                     switch (oper[0]) {
                     case 'LT': //line To
-                        if (!context.filling) {
+                        if (!filling) {
                             context.beginPath();
                             context.moveTo(oper[1], oper[2]);
                         }
