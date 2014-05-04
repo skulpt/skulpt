@@ -495,6 +495,11 @@ if (!TurtleGraphics) {
         this.tlist.splice(0, this.tlist.length);
         clearTimeout(this.intervalId);
         //Sk.runButton.removeAttribute('disabled');
+        if (TurtleGraphics.doneDelegates) {
+            for (var i = 0; i < TurtleGraphics.doneDelegates.length; i = i + 1) {
+                TurtleGraphics.doneDelegates[i]();
+            }
+        }
     };
     TurtleCanvas.prototype.cancelAnimation = function () {
         var t;
