@@ -186,6 +186,7 @@ if (!TurtleGraphics) {
 		context.moveTo(0, 0);
 		context.lineCap = 'round';
 		context.lineJoin = 'round';
+		context.fillStyle = 'black';
 		context.strokeStyle = 'black';
         context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly); //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
         TurtleGraphics.renderClock += incr;
@@ -248,8 +249,7 @@ if (!TurtleGraphics) {
                         filling = false;
                         break;
                     case 'FC': // fill color
-						console.log("fc" + oper[1]);
-                        context.fillStyle = oper[1];
+						context.fillStyle = oper[1];
                         break;
                     case 'TC': // turtle color
                         context.strokeStyle = oper[1];
