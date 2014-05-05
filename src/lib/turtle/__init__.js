@@ -9,7 +9,10 @@
 var TurtleGraphics;
 // the single identifier needed in the global scope
 if (!TurtleGraphics) {
-    TurtleGraphics = {};
+    TurtleGraphics = {
+        doneDelegates: [],
+        fadeOnExit: true
+    };
 }
 (function () {
     'use strict';
@@ -399,7 +402,7 @@ if (!TurtleGraphics) {
         //    fillRect(0, 0, canvas.width, canvas.height);
         //}
         ctx.clearRect(-ctx.canvas.width / 2, -ctx.canvas.height / 2, ctx.canvas.width, ctx.canvas.height);
-    }
+    };
     //
     // Define TurtleCanvas
     // 
@@ -433,7 +436,6 @@ if (!TurtleGraphics) {
         this.renderCounter = 1;
         this.clearPoint = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
-        //Sk.tg.fadeOnExit = true; //This can be set to false AFTER the program completes to turn off the fade out on the canvas as a result of exitonclick
     }
     TurtleCanvas.prototype.setup = function (width, height) {
         this.canvas.width = width;
@@ -492,11 +494,14 @@ if (!TurtleGraphics) {
         //Sk.isTurtleProgram = true;
     };
     TurtleCanvas.prototype.doneAnimating = function () {
+        var i;
         this.tlist.splice(0, this.tlist.length);
         clearTimeout(this.intervalId);
-        //Sk.runButton.removeAttribute('disabled');
+        if (TurtleGraphics.runButton) {
+            TurtleGraphics.runButton.removeAttribute('disabled');
+        }
         if (TurtleGraphics.doneDelegates) {
-            for (var i = 0; i < TurtleGraphics.doneDelegates.length; i = i + 1) {
+            for (i = 0; i < TurtleGraphics.doneDelegates.length; i = i + 1) {
                 TurtleGraphics.doneDelegates[i]();
             }
         }
@@ -573,19 +578,20 @@ if (!TurtleGraphics) {
     // todo: if animating, this should be deferred until the proper time
     TurtleCanvas.prototype.exitonclick = function () {
         var canvas_id = this.canvasID,
-            theCanvas = this;
-        this.canvas.addEventListener('click', function () {
-            if (!theCanvas.isAnimating()) {
-                if (Sk.tg.fadeOnExit) {
-                    //Let's this be configurable
-                    window.getElementById('#' + canvas_id).style.display = 'none'; //$("#"+canvas_id).hide();
+            theCanvas = this,
+            eventHandler = function () {
+                if (!theCanvas.isAnimating()) {
+                    if (TurtleGraphics.fadeOnExit) {
+                        //Let's this be configurable
+                        document.getElementById(canvas_id).style.display = 'none'; //$("#"+canvas_id).hide();
+                    }
+                    document.getElementById(canvas_id).removeEventListener('click', eventHandler);
+                    //$("#"+canvas_id).unbind('click');
+                    TurtleGraphics.canvasInit = false;
+                    delete TurtleGraphics.canvasLib[canvas_id];
                 }
-                window.getElementById('#' + canvas_id).removeEventListener('click');
-                //$("#"+canvas_id).unbind('click');
-                Sk.tg.canvasInit = false;
-                delete Sk.tg.canvasLib[canvas_id];
-            }
-        }, false);
+            };
+        this.canvas.addEventListener('click', eventHandler, false);
     };
     TurtleCanvas.prototype.turtles = function () {
         return TurtleGraphics.turtleList;
@@ -1207,14 +1213,14 @@ if (!TurtleGraphics) {
             this.penStyle = c;
         } else {
             var rs, gs, bs, c0, c1, c2;
-            if (typeof c === 'object' && c.length === 3) {
-                c0 = Sk.builtin.asnum$(c[0]);
-                c1 = Sk.builtin.asnum$(c[1]);
-                c2 = Sk.builtin.asnum$(c[2]);
+            if (Array.isArray(c)) {
+                c0 = c[0];
+                c1 = c[1];
+                c2 = c[2];
             } else {
-                c0 = Sk.builtin.asnum$(c);
-                c1 = Sk.builtin.asnum$(g);
-                c2 = Sk.builtin.asnum$(b);
+                c0 = c;
+                c1 = g;
+                c2 = b;
             }
             rs = c0.toString(16);
             gs = c1.toString(16);
@@ -1244,14 +1250,14 @@ if (!TurtleGraphics) {
             this.fillStyle = c;
         } else {
             var rs, gs, bs, c0, c1, c2;
-            if (typeof c === 'object' && c.length === 3) {
-                c0 = Sk.builtin.asnum$(c[0]);
-                c1 = Sk.builtin.asnum$(c[1]);
-                c2 = Sk.builtin.asnum$(c[2]);
+            if (Array.isArray(c)) {
+                c0 = c[0];
+                c1 = c[1];
+                c2 = c[2];
             } else {
-                c0 = Sk.builtin.asnum$(c);
-                c1 = Sk.builtin.asnum$(g);
-                c2 = Sk.builtin.asnum$(b);
+                c0 = c;
+                c1 = g;
+                c2 = b;
             }
             rs = c0.toString(16);
             gs = c1.toString(16);
@@ -1611,6 +1617,9 @@ var $builtinmodule = function (name) {
             $loc.fillcolor = new Sk.builtin.func(function (self, color, green, blue) {
                 if (color) {
                     if (blue) {
+                        color = Sk.builtin.asnum$(color);
+                        green = Sk.builtin.asnum$(green);
+                        blue = Sk.builtin.asnum$(blue);
                         self.theTurtle.set_fill_color(color, green, blue);
                     } else {
                         color = color.v || self.theTurtle.context.fillStyle;
@@ -1638,6 +1647,9 @@ var $builtinmodule = function (name) {
             $loc.color = new Sk.builtin.func(function (self, color, green, blue) {
                 if (color) {
                     if (blue) {
+                        color = Sk.builtin.asnum$(color);
+                        green = Sk.builtin.asnum$(green);
+                        blue = Sk.builtin.asnum$(blue);
                         self.theTurtle.set_pen_color(color, green, blue);
                         self.theTurtle.set_fill_color(color, green, blue);
                     } else {

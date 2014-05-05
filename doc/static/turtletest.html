@@ -116,7 +116,7 @@ CodeMirror.fromTextArea(document.getElementById("example1_code"), {
     height: "160px",
     fontSize: "9pt",
     autoMatchParens: true,
-    parserConfig: {'pythonVersion': 2, 'strictErrors': true}
+    parserConfig: { 'pythonVersion': 2, 'strictErrors': true }
 });
     
 function builtinRead(x)
@@ -131,6 +131,7 @@ function runit(myDiv) {
     var mypre = document.getElementById(myDiv+"_pre");
     mypre.innerHTML = '';
     Sk.canvas = myDiv+"_canvas";
+    TurtleGraphics = { fadeOnExit: true };
     var can = document.getElementById(Sk.canvas);
     can.style.display = 'block';
     if (can) {
