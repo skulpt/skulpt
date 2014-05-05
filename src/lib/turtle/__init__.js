@@ -174,15 +174,19 @@ if (!TurtleGraphics) {
             t,
             tix,
             i,
-            currentPos,
-            currentHead,
+			currentPos = new Vector(0, 0, 0),
+            currentHead = new Vector(1, 0, 0),
             filling,
             oper,
             ts,
             tmpColor,
             size,
             speed;
-
+		    
+		context.moveTo(0, 0);
+		context.lineCap = 'round';
+		context.lineJoin = 'round';
+		context.strokeStyle = 'black';
         context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly); //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
         TurtleGraphics.renderClock += incr;
         for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
@@ -191,13 +195,9 @@ if (!TurtleGraphics) {
             if (t.aCount >= t.drawingEvents.length) {
                 t.aCount = t.drawingEvents.length - 1;
             }
-            context.moveTo(0, 0);
-            currentPos = new Vector(0, 0, 0);
-            currentHead = new Vector(1, 0, 0);
-            context.lineWidth = t.get_pen_width();
-            context.lineCap = 'round';
-            context.lineJoin = 'round';
-            context.strokeStyle = 'black';
+
+			context.lineWidth = t.get_pen_width();
+			
             filling = false;
             if (isNaN(t.turtleCanvas.delay)) {
                 t.turtleCanvas.delay = 0;
@@ -248,6 +248,7 @@ if (!TurtleGraphics) {
                         filling = false;
                         break;
                     case 'FC': // fill color
+						console.log("fc" + oper[1]);
                         context.fillStyle = oper[1];
                         break;
                     case 'TC': // turtle color
@@ -334,7 +335,7 @@ if (!TurtleGraphics) {
             t.aCount += incr;
             if (t.visible) {
                 // draw the turtle
-                t.drawturtle(currentHead.toAngle(), currentPos); // just use currentHead
+                t.drawturtle(t.heading.toAngle(), currentPos); // just use currentHead
             }
         }
         //if (t.aCount >= t.drawingEvents.length) {
@@ -888,7 +889,7 @@ if (!TurtleGraphics) {
                 this.context.moveTo(newposition[0], newposition[1]);
             } else {
                 r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
-                for (s = 0; s < r.lenght; s = s + 1) {
+                for (s = 0; s < r.length; s = s + 1) {
                     this.addDrawingEvent(r[s]);
                 }
                 if (!this.turtleCanvas.isAnimating()) {
@@ -1222,9 +1223,9 @@ if (!TurtleGraphics) {
                 c1 = g;
                 c2 = b;
             }
-            rs = c0.toString(16);
-            gs = c1.toString(16);
-            bs = c2.toString(16);
+            rs = Math.abs(c0).toString(16);
+            gs = Math.abs(c1).toString(16);
+            bs = Math.abs(c2).toString(16);
             while (rs.length < 2) {
                 rs = '0' + rs;
             }
@@ -1259,9 +1260,9 @@ if (!TurtleGraphics) {
                 c1 = g;
                 c2 = b;
             }
-            rs = c0.toString(16);
-            gs = c1.toString(16);
-            bs = c2.toString(16);
+            rs = Math.abs(c0).toString(16);
+            gs = Math.abs(c1).toString(16);
+            bs = Math.abs(c2).toString(16);
             while (rs.length < 2) {
                 rs = '0' + rs;
             }
