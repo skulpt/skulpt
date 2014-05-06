@@ -192,6 +192,7 @@ if (!TurtleGraphics) {
         TurtleGraphics.renderClock += incr;
         for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
             t = TurtleGraphics.turtleList[tix];
+			currentHead = t.heading;
             context.lastCanvas = t.turtleCanvas;
             if (t.aCount >= t.drawingEvents.length) {
                 t.aCount = t.drawingEvents.length - 1;
