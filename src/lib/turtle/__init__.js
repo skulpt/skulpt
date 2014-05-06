@@ -493,7 +493,7 @@ if (!TurtleGraphics) {
             //Added by RNL in case startAnimating is called after it's already been added
             this.addToCanvas(t);
         }
-        //Sk.isTurtleProgram = true;
+        Sk.isTurtleProgram = true;
     };
     TurtleCanvas.prototype.doneAnimating = function () {
         var i;
@@ -1423,6 +1423,9 @@ var $builtinmodule = function (name) {
                     animate: true,
                     degrees: true
                 };
+				TurtleGraphics.doneDelegates.push(function () {
+					Sk.runButton.removeAttribute('disabled');
+				});
                 self.theTurtle = new TurtleGraphics.Turtle();
             });
             //
