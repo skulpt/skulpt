@@ -335,7 +335,7 @@ if (!TurtleGraphics) {
             t.aCount += incr;
             if (t.visible) {
                 // draw the turtle
-                t.drawturtle(t.heading.toAngle(), currentPos); // just use currentHead
+                t.drawturtle(currentHead.toAngle(), currentPos); // just use currentHead
             }
         }
         //if (t.aCount >= t.drawingEvents.length) {
