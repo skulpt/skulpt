@@ -174,8 +174,8 @@ if (!TurtleGraphics) {
             t,
             tix,
             i,
-			currentPos = new Vector(0, 0, 0),
-            currentHead = new Vector(1, 0, 0),
+			currentPos,
+            currentHead,
             filling,
             oper,
             ts,
@@ -186,11 +186,13 @@ if (!TurtleGraphics) {
 		context.moveTo(0, 0);
 		context.lineCap = 'round';
 		context.lineJoin = 'round';
-		context.fillStyle = 'black';
-		context.strokeStyle = 'black';
         context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly); //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
         TurtleGraphics.renderClock += incr;
         for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
+            currentPos = new Vector(0, 0, 0);
+            currentHead = new Vector(1, 0, 0);
+            context.fillStyle = 'black';
+            context.strokeStyle = 'black';
             t = TurtleGraphics.turtleList[tix];
 			currentHead = t.heading;
             context.lastCanvas = t.turtleCanvas;
@@ -499,9 +501,6 @@ if (!TurtleGraphics) {
         var i;
         this.tlist.splice(0, this.tlist.length);
         clearTimeout(this.intervalId);
-        if (TurtleGraphics.runButton) {
-            TurtleGraphics.runButton.removeAttribute('disabled');
-        }
         if (TurtleGraphics.doneDelegates) {
             for (i = 0; i < TurtleGraphics.doneDelegates.length; i = i + 1) {
                 TurtleGraphics.doneDelegates[i]();
@@ -1424,7 +1423,9 @@ var $builtinmodule = function (name) {
                     degrees: true
                 };
 				TurtleGraphics.doneDelegates.push(function () {
-					Sk.runButton.removeAttribute('disabled');
+					if (Sk.runButton) {
+						Sk.runButton.removeAttribute('disabled');
+					}
 				});
                 self.theTurtle = new TurtleGraphics.Turtle();
             });
