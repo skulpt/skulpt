@@ -11,7 +11,12 @@ var TurtleGraphics;
 if (!TurtleGraphics) {
     TurtleGraphics = {
         doneDelegates: [],
-        fadeOnExit: true
+        fadeOnExit: true,
+		defaults: {
+			canvasID: 'mycanvas',
+			degrees: true,
+			animate: true
+		}
     };
 }
 (function () {
@@ -1388,11 +1393,6 @@ if (!TurtleGraphics) {
             clear_canvas(this.canvasID);
         }
     };
-    TurtleGraphics.defaults = {
-        canvasID: 'mycanvas',
-        degrees: true,
-        animate: true
-    };
     TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
     TurtleGraphics.TurtleCanvas = TurtleCanvas;
@@ -1738,11 +1738,13 @@ var $builtinmodule = function (name) {
         },
         screen = function ($gbl, $loc) {
             $loc.__init__ = new Sk.builtin.func(function (self) {
-                TurtleGraphics.defaults = {
-                    canvasID: Sk.canvas,
-                    animate: true,
-                    degrees: true
-                };
+				if (!TurtleGraphics.defaults) {
+					TurtleGraphics.defaults = {
+						canvasID: Sk.canvas,
+						animate: true,
+						degrees: true
+					};
+				}
                 var currentCanvas = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
                 if (currentCanvas === undefined) {
                     self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
