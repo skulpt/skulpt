@@ -463,8 +463,13 @@ Sk.builtin.bin = function bin(x)
 
 Sk.builtin.dir = function dir(x)
 {
-    Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
-
+    //Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
+    if (x === undefined) {
+        x = Sk.globals
+        for(var propertyName in x) {
+            print("foo "+propertyName)
+        }
+    }
     var getName = function (k) {
         var s = null;
         var internal = ["__bases__", "__mro__", "__class__"];
@@ -489,7 +494,7 @@ Sk.builtin.dir = function dir(x)
 
     // Add all object properties
     for (k in x.constructor.prototype)
-    {
+    {   
         s = getName(k);
         if (s)
             names.push(new Sk.builtin.str(s));

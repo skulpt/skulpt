@@ -26,15 +26,13 @@ class TestCase:
 
     def main(self):
 
-        self.resList = l
-
         for func in self.tlist:
             try:
                 self.setup()
                 func()
                 self.tearDown()
             except:
-                self.appendResult('Error')
+                self.appendResult('Error',None,None,None)
                 self.numFailed += 1
         self.showSummary()
 
@@ -119,10 +117,13 @@ class TestCase:
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
             self.numFailed += 1
-        self.resList.append(".")
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
         print "ran %d tests, passed %d \n" % (self.numPassed+self.numFailed, self.numPassed)
 
 
+
+def main():
+    for name in dir():
+        print name
