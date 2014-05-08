@@ -284,6 +284,8 @@ var $builtinmodule = function(name) {
 	/**
 	 * random package
 	 */
+	 
+	var normal_dist = math.distribution('normal') 
 	mod.random = new Sk.builtin.module();
 	mod.random['$d'] = {
 		__name__:  Sk.builtin.str('numpy.linalg'),
@@ -302,6 +304,22 @@ var $builtinmodule = function(name) {
 			}
 			return Sk.misceval.callsim(mod.ndarray, undefined, result);
 		}),
+		normal: new Sk.builtin.func(function(mu, sigma, shape) {
+			Sk.builtin.pyCheckArgs('normal', arguments, 0, 3);
+			var mean = mu !== undefined ? mu.v : 0.0;
+			var std = sigma !== undefined ? sigma.v : 1.0;
+			std *= 6.0; // mathjs uses sigma 1/6
+			mean -= std * 0.5; // mathjs uses mean 0.5
+			var s = toValidShape(shape);
+		
+			var result;
+			try {
+				result = math.add(math.emultiply(normal_dist.random([s.rows, s.cols]), std), mean)
+			} catch(e) {
+				throw new Sk.builtin.Exception(e.message);
+			}
+			return Sk.misceval.callsim(mod.ndarray, undefined, result);
+		})
 	};
 
 	/**
@@ -616,7 +634,7 @@ var $builtinmodule = function(name) {
 	 */
 	mod.array_str = new Sk.builtin.func(function(array) {
 		Sk.builtin.pyCheckArgs('array_str', arguments, 1);
-		var str =math.format(array.v,5).replace(/\], \[/g, ']\n [');
+		var str = math.format(array.v,5).replace(/\], \[/g, ']\n [');
 		return Sk.builtin.str(str.replace(/,/g, ''));
 		//return Sk.builtin.str(math.format(array.v));
 	});
