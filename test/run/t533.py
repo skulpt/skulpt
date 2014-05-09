@@ -3,16 +3,19 @@ def foo():
     
 bar = 11
 
-print sorted(globals())
+print globals()['bar']
+print 'foo' in globals()
 
 def baz(x):
-    print sorted(globals())
+    print 'baz' in globals()
     
 baz(10)
 
 
 class MyClass:
     def __init__(self):
-        print sorted(globals())
+        print globals()['__name__']
+        print 'MyClass' in globals()
+        print type(globals()['baz'])
         
 y = MyClass()
