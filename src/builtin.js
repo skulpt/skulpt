@@ -1097,9 +1097,9 @@ Sk.builtin.issubclass = function issubclass(c1, c2) {
  }
 
 Sk.builtin.globals = function globals() { 
-    var ret = new Sk.builtin.dict();
-    for (i in Sk.globals) {
-        ret.mp$ass_subscript(new Sk.builtin.str(i),Sk.globals[i])
+    var ret = new Sk.builtin.dict([]);
+    for (var i in Sk['globals']) {
+        ret.mp$ass_subscript(new Sk.builtin.str(i),Sk['globals'][i])
     }
     
     return ret;
