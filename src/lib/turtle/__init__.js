@@ -1040,7 +1040,7 @@ if (!TurtleGraphics) {
             this.addDrawingEvent([
                 'DT',
                 size,
-                nc,
+                pcolor || ctx.strokeStyle,
                 this.position[0],
                 this.position[1]
             ]);
@@ -1431,16 +1431,20 @@ var $builtinmodule = function (name) {
         },
         turtle = function ($gbl, $loc) {
             $loc.__init__ = new Sk.builtin.func(function (self) {
-                TurtleGraphics.defaults = {
-                    canvasID: Sk.canvas,
-                    animate: true,
-                    degrees: true
-                };
-				TurtleGraphics.doneDelegates.push(function () {
-					if (Sk.runButton) {
-						Sk.runButton.removeAttribute('disabled');
-					}
-				});
+				if (!TurtleGraphics) {
+					TurtleGraphics = { 
+						defaults: {
+							canvasID: Sk.canvas,
+							animate: true,
+							degrees: true
+						},
+						doneDelegates: [function () {
+							if (Sk.runButton) {
+								Sk.runButton.removeAttribute('disabled');
+							}
+						}]
+					};
+				}
                 self.theTurtle = new TurtleGraphics.Turtle();
             });
             //
