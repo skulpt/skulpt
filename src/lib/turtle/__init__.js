@@ -846,9 +846,10 @@ if (!TurtleGraphics) {
             ctx.lineWidth = this.get_pen_width();
             ctx.strokeStyle = this.penStyle;
             ctx.lineTo(newposition[0], newposition[1]);
-			ctx.moveTo(newposition[0], newposition[1]);
+			//ctx.moveTo(newposition[0], newposition[1]);
+			this.position = newposition;
             ctx.stroke();
-            if (!ctx.filling) {
+            if (!this.filling) {
                 ctx.closePath();
             }
         } else {
@@ -1017,8 +1018,8 @@ if (!TurtleGraphics) {
     Turtle.prototype.dot = function (psize, pcolor) {
         var size = 2,
             ctx = this.context,
-            color = ctx.penStyle,
-            nc = pcolor || color;
+            curPenStyle = this.penStyle,
+			curFillStyle = this.fillStyle;
 
         if (arguments.length >= 1) {
             size = psize;
@@ -1026,9 +1027,15 @@ if (!TurtleGraphics) {
         size = size * this.turtleCanvas.lineScale;
 
         if (!this.animate) {
-            ctx.fillStyle = nc;
+			if (pcolor) {
+				ctx.fillStyle = pcolor;
+				ctx.strokeStyle = pcolor;
+			}
             ctx.fillRect(this.position[0] - size / 2, this.position[1] - size / 2, size, size);
-            ctx.fillStyle = color;
+			if (pcolor) {
+				ctx.fillStyle = curFillStyle;
+				ctx.strokeStyle = curPenStyle;
+			}
         } else {
             this.addDrawingEvent([
                 'DT',
