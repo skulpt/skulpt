@@ -1096,6 +1096,16 @@ Sk.builtin.issubclass = function issubclass(c1, c2) {
 
  }
 
+Sk.builtin.globals = function globals() { 
+    var ret = new Sk.builtin.dict();
+    for (i in Sk.globals) {
+        ret.mp$ass_subscript(new Sk.builtin.str(i),Sk.globals[i])
+    }
+    
+    return ret;
+
+}
+
 
 
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
@@ -1106,7 +1116,7 @@ Sk.builtin.divmod = function divmod() { throw new Sk.builtin.NotImplementedError
 Sk.builtin.execfile = function execfile() { throw new Sk.builtin.NotImplementedError("execfile is not yet implemented")}
 Sk.builtin.format = function format() { throw new Sk.builtin.NotImplementedError("format is not yet implemented")}
 Sk.builtin.frozenset = function frozenset() { throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented")}
-Sk.builtin.globals = function globals() { throw new Sk.builtin.NotImplementedError("globals is not yet implemented")}
+
 Sk.builtin.help = function help() { throw new Sk.builtin.NotImplementedError("help is not yet implemented")}
 Sk.builtin.iter = function iter() { throw new Sk.builtin.NotImplementedError("iter is not yet implemented")}
 Sk.builtin.locals = function locals() { throw new Sk.builtin.NotImplementedError("locals is not yet implemented")}
