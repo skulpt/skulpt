@@ -1,9 +1,9 @@
-
 import document
+from unittest import TestCase
 
-class unittestgui(TestCase):
+class TestCaseGui(TestCase):
 	def __init__(self):
-		unittest.__init__(self)
+		TestCase.__init__(self)
 
 		self.divid = document.currentDiv()
 		self.mydiv = document.getElementById(self.divid)
