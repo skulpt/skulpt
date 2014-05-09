@@ -187,7 +187,7 @@ if (!TurtleGraphics) {
             tmpColor,
             size,
             speed;
-		    
+
 		context.moveTo(0, 0);
 		context.lineCap = 'round';
 		context.lineJoin = 'round';
@@ -500,7 +500,10 @@ if (!TurtleGraphics) {
             //Added by RNL in case startAnimating is called after it's already been added
             this.addToCanvas(t);
         }
-        Sk.isTurtleProgram = true;
+		try {
+			Sk.isTurtleProgram = true;
+		} catch (ReferenceEror) {
+		}
     };
     TurtleCanvas.prototype.doneAnimating = function () {
         var i;
@@ -843,6 +846,7 @@ if (!TurtleGraphics) {
             ctx.lineWidth = this.get_pen_width();
             ctx.strokeStyle = this.penStyle;
             ctx.lineTo(newposition[0], newposition[1]);
+			ctx.moveTo(newposition[0], newposition[1]);
             ctx.stroke();
             if (!ctx.filling) {
                 ctx.closePath();
@@ -1390,7 +1394,10 @@ if (!TurtleGraphics) {
         if (this.animate) {
             this.addDrawingEvent(['CL']);
         } else {
-            clear_canvas(this.canvasID);
+			clear_canvas(this.canvasID);
+			this.penStyle = 'black';
+			this.penWidth = 2;
+			this.fillStyle = 'black';
         }
     };
     TurtleGraphics.turtleList = [];
