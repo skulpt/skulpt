@@ -19,14 +19,21 @@ describe("Turtle", function () {
     beforeEach(function () {
 		jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         jasmine.addMatchers(imagediff.jasmine);
-        TurtleGraphics = { doneDelegates: [] };
+        TurtleGraphics = { 
+			defaults: {
+				canvasID: 'turtlecanvas',
+				animate: true,
+				degrees: true
+			},
+			doneDelegates: [],
+		};
         Sk.configure({
             output: function(s) {
                 console.log(s);
             },
             read: builtinRead
         });
-        c = document.createElement('canvas')
+        c = document.createElement('canvas');
         c.id = "turtlecanvas";
         c.width = "200";
         c.height = "200";
@@ -35,7 +42,6 @@ describe("Turtle", function () {
         ref.width = "200";
         ref.height = "200";
         document.body.appendChild(c);
-        Sk.canvas = "turtlecanvas";
     });
     
     afterEach(function () {
@@ -47,12 +53,12 @@ describe("Turtle", function () {
             code = "import turtle\nt = turtle.Turtle()\nc = [ \"red\", \"green\", \"blue\", \"yellow\" ]\nfor color in c:\n    t.color(color)\n    t.forward(50)\n    t.left(360/len(c))",
             refctx = ref.getContext("2d");
         loadImage("data:image/png;base64,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");
-        Sk.importMainWithBody("", false, code);
         TurtleGraphics.doneDelegates.push(function () {
             //1 for tolerance
             expect(cctx).toImageDiffEqual(refctx, 1);
             done();
         });
+		Sk.importMainWithBody("", false, code);
     });
     
     it("should be able to move 50 px forward", function (done) {
@@ -60,11 +66,11 @@ describe("Turtle", function () {
             code = "import turtle\nt = turtle.Turtle()\nt.forward(50)",
             refctx = ref.getContext("2d");
         loadImage("data:image/png;base64,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");
-        Sk.importMainWithBody("", false, code);
         TurtleGraphics.doneDelegates.push(function () {
             expect(cctx).toImageDiffEqual(refctx);
             done();
         });
+		Sk.importMainWithBody("", false, code);
     });
     
     it("should be able to change the color", function (done) {
@@ -72,11 +78,11 @@ describe("Turtle", function () {
             code = "import turtle\nt = turtle.Turtle()\nt.color('red')\nt.forward(50)",
             refctx = ref.getContext("2d");
         loadImage("data:image/png;base64,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");
-        Sk.importMainWithBody("", false, code);
         TurtleGraphics.doneDelegates.push(function () {
             expect(cctx).toImageDiffEqual(refctx);
             done();
         });
+		Sk.importMainWithBody("", false, code);
     });
     
     it("should be able to draw a circle", function (done) {
@@ -102,7 +108,8 @@ describe("Turtle", function () {
 			done();
 		});
 	});
-    it("it should be able to run \"Our First Turtle Program\"", function (done) {
+    
+	it("it should be able to run \"Our First Turtle Program\"", function (done) {
         var cctx = c.getContext("2d"),
             code = "import turtle               # allows us to use the turtles library\nwn = turtle.Screen()        # creates a graphics window\nalex = turtle.Turtle()      # create a turtle named alex\nalex.forward(150/2)         # tell alex to move forward by 150 units\nalex.left(90)               # turn by 90 degrees\nalex.forward(75/2)          # complete the second side of a rectangle",
             refctx = ref.getContext("2d");
@@ -113,7 +120,8 @@ describe("Turtle", function () {
             done();
         });
     });
-    it("it should be able to run \"The second example\"", function (done) {
+    
+	it("it should be able to run \"The second example\"", function (done) {
         var cctx = c.getContext("2d"),
             code = "import turtle\n\nwn = turtle.Screen()\nwn.bgcolor(\"lightgreen\")        # set the window background color\n\ntess = turtle.Turtle()\ntess.color(\"blue\")              # make tess blue\ntess.pensize(3)                 # set the width of her pen\n\ntess.forward(50)\ntess.left(120)\ntess.forward(50)\n\nwn.exitonclick()                # wait for a user click on the canvas",
             refctx = ref.getContext("2d");
@@ -124,18 +132,19 @@ describe("Turtle", function () {
             done();
         });
     });
-//    it("it should be able to run \"A Herd of Turtles\"", function (done) {
-//        var cctx = c.getContext("2d"),
-//            code = "import turtle\nwn = turtle.Screen()             # Set up the window and its attributes\nwn.bgcolor(\"lightgreen\")\n\n\ntess = turtle.Turtle()           # create tess and set some attributes\ntess.color(\"hotpink\")\ntess.pensize(5)\n\nalex = turtle.Turtle()           # create alex\n\ntess.forward(80)                 # Let tess draw an equilateral triangle\ntess.left(120)\ntess.forward(80)\ntess.left(120)\ntess.forward(80)\ntess.left(120)                   # complete the triangle\n\ntess.right(180)                  # turn tess around\ntess.forward(80)                 # move her away from the origin\n\nalex.forward(50)                 # make alex draw a square\nalex.left(90)\nalex.forward(50)\nalex.left(90)\nalex.forward(50)\nalex.left(90)\nalex.forward(50)\nalex.left(90)\n\nwn.exitonclick()\n",
-//            refctx = ref.getContext("2d");
-//        loadImage("data:image/png;base64,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");
-//        Sk.importMainWithBody("", false, code);
-//        TurtleGraphics.doneDelegates.push(function () {
-//            expect(cctx).toImageDiffEqual(refctx, 16);
-//            done();
-//        });
-//    });
-//    
+
+	it("it should be able to draw \"A herd of turtles\"", function (done) {
+		var cctx = c.getContext("2d"),
+			code = "import turtle\nwn = turtle.Screen()             # Set up the window and its attributes\nwn.bgcolor(\"lightgreen\")\n\n\ntess = turtle.Turtle()           # create tess and set some attributes\ntess.color(\"hotpink\")\ntess.pensize(5)\n\nalex = turtle.Turtle()           # create alex\n\ntess.forward(80)                 # Let tess draw an equilateral triangle\ntess.left(120)\ntess.forward(80)\ntess.left(120)\ntess.forward(80)\ntess.left(120)                   # complete the triangle\n\ntess.right(180)                  # turn tess around\ntess.forward(80)                 # move her away from the origin\n\nalex.forward(50)                 # make alex draw a square\nalex.left(90)\nalex.forward(50)\nalex.left(90)\nalex.forward(50)\nalex.left(90)\nalex.forward(50)\nalex.left(90)\n",
+			refctx = ref.getContext("2d");
+		loadImage("data:image/png;base64,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");
+		TurtleGraphics.doneDelegates.push(function () {
+			expect(cctx).toImageDiffEqual(refctx, 16);
+			done();
+		});
+		Sk.importMainWithBody("", false, code);
+	});
+    
     it("it should be able to run \"Iteration Simplifies our Turtle Program\"", function (done) {
         var cctx = c.getContext("2d"),
             code = "import turtle            #set up alex\nwn = turtle.Screen()\nalex = turtle.Turtle()\n\nfor i in [0,1,2,3]:      #repeat four times\n    alex.forward(50)\n    alex.left(90)\n\nwn.exitonclick()",
@@ -182,11 +191,12 @@ describe("Turtle (non-animated)", function () {
 		},
 		c,
 		ref = document.createElement('canvas'),
-		loadImage = function (file) {
+		loadImage = function (file, done) {
 			var a = new Image();
 			a.src = file;
 			a.addEventListener('load', function () {
 				ref.getContext('2d').drawImage(a, 0, 0);
+				if (done) { done(); }
 			});
 		};
 
@@ -216,7 +226,6 @@ describe("Turtle (non-animated)", function () {
 		ref.width = "200";
 		ref.height = "200";
 		document.body.appendChild(c);
-		Sk.canvas = "turtlecanvas";
 	});
 
 	afterEach(function () {
@@ -227,11 +236,20 @@ describe("Turtle (non-animated)", function () {
 		var cctx = c.getContext("2d"),
 			code = "import turtle\nt = turtle.Turtle()\nc = [ \"red\", \"green\", \"blue\", \"yellow\" ]\nfor color in c:\n    t.color(color)\n    t.forward(50)\n    t.left(360/len(c))",
 			refctx = ref.getContext("2d");
-		loadImage("data:image/png;base64,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");
-		Sk.importMainWithBody("", false, code);
-		TurtleGraphics.doneDelegates.push(function () {
-			//1 for tolerance
+		loadImage("data:image/png;base64,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", function() {
+    		Sk.importMainWithBody("", false, code);
 			expect(cctx).toImageDiffEqual(refctx, 1);
+			done();
+		});
+	});
+	
+	it("should be able to go foward 50 px", function (done) {
+		var cctx = c.getContext("2d"),
+			code = "import turtle\nt = turtle.Turtle()\nt.forward(50)",
+			refctx = ref.getContext("2d");
+		loadImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAFiElEQVR4Xu3V21EcUBDEUIgIyD8Im4zAAcBH8yiV5/A/u32lVfH44A8BBD4k8IgNAgh8TEAgfh0IfEJAIH4eCAjEbwCBjYD/IBs3V0cICOSIaM/cCAhk4+bqCAGBHBHtmRsBgWzcXB0hIJAjoj1zIyCQjZurIwQEckS0Z24EBLJxc3WEgECOiPbMjYBANm6ujhAQyBHRnrkREMjGzdURAgI5ItozNwIC2bi5OkJAIEdEe+ZGQCAbN1dHCAjkiGjP3AgIZOPm6ggBgRwR7ZkbAYFs3FwdISCQI6I9cyMgkI2bqyMEBHJEtGduBASycXN1hIBAjoj2zI2AQDZuro4QEMgR0Z65ERDIxs3VEQICOSLaMzcCAtm4uTpCQCBHRHvmRkAgGzdXRwgI5Ihoz9wICGTj5uoIAYEcEe2ZGwGBbNxcHSEgkCOiPXMjIJCNm6sjBARyRLRnbgQEsnFzdYSAQI6I9syNgEA2bq6OEBDIEdGeuREQyMbN1RECAjki2jM3AgLZuLk6QkAgR0R75kZAIBs3V0cICOSIaM/cCAhk4+bqCAGBHBHtmRsBgWzcXB0hIJAjoj1zIyCQjZurIwQEckS0Z24EBLJxc3WEgECOiPbMjYBANm6ujhAQyBHRnrkREMjGzdURAgI5ItozNwIC2bi5OkJAIEdEe+ZGQCAbN1dHCAjkiGjP3AgIZOPm6ggBgRwR7ZkbAYFs3FwdISCQI6I9cyMgkI2bqyMEBHJEtGduBASycXN1hIBAjoj2zI2AQDZuro4QEMgR0Z65ERDIxs3VEQICOSLaMzcCAtm4uTpCQCBHRHvmRkAgGzdXRwgI5Ihoz9wICGTj5uoIAYEcEe2ZGwGBbNxcHSEgkCOiPXMjIJCNm6sjBARyRLRnbgQEsnFzdYSAQI6I9syNgEA2bq6OEBDIEdGeuREQyMbN1RECAjki2jM3AgLZuP3U1Z/3D37+qQ//5c/9+/59L7/8nd/+dQL5dqRf+sB/P6qnL31C5/j1f4hdIJ0flCVBAgIJSjGpQ0AgHReWBAkIJCjFpA4BgXRcWBIkIJCgFJM6BATScWFJkIBAglJM6hAQSMeFJUECAglKMalDQCAdF5YECQgkKMWkDgGBdFxYEiQgkKAUkzoEBNJxYUmQgECCUkzqEBBIx4UlQQICCUoxqUNAIB0XlgQJCCQoxaQOAYF0XFgSJCCQoBSTOgQE0nFhSZCAQIJSTOoQEEjHhSVBAgIJSjGpQ0AgHReWBAkIJCjFpA4BgXRcWBIkIJCgFJM6BATScWFJkIBAglJM6hAQSMeFJUECAglKMalDQCAdF5YECQgkKMWkDgGBdFxYEiQgkKAUkzoEBNJxYUmQgECCUkzqEBBIx4UlQQICCUoxqUNAIB0XlgQJCCQoxaQOAYF0XFgSJCCQoBSTOgQE0nFhSZCAQIJSTOoQEEjHhSVBAgIJSjGpQ0AgHReWBAkIJCjFpA4BgXRcWBIkIJCgFJM6BATScWFJkIBAglJM6hAQSMeFJUECAglKMalDQCAdF5YECQgkKMWkDgGBdFxYEiQgkKAUkzoEBNJxYUmQgECCUkzqEBBIx4UlQQICCUoxqUNAIB0XlgQJCCQoxaQOAYF0XFgSJCCQoBSTOgQE0nFhSZCAQIJSTOoQEEjHhSVBAgIJSjGpQ0AgHReWBAkIJCjFpA4BgXRcWBIkIJCgFJM6BATScWFJkIBAglJM6hAQSMeFJUECAglKMalDQCAdF5YECQgkKMWkDgGBdFxYEiQgkKAUkzoEBNJxYUmQgECCUkzqEBBIx4UlQQICCUoxqUNAIB0XlgQJCCQoxaQOAYF0XFgSJCCQoBSTOgQE0nFhSZCAQIJSTOoQEEjHhSVBAgIJSjGpQ0AgHReWBAm8AWn6BMka20FaAAAAAElFTkSuQmCC", function () {
+			Sk.importMainWithBody("", false, code);
+			expect(cctx).toImageDiffEqual(refctx);
 			done();
 		});
 	});

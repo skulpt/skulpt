@@ -43,8 +43,6 @@
     <script type="application/javascript" src="../../dist/skulpt-stdlib.js"></script>
     <script src="../../doc/static/codemirror.js" type="application/javascript"></script>
     <script src="../../doc/static/python.js"></script>
-    <script src="vendor/FileSaver/FileSaver.js"></script>
-    <script src="vendor/canvasToBlob/toBlob.js"></script>
     <link rel="stylesheet" type="text/css" media="all" href="../../doc/static/codemirror.css">
     <link rel="stylesheet" type="text/css" media="all" href="../../doc/static/solarized.css">
 </head>
@@ -57,6 +55,12 @@
     <p>
         Testname: <input type="text" id="testname">
     </p>
+	<p>
+		<div>
+			<label for="animate">animate:</label> <input type="radio" id="animate" name="animate">
+			<label for="animate2">don't animate:</label> <input type="radio" id="animate2" name="animate">
+		</div>
+	</p>
     <div id="example1">
         <form>
             <textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
@@ -96,18 +100,27 @@ t = turtle.Turtle()</textarea>
 
         function save() {
             var canvas = document.getElementById("example1_canvas"),
-                imgData = canvas.toDataURL();
+                imgData = canvas.toDataURL(),
+				noanim = document.getElementById("animate2").checked;
             
             outf('it("' + document.getElementById("testname").value + '", function (done) {\n');
             outf('    var cctx = c.getContext("2d"),\n');
             outf('        code = "' + window.Cm.getValue().replace(/\n/g,'\\n').replace(/\"/g, '\\"') + '",\n');
             outf('        refctx = ref.getContext("2d");\n');
-            outf('    loadImage("' + imgData + '");\n');
-            outf('    Sk.importMainWithBody("<stdin>", false, code);\n');
-            outf('    TurtleGraphics.doneDelegates.push(function () {\n');
-            outf('        expect(cctx).toImageDiffEqual(refctx);\n');
-            outf('        done();\n');
-            outf('    });\n');
+            if (!noanim) { 
+				outf('    loadImage("' + imgData + '");\n');
+				outf('    TurtleGraphics.doneDelegates.push(function () {\n');
+				outf('        expect(cctx).toImageDiffEqual(refctx);\n');
+				outf('        done();\n');
+				outf('    });\n');
+				outf('    Sk.importMainWithBody("<stdin>", false, code);\n');
+			} else {
+				outf('    loadImage("' + imgData + '", function () {\n');
+				outf('        Sk.importMainWithBody("<stdin>", false, code);\n');
+				outf('        expect(cctx).toImageDiffEqual(refctx);\n');
+				outf('        done();\n');
+				outf('    });\n');
+			}
             outf('});');
         }
 
@@ -121,7 +134,18 @@ t = turtle.Turtle()</textarea>
             //var prog = document.getElementById(myDiv + "_code").value;
             var mypre = document.getElementById(myDiv + "_pre");
             mypre.innerHTML = '';
-            Sk.canvas = myDiv + "_canvas";
+			Sk.canvas = myDiv + "_canvas";
+			
+			if (document.getElementById("animate2").checked) {
+				TurtleGraphics = {
+					defaults: {
+						animate: false,
+						canvasID: Sk.canvas,
+						degrees: true
+					}
+				}
+			}
+			
             var can = document.getElementById(Sk.canvas);
             can.style.display = 'block';
 
@@ -139,12 +163,12 @@ t = turtle.Turtle()</textarea>
                 read: builtinRead
             });
 
-            try {
+            //try {
                 Sk.importMainWithBody("<stdin>", false, window.Cm.getValue());
 
-            } catch (e) {
-                alert(e);
-            }
+            //} catch (e) {
+            //    alert(e);
+           // }
         }
     </script>
 </body>

@@ -32,7 +32,6 @@ if (!TurtleGraphics) {
 
     // Create a 3d Vector class for manipulating turtle heading, and position.
     function Vector(x, y, z) {
-        //debugger;
         var i;
         if ((typeof x).toLowerCase() === 'number') {
             Array.prototype.push.call(this, x);
@@ -621,11 +620,7 @@ if (!TurtleGraphics) {
     };
     // Constructor for Turtle objects
     function Turtle(opt) {
-        if (arguments.length >= 1) {
-            this.initialize(opt);
-        } else {
-            this.initialize();
-        }
+        this.initialize(opt);
         TurtleGraphics.turtleList.push(this);
     }
     Turtle.prototype.go_home = function () {
@@ -767,7 +762,7 @@ if (!TurtleGraphics) {
         
         // Initialize the turtle.
         var options = {}, ctx = null;
-        if (arguments.length >= 1) {
+        if (opt) {
             options = opt;
         }
         this.canvasID = TurtleGraphics.defaults.canvasID;
@@ -892,7 +887,7 @@ if (!TurtleGraphics) {
         } else {
             newposition = new Vector([nx, ny, 0]);
         }
-        if (this.pen) {
+		if (this.pen) {
             this.draw_line(newposition);
         } else {
             if (!this.animate) {
@@ -1444,6 +1439,10 @@ var $builtinmodule = function (name) {
 							}
 						}]
 					};
+				} else if (Sk.canvas) {
+					if (Sk.canvas != TurtleGraphics.defaults.canvasID) {
+						TurtleGraphics.defaults.canvasID = Sk.canvas;
+					}
 				}
                 self.theTurtle = new TurtleGraphics.Turtle();
             });
