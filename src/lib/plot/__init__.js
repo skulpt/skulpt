@@ -7,8 +7,8 @@ var $builtinmodule = function(name)
       'motor_command': {},
       'trajectory': {},
       'points': {},
-      'covariance_2d': {},
-      'covariance_3d': {},
+      'covariance2d': {},
+      'covariance3d': {},
     }
   };
 
@@ -78,19 +78,17 @@ var $builtinmodule = function(name)
   });
 
   mod.plot_covariance_2d = new Sk.builtin.func(function(name, cov) {
-    Sk.builtin.pyCheckArgs('plot_covariance_2d', arguments, 2);
+    Sk.builtin.pyCheckArgs('plot_covariance_2d', arguments, 2, 2);
     Sk.builtin.pyCheckType('name', 'string', Sk.builtin.checkString(name));
 
-    // TODO:
-    // addPlotValue('covariance_2d', name.v, value.v);
+    addPlotValue('covariance2d', name.v, cov.v.toArray());
   });
 
   mod.plot_covariance_3d = new Sk.builtin.func(function(name, cov) {
-    Sk.builtin.pyCheckArgs('plot_covariance_3d', arguments, 2);
+    Sk.builtin.pyCheckArgs('plot_covariance_3d', arguments, 2, 2);
     Sk.builtin.pyCheckType('name', 'string', Sk.builtin.checkString(name));
 
-    // TODO:
-    // addPlotValue('covariance_3d', name.v, value.v);
+    addPlotValue('covariance3d', name.v, cov.v.toArray());
   });
 
   return mod;
