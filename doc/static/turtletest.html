@@ -131,7 +131,7 @@ function runit(myDiv) {
     var mypre = document.getElementById(myDiv+"_pre");
     mypre.innerHTML = '';
     Sk.canvas = myDiv+"_canvas";
-    TurtleGraphics = { fadeOnExit: true };
+    // TurtleGraphics = { fadeOnExit: true };
     var can = document.getElementById(Sk.canvas);
     can.style.display = 'block';
     if (can) {
@@ -145,12 +145,12 @@ function runit(myDiv) {
     Sk.pre = myDiv+"_pre";
     Sk.configure({ output:outf, read: builtinRead });
 	
-	TurtleGraphics = {
-		defaults: {
-			animate: false,
-			canvasID: Sk.canvas,
-		}
-	};
+//	TurtleGraphics = {
+//		defaults: {
+//			animate: true,
+//			canvasID: Sk.canvas,
+//		}
+//	};
    
 //    try {
         Sk.importMainWithBody("<stdin>",false,prog);

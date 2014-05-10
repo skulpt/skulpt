@@ -1419,6 +1419,24 @@ if (!TurtleGraphics) {
 var $builtinmodule = function (name) {
     'use strict';
     var mod = {},
+		initializeTurtlegraphics = function() {
+			if (!TurtleGraphics) { TurtleGraphics = {}; }
+			if (!TurtleGraphics.defaults) { 
+				TurtleGraphics.defaults = { 
+					animate: true,
+					canvasID: Sk.canvas,
+					degrees: true
+				}
+			} else if (Sk.canvas) {
+				TurtleGraphics.defaults.canvasID = Sk.canvas;
+			}
+			if (!TurtleGraphics.doneDelegates) { TurtleGraphics.doneDelegates = []; }
+		},
+		removeDisabled = function () {
+			if (Sk.runButton) {
+				Sk.runButton.removeAttribute('disabled');
+			}
+		},
         checkArgs = function (expected, actual, func) {
             if (actual !== expected) {
                 throw new Sk.builtin.TypeError(func + ' takes exactly ' + expected + ' positional argument (' + actual + ' given)');
@@ -1426,23 +1444,9 @@ var $builtinmodule = function (name) {
         },
         turtle = function ($gbl, $loc) {
             $loc.__init__ = new Sk.builtin.func(function (self) {
-				if (!TurtleGraphics) {
-					TurtleGraphics = { 
-						defaults: {
-							canvasID: Sk.canvas,
-							animate: true,
-							degrees: true
-						},
-						doneDelegates: [function () {
-							if (Sk.runButton) {
-								Sk.runButton.removeAttribute('disabled');
-							}
-						}]
-					};
-				} else if (Sk.canvas) {
-					if (Sk.canvas != TurtleGraphics.defaults.canvasID) {
-						TurtleGraphics.defaults.canvasID = Sk.canvas;
-					}
+				initializeTurtlegraphics();
+				if (TurtleGraphics.doneDelegates.indexOf(removeDisabled) === -1){
+					TurtleGraphics.doneDelegates.push(removeDisabled);
 				}
                 self.theTurtle = new TurtleGraphics.Turtle();
             });
@@ -1755,13 +1759,7 @@ var $builtinmodule = function (name) {
         },
         screen = function ($gbl, $loc) {
             $loc.__init__ = new Sk.builtin.func(function (self) {
-				if (!TurtleGraphics.defaults) {
-					TurtleGraphics.defaults = {
-						canvasID: Sk.canvas,
-						animate: true,
-						degrees: true
-					};
-				}
+				initializeTurtlegraphics();
                 var currentCanvas = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
                 if (currentCanvas === undefined) {
                     self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
