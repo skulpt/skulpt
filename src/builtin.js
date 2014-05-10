@@ -1050,6 +1050,69 @@ Sk.builtin.sorted.co_varnames = ['cmp', 'key', 'reverse'];
 Sk.builtin.sorted.$defaults = [Sk.builtin.none, Sk.builtin.none, false];
 Sk.builtin.sorted.co_numargs = 4;
 
+Sk.builtin.issubclass = function issubclass(c1, c2) {
+    Sk.builtin.pyCheckArgs("issubclass", arguments, 2, 2);
+    if (!Sk.builtin.checkClass(c2) && !(c2 instanceof Sk.builtin.tuple)) {
+        throw new Sk.builtin.TypeError("issubclass() arg 2 must be a classinfo, type, or tuple of classes and types");
+    }
+
+    //print("c1 name: " + c1.tp$name);
+
+    if (c2 === Sk.builtin.int_.prototype.ob$type) {
+        return true;
+    }
+
+    if (c2 === Sk.builtin.float_.prototype.ob$type) {
+        return true;
+    }
+
+    if (c2 === Sk.builtin.none.prototype.ob$type) {
+        return true;
+    }
+
+    // Normal case
+    if (c1.ob$type === c2) return true;
+
+    var issubclass_internal = function(klass, base)
+    {
+        if (klass === base) return true;
+        if (klass['$d'] === undefined) return false;
+        var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
+        for (var i = 0; i < bases.v.length; ++i)
+        {
+            if (issubclass_internal(bases.v[i], base))
+                return true;
+        }
+        return false;
+    };
+
+    // Handle tuple type argument
+    if (c2 instanceof Sk.builtin.tuple)
+    {
+        for (var i = 0; i < c2.v.length; ++i)
+        {
+            if (Sk.builtin.issubclass(c1, c2.v[i]))
+                return true;
+        }
+        return false;
+    }
+
+    return issubclass_internal(c1, c2);
+
+ }
+
+Sk.builtin.globals = function globals() { 
+    var ret = new Sk.builtin.dict([]);
+    for (var i in Sk['globals']) {
+        ret.mp$ass_subscript(new Sk.builtin.str(i),Sk['globals'][i])
+    }
+    
+    return ret;
+
+}
+
+
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
@@ -1058,9 +1121,8 @@ Sk.builtin.divmod = function divmod() { throw new Sk.builtin.NotImplementedError
 Sk.builtin.execfile = function execfile() { throw new Sk.builtin.NotImplementedError("execfile is not yet implemented")}
 Sk.builtin.format = function format() { throw new Sk.builtin.NotImplementedError("format is not yet implemented")}
 Sk.builtin.frozenset = function frozenset() { throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented")}
-Sk.builtin.globals = function globals() { throw new Sk.builtin.NotImplementedError("globals is not yet implemented")}
+
 Sk.builtin.help = function help() { throw new Sk.builtin.NotImplementedError("help is not yet implemented")}
-Sk.builtin.issubclass = function issubclass() { throw new Sk.builtin.NotImplementedError("issubclass is not yet implemented")}
 Sk.builtin.iter = function iter() { throw new Sk.builtin.NotImplementedError("iter is not yet implemented")}
 Sk.builtin.locals = function locals() { throw new Sk.builtin.NotImplementedError("locals is not yet implemented")}
 Sk.builtin.memoryview = function memoryview() { throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented")}

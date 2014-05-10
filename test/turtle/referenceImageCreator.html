@@ -1,0 +1,176 @@
+<html>
+<head>
+    <script type="text/javascript" src="../../support/closure-library/closure/goog/base.js"></script>
+    <script type="text/javascript" src="../../support/closure-library/closure/goog/deps.js"></script>
+    <script type="text/javascript" src="../../src/env.js"></script>
+    <script type="text/javascript" src="../../src/builtin.js"></script>
+    <script type="text/javascript" src="../../src/errors.js"></script>
+    <script type="text/javascript" src="../../src/type.js"></script>
+    <script type="text/javascript" src="../../src/object.js"></script>
+    <script type="text/javascript" src="../../src/bool.js"></script>
+    <script type="text/javascript" src="../../src/function.js"></script>
+    <script type="text/javascript" src="../../src/native.js"></script>
+    <script type="text/javascript" src="../../src/method.js"></script>
+    <script type="text/javascript" src="../../src/misceval.js"></script>
+    <script type="text/javascript" src="../../src/abstract.js"></script>
+    <script type="text/javascript" src="../../src/mergesort.js"></script>
+    <script type="text/javascript" src="../../src/list.js"></script>
+    <script type="text/javascript" src="../../src/str.js"></script>
+    <script type="text/javascript" src="../../src/tuple.js"></script>
+    <script type="text/javascript" src="../../src/dict.js"></script>
+    <script type="text/javascript" src="../../src/biginteger.js"></script>
+    <script type="text/javascript" src="../../src/number.js"></script>
+    <script type="text/javascript" src="../../src/long.js"></script>
+    <script type="text/javascript" src="../../src/int.js"></script>
+    <script type="text/javascript" src="../../src/float.js"></script>
+    <script type="text/javascript" src="../../src/slice.js"></script>
+    <script type="text/javascript" src="../../src/set.js"></script>
+    <script type="text/javascript" src="../../src/module.js"></script>
+    <script type="text/javascript" src="../../src/generator.js"></script>
+    <script type="text/javascript" src="../../src/file.js"></script>
+    <script type="text/javascript" src="../../src/ffi.js"></script>
+    <script type="text/javascript" src="../../src/enumerate.js"></script>
+    <script type="text/javascript" src="../../src/tokenize.js"></script>
+    <script type="text/javascript" src="../../gen/parse_tables.js"></script>
+    <script type="text/javascript" src="../../src/parser.js"></script>
+    <script type="text/javascript" src="../../gen/astnodes.js"></script>
+    <script type="text/javascript" src="../../src/ast.js"></script>
+    <script type="text/javascript" src="../../src/symtable.js"></script>
+    <script type="text/javascript" src="../../src/compile.js"></script>
+    <script type="text/javascript" src="../../src/import.js"></script>
+    <script type="text/javascript" src="../../src/timsort.js"></script>
+    <script type="text/javascript" src="../../src/builtindict.js"></script>
+    <script type="application/javascript" src="../../dist/skulpt-stdlib.js"></script>
+    <script src="../../doc/static/codemirror.js" type="application/javascript"></script>
+    <script src="../../doc/static/python.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="../../doc/static/codemirror.css">
+    <link rel="stylesheet" type="text/css" media="all" href="../../doc/static/solarized.css">
+</head>
+
+<body>
+    <h3>Saving a reference image.</h3>
+    <p>
+        To make a test for the turtle module you can use this page to save a reference image. 
+    </p>
+    <p>
+        Testname: <input type="text" id="testname">
+    </p>
+	<p>
+		<div>
+			<label for="animate">animate:</label> <input type="radio" id="animate" name="animate">
+			<label for="animate2">don't animate:</label> <input type="radio" id="animate2" name="animate">
+		</div>
+	</p>
+    <div id="example1">
+        <form>
+            <textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
+import turtle
+t = turtle.Turtle()</textarea>
+            <button onclick="runit('example1')" type="button">Run</button>
+            <button onclick="save()" type="button">Save</button>
+        </form>
+
+        <canvas id="example1_canvas" height="200" width="200" style="border-style: solid; display: none"></canvas>
+
+        <pre id="example1_pre"></pre>
+
+    </div>
+
+    <script type="text/javascript">
+        function outf(text) {
+            var mypre = document.getElementById(Sk.pre);
+            mypre.innerHTML = mypre.innerHTML + text;
+        }
+
+        window.Cm = CodeMirror.fromTextArea(document.getElementById("example1_code"), {
+            parserfile: ["parsepython.js"],
+            autofocus: true,
+            theme: "solarized dark",
+            lineNumbers: true,
+            textWrapping: false,
+            indentUnit: 4,
+            height: "160px",
+            fontSize: "9pt",
+            autoMatchParens: true,
+            parserConfig: {
+                'pythonVersion': 2,
+                'strictErrors': true
+            }
+        });
+
+        function save() {
+            var canvas = document.getElementById("example1_canvas"),
+                imgData = canvas.toDataURL(),
+				noanim = document.getElementById("animate2").checked;
+            
+            outf('it("' + document.getElementById("testname").value + '", function (done) {\n');
+            outf('    var cctx = c.getContext("2d"),\n');
+            outf('        code = "' + window.Cm.getValue().replace(/\n/g,'\\n').replace(/\"/g, '\\"') + '",\n');
+            outf('        refctx = ref.getContext("2d");\n');
+            if (!noanim) { 
+				outf('    loadImage("' + imgData + '");\n');
+				outf('    TurtleGraphics.doneDelegates.push(function () {\n');
+				outf('        expect(cctx).toImageDiffEqual(refctx);\n');
+				outf('        done();\n');
+				outf('    });\n');
+				outf('    Sk.importMainWithBody("<stdin>", false, code);\n');
+			} else {
+				outf('    loadImage("' + imgData + '", function () {\n');
+				outf('        Sk.importMainWithBody("<stdin>", false, code);\n');
+				outf('        expect(cctx).toImageDiffEqual(refctx);\n');
+				outf('        done();\n');
+				outf('    });\n');
+			}
+            outf('});');
+        }
+
+        function builtinRead(x) {
+            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                throw "File not found: '" + x + "'";
+            return Sk.builtinFiles["files"][x];
+        }
+
+        function runit(myDiv) {
+            //var prog = document.getElementById(myDiv + "_code").value;
+            var mypre = document.getElementById(myDiv + "_pre");
+            mypre.innerHTML = '';
+			Sk.canvas = myDiv + "_canvas";
+			
+			if (document.getElementById("animate2").checked) {
+				TurtleGraphics = {
+					defaults: {
+						animate: false,
+						canvasID: Sk.canvas,
+						degrees: true
+					}
+				}
+			}
+			
+            var can = document.getElementById(Sk.canvas);
+            can.style.display = 'block';
+
+            if (can) {
+                can.width = can.width;
+                if (Sk.tg) {
+                    Sk.tg.canvasInit = false;
+                    Sk.tg.turtleList = [];
+                }
+            }
+
+            Sk.pre = myDiv+"_pre";
+            Sk.configure({
+                output: outf,
+                read: builtinRead
+            });
+
+            //try {
+                Sk.importMainWithBody("<stdin>", false, window.Cm.getValue());
+
+            //} catch (e) {
+            //    alert(e);
+           // }
+        }
+    </script>
+</body>
+
+</html>
