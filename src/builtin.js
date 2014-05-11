@@ -219,7 +219,7 @@ Sk.builtin.min = function min()
 {
     Sk.builtin.pyCheckArgs("min", arguments, 1);
 
-    args = Sk.misceval.arrayFromArguments(arguments);
+    var args = Sk.misceval.arrayFromArguments(arguments);
     var lowest = args[0];
     for (var i = 1; i < args.length; ++i)
     {
@@ -233,7 +233,7 @@ Sk.builtin.max = function max()
 {
     Sk.builtin.pyCheckArgs("max", arguments, 1);
 
-    args = Sk.misceval.arrayFromArguments(arguments);
+    var args = Sk.misceval.arrayFromArguments(arguments);
     var highest = args[0];
     for (var i = 1; i < args.length; ++i)
     {
