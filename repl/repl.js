@@ -1,4 +1,10 @@
-Sk.configure({ output: write, read: read, systemexit: true, retainglobals: true });
+Sk.configure({ 
+	output: write, 
+	read: read, 
+	systemexit: true, 
+	retainglobals: true,
+	inputfun: readline
+});
 
 var compilableLines = [],
     //finds lines starting with "print"
