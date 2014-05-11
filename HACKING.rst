@@ -15,8 +15,8 @@ When you run the program in the browser the javascript part is 'evaled' by javas
 * abstract.js  -- contains lots of abstract function defs 
 * biginteger.js  -- implements Python's long integer type
 * bool.js
-* builtin.js  -- builtin functions: range, min, max, etc. are defined here
-* builtindict.js -- Provides a mapping from the standard Python name to the internal name in builtin.js
+* skulpt-stdlib.js  -- builtin functions: range, min, max, etc. are defined here
+* builtindict.js -- Provides a mapping from the standard Python name to the internal name in skulpt-stdlib.js
 * dict.js
 * enumerate.js
 * env.js
@@ -151,7 +151,7 @@ For now lets concentrate on the parts of the code that were generated specifical
 Naming Conventions
 ------------------
 
-* ``Sk``   The ``Sk`` object contains all of the core Skulpt objects and functions.  Its pretty easy to get from Sk.blah to its source.  Usually you will see something like ``Sk.builtin.foo``  which indicates that you should look in ``builtin.js`` to find the source for foo.  Similarly ``Sk.misceval.callsim`` tells you that you should look in ``misceval.js`` for the callsim function.
+* ``Sk``   The ``Sk`` object contains all of the core Skulpt objects and functions.  Its pretty easy to get from Sk.blah to its source.  Usually you will see something like ``Sk.builtin.foo``  which indicates that you should look in ``skulpt-stdlib.js`` to find the source for foo.  Similarly ``Sk.misceval.callsim`` tells you that you should look in ``misceval.js`` for the callsim function.
 * $xxx  represents a compiler generated variable
 * tp$xxx   These things represent the ``magic methods`` for an object that are defined by the Skulpt system itself.  So for example ``__str__`` is called ``tp$str``.  I always think of tp as a mnemonic for type.
 * mp$xxx  similar to tp but for sequences.  As best as I know these are almost always related to subscripts.
@@ -332,9 +332,329 @@ Where the important thing is to notice how the call is formatted after it is com
 
 In the case of a bug fix, you would do a similar thing, except that the line where your get an exception is likely to be closer to helping you figure out your next steps.
 
+HOW TO
+======
 
-Development Tools
------------------
+This section is for providing specific examples, or documentation on how to do a specific task.  Suggestions for additional tasks are welcome!
+
+Default Parameters
+------------------
+
+How do I add a function with named parameters with default values?
+
+The key to this is that as the author of either a builtin function, or a method in a module, you need to add some meta data to the function definition.  Here's an example of how we added the named parameters to the ``sorted`` function.
+
+.. code-block:: javascript
+
+   Sk.builtin.sorted = function sorted(iterable, cmp, key, reverse) {
+   
+   /* body of sorted here */
+   }
+   Sk.builtin.sorted.co_varnames = ['cmp', 'key', 'reverse'];
+   Sk.builtin.sorted.$defaults = [Sk.builtin.none, Sk.builtin.none, false];
+   Sk.builtin.sorted.co_numargs = 4;
+   
+
+kwargs
+------
+
+How do I add a function with ``**kwargs``?
+
+Again the idea comes down to adding some meta-data after the function is defined.  Here is an example of adding ``**kwargs`` to a method in a module:
+
+.. code-block:: javascript
+
+    var plotk_f = function(kwa)
+        {
+            Sk.builtin.pyCheckArgs("plotk", arguments, 0, Infinity, true, false)
+            args = new Sk.builtins['tuple'](Array.prototype.slice.call(arguments, 1)); /*vararg*/
+            kwargs = new Sk.builtins['dict'](kwa);
+
+            return new Sk.builtins['tuple']([args, kwargs]);
+        };
+        plotk_f['co_kwargs'] = true;
+        mod.plotk = new Sk.builtin.func(plotk_f);
+
+
+
+Adding a Module
+---------------
+
+This section is from a blog post I made in 2011, slightly updated.
+
+So, here's the deal.  skulpt relies on two javascript files the first is skulpt.min.js  and skulpt-stdlib.js  A very minimal installation only uses skulpt.min.js, whereas if you want to use any modules they are in skulpt-stdlib.js.  Looking around the distribution you will not immediately find skulpt.min.js because you need to build it. You get a sculpt.js file by using the m script that comes with the distribution.  running m --help will give you the full list of commands, but the two that you probably most care about are m dist and m docbi The dist command builds both skulpt.min.js and skulpt-stdlib.js  docbi builds skulpt-stdlib.js and puts a new copy of it in the doc/static directory.
+Lets begin with a quick tour of the source tree:
+
+* src - contains the implementation of the Python interpreter
+
+* src/lib - has the module implementations of webgl and goog.  This is where turtle will live and any other modules I implement along the way.
+
+* doc - This directory contains a google app engine application and is what you see on skulpt.org There are a couple of important files to check out in here.  One of them is doc/static/env/editor.js  This is the code that ties together the interactive editor on the home page with the skulpt interpreter and the codemirror editor.  If you know how to build a google app engine app then this directory makes sense.  One thing about the home page is that it is not set up to use any of the modules.  The modules are used in the more advanced ide, which you can find in doc/ide/static.  I'm going to tell you how to add modules to the simpler editor later in this article.
+
+* test - this directory contains a bunch of files for testing the implementation in a batch mode.  These tests are run whenever you run m dist, or m test.
+
+* dist - This directory gets created and populated when you run the m dist command.  It contains the built and compressed versions of skulpt.min.js and skulpt-stdlib.js
+
+
+To illustrate how to make use of modules, here's an extended version of my earlier hello world style example.
+
+.. code-block:: html
+
+    <html>
+    <head>
+    <script src="skulpt.min.js" type="text/javascript"></script>
+    <script src="skulpt-stdlib.js" type="text/javascript"></script>
+
+    </head>
+
+    <body>
+    <script type="text/javascript">
+    function outf(text) {
+       var mypre = document.getElementById("output");
+       mypre.innerHTML = mypre.innerHTML + text;
+    }
+
+    function builtinRead(x)
+    {
+        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+        return Sk.builtinFiles["files"][x];
+    }
+
+    function runit() {
+       var prog = document.getElementById("yourcode").value;
+       var mypre = document.getElementById("output");
+       mypre.innerHTML = '';
+       Sk.configure({output:outf,
+               read: builtinRead
+                  });
+       try {
+          Sk.importMainWithBody("<stdin>",false,prog);
+       } catch (e) {
+          alert(e);
+       }
+    }
+    </script>
+    <h3>Try This</h3>
+    <form>
+    <textarea edit_id="eta_5" id="yourcode">
+    print "Hello World"
+    </textarea>
+    <button onclick="runit()" type="button">Run</button>
+    </form>
+
+    <pre id="output"></pre>
+
+    </body>
+    </html>
+
+There are some important differences between this version, and the version and the non-module version.  First off, the call to Sk.configure contains another key value pair which sets up a specialized read function.  This is the function that is responsible for returning your module out of the large array of files that are contained in the skulpt-stdlib.js file.  You will see that all of the modules are contained in this one file, stored in a big JSON structure.  The extra key value pair is:
+read: builtinRead
+
+The read function is just for loading modules and is called when you do an import statement of some kind.  In this case the function accesses the variable builtinFiles which is created from the skulpt-stdlib.js file.  The other difference, of course, is that you have to include skulpt-stdlib.js in your html file.  Note that skulpt-stdlib.js must be included after skulpt.min.js
+
+Now as far as the module itself goes, the easiest thing to do is to start your module in the src/lib directory.  This way it will automatically get built and included in skulpt-stdlib.js.  If you don't put it there then you are going to have to modify the m script, specifically the docbi function in the m script to include your module.  Suppose that you want to have a module called bnm.test  Here's what you have to do.  First, you need to make a bnm directory under lib.  In this directory you will need to have either __init__.py or __init__.js or bnm.js to stand in for the bnm module.  There doesn't need to be anything in the file as long as it exists.  This is just like CPython by the way.  Then to make a test module you can either make a test directory and put all your javascript code in __init__.js or you can simply create a test.js file in the bnm directory.  Lets look at the test module.
+
+.. code-block:: javascript
+
+    var $builtinmodule = function(name)
+    {
+        var mod = {};
+        var myfact = function(n) {
+     if(n < 1) {
+         return 1;
+     } else {
+         return n * myfact(n-1);
+     }
+        }
+        mod.fact = new Sk.builtin.func(function(a) {
+     return myfact(a);
+        });
+        mod.Stack = Sk.misceval.buildClass(mod, function($gbl, $loc) {
+     $loc.__init__ = new Sk.builtin.func(function(self) {
+         self.stack = [];
+     });
+ 
+     $loc.push = new Sk.builtin.func(function(self,x) {
+         self.stack.push(x);
+     });
+     $loc.pop = new Sk.builtin.func(function(self) {
+         return self.stack.pop();
+     });
+        },
+        'Stack', []);
+
+
+        return mod;
+    }
+
+All modules start out with the $var builtinmodule = statement.
+This test module exposes a single method to the outside world, called fact, There are a couple of key functions for building up a module.  The Sk.builtin.func   call for adding functions to your module, and the Sk.misceval.buildClass method.  This test module defines a simple factorial function called fact, and a class called stack.  Here's a simple Python program that exercises the module:
+
+.. code-block:: python
+
+    import bnm.test
+    print 'starting'
+    print bnm.test.fact(10)
+    x = bnm.test.Stack()
+    x.push(1)
+    x.push(2)
+    print x.pop()
+    print 'done'
+
+Its not obvious, but the buildClass method takes four parameters:  globals, func, name, bases
+It seems that you always pass the mod object itself as the globals parameter, the func parameter is a function that represents the class object, the Name is the external name of the class, and bases presumably would be if the class is inheriting from another class.
+
+The Sk.builtin.func method creates a function.  For module creation we typically only have to worry about the one parameter, func, which is the javascript implementation of our Python function.  The method can also take a globals object and two closure objects.  Look at the comments in function.js if you want more explanation of how the builtin.func method works.
+
+Well, I think this should be enough to get you going.  Its worth repeating, if you made it this far, don't forget to call m docbi or m dist after you make changes in your module, its easy to get into the mode of thinking that the new javascript is automatically loaded.  But skulpt-stdlib.js is not automatically rebuilt!
+
+
+Debugging
+---------
+
+How do I use the debugger in the browser to help me debug my code?
+
+Easy, just add the statement:  ``debugger;`` to your code.  Now if you have the javscript deveoper tools open in the browser you will have it.
+
+If you want to start the debugger from a python function that you have written you can also add a debugger statement
+
+If you want to enable debugging generally for use with ``debugbrowser`` follow these handy instructions:
+
+* I make a new test using ./m nrt
+* then add a debugger; to the start of the statement at https://github.com/skulpt/skulpt/blob/master/src/import.js#L179 the line would like this: ``finalcode += "\ndebugger;" + co.funcname + "(" + namestr + ");";``
+* run ``./skulpt.py debugbrowser`` wait until all tests have run
+* startup the developer tools cmd+alt+i on a mac or F12 on a PC in chrome that is
+* run the test I added before and it stops right before you enter the compiled code!
+
+
+
+Development Workflow
+--------------------
+
+
+1. Make a fork of the repository on github. DO NOT simply clone http://github.com/bnmnetp/runestone. Make a Fork. If you don't know how to make a fork consult the documentation here: https://help.github.com/articles/fork-a-repo
+
+2.  Make a simple myabs.py file that contains a few lines of python that exercise the abs function. Say it looks like this:
+
+.. code-block:: python
+
+    print abs(-1.0)
+    print abs(24)
+
+3. Now go edit the source. To implement abs you would edit the builtin.js file. Now abs is pretty easy to add, because you can just have our skulpt version of abs call Math.abs So here it is
+
+.. code-block:: javascript
+
+    Sk.builtin.abs = function abs(x)
+    {
+        return Math.abs(x);
+    };
+
+You are not done yet, because builtin functions also have to be declared in the builtindict.js object as follows:
+
+.. code-block:: javascript
+
+    Sk.builtins = {
+    'range': Sk.builtin.range,
+    'len': Sk.builtin.len,
+    'min': Sk.builtin.min,
+    'max': Sk.builtin.max,
+    'sum': Sk.builtin.sum,
+    'abs': Sk.builtin.abs,
+    ...
+    }
+
+Now you can test your modifications from the command line by running:
+
+:: 
+
+    ./skulpt.py run myabs.py
+
+
+    -----
+    print abs(-1.0)
+    print abs(24)
+    -----
+    /*     1 */ var $scope0 = (function($modname) {
+    /*     2 */     var $blk = 0,
+    /*     3 */         $exc = [],
+    /*     4 */         $gbl = {},
+    /*     5 */         $loc = $gbl;
+    /*     6 */     $gbl.__name__ = $modname;
+    /*     7 */     while (true) {
+    /*     8 */         try {
+    /*     9 */             switch ($blk) {
+    /*    10 */             case 0:
+    /*    11 */                 /* --- module entry --- */
+    /*    12 */                 //
+    /*    13 */                 // line 1:
+    /*    14 */                 // print abs(-1.0)
+    /*    15 */                 // ^
+    /*    16 */                 //
+    /*    17 */                 Sk.currLineNo = 1;
+    /*    18 */                 Sk.currColNo = 0
+    /*    19 */
+    /*    20 */
+    /*    21 */                 Sk.currFilename = './myabs.py';
+    /*    22 */
+    /*    23 */                 var $loadname1 = $loc.abs !== undefined ? $loc.abs : Sk.misceval.loadname('abs', $gbl);
+    /*    24 */                 var $call2 = Sk.misceval.callsim($loadname1, Sk.numberFromStr('-1.0'));
+    /*    25 */                 Sk.misceval.print_(new Sk.builtins['str']($call2).v);
+    /*    26 */                 Sk.misceval.print_("\n");
+    /*    27 */                 //
+    /*    28 */                 // line 2:
+    /*    29 */                 // print abs(24)
+    /*    30 */                 // ^
+    /*    31 */                 //
+    /*    32 */                 Sk.currLineNo = 2;
+    /*    33 */                 Sk.currColNo = 0
+    /*    34 */
+    /*    35 */
+    /*    36 */                 Sk.currFilename = './myabs.py';
+    /*    37 */
+    /*    38 */                 var $loadname3 = $loc.abs !== undefined ? $loc.abs : Sk.misceval.loadname('abs', $gbl);
+    /*    39 */                 var $call4 = Sk.misceval.callsim($loadname3, Sk.numberFromStr('24'));
+    /*    40 */                 Sk.misceval.print_(new Sk.builtins['str']($call4).v);
+    /*    41 */                 Sk.misceval.print_("\n");
+    /*    42 */                 return $loc;
+    /*    43 */                 goog.asserts.fail('unterminated block');
+    /*    44 */             }
+    /*    45 */         } catch (err) {
+    /*    46 */             if ($exc.length > 0) {
+    /*    47 */                 $blk = $exc.pop();
+    /*    48 */                 continue;
+    /*    49 */             } else {
+    /*    50 */                 throw err;
+    /*    51 */             }
+    /*    52 */         }
+    /*    53 */     }
+    /*    54 */ });
+    1
+    24
+
+
+This is all incredibly useful information.
+
+First it demonstrates that your addition actually worked. You can see the output at the bottom.
+Second, you can see how skulpt 'compiled' your python program into its intermediate Javascript form. While this may not be all that helpful in this particular case it can be very very helpful in figuring out what skulpt is actually doing.
+Now you should run all of the unit tests to make sure you have broken anything else accidentally. This is really easy:
+
+::
+
+    ./skulpt.py test
+
+If any tests fail it will be obvious that they did, and you'll have to do some investigation to figure out why. At the time of this writing you should see:
+
+::
+
+    run: 343/343 (+1 disabled)
+    closure: skipped
+
+Once you are satisfied that your extension is working fine. You should add a test case to test/run see: New Tests for instructions. This way we will have a permanent test in the bank of test cases in order to check for any future regressions.
+
+Finally make a pull request on github to have your new feature integrated into the master copy. I probably will not accept your pull request if you haven't done step 4.
+
 
 Outside of your editor, your browser, and your wits, the main development tool for skulpt is the skulpt.py command (also linked to m for historical compatibility).  
 
