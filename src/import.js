@@ -182,7 +182,6 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
 //		Sk.debugout(finalcode);
 
     var modlocs = goog.global['eval'](finalcode);
-
     // pass in __name__ so the module can set it (so that the code can access
     // it), but also set it after we're done so that builtins don't have to
     // remember to do it.
@@ -243,9 +242,16 @@ Sk.importMainWithBody = function(name, dumpJS, body)
 
 Sk.builtin.__import__ = function(name, globals, locals, fromlist)
 {
+    var saveSk = Sk.globals;
     var ret = Sk.importModuleInternal_(name);
-    if (!fromlist || fromlist.length === 0)
+    if (saveSk !== Sk.globals) {
+        Sk.globals = saveSk;
+    }
+    if (!fromlist || fromlist.length === 0) {
+        globals[name] = ret;
+        Sk.globals[name] = ret;
         return ret;
+    }
     // if there's a fromlist we want to return the actual module, not the
     // toplevel namespace
     ret = Sk.sysmodules.mp$subscript(name);

@@ -1072,7 +1072,11 @@ Sk.builtin.issubclass = function issubclass(c1, c2) {
     {
         if (klass === base) return true;
         if (klass['$d'] === undefined) return false;
-        var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
+        if (klass['$d'].mp$subscript) {
+            var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
+        } else {
+            return false;
+        }
         for (var i = 0; i < bases.v.length; ++i)
         {
             if (issubclass_internal(bases.v[i], base))
