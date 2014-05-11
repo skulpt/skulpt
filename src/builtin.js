@@ -703,17 +703,13 @@ Sk.builtin.getattr = function getattr(obj, name, default_)
     return ret;
 };
 
-Sk.builtin.raw_input = function(obj, name, default_)
-{
-    var x = Sk.inputfun(obj.v);
+Sk.builtin.raw_input = function(prompt) {
+	prompt = prompt ? prompt.v : "";
+	var x = Sk.inputfun(prompt);
     return new Sk.builtin.str(x);
 };
 
-Sk.builtin.input = function(obj, name, default_)
-{
-    var x = Sk.inputfun(obj.v);
-    return new Sk.builtin.str(x);
-};
+Sk.builtin.input = Sk.builtin.raw_input;
 
 Sk.builtin.jseval = function jseval(evalcode)
 {
