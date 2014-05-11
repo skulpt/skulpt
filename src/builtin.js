@@ -210,7 +210,7 @@ Sk.builtin.len = function len(item)
         return new Sk.builtin.nmber(item.mp$length(), Sk.builtin.nmber.int$);
 
     if (item.tp$length)
-	return new Sk.builtin.nmber(item.tp$length(), Sk.builtin.nmber.int$);
+		return new Sk.builtin.nmber(item.tp$length(), Sk.builtin.nmber.int$);
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };
@@ -219,12 +219,12 @@ Sk.builtin.min = function min()
 {
     Sk.builtin.pyCheckArgs("min", arguments, 1);
 
-    arguments = Sk.misceval.arrayFromArguments(arguments);
-    var lowest = arguments[0];
-    for (var i = 1; i < arguments.length; ++i)
+    args = Sk.misceval.arrayFromArguments(arguments);
+    var lowest = args[0];
+    for (var i = 1; i < args.length; ++i)
     {
-        if (Sk.misceval.richCompareBool(arguments[i], lowest, 'Lt'))
-            lowest = arguments[i];
+        if (Sk.misceval.richCompareBool(args[i], lowest, 'Lt'))
+            lowest = args[i];
     }
     return lowest;
 };
@@ -233,12 +233,12 @@ Sk.builtin.max = function max()
 {
     Sk.builtin.pyCheckArgs("max", arguments, 1);
 
-    arguments = Sk.misceval.arrayFromArguments(arguments);
-    var highest = arguments[0];
-    for (var i = 1; i < arguments.length; ++i)
+    args = Sk.misceval.arrayFromArguments(arguments);
+    var highest = args[0];
+    for (var i = 1; i < args.length; ++i)
     {
-        if (Sk.misceval.richCompareBool(arguments[i], highest, 'Gt'))
-            highest = arguments[i];
+        if (Sk.misceval.richCompareBool(args[i], highest, 'Gt'))
+            highest = args[i];
     }
     return highest;
 };
@@ -249,8 +249,8 @@ Sk.builtin.any = function any(iter)
 
     Sk.builtin.pyCheckArgs("any", arguments, 1);
     if (!Sk.builtin.checkIterable(iter)) {
-	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter)
-				       + "' object is not iterable");
+		throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter)
+			+ "' object is not iterable");
     }
 
     it = iter.tp$iter();
