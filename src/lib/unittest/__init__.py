@@ -127,10 +127,6 @@ class TestCase:
 def main():
     glob = globals()  # globals() still needs work
     for name in glob:
-        print name
-        print glob[name]
         if issubclass(glob[name],TestCase):
             glob[name]().main()  
-#    print "unittest.main is not implemented."
-#    print "Make an instance of the subclass of TestCase can call main on it."
 
