@@ -1,0 +1,9 @@
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='int',
+                                          ctx=Load()),
+                                args=[Str(s='0')],
+                                keywords=[keyword(arg='base',
+                                                  value=Num(n=2))],
+                                starargs=None,
+                                kwargs=None)],
+                   nl=True)])

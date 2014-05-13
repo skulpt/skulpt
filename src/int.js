@@ -142,6 +142,9 @@ Sk.builtin.int_ = function (x, base) {
     x = Sk.builtin.asnum$(x);
     return new Sk.builtin.nmber(x | 0, Sk.builtin.nmber.int$);
 };
+Sk.builtin.int_.co_varnames = [ "base" ];
+Sk.builtin.int_.co_numargs = 2;
+Sk.builtin.int_.$defaults = [ new Sk.builtin.nmber(10, Sk.builtin.nmber.int$) ];
 
 Sk.builtin.int_.prototype.tp$name = "int";
 Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('int', Sk.builtin.int_);
