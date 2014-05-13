@@ -182,7 +182,6 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
 //		Sk.debugout(finalcode);
 
     var modlocs = goog.global['eval'](finalcode);
-
     // pass in __name__ so the module can set it (so that the code can access
     // it), but also set it after we're done so that builtins don't have to
     // remember to do it.
@@ -243,9 +242,16 @@ Sk.importMainWithBody = function(name, dumpJS, body)
 
 Sk.builtin.__import__ = function(name, globals, locals, fromlist)
 {
+    // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
+    // a Python language module.  for some reason, __name__ gets overwritten.
+    var saveSk = Sk.globals;
     var ret = Sk.importModuleInternal_(name);
-    if (!fromlist || fromlist.length === 0)
+    if (saveSk !== Sk.globals) {
+        Sk.globals = saveSk;
+    }
+    if (!fromlist || fromlist.length === 0) {
         return ret;
+    }
     // if there's a fromlist we want to return the actual module, not the
     // toplevel namespace
     ret = Sk.sysmodules.mp$subscript(name);
@@ -253,10 +259,16 @@ Sk.builtin.__import__ = function(name, globals, locals, fromlist)
     return ret;
 };
 
-Sk.importStar = function(module,loc) {
+Sk.importStar = function(module,loc,global) {
+    // from the global scope, globals and locals can be the same.  So the loop below
+    // could accidentally overwrite __name__, erasing __main__.
+    var nn = global['__name__'];
     var props = Object['getOwnPropertyNames'](module['$d'])
     for(var i in props) {
         loc[props[i]] = module['$d'][props[i]];
+    }
+    if (global['__name__'] !== nn) {
+        global['__name__'] = nn;
     }
 }
 

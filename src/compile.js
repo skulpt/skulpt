@@ -1821,10 +1821,11 @@ Compiler.prototype.cmod = function(mod)
 
     var entryBlock = this.newBlock('module entry');
     this.u.prefixCode = "var " + modf + "=(function($modname){";
-    this.u.varDeclsCode = "if (Sk.retainGlobals) {" + 
+    this.u.varDeclsCode = "var $gbl = {};" +
+                         "if (Sk.retainGlobals) {" + 
 						  "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl }" + 
-						  "    else { Sk.globals = $gbl = {}; }" +
-						  "} else { Sk.globals = $gbl = {}; }" +
+						  "    else { Sk.globals = $gbl; }" +
+						  "} else { Sk.globals = $gbl; }" +
 						  "var $blk=" + entryBlock + ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname;" ;
 
     // Add the try block that pops the try/except stack if one exists

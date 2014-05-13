@@ -1,23 +1,15 @@
 __author__ = 'bmiller'
+'''
+This is the start of something that behaves like
+the unittest module from cpython.
 
-import document
+'''
 
 
-class unittest:
+class TestCase:
     def __init__(self):
         self.numPassed = 0
         self.numFailed = 0
-        self.divid = document.currentDiv()
-        self.mydiv = document.getElementById(self.divid)
-        res = document.getElementById(self.divid+'_unit_results')
-        if res:
-            self.resdiv = res
-            res.innerHTML = ''
-        else:
-            self.resdiv = document.createElement('div')
-            self.resdiv.setAttribute('id',self.divid+'_unit_results')
-            self.resdiv.setAttribute('class','unittest-results')
-        self.mydiv.appendChild(self.resdiv)
 
         self.tlist = []
         testNames = {}
@@ -33,9 +25,6 @@ class unittest:
         pass
 
     def main(self):
-        l = document.createElement('ul')
-        self.resdiv.appendChild(l)
-        self.resList = l
 
         for func in self.tlist:
             try:
@@ -43,7 +32,7 @@ class unittest:
                 func()
                 self.tearDown()
             except:
-                self.appendResult('Error')
+                self.appendResult('Error',None,None,None)
                 self.numFailed += 1
         self.showSummary()
 
@@ -129,19 +118,15 @@ class unittest:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
             self.numFailed += 1
 
-        pTag = document.createElement('li')
-        pTag.innerHTML = msg
-        self.resList.appendChild(pTag)
-
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        pTag = document.createElement('p')
-        pTag.innerHTML = "You passed: " + str(pct) + "% of the tests"
-        self.resdiv.appendChild(pTag)
-        if pct < 90:
-            self.resdiv.setCSS('background-color','#de8e96')
-        else:
-            self.resdiv.setCSS('background-color','#83d382')
+        print "ran %d tests, passed %d \n" % (self.numPassed+self.numFailed, self.numPassed)
 
 
+
+def main():
+    glob = globals()  # globals() still needs work
+    for name in glob:
+        if issubclass(glob[name],TestCase):
+            glob[name]().main()  
 
