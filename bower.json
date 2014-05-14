@@ -1,6 +1,6 @@
 {
   "name": "visnav_edx_skulpt",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "main": [ "./dist/skulpt.js", "./dist/skulpt-stdlib.js" ],
   "description": "Skulpt is a Javascript implementation of the Python programming language",
   "repository": {

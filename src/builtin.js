@@ -210,7 +210,7 @@ Sk.builtin.len = function len(item)
         return new Sk.builtin.nmber(item.mp$length(), Sk.builtin.nmber.int$);
 
     if (item.tp$length)
-	return new Sk.builtin.nmber(item.tp$length(), Sk.builtin.nmber.int$);
+		return new Sk.builtin.nmber(item.tp$length(), Sk.builtin.nmber.int$);
 
     throw new Sk.builtin.TypeError("object of type '" + Sk.abstr.typeName(item) + "' has no len()");
 };
@@ -219,12 +219,12 @@ Sk.builtin.min = function min()
 {
     Sk.builtin.pyCheckArgs("min", arguments, 1);
 
-    arguments = Sk.misceval.arrayFromArguments(arguments);
-    var lowest = arguments[0];
-    for (var i = 1; i < arguments.length; ++i)
+    var args = Sk.misceval.arrayFromArguments(arguments);
+    var lowest = args[0];
+    for (var i = 1; i < args.length; ++i)
     {
-        if (Sk.misceval.richCompareBool(arguments[i], lowest, 'Lt'))
-            lowest = arguments[i];
+        if (Sk.misceval.richCompareBool(args[i], lowest, 'Lt'))
+            lowest = args[i];
     }
     return lowest;
 };
@@ -233,12 +233,12 @@ Sk.builtin.max = function max()
 {
     Sk.builtin.pyCheckArgs("max", arguments, 1);
 
-    arguments = Sk.misceval.arrayFromArguments(arguments);
-    var highest = arguments[0];
-    for (var i = 1; i < arguments.length; ++i)
+    var args = Sk.misceval.arrayFromArguments(arguments);
+    var highest = args[0];
+    for (var i = 1; i < args.length; ++i)
     {
-        if (Sk.misceval.richCompareBool(arguments[i], highest, 'Gt'))
-            highest = arguments[i];
+        if (Sk.misceval.richCompareBool(args[i], highest, 'Gt'))
+            highest = args[i];
     }
     return highest;
 };
@@ -249,8 +249,8 @@ Sk.builtin.any = function any(iter)
 
     Sk.builtin.pyCheckArgs("any", arguments, 1);
     if (!Sk.builtin.checkIterable(iter)) {
-	throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter)
-				       + "' object is not iterable");
+		throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter)
+			+ "' object is not iterable");
     }
 
     it = iter.tp$iter();
@@ -657,13 +657,14 @@ Sk.builtin.hash = function hash(value)
     }
     else if (value instanceof Sk.builtin.bool)
     {
-	if (value.v)
-	    return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
-	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+	   if (value.v){
+	       return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+       }
+	   return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Sk.builtin.none)
     {
-	return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+	   return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     }
     else if (value instanceof Object)
     {
@@ -677,7 +678,7 @@ Sk.builtin.hash = function hash(value)
     else if (typeof value === "number" || value === null
              || value === true || value === false)
     {
-	throw new Sk.builtin.TypeError("unsupported Javascript type");
+	   throw new Sk.builtin.TypeError("unsupported Javascript type");
     }
 
     return new Sk.builtin.str((typeof value) + ' ' + String(value));
@@ -702,17 +703,13 @@ Sk.builtin.getattr = function getattr(obj, name, default_)
     return ret;
 };
 
-Sk.builtin.raw_input = function(obj, name, default_)
-{
-    var x = Sk.inputfun(obj.v);
+Sk.builtin.raw_input = function(prompt) {
+	prompt = prompt ? prompt.v : "";
+	var x = Sk.inputfun(prompt);
     return new Sk.builtin.str(x);
 };
 
-Sk.builtin.input = function(obj, name, default_)
-{
-    var x = Sk.inputfun(obj.v);
-    return new Sk.builtin.str(x);
-};
+Sk.builtin.input = Sk.builtin.raw_input;
 
 Sk.builtin.jseval = function jseval(evalcode)
 {
@@ -1044,6 +1041,73 @@ Sk.builtin.sorted.co_varnames = ['cmp', 'key', 'reverse'];
 Sk.builtin.sorted.$defaults = [Sk.builtin.none, Sk.builtin.none, false];
 Sk.builtin.sorted.co_numargs = 4;
 
+Sk.builtin.issubclass = function issubclass(c1, c2) {
+    Sk.builtin.pyCheckArgs("issubclass", arguments, 2, 2);
+    if (!Sk.builtin.checkClass(c2) && !(c2 instanceof Sk.builtin.tuple)) {
+        throw new Sk.builtin.TypeError("issubclass() arg 2 must be a classinfo, type, or tuple of classes and types");
+    }
+
+    //print("c1 name: " + c1.tp$name);
+
+    if (c2 === Sk.builtin.int_.prototype.ob$type) {
+        return true;
+    }
+
+    if (c2 === Sk.builtin.float_.prototype.ob$type) {
+        return true;
+    }
+
+    if (c2 === Sk.builtin.none.prototype.ob$type) {
+        return true;
+    }
+
+    // Normal case
+    if (c1.ob$type === c2) return true;
+
+    var issubclass_internal = function(klass, base)
+    {
+        if (klass === base) return true;
+        if (klass['$d'] === undefined) return false;
+        if (klass['$d'].mp$subscript) {
+            var bases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
+        } else {
+            return false;
+        }
+        for (var i = 0; i < bases.v.length; ++i)
+        {
+            if (issubclass_internal(bases.v[i], base))
+                return true;
+        }
+        return false;
+    };
+
+    // Handle tuple type argument
+    if (c2 instanceof Sk.builtin.tuple)
+    {
+        for (var i = 0; i < c2.v.length; ++i)
+        {
+            if (Sk.builtin.issubclass(c1, c2.v[i]))
+                return true;
+        }
+        return false;
+    }
+
+    return issubclass_internal(c1, c2);
+
+ }
+
+Sk.builtin.globals = function globals() { 
+    var ret = new Sk.builtin.dict([]);
+    for (var i in Sk['globals']) {
+        ret.mp$ass_subscript(new Sk.builtin.str(i),Sk['globals'][i])
+    }
+    
+    return ret;
+
+}
+
+
+
 Sk.builtin.bytearray = function bytearray() { throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented")}
 Sk.builtin.callable = function callable() { throw new Sk.builtin.NotImplementedError("callable is not yet implemented")}
 Sk.builtin.complex = function complex() { throw new Sk.builtin.NotImplementedError("complex is not yet implemented")}
@@ -1052,9 +1116,8 @@ Sk.builtin.divmod = function divmod() { throw new Sk.builtin.NotImplementedError
 Sk.builtin.execfile = function execfile() { throw new Sk.builtin.NotImplementedError("execfile is not yet implemented")}
 Sk.builtin.format = function format() { throw new Sk.builtin.NotImplementedError("format is not yet implemented")}
 Sk.builtin.frozenset = function frozenset() { throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented")}
-Sk.builtin.globals = function globals() { throw new Sk.builtin.NotImplementedError("globals is not yet implemented")}
+
 Sk.builtin.help = function help() { throw new Sk.builtin.NotImplementedError("help is not yet implemented")}
-Sk.builtin.issubclass = function issubclass() { throw new Sk.builtin.NotImplementedError("issubclass is not yet implemented")}
 Sk.builtin.iter = function iter() { throw new Sk.builtin.NotImplementedError("iter is not yet implemented")}
 Sk.builtin.locals = function locals() { throw new Sk.builtin.NotImplementedError("locals is not yet implemented")}
 Sk.builtin.memoryview = function memoryview() { throw new Sk.builtin.NotImplementedError("memoryview is not yet implemented")}

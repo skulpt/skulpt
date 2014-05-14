@@ -1,0 +1,6 @@
+Module(body=[Print(dest=None,
+                   values=[Dict(keys=[Num(n=1),
+                                      Num(n=1.0)],
+                                values=[Num(n=4),
+                                        Num(n=5)])],
+                   nl=True)])

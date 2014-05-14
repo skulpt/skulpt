@@ -1,0 +1,68 @@
+<html>
+    <head>
+        <script type="application/ecmascript" src="../../src/lib/turtle/__init__.js"></script>
+    </head>
+    <body>
+        <canvas id="mycanvas" width="500" height="500"/>
+        <script type="application/ecmascript">
+            TurtleGraphics.defaults = {
+                canvasID: "mycanvas",
+                animate: false,
+                degrees: true
+            };
+            var t = new TurtleGraphics.Turtle();
+		  	//t.speed(10);
+			t.set_fill_color("red");
+            t.set_pen_color("red");
+            t.set_pen_width(10);
+            t.forward(90);
+            t.left(90);
+            t.forward(90);
+            t.shape('square')
+            t.backward(10);
+            t.clear();
+            t.left(-10);
+            t.forward(100);
+            t.hideturtle();
+            t.circle(200, 360);
+            t.showturtle();
+            t.pen_up();
+            t.goto(100,100);
+            t.pen_down();
+            t.dot(5,"blue");
+            t.pen_up();
+            t.goto(100,50);
+            t.pen_down();
+            t.dot(5,"blue");
+            t.pen_up();
+            t.goto(100,25);
+            t.pen_down();
+            t.dot(5,"blue");
+            t.pen_up();
+            t.goto(10,10);
+            t.pen_down();
+            t.begin_fill();
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
+            t.end_fill();
+			t.pen_up();
+			t.goto(10,-10);
+		  	t.clear();
+            t.shape('classic');
+			t.set_pen_width(2);
+		  	for (var i = -100; i < 100; i += 20){
+				for (var j = -100; j< 100; j += 20) {
+				  	t.goto(i,j);
+				  	t.stamp();
+				  	t.set_fill_color(j,i,i+j);
+				  	t.set_pen_color(j,i,i+j);
+				}
+			}
+        </script>
+    </body>
+</html>

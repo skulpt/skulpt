@@ -19,8 +19,8 @@ var Sk = Sk || {};
  *
  * Any variables that aren't set will be left alone.
  */
-Sk.configure = function(options)
-{
+Sk.configure = function (options) {
+	'use strict';
     Sk.output = options["output"] || Sk.output;
     goog.asserts.assert(typeof Sk.output === "function");
 
@@ -30,8 +30,8 @@ Sk.configure = function(options)
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 
-    Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;											// RNL
-    goog.asserts.assert(typeof Sk.timeoutMsg === "function");										// RNL
+    Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
+    goog.asserts.assert(typeof Sk.timeoutMsg === "function");
 	goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
     Sk.sysargv = options["sysargv"] || Sk.sysargv;
@@ -41,13 +41,15 @@ Sk.configure = function(options)
     goog.asserts.assert(typeof Sk.python3 === "boolean");
 
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
-    goog.asserts.assert(typeof Sk.inputfun === "function")
+    goog.asserts.assert(typeof Sk.inputfun === "function");
 
     Sk.throwSystemExit = options["systemexit"] || false;
-    goog.asserts.assert(typeof Sk.throwSystemExit === "boolean")
-
-    if (options["syspath"])
-    {
+    goog.asserts.assert(typeof Sk.throwSystemExit === "boolean");
+	
+	Sk.retainGlobals = options["retainglobals"] || false;
+	goog.asserts.assert(typeof Sk.throwSystemExit === "boolean");
+	
+    if (options["syspath"]) {
         Sk.syspath = options["syspath"];
         goog.asserts.assert(goog.isArrayLike(Sk.syspath));
         // assume that if we're changing syspath we want to force reimports.
@@ -63,19 +65,19 @@ goog.exportSymbol("Sk.configure", Sk.configure);
 /*
 *	Replaceable message for message timeouts
 */
-Sk.timeoutMsg=function() { return "Program exceeded run time limit."; }
+Sk.timeoutMsg = function () { return "Program exceeded run time limit."; };
 goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
 
 /*
  * Replacable output redirection (called from print, etc).
  */
-Sk.output = function(x) {};
+Sk.output = function (x) {};
 
 /*
  * Replacable function to load modules with (called via import, etc.)
  * todo; this should be an async api
  */
-Sk.read = function(x) { throw "Sk.read has not been implemented"; };
+Sk.read = function (x) { throw "Sk.read has not been implemented"; };
 
 /*
  * Setable to emulate arguments to the script. Should be array of JS strings.
@@ -83,8 +85,7 @@ Sk.read = function(x) { throw "Sk.read has not been implemented"; };
 Sk.sysargv = [];
 
 // lame function for sys module
-Sk.getSysArgv = function()
-{
+Sk.getSysArgv = function () {
     return Sk.sysargv;
 };
 goog.exportSymbol("Sk.getSysArgv", Sk.getSysArgv);
@@ -106,28 +107,29 @@ Sk.debugout = function(args) {};
 
 (function() {
     // set up some sane defaults based on availability
-    if (goog.global['write'] !== undefined) Sk.output = goog.global['write'];
-    else if (goog.global['console'] !== undefined && goog.global['console']['log'] !== undefined) Sk.output = function (x) {goog.global['console']['log'](x);};
-    else if (goog.global['print'] !== undefined) Sk.output = goog.global['print'];
-
-    if (goog.global['print'] !== undefined) Sk.debugout = goog.global['print'];
+    if (goog.global['write'] !== undefined) {
+		Sk.output = goog.global['write']; 
+	} else if (goog.global['console'] !== undefined && goog.global['console']['log'] !== undefined) {
+		Sk.output = function (x) {goog.global['console']['log'](x);};
+	} else if (goog.global['print'] !== undefined) { 
+		Sk.output = goog.global['print'];
+	}
+    if (goog.global['print'] !== undefined) {
+		Sk.debugout = goog.global['print'];
+	}
 }());
 
 // override for closure to load stuff from the command line.
-if (!Sk.inBrowser)
-{
-    goog.global.CLOSURE_IMPORT_SCRIPT = function(src)
-    {
+if (!Sk.inBrowser) {
+    goog.global.CLOSURE_IMPORT_SCRIPT = function(src) {
         goog.global['eval'](goog.global['read']("support/closure-library/closure/goog/" + src));
         return true;
     };
 }
 
-
 Sk.python3 = false;
-Sk.inputfun = function(args) { return prompt(args); };
+Sk.inputfun = function (args) { return prompt(args); };
+
 goog.exportSymbol("Sk.python3",Sk.python3)
 goog.exportSymbol("Sk.inputfun",Sk.inputfun)
-
 goog.require("goog.asserts");
-
