@@ -45,6 +45,9 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     this.biginteger = new Sk.builtin.biginteger(x);
     return this;
 };
+Sk.builtin.lng.co_varnames = [ "base" ];
+Sk.builtin.lng.co_numargs = 2;
+Sk.builtin.lng.$defaults = [ new Sk.builtin.nmber(10, Sk.builtin.nmber.int$) ];
 
 Sk.builtin.lng.prototype.tp$index = function () {
     return parseInt(this.str$(10, true), 10);

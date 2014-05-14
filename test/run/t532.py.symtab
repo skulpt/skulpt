@@ -16,3 +16,15 @@ name: int
   is_namespace: False
   namespaces: [
   ]
+name: long
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
