@@ -13,7 +13,8 @@ $(function () {
         //finds defining statements
         defre = new RegExp("def.*|class.*"),
         //test for empty line.
-        emptyline = new RegExp("^\\s*$");
+        emptyline = new RegExp("^\\s*$"),
+        assignment= /^((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*((\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*)|(\s*\(\s*(\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*,)*\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*\)\s*))\s*,)*\s*((\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*)|(\s*\(\s*(\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*,)*\s*((\s*[_a-zA-Z]\w*\s*)|(\s*\(\s*(\s*[_a-zA-Z]\w*\s*,)*\s*[_a-zA-Z]\w*\s*\)\s*))\s*\)\s*))\s*\)\s*))=/;
 
     repl.print("Python 2.6(ish) (skulpt, " + new Date() + ")");
     repl.print("[" + navigator.userAgent + "] on " + navigator.platform);
@@ -63,7 +64,7 @@ $(function () {
         //it's a onliner
         if (lines.length === 1) {
             //if it's a statement that should be printed (not containing an = or def or class or an empty line)
-            if (lines[0].indexOf('=') === -1 && !defre.test(lines[0]) && !importre.test(lines[0]) && lines[0].length > 0) {
+            if (!assignment.test(lines[0]) && !defre.test(lines[0]) && !importre.test(lines[0]) && lines[0].length > 0) {
                 //if it doesn't contain print make sure it doesn't print None
                 if (!re.test(lines[0])) {
                     //remove the statement
