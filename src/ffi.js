@@ -40,7 +40,15 @@ goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
  */
 Sk.ffi.remapToJs = function(obj)
 {
-    if (obj instanceof Sk.builtin.dict)
+    if (obj instanceof Sk.builtin.nmber)
+	{
+		return Sk.builtin.asnum$(obj);
+	}
+	else if (obj instanceof Sk.builtin.lng)
+	{
+		return Sk.builtin.asnum$(obj);
+	}
+    else if (obj instanceof Sk.builtin.dict)
     {
         var ret = {};
         for (var iter = obj.tp$iter(), k = iter.tp$iternext();
@@ -56,25 +64,19 @@ Sk.ffi.remapToJs = function(obj)
         }
         return ret;
     }
-    else if (obj instanceof Sk.builtin.list)
+    else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple)
     {
         var ret = [];
         for (var i = 0; i < obj.v.length; ++i)
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         return ret;
     }
-	else if (obj instanceof Sk.builtin.nmber)
-	{
-		return Sk.builtin.asnum$(obj);
-	}
-	else if (obj instanceof Sk.builtin.lng)
-	{
-		return Sk.builtin.asnum$(obj);
-	}
-    else if (typeof obj === "number" || typeof obj === "boolean")
+    else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
-    else
+    }
+    else {
         return obj.v;
+    }
 };
 goog.exportSymbol("Sk.ffi.remapToJs", Sk.ffi.remapToJs);
 
