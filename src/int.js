@@ -137,9 +137,10 @@ Sk.builtin.int_ = function (x, base) {
         return new Sk.builtin.nmber(x.toInt$(), Sk.builtin.nmber.int$);
     }
 
-    // sneaky way to do truncate, floor doesn't work < 0, round doesn't work on the .5> side
-    // bitwise ops convert to 32bit int in the "C-truncate-way" we want.
     x = Sk.builtin.asnum$(x);
+    if (x > Sk.builtin.lng.threshold$ || x < -Sk.builtin.lng.threshold$) {
+        return new Sk.builtin.nmber(x, Sk.builtin.nmber.long$); 
+    }
     return new Sk.builtin.nmber(x | 0, Sk.builtin.nmber.int$);
 };
 Sk.builtin.int_.co_varnames = [ "base" ];
