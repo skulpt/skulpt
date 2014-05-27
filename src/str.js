@@ -842,6 +842,8 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
 						precision = 6;
 					else if (conversionType === 'f' || conversionType === 'F')
 						precision = 7;
+					else if(precision === "")
+						precision = undefined;
                 var result = (convValue)[convName](precision);
                 if ('EFG'.indexOf(conversionType) !== -1) result = result.toUpperCase();
                 // todo; signs etc.
