@@ -131,6 +131,14 @@ var $builtinmodule = function(name) {
                 self.v.setAttribute(attr.v,value.v)
         });
             
+        $loc.getProperty = new Sk.builtin.func(function(self,key) {
+            var res = self.v[key.v]
+            if (res) {
+                return new Sk.builtin.str(res)
+            } else {
+                return Sk.builtin.none.none$;
+            }
+        });
 
         $loc.__str__ = new Sk.builtin.func(function(self) {
             console.log(self.v.tagName);
