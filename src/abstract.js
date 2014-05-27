@@ -166,7 +166,7 @@ Sk.abstr.unary_op_ = function(v, opname)
     if (vop !== undefined)
     {
     if (vop.call) {
-            ret = vop.call(v, w);
+            ret = vop.call(v);
     } else {  // assume that vop is an __xxx__ type method
         ret = Sk.misceval.callsim(vop,v); //  added to be like not-in-place... is this okay?
         }
