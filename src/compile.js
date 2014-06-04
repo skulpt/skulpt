@@ -1189,6 +1189,23 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     // all function invocations in call
     this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined;";
 
+		//
+    // initialize default arguments. we store the values of the defaults to
+    // this code object as .$defaults just below after we exit this scope.
+    //
+    if (defaults.length > 0)
+    {
+        // defaults have to be "right justified" so if there's less defaults
+        // than args we offset to make them match up (we don't need another
+        // correlation in the ast)
+        var offset = args.args.length - defaults.length;
+        for (var i = 0; i < defaults.length; ++i)
+        {
+            var argname = this.nameop(args.args[i + offset].id, Param);
+            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
+        }
+    }
+		
     //
     // copy all parameters that are also cells into the cells dict. this is so
     // they can be accessed correctly by nested scopes.
@@ -1210,23 +1227,6 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
         this.u.varDeclsCode += "Sk.builtin.pyCheckArgs(\"" + coname.v + 
             "\", arguments, " + minargs + ", " + maxargs + ", " + kw + 
             ", " + hasFree + ");";
-    }
-
-    //
-    // initialize default arguments. we store the values of the defaults to
-    // this code object as .$defaults just below after we exit this scope.
-    //
-    if (defaults.length > 0)
-    {
-        // defaults have to be "right justified" so if there's less defaults
-        // than args we offset to make them match up (we don't need another
-        // correlation in the ast)
-        var offset = args.args.length - defaults.length;
-        for (var i = 0; i < defaults.length; ++i)
-        {
-            var argname = this.nameop(args.args[i + offset].id, Param);
-            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname +"=" + scopename+".$defaults[" + i + "];";
-        }
     }
 
     //
