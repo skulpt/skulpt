@@ -1,6 +1,101 @@
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
 Sk.realsyspath = undefined;
+Sk.externalLibraryCache = {};
+
+Sk.loadExternalLibraryInternal_ = function(path, inject) {
+    var request, result;
+
+    if (path == null) return void(0);
+
+    if (Sk.externalLibraryCache[path]) {
+        return Sk.externalLibraryCache[path];
+    }
+
+    request = new XMLHttpRequest();
+    request.open('GET', path, false);
+    request.send();
+
+    if (request.status !== 200) return void(0);
+
+    result = request.responseText;
+
+    if (inject) {
+        var scriptElement = document.createElement('script');
+        scriptElement.type = "text/javascript";
+        scriptElement.text = result;
+        document.getElementsByTagName('head')[0].appendChild(scriptElement);
+    }
+
+    return result;
+}
+
+Sk.loadExternalLibrary = function(name) {
+    var externalLibraryInfo, path, type, module,
+        dependencies, dep, ext, extMatch, co;
+
+    // check if the library has already been loaded and cached
+    if (Sk.externalLibraryCache[name]) return Sk.externalLibraryCache[name];
+
+    externalLibraryInfo = Sk.externalLibraries && Sk.externalLibraries[name];
+
+    // if no external library info can be found, bail out
+    if (!externalLibraryInfo) return void(0);
+
+    // if the external library info is just a string, assume it is the path
+    // otherwise dig into the info to find the path
+    path = typeof externalLibraryInfo === 'string'
+        ? externalLibraryInfo
+        : externalLibraryInfo.path;
+
+    if (typeof path !== 'string')
+    {
+        throw new Sk.builtin.ImportError("Invalid path specified for " + name);
+    }
+
+    // attempt to determine the type of the library (js or py)
+    // which is either specified explicitly in the library info
+    // or inferred from the file extension
+    ext = externalLibraryInfo.type;
+    if (!ext)
+    {
+        extMatch = path.match(/\.(js|py)$/);
+        ext = extMatch && extMatch[1];
+    }
+
+    if (!ext) throw new Sk.builtin.ImportError("Invalid file extension specified for " + name);
+
+    module = Sk.loadExternalLibraryInternal_(path, false);
+
+    if (!module) throw new Sk.builtin.ImportError("Failed to load remote module '" + name + "'");
+
+    // if the library has any js dependencies, load them in now
+    dependencies = externalLibraryInfo.dependencies;
+    if (dependencies && dependencies.length)
+    {
+        for(var i = 0; i < dependencies.length; i++)
+        {
+            dep = Sk.loadExternalLibraryInternal_(dependencies[i], true);
+            if (!dep)
+            {
+                throw new Sk.builtin.ImportError("Failed to load dependencies required for " + name);
+            }
+        }
+    }
+
+    if (ext === 'js')
+    {
+        co = { funcname: "$builtinmodule", code: module };
+    }
+    else
+    {
+        co = Sk.compile(module, path, "exec");
+    }
+
+    Sk.externalLibraryCache[name] = co;
+
+    return co;
+}
 
 /**
  * @param {string} name to look for
@@ -123,7 +218,7 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
     // - run module and set the module locals returned to the module __dict__
     var module = new Sk.builtin.module();
     Sk.sysmodules.mp$ass_subscript(name, module);
-    var filename, co, googClosure;
+    var filename, co, googClosure, external;
 
     if (suppliedPyBody)
     {
@@ -132,11 +227,32 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
     }
     else
     {
-        // if we have it as a builtin (i.e. already in JS) module then load that.
-        var builtinfn = Sk.importSearchPathForName(name, ".js", true);
-        if (builtinfn)
+        // If an onBeforeImport method is supplied, call it and if
+        // the result is false or a string, prevent the import.
+        // This allows for a user to conditionally prevent the usage
+        // of certain libraries.
+        if (Sk.onBeforeImport && typeof Sk.onBeforeImport === 'function')
         {
-            filename = builtinfn;
+            var result = Sk.onBeforeImport(name);
+            if (result === false)
+            {
+                throw new Sk.builtin.ImportError('Importing ' + name + ' is not allowed');
+            }
+            else if (typeof result === 'string')
+            {
+                throw new Sk.builtin.ImportError(result);
+            }
+        }
+
+        // check first for an externally loaded library
+        external = Sk.loadExternalLibrary(name);
+        if (external)
+        {
+            co = external;
+        }
+        // if we have it as a builtin (i.e. already in JS) module then load that.
+        else if (filename = Sk.importSearchPathForName(name, ".js", true))
+        {
             co = { funcname: "$builtinmodule", code: Sk.read(filename) };
         }
         else
