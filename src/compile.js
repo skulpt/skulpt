@@ -1183,7 +1183,16 @@ Compiler.prototype.buildcodeobj = function(n, coname, decorator_list, args, call
     }
     var cells = "";
     if (hasCell)
-        cells = ",$cell={}";
+    {
+        if (isGenerator)
+        {
+            cells = ",$cell=$gen.gi$cells";
+        }
+        else
+        {
+            cells = ",$cell={}";
+        }
+    }
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
