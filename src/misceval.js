@@ -87,9 +87,15 @@ Sk.misceval.arrayFromArguments = function(args)
         // this is a Sk.builtin.list
         arg = Sk.builtin.dict.prototype['keys'].func_code(arg);
     }
-    else if ( arg instanceof Sk.builtin.str )
+
+    // shouldn't else if here as the above may output lists to arg.
+    if ( arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple )
     {
-        // this is a Sk.builtin.str
+        return arg.v;
+    }
+    else if ( arg.tp$iter !== undefined )
+    {
+        // handle arbitrary iterable (strings, generators, etc.)
         var res = [];
         for (var it = arg.tp$iter(), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext())
@@ -99,11 +105,6 @@ Sk.misceval.arrayFromArguments = function(args)
         return res;
     }
 
-    // shouldn't else if here as the above may output lists to arg.
-    if ( arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple )
-    {
-        return arg.v;
-    }
     return args;
 };
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
