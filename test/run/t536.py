@@ -1,0 +1,4 @@
+print ~1
+print ~1L
+print ~10000000000000
+print ~10000000000000L
