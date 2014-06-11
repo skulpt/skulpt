@@ -105,7 +105,7 @@ Sk.misceval.arrayFromArguments = function(args)
         return res;
     }
 
-    return args;
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(arg) + "' object is not iterable");
 };
 goog.exportSymbol("Sk.misceval.arrayFromArguments", Sk.misceval.arrayFromArguments);
 
