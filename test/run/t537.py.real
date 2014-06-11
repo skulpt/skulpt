@@ -1,0 +1,6 @@
+min(3) raises type error
+max(3) raises type error
+min([]) raises value error
+max(tuple()) raises value error
+6
+2
