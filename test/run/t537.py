@@ -1,0 +1,22 @@
+import time
+
+t = time.mktime((1973, 9, 16, 1, 3, 52, 0, 0, -1))
+print time.ctime(t)
+t = time.mktime((2000, 1, 1, 0, 0, 0, 0, 0, -1))
+print time.ctime(t)
+t = time.time()
+t = 1402405220.0
+print time.ctime(t)
+print time.asctime(time.localtime(t))
+print time.mktime(time.localtime(t))
+print 'time.asctime(): %s' % time.asctime((2014,12,3,4,5,6,7,8,-1))
+print 'time.mktime(): %.1f' % time.mktime((2014,12,3,4,5,6,7,8,-1))
+c1 = time.ctime()
+c2 = time.ctime(None)
+g1 = time.gmtime()
+g2 = time.gmtime(None)
+l1 = time.localtime()
+l2 = time.localtime(None)
+print time.ctime(1)
+print time.localtime(1)
+print time.gmtime(1)
