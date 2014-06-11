@@ -1,0 +1,252 @@
+Sym_type: module
+Sym_name: top
+Sym_lineno: 0
+Sym_nested: False
+Sym_haschildren: True
+-- Identifiers --
+name: cos
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: differentiate
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: function
+    Sym_name: differentiate
+    Sym_lineno: 4
+    Sym_nested: False
+    Sym_haschildren: True
+    Func_params: ['f', 'h', 'method']
+    Func_locals: ['Backward1', 'Forward1', 'f', 'h', 'method']
+    Func_globals: []
+    Func_frees: []
+    -- Identifiers --
+    name: Backward1
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: Backward1
+        Sym_lineno: 10
+        Sym_nested: True
+        Sym_haschildren: False
+        Func_params: ['x']
+        Func_locals: ['x']
+        Func_globals: []
+        Func_frees: ['f', 'h']
+        -- Identifiers --
+        name: f
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: h
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: x
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: Forward1
+      is_referenced: True
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: Forward1
+        Sym_lineno: 6
+        Sym_nested: True
+        Sym_haschildren: False
+        Func_params: ['x']
+        Func_locals: ['x']
+        Func_globals: []
+        Func_frees: ['f', 'h']
+        -- Identifiers --
+        name: f
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: h
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: False
+          is_free: True
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: x
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: f
+      is_referenced: False
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: h
+      is_referenced: False
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+    name: method
+      is_referenced: True
+      is_imported: False
+      is_parameter: True
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: False
+      is_namespace: False
+      namespaces: [
+      ]
+  ]
+name: mycos
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: mysin
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: pi
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: sin
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: x
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
