@@ -65,7 +65,7 @@ var $builtinmodule = function(name)
 
     var size = position.v.size();
 
-    addPlotValue('trajectory', name.v, [position.v.get([0, 0]), position.v.get([1, 0]), size[0] > 2 ? position.v.get([2, 0]) : 0]);
+    addPlotValue('trajectory', name.v, [position.v.get([0, 0]), position.v.get([1, 0]), size[0] > 2 ? position.v.get([2, 0]) : Infinity]);
   });
 
   mod.plot_point = new Sk.builtin.func(function(name, position) {
