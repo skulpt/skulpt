@@ -221,6 +221,12 @@ Sk.builtin.min = function min()
 
     var args = Sk.misceval.arrayFromArguments(arguments);
     var lowest = args[0];
+
+    if (lowest === undefined)
+    {
+        throw new Sk.builtin.ValueError("min() arg is an empty sequence");
+    }
+
     for (var i = 1; i < args.length; ++i)
     {
         if (Sk.misceval.richCompareBool(args[i], lowest, 'Lt'))
@@ -235,6 +241,12 @@ Sk.builtin.max = function max()
 
     var args = Sk.misceval.arrayFromArguments(arguments);
     var highest = args[0];
+
+    if (highest === undefined)
+    {
+        throw new Sk.builtin.ValueError("max() arg is an empty sequence");
+    }
+
     for (var i = 1; i < args.length; ++i)
     {
         if (Sk.misceval.richCompareBool(args[i], highest, 'Gt'))
