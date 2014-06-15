@@ -629,7 +629,7 @@ if(this.s < 0) {
 else if(this.t == 1) return this[0];
 else if(this.t == 0) return 0;
 // assumes 16 < DB < 32
-return ((this[1]&((1<<(32-this.DB))-1))<<this.DB)|this[0];
+return ((this[1]&((1<<(53-this.DB))-1))<<this.DB)|this[0];
 }
 
 //(public) return value as byte
