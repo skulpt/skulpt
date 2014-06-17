@@ -306,6 +306,16 @@ Sk.importModuleInternal_ = function(name, dumpJS, modname, suppliedPyBody)
 
     module['$d'] = modlocs;
 
+    // If an onAfterImport method is defined on the global Sk
+    // then call it now after a library has been successfully imported
+    // and compiled.
+    if (Sk.onAfterImport && typeof Sk.onAfterImport === 'function')
+    {
+        try {
+            Sk.onAfterImport(name);
+        } catch(e){};
+    }
+
     if (toReturn)
     {
         // if we were a dotted name, then we want to return the top-most
