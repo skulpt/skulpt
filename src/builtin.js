@@ -956,7 +956,8 @@ Sk.builtin.pow = function pow(a, b, c) {
         
         if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0))
         {
-            return new Sk.builtin.nmber(res, Sk.builtin.nmber.float$);
+            print("hoi");
+            return new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.float$);
         }
         else if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng)
         {
