@@ -59,7 +59,6 @@ name: E
       ]
   ]
 name: Exception
->>>>>>> 8f6a0561ef200c284806ca8f8ba3a30b5500e8f2
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -71,21 +70,6 @@ name: Exception
   is_namespace: False
   namespaces: [
   ]
-<<<<<<< HEAD
-name: pow
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: True
-  is_declared_global: False
-  is_local: False
-  is_free: False
-  is_assigned: False
-  is_namespace: False
-  namespaces: [
-  ]
-name: type
-=======
 name: U
   is_referenced: True
   is_imported: False
@@ -254,15 +238,3 @@ name: e
   namespaces: [
   ]
 name: object
->>>>>>> 8f6a0561ef200c284806ca8f8ba3a30b5500e8f2
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: True
-  is_declared_global: False
-  is_local: False
-  is_free: False
-  is_assigned: False
-  is_namespace: False
-  namespaces: [
-  ]

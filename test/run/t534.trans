@@ -38,13 +38,6 @@ Module(body=[ClassDef(name='U',
                    values=[Call(func=Name(id='U',
                                           ctx=Load()),
                                 args=[],
->>>>>>> 8f6a0561ef200c284806ca8f8ba3a30b5500e8f2
-                                keywords=[],
-                                starargs=None,
-                                kwargs=None)],
-                   nl=True),
-             Print(dest=None,
-<<<<<<< HEAD
                    values=[Call(func=Name(id='int',
                                           ctx=Load()),
                                 args=[Num(n=3999999999.0)],
@@ -71,7 +64,6 @@ Module(body=[ClassDef(name='U',
                                 starargs=None,
                                 kwargs=None)],
                    nl=True)])
-=======
                    values=[UnaryOp(op=USub(),
                                    operand=Call(func=Name(id='U',
                                                           ctx=Load()),
@@ -128,4 +120,3 @@ Module(body=[ClassDef(name='U',
                                                                         ctx=Load())],
                                                            nl=True)])],
                        orelse=[])])
->>>>>>> 8f6a0561ef200c284806ca8f8ba3a30b5500e8f2
