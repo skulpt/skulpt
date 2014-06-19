@@ -949,16 +949,16 @@ Sk.builtin.pow = function pow(a, b, c) {
 
     if (c === undefined)
     {
-        var left = new Sk.builtin.nmber(a_num, Sk.builtin.nmber.int$);
-        var right = new Sk.builtin.nmber(b_num, Sk.builtin.nmber.int$);
-        
-        var res = left.nb$power(right);
-        
         if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0))
         {
             return new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.float$);
         }
-        else if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng)
+        
+        var left = new Sk.builtin.nmber(a_num, Sk.builtin.nmber.int$);
+        var right = new Sk.builtin.nmber(b_num, Sk.builtin.nmber.int$);
+        var res = left.nb$power(right);
+        
+        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng)
         {
             return new Sk.builtin.lng(res);
         }
