@@ -69,6 +69,33 @@ Sk.builtin.list.prototype.list_concat_ = function(other)
     return new Sk.builtin.list(ret);
 }
 
+Sk.builtin.list.prototype.list_extend_ = function(other)
+{
+    if (!Sk.builtin.checkIterable(other)) 
+    {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) 
+                                        + "' object is not iterable");  
+    }
+
+    if (this == other) 
+    {
+        // Handle extending list with itself
+        var newb = [];
+        for (var it = other.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            newb.push(i);
+
+        // Concatenate
+        this.v.push.apply(this.v, newb);
+    }
+    else
+    {
+        for (var it = other.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
+            this.v.push(i);
+    }
+
+    return this;
+}
+
 Sk.builtin.list.prototype.list_del_item_ = function(i)
 {
     i = Sk.builtin.asnum$(i);
@@ -180,7 +207,7 @@ Sk.builtin.list.prototype.tp$iter = Sk.builtin.list.prototype.list_iter_;
 Sk.builtin.list.prototype.sq$length = function() { return this.v.length; };
 Sk.builtin.list.prototype.sq$concat = Sk.builtin.list.prototype.list_concat_;
 Sk.builtin.list.prototype.nb$add = Sk.builtin.list.prototype.list_concat_;
-Sk.builtin.list.prototype.nb$inplace_add = Sk.builtin.list.prototype.list_concat_;
+Sk.builtin.list.prototype.nb$inplace_add = Sk.builtin.list.prototype.list_extend_;
 Sk.builtin.list.prototype.sq$repeat = function(n)
 {
     if (!Sk.builtin.checkInt(n)) {
@@ -445,23 +472,7 @@ Sk.builtin.list.prototype['insert'] = new Sk.builtin.func(function(self, i, x)
 Sk.builtin.list.prototype['extend'] = new Sk.builtin.func(function(self, b)
 {
     Sk.builtin.pyCheckArgs("extend", arguments, 2, 2);
-    if (!Sk.builtin.checkIterable(b)) {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(b) 
-                                        + "' object is not iterable");  
-    };
-    if (self == b) {
-        // Handle extending list with itself
-        var newb = [];
-        for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-            newb.push(i);
-
-        // Concatenate
-        self.v.push.apply(self.v, newb);
-
-        return Sk.builtin.none.none$;
-    };
-    for (var it = b.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext())
-        self.v.push(i);
+    self.list_extend_(b);
     return Sk.builtin.none.none$;
 });
 

@@ -30,6 +30,16 @@ Sk.abstr.binop_type_error = function(v, w, name)
     throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '"
             + vtypename + "' and '" + wtypename + "'");
 };
+Sk.abstr.unop_type_error = function(v, name)
+{
+    var vtypename = Sk.abstr.typeName(v);
+    var uop = {
+        'UAdd':'+',
+        'USub':'-',
+        'Invert':'~'}[name];
+
+    throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
+};
 
 Sk.abstr.boNameToSlotFuncLhs_ = function(obj, name) {
   if (obj === null) {
@@ -87,6 +97,16 @@ Sk.abstr.iboNameToSlotFunc_ = function(obj, name) {
     case "BitXor":   return obj.nb$inplace_xor          ? obj.nb$inplace_xor          : obj['__ixor__'];
   }
 };
+Sk.abstr.uoNameToSlotFunc_ = function(obj, name) {
+  if (obj === null) {
+    return undefined;
+  };
+  switch (name) {
+    case "USub":      return obj.nb$negative          ? obj.nb$negative :          obj['__neg__'];
+    case "UAdd":      return obj.nb$positive          ? obj.nb$positive :          obj['__pos__'];
+    case "Invert":    return obj.nb$invert            ? obj.nb$invert :            obj['__invert__'];
+  }
+};
 
 Sk.abstr.binary_op_ = function(v, w, opname)
 {
@@ -138,6 +158,21 @@ Sk.abstr.binary_iop_ = function(v, w, opname)
         if (ret !== undefined) return ret;
     }
     Sk.abstr.binop_type_error(v, w, opname);
+};
+Sk.abstr.unary_op_ = function(v, opname)
+{
+    var ret;
+    var vop = Sk.abstr.uoNameToSlotFunc_(v, opname);
+    if (vop !== undefined)
+    {
+    if (vop.call) {
+            ret = vop.call(v);
+    } else {  // assume that vop is an __xxx__ type method
+        ret = Sk.misceval.callsim(vop,v); //  added to be like not-in-place... is this okay?
+        }
+        if (ret !== undefined) return ret;
+    }
+    Sk.abstr.unop_type_error(v, opname);
 };
 
 //
@@ -322,8 +357,7 @@ Sk.abstr.numberUnaryOp = function(v, op)
         if (op === "Invert" && v.nb$invert) return v.nb$invert();
     }
 
-    var vtypename = Sk.abstr.typeName(v);
-    throw new Sk.builtin.TypeError("unsupported operand type for " + op + " '" + vtypename + "'");
+    return Sk.abstr.unary_op_(v, op);
 };
 goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 

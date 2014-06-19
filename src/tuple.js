@@ -191,6 +191,13 @@ Sk.builtin.tuple.prototype.tp$richcompare = function(w, op)
 
 Sk.builtin.tuple.prototype.sq$concat = function(other)
 {
+    if (other.__class__ != Sk.builtin.tuple)
+    {
+        var msg = 'can only concatenate tuple (not "';
+        msg += Sk.abstr.typeName(other) + '") to tuple';
+        throw new Sk.builtin.TypeError(msg);
+    }
+
     return new Sk.builtin.tuple(this.v.concat(other.v));
 };
 

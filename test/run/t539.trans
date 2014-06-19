@@ -1,3 +1,14 @@
+<<<<<<< HEAD
+Module(body=[Print(dest=None,
+                   values=[Call(func=Name(id='type',
+                                          ctx=Load()),
+                                args=[Call(func=Name(id='int',
+                                                     ctx=Load()),
+                                           args=[Num(n=3999999999.0)],
+                                           keywords=[],
+                                           starargs=None,
+                                           kwargs=None)],
+=======
 Module(body=[ClassDef(name='U',
                       bases=[Name(id='object',
                                   ctx=Load())],

@@ -692,7 +692,11 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
 
         var i;
         if (mappingKey === undefined || mappingKey === "" ) i = index++; // ff passes '' not undef for some reason
-
+				
+				if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
+					precision = undefined;
+				}
+				
         var zeroPad = false;
         var leftAdjust = false;
         var blankBeforePositive = false;
@@ -842,7 +846,7 @@ Sk.builtin.str.prototype.nb$remainder = function(rhs)
 						precision = 6;
 					else if (conversionType === 'f' || conversionType === 'F')
 						precision = 7;
-                var result = (convValue)[convName](precision);
+					      var result = (convValue)[convName](precision);
                 if ('EFG'.indexOf(conversionType) !== -1) result = result.toUpperCase();
                 // todo; signs etc.
                 return handleWidth(['', result]);
