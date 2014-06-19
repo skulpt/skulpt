@@ -142,7 +142,6 @@ Sk.builtin.int_ = function (x, base) {
     }
 
     x = Sk.builtin.asnum$(x);
-    print("hoi");
     if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
         return new Sk.builtin.lng(x); 
     }
