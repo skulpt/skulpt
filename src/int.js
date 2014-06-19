@@ -119,7 +119,7 @@ Sk.builtin.int_ = function (x, base) {
     if (x instanceof Sk.builtin.str) {
         base = Sk.builtin.asnum$(base);
         val = Sk.str2number(x.v, base, parseInt, function (x) { return -x; }, "int");
-        if ((val > Sk.builtin.lng.threshold$) || (val < -Sk.builtin.lng.threshold$)) {
+        if ((val > Sk.builtin.nmber.threshold$) || (val < -Sk.builtin.nmber.threshold$)) {
             // Too big for int, convert to long
             return new Sk.builtin.lng(x, base);
         }
@@ -138,8 +138,9 @@ Sk.builtin.int_ = function (x, base) {
     }
 
     x = Sk.builtin.asnum$(x);
-    if (x > Sk.builtin.lng.threshold$ || x < -Sk.builtin.lng.threshold$) {
-        return Sk.builtin.lng(x); 
+    print("hoi");
+    if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
+        return new Sk.builtin.lng(x); 
     }
     return new Sk.builtin.nmber(new Sk.builtin.lng(x), Sk.builtin.nmber.int$);
 };
