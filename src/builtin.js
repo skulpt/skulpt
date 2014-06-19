@@ -174,21 +174,21 @@ Sk.builtin.asnum$nofloat = function(a) {
 }
 goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
-Sk.builtin.round = function round(number, ndigits)
-{
+Sk.builtin.round = function round(number, ndigits) {
     var result, multiplier;
-
     Sk.builtin.pyCheckArgs("round", arguments, 1, 2);
+    
     if (!Sk.builtin.checkNumber(number)) {
-	throw new Sk.builtin.TypeError("a float is required");
+        throw new Sk.builtin.TypeError("a float is required");
     }
+    
     if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
-    };
+    }
 
     if (ndigits === undefined) {
         ndigits = 0;
-    };
+    }
 
     number = Sk.builtin.asnum$(number);
     ndigits = Sk.misceval.asIndex(ndigits);
