@@ -130,6 +130,10 @@ Sk.builtin.int_ = function (x, base) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     }
 
+    if (x === undefined || x === Sk.builtin.none) {
+        x = 0;
+    }
+    
     if (x instanceof Sk.builtin.lng) {
         if (x.cantBeInt()) {
             return new Sk.builtin.lng(x);
@@ -142,7 +146,7 @@ Sk.builtin.int_ = function (x, base) {
     if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
         return new Sk.builtin.lng(x); 
     }
-    return new Sk.builtin.nmber(new Sk.builtin.lng(x), Sk.builtin.nmber.int$);
+    return new Sk.builtin.nmber(parseInt(x, base), Sk.builtin.nmber.int$);
 };
 Sk.builtin.int_.co_varnames = [ "base" ];
 Sk.builtin.int_.co_numargs = 2;
