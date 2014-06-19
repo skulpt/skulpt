@@ -926,8 +926,9 @@ Sk.builtin.hasattr = function hasattr(obj,attr) {
 Sk.builtin.pow = function pow(a, b, c) {
     Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
 
-    if (c instanceof Sk.builtin.none)
+    if (c instanceof Sk.builtin.none) {
         c = undefined;
+    }
 
     var a_num = Sk.builtin.asnum$(a);
     var b_num = Sk.builtin.asnum$(b);
@@ -935,62 +936,60 @@ Sk.builtin.pow = function pow(a, b, c) {
 
     if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b))
     {
-	if (c === undefined)
-	{
-	    throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
-	}
-	else
-	{
-	    throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
-	}
+        if (c === undefined)
+        {
+            throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
+        }
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");        
     }
     if (a_num < 0 && b.skType === Sk.builtin.nmber.float$)
     {
-	throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
+	   throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
     }
 
     if (c === undefined)
     {
-	var res = Math.pow(a_num, b_num);
-	if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0))
-	{
-	    return new Sk.builtin.nmber(res, Sk.builtin.nmber.float$);
-	}
-	else if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng)
-	{
-	    return new Sk.builtin.lng(res);
-	}
-	else
-	{
-	    return new Sk.builtin.nmber(res, Sk.builtin.nmber.int$);
-	}
+        var left = new Sk.builtin.nmber(a_num, Sk.builtin.nmber.int$);
+        var right = new Sk.builtin.nmber(b_num, Sk.builtin.nmber.int$);
+        
+        var res = left.nb$power(right);
+        
+        if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0))
+        {
+            return new Sk.builtin.nmber(res, Sk.builtin.nmber.float$);
+        }
+        else if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng)
+        {
+            return new Sk.builtin.lng(res);
+        }
+
+        return res;
     }
     else
     {
-	if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c))
-	{
-	    throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
-	}
-	if (b_num < 0)
-	{
-	    throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
-	}
+        if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c))
+        {
+            throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
+        }
+        if (b_num < 0)
+        {
+            throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+        }
 
-	if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng)
-            || (Math.pow(a_num, b_num) === Infinity))
-	{
-	    // convert a to a long so that we can use biginteger's modPowInt method
-	    a = new Sk.builtin.lng(a);
-	    return a.nb$power(b, c);
-	}
-	else
-	{
-	    var ret = new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.int$);
-	    return ret.nb$remainder(c);
-	}
+        if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng)
+                || (Math.pow(a_num, b_num) === Infinity))
+        {
+            // convert a to a long so that we can use biginteger's modPowInt method
+            a = new Sk.builtin.lng(a);
+            return a.nb$power(b, c);
+        }
+        else
+        {
+            var ret = new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.int$);
+            return ret.nb$remainder(c);
+        }
     }
-
-}
+};
 
 Sk.builtin.quit = function quit(msg) {
     var s = new Sk.builtin.str(msg).v;
