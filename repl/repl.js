@@ -71,7 +71,7 @@ while (true) {
                 //evaluate it if nessecary
                 lines.push("evaluationresult = " + lines.pop());
                 //print the result if not None
-                lines.push("if not evaluationresult == None: print evaluationresult");
+                lines.push("if not evaluationresult == None: print repr(evaluationresult)");
             }
         }
     }

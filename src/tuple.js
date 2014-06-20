@@ -92,7 +92,7 @@ Sk.builtin.tuple.prototype.tp$hash = function()
     }
     x += 97531;
     if (x === -1) x = -2;
-    return new Sk.builtin.nmber(x, Sk.builtin.nmber.int$);
+    return new Sk.builtin.nmber(x | 0, Sk.builtin.nmber.int$);
 };
 
 Sk.builtin.tuple.prototype.sq$repeat = function(n)

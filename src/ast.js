@@ -1603,7 +1603,7 @@ function parsenumber(c, s, lineno)
     }
 
     // Convert to long
-    if (val > Sk.builtin.lng.threshold$
+    if (val > Sk.builtin.nmber.threshold$
         && Math.floor(val) === val
         && (s.indexOf('e') === -1 && s.indexOf('E') === -1))
     {

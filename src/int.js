@@ -119,7 +119,7 @@ Sk.builtin.int_ = function (x, base) {
     if (x instanceof Sk.builtin.str) {
         base = Sk.builtin.asnum$(base);
         val = Sk.str2number(x.v, base, parseInt, function (x) { return -x; }, "int");
-        if ((val > Sk.builtin.lng.threshold$) || (val < -Sk.builtin.lng.threshold$)) {
+        if ((val > Sk.builtin.nmber.threshold$) || (val < -Sk.builtin.nmber.threshold$)) {
             // Too big for int, convert to long
             return new Sk.builtin.lng(x, base);
         }
@@ -130,6 +130,10 @@ Sk.builtin.int_ = function (x, base) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     }
 
+    if (x === undefined || x === Sk.builtin.none) {
+        x = 0;
+    }
+    
     if (x instanceof Sk.builtin.lng) {
         if (x.cantBeInt()) {
             return new Sk.builtin.lng(x);
@@ -137,10 +141,11 @@ Sk.builtin.int_ = function (x, base) {
         return new Sk.builtin.nmber(x.toInt$(), Sk.builtin.nmber.int$);
     }
 
-    // sneaky way to do truncate, floor doesn't work < 0, round doesn't work on the .5> side
-    // bitwise ops convert to 32bit int in the "C-truncate-way" we want.
     x = Sk.builtin.asnum$(x);
-    return new Sk.builtin.nmber(x | 0, Sk.builtin.nmber.int$);
+    if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
+        return new Sk.builtin.lng(x); 
+    }
+    return new Sk.builtin.nmber(parseInt(x, base), Sk.builtin.nmber.int$);
 };
 Sk.builtin.int_.co_varnames = [ "base" ];
 Sk.builtin.int_.co_numargs = 2;
