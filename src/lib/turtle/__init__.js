@@ -67,13 +67,13 @@ if (!TurtleGraphics) {
                            a * this[1] + b * v[1],
                            a * this[2] + b * v[2]]);
 
-        
+
     };
     Vector.prototype.cross = function (v) {
         if (this.length !== 3 || v.length !== 3) {
             return;
         }
- 
+
         return new Vector([this[1] * v[2] - this[2] * v[1],
                     this[2] * v[0] - this[0] * v[2],
                     this[0] * v[1] - this[1] * v[0]]);
@@ -205,7 +205,7 @@ if (!TurtleGraphics) {
             }
 
 			context.lineWidth = t.get_pen_width();
-			
+
             filling = false;
             if (isNaN(t.turtleCanvas.delay)) {
                 t.turtleCanvas.delay = 0;
@@ -313,7 +313,7 @@ if (!TurtleGraphics) {
                         break;
                     case 'SC': // speed change
                         speed = oper[1];
-                        
+
                         if (speed < 0) {
                             t.turtleCanvas.delay = 0;
                         } else {
@@ -360,7 +360,7 @@ if (!TurtleGraphics) {
             }
         }
     };
-    //  
+    //
     //  Drawing Functions
     //
     // break a line into segments
@@ -413,7 +413,7 @@ if (!TurtleGraphics) {
     };
     //
     // Define TurtleCanvas
-    // 
+    //
     function TurtleCanvas(options) {
         this.canvasID = TurtleGraphics.defaults.canvasID;
         if (options.canvasID) {
@@ -759,7 +759,7 @@ if (!TurtleGraphics) {
             }
             return res;
         }
-        
+
         // Initialize the turtle.
         var options = {}, ctx = null;
         if (opt) {
@@ -928,11 +928,11 @@ if (!TurtleGraphics) {
         if (s > 0 && !this.animate) {
             this.animate = true;
             this.turtleCanvas.setSpeedDelay(s);
-        } else if (s === 0 && !this.animate) {
-            this.turtleCanvas.setSpeedDelay(s);
+        } else if (s === 0 ) {
+            this.animate = false;
+            this.turtleCanvas.cancelAnimation();
         } else {
-            //          this.animate = false;
-            //          this.turtleCanvas.cancelAnimation();
+            this.turtleCanvas.setSpeedDelay(s);
             this.addDrawingEvent([ 'SC', s, t ]);
             this.addDrawingEvent(['NO']);
         }
@@ -1337,7 +1337,7 @@ if (!TurtleGraphics) {
     Turtle.prototype.isvisible = function () {
         return this.visible;
     };
-    // 
+    //
     // Appearance
     //
     Turtle.prototype.shape = function (s) {
@@ -1361,7 +1361,7 @@ if (!TurtleGraphics) {
         if (!pos) {
             pos = this.position;
         }
-        
+
         for (p = 0; p < plist.length; p = p + 1) {
             rtPoints.push(plist[p]
                           .scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale)
@@ -1421,8 +1421,8 @@ var $builtinmodule = function (name) {
     var mod = {},
 		initializeTurtlegraphics = function() {
 			if (!TurtleGraphics) { TurtleGraphics = {}; }
-			if (!TurtleGraphics.defaults) { 
-				TurtleGraphics.defaults = { 
+			if (!TurtleGraphics.defaults) {
+				TurtleGraphics.defaults = {
 					animate: true,
 					canvasID: Sk.canvas,
 					degrees: true
