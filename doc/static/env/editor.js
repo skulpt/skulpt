@@ -9,16 +9,25 @@ $(document).ready(function () {
             Sk.configure({output: outf, read: builtinRead});
             Sk.canvas = "mycanvas";
             Sk.pre = "edoutput";
-            Sk.importMainWithBody("<stdin>", false, editor.getValue());
+            try {
+                Sk.importMainWithBody("<stdin>", false, editor.getValue());
+            } catch(e) {
+                outf(e.toString() + "\n")
+            }
         },
         "Shift-Enter": function (editor) {
             Sk.configure({output: outf, read: builtinRead});
             Sk.canvas = "mycanvas";
             Sk.pre = "edoutput";
-            Sk.importMainWithBody("<stdin>", false, editor.getSelection());
+            try {
+                Sk.importMainWithBody("<stdin>", false, editor.getSelection());
+            } catch(e) {
+                outf(e.toString() + "\n")
+            }
         }
     }
-    
+
+
     var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
         parserfile: ["parsepython.js"],
         autofocus: true,
@@ -33,6 +42,9 @@ $(document).ready(function () {
         extraKeys: keymap,
         parserConfig: {'pythonVersion': 2, 'strictErrors': true}
     });
+
+    $("#skulpt_run").click(function (e) { keymap["Ctrl-Enter"](editor)} );
+
     $("#toggledocs").click(function (e) {
         $("#quickdocs").toggle();
     });
