@@ -75,6 +75,7 @@ Sk.builtin.type = function(name, bases, dict)
             klass[v] = dict[v];
         }
         klass['__class__'] = klass;
+        klass['__name__'] = new Sk.builtin.str(name);
         klass.sk$klass = true;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
@@ -103,7 +104,7 @@ Sk.builtin.type = function(name, bases, dict)
                 return Sk.misceval.apply(lenf, undefined, undefined, undefined, []);
 	    var tname = Sk.abstr.typeName(this);
 	    throw new Sk.builtin.AttributeError(tname + " instance has no attribute '__len__'");
-	};	    
+	};
         klass.prototype.tp$call = function(args, kw)
         {
             var callf = this.tp$getattr("__call__");
@@ -119,7 +120,7 @@ Sk.builtin.type = function(name, bases, dict)
             if (iterf)
             {
                  var ret = Sk.misceval.callsim(iterf);
-                 // This check does not work for builtin iterators 
+                 // This check does not work for builtin iterators
                  // if (ret.tp$getattr("next") === undefined)
                  //    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + tname + "'");
                  return ret;
@@ -164,7 +165,7 @@ Sk.builtin.type = function(name, bases, dict)
 
         klass.prototype.ob$type = klass;
         Sk.builtin.type.makeIntoTypeObj(name, klass);
-	
+
 	// fix for class attributes
 	klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
 
@@ -372,7 +373,7 @@ Sk.builtin.type.buildMRO_ = function(klass)
  *
  * Kind of complicated to explain, but not really that complicated in
  * implementation. Explanations:
- * 
+ *
  * http://people.csail.mit.edu/jrb/goo/manual.43/goomanual_55.html
  * http://www.python.org/download/releases/2.3/mro/
  * http://192.220.96.201/dylan/linearization-oopsla96.html
@@ -380,7 +381,7 @@ Sk.builtin.type.buildMRO_ = function(klass)
  * This implementation is based on a post by Samuele Pedroni on python-dev
  * (http://mail.python.org/pipermail/python-dev/2002-October/029176.html) when
  * discussing its addition to Python.
- */ 
+ */
 Sk.builtin.type.buildMRO = function(klass)
 {
     return new Sk.builtin.tuple(Sk.builtin.type.buildMRO_(klass));
