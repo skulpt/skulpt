@@ -61,10 +61,10 @@ Sk.builtin.lng.prototype.tp$name = "long";
 Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.builtin.lng);
 
 //    Threshold to determine when types should be converted to long
-Sk.builtin.lng.threshold$ = Math.pow(2, 53);
+//Sk.builtin.lng.threshold$ = Sk.builtin.nmber.threshold$;
 
-Sk.builtin.lng.MAX_INT$ = new Sk.builtin.lng(Sk.builtin.lng.threshold$);
-Sk.builtin.lng.MIN_INT$ = new Sk.builtin.lng(-Sk.builtin.lng.threshold$);
+Sk.builtin.lng.MAX_INT$ = new Sk.builtin.lng(Sk.builtin.nmber.threshold$);
+Sk.builtin.lng.MIN_INT$ = new Sk.builtin.lng(-Sk.builtin.nmber.threshold$);
 
 Sk.builtin.lng.prototype.cantBeInt = function () {
     return (this.longCompare(Sk.builtin.lng.MAX_INT$) > 0) || (this.longCompare(Sk.builtin.lng.MIN_INT$) < 0);
