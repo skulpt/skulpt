@@ -28,3 +28,27 @@ name: b
   is_namespace: False
   namespaces: [
   ]
+name: d
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: mylist
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
