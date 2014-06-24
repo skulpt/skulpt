@@ -124,11 +124,15 @@ Sk.builtin.list.prototype.list_ass_item_ = function(i, v)
 
 Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
 {
+    var args
 	ilow = Sk.builtin.asnum$(ilow);
 	ihigh = Sk.builtin.asnum$(ihigh);
 
-    // todo; item rather list/null
-    var args = v.v.slice(0);
+    if (v.tp$iter) {
+        args = new Sk.builtin.list(v).v.slice(0)
+    } else {
+        throw new Sk.builtin.TypeError("Argument to slice assignment must be iterable")
+    }
     args.unshift(ihigh - ilow);
     args.unshift(ilow);
     this.v.splice.apply(this.v, args);
