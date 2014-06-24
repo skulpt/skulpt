@@ -131,7 +131,7 @@ Sk.builtin.list.prototype.list_ass_slice_ = function(ilow, ihigh, v)
     if (v.tp$iter) {
         args = new Sk.builtin.list(v).v.slice(0)
     } else {
-        throw new Sk.builtin.TypeError("Argument to slice assignment must be iterable")
+        throw new Sk.builtin.TypeError("You must assign an iterable to a slice")
     }
     args.unshift(ihigh - ilow);
     args.unshift(ilow);
