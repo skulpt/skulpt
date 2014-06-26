@@ -322,20 +322,41 @@ Compiler.prototype.cdict = function (e) {
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
 };
 
-Compiler.prototype.clistcompgen = function (tmpname, generators, genIndex, elt) {
-    var velt;
-    var ifres;
-    var i;
-    var n;
-    var target;
-    var nexti;
-    var start = this.newBlock("list gen start");
-    var skip = this.newBlock("list gen skip");
-    var anchor = this.newBlock("list gen anchor");
+Compiler.prototype.clistcomp = function(e)
+{
+    goog.asserts.assert(e instanceof ListComp);
+    var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
+    return this.ccompgen("list", tmp, e.generators, 0, e.elt);
+};
+
+Compiler.prototype.cdictcomp = function(e) {
+    goog.asserts.assert(e instanceof DictComp);
+    var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
+    return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key);
+};
+
+Compiler.prototype.csetcomp = function(e) {
+    goog.asserts.assert(e instanceof SetComp);
+    var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
+    return this.ccompgen("set", tmp, e.generators, 0, e.elt);
+};
+
+Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key) {
+    var start = this.newBlock(type + " comp start");
+    var skip = this.newBlock(type + " comp skip");
+    var anchor = this.newBlock(type + " comp anchor");
 
     var l = generators[genIndex];
     var toiter = this.vexpr(l.iter);
     var iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
+    var lvalue;
+    var lkey;
+    var ifres;
+    var i;
+    var target;
+    var nexti;
+    var n;
+    
     this._jump(start);
     this.setBlock(start);
 
@@ -350,119 +371,24 @@ Compiler.prototype.clistcompgen = function (tmpname, generators, genIndex, elt) 
         this._jumpfalse(ifres, start);
     }
 
-    if (++genIndex < generators.length) {
-        this.clistcompgen(tmpname, generators, genIndex, elt);
-    }
-
-    if (genIndex >= generators.length) {
-        velt = this.vexpr(elt);
-        out(tmpname, ".v.push(", velt, ");"); // todo;
-        this._jump(skip);
-        this.setBlock(skip);
-    }
-
-    this._jump(start);
-
-    this.setBlock(anchor);
-
-    return tmpname;
-};
-
-Compiler.prototype.clistcomp = function (e) {
-    var tmp;
-    goog.asserts.assert(e instanceof ListComp);
-    tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
-    return this.clistcompgen(tmp, e.generators, 0, e.elt);
-};
-
-Compiler.prototype.cdictcomp = function(e) {
-    goog.asserts.assert(e instanceof DictComp);
-    var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
-    return this.cdictcompgen(tmp, e.generators, 0, e.key, e.value);
-};
-
-Compiler.prototype.csetcomp = function(e) {
-    goog.asserts.assert(e instanceof SetComp);
-    var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
-    return this.csetcompgen(tmp, e.generators, 0, e.elt);
-}
-
-Compiler.prototype.csetcompgen = function (tmpname, generators, genIndex, elt) {
-    var start = this.newBlock('set comp start');
-    var skip = this.newBlock('set comp skip');
-    var anchor = this.newBlock('set comp anchor');
-
-    var l = generators[genIndex];
-    var toiter = this.vexpr(l.iter);
-    var iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
-    this._jump(start);
-    this.setBlock(start);
-
-    // load targets
-    var nexti = this._gr('next', "Sk.abstr.iternext(", iter, ")");
-    this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
-    var target = this.vexpr(l.target, nexti);
-
-    var n = l.ifs.length;
-    for (var i = 0; i < n; ++i)
-    {
-        var ifres = this.vexpr(l.ifs[i]);
-        this._jumpfalse(ifres, start);
-    }
-
     if (++genIndex < generators.length)
     {
-        this.csetcompgen(tmpname, generators, genIndex, elt);
+        this.ccompgen(type, tmpname, generators, genIndex, value, key);
     }
 
     if (genIndex >= generators.length)
     {
-        var velt = this.vexpr(elt);
-        out(tmpname, ".v.mp$ass_subscript(", velt, ", true);");
-        this._jump(skip);
-        this.setBlock(skip);
-    }
-
-    this._jump(start);
-
-    this.setBlock(anchor);
-
-    return tmpname;
-}
-
-Compiler.prototype.cdictcompgen = function(tmpname, generators, genIndex, key, value){
-    var start = this.newBlock('dict gen start');
-    var skip = this.newBlock('dict gen skip');
-    var anchor = this.newBlock('dict gen anchor');
-
-    var l = generators[genIndex];
-    var toiter = this.vexpr(l.iter);
-    var iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
-    this._jump(start);
-    this.setBlock(start);
-
-    // load targets
-    var nexti = this._gr('next', "Sk.abstr.iternext(", iter, ")");
-    this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
-    var target = this.vexpr(l.target, nexti);
-
-    var n = l.ifs.length;
-    for (var i = 0; i < n; ++i)
-    {
-        var ifres = this.vexpr(l.ifs[i]);
-        this._jumpfalse(ifres, start);
-    }
-
-    if (++genIndex < generators.length)
-    {
-        this.cdictcompgen(tmpname, generators, genIndex, key, value);
-    }
-
-    if (genIndex >= generators.length)
-    {
-        var key = this.vexpr(key);
-        var value = this.vexpr(value);
-        out(tmpname, ".mp$ass_subscript(", key, ",", value, ");");
+        lvalue = this.vexpr(value);
+        if (type === "dict") {
+            lkey = this.vexpr(key);
+            out(tmpname, ".mp$ass_subscript(", key, ",", value, ");");
+        } 
+        else if (type === 'list') {
+            out(tmpname, ".v.push(", value, ");"); // todo;
+        } 
+        else if (type === 'set') {
+            out(tmpname, ".v.mp$ass_subscript(", value, ", true);");
+        }
         this._jump(skip);
         this.setBlock(skip);
     }
@@ -479,7 +405,8 @@ Compiler.prototype.cyield = function(e)
     if (this.u.ste.blockType !== FunctionBlock) {
         throw new SyntaxError("'yield' outside function");
     }
-    val = "null";
+    var val = "null",
+        nextBlock;
     if (e.value) {
         val = this.vexpr(e.value);
     }
@@ -783,17 +710,11 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Name:
             return this.nameop(e.id, e.ctx, data);
         case List:
-<<<<<<< HEAD
-            return this.ctupleorlist(e, data, "list");
-        case Tuple:
-            return this.ctupleorlist(e, data, "tuple");
-=======
             return this.ctuplelistorset(e, data, 'list');
         case Tuple:
             return this.ctuplelistorset(e, data, 'tuple');
         case Set:
             return this.ctuplelistorset(e, data, 'set');
->>>>>>> Adds set literals
         default:
             goog.asserts.fail("unhandled case in vexpr");
     }
