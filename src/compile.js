@@ -380,10 +380,10 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
             lkey = this.vexpr(key);
             out(tmpname, ".mp$ass_subscript(", key, ",", value, ");");
         } 
-        else if (type === 'list') {
+        else if (type === "list") {
             out(tmpname, ".v.push(", value, ");"); // todo;
         } 
-        else if (type === 'set') {
+        else if (type === "set") {
             out(tmpname, ".v.mp$ass_subscript(", value, ", true);");
         }
         this._jump(skip);
