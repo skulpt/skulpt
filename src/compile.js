@@ -322,11 +322,10 @@ Compiler.prototype.cdict = function (e) {
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
 };
 
-Compiler.prototype.clistcomp = function(e)
-{
+Compiler.prototype.clistcomp = function(e) {
     goog.asserts.assert(e instanceof ListComp);
     var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
-    return this.ccompgen("list", tmp, e.generators, 0, e.elt);
+    return this.ccompgen("list", tmp, e.generators, 0, e.elt, null);
 };
 
 Compiler.prototype.cdictcomp = function(e) {
@@ -338,7 +337,7 @@ Compiler.prototype.cdictcomp = function(e) {
 Compiler.prototype.csetcomp = function(e) {
     goog.asserts.assert(e instanceof SetComp);
     var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
-    return this.ccompgen("set", tmp, e.generators, 0, e.elt);
+    return this.ccompgen("set", tmp, e.generators, 0, e.elt, null);
 };
 
 Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key) {
@@ -371,13 +370,11 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
         this._jumpfalse(ifres, start);
     }
 
-    if (++genIndex < generators.length)
-    {
+    if (++genIndex < generators.length) {
         this.ccompgen(type, tmpname, generators, genIndex, value, key);
     }
 
-    if (genIndex >= generators.length)
-    {
+    if (genIndex >= generators.length) {
         lvalue = this.vexpr(value);
         if (type === "dict") {
             lkey = this.vexpr(key);
