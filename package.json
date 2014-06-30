@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "jshint": "~2.5.1"
+  }
+}
