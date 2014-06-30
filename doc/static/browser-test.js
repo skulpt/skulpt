@@ -10784,11 +10784,13 @@ function parsestr(c, s)
 
     var quote = s.charAt(0);
     var rawmode = false;
+    var unicode = false;
 
     if (quote === 'u' || quote === 'U')
     {
         s = s.substr(1);
         quote = s.charAt(0);
+        unicode = true;
     }
     else if (quote === 'r' || quote === 'R')
     {
@@ -10800,6 +10802,9 @@ function parsestr(c, s)
 
     goog.asserts.assert(quote === "'" || quote === '"' && s.charAt(s.length - 1) === quote);
     s = s.substr(1, s.length - 2);
+    if (unicode) {
+        s = encodeUtf8(s);
+    }
 
     if (s.length >= 4 && s.charAt(0) === quote && s.charAt(1) === quote)
     {
