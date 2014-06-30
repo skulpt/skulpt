@@ -1,0 +1,118 @@
+/*
+Options files live in your home directory or project repository, and can be
+written in JSON or YAML. They can be used not just by JSLintMate, but also by
+teammates' lint tools in other editors, continuous integration systems,
+automated testing systems, and more. This is great for helping your team use
+the same coding standards everywhere.
+
+To use this file, save a copy as `~/.jshintrc`. JSLintMate reads JSHint
+options from this path by default, and detects whether it contains JSON or
+YAML. If you want to change this path:
+
+    1.  Save a copy of this file where you'd like it. For example:
+
+          * If you want to keep a personal set of options, save it outside
+            of your project's directory, e.g., `~/Documents/jshint.json`.
+          * If you want to share an options file with project collaborators,
+            save it in your project's directory, e.g., `config/jshint.json`.
+
+    2.  In TextMate's "Bundles" menu, select "Bundle Editor" >
+        "Show Bundle Editor" > "JavaScript JSLintMate" > "Options Files".
+
+    3.  Change the value for `TM_JSLINTMATE_JSHINT_OPTIONS_FILE` to the path
+        for your options file.
+
+        If your options file is within your project, the value should start
+        with the variable `$TM_PROJECT_DIRECTORY`, e.g.,
+        `$TM_PROJECT_DIRECTORY/config/jshint.json`.
+
+    4.  Close the "Bundle Editor" window.
+
+Tweak the options in your new options file, and you're done!
+
+NOTE: Not all JSON parsers tolerate comments. If you use this options file with
+tools other than JSLintMate, you might need to remove these comments.
+
+More info:
+- JSHint options: http://www.jshint.com/options/
+- JSLintMate:     http://rondevera.github.com/jslintmate/
+*/
+
+
+{
+  /*** Globals ***/
+  // To ignore any custom global variables, enable the `predef` option and list
+  // your variables within it.
+
+  "predef": [
+    "Sk"
+  ],
+
+
+  /*** Enforcing options ***/
+  // Set these to `true` to enforce, or `false` to relax.
+  "bitwise":      true,
+  "curly":        true,
+  "eqeqeq":       false,
+  "forin":        false,
+  "immed":        true,
+  "latedef":      false,
+  "newcap":       true,
+  "noarg":        true,
+  "noempty":      true,
+  "nonew":        true,
+  "plusplus":     false,
+  "regexp":       false,
+  "undef":        true,
+  "strict":       false,
+  "trailing":     true,
+
+  /*** Relaxing options ***/
+  // Set these to `true` to relax, or `false` to enforce.
+  "asi":          false,
+  "boss":         true,
+  "debug":        false,
+  "eqnull":       true,
+  "es5":          true,
+  "esnext":       true,
+  "evil":         true,
+  "expr":         true,
+  "funcscope":    false,
+  "globalstrict": false,
+  "iterator":     false,
+  "lastsemic":    false,
+  "laxbreak":     false,
+  "laxcomma":     false,
+  "loopfunc":     true,
+  "multistr":     false,
+  "onecase":      false,
+  "proto":        false,
+  "regexdash":    false,
+  "scripturl":    false,
+  "shadow":       true,
+  "smarttabs":    true,
+  "sub":          false,
+  "supernew":     false,
+  "validthis":    true,
+
+  /*** Environments ***/
+  // Set each environment that you're using to `true`.
+  "browser":      true,
+  "couch":        false,
+  "devel":        false,
+  "dojo":         false,
+  "jquery":       true,
+  "mootools":     false,
+  "node":         false,
+  "nonstandard":  false,
+  "prototypejs":  false,
+  "rhino":        false,
+  "wsh":          false,
+
+  /*** Legacy from JSLint ***/
+  // Set these to `true` to enforce, or `false` to relax.
+  "nomen":        false,
+  "onevar":       false,
+  "passfail":     false,
+  "white":        false
+}
