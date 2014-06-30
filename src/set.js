@@ -96,11 +96,11 @@ Sk.builtin.set.prototype.tp$richcompare = function(w, op)
         case 'LtE':
         case 'Eq':
         case 'NotEq':
-            isSub = Sk.builtin.set.prototype['issubset'].func_code(this, w);
+            isSub = Sk.builtin.set.prototype['issubset'].func_code(this, w).v;
             break;
         case 'Gt':
         case 'GtE':
-            isSuper = Sk.builtin.set.prototype['issuperset'].func_code(this, w);
+            isSuper = Sk.builtin.set.prototype['issuperset'].func_code(this, w).v;
             break;
         default:
             goog.asserts.fail();
