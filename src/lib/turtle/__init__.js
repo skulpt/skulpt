@@ -329,6 +329,9 @@ if (!TurtleGraphics) {
                             t.turtleCanvas.setSegmentLength(oper[2]);
                         }
                         break;
+                    case 'CS': // change shape
+                        t.currentShape = oper[1];
+                        break;
                     case 'NO':
                         break;
                     } //else {
@@ -1342,7 +1345,7 @@ if (!TurtleGraphics) {
     //
     Turtle.prototype.shape = function (s) {
         if (this.shapeStore[s]) {
-            this.currentShape = s;
+            this.addDrawingEvent(['CS', s]); // add a Change Shape event
         }
     };
     Turtle.prototype.drawturtle = function (pHeading, pos) {
