@@ -101,7 +101,7 @@ More info:
   "couch":        false,
   "devel":        false,
   "dojo":         false,
-  "jquery":       true,
+  "jquery":       false,
   "mootools":     false,
   "node":         false,
   "nonstandard":  false,
