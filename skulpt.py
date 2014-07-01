@@ -172,7 +172,9 @@ if os.environ.get("CI",False):
 
 def test():
     """runs the unit tests."""
-    return os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
+    os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
+    print "Now running new unit tests"
+    rununits()
 
 def debugbrowser():
     tmpl = """
@@ -609,9 +611,9 @@ print("-----");
 print(input);
 print("-----");
 Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", true);
+Sk.importMain("%s", %s);
 print("-----");
-    """ % (fn, os.path.split(fn)[0], p3on, modname))
+    """ % (fn, os.path.split(fn)[0], p3on, modname, dumpJS))
     f.close()
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
@@ -626,6 +628,33 @@ def run3(fn):
 
 def shell(fn):
     run(fn, "--shell")
+
+
+def rununits(opt=True, p3=False):
+    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    jstestengine = jsengine.replace('--debugger', '')
+    for fn in testFiles:
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+        f = open("support/tmp/run.js", "w")
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        if p3:
+            p3on = 'true'
+        else:
+            p3on = 'false'
+        f.write("""
+var input = read('%s');
+print('%s');
+Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.importMain("%s", false);
+        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        f.close()
+        if opt:
+            os.system("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
+                                                              OUTFILE_MIN))
+        else:
+            os.system("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
+                getFileList(FILE_TYPE_TEST))))
 
 
 def repl():
@@ -822,6 +851,8 @@ def main():
         regensymtabtests()
     elif cmd == "run":
         run(sys.argv[2])
+    elif cmd == 'rununits':
+        rununits()
     elif cmd == "runopt":
         runopt(sys.argv[2])
     elif cmd == "run3":
