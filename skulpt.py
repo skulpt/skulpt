@@ -172,9 +172,12 @@ if os.environ.get("CI",False):
 
 def test():
     """runs the unit tests."""
-    os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
-    print "Now running new unit tests"
-    rununits()
+    res = os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)),
+                                    ' '.join(TestFiles)))
+    if res == 0:
+        print "Now running new unit tests"
+        return rununits()
+    return res
 
 def debugbrowser():
     tmpl = """
@@ -444,6 +447,10 @@ def dist(options):
     if ret != 0:
         print "Tests failed on compressed version."
         sys.exit(1)
+    ret = rununits(opt=True)
+    if ret != 0:
+        print "Tests failed on compressed unit tests"
+        sys.exit(1)
 
     ret = os.system("cp {0} {1}/tmp.js".format(compfn, DIST_DIR))
     if ret != 0:
@@ -593,7 +600,7 @@ def docbi(options):
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
 
-def run(fn, shell="", opt=False, p3=False):
+def run(fn, shell="", opt=False, p3=False, dumpJS='true'):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -630,9 +637,11 @@ def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=True, p3=False):
+def rununits(opt=False, p3=False):
     testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
+    passTot = 0
+    failTot = 0
     for fn in testFiles:
         if not os.path.exists("support/tmp"):
             os.mkdir("support/tmp")
@@ -650,11 +659,29 @@ Sk.importMain("%s", false);
         """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
         f.close()
         if opt:
-            os.system("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
-                                                              OUTFILE_MIN))
+            p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
+                                                           OUTFILE_MIN),shell=True,
+                      stdout=PIPE, stderr=PIPE)
         else:
-            os.system("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
-                getFileList(FILE_TYPE_TEST))))
+            p = Popen("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
+                getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
+
+        outs, errs = p.communicate()
+        print outs
+        if errs:
+            print errs
+        g = re.match(r'.*\n.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
+        if g:
+            passTot += int(g.group(1))
+            failTot += int(g.group(2))
+
+        print "Summary"
+        print "Passed: %5d Failed %5d" % (passTot, failTot)
+
+        if failTot != 0:
+            return -1
+        else:
+            return 0
 
 
 def repl():
