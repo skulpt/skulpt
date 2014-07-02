@@ -10,7 +10,9 @@
  */
 Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     base = Sk.builtin.asnum$(base);
-    if (!(this instanceof Sk.builtin.lng)) { return new Sk.builtin.lng(x, base); }
+    if (!(this instanceof Sk.builtin.lng)) {
+        return new Sk.builtin.lng(x, base);
+    }
 
     if (x === undefined) {
         this.biginteger = new Sk.builtin.biginteger(0);
@@ -86,7 +88,9 @@ Sk.longFromStr = function (s, base) {
             }
             return new Sk.builtin.biginteger(s, base);
         },
-        biginteger = Sk.str2number(s, base, parser, function (x) { return x.negate(); }, "long");
+        biginteger = Sk.str2number(s, base, parser, function (x) {
+            return x.negate();
+        }, "long");
 
     return new Sk.builtin.lng(biginteger);
 };
@@ -427,7 +431,9 @@ Sk.builtin.lng.prototype.nb$negative = function () {
     return new Sk.builtin.lng(this.biginteger.negate());
 };
 
-Sk.builtin.lng.prototype.nb$positive = function () { return this.clone(); };
+Sk.builtin.lng.prototype.nb$positive = function () {
+    return this.clone();
+};
 
 Sk.builtin.lng.prototype.nb$nonzero = function () {
     return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) !== 0;
@@ -506,7 +512,9 @@ Sk.builtin.lng.prototype.tp$str = function () {
 };
 
 Sk.builtin.lng.prototype.str$ = function (base, sign) {
-    if (sign === undefined) { sign = true; }
+    if (sign === undefined) {
+        sign = true;
+    }
 
     var work = sign ? this.biginteger : this.biginteger.abs();
 

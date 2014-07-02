@@ -1,7 +1,7 @@
 /**
  * Check arguments to Python functions to ensure the correct number of
  * arguments are passed.
- * 
+ *
  * @param {string} name the name of the function
  * @param {Object} args the args passed to the function
  * @param {number} minargs the minimum number of allowable arguments
@@ -16,9 +16,15 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
     var nargs = args.length;
     var msg = "";
 
-    if (maxargs === undefined) { maxargs = Infinity; }
-    if (kwargs) { nargs -= 1; }
-    if (free) { nargs -= 1; }
+    if (maxargs === undefined) {
+        maxargs = Infinity;
+    }
+    if (kwargs) {
+        nargs -= 1;
+    }
+    if (free) {
+        nargs -= 1;
+    }
     if ((nargs < minargs) || (nargs > maxargs)) {
         if (minargs === maxargs) {
             msg = name + "() takes exactly " + minargs + " arguments";
@@ -29,13 +35,14 @@ Sk.builtin.pyCheckArgs = function (name, args, minargs, maxargs, kwargs, free) {
         }
         msg += " (" + nargs + " given)";
         throw new Sk.builtin.TypeError(msg);
-    };
+    }
+    ;
 };
 goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 
 /**
  * Check type of argument to Python functions.
- * 
+ *
  * @param {string} name the name of the argument
  * @param {string} exptype string of the expected type name
  * @param {boolean} check truthy if type check passes, falsy otherwise
@@ -44,7 +51,8 @@ goog.exportSymbol("Sk.builtin.pyCheckArgs", Sk.builtin.pyCheckArgs);
 Sk.builtin.pyCheckType = function (name, exptype, check) {
     if (!check) {
         throw new Sk.builtin.TypeError(name + " must be a " + exptype);
-    };
+    }
+    ;
 };
 goog.exportSymbol("Sk.builtin.pyCheckType", Sk.builtin.pyCheckType);
 
@@ -60,18 +68,18 @@ goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number"
-			     || arg instanceof Sk.builtin.nmber
-			     || arg instanceof Sk.builtin.lng
-                             || arg instanceof Sk.builtin.bool));
+        || arg instanceof Sk.builtin.nmber
+        || arg instanceof Sk.builtin.lng
+        || arg instanceof Sk.builtin.bool));
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
 Sk.builtin.checkInt = function (arg) {
-    return (arg !== null) && ((typeof arg === "number" && arg === (arg|0))
-			      || (arg instanceof Sk.builtin.nmber
-				  && arg.skType === Sk.builtin.nmber.int$)
-			      || arg instanceof Sk.builtin.lng
-                              || arg instanceof Sk.builtin.bool);
+    return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0))
+        || (arg instanceof Sk.builtin.nmber
+            && arg.skType === Sk.builtin.nmber.int$)
+        || arg instanceof Sk.builtin.lng
+        || arg instanceof Sk.builtin.bool);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
@@ -96,7 +104,7 @@ Sk.builtin.checkNone = function (arg) {
 goog.exportSymbol("Sk.builtin.checkNone", Sk.builtin.checkNone);
 
 Sk.builtin.checkFunction = function (arg) {
-    return (arg !== null && arg.tp$call !== undefined);  
+    return (arg !== null && arg.tp$call !== undefined);
 };
 goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
@@ -120,15 +128,14 @@ goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
  * to access them via dict-style lookup for closure.
  *
  */
-Sk.builtin.func = function(code, globals, closure, closure2)
-{
+Sk.builtin.func = function (code, globals, closure, closure2) {
     this.func_code = code;
     this.func_globals = globals || null;
-    if (closure2 !== undefined)
-    {
+    if (closure2 !== undefined) {
         // todo; confirm that modification here can't cause problems
-        for (var k in closure2)
+        for (var k in closure2) {
             closure[k] = closure2[k];
+        }
     }
     this.func_closure = closure;
     return this;
@@ -137,20 +144,19 @@ goog.exportSymbol("Sk.builtin.func", Sk.builtin.func);
 
 
 Sk.builtin.func.prototype.tp$name = "function";
-Sk.builtin.func.prototype.tp$descr_get = function(obj, objtype)
-{
+Sk.builtin.func.prototype.tp$descr_get = function (obj, objtype) {
     goog.asserts.assert(obj !== undefined && objtype !== undefined)
-    if (obj == null) return this;
+    if (obj == null) {
+        return this;
+    }
     return new Sk.builtin.method(this, obj);
 };
-Sk.builtin.func.prototype.tp$call = function(args, kw)
-{
+Sk.builtin.func.prototype.tp$call = function (args, kw) {
     var name;
 
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
-    if (this.func_closure)
-    {
+    if (this.func_closure) {
         // todo; OK to modify?
         args.push(this.func_closure);
     }
@@ -163,39 +169,33 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
         throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
     }
 
-    if (kw)
-    {
+    if (kw) {
         // bind the kw args
         var kwlen = kw.length;
         var varnames = this.func_code['co_varnames'];
         var numvarnames = varnames && varnames.length;
-        for (var i = 0; i < kwlen; i += 2)
-        {
+        for (var i = 0; i < kwlen; i += 2) {
             // todo; make this a dict mapping name to offset
-            for (var j = 0; j < numvarnames; ++j)
-            {
-                if (kw[i] === varnames[j])
+            for (var j = 0; j < numvarnames; ++j) {
+                if (kw[i] === varnames[j]) {
                     break;
+                }
             }
-            if (varnames && j !== numvarnames)
-            {
-                args[j] = kw[i+1];
+            if (varnames && j !== numvarnames) {
+                args[j] = kw[i + 1];
             }
-            else if (expectskw)
-            {
+            else if (expectskw) {
                 // build kwargs dict
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
             }
-            else
-            {
+            else {
                 name = (this.func_code && this.func_code['co_name'] && this.func_code['co_name'].v) || '<native JS>';
                 throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }
         }
     }
-    if (expectskw)
-    {
+    if (expectskw) {
         args.unshift(kwargsarr);
     }
 
@@ -204,10 +204,10 @@ Sk.builtin.func.prototype.tp$call = function(args, kw)
     return this.func_code.apply(this.func_globals, args);
 };
 
-Sk.builtin.func.prototype.tp$getattr = function(key) {
+Sk.builtin.func.prototype.tp$getattr = function (key) {
     return this[key];
 }
-Sk.builtin.func.prototype.tp$setattr = function(key,value) {
+Sk.builtin.func.prototype.tp$setattr = function (key, value) {
     this[key] = value;
 }
 
@@ -215,8 +215,7 @@ Sk.builtin.func.prototype.tp$setattr = function(key,value) {
 //Sk.builtin.type.makeIntoTypeObj('function', Sk.builtin.func);
 Sk.builtin.func.prototype.ob$type = Sk.builtin.type.makeTypeObj('function', new Sk.builtin.func(null, null));
 
-Sk.builtin.func.prototype['$r'] = function()
-{
+Sk.builtin.func.prototype['$r'] = function () {
     var name = (this.func_code && this.func_code['co_name'] && this.func_code['co_name'].v) || '<native JS>';
     return new Sk.builtin.str("<function " + name + ">");
 };
