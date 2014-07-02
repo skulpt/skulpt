@@ -768,7 +768,7 @@ if (!TurtleGraphics) {
         }
 
         // Initialize the turtle.
-        var options = {}, ctx = null;
+        var options = {}, ctx;
         if (opt) {
             options = opt;
         }
@@ -964,9 +964,8 @@ if (!TurtleGraphics) {
     };
     Turtle.prototype.turn = function (phi) {
         var alpha = phi * Degree2Rad,
-            left = this.normal.cross(this.heading),
-            newheading = this.heading.rotateNormal(left, alpha);
-        this.heading = newheading;
+            left = this.normal.cross(this.heading);
+        this.heading = this.heading.rotateNormal(left, alpha);
         if (this.animate) {
             this.addDrawingEvent([ "TT", this.heading ]);
         }
@@ -1177,6 +1176,7 @@ if (!TurtleGraphics) {
         }
     };
     Turtle.prototype.write = function (theText, /*move, align, */font) {
+        var fontspec;
         if (!this.animate) {
             if (font) {
                 this.context.font = font.v;
@@ -1185,7 +1185,6 @@ if (!TurtleGraphics) {
             this.context.fillText(theText, this.position[0], -this.position[1]);
             this.context.scale(1, -1);
         } else {
-            var fontspec;
             if (font) {
                 fontspec = font.v;
             }
@@ -1229,10 +1228,10 @@ if (!TurtleGraphics) {
         return this.penWidth * this.turtleCanvas.lineScale;
     };
     Turtle.prototype.set_pen_color = function (c, g, b) {
+        var rs, gs, bs, c0, c1, c2;
         if (typeof c === "string") {
             this.penStyle = c;
         } else {
-            var rs, gs, bs, c0, c1, c2;
             if (Array.isArray(c)) {
                 c0 = c[0];
                 c1 = c[1];
@@ -1424,6 +1423,7 @@ if (!TurtleGraphics) {
 //
 // Wrapper around the Turtle Module starts here.
 //
+
 var $builtinmodule = function (name) {
     "use strict";
     var mod = {},
@@ -1569,9 +1569,9 @@ var $builtinmodule = function (name) {
                 checkArgs(1, arguments.length, "position()");
                 res = self.theTurtle.get_position();
                 x = new Sk.builtin.tuple([
-                        Sk.builtin.assk$(res[0], Sk.builtin.nmber.float$),
-                        Sk.builtin.assk$(res[1], Sk.builtin.nmber.float$)
-                    ]);
+                    Sk.builtin.assk$(res[0], Sk.builtin.nmber.float$),
+                    Sk.builtin.assk$(res[1], Sk.builtin.nmber.float$)
+                ]);
                 return x;
             });
             $loc.pos = $loc.position;
@@ -1776,8 +1776,9 @@ var $builtinmodule = function (name) {
         screen = function ($gbl, $loc) {
             var myfunc;
             $loc.__init__ = new Sk.builtin.func(function (self) {
+                var currentCanvas;
                 initializeTurtlegraphics();
-                var currentCanvas = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
+                currentCanvas = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
                 if (currentCanvas === undefined) {
                     self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
                 } else {
