@@ -1,23 +1,20 @@
-Sk.builtin.bool = function(x)
-{
+Sk.builtin.bool = function (x) {
     Sk.builtin.pyCheckArgs("bool", arguments, 1);
-    if (Sk.misceval.isTrue(x))
-    {
-	return Sk.builtin.bool.true$;
+    if (Sk.misceval.isTrue(x)) {
+        return Sk.builtin.bool.true$;
     }
-    else
-    {
-	return Sk.builtin.bool.false$;
+    else {
+        return Sk.builtin.bool.false$;
     }
 };
 
 Sk.builtin.bool.prototype.tp$name = "bool";
 Sk.builtin.bool.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('bool', Sk.builtin.bool);
 
-Sk.builtin.bool.prototype['$r'] = function()
-{
-    if (this.v)
-	return new Sk.builtin.str('True');
+Sk.builtin.bool.prototype['$r'] = function () {
+    if (this.v) {
+        return new Sk.builtin.str('True');
+    }
     return new Sk.builtin.str('False');
 }
 

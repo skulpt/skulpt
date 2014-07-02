@@ -35,7 +35,9 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         s = s.substring(1);
     }
 
-    if (base === undefined) { base = 10; } // default radix is 10, not dwim
+    if (base === undefined) {
+        base = 10;
+    } // default radix is 10, not dwim
 
     if (base < 2 || base > 36) {
         if (base !== 0) {
@@ -65,13 +67,17 @@ Sk.str2number = function (s, base, parser, negater, fname) {
             throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
     } else if (s.charAt(0) === '0') {
-        if (s === '0') { return 0; }
+        if (s === '0') {
+            return 0;
+        }
         if (base === 8 || base === 0) {
             base = 8;
         }
     }
 
-    if (base === 0) { base = 10; }
+    if (base === 0) {
+        base = 10;
+    }
 
     if (s.length === 0) {
         throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
@@ -118,7 +124,9 @@ Sk.builtin.int_ = function (x, base) {
 
     if (x instanceof Sk.builtin.str) {
         base = Sk.builtin.asnum$(base);
-        val = Sk.str2number(x.v, base, parseInt, function (x) { return -x; }, "int");
+        val = Sk.str2number(x.v, base, parseInt, function (x) {
+            return -x;
+        }, "int");
         if ((val > Sk.builtin.nmber.threshold$) || (val < -Sk.builtin.nmber.threshold$)) {
             // Too big for int, convert to long
             return new Sk.builtin.lng(x, base);
@@ -133,7 +141,7 @@ Sk.builtin.int_ = function (x, base) {
     if (x === undefined || x === Sk.builtin.none) {
         x = 0;
     }
-    
+
     if (x instanceof Sk.builtin.lng) {
         if (x.cantBeInt()) {
             return new Sk.builtin.lng(x);
@@ -143,7 +151,7 @@ Sk.builtin.int_ = function (x, base) {
 
     x = Sk.builtin.asnum$(x);
     if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
-        return new Sk.builtin.lng(x); 
+        return new Sk.builtin.lng(x);
     }
     return new Sk.builtin.nmber(parseInt(x, base), Sk.builtin.nmber.int$);
 };

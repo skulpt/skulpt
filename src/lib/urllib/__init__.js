@@ -1,6 +1,5 @@
-var $builtinmodule = function(name)
-{
-  var urllib = {};
+var $builtinmodule = function (name) {
+    var urllib = {};
 
-  return urllib;
+    return urllib;
 };
