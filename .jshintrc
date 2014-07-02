@@ -14,7 +14,6 @@
   "immed":        true,
   "indent":       4,
   "latedef":      true,
-  "newcap":       true,
   "nonew":        true,
   "plusplus":     false,
   "quotmark":     "double",
