@@ -1,13 +1,7 @@
 Sk.abstr = {};
 
 //
-//
-//
-//
 // Number
-//
-//
-//
 //
 
 Sk.abstr.typeName = function (v) {
@@ -19,23 +13,23 @@ Sk.abstr.typeName = function (v) {
     } else {
         vtypename = "<invalid type>";
     }
-    ;
     return vtypename;
 };
 
 Sk.abstr.binop_type_error = function (v, w, name) {
-    var vtypename = Sk.abstr.typeName(v);
-    var wtypename = Sk.abstr.typeName(w);
+    var vtypename = Sk.abstr.typeName(v),
+        wtypename = Sk.abstr.typeName(w);
 
-    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '"
-        + vtypename + "' and '" + wtypename + "'");
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for " + name + ": '" + vtypename + "' and '" + wtypename + "'");
 };
+
 Sk.abstr.unop_type_error = function (v, name) {
-    var vtypename = Sk.abstr.typeName(v);
-    var uop = {
-        'UAdd'  : '+',
-        'USub'  : '-',
-        'Invert': '~'}[name];
+    var vtypename = Sk.abstr.typeName(v),
+        uop = {
+            "UAdd"  : "+",
+            "USub"  : "-",
+            "Inver": "~"
+        }[name];
 
     throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
 };
@@ -44,32 +38,32 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-    ;
+    
     switch (name) {
-        case "Add":
-            return obj.nb$add ? obj.nb$add : obj['__add__'];
-        case "Sub":
-            return obj.nb$subtract ? obj.nb$subtract : obj['__sub__'];
-        case "Mult":
-            return obj.nb$multiply ? obj.nb$multiply : obj['__mul__'];
-        case "Div":
-            return obj.nb$divide ? obj.nb$divide : obj['__div__'];
-        case "FloorDiv":
-            return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__floordiv__'];
-        case "Mod":
-            return obj.nb$remainder ? obj.nb$remainder : obj['__mod__'];
-        case "Pow":
-            return obj.nb$power ? obj.nb$power : obj['__pow__'];
-        case "LShift":
-            return obj.nb$lshift ? obj.nb$lshift : obj['__lshift__'];
-        case "RShift":
-            return obj.nb$rshift ? obj.nb$rshift : obj['__rshift__'];
-        case "BitAnd":
-            return obj.nb$and ? obj.nb$and : obj['__and__'];
-        case "BitXor":
-            return obj.nb$xor ? obj.nb$xor : obj['__xor__'];
-        case "BitOr":
-            return obj.nb$or ? obj.nb$or : obj['__or__'];
+    case "Add":
+        return obj.nb$add ? obj.nb$add : obj["__add__"];
+    case "Sub":
+        return obj.nb$subtract ? obj.nb$subtract : obj["__sub__"];
+    case "Mult":
+        return obj.nb$multiply ? obj.nb$multiply : obj["__mul__"];
+    case "Div":
+        return obj.nb$divide ? obj.nb$divide : obj["__div__"];
+    case "FloorDiv":
+        return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__floordiv__"];
+    case "Mod":
+        return obj.nb$remainder ? obj.nb$remainder : obj["__mod__"];
+    case "Pow":
+        return obj.nb$power ? obj.nb$power : obj["__pow__"];
+    case "LShift":
+        return obj.nb$lshift ? obj.nb$lshift : obj["__lshift__"];
+    case "RShift":
+        return obj.nb$rshift ? obj.nb$rshift : obj["__rshift__"];
+    case "BitAnd":
+        return obj.nb$and ? obj.nb$and : obj["__and__"];
+    case "BitXor":
+        return obj.nb$xor ? obj.nb$xor : obj["__xor__"];
+    case "BitOr":
+        return obj.nb$or ? obj.nb$or : obj["__or__"];
     }
 };
 
@@ -77,75 +71,75 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-    ;
+    
     switch (name) {
-        case "Add":
-            return obj.nb$add ? obj.nb$add : obj['__radd__'];
-        case "Sub":
-            return obj.nb$subtract ? obj.nb$subtract : obj['__rsub__'];
-        case "Mult":
-            return obj.nb$multiply ? obj.nb$multiply : obj['__rmul__'];
-        case "Div":
-            return obj.nb$divide ? obj.nb$divide : obj['__rdiv__'];
-        case "FloorDiv":
-            return obj.nb$floor_divide ? obj.nb$floor_divide : obj['__rfloordiv__'];
-        case "Mod":
-            return obj.nb$remainder ? obj.nb$remainder : obj['__rmod__'];
-        case "Pow":
-            return obj.nb$power ? obj.nb$power : obj['__rpow__'];
-        case "LShift":
-            return obj.nb$lshift ? obj.nb$lshift : obj['__rlshift__'];
-        case "RShift":
-            return obj.nb$rshift ? obj.nb$rshift : obj['__rrshift__'];
-        case "BitAnd":
-            return obj.nb$and ? obj.nb$and : obj['__rand__'];
-        case "BitXor":
-            return obj.nb$xor ? obj.nb$xor : obj['__rxor__'];
-        case "BitOr":
-            return obj.nb$or ? obj.nb$or : obj['__ror__'];
+    case "Add":
+        return obj.nb$add ? obj.nb$add : obj["__radd__"];
+    case "Sub":
+        return obj.nb$subtract ? obj.nb$subtract : obj["__rsub__"];
+    case "Mult":
+        return obj.nb$multiply ? obj.nb$multiply : obj["__rmul__"];
+    case "Div":
+        return obj.nb$divide ? obj.nb$divide : obj["__rdiv__"];
+    case "FloorDiv":
+        return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__rfloordiv__"];
+    case "Mod":
+        return obj.nb$remainder ? obj.nb$remainder : obj["__rmod__"];
+    case "Pow":
+        return obj.nb$power ? obj.nb$power : obj["__rpow__"];
+    case "LShift":
+        return obj.nb$lshift ? obj.nb$lshift : obj["__rlshift__"];
+    case "RShift":
+        return obj.nb$rshift ? obj.nb$rshift : obj["__rrshift__"];
+    case "BitAnd":
+        return obj.nb$and ? obj.nb$and : obj["__rand__"];
+    case "BitXor":
+        return obj.nb$xor ? obj.nb$xor : obj["__rxor__"];
+    case "BitOr":
+        return obj.nb$or ? obj.nb$or : obj["__ror__"];
     }
 };
 
 Sk.abstr.iboNameToSlotFunc_ = function (obj, name) {
     switch (name) {
-        case "Add":
-            return obj.nb$inplace_add ? obj.nb$inplace_add : obj['__iadd__'];
-        case "Sub":
-            return obj.nb$inplace_subtract ? obj.nb$inplace_subtract : obj['__isub__'];
-        case "Mult":
-            return obj.nb$inplace_multiply ? obj.nb$inplace_multiply : obj['__imul__'];
-        case "Div":
-            return obj.nb$inplace_divide ? obj.nb$inplace_divide : obj['__idiv__'];
-        case "FloorDiv":
-            return obj.nb$inplace_floor_divide ? obj.nb$inplace_floor_divide : obj['__ifloordiv__'];
-        case "Mod":
-            return obj.nb$inplace_remainder;
-        case "Pow":
-            return obj.nb$inplace_power;
-        case "LShift":
-            return obj.nb$inplace_lshift ? obj.nb$inplace_lshift : obj['__ilshift__'];
-        case "RShift":
-            return obj.nb$inplace_rshift ? obj.nb$inplace_rshift : obj['__irshift__'];
-        case "BitAnd":
-            return obj.nb$inplace_and;
-        case "BitOr":
-            return obj.nb$inplace_or;
-        case "BitXor":
-            return obj.nb$inplace_xor ? obj.nb$inplace_xor : obj['__ixor__'];
+    case "Add":
+        return obj.nb$inplace_add ? obj.nb$inplace_add : obj["__iadd__"];
+    case "Sub":
+        return obj.nb$inplace_subtract ? obj.nb$inplace_subtract : obj["__isub__"];
+    case "Mult":
+        return obj.nb$inplace_multiply ? obj.nb$inplace_multiply : obj["__imul__"];
+    case "Div":
+        return obj.nb$inplace_divide ? obj.nb$inplace_divide : obj["__idiv__"];
+    case "FloorDiv":
+        return obj.nb$inplace_floor_divide ? obj.nb$inplace_floor_divide : obj["__ifloordiv__"];
+    case "Mod":
+        return obj.nb$inplace_remainder;
+    case "Pow":
+        return obj.nb$inplace_power;
+    case "LShift":
+        return obj.nb$inplace_lshift ? obj.nb$inplace_lshift : obj["__ilshift__"];
+    case "RShift":
+        return obj.nb$inplace_rshift ? obj.nb$inplace_rshift : obj["__irshift__"];
+    case "BitAnd":
+        return obj.nb$inplace_and;
+    case "BitOr":
+        return obj.nb$inplace_or;
+    case "BitXor":
+        return obj.nb$inplace_xor ? obj.nb$inplace_xor : obj["__ixor__"];
     }
 };
 Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-    ;
+
     switch (name) {
-        case "USub":
-            return obj.nb$negative ? obj.nb$negative : obj['__neg__'];
-        case "UAdd":
-            return obj.nb$positive ? obj.nb$positive : obj['__pos__'];
-        case "Invert":
-            return obj.nb$invert ? obj.nb$invert : obj['__invert__'];
+    case "USub":
+        return obj.nb$negative ? obj.nb$negative : obj["__neg__"];
+    case "UAdd":
+        return obj.nb$positive ? obj.nb$positive : obj["__pos__"];
+    case "Invert":
+        return obj.nb$invert ? obj.nb$invert : obj["__invert__"];
     }
 };
 
@@ -156,7 +150,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         if (vop.call) {
             ret = vop.call(v, w);
         } else {
-            ret = Sk.misceval.callsim(vop, v, w)
+            ret = Sk.misceval.callsim(vop, v, w);
         }
         if (ret !== undefined) {
             return ret;
@@ -167,7 +161,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         if (wop.call) {
             ret = wop.call(w, v);
         } else {
-            ret = Sk.misceval.callsim(wop, w, v)
+            ret = Sk.misceval.callsim(wop, w, v);
         }
         if (ret !== undefined) {
             return ret;
@@ -225,8 +219,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     if (a === null || b === null) {
         return undefined;
     }
-    ;
-
+    
     if (typeof a === "number" && typeof b === "number") {
         var ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
@@ -237,7 +230,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
         }
     }
     else if (a === undefined || b === undefined) {
-        throw new Sk.builtin.NameError('Undefined variable in expression')
+        throw new Sk.builtin.NameError("Undefined variable in expression");
     }
 
     if (a.constructor === Sk.builtin.lng) {
@@ -418,13 +411,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
 goog.exportSymbol("Sk.abstr.numberUnaryOp", Sk.abstr.numberUnaryOp);
 
 //
-//
-//
-//
 // Sequence
-//
-//
-//
 //
 
 Sk.abstr.fixSeqIndex_ = function (seq, i) {
@@ -455,7 +442,7 @@ Sk.abstr.sequenceContains = function (seq, ob) {
 
 Sk.abstr.sequenceConcat = function (seq1, seq2) {
     if (seq1.sq$concat) {
-        return seq1.sq$concat(seq2)
+        return seq1.sq$concat(seq2);
     }
     var seq1typename = Sk.abstr.typeName(seq1);
     throw new Sk.builtin.TypeError("'" + seq1typename + "' object can't be concatenated");
@@ -563,13 +550,7 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
 };
 
 //
-//
-//
-//
 // Object
-//
-//
-//
 //
 
 Sk.abstr.objectAdd = function (a, b) {
@@ -586,8 +567,8 @@ Sk.abstr.objectAdd = function (a, b) {
 Sk.abstr.objectNegative = function (obj) {
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
-    if (typeof obj_asnum === 'number') {
-        return Sk.builtin.nmber.prototype['nb$negative'].call(obj);
+    if (typeof obj_asnum === "number") {
+        return Sk.builtin.nmber.prototype["nb$negative"].call(obj);
     }
 
     var objtypename = Sk.abstr.typeName(obj);
@@ -599,11 +580,11 @@ Sk.abstr.objectPositive = function (obj) {
     var objtypename = Sk.abstr.typeName(obj);
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
-    if (objtypename === 'bool') {
-        return new Sk.builtin.nmber(obj_asnum, 'int');
+    if (objtypename === "bool") {
+        return new Sk.builtin.nmber(obj_asnum, "int");
     }
-    if (typeof obj_asnum === 'number') {
-        return Sk.builtin.nmber.prototype['nb$positive'].call(obj);
+    if (typeof obj_asnum === "number") {
+        return Sk.builtin.nmber.prototype["nb$positive"].call(obj);
     }
 
     throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");
@@ -676,10 +657,10 @@ Sk.abstr.gattr = function (obj, nameJS) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
-    var ret = undefined;
+    var ret;
 
-    if (obj['__getattr__']) {
-        ret = Sk.misceval.callsim(obj['__getattr__'], obj, nameJS);
+    if (obj["__getattr__"]) {
+        ret = Sk.misceval.callsim(obj["__getattr__"], obj, nameJS);
     } else if (obj.tp$getattr !== undefined) {
         ret = obj.tp$getattr(nameJS);
     }
@@ -697,8 +678,8 @@ Sk.abstr.sattr = function (obj, nameJS, data) {
 
     if (obj === null) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    } else if (obj['__setattr__']) {
-        Sk.misceval.callsim(obj['__setattr__'], obj, nameJS, data);
+    } else if (obj["__setattr__"]) {
+        Sk.misceval.callsim(obj["__setattr__"], obj, nameJS, data);
     } else if (obj.tp$setattr !== undefined) {
         obj.tp$setattr(nameJS, data);
     } else {
