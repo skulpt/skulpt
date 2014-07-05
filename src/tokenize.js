@@ -24,9 +24,9 @@ Sk.Tokenizer = function (filename, interactive, callback) {
     this.lnum = 0;
     this.parenlev = 0;
     this.continued = false;
-    this.namechars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
-    this.numchars = '0123456789';
-    this.contstr = '';
+    this.namechars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+    this.numchars = "0123456789";
+    this.contstr = "";
     this.needcont = false;
     this.contline = undefined;
     this.indents = [0];
@@ -34,17 +34,18 @@ Sk.Tokenizer = function (filename, interactive, callback) {
     this.strstart = [-1, -1];
     this.interactive = interactive;
     this.doneFunc = function () {
-        for (var i = 1; i < this.indents.length; ++i) // pop remaining indent levels
+        var i;
+        for (i = 1; i < this.indents.length; ++i) // pop remaining indent levels
         {
-            if (this.callback(Sk.Tokenizer.Tokens.T_DEDENT, '', [this.lnum, 0], [this.lnum, 0], '')) {
-                return 'done';
+            if (this.callback(Sk.Tokenizer.Tokens.T_DEDENT, "", [this.lnum, 0], [this.lnum, 0], "")) {
+                return "done";
             }
         }
-        if (this.callback(Sk.Tokenizer.Tokens.T_ENDMARKER, '', [this.lnum, 0], [this.lnum, 0], '')) {
-            return 'done';
+        if (this.callback(Sk.Tokenizer.Tokens.T_ENDMARKER, "", [this.lnum, 0], [this.lnum, 0], "")) {
+            return "done";
         }
 
-        return 'failed';
+        return "failed";
     };
 
 };
@@ -116,7 +117,7 @@ Sk.Tokenizer.Tokens = {
 /** @param {...*} x */
 function group (x) {
     var args = Array.prototype.slice.call(arguments);
-    return '(' + args.join('|') + ')';
+    return "(" + args.join("|") + ")";
 }
 
 /** @param {...*} x */
@@ -135,15 +136,15 @@ var Whitespace = "[ \\f\\t]*";
 var Comment_ = "#[^\\r\\n]*";
 var Ident = "[a-zA-Z_]\\w*";
 
-var Binnumber = '0[bB][01]*';
-var Hexnumber = '0[xX][\\da-fA-F]*[lL]?';
-var Octnumber = '0[oO]?[0-7]*[lL]?';
-var Decnumber = '[1-9]\\d*[lL]?';
+var Binnumber = "0[bB][01]*";
+var Hexnumber = "0[xX][\\da-fA-F]*[lL]?";
+var Octnumber = "0[oO]?[0-7]*[lL]?";
+var Decnumber = "[1-9]\\d*[lL]?";
 var Intnumber = group(Binnumber, Hexnumber, Octnumber, Decnumber);
 
 var Exponent = "[eE][-+]?\\d+";
 var Pointfloat = group("\\d+\\.\\d*", "\\.\\d+") + maybe(Exponent);
-var Expfloat = '\\d+' + Exponent;
+var Expfloat = "\\d+" + Exponent;
 var Floatnumber = group(Pointfloat, Expfloat);
 var Imagnumber = group("\\d+[jJ]", Floatnumber + "[jJ]");
 var Number_ = group(Imagnumber, Floatnumber, Intnumber);
@@ -168,22 +169,18 @@ var Operator = group("\\*\\*=?", ">>=?", "<<=?", "<>", "!=",
     "[+\\-*/%&|^=<>]=?",
     "~");
 
-var Bracket = '[\\][(){}]';
-var Special = group('\\r?\\n', '[:;.,`@]');
+var Bracket = "[\\][(){}]";
+var Special = group("\\r?\\n", "[:;.,`@]");
 var Funny = group(Operator, Bracket, Special);
 
 var ContStr = group("[uUbB]?[rR]?'[^\\n'\\\\]*(?:\\\\.[^\\n'\\\\]*)*" +
-        group("'", '\\\\\\r?\\n'),
-        '[uUbB]?[rR]?"[^\\n"\\\\]*(?:\\\\.[^\\n"\\\\]*)*' +
-        group('"', '\\\\\\r?\\n'));
-var PseudoExtras = group('\\\\\\r?\\n', Comment_, Triple);
+        group("'", "\\\\\\r?\\n"),
+        "[uUbB]?[rR]?\"[^\\n\"\\\\]*(?:\\\\.[^\\n\"\\\\]*)*" +
+        group("\"", "\\\\\\r?\\n"));
+var PseudoExtras = group("\\\\\\r?\\n", Comment_, Triple);
 // Need to prefix with "^" as we only want to match what's next
 var PseudoToken = "^" + group(PseudoExtras, Number_, Funny, ContStr, Ident);
 
-var pseudoprog;
-var single3prog;
-var double3prog;
-var endprogs = {};
 
 var triple_quoted = {
     "'''"  : true, '"""': true,
@@ -209,9 +206,10 @@ var single_quoted = {
 
 // hack to make closure keep those objects. not sure what a better way is.
 (function () {
-    for (var k in triple_quoted) {
+    var k;
+    for (k in triple_quoted) {
     }
-    for (var k in single_quoted) {
+    for (k in single_quoted) {
     }
 }());
 
@@ -229,7 +227,8 @@ function contains (a, obj) {
 }
 
 function rstrip (input, what) {
-    for (var i = input.length; i > 0; --i) {
+    var i;
+    for (i = input.length; i > 0; --i) {
         if (what.indexOf(input.charAt(i - 1)) === -1) {
             break;
         }
@@ -238,6 +237,16 @@ function rstrip (input, what) {
 }
 
 Sk.Tokenizer.prototype.generateTokens = function (line) {
+    var nl_pos;
+    var newl;
+    var initial;
+    var token;
+    var epos;
+    var spos;
+    var start;
+    var pseudomatch;
+    var capos;
+    var comment_token;
     var endmatch, pos, column, end, max;
 
 
@@ -249,7 +258,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
     var single3prog = new RegExp(Single3, "g");
     var double3prog = new RegExp(Double3, "g");
 
-    var endprogs = {     "'": new RegExp(Single, "g"), '"': new RegExp(Double_, "g"),
+    var endprogs = {     "'": new RegExp(Single, "g"), "\"": new RegExp(Double_, "g"),
         "'''"               : single3prog, '"""': double3prog,
         "r'''"              : single3prog, 'r"""': double3prog,
         "u'''"              : single3prog, 'u"""': double3prog,
@@ -338,8 +347,8 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
         if ("#\r\n".indexOf(line.charAt(pos)) !== -1) // skip comments or blank lines
         {
             if (line.charAt(pos) === '#') {
-                var comment_token = rstrip(line.substring(pos), '\r\n');
-                var nl_pos = pos + comment_token.length;
+                comment_token = rstrip(line.substring(pos), '\r\n');
+                nl_pos = pos + comment_token.length;
                 if (this.callback(Sk.Tokenizer.Tokens.T_COMMENT, comment_token,
                     [this.lnum, pos], [this.lnum, pos + comment_token.length], line)) {
                     return 'done';
@@ -395,21 +404,21 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
         // js regexes don't return any info about matches, other than the
         // content. we'd like to put a \w+ before pseudomatch, but then we
         // can't get any data
-        var capos = line.charAt(pos);
+        capos = line.charAt(pos);
         while (capos === ' ' || capos === '\f' || capos === '\t') {
             pos += 1;
             capos = line.charAt(pos);
         }
         pseudoprog.lastIndex = 0;
-        var pseudomatch = pseudoprog.exec(line.substring(pos));
+        pseudomatch = pseudoprog.exec(line.substring(pos));
         if (pseudomatch) {
-            var start = pos;
+            start = pos;
             end = start + pseudomatch[1].length;
-            var spos = [this.lnum, start];
-            var epos = [this.lnum, end];
+            spos = [this.lnum, start];
+            epos = [this.lnum, end];
             pos = end;
-            var token = line.substring(start, end);
-            var initial = line.charAt(start);
+            token = line.substring(start, end);
+            initial = line.charAt(start);
             //Sk.debugout("token:",token, "initial:",initial, start, end);
             if (this.numchars.indexOf(initial) !== -1 || (initial === '.' && token !== '.')) {
                 if (this.callback(Sk.Tokenizer.Tokens.T_NUMBER, token, spos, epos, line)) {
@@ -417,7 +426,7 @@ Sk.Tokenizer.prototype.generateTokens = function (line) {
                 }
             }
             else if (initial === '\r' || initial === '\n') {
-                var newl = Sk.Tokenizer.Tokens.T_NEWLINE;
+                newl = Sk.Tokenizer.Tokens.T_NEWLINE;
                 //print("HERE:3");
                 if (this.parenlev > 0) {
                     newl = Sk.Tokenizer.Tokens.T_NL;

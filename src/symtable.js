@@ -48,9 +48,9 @@ var OPT_TOPLEVEL = 8;
 var GENERATOR = 2;
 var GENERATOR_EXPRESSION = 2;
 
-var ModuleBlock = 'module';
-var FunctionBlock = 'function';
-var ClassBlock = 'class';
+var ModuleBlock = "module";
+var FunctionBlock = "function";
+var ClassBlock = "class";
 
 /**
  * @constructor
@@ -63,40 +63,40 @@ function Symbol (name, flags, namespaces) {
     this.__flags = flags;
     this.__scope = (flags >> SCOPE_OFF) & SCOPE_MASK;
     this.__namespaces = namespaces || [];
-};
+}
 Symbol.prototype.get_name = function () {
     return this.__name;
-}
+};
 Symbol.prototype.is_referenced = function () {
     return !!(this.__flags & USE);
-}
+};
 Symbol.prototype.is_parameter = function () {
     return !!(this.__flags & DEF_PARAM);
-}
+};
 Symbol.prototype.is_global = function () {
     return this.__scope === GLOBAL_IMPLICIT || this.__scope == GLOBAL_EXPLICIT;
-}
+};
 Symbol.prototype.is_declared_global = function () {
     return this.__scope == GLOBAL_EXPLICIT;
-}
+};
 Symbol.prototype.is_local = function () {
     return !!(this.__flags & DEF_BOUND);
-}
+};
 Symbol.prototype.is_free = function () {
     return this.__scope == FREE;
-}
+};
 Symbol.prototype.is_imported = function () {
     return !!(this.__flags & DEF_IMPORT);
-}
+};
 Symbol.prototype.is_assigned = function () {
     return !!(this.__flags & DEF_LOCAL);
-}
+};
 Symbol.prototype.is_namespace = function () {
     return this.__namespaces && this.__namespaces.length > 0;
-}
+};
 Symbol.prototype.get_namespaces = function () {
     return this.__namespaces;
-}
+};
 
 var astScopeCounter = 0;
 
@@ -152,15 +152,17 @@ SymbolTableScope.prototype.has_children = function () {
     return this.children.length > 0;
 };
 SymbolTableScope.prototype.get_identifiers = function () {
-    return this._identsMatching(function (x) {
+    return this._identsMatching(function () {
         return true;
     });
 };
 SymbolTableScope.prototype.lookup = function (name) {
+    var namespaces;
+    var flags;
     var sym;
     if (!this.symbols.hasOwnProperty(name)) {
-        var flags = this.symFlags[name];
-        var namespaces = this.__check_children(name);
+        flags = this.symFlags[name];
+        namespaces = this.__check_children(name);
         sym = this.symbols[name] = new Symbol(name, flags, namespaces);
     }
     else {
@@ -170,9 +172,11 @@ SymbolTableScope.prototype.lookup = function (name) {
 };
 SymbolTableScope.prototype.__check_children = function (name) {
     //print("  check_children:", name);
+    var child;
+    var i;
     var ret = [];
-    for (var i = 0; i < this.children.length; ++i) {
-        var child = this.children[i];
+    for (i = 0; i < this.children.length; ++i) {
+        child = this.children[i];
         if (child.name === name) {
             ret.push(child);
         }
@@ -181,8 +185,9 @@ SymbolTableScope.prototype.__check_children = function (name) {
 };
 
 SymbolTableScope.prototype._identsMatching = function (f) {
+    var k;
     var ret = [];
-    for (var k in this.symFlags) {
+    for (k in this.symFlags) {
         if (this.symFlags.hasOwnProperty(k)) {
             if (f(this.symFlags[k])) {
                 ret.push(k);
@@ -193,7 +198,7 @@ SymbolTableScope.prototype._identsMatching = function (f) {
     return ret;
 };
 SymbolTableScope.prototype.get_parameters = function () {
-    goog.asserts.assert(this.get_type() == 'function', "get_parameters only valid for function scopes");
+    goog.asserts.assert(this.get_type() == "function", "get_parameters only valid for function scopes");
     if (!this._funcParams) {
         this._funcParams = this._identsMatching(function (x) {
             return x & DEF_PARAM;
@@ -202,7 +207,7 @@ SymbolTableScope.prototype.get_parameters = function () {
     return this._funcParams;
 };
 SymbolTableScope.prototype.get_locals = function () {
-    goog.asserts.assert(this.get_type() == 'function', "get_locals only valid for function scopes");
+    goog.asserts.assert(this.get_type() == "function", "get_locals only valid for function scopes");
     if (!this._funcLocals) {
         this._funcLocals = this._identsMatching(function (x) {
             return x & DEF_BOUND;
@@ -211,7 +216,7 @@ SymbolTableScope.prototype.get_locals = function () {
     return this._funcLocals;
 };
 SymbolTableScope.prototype.get_globals = function () {
-    goog.asserts.assert(this.get_type() == 'function', "get_globals only valid for function scopes");
+    goog.asserts.assert(this.get_type() == "function", "get_globals only valid for function scopes");
     if (!this._funcGlobals) {
         this._funcGlobals = this._identsMatching(function (x) {
             var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
@@ -221,7 +226,7 @@ SymbolTableScope.prototype.get_globals = function () {
     return this._funcGlobals;
 };
 SymbolTableScope.prototype.get_frees = function () {
-    goog.asserts.assert(this.get_type() == 'function', "get_frees only valid for function scopes");
+    goog.asserts.assert(this.get_type() == "function", "get_frees only valid for function scopes");
     if (!this._funcFrees) {
         this._funcFrees = this._identsMatching(function (x) {
             var masked = (x >> SCOPE_OFF) & SCOPE_MASK;
@@ -231,11 +236,13 @@ SymbolTableScope.prototype.get_frees = function () {
     return this._funcFrees;
 };
 SymbolTableScope.prototype.get_methods = function () {
-    goog.asserts.assert(this.get_type() == 'class', "get_methods only valid for class scopes");
+    var i;
+    var all;
+    goog.asserts.assert(this.get_type() == "class", "get_methods only valid for class scopes");
     if (!this._classMethods) {
         // todo; uniq?
-        var all = [];
-        for (var i = 0; i < this.children.length; ++i) {
+        all = [];
+        for (i = 0; i < this.children.length; ++i) {
             all.push(this.children[i].name);
         }
         all.sort();
@@ -272,27 +279,34 @@ function SymbolTable (filename) {
     this.stss = {};
 }
 SymbolTable.prototype.getStsForAst = function (ast) {
+    var v;
     goog.asserts.assert(ast.scopeId !== undefined, "ast wasn't added to st?");
-    var v = this.stss[ast.scopeId];
+    v = this.stss[ast.scopeId];
     goog.asserts.assert(v !== undefined, "unknown sym tab entry");
     return v;
 };
 
 SymbolTable.prototype.SEQStmt = function (nodes) {
+    var val;
+    var i;
+    var len;
     goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
-    var len = nodes.length;
-    for (var i = 0; i < len; ++i) {
-        var val = nodes[i];
+    len = nodes.length;
+    for (i = 0; i < len; ++i) {
+        val = nodes[i];
         if (val) {
             this.visitStmt(val);
         }
     }
 };
 SymbolTable.prototype.SEQExpr = function (nodes) {
+    var val;
+    var i;
+    var len;
     goog.asserts.assert(goog.isArrayLike(nodes), "SEQ: nodes isn't array? got %s", nodes);
-    var len = nodes.length;
-    for (var i = 0; i < len; ++i) {
-        var val = nodes[i];
+    len = nodes.length;
+    for (i = 0; i < len; ++i) {
+        val = nodes[i];
         if (val) {
             this.visitExpr(val);
         }
@@ -300,16 +314,16 @@ SymbolTable.prototype.SEQExpr = function (nodes) {
 };
 
 SymbolTable.prototype.enterBlock = function (name, blockType, ast, lineno) {
+    var prev;
     name = fixReservedNames(name);
     //print("enterBlock:", name);
-    var prev = null;
+    prev = null;
     if (this.cur) {
         prev = this.cur;
         this.stack.push(this.cur);
     }
     this.cur = new SymbolTableScope(this, name, blockType, ast, lineno);
-    if (name === 'top') {
-        //print("    setting global because it's top");
+    if (name === "top") {
         this.global = this.cur.symFlags;
     }
     if (prev) {
@@ -327,8 +341,10 @@ SymbolTable.prototype.exitBlock = function () {
 };
 
 SymbolTable.prototype.visitParams = function (args, toplevel) {
-    for (var i = 0; i < args.length; ++i) {
-        var arg = args[i];
+    var arg;
+    var i;
+    for (i = 0; i < args.length; ++i) {
+        arg = args[i];
         if (arg.constructor === Name) {
             goog.asserts.assert(arg.ctx === Param || (arg.ctx === Store && !toplevel));
             this.addDef(arg.id, DEF_PARAM, arg.lineno);
@@ -338,7 +354,7 @@ SymbolTable.prototype.visitParams = function (args, toplevel) {
             throw new Sk.builtin.SyntaxError("invalid expression in parameter list", this.filename);
         }
     }
-}
+};
 
 SymbolTable.prototype.visitArguments = function (a, lineno) {
     if (a.args) {
@@ -356,13 +372,14 @@ SymbolTable.prototype.visitArguments = function (a, lineno) {
 
 SymbolTable.prototype.newTmpname = function (lineno) {
     this.addDef(new Sk.builtin.str("_[" + (++this.tmpname) + "]"), DEF_LOCAL, lineno);
-}
+};
 
 SymbolTable.prototype.addDef = function (name, flag, lineno) {
-    //print("addDef:", name.v, flag);
+    var fromGlobal;
+    var val;
     var mangled = mangleName(this.curClass, new Sk.builtin.str(name)).v;
     mangled = fixReservedNames(mangled);
-    var val = this.cur.symFlags[mangled];
+    val = this.cur.symFlags[mangled];
     if (val !== undefined) {
         if ((flag & DEF_PARAM) && (val & DEF_PARAM)) {
             throw new Sk.builtin.SyntaxError("duplicate argument '" + name.v + "' in function definition", this.filename, lineno);
@@ -378,7 +395,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
     }
     else if (flag & DEF_GLOBAL) {
         val = flag;
-        var fromGlobal = this.global[mangled];
+        fromGlobal = this.global[mangled];
         if (fromGlobal !== undefined) {
             val |= fromGlobal;
         }
@@ -387,6 +404,7 @@ SymbolTable.prototype.addDef = function (name, flag, lineno) {
 };
 
 SymbolTable.prototype.visitSlice = function (s) {
+    var i;
     switch (s.constructor) {
         case Slice:
             if (s.lower) {
@@ -400,7 +418,7 @@ SymbolTable.prototype.visitSlice = function (s) {
             }
             break;
         case ExtSlice:
-            for (var i = 0; i < s.dims.length; ++i) {
+            for (i = 0; i < s.dims.length; ++i) {
                 this.visitSlice(s.dims[i]);
             }
             break;
@@ -413,6 +431,11 @@ SymbolTable.prototype.visitSlice = function (s) {
 };
 
 SymbolTable.prototype.visitStmt = function (s) {
+    var cur;
+    var name;
+    var i;
+    var nameslen;
+    var tmp;
     goog.asserts.assert(s !== undefined, "visitStmt called with undefined");
     switch (s.constructor) {
         case FunctionDef:
@@ -435,10 +458,9 @@ SymbolTable.prototype.visitStmt = function (s) {
                 this.SEQExpr(s.decorator_list);
             }
             this.enterBlock(s.name.v, ClassBlock, s, s.lineno);
-            var tmp = this.curClass;
+            tmp = this.curClass;
             this.curClass = s.name;
             this.SEQStmt(s.body);
-            this.curCalss = tmp;
             this.exitBlock();
             break;
         case Return_:
@@ -529,11 +551,11 @@ SymbolTable.prototype.visitStmt = function (s) {
             }
             break;
         case Global:
-            var nameslen = s.names.length;
-            for (var i = 0; i < nameslen; ++i) {
-                var name = mangleName(this.curClass, s.names[i]).v;
+            nameslen = s.names.length;
+            for (i = 0; i < nameslen; ++i) {
+                name = mangleName(this.curClass, s.names[i]).v;
                 name = fixReservedNames(name);
-                var cur = this.cur.symFlags[name];
+                cur = this.cur.symFlags[name];
                 if (cur & (DEF_LOCAL | USE)) {
                     if (cur & DEF_LOCAL) {
                         throw new Sk.builtin.SyntaxError("name '" + name + "' is assigned to before global declaration", this.filename, s.lineno);
@@ -569,6 +591,7 @@ SymbolTable.prototype.visitStmt = function (s) {
 };
 
 SymbolTable.prototype.visitExpr = function (e) {
+    var i;
     goog.asserts.assert(e !== undefined, "visitExpr called with undefined");
     //print("  e: ", e.constructor.name);
     switch (e.constructor) {
@@ -625,7 +648,7 @@ SymbolTable.prototype.visitExpr = function (e) {
         case Call:
             this.visitExpr(e.func);
             this.SEQExpr(e.args);
-            for (var i = 0; i < e.keywords.length; ++i) {
+            for (i = 0; i < e.keywords.length; ++i) {
                 this.visitExpr(e.keywords[i].value);
             }
             //print(JSON.stringify(e.starargs, null, 2));
@@ -660,9 +683,11 @@ SymbolTable.prototype.visitExpr = function (e) {
 };
 
 SymbolTable.prototype.visitComprehension = function (lcs, startAt) {
+    var lc;
+    var i;
     var len = lcs.length;
-    for (var i = startAt; i < len; ++i) {
-        var lc = lcs[i];
+    for (i = startAt; i < len; ++i) {
+        lc = lcs[i];
         this.visitExpr(lc.target);
         this.visitExpr(lc.iter);
         this.SEQExpr(lc.ifs);
@@ -674,11 +699,16 @@ SymbolTable.prototype.visitAlias = function (names, lineno) {
      operation.  It is diferent than a->name when a->name is a
      dotted package name (e.g. spam.eggs)
      */
-    for (var i = 0; i < names.length; ++i) {
-        var a = names[i];
-        var name = a.asname === null ? a.name.v : a.asname.v;
-        var storename = name;
-        var dot = name.indexOf('.');
+    var dot;
+    var storename;
+    var name;
+    var a;
+    var i;
+    for (i = 0; i < names.length; ++i) {
+        a = names[i];
+        name = a.asname === null ? a.name.v : a.asname.v;
+        storename = name;
+        dot = name.indexOf(".");
         if (dot !== -1) {
             storename = name.substr(0, dot);
         }
@@ -708,7 +738,8 @@ SymbolTable.prototype.visitGenexp = function (e) {
 };
 
 SymbolTable.prototype.visitExcepthandlers = function (handlers) {
-    for (var i = 0, eh; eh = handlers[i]; ++i) {
+    var i, eh;
+    for (i = 0; eh = handlers[i]; ++i) {
         if (eh.type) {
             this.visitExpr(eh.type);
         }
@@ -720,12 +751,19 @@ SymbolTable.prototype.visitExcepthandlers = function (handlers) {
 };
 
 function _dictUpdate (a, b) {
-    for (var kb in b) {
+    var kb;
+    for (kb in b) {
         a[kb] = b[kb];
     }
 }
 
 SymbolTable.prototype.analyzeBlock = function (ste, bound, free, global) {
+    var c;
+    var i;
+    var childlen;
+    var allfree;
+    var flags;
+    var name;
     var local = {};
     var scope = {};
     var newglobal = {};
@@ -739,8 +777,8 @@ SymbolTable.prototype.analyzeBlock = function (ste, bound, free, global) {
         }
     }
 
-    for (var name in ste.symFlags) {
-        var flags = ste.symFlags[name];
+    for (name in ste.symFlags) {
+        flags = ste.symFlags[name];
         this.analyzeName(ste, scope, name, flags, bound, local, free, global);
     }
 
@@ -754,10 +792,10 @@ SymbolTable.prototype.analyzeBlock = function (ste, bound, free, global) {
         _dictUpdate(newglobal, global);
     }
 
-    var allfree = {};
-    var childlen = ste.children.length;
-    for (var i = 0; i < childlen; ++i) {
-        var c = ste.children[i];
+    allfree = {};
+    childlen = ste.children.length;
+    for (i = 0; i < childlen; ++i) {
+        c = ste.children[i];
         this.analyzeChildBlock(c, newbound, newfree, newglobal, allfree);
         if (c.hasFree || c.childHasFree) {
             ste.childHasFree = true;
@@ -774,11 +812,13 @@ SymbolTable.prototype.analyzeBlock = function (ste, bound, free, global) {
 };
 
 SymbolTable.prototype.analyzeChildBlock = function (entry, bound, free, global, childFree) {
+    var tempGlobal;
+    var tempFree;
     var tempBound = {};
     _dictUpdate(tempBound, bound);
-    var tempFree = {};
+    tempFree = {};
     _dictUpdate(tempFree, free);
-    var tempGlobal = {};
+    tempGlobal = {};
     _dictUpdate(tempGlobal, global);
 
     this.analyzeBlock(entry, tempBound, tempFree, tempGlobal);
@@ -786,8 +826,10 @@ SymbolTable.prototype.analyzeChildBlock = function (entry, bound, free, global, 
 };
 
 SymbolTable.prototype.analyzeCells = function (scope, free) {
-    for (var name in scope) {
-        var flags = scope[name];
+    var flags;
+    var name;
+    for (name in scope) {
+        flags = scope[name];
         if (flags !== LOCAL) {
             continue;
         }
@@ -804,22 +846,29 @@ SymbolTable.prototype.analyzeCells = function (scope, free) {
  * others are not.
  */
 SymbolTable.prototype.updateSymbols = function (symbols, scope, bound, free, classflag) {
-    for (var name in symbols) {
-        var flags = symbols[name];
-        var w = scope[name];
+    var i;
+    var o;
+    var pos;
+    var freeValue;
+    var w;
+    var flags;
+    var name;
+    for (name in symbols) {
+        flags = symbols[name];
+        w = scope[name];
         flags |= w << SCOPE_OFF;
         symbols[name] = flags;
     }
 
-    var freeValue = FREE << SCOPE_OFF;
-    var pos = 0;
-    for (var name in free) {
-        var o = symbols[name];
+    freeValue = FREE << SCOPE_OFF;
+    pos = 0;
+    for (name in free) {
+        o = symbols[name];
         if (o !== undefined) {
             // it could be a free variable in a method of the class that has
             // the same name as a local or global in the class scope
             if (classflag && (o & (DEF_BOUND | DEF_GLOBAL))) {
-                var i = o | DEF_FREE_CLASS;
+                i = o | DEF_FREE_CLASS;
                 symbols[name] = i;
             }
             // else it's not free, probably a cell
@@ -878,13 +927,14 @@ SymbolTable.prototype.analyze = function () {
  * @param {string} filename
  */
 Sk.symboltable = function (ast, filename) {
+    var i;
     var ret = new SymbolTable(filename);
 
     ret.enterBlock("top", ModuleBlock, ast, 0);
     ret.top = ret.cur;
 
     //print(Sk.astDump(ast));
-    for (var i = 0; i < ast.body.length; ++i) {
+    for (i = 0; i < ast.body.length; ++i) {
         ret.visitStmt(ast.body[i]);
     }
 
@@ -900,17 +950,28 @@ Sk.dumpSymtab = function (st) {
         return b ? "True" : "False";
     }
     var pyList = function (l) {
+        var i;
         var ret = [];
-        for (var i = 0; i < l.length; ++i) {
-            ret.push(new Sk.builtin.str(l[i])['$r']().v);
+        for (i = 0; i < l.length; ++i) {
+            ret.push(new Sk.builtin.str(l[i])["$r"]().v);
         }
-        return '[' + ret.join(', ') + ']';
+        return "[" + ret.join(", ") + "]";
     };
     var getIdents = function (obj, indent) {
+        var ns;
+        var j;
+        var sub;
+        var nsslen;
+        var nss;
+        var info;
+        var i;
+        var objidentslen;
+        var objidents;
+        var ret;
         if (indent === undefined) {
             indent = "";
         }
-        var ret = "";
+        ret = "";
         ret += indent + "Sym_type: " + obj.get_type() + "\n";
         ret += indent + "Sym_name: " + obj.get_name() + "\n";
         ret += indent + "Sym_lineno: " + obj.get_lineno() + "\n";
@@ -926,10 +987,10 @@ Sk.dumpSymtab = function (st) {
             ret += indent + "Func_frees: " + pyList(obj.get_frees()) + "\n";
         }
         ret += indent + "-- Identifiers --\n";
-        var objidents = obj.get_identifiers();
-        var objidentslen = objidents.length;
-        for (var i = 0; i < objidentslen; ++i) {
-            var info = obj.lookup(objidents[i]);
+        objidents = obj.get_identifiers();
+        objidentslen = objidents.length;
+        for (i = 0; i < objidentslen; ++i) {
+            info = obj.lookup(objidents[i]);
             ret += indent + "name: " + info.get_name() + "\n";
             ret += indent + "  is_referenced: " + pyBoolStr(info.is_referenced()) + "\n";
             ret += indent + "  is_imported: " + pyBoolStr(info.is_imported()) + "\n";
@@ -940,19 +1001,19 @@ Sk.dumpSymtab = function (st) {
             ret += indent + "  is_free: " + pyBoolStr(info.is_free()) + "\n";
             ret += indent + "  is_assigned: " + pyBoolStr(info.is_assigned()) + "\n";
             ret += indent + "  is_namespace: " + pyBoolStr(info.is_namespace()) + "\n";
-            var nss = info.get_namespaces();
-            var nsslen = nss.length;
+            nss = info.get_namespaces();
+            nsslen = nss.length;
             ret += indent + "  namespaces: [\n";
-            var sub = [];
-            for (var j = 0; j < nsslen; ++j) {
-                var ns = nss[j];
+            sub = [];
+            for (j = 0; j < nsslen; ++j) {
+                ns = nss[j];
                 sub.push(getIdents(ns, indent + "    "));
             }
-            ret += sub.join('\n');
+            ret += sub.join("\n");
             ret += indent + "  ]\n";
         }
         return ret;
-    }
+    };
     return getIdents(st.top, "");
 };
 

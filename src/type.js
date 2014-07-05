@@ -42,7 +42,9 @@ Sk.builtin.type = function (name, bases, dict) {
         // dict is the result of running the classes code object
         // (basically the dict of functions). those become the prototype
         // object of the class).
-
+        /**
+        * @constructor
+        */
         klass = function (kwdict, varargseq, kws, args) {
             var init;
             if (!(this instanceof klass)) {
