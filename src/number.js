@@ -6,7 +6,6 @@
  */
 Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
     var result;
-    var result;
     if (!(this instanceof Sk.builtin.nmber)) {
         return new Sk.builtin.nmber(x, skType);
     }
@@ -446,7 +445,6 @@ Sk.builtin.nmber.prototype.nb$floor_divide = function (other) {
 
 Sk.builtin.nmber.prototype.nb$remainder = function (other) {
     var thisAsLong;
-    var tmp;
     var op2;
     var tmp;
     var result;
@@ -785,6 +783,9 @@ Sk.builtin.nmber.prototype.numberCompare = function (other) {
     return undefined;
 };
 
+// Despite what jshint may want us to do, these two  functions need to remain
+// as == and !=  Unless you modify the logic of numberCompare do not change
+// these.
 Sk.builtin.nmber.prototype.__eq__ = function (me, other) {
     return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none);
 };
@@ -811,7 +812,7 @@ Sk.builtin.nmber.prototype.__ge__ = function (me, other) {
 
 Sk.builtin.nmber.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
-Sk.builtin.nmber.prototype['$r'] = function () {
+Sk.builtin.nmber.prototype["$r"] = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
@@ -820,6 +821,11 @@ Sk.builtin.nmber.prototype.tp$str = function () {
 };
 
 Sk.builtin.nmber.prototype.str$ = function (base, sign) {
+    var post;
+    var pre;
+    var idx;
+    var tmp;
+    var work;
     if (isNaN(this.v)) {
         return "nan";
     }
@@ -829,27 +835,26 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     }
 
     if (this.v == Infinity) {
-        return 'inf';
+        return "inf";
     }
     if (this.v == -Infinity && sign) {
-        return '-inf';
+        return "-inf";
     }
     if (this.v == -Infinity && !sign) {
-        return 'inf';
+        return "inf";
     }
 
-    var work = sign ? this.v : Math.abs(this.v);
+    work = sign ? this.v : Math.abs(this.v);
 
 
-    var tmp;
     if (base === undefined || base === 10) {
         if (this.skType == Sk.builtin.nmber.float$) {
             tmp = work.toPrecision(12);
 
             // transform fractions with 4 or more leading zeroes into exponents
-            var idx = tmp.indexOf('.');
-            var pre = work.toString().slice(0, idx);
-            var post = work.toString().slice(idx);
+            idx = tmp.indexOf(".");
+            pre = work.toString().slice(0, idx);
+            post = work.toString().slice(idx);
             if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
                 if (tmp.length < 12) {
                     tmp = work.toExponential();
@@ -859,19 +864,19 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
                 }
             }
 
-            while (tmp.charAt(tmp.length - 1) == "0" && tmp.indexOf('e') < 0) {
-                tmp = tmp.substring(0, tmp.length - 1)
+            while (tmp.charAt(tmp.length - 1) == "0" && tmp.indexOf("e") < 0) {
+                tmp = tmp.substring(0, tmp.length - 1);
             }
             if (tmp.charAt(tmp.length - 1) == ".") {
-                tmp = tmp + "0"
+                tmp = tmp + "0";
             }
-            tmp = tmp.replace(new RegExp('\\.0+e'), 'e', "i")
+            tmp = tmp.replace(new RegExp("\\.0+e"), "e", "i");
             // make exponent two digits instead of one (ie e+09 not e+9)
             tmp = tmp.replace(/(e[-+])([1-9])$/, "$10$2");
             // remove trailing zeroes before the exponent
-            tmp = tmp.replace(/0+(e.*)/, '$1');
+            tmp = tmp.replace(/0+(e.*)/, "$1");
         } else {
-            tmp = work.toString()
+            tmp = work.toString();
         }
     } else {
         tmp = work.toString(base);
@@ -880,8 +885,8 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     if (this.skType !== Sk.builtin.nmber.float$) {
         return tmp;
     }
-    if (tmp.indexOf('.') < 0 && tmp.indexOf('E') < 0 && tmp.indexOf('e') < 0) {
-        tmp = tmp + '.0';
+    if (tmp.indexOf(".") < 0 && tmp.indexOf("E") < 0 && tmp.indexOf("e") < 0) {
+        tmp = tmp + ".0";
     }
     return tmp;
 };
