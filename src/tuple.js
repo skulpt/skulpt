@@ -3,6 +3,7 @@
  * @param {Array.<Object>|Object} L
  */
 Sk.builtin.tuple = function (L) {
+    var it, i;
     if (!(this instanceof Sk.builtin.tuple)) {
         return new Sk.builtin.tuple(L);
     }
@@ -11,13 +12,13 @@ Sk.builtin.tuple = function (L) {
         L = [];
     }
 
-    if (Object.prototype.toString.apply(L) === '[object Array]') {
+    if (Object.prototype.toString.apply(L) === "[object Array]") {
         this.v = L;
     }
     else {
         if (L.tp$iter) {
             this.v = [];
-            for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 this.v.push(i);
             }
         }
@@ -33,15 +34,18 @@ Sk.builtin.tuple = function (L) {
 };
 
 Sk.builtin.tuple.prototype.tp$name = "tuple";
-Sk.builtin.tuple.prototype['$r'] = function () {
+Sk.builtin.tuple.prototype["$r"] = function () {
+    var ret;
+    var i;
+    var bits;
     if (this.v.length === 0) {
         return new Sk.builtin.str("()");
     }
-    var bits = [];
-    for (var i = 0; i < this.v.length; ++i) {
+    bits = [];
+    for (i = 0; i < this.v.length; ++i) {
         bits[i] = Sk.misceval.objectRepr(this.v[i]).v;
     }
-    var ret = bits.join(', ');
+    ret = bits.join(", ");
     if (this.v.length === 1) {
         ret += ",";
     }
@@ -49,8 +53,10 @@ Sk.builtin.tuple.prototype['$r'] = function () {
 };
 
 Sk.builtin.tuple.prototype.mp$subscript = function (index) {
+    var ret;
+    var i;
     if (Sk.misceval.isIndex(index)) {
-        var i = Sk.misceval.asIndex(index);
+        i = Sk.misceval.asIndex(index);
         if (i !== undefined) {
             if (i < 0) {
                 i = this.v.length + i;
@@ -62,7 +68,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
         }
     }
     else if (index instanceof Sk.builtin.slice) {
-        var ret = [];
+        ret = [];
         index.sssiter$(this, function (i, wrt) {
             ret.push(wrt.v[i]);
         });
@@ -77,11 +83,13 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
 // but would be nice to make the hash() values the same if it's not too
 // expensive to simplify tests.
 Sk.builtin.tuple.prototype.tp$hash = function () {
+    var y;
+    var i;
     var mult = 1000003;
     var x = 0x345678;
     var len = this.v.length;
-    for (var i = 0; i < len; ++i) {
-        var y = Sk.builtin.hash(this.v[i]).v;
+    for (i = 0; i < len; ++i) {
+        y = Sk.builtin.hash(this.v[i]).v;
         if (y === -1) {
             return new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$);
         }
@@ -96,10 +104,13 @@ Sk.builtin.tuple.prototype.tp$hash = function () {
 };
 
 Sk.builtin.tuple.prototype.sq$repeat = function (n) {
+    var j;
+    var i;
+    var ret;
     n = Sk.builtin.asnum$(n);
-    var ret = [];
-    for (var i = 0; i < n; ++i) {
-        for (var j = 0; j < this.v.length; ++j) {
+    ret = [];
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < this.v.length; ++j) {
             ret.push(this.v[j]);
         }
     }
@@ -109,7 +120,7 @@ Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
 Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
 
 
-Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('tuple', Sk.builtin.tuple);
+Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("tuple", Sk.builtin.tuple);
 
 Sk.builtin.tuple.prototype.tp$iter = function () {
     var ret =
@@ -130,7 +141,7 @@ Sk.builtin.tuple.prototype.tp$iter = function () {
     return ret;
 };
 
-Sk.builtin.tuple.prototype['__iter__'] = new Sk.builtin.func(function (self) {
+Sk.builtin.tuple.prototype["__iter__"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
 
     return self.tp$iter();
@@ -142,12 +153,17 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
 
     // w not a tuple
+    var k;
+    var i;
+    var wl;
+    var vl;
+    var v;
     if (!w.__class__ || w.__class__ != Sk.builtin.tuple) {
         // shortcuts for eq/not
-        if (op === 'Eq') {
+        if (op === "Eq") {
             return false;
         }
-        if (op === 'NotEq') {
+        if (op === "NotEq") {
             return true;
         }
 
@@ -155,14 +171,13 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
         return false;
     }
 
-    var v = this.v;
-    var w = w.v;
-    var vl = v.length;
-    var wl = w.length;
+    v = this.v;
+    w = w.v;
+    vl = v.length;
+    wl = w.length;
 
-    var i;
     for (i = 0; i < vl && i < wl; ++i) {
-        var k = Sk.misceval.richCompareBool(v[i], w[i], 'Eq');
+        k = Sk.misceval.richCompareBool(v[i], w[i], "Eq");
         if (!k) {
             break;
         }
@@ -171,17 +186,17 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     if (i >= vl || i >= wl) {
         // no more items to compare, compare sizes
         switch (op) {
-            case 'Lt':
+            case "Lt":
                 return vl < wl;
-            case 'LtE':
+            case "LtE":
                 return vl <= wl;
-            case 'Eq':
+            case "Eq":
                 return vl === wl;
-            case 'NotEq':
+            case "NotEq":
                 return vl !== wl;
-            case 'Gt':
+            case "Gt":
                 return vl > wl;
-            case 'GtE':
+            case "GtE":
                 return vl >= wl;
             default:
                 goog.asserts.fail();
@@ -191,10 +206,10 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     // we have an item that's different
 
     // shortcuts for eq/not
-    if (op === 'Eq') {
+    if (op === "Eq") {
         return false;
     }
-    if (op === 'NotEq') {
+    if (op === "NotEq") {
         return true;
     }
 
@@ -204,9 +219,10 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
 };
 
 Sk.builtin.tuple.prototype.sq$concat = function (other) {
+    var msg;
     if (other.__class__ != Sk.builtin.tuple) {
-        var msg = 'can only concatenate tuple (not "';
-        msg += Sk.abstr.typeName(other) + '") to tuple';
+        msg = "can only concatenate tuple (not \"";
+        msg += Sk.abstr.typeName(other) + "\") to tuple";
         throw new Sk.builtin.TypeError(msg);
     }
 
@@ -221,10 +237,11 @@ Sk.builtin.tuple.prototype.sq$length = function () {
 };
 
 
-Sk.builtin.tuple.prototype['index'] = new Sk.builtin.func(function (self, item) {
+Sk.builtin.tuple.prototype["index"] = new Sk.builtin.func(function (self, item) {
+    var i;
     var len = self.v.length;
     var obj = self.v;
-    for (var i = 0; i < len; ++i) {
+    for (i = 0; i < len; ++i) {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
             return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);
         }
@@ -232,11 +249,12 @@ Sk.builtin.tuple.prototype['index'] = new Sk.builtin.func(function (self, item) 
     throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
 });
 
-Sk.builtin.tuple.prototype['count'] = new Sk.builtin.func(function (self, item) {
+Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) {
+    var i;
     var len = self.v.length;
     var obj = self.v;
     var count = 0;
-    for (var i = 0; i < len; ++i) {
+    for (i = 0; i < len; ++i) {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
             count += 1;
         }

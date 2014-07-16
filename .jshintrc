@@ -24,12 +24,12 @@
   // Set these to `true` to relax, or `false` to enforce.
   "boss":         true,
   "eqnull":       true,
-  "es5":          true,
   "evil":         true,
   "expr":         true,
   "smarttabs":    true,
   "sub":          true,
   "validthis":    true,
+
 
   /*** Environments ***/
   // Set each environment that you're using to `true`.

@@ -5,6 +5,7 @@
  * @constructor
  */
 Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
+    var result;
     if (!(this instanceof Sk.builtin.nmber)) {
         return new Sk.builtin.nmber(x, skType);
     }
@@ -19,7 +20,7 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
     } else if (typeof x === "number") {
         this.v = x;
         if (skType === undefined) {
-            if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$ || x % 1 != 0) {
+            if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$ || x % 1 !== 0) {
                 this.skType = Sk.builtin.nmber.float$;
             }
             else {
@@ -34,7 +35,7 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
             }
         }
     } else if (typeof x === "string") {
-        var result = Sk.numberFromStr(x);
+        result = Sk.numberFromStr(x);
         if (skType !== undefined) {
             result.skType = skType;
         }
@@ -47,7 +48,7 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
     } else if (x instanceof Sk.builtin.lng) {
         return Sk.numberFromStr(x.str$(10, true));
     } else if (x instanceof Sk.builtin.biginteger) {
-        var result = Sk.numberFromStr(x.toString());
+        result = Sk.numberFromStr(x.toString());
         if (skType !== undefined) {
             result.skType = skType;
         }
@@ -80,7 +81,7 @@ Sk.builtin.nmber.prototype.tp$hash = function () {
 };
 
 Sk.builtin.nmber.prototype.tp$name = "number";
-Sk.builtin.nmber.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('number', Sk.builtin.nmber);
+Sk.builtin.nmber.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("number", Sk.builtin.nmber);
 
 //	Threshold to determine when types should be converted to long
 Sk.builtin.nmber.threshold$ = Math.pow(2, 53) - 1;
@@ -94,18 +95,19 @@ Sk.builtin.nmber.fromInt$ = function (ival) {
 // js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
 // 0x, 0o, 0b, etc.
 Sk.numberFromStr = function (s) {
-    if (s == 'inf') {
+    var s1;
+    var tmp;
+    var res;
+    if (s == "inf") {
         return new Sk.builtin.nmber(Infinity, undefined);
     }
-    if (s == '-inf') {
+    if (s == "-inf") {
         return new Sk.builtin.nmber(-Infinity, undefined);
     }
 
-    var res = new Sk.builtin.nmber(0, undefined);
+    res = new Sk.builtin.nmber(0, undefined);
 
-    if (s.indexOf('.') !== -1
-        || s.indexOf('e') !== -1
-        || s.indexOf('E') !== -1) {
+    if (s.indexOf(".") !== -1 || s.indexOf("e") !== -1 || s.indexOf("E") !== -1) {
         res.v = parseFloat(s);
         res.skType = Sk.builtin.nmber.float$;
         return res;
@@ -114,18 +116,17 @@ Sk.numberFromStr = function (s) {
     // ugly gunk to placate an overly-nanny closure-compiler:
     // http://code.google.com/p/closure-compiler/issues/detail?id=111
     // this is all just to emulate "parseInt(s)" with no radix.
-    var tmp = s;
-    var s1;
-    if (s.charAt(0) === '-') {
+    tmp = s;
+    if (s.charAt(0) === "-") {
         tmp = s.substr(1);
     }
-    if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'x' || tmp.charAt(1) === 'X')) {
+    if (tmp.charAt(0) === "0" && (tmp.charAt(1) === "x" || tmp.charAt(1) === "X")) {
         s1 = parseInt(s, 16);
     }
-    else if (tmp.charAt(0) === '0' && (tmp.charAt(1) === 'b' || tmp.charAt(1) === 'B')) {
+    else if (tmp.charAt(0) === "0" && (tmp.charAt(1) === "b" || tmp.charAt(1) === "B")) {
         s1 = parseInt(s, 2);
     }
-    else if (tmp.charAt(0) === '0') {
+    else if (tmp.charAt(0) === "0") {
         s1 = parseInt(s, 8);
     }
     else {
@@ -144,10 +145,11 @@ Sk.builtin.nmber.prototype.clone = function () {
 
 Sk.builtin.nmber.prototype.toFixed = function (x) {
     x = Sk.builtin.asnum$(x);
-    return this.v.toFixed(x)
-}
+    return this.v.toFixed(x);
+};
 
 Sk.builtin.nmber.prototype.nb$add = function (other) {
+    var thisAsLong;
     var result;
 
     if (typeof other === "number") {
@@ -180,7 +182,7 @@ Sk.builtin.nmber.prototype.nb$add = function (other) {
         if (this.skType === Sk.builtin.nmber.float$) {  // float + long --> float
             result = new Sk.builtin.nmber(this.v + parseFloat(other.str$(10, true)), Sk.builtin.nmber.float$);
         } else {	//	int + long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$add(other);
         }
         return result;
@@ -191,6 +193,7 @@ Sk.builtin.nmber.prototype.nb$add = function (other) {
 
 
 Sk.builtin.nmber.prototype.nb$subtract = function (other) {
+    var thisAsLong;
     var result;
 
     if (typeof other === "number") {
@@ -223,7 +226,7 @@ Sk.builtin.nmber.prototype.nb$subtract = function (other) {
         if (this.skType === Sk.builtin.nmber.float$) {  // float + long --> float
             result = new Sk.builtin.nmber(this.v - parseFloat(other.str$(10, true)), Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$subtract(other);
         }
         return result;
@@ -233,6 +236,7 @@ Sk.builtin.nmber.prototype.nb$subtract = function (other) {
 };
 
 Sk.builtin.nmber.prototype.nb$multiply = function (other) {
+    var thisAsLong;
     var result;
 
     if (typeof other === "number") {
@@ -265,7 +269,7 @@ Sk.builtin.nmber.prototype.nb$multiply = function (other) {
         if (this.skType === Sk.builtin.nmber.float$) {  // float + long --> float
             result = new Sk.builtin.nmber(this.v * parseFloat(other.str$(10, true)), Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$multiply(other);
         }
         return result;
@@ -275,6 +279,7 @@ Sk.builtin.nmber.prototype.nb$multiply = function (other) {
 };
 
 Sk.builtin.nmber.prototype.nb$divide = function (other) {
+    var thisAsLong;
     var result;
 
     if (typeof other === "number") {
@@ -289,7 +294,7 @@ Sk.builtin.nmber.prototype.nb$divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.nmber) {
-        if (other.v == 0) {
+        if (other.v === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
@@ -332,7 +337,7 @@ Sk.builtin.nmber.prototype.nb$divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) == 0) {
+        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
@@ -356,7 +361,7 @@ Sk.builtin.nmber.prototype.nb$divide = function (other) {
         if (this.skType === Sk.builtin.nmber.float$ || Sk.python3) {  // float / long --> float
             result = new Sk.builtin.nmber(this.v / parseFloat(other.str$(10, true)), Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$divide(other);
         }
         return result;
@@ -366,6 +371,7 @@ Sk.builtin.nmber.prototype.nb$divide = function (other) {
 };
 
 Sk.builtin.nmber.prototype.nb$floor_divide = function (other) {
+    var thisAsLong;
     var result;
 
     if (typeof other === "number") {
@@ -384,7 +390,7 @@ Sk.builtin.nmber.prototype.nb$floor_divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.nmber) {
-        if (other.v == 0) {
+        if (other.v === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
@@ -421,14 +427,14 @@ Sk.builtin.nmber.prototype.nb$floor_divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) == 0) {
+        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
         if (this.skType === Sk.builtin.nmber.float$) {  // float / long --> float
             result = Math.floor(this.v / parseFloat(other.str$(10, true)));
             result = new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$floor_divide(other);
         }
         return result;
@@ -438,6 +444,9 @@ Sk.builtin.nmber.prototype.nb$floor_divide = function (other) {
 };
 
 Sk.builtin.nmber.prototype.nb$remainder = function (other) {
+    var thisAsLong;
+    var op2;
+    var tmp;
     var result;
 
     if (typeof other === "number") {
@@ -452,11 +461,11 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
     }
 
     if (other instanceof Sk.builtin.nmber) {
-        if (other.v == 0) {
+        if (other.v === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
-        if (this.v == 0) {
+        if (this.v === 0) {
             if (this.skType == Sk.builtin.nmber.float$ || other.skType == Sk.builtin.nmber.float$) {
                 return new Sk.builtin.nmber(0, Sk.builtin.nmber.float$);
             }
@@ -478,13 +487,13 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
         }
 
         //	Javacript logic on negatives doesn't work for Python... do this instead
-        var tmp = this.v % other.v;
+        tmp = this.v % other.v;
         if (this.v < 0) {
             if (other.v > 0 && tmp < 0) {
                 tmp = tmp + other.v;
             }
         } else {
-            if (other.v < 0 && tmp != 0) {
+            if (other.v < 0 && tmp !== 0) {
                 tmp = tmp + other.v;
             }
         }
@@ -503,11 +512,11 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (other.longCompare(Sk.builtin.biginteger.ZERO) == 0) {
+        if (other.longCompare(Sk.builtin.biginteger.ZERO) === 0) {
             throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
         }
 
-        if (this.v == 0) {
+        if (this.v === 0) {
             if (this.skType === Sk.builtin.nmber.int$) {
                 return new Sk.builtin.lng(0);
             }
@@ -517,20 +526,20 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
         }
 
         if (this.skType === Sk.builtin.nmber.float$) {  // float / long --> float
-            var op2 = parseFloat(other.str$(10, true))
-            var tmp = this.v % op2;
+            op2 = parseFloat(other.str$(10, true));
+            tmp = this.v % op2;
             if (tmp < 0) {
-                if (op2 > 0 && tmp != 0) {
+                if (op2 > 0 && tmp !== 0) {
                     tmp = tmp + op2;
                 }
             } else {
-                if (op2 < 0 && tmp != 0) {
+                if (op2 < 0 && tmp !== 0) {
                     tmp = tmp + op2;
                 }
             }
             result = new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$remainder(other);
         }
         return result;
@@ -540,6 +549,7 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
 };
 
 Sk.builtin.nmber.prototype.nb$power = function (other) {
+    var thisAsLong;
     var result;
 
     if (typeof other === "number") {
@@ -554,10 +564,10 @@ Sk.builtin.nmber.prototype.nb$power = function (other) {
     }
 
     if (other instanceof Sk.builtin.nmber) {
-        if (this.v < 0 && other.v % 1 != 0) {
+        if (this.v < 0 && other.v % 1 !== 0) {
             throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
         }
-        if (this.v == 0 && other.v < 0) {
+        if (this.v === 0 && other.v < 0) {
             throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
         }
 
@@ -582,13 +592,13 @@ Sk.builtin.nmber.prototype.nb$power = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (this.v == 0 && other.longCompare(Sk.builtin.biginteger.ZERO) < 0) {
+        if (this.v === 0 && other.longCompare(Sk.builtin.biginteger.ZERO) < 0) {
             throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
         }
         if (this.skType === Sk.builtin.nmber.float$ || other.nb$isnegative()) {  // float / long --> float
             result = new Sk.builtin.nmber(Math.pow(this.v, parseFloat(other.str$(10, true))), Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
-            var thisAsLong = new Sk.builtin.lng(this.v);
+            thisAsLong = new Sk.builtin.lng(this.v);
             result = thisAsLong.nb$power(other);
         }
         return result;
@@ -610,7 +620,7 @@ Sk.builtin.nmber.prototype.nb$and = function (other) {
     }
 
     return undefined;
-}
+};
 
 Sk.builtin.nmber.prototype.nb$or = function (other) {
     var tmp;
@@ -625,7 +635,7 @@ Sk.builtin.nmber.prototype.nb$or = function (other) {
     }
 
     return undefined;
-}
+};
 
 Sk.builtin.nmber.prototype.nb$xor = function (other) {
     var tmp;
@@ -640,7 +650,7 @@ Sk.builtin.nmber.prototype.nb$xor = function (other) {
     }
 
     return undefined;
-}
+};
 
 Sk.builtin.nmber.prototype.nb$lshift = function (other) {
     var tmp;
@@ -662,7 +672,7 @@ Sk.builtin.nmber.prototype.nb$lshift = function (other) {
     }
 
     return undefined;
-}
+};
 
 Sk.builtin.nmber.prototype.nb$rshift = function (other) {
     var tmp;
@@ -684,7 +694,7 @@ Sk.builtin.nmber.prototype.nb$rshift = function (other) {
     }
 
     return undefined;
-}
+};
 
 Sk.builtin.nmber.prototype.nb$inplace_add = Sk.builtin.nmber.prototype.nb$add;
 
@@ -723,14 +733,17 @@ Sk.builtin.nmber.prototype.nb$nonzero = function () {
 };
 
 Sk.builtin.nmber.prototype.nb$isnegative = function () {
-    return this.v < 0
+    return this.v < 0;
 };
 
 Sk.builtin.nmber.prototype.nb$ispositive = function () {
-    return this.v >= 0
+    return this.v >= 0;
 };
 
 Sk.builtin.nmber.prototype.numberCompare = function (other) {
+    var diff;
+    var tmp;
+    var thisAsLong;
     if (other instanceof Sk.builtin.bool) {
         other = Sk.builtin.asnum$(other);
     }
@@ -754,12 +767,12 @@ Sk.builtin.nmber.prototype.numberCompare = function (other) {
     }
 
     if (other instanceof Sk.builtin.lng) {
-        if (this.skType === Sk.builtin.nmber.int$ || this.v % 1 == 0) {
-            var thisAsLong = new Sk.builtin.lng(this.v);
-            var tmp = thisAsLong.longCompare(other);
+        if (this.skType === Sk.builtin.nmber.int$ || this.v % 1 === 0) {
+            thisAsLong = new Sk.builtin.lng(this.v);
+            tmp = thisAsLong.longCompare(other);
             return tmp;
         }
-        var diff = this.nb$subtract(other);
+        diff = this.nb$subtract(other);
         if (diff instanceof Sk.builtin.nmber) {
             return diff.v;
         } else if (diff instanceof Sk.builtin.lng) {
@@ -768,8 +781,11 @@ Sk.builtin.nmber.prototype.numberCompare = function (other) {
     }
 
     return undefined;
-}
+};
 
+// Despite what jshint may want us to do, these two  functions need to remain
+// as == and !=  Unless you modify the logic of numberCompare do not change
+// these.
 Sk.builtin.nmber.prototype.__eq__ = function (me, other) {
     return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none);
 };
@@ -796,7 +812,7 @@ Sk.builtin.nmber.prototype.__ge__ = function (me, other) {
 
 Sk.builtin.nmber.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
-Sk.builtin.nmber.prototype['$r'] = function () {
+Sk.builtin.nmber.prototype["$r"] = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
@@ -805,6 +821,11 @@ Sk.builtin.nmber.prototype.tp$str = function () {
 };
 
 Sk.builtin.nmber.prototype.str$ = function (base, sign) {
+    var post;
+    var pre;
+    var idx;
+    var tmp;
+    var work;
     if (isNaN(this.v)) {
         return "nan";
     }
@@ -814,27 +835,26 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     }
 
     if (this.v == Infinity) {
-        return 'inf';
+        return "inf";
     }
     if (this.v == -Infinity && sign) {
-        return '-inf';
+        return "-inf";
     }
     if (this.v == -Infinity && !sign) {
-        return 'inf';
+        return "inf";
     }
 
-    var work = sign ? this.v : Math.abs(this.v);
+    work = sign ? this.v : Math.abs(this.v);
 
 
-    var tmp;
     if (base === undefined || base === 10) {
         if (this.skType == Sk.builtin.nmber.float$) {
             tmp = work.toPrecision(12);
 
             // transform fractions with 4 or more leading zeroes into exponents
-            var idx = tmp.indexOf('.');
-            var pre = work.toString().slice(0, idx);
-            var post = work.toString().slice(idx);
+            idx = tmp.indexOf(".");
+            pre = work.toString().slice(0, idx);
+            post = work.toString().slice(idx);
             if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
                 if (tmp.length < 12) {
                     tmp = work.toExponential();
@@ -844,19 +864,19 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
                 }
             }
 
-            while (tmp.charAt(tmp.length - 1) == "0" && tmp.indexOf('e') < 0) {
-                tmp = tmp.substring(0, tmp.length - 1)
+            while (tmp.charAt(tmp.length - 1) == "0" && tmp.indexOf("e") < 0) {
+                tmp = tmp.substring(0, tmp.length - 1);
             }
             if (tmp.charAt(tmp.length - 1) == ".") {
-                tmp = tmp + "0"
+                tmp = tmp + "0";
             }
-            tmp = tmp.replace(new RegExp('\\.0+e'), 'e', "i")
+            tmp = tmp.replace(new RegExp("\\.0+e"), "e", "i");
             // make exponent two digits instead of one (ie e+09 not e+9)
             tmp = tmp.replace(/(e[-+])([1-9])$/, "$10$2");
             // remove trailing zeroes before the exponent
-            tmp = tmp.replace(/0+(e.*)/, '$1');
+            tmp = tmp.replace(/0+(e.*)/, "$1");
         } else {
-            tmp = work.toString()
+            tmp = work.toString();
         }
     } else {
         tmp = work.toString(base);
@@ -865,8 +885,8 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     if (this.skType !== Sk.builtin.nmber.float$) {
         return tmp;
     }
-    if (tmp.indexOf('.') < 0 && tmp.indexOf('E') < 0 && tmp.indexOf('e') < 0) {
-        tmp = tmp + '.0';
+    if (tmp.indexOf(".") < 0 && tmp.indexOf("E") < 0 && tmp.indexOf("e") < 0) {
+        tmp = tmp + ".0";
     }
     return tmp;
 };

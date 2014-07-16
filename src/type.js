@@ -18,10 +18,14 @@
  */
 
 Sk.builtin.type = function (name, bases, dict) {
+    var mro;
+    var obj;
+    var klass;
+    var v;
     if (bases === undefined && dict === undefined) {
         // 1 arg version of type()
         // the argument is an object, not a name and returns a type object
-        var obj = name;
+        obj = name;
         if (obj.constructor === Sk.builtin.nmber) {
             if (obj.skType === Sk.builtin.nmber.int$) {
                 return Sk.builtin.int_.prototype.ob$type;
@@ -38,19 +42,19 @@ Sk.builtin.type = function (name, bases, dict) {
         // dict is the result of running the classes code object
         // (basically the dict of functions). those become the prototype
         // object of the class).
-
         /**
-         * @constructor
-         */
-        var klass = (function (kwdict, varargseq, kws, args) {
+        * @constructor
+        */
+        klass = function (kwdict, varargseq, kws, args) {
+            var init;
             if (!(this instanceof klass)) {
                 return new klass(kwdict, varargseq, kws, args);
             }
 
             args = args || [];
-            this['$d'] = new Sk.builtin.dict([]);
+            this["$d"] = new Sk.builtin.dict([]);
 
-            var init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
+            init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
             if (init !== undefined) {
                 // return should be None or throw a TypeError otherwise
                 args.unshift(this);
@@ -58,27 +62,29 @@ Sk.builtin.type = function (name, bases, dict) {
             }
 
             return this;
-        });
-        //print("type(nbd):",name,JSON.stringify(dict, null,2));
-        for (var v in dict) {
+        };
+
+        for (v in dict) {
             klass.prototype[v] = dict[v];
             klass[v] = dict[v];
         }
-        klass['__class__'] = klass;
-        klass['__name__'] = new Sk.builtin.str(name);
+        klass["__class__"] = klass;
+        klass["__name__"] = new Sk.builtin.str(name);
         klass.sk$klass = true;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function () {
             goog.asserts.fail("in type tp$descr_get");
         };
-        klass.prototype['$r'] = function () {
+        klass.prototype["$r"] = function () {
+            var cname;
+            var mod;
             var reprf = this.tp$getattr("__repr__");
             if (reprf !== undefined) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
-            var mod = dict.__module__;
-            var cname = "";
+            mod = dict.__module__;
+            cname = "";
             if (mod) {
                 cname = mod.v + ".";
             }
@@ -89,14 +95,15 @@ Sk.builtin.type = function (name, bases, dict) {
             if (strf !== undefined) {
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
             }
-            return this['$r']();
+            return this["$r"]();
         };
         klass.prototype.tp$length = function () {
+            var tname;
             var lenf = this.tp$getattr("__len__");
             if (lenf !== undefined) {
                 return Sk.misceval.apply(lenf, undefined, undefined, undefined, []);
             }
-            var tname = Sk.abstr.typeName(this);
+            tname = Sk.abstr.typeName(this);
             throw new Sk.builtin.AttributeError(tname + " instance has no attribute '__len__'");
         };
         klass.prototype.tp$call = function (args, kw) {
@@ -108,10 +115,11 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object is not callable");
         };
         klass.prototype.tp$iter = function () {
+            var ret;
             var iterf = this.tp$getattr("__iter__");
             var tname = Sk.abstr.typeName(this);
             if (iterf) {
-                var ret = Sk.misceval.callsim(iterf);
+                ret = Sk.misceval.callsim(iterf);
                 // This check does not work for builtin iterators
                 // if (ret.tp$getattr("next") === undefined)
                 //    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + tname + "'");
@@ -130,14 +138,14 @@ Sk.builtin.type = function (name, bases, dict) {
                 return Sk.misceval.apply(getf, undefined, undefined, undefined, [key]);
             }
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
-        }
+        };
         klass.prototype.tp$setitem = function (key, value) {
             var setf = this.tp$getattr("__setitem__");
             if (setf !== undefined) {
                 return Sk.misceval.apply(setf, undefined, undefined, undefined, [key, value]);
             }
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
-        }
+        };
 
         klass.prototype.tp$name = name;
 
@@ -145,10 +153,10 @@ Sk.builtin.type = function (name, bases, dict) {
             //print("building mro for", name);
             //for (var i = 0; i < bases.length; ++i)
             //print("base[" + i + "]=" + bases[i].tp$name);
-            klass['$d'] = new Sk.builtin.dict([]);
-            klass['$d'].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
-            var mro = Sk.builtin.type.buildMRO(klass);
-            klass['$d'].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
+            klass["$d"] = new Sk.builtin.dict([]);
+            klass["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
+            mro = Sk.builtin.type.buildMRO(klass);
+            klass["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
             klass.tp$mro = mro;
             //print("mro result", Sk.builtin.repr(mro).v);
         }
@@ -168,8 +176,7 @@ Sk.builtin.type = function (name, bases, dict) {
  *
  */
 Sk.builtin.type.makeTypeObj = function (name, newedInstanceOfType) {
-    var t = newedInstanceOfType;
-    Sk.builtin.type.makeIntoTypeObj(name, t);
+    Sk.builtin.type.makeIntoTypeObj(name, newedInstanceOfType);
     return newedInstanceOfType;
 };
 
@@ -178,13 +185,14 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     goog.asserts.assert(t !== undefined);
     t.ob$type = Sk.builtin.type;
     t.tp$name = name;
-    t['$r'] = function () {
+    t["$r"] = function () {
+        var ctype;
         var mod = t.__module__;
         var cname = "";
         if (mod) {
             cname = mod.v + ".";
         }
-        var ctype = "class";
+        ctype = "class";
         if (!mod && !t.sk$klass) {
             ctype = "type";
         }
@@ -200,7 +208,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
 
 Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
-Sk.builtin.type['$r'] = function () {
+Sk.builtin.type["$r"] = function () {
     return new Sk.builtin.str("<type 'type'>");
 };
 
@@ -210,6 +218,7 @@ Sk.builtin.type['$r'] = function () {
 
 // basically the same as GenericGetAttr except looks in the proto instead
 Sk.builtin.type.prototype.tp$getattr = function (name) {
+    var res;
     var tp = this;
     var descr = Sk.builtin.type.typeLookup(tp, name);
     var f;
@@ -220,8 +229,8 @@ Sk.builtin.type.prototype.tp$getattr = function (name) {
         // return f.call(descr, this, this.ob$type);
     }
 
-    if (this['$d']) {
-        var res = this['$d'].mp$lookup(new Sk.builtin.str(name));
+    if (this["$d"]) {
+        res = this["$d"].mp$lookup(new Sk.builtin.str(name));
         if (res !== undefined) {
             return res;
         }
@@ -242,7 +251,7 @@ Sk.builtin.type.prototype.tp$getattr = function (name) {
 Sk.builtin.type.prototype.tp$setattr = function (name, value) {
     // class attributes are direct properties of the object
     this[name] = value;
-}
+};
 
 Sk.builtin.type.typeLookup = function (type, name) {
     var mro = type.tp$mro;
@@ -262,7 +271,7 @@ Sk.builtin.type.typeLookup = function (type, name) {
         if (base.hasOwnProperty(name)) {
             return base[name];
         }
-        res = base['$d'].mp$lookup(pyname);
+        res = base["$d"].mp$lookup(pyname);
         if (res !== undefined) {
             return res;
         }
@@ -280,10 +289,18 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
      }
      print(Sk.builtin.repr(new Sk.builtin.list(tmp)).v);
      */
+    var seq;
+    var i;
+    var next;
+    var k;
+    var sseq;
+    var j;
+    var cand;
+    var cands;
     var res = [];
     for (; ;) {
-        for (var i = 0; i < seqs.length; ++i) {
-            var seq = seqs[i];
+        for (i = 0; i < seqs.length; ++i) {
+            seq = seqs[i];
             if (seq.length !== 0) {
                 break;
             }
@@ -292,17 +309,17 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
         {
             return res;
         }
-        var cands = [];
-        for (var i = 0; i < seqs.length; ++i) {
-            var seq = seqs[i];
+        cands = [];
+        for (i = 0; i < seqs.length; ++i) {
+            seq = seqs[i];
             //print("XXX", Sk.builtin.repr(new Sk.builtin.list(seq)).v);
             if (seq.length !== 0) {
-                var cand = seq[0];
+                cand = seq[0];
                 //print("CAND", Sk.builtin.repr(cand).v);
                 OUTER:
-                    for (var j = 0; j < seqs.length; ++j) {
-                        var sseq = seqs[j];
-                        for (var k = 1; k < sseq.length; ++k) {
+                    for (j = 0; j < seqs.length; ++j) {
+                        sseq = seqs[j];
+                        for (k = 1; k < sseq.length; ++k) {
                             if (sseq[k] === cand) {
                                 break OUTER;
                             }
@@ -320,11 +337,11 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
             throw new Sk.builtin.TypeError("Inconsistent precedences in type hierarchy");
         }
 
-        var next = cands[0];
+        next = cands[0];
         // append next to result and remove from sequences
         res.push(next);
-        for (var i = 0; i < seqs.length; ++i) {
-            var seq = seqs[i];
+        for (i = 0; i < seqs.length; ++i) {
+            seq = seqs[i];
             if (seq.length > 0 && seq[0] === next) {
                 seq.splice(0, 1);
             }
@@ -334,19 +351,21 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
 
 Sk.builtin.type.buildMRO_ = function (klass) {
     // MERGE(klass + mro(bases) + bases)
+    var i;
+    var bases;
     var all = [
         [klass]
     ];
 
     // Sk.debugout("buildMRO for", klass.tp$name);
 
-    var kbases = klass['$d'].mp$subscript(Sk.builtin.type.basesStr_);
-    for (var i = 0; i < kbases.v.length; ++i) {
+    var kbases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
+    for (i = 0; i < kbases.v.length; ++i) {
         all.push(Sk.builtin.type.buildMRO_(kbases.v[i]));
     }
 
-    var bases = [];
-    for (var i = 0; i < kbases.v.length; ++i) {
+    bases = [];
+    for (i = 0; i < kbases.v.length; ++i) {
         bases.push(kbases.v[i]);
     }
     all.push(bases);
@@ -375,16 +394,18 @@ Sk.builtin.type.buildMRO = function (klass) {
 };
 
 Sk.builtin.type.prototype.tp$richcompare = function (other, op) {
+    var r2;
+    var r1;
     if (other.ob$type != Sk.builtin.type) {
         return undefined;
     }
 
-    if (!this['$r'] || !other['$r']) {
+    if (!this["$r"] || !other["$r"]) {
         return undefined;
     }
 
-    var r1 = this['$r']();
-    var r2 = other['$r']();
+    r1 = this["$r"]();
+    r2 = other["$r"]();
 
     return r1.tp$richcompare(r2, op);
 };

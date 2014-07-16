@@ -22,17 +22,19 @@ function Parser (filename, grammar) {
 
 
 Parser.prototype.setup = function (start) {
+    var stackentry;
+    var newnode;
     start = start || this.grammar.start;
     //print("START:"+start);
 
-    var newnode =
+    newnode =
     {
         type    : start,
         value   : null,
         context : null,
         children: []
     };
-    var stackentry =
+    stackentry =
     {
         dfa  : this.grammar.dfas[start],
         state: 0,
@@ -55,30 +57,42 @@ function findInDfa (a, obj) {
 
 // Add a token; return true if we're done
 Parser.prototype.addtoken = function (type, value, context) {
+    var errline;
+    var itsfirst;
+    var itsdfa;
+    var state;
+    var v;
+    var t;
+    var newstate;
+    var i;
+    var a;
+    var arcs;
+    var first;
+    var states;
+    var tp;
     var ilabel = this.classify(type, value, context);
     //print("ilabel:"+ilabel);
 
     OUTERWHILE:
         while (true) {
-            var tp = this.stack[this.stack.length - 1];
-            var states = tp.dfa[0];
-            var first = tp.dfa[1];
-            var arcs = states[tp.state];
+            tp = this.stack[this.stack.length - 1];
+            states = tp.dfa[0];
+            first = tp.dfa[1];
+            arcs = states[tp.state];
 
             // look for a state with this label
-            for (var a = 0; a < arcs.length; ++a) {
-                var i = arcs[a][0];
-                var newstate = arcs[a][1];
-                var t = this.grammar.labels[i][0];
-                var v = this.grammar.labels[i][1];
-                //print("a:"+a+", t:"+t+", i:"+i);
+            for (a = 0; a < arcs.length; ++a) {
+                i = arcs[a][0];
+                newstate = arcs[a][1];
+                t = this.grammar.labels[i][0];
+                v = this.grammar.labels[i][1];
                 if (ilabel === i) {
                     // look it up in the list of labels
                     goog.asserts.assert(t < 256);
                     // shift a token; we're done with it
                     this.shift(type, value, newstate, context);
                     // pop while we are in an accept-only state
-                    var state = newstate;
+                    state = newstate;
                     //print("before:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
                     while (states[state].length === 1
                         && states[state][0][0] === 0
@@ -102,8 +116,8 @@ Parser.prototype.addtoken = function (type, value, context) {
                     return false;
                 }
                 else if (t >= 256) {
-                    var itsdfa = this.grammar.dfas[t];
-                    var itsfirst = itsdfa[1];
+                    itsdfa = this.grammar.dfas[t];
+                    itsfirst = itsdfa[1];
                     if (itsfirst.hasOwnProperty(ilabel)) {
                         // push a symbol
                         this.push(t, this.grammar.dfas[t], newstate, context);
@@ -123,7 +137,7 @@ Parser.prototype.addtoken = function (type, value, context) {
             }
             else {
                 // no transition
-                var errline = context[0][0];
+                errline = context[0][0];
                 throw new Sk.builtin.ParseError("bad input", this.filename, errline, context);	//	RNL
 //          throw new Sk.builtin.ParseError("bad input on line " + errline.toString());		RNL
             }
@@ -202,6 +216,7 @@ Parser.prototype.push = function (type, newdfa, newstate, context) {
 
 // pop a nonterminal
 Parser.prototype.pop = function () {
+    var node;
     var pop = this.stack.pop();
     var newnode = pop.node;
     //print("POP");
@@ -210,7 +225,7 @@ Parser.prototype.pop = function () {
         //print("stacklen:"+this.stack.length);
         if (this.stack.length !== 0) {
             //print("B", bc++);
-            var node = this.stack[this.stack.length - 1].node;
+            node = this.stack[this.stack.length - 1].node;
             node.children.push(newnode);
         }
         else {
@@ -230,10 +245,18 @@ Parser.prototype.pop = function () {
  * @param {string=} style root of parse tree (optional)
  */
 function makeParser (filename, style) {
+    var tokenizer;
+    var T_OP;
+    var T_NL;
+    var T_COMMENT;
+    var prefix;
+    var column;
+    var lineno;
+    var p;
     if (style === undefined) {
         style = "file_input";
     }
-    var p = new Parser(filename, Sk.ParseTables);
+    p = new Parser(filename, Sk.ParseTables);
     // for closure's benefit
     if (style === "file_input") {
         p.setup(Sk.ParseTables.sym.file_input);
@@ -241,15 +264,13 @@ function makeParser (filename, style) {
     else {
         goog.asserts.fail("todo;");
     }
-    var curIndex = 0;
-    var lineno = 1;
-    var column = 0;
-    var prefix = "";
-    var T_COMMENT = Sk.Tokenizer.Tokens.T_COMMENT;
-    var T_NL = Sk.Tokenizer.Tokens.T_NL;
-    var T_OP = Sk.Tokenizer.Tokens.T_OP;
-    var tokenizer = new Sk.Tokenizer(filename, style === "single_input", function (type, value, start, end, line) {
-        //print(JSON.stringify([type, value, start, end, line]));
+    lineno = 1;
+    column = 0;
+    prefix = "";
+    T_COMMENT = Sk.Tokenizer.Tokens.T_COMMENT;
+    T_NL = Sk.Tokenizer.Tokens.T_NL;
+    T_OP = Sk.Tokenizer.Tokens.T_OP;
+    tokenizer = new Sk.Tokenizer(filename, style === "single_input", function (type, value, start, end, line) {
         var s_lineno = start[0];
         var s_column = start[1];
         /*
@@ -290,14 +311,16 @@ function makeParser (filename, style) {
 }
 
 Sk.parse = function parse (filename, input) {
+    var i;
+    var ret;
+    var lines;
     var parseFunc = makeParser(filename);
     if (input.substr(input.length - 1, 1) !== "\n") {
         input += "\n";
     }
     //print("input:"+input);
-    var lines = input.split("\n");
-    var ret;
-    for (var i = 0; i < lines.length; ++i) {
+    lines = input.split("\n");
+    for (i = 0; i < lines.length; ++i) {
         ret = parseFunc(lines[i] + ((i === lines.length - 1) ? "" : "\n"));
     }
     return ret;
@@ -305,18 +328,20 @@ Sk.parse = function parse (filename, input) {
 
 Sk.parseTreeDump = function parseTreeDump (n, indent) {
     //return JSON.stringify(n, null, 2);
+    var i;
+    var ret;
     indent = indent || "";
-    var ret = "";
+    ret = "";
     ret += indent;
     if (n.type >= 256) // non-term
     {
         ret += Sk.ParseTables.number2symbol[n.type] + "\n";
-        for (var i = 0; i < n.children.length; ++i) {
+        for (i = 0; i < n.children.length; ++i) {
             ret += Sk.parseTreeDump(n.children[i], indent + "  ");
         }
     }
     else {
-        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)['$r']().v + "\n";
+        ret += Sk.Tokenizer.tokenNames[n.type] + ": " + new Sk.builtin.str(n.value)["$r"]().v + "\n";
     }
     return ret;
 };
