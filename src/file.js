@@ -5,11 +5,13 @@
  * @param {Object} buffering
  */
 Sk.builtin.file = function (name, mode, buffering) {
+    var i;
+    var elem;
     this.mode = mode;
     this.name = name;
     this.closed = false;
     if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
-        var elem = document.getElementById(name.v);
+        elem = document.getElementById(name.v);
         if (elem == null) {
             throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
         } else {
@@ -25,8 +27,8 @@ Sk.builtin.file = function (name, mode, buffering) {
     }
     this.lineList = this.data$.split("\n");
     this.lineList = this.lineList.slice(0, -1);
-    for (var i in this.lineList) {
-        this.lineList[i] = this.lineList[i] + '\n';
+    for (i in this.lineList) {
+        this.lineList[i] = this.lineList[i] + "\n";
     }
     this.currentLine = 0;
     this.pos$ = 0;
@@ -36,18 +38,18 @@ Sk.builtin.file = function (name, mode, buffering) {
     return this;
 };
 
-Sk.builtin.file.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('file', Sk.builtin.file);
+Sk.builtin.file.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("file", Sk.builtin.file);
 
 Sk.builtin.file.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
-Sk.builtin.file.prototype['$r'] = function () {
-    return new Sk.builtin.str("<"
-        + (this.closed ? "closed" : "open")
-        + "file '"
-        + this.name
-        + "', mode '"
-        + this.mode
-        + "'>");
+Sk.builtin.file.prototype["$r"] = function () {
+    return new Sk.builtin.str("<" +
+        (this.closed ? "closed" : "open") +
+        "file '" +
+        this.name +
+        "', mode '" +
+        this.mode +
+        "'>");
 };
 
 Sk.builtin.file.prototype.tp$iter = function () {
@@ -72,30 +74,32 @@ Sk.builtin.file.prototype.tp$iter = function () {
 };
 
 
-Sk.builtin.file.prototype['close'] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["close"] = new Sk.builtin.func(function (self) {
     self.closed = true;
 });
 
 
-Sk.builtin.file.prototype['flush'] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["flush"] = new Sk.builtin.func(function (self) {
 });
-Sk.builtin.file.prototype['fileno'] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["fileno"] = new Sk.builtin.func(function (self) {
     return 10;
 }); // > 0, not 1/2/3
-Sk.builtin.file.prototype['isatty'] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["isatty"] = new Sk.builtin.func(function (self) {
     return false;
 });
 
 
-Sk.builtin.file.prototype['read'] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["read"] = new Sk.builtin.func(function (self, size) {
+    var ret;
+    var len;
     if (self.closed) {
         throw new Sk.builtin.ValueError("I/O operation on closed file");
     }
-    var len = self.data$.length;
+    len = self.data$.length;
     if (size === undefined) {
         size = len;
     }
-    var ret = new Sk.builtin.str(self.data$.substr(self.pos$, size));
+    ret = new Sk.builtin.str(self.data$.substr(self.pos$, size));
     self.pos$ += size;
     if (self.pos$ >= len) {
         self.pos$ = len;
@@ -103,7 +107,7 @@ Sk.builtin.file.prototype['read'] = new Sk.builtin.func(function (self, size) {
     return ret;
 });
 
-Sk.builtin.file.prototype['readline'] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["readline"] = new Sk.builtin.func(function (self, size) {
     var line = "";
     if (self.currentLine < self.lineList.length) {
         line = self.lineList[self.currentLine];
@@ -112,15 +116,16 @@ Sk.builtin.file.prototype['readline'] = new Sk.builtin.func(function (self, size
     return new Sk.builtin.str(line);
 });
 
-Sk.builtin.file.prototype['readlines'] = new Sk.builtin.func(function (self, sizehint) {
+Sk.builtin.file.prototype["readlines"] = new Sk.builtin.func(function (self, sizehint) {
+    var i;
     var arr = [];
-    for (var i = self.currentLine; i < self.lineList.length; i++) {
+    for (i = self.currentLine; i < self.lineList.length; i++) {
         arr.push(new Sk.builtin.str(self.lineList[i]));
     }
     return new Sk.builtin.list(arr);
 });
 
-Sk.builtin.file.prototype['seek'] = new Sk.builtin.func(function (self, offset, whence) {
+Sk.builtin.file.prototype["seek"] = new Sk.builtin.func(function (self, offset, whence) {
     if (whence === undefined) {
         whence = 1;
     }
@@ -131,16 +136,16 @@ Sk.builtin.file.prototype['seek'] = new Sk.builtin.func(function (self, offset, 
     }
 });
 
-Sk.builtin.file.prototype['tell'] = new Sk.builtin.func(function (self) {
+Sk.builtin.file.prototype["tell"] = new Sk.builtin.func(function (self) {
     return self.pos$;
 });
 
 
-Sk.builtin.file.prototype['truncate'] = new Sk.builtin.func(function (self, size) {
+Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size) {
     goog.asserts.fail();
 });
 
-Sk.builtin.file.prototype['write'] = new Sk.builtin.func(function (self, str) {
+Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
     goog.asserts.fail();
 });
 

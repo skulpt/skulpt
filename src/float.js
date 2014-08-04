@@ -1,10 +1,10 @@
 Sk.builtin.float_ = function (x) {
+    var tmp;
     if (x === undefined) {
         return new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
     }
 
     if (x instanceof Sk.builtin.str) {
-        var tmp;
 
         if (x.v.match(/^-inf$/i)) {
             tmp = -Infinity;
@@ -26,8 +26,8 @@ Sk.builtin.float_ = function (x) {
     }
 
     // Floats are just numbers
-    if (typeof x === "number" || x instanceof Sk.builtin.nmber
-        || x instanceof Sk.builtin.lng) {
+    if (typeof x === "number" || x instanceof Sk.builtin.nmber ||
+        x instanceof Sk.builtin.lng) {
         x = Sk.builtin.asnum$(x);
         return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
     }
@@ -42,4 +42,4 @@ Sk.builtin.float_ = function (x) {
 };
 
 Sk.builtin.float_.prototype.tp$name = "float";
-Sk.builtin.float_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('float', Sk.builtin.float_);
+Sk.builtin.float_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("float", Sk.builtin.float_);

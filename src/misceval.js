@@ -1,7 +1,8 @@
 Sk.misceval = {};
 
 Sk.misceval.isIndex = function (o) {
-    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index || o === true || o === false) {
+    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index ||
+        o === true || o === false) {
         return true;
     }
 
@@ -149,6 +150,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
     var wname;
     var vname;
+    var ret;
     var swapped_method;
     var method;
     var op2method;
@@ -171,7 +173,8 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     // Python has specific rules when comparing two different builtin types
     // currently, this code will execute even if the objects are not builtin types
     // but will fall through and not return anything in this section
-    if ((v_type !== w_type)  && (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
+    if ((v_type !== w_type) &&
+        (op === "GtE" || op === "Gt" || op === "LtE" || op === "Lt")) {
         // note: sets are omitted here because they can only be compared to other sets
         numeric_types = [Sk.builtin.float_.prototype.ob$type,
             Sk.builtin.int_.prototype.ob$type,
@@ -663,7 +666,7 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
     var kwix;
     var numPosParams;
     var numNonOptParams;
-    var i, it;
+    var it, i;
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
@@ -783,7 +786,6 @@ Sk.misceval.buildClass = function (globals, func, name, bases) {
     locals.__module__ = globals["__name__"];
 
     klass = Sk.misceval.callsim(meta, name, bases, locals);
-    //print("class", klass, JSON.stringify(klass.prototype));
     return klass;
 };
 goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);

@@ -11,17 +11,22 @@
  */
 Sk.mergeSort = function (arr, cmp, key, reverse)	//	Replaced by quicksort
 {
-    Sk.quickSort(arr, cmp, key, reverse)
-}
+    Sk.quickSort(arr, cmp, key, reverse);
+};
 
 Sk.quickSort = function (arr, cmp, key, reverse) {
+    var qsort;
+    var partition;
     goog.asserts.assert(!key, "todo;");
 
     if (!cmp) {
         cmp = Sk.mergeSort.stdCmp;
     }
 
-    var partition = function (arr, begin, end, pivot, reverse) {
+    partition = function (arr, begin, end, pivot, reverse) {
+        var cmpresult;
+        var ix;
+        var store;
         var tmp;
         var piv = arr[pivot];
 
@@ -30,13 +35,12 @@ Sk.quickSort = function (arr, cmp, key, reverse) {
         arr[pivot] = arr[end - 1];
         arr[end - 1] = tmp;
 
-        var store = begin;
-        var ix;
+        store = begin;
         for (ix = begin; ix < end - 1; ++ix) {
             if (reverse) {
-                var cmpresult = Sk.misceval.callsim(cmp, piv, arr[ix]);
+                cmpresult = Sk.misceval.callsim(cmp, piv, arr[ix]);
             } else {
-                var cmpresult = Sk.misceval.callsim(cmp, arr[ix], piv);
+                cmpresult = Sk.misceval.callsim(cmp, arr[ix], piv);
             }
             if (Sk.builtin.asnum$(cmpresult) < 0) {
 //				swap store, ix
@@ -53,28 +57,26 @@ Sk.quickSort = function (arr, cmp, key, reverse) {
         arr[store] = tmp;
 
         return store;
-    }
+    };
 
-    var qsort = function (arr, begin, end, reverse) {
+    qsort = function (arr, begin, end, reverse) {
+        var pivot;
         if (end - 1 > begin) {
-            var pivot = begin + Math.floor(Math.random() * (end - begin));
+            pivot = begin + Math.floor(Math.random() * (end - begin));
 
             pivot = partition(arr, begin, end, pivot, reverse);
 
             qsort(arr, begin, pivot, reverse);
             qsort(arr, pivot + 1, end, reverse);
         }
-    }
+    };
 
     qsort(arr, 0, arr.length, reverse);
     return null;
 };
 
 Sk.mergeSort.stdCmp = new Sk.builtin.func(function (k0, k1) {
-    //print("CMP", JSON.stringify(k0), JSON.stringify(k1));
-    var res = Sk.misceval.richCompareBool(k0, k1, "Lt") ? -1 : 0;
-    //print("  ret:", res);
-    return res;
+    return Sk.misceval.richCompareBool(k0, k1, "Lt") ? -1 : 0;
 });
 
 //	A javascript mergesort from the web

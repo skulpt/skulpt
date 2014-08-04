@@ -144,6 +144,7 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
 };
 
 Sk.abstr.binary_op_ = function (v, w, opname) {
+    var wop;
     var ret;
     var vop = Sk.abstr.boNameToSlotFuncLhs_(v, opname);
     if (vop !== undefined) {
@@ -156,7 +157,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
             return ret;
         }
     }
-    var wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
+    wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
     if (wop !== undefined) {
         if (wop.call) {
             ret = wop.call(w, v);
@@ -171,6 +172,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
 };
 
 Sk.abstr.binary_iop_ = function (v, w, opname) {
+    var wop;
     var ret;
     var vop = Sk.abstr.iboNameToSlotFunc_(v, opname);
     if (vop !== undefined) {
@@ -183,7 +185,7 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
             return ret;
         }
     }
-    var wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
+    wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
     if (wop !== undefined) {
         if (wop.call) {
             ret = wop.call(w, v);
@@ -216,12 +218,14 @@ Sk.abstr.unary_op_ = function (v, opname) {
 // handle upconverting a/b from number to long if op causes too big/small a
 // result, or if either of the ops are already longs
 Sk.abstr.numOpAndPromote = function (a, b, opfn) {
+    var tmp;
+    var ans;
     if (a === null || b === null) {
         return undefined;
     }
     
     if (typeof a === "number" && typeof b === "number") {
-        var ans = opfn(a, b);
+        ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
         if ((ans > Sk.builtin.nmber.threshold$ || ans < -Sk.builtin.nmber.threshold$) && Math.floor(ans) === ans) {
             return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
@@ -244,7 +248,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     } else if (a.constructor === Sk.builtin.nmber) {
         return [a, b];
     } else if (typeof a === "number") {
-        var tmp = new Sk.builtin.nmber(a, undefined);
+        tmp = new Sk.builtin.nmber(a, undefined);
         return [tmp, b];
     } else {
         return undefined;
@@ -262,10 +266,11 @@ Sk.abstr.boNumPromote_ = {
         return a * b;
     },
     "Mod"     : function (a, b) {
+        var m;
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
         }
-        var m = a % b;
+        m = a % b;
         return ((m * b) < 0 ? (m + b) : m);
     },
     "Div"     : function (a, b) {
@@ -307,10 +312,11 @@ Sk.abstr.boNumPromote_ = {
         return m;
     },
     "LShift"  : function (a, b) {
+        var m;
         if (b < 0) {
             throw new Sk.builtin.ValueError("negative shift count");
         }
-        var m = a << b;
+        m = a << b;
         if (m > a) {
             return m;
         }
@@ -320,10 +326,11 @@ Sk.abstr.boNumPromote_ = {
         }
     },
     "RShift"  : function (a, b) {
+        var m;
         if (b < 0) {
             throw new Sk.builtin.ValueError("negative shift count");
         }
-        var m = a >> b;
+        m = a >> b;
         if ((a > 0) && (m < 0)) {
             // fix incorrect sign extension
             m = m & (Math.pow(2, 32 - b) - 1);
@@ -333,9 +340,10 @@ Sk.abstr.boNumPromote_ = {
 };
 
 Sk.abstr.numberBinOp = function (v, w, op) {
+    var tmp;
     var numPromoteFunc = Sk.abstr.boNumPromote_[op];
     if (numPromoteFunc !== undefined) {
-        var tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
+        tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
         }
@@ -356,9 +364,10 @@ Sk.abstr.numberBinOp = function (v, w, op) {
 goog.exportSymbol("Sk.abstr.numberBinOp", Sk.abstr.numberBinOp);
 
 Sk.abstr.numberInplaceBinOp = function (v, w, op) {
+    var tmp;
     var numPromoteFunc = Sk.abstr.boNumPromote_[op];
     if (numPromoteFunc !== undefined) {
-        var tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
+        tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
         }
@@ -379,11 +388,12 @@ Sk.abstr.numberInplaceBinOp = function (v, w, op) {
 goog.exportSymbol("Sk.abstr.numberInplaceBinOp", Sk.abstr.numberInplaceBinOp);
 
 Sk.abstr.numberUnaryOp = function (v, op) {
+    var value;
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
     }
     else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
-        var value = Sk.builtin.asnum$(v);
+        value = Sk.builtin.asnum$(v);
         if (op === "USub") {
             return new Sk.builtin.nmber(-value, v.skType);
         }
@@ -423,16 +433,18 @@ Sk.abstr.fixSeqIndex_ = function (seq, i) {
 };
 
 Sk.abstr.sequenceContains = function (seq, ob) {
+    var it, i;
+    var seqtypename;
     if (seq.sq$contains) {
         return seq.sq$contains(ob);
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     if (!seq.tp$iter) {
         throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
-    for (var it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
             return true;
         }
@@ -441,19 +453,21 @@ Sk.abstr.sequenceContains = function (seq, ob) {
 };
 
 Sk.abstr.sequenceConcat = function (seq1, seq2) {
+    var seq1typename;
     if (seq1.sq$concat) {
         return seq1.sq$concat(seq2);
     }
-    var seq1typename = Sk.abstr.typeName(seq1);
+    seq1typename = Sk.abstr.typeName(seq1);
     throw new Sk.builtin.TypeError("'" + seq1typename + "' object can't be concatenated");
 };
 
 Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
+    var seqtypename;
     if (seq.index) {
         return Sk.misceval.callsim(seq.index, seq, ob);
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     if (seqtypename === "dict") {
         throw new Sk.builtin.NotImplementedError("looking up dict key from value is not yet implemented (supported in Python 2.6)");
     }
@@ -461,54 +475,61 @@ Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
 };
 
 Sk.abstr.sequenceGetCountOf = function (seq, ob) {
+    var seqtypename;
     if (seq.count) {
         return Sk.misceval.callsim(seq.count, seq, ob);
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
 Sk.abstr.sequenceGetItem = function (seq, i) {
+    var seqtypename;
     if (seq.mp$subscript) {
         return seq.mp$subscript(i);
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
 };
 
 Sk.abstr.sequenceSetItem = function (seq, i, x) {
+    var seqtypename;
     if (seq.mp$ass_subscript) {
         return seq.mp$ass_subscript(i, x);
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item assignment");
 };
 
 Sk.abstr.sequenceDelItem = function (seq, i) {
+    var seqtypename;
     if (seq.sq$del_item) {
         i = Sk.abstr.fixSeqIndex_(seq, i);
         seq.sq$del_item(i);
         return;
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     throw new Sk.builtin.TypeError("'" + seqtypename + "' object does not support item deletion");
 };
 
 Sk.abstr.sequenceRepeat = function (f, seq, n) {
+    var ntypename;
+    var count;
     n = Sk.builtin.asnum$(n);
-    var count = Sk.misceval.asIndex(n);
+    count = Sk.misceval.asIndex(n);
     if (count === undefined) {
-        var ntypename = Sk.abstr.typeName(n);
+        ntypename = Sk.abstr.typeName(n);
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + ntypename + "'");
     }
     return f.call(seq, n);
 };
 
 Sk.abstr.sequenceGetSlice = function (seq, i1, i2) {
+    var seqtypename;
     if (seq.sq$slice) {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
@@ -518,11 +539,12 @@ Sk.abstr.sequenceGetSlice = function (seq, i1, i2) {
         return seq.mp$subscript(new Sk.builtin.slice(i1, i2));
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsliceable");
 };
 
 Sk.abstr.sequenceDelSlice = function (seq, i1, i2) {
+    var seqtypename;
     if (seq.sq$del_slice) {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
@@ -530,11 +552,12 @@ Sk.abstr.sequenceDelSlice = function (seq, i1, i2) {
         return;
     }
 
-    var seqtypename = Sk.abstr.typeName(seq);
+    seqtypename = Sk.abstr.typeName(seq);
     throw new Sk.builtin.TypeError("'" + seqtypename + "' doesn't support slice deletion");
 };
 
 Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
+    var seqtypename;
     if (seq.sq$ass_slice) {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
@@ -544,7 +567,7 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
         seq.mp$ass_subscript(new Sk.builtin.slice(i1, i2), x);
     }
     else {
-        var seqtypename = Sk.abstr.typeName(seq);
+        seqtypename = Sk.abstr.typeName(seq);
         throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
     }
 };
@@ -554,24 +577,27 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
 //
 
 Sk.abstr.objectAdd = function (a, b) {
+    var btypename;
+    var atypename;
     if (a.nb$add) {
         return a.nb$add(b);
     }
 
-    var atypename = Sk.abstr.typeName(a);
-    var btypename = Sk.abstr.typeName(b);
+    atypename = Sk.abstr.typeName(a);
+    btypename = Sk.abstr.typeName(b);
     throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" + atypename + "' and '" + btypename + "'");
 };
 
 // in Python 2.6, this behaviour seems to be defined for numbers and bools (converts bool to int)
 Sk.abstr.objectNegative = function (obj) {
+    var objtypename;
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
     if (typeof obj_asnum === "number") {
         return Sk.builtin.nmber.prototype["nb$negative"].call(obj);
     }
 
-    var objtypename = Sk.abstr.typeName(obj);
+    objtypename = Sk.abstr.typeName(obj);
     throw new Sk.builtin.TypeError("bad operand type for unary -: '" + objtypename + "'");
 };
 
@@ -591,15 +617,18 @@ Sk.abstr.objectPositive = function (obj) {
 };
 
 Sk.abstr.objectDelItem = function (o, key) {
+    var otypename;
+    var keytypename;
+    var keyValue;
     if (o !== null) {
         if (o.mp$del_subscript) {
             o.mp$del_subscript(key);
             return;
         }
         if (o.sq$ass_item) {
-            var keyValue = Sk.misceval.asIndex(key);
+            keyValue = Sk.misceval.asIndex(key);
             if (keyValue === undefined) {
-                var keytypename = Sk.abstr.typeName(key);
+                keytypename = Sk.abstr.typeName(key);
                 throw new Sk.builtin.TypeError("sequence index must be integer, not '" + keytypename + "'");
             }
             Sk.abstr.sequenceDelItem(o, keyValue);
@@ -608,12 +637,13 @@ Sk.abstr.objectDelItem = function (o, key) {
         // if o is a slice do something else...
     }
 
-    var otypename = Sk.abstr.typeName(o);
+    otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' object does not support item deletion");
 };
 goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
 Sk.abstr.objectGetItem = function (o, key) {
+    var otypename;
     if (o !== null) {
         if (o.mp$subscript) {
             return o.mp$subscript(key);
@@ -626,12 +656,13 @@ Sk.abstr.objectGetItem = function (o, key) {
         }
     }
 
-    var otypename = Sk.abstr.typeName(o);
+    otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support indexing");
 };
 goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
 Sk.abstr.objectSetItem = function (o, key, v) {
+    var otypename;
     if (o !== null) {
         if (o.mp$ass_subscript) {
             return o.mp$ass_subscript(key, v);
@@ -644,20 +675,20 @@ Sk.abstr.objectSetItem = function (o, key, v) {
         }
     }
 
-    var otypename = Sk.abstr.typeName(o);
+    otypename = Sk.abstr.typeName(o);
     throw new Sk.builtin.TypeError("'" + otypename + "' does not support item assignment");
 };
 goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
 Sk.abstr.gattr = function (obj, nameJS) {
+    var ret;
     var objname = Sk.abstr.typeName(obj);
 
     if (obj === null) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     }
 
-    var ret;
 
     if (obj["__getattr__"]) {
         ret = Sk.misceval.callsim(obj["__getattr__"], obj, nameJS);

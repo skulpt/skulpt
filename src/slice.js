@@ -73,12 +73,12 @@ Sk.builtin.slice.prototype.tp$richcompare = function (w, op) {
 
 Sk.builtin.slice.prototype.indices = function (length) {
     var start, stop, step;
-    if ((!Sk.builtin.checkInt(this.start)
-        && !Sk.builtin.checkNone(this.start))
-        || (!Sk.builtin.checkInt(this.stop)
-            && !Sk.builtin.checkNone(this.stop))
-        || (!Sk.builtin.checkInt(this.step)
-            && !Sk.builtin.checkNone(this.step))) {
+    if ((!Sk.builtin.checkInt(this.start) &&
+        !Sk.builtin.checkNone(this.start)) ||
+        (!Sk.builtin.checkInt(this.stop) &&
+            !Sk.builtin.checkNone(this.stop)) ||
+        (!Sk.builtin.checkInt(this.step) &&
+            !Sk.builtin.checkNone(this.step))) {
         throw new Sk.builtin.TypeError("slice indices must be integers or None");
     }
 

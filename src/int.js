@@ -13,7 +13,7 @@
 // fname is a string containing the function name to be used in error
 // messages
 Sk.str2number = function (s, base, parser, negater, fname) {
-    'use strict';
+    "use strict";
     var origs = s,
         neg = false,
         i,
@@ -22,16 +22,16 @@ Sk.str2number = function (s, base, parser, negater, fname) {
 
     // strip whitespace from ends
     // s = s.trim();
-    s = s.replace(/^\s+|\s+$/g, '');
+    s = s.replace(/^\s+|\s+$/g, "");
 
     // check for minus sign
-    if (s.charAt(0) === '-') {
+    if (s.charAt(0) === "-") {
         neg = true;
         s = s.substring(1);
     }
 
     // check for plus sign
-    if (s.charAt(0) === '+') {
+    if (s.charAt(0) === "+") {
         s = s.substring(1);
     }
 
@@ -45,29 +45,29 @@ Sk.str2number = function (s, base, parser, negater, fname) {
         }
     }
 
-    if (s.substring(0, 2).toLowerCase() === '0x') {
+    if (s.substring(0, 2).toLowerCase() === "0x") {
         if (base === 16 || base === 0) {
             s = s.substring(2);
             base = 16;
         } else if (base < 34) {
             throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
-    } else if (s.substring(0, 2).toLowerCase() === '0b') {
+    } else if (s.substring(0, 2).toLowerCase() === "0b") {
         if (base === 2 || base === 0) {
             s = s.substring(2);
             base = 2;
         } else if (base < 12) {
             throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
-    } else if (s.substring(0, 2).toLowerCase() === '0o') {
+    } else if (s.substring(0, 2).toLowerCase() === "0o") {
         if (base === 8 || base === 0) {
             s = s.substring(2);
             base = 8;
         } else if (base < 25) {
             throw new Sk.builtin.ValueError("invalid literal for " + fname + "() with base " + base + ": '" + origs + "'");
         }
-    } else if (s.charAt(0) === '0') {
-        if (s === '0') {
+    } else if (s.charAt(0) === "0") {
+        if (s === "0") {
             return 0;
         }
         if (base === 8 || base === 0) {
@@ -112,7 +112,7 @@ Sk.str2number = function (s, base, parser, negater, fname) {
 };
 
 Sk.builtin.int_ = function (x, base) {
-    'use strict';
+    "use strict";
     var val;
     if ((x !== undefined) && (!Sk.builtin.checkString(x) && !Sk.builtin.checkNumber(x))) {
         if (x instanceof Sk.builtin.bool) {
@@ -160,4 +160,4 @@ Sk.builtin.int_.co_numargs = 2;
 Sk.builtin.int_.$defaults = [ new Sk.builtin.nmber(10, Sk.builtin.nmber.int$) ];
 
 Sk.builtin.int_.prototype.tp$name = "int";
-Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('int', Sk.builtin.int_);
+Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("int", Sk.builtin.int_);
