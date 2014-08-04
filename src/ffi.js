@@ -7,16 +7,20 @@ Sk.ffi = Sk.ffi || {};
  * functions, etc.
  */
 Sk.ffi.remapToPy = function (obj) {
+    var k;
+    var kvs;
+    var i;
+    var arr;
     if (Object.prototype.toString.call(obj) === "[object Array]") {
-        var arr = [];
-        for (var i = 0; i < obj.length; ++i) {
+        arr = [];
+        for (i = 0; i < obj.length; ++i) {
             arr.push(Sk.ffi.remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
     }
     else if (typeof obj === "object") {
-        var kvs = [];
-        for (var k in obj) {
+        kvs = [];
+        for (k in obj) {
             kvs.push(Sk.ffi.remapToPy(k));
             kvs.push(Sk.ffi.remapToPy(obj[k]));
         }
@@ -39,24 +43,29 @@ goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
  * maps from Python dict/list/str to Javascript Object/Array/string.
  */
 Sk.ffi.remapToJs = function (obj) {
+    var i;
+    var kAsJs;
+    var v;
+    var iter, k;
+    var ret;
     if (obj instanceof Sk.builtin.dict) {
-        var ret = {};
-        for (var iter = obj.tp$iter(), k = iter.tp$iternext();
+        ret = {};
+        for (iter = obj.tp$iter(), k = iter.tp$iternext();
              k !== undefined;
              k = iter.tp$iternext()) {
-            var v = obj.mp$subscript(k);
+            v = obj.mp$subscript(k);
             if (v === undefined) {
                 v = null;
             }
-            var kAsJs = Sk.ffi.remapToJs(k);
+            kAsJs = Sk.ffi.remapToJs(k);
             // todo; assert that this is a reasonble lhs?
             ret[kAsJs] = Sk.ffi.remapToJs(v);
         }
         return ret;
     }
     else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
-        var ret = [];
-        for (var i = 0; i < obj.v.length; ++i) {
+        ret = [];
+        for (i = 0; i < obj.v.length; ++i) {
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         }
         return ret;
@@ -88,7 +97,7 @@ goog.exportSymbol("Sk.ffi.callback", Sk.ffi.callback);
 
 Sk.ffi.stdwrap = function (type, towrap) {
     var inst = new type();
-    inst['v'] = towrap;
+    inst["v"] = towrap;
     return inst;
 };
 goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
@@ -118,7 +127,7 @@ Sk.ffi.unwrapo = function (obj) {
     if (obj === undefined) {
         return undefined;
     }
-    return obj['v'];
+    return obj["v"];
 };
 goog.exportSymbol("Sk.ffi.unwrapo", Sk.ffi.unwrapo);
 
@@ -126,6 +135,6 @@ Sk.ffi.unwrapn = function (obj) {
     if (obj === null) {
         return null;
     }
-    return obj['v'];
+    return obj["v"];
 };
 goog.exportSymbol("Sk.ffi.unwrapn", Sk.ffi.unwrapn);

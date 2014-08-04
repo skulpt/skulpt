@@ -12,26 +12,28 @@
  * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.generator = function (code, globals, args, closure, closure2) {
+    var k;
+    var i;
     if (!code) {
         return;
     } // ctor hack
     this.func_code = code;
     this.func_globals = globals || null;
-    this.gi$running = false;
-    this['gi$resumeat'] = 0;
-    this['gi$sentvalue'] = undefined;
-    this['gi$locals'] = {};
-    this['gi$cells'] = {};
+    this["gi$running"] = false;
+    this["gi$resumeat"] = 0;
+    this["gi$sentvalue"] = undefined;
+    this["gi$locals"] = {};
+    this["gi$cells"] = {};
     if (args.length > 0) {
         // store arguments into locals because they have to be maintained
         // too. 'fast' var lookups are locals in generator functions.
-        for (var i = 0; i < code['co_varnames'].length; ++i) {
-            this['gi$locals'][code['co_varnames'][i]] = args[i];
+        for (i = 0; i < code["co_varnames"].length; ++i) {
+            this["gi$locals"][code["co_varnames"][i]] = args[i];
         }
     }
     if (closure2 !== undefined) {
         // todo; confirm that modification here can't cause problems
-        for (var k in closure2) {
+        for (k in closure2) {
             closure[k] = closure2[k];
         }
     }
@@ -48,25 +50,27 @@ Sk.builtin.generator.prototype.tp$iter = function () {
 };
 
 Sk.builtin.generator.prototype.tp$iternext = function (yielded) {
-    this.gi$running = true;
+    var ret;
+    var args;
+    this["gi$running"] = true;
     if (yielded === undefined) {
         yielded = null;
     }
-    this['gi$sentvalue'] = yielded;
+    this["gi$sentvalue"] = yielded;
 
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
-    var args = [ this ];
+    args = [ this ];
     if (this.func_closure) {
         args.push(this.func_closure);
     }
-    var ret = this.func_code.apply(this.func_globals, args);
+    ret = this.func_code.apply(this.func_globals, args);
     //print("ret", JSON.stringify(ret));
-    this.gi$running = false;
+    this["gi$running"] = false;
     goog.asserts.assert(ret !== undefined);
     if (ret !== Sk.builtin.none.none$) {
         // returns a pair: resume target and yielded value
-        this['gi$resumeat'] = ret[0];
+        this["gi$resumeat"] = ret[0];
         ret = ret[1];
     }
     else {
@@ -77,17 +81,17 @@ Sk.builtin.generator.prototype.tp$iternext = function (yielded) {
     return ret;
 };
 
-Sk.builtin.generator.prototype['next'] = new Sk.builtin.func(function (self) {
+Sk.builtin.generator.prototype["next"] = new Sk.builtin.func(function (self) {
     return self.tp$iternext();
 });
 
-Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('generator', Sk.builtin.generator);
+Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("generator", Sk.builtin.generator);
 
-Sk.builtin.generator.prototype['$r'] = function () {
-    return new Sk.builtin.str("<generator object " + this.func_code['co_name'].v + ">");
+Sk.builtin.generator.prototype["$r"] = function () {
+    return new Sk.builtin.str("<generator object " + this.func_code["co_name"].v + ">");
 };
 
-Sk.builtin.generator.prototype['send'] = new Sk.builtin.func(function (self, value) {
+Sk.builtin.generator.prototype["send"] = new Sk.builtin.func(function (self, value) {
     return self.tp$iternext(value);
 });
 
@@ -97,10 +101,11 @@ Sk.builtin.generator.prototype['send'] = new Sk.builtin.func(function (self, val
  * the __iter__ method.
  */
 Sk.builtin.makeGenerator = function (next, data) {
+    var key;
     var gen = new Sk.builtin.generator(null, null, null);
     gen.tp$iternext = next;
 
-    for (var key in data) {
+    for (key in data) {
         if (data.hasOwnProperty(key)) {
             gen[key] = data[key];
         }

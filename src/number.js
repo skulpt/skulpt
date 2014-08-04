@@ -583,9 +583,9 @@ Sk.builtin.nmber.prototype.nb$power = function (other) {
                 result = new Sk.builtin.lng(this.v).nb$power(other.v);
             }
         }
-        if ((Math.abs(result.v) === Infinity)
-            && (Math.abs(this.v) !== Infinity)
-            && (Math.abs(other.v) !== Infinity)) {
+        if ((Math.abs(result.v) === Infinity) &&
+            (Math.abs(this.v) !== Infinity) &&
+            (Math.abs(other.v) !== Infinity)) {
             throw new Sk.builtin.OverflowError("Numerical result out of range");
         }
         return result;

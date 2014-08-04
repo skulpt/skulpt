@@ -4,6 +4,7 @@ Sk.realsyspath = undefined;
 Sk.externalLibraryCache = {};
 
 Sk.loadExternalLibraryInternal_ = function (path, inject) {
+    var scriptElement;
     var request, result;
 
     if (path == null) {
@@ -15,7 +16,7 @@ Sk.loadExternalLibraryInternal_ = function (path, inject) {
     }
 
     request = new XMLHttpRequest();
-    request.open('GET', path, false);
+    request.open("GET", path, false);
     request.send();
 
     if (request.status !== 200) {
@@ -25,17 +26,18 @@ Sk.loadExternalLibraryInternal_ = function (path, inject) {
     result = request.responseText;
 
     if (inject) {
-        var scriptElement = document.createElement('script');
+        scriptElement = document.createElement("script");
         scriptElement.type = "text/javascript";
         scriptElement.text = result;
-        document.getElementsByTagName('head')[0].appendChild(scriptElement);
+        document.getElementsByTagName("head")[0].appendChild(scriptElement);
     }
 
     return result;
-}
+};
 
 Sk.loadExternalLibrary = function (name) {
-    var externalLibraryInfo, path, type, module,
+    var i;
+    var externalLibraryInfo, path,  module,
         dependencies, dep, ext, extMatch, co;
 
     // check if the library has already been loaded and cached
@@ -52,11 +54,11 @@ Sk.loadExternalLibrary = function (name) {
 
     // if the external library info is just a string, assume it is the path
     // otherwise dig into the info to find the path
-    path = typeof externalLibraryInfo === 'string'
-        ? externalLibraryInfo
-        : externalLibraryInfo.path;
+    path = typeof externalLibraryInfo === "string" ?
+        externalLibraryInfo :
+        externalLibraryInfo.path;
 
-    if (typeof path !== 'string') {
+    if (typeof path !== "string") {
         throw new Sk.builtin.ImportError("Invalid path specified for " + name);
     }
 
@@ -82,7 +84,7 @@ Sk.loadExternalLibrary = function (name) {
     // if the library has any js dependencies, load them in now
     dependencies = externalLibraryInfo.dependencies;
     if (dependencies && dependencies.length) {
-        for (var i = 0; i < dependencies.length; i++) {
+        for (i = 0; i < dependencies.length; i++) {
             dep = Sk.loadExternalLibraryInternal_(dependencies[i], true);
             if (!dep) {
                 throw new Sk.builtin.ImportError("Failed to load dependencies required for " + name);
@@ -90,7 +92,7 @@ Sk.loadExternalLibrary = function (name) {
         }
     }
 
-    if (ext === 'js') {
+    if (ext === "js") {
         co = { funcname: "$builtinmodule", code: module };
     }
     else {
@@ -100,7 +102,7 @@ Sk.loadExternalLibrary = function (name) {
     Sk.externalLibraryCache[name] = co;
 
     return co;
-}
+};
 
 /**
  * @param {string} name to look for
@@ -108,16 +110,21 @@ Sk.loadExternalLibrary = function (name) {
  * @param {boolean=} failok will throw if not true
  */
 Sk.importSearchPathForName = function (name, ext, failok) {
+    var fn;
+    var j;
+    var fns;
+    var nameAsPath;
+    var it, i;
     var L = Sk.realsyspath;
-    for (var it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        var nameAsPath = name.replace(/\./g, "/");
-        var fns = [
+    for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        nameAsPath = name.replace(/\./g, "/");
+        fns = [
                 i.v + "/" + nameAsPath + ext,                 // module
                 i.v + "/" + nameAsPath + "/__init__" + ext    // package
         ];
 
-        for (var j = 0; j < fns.length; ++j) {
-            var fn = fns[j];
+        for (j = 0; j < fns.length; ++j) {
+            fn = fns[j];
             //Sk.debugout("  import search, trying", fn);
             try {
                 // todo; lame, this is the only way we have to test existence right now
@@ -126,7 +133,6 @@ Sk.importSearchPathForName = function (name, ext, failok) {
                 return fn;
             } catch (e) {
             }
-            ;
         }
     }
 
@@ -141,9 +147,9 @@ Sk.doOneTimeInitialization = function () {
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
-    Sk.builtin.object['$d'] = new Sk.builtin.dict([]);
-    Sk.builtin.object['$d'].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
-    Sk.builtin.object['$d'].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+    Sk.builtin.object["$d"] = new Sk.builtin.dict([]);
+    Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
+    Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
 };
 
 /**
@@ -151,13 +157,15 @@ Sk.doOneTimeInitialization = function () {
  * from js or from py.
  */
 Sk.importSetUpPath = function () {
+    var i;
+    var paths;
     if (!Sk.realsyspath) {
-        var paths = [
+        paths = [
             new Sk.builtin.str("src/builtin"),
             new Sk.builtin.str("src/lib"),
             new Sk.builtin.str(".")
         ];
-        for (var i = 0; i < Sk.syspath.length; ++i) {
+        for (i = 0; i < Sk.syspath.length; ++i) {
             paths.push(new Sk.builtin.str(Sk.syspath[i]));
         }
         Sk.realsyspath = new Sk.builtin.list(paths);
@@ -183,6 +191,18 @@ if (COMPILED) {
  */
 Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
     //dumpJS = true;
+    var parentModule;
+    var modlocs;
+    var namestr;
+    var withLineNumbers;
+    var finalcode;
+    var result;
+    var filename, co, googClosure, external;
+    var module;
+    var prev;
+    var parentModName;
+    var modNameSplit;
+    var toReturn;
     Sk.importSetUpPath();
 
     // if no module name override, supplied, use default name
@@ -190,13 +210,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
         modname = name;
     }
 
-    var toReturn = null;
-    var modNameSplit = modname.split(".");
-    var parentModName;
+    toReturn = null;
+    modNameSplit = modname.split(".");
 
     // if leaf is already in sys.modules, early out
     try {
-        var prev = Sk.sysmodules.mp$subscript(modname);
+        prev = Sk.sysmodules.mp$subscript(modname);
         // if we're a dotted module, return the top level, otherwise ourselves
         if (modNameSplit.length > 1) {
             return Sk.sysmodules.mp$subscript(modNameSplit[0]);
@@ -222,9 +241,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
     // - add module object to sys.modules
     // - compile source to (function(){...});
     // - run module and set the module locals returned to the module __dict__
-    var module = new Sk.builtin.module();
+    module = new Sk.builtin.module();
     Sk.sysmodules.mp$ass_subscript(name, module);
-    var filename, co, googClosure, external;
 
     if (suppliedPyBody) {
         filename = name + ".py";
@@ -235,12 +253,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
         // the result is false or a string, prevent the import.
         // This allows for a user to conditionally prevent the usage
         // of certain libraries.
-        if (Sk.onBeforeImport && typeof Sk.onBeforeImport === 'function') {
-            var result = Sk.onBeforeImport(name);
+        if (Sk.onBeforeImport && typeof Sk.onBeforeImport === "function") {
+            result = Sk.onBeforeImport(name);
             if (result === false) {
-                throw new Sk.builtin.ImportError('Importing ' + name + ' is not allowed');
+                throw new Sk.builtin.ImportError("Importing " + name + " is not allowed");
             }
-            else if (typeof result === 'string') {
+            else if (typeof result === "string") {
                 throw new Sk.builtin.ImportError(result);
             }
         }
@@ -261,22 +279,26 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
     }
 
     module.$js = co.code; // todo; only in DEBUG?
-    var finalcode = co.code;
+    finalcode = co.code;
     if (Sk.dateSet == null || !Sk.dateSet) {
-        finalcode = 'Sk.execStart = new Date();\n' + co.code;
+        finalcode = "Sk.execStart = new Date();\n" + co.code;
         Sk.dateSet = true;
     }
 
     //if (!COMPILED)
     {
         if (dumpJS) {
-            var withLineNumbers = function (code) {
+            withLineNumbers = function (code) {
+                var j;
+                var pad;
+                var width;
+                var i;
                 var beaut = js_beautify(co.code);
                 var lines = beaut.split("\n");
-                for (var i = 1; i <= lines.length; ++i) {
-                    var width = ("" + i).length;
-                    var pad = "";
-                    for (var j = width; j < 5; ++j) {
+                for (i = 1; i <= lines.length; ++i) {
+                    width = ("" + i).length;
+                    pad = "";
+                    for (j = width; j < 5; ++j) {
                         pad += " ";
                     }
                     lines[i - 1] = "/* " + pad + i + " */ " + lines[i - 1];
@@ -288,37 +310,36 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
         }
     }
 
-    var namestr = "new Sk.builtin.str('" + modname + "')";
+    namestr = "new Sk.builtin.str('" + modname + "')";
     finalcode += "\n" + co.funcname + "(" + namestr + ");";
 
 //	if (Sk.debugCode)
 //		Sk.debugout(finalcode);
 
-    var modlocs = goog.global['eval'](finalcode);
+    modlocs = goog.global["eval"](finalcode);
     // pass in __name__ so the module can set it (so that the code can access
     // it), but also set it after we're done so that builtins don't have to
     // remember to do it.
-    if (!modlocs['__name__']) {
-        modlocs['__name__'] = new Sk.builtin.str(modname);
+    if (!modlocs["__name__"]) {
+        modlocs["__name__"] = new Sk.builtin.str(modname);
     }
 
-    module['$d'] = modlocs;
+    module["$d"] = modlocs;
 
     // If an onAfterImport method is defined on the global Sk
     // then call it now after a library has been successfully imported
     // and compiled.
-    if (Sk.onAfterImport && typeof Sk.onAfterImport === 'function') {
+    if (Sk.onAfterImport && typeof Sk.onAfterImport === "function") {
         try {
             Sk.onAfterImport(name);
         } catch (e) {
         }
-        ;
     }
 
     if (toReturn) {
         // if we were a dotted name, then we want to return the top-most
         // package. we store ourselves into our parent as an attribute
-        var parentModule = Sk.sysmodules.mp$subscript(parentModName);
+        parentModule = Sk.sysmodules.mp$subscript(parentModName);
         parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
         //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
         return toReturn;
@@ -339,7 +360,7 @@ Sk.importModule = function (name, dumpJS) {
 
 Sk.importMain = function (name, dumpJS) {
     Sk.dateSet = false;
-    Sk.filesLoaded = false
+    Sk.filesLoaded = false;
     //	Added to reset imports
     Sk.sysmodules = new Sk.builtin.dict([]);
     Sk.realsyspath = undefined;
@@ -351,7 +372,7 @@ Sk.importMain = function (name, dumpJS) {
 
 Sk.importMainWithBody = function (name, dumpJS, body) {
     Sk.dateSet = false;
-    Sk.filesLoaded = false
+    Sk.filesLoaded = false;
     //	Added to reset imports
     Sk.sysmodules = new Sk.builtin.dict([]);
     Sk.realsyspath = undefined;
@@ -382,15 +403,16 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
 Sk.importStar = function (module, loc, global) {
     // from the global scope, globals and locals can be the same.  So the loop below
     // could accidentally overwrite __name__, erasing __main__.
-    var nn = global['__name__'];
-    var props = Object['getOwnPropertyNames'](module['$d'])
-    for (var i in props) {
-        loc[props[i]] = module['$d'][props[i]];
+    var i;
+    var nn = global["__name__"];
+    var props = Object["getOwnPropertyNames"](module["$d"]);
+    for (i in props) {
+        loc[props[i]] = module["$d"][props[i]];
     }
-    if (global['__name__'] !== nn) {
-        global['__name__'] = nn;
+    if (global["__name__"] !== nn) {
+        global["__name__"] = nn;
     }
-}
+};
 
 goog.exportSymbol("Sk.importMain", Sk.importMain);
 goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
