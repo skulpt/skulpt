@@ -60,7 +60,7 @@ Sk.builtin.lng.prototype.tp$hash = function () {
 };
 
 Sk.builtin.lng.prototype.tp$name = "long";
-Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.builtin.lng);
+Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("long", Sk.builtin.lng);
 
 //    Threshold to determine when types should be converted to long
 //Sk.builtin.lng.threshold$ = Sk.builtin.nmber.threshold$;
@@ -161,13 +161,14 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
 Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
 
 Sk.builtin.lng.prototype.nb$multiply = function (other) {
+    var thisAsFloat;
     if (other instanceof Sk.builtin.bool) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
     if (other instanceof Sk.builtin.nmber) {
         if (other.skType === Sk.builtin.nmber.float$) {
-            var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
             return thisAsFloat.nb$multiply(other);
         }
         other = new Sk.builtin.lng(other.v);
@@ -227,13 +228,14 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
 Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
 
 Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
+    var thisAsFloat;
     if (other instanceof Sk.builtin.bool) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
     if (other instanceof Sk.builtin.nmber) {
         if (other.skType === Sk.builtin.nmber.float$) {
-            var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
             return thisAsFloat.nb$floor_divide(other);
         }
     }
@@ -512,11 +514,12 @@ Sk.builtin.lng.prototype.tp$str = function () {
 };
 
 Sk.builtin.lng.prototype.str$ = function (base, sign) {
+    var work;
     if (sign === undefined) {
         sign = true;
     }
 
-    var work = sign ? this.biginteger : this.biginteger.abs();
+    work = sign ? this.biginteger : this.biginteger.abs();
 
     if (base === undefined || base === 10) {
         return work.toString();

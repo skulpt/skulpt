@@ -148,7 +148,6 @@ Sk.misceval.swappedOp_ = {
 Sk.misceval.richCompareBool = function (v, w, op) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
-
     var wname;
     var vname;
     var ret;
@@ -164,6 +163,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     var numeric_types;
     var w_type;
     var v_type;
+    var ret;
     goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
     goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
@@ -667,6 +667,7 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
     var numPosParams;
     var numNonOptParams;
     var it, i;
+
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
