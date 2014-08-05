@@ -176,16 +176,20 @@ Sk.builtin.set.prototype["union"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.set.prototype["intersection"] = new Sk.builtin.func(function (self) {
-    var S = Sk.builtin.set.prototype["copy"].func_code(self);
-    arguments[0] = S;
-    Sk.builtin.set.prototype["intersection_update"].func_code.apply(null, arguments);
+    var S = Sk.builtin.set.prototype["copy"].func_code(self),
+        new_args = Array.prototype.slice.call(arguments); //copy array
+    
+    new_args[0] = S;
+    Sk.builtin.set.prototype["intersection_update"].func_code.apply(null, new_args);
     return S;
 });
 
 Sk.builtin.set.prototype["difference"] = new Sk.builtin.func(function (self, other) {
-    var S = Sk.builtin.set.prototype["copy"].func_code(self);
-    arguments[0] = S;
-    Sk.builtin.set.prototype["difference_update"].func_code.apply(null, arguments);
+    var S = Sk.builtin.set.prototype["copy"].func_code(self),
+        new_args = Array.prototype.slice.call(arguments); //copy array
+    
+    new_args[0] = S;
+    Sk.builtin.set.prototype["difference_update"].func_code.apply(null, new_args);
     return S;
 });
 

@@ -121,7 +121,7 @@ Sk.importSearchPathForName = function (name, ext, failok) {
         fns = [
                 i.v + "/" + nameAsPath + ext,                 // module
                 i.v + "/" + nameAsPath + "/__init__" + ext    // package
-        ];
+            ];
 
         for (j = 0; j < fns.length; ++j) {
             fn = fns[j];
