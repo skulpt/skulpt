@@ -16,26 +16,56 @@ Sk.builtin.method.prototype.tp$call = function(args, kw)
     goog.asserts.assert(this.im_self, "should just be a function, not a method since there's no self?");
     goog.asserts.assert(this.im_func instanceof Sk.builtin.func);
 
+    // TODO: This function has an awful lot in common with Sk.builtin.func.prototype.tp$call.
+    // Should we just unshift this.im_self onto the front of args and call that function
+    // instead?
+
     //print("calling method");
     // todo; modification OK?
     args.unshift(this.im_self);
+
+    var expectskw = this.im_func.func_code['co_kwargs'];
+    var kwargsarr = [];
+
+    if (this.im_func.func_code['no_kw']) {
+        name = (this.im_func.func_code['co_name'] && this.im_func.func_code['co_name'].v) || '<native JS>';
+        throw new Sk.builtin.TypeError(name + "() takes no keyword arguments");
+    }
 
     if (kw)
     {
         // bind the kw args
         var kwlen = kw.length;
+        var varnames = this.im_func.func_code['co_varnames'];
+        var numvarnames = varnames && varnames.length;
         for (var i = 0; i < kwlen; i += 2)
         {
             // todo; make this a dict mapping name to offset
-            var varnames = this.im_func.func_code['co_varnames'];
-            var numvarnames = varnames &&  varnames.length;
             for (var j = 0; j < numvarnames; ++j)
             {
                 if (kw[i] === varnames[j])
                     break;
             }
-            args[j] = kw[i+1];
+            if (varnames && j !== numvarnames)
+            {
+                args[j] = kw[i+1];
+            }
+            else if (expectskw)
+            {
+                // build kwargs dict
+                kwargsarr.push(new Sk.builtin.str(kw[i]));
+                kwargsarr.push(kw[i + 1]);
+            }
+            else
+            {
+                name = (this.im_func.func_code && this.im_func.func_code['co_name'] && this.im_func.func_code['co_name'].v) || '<native JS>';
+                throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
+            }
         }
+    }
+    if (expectskw)
+    {
+        args.unshift(kwargsarr);
     }
 
     // note: functions expect globals to be their 'this'. see compile.js and function.js also
