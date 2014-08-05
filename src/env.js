@@ -4,7 +4,7 @@
  * below.
  */
 
-var Sk = Sk || {};
+var Sk = Sk || {}; //jshint ignore:line
 
 /**
  *

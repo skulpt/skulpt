@@ -201,9 +201,11 @@ Sk.builtin.str.prototype["$r"] = function () {
     var ret;
     var len;
     var quote = "'";
+    //jshint ignore:start
     if (this.v.indexOf("'") !== -1 && this.v.indexOf('"') === -1) {
         quote = '"';
     }
+    //jshint ignore:end
     len = this.v.length;
     ret = quote;
     for (i = 0; i < len; ++i) {

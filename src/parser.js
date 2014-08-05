@@ -74,74 +74,75 @@ Parser.prototype.addtoken = function (type, value, context) {
     //print("ilabel:"+ilabel);
 
     OUTERWHILE:
-        while (true) {
-            tp = this.stack[this.stack.length - 1];
-            states = tp.dfa[0];
-            first = tp.dfa[1];
-            arcs = states[tp.state];
+    while (true) {
+        tp = this.stack[this.stack.length - 1];
+        states = tp.dfa[0];
+        first = tp.dfa[1];
+        arcs = states[tp.state];
 
-            // look for a state with this label
-            for (a = 0; a < arcs.length; ++a) {
-                i = arcs[a][0];
-                newstate = arcs[a][1];
-                t = this.grammar.labels[i][0];
-                v = this.grammar.labels[i][1];
-                if (ilabel === i) {
-                    // look it up in the list of labels
-                    goog.asserts.assert(t < 256);
-                    // shift a token; we're done with it
-                    this.shift(type, value, newstate, context);
-                    // pop while we are in an accept-only state
-                    state = newstate;
-                    //print("before:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
-                    while (states[state].length === 1
-                        && states[state][0][0] === 0
-                        && states[state][0][1] === state) // states[state] == [(0, state)])
-                    {
-                        this.pop();
-                        //print("in after pop:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
-                        if (this.stack.length === 0) {
-                            // done!
-                            return true;
-                        }
-                        tp = this.stack[this.stack.length - 1];
-                        state = tp.state;
-                        states = tp.dfa[0];
-                        first = tp.dfa[1];
-                        //print(JSON.stringify(states), JSON.stringify(first));
-                        //print("bottom:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
+        // look for a state with this label
+        for (a = 0; a < arcs.length; ++a) {
+            i = arcs[a][0];
+            newstate = arcs[a][1];
+            t = this.grammar.labels[i][0];
+            v = this.grammar.labels[i][1];
+            if (ilabel === i) {
+                // look it up in the list of labels
+                goog.asserts.assert(t < 256);
+                // shift a token; we're done with it
+                this.shift(type, value, newstate, context);
+                // pop while we are in an accept-only state
+                state = newstate;
+                //print("before:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
+                /* jshint ignore:start */
+                while (states[state].length === 1
+                    && states[state][0][0] === 0
+                    && states[state][0][1] === state) // states[state] == [(0, state)])
+                {
+                    this.pop();
+                    //print("in after pop:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
+                    if (this.stack.length === 0) {
+                        // done!
+                        return true;
                     }
-                    // done with this token
-                    //print("DONE, return false");
-                    return false;
+                    tp = this.stack[this.stack.length - 1];
+                    state = tp.state;
+                    states = tp.dfa[0];
+                    first = tp.dfa[1];
+                    //print(JSON.stringify(states), JSON.stringify(first));
+                    //print("bottom:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
                 }
-                else if (t >= 256) {
-                    itsdfa = this.grammar.dfas[t];
-                    itsfirst = itsdfa[1];
-                    if (itsfirst.hasOwnProperty(ilabel)) {
-                        // push a symbol
-                        this.push(t, this.grammar.dfas[t], newstate, context);
-                        continue OUTERWHILE;
-                    }
-                }
+                /* jshint ignore:end */
+                // done with this token
+                //print("DONE, return false");
+                return false;
             }
-
-            //print("findInDfa: " + JSON.stringify(arcs)+" vs. " + tp.state);
-            if (findInDfa(arcs, [0, tp.state])) {
-                // an accepting state, pop it and try somethign else
-                //print("WAA");
-                this.pop();
-                if (this.stack.length === 0) {
-                    throw new Sk.builtin.ParseError("too much input", this.filename);
+            else if (t >= 256) {
+                itsdfa = this.grammar.dfas[t];
+                itsfirst = itsdfa[1];
+                if (itsfirst.hasOwnProperty(ilabel)) {
+                    // push a symbol
+                    this.push(t, this.grammar.dfas[t], newstate, context);
+                    continue OUTERWHILE;
                 }
-            }
-            else {
-                // no transition
-                errline = context[0][0];
-                throw new Sk.builtin.ParseError("bad input", this.filename, errline, context);	//	RNL
-//          throw new Sk.builtin.ParseError("bad input on line " + errline.toString());		RNL
             }
         }
+
+        //print("findInDfa: " + JSON.stringify(arcs)+" vs. " + tp.state);
+        if (findInDfa(arcs, [0, tp.state])) {
+            // an accepting state, pop it and try somethign else
+            //print("WAA");
+            this.pop();
+            if (this.stack.length === 0) {
+                throw new Sk.builtin.ParseError("too much input", this.filename);
+            }
+        }
+        else {
+            // no transition
+            errline = context[0][0];
+            throw new Sk.builtin.ParseError("bad input", this.filename, errline, context);
+        }
+    }
 };
 
 // turn a token into a label
