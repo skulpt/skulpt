@@ -4,8 +4,10 @@ python:
 install:
 - pip install "GitPython>=0.2.0-beta1" --use-mirrors
 - mkdir -p vendors
+- npm install jshint
 script:
 - ./skulpt.py dist
+- jshint src/*.js
 after_script:
 - ./dist-update.sh
 env:
