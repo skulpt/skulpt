@@ -148,22 +148,22 @@ Sk.misceval.swappedOp_ = {
 Sk.misceval.richCompareBool = function (v, w, op) {
     // v and w must be Python objects. will return Javascript true or false for internal use only
     // if you want to return a value from richCompareBool to Python you must wrap as Sk.builtin.bool first
-    var wname;
-    var vname;
-    var ret;
-    var swapped_method;
-    var method;
-    var op2method;
-    var res;
-    var w_seq_type;
-    var w_num_type;
-    var v_seq_type;
-    var v_num_type;
-    var sequence_types;
-    var numeric_types;
-    var w_type;
-    var v_type;
-    var ret;
+    var wname,
+        vname,
+        ret,
+        swapped_method,
+        method,
+        op2method,
+        res,
+        w_seq_type,
+        w_num_type,
+        v_seq_type,
+        v_num_type,
+        sequence_types,
+        numeric_types,
+        w_type,
+        v_type;
+    
     goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
     goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 

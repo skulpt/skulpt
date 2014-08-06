@@ -4,7 +4,7 @@
  * below.
  */
 
-var Sk = Sk || {};
+var Sk = Sk || {}; //jshint ignore:line
 
 /**
  *
@@ -137,7 +137,7 @@ if (!Sk.inBrowser) {
 
 Sk.python3 = false;
 Sk.inputfun = function (args) {
-    return prompt(args);
+    return window.prompt(args);
 };
 
 goog.exportSymbol("Sk.python3", Sk.python3);
