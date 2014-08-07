@@ -172,7 +172,10 @@ if os.environ.get("CI",False):
 
 def test():
     """runs the unit tests."""
-    return os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
+    ret1 = os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
+    print "Running jshint"
+    ret2 = os.system("jshint src/*.js")
+    return ret1 | ret2
 
 def debugbrowser():
     tmpl = """
@@ -399,7 +402,7 @@ def dist(options):
         linemap.close()
         uncompfn = "{0}/{1}".format(DIST_DIR, OUTFILE_REG)
         open(uncompfn, "w").write(combined)
-        # Prevent accidental editing of the uncompressed distribution file. 
+        # Prevent accidental editing of the uncompressed distribution file.
         os.system("chmod 444 {0}/{1}".format(DIST_DIR, OUTFILE_REG))
 
 
