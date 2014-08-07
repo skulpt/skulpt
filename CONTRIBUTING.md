@@ -62,7 +62,7 @@ quickly revealed to you by the jshint program.
 
 Our Travis script will run jshint over all the source.  You should run jshint as well.  
 Many editors and IDEs do this automatically for you -- Atom, PyCharm, TextMate has a
-nice plugin, Sublime.  You can easily install `jshint <http://jshint.org>`_ using the ``npm`` package manager that comes with `node <http://nodejs.org>`_.
+nice plugin, Sublime.  You can easily install [jshint](http://jshint.org) using the ``npm`` package manager that comes with [node](http://nodejs.org).
 
 # Documentation
 
