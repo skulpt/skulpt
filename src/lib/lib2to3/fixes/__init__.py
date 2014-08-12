@@ -1,1 +1,1 @@
-raise NotImplementedError("__init__ is not yet implemented in Skulpt")
+raise NotImplementedError("fixes is not yet implemented in Skulpt")
