@@ -1,11 +1,11 @@
 {
-  "name": "visnav_edx_skulpt",
+  "name": "autonavx_skulpt",
   "version": "0.9.4",
-  "main": [ "./dist/skulpt.js", "./dist/skulpt-stdlib.js" ],
+  "main": [ "./dist/autonavx_skulpt.js", "./dist/autonavx_skulpt-stdlib.js" ],
   "description": "Skulpt is a Javascript implementation of the Python programming language",
   "repository": {
     "type": "git",
-    "url": "https://svncvpr.informatik.tu-muenchen.de/git/visnav_edx_skulpt"
+    "url": "https://github.com/tum-vision/autonavx_skulpt.git"
   },
   "private": true,
   "bugs": {
