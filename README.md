@@ -31,7 +31,7 @@ part of the standard library.
 
 1. Currently builtin types (list, tuple, string, etc) are not subclassable.  Making the builtins subclassable would eliminate several known bugs in Skulpt.
 
-1. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the coede.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.  
+1. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the code.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.  
 
 1.  Change the execution model so that each line/step is interruptible.
 Currently, skulplt runs an entire python program from beginning to end.  We have an interrupt timer in place to prevent programs from running more than 30 seconds, during that thirty seconds, the browser is locked up.  Over time we have had various suggestions on how to restructure the main interpreter so that the program could be interrupted after each line.  This is an advanced project, that would need a lot of testing and a lot of Javascript skill to make sure that we do not sacrifice too much performance for the gain of interruptability.
