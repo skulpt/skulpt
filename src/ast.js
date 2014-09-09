@@ -480,7 +480,7 @@ function astForWithStmt (c, n) {
     var suiteIndex = 3; // skip with, test, :
     goog.asserts.assert(n.type === SYM.with_stmt);
     contextExpr = astForExpr(c, CHILD(n, 1));
-    if (CHILD(n, 2).type === SYM.with_var) {
+    if (CHILD(n, 2).type === SYM.with_item) {
         optionalVars = astForWithVar(c, CHILD(n, 2));
         setContext(c, optionalVars, Store, n);
         suiteIndex = 4;
@@ -763,7 +763,7 @@ function astForTestlistComp(c, n) {
     /* argument: test [comp_for] */
     goog.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
     if (NCH(n) > 1 && CHILD(n, 1).type === SYM.comp_for) {
-        return astForComprehension(c, n);
+        return astForGenExpr(c, n);
     }
     return astForTestlist(c, n);
 }
@@ -965,7 +965,7 @@ function astForCall (c, n, func) {
     nargs = 0;
     nkeywords = 0;
     ngens = 0;
-    for (i = 0; i < NCH(n); ++i) {
+    for (i = 0; i < NCH(n); i++) {
         ch = CHILD(n, i);
         if (ch.type === SYM.argument) {
             if (NCH(ch) === 1) {
@@ -991,7 +991,7 @@ function astForCall (c, n, func) {
     nkeywords = 0;
     vararg = null;
     kwarg = null;
-    for (i = 0; i < NCH(n); ++i) {
+    for (i = 0; i < NCH(n); i++) {
         ch = CHILD(n, i);
         if (ch.type === SYM.argument) {
             if (NCH(ch) === 1) {
@@ -1004,7 +1004,7 @@ function astForCall (c, n, func) {
                 args[nargs++] = astForExpr(c, CHILD(ch, 0));
             }
             else if (CHILD(ch, 1).type === SYM.comp_for) {
-                args[nargs++] = astForComprehension(c, ch);
+                args[nargs++] = astForGenExpr(c, ch);
             }
             else {
                 e = astForExpr(c, CHILD(ch, 0));
@@ -1326,8 +1326,8 @@ function astForComprehension(c, n) {
     var genexps;
     var nfors;
     var elt;
-    goog.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
-    goog.asserts.assert(NCH(n) > 1);
+    var comps;
+    var comp;
 
     function countCompFors(c, n) {
         var nfors = 0;

@@ -378,13 +378,13 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
         lvalue = this.vexpr(value);
         if (type === "dict") {
             lkey = this.vexpr(key);
-            out(tmpname, ".mp$ass_subscript(", key, ",", value, ");");
+            out(tmpname, ".mp$ass_subscript(", lkey, ",", lvalue, ");");
         } 
         else if (type === "list") {
-            out(tmpname, ".v.push(", value, ");"); // todo;
+            out(tmpname, ".v.push(", lvalue, ");"); // todo;
         } 
         else if (type === "set") {
-            out(tmpname, ".v.mp$ass_subscript(", value, ", true);");
+            out(tmpname, ".v.mp$ass_subscript(", lvalue, ", true);");
         }
         this._jump(skip);
         this.setBlock(skip);
