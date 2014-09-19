@@ -1,5 +1,50 @@
 Sk.misceval = {};
 
+/*
+  Suspension object format:
+  {resume: function() {...}, // the continuation - returns either another suspension or the return value
+   data: <copied down from innermost level>,
+   optional: <if true, can be resumed immediately (eg debug stops)>,
+   child: <Suspension, or null if we are the innermost level>,
+   $blk: <>, $loc: <>, $gbl: <>, $exc: <>, $err: <>, [$cell: <>],
+  }
+*/
+
+/**
+ * @constructor
+ * @param{function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
+ * @param{Object=} child A child suspension. 'optional' will be copied from here if supplied.
+ * @param{Object=} data Data attached to this suspension. Will be copied from child if not supplied.
+ */
+Sk.misceval.Suspension = function Suspension(resume, child, data) {
+    if (resume !== undefined && child !== undefined) {
+        this.resume = function() { return resume(child.resume()); };
+    }
+    this.child = child;
+    this.optional = child !== undefined && child.optional;
+    if (data === undefined && child !== undefined) {
+        this.data = child.data;
+    } else {
+        this.data = data;
+    }
+};
+goog.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
+
+/**
+ * @param{Sk.misceval.Suspension} susp
+ * @param{string=} message
+ */
+Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
+    while (susp instanceof Sk.misceval.Suspension) {
+        if (!susp.optional) {
+            throw new Sk.builtin.SuspensionError(message || "Cannot call a function that blocks or suspends here");
+        }
+        susp = susp.resume();
+    }
+    return susp;
+};
+goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
+
 Sk.misceval.isIndex = function (o) {
     if (o === null || o.constructor === Sk.builtin.lng || o.tp$index ||
         o === true || o === false) {
@@ -163,7 +208,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         numeric_types,
         w_type,
         v_type;
-    
+
     goog.asserts.assert((v !== null) && (v !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
     goog.asserts.assert((w !== null) && (w !== undefined), "passed null or undefined parameter to Sk.misceval.richCompareBool");
 
@@ -647,6 +692,14 @@ Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
 };
 goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
 
+
+Sk.misceval.callOrSuspend = function (func, kwdict, varargseq, kws, args) {
+    args = Array.prototype.slice.call(arguments, 4);
+    // todo; possibly inline apply to avoid extra stack frame creation
+    return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
+};
+goog.exportSymbol("Sk.misceval.callOrSuspend", Sk.misceval.callOrSuspend);
+
 /**
  * @param {Object} func the thing to call
  * @param {...*} args stuff to pass it
@@ -657,11 +710,36 @@ Sk.misceval.callsim = function (func, args) {
 };
 goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
 
+
+/**
+ * @param {Object} func the thing to call
+ * @param {...*} args stuff to pass it
+ */
+Sk.misceval.callsimOrSuspend = function (func, args) {
+    args = Array.prototype.slice.call(arguments, 1);
+    return Sk.misceval.applyOrSuspend(func, undefined, undefined, undefined, args);
+};
+goog.exportSymbol("Sk.misceval.callsimOrSuspend", Sk.misceval.callsimOrSuspend);
+
+/**
+ * Wrap Sk.misceval.applyOrSuspend, but throw an error if we suspend
+ */
+Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
+    var r = Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
+    if (r instanceof Sk.misceval.Suspension) {
+        return Sk.misceval.retryOptionalSuspensionOrThrow(r);
+    } else {
+        return r;
+    }
+};
+goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
+
+
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
  * varargs.
  */
-Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
+Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
     var fcall;
     var kwix;
     var numPosParams;
@@ -754,7 +832,7 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
     }
 };
-goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
+goog.exportSymbol("Sk.misceval.applyOrSuspend", Sk.misceval.applyOrSuspend);
 
 /**
  * Constructs a class object given a code object representing the body

@@ -223,14 +223,20 @@ function testRun(name, nocatch)
     if (nocatch)
     {
         var justname = name.substr(name.lastIndexOf('/') + 1);
-        module = Sk.importMain(justname);
+        module = Sk.importMain(justname, false, true);
+        while (module instanceof Sk.misceval.Suspension) {
+            module = module.resume();
+        }
         //print(got);
     }
     else
     {
         try {
             var justname = name.substr(name.lastIndexOf('/') + 1);
-            module = Sk.importMain(justname);
+            module = Sk.importMain(justname, false, true);
+            while (module instanceof Sk.misceval.Suspension) {
+                module = module.resume();
+            }
         }
         catch (e)
         {

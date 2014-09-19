@@ -49,9 +49,10 @@ Sk.builtin.generator.prototype.tp$iter = function () {
     return this;
 };
 
-Sk.builtin.generator.prototype.tp$iternext = function (yielded) {
+Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
     var ret;
     var args;
+    var self = this;
     this["gi$running"] = true;
     if (yielded === undefined) {
         yielded = null;
@@ -65,20 +66,29 @@ Sk.builtin.generator.prototype.tp$iternext = function (yielded) {
         args.push(this.func_closure);
     }
     ret = this.func_code.apply(this.func_globals, args);
-    //print("ret", JSON.stringify(ret));
-    this["gi$running"] = false;
-    goog.asserts.assert(ret !== undefined);
-    if (ret !== Sk.builtin.none.none$) {
-        // returns a pair: resume target and yielded value
-        this["gi$resumeat"] = ret[0];
-        ret = ret[1];
-    }
-    else {
-        // todo; StopIteration
-        return undefined;
-    }
-    //print("returning:", JSON.stringify(ret));
-    return ret;
+    return (function finishIteration(ret) {
+        if (ret instanceof Sk.misceval.Suspension) {
+            if (canSuspend) {
+                return new Sk.misceval.Suspension(finishIteration, ret);
+            } else {
+                ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+            }
+        }
+        //print("ret", JSON.stringify(ret));
+        self["gi$running"] = false;
+        goog.asserts.assert(ret !== undefined);
+        if (ret !== Sk.builtin.none.none$) {
+            // returns a pair: resume target and yielded value
+            self["gi$resumeat"] = ret[0];
+            ret = ret[1];
+        }
+        else {
+            // todo; StopIteration
+            return undefined;
+        }
+        //print("returning:", JSON.stringify(ret));
+        return ret;
+    })(ret);
 };
 
 Sk.builtin.generator.prototype["next"] = new Sk.builtin.func(function (self) {
@@ -92,7 +102,7 @@ Sk.builtin.generator.prototype["$r"] = function () {
 };
 
 Sk.builtin.generator.prototype["send"] = new Sk.builtin.func(function (self, value) {
-    return self.tp$iternext(value);
+    return self.tp$iternext(true, value);
 });
 
 /**

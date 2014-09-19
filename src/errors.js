@@ -250,6 +250,25 @@ Sk.builtin.ParseError.prototype.tp$name = "ParseError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
+Sk.builtin.SuspensionError = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.SuspensionError)) {
+        o = Object.create(Sk.builtin.SuspensionError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+};
+goog.inherits(Sk.builtin.SuspensionError, Sk.builtin.Exception);
+Sk.builtin.SuspensionError.prototype.tp$name = "SuspensionError";
+goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
+
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
 Sk.builtin.SystemExit = function (args) {
     var o;
     if (!(this instanceof Sk.builtin.SystemExit)) {
