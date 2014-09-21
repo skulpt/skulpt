@@ -170,9 +170,13 @@ if os.environ.get("CI",False):
 
 #jsengine = "rhino"
 
-def test():
+def test(debug_mode=False):
     """runs the unit tests."""
-    ret1 = os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
+    if debug_mode:
+        debugon = "--debug-mode"
+    else:
+        debugon = ""
+    ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
     print "Running jshint"
     ret2 = os.system("jshint src/*.js")
     return ret1 | ret2
@@ -594,7 +598,7 @@ def docbi(options):
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
 
-def run(fn, shell="", opt=False, p3=False):
+def run(fn, shell="", opt=False, p3=False, debug_mode=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -606,15 +610,22 @@ def run(fn, shell="", opt=False, p3=False):
         p3on = 'true'
     else:
         p3on = 'false'
+    if debug_mode:
+        debugon = 'true'
+    else:
+        debugon = 'false'
     f.write("""
 var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", true);
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
+var r = Sk.importMain("%s", true, true);
+while (r instanceof Sk.misceval.Suspension) {
+  r = r.resume();
+}
 print("-----");
-    """ % (fn, os.path.split(fn)[0], p3on, modname))
+    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname))
     f.close()
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
@@ -626,6 +637,9 @@ def runopt(fn):
 
 def run3(fn):
     run(fn,p3=True)
+
+def rundebug(fn):
+    run(fn,debug_mode=True)
 
 def shell(fn):
     run(fn, "--shell")
@@ -808,6 +822,8 @@ def main():
 
     if cmd == "test":
         test()
+    elif cmd == "testdebug":
+        test(True)
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":
@@ -829,6 +845,8 @@ def main():
         runopt(sys.argv[2])
     elif cmd == "run3":
         run3(sys.argv[2])
+    elif cmd == "rundebug":
+        rundebug(sys.argv[2])
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":

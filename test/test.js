@@ -194,7 +194,7 @@ var AllRunTests = [];
 var runpass = 0;
 var runfail = 0;
 var rundisabled = 0;
-function testRun(name, nocatch)
+function testRun(name, nocatch, debugMode)
 {
     try { var input = read(name + ".py"); }
     catch (e) {
@@ -211,6 +211,7 @@ function testRun(name, nocatch)
         output: function(str) { got += str; },
         sysargv: [ name + '.py' ],
         read: read,
+        debugging: debugMode,
         syspath: [ justpath ]
     });
 
@@ -346,6 +347,7 @@ var doTestParse = false
 var doTestTrans = false
 var doTestSymtab = false
 var doTestRun = true
+var testInDebugMode = arguments.indexOf("--debug-mode") != -1;
 function testsMain()
 {
     var i;
@@ -381,7 +383,7 @@ function testsMain()
     if (doTestRun) {
         for (i = 0; i <= 1000; ++i)
         {
-            testRun(sprintf("test/run/t%02d", i));
+            testRun(sprintf("test/run/t%02d", i), undefined, testInDebugMode);
         }
         print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
     }
