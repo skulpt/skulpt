@@ -1740,7 +1740,7 @@ Compiler.prototype.vstmt = function (s) {
     if (Sk.debugging && this.u.canSuspend) {
         debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
         out("if (Sk.breakpoints('"+this.filename+"',"+s.lineno+","+s.col_offset+")) {",
-            "var $susp = $saveSuspension({data: {type: 'debug'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
+            "var $susp = $saveSuspension({data: {type: 'Sk.debug'}, resume: function() {}}, '"+this.filename+"',"+s.lineno+","+s.col_offset+");",
             "$susp.$blk = "+debugBlock+";",
             "$susp.optional = true;",
             "return $susp;",

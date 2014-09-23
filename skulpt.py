@@ -63,6 +63,7 @@ Files = [
         ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
+        ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -429,7 +430,7 @@ def dist(options):
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn))
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file %s" % (uncompfiles, compfn))
     # to disable asserts
     # --define goog.DEBUG=false
     #
@@ -620,11 +621,11 @@ print("-----");
 print(input);
 print("-----");
 Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
-var r = Sk.importMain("%s", true, true);
-while (r instanceof Sk.misceval.Suspension) {
-  r = r.resume();
-}
-print("-----");
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", true, true);
+}).then(function () {
+    print("-----");
+});
     """ % (fn, os.path.split(fn)[0], p3on, debugon, modname))
     f.close()
     if opt:

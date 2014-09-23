@@ -692,6 +692,25 @@ Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
 };
 goog.exportSymbol("Sk.misceval.call", Sk.misceval.call);
 
+/**
+ * @param {?Object} suspensionHandlers
+ * @param {Object} func the thing to call
+ * @param {Object=} kwdict **kwargs
+ * @param {Object=} varargseq **args
+ * @param {Object=} kws keyword args or undef
+ * @param {...*} args stuff to pass it
+ *
+ *
+ * TODO I think all the above is out of date.
+ */
+
+Sk.misceval.callAsync = function (suspensionHandlers, func, kwdict, varargseq, kws, args) {
+    args = Array.prototype.slice.call(arguments, 5);
+    // todo; possibly inline apply to avoid extra stack frame creation
+    return Sk.misceval.applyAsync(suspensionHandlers, func, kwdict, varargseq, kws, args);
+};
+goog.exportSymbol("Sk.misceval.callAsync", Sk.misceval.callAsync);
+
 
 Sk.misceval.callOrSuspend = function (func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
@@ -709,6 +728,17 @@ Sk.misceval.callsim = function (func, args) {
     return Sk.misceval.apply(func, undefined, undefined, undefined, args);
 };
 goog.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
+
+/**
+ * @param {?Object} suspensionHandlers any custom suspension handlers
+ * @param {Object} func the thing to call
+ * @param {...*} args stuff to pass it
+ */
+Sk.misceval.callsimAsync = function (suspensionHandlers, func, args) {
+    args = Array.prototype.slice.call(arguments, 2);
+    return Sk.misceval.applyAsync(suspensionHandlers, func, undefined, undefined, undefined, args);
+};
+goog.exportSymbol("Sk.misceval.callsimAsync", Sk.misceval.callsimAsync);
 
 
 /**
@@ -733,6 +763,103 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
     }
 };
 goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
+
+/**
+ * Wraps anything that can return an Sk.misceval.Suspension, and returns a
+ * JS Promise with the result. Also takes an object map of suspension handlers:
+ * pass in {"suspType": function (susp) {} }, and your function will be called
+ * with the Suspension object if susp.type=="suspType". A suspension handler
+ * should return a Promise yielding the return value of r.resume() - ie,
+ * either the final return value of this call or another Suspension. That is,
+ * the null suspension handler is:
+ *
+ *     function handler(susp) {
+ *       return new Promise(resolve, reject) {
+ *         try {
+ *           resolve(susp.resume());
+ *         } catch(e) {
+ *           reject(e);
+ *         }
+ *       };
+ *     }
+ *
+ * (Note: do *not* call asyncToPromise() in a suspension handler; this will
+ * create a new Promise object for each such suspension that occurs)
+ *
+ * asyncToPromise() returns a Promise that will be resolved with the final
+ * return value, or rejected with an exception if one is thrown.
+ *
+ * @param{function()} suspendablefn returns either a result or a Suspension
+ * @param{Object=} suspHandlers an object map of suspension handlers
+ */
+Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
+    return new Promise(function(resolve, reject) {
+        try {
+            var r = suspendablefn();
+
+            (function handleResponse (r) {
+                try {
+                    // jsh*nt insists these be defined outside the loop
+                    var resumeWithData = function resolved(x) {
+                        try {
+                            r.data["result"] = x;
+                            handleResponse(r.resume());
+                        } catch(e) {
+                            reject(e);
+                        }
+                    };
+                    var resumeWithError = function rejected(e) {
+                        try {
+                            r.data["error"] = e;
+                            handleResponse(r.resume());
+                        } catch(ex) {
+                            reject(ex);
+                        }
+                    };
+
+
+                    while (r instanceof Sk.misceval.Suspension) {
+
+                        var handler = suspHandlers && suspHandlers[r.data["type"]];
+
+                        if (handler) {
+                            handler(r).then(handleResponse, reject);
+                            return;
+
+                        } else if (r.data["type"] == "Sk.promise") {
+                            r.data["promise"].then(resumeWithData, resumeWithError);
+                            return;
+
+                        } else if (r.optional) {
+                            // Unhandled optional suspensions just get
+                            // resumed immediately, and we go around the loop again.
+                            r = r.resume();
+
+                        } else {
+                            // Unhandled, non-optional suspension.
+                            throw new Sk.builtin.SuspensionError("Unhandled non-optional suspension of type '"+r.data["type"]+"'");
+                        }
+                    }
+
+                    resolve(r);
+                } catch(e) {
+                    reject(e);
+                }
+            })(r);
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+goog.exportSymbol("Sk.misceval.asyncToPromise", Sk.misceval.asyncToPromise);
+
+Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, args) {
+    return Sk.misceval.asyncToPromise(function() {
+        return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
+    });
+};
+goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
 
 
 /**

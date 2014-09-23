@@ -15,7 +15,14 @@ var $builtinmodule = function (name) {
     mod.sleep = new Sk.builtin.func(function(delay) {
         var susp = new Sk.misceval.Suspension();
         susp.resume = function() { return Sk.builtin.none.none$; }
-        susp.data = {type: "timer", delay: Sk.ffi.remapToJs(delay)};
+        susp.data = {type: "Sk.promise", promise: new Promise(function(resolve) {
+            if (typeof setTimeout === undefined) {
+                // We can't sleep (eg test environment), so resume immediately
+                resolve();
+            } else {
+                setTimeout(resolve, Sk.ffi.remapToJs(delay)*1000);
+            }
+        })};
         return susp;
     });
 
