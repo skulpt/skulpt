@@ -144,28 +144,28 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    jsengine = ".\\support\\d8\\d8.exe --trace_exception --debugger"
+    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony_promises"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "./support/d8/d8m --trace_exception --debugger"
+    jsengine = "./support/d8/d8m --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
     if is64bit():
-        jsengine = "support/d8/d8x64 --trace_exception --debugger"
+        jsengine = "support/d8/d8x64 --debugger --harmony_promises"
     else:
-        jsengine = "support/d8/d8 --trace_exception --debugger"
+        jsengine = "support/d8/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    jsengine = "support/d8/d8 --trace_exception --debugger"
+    jsengine = "support/d8/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    jsengine = "support/d8/d8x64 --trace_exception"
+    jsengine = "support/d8/d8x64 --harmony_promises"
     nul = "/dev/null"
 
 #jsengine = "rhino"
