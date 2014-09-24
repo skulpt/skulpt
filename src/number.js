@@ -733,7 +733,6 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 
 	var work = sign ? this.v : Math.abs(this.v);
 
-
 	var tmp;
 	if (base === undefined || base === 10) {
 		if (this.skType == Sk.builtin.nmber.float$) {
@@ -750,13 +749,15 @@ Sk.builtin.nmber.prototype.str$ = function(base, sign)
 			    tmp = work.toExponential(11);
 		    }
 
-			while (tmp.charAt(tmp.length-1) == "0" && tmp.indexOf('e') < 0) {
+                    if (tmp.indexOf('e') < 0 && tmp.indexOf('.') >= 0) {
+			while (tmp.charAt(tmp.length-1) == "0") {
 				tmp = tmp.substring(0,tmp.length-1)
 			}
 			if (tmp.charAt(tmp.length-1) == ".") {
 				tmp = tmp + "0"
 			}
-			tmp = tmp.replace(new RegExp('\\.0+e'),'e',"i")
+                    }
+		    tmp = tmp.replace(new RegExp('\\.0+e'),'e',"i")
 		    // make exponent two digits instead of one (ie e+09 not e+9)
 		    tmp = tmp.replace(/(e[-+])([1-9])$/, "$10$2");
 		    // remove trailing zeroes before the exponent
