@@ -1984,17 +1984,14 @@ var $builtinmodule = function (name) {
         return Sk.misceval.callsim(turtle.isdown, turtle);
     });
     mod.fillcolor = new Sk.builtin.func(function (color, green, blue) {
-        checkArgs(3, arguments.length, "fillcolor()");
         var turtle = ensureAnonymousTurtle();
         return Sk.misceval.callsim(turtle.fillcolor, turtle, color, green, blue);
     });
     mod.pencolor = new Sk.builtin.func(function (color, green, blue) {
-        checkArgs(3, arguments.length, "pencolor()");
         var turtle = ensureAnonymousTurtle();
         return Sk.misceval.callsim(turtle.pencolor, turtle, color, green, blue);
     });
     mod.color = new Sk.builtin.func(function (color, green, blue) {
-        checkArgs(3, arguments.length, "color()");
         var turtle = ensureAnonymousTurtle();
         return Sk.misceval.callsim(turtle.color, turtle, color, green, blue);
     });
