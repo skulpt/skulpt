@@ -1427,6 +1427,7 @@ if (!TurtleGraphics) {
 var $builtinmodule = function (name) {
     "use strict";
     var mod = {},
+        anonymousTurtle,
         initializeTurtlegraphics = function () {
             if (!TurtleGraphics) {
                 TurtleGraphics = {};
@@ -1451,7 +1452,7 @@ var $builtinmodule = function (name) {
         },
         checkArgs = function (expected, actual, func) {
             if (actual !== expected) {
-                throw new Sk.builtin.TypeError(func + " takes exactly " + expected + " positional argument (" + actual + " given)");
+                throw new Sk.builtin.TypeError(func + " takes exactly " + expected + " positional argument(s) (" + actual + " given)");
             }
         },
         turtle = function ($gbl, $loc) {
@@ -1835,6 +1836,14 @@ var $builtinmodule = function (name) {
                 0
             ];
             $loc.setup = new Sk.builtin.func(myfunc);
+        },
+        ensureAnonymousTurtle = function() {
+            if (anonymousTurtle === undefined) {
+                anonymousTurtle = {};
+                turtle(Sk.globals, anonymousTurtle);
+                Sk.misceval.callsim(anonymousTurtle.__init__, anonymousTurtle);
+            }
+            return anonymousTurtle;
         };
     // First we create an object, this will end up being the class
     // class
@@ -1850,6 +1859,12 @@ var $builtinmodule = function (name) {
         }
     });
     mod.update = new Sk.builtin.func(function (self) {
+    }); 
+    mod.forward = new Sk.builtin.func(function (dist) {
+        dist = Sk.builtin.asnum$(dist);
+        checkArgs(1, arguments.length, "forward()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.forward, turtle, dist);
     });
     return mod;
 };
