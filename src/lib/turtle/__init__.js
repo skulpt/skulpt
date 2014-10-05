@@ -1858,13 +1858,195 @@ var $builtinmodule = function (name) {
             Sk.tg.canvasLib[i].tracer(t, d);
         }
     });
-    mod.update = new Sk.builtin.func(function (self) {
+    mod.update = new Sk.builtin.func(function () {
     }); 
     mod.forward = new Sk.builtin.func(function (dist) {
-        dist = Sk.builtin.asnum$(dist);
         checkArgs(1, arguments.length, "forward()");
         var turtle = ensureAnonymousTurtle();
         Sk.misceval.callsim(turtle.forward, turtle, dist);
+    });
+    mod.fd = mod.forward;
+    mod.backward = new Sk.builtin.func(function (dist) {
+        checkArgs(1, arguments.length, "backward()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.backward, turtle, dist);
+    });
+    mod.bk = mod.backward;
+    mod.right = new Sk.builtin.func(function (angle) {
+        checkArgs(1, arguments.length, "right()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.right, turtle, angle);
+    });
+    mod.rt = mod.right;
+    mod.left = new Sk.builtin.func(function (angle) {
+        checkArgs(1, arguments.length, "left()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.left, turtle, angle);
+    });
+    mod.lt = mod.left;
+    mod.goto_$rw$ = new Sk.builtin.func(function (nx, ny) {
+        checkArgs(2, arguments.length, "goto()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.goto_$rw$, turtle, nx, ny);
+    });
+    mod.setposition = new Sk.builtin.func(function (nx, ny) {
+        checkArgs(2, arguments.length, "setposition()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.setposition, turtle, nx, ny);
+    });
+    mod.setpos = mod.setposition;
+    mod.setx = new Sk.builtin.func(function (nx) {
+        checkArgs(1, arguments.length, "setx()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.setx, turtle, nx);
+    });
+    mod.sety = new Sk.builtin.func(function (ny) {
+        checkArgs(1, arguments.length, "sety()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.sety, turtle, ny);
+    });
+    mod.setheading = new Sk.builtin.func(function (newhead) {
+        checkArgs(1, arguments.length, "setheading()");
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.setheading, turtle, newhead);
+    });
+    mod.seth = mod.setheading;
+    mod.home = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.home, turtle);
+    });
+    mod.dot = new Sk.builtin.func(function (size, color) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.dot, turtle, size, color);
+    });
+    mod.circle = new Sk.builtin.func(function (radius, extent) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.circle, turtle, radius, extent);
+    });
+    mod.delay = new Sk.builtin.func(function (d) {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.delay, turtle, d);
+    });
+    mod.speed = new Sk.builtin.func(function (s, t) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.speed, turtle, s, t);
+    });
+    mod.tracer = new Sk.builtin.func(function (t, d) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.tracer, turtle, t, d);
+    });
+    mod.heading = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.heading, turtle);
+    });
+    mod.position = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.position, turtle);
+    });
+    mod.pos = mod.position;
+    mod.xcor = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.xcor, turtle);
+    });
+    mod.ycor = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.ycor, turtle);
+    });
+    mod.towards = new Sk.builtin.func(function (tx, ty) {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.towards, turtle, tx, ty);
+    });
+    mod.distance = new Sk.builtin.func(function (tx, ty) {
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.distance, turtle, tx, ty);
+    });
+    mod.up = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.up, turtle);
+    });
+    mod.penup = mod.up;
+    mod.pu = mod.up;
+    mod.down = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.down, turtle);
+    });
+    mod.pendown = mod.down;
+    mod.pd = mod.down;
+    mod.width = new Sk.builtin.func(function (w) {
+        checkArgs(1, arguments.length, "width()");
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.width, turtle, w);
+    });
+    mod.pensize = mod.width;
+    mod.isdown = new Sk.builtin.func(function () {
+        checkArgs(1, arguments.length, "isdown()");
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.isdown, turtle);
+    });
+    mod.fillcolor = new Sk.builtin.func(function (color, green, blue) {
+        checkArgs(3, arguments.length, "fillcolor()");
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.fillcolor, turtle, color, green, blue);
+    });
+    mod.pencolor = new Sk.builtin.func(function (color, green, blue) {
+        checkArgs(3, arguments.length, "pencolor()");
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.pencolor, turtle, color, green, blue);
+    });
+    mod.color = new Sk.builtin.func(function (color, green, blue) {
+        checkArgs(3, arguments.length, "color()");
+        var turtle = ensureAnonymousTurtle();
+        return Sk.misceval.callsim(turtle.color, turtle, color, green, blue);
+    });
+    mod.begin_fill = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.begin_fill, turtle);
+    });
+    mod.end_fill = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.end_fill, turtle); 
+    });
+    mod.fill = new Sk.builtin.func(function (fillt) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.begin_fill, turtle, fillt);
+    });
+    mod.reset = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.reset, turtle);
+    });
+    mod.showturtle = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.showturtle, turtle);
+    });
+    mod.st = mod.showturtle;
+    mod.hideturtle = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.hideturtle, turtle);
+    });
+    mod.ht = mod.hideturtle;
+    mod.isvisible = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.isvisible, turtle);
+    });
+    mod.stamp = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.begin_fill, turtle);
+    });
+    mod.shape = new Sk.builtin.func(function (s) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.shape, turtle, s);
+    });
+    mod.write = new Sk.builtin.func(function (mystr, move, align, font) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.write, turtle, mystr, move, align, font);
+    });
+    mod.setworldcoordinates = new Sk.builtin.func(function (llx, lly, urx, ury) {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.setworldcoordinates, turtle, llx, lly, urx, ury);
+    });
+    mod.clear = new Sk.builtin.func(function () {
+        var turtle = ensureAnonymousTurtle();
+        Sk.misceval.callsim(turtle.clear, turtle);
     });
     return mod;
 };
