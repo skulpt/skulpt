@@ -8,6 +8,9 @@ def sleepFiveTimes(param):
 		v += param
 
 
-for v in sleepFiveTimes(5):
+gen = sleepFiveTimes(5);
+print gen.next()
+
+for v in gen:
 	print v
 

@@ -1948,10 +1948,8 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
         case OP_NAME:
             switch (ctx) {
                 case Load:
-                    v = this.gensym("loadname");
                     // can't be || for loc.x = 0 or null
-                    out("var ", v, "=", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl);");
-                    return v;
+                    return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl);");
                 case Store:
                     out(mangled, "=", dataToStore, ";");
                     break;

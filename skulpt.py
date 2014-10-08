@@ -625,6 +625,9 @@ Sk.misceval.asyncToPromise(function() {
     return Sk.importMain("%s", true, true);
 }).then(function () {
     print("-----");
+}, function(e) {
+    print("UNCAUGHT EXCEPTION: " + e);
+    print(e.stack);
 });
     """ % (fn, os.path.split(fn)[0], p3on, debugon, modname))
     f.close()

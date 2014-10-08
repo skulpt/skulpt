@@ -774,13 +774,13 @@ goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
  * the null suspension handler is:
  *
  *     function handler(susp) {
- *       return new Promise(resolve, reject) {
+ *       return new Promise(function(resolve, reject) {
  *         try {
  *           resolve(susp.resume());
  *         } catch(e) {
  *           reject(e);
  *         }
- *       };
+ *       });
  *     }
  *
  * (Note: do *not* call asyncToPromise() in a suspension handler; this will
@@ -857,7 +857,7 @@ goog.exportSymbol("Sk.misceval.asyncToPromise", Sk.misceval.asyncToPromise);
 Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, args) {
     return Sk.misceval.asyncToPromise(function() {
         return Sk.misceval.applyOrSuspend(func, kwdict, varargseq, kws, args);
-    });
+    }, suspHandlers);
 };
 goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
 
@@ -890,7 +890,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
         if (func.sk$klass) {
             // klass wrapper around __init__ requires special handling
-            return func.apply(null, [kwdict, varargseq, kws, args]);
+            return func.apply(null, [kwdict, varargseq, kws, args, true]);
         }
 
         if (varargseq) {

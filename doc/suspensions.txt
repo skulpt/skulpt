@@ -66,7 +66,7 @@ rejected with an exception. For example:
         return Promise.reject(e);
       }
     };
-                     
+
     Sk.misceval.callsimAsync(handlers, pyFunction).then(...)
 
 
@@ -89,6 +89,17 @@ p.then(function (module) {
 }, function (err) {
     console.log("Script aborted with error: " + err);
 });
+
+
+Completeness notes: ---------------------------------------------------------
+
+There are many places that don't currently support suspension that should.
+These include:
+
+ * Imports. Both the fetching of the imported module source and the running
+   of that code should be able to suspend. However, Sk.import*() is a maze of
+   twisty code paths and loops that make continuation transformation
+   non-trivial.
 
 
 

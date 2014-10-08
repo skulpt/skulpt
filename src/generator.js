@@ -92,7 +92,7 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
 };
 
 Sk.builtin.generator.prototype["next"] = new Sk.builtin.func(function (self) {
-    return self.tp$iternext();
+    return self.tp$iternext(true);
 });
 
 Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("generator", Sk.builtin.generator);

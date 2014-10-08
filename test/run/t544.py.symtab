@@ -4,7 +4,7 @@ Sym_lineno: 0
 Sym_nested: False
 Sym_haschildren: True
 -- Identifiers --
-name: doSleep
+name: SleepyClass
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -15,54 +15,15 @@ name: doSleep
   is_assigned: True
   is_namespace: True
   namespaces: [
-    Sym_type: function
-    Sym_name: doSleep
+    Sym_type: class
+    Sym_name: SleepyClass
     Sym_lineno: 3
     Sym_nested: False
-    Sym_haschildren: False
-    Func_params: ['param']
-    Func_locals: ['param', 'x']
-    Func_globals: ['sleep', 'str']
-    Func_frees: []
+    Sym_haschildren: True
+    Class_methods: ['__init__', 'doSleep']
     -- Identifiers --
-    name: param
-      is_referenced: True
-      is_imported: False
-      is_parameter: True
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
-    name: sleep
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: True
-      is_declared_global: False
-      is_local: False
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
-    name: str
-      is_referenced: True
-      is_imported: False
-      is_parameter: False
-      is_global: True
-      is_declared_global: False
-      is_local: False
-      is_free: False
-      is_assigned: False
-      is_namespace: False
-      namespaces: [
-      ]
-    name: x
-      is_referenced: True
+    name: __init__
+      is_referenced: False
       is_imported: False
       is_parameter: False
       is_global: False
@@ -70,8 +31,136 @@ name: doSleep
       is_local: True
       is_free: False
       is_assigned: True
-      is_namespace: False
+      is_namespace: True
       namespaces: [
+        Sym_type: function
+        Sym_name: __init__
+        Sym_lineno: 5
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['self']
+        Func_locals: ['self']
+        Func_globals: ['sleep', 'str']
+        Func_frees: []
+        -- Identifiers --
+        name: self
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: sleep
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: str
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: doSleep
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: doSleep
+        Sym_lineno: 9
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['param', 'self']
+        Func_locals: ['param', 'self', 'x']
+        Func_globals: ['sleep', 'str']
+        Func_frees: []
+        -- Identifiers --
+        name: param
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: False
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: sleep
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: str
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: x
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: True
+          is_namespace: False
+          namespaces: [
+          ]
       ]
   ]
 name: sleep
@@ -83,6 +172,18 @@ name: sleep
   is_local: True
   is_free: False
   is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: sleeper
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
   is_namespace: False
   namespaces: [
   ]
