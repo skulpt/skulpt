@@ -63,6 +63,7 @@ Files = [
         ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
+        ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -144,35 +145,39 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    jsengine = ".\\support\\d8\\d8.exe --trace_exception --debugger"
+    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony_promises"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "./support/d8/d8m --trace_exception --debugger"
+    jsengine = "./support/d8/d8m --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
     if is64bit():
-        jsengine = "support/d8/d8x64 --trace_exception --debugger"
+        jsengine = "support/d8/d8x64 --debugger --harmony_promises"
     else:
-        jsengine = "support/d8/d8 --trace_exception --debugger"
+        jsengine = "support/d8/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    jsengine = "support/d8/d8 --trace_exception --debugger"
+    jsengine = "support/d8/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    jsengine = "support/d8/d8x64 --trace_exception"
+    jsengine = "support/d8/d8x64 --harmony_promises"
     nul = "/dev/null"
 
 #jsengine = "rhino"
 
-def test():
+def test(debug_mode=False):
     """runs the unit tests."""
-    ret1 = os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
+    if debug_mode:
+        debugon = "--debug-mode"
+    else:
+        debugon = ""
+    ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
     print "Running jshint"
     ret2 = os.system("jshint src/*.js")
     return ret1 | ret2
@@ -425,7 +430,7 @@ def dist(options):
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn))
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file %s" % (uncompfiles, compfn))
     # to disable asserts
     # --define goog.DEBUG=false
     #
@@ -594,7 +599,7 @@ def docbi(options):
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
 
-def run(fn, shell="", opt=False, p3=False):
+def run(fn, shell="", opt=False, p3=False, debug_mode=False):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -606,15 +611,25 @@ def run(fn, shell="", opt=False, p3=False):
         p3on = 'true'
     else:
         p3on = 'false'
+    if debug_mode:
+        debugon = 'true'
+    else:
+        debugon = 'false'
     f.write("""
 var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", true);
-print("-----");
-    """ % (fn, os.path.split(fn)[0], p3on, modname))
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", true, true);
+}).then(function () {
+    print("-----");
+}, function(e) {
+    print("UNCAUGHT EXCEPTION: " + e);
+    print(e.stack);
+});
+    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname))
     f.close()
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
@@ -626,6 +641,9 @@ def runopt(fn):
 
 def run3(fn):
     run(fn,p3=True)
+
+def rundebug(fn):
+    run(fn,debug_mode=True)
 
 def shell(fn):
     run(fn, "--shell")
@@ -808,6 +826,8 @@ def main():
 
     if cmd == "test":
         test()
+    elif cmd == "testdebug":
+        test(True)
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":
@@ -829,6 +849,8 @@ def main():
         runopt(sys.argv[2])
     elif cmd == "run3":
         run3(sys.argv[2])
+    elif cmd == "rundebug":
+        rundebug(sys.argv[2])
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":

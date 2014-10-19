@@ -188,8 +188,9 @@ if (COMPILED) {
  * it's to be renamed (i.e. __main__)
  * @param {string=} suppliedPyBody use as the body of the text for the module
  * rather than Sk.read'ing it.
+ * @param {boolean=} canSuspend whether we may return a Suspension object
  */
-Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
+Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canSuspend) {
     //dumpJS = true;
     var parentModule;
     var modlocs;
@@ -317,48 +318,63 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody) {
 //		Sk.debugout(finalcode);
 
     modlocs = goog.global["eval"](finalcode);
-    // pass in __name__ so the module can set it (so that the code can access
-    // it), but also set it after we're done so that builtins don't have to
-    // remember to do it.
-    if (!modlocs["__name__"]) {
-        modlocs["__name__"] = new Sk.builtin.str(modname);
-    }
 
-    module["$d"] = modlocs;
+    return (function finishLoading(modlocs) {
+        var susp;
 
-    // If an onAfterImport method is defined on the global Sk
-    // then call it now after a library has been successfully imported
-    // and compiled.
-    if (Sk.onAfterImport && typeof Sk.onAfterImport === "function") {
-        try {
-            Sk.onAfterImport(name);
-        } catch (e) {
+        if (modlocs instanceof Sk.misceval.Suspension) {
+
+            if (canSuspend) {
+                return new Sk.misceval.Suspension(finishLoading, modlocs);
+            } else {
+                modlocs = Sk.misceval.retryOptionalSuspensionOrThrow(modlocs, "Module \""+modname+"\" suspended or blocked during load, and it was loaded somewhere that does not permit this");
+            }
         }
-    }
 
-    if (toReturn) {
-        // if we were a dotted name, then we want to return the top-most
-        // package. we store ourselves into our parent as an attribute
-        parentModule = Sk.sysmodules.mp$subscript(parentModName);
-        parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
-        //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
-        return toReturn;
-    }
+        // pass in __name__ so the module can set it (so that the code can access
+        // it), but also set it after we're done so that builtins don't have to
+        // remember to do it.
+        if (!modlocs["__name__"]) {
+            modlocs["__name__"] = new Sk.builtin.str(modname);
+        }
 
-    //print("name", name, "modname", modname, "returning leaf");
-    // otherwise we return the actual module that we just imported
-    return module;
+        module["$d"] = modlocs;
+
+        // If an onAfterImport method is defined on the global Sk
+        // then call it now after a library has been successfully imported
+        // and compiled.
+        if (Sk.onAfterImport && typeof Sk.onAfterImport === "function") {
+            try {
+                Sk.onAfterImport(name);
+            } catch (e) {
+            }
+        }
+
+        if (toReturn) {
+            // if we were a dotted name, then we want to return the top-most
+            // package. we store ourselves into our parent as an attribute
+            parentModule = Sk.sysmodules.mp$subscript(parentModName);
+            parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
+            //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
+            return toReturn;
+        }
+
+        //print("name", name, "modname", modname, "returning leaf");
+        // otherwise we return the actual module that we just imported
+        return module;
+    })(modlocs);
 };
 
 /**
  * @param {string} name the module name
  * @param {boolean=} dumpJS print out the js code after compilation for debugging
+ * @param {boolean=} canSuspend can this function suspend and return a Suspension object?
  */
-Sk.importModule = function (name, dumpJS) {
-    return Sk.importModuleInternal_(name, dumpJS);
+Sk.importModule = function (name, dumpJS, canSuspend) {
+    return Sk.importModuleInternal_(name, dumpJS, undefined, undefined, canSuspend);
 };
 
-Sk.importMain = function (name, dumpJS) {
+Sk.importMain = function (name, dumpJS, canSuspend) {
     Sk.dateSet = false;
     Sk.filesLoaded = false;
     //	Added to reset imports
@@ -367,10 +383,10 @@ Sk.importMain = function (name, dumpJS) {
 
     Sk.resetCompiler();
 
-    return Sk.importModuleInternal_(name, dumpJS, "__main__");
+    return Sk.importModuleInternal_(name, dumpJS, "__main__", undefined, canSuspend);
 };
 
-Sk.importMainWithBody = function (name, dumpJS, body) {
+Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
     Sk.dateSet = false;
     Sk.filesLoaded = false;
     //	Added to reset imports
@@ -379,7 +395,7 @@ Sk.importMainWithBody = function (name, dumpJS, body) {
 
     Sk.resetCompiler();
 
-    return Sk.importModuleInternal_(name, dumpJS, "__main__", body);
+    return Sk.importModuleInternal_(name, dumpJS, "__main__", body, canSuspend);
 };
 
 Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
