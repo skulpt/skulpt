@@ -149,7 +149,7 @@ if sys.platform == "win32":
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "./support/d8/d8m --debugger --harmony_promises"
+    jsengine = "./support/d8/d8m --debugger"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
