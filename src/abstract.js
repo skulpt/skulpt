@@ -38,7 +38,7 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-    
+
     switch (name) {
     case "Add":
         return obj.nb$add ? obj.nb$add : obj["__add__"];
@@ -71,7 +71,7 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-    
+
     switch (name) {
     case "Add":
         return obj.nb$add ? obj.nb$add : obj["__radd__"];
@@ -223,7 +223,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     if (a === null || b === null) {
         return undefined;
     }
-    
+
     if (typeof a === "number" && typeof b === "number") {
         ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
@@ -729,7 +729,7 @@ Sk.abstr.iter = function (obj) {
 };
 goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
-Sk.abstr.iternext = function (it) {
-    return it.tp$iternext();
+Sk.abstr.iternext = function (it, canSuspend) {
+    return it.tp$iternext(canSuspend);
 };
 goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);

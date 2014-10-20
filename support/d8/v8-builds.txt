@@ -1,10 +1,10 @@
 d8 is built on ubuntu using gyp (32-bit)
     -make dependencies 
-    -make release.ia32 console=readline
+    -make ia32.release console=readline
 
 d8x64 is built on ubuntu using gyp (64-bit)
     -make dependencies
-    -make release.x64 console=readline
+    -make x64.release console=readline
     
 d8m is built on osx 10.8 with homebrew (64-bit)
     -brew install v8 -static

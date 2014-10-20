@@ -49,6 +49,13 @@ Sk.configure = function (options) {
     Sk.retainGlobals = options["retainglobals"] || false;
     goog.asserts.assert(typeof Sk.throwSystemExit === "boolean");
 
+    Sk.debugging = options["debugging"] || false;
+    goog.asserts.assert(typeof Sk.debugging === "boolean");
+
+    Sk.breakpoints = options["breakpoints"] || function() { return true; };
+    goog.asserts.assert(typeof Sk.breakpoints === "function");
+
+
     if (options["syspath"]) {
         Sk.syspath = options["syspath"];
         goog.asserts.assert(goog.isArrayLike(Sk.syspath));

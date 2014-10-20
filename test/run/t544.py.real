@@ -1,0 +1,6 @@
+Sleeping in __init__
+Sleep returned None
+Sleeping for .01 seconds
+Sleep returned None
+Woke up; x = 42
+param = 7

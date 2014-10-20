@@ -6,7 +6,8 @@
   "predef": [
     "Sk",
     "goog",
-    "COMPILED"
+    "COMPILED",
+    "Promise"
   ],
 
   /*** Enforcing options ***/
