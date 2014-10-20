@@ -783,6 +783,9 @@ goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
  *       });
  *     }
  *
+ * Alternatively, a handler can return null to perform the default action for
+ * that suspension type.
+ *
  * (Note: do *not* call asyncToPromise() in a suspension handler; this will
  * create a new Promise object for each such suspension that occurs)
  *
@@ -826,10 +829,14 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
                         var handler = suspHandlers && suspHandlers[r.data["type"]];
 
                         if (handler) {
-                            handler(r).then(handleResponse, reject);
-                            return;
+                            var handlerPromise = handler(r);
+                            if (handlerPromise) {
+                                handlerPromise.then(handleResponse, reject);
+                                return;
+                            }
+                        }
 
-                        } else if (r.data["type"] == "Sk.promise") {
+                        if (r.data["type"] == "Sk.promise") {
                             r.data["promise"].then(resumeWithData, resumeWithError);
                             return;
 
