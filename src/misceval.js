@@ -768,10 +768,12 @@ goog.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
  * Wraps anything that can return an Sk.misceval.Suspension, and returns a
  * JS Promise with the result. Also takes an object map of suspension handlers:
  * pass in {"suspType": function (susp) {} }, and your function will be called
- * with the Suspension object if susp.type=="suspType". A suspension handler
- * should return a Promise yielding the return value of r.resume() - ie,
- * either the final return value of this call or another Suspension. That is,
- * the null suspension handler is:
+ * with the Suspension object if susp.type=="suspType". The type "*" will match
+ * all otherwise unhandled suspensions.
+ *
+ * A suspension handler should return a Promise yielding the return value of
+ * r.resume() - ie, either the final return value of this call or another
+ * Suspension. That is, the null suspension handler is:
  *
  *     function handler(susp) {
  *       return new Promise(function(resolve, reject) {
@@ -823,7 +825,7 @@ Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers) {
 
                     while (r instanceof Sk.misceval.Suspension) {
 
-                        var handler = suspHandlers && suspHandlers[r.data["type"]];
+                        var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
 
                         if (handler) {
                             handler(r).then(handleResponse, reject);
