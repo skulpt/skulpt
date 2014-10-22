@@ -287,7 +287,14 @@ Compiler.prototype._jumptrue = function (test, block) {
 
 Compiler.prototype._jump = function (block) {
     this._interruptTest();	// Added by RNL
-    out("$blk=", block, ";/* jump */continue;");
+    out("$blk=", block, ";");
+    if (block === this.u.curblock + 1) {
+        this.u.blocks[this.u.curblock]._fallthrough = true;
+        out("/* fall through to " + block + " */");
+    }
+    else {
+        out("/* jump */continue;");
+    }
 };
 
 Compiler.prototype.ctupleorlist = function (e, data, tuporlist) {
@@ -898,7 +905,12 @@ Compiler.prototype.outputAllUnits = function () {
             ret += "case " + i + ": /* --- " + blocks[i]._name + " --- */";
             ret += blocks[i].join("");
 
-            ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');";
+            if (blocks[i]._fallthrough) {
+                ret += "/* allowing case fallthrough */";
+            }
+            else {
+                ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');";
+            }
         }
         ret += unit.suffixCode;
     }
