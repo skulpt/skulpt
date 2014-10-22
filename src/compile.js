@@ -742,14 +742,14 @@ Compiler.prototype.caugassign = function (s) {
 };
 
 /**
- * optimize some constant exprs. returns 0 if always 0, 1 if always 1 or -1 otherwise.
+ * optimize some constant exprs. returns 0 if always false, 1 if always true or -1 otherwise.
  */
 Compiler.prototype.exprConstant = function (e) {
     switch (e.constructor) {
         case Num:
-            return Sk.misceval.isTrue(e.n);
+            return Sk.misceval.isTrue(e.n) ? 1 : 0;
         case Str:
-            return Sk.misceval.isTrue(e.s);
+            return Sk.misceval.isTrue(e.s) ? 1 : 0;
         case Name:
         // todo; do __debug__ test here if opt
         default:
@@ -913,7 +913,7 @@ Compiler.prototype.cif = function (s) {
     goog.asserts.assert(s instanceof If_);
     constant = this.exprConstant(s.test);
     if (constant === 0) {
-        if (s.orelse) {
+        if (s.orelse && s.orelse.length > 0) {
             this.vseqstmt(s.orelse);
         }
     }
@@ -930,12 +930,12 @@ Compiler.prototype.cif = function (s) {
         this._jump(end);
 
         this.setBlock(next);
-        if (s.orelse) {
+        if (s.orelse && s.orelse.length > 0) {
             this.vseqstmt(s.orelse);
         }
         this._jump(end);
+        this.setBlock(end);
     }
-    this.setBlock(end);
 
 };
 
