@@ -922,16 +922,23 @@ Compiler.prototype.cif = function (s) {
     }
     else {
         end = this.newBlock("end of if");
-        next = this.newBlock("next branch of if");
+        if (s.orelse && s.orelse.length > 0) {
+            next = this.newBlock("next branch of if");
+        }
 
         test = this.vexpr(s.test);
-        this._jumpfalse(test, next);
-        this.vseqstmt(s.body);
-        this._jump(end);
 
-        this.setBlock(next);
         if (s.orelse && s.orelse.length > 0) {
+            this._jumpfalse(test, next);
+            this.vseqstmt(s.body);
+            this._jump(end);
+
+            this.setBlock(next);
             this.vseqstmt(s.orelse);
+        }
+        else {
+            this._jumpfalse(test, end);
+            this.vseqstmt(s.body);
         }
         this._jump(end);
         this.setBlock(end);
