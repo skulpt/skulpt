@@ -78,9 +78,12 @@ CompilerUnit.prototype.activateScope = function () {
     out = function () {
         var i;
         var b = self.blocks[self.curblock];
-        for (i = 0; i < arguments.length; ++i) {
-            b.push(arguments[i]);
+        if (b._next === null) {
+            for (i = 0; i < arguments.length; ++i) {
+                b.push(arguments[i]);
+            }
         }
+        // TODO: Warn about unreachable code after an unconditional jump?
     };
 };
 
@@ -288,13 +291,7 @@ Compiler.prototype._jumptrue = function (test, block) {
 Compiler.prototype._jump = function (block) {
     this._interruptTest();	// Added by RNL
     out("$blk=", block, ";");
-    if (block === this.u.curblock + 1) {
-        this.u.blocks[this.u.curblock]._fallthrough = true;
-        out("/* fall through to " + block + " */");
-    }
-    else {
-        out("/* jump */continue;");
-    }
+    this.u.blocks[this.u.curblock]._next = block;
 };
 
 Compiler.prototype.ctupleorlist = function (e, data, tuporlist) {
@@ -768,6 +765,7 @@ Compiler.prototype.newBlock = function (name) {
     var ret = this.u.blocknum++;
     this.u.blocks[ret] = [];
     this.u.blocks[ret]._name = name || "<unnamed>";
+    this.u.blocks[ret]._next = null;
     return ret;
 };
 Compiler.prototype.setBlock = function (n) {
@@ -905,11 +903,14 @@ Compiler.prototype.outputAllUnits = function () {
             ret += "case " + i + ": /* --- " + blocks[i]._name + " --- */";
             ret += blocks[i].join("");
 
-            if (blocks[i]._fallthrough) {
+            if (blocks[i]._next === null) {
+                ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');"
+            }
+            else if (blocks[i]._next === i + 1) {
                 ret += "/* allowing case fallthrough */";
             }
             else {
-                ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');";
+                ret += "/* jump */ continue;";
             }
         }
         ret += unit.suffixCode;
