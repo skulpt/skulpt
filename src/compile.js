@@ -290,8 +290,10 @@ Compiler.prototype._jumptrue = function (test, block) {
 
 Compiler.prototype._jump = function (block) {
     this._interruptTest();	// Added by RNL
-    out("$blk=", block, ";");
-    this.u.blocks[this.u.curblock]._next = block;
+    if (this.u.blocks[this.u.curblock]._next === null) {
+        out("$blk=", block, ";");
+        this.u.blocks[this.u.curblock]._next = block;
+    }
 };
 
 Compiler.prototype.ctupleorlist = function (e, data, tuporlist) {
@@ -889,6 +891,8 @@ Compiler.prototype.outputAllUnits = function () {
     var unit;
     var j;
     var ret = "";
+    var block;
+    var generatedBlocks;
     for (j = 0; j < this.allUnits.length; ++j) {
         unit = this.allUnits[j];
         ret += unit.prefixCode;
@@ -899,18 +903,31 @@ Compiler.prototype.outputAllUnits = function () {
         ret += unit.varDeclsCode;
         ret += unit.switchCode;
         blocks = unit.blocks;
+        generatedBlocks = Object.create(null);
         for (i = 0; i < blocks.length; ++i) {
-            ret += "case " + i + ": /* --- " + blocks[i]._name + " --- */";
-            ret += blocks[i].join("");
+            block = i;
+            if (block in generatedBlocks)
+                continue;
+            while (true) {
+                generatedBlocks[block] = true;
 
-            if (blocks[i]._next === null) {
-                ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');"
-            }
-            else if (blocks[i]._next === i + 1) {
-                ret += "/* allowing case fallthrough */";
-            }
-            else {
-                ret += "/* jump */ continue;";
+                ret += "case " + block + ": /* --- " + blocks[block]._name + " --- */";
+                ret += blocks[block].join("");
+
+                if (blocks[block]._next !== null) {
+                    if (!(blocks[block]._next in generatedBlocks)) {
+                        ret += "/* allowing case fallthrough */";
+                        block = blocks[block]._next;
+                    }
+                    else {
+                        ret += "/* jump */ continue;";
+                        break;
+                    }
+                }
+                else {
+                    ret += "throw new Sk.builtin.SystemError('internal error: unterminated block');";
+                    break;
+                }
             }
         }
         ret += unit.suffixCode;
