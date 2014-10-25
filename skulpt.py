@@ -178,13 +178,12 @@ def test(debug_mode=False):
     else:
         debugon = ""
     ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
-    if res == 0:
-    print "Running jshint"
-    ret2 = os.system("jshint src/*.js")
-    return ret1 | ret2
+    if ret1 == 0:
+        print "Running jshint"
+        ret2 = os.system("jshint src/*.js")
         print "Now running new unit tests"
-        return rununits()
-    return res
+        ret3 = rununits()
+    return ret1 | ret2 | ret3
 
 def debugbrowser():
     tmpl = """
@@ -630,14 +629,14 @@ print(input);
 print("-----");
 Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain("%s", true, true);
+    return Sk.importMain("%s", %s, true);
 }).then(function () {
     print("-----");
 }, function(e) {
     print("UNCAUGHT EXCEPTION: " + e);
     print(e.stack);
 });
-    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname))
+    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
     f.close()
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
