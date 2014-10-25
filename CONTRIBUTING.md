@@ -28,7 +28,7 @@ This section includes ways to get started with your open source project. Include
 This section includes advice on how to build new features for the project & what kind of process it includes.
 
 * First you should make a Fork.  If you have never made a fork before please read this [github help article](https://help.github.com/articles/fork-a-repo)
-* Check out the document HACKING.rst  Although its a work in progress, it contains valueable information about Skulpt and how it is structured, some of the naming conventions, and information to help you understand how it all works.
+* Check out the document HACKING.rst  Although its a work in progress, it contains valuable information about Skulpt and how it is structured, some of the naming conventions, and information to help you understand how it all works.
 * Once you have added a new feature make sure you develop some test cases and add them to the test bank. Even better would be to write the failing test first. The easy way to do this is to run `m nrt` (make sure you have either vim installed or the `EDITOR` environment variable set) which creates a new test file, opens up an editor for you to create your tests, and then generates the expected output based on 'real python'
 * Before submitting a pull request please make sure you run ``m test`` and ``m dist`` this checks that there are no regressions.  We have an automatic system to do regression testing, but if your pull request fails it is certain that it will not be accepted.
 * push your changes to your fork and then use github to submit a pull request.
@@ -62,7 +62,7 @@ quickly revealed to you by the jshint program.
 
 Our Travis script will run jshint over all the source.  You should run jshint as well.  
 Many editors and IDEs do this automatically for you -- Atom, PyCharm, TextMate has a
-nice plugin, Sublime.  You can easily install [jshint](http://jshint.org) using the ``npm`` package manager that comes with [node](http://nodejs.org).
+nice plugin called JSLintMate.  You can easily install [jshint](http://jshint.org) using the ``npm`` package manager that comes with [node](http://nodejs.org).
 
 # Documentation
 
