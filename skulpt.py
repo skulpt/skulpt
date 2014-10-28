@@ -119,7 +119,7 @@ TestFiles = [
         "{0}/test.js".format(TEST_DIR)
         ]
 
-def getNamedTests():
+def buildNamedTestsFile():
     testFiles = ['test/run/'+f.replace(".py","") for f in os.listdir('test/run') if re.match(r"test_.*\.py$",f)]
     nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
     nt.write("namedtfiles = [")
@@ -187,7 +187,7 @@ def test(debug_mode=False):
         debugon = "--debug-mode"
     else:
         debugon = ""
-    getNamedTests()
+    buildNamedTestsFile()
     ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
     ret2 = 0
     ret3 = 0
@@ -462,6 +462,7 @@ def dist(options):
     # Run tests on compressed.
     if options.verbose:
         print ". Running tests on compressed..."
+    buildNamedTestsFile()
     ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
@@ -707,13 +708,13 @@ Sk.importMain("%s", false);
             passTot += int(g.group(1))
             failTot += int(g.group(2))
 
-        print "Summary"
-        print "Passed: %5d Failed %5d" % (passTot, failTot)
+    print "Summary"
+    print "Passed: %5d Failed %5d" % (passTot, failTot)
 
-        if failTot != 0:
-            return -1
-        else:
-            return 0
+    if failTot != 0:
+        return -1
+    else:
+        return 0
 
 
 def repl():
