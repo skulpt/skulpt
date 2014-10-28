@@ -722,6 +722,9 @@ def repl():
 
 def nrt(newTest):
     """open a new run test"""
+    print "Warning: nrt is deprectated."
+    print "It is preferred that you enhance one of the unit tests in test/unit"
+    print "Or, create a new unit test file in test/unit using the template in test/unit_tmpl.py"
     fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
     disfn = fn + ".disabled"
     if not os.path.exists(fn) and not os.path.exists(disfn):
@@ -736,7 +739,8 @@ def nrt(newTest):
             regenasttests(fn)
             regenruntests(fn)
         else:
-            print "run ./m regentests test_{0}.py" % fn
+            print "Test test_%s.py already exists." % newTest
+            print "run ./m regentests test_%s.py" % newTest
 
 def vmwareregr(names):
     """todo; not working yet.
