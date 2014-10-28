@@ -113,11 +113,21 @@ TestFiles = [
         'support/closure-library/closure/goog/math/vec2.js',
         'support/closure-library/closure/goog/json/json.js',
         'support/jsbeautify/beautify.js',
+        "{0}/namedtests.js".format(TEST_DIR),
         "{0}/sprintf.js".format(TEST_DIR),
         "{0}/json2.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
         ]
 
+def getNamedTests():
+    testFiles = ['test/unit/'+f for f in os.listdir('test/run') if re.match(r"test_.*\.py",f)]
+    nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
+    nt.write("namedtfiles = [")
+    for f in testFiles:
+        nt.write("'%s',\n" % f)
+    nt.write("];")
+    nt.close()
+    
 def isClean():
     repo = Repo(".")
     return not repo.is_dirty()
@@ -177,6 +187,7 @@ def test(debug_mode=False):
         debugon = "--debug-mode"
     else:
         debugon = ""
+    getNamedTests()
     ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
     if ret1 == 0:
         print "Running jshint"
