@@ -120,7 +120,7 @@ TestFiles = [
         ]
 
 def getNamedTests():
-    testFiles = ['test/unit/'+f for f in os.listdir('test/run') if re.match(r"test_.*\.py",f)]
+    testFiles = ['test/run/'+f.replace(".py","") for f in os.listdir('test/run') if re.match(r"test_.*\.py$",f)]
     nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
     nt.write("namedtfiles = [")
     for f in testFiles:
@@ -189,6 +189,8 @@ def test(debug_mode=False):
         debugon = ""
     getNamedTests()
     ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+    ret2 = 0
+    ret3 = 0
     if ret1 == 0:
         print "Running jshint"
         ret2 = os.system("jshint src/*.js")
@@ -717,25 +719,23 @@ Sk.importMain("%s", false);
 def repl():
     os.system("{0} {1} repl/repl.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
 
-def nrt():
+def nrt(newTest):
     """open a new run test"""
-    for i in range(100000):
-        fn = "{0}/run/t%02d.py".format(TEST_DIR) % i
-        disfn = fn + ".disabled"
-        if not os.path.exists(fn) and not os.path.exists(disfn):
-            if 'EDITOR' in os.environ:
-                editor = os.environ['EDITOR']
-            else:
-                editor = 'vim'
-            os.system(editor + ' ' + fn)
-            if os.path.exists(fn):
-                print "Generating tests for %s" % fn
-                regensymtabtests(fn)
-                regenasttests(fn)
-                regenruntests(fn)
-            else:
-                print "run ./m regentests t%02d.py" % i
-            break
+    fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
+    disfn = fn + ".disabled"
+    if not os.path.exists(fn) and not os.path.exists(disfn):
+        if 'EDITOR' in os.environ:
+            editor = os.environ['EDITOR']
+        else:
+            editor = 'vim'
+        os.system(editor + ' ' + fn)
+        if os.path.exists(fn):
+            print "Generating tests for %s" % fn
+            regensymtabtests(fn)
+            regenasttests(fn)
+            regenruntests(fn)
+        else:
+            print "run ./m regentests test_{0}.py" % fn
 
 def vmwareregr(names):
     """todo; not working yet.
@@ -933,7 +933,11 @@ def main():
     elif cmd == "docbi":
         docbi(options)
     elif cmd == "nrt":
-        nrt()
+        if len(sys.argv) < 3:
+            print "Need a name for the new test"
+            print usageString(os.path.basename(sys.argv[0]))
+            sys.exit(2)
+        nrt(sys.argv[2])
     elif cmd == "browser":
         buildBrowserTests()
     elif cmd == "debugbrowser":
