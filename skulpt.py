@@ -722,9 +722,6 @@ def repl():
 
 def nrt(newTest):
     """open a new run test"""
-    print "Warning: nrt is deprectated."
-    print "It is preferred that you enhance one of the unit tests in test/unit"
-    print "Or, create a new unit test file in test/unit using the template in test/unit_tmpl.py"
     fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
     disfn = fn + ".disabled"
     if not os.path.exists(fn) and not os.path.exists(disfn):
@@ -938,6 +935,9 @@ def main():
     elif cmd == "docbi":
         docbi(options)
     elif cmd == "nrt":
+        print "Warning: nrt is deprectated."
+        print "It is preferred that you enhance one of the unit tests in test/unit"
+        print "Or, create a new unit test file in test/unit using the template in test/unit_tmpl.py"
         if len(sys.argv) < 3:
             print "Need a name for the new test"
             print usageString(os.path.basename(sys.argv[0]))
