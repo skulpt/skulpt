@@ -125,7 +125,7 @@ name: C
     Sym_nested: False
     Sym_haschildren: True
     Func_params: ['x']
-    Func_locals: ['D', 'c', 'n', 'x']
+    Func_locals: ['D', 'n', 'x']
     Func_globals: ['a', 'c', 'range', 'set']
     Func_frees: []
     -- Identifiers --

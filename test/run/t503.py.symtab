@@ -161,18 +161,6 @@ name: Comparable
           ]
       ]
   ]
-name: _[1]
-  is_referenced: False
-  is_imported: False
-  is_parameter: False
-  is_global: False
-  is_declared_global: False
-  is_local: True
-  is_free: False
-  is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
 name: a
   is_referenced: True
   is_imported: False
