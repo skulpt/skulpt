@@ -113,11 +113,21 @@ TestFiles = [
         'support/closure-library/closure/goog/math/vec2.js',
         'support/closure-library/closure/goog/json/json.js',
         'support/jsbeautify/beautify.js',
+        "{0}/namedtests.js".format(TEST_DIR),
         "{0}/sprintf.js".format(TEST_DIR),
         "{0}/json2.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
         ]
 
+def buildNamedTestsFile():
+    testFiles = ['test/run/'+f.replace(".py","") for f in os.listdir('test/run') if re.match(r"test_.*\.py$",f)]
+    nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
+    nt.write("namedtfiles = [")
+    for f in testFiles:
+        nt.write("'%s',\n" % f)
+    nt.write("];")
+    nt.close()
+    
 def isClean():
     repo = Repo(".")
     return not repo.is_dirty()
@@ -177,10 +187,16 @@ def test(debug_mode=False):
         debugon = "--debug-mode"
     else:
         debugon = ""
+    buildNamedTestsFile()
     ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
-    print "Running jshint"
-    ret2 = os.system("jshint src/*.js")
-    return ret1 | ret2
+    ret2 = 0
+    ret3 = 0
+    if ret1 == 0:
+        print "Running jshint"
+        ret2 = os.system("jshint src/*.js")
+        print "Now running new unit tests"
+        ret3 = rununits()
+    return ret1 | ret2 | ret3
 
 def debugbrowser():
     tmpl = """
@@ -446,9 +462,14 @@ def dist(options):
     # Run tests on compressed.
     if options.verbose:
         print ". Running tests on compressed..."
+    buildNamedTestsFile()
     ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
+        sys.exit(1)
+    ret = rununits(opt=True)
+    if ret != 0:
+        print "Tests failed on compressed unit tests"
         sys.exit(1)
 
     ret = os.system("cp {0} {1}/tmp.js".format(compfn, DIST_DIR))
@@ -599,7 +620,7 @@ def docbi(options):
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
 
-def run(fn, shell="", opt=False, p3=False, debug_mode=False):
+def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -622,14 +643,14 @@ print(input);
 print("-----");
 Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
 Sk.misceval.asyncToPromise(function() {
-    return Sk.importMain("%s", true, true);
+    return Sk.importMain("%s", %s, true);
 }).then(function () {
     print("-----");
 }, function(e) {
     print("UNCAUGHT EXCEPTION: " + e);
     print(e.stack);
 });
-    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname))
+    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
     f.close()
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
@@ -649,28 +670,74 @@ def shell(fn):
     run(fn, "--shell")
 
 
+def rununits(opt=False, p3=False):
+    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    jstestengine = jsengine.replace('--debugger', '')
+    passTot = 0
+    failTot = 0
+    for fn in testFiles:
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+        f = open("support/tmp/run.js", "w")
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        if p3:
+            p3on = 'true'
+        else:
+            p3on = 'false'
+        f.write("""
+var input = read('%s');
+print('%s');
+Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.importMain("%s", false);
+        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        f.close()
+        if opt:
+            p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
+                                                           OUTFILE_MIN),shell=True,
+                      stdout=PIPE, stderr=PIPE)
+        else:
+            p = Popen("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
+                getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
+
+        outs, errs = p.communicate()
+        print outs
+        if errs:
+            print errs
+        g = re.match(r'.*\n.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
+        if g:
+            passTot += int(g.group(1))
+            failTot += int(g.group(2))
+
+    print "Summary"
+    print "Passed: %5d Failed %5d" % (passTot, failTot)
+
+    if failTot != 0:
+        return -1
+    else:
+        return 0
+
+
 def repl():
     os.system("{0} {1} repl/repl.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
 
-def nrt():
+def nrt(newTest):
     """open a new run test"""
-    for i in range(100000):
-        fn = "{0}/run/t%02d.py".format(TEST_DIR) % i
-        disfn = fn + ".disabled"
-        if not os.path.exists(fn) and not os.path.exists(disfn):
-            if 'EDITOR' in os.environ:
-                editor = os.environ['EDITOR']
-            else:
-                editor = 'vim'
-            os.system(editor + ' ' + fn)
-            if os.path.exists(fn):
-                print "Generating tests for %s" % fn
-                regensymtabtests(fn)
-                regenasttests(fn)
-                regenruntests(fn)
-            else:
-                print "run ./m regentests t%02d.py" % i
-            break
+    fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
+    disfn = fn + ".disabled"
+    if not os.path.exists(fn) and not os.path.exists(disfn):
+        if 'EDITOR' in os.environ:
+            editor = os.environ['EDITOR']
+        else:
+            editor = 'vim'
+        os.system(editor + ' ' + fn)
+        if os.path.exists(fn):
+            print "Generating tests for %s" % fn
+            regensymtabtests(fn)
+            regenasttests(fn)
+            regenruntests(fn)
+        else:
+            print "Test test_%s.py already exists." % newTest
+            print "run ./m regentests test_%s.py" % newTest
 
 def vmwareregr(names):
     """todo; not working yet.
@@ -845,6 +912,8 @@ def main():
         regensymtabtests()
     elif cmd == "run":
         run(sys.argv[2])
+    elif cmd == 'rununits':
+        rununits()
     elif cmd == "runopt":
         runopt(sys.argv[2])
     elif cmd == "run3":
@@ -866,7 +935,14 @@ def main():
     elif cmd == "docbi":
         docbi(options)
     elif cmd == "nrt":
-        nrt()
+        print "Warning: nrt is deprectated."
+        print "It is preferred that you enhance one of the unit tests in test/unit"
+        print "Or, create a new unit test file in test/unit using the template in test/unit_tmpl.py"
+        if len(sys.argv) < 3:
+            print "Need a name for the new test"
+            print usageString(os.path.basename(sys.argv[0]))
+            sys.exit(2)
+        nrt(sys.argv[2])
     elif cmd == "browser":
         buildBrowserTests()
     elif cmd == "debugbrowser":

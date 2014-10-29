@@ -386,6 +386,13 @@ function testsMain()
                 });
             })(i);
         }
+        for (i = 0; i < namedtfiles.length; i++ ) {
+            (function(i) {
+                promise = promise.then(function(p) {
+                    return testRun(namedtfiles[i],undefined,testInDebugMode);
+                });
+            })(i);
+        }
         promise = promise.then(function() {
             print(sprintf("run: %d/%d (+%d disabled)", runpass, runpass + runfail, rundisabled));
         }, function(e) {
