@@ -33,7 +33,8 @@ This section includes advice on how to build new features for the project & what
 * Create a feature branch using this command `git checkout -b feature_branch_name`
 * Once you have added a new feature make sure you develop some test cases and add them to the test bank. Even better would be to write the failing test first. 
   You can add a test by copying the unit-test template file `./test/unit_tmpl.py` to `./test/unit` and give it a descriptive name. Make sure the functions in 
-  your test class start with `test`. 
+  your test class start with `test`. [Here](https://docs.python.org/2/library/unittest.html) is some documentation on the unittest module (not everything is 
+  implemented in skulpt).
 * Before submitting a pull request please make sure you run ``./skulpt test`` and ``./skulpt dist`` this checks that there are no regressions.  
   We have an automatic system to do regression testing, but if your pull request fails it is certain that it will not be accepted. 
 * Now you can push this branch to your fork on github (you can do this earlier too) with this command `git push -u origin feature_branch_name`. And create a Pull Request on github.
@@ -41,8 +42,21 @@ This section includes advice on how to build new features for the project & what
   that looks like `git rebase upstream/master`. Make sure you do a __force__ push to your branch `git push --force` because you've rewritten history, and all 
   your commits will appear in two fold if you don't
 
-
 We try to get to pull requests in a very timely way so they don't languish. Nothing is more frustrating than a project that just leaves pull requests sitting there for ages. Usually we get to them in a one or two days.
+
+### In short: TL;DR
+
+* fork: (on github)
+* branch: `git checkout -b feature_branch_name`
+* add unit-test
+* commit: `git commit -m 'failing test'` (you can do this more often)
+* write code 
+* test: `./skulpt.py test` and `./skulpt.py dist`
+* commit: `git commit -m 'implement fix'` (you can do this more often)
+* push: `git push -u origin feature_branch_name`
+* pull-request: (on github) 
+
+
 
 
 ## Coding Style and Conventions
