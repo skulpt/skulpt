@@ -776,14 +776,14 @@ Compiler.prototype.caugassign = function (s) {
 };
 
 /**
- * optimize some constant exprs. returns 0 if always 0, 1 if always 1 or -1 otherwise.
+ * optimize some constant exprs. returns 0 if always false, 1 if always true or -1 otherwise.
  */
 Compiler.prototype.exprConstant = function (e) {
     switch (e.constructor) {
         case Num:
-            return Sk.misceval.isTrue(e.n);
+            return Sk.misceval.isTrue(e.n) ? 1 : 0;
         case Str:
-            return Sk.misceval.isTrue(e.s);
+            return Sk.misceval.isTrue(e.s) ? 1 : 0;
         case Name:
         // todo; do __debug__ test here if opt
         default:
@@ -971,7 +971,7 @@ Compiler.prototype.cif = function (s) {
     goog.asserts.assert(s instanceof If_);
     constant = this.exprConstant(s.test);
     if (constant === 0) {
-        if (s.orelse) {
+        if (s.orelse && s.orelse.length > 0) {
             this.vseqstmt(s.orelse);
         }
     }
@@ -980,20 +980,27 @@ Compiler.prototype.cif = function (s) {
     }
     else {
         end = this.newBlock("end of if");
-        next = this.newBlock("next branch of if");
+        if (s.orelse && s.orelse.length > 0) {
+            next = this.newBlock("next branch of if");
+        }
 
         test = this.vexpr(s.test);
-        this._jumpfalse(test, next);
-        this.vseqstmt(s.body);
-        this._jump(end);
 
-        this.setBlock(next);
-        if (s.orelse) {
+        if (s.orelse && s.orelse.length > 0) {
+            this._jumpfalse(test, next);
+            this.vseqstmt(s.body);
+            this._jump(end);
+
+            this.setBlock(next);
             this.vseqstmt(s.orelse);
         }
+        else {
+            this._jumpfalse(test, end);
+            this.vseqstmt(s.body);
+        }
         this._jump(end);
+        this.setBlock(end);
     }
-    this.setBlock(end);
 
 };
 
