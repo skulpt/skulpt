@@ -57,7 +57,7 @@ name: x
     Sym_nested: False
     Sym_haschildren: True
     Func_params: []
-    Func_locals: ['b', 'time', 'y']
+    Func_locals: ['b', 'y']
     Func_globals: ['c', 'time']
     Func_frees: []
     -- Identifiers --

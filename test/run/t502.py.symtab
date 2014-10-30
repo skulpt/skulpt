@@ -69,6 +69,30 @@ name: A
           ]
       ]
   ]
+name: None
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: True
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: True
+  is_declared_global: False
+  is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
 name: a
   is_referenced: True
   is_imported: False

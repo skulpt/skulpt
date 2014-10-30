@@ -33,7 +33,7 @@ name: f
     Sym_nested: False
     Sym_haschildren: False
     Func_params: []
-    Func_locals: ['ctr']
+    Func_locals: []
     Func_globals: ['ctr']
     Func_frees: []
     -- Identifiers --

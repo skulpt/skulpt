@@ -7,7 +7,7 @@ dist/*
 node_modules/
 *.pyc
 .DS_Store
-
+test/namedtests.js
 /.d8_history
 /.idea
 /.vagrant

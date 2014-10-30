@@ -290,16 +290,16 @@ Compiler.prototype._jump = function (block) {
     out("$blk=", block, ";/* jump */continue;");
 };
 
-Compiler.prototype.ctupleorlist = function (e, data, tuporlist) {
-    var items;
+Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
-    goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list");
+    var items;
+    goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
     if (e.ctx === Store) {
         for (i = 0; i < e.elts.length; ++i) {
             this.vexpr(e.elts[i], "Sk.abstr.objectGetItem(" + data + "," + i + ")");
         }
     }
-    else if (e.ctx === Load) {
+    else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to. 
         items = [];
         for (i = 0; i < e.elts.length; ++i) {
             items.push(this._gr("elem", this.vexpr(e.elts[i])));
@@ -322,20 +322,40 @@ Compiler.prototype.cdict = function (e) {
     return this._gr("loaddict", "new Sk.builtins['dict']([", items, "])");
 };
 
-Compiler.prototype.clistcompgen = function (tmpname, generators, genIndex, elt) {
-    var velt;
-    var ifres;
-    var i;
-    var n;
-    var target;
-    var nexti;
-    var start = this.newBlock("list gen start");
-    var skip = this.newBlock("list gen skip");
-    var anchor = this.newBlock("list gen anchor");
+Compiler.prototype.clistcomp = function(e) {
+    goog.asserts.assert(e instanceof ListComp);
+    var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
+    return this.ccompgen("list", tmp, e.generators, 0, e.elt, null);
+};
+
+Compiler.prototype.cdictcomp = function(e) {
+    goog.asserts.assert(e instanceof DictComp);
+    var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
+    return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key);
+};
+
+Compiler.prototype.csetcomp = function(e) {
+    goog.asserts.assert(e instanceof SetComp);
+    var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
+    return this.ccompgen("set", tmp, e.generators, 0, e.elt, null);
+};
+
+Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key) {
+    var start = this.newBlock(type + " comp start");
+    var skip = this.newBlock(type + " comp skip");
+    var anchor = this.newBlock(type + " comp anchor");
 
     var l = generators[genIndex];
     var toiter = this.vexpr(l.iter);
     var iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
+    var lvalue;
+    var lkey;
+    var ifres;
+    var i;
+    var target;
+    var nexti;
+    var n;
+    
     this._jump(start);
     this.setBlock(start);
 
@@ -351,12 +371,21 @@ Compiler.prototype.clistcompgen = function (tmpname, generators, genIndex, elt) 
     }
 
     if (++genIndex < generators.length) {
-        this.clistcompgen(tmpname, generators, genIndex, elt);
+        this.ccompgen(type, tmpname, generators, genIndex, value, key);
     }
 
     if (genIndex >= generators.length) {
-        velt = this.vexpr(elt);
-        out(tmpname, ".v.push(", velt, ");"); // todo;
+        lvalue = this.vexpr(value);
+        if (type === "dict") {
+            lkey = this.vexpr(key);
+            out(tmpname, ".mp$ass_subscript(", lkey, ",", lvalue, ");");
+        } 
+        else if (type === "list") {
+            out(tmpname, ".v.push(", lvalue, ");"); // todo;
+        } 
+        else if (type === "set") {
+            out(tmpname, ".v.mp$ass_subscript(", lvalue, ", true);");
+        }
         this._jump(skip);
         this.setBlock(skip);
     }
@@ -368,20 +397,13 @@ Compiler.prototype.clistcompgen = function (tmpname, generators, genIndex, elt) 
     return tmpname;
 };
 
-Compiler.prototype.clistcomp = function (e) {
-    var tmp;
-    goog.asserts.assert(e instanceof ListComp);
-    tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
-    return this.clistcompgen(tmp, e.generators, 0, e.elt);
-};
-
-Compiler.prototype.cyield = function (e) {
-    var nextBlock;
-    var val;
+Compiler.prototype.cyield = function(e)
+{
     if (this.u.ste.blockType !== FunctionBlock) {
         throw new SyntaxError("'yield' outside function");
     }
-    val = "null";
+    var val = "null",
+        nextBlock;
     if (e.value) {
         val = this.vexpr(e.value);
     }
@@ -606,6 +628,10 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
             return this.cdict(e);
         case ListComp:
             return this.clistcomp(e);
+        case DictComp:
+            return this.cdictcomp(e);
+        case SetComp:
+            return this.csetcomp(e);
         case GeneratorExp:
             return this.cgenexp(e);
         case Yield:
@@ -681,9 +707,11 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Name:
             return this.nameop(e.id, e.ctx, data);
         case List:
-            return this.ctupleorlist(e, data, "list");
+            return this.ctuplelistorset(e, data, 'list');
         case Tuple:
-            return this.ctupleorlist(e, data, "tuple");
+            return this.ctuplelistorset(e, data, 'tuple');
+        case Set:
+            return this.ctuplelistorset(e, data, 'set');
         default:
             goog.asserts.fail("unhandled case in vexpr");
     }
@@ -1818,6 +1846,9 @@ Compiler.prototype.vstmt = function (s) {
             break;
         case Continue_:
             this.ccontinue(s);
+            break;
+        case Debugger_:
+            out("debugger;");
             break;
         default:
             goog.asserts.fail("unhandled case in vstmt");
