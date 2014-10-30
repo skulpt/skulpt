@@ -10,6 +10,8 @@
 
 var SYM = Sk.ParseTables.sym;
 var TOK = Sk.Tokenizer.Tokens;
+var COMP_GENEXP = 0;
+var COMP_SETCOMP = 1;
 
 /** @constructor */
 function Compiling (encoding, filename) {
@@ -154,13 +156,23 @@ function setContext (c, e, ctx, n) {
         case ListComp:
             exprName = "list comprehension";
             break;
+        case SetComp:
+            exprName = "set comprehension";
+            break;
+        case DictComp:
+            exprName = "dict comprehension";
+            break;
         case Dict:
+        case Set:
         case Num:
         case Str:
             exprName = "literal";
             break;
         case Compare:
             exprName = "comparison";
+            break;
+        case Repr:
+            exprName = "repr";
             break;
         case IfExp:
             exprName = "conditional expression";
@@ -182,7 +194,6 @@ function setContext (c, e, ctx, n) {
 var operatorMap = {};
 (function () {
     operatorMap[TOK.T_VBAR] = BitOr;
-    operatorMap[TOK.T_VBAR] = BitOr;
     operatorMap[TOK.T_CIRCUMFLEX] = BitXor;
     operatorMap[TOK.T_AMPER] = BitAnd;
     operatorMap[TOK.T_LEFTSHIFT] = LShift;
@@ -194,6 +205,7 @@ var operatorMap = {};
     operatorMap[TOK.T_DOUBLESLASH] = FloorDiv;
     operatorMap[TOK.T_PERCENT] = Mod;
 }());
+
 function getOperator (n) {
     goog.asserts.assert(operatorMap[n.type] !== undefined);
     return operatorMap[n.type];
@@ -244,13 +256,12 @@ function astForCompOp (c, n) {
 function seqForTestlist (c, n) {
     /* testlist: test (',' test)* [','] */
     var i;
-    var seq;
+    var seq = [];
     goog.asserts.assert(n.type === SYM.testlist ||
         n.type === SYM.listmaker ||
-        n.type === SYM.testlist_gexp ||
+        n.type === SYM.testlist_comp ||
         n.type === SYM.testlist_safe ||
         n.type === SYM.testlist1);
-    seq = [];
     for (i = 0; i < NCH(n); i += 2) {
         goog.asserts.assert(CHILD(n, i).type === SYM.test || CHILD(n, i).type === SYM.old_test);
         seq[i / 2] = astForExpr(c, CHILD(n, i));
@@ -334,7 +345,8 @@ function astForTryStmt (c, n) {
     var handlers;
     var nc = NCH(n);
     var nexcept = (nc - 3) / 3;
-    var body, orelse = [], finally_ = null;
+    var body, orelse = [],
+        finally_ = null;
 
     REQ(n, SYM.try_stmt);
     body = astForSuite(c, CHILD(n, 2));
@@ -453,8 +465,11 @@ function astForDecorated (c, n) {
     return thing;
 }
 
+//note: with statements need to be updated to 2.7
+//see: ast.c lines: 3127 -> 3185
+
 function astForWithVar (c, n) {
-    REQ(n, SYM.with_var);
+    REQ(n, SYM.with_item);
     return astForExpr(c, CHILD(n, 1));
 }
 
@@ -465,7 +480,7 @@ function astForWithStmt (c, n) {
     var suiteIndex = 3; // skip with, test, :
     goog.asserts.assert(n.type === SYM.with_stmt);
     contextExpr = astForExpr(c, CHILD(n, 1));
-    if (CHILD(n, 2).type === SYM.with_var) {
+    if (CHILD(n, 2).type === SYM.with_item) {
         optionalVars = astForWithVar(c, CHILD(n, 2));
         setContext(c, optionalVars, Store, n);
         suiteIndex = 4;
@@ -587,9 +602,8 @@ function astForDelStmt (c, n) {
 function astForGlobalStmt (c, n) {
     /* global_stmt: 'global' NAME (',' NAME)* */
     var i;
-    var s;
+    var s = [];
     REQ(n, SYM.global_stmt);
-    s = [];
     for (i = 1; i < NCH(n); i += 2) {
         s[(i - 1) / 2] = strobj(CHILD(n, i).value);
     }
@@ -744,12 +758,12 @@ function astForImportStmt (c, n) {
     throw new Sk.builtin.SyntaxError("unknown import statement", c.c_filename, n.lineno);
 }
 
-function astForTestlistGexp (c, n) {
-    /* testlist_gexp: test ( gen_for | (',' test)* [','] ) */
-    /* argument: test [ gen_for ] */
-    goog.asserts.assert(n.type === SYM.testlist_gexp || n.type === SYM.argument);
-    if (NCH(n) > 1 && CHILD(n, 1).type === SYM.gen_for) {
-        return astForGenexp(c, n);
+function astForTestlistComp(c, n) {
+    /* testlist_comp: test ( comp_for | (',' test)* [','] ) */
+    /* argument: test [comp_for] */
+    goog.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
+    if (NCH(n) > 1 && CHILD(n, 1).type === SYM.comp_for) {
+        return astForGenExpr(c, n);
     }
     return astForTestlist(c, n);
 }
@@ -929,10 +943,10 @@ function astForForStmt (c, n) {
 
 function astForCall (c, n, func) {
     /*
-     arglist: (argument ',')* (argument [',']| '*' test [',' '**' test]
-     | '**' test)
-     argument: [test '='] test [gen_for]        # Really [keyword '='] test
-     */
+      arglist: (argument ',')* (argument [',']| '*' test [',' '**' test]
+               | '**' test)
+      argument: test [comp_for] | test '=' test       # Really [keyword '='] test
+    */
     var tmp;
     var k;
     var key;
@@ -946,17 +960,18 @@ function astForCall (c, n, func) {
     var ngens;
     var nkeywords;
     var nargs;
+
     REQ(n, SYM.arglist);
     nargs = 0;
     nkeywords = 0;
     ngens = 0;
-    for (i = 0; i < NCH(n); ++i) {
+    for (i = 0; i < NCH(n); i++) {
         ch = CHILD(n, i);
         if (ch.type === SYM.argument) {
             if (NCH(ch) === 1) {
                 nargs++;
             }
-            else if (CHILD(ch, 1).type === SYM.gen_for) {
+            else if (CHILD(ch, 1).type === SYM.comp_for) {
                 ngens++;
             }
             else {
@@ -976,7 +991,7 @@ function astForCall (c, n, func) {
     nkeywords = 0;
     vararg = null;
     kwarg = null;
-    for (i = 0; i < NCH(n); ++i) {
+    for (i = 0; i < NCH(n); i++) {
         ch = CHILD(n, i);
         if (ch.type === SYM.argument) {
             if (NCH(ch) === 1) {
@@ -988,8 +1003,8 @@ function astForCall (c, n, func) {
                 }
                 args[nargs++] = astForExpr(c, CHILD(ch, 0));
             }
-            else if (CHILD(ch, 1).type === SYM.gen_for) {
-                args[nargs++] = astForGenexp(c, ch);
+            else if (CHILD(ch, 1).type === SYM.comp_for) {
+                args[nargs++] = astForGenExpr(c, ch);
             }
             else {
                 e = astForExpr(c, CHILD(ch, 0));
@@ -1295,9 +1310,10 @@ function astForLambdef (c, n) {
     return new Lambda(args, expression, n.lineno, n.col_offset);
 }
 
-function astForGenexp (c, n) {
-    /* testlist_gexp: test ( gen_for | (',' test)* [','] )
-     argument: [test '='] test [gen_for]       # Really [keyword '='] test */
+function astForComprehension(c, n) {
+    /* testlist_comp: test ( comp_for | (',' test)* [','] )
+       argument: test [comp_for] | test '=' test       # Really [keyword '='] test */
+    
     var j;
     var ifs;
     var nifs;
@@ -1310,33 +1326,29 @@ function astForGenexp (c, n) {
     var genexps;
     var nfors;
     var elt;
-    goog.asserts.assert(n.type === SYM.testlist_gexp || n.type === SYM.argument);
-    goog.asserts.assert(NCH(n) > 1);
+    var comps;
+    var comp;
 
-    function countGenFors (c, n) {
+    function countCompFors(c, n) {
         var nfors = 0;
-        var ch = CHILD(n, 1);
-        count_gen_for: while (true) {
+        count_comp_for: while (true) {
             nfors++;
-            REQ(ch, SYM.gen_for);
-            if (NCH(ch) === 5) {
-                ch = CHILD(ch, 4);
-            }
-            else {
+            REQ(n, SYM.comp_for);
+            if (NCH(n) === 5) {
+                n = CHILD(n, 4);
+            } else {
                 return nfors;
             }
-            count_gen_iter: while (true) {
-                REQ(ch, SYM.gen_iter);
-                ch = CHILD(ch, 0);
-                if (ch.type === SYM.gen_for) {
-                    continue count_gen_for;
-                }
-                else if (ch.type === SYM.gen_if) {
-                    if (NCH(ch) === 3) {
-                        ch = CHILD(ch, 2);
-                        continue count_gen_iter;
-                    }
-                    else {
+            count_comp_iter: while (true) {
+                REQ(n, SYM.comp_iter);
+                n = CHILD(n, 0);
+                if (n.type === SYM.comp_for) {
+                    continue count_comp_for;
+                } else if (n.type === SYM.comp_if) {
+                    if (NCH(n) === 3) {
+                        n = CHILD(n, 2);
+                        continue count_comp_iter;
+                    } else {
                         return nfors;
                     }
                 }
@@ -1344,18 +1356,18 @@ function astForGenexp (c, n) {
             }
             break;
         }
-        goog.asserts.fail("logic error in countGenFors");
+        goog.asserts.fail("logic error in countCompFors");
     }
 
-    function countGenIfs (c, n) {
+    function countCompIfs(c, n) {
         var nifs = 0;
         while (true) {
-            REQ(n, SYM.gen_iter);
-            if (CHILD(n, 0).type === SYM.gen_for) {
+            REQ(n, SYM.comp_iter);
+            if (CHILD(n, 0).type === SYM.comp_for) {
                 return nifs;
             }
             n = CHILD(n, 0);
-            REQ(n, SYM.gen_if);
+            REQ(n, SYM.comp_if);
             nifs++;
             if (NCH(n) == 2) {
                 return nifs;
@@ -1364,43 +1376,73 @@ function astForGenexp (c, n) {
         }
     }
 
-    elt = astForExpr(c, CHILD(n, 0));
-    nfors = countGenFors(c, n);
-    genexps = [];
-    ch = CHILD(n, 1);
+    nfors = countCompFors(c, n);
+    comps = [];
     for (i = 0; i < nfors; ++i) {
-        REQ(ch, SYM.gen_for);
-        forch = CHILD(ch, 1);
+        REQ(n, SYM.comp_for);
+        forch = CHILD(n, 1);
         t = astForExprlist(c, forch, Store);
-        expression = astForExpr(c, CHILD(ch, 3));
+        expression = astForExpr(c, CHILD(n, 3));
         if (NCH(forch) === 1) {
-            ge = new comprehension(t[0], expression, []);
+            comp = new comprehension(t[0], expression, []);
+        } else {
+            comp = new comprehension(new Tuple(t, Store, n.lineno, n.col_offset), expression, []);
         }
-        else {
-            ge = new comprehension(new Tuple(t, Store, ch.lineno, ch.col_offset), expression, []);
-        }
-        if (NCH(ch) === 5) {
-            ch = CHILD(ch, 4);
-            nifs = countGenIfs(c, ch);
+        if (NCH(n) === 5) {
+            n = CHILD(n, 4);
+            nifs = countCompIfs(c, n);
             ifs = [];
             for (j = 0; j < nifs; ++j) {
-                REQ(ch, SYM.gen_iter);
-                ch = CHILD(ch, 0);
-                REQ(ch, SYM.gen_if);
-                expression = astForExpr(c, CHILD(ch, 1));
+                REQ(n, SYM.comp_iter);
+                n = CHILD(n, 0);
+                REQ(n, SYM.comp_if);
+                expression = astForExpr(c, CHILD(n, 1));
                 ifs[j] = expression;
-                if (NCH(ch) === 3) {
-                    ch = CHILD(ch, 2);
+                if (NCH(n) === 3) {
+                    n = CHILD(n, 2);
                 }
             }
-            if (ch.type === SYM.gen_iter) {
-                ch = CHILD(ch, 0);
+            if (n.type === SYM.comp_iter) {
+                n = CHILD(n, 0);
             }
-            ge.ifs = ifs;
+            comp.ifs = ifs;
         }
-        genexps[i] = ge;
+        comps[i] = comp;
     }
-    return new GeneratorExp(elt, genexps, n.lineno, n.col_offset);
+    return comps;
+}
+
+function astForIterComp(c, n, type) {
+    var elt, comps;
+    goog.asserts.assert(NCH(n) > 1);
+    elt = astForExpr(c, CHILD(n, 0));
+    comps = astForComprehension(c, CHILD(n, 1));
+    if (type === COMP_GENEXP) {
+        return new GeneratorExp(elt, comps, n.lineno, n.col_offset);
+    } else if (type === COMP_SETCOMP) {
+        return new SetComp(elt, comps, n.lineno, n.col_offset);
+    }
+}
+
+function astForDictComp(c, n) {
+    var key, value;
+    var comps = [];
+    goog.asserts.assert(NCH(n) > 3);
+    REQ(CHILD(n, 1), TOK.T_COLON);
+    key = astForExpr(c, CHILD(n, 0));
+    value = astForExpr(c, CHILD(n, 2));
+    comps = astForComprehension(c, CHILD(n, 3));
+    return new DictComp(key, value, comps, n.lineno, n.col_offset);
+}
+
+function astForGenExpr(c, n) {
+    goog.asserts.assert(n.type === SYM.testlist_comp || n.type === SYM.argument);
+    return astForIterComp(c, n, COMP_GENEXP);
+}
+
+function astForSetComp(c, n) {
+    goog.asserts.assert(n.type === SYM.dictorsetmaker);
+    return astForIterComp(c, n, COMP_SETCOMP);
 }
 
 function astForWhileStmt (c, n) {
@@ -1475,15 +1517,17 @@ function astForBinop (c, n) {
 
 }
 
-function astForTestlist (c, n) {
-    /* testlist_gexp: test (',' test)* [','] */
+
+function astForTestlist(c, n) {
+    /* this doesn't show up in Grammar.txt never did: testlist_gexp: test (',' test)* [','] */
+    /* testlist_comp: test (',' test)* [','] */
     /* testlist: test (',' test)* [','] */
     /* testlist_safe: test (',' test)+ [','] */
     /* testlist1: test (',' test)* */
     goog.asserts.assert(NCH(n) > 0);
-    if (n.type === SYM.testlist_gexp) {
+    if (n.type === SYM.testlist_comp) {
         if (NCH(n) > 1) {
-            goog.asserts.assert(CHILD(n, 1).type !== SYM.gen_for);
+            goog.asserts.assert(CHILD(n, 1).type !== SYM.comp_for);
         }
     }
     else {
@@ -1846,15 +1890,19 @@ function astForSlice (c, n) {
     return new Slice(lower, upper, step);
 }
 
-function astForAtom (c, n) {
-    /* atom: '(' [yield_expr|testlist_gexp] ')' | '[' [listmaker] ']'
-     | '{' [dictmaker] '}' | '`' testlist '`' | NAME | NUMBER | STRING+
-     */
+function astForAtom(c, n) {
+    /* atom: ('(' [yield_expr|testlist_comp] ')' |
+       '[' [listmaker] ']' |
+       '{' [dictorsetmaker] '}' |
+       '`' testlist1 '`' |
+       NAME | NUMBER | STRING+)
+    */
     var i;
     var values;
     var keys;
     var size;
     var ch = CHILD(n, 0);
+    var elts;
     switch (ch.type) {
         case TOK.T_NAME:
             // All names start in Load context, but may be changed later
@@ -1871,10 +1919,10 @@ function astForAtom (c, n) {
             if (ch.type === SYM.yield_expr) {
                 return astForExpr(c, ch);
             }
-            if (NCH(ch) > 1 && CHILD(ch, 1).type === SYM.gen_for) {
-                return astForGenexp(c, ch);
-            }
-            return astForTestlistGexp(c, ch);
+            //            if (NCH(ch) > 1 && CHILD(ch, 1).type === SYM.comp_for) {
+            //                return astForComprehension(c, ch);
+            //            }
+            return astForTestlistComp(c, ch);
         case TOK.T_LSQB: // list or listcomp
             ch = CHILD(n, 1);
             if (ch.type === TOK.T_RSQB) {
@@ -1883,25 +1931,53 @@ function astForAtom (c, n) {
             REQ(ch, SYM.listmaker);
             if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA) {
                 return new List(seqForTestlist(c, ch), Load, n.lineno, n.col_offset);
-            }
-            else {
-                return astForListcomp(c, ch);
-            }
+            } 
+            return astForListcomp(c, ch);
+            
         case TOK.T_LBRACE:
-            /* dictmaker: test ':' test (',' test ':' test)* [','] */
-            ch = CHILD(n, 1);
-            size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
+            /* dictorsetmaker: 
+             *     (test ':' test (comp_for : (',' test ':' test)* [','])) |
+             *     (test (comp_for | (',' test)* [',']))
+             */
             keys = [];
             values = [];
-            for (i = 0; i < NCH(ch); i += 4) {
-                keys[i / 4] = astForExpr(c, CHILD(ch, i));
-                values[i / 4] = astForExpr(c, CHILD(ch, i + 2));
+            ch = CHILD(n, 1);
+            if (n.type === TOK.T_RBRACE) {
+                //it's an empty dict
+                return new Dict([], null, n.lineno, n.col_offset);
+            } 
+            else if (NCH(ch) === 1 || (NCH(ch) !== 0 && CHILD(ch, 1).type === TOK.T_COMMA)) {
+                //it's a simple set
+                elts = [];
+                size = Math.floor((NCH(ch) + 1) / 2);
+                for (i = 0; i < NCH(ch); i += 2) {
+                    var expression = astForExpr(c, CHILD(ch, i));
+                    elts[i / 2] = expression;
+                }
+                return new Set(elts, n.lineno, n.col_offset);
+            } 
+            else if (NCH(ch) !== 0 && CHILD(ch, 1).type == SYM.comp_for) {
+                //it's a set comprehension
+                return astForSetComp(c, ch);
+            } 
+            else if (NCH(ch) > 3 && CHILD(ch, 3).type === SYM.comp_for) {
+                //it's a dict compr. I think.
+                return astForDictComp(c, ch);
+            } 
+            else {
+                size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
+                for (i = 0; i < NCH(ch); i += 4) {
+                    keys[i / 4] = astForExpr(c, CHILD(ch, i));
+                    values[i / 4] = astForExpr(c, CHILD(ch, i + 2));
+                }
+                return new Dict(keys, values, n.lineno, n.col_offset);
             }
-            return new Dict(keys, values, n.lineno, n.col_offset);
         case TOK.T_BACKQUOTE:
-            throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
+            //throw new Sk.builtin.SyntaxError("backquote not supported, use repr()", c.c_filename, n.lineno);
+            return new Repr(astForTestlist(c, CHILD(n, 1)), n.lineno, n.col_offset);
         default:
             goog.asserts.fail("unhandled atom", ch.type);
+
     }
 }
 
@@ -2106,6 +2182,8 @@ function astForStmt (c, n) {
                 return astForExecStmt(c, n);
             case SYM.assert_stmt:
                 return astForAssertStmt(c, n);
+            case SYM.debugger_stmt:
+                return new Debugger_(n.lineno, n.col_offset);
             default:
                 goog.asserts.fail("unhandled small_stmt");
         }
@@ -2145,7 +2223,6 @@ Sk.astFromParse = function (n, filename) {
     var ch;
     var i;
     var c = new Compiling("utf-8", filename);
-
     var stmts = [];
     var k = 0;
     switch (n.type) {

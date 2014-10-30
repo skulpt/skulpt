@@ -572,6 +572,7 @@ SymbolTable.prototype.visitStmt = function (s) {
             break;
         case Pass:
         case Break_:
+        case Debugger_:
         case Continue_:
             // nothing
             break;
@@ -624,6 +625,10 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.SEQExpr(e.keys);
             this.SEQExpr(e.values);
             break;
+        case DictComp:
+        case SetComp:    
+            this.visitComprehension(e.generators, 0);
+            break;
         case ListComp:
             this.newTmpname(e.lineno);
             this.visitExpr(e.elt);
@@ -675,6 +680,7 @@ SymbolTable.prototype.visitExpr = function (e) {
             break;
         case List:
         case Tuple:
+        case Set:
             this.SEQExpr(e.elts);
             break;
         default:
