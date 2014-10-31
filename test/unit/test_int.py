@@ -1,7 +1,7 @@
 import sys
 
 import unittest
-from test import test_support
+#from test import test_support
 from test.test_support import run_unittest, have_unicode
 import math
 
