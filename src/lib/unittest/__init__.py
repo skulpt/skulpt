@@ -124,6 +124,28 @@ class TestCase:
                                                self.numPassed, self.numFailed)
 
 
+class TestSuite:
+    def __init__(self,testlist=[]):
+        """docstring for __init__"""
+        self.my_tests = testlist[:]
+        
+    def addTest(self,test):
+        self.my_tests.append(test)
+        
+    def addTests(self,tlist):
+        for t in tlist:
+            self.my_tests.append(test)
+    
+    def run(self,results,debug=False):
+        for t in self.my_tests:
+            t()
+    
+    def debug(self):
+        self.run([],debug=True)
+        
+    def __iter__():
+        return self.my_tests.__iter__()
+        
 
 def main():
     glob = globals()  # globals() still needs work
