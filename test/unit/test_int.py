@@ -1,7 +1,7 @@
 import sys
 
 import unittest
-#from test import test_support
+from test import test_support
 from test.test_support import run_unittest, have_unicode
 import math
 
@@ -302,39 +302,39 @@ class IntTestCases(IntLongCommonTests, unittest.TestCase):
             self.assertEqual((a+1).bit_length(), i+1)
             self.assertEqual((-a-1).bit_length(), i+1)
 
-    @unittest.skipUnless(float.__getformat__("double").startswith("IEEE"),
-                         "test requires IEEE 754 doubles")
-    def test_float_conversion(self):
-        # values exactly representable as floats
-        exact_values = [-2, -1, 0, 1, 2, 2**52, 2**53-1, 2**53, 2**53+2,
-                         2**53+4, 2**54-4, 2**54-2, 2**63, -2**63, 2**64,
-                         -2**64, 10**20, 10**21, 10**22]
-        for value in exact_values:
-            self.assertEqual(int(float(int(value))), value)
-
-        # test round-half-to-even
-        self.assertEqual(int(float(2**53+1)), 2**53)
-        self.assertEqual(int(float(2**53+2)), 2**53+2)
-        self.assertEqual(int(float(2**53+3)), 2**53+4)
-        self.assertEqual(int(float(2**53+5)), 2**53+4)
-        self.assertEqual(int(float(2**53+6)), 2**53+6)
-        self.assertEqual(int(float(2**53+7)), 2**53+8)
-
-        self.assertEqual(int(float(-2**53-1)), -2**53)
-        self.assertEqual(int(float(-2**53-2)), -2**53-2)
-        self.assertEqual(int(float(-2**53-3)), -2**53-4)
-        self.assertEqual(int(float(-2**53-5)), -2**53-4)
-        self.assertEqual(int(float(-2**53-6)), -2**53-6)
-        self.assertEqual(int(float(-2**53-7)), -2**53-8)
-
-        self.assertEqual(int(float(2**54-2)), 2**54-2)
-        self.assertEqual(int(float(2**54-1)), 2**54)
-        self.assertEqual(int(float(2**54+2)), 2**54)
-        self.assertEqual(int(float(2**54+3)), 2**54+4)
-        self.assertEqual(int(float(2**54+5)), 2**54+4)
-        self.assertEqual(int(float(2**54+6)), 2**54+8)
-        self.assertEqual(int(float(2**54+10)), 2**54+8)
-        self.assertEqual(int(float(2**54+11)), 2**54+12)
+    # @unittest.skipUnless(float.__getformat__("double").startswith("IEEE"),
+    #                      "test requires IEEE 754 doubles")
+    # def test_float_conversion(self):
+    #     # values exactly representable as floats
+    #     exact_values = [-2, -1, 0, 1, 2, 2**52, 2**53-1, 2**53, 2**53+2,
+    #                      2**53+4, 2**54-4, 2**54-2, 2**63, -2**63, 2**64,
+    #                      -2**64, 10**20, 10**21, 10**22]
+    #     for value in exact_values:
+    #         self.assertEqual(int(float(int(value))), value)
+    #
+    #     # test round-half-to-even
+    #     self.assertEqual(int(float(2**53+1)), 2**53)
+    #     self.assertEqual(int(float(2**53+2)), 2**53+2)
+    #     self.assertEqual(int(float(2**53+3)), 2**53+4)
+    #     self.assertEqual(int(float(2**53+5)), 2**53+4)
+    #     self.assertEqual(int(float(2**53+6)), 2**53+6)
+    #     self.assertEqual(int(float(2**53+7)), 2**53+8)
+    #
+    #     self.assertEqual(int(float(-2**53-1)), -2**53)
+    #     self.assertEqual(int(float(-2**53-2)), -2**53-2)
+    #     self.assertEqual(int(float(-2**53-3)), -2**53-4)
+    #     self.assertEqual(int(float(-2**53-5)), -2**53-4)
+    #     self.assertEqual(int(float(-2**53-6)), -2**53-6)
+    #     self.assertEqual(int(float(-2**53-7)), -2**53-8)
+    #
+    #     self.assertEqual(int(float(2**54-2)), 2**54-2)
+    #     self.assertEqual(int(float(2**54-1)), 2**54)
+    #     self.assertEqual(int(float(2**54+2)), 2**54)
+    #     self.assertEqual(int(float(2**54+3)), 2**54+4)
+    #     self.assertEqual(int(float(2**54+5)), 2**54+4)
+    #     self.assertEqual(int(float(2**54+6)), 2**54+8)
+    #     self.assertEqual(int(float(2**54+10)), 2**54+8)
+    #     self.assertEqual(int(float(2**54+11)), 2**54+12)
 
     def test_valid_non_numeric_input_types_for_x(self):
         # Test possible valid non-numeric types for x, including subclasses
