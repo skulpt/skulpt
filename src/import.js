@@ -414,13 +414,13 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     // toplevel namespace
     ret = Sk.sysmodules.mp$subscript(name);
     // But if there is a fromlist it might also be a module in a package 
-    // so we should try to import them
-    for(i=0; i < fromlist.length; i++) {
+    // so we should try to import it
+    if (fromlist.length == 1) {
         try {
-            tret = Sk.importModuleInternal_(name+"."+fromlist[i]);
-            Sk.abstr.sattr(ret,fromlist[i],tret);
-        } catch (x) {
-          }
+            tret = Sk.importModuleInternal_(name+"."+fromlist[0]);
+            //            Sk.abstr.sattr(ret,fromlist[i],tret);
+            return  tret;
+        } catch (x) {}
     }
     goog.asserts.assert(ret);
     return ret;
