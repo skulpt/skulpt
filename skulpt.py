@@ -703,13 +703,13 @@ Sk.importMain("%s", false);
         print outs
         if errs:
             print errs
-        g = re.match(r'.*\n.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
+        g = re.match(r'.*\n.*([\n].*)*.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
         if g:
-            passTot += int(g.group(1))
-            failTot += int(g.group(2))
+            passTot += int(g.group(2))
+            failTot += int(g.group(3))
 
     print "Summary"
-    print "Passed: %5d Failed %5d" % (passTot, failTot)
+    print "Passed: %5d Failed: %5d" % (passTot, failTot)
 
     if failTot != 0 and not options.ignoreunits:
         return -1
