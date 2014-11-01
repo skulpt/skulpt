@@ -467,7 +467,7 @@ def dist(options):
     if ret != 0:
         print "Tests failed on compressed version."
         sys.exit(1)
-    ret = rununits(opt=True)
+    ret = rununits(opt=True,options=options)
     if ret != 0:
         print "Tests failed on compressed unit tests"
         sys.exit(1)
@@ -670,7 +670,7 @@ def shell(fn):
     run(fn, "--shell")
 
 
-def rununits(opt=False, p3=False):
+def rununits(opt=False, p3=False,options=None):
     testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
     jstestengine = jsengine.replace('--debugger', '')
     passTot = 0
@@ -711,7 +711,7 @@ Sk.importMain("%s", false);
     print "Summary"
     print "Passed: %5d Failed %5d" % (passTot, failTot)
 
-    if failTot != 0:
+    if failTot != 0 and not options.ignoreunits:
         return -1
     else:
         return 0
@@ -877,6 +877,7 @@ def main():
         dest="verbose",
         default=True,
         help="Make output more verbose [default]")
+    parser.add_option("-i", "--ignoreunits", action="store_true", dest="ignoreunits", default=False)
     (options, args) = parser.parse_args()
 
     # This is rather aggressive. Do we really want it?
@@ -913,7 +914,7 @@ def main():
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == 'rununits':
-        rununits()
+        rununits(options=options)
     elif cmd == "runopt":
         runopt(sys.argv[2])
     elif cmd == "run3":
