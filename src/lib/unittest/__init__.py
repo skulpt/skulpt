@@ -5,7 +5,6 @@ the unittest module from cpython.
 
 '''
 
-
 class TestCase:
     def __init__(self):
         self.numPassed = 0
@@ -33,6 +32,7 @@ class TestCase:
                 self.tearDown()
             except:
                 self.appendResult('Error',None,None,None)
+                print "Uncaught Exception in ", func
                 self.numFailed += 1
         self.showSummary()
 
@@ -116,6 +116,7 @@ class TestCase:
             self.numPassed += 1
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
+            print msg
             self.numFailed += 1
 
     def showSummary(self):
@@ -145,7 +146,37 @@ class TestSuite:
         
     def __iter__():
         return self.my_tests.__iter__()
-        
+
+def skip(reason):
+    """
+    Unconditionally skip a test.
+    """
+    def decorator(test_item):
+        if not isinstance(test_item, (type, types.ClassType)):
+            def skip_wrapper(*args, **kwargs):
+                raise SkipTest(reason)
+            test_item = skip_wrapper
+
+        test_item.__unittest_skip__ = True
+        test_item.__unittest_skip_why__ = reason
+        return test_item
+    return decorator
+
+def skipIf(condition, reason):
+    """
+    Skip a test if the condition is true.
+    """
+    if condition:
+        return skip(reason)
+    return _id
+
+def skipUnless(condition, reason):
+    """
+    Skip a test unless the condition is true.
+    """
+    if not condition:
+        return skip(reason)
+    return _id
 
 def main():
     glob = globals()  # globals() still needs work
