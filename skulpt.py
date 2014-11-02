@@ -18,6 +18,7 @@ import shutil
 import re
 import pprint
 import json
+import shutil
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -155,7 +156,7 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony_promises"
+    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
@@ -193,7 +194,11 @@ def test(debug_mode=False):
     ret3 = 0
     if ret1 == 0:
         print "Running jshint"
-        ret2 = os.system("jshint src/*.js")
+        if sys.platform == "win32":
+            jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob("src/*.js")))
+        else:
+            jshintcmd = "jshint src/*.js"
+        ret2 = os.system(jshintcmd)
         print "Now running new unit tests"
         ret3 = rununits()
     return ret1 | ret2 | ret3
@@ -406,14 +411,14 @@ def dist(options):
     if options.verbose:
         print ". Removing distribution directory, '{0}/'.".format(DIST_DIR)
 
-    os.system("rm -rf {0}/".format(DIST_DIR))
+    shutil.rmtree(DIST_DIR, ignore_errors=True)
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
     if options.uncompressed:
         if options.verbose:
             print ". Writing combined version..."
         combined = ''
-        linemap = open("{0}/{1}".format(DIST_DIR, OUTFILE_MAP), "w")
+        linemap = open(os.path.join(DIST_DIR, OUTFILE_MAP), "w")
         curline = 1
         for file in getFileList(FILE_TYPE_DIST):
             curfiledata = open(file).read()
@@ -421,15 +426,16 @@ def dist(options):
             print >>linemap, "%d:%s" % (curline, file)
             curline += len(curfiledata.split("\n")) - 1
         linemap.close()
-        uncompfn = "{0}/{1}".format(DIST_DIR, OUTFILE_REG)
+        uncompfn = os.path.join(DIST_DIR, OUTFILE_REG)
         open(uncompfn, "w").write(combined)
         # Prevent accidental editing of the uncompressed distribution file.
-        os.system("chmod 444 {0}/{1}".format(DIST_DIR, OUTFILE_REG))
+        if sys.platform != "win32":
+            os.chmod(os.path.join(DIST_DIR, OUTFILE_REG), 0o444)
 
 
     # Make the compressed distribution.
-    compfn = "{0}/{1}".format(DIST_DIR, OUTFILE_MIN)
-    builtinfn = "{0}/{1}".format(DIST_DIR, OUTFILE_LIB)
+    compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
+    builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
 
     # Run tests on uncompressed.
     if options.verbose:
@@ -472,18 +478,24 @@ def dist(options):
         print "Tests failed on compressed unit tests"
         sys.exit(1)
 
-    ret = os.system("cp {0} {1}/tmp.js".format(compfn, DIST_DIR))
-    if ret != 0:
+    try:
+        shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
+    except:
         print "Couldn't copy for gzip test."
         sys.exit(1)
 
-    ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
-    if ret != 0:
-        print "Couldn't gzip to get final size."
-        sys.exit(1)
+    has_gzip = os.access("gzip", os.X_OK)
 
-    size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
-    os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
+    if has_gzip:
+        ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
+        if ret != 0:
+            print "Couldn't gzip to get final size."
+            has_gzip = False
+
+        size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
+        os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
+    else:
+        print "No gzip executable, can't get final size"
 
     with open(builtinfn, "w") as f:
         f.write(getBuiltinsAsJson(options))
@@ -491,9 +503,10 @@ def dist(options):
             print ". Wrote {0}".format(builtinfn)
 
     # Update documentation folder copies of the distribution.
-    ret  = os.system("cp {0} doc/static/{1}".format(compfn,    OUTFILE_MIN))
-    ret |= os.system("cp {0} doc/static/{1}".format(builtinfn, OUTFILE_LIB))
-    if ret != 0:
+    try:
+        shutil.copy(compfn,    os.path.join("doc", "static", OUTFILE_MIN))
+        shutil.copy(builtinfn, os.path.join("doc", "static", OUTFILE_LIB))
+    except:
         print "Couldn't copy to docs dir."
         sys.exit(1)
     if options.verbose:
@@ -502,7 +515,8 @@ def dist(options):
     # All good!
     if options.verbose:
         print ". Wrote {0}.".format(compfn)
-        print ". gzip of compressed: %d bytes" % size
+        if has_gzip:
+            print ". gzip of compressed: %d bytes" % size
 
 def regenparser():
     """regenerate the parser/ast source code"""
