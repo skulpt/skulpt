@@ -55,6 +55,13 @@ Sk.configure = function (options) {
     Sk.breakpoints = options["breakpoints"] || function() { return true; };
     goog.asserts.assert(typeof Sk.breakpoints === "function");
 
+    if ("execLimit" in options) {
+        Sk.execLimit = options["execLimit"];
+    }
+
+    if ("yieldLimit" in options) {
+        Sk.yieldLimit = options["yieldLimit"];
+    }
 
     if (options["syspath"]) {
         Sk.syspath = options["syspath"];
@@ -76,6 +83,16 @@ Sk.timeoutMsg = function () {
     return "Program exceeded run time limit.";
 };
 goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
+
+/*
+ *  Hard execution timeout, throws an error. Set to null to disable
+ */
+Sk.execLimit = Number.POSITIVE_INFINITY;
+
+/*
+ *  Soft execution timeout, returns a Suspension. Set to null to disable
+ */
+Sk.yieldLimit = Number.POSITIVE_INFINITY;
 
 /*
  * Replacable output redirection (called from print, etc).

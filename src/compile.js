@@ -266,30 +266,38 @@ Compiler.prototype._gr = function (hint, rest) {
  * Function to test if an interrupt should occur if the program has been running for too long.
  * This function is executed at every test/branch operation.
  */
-Compiler.prototype._interruptTest = function () { // Added by RNL
-    out("if (Sk.execStart === undefined) {Sk.execStart=new Date()}");
-    out("if (Sk.execLimit != null && new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}");
+Compiler.prototype.outputInterruptTest = function () { // Added by RNL
+    var output = "";
+    if (Sk.execLimit !== null) {
+        output += "if (new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}";
+    }
+    if (Sk.yieldLimit !== null && this.u.canSuspend) {
+        output += "if (new Date() - Sk.lastYield > Sk.yieldLimit) {";
+        output += "var $susp = $saveSuspension({data: {type: 'Sk.yield'}, resume: function() {}}, '"+this.filename+"',Sk.currLineNo,Sk.currColNo);";
+        output += "$susp.$blk = $blk;";
+        output += "$susp.optional = true;";
+        output += "return $susp;";
+        output += "}";
+        this.u.doesSuspend = true;
+    }
+    return output;
 };
 
 Compiler.prototype._jumpfalse = function (test, block) {
     var cond = this._gr("jfalse", "(", test, "===false||!Sk.misceval.isTrue(", test, "))");
-    this._interruptTest();	// Added by RNL
     out("if(", cond, "){/*test failed */$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jumpundef = function (test, block) {
-    this._interruptTest();	// Added by RNL
     out("if(", test, "===undefined){$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jumptrue = function (test, block) {
     var cond = this._gr("jtrue", "(", test, "===true||Sk.misceval.isTrue(", test, "))");
-    this._interruptTest();	// Added by RNL
     out("if(", cond, "){/*test passed */$blk=", block, ";continue;}");
 };
 
 Compiler.prototype._jump = function (block) {
-    this._interruptTest();	// Added by RNL
     if (this.u.blocks[this.u.curblock]._next === null) {
         out("$blk=", block, ";");
         this.u.blocks[this.u.curblock]._next = block;
@@ -877,6 +885,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var output = "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".wakingSuspension; delete "+unit.scopename+".wakingSuspension;" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err;" +
+                    "Sk.lastYield=new Date();" +
                     (hasCell?"$cell=susp.$cell;":"");
 
     for (i = 0; i < localsToSave.length; i++) {
@@ -1453,6 +1462,12 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
     this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined;";
+    if (Sk.execLimit !== null) {
+        this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
+    }
+    if (Sk.yieldLimit !== null && this.u.canSuspend) {
+        this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
+    }
 
     //
     // If there is a suspension, resume from it. Otherwise, initialise
@@ -1529,7 +1544,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // this.u.suffixCode = "}break;}});";
 
     // New switch code to catch exceptions
-    this.u.switchCode = "while(true){try{ switch($blk){";
+    this.u.switchCode = "while(true){try{"
+    this.u.switchCode += this.outputInterruptTest();
+    this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
     //
@@ -1761,7 +1778,16 @@ Compiler.prototype.cclass = function (s) {
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
     this.u.switchCode += "return(function " + s.name.v + "(){";
-    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined;while(true){switch($blk){";
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined;"
+    if (Sk.execLimit !== null) {
+        this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
+    }
+    if (Sk.yieldLimit !== null && this.u.canSuspend) {
+        this.u.switchCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
+    }
+    this.u.switchCode += "while(true){";
+    this.u.switchCode += this.outputInterruptTest();
+    this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
     this.u.private_ = s.name;
@@ -2150,6 +2176,12 @@ Compiler.prototype.cmod = function (mod) {
     var entryBlock = this.newBlock("module entry");
     this.u.prefixCode = "var " + modf + "=(function($modname){";
     this.u.varDeclsCode = "var $gbl = {}, $blk=" + entryBlock + ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname,$ret=undefined;";
+    if (Sk.execLimit !== null) {
+        this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
+    }
+    if (Sk.yieldLimit !== null && this.u.canSuspend) {
+        this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
+    }
 
     this.u.varDeclsCode += "try {";
 
@@ -2168,7 +2200,9 @@ Compiler.prototype.cmod = function (mod) {
     //this.u.suffixCode = "}}});";
 
     // New Code:
-    this.u.switchCode = "while(true){try{ switch($blk){";
+    this.u.switchCode = "while(true){try{";
+    this.u.switchCode += this.outputInterruptTest();
+    this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }" +
         " }catch(err){ if (err instanceof Sk.builtin.SystemExit && !Sk.throwSystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
 

@@ -282,7 +282,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     module.$js = co.code; // todo; only in DEBUG?
     finalcode = co.code;
     if (Sk.dateSet == null || !Sk.dateSet) {
-        finalcode = "Sk.execStart = new Date();\n" + co.code;
+        finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
         Sk.dateSet = true;
     }
 
