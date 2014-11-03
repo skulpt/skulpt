@@ -181,7 +181,7 @@ if os.environ.get("CI",False):
 
 #jsengine = "rhino"
 
-def test(debug_mode=False):
+def test(debug_mode=False,options=None):
     """runs the unit tests."""
     if debug_mode:
         debugon = "--debug-mode"
@@ -195,7 +195,7 @@ def test(debug_mode=False):
         print "Running jshint"
         ret2 = os.system("jshint src/*.js")
         print "Now running new unit tests"
-        ret3 = rununits()
+        ret3 = rununits(options)
     return ret1 | ret2 | ret3
 
 def debugbrowser():
@@ -435,7 +435,7 @@ def dist(options):
     if options.verbose:
         print ". Running tests on uncompressed..."
 
-    ret = test()
+    ret = test(options=options)
     if ret != 0:
         print "Tests failed on uncompressed version."
         sys.exit(1);
@@ -703,15 +703,15 @@ Sk.importMain("%s", false);
         print outs
         if errs:
             print errs
-        g = re.match(r'.*\n.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
+        g = re.match(r'.*\n.*([\n].*)*.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
         if g:
-            passTot += int(g.group(1))
-            failTot += int(g.group(2))
+            passTot += int(g.group(2))
+            failTot += int(g.group(3))
 
     print "Summary"
-    print "Passed: %5d Failed %5d" % (passTot, failTot)
+    print "Passed: %5d Failed: %5d" % (passTot, failTot)
 
-    if failTot != 0 and not options.ignoreunits:
+    if failTot != 0 and (not options or not options.ignoreunits):
         return -1
     else:
         return 0
@@ -893,7 +893,7 @@ def main():
         cmd = sys.argv[1]
 
     if cmd == "test":
-        test()
+        test(options=options)
     elif cmd == "testdebug":
         test(True)
     elif cmd == "dist":
