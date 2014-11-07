@@ -1624,47 +1624,47 @@ var $builtinmodule = function (name) {
     mod.forward = new Sk.builtin.func(function (dist) {
         checkArgs(1, arguments.length, "forward()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.forward, turtle, dist);
+        return Sk.misceval.callsimOrSuspend(turtle.forward, turtle, dist);
     });
     mod.fd = mod.forward;
     mod.backward = new Sk.builtin.func(function (dist) {
         checkArgs(1, arguments.length, "backward()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.backward, turtle, dist);
+        return Sk.misceval.callsimOrSuspend(turtle.backward, turtle, dist);
     });
     mod.bk = mod.backward;
     mod.right = new Sk.builtin.func(function (angle) {
         checkArgs(1, arguments.length, "right()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.right, turtle, angle);
+        return Sk.misceval.callsimOrSuspend(turtle.right, turtle, angle);
     });
     mod.rt = mod.right;
     mod.left = new Sk.builtin.func(function (angle) {
         checkArgs(1, arguments.length, "left()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.left, turtle, angle);
+        return Sk.misceval.callsimOrSuspend(turtle.left, turtle, angle);
     });
     mod.lt = mod.left;
     mod.goto_$rw$ = new Sk.builtin.func(function (nx, ny) {
         checkArgs(2, arguments.length, "goto()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.goto_$rw$, turtle, nx, ny);
+        return Sk.misceval.callsimOrSuspend(turtle.goto_$rw$, turtle, nx, ny);
     });
     mod.setposition = new Sk.builtin.func(function (nx, ny) {
         checkArgs(2, arguments.length, "setposition()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.setposition, turtle, nx, ny);
+        return Sk.misceval.callsimOrSuspend(turtle.setposition, turtle, nx, ny);
     });
     mod.setpos = mod.setposition;
     mod.setx = new Sk.builtin.func(function (nx) {
         checkArgs(1, arguments.length, "setx()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.setx, turtle, nx);
+        return Sk.misceval.callsimOrSuspend(turtle.setx, turtle, nx);
     });
     mod.sety = new Sk.builtin.func(function (ny) {
         checkArgs(1, arguments.length, "sety()");
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.sety, turtle, ny);
+        return Sk.misceval.callsimOrSuspend(turtle.sety, turtle, ny);
     });
     mod.setheading = new Sk.builtin.func(function (newhead) {
         checkArgs(1, arguments.length, "setheading()");
@@ -1682,7 +1682,7 @@ var $builtinmodule = function (name) {
     });
     mod.circle = new Sk.builtin.func(function (radius, extent) {
         var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.circle, turtle, radius, extent);
+        return Sk.misceval.callsimOrSuspend(turtle.circle, turtle, radius, extent);
     });
     mod.delay = new Sk.builtin.func(function (d) {
         var turtle = ensureAnonymousTurtle();
