@@ -160,210 +160,7 @@ if (!TurtleGraphics) {
     Vector.prototype.len = function () {
         return Math.sqrt(this[0] * this[0] + this[1] * this[1] + this[2] * this[2]);
     };
-
-    allDone = function () {
-        var done = true, tix, theT;
-        for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
-            theT = TurtleGraphics.turtleList[tix];
-            done = done && theT.aCount >= theT.drawingEvents.length;
-        }
-        return done;
-    };
-    //
-    //  This is the function that provides the animation
-    //
-    render = function () {
-        var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext("2d"),
-            canvasLib = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID],
-            incr = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID].getCounter(),
-            t,
-            tix,
-            i,
-            currentPos,
-            currentHead,
-            filling,
-            oper,
-            ts,
-            tmpColor,
-            size,
-            speed;
-
-        context.moveTo(0, 0);
-        context.lineCap = "round";
-        context.lineJoin = "round";
-        context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly); //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
-        TurtleGraphics.renderClock += incr;
-        for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
-            currentPos = new Vector(0, 0, 0);
-            currentHead = new Vector(1, 0, 0);
-            context.fillStyle = "black";
-            context.strokeStyle = "black";
-            t = TurtleGraphics.turtleList[tix];
-            currentHead = t.heading;
-            context.lastCanvas = t.turtleCanvas;
-            if (t.aCount >= t.drawingEvents.length) {
-                t.aCount = t.drawingEvents.length - 1;
-            }
-
-            context.lineWidth = t.get_pen_width();
-
-            filling = false;
-            if (isNaN(t.turtleCanvas.delay)) {
-                t.turtleCanvas.delay = 0;
-            }
-            //console.log(tix + " : " + t.clearPoint + " to " + t.aCount)
-            for (i = t.clearPoint; (i <= t.aCount || t.turtleCanvas.delay === 0) && i < t.drawingEvents.length; i = i + 1) {
-                if (i > t.aCount) {
-                    //If se jump past aCount, jump it ahead
-                    t.aCount = i;
-                }
-                oper = t.drawingEvents[i];
-                ts = oper[oper.length - 1];
-                //console.log(i + "/" + ts + oper [0] + "{" + oper [1] + "}" + t.turtleCanvas.delay)
-                if (ts <= TurtleGraphics.renderClock || t.turtleCanvas.delay === 0) {
-                    if (ts > TurtleGraphics.renderClock) {
-                        //If we go past the render clock, jump it ahead
-                        TurtleGraphics.renderClock = ts;
-                    }
-                    //console.log("<==")
-                    switch (oper[0]) {
-                        case "LT": //line To
-                            if (!filling) {
-                                context.beginPath();
-                                context.moveTo(oper[1], oper[2]);
-                            }
-                            context.lineTo(oper[3], oper[4]);
-                            context.strokeStyle = oper[5];
-                            context.stroke();
-                            currentPos = new Vector(oper[3], oper[4], 0);
-                            if (!filling) {
-                                context.closePath();
-                            }
-                            break;
-                        case "MT": //move to
-                            context.moveTo(oper[3], oper[4]);
-                            currentPos = new Vector(oper[3], oper[4], 0);
-                            break;
-                        case "BF": //begin fill
-                            context.beginPath();
-                            context.moveTo(oper[1], oper[2]);
-                            filling = true;
-                            break;
-                        case "EF": //end fill
-                            context.fillStyle = oper[3];
-                            context.stroke();
-                            context.fill();
-                            context.closePath();
-                            filling = false;
-                            break;
-                        case "FC": // fill color
-                            context.fillStyle = oper[1];
-                            break;
-                        case "TC": // turtle color
-                            context.strokeStyle = oper[1];
-                            break;
-                        case "PW": // Pen width
-                            context.lineWidth = oper[1];
-                            break;
-                        case "DT": // Dot
-                            tmpColor = context.fillStyle;
-                            context.fillStyle = oper[2];
-                            size = oper[1];
-                            context.fillRect(oper[3] - size / 2, oper[4] - size / 2, size, size);
-                            context.fillStyle = tmpColor;
-                            break;
-                        case "CI": // Circle
-                            if (!filling) {
-                                context.beginPath();
-                            }
-                            context.arc(oper[1], oper[2], oper[3], oper[4], oper[5], oper[6]);
-                            currentPos = new Vector(oper[1] + Math.cos(oper[5]) * oper[3], oper[2] + Math.sin(oper[5]) * oper[3], 0);
-                            context.stroke();
-                            if (!filling) {
-                                context.closePath();
-                            }
-                            break;
-                        case "WT":
-                            // write
-                            if (context.font) {
-                                context.font = oper[2];
-                            }
-                            context.scale(1, -1);
-                            context.fillText(oper[1], oper[3], -oper[4]);
-                            context.scale(1, -1);
-                            break;
-                        case "ST":
-                            // stamp
-                            t.drawturtle(oper[3], new Vector(oper[1], oper[2], 0));
-                            break;
-                        case "HT": // hide turtle
-                            t.visible = false;
-                            break;
-                        case "SH": // show turtle
-                            t.visible = true;
-                            break;
-                        case "TT": // turn
-                            currentHead = oper[1];
-                            break;
-                        case "CL": // clear
-                            clear_canvas(t.canvasID);
-                            t.clearPoint = i; // Different from reset that calls clear because it leaves the turtles where they are
-                            break;
-                        case "DL":  // delay
-                            t.turtleCanvas.delay = oper[1];
-                            break;
-                        case "SC": // speed change
-                            speed = oper[1];
-
-                            if (speed < 0) {
-                                t.turtleCanvas.delay = 0;
-                            } else {
-                                if (speed > 10) {
-                                    speed = 10;
-                                }
-                                t.turtleCanvas.delay = (10 - speed % 11 + 1) * t.turtleCanvas.timeFactor; //10
-                            }
-
-                            //t.turtleCanvas.intervalId = clearInterval(t.turtleCanvas.intervalId);
-                            //t.turtleCanvas.intervalId = setInterval(render, t.turtleCanvas.delay)
-                            if (oper[2]) {
-                                t.turtleCanvas.setSegmentLength(oper[2]);
-                            }
-                            break;
-                        case "CS": // change shape
-                            t.currentShape = oper[1];
-                            break;
-                        case "NO":
-                            break;
-                    } //else {
-                    //console.log('unknown op: ' + oper[0]);
-                    //} // end of oper[0] test
-                } // end of if ts < render clock
-            }
-            // end of for
-            // console.log(TurtleGraphics.renderClock + " / " + t.aCount)
-            // console.log("------------------------------")
-            t.aCount += incr;
-            if (t.visible) {
-                // draw the turtle
-                t.drawturtle(currentHead.toAngle(), currentPos); // just use currentHead
-            }
-        }
-        //if (t.aCount >= t.drawingEvents.length) {
-        if (TurtleGraphics.renderClock > TurtleGraphics.eventCount) {
-            // && allDone() ){
-            //  t.turtleCanvas.doneAnimating(t);
-            //  console.log("done animating")
-            if (context.lastCanvas) {
-                context.lastCanvas.doneAnimating(t);
-            }
-        } else {
-            //t.turtleCanvas.intervalId = setTimeout(render, t.turtleCanvas.delay)
-            if (context.lastCanvas) {
-                context.lastCanvas.intervalId = setTimeout(render, context.lastCanvas.delay);
-            }
-        }
-    };
+    
     //
     //  Drawing Functions
     //
@@ -407,13 +204,100 @@ if (!TurtleGraphics) {
         return res;
     };
 
+    var doCommand = function(turtle, oper, cb) {
+      return function() {
+        var context = turtle.context,
+            filling = turtle.filling;
+
+        switch(oper[0]) {
+          case "LT": //line To
+            if (!filling) {
+                context.beginPath();
+                context.moveTo(oper[1], oper[2]);
+            }
+            context.lineTo(oper[3], oper[4]);
+            context.strokeStyle = oper[5];
+            context.stroke();
+            if (!filling) {
+                context.closePath();
+            }
+            turtle.position = new TurtleGraphics.Vector(oper[3], oper[4], 0);
+            break;
+          case "MT": //move to
+            context.moveTo(oper[3], oper[4]);
+            turtle.position = new TurtleGraphics.Vector(oper[3], oper[4], 0);
+            break;
+          case "CI": //circle
+            turtle.arc(oper[1], oper[2]);
+            break;
+        }
+
+        if (turtle.visible) {
+          // draw the turtle
+          turtle.drawturtle();
+        }
+
+        if(cb) {
+          cb();
+        }
+      }
+    }
+
+    var animate = function(turtle, commands, newposition, newheading) {
+      var susp = new Sk.misceval.Suspension();
+      
+      susp.resume = function() {
+        if (newposition) {
+            turtle.position = newposition;
+        }
+        if (newheading) {
+            turtle.heading = newheading;
+        }
+        return Sk.builtin.none.none$;
+      };
+
+      susp.data = {
+        type: "Sk.promise",
+        promise: new Promise(function(resolve) {
+          var delay   = turtle.turtleCanvas.getDelay();
+          var counter = turtle.getRenderCounter();
+          var count   = turtle.turtleCanvas.incrementRenderCount();
+
+          var nextStep = function() {
+            var step = commands.shift();
+            if (step) {
+              if (count >= counter) {
+                setTimeout(doCommand(turtle, step, nextStep), delay);
+                turtle.turtleCanvas.resetRenderCount();
+              }
+              else {
+                doCommand(turtle, step, nextStep)()
+              }
+            }
+            else {
+              resolve(newposition);
+            }
+          }
+
+          if (typeof setTimeout === undefined) {
+            // We can't sleep (eg test environment), so resume immediately
+            resolve(newposition);
+          } else {
+            nextStep();
+          }
+        })
+      };
+
+      return susp;
+    }
+
     clear_canvas = function (canId) {
         var ctx = document.getElementById(canId).getContext("2d");
-        //if (arguments.length >= 2) {
-        //    fillStyle = arguments[1];
-        //    fillRect(0, 0, canvas.width, canvas.height);
-        //}
+        var canvasClone = document.getElementById(canId + '-clone');
         ctx.clearRect(-ctx.canvas.width / 2, -ctx.canvas.height / 2, ctx.canvas.width, ctx.canvas.height);
+        if (canvasClone) {
+            canvasClone.getContext("2d").clearRect(-ctx.canvas.width / 2, -ctx.canvas.height / 2, ctx.canvas.width, ctx.canvas.height);
+        }
     };
     //
     // Define TurtleCanvas
@@ -447,6 +331,7 @@ if (!TurtleGraphics) {
         this.segmentLength = 10;
         this.renderCounter = 1;
         this.clearPoint = 0;
+        this._render_counter = 0;
         TurtleGraphics.canvasLib[this.canvasID] = this;
     }
 
@@ -488,6 +373,7 @@ if (!TurtleGraphics) {
         }
     };
     TurtleCanvas.prototype.addToCanvas = function (t) {
+        if (this.onCanvas(t)) return;
         this.tlist.push(t);
     };
     TurtleCanvas.prototype.onCanvas = function (t) {
@@ -496,38 +382,11 @@ if (!TurtleGraphics) {
     TurtleCanvas.prototype.isAnimating = function () {
         return this.tlist.length > 0;
     };
-    TurtleCanvas.prototype.startAnimating = function (t) {
-        if (!this.isAnimating()) {
-            this.intervalId = setTimeout(render, this.delay); //setInterval(render, this.delay);
-        }
-        if (!this.onCanvas(t)) {
-            //Added by RNL in case startAnimating is called after it's already been added
-            this.addToCanvas(t);
-        }
-        try {
-            Sk.isTurtleProgram = true;
-        } catch (ReferenceEror) {
-        }
+    TurtleCanvas.prototype.resetRenderCount = function () {
+        this._render_counter = 0;
     };
-    TurtleCanvas.prototype.doneAnimating = function () {
-        var i;
-        this.tlist.splice(0, this.tlist.length);
-        clearTimeout(this.intervalId);
-        if (TurtleGraphics.doneDelegates) {
-            for (i = 0; i < TurtleGraphics.doneDelegates.length; i = i + 1) {
-                TurtleGraphics.doneDelegates[i]();
-            }
-        }
-    };
-    TurtleCanvas.prototype.cancelAnimation = function () {
-        var t;
-        if (this.intervalId) {
-            clearTimeout(this.intervalId);
-        }
-        for (t = 0; t < this.tlist.length; t = t + 1) {
-            this.tlist[t].aCount = this.tlist[t].drawingEvents.length - 1;
-        }
-        render();
+    TurtleCanvas.prototype.incrementRenderCount = function() {
+        return ++this._render_counter;
     };
     TurtleCanvas.prototype.setSpeedDelay = function (s) {
         // RNL
@@ -618,7 +477,6 @@ if (!TurtleGraphics) {
             for (i = 0; i < this.turtleList; i = i + 1) {
                 this.turtleList[i].animate = false;
             }
-            this.cancelAnimation();
         }
         if (d !== undefined) {
             this.setDelay(d);
@@ -795,6 +653,7 @@ if (!TurtleGraphics) {
             clear_canvas(this.canvasID);
         }
         this.turtleCanvas = TurtleGraphics.canvasLib[this.canvasID];
+        this.turtleCanvas.addToCanvas(this);
         this.home = new Vector([0, 0, 0]);
         this.visible = true;
         this.shapeStore = {};
@@ -829,52 +688,42 @@ if (!TurtleGraphics) {
         }
         this.initialize();
     };
-    Turtle.prototype.addDrawingEvent = function (eventList) {
-        TurtleGraphics.eventCount += 1;
-        eventList.push(TurtleGraphics.eventCount);
-        this.drawingEvents.push(eventList);
-    };
     Turtle.prototype.draw_line = function (newposition) {
         var ctx = this.context,
-            r,
-            s;
+            r, s;
+
+        if (!this.filling) {
+            ctx.beginPath();
+            ctx.moveTo(this.position[0], this.position[1]);
+        }
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = this.get_pen_width();
+        ctx.strokeStyle = this.penStyle;
+
         if (!this.animate) {
-            if (!this.filling) {
-                ctx.beginPath();
-                ctx.moveTo(this.position[0], this.position[1]);
-            }
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.lineWidth = this.get_pen_width();
-            ctx.strokeStyle = this.penStyle;
             ctx.lineTo(newposition[0], newposition[1]);
-            //ctx.moveTo(newposition[0], newposition[1]);
             this.position = newposition;
             ctx.stroke();
             if (!this.filling) {
                 ctx.closePath();
             }
+            return newposition;
         } else {
             r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
-            for (s = 0; s < r.length; s = s + 1) {
-                r[s].push(this.penStyle);
-                this.addDrawingEvent(r[s]);
+            for(s = 0; s < r.length; s++) {
+              r[s].push(this.penStyle);
             }
-            if (!this.turtleCanvas.isAnimating()) {
-                this.turtleCanvas.startAnimating(this);
-            } else {
-                if (!this.turtleCanvas.onCanvas(this)) {
-                    this.turtleCanvas.addToCanvas(this);
-                }
-            }
+
+            return animate(this, r, newposition);
         }
     };
     Turtle.prototype.forward = function (d) {
         var newposition = this.position.linear(1, d, this.heading);
-        this.goto(newposition);
+        return this.goto(newposition);
     };
     Turtle.prototype.backward = function (d) {
-        this.forward(-d);
+        return this.forward(-d);
     };
     //This is an internal function that sets the position without doing any drawing
     Turtle.prototype.teleport_to = function (nx, ny) {
@@ -887,30 +736,21 @@ if (!TurtleGraphics) {
         this.context.moveTo(newposition[0], newposition[1]);
         this.position = newposition;
     };
-    Turtle.prototype.goto = function (nx, ny) {
+    Turtle.prototype.goto = function (nx, ny, noPen) {
         var newposition, r, s;
         if (nx instanceof Vector) {
             newposition = nx;
         } else {
             newposition = new Vector([nx, ny, 0]);
         }
-        if (this.pen) {
-            this.draw_line(newposition);
+        if (this.pen && !noPen) {
+            return this.draw_line(newposition);
         } else {
             if (!this.animate) {
                 this.context.moveTo(newposition[0], newposition[1]);
             } else {
                 r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
-                for (s = 0; s < r.length; s = s + 1) {
-                    this.addDrawingEvent(r[s]);
-                }
-                if (!this.turtleCanvas.isAnimating()) {
-                    this.turtleCanvas.startAnimating(this);
-                } else {
-                    if (!this.turtleCanvas.onCanvas(this)) {
-                        this.turtleCanvas.addToCanvas(this);
-                    }
-                }
+                return animate(this, r, newposition);
             }
         }
         this.position = newposition;
@@ -921,13 +761,7 @@ if (!TurtleGraphics) {
             if (d < 0) {
                 d = -d;
             }
-            if (!this.animate) {
-                this.turtleCanvas.setDelay(d);
-            } else {
-                this.turtleCanvas.setDelay(d);
-                this.addDrawingEvent([ "DL", d ]);
-                this.addDrawingEvent(["NO"]);
-            }
+            this.turtleCanvas.setDelay(d);
         }
         return this.turtleCanvas.getDelay();
     };
@@ -937,11 +771,9 @@ if (!TurtleGraphics) {
             this.turtleCanvas.setSpeedDelay(s);
         } else if (s === 0) {
             this.animate = false;
-            this.turtleCanvas.cancelAnimation();
+            this.turtleCanvas.resetRenderCount();
         } else {
             this.turtleCanvas.setSpeedDelay(s);
-            this.addDrawingEvent([ "SC", s, t ]);
-            this.addDrawingEvent(["NO"]);
         }
         if (t) {
             this.turtleCanvas.setSegmentLength(t); // set the number of units to divide a segment into
@@ -953,7 +785,7 @@ if (!TurtleGraphics) {
         this.turtleCanvas.setCounter(t);
         if (t === 0) {
             this.animate = false;
-            this.turtleCanvas.cancelAnimation();
+            this.turtleCanvas.resetRenderCount();
         }
         if (d !== undefined) {
             this.turtleCanvas.setDelay(d);
@@ -966,9 +798,6 @@ if (!TurtleGraphics) {
         var alpha = phi * Degree2Rad,
             left = this.normal.cross(this.heading);
         this.heading = this.heading.rotateNormal(left, alpha);
-        if (this.animate) {
-            this.addDrawingEvent([ "TT", this.heading ]);
-        }
     };
     Turtle.prototype.right = Turtle.prototype.turn;
     Turtle.prototype.left = function (phi) {
@@ -1028,24 +857,14 @@ if (!TurtleGraphics) {
         }
         size = size * this.turtleCanvas.lineScale;
 
-        if (!this.animate) {
-            if (pcolor) {
-                ctx.fillStyle = pcolor;
-                ctx.strokeStyle = pcolor;
-            }
-            ctx.fillRect(this.position[0] - size / 2, this.position[1] - size / 2, size, size);
-            if (pcolor) {
-                ctx.fillStyle = curFillStyle;
-                ctx.strokeStyle = curPenStyle;
-            }
-        } else {
-            this.addDrawingEvent([
-                "DT",
-                size,
-                    pcolor || ctx.strokeStyle,
-                this.position[0],
-                this.position[1]
-            ]);
+        if (pcolor) {
+            ctx.fillStyle = pcolor;
+            ctx.strokeStyle = pcolor;
+        }
+        ctx.fillRect(this.position[0] - size / 2, this.position[1] - size / 2, size, size);
+        if (pcolor) {
+            ctx.fillStyle = curFillStyle;
+            ctx.strokeStyle = curPenStyle;
         }
     };
     Turtle.prototype.circle = function (radius, extent) {
@@ -1056,29 +875,24 @@ if (!TurtleGraphics) {
         if (this.animate) {
             arcLen = Math.abs(radius * Math.PI * 2 * extent / 360);
             segLen = this.turtleCanvas.getSegmentLength();
+            var steps = [];
             if (arcLen <= segLen) {
-                this.arc(radius, extent);
+                steps.push(['CI', radius, extent]);
             } else {
                 //Break the arc into segments for animation
                 extentPart = segLen / arcLen * extent;
                 extentLeft = extent;
                 while (Math.abs(extentLeft) > Math.abs(extentPart)) {
-                    this.arc(radius, extentPart);
+                    steps.push(['CI', radius, extentPart]);
                     extentLeft = extentLeft - extentPart;
                 }
                 if (Math.abs(extentLeft) > 0.01) {
-                    this.arc(radius, extentLeft);
+                    steps.push(['CI', radius, extentLeft]);
                 }
             }
-            if (!this.turtleCanvas.isAnimating()) {
-                this.turtleCanvas.startAnimating(this);
-            } else {
-                if (!this.turtleCanvas.onCanvas(this)) {
-                    this.turtleCanvas.addToCanvas(this);
-                }
-            }
+            return animate(this, steps);
         } else {
-            this.arc(radius, extent);
+            return this.arc(radius, extent);
         }
     };
     Turtle.prototype.arc = function (radius, extent) {
@@ -1098,7 +912,8 @@ if (!TurtleGraphics) {
             turtleArc,
             newTurtleHeading,
             nx,
-            ny;
+            ny,
+            newPosition;
 
         if (radius >= 0) {
             startAngleDeg = turtleHeading - 90;
@@ -1128,27 +943,16 @@ if (!TurtleGraphics) {
         //Convert to radians
         startAngle = startAngleDeg * Degree2Rad;
         endAngle = endAngleDeg * Degree2Rad;
-        //Do the drawing
-        if (!this.animate) {
-            if (!this.filling) {
-                this.context.beginPath();
-            }
-            this.context.arc(cx, cy, Math.abs(radius), startAngle, endAngle, radius * extent <= 0);
-            this.context.stroke();
-            if (!this.filling) {
-                this.context.closePath();
-            }
-        } else {
-            this.addDrawingEvent([
-                "CI",
-                cx,
-                cy,
-                Math.abs(radius),
-                startAngle,
-                endAngle,
-                    radius * extent <= 0
-            ]);
+
+        if (!this.filling) {
+            this.context.beginPath();
         }
+        this.context.arc(cx, cy, Math.abs(radius), startAngle, endAngle, radius * extent <= 0);
+        this.context.stroke();
+        if (!this.filling) {
+            this.context.closePath();
+        }
+
         //Move the turtle only if we have to
         if (extent && extent % 360 !== 0) {
             if (radius >= 0) {
@@ -1162,40 +966,20 @@ if (!TurtleGraphics) {
             }
             nx = cx + radius * Math.cos((newTurtleHeading - 90) * Degree2Rad);
             ny = cy + radius * Math.sin((newTurtleHeading - 90) * Degree2Rad);
-            //y coord is inverted in turtle
-            //Move it internally
+            
+            this.position = new Vector([nx, ny, 0]);
             this.set_heading(newTurtleHeading);
-            this.teleport_to(nx, ny);
-            //If we're animating the turtle, move it on the screen
-            if (this.animate) {
-                this.addDrawingEvent([
-                    "TT",
-                    this.heading
-                ]);
-            }
         }
     };
     Turtle.prototype.write = function (theText, /*move, align, */font) {
         var fontspec;
-        if (!this.animate) {
-            if (font) {
-                this.context.font = font.v;
-            }
-            this.context.scale(1, -1);
-            this.context.fillText(theText, this.position[0], -this.position[1]);
-            this.context.scale(1, -1);
-        } else {
-            if (font) {
-                fontspec = font.v;
-            }
-            this.addDrawingEvent([
-                "WT",
-                theText,
-                fontspec,
-                this.position[0],
-                this.position[1]
-            ]);
+    
+        if (font) {
+            this.context.font = font.v;
         }
+        this.context.scale(1, -1);
+        this.context.fillText(theText, this.position[0], -this.position[1]);
+        this.context.scale(1, -1);
     };
     Turtle.prototype.setworldcoordinates = function (llx, lly, urx, ury) {
         this.turtleCanvas.setworldcoordinates(llx, lly, urx, ury);
@@ -1215,14 +999,7 @@ if (!TurtleGraphics) {
         return this.pen;
     };
     Turtle.prototype.set_pen_width = function (w) {
-        if (this.animate) {
-            this.addDrawingEvent([
-                "PW",
-                    w * this.turtleCanvas.lineScale
-            ]);
-        } else {
-            this.penWidth = w;
-        }
+        this.penWidth = w;
     };
     Turtle.prototype.get_pen_width = function () {
         return this.penWidth * this.turtleCanvas.lineScale;
@@ -1257,12 +1034,6 @@ if (!TurtleGraphics) {
             this.penStyle = c;
         }
         this.context.strokeStyle = c;
-        if (this.animate) {
-            this.addDrawingEvent([
-                "TC",
-                c
-            ]);
-        }
     };
     Turtle.prototype.set_fill_color = function (c, g, b) {
         var rs, gs, bs, c0, c1, c2;
@@ -1294,52 +1065,25 @@ if (!TurtleGraphics) {
             this.fillStyle = c;
         }
         this.context.fillStyle = c;
-        if (this.animate) {
-            this.addDrawingEvent([
-                "FC",
-                c
-            ]);
-        }
     };
     Turtle.prototype.begin_fill = function () {
-        if (!this.animate) {
-            this.filling = true;
-            this.context.beginPath();
-            this.context.moveTo(this.position[0], this.position[1]);
-        } else {
-            this.addDrawingEvent([
-                "BF",
-                this.position[0],
-                this.position[1]
-            ]);
-        }
+        this.filling = true;
+        this.context.beginPath();
+        this.context.moveTo(this.position[0], this.position[1]);
     };
     Turtle.prototype.end_fill = function () {
-        if (!this.animate) {
-            this.context.stroke();
-            this.context.fill();
-            this.context.closePath();
-            this.filling = false;
-        } else {
-            this.addDrawingEvent([
-                "EF",
-                this.position[0],
-                this.position[1],
-                this.fillStyle
-            ]);
-        }
+        this.context.stroke();
+        this.context.fill();
+        this.context.closePath();
+        this.filling = false;
     };
     Turtle.prototype.showturtle = function () {
-        if (this.animate) {
-            this.addDrawingEvent(["SH"]);
-        }
         this.visible = true;
+        this.drawturtle();
     };
     Turtle.prototype.hideturtle = function () {
-        if (this.animate) {
-            this.addDrawingEvent(["HT"]);
-        }
         this.visible = false;
+        this.drawturtle();
     };
     Turtle.prototype.isvisible = function () {
         return this.visible;
@@ -1349,65 +1093,84 @@ if (!TurtleGraphics) {
     //
     Turtle.prototype.shape = function (s) {
         if (this.shapeStore[s]) {
-            this.addDrawingEvent(["CS", s]); // add a Change Shape event
+          this.currentShape = s;
         }
     };
-    Turtle.prototype.drawturtle = function (pHeading, pos) {
+    Turtle.prototype.drawturtle = function (pHeading, pos, permanent) {
         var rtPoints = [],
             plist = this.shapeStore[this.currentShape],
+            canvasLib,
+            context,
             head,
             p,
             i;
 
-        if (pHeading !== undefined) {
-            head = pHeading - 90;
-        } else {
-            head = this.heading.toAngle() - 90;
+        if (!permanent && !this.animationContext) {
+          var orig = this.turtleCanvas.canvas;
+          var copy = orig.cloneNode();
+          copy.id = orig.id + '-clone';
+          copy.style.position = "absolute";
+          copy.style.left = orig.offsetLeft + 'px';
+          copy.style.top  = orig.offsetTop + 'px';
+          copy.width = orig.width;
+          copy.height = orig.height;
+          orig.parentNode.insertBefore(copy, orig.nextSibling);
+          this.animationContext = copy.getContext('2d');
+          this.animationContext.translate(orig.width / 2, orig.height / 2);
+          this.animationContext.scale(1, -1);
+          this.turtleCanvas.animationCanvas = copy;
         }
 
-        if (!pos) {
-            pos = this.position;
+        context = permanent ? this.context : this.animationContext;
+
+        if (!permanent) {
+          canvasLib = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
+          context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly);
         }
 
-        for (p = 0; p < plist.length; p = p + 1) {
-            rtPoints.push(plist[p]
-                .scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale)
-                .rotate(head)
-                .add(pos));
-        }
-        this.context.beginPath();
-        this.context.moveTo(rtPoints[0][0], rtPoints[0][1]);
-        for (i = 1; i < rtPoints.length; i = i + 1) {
-            this.context.lineTo(rtPoints[i][0], rtPoints[i][1]);
-        }
-        this.context.closePath();
-        this.context.stroke();
-        if (this.fillStyle) {
-            this.context.fill();
+        if (this.visible || permanent) {
+          if (pHeading !== undefined) {
+              head = pHeading - 90;
+          } else {
+              head = this.heading.toAngle() - 90;
+          }
+
+          if (!pos) {
+              pos = this.position;
+          }
+
+          for (p = 0; p < plist.length; p = p + 1) {
+              rtPoints.push(plist[p]
+                  .scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale)
+                  .rotate(head)
+                  .add(pos));
+          }
+
+          if (!permanent) {
+            context.fillStyle = this.context.fillStyle;
+            context.strokeStyle = this.context.strokeStyle;
+          }
+
+          context.beginPath();
+          context.moveTo(rtPoints[0][0], rtPoints[0][1]);
+          for (i = 1; i < rtPoints.length; i = i + 1) {
+              context.lineTo(rtPoints[i][0], rtPoints[i][1]);
+          }
+          context.closePath();
+          context.stroke();
+          if (this.fillStyle) {
+              context.fill();
+          }
         }
     };
     Turtle.prototype.stamp = function () {
-        // either call drawTurtle or just add a DT with current position and heading to the drawingEvents list.
-        if (this.animate) {
-            this.addDrawingEvent([
-                "ST",
-                this.position[0],
-                this.position[1],
-                this.heading.toAngle()
-            ]);
-        } else {
-            this.drawturtle();
-        }
+        this.drawturtle(undefined, undefined, true);
     };
     Turtle.prototype.clear = function () {
-        if (this.animate) {
-            this.addDrawingEvent(["CL"]);
-        } else {
-            clear_canvas(this.canvasID);
-            this.penStyle = "black";
-            this.penWidth = 2;
-            this.fillStyle = "black";
-        }
+        clear_canvas(this.canvasID);
+        this.penStyle = "black";
+        this.penWidth = 2;
+        this.fillStyle = "black";
     };
     TurtleGraphics.turtleList = [];
     TurtleGraphics.Turtle = Turtle;
@@ -1472,52 +1235,50 @@ var $builtinmodule = function (name) {
             $loc.forward = new Sk.builtin.func(function (self, dist) {
                 dist = Sk.builtin.asnum$(dist);
                 checkArgs(2, arguments.length, "forward()");
-                self.theTurtle.forward(dist);
+                return self.theTurtle.forward(dist);
             });
             $loc.fd = $loc.forward;
             $loc.backward = new Sk.builtin.func(function (self, dist) {
                 dist = Sk.builtin.asnum$(dist);
                 checkArgs(2, arguments.length, "backward()");
-                self.theTurtle.forward(-dist);
+                return self.theTurtle.forward(-dist);
             });
             $loc.back = $loc.backward;
             $loc.bk = $loc.backward;
             $loc.right = new Sk.builtin.func(function (self, angle) {
                 angle = Sk.builtin.asnum$(angle);
                 checkArgs(2, arguments.length, "right()");
-                self.theTurtle.turn(angle);
+                return self.theTurtle.turn(angle);
             });
             $loc.rt = $loc.right;
             $loc.left = new Sk.builtin.func(function (self, angle) {
                 angle = Sk.builtin.asnum$(angle);
                 checkArgs(2, arguments.length, "left()");
-                self.theTurtle.turn(-angle);
+                return self.theTurtle.turn(-angle);
             });
             $loc.lt = $loc.left;
             $loc.goto_$rw$ = new Sk.builtin.func(function (self, nx, ny) {
                 nx = Sk.builtin.asnum$(nx);
                 ny = Sk.builtin.asnum$(ny);
                 checkArgs(3, arguments.length, "goto()");
-                self.theTurtle.goto(nx, ny);
+                return self.theTurtle.goto(nx, ny);
             });
             $loc.setposition = new Sk.builtin.func(function (self, nx, ny) {
                 nx = Sk.builtin.asnum$(nx);
                 ny = Sk.builtin.asnum$(ny);
                 checkArgs(3, arguments.length, "setposition()");
-                self.theTurtle.up();
-                self.theTurtle.goto(nx, ny);
-                self.theTurtle.down();
+                return self.theTurtle.goto(nx, ny, true);
             });
             $loc.setpos = $loc.setposition;
             $loc.setx = new Sk.builtin.func(function (self, nx) {
                 nx = Sk.builtin.asnum$(nx);
                 checkArgs(2, arguments.length, "setx()");
-                self.theTurtle.goto(nx, self.theTurtle.gety());
+                return self.theTurtle.goto(nx, self.theTurtle.gety());
             });
             $loc.sety = new Sk.builtin.func(function (self, ny) {
                 ny = Sk.builtin.asnum$(ny);
                 checkArgs(2, arguments.length, "sety()");
-                self.theTurtle.goto(self.theTurtle.getx(), ny);
+                return self.theTurtle.goto(self.theTurtle.getx(), ny);
             });
             $loc.setheading = new Sk.builtin.func(function (self, newhead) {
                 newhead = Sk.builtin.asnum$(newhead);
@@ -1526,7 +1287,7 @@ var $builtinmodule = function (name) {
             });
             $loc.seth = $loc.setheading;
             $loc.home = new Sk.builtin.func(function (self) {
-                self.theTurtle.go_home();
+                return self.theTurtle.go_home();
             });
             $loc.dot = new Sk.builtin.func(function (self, size, color) {
                 size = Sk.builtin.asnum$(size);
@@ -1534,12 +1295,12 @@ var $builtinmodule = function (name) {
                 if (color) {
                     color = color.v || self.theTurtle.penStyle;
                 }
-                self.theTurtle.dot(size, color);
+                return self.theTurtle.dot(size, color);
             });
             $loc.circle = new Sk.builtin.func(function (self, radius, extent) {
                 radius = Sk.builtin.asnum$(radius);
                 extent = Sk.builtin.asnum$(extent);
-                self.theTurtle.circle(radius, extent);
+                return self.theTurtle.circle(radius, extent);
             });
             $loc.delay = new Sk.builtin.func(function (self, d) {
                 d = Sk.builtin.asnum$(d);
@@ -1548,12 +1309,12 @@ var $builtinmodule = function (name) {
             $loc.speed = new Sk.builtin.func(function (self, s, t) {
                 s = Sk.builtin.asnum$(s);
                 t = Sk.builtin.asnum$(t);
-                self.theTurtle.speed(s, t);
+                return self.theTurtle.speed(s, t);
             });
             $loc.tracer = new Sk.builtin.func(function (self, t, d) {
                 t = Sk.builtin.asnum$(t);
                 d = Sk.builtin.asnum$(d);
-                self.theTurtle.tracer(t, d);
+                return self.theTurtle.tracer(t, d);
             });
             $loc.update = new Sk.builtin.func(function (self) {
             });
