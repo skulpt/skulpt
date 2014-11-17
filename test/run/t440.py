@@ -36,14 +36,14 @@ print math.atan2(-5.1,6.3)
 
 print "\nmath.cos(x)"
 print math.cos(0.0)
-print math.cos(math.pi/2.0)
+print isCloseTo(0, math.cos(math.pi/2.0), 15)
 print math.cos(math.pi)
 print math.cos(1)
 
 print "\nmath.sin(x)"
 print math.sin(0.0)
 print math.sin(math.pi/2.0)
-print math.sin(math.pi)
+print isCloseTo(0, math.sin(math.pi), 15)
 print math.sin(1)
 
 print "\nmath.tan(x)"

@@ -45,23 +45,41 @@ Sk.builtin.type = function (name, bases, dict) {
         /**
         * @constructor
         */
-        klass = function (kwdict, varargseq, kws, args) {
+        klass = function (kwdict, varargseq, kws, args, canSuspend) {
             var init;
+            var self = this;
+            var s;
             if (!(this instanceof klass)) {
-                return new klass(kwdict, varargseq, kws, args);
+                return new klass(kwdict, varargseq, kws, args, canSuspend);
             }
 
             args = args || [];
-            this["$d"] = new Sk.builtin.dict([]);
+            self["$d"] = new Sk.builtin.dict([]);
 
-            init = Sk.builtin.type.typeLookup(this.ob$type, "__init__");
+
+            init = Sk.builtin.type.typeLookup(self.ob$type, "__init__");
             if (init !== undefined) {
                 // return should be None or throw a TypeError otherwise
-                args.unshift(this);
-                Sk.misceval.apply(init, kwdict, varargseq, kws, args);
+                args.unshift(self);
+                s = Sk.misceval.applyOrSuspend(init, kwdict, varargseq, kws, args);
+
+                return (function doSusp(s) {
+                    if (s instanceof Sk.misceval.Suspension) {
+                        // TODO I (Meredydd) don't know whether we are ever called
+                        // from anywhere except Sk.misceval.applyOrSuspend().
+                        // If we're not, we don't need a canSuspend parameter at all.
+                        if (canSuspend) {
+                            return new Sk.misceval.Suspension(doSusp, s);
+                        } else {
+                            return Sk.misceval.retryOptionalSuspensionOrThrow(s);
+                        }
+                    } else {
+                        return self;
+                    }
+                })(s);
             }
 
-            return this;
+            return self;
         };
 
         for (v in dict) {

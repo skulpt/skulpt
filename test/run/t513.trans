@@ -1,0 +1,9 @@
+Module(body=[Assign(targets=[Name(id='x',
+                                  ctx=Store())],
+                    value=List(elts=[Num(n=1.0),
+                                     Num(n=2.0)],
+                               ctx=Load())),
+             Print(dest=None,
+                   values=[Name(id='x',
+                                ctx=Load())],
+                   nl=True)])

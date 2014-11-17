@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 
 #
 #   Note:  python2.6 is specified because that is what the skulpt parser
@@ -18,6 +18,7 @@ import shutil
 import re
 import pprint
 import json
+import shutil
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -63,6 +64,7 @@ Files = [
         ('support/closure-library/closure/goog/string/string.js',   FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/debug/error.js',     FILE_TYPE_DIST),
         ('support/closure-library/closure/goog/asserts/asserts.js', FILE_TYPE_DIST),
+        ('support/es6-promise-polyfill/promise-1.0.0.hacked.js',    FILE_TYPE_DIST),
         'src/env.js',
         'src/builtin.js',
         'src/errors.js',
@@ -112,11 +114,21 @@ TestFiles = [
         'support/closure-library/closure/goog/math/vec2.js',
         'support/closure-library/closure/goog/json/json.js',
         'support/jsbeautify/beautify.js',
+        "{0}/namedtests.js".format(TEST_DIR),
         "{0}/sprintf.js".format(TEST_DIR),
         "{0}/json2.js".format(TEST_DIR),
         "{0}/test.js".format(TEST_DIR)
         ]
 
+def buildNamedTestsFile():
+    testFiles = ['test/run/'+f.replace(".py","") for f in os.listdir('test/run') if re.match(r"test_.*\.py$",f)]
+    nt = open("{0}/namedtests.js".format(TEST_DIR),'w')
+    nt.write("namedtfiles = [")
+    for f in testFiles:
+        nt.write("'%s',\n" % f)
+    nt.write("];")
+    nt.close()
+    
 def isClean():
     repo = Repo(".")
     return not repo.is_dirty()
@@ -144,38 +156,52 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    jsengine = ".\\support\\d8\\d8.exe --trace_exception --debugger"
+    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "./support/d8/d8m --trace_exception --debugger"
+    jsengine = "./support/d8/d8m --debugger"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
     if is64bit():
-        jsengine = "support/d8/d8x64 --trace_exception --debugger"
+        jsengine = "support/d8/d8x64 --debugger --harmony_promises"
     else:
-        jsengine = "support/d8/d8 --trace_exception --debugger"
+        jsengine = "support/d8/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    jsengine = "support/d8/d8 --trace_exception --debugger"
+    jsengine = "support/d8/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    jsengine = "support/d8/d8x64 --trace_exception"
+    jsengine = "support/d8/d8x64 --harmony_promises"
     nul = "/dev/null"
 
 #jsengine = "rhino"
 
-def test():
+def test(debug_mode=False):
     """runs the unit tests."""
-    ret1 = os.system("{0} {1} {2}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles)))
-    print "Running jshint"
-    ret2 = os.system("jshint src/*.js")
-    return ret1 | ret2
+    if debug_mode:
+        debugon = "--debug-mode"
+    else:
+        debugon = ""
+    buildNamedTestsFile()
+    ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
+    ret2 = 0
+    ret3 = 0
+    if ret1 == 0:
+        print "Running jshint"
+        if sys.platform == "win32":
+            jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob("src/*.js")))
+        else:
+            jshintcmd = "jshint src/*.js"
+        ret2 = os.system(jshintcmd)
+        print "Now running new unit tests"
+        ret3 = rununits()
+    return ret1 | ret2 | ret3
 
 def debugbrowser():
     tmpl = """
@@ -385,14 +411,14 @@ def dist(options):
     if options.verbose:
         print ". Removing distribution directory, '{0}/'.".format(DIST_DIR)
 
-    os.system("rm -rf {0}/".format(DIST_DIR))
+    shutil.rmtree(DIST_DIR, ignore_errors=True)
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
     if options.uncompressed:
         if options.verbose:
             print ". Writing combined version..."
         combined = ''
-        linemap = open("{0}/{1}".format(DIST_DIR, OUTFILE_MAP), "w")
+        linemap = open(os.path.join(DIST_DIR, OUTFILE_MAP), "w")
         curline = 1
         for file in getFileList(FILE_TYPE_DIST):
             curfiledata = open(file).read()
@@ -400,15 +426,16 @@ def dist(options):
             print >>linemap, "%d:%s" % (curline, file)
             curline += len(curfiledata.split("\n")) - 1
         linemap.close()
-        uncompfn = "{0}/{1}".format(DIST_DIR, OUTFILE_REG)
+        uncompfn = os.path.join(DIST_DIR, OUTFILE_REG)
         open(uncompfn, "w").write(combined)
         # Prevent accidental editing of the uncompressed distribution file.
-        os.system("chmod 444 {0}/{1}".format(DIST_DIR, OUTFILE_REG))
+        if sys.platform != "win32":
+            os.chmod(os.path.join(DIST_DIR, OUTFILE_REG), 0o444)
 
 
     # Make the compressed distribution.
-    compfn = "{0}/{1}".format(DIST_DIR, OUTFILE_MIN)
-    builtinfn = "{0}/{1}".format(DIST_DIR, OUTFILE_LIB)
+    compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
+    builtinfn = os.path.join(DIST_DIR, OUTFILE_LIB)
 
     # Run tests on uncompressed.
     if options.verbose:
@@ -425,7 +452,7 @@ def dist(options):
     if options.verbose:
         print ". Compressing..."
 
-    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --js_output_file %s" % (uncompfiles, compfn))
+    ret = os.system("java -jar support/closure-compiler/compiler.jar --define goog.DEBUG=false --output_wrapper \"(function(){%%output%%}());\" --compilation_level SIMPLE_OPTIMIZATIONS --jscomp_error accessControls --jscomp_error checkRegExp --jscomp_error checkTypes --jscomp_error checkVars --jscomp_error deprecated --jscomp_off fileoverviewTags --jscomp_error invalidCasts --jscomp_error missingProperties --jscomp_error nonStandardJsDocs --jscomp_error strictModuleDepCheck --jscomp_error undefinedVars --jscomp_error unknownDefines --jscomp_error visibility %s --externs support/es6-promise-polyfill/externs.js --js_output_file %s" % (uncompfiles, compfn))
     # to disable asserts
     # --define goog.DEBUG=false
     #
@@ -441,23 +468,34 @@ def dist(options):
     # Run tests on compressed.
     if options.verbose:
         print ". Running tests on compressed..."
+    buildNamedTestsFile()
     ret = os.system("{0} {1} {2}".format(jsengine, compfn, ' '.join(TestFiles)))
     if ret != 0:
         print "Tests failed on compressed version."
         sys.exit(1)
-
-    ret = os.system("cp {0} {1}/tmp.js".format(compfn, DIST_DIR))
+    ret = rununits(opt=True)
     if ret != 0:
+        print "Tests failed on compressed unit tests"
+        sys.exit(1)
+
+    try:
+        shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
+    except:
         print "Couldn't copy for gzip test."
         sys.exit(1)
 
-    ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
-    if ret != 0:
-        print "Couldn't gzip to get final size."
-        sys.exit(1)
+    has_gzip = os.access("gzip", os.X_OK)
 
-    size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
-    os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
+    if has_gzip:
+        ret = os.system("gzip -9 {0}/tmp.js".format(DIST_DIR))
+        if ret != 0:
+            print "Couldn't gzip to get final size."
+            has_gzip = False
+
+        size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
+        os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
+    else:
+        print "No gzip executable, can't get final size"
 
     with open(builtinfn, "w") as f:
         f.write(getBuiltinsAsJson(options))
@@ -465,9 +503,10 @@ def dist(options):
             print ". Wrote {0}".format(builtinfn)
 
     # Update documentation folder copies of the distribution.
-    ret  = os.system("cp {0} doc/static/{1}".format(compfn,    OUTFILE_MIN))
-    ret |= os.system("cp {0} doc/static/{1}".format(builtinfn, OUTFILE_LIB))
-    if ret != 0:
+    try:
+        shutil.copy(compfn,    os.path.join("doc", "static", OUTFILE_MIN))
+        shutil.copy(builtinfn, os.path.join("doc", "static", OUTFILE_LIB))
+    except:
         print "Couldn't copy to docs dir."
         sys.exit(1)
     if options.verbose:
@@ -476,7 +515,8 @@ def dist(options):
     # All good!
     if options.verbose:
         print ". Wrote {0}.".format(compfn)
-        print ". gzip of compressed: %d bytes" % size
+        if has_gzip:
+            print ". gzip of compressed: %d bytes" % size
 
 def regenparser():
     """regenerate the parser/ast source code"""
@@ -594,7 +634,7 @@ def docbi(options):
         if options.verbose:
             print ". Wrote {fileName}".format(fileName=builtinfn)
 
-def run(fn, shell="", opt=False, p3=False):
+def run(fn, shell="", opt=False, p3=False, debug_mode=False, dumpJS='true'):
     if not os.path.exists(fn):
         print "%s doesn't exist" % fn
         raise SystemExit()
@@ -606,15 +646,25 @@ def run(fn, shell="", opt=False, p3=False):
         p3on = 'true'
     else:
         p3on = 'false'
+    if debug_mode:
+        debugon = 'true'
+    else:
+        debugon = 'false'
     f.write("""
 var input = read('%s');
 print("-----");
 print(input);
 print("-----");
-Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", true);
-print("-----");
-    """ % (fn, os.path.split(fn)[0], p3on, modname))
+Sk.configure({syspath:["%s"], read:read, python3:%s, debugging:%s});
+Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", %s, true);
+}).then(function () {
+    print("-----");
+}, function(e) {
+    print("UNCAUGHT EXCEPTION: " + e);
+    print(e.stack);
+});
+    """ % (fn, os.path.split(fn)[0], p3on, debugon, modname, dumpJS))
     f.close()
     if opt:
         os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
@@ -627,32 +677,81 @@ def runopt(fn):
 def run3(fn):
     run(fn,p3=True)
 
+def rundebug(fn):
+    run(fn,debug_mode=True)
+
 def shell(fn):
     run(fn, "--shell")
+
+
+def rununits(opt=False, p3=False):
+    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    jstestengine = jsengine.replace('--debugger', '')
+    passTot = 0
+    failTot = 0
+    for fn in testFiles:
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+        f = open("support/tmp/run.js", "w")
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        if p3:
+            p3on = 'true'
+        else:
+            p3on = 'false'
+        f.write("""
+var input = read('%s');
+print('%s');
+Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.importMain("%s", false);
+        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+        f.close()
+        if opt:
+            p = Popen("{0} {1}/{2} support/tmp/run.js".format(jstestengine, DIST_DIR,
+                                                           OUTFILE_MIN),shell=True,
+                      stdout=PIPE, stderr=PIPE)
+        else:
+            p = Popen("{0} {1} support/tmp/run.js".format(jstestengine,  ' '.join(
+                getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
+
+        outs, errs = p.communicate()
+        print outs
+        if errs:
+            print errs
+        g = re.match(r'.*\n.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
+        if g:
+            passTot += int(g.group(1))
+            failTot += int(g.group(2))
+
+    print "Summary"
+    print "Passed: %5d Failed %5d" % (passTot, failTot)
+
+    if failTot != 0:
+        return -1
+    else:
+        return 0
 
 
 def repl():
     os.system("{0} {1} repl/repl.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
 
-def nrt():
+def nrt(newTest):
     """open a new run test"""
-    for i in range(100000):
-        fn = "{0}/run/t%02d.py".format(TEST_DIR) % i
-        disfn = fn + ".disabled"
-        if not os.path.exists(fn) and not os.path.exists(disfn):
-            if 'EDITOR' in os.environ:
-                editor = os.environ['EDITOR']
-            else:
-                editor = 'vim'
-            os.system(editor + ' ' + fn)
-            if os.path.exists(fn):
-                print "Generating tests for %s" % fn
-                regensymtabtests(fn)
-                regenasttests(fn)
-                regenruntests(fn)
-            else:
-                print "run ./m regentests t%02d.py" % i
-            break
+    fn = "{0}/run/test_{1}.py".format(TEST_DIR,newTest)
+    disfn = fn + ".disabled"
+    if not os.path.exists(fn) and not os.path.exists(disfn):
+        if 'EDITOR' in os.environ:
+            editor = os.environ['EDITOR']
+        else:
+            editor = 'vim'
+        os.system(editor + ' ' + fn)
+        if os.path.exists(fn):
+            print "Generating tests for %s" % fn
+            regensymtabtests(fn)
+            regenasttests(fn)
+            regenruntests(fn)
+        else:
+            print "Test test_%s.py already exists." % newTest
+            print "run ./m regentests test_%s.py" % newTest
 
 def vmwareregr(names):
     """todo; not working yet.
@@ -808,6 +907,8 @@ def main():
 
     if cmd == "test":
         test()
+    elif cmd == "testdebug":
+        test(True)
     elif cmd == "dist":
         dist(options)
     elif cmd == "regengooglocs":
@@ -825,10 +926,14 @@ def main():
         regensymtabtests()
     elif cmd == "run":
         run(sys.argv[2])
+    elif cmd == 'rununits':
+        rununits()
     elif cmd == "runopt":
         runopt(sys.argv[2])
     elif cmd == "run3":
         run3(sys.argv[2])
+    elif cmd == "rundebug":
+        rundebug(sys.argv[2])
     elif cmd == "vmwareregr":
         vmwareregr()
     elif cmd == "regenparser":
@@ -844,7 +949,14 @@ def main():
     elif cmd == "docbi":
         docbi(options)
     elif cmd == "nrt":
-        nrt()
+        print "Warning: nrt is deprectated."
+        print "It is preferred that you enhance one of the unit tests in test/unit"
+        print "Or, create a new unit test file in test/unit using the template in test/unit_tmpl.py"
+        if len(sys.argv) < 3:
+            print "Need a name for the new test"
+            print usageString(os.path.basename(sys.argv[0]))
+            sys.exit(2)
+        nrt(sys.argv[2])
     elif cmd == "browser":
         buildBrowserTests()
     elif cmd == "debugbrowser":

@@ -1,6 +1,7 @@
 -- ASDL's five builtin types are identifier, int, string, object, bool
+-- changeset: 374746c5dedc
 
-module Python version "$Revision: 62047 $"
+module Python version "$Revision$"
 {
 	mod = Module(stmt* body)
 	    | Interactive(stmt* body)
@@ -11,7 +12,7 @@ module Python version "$Revision: 62047 $"
 
 	stmt = FunctionDef(identifier name, arguments_ args, 
                             stmt* body, expr* decorator_list)
-	      | ClassDef(identifier name, expr* bases, stmt* body, expr *decorator_list)
+	      | ClassDef(identifier name, expr* bases, stmt* body, expr* decorator_list)
 	      | Return_(expr? value)
 
 	      | Delete_(expr* targets)
@@ -43,7 +44,7 @@ module Python version "$Revision: 62047 $"
 
 	      | Global(identifier* names)
 	      | Expr(expr value)
-	      | Pass | Break_ | Continue_
+	      | Pass | Break_ | Continue_ | Debugger_
 
 	      -- XXX Jython will be different
 	      -- col_offset is the byte offset in the utf8 string the parser uses
@@ -56,7 +57,10 @@ module Python version "$Revision: 62047 $"
 	     | Lambda(arguments_ args, expr body)
 	     | IfExp(expr test, expr body, expr orelse)
 	     | Dict(expr* keys, expr* values)
+	     | Set(expr* elts)
 	     | ListComp(expr elt, comprehension* generators)
+	     | SetComp(expr elt, comprehension* generators)
+	     | DictComp(expr key, expr value, comprehension* generators)
 	     | GeneratorExp(expr elt, comprehension* generators)
 	     -- the grammar constrains where yield expressions can occur
 	     | Yield(expr? value)
@@ -65,6 +69,7 @@ module Python version "$Revision: 62047 $"
 	     | Compare(expr left, cmpop* ops, expr* comparators)
 	     | Call(expr func, expr* args, keyword* keywords,
 			 expr? starargs, expr? kwargs)
+	     | Repr(expr value)
 	     | Num(object n) -- a number as a PyObject.
 	     | Str(string s) -- need to specify raw, unicode, etc?
 	     -- other literals? bools?

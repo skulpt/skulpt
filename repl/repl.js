@@ -44,7 +44,7 @@ function isBalanced(lines) {
 				depth = depth + 1;
 			}
 			if (!mlsopened && lines[l] === "" && depth > 0) {
-				depth = depth - 1;
+				depth = 0;
 			}
 		}
     }

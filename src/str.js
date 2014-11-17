@@ -716,6 +716,32 @@ Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
     return Sk.builtin.bool(true);
 });
 
+Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("isalpha", arguments, 1, 1);
+    return Sk.builtin.bool(self.v.length && goog.string.isAlpha(self.v));
+});
+
+Sk.builtin.str.prototype["isalnum"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("isalnum", arguments, 1, 1);
+    return Sk.builtin.bool(self.v.length && goog.string.isAlphaNumeric(self.v));
+});
+
+// does not account for unicode numeric values
+Sk.builtin.str.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("isnumeric", arguments, 1, 1);
+    return Sk.builtin.bool(self.v.length && goog.string.isNumeric(self.v));
+});
+
+Sk.builtin.str.prototype["islower"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("islower", arguments, 1, 1);
+    return Sk.builtin.bool(self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
+});
+
+Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("isupper", arguments, 1, 1);
+    return Sk.builtin.bool(self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
+});
+
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("str", Sk.builtin.str);
 
 Sk.builtin.str.prototype.nb$remainder = function (rhs) {
