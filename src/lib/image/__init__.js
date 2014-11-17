@@ -29,7 +29,17 @@ $builtinmodule = function (name) {
             self.ctx.drawImage(self.image, 0, 0)
             self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
         });
-
+	//array of pixel
+	$loc.getPixels = new Sk.builtin.func(function(self){
+		var arr = [self.image.height*self.image.width];//initial array
+		var i;
+		for(i=0;i<self.image.height*self.image.width;i++){
+		
+			arr[i] = Sk.misceval.callsim(self.getPixel,self,i%image.width,i/image.width);//using the local function
+		}
+		return new Sk.builtin.tuple(arr);
+	});
+	
         $loc.getPixel = new Sk.builtin.func(function (self, x, y) {
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
@@ -49,6 +59,12 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 2] = Sk.misceval.callsim(pix.getBlue, pix);
             self.imagedata.data[index + 3] = 255;
         });
+	//newsetpixel
+	$loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel){
+            var x = count%image.width;
+	    var y = count/image.width;
+            return Sk.misceval.callsim(self.getPixel,self,x,y);
+	});
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
             return self.image.height;
