@@ -23,7 +23,7 @@ return (function() {
       , Types                = {};
 
   Types.FLOAT = function(value) {
-    return Sk.builtin.assk$(value[0], Sk.builtin.nmber.float$);
+    return Sk.builtin.float_(value);
   };
   Types.COLOR = function(value) {
     if (typeof value === 'string') {
@@ -31,10 +31,10 @@ return (function() {
     }
     else {
       for(var i = 0; i < 3; i++) {
-        value[i] = Sk.builtin.assk$(value[i], Sk.builtin.nmber.int$);
+        value[i] = new Sk.builtin.nmber(value[i], undefined);
       }
       if (value.length === 4) {
-        value[i] = Sk.builtin.assk$(value[i], Sk.builtin.nmber.float$);
+        value[3] = Sk.builtin.float_(value[3]);
       }
       return new Sk.builtin.tuple(value);
     }
@@ -252,8 +252,8 @@ return (function() {
     };
     proto.$position.returnType = function(value) {
       return new Sk.builtin.tuple([
-          Sk.builtin.assk$(value[0], Sk.builtin.nmber.float$),
-          Sk.builtin.assk$(value[1], Sk.builtin.nmber.float$)
+          Sk.builtin.float_(value)
+          , Sk.builtin.float_(value)
       ]);
     };
 
@@ -1263,13 +1263,7 @@ return (function() {
         }
       }
 
-      try {
-        result = instance[method].apply(instance, args);
-      }
-      catch(e) {
-        console.log(e.stack);
-        throw e;
-      }
+      result = instance[method].apply(instance, args);
       
       if (result instanceof Promise) {
         susp = new Sk.misceval.Suspension();
