@@ -59,21 +59,28 @@ return (function() {
 
   _config = (function() {
     var defaultSetup = {
-          target    : 'turtle' // DOM element or id of parent container
-          , width   : 400 // if set to 0 it will use the target width
-          , height  : 400 // if set to 0 it will use the target height
-          , animate : true // enabled/disable all animated rendering
+          target       : 'turtle' // DOM element or id of parent container
+          , width      : 400 // if set to 0 it will use the target width
+          , height     : 400 // if set to 0 it will use the target height
+          , animate    : true // enabled/disable all animated rendering
+          , bufferSize : 0 // default turtle buffer size
           , reset   : function() {
-            if (_target) {
-              while (_target.firstChild) {
-                _target.removeChild(_target.firstChild);
-              }
-            }
             if (_renderTimeout) {
               window.clearTimeout(_renderTimeout);
               _renderTimeout = false;
             };
             cancelAnimationFrame();
+
+            for(var i = 0; i < _turtles.length; i++) {
+              _turtles[i].reset();
+            };
+
+            if (_target) {
+              while (_target.firstChild) {
+                _target.removeChild(_target.firstChild);
+              }
+            }
+
             _turtles             = [];
             _durationSinceRedraw = 0;
             _screenInstance      = undefined;
@@ -114,9 +121,12 @@ return (function() {
 
       this._updates = [];
 
+      state.paperLayer || (state.paperLayer = createLayer());
+      state.penLayer   || (state.penLayer = createLayer());
+
       if (updatesLength) {
         for(i = 0; i < updatesLength; i++) {
-          updates[i](state, i === last);
+          updates[i].call(this, state, i === last);
         }
 
         drawTurtle(state);
@@ -179,25 +189,33 @@ return (function() {
 
     proto.clear = function() {
       var state = this._renderCycleState;
-      
+
+      this._updates    = [];
+      this._undoBuffer = [];
+
       if (state.paperLayer) {
-        state.paperLayer.canvas.parentNode.removeChild(state.paperLayer.canvas);
+        if (state.paperLayer.canvas.parentNode) {
+          state.paperLayer.canvas.parentNode.removeChild(state.paperLayer.canvas);
+        }
+        delete state.paperLayer;
       }
       if (state.penLayer) {
-       state.penLayer.canvas.parentNode.removeChild(state.penLayer.canvas);
+        if (state.penLayer.canvas.parentNode) {
+          state.penLayer.canvas.parentNode.removeChild(state.penLayer.canvas);
+        }
+        delete state.penLayer;
       }
-
-      state.paperLayer = createLayer();
-      state.penLayer   = createLayer();
     };
 
     proto.reset = function() {
-      var self    = this
-          , state = this._renderCycleState || {};
+      var state = {};
+
+      this.clear();
 
       state.x       = this._x          = 0;
       state.y       = this._y          = 0;
       state.radians = this._radians    = 0;
+      state.angle   = this._angle      = 0;
       state.shown   = this._shown      = true;
       state.down    = this._down       = true;
       state.color   = this._color      = "black";
@@ -208,16 +226,13 @@ return (function() {
 
       this._isRadians  = false;
       this._fullCircle = 360;
-      this._angle      = 0;
       this._updates    = [];
       this._screen     = getScreen();
+      this._bufferSize = typeof _config.bufferSize === 'number'
+        ? _config.bufferSize
+        : 0;
       this.$speed(3);
-      this.addUpdate(function(cycleState) {
-        for(var key in state) {
-          cycleState[key] = state[key];
-        }
-        self.clear();
-      });
+      this._renderCycleState = state;
     };
 
     proto.$degrees = function(fullCircle) {
@@ -292,14 +307,29 @@ return (function() {
     proto.$ycor.returnType = Types.FLOAT;
 
     proto.$forward = proto.$fd = function(distance) {
+      pushUndo(this);
       return this.queueMoveBy(distance);
     };
 
+    proto.$undo = function() {
+      popUndo(this);
+    };
+
+    proto.$undobufferentries = function() {
+      return this._undoBuffer.length;
+    };
+
+    proto.$setundobuffer = function(size) {
+      this._bufferSize = typeof size === 'number' ? Math.min(Math.abs(size), 1000) : 0;
+    };
+
     proto.$backward = proto.$back = proto.$bk = function(distance) {
+      pushUndo(this);
       return this.queueMoveBy(-distance);
     };
 
     proto.$goto_$rw$ = proto.$setpos = proto.$setposition = function(x,y) {
+      pushUndo(this);
       var coords = getCoordinates(x,y);
       return this.queueMoveTo(coords.x, coords.y);
     };
@@ -316,6 +346,7 @@ return (function() {
 
     proto.$home = function() {
       var self = this;
+      pushUndo(this);
       return self.queueMoveTo(0,0)
         .then(function(position) {
           return self.queueTurnTo(0);
@@ -326,14 +357,17 @@ return (function() {
     };
 
     proto.$right = proto.$rt = function(angle) {
+      pushUndo(this);
       return this.queueTurnBy(-angle);
     };
 
     proto.$left = proto.$lt = function(angle) {
+      pushUndo(this);
       return this.queueTurnBy(angle);
     };
 
     proto.$setheading = proto.$seth = function(angle) {
+      pushUndo(this);
       return this.queueTurnTo(angle);
     };
 
@@ -342,6 +376,8 @@ return (function() {
           , radians = self._radians
           , scale   = 1/getScreen().lineScale
           , frac, w, w2, l, i, lastStep, heading;
+
+      pushUndo(this);
 
       if (extent === undefined) {
         extent = self._fullCircle;
@@ -513,12 +549,14 @@ return (function() {
     };
 
     proto.$stamp = function() {
+      pushUndo(this);
       this.addUpdate(function(state) {
         drawTurtle(state, true);
       });
     };
 
     proto.$dot = function(size, color, g, b, a) {
+      pushUndo(this);
       size = (typeof size === 'number')
         ? Math.max(1, Math.abs(size) | 0)
         : Math.max(this._size + 4, this._size * 2);
@@ -534,6 +572,8 @@ return (function() {
 
     proto.$write = function(message,move,align,font) {
       var face, size, type, width;
+
+      pushUndo(this);
 
       if (font && font.constructor === Array) {
         face = typeof font[0] === "string" ? font[0] : "Arial";
@@ -628,10 +668,7 @@ return (function() {
     };
 
     proto.$clear = function() {
-      var self = this;
-      this.addUpdate(function(state) {
-        self.clear();
-      });
+      this.clear();
     };
     proto.$dot.minArgs = 0;
   })(Turtle.prototype);
@@ -860,6 +897,59 @@ return (function() {
     }
   }
 
+  function pushUndo(turtle) {
+    var undoState = {
+      angle : turtle._angle
+    };
+
+    if (!turtle._bufferSize) {
+      return;
+    }
+
+    while(turtle._undoBuffer.length > turtle._bufferSize) {
+      turtle._undoBuffer.shift();
+    }
+
+    turtle.addUpdate(function(state) {
+      for(var key in state) {
+        undoState[key] = state[key];
+      }
+      if (state.paperLayer && state.paperLayer.canvas) {
+        undoState.image = state.paperLayer.canvas.toDataURL();
+        turtle._undoBuffer.push(undoState);
+      }
+    });
+  }
+
+  var undoImage = new Image();
+  function popUndo(turtle) {
+    var undoState = turtle._undoBuffer.pop();
+    if (!undoState) {
+      return;
+    }
+
+    turtle._x = undoState.x;
+    turtle._y = undoState.y;
+    turtle._radians = undoState.radians;
+    turtle._angle   = undoState.angle;
+    turtle.addUpdate(function(state) {
+      var context = state.paperLayer;
+      undoImage.src = undoState.image;
+
+      if (!context) return;
+
+      context.save();
+      context.setTransform(1,0,0,1,0,0);
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.drawImage(undoImage, 0, 0);
+      context.restore();
+      delete undoState.image;
+      for(var key in undoState) {
+        state[key] = undoState[key];
+      }
+    });
+  }
+
   function drawTurtle(state, stamp) {
     var context  = stamp ? state.paperLayer : state.penLayer
         , shape  = SHAPES[state.shape]
@@ -869,6 +959,8 @@ return (function() {
         , xScale = world.xScale
         , yScale = world.yScale
         , x, y, bearing;
+
+    if (!context) return;
 
     if (!stamp) {
       context.save();
@@ -908,6 +1000,8 @@ return (function() {
         , xScale = screen.xScale
         , yScale = screen.yScale;
 
+    if (!context) return;
+
     context.save();
     context.beginPath();
     context.scale(xScale,yScale);
@@ -933,6 +1027,8 @@ return (function() {
         , xScale = screen.xScale
         , yScale = screen.yScale;
 
+    if (!context) return;
+
     context.save();
     if (font) {
       context.font = font;
@@ -950,6 +1046,8 @@ return (function() {
   function drawLine(state, endX, endY, beginPath) {
     var context = state.paperLayer;
 
+    if (!context) return;
+
     if (beginPath) {
       context.beginPath();
       context.moveTo(state.x, state.y);
@@ -964,6 +1062,8 @@ return (function() {
   function drawFill(state, path) {
     var context = state.paperLayer
         , i;
+
+    if (!context) return;
 
     context.save();
     context.beginPath();
