@@ -1214,7 +1214,7 @@ return (function() {
   }
 
   function getCoordinates(x, y) {
-    if (y !== undefined) {
+    if (y === undefined) {
       y = x[1] || 0;
       x = x[0] || 0;
     }
