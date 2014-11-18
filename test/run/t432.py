@@ -29,6 +29,37 @@ helper('1234'.isdigit(),True)
 helper(''.isdigit(),False)
 helper('123.45'.isdigit(),False)
 
+print "\nstr.isalpha"
+helper('ABCabc'.isalpha(),True)
+helper('abc123'.isalpha(),False)
+helper('ABC abc'.isalpha(),False)
+helper(''.isalpha(),False)
+
+print "\nstr.isalnum"
+helper('ABCabc'.isalnum(),True)
+helper('abc123'.isalnum(),True)
+helper('ABC abc'.isalnum(),False)
+helper(''.isalnum(),False)
+
+print "\nstr.islower"
+helper('abc'.islower(),True)
+helper('abc123'.islower(),True)
+helper('ABC abc'.islower(),False)
+helper(''.islower(),False)
+
+print "\nstr.isupper"
+helper('ABC'.isupper(),True)
+helper('ABC123'.isupper(),True)
+helper('ABC abc'.isupper(),False)
+helper(''.isupper(),False)
+
+print "\nstr.isnumeric"
+helper('123'.isnumeric(),True)
+helper('abc123'.isnumeric(),False)
+helper('1 2 3'.isnumeric(),False)
+helper('123.4'.isnumeric(),False)
+helper(''.isnumeric(),False)
+
 print "\nstr.join"
 helper('-'.join('1234'),'1-2-3-4')
 helper('-'.join(('1','2','3','4')),'1-2-3-4')
