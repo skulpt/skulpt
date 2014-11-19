@@ -138,53 +138,43 @@ return (function() {
       renderLoop();
     };
 
-    proto.translate = function(x, y, dx, dy) {
-      var self = this;
-      return ((x === this._x && y === this._y) || (dx === 0 && dy === 0))
-        ? Promise.resolve()
-        : translate(self, x, y, dx, dy)
-            .then(function(coords) {
-              self._x = coords[0];
-              self._y = coords[1];
-            });
+    proto.translate = function(startX, startY, dx, dy) {
+      var self      = this
+          , promise = (dx === 0 && dy === 0)
+              ? Promise.resolve([startX, startY])
+              : translate(self, startX, startY, dx, dy);
+
+      return promise.then(function(coords) {
+          self._x = coords[0];
+          self._y = coords[1];
+        });
     };
 
-    proto.rotate = function(angle, delta) {
-      var self = this;
-      return (angle === this._angle || delta === 0)
-        ? Promise.resolve()
-        : rotate(self, angle, delta)
-            .then(function(heading) {
-              self._angle   = heading.angle;
-              self._radians = heading.radians;
-            });
+    proto.rotate = function(startAngle, delta) {
+      var self      = this
+          , promise = (delta === 0)
+              ? Promise.resolve(calculateHeading(self, startAngle))
+              : rotate(self, startAngle, delta);
+
+      return promise.then(function(heading) {
+        self._angle   = heading.angle;
+        self._radians = heading.radians;
+      });
     };
 
-    proto.queueMoveBy = function(distance) {
-      var theta = this._radians
-          , dx  = Math.cos(theta) * distance
-          , dy  = Math.sin(theta) * distance
-          , x   = this._x + dx
-          , y   = this._y + dy;
+    proto.queueMoveBy = function(startX, startY, theta, distance) {
+      var dx   = Math.cos(theta) * distance
+          , dy = Math.sin(theta) * distance;
 
-      return this.translate(x, y, dx, dy);
+      return this.translate(startX, startY, dx, dy);
     };
 
-    proto.queueMoveTo = function(x, y) {
-      if (x === this._x && y === this._y) return;
-      return this.translate(x, y, x - this._x, y - this._y);
-    };
-
-    proto.queueTurnBy = function(angle) {
-      return this.rotate(this._angle + angle, angle);
-    };
-
-    proto.queueTurnTo = function(angle) {
-      angle = angle % this._fullCircle;
-      if (angle < 0) {
-        angle += this._fullCircle;
+    proto.queueTurnTo = function(startAngle, endAngle) {
+      endAngle = endAngle % this._fullCircle;
+      if (endAngle < 0) {
+        endAngle += this._fullCircle;
       }
-      return this.rotate(angle, angle - this._angle);
+      return this.rotate(startAngle, endAngle - startAngle);
     };
 
     proto.clear = function() {
@@ -267,16 +257,17 @@ return (function() {
     };
     proto.$position.returnType = function(value) {
       return new Sk.builtin.tuple([
-          Sk.builtin.float_(value)
-          , Sk.builtin.float_(value)
+          Sk.builtin.float_(value[0])
+          , Sk.builtin.float_(value[1])
       ]);
     };
 
     proto.$towards = function(x,y) {
       var coords    = getCoordinates(x,y)
-          , radians = Math.PI + Math.atan2(this._x-coords.x, this._y-coords.y);
+          , radians = Math.PI + Math.atan2(this._y - coords.y, this._x - coords.x)
+          , angle   = radians * (this._fullCircle / Turtle.RADIANS);
 
-      return radians * (this._fullCircle / Turtle.RADIANS);
+      return angle;
     };
     proto.$towards.minArgs    = 1;
     proto.$towards.returnType = Types.FLOAT;
@@ -308,7 +299,7 @@ return (function() {
 
     proto.$forward = proto.$fd = function(distance) {
       pushUndo(this);
-      return this.queueMoveBy(distance);
+      return this.queueMoveBy(this._x, this._y, this._radians, distance);
     };
 
     proto.$undo = function() {
@@ -325,31 +316,36 @@ return (function() {
 
     proto.$backward = proto.$back = proto.$bk = function(distance) {
       pushUndo(this);
-      return this.queueMoveBy(-distance);
+      return this.queueMoveBy(this._x, this._y, this._radians, -distance);
     };
 
     proto.$goto_$rw$ = proto.$setpos = proto.$setposition = function(x,y) {
-      pushUndo(this);
       var coords = getCoordinates(x,y);
-      return this.queueMoveTo(coords.x, coords.y);
+
+      pushUndo(this);
+      
+      return this.translate(
+        this._x, this._y
+        , coords.x - this._x, coords.y - this._y
+      );
     };
     proto.$goto_$rw$.displayName = 'goto';
     proto.$goto_$rw$.minArgs = 1;
 
     proto.$setx = function(x) {
-      return this.queueMoveTo(x,this._y);
+      return this.translate(this._x, this._y, x - this._x, 0);
     };
 
     proto.$sety = function(y) {
-      return this.queueMoveTo(this._x,y);
+      return this.translate(this._x, this._y, 0, y - this._y);
     };
 
     proto.$home = function() {
       var self = this;
       pushUndo(this);
-      return self.queueMoveTo(0,0)
+      return self.translate(this._x, this._y, -this._x, -this._y)
         .then(function(position) {
-          return self.queueTurnTo(0);
+          return self.queueTurnTo(this._angle, 0);
         })
         .then(function(heading) {
           return undefined;
@@ -358,24 +354,29 @@ return (function() {
 
     proto.$right = proto.$rt = function(angle) {
       pushUndo(this);
-      return this.queueTurnBy(-angle);
+      return this.rotate(this._angle, -angle);
     };
 
     proto.$left = proto.$lt = function(angle) {
       pushUndo(this);
-      return this.queueTurnBy(angle);
+      return this.rotate(this._angle, angle);
     };
 
     proto.$setheading = proto.$seth = function(angle) {
       pushUndo(this);
-      return this.queueTurnTo(angle);
+      return this.queueTurnTo(this._angle, angle);
     };
 
     proto.$circle = function(radius, extent, steps) {
       var self      = this
-          , radians = self._radians
+          , x       = this._x
+          , y       = this._y
+          , angle   = this._angle
+          , heading = {}
+          , states  = []
+          , speed   = self._speed
           , scale   = 1/getScreen().lineScale
-          , frac, w, w2, l, i, lastStep, heading;
+          , frac, w, w2, l, i, dx, dy, promise;
 
       pushUndo(this);
 
@@ -386,44 +387,43 @@ return (function() {
         frac  = Math.abs(extent)/self._fullCircle;
         steps = 1 + ((Math.min(11+Math.abs(radius*scale)/6, 59)*frac) | 0)
       }
-      w  = (extent / self._fullCircle * Turtle.RADIANS) / steps
+      w  = extent / steps;
       w2 = .5 * w;
-      l  = radius * Math.sin(w);
+      l  = radius * Math.sin(w/self._fullCircle*Turtle.RADIANS);
       if (radius < 0) {
         l = -l;
         w = -w;
         w2 = -w2;
       }
 
-      radians     = radians + w2 % Turtle.RADIANS;
-      lastStep    = steps - 1;
+      promise = Promise.resolve();
+      heading = calculateHeading(self, angle + w2);
 
-      return new Promise(function(resolve) {
-        self.addUpdate(function(state) {
-          var promise = Promise.resolve();
-          state.radians = self._radians = radians;
-          for (i = 0; i < steps; i++) {
-            (function(index) {
-              promise = promise.then(function() {
-                return self.queueMoveBy(l);
-              }).then(function() {
-                self._radians = (self._radians + w) % Turtle.RADIANS;
-                self.addUpdate(function(state) {
-                  state.radians = self._radians;
-                });
-              });
-            })(i);
-          }
-          promise.then(function() {
-            self._angle   = state.radians / Turtle.RADIANS * self._fullCircle;
-            self._radians = state.radians;
-            self.addUpdate(function(state) {
-              drawTurtle(state);
-            });
-            resolve();
+      for(i = 0; i < steps; i++) {
+        dx = Math.cos(heading.radians) * l;
+        dy = Math.sin(heading.radians) * l;
+        (function(x, y, dx, dy, angle, delta) {
+          promise = promise.then(function() {
+            self.$speed(0);
+            return self.rotate(angle, delta);
+          }).then(function(result) {
+            self.$speed(speed);
+            return self.translate(x, y, dx, dy);
           });
-        });
+        })(x, y, dx, dy, angle, w);
+        angle   = heading.angle;
+        heading = calculateHeading(self, angle + w);
+        x += dx;
+        y += dy;
+      }
+
+      promise = promise.then(function() {
+        self.$speed(0);
+        self.rotate(angle, w2);
+        self.$speed(speed);
       });
+
+      return promise;
     }
     proto.$circle.keywordArgs = ["extent", "steps"];
     proto.$circle.minArgs     = 1;
@@ -575,6 +575,8 @@ return (function() {
 
       pushUndo(this);
 
+      message = String(message);
+
       if (font && font.constructor === Array) {
         face = typeof font[0] === "string" ? font[0] : "Arial";
         size = String(font[1] || "12pt");
@@ -595,7 +597,7 @@ return (function() {
         if (align === 'center') {
           width = width/2;
         }
-        return this.queueMoveTo(this._x + width * getScreen().xScale, this._y);
+        return this.translate(this._x, this._y, width * getScreen().xScale, 0, true);
       }
     };
     proto.$write.keywordArgs = ['move','align','font'];
@@ -682,6 +684,7 @@ return (function() {
     this.xScale    = 1;
     this.yScale    = -1;
     this.lineScale = 1;
+    this.layer = createLayer(this);
   }
 
   (function(proto) {
@@ -766,6 +769,7 @@ return (function() {
     };
     proto.$bgcolor.minArgs = 0;
     proto.$bgcolor.returnType = Types.COLOR;
+
   })(Screen.prototype);
 
   function ensureAnonymous() {
@@ -806,7 +810,7 @@ return (function() {
     return (_config.height || getTarget().clientHeight) | 0;
   }
 
-  function createLayer() {
+  function createLayer(screen) {
     var canvas = document.createElement('canvas')
         , width  = getWidth()
         , height = getHeight()
@@ -826,7 +830,7 @@ return (function() {
     context.lineCap = "round";
     context.lineJoin = "round";
 
-    applyWorld(getScreen(), context);
+    applyWorld(screen || getScreen(), context);
 
     return context;
   }
@@ -974,11 +978,11 @@ return (function() {
 
     x       = Math.cos(state.radians) / xScale;
     y       = Math.sin(state.radians) / yScale;
-    bearing = Math.PI + Math.atan2(x, y);
+    bearing = Math.atan2(y, x) - Math.PI/2;
 
     context.save();    
     context.translate(state.x, state.y);
-    context.scale(xScale,-yScale);
+    context.scale(xScale,yScale);
     context.rotate(bearing);
     context.beginPath();
     context.lineWidth   = 1;
@@ -1033,7 +1037,7 @@ return (function() {
     if (font) {
       context.font = font;
     }
-    if (align.match(/^(left|right|center)$/)) {
+    if (align && align.match(/^(left|right|center)$/)) {
       context.textAlign = align;
     }
 
@@ -1089,11 +1093,11 @@ return (function() {
     context.restore();
   }
 
-  function translate(turtle, x, y, dx, dy) {
+  function translate(turtle, startX, startY, dx, dy) {
     // speed is in pixels per ms
     var speed      = turtle._computed_speed
-        , startX   = turtle._x
-        , startY   = turtle._y
+        , x        = startX + dx
+        , y        = startY + dy
         , screen   = getScreen()
         , xScale   = Math.abs(screen.xScale)
         , yScale   = Math.abs(screen.yScale)
@@ -1167,31 +1171,31 @@ return (function() {
     return promise;
   }
 
-  function rotate(turtle, angle, delta) {
+  function rotate(turtle, startAngle, delta) {
     var speed        = turtle._computed_speed
+        , angle      = startAngle + delta
         , heading    = calculateHeading(turtle, angle)
-        , startAngle = turtle._radians
+        , startAngle = turtle._angle
         , duration, promise;
-
-    delta = delta / turtle._fullCircle * Turtle.RADIANS;
 
     if (!speed) {
       turtle.addUpdate(function(state) {
         state.radians = heading.radians;
+        state.angle   = heading.angle;
       });
       promise = Promise.resolve(heading);
     }
     else {
-      duration = speed ? Math.abs(delta/Turtle.RADIANS*360)/speed : 0;
+      duration = speed ? Math.abs(360*delta/turtle._fullCircle)/speed : 0;
 
       (function() {
         var startTime   = Date.now()
             , animation, elapsed, ratio;
 
         animation = function(state, last) {
-          elapsed       = Date.now() - startTime;
-          ratio         = last ? Math.min(1, elapsed/duration) : 1;
-          state.radians = startAngle + ratio * delta;
+          elapsed    = Date.now() - startTime;
+          ratio      = last ? Math.min(1, elapsed/duration) : 1;
+          calculateHeading(turtle, startAngle + ratio * delta, state);
           if (ratio < 1) {
             turtle.addUpdate(animation);
           }
@@ -1302,9 +1306,11 @@ return (function() {
     return computed;
   }
 
-  function calculateHeading(turtle, value) {
+  function calculateHeading(turtle, value, heading) {
     var angle     = turtle._angle   || 0
         , radians = turtle._radians || 0;
+
+    heading || (heading = {});
 
     if (typeof value === 'number') {
       if (turtle._isRadians) {
@@ -1324,10 +1330,10 @@ return (function() {
       }
     }
 
-    return {
-      angle     : angle
-      , radians : radians
-    };
+    heading.angle   = angle;
+    heading.radians = radians;
+    
+    return heading;
   }
 
   function addModuleMethod(klass, module, method, classMethod) {
@@ -1359,7 +1365,18 @@ return (function() {
 
       for (i = args.length; --i >= 0;) {
         if (args[i] !== undefined) {
-          args[i] = Sk.ffi.remapToJs(args[i]);
+          if (args[i] instanceof Sk.builtin.func) {
+            args[i] = (function(pyValue) {
+              return function() {
+                var argsJs = Array.prototype.slice.call(arguments);
+                var argsPy = argsJs.map(function(argJs) {return Sk.ffi.remapToPy(argJs);});
+                return Sk.misceval.applyAsync(undefined, pyValue, undefined, undefined, undefined, argsPy);
+              };
+            })(args[i]);
+          }
+          else {
+            args[i] = Sk.ffi.remapToJs(args[i]);
+          }
         }
       }
 
