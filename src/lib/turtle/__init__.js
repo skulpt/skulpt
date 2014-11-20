@@ -17,6 +17,7 @@ return (function() {
       , _config              = undefined
       , _target              = undefined
       , _anonymousTurtle     = undefined
+      , _mouseHandler        = undefined
       , _durationSinceRedraw = 0
       , OPTIMAL_FRAME_RATE   = 30
       , SHAPES               = {}
@@ -70,6 +71,7 @@ return (function() {
               _renderTimeout = false;
             };
             cancelAnimationFrame();
+            getScreen().reset();
 
             for(var i = 0; i < _turtles.length; i++) {
               _turtles[i].reset();
@@ -81,11 +83,16 @@ return (function() {
               }
             }
 
+            if (_mouseHandler) {
+              _mouseHandler.reset();
+            }
+
             _turtles             = [];
             _durationSinceRedraw = 0;
             _screenInstance      = undefined;
             _target              = undefined;
             _anonymousTurtle     = undefined;
+            _mouseHandler        = undefined;
           }
         }
         , key;
@@ -103,15 +110,159 @@ return (function() {
     return Sk.TurtleGraphics;
   })();
 
+  function MouseHandler() {
+    var self = this;
+
+    this._target   = getTarget();
+    this._managers = {};
+    this._handlers = {
+      mousedown : function(e) {
+        self.onEvent('mousedown', e);
+      },
+      mouseup : function(e) {
+        self.onEvent('mouseup', e);
+      },
+      mousemove : function(e) {
+        self.onEvent('mousemove', e);
+      }
+    };
+  }
+
+  (function(proto) {
+    proto.onEvent = function(type, e) {
+      var world      = getScreen()
+          , rect     = world.layer.canvas.getBoundingClientRect()
+          , x        = e.clientX - rect.left | 0
+          , y        = e.clientY - rect.top  | 0
+          , localX   = x * world.xScale + world.llx
+          , localY   = y * world.yScale - world.lly
+          , managers = this._managers[type]
+          , i;
+
+      if (managers && managers.length) {
+        for(i = managers.length; --i >= 0;) {
+          if (type === 'mousemove') {
+            if (managers[i].canMove()) {
+              managers[i].trigger([localX, localY]);
+            }
+            continue;
+          }
+
+          managers[i].canMove(false);
+
+          if (managers[i].test(x, y, localX, localY)) {
+            if (type === 'mousedown') {
+              managers[i].canMove(true);
+            }
+            managers[i].trigger([localX, localY]);
+          }
+        }
+      }
+    };
+
+    proto.reset = function() {
+      if (this._target) {
+        for(var key in this._handlers) {
+          this._target.removeEventListener(key, this._handlers[key]);
+        }
+      }
+      this._managers = {};
+    };
+
+    proto.addManager = function(type, manager) {
+      if (!this._managers[type]) {
+        this._managers[type] = [];
+        this._target.addEventListener(type, this._handlers[type]);
+      }
+
+      this._managers[type].push(manager);
+    };
+
+  })(MouseHandler.prototype);
+
+  function EventManager(type, target) {
+    this._type     = type;
+    this._target   = target;
+    this._handlers = undefined;
+    getMouseHandler().addManager(type, this);
+  };
+
+  (function(proto) {
+    proto.reset = function() {
+      if (this._target) {
+        this._target
+      }
+      this._handlers = undefined;
+    };
+
+    proto.canMove = function(value) {
+      if (!this._target || !this._target.hitTest) return false;
+
+      if (value !== undefined) {
+        this._target.hitTest.hit = value;
+      }
+
+      return this._target.hitTest.hit;
+    }
+
+    proto.test = function(x, y, localX, localY) {
+      return (this._target && this._target.hitTest)
+        ? this._target.hitTest(x, y, localX, localY)
+        : !!this._target;
+    };
+
+    proto.trigger = function(args) {
+      var handlers  = this._handlers
+          , args, i;
+
+      if (handlers && handlers.length) {
+        for (i = 0; i < handlers.length; i++) {
+          handlers[i].apply({}, args);
+        }
+      }
+    };
+
+    proto.addHandler = function(handler, add) {
+      var handlers = this._handlers;
+
+      if (!add && handlers && handlers.length) {
+        // remove all existing handlers
+        while (handlers.shift()) {/* noop */};
+      }
+
+      if (typeof handler !== 'function') {
+        if (handlers && !handlers.length) {
+          this.reset();
+        }
+        return;
+      };
+
+      if (!handlers) {
+        handlers = this._handlers = [];
+      }
+
+      handlers.push(handler);
+    };
+  })(EventManager.prototype);
+
   function Turtle() {
     registerTurtle(this);
-    this._renderCycleState = {};
+    this._screen = getScreen();
+    this._managers = {};
+    this.getPaper();
+    this.getPen();
     this.reset();
   }
 
   Turtle.RADIANS = 2 * Math.PI;
 
   (function(proto) {
+    proto.hitTest = function(mouseX, mouseY, localX, localY) {
+      var pixel = this.getPen().getImageData(mouseX,mouseY,1,1).data;
+      // check alpha first since it is most likely to have a value
+      return pixel[3] ||pixel[0] || pixel[1] || pixel[2];
+    };
+
     proto.render = function() {
       var updates         = this._updates
           , updatesLength = updates.length
@@ -121,8 +272,8 @@ return (function() {
 
       this._updates = [];
 
-      state.paperLayer || (state.paperLayer = createLayer());
-      state.penLayer   || (state.penLayer = createLayer());
+      state.paperLayer || (state.paperLayer = this.getPaper());
+      state.penLayer   || (state.penLayer   = this.getPen());
 
       if (updatesLength) {
         for(i = 0; i < updatesLength; i++) {
@@ -177,23 +328,32 @@ return (function() {
       return this.rotate(startAngle, endAngle - startAngle);
     };
 
+    proto.getManager = function(type) {
+      if (!this._managers[type]) {
+        this._managers[type] = new EventManager(type, this);
+      }
+      return this._managers[type];
+    };
+
+    proto.getPaper = function() {
+      return this._paper || (this._paper = createLayer());
+    };
+
+    proto.getPen = function() {
+      return this._pen || (this.getPaper() && (this._pen = createLayer()));
+    };
+
     proto.clear = function() {
       var state = this._renderCycleState;
 
       this._updates    = [];
       this._undoBuffer = [];
 
-      if (state.paperLayer) {
-        if (state.paperLayer.canvas.parentNode) {
-          state.paperLayer.canvas.parentNode.removeChild(state.paperLayer.canvas);
-        }
-        delete state.paperLayer;
+      if (this._paper) {
+        clearLayer(this._paper);
       }
-      if (state.penLayer) {
-        if (state.penLayer.canvas.parentNode) {
-          state.penLayer.canvas.parentNode.removeChild(state.penLayer.canvas);
-        }
-        delete state.penLayer;
+      if (this._pen) {
+        clearLayer(this._pen);
       }
     };
 
@@ -214,10 +374,12 @@ return (function() {
       state.size    = this._size       = 1;
       state.filling = this._filling    = false;
 
+      for(var key in this._managers) {
+        this._managers[key].reset();
+      }
+
       this._isRadians  = false;
       this._fullCircle = 360;
-      this._updates    = [];
-      this._screen     = getScreen();
       this._bufferSize = typeof _config.bufferSize === 'number'
         ? _config.bufferSize
         : 0;
@@ -673,21 +835,66 @@ return (function() {
       this.clear();
     };
     proto.$dot.minArgs = 0;
+
+    proto.$onclick = function(method,btn,add) {
+      this.getManager('mousedown').addHandler(method, add);
+    }
+    proto.$onclick.minArgs = 1;
+    proto.$onclick.keywordArgs = ["btn","add"];
+
+    proto.$onrelease = function(method,btn,add) {
+      this.getManager('mouseup').addHandler(method, add);
+    }
+    proto.$onrelease.minArgs = 1;
+    proto.$onrelease.keywordArgs = ["btn","add"];
+
+    proto.$ondrag = function(method,btn,add) {
+      this.getManager('mousemove').addHandler(method, add);
+    }
+    proto.$ondrag.minArgs = 1;
+    proto.$ondrag.keywordArgs = ["btn","add"];
   })(Turtle.prototype);
 
   function Screen() {
     this._frames = 1;
     this._delay  = undefined;
-    this.bgcolor = 'none';
-    this.llx = this.lly = -200;
-    this.urx = this.ury = 200;
-    this.xScale    = 1;
-    this.yScale    = -1;
-    this.lineScale = 1;
+    this._bgcolor = 'none';
+    this._managers = {};
     this.layer = createLayer(this);
+    this.setUpWorld(-200,-200,200,200);
   }
 
   (function(proto) {
+    proto.getManager = function(type) {
+      if (!this._managers[type]) {
+        this._managers[type] = new EventManager(type, this);
+      }
+      return this._managers[type];
+    };
+
+    proto.reset = function() {
+      if (this._timer) {
+        window.clearTimeout(this._timer);
+        this._timer = undefined;
+      }
+
+      for(var key in this._managers) {
+        this._managers[key].reset();
+      }
+    };
+
+    proto.setUpWorld = function(llx, lly, urx, ury) {
+      var world = this;
+
+      world.llx       = llx;
+      world.lly       = lly;
+      world.urx       = urx;
+      world.ury       = ury;
+      world.xScale    = (urx - llx) / getWidth();
+      world.yScale    = -1 * (ury - lly) / getHeight();
+      world.lineScale = Math.min(Math.abs(world.xScale), Math.abs(world.yScale));
+    };
+
     proto.$tracer = function(frames, delay) {
       if (frames !== undefined || delay !== undefined) {
         if (typeof frames === 'number') {
@@ -718,13 +925,7 @@ return (function() {
     proto.$setworldcoordinates = function(llx, lly, urx, ury) {
       var world = this;
 
-      world.llx       = llx;
-      world.lly       = lly;
-      world.urx       = urx;
-      world.ury       = ury;
-      world.xScale    = (urx - llx) / getWidth();
-      world.yScale    = -1 * (ury - lly) / getHeight();
-      world.lineScale = Math.min(Math.abs(world.xScale), Math.abs(world.yScale));
+      this.setUpWorld(llx, lly, urx, ury);
 
       this.$clear();
 
@@ -737,7 +938,8 @@ return (function() {
     };
 
     proto.$clear = proto.$clearscreen = function() {
-      getTarget().style.setProperty("background-color","none");
+      this.reset();
+      clearLayer(this.layer);
       for(var i = 0; i < _turtles.length; i++) {
         _turtles[i].$reset();
       }
@@ -760,15 +962,39 @@ return (function() {
 
     proto.$bgcolor = function(color, g, b, a) {
       if (arguments.length) {
-        this.bgcolor = createColor(color);
-        getTarget().style.setProperty("background-color", this.bgcolor);
+        this._bgcolor = createColor(color, g, b, a);
+        clearLayer(this.layer, this._bgcolor);
         return;
       }
 
-      return hexToRGB(this.bgcolor);
+      return hexToRGB(this._bgcolor);
     };
     proto.$bgcolor.minArgs = 0;
     proto.$bgcolor.returnType = Types.COLOR;
+
+    proto.$onclick = function(method,btn,add) {
+      this.getManager('mousedown').addHandler(method, add);
+    };
+    proto.$onclick.minArgs = 1;
+    proto.$onclick.keywordArgs = ["btn","add"];
+
+    proto.$onscreenclick = function(method,btn,add) {
+      this.getManager('mousedown').addHandler(method, add);
+    };
+    proto.$onscreenclick.minArgs = 1;
+    proto.$onscreenclick.keywordArgs = ["btn","add"];
+
+    proto.$ontimer = function(method, interval) {
+      if (this._timer) {
+        window.clearTimeout(this._timer);
+        this._timer = undefined;
+      }
+
+      if (method && typeof interval === "number") {
+        this._timer = window.setTimeout(method, Math.max(0, interval|0));
+      }
+    };
+    proto.$ontimer.minArgs = 0;
 
   })(Screen.prototype);
 
@@ -800,6 +1026,13 @@ return (function() {
       _screenInstance = new Screen();
     }
     return _screenInstance;
+  }
+
+  function getMouseHandler() {
+    if (!_mouseHandler) {
+      _mouseHandler = new MouseHandler();
+    }
+    return _mouseHandler;
   }
 
   function getWidth() {
@@ -954,6 +1187,21 @@ return (function() {
     });
   }
 
+  function clearLayer(context, color) {
+    if (!context) return;
+
+    context.save();
+    context.setTransform(1,0,0,1,0,0);
+    if (color) {
+      context.fillStyle = color;
+      context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    }
+    else {
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+    }
+    context.restore();
+  };
+
   function drawTurtle(state, stamp) {
     var context  = stamp ? state.paperLayer : state.penLayer
         , shape  = SHAPES[state.shape]
@@ -967,10 +1215,7 @@ return (function() {
     if (!context) return;
 
     if (!stamp) {
-      context.save();
-      context.setTransform(1,0,0,1,0,0);
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-      context.restore();
+      clearLayer(context);
       if (!state.shown) {
         return;
       }
