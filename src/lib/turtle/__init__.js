@@ -507,7 +507,7 @@ return (function() {
       pushUndo(this);
       return self.translate(this._x, this._y, -this._x, -this._y)
         .then(function(position) {
-          return self.queueTurnTo(this._angle, 0);
+          return self.queueTurnTo(self._angle, 0);
         })
         .then(function(heading) {
           return undefined;
@@ -1698,6 +1698,11 @@ return (function() {
 
   _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
   _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
+
+  Sk.TurtleGraphics.raw = {
+    Turtle   : Turtle
+    , Screen : Screen
+  };
 
   Sk.TurtleGraphics.module = _module;
 
