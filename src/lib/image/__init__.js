@@ -31,7 +31,7 @@ $builtinmodule = function (name) {
         });
 	//array of pixel
 	$loc.getPixels = new Sk.builtin.func(function(self){
-		var arr = [self.image.height*self.image.width];//initial array
+		var arr = [];//initial array
 		var i;
 		for(i=0;i<self.image.height*self.image.width;i++){
 		
@@ -63,7 +63,7 @@ $builtinmodule = function (name) {
 	$loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel){
             var x = count%image.width;
 	    var y = count/image.width;
-            return Sk.misceval.callsim(self.getPixel,self,x,y);
+            return Sk.misceval.callsim(self.setPixel,self,x,y,pixel);
 	});
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
