@@ -9,8 +9,6 @@ if (Sk.TurtleGraphics && Sk.TurtleGraphics.module) {
 
 return (function() {
   var _module                = {}
-      , _turtles             = []
-      , _renderTimeout       = false
       , _frameRequest        = undefined
       , _frameRequestTimeout = undefined
       , _screenInstance      = undefined
@@ -19,8 +17,9 @@ return (function() {
       , _anonymousTurtle     = undefined
       , _mouseHandler        = undefined
       , _durationSinceRedraw = 0
-      , OPTIMAL_FRAME_RATE   = 30
+      , OPTIMAL_FRAME_RATE   = 1000/30
       , SHAPES               = {}
+      , TURTLE_COUNT         = 0
       , Types                = {};
 
   Types.FLOAT = function(value) {
@@ -50,7 +49,7 @@ return (function() {
     ,[-6,-8],[-4,-5],[0,-7],[4,-5],[6,-8],[8,-6],[5,-3],[7,1],[6,5],[9,8],[7,9]
     ,[4,7],[1,10],[2,14]
   ];
-  
+
   SHAPES.circle = [
     [10,0],[9.51,3.09],[8.09,5.88],[5.88,8.09],[3.09,9.51],[0,10],[-3.09,9.51]
     ,[-5.88,8.09],[-8.09,5.88],[-9.51,3.09],[-10,0],[-9.51,-3.09],[-8.09,-5.88]
@@ -65,17 +64,11 @@ return (function() {
           , height     : 400 // if set to 0 it will use the target height
           , animate    : true // enabled/disable all animated rendering
           , bufferSize : 0 // default turtle buffer size
+          , allowUndo  : true // enable ability to use the undo buffer
           , reset   : function() {
-            if (_renderTimeout) {
-              window.clearTimeout(_renderTimeout);
-              _renderTimeout = false;
-            };
             cancelAnimationFrame();
             getScreen().reset();
-
-            for(var i = 0; i < _turtles.length; i++) {
-              _turtles[i].reset();
-            };
+            getFrameManager().reset();
 
             if (_target) {
               while (_target.firstChild) {
@@ -87,12 +80,12 @@ return (function() {
               _mouseHandler.reset();
             }
 
-            _turtles             = [];
             _durationSinceRedraw = 0;
             _screenInstance      = undefined;
             _target              = undefined;
             _anonymousTurtle     = undefined;
             _mouseHandler        = undefined;
+            TURTLE_COUNT         = 0;
           }
         }
         , key;
@@ -109,6 +102,133 @@ return (function() {
 
     return Sk.TurtleGraphics;
   })();
+
+  function FrameManager() {
+    this.reset();
+  }
+
+  var _frameManager;
+  function getFrameManager() {
+    if (!_frameManager) {
+      _frameManager = new FrameManager();
+    }
+    return _frameManager;
+  }
+
+  (function(proto) {
+    var browserFrame;
+    (function(frame) {
+      if (frame) {
+        browserFrame = function(method) {
+          return (_frameRequest = frame(method));
+        }
+      }
+    })(window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame);
+
+    function animationFrame(delay) {
+      if (!_config.animate) {
+        return function(method) {
+          method();
+        };
+      }
+
+      if (!delay && browserFrame) {
+        return browserFrame;
+      }
+
+      return function(method) {
+         return (_frameRequestTimeout = window.setTimeout(method, delay || OPTIMAL_FRAME_RATE));
+      }
+    }
+
+    proto.turtles = function() {
+      return this._turtles;
+    };
+
+    proto.addTurtle = function(turtle) {
+      this._turtles.push(turtle);
+    };
+
+    proto.reset = function() {
+      if (this._turtles) {
+        for(var i = this._turtles.length; --i >= 0;) {
+          this._turtles[i].reset();
+        };
+      }
+      this._turtles        = [];
+      this._frames         = [];
+      this._frameCount     = 0;
+      this._buffer         = 1;
+      this._rate           = 0;
+      this._animationFrame = animationFrame();
+    };
+
+    proto.addFrame = function(method, countAsFrame) {
+      if (countAsFrame) {
+        this._frameCount += 1;
+      }
+
+      this.frames().push(method);
+
+      return (!_config.animate || (this._buffer && this._frameCount === this.frameBuffer()))
+        ? this.update()
+        : Promise.resolve();
+    };
+
+    proto.frames = function() {
+      return this._frames;
+    };
+
+    proto.frameBuffer = function(buffer) {
+      if (typeof buffer === 'number') {
+        this._buffer = buffer | 0;
+      }
+      return this._buffer;
+    };
+
+    proto.refreshInterval = function(rate) {
+      if (typeof rate === 'number') {
+        this._rate = rate | 0;
+        this._animationFrame = animationFrame(rate);
+      }
+      return this._rate;
+    };
+
+    proto.update = function() {
+      return (this._frames && this._frames.length)
+        ? this.requestAnimationFrame()
+        : Promise.resolve();
+    };
+
+    proto.requestAnimationFrame = function() {
+      var frames           = this._frames
+          , animationFrame = this._animationFrame
+          , turtles        = this._turtles
+          , sprites        = getScreen().spriteLayer()
+          , turtle, i;
+
+      this._frames     = [];
+      this._frameCount = 0;
+
+      return new Promise(function(resolve) {
+        animationFrame(function paint() {
+          for (i = 0; i < frames.length; i++) {
+            if (frames[i]) {
+              frames[i]();
+            }
+          }
+          clearLayer(sprites);
+          for (i = 0; i < turtles.length; i++) {
+            turtle = turtles[i];
+            if (turtle.getState().shown) {
+              drawTurtle(turtle.getState(), sprites);
+            }
+          }
+          resolve();
+        });
+      });
+    };
+  })(FrameManager.prototype);
 
   function MouseHandler() {
     var self = this;
@@ -131,7 +251,7 @@ return (function() {
   (function(proto) {
     proto.onEvent = function(type, e) {
       var world      = getScreen()
-          , rect     = world.layer.canvas.getBoundingClientRect()
+          , rect     = world.spriteLayer().canvas.getBoundingClientRect()
           , x        = e.clientX - rect.left | 0
           , y        = e.clientY - rect.top  | 0
           , localX   = x * world.xScale + world.llx
@@ -246,11 +366,9 @@ return (function() {
   })(EventManager.prototype);
 
   function Turtle() {
-    registerTurtle(this);
+    getFrameManager().addTurtle(this);
     this._screen = getScreen();
     this._managers = {};
-    this.getPaper();
-    this.getPen();
     this.reset();
   }
 
@@ -258,66 +376,79 @@ return (function() {
 
   (function(proto) {
     proto.hitTest = function(mouseX, mouseY, localX, localY) {
-      var pixel = this.getPen().getImageData(mouseX,mouseY,1,1).data;
+      var context = getScreen().hitTestLayer();
+      clearLayer(context);
+      drawTurtle(this.getState(), context);
+      var pixel = context.getImageData(mouseX,mouseY,1,1).data;
       // check alpha first since it is most likely to have a value
       return pixel[3] ||pixel[0] || pixel[1] || pixel[2];
     };
 
-    proto.render = function() {
-      var updates         = this._updates
-          , updatesLength = updates.length
-          , last          = updatesLength - 1
-          , state         = this._renderCycleState
-          , i;
+    proto.addUpdate = function(method, countAsFrame, stateChanges) {
+      var self    = this
+          , state = this.getState()
+          , args  = Array.prototype.slice.call(arguments, stateChanges ? 2 : 3);
 
-      this._updates = [];
-
-      state.paperLayer || (state.paperLayer = this.getPaper());
-      state.penLayer   || (state.penLayer   = this.getPen());
-
-      if (updatesLength) {
-        for(i = 0; i < updatesLength; i++) {
-          updates[i].call(this, state, i === last);
+      return getFrameManager().addFrame(function() {
+        if (method) {
+          method.apply(state, args);
         }
+        if (stateChanges) {
+          for(var key in stateChanges) {
+            state[key] = stateChanges[key];
+          }
+        }
+      }, countAsFrame);
+    };
 
-        drawTurtle(state);
+    proto.getState = function() {
+      var self = this;
+
+      if (!this._state) {
+        this._state = {
+          x         : this._x
+          , y       : this._y
+          , angle   : this._angle
+          , radians : this._radians
+          , shape   : this._shape
+          , color   : this._color
+          , fill    : this._fill
+          , filling : this._filling
+          , size    : this._size
+          , speed   : this._computed_speed
+          , down    : this._down
+          , shown   : this._shown
+          , context : function() {
+            return self.getPaper()
+          }
+        };
       }
+      return this._state;
     };
 
-    proto.addUpdate = function(method) {
-      this._updates.push(method);
-      renderLoop();
-    };
-
-    proto.translate = function(startX, startY, dx, dy) {
-      var self      = this
-          , promise = (dx === 0 && dy === 0)
-              ? Promise.resolve([startX, startY])
-              : translate(self, startX, startY, dx, dy);
-
-      return promise.then(function(coords) {
+    proto.translate = function(startX, startY, dx, dy, beginPath, isCircle) {
+      var self = this;
+      return translate(this, startX, startY, dx, dy, beginPath, isCircle)
+        .then(function(coords) {
           self._x = coords[0];
           self._y = coords[1];
         });
     };
 
-    proto.rotate = function(startAngle, delta) {
-      var self      = this
-          , promise = (delta === 0)
-              ? Promise.resolve(calculateHeading(self, startAngle))
-              : rotate(self, startAngle, delta);
-
-      return promise.then(function(heading) {
-        self._angle   = heading.angle;
-        self._radians = heading.radians;
-      });
+    proto.rotate = function(startAngle, delta, isCircle) {
+      var self = this;
+      return rotate(this, startAngle, delta, isCircle)
+        .then(function(heading) {
+          self._angle   = heading.angle;
+          self._radians = heading.radians;
+        });
     };
 
     proto.queueMoveBy = function(startX, startY, theta, distance) {
       var dx   = Math.cos(theta) * distance
           , dy = Math.sin(theta) * distance;
 
-      return this.translate(startX, startY, dx, dy);
+      return this.translate(startX, startY, dx, dy, true);
     };
 
     proto.queueTurnTo = function(startAngle, endAngle) {
@@ -336,43 +467,24 @@ return (function() {
     };
 
     proto.getPaper = function() {
-      return this._paper || (this._paper = createLayer());
-    };
-
-    proto.getPen = function() {
-      return this._pen || (this.getPaper() && (this._pen = createLayer()));
-    };
-
-    proto.clear = function() {
-      var state = this._renderCycleState;
-
-      this._updates    = [];
-      this._undoBuffer = [];
-
-      if (this._paper) {
-        clearLayer(this._paper);
-      }
-      if (this._pen) {
-        clearLayer(this._pen);
-      }
+      return this._paper || (this._paper = createLayer(false, false));
     };
 
     proto.reset = function() {
-      var state = {};
-
-      this.clear();
-
-      state.x       = this._x          = 0;
-      state.y       = this._y          = 0;
-      state.radians = this._radians    = 0;
-      state.angle   = this._angle      = 0;
-      state.shown   = this._shown      = true;
-      state.down    = this._down       = true;
-      state.color   = this._color      = "black";
-      state.fill    = this._fill       = "black";
-      state.shape   = this._shape      = "classic";
-      state.size    = this._size       = 1;
-      state.filling = this._filling    = false;
+      this._x          = 0;
+      this._y          = 0;
+      this._radians    = 0;
+      this._angle      = 0;
+      this._shown      = true;
+      this._down       = true;
+      this._color      = "black";
+      this._fill       = "black";
+      this._shape      = "classic";
+      this._size       = 1;
+      this._filling    = false;
+      this._undoBuffer = [];
+      this._speed      = 3;
+      this._computed_speed = 5;
 
       for(var key in this._managers) {
         this._managers[key].reset();
@@ -383,13 +495,11 @@ return (function() {
       this._bufferSize = typeof _config.bufferSize === 'number'
         ? _config.bufferSize
         : 0;
-      this.$speed(3);
-      this._renderCycleState = state;
     };
 
     proto.$degrees = function(fullCircle) {
       fullCircle = (typeof fullCircle === 'number') ? Math.abs(fullCircle) : 360;
-      
+
       this._isRadians  = false;
       if (!fullCircle || !this._fullCircle) {
         this._angle = this._radians = 0;
@@ -398,8 +508,7 @@ return (function() {
         this._angle = this._angle / this._fullCircle * fullCircle;
       }
       this._fullCircle = fullCircle;
-
-      return this._angle;
+      return this.addUpdate(undefined, false, {angle:this._angle, radians: this._radians});
     };
     proto.$degrees.returnType = Types.FLOAT;
 
@@ -438,7 +547,7 @@ return (function() {
       var coords = getCoordinates(x,y)
           , dx   = coords.x - this._x
           , dy   = coords.y - this._y
-      
+
       return Math.sqrt(dx * dx + dy * dy);
     };
     proto.$distance.minArgs    = 1;
@@ -485,29 +594,32 @@ return (function() {
       var coords = getCoordinates(x,y);
 
       pushUndo(this);
-      
+
       return this.translate(
         this._x, this._y
         , coords.x - this._x, coords.y - this._y
+        , true
       );
     };
     proto.$goto_$rw$.displayName = 'goto';
     proto.$goto_$rw$.minArgs = 1;
 
     proto.$setx = function(x) {
-      return this.translate(this._x, this._y, x - this._x, 0);
+      return this.translate(this._x, this._y, x - this._x, 0, true);
     };
 
     proto.$sety = function(y) {
-      return this.translate(this._x, this._y, 0, y - this._y);
+      return this.translate(this._x, this._y, 0, y - this._y, true);
     };
 
     proto.$home = function() {
-      var self = this;
+      var self = this
+          , angle = this._angle;
+
       pushUndo(this);
-      return self.translate(this._x, this._y, -this._x, -this._y)
+      return self.translate(this._x, this._y, -this._x, -this._y, true)
         .then(function(position) {
-          return self.queueTurnTo(self._angle, 0);
+          return self.queueTurnTo(angle, 0);
         })
         .then(function(heading) {
           return undefined;
@@ -536,8 +648,9 @@ return (function() {
           , angle   = this._angle
           , heading = {}
           , states  = []
-          , speed   = self._speed
+          , speed   = this._computed_speed
           , scale   = 1/getScreen().lineScale
+          , beginPath = true
           , frac, w, w2, l, i, dx, dy, promise;
 
       pushUndo(this);
@@ -561,28 +674,33 @@ return (function() {
       promise = Promise.resolve();
       heading = calculateHeading(self, angle + w2);
 
+      self._inCircle = true;
+
       for(i = 0; i < steps; i++) {
         dx = Math.cos(heading.radians) * l;
         dy = Math.sin(heading.radians) * l;
-        (function(x, y, dx, dy, angle, delta) {
+        (function(x, y, dx, dy, angle, delta, beginPath) {
           promise = promise.then(function() {
-            self.$speed(0);
-            return self.rotate(angle, delta);
+            self._computed_speed = 0;
+            return self.rotate(angle, delta, true);
           }).then(function(result) {
-            self.$speed(speed);
-            return self.translate(x, y, dx, dy);
+            self._computed_speed = speed;
+            return self.translate(x, y, dx, dy, beginPath, true);
           });
-        })(x, y, dx, dy, angle, w);
+        })(x, y, dx, dy, angle, w, beginPath);
         angle   = heading.angle;
         heading = calculateHeading(self, angle + w);
         x += dx;
         y += dy;
+        beginPath = false;
       }
 
+      self._inCircle = false;
+
       promise = promise.then(function() {
-        self.$speed(0);
-        self.rotate(angle, w2);
-        self.$speed(speed);
+        self._computed_speed = 0;
+        self.rotate(angle, w2, true);
+        self._computed_speed = speed;
       });
 
       return promise;
@@ -592,16 +710,12 @@ return (function() {
 
     proto.$penup = proto.$up = proto.$pu = function() {
       this._down = false;
-      this.addUpdate(function(state) {
-        state.down = false;
-      });
+      return this.addUpdate(undefined, false, {down:false});
     };
 
     proto.$pendown = proto.$down = proto.$pd = function() {
       this._down = true;
-      this.addUpdate(function(state) {
-        state.down = true;
-      });
+      return this.addUpdate(undefined, false, {down:true});
     };
 
     proto.$isdown = function() {
@@ -611,8 +725,8 @@ return (function() {
     proto.$speed = function(speed) {
       if (arguments.length) {
         this._speed          = Math.max(0, Math.min(1000, speed));
-        this._computed_speed = calculateSpeed(this);
-        return undefined;
+        this._computed_speed = Math.max(0, speed * 2 - 1);
+        return this.addUpdate(undefined, false, {speed:this._computed_speed});
       }
 
       return this._speed;
@@ -623,12 +737,8 @@ return (function() {
       var color;
 
       if (arguments.length) {
-        color = createColor(r,g,b,a);
-        this._color = color;
-        this.addUpdate(function(state) {
-          state.color = color;
-        });
-        return undefined;
+        this._color = createColor(r,g,b,a);
+        return this.addUpdate(undefined, false, {color : this._color});
       }
 
       return hexToRGB(this._color);
@@ -640,12 +750,8 @@ return (function() {
       var color;
 
       if (arguments.length) {
-        color = createColor(r,g,b,a);
-        this._fill = color;
-        this.addUpdate(function(state) {
-          state.fill = color;
-        });
-        return undefined;
+        this._fill = createColor(r,g,b,a);
+        return this.addUpdate(undefined, false, {fill : this._fill});
       }
 
       return hexToRGB(this._fill);
@@ -656,14 +762,16 @@ return (function() {
     proto.$color = function(color, fill, b, a) {
       if (arguments.length) {
         if (arguments.length === 1 || arguments.length >= 3) {
-          this.$pencolor(color, fill, b, a);
-          this.$fillcolor(color, fill, b, a);
+          this._color = this._fill = createColor(color, fill, b, a);
         }
         else {
-          this.$pencolor(color);
-          this.$fillcolor(fill);
+          this._color = createColor(color);
+          this._fill  = createColor(fill);
         }
-        return undefined;
+        return this.addUpdate(undefined, false, {
+          color  : this._color
+          , fill : this._fill
+        });
       }
       return [this.$pencolor(), this.$fillcolor()];
     };
@@ -681,21 +789,28 @@ return (function() {
       if (flag !== undefined) {
         flag = !!flag;
         if (flag === this._filling) return;
-        self._filling = flag;
+        this._filling = flag;
         if (flag) {
-          self.addUpdate(function(state) {
-            self._fillBuffer = [{
-              x   : state.x
-              , y : state.y
-            }];
+          pushUndo(this);
+          return this.addUpdate(undefined, false, {
+            filling      : true
+            , fillBuffer : [{x : this._x, y : this._y}]
           });
         }
         else {
-          self.addUpdate(function(state) {
-            drawFill(state, self._fillBuffer);
-          });
+          pushUndo(this);
+          return this.addUpdate(
+            function() {
+              this.fillBuffer.push(this);
+              drawFill.call(this);
+            }
+            , true
+            , {
+              filling      : false
+              , fillBuffer : undefined
+            }
+          );
         }
-        return;
       }
 
       return this._filling;
@@ -703,18 +818,18 @@ return (function() {
     proto.$fill.minArgs = 0;
 
     proto.$begin_fill = function() {
-      this.$fill(true);
+      return this.$fill(true);
     };
 
     proto.$end_fill = function() {
-      this.$fill(false);
+      return this.$fill(false);
     };
 
     proto.$stamp = function() {
       pushUndo(this);
-      this.addUpdate(function(state) {
-        drawTurtle(state, true);
-      });
+      return this.addUpdate(function() {
+        drawTurtle(this, this.context());
+      }, true);
     };
 
     proto.$dot = function(size, color, g, b, a) {
@@ -727,13 +842,11 @@ return (function() {
         ? this._color
         : createColor(color, g, b, a);
 
-      this.addUpdate(function(state) {
-        drawDot(state, size, color);
-      });
+      return this.addUpdate(drawDot, true, undefined, size, color);
     };
 
     proto.$write = function(message,move,align,font) {
-      var face, size, type, width;
+      var promise, face, size, type, width;
 
       pushUndo(this);
 
@@ -750,17 +863,20 @@ return (function() {
         font = [type, size, face].join(" ");
       }
 
-      this.addUpdate(function(state) {
-        drawText(state, message, align, font);
-      });
+      var promise = this.addUpdate(drawText, true, undefined, message, align, font);
 
       if (move && (align === 'left' || align === 'center')) {
         width = measureText(message, font);
         if (align === 'center') {
           width = width/2;
         }
-        return this.translate(this._x, this._y, width * getScreen().xScale, 0, true);
+        return promise.then(function() {
+          var state = self.getState();
+          return self.translate(state.x, state.y, width * getScreen().xScale, 0, true);
+        });
       }
+
+      return promise;
     };
     proto.$write.keywordArgs = ['move','align','font'];
     proto.$write.minArgs     = 1;
@@ -768,10 +884,7 @@ return (function() {
     proto.$pensize = proto.$width = function(size) {
       if (arguments.length) {
         this._size = size;
-        this.addUpdate(function(state) {
-          state.size = size;
-        });
-        return undefined;
+        return this.addUpdate(undefined, true, {size : size});
       }
 
       return this._size;
@@ -780,16 +893,12 @@ return (function() {
 
     proto.$showturtle = proto.$st = function() {
       this._shown = true;
-      this.addUpdate(function(state) {
-        state.shown = true;
-      });
+      return this.addUpdate(undefined, true, {shown : true});
     };
 
     proto.$hideturtle = proto.$ht = function() {
       this._shown = false;
-      this.addUpdate(function(state) {
-        state.shown = false;
-      });
+      return this.addUpdate(undefined, true, {shown : false});
     };
 
     proto.$isvisible = function() {
@@ -799,10 +908,7 @@ return (function() {
     proto.$shape = function(shape) {
       if (shape && SHAPES[shape]) {
         this._shape = shape;
-        this.addUpdate(function(state) {
-          state.shape = shape;
-        });
-        return;
+        return this.addUpdate(undefined, true, {shape : shape});
       }
 
       return this._shape;
@@ -829,10 +935,13 @@ return (function() {
 
     proto.$reset = function() {
       this.reset();
+      return this.$clear();
     };
 
     proto.$clear = function() {
-      this.clear();
+      return this.addUpdate(function() {
+        clearLayer(this.context());
+      }, true);
     };
     proto.$dot.minArgs = 0;
 
@@ -853,6 +962,11 @@ return (function() {
     }
     proto.$ondrag.minArgs = 1;
     proto.$ondrag.keywordArgs = ["btn","add"];
+
+    proto.$getscreen = function() {
+      return _module.Screen();
+    }
+    proto.$getscreen.isSk = true;
   })(Turtle.prototype);
 
   function Screen() {
@@ -860,11 +974,18 @@ return (function() {
     this._delay  = undefined;
     this._bgcolor = 'none';
     this._managers = {};
-    this.layer = createLayer(this);
     this.setUpWorld(-200,-200,200,200);
   }
 
   (function(proto) {
+    proto.spriteLayer = function() {
+      return this._sprites || (this._sprites = createLayer(false,true));
+    };
+
+    proto.hitTestLayer = function() {
+      return this._hitTest || (this._hitTest = createLayer(true,false));
+    };
+
     proto.getManager = function(type) {
       if (!this._managers[type]) {
         this._managers[type] = new EventManager(type, this);
@@ -895,18 +1016,21 @@ return (function() {
       world.lineScale = Math.min(Math.abs(world.xScale), Math.abs(world.yScale));
     };
 
+    proto.$register_shape = function(name, points) {
+      SHAPES[name] = points;
+    };
+
     proto.$tracer = function(frames, delay) {
       if (frames !== undefined || delay !== undefined) {
         if (typeof frames === 'number') {
           this._frames = frames;
+          getFrameManager().frameBuffer(frames);
         }
         if (typeof delay === 'number') {
           this._delay = delay;
+          getFrameManager().refreshInterval(delay);
         }
 
-        for(var i = 0; i < _turtles.length; i++) {
-          _turtles[i]._computed_speed = calculateSpeed(_turtles[i]);
-        }
         return;
       }
 
@@ -923,32 +1047,35 @@ return (function() {
     };
 
     proto.$setworldcoordinates = function(llx, lly, urx, ury) {
-      var world = this;
+      var world     = this
+          , turtles = getFrameManager().turtles();
 
       this.setUpWorld(llx, lly, urx, ury);
 
-      this.$clear();
-
-      for(var i = 0; i < _turtles.length; i++) {
-        _turtles[i].addUpdate(function(state) {
-          applyWorld(world, state.paperLayer);
-          applyWorld(world, state.penLayer);
-        });
-      }
+      return this.$clear();
     };
 
     proto.$clear = proto.$clearscreen = function() {
+      var turtles = getFrameManager().turtles();
       this.reset();
-      clearLayer(this.layer);
-      for(var i = 0; i < _turtles.length; i++) {
-        _turtles[i].$reset();
-      }
+      return this.$reset();
+    };
+
+    proto.$update = function() {
+      return getFrameManager().update();
     };
 
     proto.$reset = proto.$resetscreen = function() {
-      for(var i = 0; i < _turtles.length; i++) {
-        _turtles[i].$reset();
-      }
+      var self = this
+          , turtles = getFrameManager().turtles();
+
+      return getFrameManager().addFrame(function() {
+        applyWorld(self, self.spriteLayer());
+        for(var i = 0; i < turtles.length; i++) {
+          turtles[i].reset();
+          applyWorld(self, turtles[i].getPaper());
+        }
+      }, true);
     };
 
     proto.$window_width = function() {
@@ -963,7 +1090,7 @@ return (function() {
     proto.$bgcolor = function(color, g, b, a) {
       if (arguments.length) {
         this._bgcolor = createColor(color, g, b, a);
-        clearLayer(this.layer, this._bgcolor);
+        clearLayer(this.spriteLayer(), this._bgcolor);
         return;
       }
 
@@ -1017,10 +1144,6 @@ return (function() {
     return _target;
   };
 
-  function registerTurtle(turtle) {
-    _turtles.push(turtle);
-  }
-
   function getScreen() {
     if (!_screenInstance) {
       _screenInstance = new Screen();
@@ -1043,19 +1166,23 @@ return (function() {
     return (_config.height || getTarget().clientHeight) | 0;
   }
 
-  function createLayer(screen) {
+  function createLayer(isHidden, isTop) {
     var canvas = document.createElement('canvas')
         , width  = getWidth()
         , height = getHeight()
         , offset = getTarget().firstChild ? (-height) + "px" : "0"
         , context;
-    
+
     canvas.width          = width;
     canvas.height         = height;
     canvas.style.position = "relative";
     canvas.style.display  = "block";
     canvas.style.top      = offset;
     canvas.style.setProperty("margin-bottom",offset);
+    canvas.style.setProperty("z-index", isTop ? 1 : 0);
+    if (isHidden) {
+      canvas.style.display = "none";
+    }
 
     getTarget().appendChild(canvas);
 
@@ -1063,17 +1190,9 @@ return (function() {
     context.lineCap = "round";
     context.lineJoin = "round";
 
-    applyWorld(screen || getScreen(), context);
+    applyWorld(getScreen(), context);
 
     return context;
-  }
-
-  function renderLoop() {
-    if (_renderTimeout) return;
-    _renderTimeout = window.setTimeout(function() {
-      _renderTimeout = undefined;
-      requestAnimationFrame(render);
-    }, 0);
   }
 
   function cancelAnimationFrame() {
@@ -1087,33 +1206,6 @@ return (function() {
     }
   }
 
-  function requestAnimationFrame(method) {
-    var animationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame;
-    if (animationFrame && !getScreen()._delay) {
-      _frameRequest = animationFrame(function() {
-        _frameRequest = undefined;
-        method();
-      });
-    }
-    else {
-      _frameRequestTimeout = window.setTimeout(function() {
-        _frameRequestTimeout = undefined;
-        method();
-      }, 1000 / getScreen().$delay());
-    }
-  };
-
-  function render() {
-    var turtleLength = _turtles.length
-        , i;
-
-    _durationSinceRedraw = 0;
-
-    for(i = 0; i < turtleLength; i++) {
-      _turtles[i] && _turtles[i].render();
-    }
-  }
-
   function applyWorld(world, context) {
     var llx      = world.llx
         , lly    = world.lly
@@ -1121,6 +1213,8 @@ return (function() {
         , ury    = world.ury
         , xScale = world.xScale
         , yScale = world.yScale
+
+    clearLayer(context);
 
     context.restore();
     context.save();
@@ -1135,59 +1229,68 @@ return (function() {
   }
 
   function pushUndo(turtle) {
-    var undoState = {
-      angle : turtle._angle
-    };
+    var properties, undoState, i;
 
-    if (!turtle._bufferSize) {
+    if (!_config.allowUndo || !turtle._bufferSize) {
       return;
+    }
+
+    if (!turtle._undoBuffer) {
+      turtle._undoBuffer = [];
     }
 
     while(turtle._undoBuffer.length > turtle._bufferSize) {
       turtle._undoBuffer.shift();
     }
 
-    turtle.addUpdate(function(state) {
-      for(var key in state) {
-        undoState[key] = state[key];
+    undoState  = {};
+    properties = "x y angle radians color fill down filling shown shape size".split(" ");
+    for(i = 0; i < properties.length; i++) {
+      undoState[properties[i]] = turtle['_' + properties[i]];
+    }
+
+    turtle._undoBuffer.push(undoState);
+
+    return turtle.addUpdate(function() {
+      undoState.fillBuffer = this.fillBuffer ? this.fillBuffer.slice() : undefined;
+      if (turtle._paper && turtle._paper.canvas) {
+        undoState.image = turtle._paper.canvas.toDataURL();
       }
-      if (state.paperLayer && state.paperLayer.canvas) {
-        undoState.image = state.paperLayer.canvas.toDataURL();
-        turtle._undoBuffer.push(undoState);
-      }
-    });
+    }, false);
   }
 
   var undoImage = new Image();
   function popUndo(turtle) {
-    var undoState = turtle._undoBuffer.pop();
+    var undoState;
+
+    if (!turtle._bufferSize || !turtle._undoBuffer) {
+      return;
+    }
+
+    undoState = turtle._undoBuffer.pop();
+
     if (!undoState) {
       return;
     }
 
-    turtle._x = undoState.x;
-    turtle._y = undoState.y;
-    turtle._radians = undoState.radians;
-    turtle._angle   = undoState.angle;
-    turtle.addUpdate(function(state) {
-      var context = state.paperLayer;
-      undoImage.src = undoState.image;
+    for(var key in undoState) {
+      if (key === 'image' || key === 'fillBuffer') continue;
+      turtle['_' + key] = undoState[key];
+    }
 
-      if (!context) return;
-
-      context.save();
-      context.setTransform(1,0,0,1,0,0);
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-      context.drawImage(undoImage, 0, 0);
-      context.restore();
-      delete undoState.image;
-      for(var key in undoState) {
-        state[key] = undoState[key];
+    return turtle.addUpdate(function() {
+      var img;
+      if (undoState.image) {
+        undoImage.src = undoState.image;
+        img = undoImage;
       }
-    });
+
+      clearLayer(this.context(), false, undoImage);
+      delete undoState.image;
+    }, true, undoState);
   }
 
-  function clearLayer(context, color) {
+  function clearLayer(context, color, image) {
     if (!context) return;
 
     context.save();
@@ -1199,12 +1302,16 @@ return (function() {
     else {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     }
+
+    if (image) {
+      context.drawImage(image, 0, 0);
+    }
+
     context.restore();
   };
 
-  function drawTurtle(state, stamp) {
-    var context  = stamp ? state.paperLayer : state.penLayer
-        , shape  = SHAPES[state.shape]
+  function drawTurtle(state, context) {
+    var shape  = SHAPES[state.shape]
         , world  = getScreen()
         , width  = getWidth()
         , height = getHeight()
@@ -1214,18 +1321,11 @@ return (function() {
 
     if (!context) return;
 
-    if (!stamp) {
-      clearLayer(context);
-      if (!state.shown) {
-        return;
-      }
-    }
-
     x       = Math.cos(state.radians) / xScale;
     y       = Math.sin(state.radians) / yScale;
     bearing = Math.atan2(y, x) - Math.PI/2;
 
-    context.save();    
+    context.save();
     context.translate(state.x, state.y);
     context.scale(xScale,yScale);
     context.rotate(bearing);
@@ -1243,8 +1343,8 @@ return (function() {
     context.restore();
   }
 
-  function drawDot(state, size, color) {
-    var context = state.paperLayer
+  function drawDot(size, color) {
+    var context  = thix.context
         , screen = getScreen()
         , xScale = screen.xScale
         , yScale = screen.yScale;
@@ -1254,10 +1354,10 @@ return (function() {
     context.save();
     context.beginPath();
     context.scale(xScale,yScale);
-    context.moveTo(state.x, state.y);
-    context.arc(state.x, state.y, size, 0, Turtle.RADIANS);
+    context.moveTo(this.x, this.y);
+    context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
     context.closePath();
-    context.fillStyle = color || state.color;
+    context.fillStyle = color || this.color;
     context.fill();
     context.restore();
   }
@@ -1270,8 +1370,8 @@ return (function() {
     return textMeasuringContext.measureText(message).width;
   };
 
-  function drawText(state, message, align, font) {
-    var context  = state.paperLayer
+  function drawText(message, align, font) {
+    var context  = this.context()
         , screen = getScreen()
         , xScale = screen.xScale
         , yScale = screen.yScale;
@@ -1287,32 +1387,36 @@ return (function() {
     }
 
     context.scale(xScale,yScale);
-    context.fillStyle = state.color;
-    context.fillText(message, state.x, -state.y);
+    context.fillStyle = this.color;
+    context.fillText(message, this.x/xScale, this.y/yScale);
     context.restore();
   }
 
-  function drawLine(state, endX, endY, beginPath) {
-    var context = state.paperLayer;
+  function drawLine(loc, beginPath, endPath) {
+    // TODO: make steps in path use square ends of lines
+    // and open and close path at the right times.
+    // See if we can minimize calls to stroke
+    var context = this.context();
 
     if (!context) return;
 
     if (beginPath) {
       context.beginPath();
-      context.moveTo(state.x, state.y);
+      context.moveTo(this.x, this.y);
     }
 
-    context.lineWidth   = state.size * getScreen().lineScale;
-    context.strokeStyle = state.color;
-    context.lineTo(endX, endY);
+    context.lineWidth   = this.size * getScreen().lineScale;
+    context.strokeStyle = this.color;
+    context.lineTo(loc.x, loc.y);
     context.stroke();
   }
 
-  function drawFill(state, path) {
-    var context = state.paperLayer
+  function drawFill() {
+    var context = this.context()
+        , path  = this.fillBuffer
         , i;
 
-    if (!context) return;
+    if (!context || !path || !path.length) return;
 
     context.save();
     context.beginPath();
@@ -1321,7 +1425,7 @@ return (function() {
       context.lineTo(path[i].x, path[i].y);
     }
     context.closePath();
-    context.fillStyle = state.fill;
+    context.fillStyle = this.fill;
     context.fill();
     for(i = 1; i < path.length; i++) {
       if (!path[i].stroke) {
@@ -1338,128 +1442,83 @@ return (function() {
     context.restore();
   }
 
-  function translate(turtle, startX, startY, dx, dy) {
+  function translate(turtle, startX, startY, dx, dy, beginPath, isCircle) {
     // speed is in pixels per ms
-    var speed      = turtle._computed_speed
-        , x        = startX + dx
-        , y        = startY + dy
-        , screen   = getScreen()
-        , xScale   = Math.abs(screen.xScale)
-        , yScale   = Math.abs(screen.yScale)
-        , promise, distance, duration;
+    var speed     = turtle._computed_speed
+        , screen  = getScreen()
+        , xScale  = Math.abs(screen.xScale)
+        , yScale  = Math.abs(screen.yScale)
+        , x       = startX
+        , y       = startY
+        , pixels  = Math.sqrt(dx * dx * xScale + dy * dy * yScale)
+        // TODO: allow fractional frame updates?
+        , frames  = speed ? Math.round(Math.max(1, pixels / speed)) : 1
+        , xStep   = dx / frames
+        , yStep   = dy / frames
+        , promise = Promise.resolve()
+        , countAsFrame = (!speed && isCircle) ? false : true
+        , i;
 
-    if (turtle._filling) {
-      turtle.addUpdate(function(state) {
-        turtle._fillBuffer.push({
-          x        : x
-          , y      : y
-          , stroke : state.down
-          , color  : state.color
-          , size   : state.size
+    turtle.addUpdate(function() {
+      if (this.filling) {
+        this.fillBuffer.push({
+          x        : this.x
+          , y      : this.y
+          , stroke : this.down
+          , color  : this.color
+          , size   : this.size
         });
-      });
+      }
+    }, false);
+
+    for(i = 0; i < frames; i++) {
+      promise = (function(endX,endY,beginPath) {
+        return promise.then(function() {
+          return turtle.addUpdate(
+            function(loc, beginPath) {
+              if (this.down) {
+                drawLine.call(this, loc, beginPath);
+              }
+            }
+            , countAsFrame
+            , {x : endX, y : endY}
+            , beginPath
+          );
+        });
+      })(x=startX + xStep * (i+1), y=startY + yStep * (i+1), beginPath);
+      beginPath = false;
     }
 
-    if (!speed) {
-      turtle.addUpdate(function(state) {
-        if (state.down) {
-          drawLine(state, x, y, true);
-        }
-        state.x = x;
-        state.y = y;
-      });
-      promise = Promise.resolve([x,y]);
-    }
-    else {
-      distance  = Math.sqrt(dx/xScale*dx/xScale + dy/yScale*dy/yScale);
-      duration  = speed ? distance/speed : 0;
-
-      (function() {
-        var startTime   = Date.now()
-            , beginPath = true
-            , animation, elapsed, ratio, endX, endY;
-
-        animation = function(state, last) {
-          elapsed = Date.now() - startTime;
-          // if this is not the last animation in the current cycle
-          // then force this animation to completion
-          ratio = last ? Math.min(1, elapsed/duration) : 1;
-          endX  = startX + ratio * dx;
-          endY  = startY + ratio * dy;
-
-          if (state.down) {
-            drawLine(state, endX, endY, beginPath);
-          }
-
-          state.x = endX;
-          state.y = endY;
-          beginPath = false;
-
-          if (ratio < 1) {
-            turtle.addUpdate(animation);
-          }
-        };
-
-        turtle.addUpdate(animation);
-      })();
-
-      _durationSinceRedraw += duration;
-      promise = _durationSinceRedraw < OPTIMAL_FRAME_RATE
-        ? Promise.resolve([x,y])
-        : new Promise(function(resolve) {
-            window.setTimeout(function() {
-              resolve([x,y]);
-          }, duration);
-      });
-    }
-
-    return promise;
+    return promise.then(function() {
+      return [startX + dx, startY + dy];
+    });
   }
 
-  function rotate(turtle, startAngle, delta) {
+  function rotate(turtle, startAngle, delta, isCircle) {
     var speed        = turtle._computed_speed
-        , angle      = startAngle + delta
-        , heading    = calculateHeading(turtle, angle)
-        , startAngle = turtle._angle
-        , duration, promise;
+        , degrees    = delta / turtle._fullCircle * 360
+        , frames     = speed ? Math.round(Math.max(1, Math.abs(degrees) / speed)) : 1
+        , dAngle     = delta / frames
+        , heading    = {}
+        , countAsFrame = (!speed && isCircle) ? false : true
+        , promise    = Promise.resolve()
+        , i;
 
-    if (!speed) {
-      turtle.addUpdate(function(state) {
-        state.radians = heading.radians;
-        state.angle   = heading.angle;
-      });
-      promise = Promise.resolve(heading);
-    }
-    else {
-      duration = speed ? Math.abs(360*delta/turtle._fullCircle)/speed : 0;
+    // TODO: request how many frames are remaining and only queue up
+    // a single rotation per screen update
 
-      (function() {
-        var startTime   = Date.now()
-            , animation, elapsed, ratio;
-
-        animation = function(state, last) {
-          elapsed    = Date.now() - startTime;
-          ratio      = last ? Math.min(1, elapsed/duration) : 1;
-          calculateHeading(turtle, startAngle + ratio * delta, state);
-          if (ratio < 1) {
-            turtle.addUpdate(animation);
-          }
-        }
-
-        turtle.addUpdate(animation);
-      })();
-
-      _durationSinceRedraw += duration;
-      promise = _durationSinceRedraw < OPTIMAL_FRAME_RATE
-        ? Promise.resolve(heading)
-        : new Promise(function(resolve) {
-            window.setTimeout(function() {
-              resolve(heading);
-          }, duration);
-      });
+    for(i = 0; i < frames; i++) {
+      calculateHeading(turtle, startAngle + dAngle * (i+1), heading);
+      promise = (function(angle, radians) {
+        return promise.then(function() {
+          return turtle.addUpdate(undefined, countAsFrame, {angle : angle, radians : radians});
+        });
+      })(heading.angle, heading.radians);
     }
 
-    return promise;
+    return promise.then(function() {
+      return calculateHeading(turtle, startAngle + delta);
+    });
   }
 
   function getCoordinates(x, y) {
@@ -1538,19 +1597,6 @@ return (function() {
     return color;
   }
 
-  function calculateSpeed(turtle) {
-    var computed = 0;
-
-    if (_config.animate && turtle._speed) {
-      computed = (turtle._speed * 2 - 1) * turtle._screen._frames / 10;
-      if (turtle._screen._delay) {
-        computed *= OPTIMAL_FRAME_RATE / turtle._screen._delay;
-      }
-    }
-    
-    return computed;
-  }
-
   function calculateHeading(turtle, value, heading) {
     var angle     = turtle._angle   || 0
         , radians = turtle._radians || 0;
@@ -1577,7 +1623,7 @@ return (function() {
 
     heading.angle   = angle;
     heading.radians = radians;
-    
+
     return heading;
   }
 
@@ -1588,6 +1634,7 @@ return (function() {
         , minArgs        = klass.prototype[method].minArgs
         , keywordArgs    = klass.prototype[method].keywordArgs
         , returnType     = klass.prototype[method].returnType
+        , isSk           = klass.prototype[method].isSk
         , wrapperFn;
 
     if (minArgs === undefined) {
@@ -1625,11 +1672,26 @@ return (function() {
         }
       }
 
-      result = instance[method].apply(instance, args);
-      
+      try {
+        result = instance[method].apply(instance, args);
+      } catch(e) {
+        if (window && window.console) {
+          console.log('wrapped method failed');
+          console.log(e.stack);
+        }
+        throw e;
+      }
+
       if (result instanceof Promise) {
+        result.catch(function(e) {
+          if (window && window.console) {
+            console.log('promise failed');
+            console.log(e.stack);
+          }
+          throw e;
+        });
         susp = new Sk.misceval.Suspension();
-        
+
         susp.resume = function() {
           return (resolution === undefined)
             ? Sk.builtin.none.none$
@@ -1648,6 +1710,7 @@ return (function() {
       }
       else {
         if (result === undefined) return Sk.builtin.none.none$;
+        if (isSk) return result;
         if (typeof returnType === 'function') {
           return returnType(result);
         }
@@ -1672,7 +1735,7 @@ return (function() {
     });
 
     for(var key in Turtle.prototype) {
-      if (/^\$[a-z]+/.test(key)) {
+      if (/^\$[a-z_]+/.test(key)) {
         addModuleMethod(Turtle, $loc, key);
       }
     }
@@ -1684,14 +1747,14 @@ return (function() {
     });
 
     for(var key in Screen.prototype) {
-      if (/^\$[a-z]+/.test(key)) {
+      if (/^\$[a-z_]+/.test(key)) {
         addModuleMethod(Screen, $loc, key);
       }
     }
   }
 
   for(var key in Turtle.prototype) {
-    if (/^\$[a-z]+/.test(key)) {
+    if (/^\$[a-z_]+/.test(key)) {
       addModuleMethod(Turtle, _module, key, true);
     }
   }
