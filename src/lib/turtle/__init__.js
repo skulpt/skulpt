@@ -182,6 +182,9 @@ return (function() {
     proto.frameBuffer = function(buffer) {
       if (typeof buffer === 'number') {
         this._buffer = buffer | 0;
+        if (buffer && buffer <= this._frameCount) {
+          return this.update();
+        }
       }
       return this._buffer;
     };
@@ -846,7 +849,8 @@ return (function() {
     };
 
     proto.$write = function(message,move,align,font) {
-      var promise, face, size, type, width;
+      var self = this
+          , promise, face, size, type, width;
 
       pushUndo(this);
 
@@ -1026,13 +1030,13 @@ return (function() {
 
     proto.$tracer = function(frames, delay) {
       if (frames !== undefined || delay !== undefined) {
-        if (typeof frames === 'number') {
-          this._frames = frames;
-          getFrameManager().frameBuffer(frames);
-        }
         if (typeof delay === 'number') {
           this._delay = delay;
           getFrameManager().refreshInterval(delay);
+        }
+        if (typeof frames === 'number') {
+          this._frames = frames;
+          return getFrameManager().frameBuffer(frames);
         }
 
         return;
