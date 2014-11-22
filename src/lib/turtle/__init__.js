@@ -842,8 +842,8 @@ return (function() {
         : Math.max(this._size + 4, this._size * 2);
 
       color = (color !== undefined)
-        ? this._color
-        : createColor(color, g, b, a);
+        ? createColor(color, g, b, a)
+        : this._color;
 
       return this.addUpdate(drawDot, true, undefined, size, color);
     };
@@ -1355,22 +1355,19 @@ return (function() {
   }
 
   function drawDot(size, color) {
-    var context  = thix.context
+    var context  = this.context()
         , screen = getScreen()
         , xScale = screen.xScale
         , yScale = screen.yScale;
 
     if (!context) return;
 
-    context.save();
     context.beginPath();
-    context.scale(xScale,yScale);
     context.moveTo(this.x, this.y);
     context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
     context.closePath();
     context.fillStyle = color || this.color;
     context.fill();
-    context.restore();
   }
 
   var textMeasuringContext = document.createElement('canvas').getContext('2d');
@@ -1534,8 +1531,8 @@ return (function() {
 
   function getCoordinates(x, y) {
     if (y === undefined) {
-      y = x[1] || 0;
-      x = x[0] || 0;
+      y = (x && (x.y || x._y || x[1])) || 0;
+      x = (x && (x.x || x._x || x[0])) || 0;
     }
     return {x:x, y:y};
   }
@@ -1676,6 +1673,9 @@ return (function() {
                 return Sk.misceval.applyAsync(undefined, pyValue, undefined, undefined, undefined, argsPy);
               };
             })(args[i]);
+          }
+          else if (args[i] && args[i].$d instanceof Sk.builtin.dict && args[i].instance) {
+            args[i] = args[i].instance;
           }
           else {
             args[i] = Sk.ffi.remapToJs(args[i]);
