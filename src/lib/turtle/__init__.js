@@ -467,7 +467,7 @@ return (function() {
     };
 
     proto.getPaper = function() {
-      return this._paper || (this._paper = createLayer(false, false));
+      return this._paper || (this._paper = createLayer(2));
     };
 
     proto.reset = function() {
@@ -738,7 +738,7 @@ return (function() {
 
       if (arguments.length) {
         this._color = createColor(r,g,b,a);
-        return this.addUpdate(undefined, false, {color : this._color});
+        return this.addUpdate(undefined, this._shown, {color : this._color});
       }
 
       return hexToRGB(this._color);
@@ -751,7 +751,7 @@ return (function() {
 
       if (arguments.length) {
         this._fill = createColor(r,g,b,a);
-        return this.addUpdate(undefined, false, {fill : this._fill});
+        return this.addUpdate(undefined, this._shown, {fill : this._fill});
       }
 
       return hexToRGB(this._fill);
@@ -768,7 +768,7 @@ return (function() {
           this._color = createColor(color);
           this._fill  = createColor(fill);
         }
-        return this.addUpdate(undefined, false, {
+        return this.addUpdate(undefined, this._shown, {
           color  : this._color
           , fill : this._fill
         });
@@ -884,7 +884,7 @@ return (function() {
     proto.$pensize = proto.$width = function(size) {
       if (arguments.length) {
         this._size = size;
-        return this.addUpdate(undefined, true, {size : size});
+        return this.addUpdate(undefined, this._shown, {size : size});
       }
 
       return this._size;
@@ -908,7 +908,7 @@ return (function() {
     proto.$shape = function(shape) {
       if (shape && SHAPES[shape]) {
         this._shape = shape;
-        return this.addUpdate(undefined, true, {shape : shape});
+        return this.addUpdate(undefined, this._shown, {shape : shape});
       }
 
       return this._shape;
@@ -979,11 +979,15 @@ return (function() {
 
   (function(proto) {
     proto.spriteLayer = function() {
-      return this._sprites || (this._sprites = createLayer(false,true));
+      return this._sprites || (this._sprites = createLayer(3));
     };
 
+    proto.bgLayer = function() {
+      return this._background || (this._background = createLayer(1));
+    }
+
     proto.hitTestLayer = function() {
-      return this._hitTest || (this._hitTest = createLayer(true,false));
+      return this._hitTest || (this._hitTest = createLayer(0,true));
     };
 
     proto.getManager = function(type) {
@@ -1070,10 +1074,11 @@ return (function() {
           , turtles = getFrameManager().turtles();
 
       return getFrameManager().addFrame(function() {
-        applyWorld(self, self.spriteLayer());
+        applyWorld(self, self._sprites);
+        applyWorld(self, self._background);
         for(var i = 0; i < turtles.length; i++) {
           turtles[i].reset();
-          applyWorld(self, turtles[i].getPaper());
+          applyWorld(self, turtles[i]._paper);
         }
       }, true);
     };
@@ -1090,7 +1095,7 @@ return (function() {
     proto.$bgcolor = function(color, g, b, a) {
       if (arguments.length) {
         this._bgcolor = createColor(color, g, b, a);
-        clearLayer(this.spriteLayer(), this._bgcolor);
+        clearLayer(this.bgLayer(), this._bgcolor);
         return;
       }
 
@@ -1166,7 +1171,7 @@ return (function() {
     return (_config.height || getTarget().clientHeight) | 0;
   }
 
-  function createLayer(isHidden, isTop) {
+  function createLayer(zIndex, isHidden) {
     var canvas = document.createElement('canvas')
         , width  = getWidth()
         , height = getHeight()
@@ -1179,7 +1184,7 @@ return (function() {
     canvas.style.display  = "block";
     canvas.style.top      = offset;
     canvas.style.setProperty("margin-bottom",offset);
-    canvas.style.setProperty("z-index", isTop ? 1 : 0);
+    canvas.style.setProperty("z-index", zIndex);
     if (isHidden) {
       canvas.style.display = "none";
     }
@@ -1213,6 +1218,8 @@ return (function() {
         , ury    = world.ury
         , xScale = world.xScale
         , yScale = world.yScale
+
+    if (!context) return;
 
     clearLayer(context);
 
