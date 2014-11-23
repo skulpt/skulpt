@@ -604,7 +604,6 @@ return (function() {
         , true
       );
     };
-    proto.$goto_$rw$.displayName = 'goto';
     proto.$goto_$rw$.minArgs = 1;
 
     proto.$setx = function(x) {
@@ -702,7 +701,7 @@ return (function() {
 
       promise = promise.then(function() {
         self._computed_speed = 0;
-        self.rotate(angle, w2, true);
+        self.rotate(angle, w2, false);
         self._computed_speed = speed;
       });
 
@@ -1636,8 +1635,8 @@ return (function() {
   }
 
   function addModuleMethod(klass, module, method, classMethod) {
-    var publicMethodName = method.substr(1)
-        , displayName    = klass.prototype[method].displayName || publicMethodName
+    var publicMethodName = method.replace(/^\$/, "")
+        , displayName    = publicMethodName.replace(/_\$[a-z]+\$$/i, "")
         , maxArgs        = klass.prototype[method].length
         , minArgs        = klass.prototype[method].minArgs
         , keywordArgs    = klass.prototype[method].keywordArgs
