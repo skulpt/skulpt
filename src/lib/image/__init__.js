@@ -26,7 +26,7 @@ $builtinmodule = function (name) {
             self.canvas.height = self.height;
             self.canvas.width = self.width;
             self.ctx = self.canvas.getContext("2d");
-            self.ctx.drawImage(self.image, 0, 0)
+            self.ctx.drawImage(self.image, 0, 0);
             self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
         });
 	//array of pixel
@@ -35,7 +35,7 @@ $builtinmodule = function (name) {
 		var i;
 		for(i=0;i<self.image.height*self.image.width;i++){
 		
-			arr[i] = Sk.misceval.callsim(self.getPixel,self,i%image.width,i/image.width);//using the local function
+			arr[i] = Sk.misceval.callsim(self.getPixel,self,i%self.image.width,i/self.image.width);//using the local function
 		}
 		return new Sk.builtin.tuple(arr);
 	});
@@ -44,9 +44,9 @@ $builtinmodule = function (name) {
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             var index = (y * 4) * self.width + (x * 4);
-            var red = self.imagedata.data[index]
-            var green = self.imagedata.data[index + 1]
-            var blue = self.imagedata.data[index + 2]
+            var red = self.imagedata.data[index];
+            var green = self.imagedata.data[index + 1];
+            var blue = self.imagedata.data[index + 2];
             return Sk.misceval.callsim(mod.Pixel, red, green, blue);
         });
 
