@@ -17,6 +17,7 @@ return (function() {
       , _anonymousTurtle     = undefined
       , _mouseHandler        = undefined
       , _durationSinceRedraw = 0
+      , _focus               = false
       , OPTIMAL_FRAME_RATE   = 1000/30
       , SHAPES               = {}
       , TURTLE_COUNT         = 0
@@ -65,6 +66,13 @@ return (function() {
           , animate    : true // enabled/disable all animated rendering
           , bufferSize : 0 // default turtle buffer size
           , allowUndo  : true // enable ability to use the undo buffer
+          , focus : function(value) {
+            if (value !== undefined) {
+              _focus = !!value;
+            }
+
+            return _focus;
+          }
           , reset   : function() {
             cancelAnimationFrame();
             getScreen().reset();
@@ -997,6 +1005,13 @@ return (function() {
     };
 
     proto.reset = function() {
+      this._keyListeners = undefined;
+
+      if (this._keyListener) {
+        window.removeEventListener('keydown', this._keyListener);
+        this._keyListener = undefined;
+      }
+
       if (this._timer) {
         window.clearTimeout(this._timer);
         this._timer = undefined;
@@ -1108,6 +1123,50 @@ return (function() {
     };
     proto.$onclick.minArgs = 1;
     proto.$onclick.keywordArgs = ["btn","add"];
+
+    var KEY_MAP = {
+      '37'   : 'left'
+      , '38' : 'up'
+      , '39' : 'right'
+      , '40' : 'down'
+    };
+    proto.$listen = function() {
+      var self = this;
+
+      if (!this._keyListener) {
+        this._keyListener = function(e) {
+          if (!_focus) return;
+
+          var code      = e.charCode || e.keyCode
+              , pressed = String.fromCharCode(code).toLowerCase()
+              , key;
+
+          for (key in self._keyListeners) {
+            if (key.length > 1 && KEY_MAP[code] === key) {
+              self._keyListeners[key]();
+              break;
+            }
+            else if (key === pressed) {
+              self._keyListeners[key]();
+              break;
+            }
+          }
+        };
+        window.addEventListener('keydown', this._keyListener);
+      }
+    };
+
+    proto.$onkey = function(method, keyValue) {
+      keyValue = String(keyValue).toLowerCase();
+
+      if (method && typeof method === 'function') {
+        if (!this._keyListeners) this._keyListeners = {};
+        this._keyListeners[keyValue] = method;
+      }
+      else {
+        delete this._keyListeners[keyValue];
+      }
+    };
 
     proto.$onscreenclick = function(method,btn,add) {
       this.getManager('mousedown').addHandler(method, add);
