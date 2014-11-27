@@ -644,14 +644,14 @@ return (function() {
     };
 
     proto.$circle = function(radius, extent, steps) {
-      var self      = this
-          , x       = this._x
-          , y       = this._y
-          , angle   = this._angle
-          , heading = {}
-          , states  = []
-          , speed   = this._computed_speed
-          , scale   = 1/getScreen().lineScale
+      var self        = this
+          , x         = this._x
+          , y         = this._y
+          , angle     = this._angle
+          , endAngle  = angle + extent
+          , heading   = {}
+          , states    = []
+          , scale     = 1/getScreen().lineScale
           , beginPath = true
           , frac, w, w2, l, i, dx, dy, promise;
 
@@ -674,35 +674,30 @@ return (function() {
       }
 
       promise = Promise.resolve();
-      heading = calculateHeading(self, angle + w2);
 
-      self._inCircle = true;
+      angle += w2;
 
       for(i = 0; i < steps; i++) {
+        calculateHeading(self, angle + w * i, heading);
         dx = Math.cos(heading.radians) * l;
         dy = Math.sin(heading.radians) * l;
-        (function(x, y, dx, dy, angle, delta, beginPath) {
+        (function(x, y, dx, dy, angle, radians, beginPath) {
           promise = promise.then(function() {
-            self._computed_speed = 0;
-            return self.rotate(angle, delta, true);
+            return self.addUpdate(undefined, false, {angle:angle, radians:radians});
           }).then(function(result) {
-            self._computed_speed = speed;
             return self.translate(x, y, dx, dy, beginPath, true);
           });
-        })(x, y, dx, dy, angle, w, beginPath);
-        angle   = heading.angle;
-        heading = calculateHeading(self, angle + w);
+        })(x, y, dx, dy, heading.angle, heading.radians, beginPath);
         x += dx;
         y += dy;
         beginPath = false;
       }
 
-      self._inCircle = false;
-
       promise = promise.then(function() {
-        self._computed_speed = 0;
-        self.rotate(angle, w2, false);
-        self._computed_speed = speed;
+        calculateHeading(self, endAngle, heading);
+        self._angle   = heading.angle;
+        self._radians = heading.radians;
+        return self.addUpdate(undefined, true, heading);
       });
 
       return promise;
@@ -764,7 +759,8 @@ return (function() {
     proto.$color = function(color, fill, b, a) {
       if (arguments.length) {
         if (arguments.length === 1 || arguments.length >= 3) {
-          this._color = this._fill = createColor(color, fill, b, a);
+          this._color = createColor(color, fill, b, a);
+          this._fill  = this._color;
         }
         else {
           this._color = createColor(color);
@@ -873,7 +869,7 @@ return (function() {
         if (align === 'center') {
           width = width/2;
         }
-        return promise.then(function() {
+        promise = promise.then(function() {
           var state = self.getState();
           return self.translate(state.x, state.y, width * getScreen().xScale, 0, true);
         });
@@ -1393,9 +1389,9 @@ return (function() {
       context.textAlign = align;
     }
 
-    context.scale(xScale,yScale);
+    context.scale(1,-1);
     context.fillStyle = this.color;
-    context.fillText(message, this.x/xScale, this.y/yScale);
+    context.fillText(message, this.x, -this.y);
     context.restore();
   }
 
