@@ -26,17 +26,28 @@ $builtinmodule = function (name) {
             self.canvas.height = self.height;
             self.canvas.width = self.width;
             self.ctx = self.canvas.getContext("2d");
-            self.ctx.drawImage(self.image, 0, 0)
+            self.ctx.drawImage(self.image, 0, 0);
             self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
         });
-
+	//array of pixel
+	$loc.getPixels = new Sk.builtin.func(function(self){
+		var arr = [];//initial array
+		var i;
+		
+		for(i=0;i<self.image.height*self.image.width;i++){
+		
+			arr[i] = Sk.misceval.callsim(self.getPixel,self,i%self.image.width,Math.floor(i/self.image.width));
+		}
+		return new Sk.builtin.tuple(arr);
+	});
+	
         $loc.getPixel = new Sk.builtin.func(function (self, x, y) {
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             var index = (y * 4) * self.width + (x * 4);
-            var red = self.imagedata.data[index]
-            var green = self.imagedata.data[index + 1]
-            var blue = self.imagedata.data[index + 2]
+            var red = self.imagedata.data[index];
+            var green = self.imagedata.data[index + 1];
+            var blue = self.imagedata.data[index + 2];
             return Sk.misceval.callsim(mod.Pixel, red, green, blue);
         });
 
@@ -49,6 +60,17 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 2] = Sk.misceval.callsim(pix.getBlue, pix);
             self.imagedata.data[index + 3] = 255;
         });
+	//newsetpixel
+	$loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel){
+	    count = Sk.builtin.asnum$(count);
+            var x = count%self.image.width;
+	    var y = Math.floor(count/self.image.width);
+            var index = (y * 4) * self.width + (x * 4);
+            self.imagedata.data[index] = Sk.misceval.callsim(pixel.getRed, pixel);
+            self.imagedata.data[index + 1] = Sk.misceval.callsim(pixel.getGreen, pixel);
+            self.imagedata.data[index + 2] = Sk.misceval.callsim(pixel.getBlue, pixel);
+            self.imagedata.data[index + 3] = 255;
+	});
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
             return self.image.height;
