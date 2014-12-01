@@ -17,7 +17,7 @@ return (function() {
       , _anonymousTurtle     = undefined
       , _mouseHandler        = undefined
       , _durationSinceRedraw = 0
-      , _focus               = false
+      , _focus               = true
       , OPTIMAL_FRAME_RATE   = 1000/30
       , SHAPES               = {}
       , TURTLE_COUNT         = 0
@@ -66,6 +66,8 @@ return (function() {
           , animate    : true // enabled/disable all animated rendering
           , bufferSize : 0 // default turtle buffer size
           , allowUndo  : true // enable ability to use the undo buffer
+          // Calling focus(false) will block turtle key/mouse events
+          // until focus(true) is called again.
           , focus : function(value) {
             if (value !== undefined) {
               _focus = !!value;
@@ -261,6 +263,8 @@ return (function() {
 
   (function(proto) {
     proto.onEvent = function(type, e) {
+      if (!Sk.TurtleGraphics.focus()) return;
+
       var world      = getScreen()
           , rect     = world.spriteLayer().canvas.getBoundingClientRect()
           , x        = e.clientX - rect.left | 0
@@ -1135,7 +1139,7 @@ return (function() {
 
       if (!this._keyListener) {
         this._keyListener = function(e) {
-          if (!_focus) return;
+          if (!Sk.TurtleGraphics.focus()) return;
 
           var code      = e.charCode || e.keyCode
               , pressed = String.fromCharCode(code).toLowerCase()
@@ -1748,13 +1752,14 @@ return (function() {
       }
 
       if (result instanceof Promise) {
-        result.catch(function(e) {
+        result = result.catch(function(e) {
           if (window && window.console) {
             console.log('promise failed');
             console.log(e.stack);
           }
           throw e;
         });
+
         susp = new Sk.misceval.Suspension();
 
         susp.resume = function() {
