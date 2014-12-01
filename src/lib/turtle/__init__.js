@@ -113,6 +113,54 @@ return (function() {
     return Sk.TurtleGraphics;
   })();
 
+  // InstantPromise is a workaround to allow usage of the clean promise-style
+  // then/catch syntax but to instantly call resolve the then/catch chain so we
+  // can avoid creating Suspensions in unnecessary cases.  This is desirable
+  // because Suspensions have a fairly large negative impact on overall
+  // performance.  These 'instant promises' come into play when a tracer()
+  // call is made with a value other than 1.  When tracer is 0 or greater than 1
+  // , we can bypass the creation of a Suspension and proceed to the next line of
+  // code immediately if the current line is not going to incur involve a screen
+  // update. We determine if a real promise or InstantPromise is necessary by
+  // checking FrameManager.willRenderNext()
+  function InstantPromise() {
+    this.lastResult = undefined;
+    this.lastError  = undefined;
+  }
+
+  InstantPromise.prototype.then = function(cb) {
+    if (this.lastError) {
+      return this;
+    }
+
+    try {
+     this.lastResult = cb(this.lastResult);
+    } catch(e) {
+      this.lastResult = undefined;
+      this.lastError  = e;
+    }
+
+    return this.lastResult instanceof Promise
+      ? this.lastResult
+      : this;
+  }
+
+  InstantPromise.prototype.catch = function(cb) {
+    if (this.lastError) {
+      try {
+        this.lastResult = cb(this.lastError);
+        this.lastError  = undefined;
+      } catch(e) {
+        this.lastResult = undefined;
+        this.lastError = e;
+      }
+    }
+
+    return this.lastResult instanceof Promise
+      ? this.lastResult
+      : this;
+  }
+
   function FrameManager() {
     this.reset();
   }
@@ -151,6 +199,12 @@ return (function() {
       }
     }
 
+    proto.willRenderNext = function() {
+      return (this._buffer && this._frameCount+1 === this.frameBuffer())
+        ? true
+        : false;
+    }
+
     proto.turtles = function() {
       return this._turtles;
     };
@@ -182,7 +236,7 @@ return (function() {
 
       return (!_config.animate || (this._buffer && this._frameCount === this.frameBuffer()))
         ? this.update()
-        : Promise.resolve();
+        : new InstantPromise();
     };
 
     proto.frames = function() {
@@ -210,7 +264,7 @@ return (function() {
     proto.update = function() {
       return (this._frames && this._frames.length)
         ? this.requestAnimationFrame()
-        : Promise.resolve();
+        : new InstantPromise();
     };
 
     proto.requestAnimationFrame = function() {
@@ -660,18 +714,18 @@ return (function() {
           , x         = this._x
           , y         = this._y
           , angle     = this._angle
-          , endAngle  = angle + extent
           , heading   = {}
           , states    = []
           , scale     = 1/getScreen().lineScale
           , beginPath = true
-          , frac, w, w2, l, i, dx, dy, promise;
+          , endAngle, frac, w, w2, l, i, dx, dy, promise;
 
       pushUndo(this);
 
       if (extent === undefined) {
         extent = self._fullCircle;
       }
+
       if (steps === undefined) {
         frac  = Math.abs(extent)/self._fullCircle;
         steps = 1 + ((Math.min(11+Math.abs(radius*scale)/6, 59)*frac) | 0)
@@ -685,8 +739,11 @@ return (function() {
         w2 = -w2;
       }
 
-      promise = Promise.resolve();
+      promise = getFrameManager().willRenderNext()
+        ? Promise.resolve()
+        : new InstantPromise();
 
+      endAngle = angle + extent;
       angle += w2;
 
       for(i = 0; i < steps; i++) {
@@ -1521,7 +1578,9 @@ return (function() {
         , frames  = speed ? Math.round(Math.max(1, pixels / speed)) : 1
         , xStep   = dx / frames
         , yStep   = dy / frames
-        , promise = Promise.resolve()
+        , promise = getFrameManager().willRenderNext()
+            ? Promise.resolve()
+            : new InstantPromise()
         , countAsFrame = (!speed && isCircle) ? false : true
         , i;
 
@@ -1567,7 +1626,9 @@ return (function() {
         , dAngle     = delta / frames
         , heading    = {}
         , countAsFrame = (!speed && isCircle) ? false : true
-        , promise    = Promise.resolve()
+        , promise    = getFrameManager().willRenderNext()
+            ? Promise.resolve()
+            : new InstantPromise()
         , i;
 
     // TODO: request how many frames are remaining and only queue up
@@ -1751,6 +1812,10 @@ return (function() {
         throw e;
       }
 
+      if (result instanceof InstantPromise) {
+        result = result.lastResult;
+      }
+
       if (result instanceof Promise) {
         result = result.catch(function(e) {
           if (window && window.console) {
@@ -1784,6 +1849,7 @@ return (function() {
         if (typeof returnType === 'function') {
           return returnType(result);
         }
+
         return Sk.ffi.remapToPy(result);
       }
     };
