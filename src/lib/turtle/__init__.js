@@ -1921,6 +1921,10 @@ return (function() {
       for(var i = 0; i < minArgs; i++) {
         wrapperFn.co_varnames.unshift("");
       }
+      if (!classMethod) {
+        // make room for the "self" argument
+        wrapperFn.co_varnames.unshift("");
+      }
     }
 
     module[publicMethodName] = new Sk.builtin.func(wrapperFn);
