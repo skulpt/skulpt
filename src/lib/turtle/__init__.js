@@ -1315,9 +1315,7 @@ return (function() {
 
   function ensureAnonymous() {
     if (!_anonymousTurtle) {
-      _anonymousTurtle = {};
-      TurtleWrapper(Sk.globals, _anonymousTurtle);
-      Sk.misceval.callsim(_anonymousTurtle.__init__, _anonymousTurtle);
+      _anonymousTurtle = _module.Turtle();
     }
 
     return _anonymousTurtle;
