@@ -40,6 +40,13 @@ return (function() {
       return new Sk.builtin.tuple(value);
     }
   };
+  Types.TURTLE_LIST = function(value) {
+    var skValues = [];
+    for (var i = 0; i < value.length; i++) {
+      skValues.push(value[i].skInstance);
+    }
+    return new Sk.builtin.tuple(skValues);
+  };
 
   SHAPES.arrow    = [[-10,0],[10,0],[0,10]];
   SHAPES.square   = [[ 10,-10],[10,10],[-10,10],[-10, -10]];
@@ -994,6 +1001,10 @@ return (function() {
     };
     proto.$tracer.minArgs = 0;
 
+    proto.$update = function() {
+      return this._screen.$update();
+    };
+
     proto.$delay = function(delay) {
       return this._screen.$delay(delay);
     };
@@ -1002,6 +1013,10 @@ return (function() {
     proto.$reset = function() {
       this.reset();
       return this.$clear();
+    };
+
+    proto.$mainloop = proto.$done = function() {
+      return this._screen.$mainloop();
     };
 
     proto.$clear = function() {
@@ -1013,26 +1028,31 @@ return (function() {
 
     proto.$onclick = function(method,btn,add) {
       this.getManager('mousedown').addHandler(method, add);
-    }
+    };
     proto.$onclick.minArgs = 1;
     proto.$onclick.keywordArgs = ["btn","add"];
 
     proto.$onrelease = function(method,btn,add) {
       this.getManager('mouseup').addHandler(method, add);
-    }
+    };
     proto.$onrelease.minArgs = 1;
     proto.$onrelease.keywordArgs = ["btn","add"];
 
     proto.$ondrag = function(method,btn,add) {
       this.getManager('mousemove').addHandler(method, add);
-    }
+    };
     proto.$ondrag.minArgs = 1;
     proto.$ondrag.keywordArgs = ["btn","add"];
 
     proto.$getscreen = function() {
       return _module.Screen();
-    }
+    };
     proto.$getscreen.isSk = true;
+
+    proto.$getturtle = proto.$getpen = function() {
+      return this.skInstance;
+    };
+    proto.$getturtle.isSk = true;
   })(Turtle.prototype);
 
   function Screen() {
@@ -1093,8 +1113,12 @@ return (function() {
       world.lineScale = Math.min(Math.abs(world.xScale), Math.abs(world.yScale));
     };
 
-    proto.$register_shape = function(name, points) {
+    proto.$register_shape = proto.$addshape = function(name, points) {
       SHAPES[name] = points;
+    };
+
+    proto.$getshapes = function() {
+      return Object.keys(SHAPES);
     };
 
     proto.$tracer = function(frames, delay) {
@@ -1165,6 +1189,11 @@ return (function() {
     };
     proto.$delay.minArgs = 0;
 
+    proto.$turtles = function() {
+      return getFrameManager().turtles();
+    };
+    proto.$turtles.returnType = Types.TURTLE_LIST;
+
     proto.$bgcolor = function(color, g, b, a) {
       if (arguments.length) {
         this._bgcolor = createColor(color, g, b, a);
@@ -1177,7 +1206,24 @@ return (function() {
     proto.$bgcolor.minArgs = 0;
     proto.$bgcolor.returnType = Types.COLOR;
 
+    // no-op - just defined for consistency with python version
+    proto.$mainloop = proto.$done = function() {
+      return undefined;
+    };
+
+    proto.$bye = function() {
+      return Sk.TurtleGraphics.reset();
+    };
+
+    proto.$exitonclick = function() {
+      this._exitOnClick = true;
+      return this.getManager('mousedown').addHandler(function() {
+        Sk.TurtleGraphics.reset();
+      }, false);
+    };
+
     proto.$onclick = function(method,btn,add) {
+      if (this._exitOnClick) return;
       this.getManager('mousedown').addHandler(method, add);
     };
     proto.$onclick.minArgs = 1;
@@ -1230,6 +1276,12 @@ return (function() {
     };
 
     proto.$onkey = function(method, keyValue) {
+      if (typeof keyValue === 'function') {
+        var temp = method;
+        method   = keyValue;
+        keyValue = temp;
+      }
+
       keyValue = String(keyValue).toLowerCase();
 
       if (method && typeof method === 'function') {
@@ -1880,6 +1932,7 @@ return (function() {
   function TurtleWrapper($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function (self) {
       self.instance = new Turtle();
+      self.instance.skInstance = self;
     });
 
     for(var key in Turtle.prototype) {
