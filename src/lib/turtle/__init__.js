@@ -317,8 +317,6 @@ return (function() {
 
   (function(proto) {
     proto.onEvent = function(type, e) {
-      if (!Sk.TurtleGraphics.focus()) return;
-
       var world      = getScreen()
           , rect     = world.spriteLayer().canvas.getBoundingClientRect()
           , x        = e.clientX - rect.left | 0
@@ -1186,10 +1184,24 @@ return (function() {
     proto.$onclick.keywordArgs = ["btn","add"];
 
     var KEY_MAP = {
-      '37'   : 'left'
-      , '38' : 'up'
-      , '39' : 'right'
-      , '40' : 'down'
+      '8'    : /^back(space)?$/i
+      , '9'  : /^tab$/i
+      , '13' : /^(enter|return)$/i
+      , '16' : /^shift$/i
+      , '17' : /^(ctrl|control)$/i
+      , '18' : /^alt$/i
+      , '27' : /^esc(ape)?$/i
+      , '32' : /^space$/i
+      , '33' : /^page[\s\-]?up$/i
+      , '34' : /^page[\s\-]?down$/i
+      , '35' : /^end$/i
+      , '36' : /^home$/i
+      , '37' : /^left([\s\-]?arrow)?$/i
+      , '38' : /^up([\s\-]?arrow)?$/i
+      , '39' : /^right([\s\-]?arrow)?$/i
+      , '40' : /^down([\s\-]?arrow)?$/i
+      , '45' : /^insert$/i
+      , '46' : /^del(ete)?$/i
     };
     proto.$listen = function() {
       var self = this;
@@ -1203,7 +1215,7 @@ return (function() {
               , key;
 
           for (key in self._keyListeners) {
-            if (key.length > 1 && KEY_MAP[code] === key) {
+            if (key.length > 1 && KEY_MAP[code] && KEY_MAP[code].test(key)) {
               self._keyListeners[key]();
               break;
             }
