@@ -1363,8 +1363,7 @@ return (function() {
     canvas.height         = height;
     canvas.style.position = "relative";
     canvas.style.display  = "block";
-    canvas.style.top      = offset;
-    canvas.style.setProperty("margin-bottom",offset);
+    canvas.style.setProperty("margin-top",offset);
     canvas.style.setProperty("z-index", zIndex);
     if (isHidden) {
       canvas.style.display = "none";
