@@ -329,7 +329,7 @@ return (function() {
           , x        = e.clientX - rect.left | 0
           , y        = e.clientY - rect.top  | 0
           , localX   = x * world.xScale + world.llx
-          , localY   = y * world.yScale - world.lly
+          , localY   = y * world.yScale + world.ury
           , managers = this._managers[type]
           , i;
 
@@ -936,6 +936,10 @@ return (function() {
         font = [type, size, face].join(" ");
       }
 
+      if (!align) {
+        align = "left";
+      }
+
       var promise = this.addUpdate(drawText, true, undefined, message, align, font);
 
       if (move && (align === 'left' || align === 'center')) {
@@ -945,7 +949,7 @@ return (function() {
         }
         promise = promise.then(function() {
           var state = self.getState();
-          return self.translate(state.x, state.y, width * getScreen().xScale, 0, true);
+          return self.translate(state.x, state.y, width, 0, true);
         });
       }
 
@@ -1152,6 +1156,14 @@ return (function() {
           , turtles = getFrameManager().turtles();
 
       this.setUpWorld(llx, lly, urx, ury);
+
+      if (this._sprites) {
+        applyWorld(this, this._sprites);
+      }
+
+      if (this._background) {
+        applyWorld(this, this._background);
+      }
 
       return this.$clear();
     };
@@ -1556,9 +1568,6 @@ return (function() {
 
   function drawText(message, align, font) {
     var context  = this.context()
-        , screen = getScreen()
-        , xScale = screen.xScale
-        , yScale = screen.yScale;
 
     if (!context) return;
 
