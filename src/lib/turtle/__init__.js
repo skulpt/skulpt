@@ -8,20 +8,20 @@ if (Sk.TurtleGraphics && Sk.TurtleGraphics.module) {
 }
 
 return (function() {
-  var _module                = {}
-      , _durationSinceRedraw = 0
-      , _focus               = true
-      , OPTIMAL_FRAME_RATE   = 1000/30
-      , SHAPES               = {}
-      , TURTLE_COUNT         = 0
-      , Types                = {}
-      , _frameRequest
-      , _frameRequestTimeout
-      , _screenInstance
-      , _config
-      , _target
-      , _anonymousTurtle
-      , _mouseHandler;
+  var _module              = {},
+      _durationSinceRedraw = 0,
+      _focus               = true,
+      OPTIMAL_FRAME_RATE   = 1000/30,
+      SHAPES               = {},
+      TURTLE_COUNT         = 0,
+      Types                = {},
+      _frameRequest,
+      _frameRequestTimeout,
+      _screenInstance,
+      _config,
+      _target,
+      _anonymousTurtle,
+      _mouseHandler;
 
   Types.FLOAT = function(value) {
     return Sk.builtin.float_(value);
@@ -53,36 +53,36 @@ return (function() {
   SHAPES.triangle = [[10,-5.77],[0,11.55],[-10,-5.77]];
   SHAPES.classic  = [[0,0],[-5,-9],[0,-7],[5,-9]];
   SHAPES.turtle   = [
-    [0,16],[-2,14],[-1,10],[-4,7],[-7,9],[-9,8],[-6,5],[-7,1],[-5,-3],[-8,-6]
-    ,[-6,-8],[-4,-5],[0,-7],[4,-5],[6,-8],[8,-6],[5,-3],[7,1],[6,5],[9,8],[7,9]
-    ,[4,7],[1,10],[2,14]
+    [0,16],[-2,14],[-1,10],[-4,7],[-7,9],[-9,8],[-6,5],[-7,1],[-5,-3],[-8,-6],
+    [-6,-8],[-4,-5],[0,-7],[4,-5],[6,-8],[8,-6],[5,-3],[7,1],[6,5],[9,8],[7,9],
+    [4,7],[1,10],[2,14]
   ];
 
   SHAPES.circle = [
-    [10,0],[9.51,3.09],[8.09,5.88],[5.88,8.09],[3.09,9.51],[0,10],[-3.09,9.51]
-    ,[-5.88,8.09],[-8.09,5.88],[-9.51,3.09],[-10,0],[-9.51,-3.09],[-8.09,-5.88]
-    ,[-5.88,-8.09],[-3.09,-9.51],[-0,-10],[3.09,-9.51],[5.88,-8.09],[8.09,-5.88]
-    ,[9.51,-3.09]
+    [10,0],[9.51,3.09],[8.09,5.88],[5.88,8.09],[3.09,9.51],[0,10],[-3.09,9.51],
+    [-5.88,8.09],[-8.09,5.88],[-9.51,3.09],[-10,0],[-9.51,-3.09],[-8.09,-5.88],
+    [-5.88,-8.09],[-3.09,-9.51],[-0,-10],[3.09,-9.51],[5.88,-8.09],[8.09,-5.88],
+    [9.51,-3.09]
   ];
 
   _config = (function() {
     var defaultSetup = {
-          target       : "turtle" // DOM element or id of parent container
-          , width      : 400 // if set to 0 it will use the target width
-          , height     : 400 // if set to 0 it will use the target height
-          , animate    : true // enabled/disable all animated rendering
-          , bufferSize : 0 // default turtle buffer size
-          , allowUndo  : true // enable ability to use the undo buffer
+          target     : "turtle", // DOM element or id of parent container
+          width      : 400, // if set to 0 it will use the target width
+          height     : 400, // if set to 0 it will use the target height
+          animate    : true, // enabled/disable all animated rendering
+          bufferSize : 0, // default turtle buffer size
+          allowUndo  : true, // enable ability to use the undo buffer
           // Calling focus(false) will block turtle key/mouse events
           // until focus(true) is called again.
-          , focus : function(value) {
+          focus : function(value) {
             if (value !== undefined) {
               _focus = !!value;
             }
 
             return _focus;
-          }
-          , reset   : function() {
+          },
+          reset   : function() {
             cancelAnimationFrame();
             getScreen().reset();
             getFrameManager().reset();
@@ -104,8 +104,8 @@ return (function() {
             _mouseHandler        = undefined;
             TURTLE_COUNT         = 0;
           }
-        }
-        , key;
+        },
+        key;
 
     if (!Sk.TurtleGraphics) {
       Sk.TurtleGraphics = {};
@@ -269,11 +269,11 @@ return (function() {
     };
 
     proto.requestAnimationFrame = function() {
-      var frames           = this._frames
-          , animationFrame = this._animationFrame
-          , turtles        = this._turtles
-          , sprites        = getScreen().spriteLayer()
-          , turtle, i;
+      var frames         = this._frames,
+          animationFrame = this._animationFrame,
+          turtles        = this._turtles,
+          sprites        = getScreen().spriteLayer(),
+          turtle, i;
 
       this._frames     = [];
       this._frameCount = 0;
@@ -318,14 +318,14 @@ return (function() {
 
   (function(proto) {
     proto.onEvent = function(type, e) {
-      var world      = getScreen()
-          , rect     = world.spriteLayer().canvas.getBoundingClientRect()
-          , x        = e.clientX - rect.left | 0
-          , y        = e.clientY - rect.top  | 0
-          , localX   = x * world.xScale + world.llx
-          , localY   = y * world.yScale + world.ury
-          , managers = this._managers[type]
-          , i;
+      var world    = getScreen(),
+          rect     = world.spriteLayer().canvas.getBoundingClientRect(),
+          x        = e.clientX - rect.left | 0,
+          y        = e.clientY - rect.top  | 0,
+          localX   = x * world.xScale + world.llx,
+          localY   = y * world.yScale + world.ury,
+          managers = this._managers[type],
+          i;
 
       if (managers && managers.length) {
         for(i = managers.length; --i >= 0;) {
@@ -396,8 +396,8 @@ return (function() {
     };
 
     proto.trigger = function(args) {
-      var handlers  = this._handlers
-          , i;
+      var handlers  = this._handlers,
+          i;
 
       if (handlers && handlers.length) {
         for (i = 0; i < handlers.length; i++) {
@@ -449,9 +449,9 @@ return (function() {
     };
 
     proto.addUpdate = function(method, countAsFrame, stateChanges) {
-      var self    = this
-          , state = this.getState()
-          , args  = Array.prototype.slice.call(arguments, stateChanges ? 2 : 3);
+      var self  = this,
+          state = this.getState(),
+          args  = Array.prototype.slice.call(arguments, stateChanges ? 2 : 3);
 
       return getFrameManager().addFrame(function() {
         if (method) {
@@ -470,19 +470,19 @@ return (function() {
 
       if (!this._state) {
         this._state = {
-          x         : this._x
-          , y       : this._y
-          , angle   : this._angle
-          , radians : this._radians
-          , shape   : this._shape
-          , color   : this._color
-          , fill    : this._fill
-          , filling : this._filling
-          , size    : this._size
-          , speed   : this._computed_speed
-          , down    : this._down
-          , shown   : this._shown
-          , context : function() {
+          x       : this._x,
+          y       : this._y,
+          angle   : this._angle,
+          radians : this._radians,
+          shape   : this._shape,
+          color   : this._color,
+          fill    : this._fill,
+          filling : this._filling,
+          size    : this._size,
+          speed   : this._computed_speed,
+          down    : this._down,
+          shown   : this._shown,
+          context : function() {
             return self.getPaper();
           }
         };
@@ -509,8 +509,8 @@ return (function() {
     };
 
     proto.queueMoveBy = function(startX, startY, theta, distance) {
-      var dx   = Math.cos(theta) * distance
-          , dy = Math.sin(theta) * distance;
+      var dx = Math.cos(theta) * distance,
+          dy = Math.sin(theta) * distance;
 
       return this.translate(startX, startY, dx, dy, true);
     };
@@ -590,15 +590,15 @@ return (function() {
     };
     proto.$position.returnType = function(value) {
       return new Sk.builtin.tuple([
-          Sk.builtin.float_(value[0])
-          , Sk.builtin.float_(value[1])
+          Sk.builtin.float_(value[0]),
+          Sk.builtin.float_(value[1])
       ]);
     };
 
     proto.$towards = function(x,y) {
-      var coords    = getCoordinates(x,y)
-          , radians = Math.PI + Math.atan2(this._y - coords.y, this._x - coords.x)
-          , angle   = radians * (this._fullCircle / Turtle.RADIANS);
+      var coords  = getCoordinates(x,y),
+          radians = Math.PI + Math.atan2(this._y - coords.y, this._x - coords.x),
+          angle   = radians * (this._fullCircle / Turtle.RADIANS);
 
       return angle;
     };
@@ -606,9 +606,9 @@ return (function() {
     proto.$towards.returnType = Types.FLOAT;
 
     proto.$distance = function(x,y) {
-      var coords = getCoordinates(x,y)
-          , dx   = coords.x - this._x
-          , dy   = coords.y - this._y;
+      var coords = getCoordinates(x,y),
+          dx     = coords.x - this._x,
+          dy     = coords.y - this._y;
 
       return Math.sqrt(dx * dx + dy * dy);
     };
@@ -658,9 +658,9 @@ return (function() {
       pushUndo(this);
 
       return this.translate(
-        this._x, this._y
-        , coords.x - this._x, coords.y - this._y
-        , true
+        this._x, this._y,
+        coords.x - this._x, coords.y - this._y,
+        true
       );
     };
     proto.$goto_$rw$.minArgs = 1;
@@ -674,8 +674,8 @@ return (function() {
     };
 
     proto.$home = function() {
-      var self = this
-          , angle = this._angle;
+      var self  = this,
+          angle = this._angle;
 
       pushUndo(this);
       return self.translate(this._x, this._y, -this._x, -this._y, true)
@@ -715,15 +715,15 @@ return (function() {
     }
 
     proto.$circle = function(radius, extent, steps) {
-      var self        = this
-          , x         = this._x
-          , y         = this._y
-          , angle     = this._angle
-          , heading   = {}
-          , states    = []
-          , scale     = 1/getScreen().lineScale
-          , beginPath = true
-          , endAngle, frac, w, w2, l, i, dx, dy, promise;
+      var self      = this,
+          x         = this._x,
+          y         = this._y,
+          angle     = this._angle,
+          heading   = {},
+          states    = [],
+          scale     = 1/getScreen().lineScale,
+          beginPath = true,
+          endAngle, frac, w, w2, l, i, dx, dy, promise;
 
       pushUndo(this);
 
@@ -835,8 +835,8 @@ return (function() {
           this._fill  = createColor(fill);
         }
         return this.addUpdate(undefined, this._shown, {
-          color  : this._color
-          , fill : this._fill
+          color : this._color,
+          fill  : this._fill
         });
       }
       return [this.$pencolor(), this.$fillcolor()];
@@ -844,8 +844,8 @@ return (function() {
     proto.$color.minArgs = 0;
     proto.$color.returnType = function(value) {
       return new Sk.builtin.tuple([
-        Types.COLOR(value[0])
-        , Types.COLOR(value[1])
+        Types.COLOR(value[0]),
+        Types.COLOR(value[1])
       ]);
     };
 
@@ -859,8 +859,8 @@ return (function() {
         if (flag) {
           pushUndo(this);
           return this.addUpdate(undefined, false, {
-            filling      : true
-            , fillBuffer : [{x : this._x, y : this._y}]
+            filling      : true,
+            fillBuffer : [{x : this._x, y : this._y}]
           });
         }
         else {
@@ -869,11 +869,11 @@ return (function() {
             function() {
               this.fillBuffer.push(this);
               drawFill.call(this);
-            }
-            , true
-            , {
-              filling      : false
-              , fillBuffer : undefined
+            },
+            true,
+            {
+              filling      : false,
+              fillBuffer : undefined
             }
           );
         }
@@ -912,8 +912,8 @@ return (function() {
     };
 
     proto.$write = function(message,move,align,font) {
-      var self = this
-          , promise, face, size, type, width;
+      var self = this,
+          promise, face, size, type, width;
 
       pushUndo(this);
 
@@ -1146,8 +1146,8 @@ return (function() {
     };
 
     proto.$setworldcoordinates = function(llx, lly, urx, ury) {
-      var world     = this
-          , turtles = getFrameManager().turtles();
+      var world     = this,
+          turtles = getFrameManager().turtles();
 
       this.setUpWorld(llx, lly, urx, ury);
 
@@ -1173,8 +1173,8 @@ return (function() {
     };
 
     proto.$reset = proto.$resetscreen = function() {
-      var self = this
-          , turtles = getFrameManager().turtles();
+      var self = this,
+          turtles = getFrameManager().turtles();
 
       return getFrameManager().addFrame(function() {
         applyWorld(self, self._sprites);
@@ -1236,24 +1236,24 @@ return (function() {
     proto.$onclick.keywordArgs = ["btn","add"];
 
     var KEY_MAP = {
-      "8"    : /^back(space)?$/i
-      , "9"  : /^tab$/i
-      , "13" : /^(enter|return)$/i
-      , "16" : /^shift$/i
-      , "17" : /^(ctrl|control)$/i
-      , "18" : /^alt$/i
-      , "27" : /^esc(ape)?$/i
-      , "32" : /^space$/i
-      , "33" : /^page[\s\-]?up$/i
-      , "34" : /^page[\s\-]?down$/i
-      , "35" : /^end$/i
-      , "36" : /^home$/i
-      , "37" : /^left([\s\-]?arrow)?$/i
-      , "38" : /^up([\s\-]?arrow)?$/i
-      , "39" : /^right([\s\-]?arrow)?$/i
-      , "40" : /^down([\s\-]?arrow)?$/i
-      , "45" : /^insert$/i
-      , "46" : /^del(ete)?$/i
+      "8"    : /^back(space)?$/i,
+      "9"  : /^tab$/i,
+      "13" : /^(enter|return)$/i,
+      "16" : /^shift$/i,
+      "17" : /^(ctrl|control)$/i,
+      "18" : /^alt$/i,
+      "27" : /^esc(ape)?$/i,
+      "32" : /^space$/i,
+      "33" : /^page[\s\-]?up$/i,
+      "34" : /^page[\s\-]?down$/i,
+      "35" : /^end$/i,
+      "36" : /^home$/i,
+      "37" : /^left([\s\-]?arrow)?$/i,
+      "38" : /^up([\s\-]?arrow)?$/i,
+      "39" : /^right([\s\-]?arrow)?$/i,
+      "40" : /^down([\s\-]?arrow)?$/i,
+      "45" : /^insert$/i,
+      "46" : /^del(ete)?$/i
     };
     proto.$listen = function() {
       var self = this;
@@ -1262,9 +1262,9 @@ return (function() {
         this._keyListener = function(e) {
           if (!Sk.TurtleGraphics.focus()) return;
 
-          var code      = e.charCode || e.keyCode
-              , pressed = String.fromCharCode(code).toLowerCase()
-              , key;
+          var code      = e.charCode || e.keyCode,
+              pressed = String.fromCharCode(code).toLowerCase(),
+              key;
 
           for (key in self._keyListeners) {
             if (key.length > 1 && KEY_MAP[code] && KEY_MAP[code].test(key)) {
@@ -1359,11 +1359,11 @@ return (function() {
   }
 
   function createLayer(zIndex, isHidden) {
-    var canvas = document.createElement("canvas")
-        , width  = getWidth()
-        , height = getHeight()
-        , offset = getTarget().firstChild ? (-height) + "px" : "0"
-        , context;
+    var canvas = document.createElement("canvas"),
+        width  = getWidth(),
+        height = getHeight(),
+        offset = getTarget().firstChild ? (-height) + "px" : "0",
+        context;
 
     canvas.width          = width;
     canvas.height         = height;
@@ -1398,12 +1398,12 @@ return (function() {
   }
 
   function applyWorld(world, context) {
-    var llx      = world.llx
-        , lly    = world.lly
-        , urx    = world.urx
-        , ury    = world.ury
-        , xScale = world.xScale
-        , yScale = world.yScale;
+    var llx      = world.llx,
+        lly    = world.lly,
+        urx    = world.urx,
+        ury    = world.ury,
+        xScale = world.xScale,
+        yScale = world.yScale;
 
     if (!context) return;
 
@@ -1504,13 +1504,13 @@ return (function() {
   }
 
   function drawTurtle(state, context) {
-    var shape  = SHAPES[state.shape]
-        , world  = getScreen()
-        , width  = getWidth()
-        , height = getHeight()
-        , xScale = world.xScale
-        , yScale = world.yScale
-        , x, y, bearing;
+    var shape  = SHAPES[state.shape],
+        world  = getScreen(),
+        width  = getWidth(),
+        height = getHeight(),
+        xScale = world.xScale,
+        yScale = world.yScale,
+        x, y, bearing;
 
     if (!context) return;
 
@@ -1537,10 +1537,10 @@ return (function() {
   }
 
   function drawDot(size, color) {
-    var context  = this.context()
-        , screen = getScreen()
-        , xScale = screen.xScale
-        , yScale = screen.yScale;
+    var context  = this.context(),
+        screen = getScreen(),
+        xScale = screen.xScale,
+        yScale = screen.yScale;
 
     if (!context) return;
 
@@ -1599,9 +1599,9 @@ return (function() {
   }
 
   function drawFill() {
-    var context = this.context()
-        , path  = this.fillBuffer
-        , i;
+    var context = this.context(),
+        path  = this.fillBuffer,
+        i;
 
     if (!context || !path || !path.length) return;
 
@@ -1636,41 +1636,41 @@ return (function() {
           if (this.down) {
             drawLine.call(this, loc, beginPath);
           }
-        }
-        , countAsFrame
-        , {x : x, y : y}
-        , beginPath
+        },
+        countAsFrame,
+        {x : x, y : y},
+        beginPath
       );
     };
   }
 
   function translate(turtle, startX, startY, dx, dy, beginPath, isCircle) {
     // speed is in pixels per ms
-    var speed     = turtle._computed_speed
-        , screen  = getScreen()
-        , xScale  = Math.abs(screen.xScale)
-        , yScale  = Math.abs(screen.yScale)
-        , x       = startX
-        , y       = startY
-        , pixels  = Math.sqrt(dx * dx * xScale + dy * dy * yScale)
+    var speed     = turtle._computed_speed,
+        screen  = getScreen(),
+        xScale  = Math.abs(screen.xScale),
+        yScale  = Math.abs(screen.yScale),
+        x       = startX,
+        y       = startY,
+        pixels  = Math.sqrt(dx * dx * xScale + dy * dy * yScale),
         // TODO: allow fractional frame updates?
-        , frames  = speed ? Math.round(Math.max(1, pixels / speed)) : 1
-        , xStep   = dx / frames
-        , yStep   = dy / frames
-        , promise = getFrameManager().willRenderNext() ?
+        frames  = speed ? Math.round(Math.max(1, pixels / speed)) : 1,
+        xStep   = dx / frames,
+        yStep   = dy / frames,
+        promise = getFrameManager().willRenderNext() ?
             Promise.resolve() :
-            new InstantPromise()
-        , countAsFrame = (!speed && isCircle) ? false : true
-        , i;
+            new InstantPromise(),
+        countAsFrame = (!speed && isCircle) ? false : true,
+        i;
 
     turtle.addUpdate(function() {
       if (this.filling) {
         this.fillBuffer.push({
-          x        : this.x
-          , y      : this.y
-          , stroke : this.down
-          , color  : this.color
-          , size   : this.size
+          x        : this.x,
+          y      : this.y,
+          stroke : this.down,
+          color  : this.color,
+          size   : this.size
         });
       }
     }, false);
@@ -1696,16 +1696,16 @@ return (function() {
   }
 
   function rotate(turtle, startAngle, delta, isCircle) {
-    var speed        = turtle._computed_speed
-        , degrees    = delta / turtle._fullCircle * 360
-        , frames     = speed ? Math.round(Math.max(1, Math.abs(degrees) / speed)) : 1
-        , dAngle     = delta / frames
-        , heading    = {}
-        , countAsFrame = (!speed && isCircle) ? false : true
-        , promise    = getFrameManager().willRenderNext() ?
+    var speed        = turtle._computed_speed,
+        degrees    = delta / turtle._fullCircle * 360,
+        frames     = speed ? Math.round(Math.max(1, Math.abs(degrees) / speed)) : 1,
+        dAngle     = delta / frames,
+        heading    = {},
+        countAsFrame = (!speed && isCircle) ? false : true,
+        promise    = getFrameManager().willRenderNext() ?
             Promise.resolve() :
-            new InstantPromise()
-        , i;
+            new InstantPromise(),
+        i;
 
     // TODO: request how many frames are remaining and only queue up
     // a single rotation per screen update
@@ -1737,9 +1737,9 @@ return (function() {
 
     if (rgbForm = /^rgba?\((\d+),(\d+),(\d+)(?:,([.\d]+))?\)$/.exec(hex)) {
       result = [
-        parseInt(rgbForm[1])
-        , parseInt(rgbForm[2])
-        , parseInt(rgbForm[3])
+        parseInt(rgbForm[1]),
+        parseInt(rgbForm[2]),
+        parseInt(rgbForm[3])
       ];
       if (rgbForm[4]) {
         result.push(parseFloat(rgbForm[4]));
@@ -1755,9 +1755,9 @@ return (function() {
 
       hexForm = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       result = [
-        parseInt(hexForm[1], 16)
-        , parseInt(hexForm[2], 16)
-        , parseInt(hexForm[3], 16)
+        parseInt(hexForm[1], 16),
+        parseInt(hexForm[2], 16),
+        parseInt(hexForm[3], 16)
       ];
     }
     else {
@@ -1799,8 +1799,8 @@ return (function() {
   }
 
   function calculateHeading(turtle, value, heading) {
-    var angle     = turtle._angle   || 0
-        , radians = turtle._radians || 0;
+    var angle     = turtle._angle   || 0,
+        radians = turtle._radians || 0;
 
     heading || (heading = {});
 
@@ -1837,24 +1837,24 @@ return (function() {
   }
 
   function addModuleMethod(klass, module, method, classMethod) {
-    var publicMethodName = method.replace(/^\$/, "")
-        , displayName    = publicMethodName.replace(/_\$[a-z]+\$$/i, "")
-        , maxArgs        = klass.prototype[method].length
-        , minArgs        = klass.prototype[method].minArgs
-        , keywordArgs    = klass.prototype[method].keywordArgs
-        , returnType     = klass.prototype[method].returnType
-        , isSk           = klass.prototype[method].isSk
-        , wrapperFn;
+    var publicMethodName = method.replace(/^\$/, ""),
+        displayName    = publicMethodName.replace(/_\$[a-z]+\$$/i, ""),
+        maxArgs        = klass.prototype[method].length,
+        minArgs        = klass.prototype[method].minArgs,
+        keywordArgs    = klass.prototype[method].keywordArgs,
+        returnType     = klass.prototype[method].returnType,
+        isSk           = klass.prototype[method].isSk,
+        wrapperFn;
 
     if (minArgs === undefined) {
       minArgs = maxArgs;
     }
 
     wrapperFn = function() {
-      var args       = Array.prototype.slice.call(arguments, 0)
-          , self     = classMethod ? ensureAnonymous() : args.shift()
-          , instance = self.instance
-          , i, result, susp, resolution, lengthError;
+      var args       = Array.prototype.slice.call(arguments, 0),
+          self     = classMethod ? ensureAnonymous() : args.shift(),
+          instance = self.instance,
+          i, result, susp, resolution, lengthError;
 
       if (args < minArgs || args.length > maxArgs) {
         lengthError = minArgs === maxArgs ?
@@ -1980,8 +1980,8 @@ return (function() {
   _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
 
   Sk.TurtleGraphics.raw = {
-    Turtle   : Turtle
-    , Screen : Screen
+    Turtle   : Turtle,
+    Screen : Screen
   };
 
   Sk.TurtleGraphics.module = _module;
