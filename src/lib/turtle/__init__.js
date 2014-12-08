@@ -1,5 +1,5 @@
 var $builtinmodule = function (name) {
-'use strict';
+"use strict";
 
 // See if the TurtleGraphics module has already been loaded
 if (Sk.TurtleGraphics && Sk.TurtleGraphics.module) {
@@ -9,25 +9,25 @@ if (Sk.TurtleGraphics && Sk.TurtleGraphics.module) {
 
 return (function() {
   var _module                = {}
-      , _frameRequest        = undefined
-      , _frameRequestTimeout = undefined
-      , _screenInstance      = undefined
-      , _config              = undefined
-      , _target              = undefined
-      , _anonymousTurtle     = undefined
-      , _mouseHandler        = undefined
       , _durationSinceRedraw = 0
       , _focus               = true
       , OPTIMAL_FRAME_RATE   = 1000/30
       , SHAPES               = {}
       , TURTLE_COUNT         = 0
-      , Types                = {};
+      , Types                = {}
+      , _frameRequest
+      , _frameRequestTimeout
+      , _screenInstance
+      , _config
+      , _target
+      , _anonymousTurtle
+      , _mouseHandler;
 
   Types.FLOAT = function(value) {
     return Sk.builtin.float_(value);
   };
   Types.COLOR = function(value) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       return new Sk.builtin.str(value);
     }
     else {
@@ -67,7 +67,7 @@ return (function() {
 
   _config = (function() {
     var defaultSetup = {
-          target       : 'turtle' // DOM element or id of parent container
+          target       : "turtle" // DOM element or id of parent container
           , width      : 400 // if set to 0 it will use the target width
           , height     : 400 // if set to 0 it will use the target height
           , animate    : true // enabled/disable all animated rendering
@@ -109,7 +109,7 @@ return (function() {
 
     if (!Sk.TurtleGraphics) {
       Sk.TurtleGraphics = {};
-    };
+    }
 
     for(key in defaultSetup) {
       if (!Sk.TurtleGraphics.hasOwnProperty(key)) {
@@ -147,10 +147,8 @@ return (function() {
       this.lastError  = e;
     }
 
-    return this.lastResult instanceof Promise
-      ? this.lastResult
-      : this;
-  }
+    return this.lastResult instanceof Promise ? this.lastResult : this;
+  };
 
   InstantPromise.prototype.catch = function(cb) {
     if (this.lastError) {
@@ -163,10 +161,8 @@ return (function() {
       }
     }
 
-    return this.lastResult instanceof Promise
-      ? this.lastResult
-      : this;
-  }
+    return this.lastResult instanceof Promise ? this.lastResult : this;
+  };
 
   function FrameManager() {
     this.reset();
@@ -186,7 +182,7 @@ return (function() {
       if (frame) {
         browserFrame = function(method) {
           return (_frameRequest = frame(method));
-        }
+        };
       }
     })(window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame);
 
@@ -203,14 +199,12 @@ return (function() {
 
       return function(method) {
          return (_frameRequestTimeout = window.setTimeout(method, delay || OPTIMAL_FRAME_RATE));
-      }
+      };
     }
 
     proto.willRenderNext = function() {
-      return (this._buffer && this._frameCount+1 === this.frameBuffer())
-        ? true
-        : false;
-    }
+      return !!(this._buffer && this._frameCount+1 === this.frameBuffer());
+    };
 
     proto.turtles = function() {
       return this._turtles;
@@ -224,7 +218,7 @@ return (function() {
       if (this._turtles) {
         for(var i = this._turtles.length; --i >= 0;) {
           this._turtles[i].reset();
-        };
+        }
       }
       this._turtles        = [];
       this._frames         = [];
@@ -235,15 +229,17 @@ return (function() {
     };
 
     proto.addFrame = function(method, countAsFrame) {
+      var instant = false;
+
       if (countAsFrame) {
         this._frameCount += 1;
       }
 
       this.frames().push(method);
 
-      return (!_config.animate || (this._buffer && this._frameCount === this.frameBuffer()))
-        ? this.update()
-        : new InstantPromise();
+      instant = (!_config.animate || (this._buffer && this._frameCount === this.frameBuffer()));
+
+      return instant ? this.update() : new InstantPromise();
     };
 
     proto.frames = function() {
@@ -251,7 +247,7 @@ return (function() {
     };
 
     proto.frameBuffer = function(buffer) {
-      if (typeof buffer === 'number') {
+      if (typeof buffer === "number") {
         this._buffer = buffer | 0;
         if (buffer && buffer <= this._frameCount) {
           return this.update();
@@ -261,7 +257,7 @@ return (function() {
     };
 
     proto.refreshInterval = function(rate) {
-      if (typeof rate === 'number') {
+      if (typeof rate === "number") {
         this._rate = rate | 0;
         this._animationFrame = animationFrame(rate);
       }
@@ -269,9 +265,7 @@ return (function() {
     };
 
     proto.update = function() {
-      return (this._frames && this._frames.length)
-        ? this.requestAnimationFrame()
-        : new InstantPromise();
+      return (this._frames && this._frames.length) ? this.requestAnimationFrame() : new InstantPromise();
     };
 
     proto.requestAnimationFrame = function() {
@@ -311,13 +305,13 @@ return (function() {
     this._managers = {};
     this._handlers = {
       mousedown : function(e) {
-        self.onEvent('mousedown', e);
+        self.onEvent("mousedown", e);
       },
       mouseup : function(e) {
-        self.onEvent('mouseup', e);
+        self.onEvent("mouseup", e);
       },
       mousemove : function(e) {
-        self.onEvent('mousemove', e);
+        self.onEvent("mousemove", e);
       }
     };
   }
@@ -335,7 +329,7 @@ return (function() {
 
       if (managers && managers.length) {
         for(i = managers.length; --i >= 0;) {
-          if (type === 'mousemove') {
+          if (type === "mousemove") {
             if (managers[i].canMove()) {
               managers[i].trigger([localX, localY]);
             }
@@ -345,7 +339,7 @@ return (function() {
           managers[i].canMove(false);
 
           if (managers[i].test(x, y, localX, localY)) {
-            if (type === 'mousedown') {
+            if (type === "mousedown") {
               managers[i].canMove(true);
             }
             managers[i].trigger([localX, localY]);
@@ -379,13 +373,10 @@ return (function() {
     this._target   = target;
     this._handlers = undefined;
     getMouseHandler().addManager(type, this);
-  };
+  }
 
   (function(proto) {
     proto.reset = function() {
-      if (this._target) {
-        this._target
-      }
       this._handlers = undefined;
     };
 
@@ -397,17 +388,16 @@ return (function() {
       }
 
       return this._target.hitTest.hit;
-    }
+    };
 
     proto.test = function(x, y, localX, localY) {
-      return (this._target && this._target.hitTest)
-        ? this._target.hitTest(x, y, localX, localY)
-        : !!this._target;
+      var hit = this._target && this._target.hitTest;
+      return hit ? this._target.hitTest(x, y, localX, localY) : !!this._target;
     };
 
     proto.trigger = function(args) {
       var handlers  = this._handlers
-          , args, i;
+          , i;
 
       if (handlers && handlers.length) {
         for (i = 0; i < handlers.length; i++) {
@@ -421,15 +411,15 @@ return (function() {
 
       if (!add && handlers && handlers.length) {
         // remove all existing handlers
-        while (handlers.shift()) {/* noop */};
+        while (handlers.shift()) {/* noop */}
       }
 
-      if (typeof handler !== 'function') {
+      if (typeof handler !== "function") {
         if (handlers && !handlers.length) {
           this.reset();
         }
         return;
-      };
+      }
 
       if (!handlers) {
         handlers = this._handlers = [];
@@ -493,7 +483,7 @@ return (function() {
           , down    : this._down
           , shown   : this._shown
           , context : function() {
-            return self.getPaper()
+            return self.getPaper();
           }
         };
       }
@@ -566,13 +556,11 @@ return (function() {
 
       this._isRadians  = false;
       this._fullCircle = 360;
-      this._bufferSize = typeof _config.bufferSize === 'number'
-        ? _config.bufferSize
-        : 0;
+      this._bufferSize = typeof _config.bufferSize === "number" ? _config.bufferSize : 0;
     };
 
     proto.$degrees = function(fullCircle) {
-      fullCircle = (typeof fullCircle === 'number') ? Math.abs(fullCircle) : 360;
+      fullCircle = (typeof fullCircle === "number") ? Math.abs(fullCircle) : 360;
 
       this._isRadians  = false;
       if (!fullCircle || !this._fullCircle) {
@@ -620,7 +608,7 @@ return (function() {
     proto.$distance = function(x,y) {
       var coords = getCoordinates(x,y)
           , dx   = coords.x - this._x
-          , dy   = coords.y - this._y
+          , dy   = coords.y - this._y;
 
       return Math.sqrt(dx * dx + dy * dy);
     };
@@ -639,7 +627,7 @@ return (function() {
 
     proto.$ycor = function() {
       return Math.abs(this._y) < 1e-13 ? 0 : this._y;
-    }
+    };
     proto.$ycor.returnType = Types.FLOAT;
 
     proto.$forward = proto.$fd = function(distance) {
@@ -656,7 +644,7 @@ return (function() {
     };
 
     proto.$setundobuffer = function(size) {
-      this._bufferSize = typeof size === 'number' ? Math.min(Math.abs(size), 1000) : 0;
+      this._bufferSize = typeof size === "number" ? Math.min(Math.abs(size), 1000) : 0;
     };
 
     proto.$backward = proto.$back = proto.$bk = function(distance) {
@@ -714,6 +702,18 @@ return (function() {
       return this.queueTurnTo(this._angle, angle);
     };
 
+    function circleRotate(turtle, angle, radians) {
+      return function() {
+        return turtle.addUpdate(undefined, false, {angle:angle, radians:radians});
+      };
+    }
+
+    function circleSegment(turtle, x, y, dx, dy, beginPath) {
+      return function() {
+        return turtle.translate(x, y, dx, dy, beginPath, true);
+      };
+    }
+
     proto.$circle = function(radius, extent, steps) {
       var self        = this
           , x         = this._x
@@ -733,10 +733,10 @@ return (function() {
 
       if (steps === undefined) {
         frac  = Math.abs(extent)/self._fullCircle;
-        steps = 1 + ((Math.min(11+Math.abs(radius*scale)/6, 59)*frac) | 0)
+        steps = 1 + ((Math.min(11+Math.abs(radius*scale)/6, 59)*frac) | 0);
       }
       w  = extent / steps;
-      w2 = .5 * w;
+      w2 = 0.5 * w;
       l  = radius * Math.sin(w/self._fullCircle*Turtle.RADIANS);
       if (radius < 0) {
         l = -l;
@@ -744,9 +744,7 @@ return (function() {
         w2 = -w2;
       }
 
-      promise = getFrameManager().willRenderNext()
-        ? Promise.resolve()
-        : new InstantPromise();
+      promise = getFrameManager().willRenderNext() ? Promise.resolve() : new InstantPromise();
 
       endAngle = angle + extent;
       angle += w2;
@@ -755,13 +753,9 @@ return (function() {
         calculateHeading(self, angle + w * i, heading);
         dx = Math.cos(heading.radians) * l;
         dy = Math.sin(heading.radians) * l;
-        (function(x, y, dx, dy, angle, radians, beginPath) {
-          promise = promise.then(function() {
-            return self.addUpdate(undefined, false, {angle:angle, radians:radians});
-          }).then(function(result) {
-            return self.translate(x, y, dx, dy, beginPath, true);
-          });
-        })(x, y, dx, dy, heading.angle, heading.radians, beginPath);
+        promise = promise
+          .then(circleRotate(self, heading.angle, heading.radians))
+          .then(circleSegment(self, x, y, dx, dy, beginPath));
         x += dx;
         y += dy;
         beginPath = false;
@@ -775,7 +769,7 @@ return (function() {
       });
 
       return promise;
-    }
+    };
     proto.$circle.keywordArgs = ["extent", "steps"];
     proto.$circle.minArgs     = 1;
 
@@ -826,7 +820,7 @@ return (function() {
       }
 
       return hexToRGB(this._fill);
-    }
+    };
     proto.$fillcolor.minArgs = 0;
     proto.$fillcolor.returnType = Types.COLOR;
 
@@ -906,13 +900,13 @@ return (function() {
 
     proto.$dot = function(size, color, g, b, a) {
       pushUndo(this);
-      size = (typeof size === 'number')
-        ? Math.max(1, Math.abs(size) | 0)
-        : Math.max(this._size + 4, this._size * 2);
+      size = (typeof size === "number") ?
+        Math.max(1, Math.abs(size) | 0) :
+        Math.max(this._size + 4, this._size * 2);
 
-      color = (color !== undefined)
-        ? createColor(color, g, b, a)
-        : this._color;
+      color = (color !== undefined) ?
+        createColor(color, g, b, a) :
+        this._color;
 
       return this.addUpdate(drawDot, true, undefined, size, color);
     };
@@ -940,11 +934,11 @@ return (function() {
         align = "left";
       }
 
-      var promise = this.addUpdate(drawText, true, undefined, message, align, font);
+      promise = this.addUpdate(drawText, true, undefined, message, align, font);
 
-      if (move && (align === 'left' || align === 'center')) {
+      if (move && (align === "left" || align === "center")) {
         width = measureText(message, font);
-        if (align === 'center') {
+        if (align === "center") {
           width = width/2;
         }
         promise = promise.then(function() {
@@ -955,7 +949,7 @@ return (function() {
 
       return promise;
     };
-    proto.$write.keywordArgs = ['move','align','font'];
+    proto.$write.keywordArgs = ["move","align","font"];
     proto.$write.minArgs     = 1;
 
     proto.$pensize = proto.$width = function(size) {
@@ -1031,19 +1025,19 @@ return (function() {
     proto.$dot.minArgs = 0;
 
     proto.$onclick = function(method,btn,add) {
-      this.getManager('mousedown').addHandler(method, add);
+      this.getManager("mousedown").addHandler(method, add);
     };
     proto.$onclick.minArgs = 1;
     proto.$onclick.keywordArgs = ["btn","add"];
 
     proto.$onrelease = function(method,btn,add) {
-      this.getManager('mouseup').addHandler(method, add);
+      this.getManager("mouseup").addHandler(method, add);
     };
     proto.$onrelease.minArgs = 1;
     proto.$onrelease.keywordArgs = ["btn","add"];
 
     proto.$ondrag = function(method,btn,add) {
-      this.getManager('mousemove').addHandler(method, add);
+      this.getManager("mousemove").addHandler(method, add);
     };
     proto.$ondrag.minArgs = 1;
     proto.$ondrag.keywordArgs = ["btn","add"];
@@ -1062,7 +1056,7 @@ return (function() {
   function Screen() {
     this._frames = 1;
     this._delay  = undefined;
-    this._bgcolor = 'none';
+    this._bgcolor = "none";
     this._managers = {};
     this.setUpWorld(-200,-200,200,200);
   }
@@ -1074,7 +1068,7 @@ return (function() {
 
     proto.bgLayer = function() {
       return this._background || (this._background = createLayer(1));
-    }
+    };
 
     proto.hitTestLayer = function() {
       return this._hitTest || (this._hitTest = createLayer(0,true));
@@ -1091,7 +1085,7 @@ return (function() {
       this._keyListeners = undefined;
 
       if (this._keyListener) {
-        window.removeEventListener('keydown', this._keyListener);
+        window.removeEventListener("keydown", this._keyListener);
         this._keyListener = undefined;
       }
 
@@ -1127,11 +1121,11 @@ return (function() {
 
     proto.$tracer = function(frames, delay) {
       if (frames !== undefined || delay !== undefined) {
-        if (typeof delay === 'number') {
+        if (typeof delay === "number") {
           this._delay = delay;
           getFrameManager().refreshInterval(delay);
         }
-        if (typeof frames === 'number') {
+        if (typeof frames === "number") {
           this._frames = frames;
           return getFrameManager().frameBuffer(frames);
         }
@@ -1229,37 +1223,37 @@ return (function() {
 
     proto.$exitonclick = function() {
       this._exitOnClick = true;
-      return this.getManager('mousedown').addHandler(function() {
+      return this.getManager("mousedown").addHandler(function() {
         Sk.TurtleGraphics.reset();
       }, false);
     };
 
     proto.$onclick = function(method,btn,add) {
       if (this._exitOnClick) return;
-      this.getManager('mousedown').addHandler(method, add);
+      this.getManager("mousedown").addHandler(method, add);
     };
     proto.$onclick.minArgs = 1;
     proto.$onclick.keywordArgs = ["btn","add"];
 
     var KEY_MAP = {
-      '8'    : /^back(space)?$/i
-      , '9'  : /^tab$/i
-      , '13' : /^(enter|return)$/i
-      , '16' : /^shift$/i
-      , '17' : /^(ctrl|control)$/i
-      , '18' : /^alt$/i
-      , '27' : /^esc(ape)?$/i
-      , '32' : /^space$/i
-      , '33' : /^page[\s\-]?up$/i
-      , '34' : /^page[\s\-]?down$/i
-      , '35' : /^end$/i
-      , '36' : /^home$/i
-      , '37' : /^left([\s\-]?arrow)?$/i
-      , '38' : /^up([\s\-]?arrow)?$/i
-      , '39' : /^right([\s\-]?arrow)?$/i
-      , '40' : /^down([\s\-]?arrow)?$/i
-      , '45' : /^insert$/i
-      , '46' : /^del(ete)?$/i
+      "8"    : /^back(space)?$/i
+      , "9"  : /^tab$/i
+      , "13" : /^(enter|return)$/i
+      , "16" : /^shift$/i
+      , "17" : /^(ctrl|control)$/i
+      , "18" : /^alt$/i
+      , "27" : /^esc(ape)?$/i
+      , "32" : /^space$/i
+      , "33" : /^page[\s\-]?up$/i
+      , "34" : /^page[\s\-]?down$/i
+      , "35" : /^end$/i
+      , "36" : /^home$/i
+      , "37" : /^left([\s\-]?arrow)?$/i
+      , "38" : /^up([\s\-]?arrow)?$/i
+      , "39" : /^right([\s\-]?arrow)?$/i
+      , "40" : /^down([\s\-]?arrow)?$/i
+      , "45" : /^insert$/i
+      , "46" : /^del(ete)?$/i
     };
     proto.$listen = function() {
       var self = this;
@@ -1283,12 +1277,12 @@ return (function() {
             }
           }
         };
-        window.addEventListener('keydown', this._keyListener);
+        window.addEventListener("keydown", this._keyListener);
       }
     };
 
     proto.$onkey = function(method, keyValue) {
-      if (typeof keyValue === 'function') {
+      if (typeof keyValue === "function") {
         var temp = method;
         method   = keyValue;
         keyValue = temp;
@@ -1296,7 +1290,7 @@ return (function() {
 
       keyValue = String(keyValue).toLowerCase();
 
-      if (method && typeof method === 'function') {
+      if (method && typeof method === "function") {
         if (!this._keyListeners) this._keyListeners = {};
         this._keyListeners[keyValue] = method;
       }
@@ -1306,7 +1300,7 @@ return (function() {
     };
 
     proto.$onscreenclick = function(method,btn,add) {
-      this.getManager('mousedown').addHandler(method, add);
+      this.getManager("mousedown").addHandler(method, add);
     };
     proto.$onscreenclick.minArgs = 1;
     proto.$onscreenclick.keywordArgs = ["btn","add"];
@@ -1335,12 +1329,12 @@ return (function() {
 
   function getTarget() {
     if (!_target) {
-      _target = typeof _config.target === 'string'
-        ? document.getElementById(_config.target)
-        : _config.target;
+      _target = typeof _config.target === "string" ?
+        document.getElementById(_config.target) :
+        _config.target;
     }
     return _target;
-  };
+  }
 
   function getScreen() {
     if (!_screenInstance) {
@@ -1365,7 +1359,7 @@ return (function() {
   }
 
   function createLayer(zIndex, isHidden) {
-    var canvas = document.createElement('canvas')
+    var canvas = document.createElement("canvas")
         , width  = getWidth()
         , height = getHeight()
         , offset = getTarget().firstChild ? (-height) + "px" : "0"
@@ -1409,7 +1403,7 @@ return (function() {
         , urx    = world.urx
         , ury    = world.ury
         , xScale = world.xScale
-        , yScale = world.yScale
+        , yScale = world.yScale;
 
     if (!context) return;
 
@@ -1445,7 +1439,7 @@ return (function() {
     undoState  = {};
     properties = "x y angle radians color fill down filling shown shape size".split(" ");
     for(i = 0; i < properties.length; i++) {
-      undoState[properties[i]] = turtle['_' + properties[i]];
+      undoState[properties[i]] = turtle["_" + properties[i]];
     }
 
     turtle._undoBuffer.push(undoState);
@@ -1473,8 +1467,8 @@ return (function() {
     }
 
     for(var key in undoState) {
-      if (key === 'image' || key === 'fillBuffer') continue;
-      turtle['_' + key] = undoState[key];
+      if (key === "image" || key === "fillBuffer") continue;
+      turtle["_" + key] = undoState[key];
     }
 
     return turtle.addUpdate(function() {
@@ -1507,7 +1501,7 @@ return (function() {
     }
 
     context.restore();
-  };
+  }
 
   function drawTurtle(state, context) {
     var shape  = SHAPES[state.shape]
@@ -1558,16 +1552,16 @@ return (function() {
     context.fill();
   }
 
-  var textMeasuringContext = document.createElement('canvas').getContext('2d');
+  var textMeasuringContext = document.createElement("canvas").getContext("2d");
   function measureText(message, font) {
     if (font) {
       textMeasuringContext.font = font;
     }
     return textMeasuringContext.measureText(message).width;
-  };
+  }
 
   function drawText(message, align, font) {
-    var context  = this.context()
+    var context  = this.context();
 
     if (!context) return;
 
@@ -1627,12 +1621,27 @@ return (function() {
 
       context.beginPath();
       context.moveTo(path[i-1].x, path[i-1].y);
-      context.lineWidth   = path[i].size * getScreen().lineScale;;
+      context.lineWidth   = path[i].size * getScreen().lineScale;
       context.strokeStyle = path[i].color;
       context.lineTo(path[i].x, path[i].y);
       context.stroke();
     }
     context.restore();
+  }
+
+  function partialTranslate(turtle, x, y, beginPath, countAsFrame) {
+    return function() {
+      return turtle.addUpdate(
+        function(loc) {
+          if (this.down) {
+            drawLine.call(this, loc, beginPath);
+          }
+        }
+        , countAsFrame
+        , {x : x, y : y}
+        , beginPath
+      );
+    };
   }
 
   function translate(turtle, startX, startY, dx, dy, beginPath, isCircle) {
@@ -1648,9 +1657,9 @@ return (function() {
         , frames  = speed ? Math.round(Math.max(1, pixels / speed)) : 1
         , xStep   = dx / frames
         , yStep   = dy / frames
-        , promise = getFrameManager().willRenderNext()
-            ? Promise.resolve()
-            : new InstantPromise()
+        , promise = getFrameManager().willRenderNext() ?
+            Promise.resolve() :
+            new InstantPromise()
         , countAsFrame = (!speed && isCircle) ? false : true
         , i;
 
@@ -1667,26 +1676,23 @@ return (function() {
     }, false);
 
     for(i = 0; i < frames; i++) {
-      promise = (function(endX,endY,beginPath) {
-        return promise.then(function() {
-          return turtle.addUpdate(
-            function(loc, beginPath) {
-              if (this.down) {
-                drawLine.call(this, loc, beginPath);
-              }
-            }
-            , countAsFrame
-            , {x : endX, y : endY}
-            , beginPath
-          );
-        });
-      })(x=startX + xStep * (i+1), y=startY + yStep * (i+1), beginPath);
+      x = startX + xStep * (i+1);
+      y = startY + yStep * (i+1);
+      promise = promise.then(
+        partialTranslate(turtle, x, y, beginPath, countAsFrame)
+      );
       beginPath = false;
     }
 
     return promise.then(function() {
       return [startX + dx, startY + dy];
     });
+  }
+
+  function partialRotate(turtle, angle, radians, countAsFrame) {
+    return function() {
+      return turtle.addUpdate(undefined, countAsFrame, {angle:angle, radians:radians});
+    };
   }
 
   function rotate(turtle, startAngle, delta, isCircle) {
@@ -1696,9 +1702,9 @@ return (function() {
         , dAngle     = delta / frames
         , heading    = {}
         , countAsFrame = (!speed && isCircle) ? false : true
-        , promise    = getFrameManager().willRenderNext()
-            ? Promise.resolve()
-            : new InstantPromise()
+        , promise    = getFrameManager().willRenderNext() ?
+            Promise.resolve() :
+            new InstantPromise()
         , i;
 
     // TODO: request how many frames are remaining and only queue up
@@ -1706,11 +1712,9 @@ return (function() {
 
     for(i = 0; i < frames; i++) {
       calculateHeading(turtle, startAngle + dAngle * (i+1), heading);
-      promise = (function(angle, radians) {
-        return promise.then(function() {
-          return turtle.addUpdate(undefined, countAsFrame, {angle : angle, radians : radians});
-        });
-      })(heading.angle, heading.radians);
+      promise = promise.then(
+        partialRotate(turtle, heading.angle, heading.radians, countAsFrame)
+      );
     }
 
     return promise.then(function() {
@@ -1772,11 +1776,11 @@ return (function() {
 
     if (color.constructor === Array && color.length) {
       for(i = 0; i < 3; i++) {
-        color[i] = (typeof color[i] === 'number')
-          ? Math.max(0, Math.min(255, parseInt(color[i])))
-          : 0;
+        color[i] = (typeof color[i] === "number") ?
+          Math.max(0, Math.min(255, parseInt(color[i]))) :
+          0;
       }
-      if (typeof color[i] === 'number') {
+      if (typeof color[i] === "number") {
         color[3] = Math.max(0, Math.min(1, color[i]));
         color = "rgba(" + color.join(",") + ")";
       }
@@ -1784,7 +1788,7 @@ return (function() {
         color = "rgb(" + color.slice(0,3).join(",") + ")";
       }
     }
-    else if (typeof color === 'string' && !color.match(/\s*url\s*\(/i)) {
+    else if (typeof color === "string" && !color.match(/\s*url\s*\(/i)) {
       color = color.replace(/\s+/g, "");
     }
     else {
@@ -1800,7 +1804,7 @@ return (function() {
 
     heading || (heading = {});
 
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       if (turtle._isRadians) {
         angle = radians = value % Turtle.RADIANS;
       }
@@ -1824,6 +1828,14 @@ return (function() {
     return heading;
   }
 
+  function pythonToJavascriptFunction(pyValue) {
+    return function() {
+      var argsJs = Array.prototype.slice.call(arguments);
+      var argsPy = argsJs.map(function(argJs) {return Sk.ffi.remapToPy(argJs);});
+      return Sk.misceval.applyAsync(undefined, pyValue, undefined, undefined, undefined, argsPy);
+    };
+  }
+
   function addModuleMethod(klass, module, method, classMethod) {
     var publicMethodName = method.replace(/^\$/, "")
         , displayName    = publicMethodName.replace(/_\$[a-z]+\$$/i, "")
@@ -1845,9 +1857,9 @@ return (function() {
           , i, result, susp, resolution, lengthError;
 
       if (args < minArgs || args.length > maxArgs) {
-        lengthError = minArgs === maxArgs
-          ? "exactly " + maxArgs
-          : "between " + minArgs + " and " + maxArgs;
+        lengthError = minArgs === maxArgs ?
+          "exactly " + maxArgs :
+          "between " + minArgs + " and " + maxArgs;
 
         throw new Sk.builtin.TypeError(displayName + "() takes " + lengthError + " positional argument(s) (" + args.length + " given)");
       }
@@ -1855,13 +1867,7 @@ return (function() {
       for (i = args.length; --i >= 0;) {
         if (args[i] !== undefined) {
           if (args[i] instanceof Sk.builtin.func) {
-            args[i] = (function(pyValue) {
-              return function() {
-                var argsJs = Array.prototype.slice.call(arguments);
-                var argsPy = argsJs.map(function(argJs) {return Sk.ffi.remapToPy(argJs);});
-                return Sk.misceval.applyAsync(undefined, pyValue, undefined, undefined, undefined, argsPy);
-              };
-            })(args[i]);
+            args[i] = pythonToJavascriptFunction(args[i]);
           }
           else if (args[i] && args[i].$d instanceof Sk.builtin.dict && args[i].instance) {
             args[i] = args[i].instance;
@@ -1876,8 +1882,8 @@ return (function() {
         result = instance[method].apply(instance, args);
       } catch(e) {
         if (window && window.console) {
-          console.log('wrapped method failed');
-          console.log(e.stack);
+          window.console.log("wrapped method failed");
+          window.console.log(e.stack);
         }
         throw e;
       }
@@ -1889,8 +1895,8 @@ return (function() {
       if (result instanceof Promise) {
         result = result.catch(function(e) {
           if (window && window.console) {
-            console.log('promise failed');
-            console.log(e.stack);
+            window.console.log("promise failed");
+            window.console.log(e.stack);
           }
           throw e;
         });
@@ -1898,9 +1904,9 @@ return (function() {
         susp = new Sk.misceval.Suspension();
 
         susp.resume = function() {
-          return (resolution === undefined)
-            ? Sk.builtin.none.none$
-            : Sk.ffi.remapToPy(resolution);
+          return (resolution === undefined) ?
+            Sk.builtin.none.none$ :
+            Sk.ffi.remapToPy(resolution);
         };
 
         susp.data = {
@@ -1916,7 +1922,7 @@ return (function() {
       else {
         if (result === undefined) return Sk.builtin.none.none$;
         if (isSk) return result;
-        if (typeof returnType === 'function') {
+        if (typeof returnType === "function") {
           return returnType(result);
         }
 
