@@ -184,7 +184,7 @@ return (function() {
           return (_frameRequest = frame(method));
         };
       }
-    })(window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame);
+    })(window.requestAnimationFrame || window.mozRequestAnimationFrame);
 
     function animationFrame(delay) {
       if (!_config.animate) {
