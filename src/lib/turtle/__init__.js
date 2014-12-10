@@ -569,6 +569,9 @@ return (function() {
             this._bufferSize = typeof _config.bufferSize === "number" ?
                 _config.bufferSize :
                 0;
+
+            removeLayer(this._paper);
+            this._paper = undefined;
         };
 
         proto.$degrees = function(fullCircle) {
@@ -1079,9 +1082,10 @@ return (function() {
     })(Turtle.prototype);
 
     function Screen() {
-        this._frames = 1;
-        this._delay  = undefined;
-        this._bgcolor = "none";
+        this._frames   = 1;
+        this._delay    = undefined;
+        this._bgcolor  = "none";
+        this._mode     = "standard";
         this._managers = {};
         this.setUpWorld(-200,-200,200,200);
     }
@@ -1122,6 +1126,12 @@ return (function() {
             for(var key in this._managers) {
                 this._managers[key].reset();
             }
+
+            this._mode = "standard";
+            removeLayer(this._sprites);
+            this._sprites = undefined;
+            removeLayer(this._background);
+            this._background = undefined;
         };
 
         proto.setUpWorld = function(llx, lly, urx, ury) {
@@ -1135,6 +1145,41 @@ return (function() {
             world.yScale    = -1 * (ury - lly) / getHeight();
             world.lineScale = Math.min(Math.abs(world.xScale), Math.abs(world.yScale));
         };
+
+        proto.$setup = function(width, height, startX, startY) {
+            if (isNaN(parseFloat(width))) {
+                width = getWidth();
+            }
+            if (isNaN(parseFloat(height))) {
+                height = getHeight();
+            }
+
+            if (width <= 1) {
+                width = getWidth() * width;
+            }
+            if (height <= 1) {
+                height = getHeight() * height;
+            }
+
+            this._width  = width;
+            this._height = height;
+
+            this._xOffset = (startX !== undefined && !isNaN(parseInt(startX))) ?
+                parseInt(startX) :
+                0;
+
+            this._yOffset = (startY !== undefined && !isNaN(parseInt(startY))) ?
+                parseInt(startY) :
+                0;
+
+            if (this._mode === "world") {
+                return this._setworldcoordinates(this.llx, this.lly, this.urx, this.ury);
+            }
+
+            return this._setworldcoordinates(-width/2, -height/2, width/2, height/2);
+        };
+        proto.$setup.minArgs = 2;
+
 
         proto.$register_shape = proto.$addshape = function(name, points) {
             SHAPES[name] = points;
@@ -1170,7 +1215,7 @@ return (function() {
             return this._delay === undefined ? OPTIMAL_FRAME_RATE : this._delay;
         };
 
-        proto.$setworldcoordinates = function(llx, lly, urx, ury) {
+        proto._setworldcoordinates = function(llx, lly, urx, ury) {
             var world     = this,
                 turtles = getFrameManager().turtles();
 
@@ -1187,8 +1232,12 @@ return (function() {
             return this.$clear();
         };
 
+        proto.$setworldcoordinates = function(llx, lly, urx, ury) {
+            this._mode = "world";
+            return this._setworldcoordinates(llx, lly, urx, ury);
+        };
+
         proto.$clear = proto.$clearscreen = function() {
-            var turtles = getFrameManager().turtles();
             this.reset();
             return this.$reset();
         };
@@ -1357,6 +1406,10 @@ return (function() {
             _target = typeof _config.target === "string" ?
                 document.getElementById(_config.target) :
                 _config.target;
+            // ensure that the canvas container is empty
+            while (_target.firstChild) {
+                _target.removeChild(_target.firstChild);
+            }
         }
         return _target;
     }
@@ -1376,11 +1429,19 @@ return (function() {
     }
 
     function getWidth() {
-        return (_config.width || getTarget().clientWidth) | 0;
+        return (
+            (_screenInstance && _screenInstance._width) ||
+            _config.width ||
+            getTarget().clientWidth
+        ) | 0;
     }
 
     function getHeight() {
-        return (_config.height || getTarget().clientHeight) | 0;
+        return (
+            (_screenInstance && _screenInstance._height) ||
+            _config.height ||
+            getTarget().clientHeight
+        ) | 0;
     }
 
     function createLayer(zIndex, isHidden) {
@@ -1508,6 +1569,12 @@ return (function() {
         }, true, undoState);
     }
 
+    function removeLayer(layer) {
+        if (layer && layer.canvas) {
+            getTarget().removeChild(layer.canvas);
+        }
+    }
+
     function clearLayer(context, color, image) {
         if (!context) return;
 
@@ -1599,7 +1666,7 @@ return (function() {
         }
 
         context.scale(1,-1);
-        context.fillStyle = this.color;
+        context.fillStyle = this.fill;
         context.fillText(message, this.x, -this.y);
         context.restore();
     }
@@ -1853,12 +1920,16 @@ return (function() {
         return heading;
     }
 
-    function pythonToJavascriptFunction(pyValue) {
+    function pythonToJavascriptFunction(pyValue, scope) {
         return function() {
-            var argsJs = Array.prototype.slice.call(arguments);
-            var argsPy = argsJs.map(
-                function(argJs) {return Sk.ffi.remapToPy(argJs);}
-            );
+            var argsJs = Array.prototype.slice.call(arguments),
+                argsPy = argsJs.map(
+                    function(argJs) {return Sk.ffi.remapToPy(argJs);}
+                );
+
+            if (typeof(scope) !== "undefined") {
+                argsPy.unshift(scope);
+            }
             return Sk.misceval.applyAsync(
                 undefined, pyValue, undefined, undefined, undefined, argsPy
             );
@@ -1897,6 +1968,9 @@ return (function() {
                 if (args[i] !== undefined) {
                     if (args[i] instanceof Sk.builtin.func) {
                         args[i] = pythonToJavascriptFunction(args[i]);
+                    }
+                    else if (args[i] instanceof Sk.builtin.method) {
+                        args[i] = pythonToJavascriptFunction(args[i].im_func, args[i].im_self);
                     }
                     else if (args[i] && args[i].$d instanceof Sk.builtin.dict && args[i].instance) {
                         args[i] = args[i].instance;
