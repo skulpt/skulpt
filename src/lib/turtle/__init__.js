@@ -559,6 +559,7 @@ return (function() {
             this._undoBuffer = [];
             this._speed      = 3;
             this._computed_speed = 5;
+            this._state      = undefined;
 
             for(var key in this._managers) {
                 this._managers[key].reset();
