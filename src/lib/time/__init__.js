@@ -16,7 +16,7 @@ var $builtinmodule = function (name) {
         var susp = new Sk.misceval.Suspension();
         susp.resume = function() { return Sk.builtin.none.none$; }
         susp.data = {type: "Sk.promise", promise: new Promise(function(resolve) {
-            if (typeof setTimeout === undefined) {
+            if (typeof setTimeout === "undefined") {
                 // We can't sleep (eg test environment), so resume immediately
                 resolve();
             } else {

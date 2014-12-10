@@ -16,10 +16,16 @@ var $builtinmodule = function (name) {
     sys.path = Sk.realsyspath;
 
     sys.getExecutionLimit = new Sk.builtin.func(function () {
+        if (Sk.execLimit === null) {
+            return Sk.buildin.none.none$;
+        }
         return Sk.builtin.assk$(Sk.execLimit, Sk.builtin.nmber.int$);
     });
 
     sys.setExecutionLimit = new Sk.builtin.func(function (t) {
+        if (Sk.execLimit === null) {
+            throw new Sk.builtin.NotImplementedError("Execution limiting is not enabled");
+        }
         if (t !== undefined) {
             Sk.execLimit = Sk.builtin.asnum$(t);
         }
@@ -27,6 +33,22 @@ var $builtinmodule = function (name) {
 
     sys.resetTimeout = new Sk.builtin.func(function () {
         Sk.execStart = new Date();
+    });
+
+    sys.getYieldLimit = new Sk.builtin.func(function () {
+        if (Sk.yieldLimit === null) {
+            return Sk.buildin.none.none$;
+        }
+        return Sk.builtin.assk$(Sk.yieldLimit, Sk.builtin.nmber.int$);
+    });
+
+    sys.setYieldLimit = new Sk.builtin.func(function (t) {
+        if (Sk.yieldLimit === null) {
+            throw new Sk.builtin.NotImplementedError("Yielding is not enabled");
+        }
+        if (t !== undefined) {
+            Sk.yieldLimit = Sk.builtin.asnum$(t);
+        }
     });
 
     sys.debug = new Sk.builtin.func(function () {

@@ -282,7 +282,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     module.$js = co.code; // todo; only in DEBUG?
     finalcode = co.code;
     if (Sk.dateSet == null || !Sk.dateSet) {
-        finalcode = "Sk.execStart = new Date();\n" + co.code;
+        finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
         Sk.dateSet = true;
     }
 
@@ -294,7 +294,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                 var pad;
                 var width;
                 var i;
-                var beaut = js_beautify(co.code);
+                var beaut = js_beautify(code);
                 var lines = beaut.split("\n");
                 for (i = 1; i <= lines.length; ++i) {
                     width = ("" + i).length;
@@ -306,7 +306,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                 }
                 return lines.join("\n");
             };
-            finalcode = withLineNumbers(co.code);
+            finalcode = withLineNumbers(finalcode);
             Sk.debugout(finalcode);
         }
     }
