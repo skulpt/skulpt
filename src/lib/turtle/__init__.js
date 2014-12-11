@@ -1571,8 +1571,8 @@ return (function() {
     }
 
     function removeLayer(layer) {
-        if (layer && layer.canvas) {
-            getTarget().removeChild(layer.canvas);
+        if (layer && layer.canvas && layer.canvas.parentNode) {
+            layer.canvas.parentNode.removeChild(layer.canvas);
         }
     }
 
