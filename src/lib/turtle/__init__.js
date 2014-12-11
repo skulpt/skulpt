@@ -1083,11 +1083,12 @@ return (function() {
     })(Turtle.prototype);
 
     function Screen() {
-        this._frames   = 1;
-        this._delay    = undefined;
-        this._bgcolor  = "none";
-        this._mode     = "standard";
-        this._managers = {};
+        this._frames    = 1;
+        this._delay     = undefined;
+        this._bgcolor   = "none";
+        this._mode      = "standard";
+        this._managers  = {};
+        this._keyLogger = {};
         this.setUpWorld(-200,-200,200,200);
     }
 
@@ -1112,11 +1113,24 @@ return (function() {
         };
 
         proto.reset = function() {
+            var key;
+
             this._keyListeners = undefined;
 
-            if (this._keyListener) {
-                window.removeEventListener("keydown", this._keyListener);
-                this._keyListener = undefined;
+            for (key in this._keyLogger) {
+                window.clearInterval(this._keyLogger[key]);
+                window.clearTimeout(this._keyLogger[key]);
+                delete this._keyLogger[key];
+            }
+
+            if (this._keyDownListener) {
+                window.removeEventListener("keydown", this._keyDownListener);
+                this._keyDownListener = undefined;
+            }
+
+            if (this._keyUpListener) {
+                window.removeEventListener("keyup", this._keyUpListener);
+                this._keyUpListener = undefined;
             }
 
             if (this._timer) {
@@ -1124,7 +1138,7 @@ return (function() {
                 this._timer = undefined;
             }
 
-            for(var key in this._managers) {
+            for(key in this._managers) {
                 this._managers[key].reset();
             }
 
@@ -1330,30 +1344,70 @@ return (function() {
             "45" : /^insert$/i,
             "46" : /^del(ete)?$/i
         };
-        proto.$listen = function() {
+
+        proto._createKeyRepeater = function(key, code) {
+            var self = this;
+            // set a timeout for 333ms and if key has not yet been
+            // released, fire another event and continue firing
+            // at a rate of ~20 times per second until key is released
+            self._keyLogger[code] = window.setTimeout(function() {
+                // trigger the first repeat after the longer delay
+                self._keyListeners[key]();
+                // set up the repeat interval with the quick delay
+                self._keyLogger[code] = window.setInterval(function() {
+                    self._keyListeners[key]();
+                }, 50);
+            }, 333);
+        };
+
+        proto._createKeyDownListener = function() {
             var self = this;
 
-            if (!this._keyListener) {
-                this._keyListener = function(e) {
-                    if (!Sk.TurtleGraphics.focus()) return;
+            if (this._keyDownListener) return;
 
-                    var code    = e.charCode || e.keyCode,
-                        pressed = String.fromCharCode(code).toLowerCase(),
-                        key;
+            this._keyDownListener = function(e) {
+                if (!Sk.TurtleGraphics.focus()) return;
 
-                    for (key in self._keyListeners) {
-                        if (key.length > 1 && KEY_MAP[code] && KEY_MAP[code].test(key)) {
-                            self._keyListeners[key]();
-                            break;
-                        }
-                        else if (key === pressed) {
-                            self._keyListeners[key]();
-                            break;
-                        }
+                var code    = e.charCode || e.keyCode,
+                    pressed = String.fromCharCode(code).toLowerCase(),
+                    key, inKeyMap;
+
+                if (self._keyLogger[code]) return;
+
+                for (key in self._keyListeners) {
+                    inKeyMap = (key.length > 1 && KEY_MAP[code] && KEY_MAP[code].test(key));
+                    if (key === pressed || inKeyMap) {
+                        // trigger the intial keydown handler
+                        self._keyListeners[key]();
+                        self._createKeyRepeater(key, code);
+                        break;
                     }
-                };
-                window.addEventListener("keydown", this._keyListener);
-            }
+                }
+            };
+
+            window.addEventListener("keydown", this._keyDownListener);
+        };
+
+        proto._createKeyUpListener = function() {
+            var self = this;
+
+            if (this._keyUpListener) return;
+
+            this._keyUpListener = function(e) {
+                var interval = self._keyLogger[e.charCode || e.keyCode];
+                if (interval !== undefined) {
+                    window.clearInterval(interval);
+                    window.clearTimeout(interval);
+                    delete(self._keyLogger[e.charCode || e.keyCode]);
+                }
+            };
+            
+            window.addEventListener("keyup", this._keyUpListener);
+        };
+
+        proto.$listen = function() {
+            this._createKeyUpListener();
+            this._createKeyDownListener();
         };
 
         proto.$onkey = function(method, keyValue) {
