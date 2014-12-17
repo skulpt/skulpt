@@ -1,2049 +1,2150 @@
-//
-//
-// Turtle Graphics Module for Skulpt
-//
-// Brad Miller
-//
-//
-//
-var TurtleGraphics;
-// the single identifier needed in the global scope
-if (!TurtleGraphics) {
-    TurtleGraphics = {
-        doneDelegates: [],
-        fadeOnExit   : true,
-        defaults     : {
-            canvasID: "mycanvas",
-            degrees : true,
-            animate : true
+var $builtinmodule = function (name) {
+"use strict";
+
+// See if the TurtleGraphics module has already been loaded
+if (Sk.TurtleGraphics && Sk.TurtleGraphics.module) {
+    Sk.TurtleGraphics.reset();
+    return Sk.TurtleGraphics.module;
+}
+
+return (function() {
+    var _module              = {},
+        _durationSinceRedraw = 0,
+        _focus               = true,
+        OPTIMAL_FRAME_RATE   = 1000/30,
+        SHAPES               = {},
+        TURTLE_COUNT         = 0,
+        Types                = {},
+        _frameRequest,
+        _frameRequestTimeout,
+        _screenInstance,
+        _config,
+        _target,
+        _anonymousTurtle,
+        _mouseHandler;
+
+    Types.FLOAT = function(value) {
+        return Sk.builtin.float_(value);
+    };
+    Types.COLOR = function(value) {
+        if (typeof value === "string") {
+            return new Sk.builtin.str(value);
+        }
+        else {
+            for(var i = 0; i < 3; i++) {
+                value[i] = new Sk.builtin.nmber(value[i], undefined);
+            }
+            if (value.length === 4) {
+                value[3] = Sk.builtin.float_(value[3]);
+            }
+            return new Sk.builtin.tuple(value);
         }
     };
-}
-(function () {
-    "use strict";
-    // Define private constants
-    var Degree2Rad = Math.PI / 180,
-    // conversion factor for degrees to radians
-        Rad2Degree = 180 / Math.PI,
-        render,
-        allDone,
-        segmentLine,
-        clear_canvas;
+    Types.TURTLE_LIST = function(value) {
+        var skValues = [];
+        for (var i = 0; i < value.length; i++) {
+            skValues.push(value[i].skInstance);
+        }
+        return new Sk.builtin.tuple(skValues);
+    };
 
-    // Create a 3d Vector class for manipulating turtle heading, and position.
-    function Vector (x, y, z) {
-        var i;
-        if ((typeof x).toLowerCase() === "number") {
-            Array.prototype.push.call(this, x);
-            Array.prototype.push.call(this, y);
-            Array.prototype.push.call(this, z);
-        } else {
-            for (i = 0; i < x.length; i = i + 1) {
-                Array.prototype.push.call(this, x[i]);
+    SHAPES.arrow    = [[-10,0],[10,0],[0,10]];
+    SHAPES.square   = [[ 10,-10],[10,10],[-10,10],[-10, -10]];
+    SHAPES.triangle = [[10,-5.77],[0,11.55],[-10,-5.77]];
+    SHAPES.classic  = [[0,0],[-5,-9],[0,-7],[5,-9]];
+    SHAPES.turtle   = [
+        [0,16],[-2,14],[-1,10],[-4,7],[-7,9],[-9,8],[-6,5],[-7,1],[-5,-3],[-8,-6],
+        [-6,-8],[-4,-5],[0,-7],[4,-5],[6,-8],[8,-6],[5,-3],[7,1],[6,5],[9,8],[7,9],
+        [4,7],[1,10],[2,14]
+    ];
+
+    SHAPES.circle = [
+        [10,0],[9.51,3.09],[8.09,5.88],[5.88,8.09],[3.09,9.51],[0,10],[-3.09,9.51],
+        [-5.88,8.09],[-8.09,5.88],[-9.51,3.09],[-10,0],[-9.51,-3.09],[-8.09,-5.88],
+        [-5.88,-8.09],[-3.09,-9.51],[-0,-10],[3.09,-9.51],[5.88,-8.09],[8.09,-5.88],
+        [9.51,-3.09]
+    ];
+
+    _config = (function() {
+        var defaultSetup = {
+                target     : "turtle", // DOM element or id of parent container
+                width      : 400, // if set to 0 it will use the target width
+                height     : 400, // if set to 0 it will use the target height
+                animate    : true, // enabled/disable all animated rendering
+                bufferSize : 0, // default turtle buffer size
+                allowUndo  : true, // enable ability to use the undo buffer
+                // Calling focus(false) will block turtle key/mouse events
+                // until focus(true) is called again.
+                focus : function(value) {
+                    if (value !== undefined) {
+                        _focus = !!value;
+                    }
+
+                    return _focus;
+                },
+                reset   : function() {
+                    cancelAnimationFrame();
+                    getScreen().reset();
+                    getFrameManager().reset();
+
+                    if (_target) {
+                        while (_target.firstChild) {
+                            _target.removeChild(_target.firstChild);
+                        }
+                    }
+
+                    if (_mouseHandler) {
+                        _mouseHandler.reset();
+                    }
+
+                    _durationSinceRedraw = 0;
+                    _screenInstance      = undefined;
+                    _target              = undefined;
+                    _anonymousTurtle     = undefined;
+                    _mouseHandler        = undefined;
+                    TURTLE_COUNT         = 0;
+                }
+            },
+            key;
+
+        if (!Sk.TurtleGraphics) {
+            Sk.TurtleGraphics = {};
+        }
+
+        for(key in defaultSetup) {
+            if (!Sk.TurtleGraphics.hasOwnProperty(key)) {
+                Sk.TurtleGraphics[key] = defaultSetup[key];
             }
         }
+
+        return Sk.TurtleGraphics;
+    })();
+
+    // InstantPromise is a workaround to allow usage of the clean promise-style
+    // then/catch syntax but to instantly call resolve the then/catch chain so we
+    // can avoid creating Suspensions in unnecessary cases.  This is desirable
+    // because Suspensions have a fairly large negative impact on overall
+    // performance.  These 'instant promises' come into play when a tracer()
+    // call is made with a value other than 1.  When tracer is 0 or greater than 1
+    // , we can bypass the creation of a Suspension and proceed to the next line of
+    // code immediately if the current line is not going to incur involve a screen
+    // update. We determine if a real promise or InstantPromise is necessary by
+    // checking FrameManager.willRenderNext()
+    function InstantPromise() {
+        this.lastResult = undefined;
+        this.lastError  = undefined;
     }
 
-    // Create a vector object given a direction as an angle.
-    Vector.angle2vec = function (phi) {
-        var res = new Vector([0, 0, 0]);
-        phi = phi * Degree2Rad;
-        res[0] = Math.cos(phi);
-        res[1] = Math.sin(phi);
-        return res.normalize();
-    };
-    // This trick allows you to access a Vector object like an array
-    // myVec[0] == x
-    // myVec[1] == y
-    // myVec[2] == z
-    // we really only need the z for the convenience of rotating
-    Vector.prototype.addItem = function (item) {
-        Array.prototype.push.call(this, item);
-    };
-    Vector.prototype.linear = function (a, b, v) {
-        if (this.length !== 3 || v.length !== 3) {
-            return;
-        }
-        return new Vector([a * this[0] + b * v[0],
-                a * this[1] + b * v[1],
-                a * this[2] + b * v[2]]);
-
-
-    };
-    Vector.prototype.cross = function (v) {
-        if (this.length !== 3 || v.length !== 3) {
-            return;
+    InstantPromise.prototype.then = function(cb) {
+        if (this.lastError) {
+            return this;
         }
 
-        return new Vector([this[1] * v[2] - this[2] * v[1],
-                this[2] * v[0] - this[0] * v[2],
-                this[0] * v[1] - this[1] * v[0]]);
-    };
-    Vector.prototype.rotate = function (angle) {
-        // Rotate this counter clockwise by angle.
-        var perp = new Vector(-this[1], this[0], 0),
-            c,
-            s;
-        angle = angle * Degree2Rad;
-        c = Math.cos(angle);
-        s = Math.sin(angle);
-        return new Vector(this[0] * c + perp[0] * s, this[1] * c + perp[1] * s, 0);
-    };
-    Vector.prototype.rotateNormal = function (v, alpha) {
-        // Return rotation of this in direction of v about w over alpha
-        // Requires: v, w are vectors; alpha is angle in radians
-        //   this, v, w are orthonormal
-        return this.linear(Math.cos(alpha), Math.sin(alpha), v);
-    };
-    Vector.prototype.normalize = function () {
-        var n = this.len();
-        return this.div(n);
-    };
-    Vector.prototype.toAngle = function () {
-        // workaround for values getting set to +/i xxx e -16 fooling the +/- checks below
-        var rads, deg;
-        if (Math.abs(this[1]) < 0.00001) {
-            this[1] = 0;
+        try {
+         this.lastResult = cb(this.lastResult);
+        } catch(e) {
+            this.lastResult = undefined;
+            this.lastError  = e;
         }
-        if (Math.abs(this[0]) < 0.00001) {
-            this[0] = 0;
-        }
-        rads = Math.atan(Math.abs(this[1]) / Math.abs(this[0]));
-        deg = rads * Rad2Degree;
-        if (this[0] < 0 && this[1] > 0) {
-            deg = 180 - deg;
-        } else if (this[0] < 0 && this[1] <= 0) {
-            deg = 180 + deg;
-        } else if (this[0] >= 0 && this[1] < 0) {
-            deg = 360 - deg;
-        }
-        return deg;
-    };
-    // divide all vector components by the same value
-    Vector.prototype.div = function (n) {
-        var res = [];
-        res[0] = this[0] / n;
-        res[1] = this[1] / n;
-        res[2] = this[2] / n;
-        return new Vector(res);
-    };
-    // subtract one vector from another
-    Vector.prototype.sub = function (v) {
-        var res = new Vector(0, 0, 0);
-        res[0] = this[0] - v[0];
-        res[1] = this[1] - v[1];
-        res[2] = this[2] - v[2];
-        return res;
-    };
-    Vector.prototype.add = function (v) {
-        var res = new Vector(0, 0, 0);
-        res[0] = this[0] + v[0];
-        res[1] = this[1] + v[1];
-        res[2] = this[2] + v[2];
-        return res;
-    };
-    Vector.prototype.smul = function (k) {
-        // scalar multiplication
-        var res = new Vector(0, 0, 0);
-        res[0] = this[0] * k;
-        res[1] = this[1] * k;
-        res[2] = this[2] * k;
-        return res;
-    };
-    Vector.prototype.scale = function (xs, ys) {
-        var res = new Vector(0, 0, 0);
-        res[0] = this[0] * ys;
-        res[1] = this[1] * xs;
-        res[2] = 1;
-        return res;
-    };
-    Vector.prototype.len = function () {
-        return Math.sqrt(this[0] * this[0] + this[1] * this[1] + this[2] * this[2]);
+
+        return this.lastResult instanceof Promise ? this.lastResult : this;
     };
 
-    allDone = function () {
-        var done = true, tix, theT;
-        for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
-            theT = TurtleGraphics.turtleList[tix];
-            done = done && theT.aCount >= theT.drawingEvents.length;
+    InstantPromise.prototype.catch = function(cb) {
+        if (this.lastError) {
+            try {
+                this.lastResult = cb(this.lastError);
+                this.lastError  = undefined;
+            } catch(e) {
+                this.lastResult = undefined;
+                this.lastError = e;
+            }
         }
-        return done;
-    };
-    //
-    //  This is the function that provides the animation
-    //
-    render = function () {
-        var context = document.getElementById(TurtleGraphics.defaults.canvasID).getContext("2d"),
-            canvasLib = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID],
-            incr = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID].getCounter(),
-            t,
-            tix,
-            i,
-            currentPos,
-            currentHead,
-            filling,
-            oper,
-            ts,
-            tmpColor,
-            size,
-            speed;
 
-        context.moveTo(0, 0);
+        return this.lastResult instanceof Promise ? this.lastResult : this;
+    };
+
+    function FrameManager() {
+        this.reset();
+    }
+
+    var _frameManager;
+    function getFrameManager() {
+        if (!_frameManager) {
+            _frameManager = new FrameManager();
+        }
+        return _frameManager;
+    }
+
+    (function(proto) {
+        var browserFrame;
+        (function(frame) {
+            if (frame) {
+                browserFrame = function(method) {
+                    return (_frameRequest = frame(method));
+                };
+            }
+        })(window.requestAnimationFrame || window.mozRequestAnimationFrame);
+
+        function animationFrame(delay) {
+            if (!_config.animate) {
+                return function(method) {
+                    method();
+                };
+            }
+
+            if (!delay && browserFrame) {
+                return browserFrame;
+            }
+
+            return function(method) {
+                _frameRequestTimeout = window.setTimeout(
+                    method,
+                    delay || OPTIMAL_FRAME_RATE
+                );
+                 return _frameRequestTimeout;
+            };
+        }
+
+        proto.willRenderNext = function() {
+            return !!(this._buffer && this._frameCount+1 === this.frameBuffer());
+        };
+
+        proto.turtles = function() {
+            return this._turtles;
+        };
+
+        proto.addTurtle = function(turtle) {
+            this._turtles.push(turtle);
+        };
+
+        proto.reset = function() {
+            if (this._turtles) {
+                for(var i = this._turtles.length; --i >= 0;) {
+                    this._turtles[i].reset();
+                }
+            }
+            this._turtles        = [];
+            this._frames         = [];
+            this._frameCount     = 0;
+            this._buffer         = 1;
+            this._rate           = 0;
+            this._animationFrame = animationFrame();
+        };
+
+        proto.addFrame = function(method, countAsFrame) {
+            var instant = false;
+
+            if (countAsFrame) {
+                this._frameCount += 1;
+            }
+
+            this.frames().push(method);
+
+            instant = (
+                !_config.animate ||
+                (this._buffer && this._frameCount === this.frameBuffer())
+            );
+
+            return instant ? this.update() : new InstantPromise();
+        };
+
+        proto.frames = function() {
+            return this._frames;
+        };
+
+        proto.frameBuffer = function(buffer) {
+            if (typeof buffer === "number") {
+                this._buffer = buffer | 0;
+                if (buffer && buffer <= this._frameCount) {
+                    return this.update();
+                }
+            }
+            return this._buffer;
+        };
+
+        proto.refreshInterval = function(rate) {
+            if (typeof rate === "number") {
+                this._rate = rate | 0;
+                this._animationFrame = animationFrame(rate);
+            }
+            return this._rate;
+        };
+
+        proto.update = function() {
+            return (this._frames && this._frames.length) ?
+                this.requestAnimationFrame() :
+                new InstantPromise();
+        };
+
+        proto.requestAnimationFrame = function() {
+            var frames         = this._frames,
+                animationFrame = this._animationFrame,
+                turtles        = this._turtles,
+                sprites        = getScreen().spriteLayer(),
+                turtle, i;
+
+            this._frames     = [];
+            this._frameCount = 0;
+
+            return new Promise(function(resolve) {
+                animationFrame(function paint() {
+                    for (i = 0; i < frames.length; i++) {
+                        if (frames[i]) {
+                            frames[i]();
+                        }
+                    }
+                    clearLayer(sprites);
+                    for (i = 0; i < turtles.length; i++) {
+                        turtle = turtles[i];
+                        if (turtle.getState().shown) {
+                            drawTurtle(turtle.getState(), sprites);
+                        }
+                    }
+                    resolve();
+                });
+            });
+        };
+    })(FrameManager.prototype);
+
+    function MouseHandler() {
+        var self = this;
+
+        this._target   = getTarget();
+        this._managers = {};
+        this._handlers = {
+            mousedown : function(e) {
+                self.onEvent("mousedown", e);
+            },
+            mouseup : function(e) {
+                self.onEvent("mouseup", e);
+            },
+            mousemove : function(e) {
+                self.onEvent("mousemove", e);
+            }
+        };
+    }
+
+    (function(proto) {
+        proto.onEvent = function(type, e) {
+            var world    = getScreen(),
+                rect     = world.spriteLayer().canvas.getBoundingClientRect(),
+                x        = e.clientX - rect.left | 0,
+                y        = e.clientY - rect.top  | 0,
+                localX   = x * world.xScale + world.llx,
+                localY   = y * world.yScale + world.ury,
+                managers = this._managers[type],
+                i;
+
+            if (managers && managers.length) {
+                for (i = managers.length; --i >= 0;) {
+                    if (type === "mousemove") {
+                        if (managers[i].canMove()) {
+                            managers[i].trigger([localX, localY]);
+                        }
+                        continue;
+                    }
+
+                    managers[i].canMove(false);
+
+                    if (managers[i].test(x, y, localX, localY)) {
+                        if (type === "mousedown") {
+                            managers[i].canMove(true);
+                        }
+                        managers[i].trigger([localX, localY]);
+                    }
+                }
+            }
+        };
+
+        proto.reset = function() {
+            if (this._target) {
+                for(var key in this._handlers) {
+                    this._target.removeEventListener(key, this._handlers[key]);
+                }
+            }
+            this._managers = {};
+        };
+
+        proto.addManager = function(type, manager) {
+            if (!this._managers[type]) {
+                this._managers[type] = [];
+                this._target.addEventListener(type, this._handlers[type]);
+            }
+
+            this._managers[type].push(manager);
+        };
+
+    })(MouseHandler.prototype);
+
+    function EventManager(type, target) {
+        this._type     = type;
+        this._target   = target;
+        this._handlers = undefined;
+        getMouseHandler().addManager(type, this);
+    }
+
+    (function(proto) {
+        proto.reset = function() {
+            this._handlers = undefined;
+        };
+
+        proto.canMove = function(value) {
+            if (!this._target || !this._target.hitTest) return false;
+
+            if (value !== undefined) {
+                this._target.hitTest.hit = value;
+            }
+
+            return this._target.hitTest.hit;
+        };
+
+        proto.test = function(x, y, localX, localY) {
+            return this._target && this._target.hitTest ?
+                this._target.hitTest(x, y, localX, localY) :
+                !!this._target;
+        };
+
+        proto.trigger = function(args) {
+            var handlers = this._handlers,
+                i;
+
+            if (handlers && handlers.length) {
+                for (i = 0; i < handlers.length; i++) {
+                    handlers[i].apply({}, args);
+                }
+            }
+        };
+
+        proto.addHandler = function(handler, add) {
+            var handlers = this._handlers;
+
+            if (!add && handlers && handlers.length) {
+                // remove all existing handlers
+                while (handlers.shift()) {/* noop */}
+            }
+
+            if (typeof handler !== "function") {
+                if (handlers && !handlers.length) {
+                    this.reset();
+                }
+                return;
+            }
+
+            if (!handlers) {
+                handlers = this._handlers = [];
+            }
+
+            handlers.push(handler);
+        };
+    })(EventManager.prototype);
+
+    function Turtle() {
+        getFrameManager().addTurtle(this);
+        this._screen = getScreen();
+        this._managers = {};
+        this.reset();
+    }
+
+    Turtle.RADIANS = 2 * Math.PI;
+
+    (function(proto) {
+        proto.hitTest = function(mouseX, mouseY, localX, localY) {
+            var context = getScreen().hitTestLayer();
+            clearLayer(context);
+            drawTurtle(this.getState(), context);
+            var pixel = context.getImageData(mouseX,mouseY,1,1).data;
+            // check alpha first since it is most likely to have a value
+            return pixel[3] ||pixel[0] || pixel[1] || pixel[2];
+        };
+
+        proto.addUpdate = function(method, countAsFrame, stateChanges) {
+            var self  = this,
+                state = this.getState(),
+                args  = Array.prototype.slice.call(arguments, stateChanges ? 2 : 3);
+
+            return getFrameManager().addFrame(function() {
+                if (method) {
+                    method.apply(state, args);
+                }
+                if (stateChanges) {
+                    for(var key in stateChanges) {
+                        state[key] = stateChanges[key];
+                    }
+                }
+            }, countAsFrame);
+        };
+
+        proto.getState = function() {
+            var self = this;
+
+            if (!this._state) {
+                this._state = {
+                    x       : this._x,
+                    y       : this._y,
+                    angle   : this._angle,
+                    radians : this._radians,
+                    shape   : this._shape,
+                    color   : this._color,
+                    fill    : this._fill,
+                    filling : this._filling,
+                    size    : this._size,
+                    speed   : this._computed_speed,
+                    down    : this._down,
+                    shown   : this._shown,
+                    context : function() {
+                        return self.getPaper();
+                    }
+                };
+            }
+            return this._state;
+        };
+
+        proto.translate = function(startX, startY, dx, dy, beginPath, isCircle) {
+            var self = this;
+            return translate(this, startX, startY, dx, dy, beginPath, isCircle)
+                .then(function(coords) {
+                    self._x = coords[0];
+                    self._y = coords[1];
+                });
+        };
+
+        proto.rotate = function(startAngle, delta, isCircle) {
+            var self = this;
+            return rotate(this, startAngle, delta, isCircle)
+                .then(function(heading) {
+                    self._angle   = heading.angle;
+                    self._radians = heading.radians;
+                });
+        };
+
+        proto.queueMoveBy = function(startX, startY, theta, distance) {
+            var dx = Math.cos(theta) * distance,
+                dy = Math.sin(theta) * distance;
+
+            return this.translate(startX, startY, dx, dy, true);
+        };
+
+        proto.queueTurnTo = function(startAngle, endAngle) {
+            endAngle = endAngle % this._fullCircle;
+            if (endAngle < 0) {
+                endAngle += this._fullCircle;
+            }
+            return this.rotate(startAngle, endAngle - startAngle);
+        };
+
+        proto.getManager = function(type) {
+            if (!this._managers[type]) {
+                this._managers[type] = new EventManager(type, this);
+            }
+            return this._managers[type];
+        };
+
+        proto.getPaper = function() {
+            return this._paper || (this._paper = createLayer(2));
+        };
+
+        proto.reset = function() {
+            this._x          = 0;
+            this._y          = 0;
+            this._radians    = 0;
+            this._angle      = 0;
+            this._shown      = true;
+            this._down       = true;
+            this._color      = "black";
+            this._fill       = "black";
+            this._shape      = "classic";
+            this._size       = 1;
+            this._filling    = false;
+            this._undoBuffer = [];
+            this._speed      = 3;
+            this._computed_speed = 5;
+            this._state      = undefined;
+
+            for(var key in this._managers) {
+                this._managers[key].reset();
+            }
+
+            this._isRadians  = false;
+            this._fullCircle = 360;
+            this._bufferSize = typeof _config.bufferSize === "number" ?
+                _config.bufferSize :
+                0;
+
+            removeLayer(this._paper);
+            this._paper = undefined;
+        };
+
+        proto.$degrees = function(fullCircle) {
+            fullCircle = (typeof fullCircle === "number") ?
+                Math.abs(fullCircle) :
+                360;
+
+            this._isRadians  = false;
+            if (!fullCircle || !this._fullCircle) {
+                this._angle = this._radians = 0;
+            }
+            else {
+                this._angle = this._angle / this._fullCircle * fullCircle;
+            }
+            this._fullCircle = fullCircle;
+            return this.addUpdate(
+                undefined,
+                false,
+                {angle:this._angle, radians: this._radians}
+            );
+        };
+        proto.$degrees.returnType = Types.FLOAT;
+
+        proto.$radians = function() {
+            if (!this._isRadians) {
+                this._isRadians     = true;
+                this._angle = this._radians;
+                this._fullCircle = Turtle.RADIANS;
+            }
+
+            return this._angle;
+        };
+        proto.$radians.returnType = Types.FLOAT;
+
+        proto.$position = proto.$pos = function() {
+            return [this.$xcor(), this.$ycor()];
+        };
+        proto.$position.returnType = function(value) {
+            return new Sk.builtin.tuple([
+                    Sk.builtin.float_(value[0]),
+                    Sk.builtin.float_(value[1])
+            ]);
+        };
+
+        proto.$towards = function(x,y) {
+            var coords  = getCoordinates(x,y),
+                radians = Math.PI + Math.atan2(this._y - coords.y, this._x - coords.x),
+                angle   = radians * (this._fullCircle / Turtle.RADIANS);
+
+            return angle;
+        };
+        proto.$towards.minArgs    = 1;
+        proto.$towards.returnType = Types.FLOAT;
+
+        proto.$distance = function(x,y) {
+            var coords = getCoordinates(x,y),
+                dx     = coords.x - this._x,
+                dy     = coords.y - this._y;
+
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+        proto.$distance.minArgs    = 1;
+        proto.$distance.returnType = Types.FLOAT;
+
+        proto.$heading = function() {
+            return Math.abs(this._angle) < 1e-13 ? 0 : this._angle;
+        };
+        proto.$heading.returnType = Types.FLOAT;
+
+        proto.$xcor = function() {
+            return Math.abs(this._x) < 1e-13 ? 0 : this._x;
+        };
+        proto.$xcor.returnType = Types.FLOAT;
+
+        proto.$ycor = function() {
+            return Math.abs(this._y) < 1e-13 ? 0 : this._y;
+        };
+        proto.$ycor.returnType = Types.FLOAT;
+
+        proto.$forward = proto.$fd = function(distance) {
+            pushUndo(this);
+            return this.queueMoveBy(this._x, this._y, this._radians, distance);
+        };
+
+        proto.$undo = function() {
+            popUndo(this);
+        };
+
+        proto.$undobufferentries = function() {
+            return this._undoBuffer.length;
+        };
+
+        proto.$setundobuffer = function(size) {
+            this._bufferSize = typeof size === "number" ?
+                Math.min(Math.abs(size), 1000) :
+                0;
+        };
+
+        proto.$backward = proto.$back = proto.$bk = function(distance) {
+            pushUndo(this);
+            return this.queueMoveBy(this._x, this._y, this._radians, -distance);
+        };
+
+        proto.$goto_$rw$ = proto.$setpos = proto.$setposition = function(x,y) {
+            var coords = getCoordinates(x,y);
+
+            pushUndo(this);
+
+            return this.translate(
+                this._x, this._y,
+                coords.x - this._x, coords.y - this._y,
+                true
+            );
+        };
+        proto.$goto_$rw$.minArgs = 1;
+
+        proto.$setx = function(x) {
+            return this.translate(this._x, this._y, x - this._x, 0, true);
+        };
+
+        proto.$sety = function(y) {
+            return this.translate(this._x, this._y, 0, y - this._y, true);
+        };
+
+        proto.$home = function() {
+            var self  = this,
+                angle = this._angle;
+
+            pushUndo(this);
+            return self.translate(this._x, this._y, -this._x, -this._y, true)
+                .then(function(position) {
+                    return self.queueTurnTo(angle, 0);
+                })
+                .then(function(heading) {
+                    return undefined;
+                });
+        };
+
+        proto.$right = proto.$rt = function(angle) {
+            pushUndo(this);
+            return this.rotate(this._angle, -angle);
+        };
+
+        proto.$left = proto.$lt = function(angle) {
+            pushUndo(this);
+            return this.rotate(this._angle, angle);
+        };
+
+        proto.$setheading = proto.$seth = function(angle) {
+            pushUndo(this);
+            return this.queueTurnTo(this._angle, angle);
+        };
+
+        function circleRotate(turtle, angle, radians) {
+            return function() {
+                return turtle.addUpdate(
+                    undefined,
+                    false,{angle:angle, radians:radians}
+                );
+            };
+        }
+
+        function circleSegment(turtle, x, y, dx, dy, beginPath) {
+            return function() {
+                return turtle.translate(x, y, dx, dy, beginPath, true);
+            };
+        }
+
+        proto.$circle = function(radius, extent, steps) {
+            var self      = this,
+                x         = this._x,
+                y         = this._y,
+                angle     = this._angle,
+                heading   = {},
+                states    = [],
+                scale     = 1/getScreen().lineScale,
+                beginPath = true,
+                endAngle, frac, w, w2, l, i, dx, dy, promise;
+
+            pushUndo(this);
+
+            if (extent === undefined) {
+                extent = self._fullCircle;
+            }
+
+            if (steps === undefined) {
+                frac  = Math.abs(extent)/self._fullCircle;
+                steps = 1 + ((Math.min(11+Math.abs(radius*scale)/6, 59)*frac) | 0);
+            }
+            w  = extent / steps;
+            w2 = 0.5 * w;
+            l  = radius * Math.sin(w/self._fullCircle*Turtle.RADIANS);
+            if (radius < 0) {
+                l = -l;
+                w = -w;
+                w2 = -w2;
+            }
+
+            promise = getFrameManager().willRenderNext() ? Promise.resolve() : new InstantPromise();
+
+            endAngle = angle + extent;
+            angle += w2;
+
+            for(i = 0; i < steps; i++) {
+                calculateHeading(self, angle + w * i, heading);
+                dx = Math.cos(heading.radians) * l;
+                dy = Math.sin(heading.radians) * l;
+                promise = promise
+                    .then(circleRotate(self, heading.angle, heading.radians))
+                    .then(circleSegment(self, x, y, dx, dy, beginPath));
+                x += dx;
+                y += dy;
+                beginPath = false;
+            }
+
+            promise = promise.then(function() {
+                calculateHeading(self, endAngle, heading);
+                self._angle   = heading.angle;
+                self._radians = heading.radians;
+                return self.addUpdate(undefined, true, heading);
+            });
+
+            return promise;
+        };
+        proto.$circle.keywordArgs = ["extent", "steps"];
+        proto.$circle.minArgs     = 1;
+
+        proto.$penup = proto.$up = proto.$pu = function() {
+            this._down = false;
+            return this.addUpdate(undefined, false, {down:false});
+        };
+
+        proto.$pendown = proto.$down = proto.$pd = function() {
+            this._down = true;
+            return this.addUpdate(undefined, false, {down:true});
+        };
+
+        proto.$isdown = function() {
+            return this._down;
+        };
+
+        proto.$speed = function(speed) {
+            if (arguments.length) {
+                this._speed          = Math.max(0, Math.min(1000, speed));
+                this._computed_speed = Math.max(0, speed * 2 - 1);
+                return this.addUpdate(undefined, false, {speed:this._computed_speed});
+            }
+
+            return this._speed;
+        };
+        proto.$speed.minArgs = 0;
+
+        proto.$pencolor = function(r,g,b,a) {
+            var color;
+
+            if (arguments.length) {
+                this._color = createColor(r,g,b,a);
+                return this.addUpdate(undefined, this._shown, {color : this._color});
+            }
+
+            return hexToRGB(this._color);
+        };
+        proto.$pencolor.minArgs = 0;
+        proto.$pencolor.returnType = Types.COLOR;
+
+        proto.$fillcolor = function(r,g,b,a) {
+            var color;
+
+            if (arguments.length) {
+                this._fill = createColor(r,g,b,a);
+                return this.addUpdate(undefined, this._shown, {fill : this._fill});
+            }
+
+            return hexToRGB(this._fill);
+        };
+        proto.$fillcolor.minArgs = 0;
+        proto.$fillcolor.returnType = Types.COLOR;
+
+        proto.$color = function(color, fill, b, a) {
+            if (arguments.length) {
+                if (arguments.length === 1 || arguments.length >= 3) {
+                    this._color = createColor(color, fill, b, a);
+                    this._fill  = this._color;
+                }
+                else {
+                    this._color = createColor(color);
+                    this._fill  = createColor(fill);
+                }
+                return this.addUpdate(undefined, this._shown, {
+                    color : this._color,
+                    fill  : this._fill
+                });
+            }
+            return [this.$pencolor(), this.$fillcolor()];
+        };
+        proto.$color.minArgs = 0;
+        proto.$color.returnType = function(value) {
+            return new Sk.builtin.tuple([
+                Types.COLOR(value[0]),
+                Types.COLOR(value[1])
+            ]);
+        };
+
+        proto.$fill = function(flag) {
+            var self = this;
+
+            if (flag !== undefined) {
+                flag = !!flag;
+                if (flag === this._filling) return;
+                this._filling = flag;
+                if (flag) {
+                    pushUndo(this);
+                    return this.addUpdate(undefined, false, {
+                        filling      : true,
+                        fillBuffer : [{x : this._x, y : this._y}]
+                    });
+                }
+                else {
+                    pushUndo(this);
+                    return this.addUpdate(
+                        function() {
+                            this.fillBuffer.push(this);
+                            drawFill.call(this);
+                        },
+                        true,
+                        {
+                            filling      : false,
+                            fillBuffer : undefined
+                        }
+                    );
+                }
+            }
+
+            return this._filling;
+        };
+        proto.$fill.minArgs = 0;
+
+        proto.$begin_fill = function() {
+            return this.$fill(true);
+        };
+
+        proto.$end_fill = function() {
+            return this.$fill(false);
+        };
+
+        proto.$stamp = function() {
+            pushUndo(this);
+            return this.addUpdate(function() {
+                drawTurtle(this, this.context());
+            }, true);
+        };
+
+        proto.$dot = function(size, color, g, b, a) {
+            pushUndo(this);
+            size = (typeof size === "number") ?
+                Math.max(1, Math.abs(size) | 0) :
+                Math.max(this._size + 4, this._size * 2);
+
+            color = (color !== undefined) ?
+                createColor(color, g, b, a) :
+                this._color;
+
+            return this.addUpdate(drawDot, true, undefined, size, color);
+        };
+
+        proto.$write = function(message,move,align,font) {
+            var self = this,
+                promise, face, size, type, width;
+
+            pushUndo(this);
+
+            message = String(message);
+
+            if (font && font.constructor === Array) {
+                face = typeof font[0] === "string" ? font[0] : "Arial";
+                size = String(font[1] || "12pt");
+                type = typeof font[2] === "string" ? font[2] : "normal";
+                if (/^\d+$/.test(size)) {
+                    size += "pt";
+                }
+
+                font = [type, size, face].join(" ");
+            }
+
+            if (!align) {
+                align = "left";
+            }
+
+            promise = this.addUpdate(
+                drawText, true, undefined, message, align, font
+            );
+
+            if (move && (align === "left" || align === "center")) {
+                width = measureText(message, font);
+                if (align === "center") {
+                    width = width/2;
+                }
+                promise = promise.then(function() {
+                    var state = self.getState();
+                    return self.translate(state.x, state.y, width, 0, true);
+                });
+            }
+
+            return promise;
+        };
+        proto.$write.keywordArgs = ["move","align","font"];
+        proto.$write.minArgs     = 1;
+
+        proto.$pensize = proto.$width = function(size) {
+            if (arguments.length) {
+                this._size = size;
+                return this.addUpdate(undefined, this._shown, {size : size});
+            }
+
+            return this._size;
+        };
+        proto.$pensize.minArgs = proto.$width.minArgs = 0;
+
+        proto.$showturtle = proto.$st = function() {
+            this._shown = true;
+            return this.addUpdate(undefined, true, {shown : true});
+        };
+
+        proto.$hideturtle = proto.$ht = function() {
+            this._shown = false;
+            return this.addUpdate(undefined, true, {shown : false});
+        };
+
+        proto.$isvisible = function() {
+            return this._shown;
+        };
+
+        proto.$shape = function(shape) {
+            if (shape && SHAPES[shape]) {
+                this._shape = shape;
+                return this.addUpdate(undefined, this._shown, {shape : shape});
+            }
+
+            return this._shape;
+        };
+        proto.$shape.minArgs = 0;
+
+        proto.$window_width = function() {
+            return this._screen.$window_width();
+        };
+
+        proto.$window_height = function() {
+            return this._screen.$window_height();
+        };
+
+        proto.$tracer = function(n, delay) {
+            return this._screen.$tracer(n, delay);
+        };
+        proto.$tracer.minArgs = 0;
+
+        proto.$update = function() {
+            return this._screen.$update();
+        };
+
+        proto.$delay = function(delay) {
+            return this._screen.$delay(delay);
+        };
+        proto.$delay.minArgs = 0;
+
+        proto.$reset = function() {
+            this.reset();
+            return this.$clear();
+        };
+
+        proto.$mainloop = proto.$done = function() {
+            return this._screen.$mainloop();
+        };
+
+        proto.$clear = function() {
+            return this.addUpdate(function() {
+                clearLayer(this.context());
+            }, true);
+        };
+        proto.$dot.minArgs = 0;
+
+        proto.$onclick = function(method,btn,add) {
+            this.getManager("mousedown").addHandler(method, add);
+        };
+        proto.$onclick.minArgs = 1;
+        proto.$onclick.keywordArgs = ["btn","add"];
+
+        proto.$onrelease = function(method,btn,add) {
+            this.getManager("mouseup").addHandler(method, add);
+        };
+        proto.$onrelease.minArgs = 1;
+        proto.$onrelease.keywordArgs = ["btn","add"];
+
+        proto.$ondrag = function(method,btn,add) {
+            this.getManager("mousemove").addHandler(method, add);
+        };
+        proto.$ondrag.minArgs = 1;
+        proto.$ondrag.keywordArgs = ["btn","add"];
+
+        proto.$getscreen = function() {
+            return _module.Screen();
+        };
+        proto.$getscreen.isSk = true;
+
+        proto.$getturtle = proto.$getpen = function() {
+            return this.skInstance;
+        };
+        proto.$getturtle.isSk = true;
+    })(Turtle.prototype);
+
+    function Screen() {
+        this._frames    = 1;
+        this._delay     = undefined;
+        this._bgcolor   = "none";
+        this._mode      = "standard";
+        this._managers  = {};
+        this._keyLogger = {};
+        this.setUpWorld(-200,-200,200,200);
+    }
+
+    (function(proto) {
+        proto.spriteLayer = function() {
+            return this._sprites || (this._sprites = createLayer(3));
+        };
+
+        proto.bgLayer = function() {
+            return this._background || (this._background = createLayer(1));
+        };
+
+        proto.hitTestLayer = function() {
+            return this._hitTest || (this._hitTest = createLayer(0,true));
+        };
+
+        proto.getManager = function(type) {
+            if (!this._managers[type]) {
+                this._managers[type] = new EventManager(type, this);
+            }
+            return this._managers[type];
+        };
+
+        proto.reset = function() {
+            var key;
+
+            this._keyListeners = undefined;
+
+            for (key in this._keyLogger) {
+                window.clearInterval(this._keyLogger[key]);
+                window.clearTimeout(this._keyLogger[key]);
+                delete this._keyLogger[key];
+            }
+
+            if (this._keyDownListener) {
+                window.removeEventListener("keydown", this._keyDownListener);
+                this._keyDownListener = undefined;
+            }
+
+            if (this._keyUpListener) {
+                window.removeEventListener("keyup", this._keyUpListener);
+                this._keyUpListener = undefined;
+            }
+
+            if (this._timer) {
+                window.clearTimeout(this._timer);
+                this._timer = undefined;
+            }
+
+            for(key in this._managers) {
+                this._managers[key].reset();
+            }
+
+            this._mode = "standard";
+            removeLayer(this._sprites);
+            this._sprites = undefined;
+            removeLayer(this._background);
+            this._background = undefined;
+        };
+
+        proto.setUpWorld = function(llx, lly, urx, ury) {
+            var world = this;
+
+            world.llx       = llx;
+            world.lly       = lly;
+            world.urx       = urx;
+            world.ury       = ury;
+            world.xScale    = (urx - llx) / getWidth();
+            world.yScale    = -1 * (ury - lly) / getHeight();
+            world.lineScale = Math.min(Math.abs(world.xScale), Math.abs(world.yScale));
+        };
+
+        proto.$setup = function(width, height, startX, startY) {
+            if (isNaN(parseFloat(width))) {
+                width = getWidth();
+            }
+            if (isNaN(parseFloat(height))) {
+                height = getHeight();
+            }
+
+            if (width <= 1) {
+                width = getWidth() * width;
+            }
+            if (height <= 1) {
+                height = getHeight() * height;
+            }
+
+            this._width  = width;
+            this._height = height;
+
+            this._xOffset = (startX !== undefined && !isNaN(parseInt(startX))) ?
+                parseInt(startX) :
+                0;
+
+            this._yOffset = (startY !== undefined && !isNaN(parseInt(startY))) ?
+                parseInt(startY) :
+                0;
+
+            if (this._mode === "world") {
+                return this._setworldcoordinates(this.llx, this.lly, this.urx, this.ury);
+            }
+
+            return this._setworldcoordinates(-width/2, -height/2, width/2, height/2);
+        };
+        proto.$setup.minArgs = 2;
+
+
+        proto.$register_shape = proto.$addshape = function(name, points) {
+            SHAPES[name] = points;
+        };
+
+        proto.$getshapes = function() {
+            return Object.keys(SHAPES);
+        };
+
+        proto.$tracer = function(frames, delay) {
+            if (frames !== undefined || delay !== undefined) {
+                if (typeof delay === "number") {
+                    this._delay = delay;
+                    getFrameManager().refreshInterval(delay);
+                }
+                if (typeof frames === "number") {
+                    this._frames = frames;
+                    return getFrameManager().frameBuffer(frames);
+                }
+
+                return;
+            }
+
+            return this._frames;
+        };
+        proto.$tracer.minArgs = 0;
+
+        proto.$delay = function(delay) {
+            if (delay !== undefined) {
+                return this.$tracer(undefined, delay);
+            }
+
+            return this._delay === undefined ? OPTIMAL_FRAME_RATE : this._delay;
+        };
+
+        proto._setworldcoordinates = function(llx, lly, urx, ury) {
+            var world     = this,
+                turtles = getFrameManager().turtles();
+
+            this.setUpWorld(llx, lly, urx, ury);
+
+            if (this._sprites) {
+                applyWorld(this, this._sprites);
+            }
+
+            if (this._background) {
+                applyWorld(this, this._background);
+            }
+
+            return this.$clear();
+        };
+
+        proto.$setworldcoordinates = function(llx, lly, urx, ury) {
+            this._mode = "world";
+            return this._setworldcoordinates(llx, lly, urx, ury);
+        };
+
+        proto.$clear = proto.$clearscreen = function() {
+            this.reset();
+            return this.$reset();
+        };
+
+        proto.$update = function() {
+            return getFrameManager().update();
+        };
+
+        proto.$reset = proto.$resetscreen = function() {
+            var self = this,
+                turtles = getFrameManager().turtles();
+
+            return getFrameManager().addFrame(function() {
+                applyWorld(self, self._sprites);
+                applyWorld(self, self._background);
+                for(var i = 0; i < turtles.length; i++) {
+                    turtles[i].reset();
+                    applyWorld(self, turtles[i]._paper);
+                }
+            }, true);
+        };
+
+        proto.$window_width = function() {
+            return getWidth();
+        };
+
+        proto.$window_height = function() {
+            return getHeight();
+        };
+        proto.$delay.minArgs = 0;
+
+        proto.$turtles = function() {
+            return getFrameManager().turtles();
+        };
+        proto.$turtles.returnType = Types.TURTLE_LIST;
+
+        proto.$bgcolor = function(color, g, b, a) {
+            if (arguments.length) {
+                this._bgcolor = createColor(color, g, b, a);
+                clearLayer(this.bgLayer(), this._bgcolor);
+                return;
+            }
+
+            return hexToRGB(this._bgcolor);
+        };
+        proto.$bgcolor.minArgs = 0;
+        proto.$bgcolor.returnType = Types.COLOR;
+
+        // no-op - just defined for consistency with python version
+        proto.$mainloop = proto.$done = function() {
+            return undefined;
+        };
+
+        proto.$bye = function() {
+            return Sk.TurtleGraphics.reset();
+        };
+
+        proto.$exitonclick = function() {
+            this._exitOnClick = true;
+            return this.getManager("mousedown").addHandler(function() {
+                Sk.TurtleGraphics.reset();
+            }, false);
+        };
+
+        proto.$onclick = function(method,btn,add) {
+            if (this._exitOnClick) return;
+            this.getManager("mousedown").addHandler(method, add);
+        };
+        proto.$onclick.minArgs = 1;
+        proto.$onclick.keywordArgs = ["btn","add"];
+
+        var KEY_MAP = {
+            "8"  : /^back(space)?$/i,
+            "9"  : /^tab$/i,
+            "13" : /^(enter|return)$/i,
+            "16" : /^shift$/i,
+            "17" : /^(ctrl|control)$/i,
+            "18" : /^alt$/i,
+            "27" : /^esc(ape)?$/i,
+            "32" : /^space$/i,
+            "33" : /^page[\s\-]?up$/i,
+            "34" : /^page[\s\-]?down$/i,
+            "35" : /^end$/i,
+            "36" : /^home$/i,
+            "37" : /^left([\s\-]?arrow)?$/i,
+            "38" : /^up([\s\-]?arrow)?$/i,
+            "39" : /^right([\s\-]?arrow)?$/i,
+            "40" : /^down([\s\-]?arrow)?$/i,
+            "45" : /^insert$/i,
+            "46" : /^del(ete)?$/i
+        };
+
+        proto._createKeyRepeater = function(key, code) {
+            var self = this;
+            // set a timeout for 333ms and if key has not yet been
+            // released, fire another event and continue firing
+            // at a rate of ~20 times per second until key is released
+            self._keyLogger[code] = window.setTimeout(function() {
+                // trigger the first repeat after the longer delay
+                self._keyListeners[key]();
+                // set up the repeat interval with the quick delay
+                self._keyLogger[code] = window.setInterval(function() {
+                    self._keyListeners[key]();
+                }, 50);
+            }, 333);
+        };
+
+        proto._createKeyDownListener = function() {
+            var self = this;
+
+            if (this._keyDownListener) return;
+
+            this._keyDownListener = function(e) {
+                if (!Sk.TurtleGraphics.focus()) return;
+
+                var code    = e.charCode || e.keyCode,
+                    pressed = String.fromCharCode(code).toLowerCase(),
+                    key, inKeyMap;
+
+                if (self._keyLogger[code]) return;
+
+                for (key in self._keyListeners) {
+                    inKeyMap = (key.length > 1 && KEY_MAP[code] && KEY_MAP[code].test(key));
+                    if (key === pressed || inKeyMap) {
+                        // trigger the intial keydown handler
+                        self._keyListeners[key]();
+                        self._createKeyRepeater(key, code);
+                        break;
+                    }
+                }
+            };
+
+            window.addEventListener("keydown", this._keyDownListener);
+        };
+
+        proto._createKeyUpListener = function() {
+            var self = this;
+
+            if (this._keyUpListener) return;
+
+            this._keyUpListener = function(e) {
+                var interval = self._keyLogger[e.charCode || e.keyCode];
+                if (interval !== undefined) {
+                    window.clearInterval(interval);
+                    window.clearTimeout(interval);
+                    delete(self._keyLogger[e.charCode || e.keyCode]);
+                }
+            };
+            
+            window.addEventListener("keyup", this._keyUpListener);
+        };
+
+        proto.$listen = function() {
+            this._createKeyUpListener();
+            this._createKeyDownListener();
+        };
+
+        proto.$onkey = function(method, keyValue) {
+            if (typeof keyValue === "function") {
+                var temp = method;
+                method   = keyValue;
+                keyValue = temp;
+            }
+
+            keyValue = String(keyValue).toLowerCase();
+
+            if (method && typeof method === "function") {
+                if (!this._keyListeners) this._keyListeners = {};
+                this._keyListeners[keyValue] = method;
+            }
+            else {
+                delete this._keyListeners[keyValue];
+            }
+        };
+
+        proto.$onscreenclick = function(method,btn,add) {
+            this.getManager("mousedown").addHandler(method, add);
+        };
+        proto.$onscreenclick.minArgs = 1;
+        proto.$onscreenclick.keywordArgs = ["btn","add"];
+
+        proto.$ontimer = function(method, interval) {
+            if (this._timer) {
+                window.clearTimeout(this._timer);
+                this._timer = undefined;
+            }
+
+            if (method && typeof interval === "number") {
+                this._timer = window.setTimeout(method, Math.max(0, interval|0));
+            }
+        };
+        proto.$ontimer.minArgs = 0;
+
+    })(Screen.prototype);
+
+    function ensureAnonymous() {
+        if (!_anonymousTurtle) {
+            _anonymousTurtle = _module.Turtle();
+        }
+
+        return _anonymousTurtle;
+    }
+
+    function getTarget() {
+        if (!_target) {
+            _target = typeof _config.target === "string" ?
+                document.getElementById(_config.target) :
+                _config.target;
+            // ensure that the canvas container is empty
+            while (_target.firstChild) {
+                _target.removeChild(_target.firstChild);
+            }
+        }
+        return _target;
+    }
+
+    function getScreen() {
+        if (!_screenInstance) {
+            _screenInstance = new Screen();
+        }
+        return _screenInstance;
+    }
+
+    function getMouseHandler() {
+        if (!_mouseHandler) {
+            _mouseHandler = new MouseHandler();
+        }
+        return _mouseHandler;
+    }
+
+    function getWidth() {
+        return (
+            (_screenInstance && _screenInstance._width) ||
+            _config.width ||
+            getTarget().clientWidth
+        ) | 0;
+    }
+
+    function getHeight() {
+        return (
+            (_screenInstance && _screenInstance._height) ||
+            _config.height ||
+            getTarget().clientHeight
+        ) | 0;
+    }
+
+    function createLayer(zIndex, isHidden) {
+        var canvas = document.createElement("canvas"),
+            width  = getWidth(),
+            height = getHeight(),
+            offset = getTarget().firstChild ? (-height) + "px" : "0",
+            context;
+
+        canvas.width          = width;
+        canvas.height         = height;
+        canvas.style.position = "relative";
+        canvas.style.display  = "block";
+        canvas.style.setProperty("margin-top",offset);
+        canvas.style.setProperty("z-index", zIndex);
+        if (isHidden) {
+            canvas.style.display = "none";
+        }
+
+        getTarget().appendChild(canvas);
+
+        context = canvas.getContext("2d");
         context.lineCap = "round";
         context.lineJoin = "round";
-        context.clearRect(canvasLib.llx, canvasLib.lly, canvasLib.urx - canvasLib.llx, canvasLib.ury - canvasLib.lly); //canvas.style.setProperty("background-color",TurtleGraphics.turtleCanvas.bgcolor.v);
-        TurtleGraphics.renderClock += incr;
-        for (tix = 0; tix < TurtleGraphics.turtleList.length; tix = tix + 1) {
-            currentPos = new Vector(0, 0, 0);
-            currentHead = new Vector(1, 0, 0);
-            context.fillStyle = "black";
-            context.strokeStyle = "black";
-            t = TurtleGraphics.turtleList[tix];
-            currentHead = t.heading;
-            context.lastCanvas = t.turtleCanvas;
-            if (t.aCount >= t.drawingEvents.length) {
-                t.aCount = t.drawingEvents.length - 1;
-            }
 
-            context.lineWidth = t.get_pen_width();
+        applyWorld(getScreen(), context);
 
-            filling = false;
-            if (isNaN(t.turtleCanvas.delay)) {
-                t.turtleCanvas.delay = 0;
-            }
-            //console.log(tix + " : " + t.clearPoint + " to " + t.aCount)
-            for (i = t.clearPoint; (i <= t.aCount || t.turtleCanvas.delay === 0) && i < t.drawingEvents.length; i = i + 1) {
-                if (i > t.aCount) {
-                    //If se jump past aCount, jump it ahead
-                    t.aCount = i;
-                }
-                oper = t.drawingEvents[i];
-                ts = oper[oper.length - 1];
-                //console.log(i + "/" + ts + oper [0] + "{" + oper [1] + "}" + t.turtleCanvas.delay)
-                if (ts <= TurtleGraphics.renderClock || t.turtleCanvas.delay === 0) {
-                    if (ts > TurtleGraphics.renderClock) {
-                        //If we go past the render clock, jump it ahead
-                        TurtleGraphics.renderClock = ts;
-                    }
-                    //console.log("<==")
-                    switch (oper[0]) {
-                        case "LT": //line To
-                            if (!filling) {
-                                context.beginPath();
-                                context.moveTo(oper[1], oper[2]);
-                            }
-                            context.lineTo(oper[3], oper[4]);
-                            context.strokeStyle = oper[5];
-                            context.stroke();
-                            currentPos = new Vector(oper[3], oper[4], 0);
-                            if (!filling) {
-                                context.closePath();
-                            }
-                            break;
-                        case "MT": //move to
-                            context.moveTo(oper[3], oper[4]);
-                            currentPos = new Vector(oper[3], oper[4], 0);
-                            break;
-                        case "BF": //begin fill
-                            context.beginPath();
-                            context.moveTo(oper[1], oper[2]);
-                            filling = true;
-                            break;
-                        case "EF": //end fill
-                            context.fillStyle = oper[3];
-                            context.stroke();
-                            context.fill();
-                            context.closePath();
-                            filling = false;
-                            break;
-                        case "FC": // fill color
-                            context.fillStyle = oper[1];
-                            break;
-                        case "TC": // turtle color
-                            context.strokeStyle = oper[1];
-                            break;
-                        case "PW": // Pen width
-                            context.lineWidth = oper[1];
-                            break;
-                        case "DT": // Dot
-                            tmpColor = context.fillStyle;
-                            context.fillStyle = oper[2];
-                            size = oper[1];
-                            context.fillRect(oper[3] - size / 2, oper[4] - size / 2, size, size);
-                            context.fillStyle = tmpColor;
-                            break;
-                        case "CI": // Circle
-                            if (!filling) {
-                                context.beginPath();
-                            }
-                            context.arc(oper[1], oper[2], oper[3], oper[4], oper[5], oper[6]);
-                            currentPos = new Vector(oper[1] + Math.cos(oper[5]) * oper[3], oper[2] + Math.sin(oper[5]) * oper[3], 0);
-                            context.stroke();
-                            if (!filling) {
-                                context.closePath();
-                            }
-                            break;
-                        case "WT":
-                            // write
-                            if (context.font) {
-                                context.font = oper[2];
-                            }
-                            context.scale(1, -1);
-                            context.fillText(oper[1], oper[3], -oper[4]);
-                            context.scale(1, -1);
-                            break;
-                        case "ST":
-                            // stamp
-                            t.drawturtle(oper[3], new Vector(oper[1], oper[2], 0));
-                            break;
-                        case "HT": // hide turtle
-                            t.visible = false;
-                            break;
-                        case "SH": // show turtle
-                            t.visible = true;
-                            break;
-                        case "TT": // turn
-                            currentHead = oper[1];
-                            break;
-                        case "CL": // clear
-                            clear_canvas(t.canvasID);
-                            t.clearPoint = i; // Different from reset that calls clear because it leaves the turtles where they are
-                            break;
-                        case "DL":  // delay
-                            t.turtleCanvas.delay = oper[1];
-                            break;
-                        case "SC": // speed change
-                            speed = oper[1];
-
-                            if (speed < 0) {
-                                t.turtleCanvas.delay = 0;
-                            } else {
-                                if (speed > 10) {
-                                    speed = 10;
-                                }
-                                t.turtleCanvas.delay = (10 - speed % 11 + 1) * t.turtleCanvas.timeFactor; //10
-                            }
-
-                            //t.turtleCanvas.intervalId = clearInterval(t.turtleCanvas.intervalId);
-                            //t.turtleCanvas.intervalId = setInterval(render, t.turtleCanvas.delay)
-                            if (oper[2]) {
-                                t.turtleCanvas.setSegmentLength(oper[2]);
-                            }
-                            break;
-                        case "CS": // change shape
-                            t.currentShape = oper[1];
-                            break;
-                        case "NO":
-                            break;
-                    } //else {
-                    //console.log('unknown op: ' + oper[0]);
-                    //} // end of oper[0] test
-                } // end of if ts < render clock
-            }
-            // end of for
-            // console.log(TurtleGraphics.renderClock + " / " + t.aCount)
-            // console.log("------------------------------")
-            t.aCount += incr;
-            if (t.visible) {
-                // draw the turtle
-                t.drawturtle(currentHead.toAngle(), currentPos); // just use currentHead
-            }
-        }
-        //if (t.aCount >= t.drawingEvents.length) {
-        if (TurtleGraphics.renderClock > TurtleGraphics.eventCount) {
-            // && allDone() ){
-            //  t.turtleCanvas.doneAnimating(t);
-            //  console.log("done animating")
-            if (context.lastCanvas) {
-                context.lastCanvas.doneAnimating(t);
-            }
-        } else {
-            //t.turtleCanvas.intervalId = setTimeout(render, t.turtleCanvas.delay)
-            if (context.lastCanvas) {
-                context.lastCanvas.intervalId = setTimeout(render, context.lastCanvas.delay);
-            }
-        }
-    };
-    //
-    //  Drawing Functions
-    //
-    // break a line into segments
-    // sp:  Vector of starting position
-    // ep:  Vector of ending position
-    // sl:  int length of segments
-    segmentLine = function (sp, ep, sL, pen) {
-        var head = ep.sub(sp).normalize(),
-            numSegs = Math.floor(ep.sub(sp).len() / sL),
-            res = [],
-            oldp = sp,
-            newp,
-            op = "",
-            i;
-        if (pen) {
-            op = "LT";
-        } else {
-            op = "MT";
-        }
-        for (i = 0; i < numSegs; i = i + 1) {
-            newp = oldp.linear(1, sL, head);
-            res.push([
-                op,
-                oldp[0],
-                oldp[1],
-                newp[0],
-                newp[1]
-            ]);
-            oldp = newp;
-        }
-        if (!(oldp[0] === ep[0] && oldp[1] === ep[1])) {
-            res.push([
-                op,
-                oldp[0],
-                oldp[1],
-                ep[0],
-                ep[1]
-            ]);
-        }
-        return res;
-    };
-
-    clear_canvas = function (canId) {
-        var ctx = document.getElementById(canId).getContext("2d");
-        //if (arguments.length >= 2) {
-        //    fillStyle = arguments[1];
-        //    fillRect(0, 0, canvas.width, canvas.height);
-        //}
-        ctx.clearRect(-ctx.canvas.width / 2, -ctx.canvas.height / 2, ctx.canvas.width, ctx.canvas.height);
-    };
-    //
-    // Define TurtleCanvas
-    //
-    function TurtleCanvas (options) {
-        this.canvasID = TurtleGraphics.defaults.canvasID;
-        if (options.canvasID) {
-            this.canvasID = options.canvasID;
-        }
-        this.canvas = document.getElementById(this.canvasID);
-        this.context = this.canvas.getContext("2d");
-        this.canvas.style.display = "block";
-        this.canvas.style.opacity = 1;
-        //$(this.canvas).fadeIn();
-        this.lineScale = 1;
-        this.xptscale = 1;
-        this.yptscale = 1;
-        this.llx = -this.canvas.width / 2;
-        this.lly = -this.canvas.height / 2;
-        this.urx = this.canvas.width / 2;
-        this.ury = this.canvas.height / 2;
-        this.setup(this.canvas.width, this.canvas.height);
-        TurtleGraphics.canvasInit = true;
-        this.tlist = [];
-        this.timeFactor = 5;
-        if (TurtleGraphics.defaults.animate) {
-            this.delay = 5 * this.timeFactor;
-        } else {
-            this.delay = 0;
-        }
-        this.segmentLength = 10;
-        this.renderCounter = 1;
-        this.clearPoint = 0;
-        TurtleGraphics.canvasLib[this.canvasID] = this;
+        return context;
     }
 
-    TurtleCanvas.prototype.setup = function (width, height) {
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.lineScale = 1;
-        this.xptscale = 1;
-        this.yptscale = 1;
-        this.llx = -this.canvas.width / 2;
-        this.lly = -this.canvas.height / 2;
-        this.urx = this.canvas.width / 2;
-        this.ury = this.canvas.height / 2;
-        this.renderCounter = 1;
-        this.clearPoint = 0;
-        this.timeFactor = 5;
-        if (TurtleGraphics.defaults.animate) {
-            this.delay = 5 * this.timeFactor;
-        } else {
-            this.delay = 0;
+    function cancelAnimationFrame() {
+        if (_frameRequest) {
+            (window.cancelAnimationFrame || window.mozCancelAnimationFrame)(_frameRequest);
+            _frameRequest = undefined;
         }
-        if (TurtleGraphics.canvasInit === false) {
-            this.context.save();
-            this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
-            // move 0,0 to center.
-            this.context.scale(1, -1);
-            // scaling like this flips the y axis the right way.
-            TurtleGraphics.canvasInit = true;
-            TurtleGraphics.eventCount = 0;
-            TurtleGraphics.renderClock = 0;
-            TurtleGraphics.renderTime = 0; // RNL
-        } else {
-            this.context.restore();
-            this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
-            // move 0,0 to center.
-            this.context.scale(1, -1);
-            // scaling like this flips the y axis the right way.
-            this.context.clearRect(-this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
+        if (_frameRequestTimeout) {
+            window.clearTimeout(_frameRequestTimeout);
+            _frameRequestTimeout = undefined;
         }
-    };
-    TurtleCanvas.prototype.addToCanvas = function (t) {
-        this.tlist.push(t);
-    };
-    TurtleCanvas.prototype.onCanvas = function (t) {
-        return this.tlist.indexOf(t) >= 0;
-    };
-    TurtleCanvas.prototype.isAnimating = function () {
-        return this.tlist.length > 0;
-    };
-    TurtleCanvas.prototype.startAnimating = function (t) {
-        if (!this.isAnimating()) {
-            this.intervalId = setTimeout(render, this.delay); //setInterval(render, this.delay);
-        }
-        if (!this.onCanvas(t)) {
-            //Added by RNL in case startAnimating is called after it's already been added
-            this.addToCanvas(t);
-        }
-        try {
-            Sk.isTurtleProgram = true;
-        } catch (ReferenceEror) {
-        }
-    };
-    TurtleCanvas.prototype.doneAnimating = function () {
-        var i;
-        this.tlist.splice(0, this.tlist.length);
-        clearTimeout(this.intervalId);
-        if (TurtleGraphics.doneDelegates) {
-            for (i = 0; i < TurtleGraphics.doneDelegates.length; i = i + 1) {
-                TurtleGraphics.doneDelegates[i]();
-            }
-        }
-    };
-    TurtleCanvas.prototype.cancelAnimation = function () {
-        var t;
-        if (this.intervalId) {
-            clearTimeout(this.intervalId);
-        }
-        for (t = 0; t < this.tlist.length; t = t + 1) {
-            this.tlist[t].aCount = this.tlist[t].drawingEvents.length - 1;
-        }
-        render();
-    };
-    TurtleCanvas.prototype.setSpeedDelay = function (s) {
-        // RNL
-        var df = 10 - s % 11 + 1;
-        this.delay = df * this.timeFactor; //RNL was 10;
-    };
-    TurtleCanvas.prototype.setDelay = function (d) {
-        this.delay = d;
-    };
-    TurtleCanvas.prototype.getDelay = function () {
-        //RNL
-        return this.delay;
-    };
-    TurtleCanvas.prototype.setCounter = function (s) {
-        if (!s || s <= 0) {
-            //Don't let this be less than 1
-            s = 1;
-        }
-        this.renderCounter = s;
-    };
-    TurtleCanvas.prototype.getCounter = function () {
-        return this.renderCounter;
-    };
-    TurtleCanvas.prototype.setworldcoordinates = function (llx, lly, urx, ury) {
-        var xlinescale, ylinescale;
-        this.context.restore();
-        this.context.scale(this.canvas.width / (urx - llx), -this.canvas.height / (ury - lly));
+    }
+
+    function applyWorld(world, context) {
+        var llx    = world.llx,
+            lly    = world.lly,
+            urx    = world.urx,
+            ury    = world.ury,
+            xScale = world.xScale,
+            yScale = world.yScale;
+
+        if (!context) return;
+
+        clearLayer(context);
+
+        context.restore();
+        context.save();
+        context.scale(1 / xScale, 1 / yScale);
         if (lly === 0) {
-            this.context.translate(-llx, lly - (ury - lly));
+            context.translate(-llx, lly - (ury - lly));
         } else if (lly > 0) {
-            this.context.translate(-llx, -lly * 2);
+            context.translate(-llx, -lly * 2);
         } else {
-            this.context.translate(-llx, -ury);
+            context.translate(-llx, -ury);
         }
-        xlinescale = (urx - llx) / this.canvas.width;
-        ylinescale = (ury - lly) / this.canvas.height;
-        this.xptscale = xlinescale;
-        this.yptscale = ylinescale;
-        this.lineScale = Math.min(xlinescale, ylinescale);
-        this.context.save();
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    };
-    TurtleCanvas.prototype.window_width = function () {
-        return this.canvas.width;
-    };
-    TurtleCanvas.prototype.window_height = function () {
-        return this.canvas.height;
-    };
-    TurtleCanvas.prototype.bgcolor = function (c) {
-        this.background_color = c;
-        this.canvas.style.setProperty("background-color", c.v); //$(this.canvas).css("background-color",c.v);
-    };
-    TurtleCanvas.prototype.setSegmentLength = function (s) {
-        this.segmentLength = s;
-    };
-    TurtleCanvas.prototype.getSegmentLength = function () {
-        return this.segmentLength;
-    };
-    // todo: if animating, this should be deferred until the proper time
-    TurtleCanvas.prototype.exitonclick = function () {
-        var canvas_id = this.canvasID,
-            theCanvas = this,
-            eventHandler = function () {
-                if (!theCanvas.isAnimating()) {
-                    if (TurtleGraphics.fadeOnExit) {
-                        //Let's this be configurable
-                        document.getElementById(canvas_id).style.display = "none"; //$("#"+canvas_id).hide();
-                    }
-                    document.getElementById(canvas_id).removeEventListener("click", eventHandler);
-                    //$("#"+canvas_id).unbind('click');
-                    TurtleGraphics.canvasInit = false;
-                    delete TurtleGraphics.canvasLib[canvas_id];
-                }
-            };
-        this.canvas.addEventListener("click", eventHandler, false);
-    };
-    TurtleCanvas.prototype.turtles = function () {
-        return TurtleGraphics.turtleList;
-    };
-    TurtleCanvas.prototype.tracer = function (t, d) {
-        var i;
-        //New version NOT attached to a turtle (as per real turtle)
-        this.setCounter(t);
-        if (t === 0) {
-            for (i = 0; i < this.turtleList; i = i + 1) {
-                this.turtleList[i].animate = false;
-            }
-            this.cancelAnimation();
-        }
-        if (d !== undefined) {
-            this.setDelay(d);
-        }
-    };
-    // Constructor for Turtle objects
-    function Turtle (opt) {
-        this.initialize(opt);
-        TurtleGraphics.turtleList.push(this);
     }
 
-    Turtle.prototype.go_home = function () {
-        // Put turtle in initial state
-        // turtle is headed to the right
-        // with location 0,0,0 in the middle of the canvas.
-        // x grows to the right
-        // y grows towards the top of the canvas
-        this.position = this.home;
-        this.context.moveTo(this.home[0], this.home[1]);
-        this.heading = new Vector([1, 0, 0]);
-        // to the right; in turtle space x+ direction
-        this.normal = new Vector([0, 0, -1]); // in z- direction
-    };
-    Turtle.prototype.initialize = function (opt) {
-        function turtleShapePoints () {
-            var pl = [
-                    [ 0, 16 ],
-                    [ -2, 14 ],
-                    [ -1, 10 ],
-                    [ -4, 7 ],
-                    [ -7, 9 ],
-                    [ -9, 8 ],
-                    [ -6, 5 ],
-                    [ -7, 1 ],
-                    [ -5, -3 ],
-                    [ -8, -6 ],
-                    [ -6, -8 ],
-                    [ -4, -5 ],
-                    [ 0, -7 ],
-                    [ 4, -5 ],
-                    [ 6, -8 ],
-                    [ 8, -6 ],
-                    [ 5, -3 ],
-                    [ 7, 1 ],
-                    [ 6, 5 ],
-                    [ 9, 8 ],
-                    [ 7, 9 ],
-                    [ 4, 7 ],
-                    [ 1, 10 ],
-                    [ 2, 14 ]
-                ],
-                res = [],
-                p;
-            for (p = 0; p < pl.length; p = p + 1) {
-                res.push(new Vector(pl[p]));
-            }
-            return res;
+    function pushUndo(turtle) {
+        var properties, undoState, i;
+
+        if (!_config.allowUndo || !turtle._bufferSize) {
+            return;
         }
 
-        function defaultShapePoints () {
-            var pl = [
-                    [ -10, 0 ],
-                    [ 10, 0 ],
-                    [ 0, 10 ]
-                ],
-                res = [],
-                p;
-            for (p = 0; p < pl.length; p = p + 1) {
-                res.push(new Vector(pl[p]));
-            }
-            return res;
+        if (!turtle._undoBuffer) {
+            turtle._undoBuffer = [];
         }
 
-        function circleShapePoints () {
-            var pl = [
-                    [ 10, 0 ],
-                    [ 9.51, 3.09 ],
-                    [ 8.09, 5.88 ],
-                    [ 5.88, 8.09 ],
-                    [ 3.09, 9.51 ],
-                    [ 0, 10 ],
-                    [ -3.09, 9.51 ],
-                    [ -5.88, 8.09 ],
-                    [ -8.09, 5.88 ],
-                    [ -9.51, 3.09 ],
-                    [ -10, 0 ],
-                    [ -9.51, -3.09 ],
-                    [ -8.09, -5.88 ],
-                    [ -5.88, -8.09 ],
-                    [ -3.09, -9.51 ],
-                    [ -0, -10 ],
-                    [ 3.09, -9.51 ],
-                    [ 5.88, -8.09 ],
-                    [ 8.09, -5.88 ],
-                    [ 9.51, -3.09 ]
-                ],
-                res = [],
-                p;
-            for (p = 0; p < pl.length; p = p + 1) {
-                res.push(new Vector(pl[p]));
-            }
-            return res;
+        while(turtle._undoBuffer.length > turtle._bufferSize) {
+            turtle._undoBuffer.shift();
         }
 
-        function triangleShapePoints () {
-            var pl = [
-                    [ 10, -5.77 ],
-                    [ 0, 11.55 ],
-                    [ -10, -5.77 ]
-                ],
-                res = [],
-                p;
-            for (p = 0; p < pl.length; p = p + 1) {
-                res.push(new Vector(pl[p]));
-            }
-            return res;
+        undoState  = {};
+        properties = "x y angle radians color fill down filling shown shape size".split(" ");
+        for(i = 0; i < properties.length; i++) {
+            undoState[properties[i]] = turtle["_" + properties[i]];
         }
 
-        function squareShapePoints () {
-            var pl = [
-                    [ 10, -10 ],
-                    [ 10, 10 ],
-                    [ -10, 10 ],
-                    [ -10, -10 ]
-                ],
-                res = [],
-                p;
-            for (p = 0; p < pl.length; p = p + 1) {
-                res.push(new Vector(pl[p]));
+        turtle._undoBuffer.push(undoState);
+
+        return turtle.addUpdate(function() {
+            undoState.fillBuffer = this.fillBuffer ? this.fillBuffer.slice() : undefined;
+            if (turtle._paper && turtle._paper.canvas) {
+                undoState.image = turtle._paper.canvas.toDataURL();
             }
-            return res;
+        }, false);
+    }
+
+    var undoImage = new Image();
+    function popUndo(turtle) {
+        var undoState;
+
+        if (!turtle._bufferSize || !turtle._undoBuffer) {
+            return;
         }
 
-        function classicShapePoints () {
-            var pl = [
-                    [ 0, 0 ],
-                    [ -5, -9 ],
-                    [ 0, -7 ],
-                    [ 5, -9 ]
-                ],
-                res = [],
-                p;
-            for (p = 0; p < pl.length; p = p + 1) {
-                res.push(new Vector(pl[p]));
-            }
-            return res;
+        undoState = turtle._undoBuffer.pop();
+
+        if (!undoState) {
+            return;
         }
 
-        // Initialize the turtle.
-        var options = {}, ctx;
-        if (opt) {
-            options = opt;
-        }
-        this.canvasID = TurtleGraphics.defaults.canvasID;
-        if (options.canvasID) {
-            this.canvasID = options.canvasID;
-        }
-        this.context = document.getElementById(this.canvasID).getContext("2d");
-        this.animate = TurtleGraphics.defaults.animate;
-        ctx = this.context;
-        if (TurtleGraphics.canvasInit === false) {
-            // This is a workaround until I understand skulpt re-running better
-            // the downside is that this limits us to a single turtle...
-            ctx.save();
-            ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
-            // move 0,0 to center.
-            ctx.scale(1, -1);
-            // scaling like this flips the y axis the right way.
-            if (!TurtleGraphics.canvasLib[this.canvasID]) {
-                TurtleGraphics.canvasLib[this.canvasID] = new TurtleCanvas(options);
-            }
-            TurtleGraphics.canvasInit = true;
-        } else {
-            clear_canvas(this.canvasID);
-        }
-        this.turtleCanvas = TurtleGraphics.canvasLib[this.canvasID];
-        this.home = new Vector([0, 0, 0]);
-        this.visible = true;
-        this.shapeStore = {};
-        this.shapeStore.turtle = turtleShapePoints();
-        this.shapeStore.arrow = defaultShapePoints();
-        this.shapeStore.circle = circleShapePoints();
-        this.shapeStore.square = squareShapePoints();
-        this.shapeStore.triangle = triangleShapePoints();
-        this.shapeStore.blank = [new Vector(0, 0)];
-        this.shapeStore.classic = classicShapePoints();
-        this.currentShape = "classic";
-        this.drawingEvents = [];
-        this.filling = false;
-        this.pen = true;
-        this.penStyle = "black";
-        this.penWidth = 2;
-        this.fillStyle = "black";
-        this.position = [];
-        this.heading = [];
-        this.normal = [];
-        this.go_home();
-        this.aCount = 0;
-        this.clearPoint = 0; // RNL for clear/clearScreen
-    };
-    Turtle.prototype.clean = function (color) {
-        // Clean the canvas
-        // Optional second argument is color
-        if (arguments.length >= 1) {
-            clear_canvas(this.canvasID, color);
-        } else {
-            clear_canvas(this.canvasID);
-        }
-        this.initialize();
-    };
-    Turtle.prototype.addDrawingEvent = function (eventList) {
-        TurtleGraphics.eventCount += 1;
-        eventList.push(TurtleGraphics.eventCount);
-        this.drawingEvents.push(eventList);
-    };
-    Turtle.prototype.draw_line = function (newposition) {
-        var ctx = this.context,
-            r,
-            s;
-        if (!this.animate) {
-            if (!this.filling) {
-                ctx.beginPath();
-                ctx.moveTo(this.position[0], this.position[1]);
-            }
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.lineWidth = this.get_pen_width();
-            ctx.strokeStyle = this.penStyle;
-            ctx.lineTo(newposition[0], newposition[1]);
-            //ctx.moveTo(newposition[0], newposition[1]);
-            this.position = newposition;
-            ctx.stroke();
-            if (!this.filling) {
-                ctx.closePath();
-            }
-        } else {
-            r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
-            for (s = 0; s < r.length; s = s + 1) {
-                r[s].push(this.penStyle);
-                this.addDrawingEvent(r[s]);
-            }
-            if (!this.turtleCanvas.isAnimating()) {
-                this.turtleCanvas.startAnimating(this);
-            } else {
-                if (!this.turtleCanvas.onCanvas(this)) {
-                    this.turtleCanvas.addToCanvas(this);
-                }
-            }
-        }
-    };
-    Turtle.prototype.forward = function (d) {
-        var newposition = this.position.linear(1, d, this.heading);
-        this.goto(newposition);
-    };
-    Turtle.prototype.backward = function (d) {
-        this.forward(-d);
-    };
-    //This is an internal function that sets the position without doing any drawing
-    Turtle.prototype.teleport_to = function (nx, ny) {
-        var newposition;
-        if (nx instanceof Vector) {
-            newposition = nx;
-        } else {
-            newposition = new Vector([nx, ny, 0]);
-        }
-        this.context.moveTo(newposition[0], newposition[1]);
-        this.position = newposition;
-    };
-    Turtle.prototype.goto = function (nx, ny) {
-        var newposition, r, s;
-        if (nx instanceof Vector) {
-            newposition = nx;
-        } else {
-            newposition = new Vector([nx, ny, 0]);
-        }
-        if (this.pen) {
-            this.draw_line(newposition);
-        } else {
-            if (!this.animate) {
-                this.context.moveTo(newposition[0], newposition[1]);
-            } else {
-                r = segmentLine(this.position, newposition, this.turtleCanvas.getSegmentLength(), this.pen);
-                for (s = 0; s < r.length; s = s + 1) {
-                    this.addDrawingEvent(r[s]);
-                }
-                if (!this.turtleCanvas.isAnimating()) {
-                    this.turtleCanvas.startAnimating(this);
-                } else {
-                    if (!this.turtleCanvas.onCanvas(this)) {
-                        this.turtleCanvas.addToCanvas(this);
-                    }
-                }
-            }
-        }
-        this.position = newposition;
-    };
-    Turtle.prototype.delay = function (d) {
-        // RNL
-        if (d !== null) {
-            if (d < 0) {
-                d = -d;
-            }
-            if (!this.animate) {
-                this.turtleCanvas.setDelay(d);
-            } else {
-                this.turtleCanvas.setDelay(d);
-                this.addDrawingEvent([ "DL", d ]);
-                this.addDrawingEvent(["NO"]);
-            }
-        }
-        return this.turtleCanvas.getDelay();
-    };
-    Turtle.prototype.speed = function (s, t) {
-        if (s > 0 && !this.animate) {
-            this.animate = true;
-            this.turtleCanvas.setSpeedDelay(s);
-        } else if (s === 0) {
-            this.animate = false;
-            this.turtleCanvas.cancelAnimation();
-        } else {
-            this.turtleCanvas.setSpeedDelay(s);
-            this.addDrawingEvent([ "SC", s, t ]);
-            this.addDrawingEvent(["NO"]);
-        }
-        if (t) {
-            this.turtleCanvas.setSegmentLength(t); // set the number of units to divide a segment into
-        } else {
-            this.turtleCanvas.setSegmentLength(10);
-        }
-    };
-    Turtle.prototype.tracer = function (t, d) {
-        this.turtleCanvas.setCounter(t);
-        if (t === 0) {
-            this.animate = false;
-            this.turtleCanvas.cancelAnimation();
-        }
-        if (d !== undefined) {
-            this.turtleCanvas.setDelay(d);
-        }
-    };
-    Turtle.prototype.getRenderCounter = function () {
-        return this.turtleCanvas.getCounter();
-    };
-    Turtle.prototype.turn = function (phi) {
-        var alpha = phi * Degree2Rad,
-            left = this.normal.cross(this.heading);
-        this.heading = this.heading.rotateNormal(left, alpha);
-        if (this.animate) {
-            this.addDrawingEvent([ "TT", this.heading ]);
-        }
-    };
-    Turtle.prototype.right = Turtle.prototype.turn;
-    Turtle.prototype.left = function (phi) {
-        this.turn(-phi);
-    };
-    Turtle.prototype.get_heading = function () {
-        if (TurtleGraphics.defaults.degrees) {
-            return this.heading.toAngle();
-        }
-        return this.heading;
-    };
-    Turtle.prototype.get_position = function () {
-        return this.position;
-    };
-    Turtle.prototype.getx = function () {
-        return this.position[0];
-    };
-    Turtle.prototype.gety = function () {
-        return this.position[1];
-    };
-    Turtle.prototype.set_heading = function (newhead) {
-        if ((typeof newhead).toLowerCase() === "number") {
-            this.heading = Vector.angle2vec(newhead);
-        } else {
-            this.heading = newhead;
-        }
-    };
-    Turtle.prototype.towards = function (to, y) {
-        // set heading vector to point towards another point.
-        var res;
-        if ((typeof to).toLowerCase() === "number") {
-            to = new Vector(to, y, 0);
-        } else if (!(to instanceof Vector)) {
-            to = new Vector(to);
-        }
-        res = to.sub(this.position);
-        res = res.normalize();
-        if (TurtleGraphics.defaults.degrees) {
-            return res.toAngle();
-        }
-        return res;
-    };
-    Turtle.prototype.distance = function (to, y) {
-        if ((typeof to).toLowerCase() === "number") {
-            to = new Vector(to, y, 0);
-        }
-        return this.position.sub(new Vector(to)).len();
-    };
-    Turtle.prototype.dot = function (psize, pcolor) {
-        var size = 2,
-            ctx = this.context,
-            curPenStyle = this.penStyle,
-            curFillStyle = this.fillStyle;
-
-        if (arguments.length >= 1) {
-            size = psize;
-        }
-        size = size * this.turtleCanvas.lineScale;
-
-        if (!this.animate) {
-            if (pcolor) {
-                ctx.fillStyle = pcolor;
-                ctx.strokeStyle = pcolor;
-            }
-            ctx.fillRect(this.position[0] - size / 2, this.position[1] - size / 2, size, size);
-            if (pcolor) {
-                ctx.fillStyle = curFillStyle;
-                ctx.strokeStyle = curPenStyle;
-            }
-        } else {
-            this.addDrawingEvent([
-                "DT",
-                size,
-                    pcolor || ctx.strokeStyle,
-                this.position[0],
-                this.position[1]
-            ]);
-        }
-    };
-    Turtle.prototype.circle = function (radius, extent) {
-        var arcLen, segLen, extentPart, extentLeft;
-        if (extent === undefined) {
-            extent = 360;
-        }
-        if (this.animate) {
-            arcLen = Math.abs(radius * Math.PI * 2 * extent / 360);
-            segLen = this.turtleCanvas.getSegmentLength();
-            if (arcLen <= segLen) {
-                this.arc(radius, extent);
-            } else {
-                //Break the arc into segments for animation
-                extentPart = segLen / arcLen * extent;
-                extentLeft = extent;
-                while (Math.abs(extentLeft) > Math.abs(extentPart)) {
-                    this.arc(radius, extentPart);
-                    extentLeft = extentLeft - extentPart;
-                }
-                if (Math.abs(extentLeft) > 0.01) {
-                    this.arc(radius, extentLeft);
-                }
-            }
-            if (!this.turtleCanvas.isAnimating()) {
-                this.turtleCanvas.startAnimating(this);
-            } else {
-                if (!this.turtleCanvas.onCanvas(this)) {
-                    this.turtleCanvas.addToCanvas(this);
-                }
-            }
-        } else {
-            this.arc(radius, extent);
-        }
-    };
-    Turtle.prototype.arc = function (radius, extent) {
-        //Figure out where the turtle is and which way it's facing
-        var turtleHeading = this.get_heading(),
-            tx = this.position[0],
-            ty = this.position[1],
-        //Figure out the circle center
-            cx = tx + radius * Math.cos((turtleHeading + 90) * Degree2Rad),
-            cy = ty + radius * Math.sin((turtleHeading + 90) * Degree2Rad),
-        //Canvas arc angles go CLOCKWISE, not COUNTERCLOCKWISE like Turtle
-        //Figure out our arc angles
-            startAngleDeg,
-            endAngleDeg,
-            startAngle,
-            endAngle,
-            turtleArc,
-            newTurtleHeading,
-            nx,
-            ny;
-
-        if (radius >= 0) {
-            startAngleDeg = turtleHeading - 90;
-        } else {
-            startAngleDeg = turtleHeading + 90;
+        for(var key in undoState) {
+            if (key === "image" || key === "fillBuffer") continue;
+            turtle["_" + key] = undoState[key];
         }
 
-        if (extent) {
-            if (radius >= 0) {
-                endAngleDeg = startAngleDeg + extent;
-            } else {
-                endAngleDeg = startAngleDeg - extent;
+        return turtle.addUpdate(function() {
+            var img;
+            if (undoState.image) {
+                undoImage.src = undoState.image;
+                img = undoImage;
             }
-        } else {
-            if (radius >= 0) {
-                endAngleDeg = startAngleDeg + 360;
-            } else {
-                endAngleDeg = startAngleDeg - 360;
-            }
+
+            clearLayer(this.context(), false, undoImage);
+            delete undoState.image;
+        }, true, undoState);
+    }
+
+    function removeLayer(layer) {
+        if (layer && layer.canvas && layer.canvas.parentNode) {
+            layer.canvas.parentNode.removeChild(layer.canvas);
         }
-        //Canvas angles are opposite
-        startAngleDeg = 360 - startAngleDeg;
-        endAngleDeg = 360 - endAngleDeg;
-        //Becuase the y axis has been flipped in HTML5 Canvas with a tanslation, we need to adjust the angles
-        startAngleDeg = -startAngleDeg;
-        endAngleDeg = -endAngleDeg;
-        //Convert to radians
-        startAngle = startAngleDeg * Degree2Rad;
-        endAngle = endAngleDeg * Degree2Rad;
-        //Do the drawing
-        if (!this.animate) {
-            if (!this.filling) {
-                this.context.beginPath();
-            }
-            this.context.arc(cx, cy, Math.abs(radius), startAngle, endAngle, radius * extent <= 0);
-            this.context.stroke();
-            if (!this.filling) {
-                this.context.closePath();
-            }
-        } else {
-            this.addDrawingEvent([
-                "CI",
-                cx,
-                cy,
-                Math.abs(radius),
-                startAngle,
-                endAngle,
-                    radius * extent <= 0
-            ]);
+    }
+
+    function clearLayer(context, color, image) {
+        if (!context) return;
+
+        context.save();
+        context.setTransform(1,0,0,1,0,0);
+        if (color) {
+            context.fillStyle = color;
+            context.fillRect(0, 0, context.canvas.width, context.canvas.height);
         }
-        //Move the turtle only if we have to
-        if (extent && extent % 360 !== 0) {
-            if (radius >= 0) {
-                turtleArc = extent;
-            } else {
-                turtleArc = -extent;
-            }
-            newTurtleHeading = (turtleHeading + turtleArc) % 360;
-            if (newTurtleHeading < 0) {
-                newTurtleHeading = newTurtleHeading + 360;
-            }
-            nx = cx + radius * Math.cos((newTurtleHeading - 90) * Degree2Rad);
-            ny = cy + radius * Math.sin((newTurtleHeading - 90) * Degree2Rad);
-            //y coord is inverted in turtle
-            //Move it internally
-            this.set_heading(newTurtleHeading);
-            this.teleport_to(nx, ny);
-            //If we're animating the turtle, move it on the screen
-            if (this.animate) {
-                this.addDrawingEvent([
-                    "TT",
-                    this.heading
-                ]);
-            }
+        else {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         }
-    };
-    Turtle.prototype.write = function (theText, /*move, align, */font) {
-        var fontspec;
-        if (!this.animate) {
-            if (font) {
-                this.context.font = font.v;
-            }
-            this.context.scale(1, -1);
-            this.context.fillText(theText, this.position[0], -this.position[1]);
-            this.context.scale(1, -1);
-        } else {
-            if (font) {
-                fontspec = font.v;
-            }
-            this.addDrawingEvent([
-                "WT",
-                theText,
-                fontspec,
-                this.position[0],
-                this.position[1]
-            ]);
+
+        if (image) {
+            context.drawImage(image, 0, 0);
         }
-    };
-    Turtle.prototype.setworldcoordinates = function (llx, lly, urx, ury) {
-        this.turtleCanvas.setworldcoordinates(llx, lly, urx, ury);
-    };
-    //
-    // Pen and Style functions
-    //
-    Turtle.prototype.pen_down = function () {
-        this.pen = true;
-    };
-    Turtle.prototype.down = Turtle.prototype.pen_down;
-    Turtle.prototype.pen_up = function () {
-        this.pen = false;
-    };
-    Turtle.prototype.up = Turtle.prototype.pen_up;
-    Turtle.prototype.get_pen = function () {
-        return this.pen;
-    };
-    Turtle.prototype.set_pen_width = function (w) {
-        if (this.animate) {
-            this.addDrawingEvent([
-                "PW",
-                    w * this.turtleCanvas.lineScale
-            ]);
-        } else {
-            this.penWidth = w;
+
+        context.restore();
+    }
+
+    function drawTurtle(state, context) {
+        var shape  = SHAPES[state.shape],
+            world  = getScreen(),
+            width  = getWidth(),
+            height = getHeight(),
+            xScale = world.xScale,
+            yScale = world.yScale,
+            x, y, bearing;
+
+        if (!context) return;
+
+        x       = Math.cos(state.radians) / xScale;
+        y       = Math.sin(state.radians) / yScale;
+        bearing = Math.atan2(y, x) - Math.PI/2;
+
+        context.save();
+        context.translate(state.x, state.y);
+        context.scale(xScale,yScale);
+        context.rotate(bearing);
+        context.beginPath();
+        context.lineWidth   = 1;
+        context.strokeStyle = state.color;
+        context.fillStyle   = state.fill;
+        context.moveTo(shape[0][0], shape[0][1]);
+        for(var i = 1; i < shape.length; i++) {
+            context.lineTo(shape[i][0], shape[i][1]);
         }
-    };
-    Turtle.prototype.get_pen_width = function () {
-        return this.penWidth * this.turtleCanvas.lineScale;
-    };
-    Turtle.prototype.set_pen_color = function (c, g, b) {
-        var rs, gs, bs, c0, c1, c2;
-        if (typeof c === "string") {
-            this.penStyle = c;
-        } else {
-            if (Array.isArray(c)) {
-                c0 = c[0];
-                c1 = c[1];
-                c2 = c[2];
-            } else {
-                c0 = c;
-                c1 = g;
-                c2 = b;
-            }
-            rs = Math.abs(c0).toString(16);
-            gs = Math.abs(c1).toString(16);
-            bs = Math.abs(c2).toString(16);
-            while (rs.length < 2) {
-                rs = "0" + rs;
-            }
-            while (gs.length < 2) {
-                gs = "0" + gs;
-            }
-            while (bs.length < 2) {
-                bs = "0" + bs;
-            }
-            c = "#" + rs + gs + bs;
-            this.penStyle = c;
+        context.closePath();
+        context.fill();
+        context.stroke();
+        context.restore();
+    }
+
+    function drawDot(size, color) {
+        var context = this.context(),
+            screen  = getScreen(),
+            xScale  = screen.xScale,
+            yScale  = screen.yScale;
+
+        if (!context) return;
+
+        context.beginPath();
+        context.moveTo(this.x, this.y);
+        context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
+        context.closePath();
+        context.fillStyle = color || this.color;
+        context.fill();
+    }
+
+    var textMeasuringContext = document.createElement("canvas").getContext("2d");
+    function measureText(message, font) {
+        if (font) {
+            textMeasuringContext.font = font;
         }
-        this.context.strokeStyle = c;
-        if (this.animate) {
-            this.addDrawingEvent([
-                "TC",
-                c
-            ]);
+        return textMeasuringContext.measureText(message).width;
+    }
+
+    function drawText(message, align, font) {
+        var context = this.context();
+
+        if (!context) return;
+
+        context.save();
+        if (font) {
+            context.font = font;
         }
-    };
-    Turtle.prototype.set_fill_color = function (c, g, b) {
-        var rs, gs, bs, c0, c1, c2;
-        if (typeof c === "string") {
-            this.fillStyle = c;
-        } else {
-            if (Array.isArray(c)) {
-                c0 = c[0];
-                c1 = c[1];
-                c2 = c[2];
-            } else {
-                c0 = c;
-                c1 = g;
-                c2 = b;
-            }
-            rs = Math.abs(c0).toString(16);
-            gs = Math.abs(c1).toString(16);
-            bs = Math.abs(c2).toString(16);
-            while (rs.length < 2) {
-                rs = "0" + rs;
-            }
-            while (gs.length < 2) {
-                gs = "0" + gs;
-            }
-            while (bs.length < 2) {
-                bs = "0" + bs;
-            }
-            c = "#" + rs + gs + bs;
-            this.fillStyle = c;
+        if (align && align.match(/^(left|right|center)$/)) {
+            context.textAlign = align;
         }
-        this.context.fillStyle = c;
-        if (this.animate) {
-            this.addDrawingEvent([
-                "FC",
-                c
-            ]);
+
+        context.scale(1,-1);
+        context.fillStyle = this.fill;
+        context.fillText(message, this.x, -this.y);
+        context.restore();
+    }
+
+    function drawLine(loc, beginPath, endPath) {
+        // TODO: make steps in path use square ends of lines
+        // and open and close path at the right times.
+        // See if we can minimize calls to stroke
+        var context = this.context();
+
+        if (!context) return;
+
+        if (beginPath) {
+            context.beginPath();
+            context.moveTo(this.x, this.y);
         }
-    };
-    Turtle.prototype.begin_fill = function () {
-        if (!this.animate) {
-            this.filling = true;
-            this.context.beginPath();
-            this.context.moveTo(this.position[0], this.position[1]);
-        } else {
-            this.addDrawingEvent([
-                "BF",
-                this.position[0],
-                this.position[1]
-            ]);
-        }
-    };
-    Turtle.prototype.end_fill = function () {
-        if (!this.animate) {
-            this.context.stroke();
-            this.context.fill();
-            this.context.closePath();
-            this.filling = false;
-        } else {
-            this.addDrawingEvent([
-                "EF",
-                this.position[0],
-                this.position[1],
-                this.fillStyle
-            ]);
-        }
-    };
-    Turtle.prototype.showturtle = function () {
-        if (this.animate) {
-            this.addDrawingEvent(["SH"]);
-        }
-        this.visible = true;
-    };
-    Turtle.prototype.hideturtle = function () {
-        if (this.animate) {
-            this.addDrawingEvent(["HT"]);
-        }
-        this.visible = false;
-    };
-    Turtle.prototype.isvisible = function () {
-        return this.visible;
-    };
-    //
-    // Appearance
-    //
-    Turtle.prototype.shape = function (s) {
-        if (this.shapeStore[s]) {
-            this.addDrawingEvent(["CS", s]); // add a Change Shape event
-        }
-    };
-    Turtle.prototype.drawturtle = function (pHeading, pos) {
-        var rtPoints = [],
-            plist = this.shapeStore[this.currentShape],
-            head,
-            p,
+
+        context.lineWidth   = this.size * getScreen().lineScale;
+        context.strokeStyle = this.color;
+        context.lineTo(loc.x, loc.y);
+        context.stroke();
+    }
+
+    function drawFill() {
+        var context = this.context(),
+            path  = this.fillBuffer,
             i;
 
-        if (pHeading !== undefined) {
-            head = pHeading - 90;
-        } else {
-            head = this.heading.toAngle() - 90;
-        }
+        if (!context || !path || !path.length) return;
 
-        if (!pos) {
-            pos = this.position;
+        context.save();
+        context.beginPath();
+        context.moveTo(path[0].x,path[0].y);
+        for(i = 1; i < path.length; i++) {
+            context.lineTo(path[i].x, path[i].y);
         }
+        context.closePath();
+        context.fillStyle = this.fill;
+        context.fill();
+        for(i = 1; i < path.length; i++) {
+            if (!path[i].stroke) {
+                continue;
+            }
 
-        for (p = 0; p < plist.length; p = p + 1) {
-            rtPoints.push(plist[p]
-                .scale(this.turtleCanvas.xptscale, this.turtleCanvas.yptscale)
-                .rotate(head)
-                .add(pos));
+            context.beginPath();
+            context.moveTo(path[i-1].x, path[i-1].y);
+            context.lineWidth   = path[i].size * getScreen().lineScale;
+            context.strokeStyle = path[i].color;
+            context.lineTo(path[i].x, path[i].y);
+            context.stroke();
         }
-        this.context.beginPath();
-        this.context.moveTo(rtPoints[0][0], rtPoints[0][1]);
-        for (i = 1; i < rtPoints.length; i = i + 1) {
-            this.context.lineTo(rtPoints[i][0], rtPoints[i][1]);
-        }
-        this.context.closePath();
-        this.context.stroke();
-        if (this.fillStyle) {
-            this.context.fill();
-        }
-    };
-    Turtle.prototype.stamp = function () {
-        // either call drawTurtle or just add a DT with current position and heading to the drawingEvents list.
-        if (this.animate) {
-            this.addDrawingEvent([
-                "ST",
-                this.position[0],
-                this.position[1],
-                this.heading.toAngle()
-            ]);
-        } else {
-            this.drawturtle();
-        }
-    };
-    Turtle.prototype.clear = function () {
-        if (this.animate) {
-            this.addDrawingEvent(["CL"]);
-        } else {
-            clear_canvas(this.canvasID);
-            this.penStyle = "black";
-            this.penWidth = 2;
-            this.fillStyle = "black";
-        }
-    };
-    TurtleGraphics.turtleList = [];
-    TurtleGraphics.Turtle = Turtle;
-    TurtleGraphics.TurtleCanvas = TurtleCanvas;
-    TurtleGraphics.canvasLib = {};
-    TurtleGraphics.clear_canvas = clear_canvas;
-    TurtleGraphics.Vector = Vector;
-    TurtleGraphics.canvasInit = false;
-    TurtleGraphics.eventCount = 0;
-    TurtleGraphics.renderClock = 0;
-    TurtleGraphics.renderTime = 0; // RNL
-}());
-//
-// Wrapper around the Turtle Module starts here.
-//
+        context.restore();
+    }
 
-var $builtinmodule = function (name) {
-    "use strict";
-    var mod = {},
-        anonymousTurtle,
-        initializeTurtlegraphics = function () {
-            if (!TurtleGraphics) {
-                TurtleGraphics = {};
-            }
-            if (!TurtleGraphics.defaults) {
-                TurtleGraphics.defaults = {
-                    animate : true,
-                    canvasID: Sk.canvas,
-                    degrees : true
-                };
-            } else if (Sk.canvas) {
-                TurtleGraphics.defaults.canvasID = Sk.canvas;
-            }
-            if (!TurtleGraphics.doneDelegates) {
-                TurtleGraphics.doneDelegates = [];
-            }
-        },
-        removeDisabled = function () {
-            if (Sk.runButton) {
-                Sk.runButton.removeAttribute("disabled");
-            }
-        },
-        checkArgs = function (expected, actual, func) {
-            if (actual !== expected) {
-                throw new Sk.builtin.TypeError(func + " takes exactly " + expected + " positional argument(s) (" + actual + " given)");
-            }
-        },
-        turtle = function ($gbl, $loc) {
-            $loc.__init__ = new Sk.builtin.func(function (self) {
-                initializeTurtlegraphics();
-                if (TurtleGraphics.doneDelegates.indexOf(removeDisabled) === -1) {
-                    TurtleGraphics.doneDelegates.push(removeDisabled);
-                }
-                self.theTurtle = new TurtleGraphics.Turtle();
-            });
-            //
-            // Turtle Motion
-            //
-            //
-            // Move and Draw
-            //
-            $loc.forward = new Sk.builtin.func(function (self, dist) {
-                dist = Sk.builtin.asnum$(dist);
-                checkArgs(2, arguments.length, "forward()");
-                self.theTurtle.forward(dist);
-            });
-            $loc.fd = $loc.forward;
-            $loc.backward = new Sk.builtin.func(function (self, dist) {
-                dist = Sk.builtin.asnum$(dist);
-                checkArgs(2, arguments.length, "backward()");
-                self.theTurtle.forward(-dist);
-            });
-            $loc.back = $loc.backward;
-            $loc.bk = $loc.backward;
-            $loc.right = new Sk.builtin.func(function (self, angle) {
-                angle = Sk.builtin.asnum$(angle);
-                checkArgs(2, arguments.length, "right()");
-                self.theTurtle.turn(angle);
-            });
-            $loc.rt = $loc.right;
-            $loc.left = new Sk.builtin.func(function (self, angle) {
-                angle = Sk.builtin.asnum$(angle);
-                checkArgs(2, arguments.length, "left()");
-                self.theTurtle.turn(-angle);
-            });
-            $loc.lt = $loc.left;
-            $loc.goto_$rw$ = new Sk.builtin.func(function (self, nx, ny) {
-                nx = Sk.builtin.asnum$(nx);
-                ny = Sk.builtin.asnum$(ny);
-                checkArgs(3, arguments.length, "goto()");
-                self.theTurtle.goto(nx, ny);
-            });
-            $loc.setposition = new Sk.builtin.func(function (self, nx, ny) {
-                nx = Sk.builtin.asnum$(nx);
-                ny = Sk.builtin.asnum$(ny);
-                checkArgs(3, arguments.length, "setposition()");
-                self.theTurtle.up();
-                self.theTurtle.goto(nx, ny);
-                self.theTurtle.down();
-            });
-            $loc.setpos = $loc.setposition;
-            $loc.setx = new Sk.builtin.func(function (self, nx) {
-                nx = Sk.builtin.asnum$(nx);
-                checkArgs(2, arguments.length, "setx()");
-                self.theTurtle.goto(nx, self.theTurtle.gety());
-            });
-            $loc.sety = new Sk.builtin.func(function (self, ny) {
-                ny = Sk.builtin.asnum$(ny);
-                checkArgs(2, arguments.length, "sety()");
-                self.theTurtle.goto(self.theTurtle.getx(), ny);
-            });
-            $loc.setheading = new Sk.builtin.func(function (self, newhead) {
-                newhead = Sk.builtin.asnum$(newhead);
-                checkArgs(2, arguments.length, "setheading()");
-                return self.theTurtle.set_heading(newhead);
-            });
-            $loc.seth = $loc.setheading;
-            $loc.home = new Sk.builtin.func(function (self) {
-                self.theTurtle.go_home();
-            });
-            $loc.dot = new Sk.builtin.func(function (self, size, color) {
-                size = Sk.builtin.asnum$(size);
-                size = size || 1;
-                if (color) {
-                    color = color.v || self.theTurtle.penStyle;
-                }
-                self.theTurtle.dot(size, color);
-            });
-            $loc.circle = new Sk.builtin.func(function (self, radius, extent) {
-                radius = Sk.builtin.asnum$(radius);
-                extent = Sk.builtin.asnum$(extent);
-                self.theTurtle.circle(radius, extent);
-            });
-            $loc.delay = new Sk.builtin.func(function (self, d) {
-                d = Sk.builtin.asnum$(d);
-                return self.theTurtle.delay(d);
-            });
-            $loc.speed = new Sk.builtin.func(function (self, s, t) {
-                s = Sk.builtin.asnum$(s);
-                t = Sk.builtin.asnum$(t);
-                self.theTurtle.speed(s, t);
-            });
-            $loc.tracer = new Sk.builtin.func(function (self, t, d) {
-                t = Sk.builtin.asnum$(t);
-                d = Sk.builtin.asnum$(d);
-                self.theTurtle.tracer(t, d);
-            });
-            $loc.update = new Sk.builtin.func(function (self) {
-            });
-            // todo:  stamp, clearstamp, clearstamps, undo, speed
-            //
-            // Tell Turtle's state
-            //
-            $loc.heading = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "heading()");
-                return Sk.builtin.assk$(self.theTurtle.get_heading(), Sk.builtin.nmber.float$);
-            });
-            $loc.position = new Sk.builtin.func(function (self) {
-                var res, x;
-                checkArgs(1, arguments.length, "position()");
-                res = self.theTurtle.get_position();
-                x = new Sk.builtin.tuple([
-                    Sk.builtin.assk$(res[0], Sk.builtin.nmber.float$),
-                    Sk.builtin.assk$(res[1], Sk.builtin.nmber.float$)
-                ]);
-                return x;
-            });
-            $loc.pos = $loc.position;
-            $loc.xcor = new Sk.builtin.func(function (self) {
-                var res;
-                checkArgs(1, arguments.length, "xcor()");
-                res = self.theTurtle.getx();
-                return Sk.builtin.assk$(res, Sk.builtin.nmber.float$);
-            });
-            $loc.ycor = new Sk.builtin.func(function (self) {
-                var res;
-                checkArgs(1, arguments.length, "ycor()");
-                res = self.theTurtle.gety();
-                return Sk.builtin.assk$(res, Sk.builtin.nmber.float$);
-            });
-            $loc.towards = new Sk.builtin.func(function (self, tx, ty) {
-                tx = Sk.builtin.asnum$(tx);
-                ty = Sk.builtin.asnum$(ty);
-                if ((typeof tx).toLowerCase() === "number") {
-                    tx = [ tx, ty, 0 ];
-                } else {
-                    tx = [
-                        Sk.builtin.asnum$(tx.theTurtle.getx()),
-                        Sk.builtin.asnum$(tx.theTurtle.gety()),
-                        Sk.builtin.asnum$(0)
-                    ];
-                }
-                return Sk.builtin.assk$(self.theTurtle.towards(tx), Sk.builtin.nmber.float$);
-            });
-            // tx can be either a number or a vector position.
-            // tx can not be a turtle at this time as multiple turtles have not been implemented yet.
-            $loc.distance = new Sk.builtin.func(function (self, tx, ty) {
-                tx = Sk.builtin.asnum$(tx);
-                ty = Sk.builtin.asnum$(ty);
-                if ((typeof tx).toLowerCase() === "number") {
-                    tx = [
-                        tx,
-                        ty,
-                        0
-                    ];
-                } else {
-                    tx = [
-                        tx.theTurtle.getx(),
-                        tx.theTurtle.gety(),
-                        0
-                    ];
-                }
-                return Sk.builtin.assk$(self.theTurtle.distance(tx), Sk.builtin.nmber.float$);
-            });
-            //
-            // Setting and Measurement
-            //
-            // todo:  degrees and radians...
-            //
-            // Pen Control
-            //
-            //
-            // Drawing State
-            //
-            $loc.up = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "up()");
-                self.theTurtle.pen_up();
-            });
-            $loc.penup = $loc.up;
-            $loc.pu = $loc.up;
-            $loc.down = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "down()");
-                self.theTurtle.pen_down();
-            });
-            $loc.pendown = $loc.down;
-            $loc.pd = $loc.down;
-            $loc.width = new Sk.builtin.func(function (self, w) {
-                w = Sk.builtin.asnum$(w);
-                checkArgs(2, arguments.length, "width()");
-                self.theTurtle.set_pen_width(w);
-            });
-            $loc.pensize = $loc.width;
-            $loc.isdown = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "isdown()");
-                return self.theTurtle.get_pen();
-            });
-            // todo:  pen  -- return a dictionary full of pen stuff
-            //
-            // Color Control
-            //
-            $loc.fillcolor = new Sk.builtin.func(function (self, color, green, blue) {
-                if (color) {
-                    if (blue) {
-                        color = Sk.builtin.asnum$(color);
-                        green = Sk.builtin.asnum$(green);
-                        blue = Sk.builtin.asnum$(blue);
-                        self.theTurtle.set_fill_color(color, green, blue);
-                    } else {
-                        color = color.v || self.theTurtle.context.fillStyle;
-                        self.theTurtle.set_fill_color(color);
+    function partialTranslate(turtle, x, y, beginPath, countAsFrame) {
+        return function() {
+            return turtle.addUpdate(
+                function(loc) {
+                    if (this.down) {
+                        drawLine.call(this, loc, beginPath);
                     }
-                } else {
-                    return self.theTurtle.fillStyle;
-                }
-            });
-            $loc.pencolor = new Sk.builtin.func(function (self, color, green, blue) {
-                if (color) {
-                    if (blue) {
-                        color = Sk.builtin.asnum$(color);
-                        green = Sk.builtin.asnum$(green);
-                        blue = Sk.builtin.asnum$(blue);
-                        self.theTurtle.set_pen_color(color, green, blue);
-                    } else {
-                        color = color.v || self.theTurtle.context.fillStyle;
-                        self.theTurtle.set_pen_color(color);
-                    }
-                } else {
-                    return self.theTurtle.penStyle;
-                }
-            });
-            $loc.color = new Sk.builtin.func(function (self, color, green, blue) {
-                if (color) {
-                    if (blue) {
-                        color = Sk.builtin.asnum$(color);
-                        green = Sk.builtin.asnum$(green);
-                        blue = Sk.builtin.asnum$(blue);
-                        self.theTurtle.set_pen_color(color, green, blue);
-                        self.theTurtle.set_fill_color(color, green, blue);
-                    } else {
-                        color = color.v || self.theTurtle.context.fillStyle;
-                        self.theTurtle.set_pen_color(color);
-                        self.theTurtle.set_fill_color(color);
-                    }
-                } else {
-                    return [
-                        self.theTurtle.penStyle,
-                        self.theTurtle.fillStyle
-                    ];
-                }
-            });
-            //
-            //  Filling
-            //
-            $loc.begin_fill = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "begin_fill()");
-                self.theTurtle.begin_fill();
-            });
-            $loc.end_fill = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "end_fill()");
-                self.theTurtle.end_fill();
-            });
-            $loc.fill = new Sk.builtin.func(function (self, fillt) {
-                if (fillt === undefined) {
-                    return self.theTurtle.filling;
-                }
-                if (fillt) {
-                    self.theTurtle.begin_fill();
-                } else {
-                    self.theTurtle.end_fill();
-                }
-            });
-            //
-            // More drawing control
-            //
-            $loc.reset = new Sk.builtin.func(function (self) {
-                self.theTurtle.clean();
-            });
-            $loc.showturtle = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "showturtle()");
-                self.theTurtle.showturtle();
-            });
-            $loc.st = $loc.showturtle;
-            $loc.hideturtle = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "hideturtle()");
-                self.theTurtle.hideturtle();
-            });
-            $loc.ht = $loc.hideturtle;
-            $loc.isvisible = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "isvisible()");
-                self.theTurtle.isvisible();
-            });
-            $loc.stamp = new Sk.builtin.func(function (self) {
-                checkArgs(1, arguments.length, "stamp()");
-                self.theTurtle.stamp();
-            });
-            $loc.shape = new Sk.builtin.func(function (self, s) {
-                checkArgs(2, arguments.length, "shape()");
-                self.theTurtle.shape(s.v);
-            });
-            //todo the move, align, and font parameters should be kwargs...
-            $loc.write = new Sk.builtin.func(function (self, mystr, move, align, font) {
-                self.theTurtle.write(mystr.v, /*move, align, */font);
-            });
-            //todo clean  -- again multiple turtles
-            $loc.setworldcoordinates = new Sk.builtin.func(function (self, llx, lly, urx, ury) {
-                llx = Sk.builtin.asnum$(llx);
-                lly = Sk.builtin.asnum$(lly);
-                urx = Sk.builtin.asnum$(urx);
-                ury = Sk.builtin.asnum$(ury);
-                self.theTurtle.setworldcoordinates(llx, lly, urx, ury);
-            });
-            //Added by RNL
-            $loc.clear = new Sk.builtin.func(function (self) {
-                self.theTurtle.clear();
-            });
-        },
-        screen = function ($gbl, $loc) {
-            var myfunc;
-            $loc.__init__ = new Sk.builtin.func(function (self) {
-                var currentCanvas;
-                initializeTurtlegraphics();
-                currentCanvas = TurtleGraphics.canvasLib[TurtleGraphics.defaults.canvasID];
-                if (currentCanvas === undefined) {
-                    self.theScreen = new TurtleGraphics.TurtleCanvas(TurtleGraphics.defaults);
-                } else {
-                    self.theScreen = currentCanvas;
-                }
-            });
-            $loc.bgcolor = new Sk.builtin.func(function (self, c) {
-                self.theScreen.bgcolor(c);
-            });
-            $loc.setworldcoordinates = new Sk.builtin.func(function (self, llx, lly, urx, ury) {
-                llx = Sk.builtin.asnum$(llx);
-                lly = Sk.builtin.asnum$(lly);
-                urx = Sk.builtin.asnum$(urx);
-                ury = Sk.builtin.asnum$(ury);
-                self.theScreen.setworldcoordinates(llx, lly, urx, ury);
-            });
-            $loc.exitonclick = new Sk.builtin.func(function (self) {
-                self.theScreen.exitonclick();
-            });
-            $loc.title = new Sk.builtin.func(function (self, titlestring) {
-            });
-            $loc.window_width = new Sk.builtin.func(function (self) {
-                return Sk.builtin.assk$(self.theScreen.window_width(), Sk.builtin.nmber.int$);
-            });
-            $loc.window_height = new Sk.builtin.func(function (self) {
-                return Sk.builtin.assk$(self.theScreen.window_height(), Sk.builtin.nmber.int$);
-            });
-            $loc.turtles = new Sk.builtin.func(function (self) {
-                return self.theScreen.turtles();
-            });
-            $loc.colormode = new Sk.builtin.func(function (self) {
-            });
-            //        $loc.clear = new Sk.builtin.func(function(self) {
-            //
-            //        });
-            myfunc = function (self, width, height, startx, starty) {
-                width = Sk.builtin.asnum$(width);
-                height = Sk.builtin.asnum$(height);
-                self.theScreen.setup(width, height);
-            };
-            // this should allow for named parameters
-            myfunc.co_varnames = [
-                "self",
-                "width",
-                "height",
-                "startx",
-                "starty"
-            ];
-            myfunc.$defaults = [
-                null,
-                500,
-                500,
-                0,
-                0
-            ];
-            $loc.setup = new Sk.builtin.func(myfunc);
-        },
-        ensureAnonymousTurtle = function() {
-            if (anonymousTurtle === undefined) {
-                anonymousTurtle = {};
-                turtle(Sk.globals, anonymousTurtle);
-                Sk.misceval.callsim(anonymousTurtle.__init__, anonymousTurtle);
-            }
-            return anonymousTurtle;
+                },
+                countAsFrame,
+                {x : x, y : y},
+                beginPath
+            );
         };
-    // First we create an object, this will end up being the class
-    // class
-    Sk.tg = TurtleGraphics;
-    mod.Turtle = Sk.misceval.buildClass(mod, turtle, "Turtle", []);
-    mod.Screen = Sk.misceval.buildClass(mod, screen, "Screen", []);
-    mod.tracer = new Sk.builtin.func(function (t, d) {
-        var i;
-        t = Sk.builtin.asnum$(t);
-        d = Sk.builtin.asnum$(d);
-        for (i = 0; i < Sk.tg.canvasLib.length; i = i + 1) {
-            Sk.tg.canvasLib[i].tracer(t, d);
+    }
+
+    function translate(turtle, startX, startY, dx, dy, beginPath, isCircle) {
+        // speed is in pixels per ms
+        var speed   = turtle._computed_speed,
+            screen  = getScreen(),
+            xScale  = Math.abs(screen.xScale),
+            yScale  = Math.abs(screen.yScale),
+            x       = startX,
+            y       = startY,
+            pixels  = Math.sqrt(dx * dx * xScale + dy * dy * yScale),
+            // TODO: allow fractional frame updates?
+            frames  = speed ? Math.round(Math.max(1, pixels / speed)) : 1,
+            xStep   = dx / frames,
+            yStep   = dy / frames,
+            promise = getFrameManager().willRenderNext() ?
+                Promise.resolve() :
+                new InstantPromise(),
+            countAsFrame = (!speed && isCircle) ? false : true,
+            i;
+
+        turtle.addUpdate(function() {
+            if (this.filling) {
+                this.fillBuffer.push({
+                    x        : this.x,
+                    y      : this.y,
+                    stroke : this.down,
+                    color  : this.color,
+                    size   : this.size
+                });
+            }
+        }, false);
+
+        for(i = 0; i < frames; i++) {
+            x = startX + xStep * (i+1);
+            y = startY + yStep * (i+1);
+            promise = promise.then(
+                partialTranslate(turtle, x, y, beginPath, countAsFrame)
+            );
+            beginPath = false;
         }
-    });
-    mod.update = new Sk.builtin.func(function () {
-    }); 
-    mod.forward = new Sk.builtin.func(function (dist) {
-        checkArgs(1, arguments.length, "forward()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.forward, turtle, dist);
-    });
-    mod.fd = mod.forward;
-    mod.backward = new Sk.builtin.func(function (dist) {
-        checkArgs(1, arguments.length, "backward()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.backward, turtle, dist);
-    });
-    mod.bk = mod.backward;
-    mod.right = new Sk.builtin.func(function (angle) {
-        checkArgs(1, arguments.length, "right()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.right, turtle, angle);
-    });
-    mod.rt = mod.right;
-    mod.left = new Sk.builtin.func(function (angle) {
-        checkArgs(1, arguments.length, "left()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.left, turtle, angle);
-    });
-    mod.lt = mod.left;
-    mod.goto_$rw$ = new Sk.builtin.func(function (nx, ny) {
-        checkArgs(2, arguments.length, "goto()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.goto_$rw$, turtle, nx, ny);
-    });
-    mod.setposition = new Sk.builtin.func(function (nx, ny) {
-        checkArgs(2, arguments.length, "setposition()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.setposition, turtle, nx, ny);
-    });
-    mod.setpos = mod.setposition;
-    mod.setx = new Sk.builtin.func(function (nx) {
-        checkArgs(1, arguments.length, "setx()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.setx, turtle, nx);
-    });
-    mod.sety = new Sk.builtin.func(function (ny) {
-        checkArgs(1, arguments.length, "sety()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.sety, turtle, ny);
-    });
-    mod.setheading = new Sk.builtin.func(function (newhead) {
-        checkArgs(1, arguments.length, "setheading()");
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.setheading, turtle, newhead);
-    });
-    mod.seth = mod.setheading;
-    mod.home = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.home, turtle);
-    });
-    mod.dot = new Sk.builtin.func(function (size, color) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.dot, turtle, size, color);
-    });
-    mod.circle = new Sk.builtin.func(function (radius, extent) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.circle, turtle, radius, extent);
-    });
-    mod.delay = new Sk.builtin.func(function (d) {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.delay, turtle, d);
-    });
-    mod.speed = new Sk.builtin.func(function (s, t) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.speed, turtle, s, t);
-    });
-    mod.tracer = new Sk.builtin.func(function (t, d) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.tracer, turtle, t, d);
-    });
-    mod.heading = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.heading, turtle);
-    });
-    mod.position = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.position, turtle);
-    });
-    mod.pos = mod.position;
-    mod.xcor = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.xcor, turtle);
-    });
-    mod.ycor = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.ycor, turtle);
-    });
-    mod.towards = new Sk.builtin.func(function (tx, ty) {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.towards, turtle, tx, ty);
-    });
-    mod.distance = new Sk.builtin.func(function (tx, ty) {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.distance, turtle, tx, ty);
-    });
-    mod.up = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.up, turtle);
-    });
-    mod.penup = mod.up;
-    mod.pu = mod.up;
-    mod.down = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.down, turtle);
-    });
-    mod.pendown = mod.down;
-    mod.pd = mod.down;
-    mod.width = new Sk.builtin.func(function (w) {
-        checkArgs(1, arguments.length, "width()");
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.width, turtle, w);
-    });
-    mod.pensize = mod.width;
-    mod.isdown = new Sk.builtin.func(function () {
-        checkArgs(1, arguments.length, "isdown()");
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.isdown, turtle);
-    });
-    mod.fillcolor = new Sk.builtin.func(function (color, green, blue) {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.fillcolor, turtle, color, green, blue);
-    });
-    mod.pencolor = new Sk.builtin.func(function (color, green, blue) {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.pencolor, turtle, color, green, blue);
-    });
-    mod.color = new Sk.builtin.func(function (color, green, blue) {
-        var turtle = ensureAnonymousTurtle();
-        return Sk.misceval.callsim(turtle.color, turtle, color, green, blue);
-    });
-    mod.begin_fill = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.begin_fill, turtle);
-    });
-    mod.end_fill = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.end_fill, turtle); 
-    });
-    mod.fill = new Sk.builtin.func(function (fillt) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.begin_fill, turtle, fillt);
-    });
-    mod.reset = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.reset, turtle);
-    });
-    mod.showturtle = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.showturtle, turtle);
-    });
-    mod.st = mod.showturtle;
-    mod.hideturtle = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.hideturtle, turtle);
-    });
-    mod.ht = mod.hideturtle;
-    mod.isvisible = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.isvisible, turtle);
-    });
-    mod.stamp = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.begin_fill, turtle);
-    });
-    mod.shape = new Sk.builtin.func(function (s) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.shape, turtle, s);
-    });
-    mod.write = new Sk.builtin.func(function (mystr, move, align, font) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.write, turtle, mystr, move, align, font);
-    });
-    mod.setworldcoordinates = new Sk.builtin.func(function (llx, lly, urx, ury) {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.setworldcoordinates, turtle, llx, lly, urx, ury);
-    });
-    mod.clear = new Sk.builtin.func(function () {
-        var turtle = ensureAnonymousTurtle();
-        Sk.misceval.callsim(turtle.clear, turtle);
-    });
-    return mod;
+
+        return promise.then(function() {
+            return [startX + dx, startY + dy];
+        });
+    }
+
+    function partialRotate(turtle, angle, radians, countAsFrame) {
+        return function() {
+            return turtle.addUpdate(undefined, countAsFrame, {angle:angle, radians:radians});
+        };
+    }
+
+    function rotate(turtle, startAngle, delta, isCircle) {
+        var speed        = turtle._computed_speed,
+            degrees    = delta / turtle._fullCircle * 360,
+            frames     = speed ? Math.round(Math.max(1, Math.abs(degrees) / speed)) : 1,
+            dAngle     = delta / frames,
+            heading    = {},
+            countAsFrame = (!speed && isCircle) ? false : true,
+            promise    = getFrameManager().willRenderNext() ?
+                Promise.resolve() :
+                new InstantPromise(),
+            i;
+
+        // TODO: request how many frames are remaining and only queue up
+        // a single rotation per screen update
+
+        for(i = 0; i < frames; i++) {
+            calculateHeading(turtle, startAngle + dAngle * (i+1), heading);
+            promise = promise.then(
+                partialRotate(turtle, heading.angle, heading.radians, countAsFrame)
+            );
+        }
+
+        return promise.then(function() {
+            return calculateHeading(turtle, startAngle + delta);
+        });
+    }
+
+    function getCoordinates(x, y) {
+        if (y === undefined) {
+            y = (x && (x.y || x._y || x[1])) || 0;
+            x = (x && (x.x || x._x || x[0])) || 0;
+        }
+        return {x:x, y:y};
+    }
+
+    // Modified solution of Tim Down's version from stackoverflow
+    // http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+    function hexToRGB(hex) {
+        var rgbForm, hexForm, result;
+
+        if (rgbForm = /^rgba?\((\d+),(\d+),(\d+)(?:,([.\d]+))?\)$/.exec(hex)) {
+            result = [
+                parseInt(rgbForm[1]),
+                parseInt(rgbForm[2]),
+                parseInt(rgbForm[3])
+            ];
+            if (rgbForm[4]) {
+                result.push(parseFloat(rgbForm[4]));
+            }
+        }
+        else if (/^#?[a-f\d]{3}|[a-f\d]{6}$/i.exec(hex)) {
+            if (hex.length === 4) {
+                // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+                hex = hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, function(m, r, g, b) {
+                        return r + r + g + g + b + b;
+                });
+            }
+
+            hexForm = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            result = [
+                parseInt(hexForm[1], 16),
+                parseInt(hexForm[2], 16),
+                parseInt(hexForm[3], 16)
+            ];
+        }
+        else {
+            result = hex;
+        }
+
+        return result;
+    }
+
+    function createColor(color, g, b, a) {
+        var i;
+
+        if (g !== undefined) {
+            color = [color, g, b, a];
+        }
+
+        if (color.constructor === Array && color.length) {
+            for(i = 0; i < 3; i++) {
+                color[i] = (typeof color[i] === "number") ?
+                    Math.max(0, Math.min(255, parseInt(color[i]))) :
+                    0;
+            }
+            if (typeof color[i] === "number") {
+                color[3] = Math.max(0, Math.min(1, color[i]));
+                color = "rgba(" + color.join(",") + ")";
+            }
+            else {
+                color = "rgb(" + color.slice(0,3).join(",") + ")";
+            }
+        }
+        else if (typeof color === "string" && !color.match(/\s*url\s*\(/i)) {
+            color = color.replace(/\s+/g, "");
+        }
+        else {
+            return "black";
+        }
+
+        return color;
+    }
+
+    function calculateHeading(turtle, value, heading) {
+        var angle   = turtle._angle   || 0,
+            radians = turtle._radians || 0;
+
+        heading || (heading = {});
+
+        if (typeof value === "number") {
+            if (turtle._isRadians) {
+                angle = radians = value % Turtle.RADIANS;
+            }
+            else if (turtle._fullCircle) {
+                angle   = (value % turtle._fullCircle);
+                radians = angle / turtle._fullCircle * Turtle.RADIANS;
+            }
+            else {
+                angle = radians = 0;
+            }
+
+            if (angle < 0) {
+                angle   += turtle._fullCircle;
+                radians += Turtle.RADIANS;
+            }
+        }
+
+        heading.angle   = angle;
+        heading.radians = radians;
+
+        return heading;
+    }
+
+    function pythonToJavascriptFunction(pyValue, scope) {
+        return function() {
+            var argsJs = Array.prototype.slice.call(arguments),
+                argsPy = argsJs.map(
+                    function(argJs) {return Sk.ffi.remapToPy(argJs);}
+                );
+
+            if (typeof(scope) !== "undefined") {
+                argsPy.unshift(scope);
+            }
+            return Sk.misceval.applyAsync(
+                undefined, pyValue, undefined, undefined, undefined, argsPy
+            );
+        };
+    }
+
+    function addModuleMethod(klass, module, method, classMethod) {
+        var publicMethodName = method.replace(/^\$/, ""),
+            displayName      = publicMethodName.replace(/_\$[a-z]+\$$/i, ""),
+            maxArgs          = klass.prototype[method].length,
+            minArgs          = klass.prototype[method].minArgs,
+            keywordArgs      = klass.prototype[method].keywordArgs,
+            returnType       = klass.prototype[method].returnType,
+            isSk             = klass.prototype[method].isSk,
+            wrapperFn;
+
+        if (minArgs === undefined) {
+            minArgs = maxArgs;
+        }
+
+        wrapperFn = function() {
+            var args       = Array.prototype.slice.call(arguments, 0),
+                self       = classMethod ? ensureAnonymous() : args.shift(),
+                instance   = self.instance,
+                i, result, susp, resolution, lengthError;
+
+            if (args < minArgs || args.length > maxArgs) {
+                lengthError = minArgs === maxArgs ?
+                    "exactly " + maxArgs :
+                    "between " + minArgs + " and " + maxArgs;
+
+                throw new Sk.builtin.TypeError(displayName + "() takes " + lengthError + " positional argument(s) (" + args.length + " given)");
+            }
+
+            for (i = args.length; --i >= 0;) {
+                if (args[i] !== undefined) {
+                    if (args[i] instanceof Sk.builtin.func) {
+                        args[i] = pythonToJavascriptFunction(args[i]);
+                    }
+                    else if (args[i] instanceof Sk.builtin.method) {
+                        args[i] = pythonToJavascriptFunction(args[i].im_func, args[i].im_self);
+                    }
+                    else if (args[i] && args[i].$d instanceof Sk.builtin.dict && args[i].instance) {
+                        args[i] = args[i].instance;
+                    }
+                    else {
+                        args[i] = Sk.ffi.remapToJs(args[i]);
+                    }
+                }
+            }
+
+            try {
+                result = instance[method].apply(instance, args);
+            } catch(e) {
+                if (window && window.console) {
+                    window.console.log("wrapped method failed");
+                    window.console.log(e.stack);
+                }
+                throw e;
+            }
+
+            if (result instanceof InstantPromise) {
+                result = result.lastResult;
+            }
+
+            if (result instanceof Promise) {
+                result = result.catch(function(e) {
+                    if (window && window.console) {
+                        window.console.log("promise failed");
+                        window.console.log(e.stack);
+                    }
+                    throw e;
+                });
+
+                susp = new Sk.misceval.Suspension();
+
+                susp.resume = function() {
+                    return (resolution === undefined) ?
+                        Sk.builtin.none.none$ :
+                        Sk.ffi.remapToPy(resolution);
+                };
+
+                susp.data = {
+                    type: "Sk.promise",
+                    promise: result.then(function(value) {
+                        resolution = value;
+                        return value;
+                    })
+                };
+
+                return susp;
+            }
+            else {
+                if (result === undefined) return Sk.builtin.none.none$;
+                if (isSk) return result;
+                if (typeof returnType === "function") {
+                    return returnType(result);
+                }
+
+                return Sk.ffi.remapToPy(result);
+            }
+        };
+
+        if (keywordArgs) {
+            wrapperFn.co_varnames = keywordArgs.slice();
+            // make room for required arguments
+            for(var i = 0; i < minArgs; i++) {
+                wrapperFn.co_varnames.unshift("");
+            }
+            if (!classMethod) {
+                // make room for the "self" argument
+                wrapperFn.co_varnames.unshift("");
+            }
+        }
+
+        module[publicMethodName] = new Sk.builtin.func(wrapperFn);
+    }
+
+    function TurtleWrapper($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self) {
+            self.instance = new Turtle();
+            self.instance.skInstance = self;
+        });
+
+        for(var key in Turtle.prototype) {
+            if (/^\$[a-z_]+/.test(key)) {
+                addModuleMethod(Turtle, $loc, key);
+            }
+        }
+    }
+
+    function ScreenWrapper($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self) {
+            self.instance = getScreen();
+        });
+
+        for(var key in Screen.prototype) {
+            if (/^\$[a-z_]+/.test(key)) {
+                addModuleMethod(Screen, $loc, key);
+            }
+        }
+    }
+
+    for(var key in Turtle.prototype) {
+        if (/^\$[a-z_]+/.test(key)) {
+            addModuleMethod(Turtle, _module, key, true);
+        }
+    }
+
+    _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
+    _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
+
+    Sk.TurtleGraphics.raw = {
+        Turtle   : Turtle,
+        Screen : Screen
+    };
+
+    Sk.TurtleGraphics.module = _module;
+
+    return _module;
+
+})();
 };
