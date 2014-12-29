@@ -765,15 +765,19 @@ return (function() {
             w  = extent / steps;
             w2 = 0.5 * w;
             l  = radius * Math.sin(w/self._fullCircle*Turtle.RADIANS);
+
             if (radius < 0) {
                 l = -l;
                 w = -w;
                 w2 = -w2;
+                endAngle = angle - extent;
+            }
+            else {
+                endAngle = angle + extent;
             }
 
             promise = getFrameManager().willRenderNext() ? Promise.resolve() : new InstantPromise();
 
-            endAngle = angle + extent;
             angle += w2;
 
             for(i = 0; i < steps; i++) {
