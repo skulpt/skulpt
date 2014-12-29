@@ -751,10 +751,34 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
 };
 
 Sk.builtin.raw_input = function (prompt) {
-    var x;
+    var x, resolution, susp;
+
     prompt = prompt ? prompt.v : "";
     x = Sk.inputfun(prompt);
-    return new Sk.builtin.str(x);
+
+    if (x instanceof Promise) {
+        susp = new Sk.misceval.Suspension();
+
+        susp.resume = function() {
+            return new Sk.builtin.str(resolution);
+        };
+
+        susp.data = {
+            type: "Sk.promise",
+            promise: x.then(function(value) {
+                resolution = value;
+                return value;
+            }, function(err) {
+                resolution = "";
+                return err;
+            })
+        };
+
+        return susp;
+    }
+    else {
+        return new Sk.builtin.str(x);
+    }
 };
 
 Sk.builtin.input = Sk.builtin.raw_input;
