@@ -794,10 +794,10 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
 
     for(var x = 0; x<split.length; x++){
         if (split[x].match('/\n|\r/g') !== undefined){
-            spacerem = tabsize - ((split[x].length - (Math.max(split[x].lastIndexOf('\r'),split[x].lastIndexOf('\n')))+2) % tabsize);
+            spacerem = tabsize - ((split[x].length - (Math.max(split[x].lastIndexOf('\r'),split[x].lastIndexOf('\n')))) % tabsize);
         } else{
             if(Math.max([expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')]) !== -1){
-                spacerem = tabsize - ((expanded.length - (Math.max(expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')))+2) % tabsize);
+                spacerem = tabsize - ((expanded.length - (Math.max(expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')))) % tabsize);
             } else {
                 spacerem = tabsize - (expanded.length % tabsize);
             }
