@@ -35,10 +35,10 @@ class string_functions(unittest.TestCase):
         self.assertFalse("".istitle())
         self.assertFalse("a".istitle())
         self.assertTrue("A".istitle())
-        self.assertFalse("\n".istitle())
-        self.assertTrue("A Titlecased Line".istitle())
-        self.assertTrue("A\nTitlecased Line".istitle())
-        self.assertTrue("A Titlecased, Line".istitle())
+        self.assertFalse("\n".istitle()) ##
+        self.assertTrue("A Titlecased Line".istitle()) ##
+        self.assertTrue("A\nTitlecased Line".istitle()) ##
+        self.assertTrue("A Titlecased, Line".istitle()) ##
         self.assertFalse("Not a capitalized String".istitle())
         self.assertFalse("Not\ta Titlecase String".istitle())
         self.assertFalse("Not--a Titlecase String".istitle())
@@ -63,7 +63,7 @@ class string_functions(unittest.TestCase):
         self.assertFalse("\n".isalpha())
         self.assertTrue("abc".isalpha())
         self.assertFalse("aBc123".isalpha())
-        self.assertFalse("abc\n".isalpha())#
+        self.assertFalse("abc\n".isalpha())
         # self.assertRaises(TypeError, "abc".isalpha, 42)
 
     def test_isalnum(self):
@@ -148,25 +148,18 @@ class string_functions(unittest.TestCase):
         # self.assertRaises(TypeError, "123".zfill)
 
     def test_expandtabs(self):
-        self.assertEqual("abc\rab      def\ng       hi",
-                         "abc\rab\tdef\ng\thi".expandtabs())
-        self.assertEqual("abc\rab      def\ng       hi",
-                         "abc\rab\tdef\ng\thi".expandtabs(8))
-        self.assertEqual("abc\rab  def\ng   hi",
-                         "abc\rab\tdef\ng\thi".expandtabs(4))
-        self.assertEqual("abc\r\nab      def\ng       hi",
-                         "abc\r\nab\tdef\ng\thi".expandtabs())
-        self.assertEqual("abc\r\nab      def\ng       hi",
-                         "abc\r\nab\tdef\ng\thi".expandtabs(8))
-        self.assertEqual("abc\r\nab  def\ng   hi",
-                         "abc\r\nab\tdef\ng\thi".expandtabs(4))
-        self.assertEqual("abc\r\nab\r\ndef\ng\r\nhi",
-                         "abc\r\nab\r\ndef\ng\r\nhi".expandtabs(4))
-        # check keyword args
-        self.assertEqual("abc\rab      def\ng       hi",
-                         "abc\rab\tdef\ng\thi".expandtabs(tabsize=8))
-        self.assertEqual("abc\rab  def\ng   hi",
-                         "abc\rab\tdef\ng\thi".expandtabs(tabsize=4))
+        self.assertEqual("abc\rab      def\ng       hi", "abc\rab\tdef\ng\thi".expandtabs())
+        self.assertEqual("abc\rab      def\ng       hi", "abc\rab\tdef\ng\thi".expandtabs(8))
+        self.assertEqual("abc\rab  def\ng   hi", "abc\rab\tdef\ng\thi".expandtabs(4))
+        self.assertEqual("abc\r\nab      def\ng       hi", "abc\r\nab\tdef\ng\thi".expandtabs())
+        self.assertEqual("abc\r\nab      def\ng       hi", "abc\r\nab\tdef\ng\thi".expandtabs(8))
+        self.assertEqual("abc\r\nab  def\ng   hi", "abc\r\nab\tdef\ng\thi".expandtabs(4))
+        self.assertEqual("abc\r\nab\r\ndef\ng\r\nhi", "abc\r\nab\r\ndef\ng\r\nhi".expandtabs(4))
+        # kwargs only supported in python 3
+        # self.assertEqual("abc\rab      def\ng       hi",
+        #                  "abc\rab\tdef\ng\thi".expandtabs(tabsize=8))
+        # self.assertEqual("abc\rab  def\ng   hi",
+        #                  "abc\rab\tdef\ng\thi".expandtabs(tabsize=4))
 
         self.assertEqual("  a\n b", " \ta\n\tb".expandtabs(1))
 

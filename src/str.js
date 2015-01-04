@@ -793,21 +793,25 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     split = input.split("\t");
 
     for(var x = 0; x<split.length; x++){
-        if (split[x].match('/\n|\r/g') !== undefined){
-            spacerem = tabsize - ((split[x].length - (Math.max(split[x].lastIndexOf('\r'),split[x].lastIndexOf('\n')))) % tabsize);
+        if (split[x].match("/\n|\r/g") !== undefined){
+            spacerem = tabsize - ((split[x].length - (Math.max(split[x].lastIndexOf("\r"),split[x].lastIndexOf("\n")))-1) % tabsize);
         } else{
-            if(Math.max([expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')]) !== -1){
-                spacerem = tabsize - ((expanded.length - (Math.max(expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')))) % tabsize);
+            if(Math.max([expanded.lastIndexOf("\r"),expanded.lastIndexOf("\n")]) !== -1){
+                spacerem = tabsize - ((expanded.length - (Math.max(expanded.lastIndexOf("\r"),expanded.lastIndexOf("\n")))-1) % tabsize);
             } else {
                 spacerem = tabsize - (expanded.length % tabsize);
             }
         }
         spacestr = goog.string.repeat(" ", spacerem);
-        expanded += split[x] +  spacestr ;
+        if(x!==split.length-1){
+            expanded += split[x] +  spacestr;
+        } else{
+            expanded += split[x];
+        }
 
     }
     
-
+    // print(expanded)
     return new Sk.builtin.str(expanded);
 });
 
@@ -842,33 +846,62 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
     var strs_w = [];
     var ch;
     var eol;
-    Sk.builtin.pyCheckArgs("splitlines", arguments, 2, 1);
+    var sol = 0;
+    var slice;
+    Sk.builtin.pyCheckArgs("splitlines", arguments, 1, 2);
     if ((keepends !== undefined) && !Sk.builtin.checkBool(keepends)) {
-        throw new Sk.builtin.TypeError("boolean argument exepcted, got " + Sk.abstr.typeName(keepends));
+        throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
     }
     if (keepends === undefined){
         keepends = false;
+    } else {
+    keepends = keepends.v;
     }
 
-    while(i < selflen){
-        ch = data.char(i);
-        while(i<selflen && ch !== "\n" && ch !== "\r"){
-            i += 1;
+
+    for(i;i<selflen; i++){
+        ch = data.charAt(i);
+        if(data.charAt(i+1) ==="\n" && ch === "\r"){
+            eol = i +2;
+            slice = data.slice(sol, eol);
+            if(!keepends){
+                slice = slice.replace(/(\r|\n)/g,"");
+            }
+            strs_w.push(new Sk.builtin.str(slice));
+            // print("option a")
+            // print(data.slice(sol, eol))
+            sol = eol;
+            
+        }else if((ch === "\n" && data.charAt(i-1) !== "\r") || ch === "\r"){
+            eol = i + 1;
+            // print("option b")
+            // print(data.slice(sol, eol))
+            slice = data.slice(sol, eol);
+            if(!keepends){
+                slice = slice.replace(/(\r|\n)/g,"");
+            }
+            strs_w.push(new Sk.builtin.str(slice));
+            sol = eol;
         }
-        eol = i;
-        i += 1;
-        if(i<selflen && data.char(i-1) ==="\r" && ch === "\n"){
-            i += 1;
-        }
-        if(keepends){
-            eol = i;
-        }
-        strs_w.push(data.slice(j, eol));
-        j = i;
+
     }
-    if(j < selflen){
-        strs_w.push(data.slice(j, selflen));
+    if(sol < selflen){
+        // sol = i;
+        eol = selflen;
+        slice = data.slice(sol, eol);
+        if(!keepends){
+            slice = slice.replace(/(\r|\n)/g,"");
+            // print('triggered)')
+        }
+        strs_w.push(new Sk.builtin.str(slice));
+        // strs_w.push(new Sk.builtin.str(data.slice(sol, eol)));
+        // print(strs_w)
     }
+
+    // if(!keepends){
+    //     strs_w.map(function(t){ return t.replace(/\r|\n/g,"")})
+    //     // print(strs_w)
+    // }
 
     return new Sk.builtin.list(strs_w);
 });
@@ -926,15 +959,17 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
     var pos;
     var ch;
     Sk.builtin.pyCheckArgs("istitle", arguments, 1, 1);
-
+    // print(input);
     for(pos = 0; pos<input.length; pos++){
-        ch = input.char(pos);
-        if(ch === ch.toUpperCase()){
+        ch = input.charAt(pos);
+        // print(ch);
+        if(!/[a-z]/.test(ch) && /[A-Z]/.test(ch)){
             if(previous_is_cased){
                 return Sk.builtin.bool(false);
             }
+            previous_is_cased = true;
             cased = true;
-        }else if(ch === ch.toLowerCase()){
+        }else if(/[a-z]/.test(ch) && !/[A-Z]/.test(ch)){
             if(!previous_is_cased){
                 return Sk.builtin.bool(false);
             }
