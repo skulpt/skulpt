@@ -702,18 +702,41 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
 
 Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     var newstr;
+    var width = len;
+    var data = self.v;
+    var buf;
+    var start;
+    var middle;
     Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
     if (!Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
     len = Sk.builtin.asnum$(len);
     if (self.v.length >= len) {
-        return self;
-    } else {
-        newstr = Array.prototype.join.call({length: Math.floor(len - self.v.length) + 1}, "0");
-        return new Sk.builtin.str(newstr + self.v);
+        return new Sk.builtin.str(self.v);
+    } 
+
+    buf =  new Array(width + 1).join(" ").split('');
+    if(data.length > 0 && (data[0] == "+" || data[0] == "-")){
+        buf[0] = data[0];
+        start = 1;
+        middle = width - data.length + 1;
+    } else{
+        start = 0;
+        middle = width - data.length;
     }
 
+    for(var i=start; i<middle; i++){
+        buf[i] = "0";
+    }
+
+    for(var j=middle; j<width; j++){
+        buf[j]=data[start];
+        start = start+1;
+    }
+    // newstr = Array.prototype.join.call({length: Math.floor(len - self.v.length) + 1}, "0");
+    return new Sk.builtin.str(buf.join());
+    
 });
 
 Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
@@ -751,7 +774,7 @@ Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
-    Sk.builtin.pyCheckArgs("expandtabs", arguments, 2, 2);
+    Sk.builtin.pyCheckArgs("expandtabs", arguments, 1, 2);
     if ((tabsize !== undefined) && !Sk.builtin.checkInt(tabsize)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(tabsize));
     }
@@ -785,6 +808,45 @@ Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
         }
     }
     return new Sk.builtin.str(newletters);
+});
+
+Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
+    var data = self.v;
+    var i = 0;
+    var j = i;
+    var selflen = self.v.length;
+    var strs_w = [];
+    var ch;
+    var eol;
+    Sk.builtin.pyCheckArgs("splitlines", arguments, 2, 1);
+    if ((keepends !== undefined) && !Sk.builtin.checkBool(keepends)) {
+        throw new Sk.builtin.TypeError("boolean argument exepcted, got " + Sk.abstr.typeName(keepends));
+    }
+    if (keepends === undefined){
+        keepends = false;
+    }
+
+    while(i < selflen){
+        ch = data.char(i);
+        while(i<selflen && ch !== "\n" && ch !== "\r"){
+            i += 1;
+        }
+        eol = i;
+        i += 1;
+        if(i<selflen && data.char(i-1) ==="\r" && ch === "\n"){
+            i += 1;
+        }
+        if(keepends){
+            eol = i;
+        }
+        strs_w.push(data.slice(j, eol));
+        j = i;
+    }
+    if(j < selflen){
+        strs_w.push(data.slice(j, selflen));
+    }
+
+    return new Sk.builtin.list(strs_w);
 });
 
 Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
@@ -830,11 +892,11 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
 
     // From http://docs.python.org/library/stdtypes.html#string-formatting the
     // format looks like:
-    // 1. The '%' character, which marks the start of the specifier.
+    // 1. The "%" character, which marks the start of the specifier.
     // 2. Mapping key (optional), consisting of a parenthesised sequence of characters (for example, (somename)).
     // 3. Conversion flags (optional), which affect the result of some conversion types.
-    // 4. Minimum field width (optional). If specified as an '*' (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
-    // 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*' (an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
+    // 4. Minimum field width (optional). If specified as an "*" (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
+    // 5. Precision (optional), given as a "." (dot) followed by the precision. If specified as "*" (an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
     // 6. Length modifier (optional).
     // 7. Conversion type.
     //
@@ -875,9 +937,9 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
 
         if (mappingKey === undefined || mappingKey === "") {
             i = index++;
-        } // ff passes '' not undef for some reason
+        } // ff passes "" not undef for some reason
 
-        if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
+        if (precision === "") { // ff passes "" here aswell causing problems with G,g, etc.
             precision = undefined;
         }
 
