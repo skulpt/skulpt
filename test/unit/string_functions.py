@@ -12,14 +12,14 @@ import unittest
 
 class string_functions(unittest.TestCase):
     def test_islower(self):
-        self.assertFalse("".islower())
-        self.assertTrue("a".islower())
-        self.assertFalse("A".islower())
-        self.assertFalse("\n".islower())
-        self.assertTrue("abc".islower())
-        self.assertFalse("aBc".islower())
-        self.assertTrue("abc\n".islower())
-        self.assertRaises(TypeError, "abc".islower, 42)
+        self.assertFalse("".islower(), "islower")
+        self.assertTrue("a".islower(), "islower")
+        self.assertFalse("A".islower(), "islower")
+        self.assertFalse("\n".islower(), "islower")
+        self.assertTrue("abc".islower(), "islower")
+        self.assertFalse("aBc".islower(), "islower")
+        self.assertTrue("abc\n".islower(), "islower")
+        self.assertRaises(TypeError, "abc".islower, 42) #
 
     def test_isupper(self):
         self.assertFalse("".isupper())
@@ -29,7 +29,7 @@ class string_functions(unittest.TestCase):
         self.assertTrue("ABC".isupper())
         self.assertFalse("AbC".isupper())
         self.assertTrue("ABC\n".isupper())
-        self.assertRaises(TypeError, "abc".isupper, 42)
+        self.assertRaises(TypeError, "abc".isupper, 42) #
 
     def test_istitle(self):
         self.assertFalse("".istitle())
@@ -43,7 +43,7 @@ class string_functions(unittest.TestCase):
         self.assertFalse("Not\ta Titlecase String".istitle())
         self.assertFalse("Not--a Titlecase String".istitle())
         self.assertFalse("NOT".istitle())
-        self.assertRaises(TypeError, "abc".istitle, 42)
+        self.assertRaises(TypeError, "abc".istitle, 42) #
 
     def test_isspace(self):
         self.assertFalse("".isspace())
@@ -54,7 +54,7 @@ class string_functions(unittest.TestCase):
         self.assertTrue("\n".isspace())
         self.assertTrue(" \t\r\n".isspace())
         self.assertFalse(" \t\r\na".isspace())
-        self.assertRaises(TypeError, "abc".isspace, 42)
+        self.assertRaises(TypeError, "abc".isspace, 42) #
 
     def test_isalpha(self):
         self.assertFalse("".isalpha())
@@ -63,7 +63,7 @@ class string_functions(unittest.TestCase):
         self.assertFalse("\n".isalpha())
         self.assertTrue("abc".isalpha())
         self.assertFalse("aBc123".isalpha())
-        self.assertFalse("abc\n".isalpha())
+        self.assertFalse("abc\n".isalpha())#
         self.assertRaises(TypeError, "abc".isalpha, 42)
 
     def test_isalnum(self):
@@ -130,9 +130,7 @@ class string_functions(unittest.TestCase):
         self.assertRaises(TypeError, "abc".center)
 
     def test_swapcase(self):
-        self.assertEqual("hEllO CoMPuTErS",
-            "HeLLo cOmpUteRs".swapcase())
-
+        self.assertEqual("hEllO CoMPuTErS", "HeLLo cOmpUteRs".swapcase())
         self.assertRaises(TypeError, "hello".swapcase, 42)
 
     def test_zfill(self):

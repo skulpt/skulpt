@@ -818,6 +818,10 @@ Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
     return Sk.builtin.bool(self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 });
 
+Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("istitle", arguments, 1, 1);
+    return Sk.builtin.bool(self.v.length && self.v === goog.string.toTitleCase(self.v));
+});
 
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("str", Sk.builtin.str);
 
