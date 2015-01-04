@@ -792,7 +792,7 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
 Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     var i;
     var letters;
-    var newletters;
+    var newletters = "";
     var ch;
     Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
     letters = self.v;
