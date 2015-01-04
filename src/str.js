@@ -700,6 +700,22 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
     return new Sk.builtin.str(self.v.replace(patt, replacer));
 });
 
+Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
+    var newstr;
+    Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
+    if (!Sk.builtin.checkInt(len)) {
+        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
+    }
+    len = Sk.builtin.asnum$(len);
+    if (self.v.length >= len) {
+        return self;
+    } else {
+        newstr = Array.prototype.join.call({length: Math.floor(len - self.v.length) + 1}, "0");
+        return new Sk.builtin.str(newstr + self.v);
+    }
+
+});
+
 Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
     var ch;
     var i;
@@ -714,6 +730,66 @@ Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
         }
     }
     return Sk.builtin.bool(true);
+});
+
+Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
+    var ch;
+    var i;
+    var newstr;
+    Sk.builtin.pyCheckArgs("isspace", arguments, 1, 1);
+    if (self.v.length === 0) {
+        return Sk.builtin.bool(false);
+    }
+    newstr = goog.string.normalizeWhitespace(self.v);
+    for (i = 0; i < newstr.length; i++) {
+        ch = newstr.charAt(i);
+        if (!goog.string.isSpace) {
+            return Sk.builtin.bool(false);
+        }
+    }
+    return Sk.builtin.bool(true);
+});
+
+Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
+    Sk.builtin.pyCheckArgs("expandtabs", arguments, 2, 2);
+    if ((tabsize !== undefined) && !Sk.builtin.checkInt(tabsize)) {
+        throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(tabsize));
+    }
+    if (tabsize === undefined) {
+        tabsize = 8;
+    }else{
+        tabsize = Sk.builtin.asnum$(tabsize);
+    }
+
+    var spacestr = goog.string.repeat(" ", tabsize);
+
+    return new Sk.builtin.str(self.v.replace(/\t/g, spacestr));
+});
+
+Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
+    var i;
+    var letters;
+    var newletters;
+    Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
+    letters = self.v;
+
+    if (letters.length === 0){
+        return new Sk.builtin.str("");
+    }
+
+    for(i = 0; i<letters.length; i++){
+        if(letters[i] === letters.charAt(i).toLowerCase()){
+            newletters += letters.charAt(i).toUpperCase();
+        }else {
+            newletters += letters.charAt(i).toLowerCase();
+        }
+    }
+    return new Sk.builtin.str(newletters);
+});
+
+Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("title", arguments, 1, 1);
+    return new Sk.builtin.str(goog.string.toTitleCase(self.v));
 });
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
@@ -741,6 +817,7 @@ Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isupper", arguments, 1, 1);
     return Sk.builtin.bool(self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 });
+
 
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("str", Sk.builtin.str);
 
