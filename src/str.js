@@ -702,7 +702,7 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
 
 Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     var newstr;
-    var width = len;
+    var width = Sk.builtin.asnum$(len);
     var data = self.v;
     var buf;
     var start;
@@ -712,11 +712,11 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(len));
     }
     len = Sk.builtin.asnum$(len);
-    if (self.v.length >= len) {
-        return new Sk.builtin.str(self.v);
+    if (data.length >= len) {
+        return new Sk.builtin.str(data);
     } 
 
-    buf =  new Array(width + 1).join(" ").split('');
+    buf =  new Array(width + 1).join(" ").split("");
     if(data.length > 0 && (data[0] == "+" || data[0] == "-")){
         buf[0] = data[0];
         start = 1;
@@ -735,7 +735,7 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
         start = start+1;
     }
     // newstr = Array.prototype.join.call({length: Math.floor(len - self.v.length) + 1}, "0");
-    return new Sk.builtin.str(buf.join());
+    return new Sk.builtin.str(buf.join(""));
     
 });
 
@@ -793,6 +793,7 @@ Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     var i;
     var letters;
     var newletters;
+    var ch;
     Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
     letters = self.v;
 
@@ -801,10 +802,11 @@ Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     }
 
     for(i = 0; i<letters.length; i++){
-        if(letters[i] === letters.charAt(i).toLowerCase()){
-            newletters += letters.charAt(i).toUpperCase();
+        ch = letters.charAt(i);
+        if(letters[i] === ch.toLowerCase()){
+            newletters += ch.toUpperCase();
         }else {
-            newletters += letters.charAt(i).toLowerCase();
+            newletters += ch.toLowerCase();
         }
     }
     return new Sk.builtin.str(newletters);
@@ -850,8 +852,23 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
 });
 
 Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
+    var input = self.v;
+    var buffer = new Array(input.length).join(" ").split("");
+    var prev_letter = " ";
+    var ch;
     Sk.builtin.pyCheckArgs("title", arguments, 1, 1);
-    return new Sk.builtin.str(goog.string.toTitleCase(self.v));
+
+    for(var i =0; i<input.length; i++){
+        ch = input[i];
+        if(!goog.string.isAlpha(prev_letter)){
+            buffer[i] = ch.toUpperCase();
+        } else {
+            buffer[i] = ch.toLowerCase();
+        }
+
+        prev_letter = buffer[i];
+    }
+    return new Sk.builtin.str(buffer.join(""));
 });
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
