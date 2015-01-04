@@ -766,7 +766,7 @@ Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
     newstr = goog.string.normalizeWhitespace(self.v);
     for (i = 0; i < newstr.length; i++) {
         ch = newstr.charAt(i);
-        if (!goog.string.isSpace) {
+        if (!goog.string.isSpace(ch)) {
             return Sk.builtin.bool(false);
         }
     }
