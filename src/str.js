@@ -773,7 +773,14 @@ Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
     return Sk.builtin.bool(true);
 });
 
+
 Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
+    var input = self.v;
+    var expanded = "";
+    var split;
+    var spacestr = "";
+    var spacerem;
+
     Sk.builtin.pyCheckArgs("expandtabs", arguments, 1, 2);
     if ((tabsize !== undefined) && !Sk.builtin.checkInt(tabsize)) {
         throw new Sk.builtin.TypeError("integer argument exepcted, got " + Sk.abstr.typeName(tabsize));
@@ -783,10 +790,25 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     }else{
         tabsize = Sk.builtin.asnum$(tabsize);
     }
+    split = input.split("\t");
 
-    var spacestr = goog.string.repeat(" ", tabsize);
+    for(var x = 0; x<split.length; x++){
+        if (split[x].match('/\n|\r/g') !== undefined){
+            spacerem = tabsize - ((split[x].length - (Math.max([split[x].lastIndexOf('\r'),split[x].lastIndexOf('\n')]))+2) % tabsize);
+        } else{
+            if(Math.max([expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')]) !== -1){
+                spacerem = tabsize - ((expanded.length - (Math.max([expanded.lastIndexOf('\r'),expanded.lastIndexOf('\n')]))+2) % tabsize);
+            } else {
+                spacerem = tabsize - (expanded.length % tabsize);
+            }
+        }
+        spacestr = goog.string.repeat(" ", spacerem);
+        expanded += split[x] +  spacestr ;
 
-    return new Sk.builtin.str(self.v.replace(/\t/g, spacestr));
+    }
+    
+
+    return new Sk.builtin.str(expanded);
 });
 
 Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
@@ -898,8 +920,32 @@ Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
+    var input = self.v;
+    var cased = false;
+    var previous_is_cased = false;
+    var pos;
+    var ch;
     Sk.builtin.pyCheckArgs("istitle", arguments, 1, 1);
-    return Sk.builtin.bool(self.v.length && self.v === goog.string.toTitleCase(self.v));
+
+    for(pos = 0; pos<input.length; pos++){
+        ch = input.char(pos);
+        if(ch === ch.toUpperCase()){
+            if(previous_is_cased){
+                return Sk.builtin.bool(false);
+            }
+            cased = true;
+        }else if(ch === ch.toLowerCase()){
+            if(!previous_is_cased){
+                return Sk.builtin.bool(false);
+            }
+            cased = true;
+        } else {
+            previous_is_cased = false;
+        }
+    }
+
+
+    return Sk.builtin.bool(cased);
 });
 
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("str", Sk.builtin.str);

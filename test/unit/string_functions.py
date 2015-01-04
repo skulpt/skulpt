@@ -163,12 +163,12 @@ class string_functions(unittest.TestCase):
         self.assertEqual("abc\r\nab\r\ndef\ng\r\nhi",
                          "abc\r\nab\r\ndef\ng\r\nhi".expandtabs(4))
         # check keyword args
-        # self.assertEqual("abc\rab      def\ng       hi",
-        #                  "abc\rab\tdef\ng\thi".expandtabs(tabsize=8))
-        # self.assertEqual("abc\rab  def\ng   hi",
-        #                  "abc\rab\tdef\ng\thi".expandtabs(tabsize=4))
+        self.assertEqual("abc\rab      def\ng       hi",
+                         "abc\rab\tdef\ng\thi".expandtabs(tabsize=8))
+        self.assertEqual("abc\rab  def\ng   hi",
+                         "abc\rab\tdef\ng\thi".expandtabs(tabsize=4))
 
-        self.assertEqual("  a\n ", " \ta\n\tb".expandtabs(1))
+        self.assertEqual("  a\n b", " \ta\n\tb".expandtabs(1))
 
         # self.assertRaises(TypeError, "hello".expandtabs, 42, 42)
         # # This test is only valid when sizeof(int) == sizeof(void*) == 4.
