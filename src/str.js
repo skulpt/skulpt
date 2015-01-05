@@ -858,7 +858,7 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
     }
 
 
-    for(i;i<selflen; i++){
+    for(i=0; i<selflen; i++){
         ch = data.charAt(i);
         if(data.charAt(i+1) ==="\n" && ch === "\r"){
             eol = i +2;
@@ -973,11 +973,11 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
 
     // From http://docs.python.org/library/stdtypes.html#string-formatting the
     // format looks like:
-    // 1. The "%" character, which marks the start of the specifier.
+    // 1. The '%' character, which marks the start of the specifier.
     // 2. Mapping key (optional), consisting of a parenthesised sequence of characters (for example, (somename)).
     // 3. Conversion flags (optional), which affect the result of some conversion types.
-    // 4. Minimum field width (optional). If specified as an "*" (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
-    // 5. Precision (optional), given as a "." (dot) followed by the precision. If specified as "*" (an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
+    // 4. Minimum field width (optional). If specified as an '*' (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
+    // 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*'(an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
     // 6. Length modifier (optional).
     // 7. Conversion type.
     //
@@ -1018,9 +1018,9 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
 
         if (mappingKey === undefined || mappingKey === "") {
             i = index++;
-        } // ff passes "" not undef for some reason
+        } // ff passes '' not undef for some reason
 
-        if (precision === "") { // ff passes "" here aswell causing problems with G,g, etc.
+        if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
             precision = undefined;
         }
 
@@ -1085,6 +1085,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             precZeroPadded = false;
 
             if (precision) {
+                //print("r.length",r.length,"precision",precision);
                 for (j = r.length; j < precision; ++j) {
                     r = "0" + r;
                     precZeroPadded = true;
