@@ -977,7 +977,7 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     // 2. Mapping key (optional), consisting of a parenthesised sequence of characters (for example, (somename)).
     // 3. Conversion flags (optional), which affect the result of some conversion types.
     // 4. Minimum field width (optional). If specified as an '*' (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
-    // 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*'(an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
+    // 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*' (an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
     // 6. Length modifier (optional).
     // 7. Conversion type.
     //
