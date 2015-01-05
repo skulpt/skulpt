@@ -810,8 +810,7 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
         }
 
     }
-    
-    // print(expanded)
+
     return new Sk.builtin.str(expanded);
 });
 
@@ -868,14 +867,10 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
                 slice = slice.replace(/(\r|\n)/g,"");
             }
             strs_w.push(new Sk.builtin.str(slice));
-            // print("option a")
-            // print(data.slice(sol, eol))
             sol = eol;
             
         }else if((ch === "\n" && data.charAt(i-1) !== "\r") || ch === "\r"){
             eol = i + 1;
-            // print("option b")
-            // print(data.slice(sol, eol))
             slice = data.slice(sol, eol);
             if(!keepends){
                 slice = slice.replace(/(\r|\n)/g,"");
@@ -886,22 +881,13 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
 
     }
     if(sol < selflen){
-        // sol = i;
         eol = selflen;
         slice = data.slice(sol, eol);
         if(!keepends){
             slice = slice.replace(/(\r|\n)/g,"");
-            // print('triggered)')
         }
         strs_w.push(new Sk.builtin.str(slice));
-        // strs_w.push(new Sk.builtin.str(data.slice(sol, eol)));
-        // print(strs_w)
     }
-
-    // if(!keepends){
-    //     strs_w.map(function(t){ return t.replace(/\r|\n/g,"")})
-    //     // print(strs_w)
-    // }
 
     return new Sk.builtin.list(strs_w);
 });
@@ -920,7 +906,6 @@ Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
         } else {
             buffer[i] = ch.toLowerCase();
         }
-
         prev_letter = buffer[i];
     }
     return new Sk.builtin.str(buffer.join(""));
@@ -959,10 +944,8 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
     var pos;
     var ch;
     Sk.builtin.pyCheckArgs("istitle", arguments, 1, 1);
-    // print(input);
     for(pos = 0; pos<input.length; pos++){
         ch = input.charAt(pos);
-        // print(ch);
         if(!/[a-z]/.test(ch) && /[A-Z]/.test(ch)){
             if(previous_is_cased){
                 return Sk.builtin.bool(false);
@@ -1102,7 +1085,6 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             precZeroPadded = false;
 
             if (precision) {
-                //print("r.length",r.length,"precision",precision);
                 for (j = r.length; j < precision; ++j) {
                     r = "0" + r;
                     precZeroPadded = true;
