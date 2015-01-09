@@ -79,6 +79,7 @@ Files = [
         'src/mergesort.js',
         'src/list.js',
         'src/str.js',
+        'src/formatting.js',
         'src/tuple.js',
         'src/dict.js',
         'src/biginteger.js',
