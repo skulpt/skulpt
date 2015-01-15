@@ -62,6 +62,9 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 			field_name = repsplit[0];
 	    	format_spec = repsplit[1];
 	    }
+	    else {
+	    	field_name = replacement_field
+	    }
 
 
 		parse_field_name(field_name);
