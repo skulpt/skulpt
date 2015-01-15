@@ -1,18 +1,21 @@
 Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 
 	// implementation of pythons str.format() function
-	// steps:
+	// step1: pull out {}'s
+	// step2: process {}'s
+	// step3: replace {}'s
 
 	var replacement_field;
 	var input;
 	// var arguments;
 	var args;
 	var fields;
+	var field_dict = {};
 
 	Sk.builtin.pyCheckArgs("format", arguments, 1);
 	// print
 	if(arguments[1] === undefined){
-	print(JSON.stringify(arguments));
+		print(JSON.stringify(arguments));
 		return self;
 	}
 	args = Sk.misceval.arrayFromArguments(arguments);
@@ -23,8 +26,52 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 
 	fields = input.match(/\{(.*?)\}/g)
 
-	print(fields)
+	for(var i = 0; i < fields.length; i++){
+		// var number = parseInt(number)
+		var match = fields[i]
+		var place = i 
+		var place_str = String(place)
+	    match = match.replace(/[\{|\}]/g, "")
+	    // place = parseInt(place)
+	    print(place)
+	    // print(place)
+	    // print(JSON.stringify(args))
+	    if(match.length === 0){
+	    	// print(place)
+	    	// print(match)
+	    	// place = place;
+	    	field_dict[place_str] = {
+	    		orig: match,
+	    		result: args[place +1].v
+	    	}
+	    }
+	    else if(isInt(match)){
+	    	// print(place)
+	    	// print(match)
 
+	    	var match_int = parseInt(match)  ;
+	    	field_dict[place_str] = {
+	    		orig: match,
+	    		result: args[place +1].v
+	    	}
+	    }
+	    // }
+	    else{
+	    	// need to process into actual result here
+	    	// eek
+	    	// print(place)
+	    	parse_replacement_field(match, place)
+	    	field_dict[match] = {
+	    		orig: match,
+	    		result: match
+	    	}
+	    }
+	}
+
+	// print(fields)
+	// print(JSON.stringify(field_dict))
+
+	// parse_replacement_field(fields)
 
 	function parse_replacement_field(replacement_field, index){
 		var field_name;
@@ -32,20 +79,30 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 		var attribute_name;
 		var element_index;
 		var conversion;
-		var format_spec;
+		var format_spec;4
 
 		var repsplit;
+		// print(replacement_field)
+		// replacement_field = replacement_field.replace(/[\{|\}]/g, "")
+		// print
+		// if(replacement_field.length === 0){
+		// 	return "index"
+		// }
 
-		replacement_field = replacement_field.replace(/[\{|\}]/g, "")
-
-		if(replacement_field.length == 0){
-			return index
+		// this regex here may be excessive
+		var result = replacement_field.match(/(((.*):(.*))|((.*)!(.))|((.*)!(.):(.*)))/g)
+		print(JSON.stringify(result))
+		for(var i = 0; i<match.length; i++){
+			print(result[i])
+			print(i)
+			print(index)
+			print("inthething")
 		}
-
+		
 		if ( replacement_field.indexOf("!") >= 0 &&
 		    replacement_field.indexOf(":") >= replacement_field.indexOf("!")){
 
-    			replspit = replacement_field.split('!');
+    			repsplit = replacement_field.split('!');
 	    		field_name = repsplit[0];
     			repsplit = repsplit[1].split(':');
 
@@ -53,12 +110,12 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 	    		format_spec = repsplit[1];
 		    }
 	    else if( replacement_field.indexOf("!") >= 0 ){
-	    	replspit = replacement_field.split('!');
+	    	repsplit = replacement_field.split('!');
 	    	field_name = repsplit[0];
 	    	conversion = repsplit[1];
 	    }
 	    else if ( replacement_field.indexOf(":") >= 0){
-	    	replspit = replacement_field.split(':');
+	    	repsplit = replacement_field.split(':');
 			field_name = repsplit[0];
 	    	format_spec = repsplit[1];
 	    }
@@ -81,12 +138,50 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 
 	}
 
-	function parse_format_spec(format_spect){
+	function parse_format_spec(format_spec){
 
 	}
 
-	return self
-	// segment input
+	// I may be the final "main" loop function
+	var ret_str = self.v.replace(/\{(.*?)\}/g, function(match, number) { 
+    var number = parseInt(number)
+    var match = match.replace(/[\{|\}]/g, "")
+
+    // if(match.length === 0){
+    // 	number = number +1;
+    // }
+    // else if(isInt(match)){
+    // 	number = parseInt(match) + 1 ;
+    // }
+    // // }
+    // else{
+    // 	number = match
+    // }
+
+    print(number)
+    print(match)
+
+    if (field_dict[match] !== 'undefined' && field_dict[match].result !== 'undefined'){
+    	// print(match)
+    	// print(typeof number)
+    	// print(JSON.stringify(field_dict))
+    	// print(JSON.stringify(field_dict[match]))
+        return field_dict[match].result
+    }
+    else{
+    	// print(match)
+            return match
+          }
+    });
+
+	return new Sk.builtin.str(ret_str)
+
+	function isInt(value) {
+ 	 return !isNaN(value) && 
+         parseInt(Number(value)) == value && 
+	         !isNaN(parseInt(value, 10));
+	}
+	    	// segment input
 
 
 
