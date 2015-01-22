@@ -12,7 +12,8 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     var fields;
     var field_dict = {};
 
-    Sk.builtin.pyCheckArgs("format", arguments, 1);
+   
+    Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
     // print
     if (arguments[1] === undefined) {
         // print(JSON.stringify(arguments));
@@ -20,7 +21,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     }
     args = Sk.misceval.arrayFromArguments(arguments);
 
-
+    print(JSON.stringify(args));
     input = self.v;
 
     fields = input.match(/{(.*?)}/g);
@@ -236,37 +237,64 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     }
 
     // I may be the final "main" loop function
-    var ret_str = self.v.replace(/\{(.*?)\}/g, function (match, number) {
-        number = parseInt(number);
-        match = match.replace(/[\{|\}]/g, "");
-
-        // if(match.length === 0){
-        // 	number = number +1;
+    var i = 0
+    var ret_str = self.v.replace(/{(.*?)}/g, function (amatch, anumber) {
+        
+        // print(number)
+        var number = parseInt(anumber);
+        var match = amatch.replace(/[\{|\}]/g, "");
+        // print(amatch)
+        // // print(isNaN(number))
+        // // print("match")
+        // // print(isNaN(match))
+        // // print(number + 1)
+        // print(JSON.stringify(match))
+        // print(isInt(match))
+        // // print(i)
+        
+        if(isNaN(number) || number === undefined){
+        	match = i;
+        }
+        else if(match.length === 0){
+        	match = i;
+        }
+        else if(match === ""){
+        	match = i;
+        }
+        else if(isInt(match)){
+        	match = parseInt(match) ;
+        }
+        else{
+        	match = i
+        }
+        
         // }
-        // else if(isInt(match)){
-        // 	number = parseInt(match) + 1 ;
-        // }
-        // // }
         // else{
-        // 	number = match
+        // 	match = match
         // }
 
         // print(number)
-        // print(match)
+        
+        // match = toString(match)
 
-        if (field_dict[match] !== "undefined" && field_dict[match].result !== "undefined") {
+        // print(JSON.stringify(match))
+        // print(JSON.stringify(field_dict[i]["result"]))
+
+        if (field_dict[match] !== undefined && field_dict[match]["result"] !== undefined) {
             // print(match)
-            // print(typeof number)
+            // // print(typeof number)
             // print(JSON.stringify(field_dict))
             // print(JSON.stringify(field_dict[match]))
+            i += 1;
             return field_dict[match].result
         }
         else {
             // print(match)
+            i += 1;
             return match
         }
     });
-
+	print(ret_str)
     return new Sk.builtin.str(ret_str);
 
     function isInt(value) {
