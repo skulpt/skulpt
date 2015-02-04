@@ -22,42 +22,17 @@ Sk.builtin.Exception = function (args) {
         }
     }
     this.args = new Sk.builtin.tuple(args);
+    this.traceback = [];
 
-    if (Sk.currFilename) {
-        this.filename = Sk.currFilename;
-    }
-    else if (this.args.sq$length() >= 3) {
-        if (this.args.v[1].v) {
-            this.filename = this.args.v[1].v;
-        }
-        else {
-            // Unknown, this is an error, and the exception that causes it
-            // probably needs to be fixed.
-            this.filename = "<unknown>";
-        }
-    }
-    else {
-        // Unknown, this is an error, and the exception that causes it
-        // probably needs to be fixed.
-        this.filename = "<unknown>";
-    }
+    // For errors occurring during normal execution, the line/col/etc
+    // of the error are populated by each stack frame of the runtime code,
+    // but we can seed it with the supplied parameters.
     if (this.args.sq$length() >= 3) {
-        this.lineno = this.args.v[2];
-    }
-    else if (Sk.currLineNo > 0) {
-        this.lineno = Sk.currLineNo;
-    }
-    else {
-        // Unknown, this is an error, and the exception that causes it
-        // probably needs to be fixed.
-        this.lineno = "<unknown>";
-    }
 
-    if (Sk.currColNo > 0) {
-        this["colno"] = Sk.currColNo;
-    }
-    else {
-        this["colno"] = "<unknown>";
+        // if !this.args[1].v, this is an error, and the exception that causes it
+        // probably needs to be fixed, but we mark as "<unknown>" for now
+        this.traceback.push({lineno: this.args.v[2],
+                             filename: this.args.v[1].v || "<unknown>"});
     }
 };
 Sk.builtin.Exception.prototype.tp$name = "Exception";
@@ -70,7 +45,11 @@ Sk.builtin.Exception.prototype.tp$str = function () {
     if (this.args) {
         ret += ": " + (this.args.v.length > 0 ? this.args.v[0].v : "");
     }
-    ret += " on line " + this.lineno;
+    if (this.traceback.length !== 0) {
+        ret += " on line " + this.traceback[0].lineno;
+    } else {
+        ret += " at <unknown>";
+    }
 
     if (this.args.v.length > 4) {
         ret += "\n" + this.args.v[4].v + "\n";
@@ -79,6 +58,13 @@ Sk.builtin.Exception.prototype.tp$str = function () {
         }
         ret += "^\n";
     }
+
+    /*for (i = 0; i < this.traceback.length; i++) {
+        ret += "\n  at " + this.traceback[i].filename + " line " + this.traceback[i].lineno;
+        if ("colno" in this.traceback[i]) {
+            ret += " column " + this.traceback[i].colno;
+        }
+    }*/
 
     return new Sk.builtin.str(ret);
 };
@@ -445,6 +431,30 @@ goog.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError
 /**
  * @constructor
  * @extends Sk.builtin.Exception
+ * @param {*} nativeError
+ * @param {...*} args
+ */
+Sk.builtin.ExternalError = function (nativeError, args) {
+    var o;
+    if (!(this instanceof Sk.builtin.ExternalError)) {
+        o = Object.create(Sk.builtin.ExternalError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    // Make the first argument a string, so it can be printed in Python without errors,
+    // but save a reference to the real thing for Javascript consumption
+    args = Array.prototype.slice.call(arguments);
+    this.nativeError = args[0];
+    args[0] = ""+args[0];
+    Sk.builtin.Exception.apply(this, args);
+};
+goog.inherits(Sk.builtin.ExternalError, Sk.builtin.Exception);
+Sk.builtin.ExternalError.prototype.tp$name = "ExternalError";
+goog.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
  * @param {...*} args
  */
 Sk.builtin.OperationError = function (args) {
@@ -478,11 +488,5 @@ goog.inherits(Sk.builtin.SystemError, Sk.builtin.Exception);
 Sk.builtin.SystemError.prototype.tp$name = "SystemError";
 goog.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
 
-Sk.currLineNo = -1;
-Sk.currColNo = -1;
-Sk.currFilename = "";
 
 goog.exportSymbol("Sk", Sk);
-goog.exportProperty(Sk, "currLineNo", Sk.currLineNo);
-goog.exportProperty(Sk, "currColNo", Sk.currColNo);
-goog.exportProperty(Sk, "currFilename", Sk.currFilename);
