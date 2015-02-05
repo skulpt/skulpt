@@ -9,8 +9,11 @@ $(document).ready(function () {
             Sk.configure({output: outf, read: builtinRead});
             Sk.canvas = "mycanvas";
             Sk.pre = "edoutput";
+            (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
             try {
-                Sk.importMainWithBody("<stdin>", false, editor.getValue());
+                Sk.misceval.asyncToPromise(function() {
+                    return Sk.importMainWithBody("<stdin>",false,editor.getValue(),true);
+                });
             } catch(e) {
                 outf(e.toString() + "\n")
             }
@@ -20,7 +23,9 @@ $(document).ready(function () {
             Sk.canvas = "mycanvas";
             Sk.pre = "edoutput";
             try {
-                Sk.importMainWithBody("<stdin>", false, editor.getSelection());
+                Sk.misceval.asyncToPromise(function() {
+                    return Sk.importMainWithBody("<stdin>",false,editor.getValue(),true);
+                });
             } catch(e) {
                 outf(e.toString() + "\n")
             }
