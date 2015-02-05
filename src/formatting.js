@@ -14,7 +14,8 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
 
     //regex to match all possible permutations of str.format. easier than doing it manually
     
-    var re = new regex("{(((\d+)|(\w+))?((\.(\w+))|(\[((\d+)|(\w+))\])?))?(\!([rs]))?(\:(((.)?([\<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnosxX%])?))?}");
+    
+
 
    	function initiate_field_dict(key, original, result, place){
     	// print("init dict")
@@ -191,11 +192,26 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     // print(JSON.stringify(args));
     input = self.v;
 
+    print("orig: ", input)
+    //print(input);
+    var re = /{(((\d+)|(\w+))?((\.(\w+))|(\[((\d+)|(\w+))\])?))?(\!([rs]))?(\:(((.)?([\<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnosxX%])?))?}/g;
+    //print(re);
+    
+
     fields = input.match(/{(.*?)}/g);
-    // print(fields)
+    // print(fields);
+
     for (var i = 0; i < fields.length; i ++) {
         // var number = parseInt(number)
         var match = fields[i];
+
+        var rematches = match.match(re);
+	    var matches = re.exec(match);
+
+	    print("matches: ", rematches);
+	    print("execmat: ", matches)
+
+
         var place = i;
         var place_str = String(place);
         var arg_value;
@@ -205,6 +221,9 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         var match_key;
         // print(JSON.stringify(args))
         // print(i)
+
+
+	    
 
         match = match.replace(/[{|}]/g, "");
         // place = parseInt(place)
@@ -252,7 +271,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             //    result: arg_value
             //}
 
-            print("isInt");
+            // print("isInt");
 
             initiate_field_dict(match, field_name, result, place);
         }
@@ -266,7 +285,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             // result = "";
             // print(match)
             // print(result)
-            print("else");
+            // print("else");
             initiate_field_dict(match, match, result, place);
             parse_replacement_field(match);
             //field_dict[match] = {
