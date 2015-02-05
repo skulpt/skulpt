@@ -200,6 +200,23 @@ Sk.builtin.NameError.prototype.tp$name = "NameError";
  * @extends Sk.builtin.Exception
  * @param {...*} args
  */
+Sk.builtin.UnboundLocalError = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.UnboundLocalError)) {
+        o = Object.create(Sk.builtin.UnboundLocalError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+};
+goog.inherits(Sk.builtin.UnboundLocalError, Sk.builtin.Exception);
+Sk.builtin.UnboundLocalError.prototype.tp$name = "UnboundLocalError";
+
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
 Sk.builtin.OverflowError = function (args) {
     var o;
     if (!(this instanceof Sk.builtin.OverflowError)) {

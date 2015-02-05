@@ -2026,7 +2026,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
                 case Load:
                 case Param:
                     // Need to check that it is bound!
-                    out("if (", mangled, " === undefined) { throw new Error('local variable \\\'", mangled, "\\\' referenced before assignment'); }\n");
+                    out("if (", mangled, " === undefined) { throw new Sk.builtin.UnboundLocalError('local variable \\\'", mangled, "\\\' referenced before assignment'); }\n");
                     return mangled;
                 case Store:
                     out(mangled, "=", dataToStore, ";");

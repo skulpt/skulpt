@@ -297,7 +297,7 @@ Sk.builtin.str.prototype["join"] = new Sk.builtin.func(function (self, seq) {
     arrOfStrs = [];
     for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (i.constructor !== Sk.builtin.str) {
-            throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
+            throw new Sk.builtin.TypeError("TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found");
         }
         arrOfStrs.push(i.v);
     }
@@ -337,7 +337,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
         regex = new RegExp(s, "g");
     }
 
-    // This is almost identical to re.split, 
+    // This is almost identical to re.split,
     // except how the regexp is constructed
 
     result = [];
