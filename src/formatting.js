@@ -12,6 +12,10 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     var fields;
     var field_dict = {};
 
+    //regex to match all possible permutations of str.format. easier than doing it manually
+    
+    var re = new regex("{(((\d+)|(\w+))?((\.(\w+))|(\[((\d+)|(\w+))\])?))?(\!([rs]))?(\:(((.)?([\<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(\.\d+)?([bcdeEfFgGnosxX%])?))?}");
+
    	function initiate_field_dict(key, original, result, place){
     	// print("init dict")
     	// print(key, original, result, place)
@@ -153,8 +157,8 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         // based on that value.
         // should be as simple as calling JSON.stringify() on the !r values
         // print(field_dict[match_key].conversion)
-        print(match_key);
-        print(JSON.stringify(field_dict[match_key].result));
+        // print(match_key);
+        // print(JSON.stringify(field_dict[match_key].result));
         if(field_dict[match_key].conversion === "r"){
         	field_dict[match_key].result = Sk.builtin.repr(field_dict[match_key].result).v;
         }
@@ -299,16 +303,10 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         // print(i)
         
         if(match.split(":")[0].length === 0 || match.split("!")[0].length === 0){
-        	print(match);
+        	// print(match);
         	match = h.toString().concat(match);
         }
-        else if(isNaN(number) || number === undefined){
-        	match = h;
-        }
-        else if(match.length === 0){
-        	match = h;
-        }
-        else if(match === ""){
+        else if(isNaN(number) || number === undefined || match.length === 0 || match === ""){
         	match = h;
         }
         else if(isInt(match)){
