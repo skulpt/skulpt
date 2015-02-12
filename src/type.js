@@ -37,6 +37,24 @@ Sk.builtin.type = function (name, bases, dict) {
         return obj.ob$type;
     }
     else {
+
+        // this checks if the dict has been already successfully unwrapped
+        // in case of creating classes with class keyword, skulpt automatically
+        // unwrap the arguments and sets the module in the buildClass function
+        if(!dict["tp$name"] && dict["tp$name"] !== "dict") {
+            throw new Sk.builtin.TypeError("type() argument 3 must be dict, not " + Sk.abstr.typeName(dict));
+        }
+
+        // checks if name is builtin type of js object
+        if(!Sk.builtin.checkString(name)) {
+            throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + Sk.abstr.typeName(name));
+        }
+
+        // unwrap bases if required
+        if(!bases["tp$name"] && bases["tp$name"] !== "tuple") {
+            throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + Sk.abstr.typeName(bases));
+        }
+
         // type building version of type
 
         // dict is the result of running the classes code object
@@ -82,12 +100,26 @@ Sk.builtin.type = function (name, bases, dict) {
             return self;
         };
 
-        for (v in dict) {
-            klass.prototype[v] = dict[v];
-            klass[v] = dict[v];
+        // set __module__ if not present (required by direct type(name, bases, dict) calls)
+        if(dict.mp$lookup(Sk.builtin.str("__module__")) === undefined) {
+            dict.mp$ass_subscript(Sk.builtin.str("__module__"), Sk.globals["__name__"]);
         }
+
+        // copy properties into our klass object
+        // uses python iter methods
+        var it, k;
+        for (it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
+            v = dict.mp$subscript(k);
+            if (v === undefined) {
+                v = null;
+            }
+            klass.prototype[k.v] = v;
+            klass[k.v] = v;
+        }
+
+        var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
         klass["__class__"] = klass;
-        klass["__name__"] = new Sk.builtin.str(name);
+        klass["__name__"] = name;
         klass.sk$klass = true;
         klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
         klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
@@ -101,12 +133,12 @@ Sk.builtin.type = function (name, bases, dict) {
             if (reprf !== undefined) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
-            mod = dict.__module__;
+            mod = dict.mp$subscript(Sk.builtin.str("__module__")); // lookup __module__
             cname = "";
             if (mod) {
                 cname = mod.v + ".";
             }
-            return new Sk.builtin.str("<" + cname + name + " object>");
+            return new Sk.builtin.str("<" + cname + _name + " object>");
         };
         klass.prototype.tp$str = function () {
             var strf = this.tp$getattr("__str__");
@@ -165,14 +197,14 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
         };
 
-        klass.prototype.tp$name = name;
+        klass.prototype.tp$name = _name;
 
         if (bases) {
             //print("building mro for", name);
             //for (var i = 0; i < bases.length; ++i)
             //print("base[" + i + "]=" + bases[i].tp$name);
             klass["$d"] = new Sk.builtin.dict([]);
-            klass["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
+            klass["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, bases);
             mro = Sk.builtin.type.buildMRO(klass);
             klass["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, mro);
             klass.tp$mro = mro;
@@ -180,7 +212,7 @@ Sk.builtin.type = function (name, bases, dict) {
         }
 
         klass.prototype.ob$type = klass;
-        Sk.builtin.type.makeIntoTypeObj(name, klass);
+        Sk.builtin.type.makeIntoTypeObj(_name, klass);
 
         // fix for class attributes
         klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;

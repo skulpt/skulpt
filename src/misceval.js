@@ -1000,13 +1000,30 @@ Sk.misceval.buildClass = function (globals, func, name, bases) {
     var locals = {};
 
     // init the dict for the class
-    //print("CALLING", func);
     func(globals, locals, []);
+    // ToDo: check if func contains the __meta__ attribute
+    // or if the bases contain __meta__
+    // new Syntax would be different
 
     // file's __name__ is class's __module__
     locals.__module__ = globals["__name__"];
+    var _name = Sk.builtin.str(name);
+    var _bases = Sk.builtin.tuple(bases);
+    var _locals = [];
+    var key;
 
-    klass = Sk.misceval.callsim(meta, name, bases, locals);
+    // build array for python dict
+    for (key in locals) {
+        if (!locals.hasOwnProperty(key)) {
+            //The current property key not a direct property of p
+            continue;
+        }
+        _locals.push(Sk.builtin.str(key)); // push key
+        _locals.push(locals[key]); // push associated value
+    }
+    _locals = Sk.builtin.dict(_locals);
+
+    klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
     return klass;
 };
 goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
