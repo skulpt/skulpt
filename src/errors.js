@@ -13,7 +13,14 @@
  * @param {...Object|null} args
  */
 Sk.builtin.Exception = function (args) {
-    var i;
+    var i, o;
+
+    if (!(this instanceof Sk.builtin.Exception)) {
+        o = Object.create(Sk.builtin.Exception.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+
     args = Array.prototype.slice.call(arguments);
     // hackage to allow shorter throws
     for (i = 0; i < args.length; ++i) {
