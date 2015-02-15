@@ -1,18 +1,21 @@
-Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
+var format = function (kwa) {
     // following PEP 3101
-    
+
     var a, args, key, kwargs;
     var ret;
-    var regex; 
+    var regex;
     var index;
     var replFunc;
     var arg_dict = {};
-    
+
     Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
     
     
+    args = new Sk.builtins["tuple"](Array.prototype.slice.call(arguments, 1)); /*vararg*/
+    kwargs = new Sk.builtins["dict"](kwa);
+    
     if (arguments[1] === undefined) {
-        return self;
+        return args.v;
     }
     index = 0;
     regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:((?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?))?}/g;
@@ -38,15 +41,24 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     // retrive field value
     // hand off format spec
     // return resulting spec to function
+
     
-    
-    for(var i in arguments){
-        if(i !== "0")
-        {
-            arg_dict[i-1] = arguments[i].v;
+    if(kwargs.size !== 0){
+        
+        var kwItems = Sk.misceval.callsim(Sk.builtin.dict.prototype["items"], kwargs);
+        
+        for (var n in kwItems.v){
+            
+            arg_dict[kwItems.v[n].v[0].v] = kwItems.v[n].v[1].v;
         }
     }
-    
+    for(var i in args.v){
+        if(i !== "0")
+        {
+            arg_dict[i-1] = args.v[i].v;
+        }
+    }
+
     replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, fill_char, fill_align, sign, zero_pad, sign_aware, fieldWidth, comma, precision, conversionType,
                             offset, str_whole){
         var return_str;
@@ -67,17 +79,19 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         var percent;
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
-        
-        
+
         if(element_index !== undefined && element_index !== ""){
             value = arg_dict[arg_name][element_index].v;
-            print(value);
             index++;
         } else if(attribute_name !== undefined && attribute_name !== ""){
             value = arg_dict[arg_name][attribute_name].v;
             index++;
         }
-        
+        else if(arg_name !== undefined && arg_name !== ""){
+            value = arg_dict[arg_name];
+            index++;
+        }
+
          else if(field_name === undefined || field_name === ""){
             return_str = arg_dict[index];
             index++;
@@ -88,14 +102,14 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
            index++;
            value = return_str;
         }
- 
+
         if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
             precision = undefined;
         }
         if(fill_char === undefined || fill_char === ""){
             fill_char = " ";
         }
-        
+
         zeroPad = false;
         leftAdjust = false;
         centerAdjust = false;
@@ -143,13 +157,13 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 r = new Sk.builtin.str(value);
                 return r.v;
             }
-            
+
         };
-        
+
         handleWidth = function (prefix, r) {
             // print(prefix);
             var totLen;
-            
+
             var j;
             if(percent){
                 r = r +"%";
@@ -200,14 +214,14 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             var prefix;
             var neg;
             var r;
-            
+
             base = Sk.builtin.asnum$(base);
             neg = false;
-            
+
             if(format_spec === undefined){
                 return formatFormat(value);
             }
-            
+
             if (typeof n === "number" && !(precision)) {
                 if (n < 0) {
                     n = -n;
@@ -215,7 +229,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 }
                 r = n.toString(base);
             }
-            
+
             else if (precision) {
                 if (n < 0) {
                     n = -n;
@@ -224,7 +238,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 n = Number(n.toString(base));
                 r = n.toFixed(precision);
             }
-            
+
             else if (n instanceof Sk.builtin.nmber) {
                 r = n.str$(base, false);
                 if (r.length > 2 && r.substr(-2) === ".0") {
@@ -232,7 +246,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 }
                 neg = n.nb$isnegative();
             }
-            
+
             else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
                 neg = n.nb$isnegative();    //  neg = n.size$ < 0;  RNL long.js change
@@ -240,10 +254,10 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             else{
                 r = n;
             }
-            
+
             precZeroPadded = false;
             prefix = "";
-        
+
             if (neg) {
                 prefix = "-";
             }
@@ -265,7 +279,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                     prefix += "0b";
                 }
             }
-            
+
             if(conversionType === "n"){
                 r=r.toLocaleString();
             } else if(",".indexOf(comma) !== -1){
@@ -274,8 +288,8 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 r = parts.join(".");
             }
             return handleWidth(prefix, r);
-        };  
-        
+        };
+
         base = 10;
         if(conversionType === "d" || conversionType === "n" || conversionType === "" || conversionType === undefined){
             return formatNumber(value, 10);
@@ -338,9 +352,12 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             if(precision === undefined){precision = parseInt(7,10);}
             return formatNumber(value*100, 10);
         }
-        
+
     };
-   
-    ret = self.v.replace(regex, replFunc);
+
+    ret = args.v[0].v.replace(regex, replFunc);
     return new Sk.builtin.str(ret);
-});
+};
+
+format["co_kwargs"] = true;
+Sk.builtin.str.prototype["format"] = new Sk.builtin.func(format);
