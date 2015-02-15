@@ -702,88 +702,56 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
 });
 
 Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
-    var newstr;
-    var width = Sk.builtin.asnum$(len);
-    var data = self.v;
-    var buf;
-    var start;
-    var middle;
+    var str = self.v;
+    var ret;
+    var zeroes;
+    var offset;
+    var pad = "";
+    
     Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
     if (! Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(len));
     }
-    len = Sk.builtin.asnum$(len);
-    if (data.length >= len) {
-        return self;
+    
+    // figure out how many zeroes are needed to make the proper length
+    zeroes = len.v - str.length;
+    // offset by 1 if there is a +/- at the beginning of the string
+    offset = (str[0] === "+" || str[0] === "-") ? 1 : 0;
+    for(var i = 0; i < zeroes; i++){
+        pad += "0";
     }
-
-    buf = new Array(width + 1).join(" ").split("");
-    if (data.length > 0 && (data[0] == "+" || data[0] == "-")) {
-        buf[0] = data[0];
-        start = 1;
-        middle = width - data.length + 1;
-    }
-    else {
-        start = 0;
-        middle = width - data.length;
-    }
-
-    for (var i = start; i < middle; i ++) {
-        buf[i] = "0";
-    }
-
-    for (var j = middle; j < width; j ++) {
-        buf[j] = data[start];
-        start = start + 1;
-    }
-
-    return new Sk.builtin.str(buf.join(""));
+    // combine the string and the zeroes
+    ret = str.substr(0, offset) + pad + str.substr(offset);
+    return new Sk.builtin.str(ret);
+    
 
 });
 
 Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
-    var ch;
-    var i;
     Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 1);
-    if (self.v.length === 0) {
-        return Sk.builtin.bool(false);
-    }
-    for (i = 0; i < self.v.length; i++) {
-        ch = self.v.charAt(i);
-        if (ch < "0" || ch > "9") {
-            return Sk.builtin.bool(false);
-        }
-    }
-    return Sk.builtin.bool(true);
+    return Sk.builtin.bool(/^\d+$/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
-    var ch;
-    var i;
-    var newstr;
     Sk.builtin.pyCheckArgs("isspace", arguments, 1, 1);
-    if (self.v.length === 0) {
-        return Sk.builtin.bool(false);
-    }
-    newstr = self.v.replace(/\xa0|\s/g, " ");
-    for (i = 0; i < newstr.length; i ++) {
-        ch = newstr.charAt(i);
-        if (! goog.string.isSpace(ch)) {
-            return Sk.builtin.bool(false);
-        }
-    }
-    return Sk.builtin.bool(true);
+    return Sk.builtin.bool(/^\s+$/.test(self.v));
 });
 
 
 Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
-    var input = self.v;
-    var expanded = "";
-    var split;
-    var spacestr = "";
-    var spacerem;
+    // var input = self.v;
+    // var expanded = "";
+    // var split;
+    // var spacestr = "";
+    // var spacerem;
+    
+    
+    var spaces;
+    var expanded;
 
     Sk.builtin.pyCheckArgs("expandtabs", arguments, 1, 2);
+    
+    
     if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
         throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
     }
@@ -793,51 +761,25 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     else {
         tabsize = Sk.builtin.asnum$(tabsize);
     }
-    split = input.split("\t");
-
-    for (var x = 0; x < split.length; x ++) {
-        if (split[x].match("/\n|\r/g") !== undefined) {
-            spacerem = tabsize - ((split[x].length - (Math.max(split[x].lastIndexOf("\r"), split[x].lastIndexOf("\n"))) - 1) % tabsize);
-        }
-        else {
-            if (Math.max([expanded.lastIndexOf("\r"), expanded.lastIndexOf("\n")]) !== - 1) {
-                spacerem = tabsize - ((expanded.length - (Math.max(expanded.lastIndexOf("\r"), expanded.lastIndexOf("\n"))) - 1) % tabsize);
-            }
-            else {
-                spacerem = tabsize - (expanded.length % tabsize);
-            }
-        }
-        spacestr = goog.string.repeat(" ", spacerem);
-        if (x !== split.length - 1) {
-            expanded += split[x] + spacestr;
-        }
-        else {
-            expanded += split[x];
-        }
-    }
+    
+    spaces = (new Array(tabsize + 1)).join(" ");
+    expanded = self.v.replace(/([^\r\n\t]*)\t/g, function(a, b) {
+      return b + spaces.slice(b.length % tabsize);
+    });
     return new Sk.builtin.str(expanded);
 });
 
 Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
-    var i;
-    var letters;
-    var newletters = "";
-    var ch;
+    var ret;
     Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
-    letters = self.v;
-    if (letters.length === 0) {
-        return self;
-    }
-    for (i = 0; i < letters.length; i ++) {
-        ch = letters.charAt(i);
-        if (letters[i] === ch.toLowerCase()) {
-            newletters += ch.toUpperCase();
-        }
-        else {
-            newletters += ch.toLowerCase();
-        }
-    }
-    return new Sk.builtin.str(newletters);
+    
+    
+    ret = self.v.replace(/[a-z]/gi, function(c) {
+        var lc = c.toLowerCase();
+        return lc === c ? c.toUpperCase() : lc;
+    });
+
+    return new Sk.builtin.str(ret);
 });
 
 Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
@@ -896,23 +838,15 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
 });
 
 Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
-    var input = self.v;
-    var buffer = new Array(input.length).join(" ").split("");
-    var prev_letter = " ";
-    var ch;
+    var ret;
+    
     Sk.builtin.pyCheckArgs("title", arguments, 1, 1);
 
-    for (var i = 0; i < input.length; i ++) {
-        ch = input[i];
-        if (! goog.string.isAlpha(prev_letter)) {
-            buffer[i] = ch.toUpperCase();
-        }
-        else {
-            buffer[i] = ch.toLowerCase();
-        }
-        prev_letter = buffer[i];
-    }
-    return new Sk.builtin.str(buffer.join(""));
+    ret = self.v.replace(/[a-z][a-z]*/gi, function(str) {
+        return str[0].toUpperCase() + str.substr(1).toLowerCase();
+    });
+
+    return new Sk.builtin.str(ret);
 });
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
@@ -942,6 +876,8 @@ Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
+    // Comparing to str.title() seems the most intuitive thing, but it fails on "",
+    // Other empty-ish strings with no change.
     var input = self.v;
     var cased = false;
     var previous_is_cased = false;
