@@ -1,27 +1,19 @@
 Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     // following PEP 3101
     
+    var a, args, key, kwargs;
     var ret;
     var regex; 
     var index;
     var replFunc;
-    var args;
     var arg_dict = {};
     
     Sk.builtin.pyCheckArgs("format", arguments, 0, Infinity, true, true);
-    // print
+    
+    
     if (arguments[1] === undefined) {
-        // print(JSON.stringify(arguments));
         return self;
     }
-    //args = Sk.misceval.arrayFromArguments(arguments);
-    
-    print(JSON.stringify(arguments));
-    
-    // if (rhs.constructor !== Sk.builtin.tuple && (rhs.mp$subscript === undefined || rhs.constructor === Sk.builtin.str)) {
-    //     rhs = new Sk.builtin.tuple([rhs]);
-    // }
-    //regex to match all possible permutations of str.format. easier than doing it manually
     index = 0;
     regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!([rs]))?(?:\:((?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?))?}/g;
     // ex: {o.name!r:*^+#030,.9b}
@@ -48,18 +40,12 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
     // return resulting spec to function
     
     
-    
-    
-    //build arg_dict to make lookup/replacement processing smoother
-    
     for(var i in arguments){
-        if(i!== 0 && i !== "0")
+        if(i !== "0")
         {
             arg_dict[i-1] = arguments[i].v;
         }
     }
-    // print("arg Dict",JSON.stringify(arg_dict))
-    // print(JSON.stringify(arg_dict));
     
     replFunc = function (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, fill_char, fill_align, sign, zero_pad, sign_aware, fieldWidth, comma, precision, conversionType,
                             offset, str_whole){
@@ -68,8 +54,6 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         var formatFormat;
         var result;
         var base;
-        var r;
-        var mk;
         var value;
         var handleWidth;
         var alternateForm;
@@ -78,7 +62,6 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         var leftAdjust;
         var centerAdjust;
         var zeroPad;
-        var i;
         var convName;
         var convValue;
         var percent;
@@ -86,53 +69,32 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         precision = Sk.builtin.asnum$(precision);
         
         
-        if (field_name === undefined || field_name === "") {
-            i = index;
-        } 
+        if(element_index !== undefined && element_index !== ""){
+            value = arg_dict[arg_name][element_index].v;
+            print(value);
+            index++;
+        } else if(attribute_name !== undefined && attribute_name !== ""){
+            value = arg_dict[arg_name][attribute_name].v;
+            index++;
+        }
         
-        if(field_name === undefined || field_name === ""){
-            return_str = arg_dict[i];
+         else if(field_name === undefined || field_name === ""){
+            return_str = arg_dict[index];
             index++;
             value = return_str;
         }
-        else if(field_name instanceof Sk.builtin.nmber || field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name))){
-            // print("field_name")
-            // print(field_name)
-            // print(JSON.stringify(arg_dict))
+        else if(field_name instanceof Sk.builtin.nmber || field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
            return_str = arg_dict[field_name];
            index++;
-           value = return_str
+           value = return_str;
         }
-    //     print(field_name)
-    //     print(value)
-        
-    //     // Yay! Debugging!
-    //     print(substring);
-    //     print(field_name);
-    //     print(typeof arg_name);
-    //     print(typeof parseInt(arg_name, 10));
-    //     print(attr_name);
-    //     print(attribute_name);
-    //     print(element_index);
-        // print("conversion ", conversion);
-        // print("format_spec", format_spec);
-        // print("fill_char", fill_char);
-        // print("fill_align", fill_align);
-        // print("sign", sign);
-        // print("AlternateForm", zero_pad);
-        // print("sign_aware", sign_aware);
-        // print('width', fieldWidth);
-        // print("comma", comma);
-        // print("Precision", precision);
-        // print("type", conversionType);
-        // print("offset", offset);
-    //     print(str_whole);
-        
-        
+ 
         if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
             precision = undefined;
         }
-        if(fill_char === undefined){}
+        if(fill_char === undefined || fill_char === ""){
+            fill_char = " ";
+        }
         
         zeroPad = false;
         leftAdjust = false;
@@ -141,80 +103,59 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
         precedeWithSign = false;
         alternateForm = false;
         if (format_spec) {
-            if(sign){
-            if (sign.indexOf("-") !== -1) {
-                leftAdjust = true;
-            }
-            else if (sign.indexOf("0") !== -1) {
-                zeroPad = true;
-            }
-
-            if (sign.indexOf("+") !== -1) {
-                precedeWithSign = true;
-            }
-            else if (sign.indexOf(" ") !== -1) {
-                blankBeforePositive = true;
-            }
+            if(sign !== undefined && sign !== ""){
+                if ("-".indexOf(sign) !== -1) {
+                    leftAdjust = true;
+                }
+                else if ("+".indexOf(sign) !== -1) {
+                    precedeWithSign = true;
+                }
+                else if (" ".indexOf(sign) !== -1) {
+                    blankBeforePositive = true;
+                }
             }
             if(zero_pad){
-            alternateForm = zero_pad.indexOf("#") !== -1;
+            alternateForm = "#".indexOf(zero_pad) !== -1;
             }
-            if(fill_align !== undefined || fieldWidth !== undefined){
+            if(fieldWidth !== undefined && fieldWidth !== ""){
                 if(fill_char === undefined || fill_char === ""){
                     fill_char = " ";
                 }
             }
+            if("%".indexOf(conversionType) !== -1){
+                percent = true;
+            }
         }
-
         if (precision) {
             precision = parseInt(precision, 10);
         }
 
-        
-        
-       
-        
         formatFormat = function(value){
             var r;
-            if(conversion === undefined){
-                // if(precision){
-                //     if(percent){
-                //         return value.substr(0, precision) +"%";
-                //     }
-                //     return value.substr(0, precision);
-                // }
+            if(conversion === undefined || conversion === ""){
                 return value;
             }
             else if( conversion == "r"){
                 r = Sk.builtin.repr(value);
-                if (precision) {
-                    return r.v.substr(0, precision);
-                }
                 return r.v;
             }
             else if(conversion == "s"){
-                r = Sk.builtin.repr(value);
-                if (precision) {
-                    return r.v.substr(0, precision);
-                    }
+                r = new Sk.builtin.str(value);
                 return r.v;
             }
             
         };
         
         handleWidth = function (prefix, r) {
+            // print(prefix);
             var totLen;
             
             var j;
             if(percent){
                 r = r +"%";
             }
-            if (fieldWidth) {
+            if (fieldWidth !== undefined && fieldWidth !== "") {
                 fieldWidth = parseInt(fieldWidth, 10);
-                // print(fieldWidth)
-                // print(typeof prefix)
-                // print(r)
-                // print(typeof r)
                 totLen = r.length + prefix.length;
                 if (zeroPad) {
                     for (j = totLen; j < fieldWidth; ++j) {
@@ -223,12 +164,31 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 }
                 else if (leftAdjust) {
                     for (j = totLen; j < fieldWidth; ++j) {
-                        r = r + " ";
+                        r = r + fill_char;
                     }
                 }
-                else {
+                else if(">".indexOf(fill_align) !== -1){
                     for (j = totLen; j < fieldWidth; ++j) {
-                        prefix = " " + prefix;
+                        prefix = fill_char + prefix;
+                    }
+                }
+                else if("^".indexOf(fill_align) !== -1){
+                    for (j = totLen; j < fieldWidth; ++j) {
+                        if(j % 2 === 0){
+                            prefix = fill_char + prefix;
+                        } else if ( j % 2 === 1){
+                            r = r + fill_char;
+                        }
+                    }
+                }
+                else if("=".indexOf(fill_align) !== -1){
+                    for (j = totLen; j < fieldWidth; ++j) {
+                        r =  fill_char + r;
+                    }
+                }
+                else{
+                    for (j = totLen; j < fieldWidth; ++j) {
+                        r = r + fill_char;
                     }
                 }
             }
@@ -240,9 +200,7 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             var prefix;
             var neg;
             var r;
-            var j;
             
-            // print("frmt1", n)
             base = Sk.builtin.asnum$(base);
             neg = false;
             
@@ -250,18 +208,21 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 return formatFormat(value);
             }
             
-            print(n)
-            if (precision) {
-                n = n.toFixed(precision);
-                print(n)
-            }
-            
-            if (typeof n === "number") {
+            if (typeof n === "number" && !(precision)) {
                 if (n < 0) {
                     n = -n;
                     neg = true;
                 }
                 r = n.toString(base);
+            }
+            
+            else if (precision) {
+                if (n < 0) {
+                    n = -n;
+                    neg = true;
+                }
+                n = Number(n.toString(base));
+                r = n.toFixed(precision);
             }
             
             else if (n instanceof Sk.builtin.nmber) {
@@ -279,24 +240,18 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             else{
                 r = n;
             }
-            // goog.asserts.assert(r !== undefined, "unhandled number format");
             
             precZeroPadded = false;
-            print("r.length",r.length,"precision",precision);
-            if (precision) {
-                r = r.toFixed(precision);
-            }
-            
             prefix = "";
         
             if (neg) {
                 prefix = "-";
             }
             else if (precedeWithSign) {
-                prefix = "+" + prefix;
+                prefix = "+" ;
             }
             else if (blankBeforePositive) {
-                prefix = " " + prefix;
+                prefix = " " ;
             }
 
             if (alternateForm) {
@@ -304,11 +259,12 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                     prefix += "0x";
                 }
                 else if (base === 8 && !precZeroPadded && r !== "0") {
-                    prefix += "0";
+                    prefix += "0o";
+                }
+                else if (base === 2 && !precZeroPadded && r !== "0"){
+                    prefix += "0b";
                 }
             }
-            
-            
             
             if(conversionType === "n"){
                 r=r.toLocaleString();
@@ -317,20 +273,9 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 r = parts.join(".");
             }
-            // print("frmt", r)
             return handleWidth(prefix, r);
         };  
-        //print("Rhs:",rhs, "ctor", rhs.constructor);
-        // if (rhs.constructor === Sk.builtin.tuple) {
-        //     value = rhs.v[i];
-        // }else if (rhs.mp$subscript !== undefined) {
-        //     mk = mappingKey.substring(1, mappingKey.length - 1);
-        //     //print("mk",mk);
-        //     value = rhs.mp$subscript(new Sk.builtin.str(mk));
-        // }
-        // else {
-        //     throw new Sk.builtin.AttributeError(rhs.tp$name + " instance has no attribute 'mp$subscript'");
-        // }
+        
         base = 10;
         if(conversionType === "d" || conversionType === "n" || conversionType === "" || conversionType === undefined){
             return formatNumber(value, 10);
@@ -362,17 +307,17 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
             if (precision === undefined || precision === "") {
                 if (conversionType === "e" || conversionType === "E" || conversionType === "%") {
-                    precision = 6;
+                    precision = parseInt(6, 10);
                 }
                 else if (conversionType === "f" || conversionType === "F") {
-                    precision = 7;
+                    precision = parseInt(6, 10);
                 }
             }
             result = (convValue)[convName](precision);
             if ("EFG".indexOf(conversionType) !== -1) {
                 result = result.toUpperCase();
             }
-            return handleWidth(["", result]);
+            return formatNumber(result, 10);
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return handleWidth("", String.fromCharCode(value));
@@ -389,40 +334,13 @@ Sk.builtin.str.prototype["format"] = new Sk.builtin.func(function (self) {
             else {
                 throw new Sk.builtin.TypeError("an integer is required");
             }
-        } else if (conversionType === "%") {
-            percent = true;
-            if(precision === undefined){precision = 7;}
+        } else if (percent) {
+            if(precision === undefined){precision = parseInt(7,10);}
             return formatNumber(value*100, 10);
         }
         
-        
-        
-        
-        
-        
-        
-        if(field_name === undefined || field_name === ""){
-            return_str = arg_dict[index];
-            index++;
-            return formatNumber(return_str);
-        }
-        else if(field_name instanceof Sk.builtin.nmber || field_name instanceof Sk.builtin.lng){
-           return_str = arg_dict[field_name];
-           index++;
-           return formatNumber(return_str);
-        }
-        
-        
-        
-        
-        
-        
-        // return 0;
     };
-
-
    
     ret = self.v.replace(regex, replFunc);
-    print(ret);
     return new Sk.builtin.str(ret);
 });
