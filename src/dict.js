@@ -386,6 +386,24 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.list(ret);
 });
 
+Sk.builtin.dict.prototype.update = new Sk.builtin.func(function (self, other) {
+    /*
+        update() accepts either another dictionary object or an iterable of key/value pairs (as tuples or other iterables of length two).
+        If keyword arguments are specified, the dictionary is then updated with those key/value pairs: d.update(red=1, blue=2).
+    */
+    /*var v;
+    var iter, k;
+    // either merge whole other dict
+    // or just iterate over the other tuple or iterable that contains another iterable pairs
+
+    for (iter = self.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+        v = self.mp$subscript(k);
+        // either merge 
+
+    }*/
+    return  Sk.builtin.none.none$;
+});
+
 Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
