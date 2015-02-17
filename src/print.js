@@ -1,0 +1,84 @@
+/*
+	Implementation of the Python3 print version. Due to Python2 grammar we have
+	to mimic the named keywords after *args as kwargs. Though this does not change
+	anything for the internal implementation
+
+*/
+Sk.builtin.print = function function_print(kwa) {
+    Sk.builtin.pyCheckArgs("print", arguments, 0, Infinity, true, false);
+    var args = Array.prototype.slice.call(arguments, 1);
+    var kwargs = new Sk.builtins.dict(kwa); // is pretty useless for handling kwargs
+    var _kwargs = Sk.ffi.remapToJs(kwargs); // create a proper dict
+
+    // defaults, null for None
+    var kw_list = {
+       "sep": " ",
+       "end": "\n",
+       "file": null
+    };
+
+    var remap_val;
+    var is_none;
+
+    // check for sep; string or None
+    remap_val = kwargs.mp$lookup(new Sk.builtin.str("sep"));
+    if(remap_val !== undefined) {
+        is_none = Sk.builtin.checkNone(remap_val);
+        if(Sk.builtin.checkString(remap_val) || is_none) {
+            kw_list["sep"] = is_none ? kw_list["sep"] : Sk.ffi.remapToJs(remap_val); // only reassign for string
+        } else {
+            throw new Sk.builtin.TypeError("sep must be None or a string, not " + Sk.abstr.typeName(remap_val));
+        }
+    }
+
+    // check for end; string or None
+    remap_val = kwargs.mp$lookup(new Sk.builtin.str("end"));
+    if(remap_val !== undefined) {
+        is_none = Sk.builtin.checkNone(remap_val);
+        if(Sk.builtin.checkString(remap_val) || is_none) {
+            kw_list["end"] = is_none ? kw_list["end"] : Sk.ffi.remapToJs(remap_val); // only reassign for string
+        } else {
+            throw new Sk.builtin.TypeError("end must be None or a string, not " + Sk.abstr.typeName(remap_val));
+        }
+    }
+
+    // check for file
+    // allow None, though just keep null or check if value has attribute write
+    remap_val = kwargs.mp$lookup(new Sk.builtin.str("file"));
+    if(remap_val !== undefined) {
+        is_none = Sk.builtin.checkNone(remap_val);
+        if(is_none || remap_val.tp$getattr("write") !== undefined) {
+            kw_list["file"] = is_none ? kw_list["file"] : remap_val;
+        } else {
+            throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(remap_val) + "' object has no attribute 'write'");
+        }
+    }
+
+    // loop through outputs and create output string
+    var s = "";
+    var i;
+    for(i = 0; i < args.length; i++) {
+        s += (new Sk.builtin.str(args[i])).v; // get str repr
+        s += kw_list.sep;
+    }
+
+    if(args.length > 0 && kw_list.sep.length > 0) {
+      s = s.substring(0, s.length-kw_list.sep.length);
+    }
+
+    s += kw_list.end;
+
+    if(kw_list.file !== null) {
+        // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
+        Sk.misceval.callsim(kw_list.file["write"].func_code, new Sk.builtin.str(s)); // callsim to write function
+    } else {
+        Sk.output(s); // call configurable output function
+    }
+
+    // ToDo:
+    // cpython print function may receive another flush kwarg that flushes the output stream immediatelly
+};
+
+Sk.builtin.print.co_kwargs = true;
+Sk.builtin.print = new Sk.builtin.func(Sk.builtin.print);
+
