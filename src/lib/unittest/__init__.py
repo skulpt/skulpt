@@ -116,6 +116,7 @@ class TestCase:
             self.numPassed += 1
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
+            print msg
             self.numFailed += 1
 
     def showSummary(self):
@@ -129,5 +130,8 @@ def main():
     glob = globals()  # globals() still needs work
     for name in glob:
         if issubclass(glob[name],TestCase):
-            glob[name]().main()  
+            try:
+                glob[name]().main()  
+            except:
+                print("Uncaught Error in: ", name)
 

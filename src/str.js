@@ -59,7 +59,8 @@ Sk.builtin.str = function (x) {
     }
 
     // interning required for strings in py
-    if (Object.prototype.hasOwnProperty.call(interned, "1" + ret)) // note, have to use Object to avoid __proto__, etc. failing
+    if (Object.prototype.hasOwnProperty.call(interned, "1" + ret)) // note, have to use Object to avoid __proto__, etc.
+                                                               // failing
     {
         return interned["1" + ret];
     }
@@ -297,7 +298,7 @@ Sk.builtin.str.prototype["join"] = new Sk.builtin.func(function (self, seq) {
     arrOfStrs = [];
     for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (i.constructor !== Sk.builtin.str) {
-            throw "TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found";
+            throw new Sk.builtin.TypeError("TypeError: sequence item " + arrOfStrs.length + ": expected string, " + typeof i + " found");
         }
         arrOfStrs.push(i.v);
     }
@@ -337,7 +338,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
         regex = new RegExp(s, "g");
     }
 
-    // This is almost identical to re.split, 
+    // This is almost identical to re.split,
     // except how the regexp is constructed
 
     result = [];
@@ -700,20 +701,152 @@ Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, 
     return new Sk.builtin.str(self.v.replace(patt, replacer));
 });
 
+Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
+    var str = self.v;
+    var ret;
+    var zeroes;
+    var offset;
+    var pad = "";
+    
+    Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
+    if (! Sk.builtin.checkInt(len)) {
+        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(len));
+    }
+    
+    // figure out how many zeroes are needed to make the proper length
+    zeroes = len.v - str.length;
+    // offset by 1 if there is a +/- at the beginning of the string
+    offset = (str[0] === "+" || str[0] === "-") ? 1 : 0;
+    for(var i = 0; i < zeroes; i++){
+        pad += "0";
+    }
+    // combine the string and the zeroes
+    ret = str.substr(0, offset) + pad + str.substr(offset);
+    return new Sk.builtin.str(ret);
+    
+
+});
+
 Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
-    var ch;
-    var i;
     Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 1);
-    if (self.v.length === 0) {
-        return Sk.builtin.bool(false);
+    return Sk.builtin.bool(/^\d+$/.test(self.v));
+});
+
+Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("isspace", arguments, 1, 1);
+    return Sk.builtin.bool(/^\s+$/.test(self.v));
+});
+
+
+Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tabsize) {
+    // var input = self.v;
+    // var expanded = "";
+    // var split;
+    // var spacestr = "";
+    // var spacerem;
+    
+    
+    var spaces;
+    var expanded;
+
+    Sk.builtin.pyCheckArgs("expandtabs", arguments, 1, 2);
+    
+    
+    if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
+        throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
     }
-    for (i = 0; i < self.v.length; i++) {
-        ch = self.v.charAt(i);
-        if (ch < "0" || ch > "9") {
-            return Sk.builtin.bool(false);
+    if (tabsize === undefined) {
+        tabsize = 8;
+    }
+    else {
+        tabsize = Sk.builtin.asnum$(tabsize);
+    }
+    
+    spaces = (new Array(tabsize + 1)).join(" ");
+    expanded = self.v.replace(/([^\r\n\t]*)\t/g, function(a, b) {
+      return b + spaces.slice(b.length % tabsize);
+    });
+    return new Sk.builtin.str(expanded);
+});
+
+Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
+    var ret;
+    Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
+    
+    
+    ret = self.v.replace(/[a-z]/gi, function(c) {
+        var lc = c.toLowerCase();
+        return lc === c ? c.toUpperCase() : lc;
+    });
+
+    return new Sk.builtin.str(ret);
+});
+
+Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, keepends) {
+    var data = self.v;
+    var i = 0;
+    var j = i;
+    var selflen = self.v.length;
+    var strs_w = [];
+    var ch;
+    var eol;
+    var sol = 0;
+    var slice;
+    Sk.builtin.pyCheckArgs("splitlines", arguments, 1, 2);
+    if ((keepends !== undefined) && ! Sk.builtin.checkBool(keepends)) {
+        throw new Sk.builtin.TypeError("boolean argument expected, got " + Sk.abstr.typeName(keepends));
+    }
+    if (keepends === undefined) {
+        keepends = false;
+    }
+    else {
+        keepends = keepends.v;
+    }
+
+
+    for (i = 0; i < selflen; i ++) {
+        ch = data.charAt(i);
+        if (data.charAt(i + 1) === "\n" && ch === "\r") {
+            eol = i + 2;
+            slice = data.slice(sol, eol);
+            if (! keepends) {
+                slice = slice.replace(/(\r|\n)/g, "");
+            }
+            strs_w.push(new Sk.builtin.str(slice));
+            sol = eol;
         }
+        else if ((ch === "\n" && data.charAt(i - 1) !== "\r") || ch === "\r") {
+            eol = i + 1;
+            slice = data.slice(sol, eol);
+            if (! keepends) {
+                slice = slice.replace(/(\r|\n)/g, "");
+            }
+            strs_w.push(new Sk.builtin.str(slice));
+            sol = eol;
+        }
+
     }
-    return Sk.builtin.bool(true);
+    if (sol < selflen) {
+        eol = selflen;
+        slice = data.slice(sol, eol);
+        if (! keepends) {
+            slice = slice.replace(/(\r|\n)/g, "");
+        }
+        strs_w.push(new Sk.builtin.str(slice));
+    }
+    return new Sk.builtin.list(strs_w);
+});
+
+Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
+    var ret;
+    
+    Sk.builtin.pyCheckArgs("title", arguments, 1, 1);
+
+    ret = self.v.replace(/[a-z][a-z]*/gi, function(str) {
+        return str[0].toUpperCase() + str.substr(1).toLowerCase();
+    });
+
+    return new Sk.builtin.str(ret);
 });
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
@@ -742,6 +875,37 @@ Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
     return Sk.builtin.bool(self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 });
 
+Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
+    // Comparing to str.title() seems the most intuitive thing, but it fails on "",
+    // Other empty-ish strings with no change.
+    var input = self.v;
+    var cased = false;
+    var previous_is_cased = false;
+    var pos;
+    var ch;
+    Sk.builtin.pyCheckArgs("istitle", arguments, 1, 1);
+    for (pos = 0; pos < input.length; pos ++) {
+        ch = input.charAt(pos);
+        if (! /[a-z]/.test(ch) && /[A-Z]/.test(ch)) {
+            if (previous_is_cased) {
+                return Sk.builtin.bool(false);
+            }
+            previous_is_cased = true;
+            cased = true;
+        }
+        else if (/[a-z]/.test(ch) && ! /[A-Z]/.test(ch)) {
+            if (! previous_is_cased) {
+                return Sk.builtin.bool(false);
+            }
+            cased = true;
+        }
+        else {
+            previous_is_cased = false;
+        }
+    }
+    return Sk.builtin.bool(cased);
+});
+
 Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("str", Sk.builtin.str);
 
 Sk.builtin.str.prototype.nb$remainder = function (rhs) {
@@ -752,12 +916,11 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     // 1. The '%' character, which marks the start of the specifier.
     // 2. Mapping key (optional), consisting of a parenthesised sequence of characters (for example, (somename)).
     // 3. Conversion flags (optional), which affect the result of some conversion types.
-    // 4. Minimum field width (optional). If specified as an '*' (asterisk), the actual width is read from the next element of the tuple in values, and the object to convert comes after the minimum field width and optional precision.
-    // 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*' (an asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes after the precision.
-    // 6. Length modifier (optional).
-    // 7. Conversion type.
-    //
-    // length modifier is ignored
+    // 4. Minimum field width (optional). If specified as an '*' (asterisk), the actual width is read from the next
+    // element of the tuple in values, and the object to convert comes after the minimum field width and optional
+    // precision. 5. Precision (optional), given as a '.' (dot) followed by the precision. If specified as '*' (an
+    // asterisk), the actual width is read from the next element of the tuple in values, and the value to convert comes
+    // after the precision. 6. Length modifier (optional). 7. Conversion type.  length modifier is ignored
 
     var ret;
     var replFunc;
@@ -923,10 +1086,13 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         if (rhs.constructor === Sk.builtin.tuple) {
             value = rhs.v[i];
         }
-        else if (rhs.mp$subscript !== undefined) {
+        else if (rhs.mp$subscript !== undefined && mappingKey !== undefined) {
             mk = mappingKey.substring(1, mappingKey.length - 1);
             //print("mk",mk);
             value = rhs.mp$subscript(new Sk.builtin.str(mk));
+        } else if (rhs.constructor === Sk.builtin.dict || rhs.constructor === Sk.builtin.list) {
+            // new case where only one argument is provided
+            value = rhs;
         }
         else {
             throw new Sk.builtin.AttributeError(rhs.tp$name + " instance has no attribute 'mp$subscript'");
@@ -994,6 +1160,9 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
             r = new Sk.builtin.str(value);
             if (precision) {
                 return r.v.substr(0, precision);
+            }
+            if(fieldWidth) {
+                r.v = handleWidth([" ", r.v]);
             }
             return r.v;
         } else if (conversionType === "%") {
