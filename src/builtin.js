@@ -397,7 +397,7 @@ Sk.builtin.zip = function zip () {
             iters.push(arguments[i].tp$iter());
         }
         else {
-            throw "TypeError: argument " + i + " must support iteration";
+            throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
         }
     }
     res = [];
@@ -859,7 +859,7 @@ Sk.builtin.map = function map (fun, seq) {
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
             if (item instanceof Array) {
-                // With None function and multiple sequences, 
+                // With None function and multiple sequences,
                 // map should return a list of tuples
                 item = new Sk.builtin.tuple(item);
             }

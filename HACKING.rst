@@ -726,3 +726,13 @@ Build the distribution files for skulpt:
 
 * skulpt.min.js  -- This is a minified version of the core interpreter files.
 * skulpt-stdlib.js  -- This is an unminified version of library functions.  This file may contain javascript that implements a module, such as turtle or math, or it may contain pure python.
+
+
+
+
+Getting stack traces from an exception
+--------------------------------------
+
+Sk.builtin.Exception objects have a property called 'traceback'. This property contains an Array of objects with 'filename', 'lineno' and (optionally) 'colno' properties, each representing a stack frame. The array is ordered from innermost to outermost frame.
+
+If an object that is not an instance of Sk.builtin.Exception is thrown from within a Skulpt function (typically as part of an external piece of Javascript), it is wrapped in an Sk.builtin.ExternalError. The original object thrown is stringified (so the exception can be manipulated in Python), but a reference to the original is also saved in the ExternalError's 'nativeError' property so it can be inspected from Javascript.
