@@ -1716,6 +1716,12 @@ function parsestr (c, s) {
     var rawmode = false;
     var unicode = false;
 
+    // treats every sequence as unicodes even if they are not treated with uU prefix
+    // kinda hacking though working for most purposes
+    if(Sk.unicode_literals === true) {
+        unicode = true;
+    }
+
     if (quote === "u" || quote === "U") {
         s = s.substr(1);
         quote = s.charAt(0);

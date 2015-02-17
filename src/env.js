@@ -40,6 +40,12 @@ Sk.configure = function (options) {
     Sk.python3 = options["python3"] || Sk.python3;
     goog.asserts.assert(typeof Sk.python3 === "boolean");
 
+    Sk.print_function = options["print_function"] || Sk.print_function;
+    goog.asserts.assert(typeof Sk.print_function === "boolean");
+
+    Sk.unicode_literals = options["unicode_literals"] || Sk.unicode_literals;
+    goog.asserts.assert(typeof Sk.unicode_literals === "boolean");
+
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
 
@@ -160,6 +166,8 @@ if (!Sk.inBrowser) {
 }
 
 Sk.python3 = false;
+Sk.print_function = false; // flag adds print() as function
+Sk.unicode_literals = false; // allows unicode literals anywhere without u''
 Sk.inputfun = function (args) {
     return window.prompt(args);
 };

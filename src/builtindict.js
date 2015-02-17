@@ -73,6 +73,7 @@ Sk.builtins = {
     "jsmillis"  : Sk.builtin.jsmillis,
     "quit"      : Sk.builtin.quit,
     "exit"      : Sk.builtin.quit,
+    "print"     : Sk.builtin.print,
 
 // Functions below are not implemented
     "bytearray" : Sk.builtin.bytearray,

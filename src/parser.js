@@ -151,6 +151,11 @@ Parser.prototype.classify = function (type, value, context) {
     if (type === Sk.Tokenizer.Tokens.T_NAME) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
+
+        if(value === "print" && Sk.print_function === true) {
+            ilabel = false; // treat print as normal function
+        }
+
         if (ilabel) {
             //print("is keyword");
             return ilabel;
