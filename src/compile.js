@@ -303,6 +303,23 @@ Compiler.prototype._jump = function (block) {
     }
 };
 
+Compiler.prototype._checkSuspension = function(e) {
+    var retblk;
+    if (this.u.canSuspend) {
+
+        retblk = this.newBlock("function return or resume suspension");
+        this._jump(retblk);
+        this.setBlock(retblk);
+
+        out ("if ($ret instanceof Sk.misceval.Suspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
+
+        this.u.doesSuspend = true;
+        this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
+
+    } else {
+        out ("if ($ret instanceof Sk.misceval.Suspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
+    }
+};
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var i;
     var items;
@@ -461,7 +478,6 @@ Compiler.prototype.ccall = function (e) {
     var kwarray;
     var func = this.vexpr(e.func);
     var args = this.vseqexpr(e.args);
-    var retblk;
 
     //print(JSON.stringify(e, null, 2));
     if (e.keywords.length > 0 || e.starargs || e.kwargs) {
@@ -487,20 +503,7 @@ Compiler.prototype.ccall = function (e) {
         out ("$ret = Sk.misceval.callsimOrSuspend(", func, args.length > 0 ? "," : "", args, ");");
     }
 
-    if (this.u.canSuspend) {
-
-        retblk = this.newBlock("function return or resume suspension");
-        this._jump(retblk);
-        this.setBlock(retblk);
-
-        out ("if ($ret instanceof Sk.misceval.Suspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
-
-        this.u.doesSuspend = true;
-        this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
-
-    } else {
-        out ("if ($ret instanceof Sk.misceval.Suspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
-    }
+    this._checkSuspension(e);
 
     return this._gr("call", "$ret");
 };
@@ -1062,7 +1065,6 @@ Compiler.prototype.cfor = function (s) {
     var iter;
     var toiter;
     var start = this.newBlock("for start");
-    var body;
     var cleanup = this.newBlock("for cleanup");
     var end = this.newBlock("for end");
 
@@ -1088,18 +1090,8 @@ Compiler.prototype.cfor = function (s) {
 
     // load targets
     out ("$ret = Sk.abstr.iternext(", iter,(this.u.canSuspend?", true":", false"),");");
-    if (this.u.canSuspend) {
-        this.u.doesSuspend = true;
 
-        body = this.newBlock("for body");
-        this._jump(body);
-
-        this.setBlock(body);
-
-        out ("if ($ret instanceof Sk.misceval.Suspension) { return $saveSuspension($ret, '"+this.filename+"',"+s.lineno+","+s.col_offset+"); }");
-    } else {
-        out ("if ($ret instanceof Sk.misceval.Suspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret, 'Generator blocked/suspended, which is not permitted here'); }");
-    }
+    this._checkSuspension(s);
 
     nexti = this._gr("next", "$ret");
     this._jumpundef(nexti, cleanup); // todo; this should be handled by StopIteration
@@ -1278,7 +1270,11 @@ Compiler.prototype.cimport = function (s) {
     var n = s.names.length;
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
-        mod = this._gr("module", "Sk.builtin.__import__(", alias.name["$r"]().v, ",$gbl,$loc,[])");
+        out("$ret = Sk.builtin.__import__(", alias.name["$r"]().v, ",$gbl,$loc,[]);");
+
+        this._checkSuspension(s);
+
+        mod = this._gr("module", "$ret");
 
         if (alias.asname) {
             this.cimportas(alias.name, alias.asname, mod);
@@ -1305,7 +1301,13 @@ Compiler.prototype.cfromimport = function (s) {
     for (i = 0; i < n; ++i) {
         names[i] = s.names[i].name["$r"]().v;
     }
-    mod = this._gr("module", "Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "])");
+    out("$ret = Sk.builtin.__import__(", s.module["$r"]().v, ",$gbl,$loc,[", names, "]);");
+
+    this._checkSuspension(s);
+
+    //out("print('__import__ returned ' + $ret);");
+    //out("for (var x in $ret) { print(x); }");
+    mod = this._gr("module", "$ret");
     for (i = 0; i < n; ++i) {
         alias = s.names[i];
         if (i === 0 && alias.name.v === "*") {
@@ -1314,7 +1316,9 @@ Compiler.prototype.cfromimport = function (s) {
             return;
         }
 
+        //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
         got = this._gr("item", "Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")");
+        //out("print('got');");
         storeName = alias.name;
         if (alias.asname) {
             storeName = alias.asname;
