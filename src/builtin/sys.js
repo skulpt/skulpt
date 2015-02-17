@@ -11,6 +11,8 @@ var $builtinmodule = function (name) {
 
     sys.copyright = Sk.builtin["str"]("Copyright 2009-2010 Scott Graham.\nAll Rights Reserved.\n");
 
+    sys.maxint = Sk.builtin.assk$(Math.pow(2,53)-1, Sk.builtin.nmber.int$);
+    
     sys.modules = Sk.sysmodules;
 
     sys.path = Sk.realsyspath;
