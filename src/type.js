@@ -38,20 +38,18 @@ Sk.builtin.type = function (name, bases, dict) {
     }
     else {
 
-        // this checks if the dict has been already successfully unwrapped
-        // in case of creating classes with class keyword, skulpt automatically
-        // unwrap the arguments and sets the module in the buildClass function
-        if(!dict["tp$name"] && dict["tp$name"] !== "dict") {
+        // argument dict must be of type dict
+        if(dict.tp$name !== "dict") {
             throw new Sk.builtin.TypeError("type() argument 3 must be dict, not " + Sk.abstr.typeName(dict));
         }
 
-        // checks if name is builtin type of js object
+        // checks if name must be string
         if(!Sk.builtin.checkString(name)) {
             throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + Sk.abstr.typeName(name));
         }
 
-        // unwrap bases if required
-        if(!bases["tp$name"] && bases["tp$name"] !== "tuple") {
+        // argument bases must be of type tuple
+        if(bases.tp$name !== "tuple") {
             throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + Sk.abstr.typeName(bases));
         }
 
@@ -101,8 +99,9 @@ Sk.builtin.type = function (name, bases, dict) {
         };
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
-        if(dict.mp$lookup(Sk.builtin.str("__module__")) === undefined) {
-            dict.mp$ass_subscript(Sk.builtin.str("__module__"), Sk.globals["__name__"]);
+        var module_lk = new Sk.builtin.str("__module__");
+        if(dict.mp$lookup(module_lk) === undefined) {
+            dict.mp$ass_subscript(module_lk, Sk.globals["__name__"]);
         }
 
         // copy properties into our klass object
@@ -133,7 +132,7 @@ Sk.builtin.type = function (name, bases, dict) {
             if (reprf !== undefined) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
-            mod = dict.mp$subscript(Sk.builtin.str("__module__")); // lookup __module__
+            mod = dict.mp$subscript(module_lk); // lookup __module__
             cname = "";
             if (mod) {
                 cname = mod.v + ".";

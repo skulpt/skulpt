@@ -1007,8 +1007,8 @@ Sk.misceval.buildClass = function (globals, func, name, bases) {
 
     // file's __name__ is class's __module__
     locals.__module__ = globals["__name__"];
-    var _name = Sk.builtin.str(name);
-    var _bases = Sk.builtin.tuple(bases);
+    var _name = new Sk.builtin.str(name);
+    var _bases = new Sk.builtin.tuple(bases);
     var _locals = [];
     var key;
 
@@ -1018,10 +1018,10 @@ Sk.misceval.buildClass = function (globals, func, name, bases) {
             //The current property key not a direct property of p
             continue;
         }
-        _locals.push(Sk.builtin.str(key)); // push key
+        _locals.push(new Sk.builtin.str(key)); // push key
         _locals.push(locals[key]); // push associated value
     }
-    _locals = Sk.builtin.dict(_locals);
+    _locals = new Sk.builtin.dict(_locals);
 
     klass = Sk.misceval.callsim(meta, _name, _bases, _locals);
     return klass;
