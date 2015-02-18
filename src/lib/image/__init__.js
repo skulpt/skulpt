@@ -181,11 +181,16 @@ $builtinmodule = function (name) {
     screen = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
             var currentCanvas = ImageMod.canvasLib[Sk.canvas];
+            var tmpCan;
             if (currentCanvas === undefined) {
-                self.theScreen = document.getElementById(Sk.canvas);
+                tmpCan = document.createElement("canvas");
+                tmpDiv = document.getElementById(Sk.canvas);
+                self.theScreen = tmpCan;
+                tmpDiv.appendChild(tmpCan);
+                ImageMod.canvasLib[Sk.canvas] = tmpCan;
                 if (width !== undefined) {
-                    self.theScreen.height = height;
-                    self.theScreen.width = width;
+                    self.theScreen.height = height.v;
+                    self.theScreen.width = width.v;
                 }
 
                 ImageMod.canvasLib[Sk.canvas] = self.theScreen;
