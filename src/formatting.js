@@ -146,11 +146,13 @@ var format = function (kwa) {
 
         formatFormat = function(value){
             var r;
+            var s;
             if(conversion === undefined || conversion === ""){
                 return value;
             }
             else if( conversion == "r"){
-                r = Sk.builtin.repr(value);
+                s = new Sk.builtin.str(value);
+                r = Sk.builtin.repr(s);
                 return r.v;
             }
             else if(conversion == "s"){
