@@ -108,6 +108,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 };
 
 Sk.builtin.dict.prototype.mp$subscript = function (key) {
+    Sk.builtin.pyCheckArgs("[]", arguments, 1, 1, false, false);
     var s;
     var res = this.mp$lookup(key);
 
@@ -123,6 +124,7 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
 };
 
 Sk.builtin.dict.prototype.sq$contains = function (ob) {
+    Sk.builtin.pyCheckArgs("__contains__()", arguments, 1, 1, false, false);
     var res = this.mp$lookup(ob);
 
     return (res !== undefined);
@@ -155,6 +157,7 @@ Sk.builtin.dict.prototype.mp$ass_subscript = function (key, w) {
 };
 
 Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
+    Sk.builtin.pyCheckArgs("del", arguments, 1, 1, false, false);
     var k = kf(key);
     var bucket = this[k.v];
     var item;
@@ -298,6 +301,7 @@ Sk.builtin.dict.prototype.tp$richcompare = function (other, op) {
 };
 
 Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
+    Sk.builtin.pyCheckArgs("get()", arguments, 1, 2, false, true);
     var ret;
 
     if (d === undefined) {
@@ -313,6 +317,7 @@ Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
 });
 
 Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
+    Sk.builtin.pyCheckArgs("pop()", arguments, 1, 2, false, true);
     var k = kf(key);
     var bucket = self[k.v];
     var item;
@@ -326,7 +331,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     if (d !== undefined) {
         return d;
     }
@@ -336,10 +341,12 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
 });
 
 Sk.builtin.dict.prototype["has_key"] = new Sk.builtin.func(function (self, k) {
+    Sk.builtin.pyCheckArgs("has_key()", arguments, 1, 1, false, true);
     return Sk.builtin.bool(self.sq$contains(k));
 });
 
 Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("items()", arguments, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
@@ -358,6 +365,7 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("keys()", arguments, 0, 0, false, true);
     var iter, k;
     var ret = [];
 
@@ -370,6 +378,7 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("values()", arguments, 0, 0, false, true);
     var v;
     var iter, k;
     var ret = [];
@@ -386,23 +395,95 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.list(ret);
 });
 
-Sk.builtin.dict.prototype.update = new Sk.builtin.func(function (self, other) {
-    /*
-        update() accepts either another dictionary object or an iterable of key/value pairs (as tuples or other iterables of length two).
-        If keyword arguments are specified, the dictionary is then updated with those key/value pairs: d.update(red=1, blue=2).
-    */
-    /*var v;
+/*
+    Remove all items from the dictionary.
+*/
+Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("clear()", arguments, 0, 0, false, true);
     var iter, k;
-    // either merge whole other dict
-    // or just iterate over the other tuple or iterable that contains another iterable pairs
-
     for (iter = self.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
-        v = self.mp$subscript(k);
-        // either merge 
-
-    }*/
-    return  Sk.builtin.none.none$;
+        self.mp$del_subscript(k);
+    }
 });
+
+
+/*
+    this function mimics the cpython implementation, which is also the reason for the
+    almost similar code, this may be changed in future
+*/
+Sk.builtin.dict.prototype.dict_merge = function(b) {
+    var iter;
+    var k, v;
+    if(b instanceof Sk.builtin.dict) {
+        // fast way
+        for (iter = b.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+            v = b.mp$subscript(k);
+            if (v === undefined) {
+                throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
+            }
+            this.mp$ass_subscript(k, v);
+        }
+    } else {
+        // generic slower way
+        var keys = Sk.misceval.callsim(b["keys"], b);
+        for (iter = keys.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+            v = b.tp$getitem(k); // get value
+            if (v === undefined) {
+                throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
+            }
+            this.mp$ass_subscript(k, v);
+        }
+    }
+};
+
+/*
+    update() accepts either another dictionary object or an iterable of key/value pairs (as tuples or other iterables of length two).
+    If keyword arguments are specified, the dictionary is then updated with those key/value pairs: d.update(red=1, blue=2).
+    https://hg.python.org/cpython/file/4ff865976bb9/Objects/dictobject.c
+*/
+var update_f = function (kwargs, self, other) {
+    // case another dict or obj with keys and getitem has been provided
+    if(other !== undefined && (other.tp$name === "dict" || other["keys"])) {
+        self.dict_merge(other); // we merge with override
+    } else if(other !== undefined && Sk.builtin.checkIterable(other)) {
+        // 2nd case, we expect an iterable that contains another iterable of length 2
+        var iter;
+        var k, v;
+        var seq_i = 0; // index of current sequence item
+        for (iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
+            // check if value is iter
+            if (!Sk.builtin.checkIterable(k)) {
+                throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
+            }
+
+            // cpython impl. would transform iterable into sequence
+            // we just call iternext twice if k has length of 2
+            if(k.sq$length() === 2) {
+                var k_iter = k.tp$iter();
+                var k_key = k_iter.tp$iternext();
+                var k_value = k_iter.tp$iternext();
+                self.mp$ass_subscript(k_key, k_value);
+            } else {
+                // throw exception
+                throw new Sk.builtin.ValueError("dictionary update sequence element #" + seq_i + " has length " + k.sq$length() + "; 2 is required");
+            }
+        }
+    } else if(other !== undefined) {
+        // other is not a dict or iterable
+        throw new Sk.builtin.TypeError("'" +Sk.abstr.typeName(other) + "' object is not iterable");
+    }
+
+    // apply all key/value pairs of kwargs
+    // create here kwargs_dict, there could be exceptions in other cases before
+    var kwargs_dict = new Sk.builtins.dict(kwargs);
+    self.dict_merge(kwargs_dict);
+
+    // returns none, when successful or throws exception
+    return  Sk.builtin.none.none$;
+};
+
+update_f.co_kwargs = true;
+Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
 Sk.builtin.dict.prototype.tp$name = "dict";
 
@@ -410,7 +491,6 @@ goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
 
 /*
 
- $.prototype.clear = function() { throw "todo; dict.clear"; };
  $.prototype.copy = function() { throw "todo; dict.copy"; };
  $.prototype.fromkeys = function() { throw "todo; dict.fromkeys"; };
  $.prototype.get = function() { throw "todo; dict.get"; };
@@ -424,11 +504,9 @@ goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
  $.prototype.iteritems = function() { throw "todo; dict.iteritems"; };
  $.prototype.iterkeys = function() { throw "todo; dict.iterkeys"; };
  $.prototype.itervalues = function() { throw "todo; dict.itervalues"; };
- $.prototype.keys = function() { throw "todo; dict.keys"; };
  $.prototype.pop = function() { throw "todo; dict.pop"; };
  $.prototype.popitem = function() { throw "todo; dict.popitem"; };
  $.prototype.setdefault = function() { throw "todo; dict.setdefault"; };
- $.prototype.update = function() { throw "todo; dict.update"; };
  $.prototype.values = function() { throw "todo; dict.values"; };
 
  $.prototype.__getitem__ = function(key)

@@ -7,6 +7,9 @@ the unittest module from cpython.
 
 
 class TestCase:
+    failureException = AssertionError
+    longMessage = False
+
     def __init__(self):
         self.numPassed = 0
         self.numFailed = 0
@@ -107,6 +110,19 @@ class TestCase:
     def assertLessEqual(self,a,b, feedback=""):
         res = a <= b
         self.appendResult(res,str(a)+' to be less than or equal to ',b,feedback)
+
+    def assertRaises(self, exception, callable=None, *args, **kwds):
+        # with is currently not supported hence we just try and catch
+        if callable is None:
+            raise NotImplementedError("assertRaises does currently not support assert contexts")
+
+        res = False
+        try:
+            callable(*args)
+        except exception as ex:
+            res = True
+
+        self.appendResult(res, str(callable) + ' raises exception: ', exception, None);
 
     def appendResult(self,res,actual,expected,feedback):
         if res == 'Error':
