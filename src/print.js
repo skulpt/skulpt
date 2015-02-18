@@ -4,7 +4,7 @@
 	anything for the internal implementation
 
 */
-Sk.builtin.print = function function_print(kwa) {
+var print_f = function function_print(kwa) {
     Sk.builtin.pyCheckArgs("print", arguments, 0, Infinity, true, false);
     var args = Array.prototype.slice.call(arguments, 1);
     var kwargs = new Sk.builtins.dict(kwa); // is pretty useless for handling kwargs
@@ -70,7 +70,7 @@ Sk.builtin.print = function function_print(kwa) {
 
     if(kw_list.file !== null) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
-        Sk.misceval.callsim(kw_list.file["write"].func_code, new Sk.builtin.str(s)); // callsim to write function
+        Sk.misceval.callsim(kw_list.file.write, new Sk.builtin.str(s)); // callsim to write function
     } else {
         Sk.output(s); // call configurable output function
     }
@@ -79,6 +79,6 @@ Sk.builtin.print = function function_print(kwa) {
     // cpython print function may receive another flush kwarg that flushes the output stream immediatelly
 };
 
-Sk.builtin.print.co_kwargs = true;
-Sk.builtin.print = new Sk.builtin.func(Sk.builtin.print);
+print_f.co_kwargs = true;
+Sk.builtin.print = new Sk.builtin.func(print_f);
 
