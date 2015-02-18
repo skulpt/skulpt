@@ -29,7 +29,7 @@ $builtinmodule = function (name) {
             self.ctx.drawImage(self.image, 0, 0);
             self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
         });
-	//array of pixel
+	//get a one-dimensional array of pixel objects - Zhu
 	$loc.getPixels = new Sk.builtin.func(function(self){
 		var arr = [];//initial array
 		var i;
@@ -126,9 +126,7 @@ $builtinmodule = function (name) {
 
     mod.EmptyImage = Sk.misceval.buildClass(mod, eImage, 'EmptyImage', [mod.Image]);
 
-    // create a ListImage object
-
-
+    // create a pixel object
     pixel = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, r, g, b, x, y) {
             self.red = Sk.builtin.asnum$(r);
@@ -210,11 +208,16 @@ $builtinmodule = function (name) {
     screen = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, width, height) {
             var currentCanvas = ImageMod.canvasLib[Sk.canvas];
+            var tmpCan;
             if (currentCanvas === undefined) {
-                self.theScreen = document.getElementById(Sk.canvas);
+                tmpCan = document.createElement("canvas");
+                tmpDiv = document.getElementById(Sk.canvas);
+                self.theScreen = tmpCan;
+                tmpDiv.appendChild(tmpCan);
+                ImageMod.canvasLib[Sk.canvas] = tmpCan;
                 if (width !== undefined) {
-                    self.theScreen.height = height;
-                    self.theScreen.width = width;
+                  self.theScreen.height = height;
+                  self.theScreen.width = width;
                 }
 
                 ImageMod.canvasLib[Sk.canvas] = self.theScreen;
