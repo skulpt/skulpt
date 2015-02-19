@@ -203,7 +203,9 @@ def test(debug_mode=False):
             jscscmd = "jshint src/*.js --reporter=inline"
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
-        ret3 = os.system(jscscmd)
+        proc = subprocess.Popen(jscscmd, stdout=subprocess.PIPE, shell=True)
+        (ret3, err) = proc.communicate()
+        #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
         ret4 = rununits()
     return ret1 | ret2 | ret3 | ret4
