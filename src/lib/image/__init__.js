@@ -55,9 +55,9 @@ $builtinmodule = function (name) {
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
             var index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.misceval.callsim(pix.getRed, pix);
-            self.imagedata.data[index + 1] = Sk.misceval.callsim(pix.getGreen, pix);
-            self.imagedata.data[index + 2] = Sk.misceval.callsim(pix.getBlue, pix);
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getRed, pix));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
             self.imagedata.data[index + 3] = 255;
         });
 	//newsetpixel
@@ -66,18 +66,18 @@ $builtinmodule = function (name) {
             var x = count%self.image.width;
 	    var y = Math.floor(count/self.image.width);
             var index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.misceval.callsim(pixel.getRed, pixel);
-            self.imagedata.data[index + 1] = Sk.misceval.callsim(pixel.getGreen, pixel);
-            self.imagedata.data[index + 2] = Sk.misceval.callsim(pixel.getBlue, pixel);
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
 	});
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
-            return self.image.height;
+            return new Sk.builtin.nmber(self.image.height, Sk.builtin.nmber.int$);
         });
 
         $loc.getWidth = new Sk.builtin.func(function (self, titlestring) {
-            return self.image.width;
+            return new Sk.builtin.nmber(self.image.width, Sk.builtin.nmber.int$);
         });
 
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
@@ -126,15 +126,15 @@ $builtinmodule = function (name) {
         });
 
         $loc.getRed = new Sk.builtin.func(function (self) {
-            return self.red;
+            return new Sk.builtin.nmber(self.red);
         });
 
         $loc.getGreen = new Sk.builtin.func(function (self) {
-            return self.green;
+            return new Sk.builtin.nmber(self.green);
         });
 
         $loc.getBlue = new Sk.builtin.func(function (self) {
-            return self.blue;
+            return new Sk.builtin.nmber(self.blue);
         });
 
         $loc.setRed = new Sk.builtin.func(function (self, r) {
@@ -188,16 +188,23 @@ $builtinmodule = function (name) {
                 self.theScreen = tmpCan;
                 tmpDiv.appendChild(tmpCan);
                 ImageMod.canvasLib[Sk.canvas] = tmpCan;
-                if (width !== undefined) {
-                    self.theScreen.height = height.v;
-                    self.theScreen.width = width.v;
-                }
-
                 ImageMod.canvasLib[Sk.canvas] = self.theScreen;
             } else {
                 self.theScreen = currentCanvas;
                 self.theScreen.height = self.theScreen.height;
             }
+            if (width !== undefined) {
+                self.theScreen.height = height.v;
+                self.theScreen.width = width.v;
+            } else {
+                if (Sk.availableHeight) {
+                    self.theScreen.height = Sk.availableHeight;
+                }
+                if (Sk.availableWidth) {
+                    self.theScreen.width = Sk.availableWidth;
+                }
+            }
+
             self.theScreen.style.display = "block";
         });
 
