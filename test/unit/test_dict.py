@@ -63,7 +63,10 @@ class DictTest(unittest.TestCase):
         self.assertIn('a', d)
         self.assertIn('b', d)
         self.assertNotIn('c', d)
-
+        '''
+            The direct call of __contains__ on a dict is currently not working
+            in skulpt
+        '''
         #self.assertRaises(TypeError, d.__contains__)
 
     def test_len(self):
