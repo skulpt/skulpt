@@ -143,7 +143,11 @@ Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
     for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        ret.push(Sk.misceval.objectRepr(i).v);
+        if(i === this) {
+            ret.push("[...]");
+        } else {
+            ret.push(Sk.misceval.objectRepr(i).v);
+        }
     }
     return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };

@@ -234,7 +234,14 @@ Sk.builtin.dict.prototype["$r"] = function () {
             //print(k, "had undefined v");
             v = null;
         }
-        ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
+
+        // we need to check if value is same as object
+        // otherwise it would cause an stack overflow
+        if(v === this) {
+            ret.push(Sk.misceval.objectRepr(k).v + ": {...}");
+        } else {
+            ret.push(Sk.misceval.objectRepr(k).v + ": " + Sk.misceval.objectRepr(v).v);
+        }
     }
     return new Sk.builtin.str("{" + ret.join(", ") + "}");
 };
