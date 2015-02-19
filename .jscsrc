@@ -1,0 +1,12 @@
+{
+    "fileExtensions": [ ".js", "jscs" ],
+    "disallowMixedSpacesAndTabs": true,
+    "validateIndentation": 4,
+
+    "excludeFiles": [
+        "src/tokenize.js",
+        "src/symtable.js",
+        "src/compile.js",
+        "src/ast.js"
+    ]
+}
