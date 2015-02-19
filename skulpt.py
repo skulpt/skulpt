@@ -9,6 +9,7 @@
 
 from optparse import OptionParser
 from subprocess import Popen, PIPE
+import subprocess
 import os
 import sys
 import glob
@@ -203,7 +204,7 @@ def test(debug_mode=False):
             jscscmd = "jscs src/*.js --reporter=inline"
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
-        ret3 = subprocess.check_output(jscscmd, stdout=subprocess.PIPE, shell=True)
+        ret3 = os.system(jscscmd)
         #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
         ret4 = rununits()
