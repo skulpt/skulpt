@@ -200,7 +200,7 @@ def test(debug_mode=False):
             jscscmd = "{0} {1}".format("jscs", ' '.join(f for f in glob.glob("src/*.js")))
         else:
             jshintcmd = "jshint src/*.js"
-            jscscmd = "jshint src/"
+            jscscmd = "jshint src/*.js"
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)

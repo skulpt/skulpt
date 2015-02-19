@@ -9,7 +9,7 @@ install:
 script:
 - ./skulpt.py dist
 - jshint src/*.js
-- jscs src/
+- jscs src/*.js
 after_script:
 - ./dist-update.sh
 env:
