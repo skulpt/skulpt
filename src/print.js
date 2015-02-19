@@ -70,7 +70,7 @@ var print_f = function function_print(kwa) {
 
     if(kw_list.file !== null) {
         // currently not tested, though it seems that we need to see how we should access the write function in a correct manner
-        Sk.misceval.callsim(kw_list.file.write, new Sk.builtin.str(s)); // callsim to write function
+        Sk.misceval.callsim(kw_list.file.write, kw_list.file, new Sk.builtin.str(s)); // callsim to write function
     } else {
         Sk.output(s); // call configurable output function
     }
