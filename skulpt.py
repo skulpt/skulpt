@@ -197,10 +197,10 @@ def test(debug_mode=False):
         print "Running jshint"
         if sys.platform == "win32":
             jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob("src/*.js")))
-            jscscmd = "{0} {1}".format("jscs", ' '.join(f for f in glob.glob("src/*.js")))
+            jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob("src/*.js")))
         else:
             jshintcmd = "jshint src/*.js"
-            jscscmd = "jshint src/*.js"
+            jscscmd = "jshint src/*.js --reporter=inline"
         ret2 = os.system(jshintcmd)
         print "Running JSCS"
         ret3 = os.system(jscscmd)
