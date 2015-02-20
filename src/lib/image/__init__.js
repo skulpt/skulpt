@@ -29,17 +29,19 @@ $builtinmodule = function (name) {
             self.ctx.drawImage(self.image, 0, 0);
             self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
         });
-	//array of pixel
-	$loc.getPixels = new Sk.builtin.func(function(self){
-		var arr = [];//initial array
-		var i;
+        
+	    //get a one-dimensional array of pixel objects - Zhu
+	    $loc.getPixels = new Sk.builtin.func(function(self){
+		    var arr = [];//initial array
+		    var i;
 		
-		for(i=0;i<self.image.height*self.image.width;i++){
+		    for(i=0;i<self.image.height*self.image.width;i++){
 		
-			arr[i] = Sk.misceval.callsim(self.getPixel,self,i%self.image.width,Math.floor(i/self.image.width));
-		}
-		return new Sk.builtin.tuple(arr);
-	});
+			    arr[i] = Sk.misceval.callsim(self.getPixel,self,
+			             i%self.image.width,Math.floor(i/self.image.width));
+		    }
+		    return new Sk.builtin.tuple(arr);
+	    });
 	
         $loc.getPixel = new Sk.builtin.func(function (self, x, y) {
             x = Sk.builtin.asnum$(x);
@@ -48,7 +50,7 @@ $builtinmodule = function (name) {
             var red = self.imagedata.data[index];
             var green = self.imagedata.data[index + 1];
             var blue = self.imagedata.data[index + 2];
-            return Sk.misceval.callsim(mod.Pixel, red, green, blue);
+            return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
         });
 
         $loc.setPixel = new Sk.builtin.func(function (self, x, y, pix) {
@@ -60,17 +62,29 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
             self.imagedata.data[index + 3] = 255;
         });
-	//newsetpixel
-	$loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel){
-	    count = Sk.builtin.asnum$(count);
+        
+	    // update the image with the pixel at the given count - Zhu
+	    $loc.setPixelAt = new Sk.builtin.func(function (self, count, pixel){
+	        count = Sk.builtin.asnum$(count);
             var x = count%self.image.width;
-	    var y = Math.floor(count/self.image.width);
+	        var y = Math.floor(count/self.image.width);
             var index = (y * 4) * self.width + (x * 4);
             self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
             self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
-	});
+	    });
+	    
+	    // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
+	    $loc.updatePixel = new Sk.builtin.func(function (self, pixel){
+            var x = Sk.misceval.callsim(pixel.getX, pixel);
+	        var y = Sk.misceval.callsim(pixel.getY, pixel);
+            var index = (y * 4) * self.width + (x * 4);
+            self.imagedata.data[index] = Sk.misceval.callsim(pixel.getRed, pixel);
+            self.imagedata.data[index + 1] = Sk.misceval.callsim(pixel.getGreen, pixel);
+            self.imagedata.data[index + 2] = Sk.misceval.callsim(pixel.getBlue, pixel);
+            self.imagedata.data[index + 3] = 255;
+	    });
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
             return new Sk.builtin.nmber(self.image.height, Sk.builtin.nmber.int$);
@@ -119,10 +133,12 @@ $builtinmodule = function (name) {
 
 
     pixel = function ($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function (self, r, g, b) {
+        $loc.__init__ = new Sk.builtin.func(function (self, r, g, b, x, y) {
             self.red = Sk.builtin.asnum$(r);
             self.green = Sk.builtin.asnum$(g);
             self.blue = Sk.builtin.asnum$(b);
+            self.x = Sk.builtin.asnum$(x);
+            self.y = Sk.builtin.asnum$(y);
         });
 
         $loc.getRed = new Sk.builtin.func(function (self) {
@@ -136,6 +152,14 @@ $builtinmodule = function (name) {
         $loc.getBlue = new Sk.builtin.func(function (self) {
             return new Sk.builtin.nmber(self.blue);
         });
+        
+        $loc.getX = new Sk.builtin.func(function (self) {
+            return self.x;
+        });
+        
+        $loc.getY = new Sk.builtin.func(function (self) {
+            return self.y;
+        });
 
         $loc.setRed = new Sk.builtin.func(function (self, r) {
             self.red = Sk.builtin.asnum$(r);
@@ -147,6 +171,14 @@ $builtinmodule = function (name) {
 
         $loc.setBlue = new Sk.builtin.func(function (self, b) {
             self.blue = Sk.builtin.asnum$(b);
+        });
+        
+        $loc.setX = new Sk.builtin.func(function (self, x) {
+            self.x = Sk.builtin.asnum$(x);
+        });
+        
+        $loc.setY = new Sk.builtin.func(function (self, y) {
+            self.y = Sk.builtin.asnum$(y);
         });
 
         $loc.__getitem__ = new Sk.builtin.func(function (self, k) {
