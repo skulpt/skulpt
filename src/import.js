@@ -179,6 +179,21 @@ Sk.doOneTimeInitialization = function () {
     Sk.builtin.object["$d"] = new Sk.builtin.dict([]);
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+
+    // setup ["$d"] to make builtins subclassable
+    var builtinObjList = ["dict", "list", "type", "set", "tuple"];
+    var i;
+    var builtin_;
+    for(i in builtinObjList) {
+        builtin_ = builtinObjList[i];
+        Sk.builtin[builtin_]["$d"] = new Sk.builtin.dict([]);
+        // builtins have only object as __bases__
+        Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+        // builtins have object and self as __mro__
+        Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object, Sk.builtin[builtin_]]));
+
+        // ToDo: copy existing
+    }
 };
 
 /**

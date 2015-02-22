@@ -2249,7 +2249,8 @@ Sk.compile = function (source, filename, mode) {
     var ast = Sk.astFromParse(cst, filename, p_flags);
 
     // check if all future_import stmts are at valid positions
-    // ToDo
+    // ToDo: https://github.com/python/cpython/blob/2.7/Python/compile.c#L272
+    // https://github.com/python/cpython/blob/2.7/Python/future.c
 
     var st = Sk.symboltable(ast, filename);
     var c = new Compiler(filename, st, p_flags, source); // todo; CO_xxx
