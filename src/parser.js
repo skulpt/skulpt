@@ -105,6 +105,10 @@ Parser.prototype.addtoken = function (type, value, context) {
                     && states[state][0][0] === 0
                     && states[state][0][1] === state) // states[state] == [(0, state)])
                 {
+                    if(tp.node.type === Sk.ParseTables.sym.import_stmt) {
+                      // t === 303
+                      this.future_hack();
+                    }
                     this.pop();
                     //print("in after pop:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
                     if (this.stack.length === 0) {
@@ -122,8 +126,7 @@ Parser.prototype.addtoken = function (type, value, context) {
                 // done with this token
                 //print("DONE, return false");
                 return false;
-            }
-            else if (t >= 256) {
+            } else if (t >= 256) {
                 itsdfa = this.grammar.dfas[t];
                 itsfirst = itsdfa[1];
 
@@ -139,7 +142,7 @@ Parser.prototype.addtoken = function (type, value, context) {
         if (findInDfa(arcs, [0, tp.state])) {
             // an accepting state, pop it and try somethign else
             //print("WAA");
-            if(t === Sk.ParseTables.sym.import_stmt) {
+            if(tp.node.type === Sk.ParseTables.sym.import_stmt) {
               // t === 303
               this.future_hack();
             }
@@ -147,8 +150,7 @@ Parser.prototype.addtoken = function (type, value, context) {
             if (this.stack.length === 0) {
                 throw new Sk.builtin.ParseError("too much input", this.filename);
             }
-        }
-        else {
+        } else {
             // no transition
             errline = context[0][0];
             throw new Sk.builtin.ParseError("bad input", this.filename, errline, context);
