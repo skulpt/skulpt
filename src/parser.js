@@ -17,9 +17,15 @@
 function Parser (filename, grammar) {
     this.filename = filename;
     this.grammar = grammar;
+    this.p_flags = 0;
     return this;
 }
 
+// flags required for parsing __future__ import
+Parser.FUTURE_PRINT_FUNCTION = "print_function";
+Parser.FUTURE_UNICODE_LITERALS = "unicode_literals";
+Parser.CO_FUTURE_PRINT_FUNCTION = 0x10000;
+Parser.CO_FUTURE_UNICODE_LITERALS = 0x20000;
 
 Parser.prototype.setup = function (start) {
     var stackentry;
@@ -120,6 +126,7 @@ Parser.prototype.addtoken = function (type, value, context) {
             else if (t >= 256) {
                 itsdfa = this.grammar.dfas[t];
                 itsfirst = itsdfa[1];
+
                 if (itsfirst.hasOwnProperty(ilabel)) {
                     // push a symbol
                     this.push(t, this.grammar.dfas[t], newstate, context);
@@ -132,6 +139,10 @@ Parser.prototype.addtoken = function (type, value, context) {
         if (findInDfa(arcs, [0, tp.state])) {
             // an accepting state, pop it and try somethign else
             //print("WAA");
+            if(t === Sk.ParseTables.sym.import_stmt) {
+              // t === 303
+              this.future_hack();
+            }
             this.pop();
             if (this.stack.length === 0) {
                 throw new Sk.builtin.ParseError("too much input", this.filename);
@@ -145,6 +156,64 @@ Parser.prototype.addtoken = function (type, value, context) {
     }
 };
 
+Parser.prototype.future_hack = function() {
+    function CHILD (n, i) {
+        goog.asserts.assert(n !== undefined);
+        goog.asserts.assert(i !== undefined);
+        return n.children[i];
+    }
+
+    function NCH (n) {
+        goog.asserts.assert(n !== undefined);
+        if (n.children === null) {
+            return 0;
+        }
+        return n.children.length;
+    }
+
+    var n = this.stack[this.stack.length -1].node;
+    var ch, cch, i;
+
+    /* from __future__ import ..., must have at least 4 children */
+    n = CHILD(n, 0); // unpack first object
+    if(NCH(n) < 4) {
+      return; // nothing todo here
+    }
+
+    // from
+    ch = CHILD(n, 0);
+    if(ch.value !== "from") {
+      return;
+    }
+
+    // __future__
+    ch = CHILD(n, 1);
+    if(NCH(ch) === 1 && typeof CHILD(ch, 0).value === "string" && CHILD(ch, 0).value !==  "__future__") {
+       return;
+    }
+
+    // check imported names
+    ch = CHILD(n, 3);
+    /* ch can be a star, a parenthesis or import_as_names */
+    if (ch.type == Sk.Tokenizer.Tokens.T_STAR)
+        return;
+    if (ch.type == Sk.Tokenizer.Tokens.T_LPAR)
+        ch = CHILD(n, 4);
+
+    /* iterate over flags and check for with, print and unicode */
+    for(i = 0; i < NCH(ch); i += 2) {
+      cch = CHILD(ch, i);
+      if(NCH(cch) >= 1 && CHILD(cch, 0).type === Sk.Tokenizer.Tokens.T_NAME) {
+        var str_ch = CHILD(cch, 0).value;
+        if(str_ch === Parser.FUTURE_PRINT_FUNCTION) {
+          this.p_flags |= Parser.CO_FUTURE_PRINT_FUNCTION;
+        } else if (str_ch === Parser.FUTURE_UNICODE_LITERALS) {
+          this.p_flags |= Parser.CO_FUTURE_UNICODE_LITERALS;
+        }
+      }
+    }
+};
+
 // turn a token into a label
 Parser.prototype.classify = function (type, value, context) {
     var ilabel;
@@ -152,7 +221,7 @@ Parser.prototype.classify = function (type, value, context) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
 
-        if(value === "print" && Sk.print_function === true) {
+        if(value === "print" && (this.p_flags & Parser.CO_FUTURE_PRINT_FUNCTION || Sk.python3 === true)) {
             ilabel = false; // treat print as normal function
         }
 
@@ -303,7 +372,7 @@ function makeParser (filename, style) {
             return true;
         }
     });
-    return function (line) {
+    var parseFunc = function (line) {
         var ret = tokenizer.generateTokens(line);
         //print("tok:"+ret);
         if (ret) {
@@ -314,6 +383,8 @@ function makeParser (filename, style) {
         }
         return false;
     };
+    //parseFunc.p_flags = p.p_flags;
+    return parseFunc;
 }
 
 Sk.parse = function parse (filename, input) {
@@ -329,7 +400,7 @@ Sk.parse = function parse (filename, input) {
     for (i = 0; i < lines.length; ++i) {
         ret = parseFunc(lines[i] + ((i === lines.length - 1) ? "" : "\n"));
     }
-    return ret;
+    return {"cst": ret, "flags": parseFunc.p_flags};
 };
 
 Sk.parseTreeDump = function parseTreeDump (n, indent) {

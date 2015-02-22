@@ -37,7 +37,7 @@ Sk.loadExternalLibraryInternal_ = function (path, inject) {
 
 Sk.loadExternalLibrary = function (name) {
     var i;
-    var externalLibraryInfo, path,  module,
+    var externalLibraryInfo, path,  module_,
         dependencies, dep, ext, extMatch, co;
 
     // check if the library has already been loaded and cached
@@ -75,9 +75,9 @@ Sk.loadExternalLibrary = function (name) {
         throw new Sk.builtin.ImportError("Invalid file extension specified for " + name);
     }
 
-    module = Sk.loadExternalLibraryInternal_(path, false);
+    module_ = Sk.loadExternalLibraryInternal_(path, false);
 
-    if (!module) {
+    if (!module_) {
         throw new Sk.builtin.ImportError("Failed to load remote module '" + name + "'");
     }
 
@@ -93,10 +93,10 @@ Sk.loadExternalLibrary = function (name) {
     }
 
     if (ext === "js") {
-        co = { funcname: "$builtinmodule", code: module };
+        co = { funcname: "$builtinmodule", code: module_ };
     }
     else {
-        co = Sk.compile(module, path, "exec");
+        co = Sk.compile(module_, path, "exec");
     }
 
     Sk.externalLibraryCache[name] = co;
@@ -228,7 +228,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     var finalcode;
     var result;
     var filename, codeAndPath, co, isPy, googClosure, external;
-    var module;
+    var module_;
     var prev;
     var parentModName;
     var modNameSplit;
@@ -289,8 +289,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     // - add module object to sys.modules
     // - compile source to (function(){...});
     // - run module and set the module locals returned to the module __dict__
-    module = new Sk.builtin.module();
-    Sk.sysmodules.mp$ass_subscript(name, module);
+    module_ = new Sk.builtin.module();
+    Sk.sysmodules.mp$ass_subscript(name, module_);
 
     if (suppliedPyBody) {
         filename = name + ".py";
@@ -340,7 +340,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             return canSuspend ? new Sk.misceval.Suspension(importCompiledCode, co) : Sk.misceval.retryOptionalSuspensionOrThrow(co);
         }
 
-        module.$js = co.code; // todo; only in DEBUG?
+        module_.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
         if (Sk.dateSet == null || !Sk.dateSet) {
             finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
@@ -398,7 +398,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                 modlocs["__name__"] = new Sk.builtin.str(modname);
             }
 
-            module["$d"] = modlocs;
+            module_["$d"] = modlocs;
 
             // If an onAfterImport method is defined on the global Sk
             // then call it now after a library has been successfully imported
@@ -414,14 +414,14 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                 // if we were a dotted name, then we want to return the top-most
                 // package. we store ourselves into our parent as an attribute
                 parentModule = Sk.sysmodules.mp$subscript(parentModName);
-                parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
+                parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module_);
                 //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
                 return toReturn;
             }
 
             //print("name", name, "modname", modname, "returning leaf");
             // otherwise we return the actual module that we just imported
-            return module;
+            return module_;
         })(modlocs);
     })(co);
 };
@@ -484,14 +484,14 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     })(ret);
 };
 
-Sk.importStar = function (module, loc, global) {
+Sk.importStar = function (module_, loc, global) {
     // from the global scope, globals and locals can be the same.  So the loop below
     // could accidentally overwrite __name__, erasing __main__.
     var i;
     var nn = global["__name__"];
-    var props = Object["getOwnPropertyNames"](module["$d"]);
+    var props = Object["getOwnPropertyNames"](module_["$d"]);
     for (i in props) {
-        loc[props[i]] = module["$d"][props[i]];
+        loc[props[i]] = module_["$d"][props[i]];
     }
     if (global["__name__"] !== nn) {
         global["__name__"] = nn;

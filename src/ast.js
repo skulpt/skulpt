@@ -14,9 +14,10 @@ var COMP_GENEXP = 0;
 var COMP_SETCOMP = 1;
 
 /** @constructor */
-function Compiling (encoding, filename) {
+function Compiling (encoding, filename, c_flags) {
     this.c_encoding = encoding;
     this.c_filename = filename;
+    this.c_flags = c_flags || 0;
 }
 
 /**
@@ -1718,7 +1719,7 @@ function parsestr (c, s) {
 
     // treats every sequence as unicodes even if they are not treated with uU prefix
     // kinda hacking though working for most purposes
-    if(Sk.unicode_literals === true) {
+    if((c.c_flags & Parser.CO_FUTURE_UNICODE_LITERALS || Sk.python3 === true)) {
         unicode = true;
     }
 
@@ -2223,12 +2224,12 @@ function astForStmt (c, n) {
     }
 }
 
-Sk.astFromParse = function (n, filename) {
+Sk.astFromParse = function (n, filename, c_flags) {
     var j;
     var num;
     var ch;
     var i;
-    var c = new Compiling("utf-8", filename);
+    var c = new Compiling("utf-8", filename, c_flags);
     var stmts = [];
     var k = 0;
     switch (n.type) {

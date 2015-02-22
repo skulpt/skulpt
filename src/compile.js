@@ -2242,12 +2242,19 @@ Compiler.prototype.cmod = function (mod) {
  * @param {string} mode one of 'exec', 'eval', or 'single'
  */
 Sk.compile = function (source, filename, mode) {
-    //print("FILE:", filename);
-    var cst = Sk.parse(filename, source);
-    var ast = Sk.astFromParse(cst, filename);
+    var parse = Sk.parse(filename, source);
+    var cst = parse.cst; // actual cst
+    var p_flags = parse.flags; // returns Parser flags __future__
+
+    var ast = Sk.astFromParse(cst, filename, p_flags);
+
+    // check if all future_import stmts are at valid positions
+    // ToDo
+
     var st = Sk.symboltable(ast, filename);
-    var c = new Compiler(filename, st, 0, source); // todo; CO_xxx
+    var c = new Compiler(filename, st, p_flags, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
+
     var ret = c.result.join("");
     return {
         funcname: funcname,

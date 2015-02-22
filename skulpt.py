@@ -88,7 +88,7 @@ Files = [
         'src/float.js',
         'src/slice.js',
         'src/set.js',
-				'src/print.js',
+        'src/print.js',
         'src/module.js',
         'src/generator.js',
         'src/file.js',
