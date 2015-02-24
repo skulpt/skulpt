@@ -1084,13 +1084,21 @@ function generateTurtleModule(_target) {
     })(Turtle.prototype);
 
     function Screen() {
+        var w,h;
         this._frames    = 1;
         this._delay     = undefined;
         this._bgcolor   = "none";
         this._mode      = "standard";
         this._managers  = {};
         this._keyLogger = {};
-        this.setUpWorld(-200,-200,200,200);
+        if (_config.height && _config.width) {
+            w = _config.width/2;
+            h = _config.height/2;
+        } else {
+            w = _config.defaultSetup.width/2;
+            h = _config.defaultSetup.height/2;
+        }
+        this.setUpWorld(-w,-h,w,h);
     }
 
     (function(proto) {
