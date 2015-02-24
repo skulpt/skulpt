@@ -2236,6 +2236,119 @@ Compiler.prototype.cmod = function (mod) {
     return modf;
 };
 
+Sk.futureFromAst = function(mod, filename) {
+    function futureCheckFeatures(ff, stmt, filename) {
+        var i;
+        var names;
+        var name;
+        var feature;
+
+        goog.asserts.assert(stmt instanceof ImportFrom);
+
+        names = stmt.names;
+        for(i = 0; i < names.length; i++) {
+          name = names[i];
+          feature = name.name.v; // feature name as js string
+
+          if(!feature) {
+            return false;
+          }
+
+          if(feature === Parser.FUTURE_NESTED_SCOPES) {
+            continue;
+          } else if (feature === Parser.FUTURE_GENERATORS) {
+            continue;
+          } else if(feature === Parser.FUTURE_DIVISION) {
+            ff.ff_features |= Parser.CO_FUTURE_DIVISON;
+          } else if(feature === Parser.FUTURE_ABSOLUTE_IMPORT) {
+            ff.ff_features |= Parser.CO_FUTURE_ABSOLUTE_IMPORT;
+          } else if(feature === Parser.FUTURE_WITH_STATEMENT) {
+            ff.ff_features |= Parser.CO_FUTURE_WITH_STATEMENT;
+          } else if(feature === Parser.FUTURE_PRINT_FUNCTION) {
+            ff.ff_features |= Parser.CO_FUTURE_PRINT_FUNCTION;
+          } else if(feature === Parser.FUTURE_UNICODE_LITERALS) {
+            ff.ff_features |= Parser.CO_FUTURE_UNICODE_LITERALS;
+          } else if (feature === "braces") {
+            throw new Sk.builtin.SyntaxError(new Sk.builtin.str("not a chance"), new Sk.builtin.str(filename), stmt.lineno);
+          } else {
+            throw new Sk.builtin.SyntaxError(new Sk.builtin.str("future feature " + feature + " is not defined"), new Sk.builtin.str(filename), stmt.lineno);
+          }
+        }
+
+        return true;
+    }
+
+    function future_parse(ff, mod, filename) {
+        var i;
+        var foundDocString = false;
+        var done = false;
+        var prevLine = 0;
+
+        //if(!(mod.kind == ModuleKind || mod.kind === interactiveKind)) {
+        //    return true;
+        //}
+
+        var stmt;
+        var modName;
+        var expr;
+
+        for(i = 0; i < mod.body.length; i++) {
+          stmt = mod.body[i];
+
+          if(done === true && stmt.lineno > prevLine) {
+            return true;
+          }
+          prevLine = stmt.lineno;
+
+          /*
+              The tests below will return from this function unless it is
+              still possible to find a future statement. The only things
+              that can precede a future statement are another future
+              statement and a doc string.
+          */
+
+          if(stmt instanceof ImportFrom) {
+            modName = stmt.module.v; // module name as js string
+
+            if(modName && modName === "__future__") {
+              if(done === true) {
+                throw new Sk.builtin.SyntaxError(new Sk.builtin.str("from __future__ imports must occur at the beginning of the file"), new Sk.builtin.str(filename), stmt.lineno);
+              }
+
+              if(!futureCheckFeatures(ff, stmt, filename)) {
+                return false;
+              }
+              ff.ff_lineno = stmt.lineno;
+            } else {
+              done = true;
+            }
+          } else if(stmt instanceof Expr && !foundDocString) {
+            expr = stmt.value;
+            if(expr instanceof Str) {
+              done = true;
+            } else {
+              foundDocString = true;
+            }
+          } else {
+            done = true;
+          }
+        }
+
+        return true;
+    }
+
+    // init object for feature information
+    // see compile.h PyFutureFeatures
+    var ff = {ff_features: 0, ff_lineno: -1};
+
+    if(!future_parse(ff, mod, filename)) {
+        return null;
+    }
+
+    return ff;
+};
+goog.exportSymbol("Sk.futureFromAst", Sk.futureFromAst);
+
 /**
  * @param {string} source the code
  * @param {string} filename where it came from
@@ -2243,17 +2356,25 @@ Compiler.prototype.cmod = function (mod) {
  */
 Sk.compile = function (source, filename, mode) {
     var parse = Sk.parse(filename, source);
-    var cst = parse.cst; // actual cst
     var p_flags = parse.flags; // returns Parser flags __future__
+    var ast = Sk.astFromParse(parse.cst, filename, p_flags);
 
-    var ast = Sk.astFromParse(cst, filename, p_flags);
-
-    // check if all future_import stmts are at valid positions
+    // check for other non parser future statements
+    // unicode_literals and print_function and with_statements must be detected at parsing level
+    // others are parser independend
     // ToDo: https://github.com/python/cpython/blob/2.7/Python/compile.c#L272
     // https://github.com/python/cpython/blob/2.7/Python/future.c
+    var c_future = Sk.futureFromAst(ast, filename);
+    var merged;
+    var flags = {};
+    if(c_future !== null) {
+        merged = c_future | p_flags;
+        flags.cf_flags = merged;
+    }
 
+    // symbol table should get c_future and set it
     var st = Sk.symboltable(ast, filename);
-    var c = new Compiler(filename, st, p_flags, source); // todo; CO_xxx
+    var c = new Compiler(filename, st, flags.cf_flags, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
 
     var ret = c.result.join("");

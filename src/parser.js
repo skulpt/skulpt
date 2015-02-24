@@ -24,8 +24,16 @@ function Parser (filename, grammar) {
 // flags required for parsing __future__ import
 Parser.FUTURE_PRINT_FUNCTION = "print_function";
 Parser.FUTURE_UNICODE_LITERALS = "unicode_literals";
+Parser.FUTURE_DIVISION = "division";
+Parser.FUTURE_ABSOLUTE_IMPORT = "absolute_import";
+Parser.FUTURE_WITH_STATEMENT = "with_statement";
+Parser.FUTURE_NESTED_SCOPES = "nested_scopes";
+Parser.FUTURE_GENERATORS = "generators";
 Parser.CO_FUTURE_PRINT_FUNCTION = 0x10000;
 Parser.CO_FUTURE_UNICODE_LITERALS = 0x20000;
+Parser.CO_FUTURE_DIVISON = 0x2000;
+Parser.CO_FUTURE_ABSOLUTE_IMPORT = 0x4000;
+Parser.CO_FUTURE_WITH_STATEMENT = 0x8000;
 
 Parser.prototype.setup = function (start) {
     var stackentry;
@@ -211,6 +219,8 @@ Parser.prototype.future_hack = function() {
           this.p_flags |= Parser.CO_FUTURE_PRINT_FUNCTION;
         } else if (str_ch === Parser.FUTURE_UNICODE_LITERALS) {
           this.p_flags |= Parser.CO_FUTURE_UNICODE_LITERALS;
+        } else if (str_ch === Parser.FUTURE_WITH_STATEMENT) {
+          this.p_flags |= Parser.CO_FUTURE_WITH_STATEMENT;
         }
       }
     }
@@ -385,7 +395,7 @@ function makeParser (filename, style) {
         }
         return false;
     };
-    //parseFunc.p_flags = p.p_flags;
+    parseFunc.p_flags = p.p_flags;
     return parseFunc;
 }
 

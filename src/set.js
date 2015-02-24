@@ -47,7 +47,11 @@ Sk.builtin.set.prototype["$r"] = function () {
     for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
-    return new Sk.builtin.str("set([" + ret.join(", ") + "])");
+    if(Sk.python3) {
+        return new Sk.builtin.str("{" + ret.join(", ") + "}");
+    } else {
+        return new Sk.builtin.str("set([" + ret.join(", ") + "])");
+    }
 };
 Sk.builtin.set.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 // todo; you can't hash a set() -- what should this be?
