@@ -355,22 +355,22 @@ Compiler.prototype.cdict = function (e) {
 Compiler.prototype.clistcomp = function(e) {
     goog.asserts.assert(e instanceof ListComp);
     var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
-    return this.ccompgen("list", tmp, e.generators, 0, e.elt, null);
+    return this.ccompgen("list", tmp, e.generators, 0, e.elt, null, e);
 };
 
 Compiler.prototype.cdictcomp = function(e) {
     goog.asserts.assert(e instanceof DictComp);
     var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
-    return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key);
+    return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key, e);
 };
 
 Compiler.prototype.csetcomp = function(e) {
     goog.asserts.assert(e instanceof SetComp);
     var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
-    return this.ccompgen("set", tmp, e.generators, 0, e.elt, null);
+    return this.ccompgen("set", tmp, e.generators, 0, e.elt, null, e);
 };
 
-Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key) {
+Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key, e) {
     var start = this.newBlock(type + " comp start");
     var skip = this.newBlock(type + " comp skip");
     var anchor = this.newBlock(type + " comp anchor");
@@ -390,7 +390,11 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     this.setBlock(start);
 
     // load targets
-    nexti = this._gr("next", "Sk.abstr.iternext(", iter, ")");
+    out("$ret = Sk.abstr.iternext(", iter, ", true);");
+
+    this._checkSuspension(e);
+
+    nexti = this._gr("next", "$ret");
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     target = this.vexpr(l.target, nexti);
 
@@ -401,7 +405,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     }
 
     if (++genIndex < generators.length) {
-        this.ccompgen(type, tmpname, generators, genIndex, value, key);
+        this.ccompgen(type, tmpname, generators, genIndex, value, key, e);
     }
 
     if (genIndex >= generators.length) {
