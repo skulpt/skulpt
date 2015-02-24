@@ -681,7 +681,7 @@ Sk.abstr.objectSetItem = function (o, key, v) {
 goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
-Sk.abstr.gattr = function (obj, nameJS) {
+Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
     var ret;
     var objname = Sk.abstr.typeName(obj);
 
@@ -695,24 +695,28 @@ Sk.abstr.gattr = function (obj, nameJS) {
     }
 
     if (ret === undefined && obj["__getattr__"] && obj["__getattr__"] !== Sk.builtin.object.prototype["__getattr__"]) {
-        ret = Sk.misceval.callsim(obj["__getattr__"], obj, new Sk.builtin.str(nameJS));
+        ret = Sk.misceval.callsimOrSuspend(obj["__getattr__"], obj, new Sk.builtin.str(nameJS));
     }
 
-    if (ret === undefined) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    }
+    ret = Sk.misceval.chain(ret, function(r) {
+        if (r === undefined) {
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        }
+        return r;
+    });
 
-    return ret;
+    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
-Sk.abstr.sattr = function (obj, nameJS, data) {
-    var objname = Sk.abstr.typeName(obj);
+Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
+    var objname = Sk.abstr.typeName(obj), r;
 
     if (obj === null) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     } else if (obj["__setattr__"]) {
-        Sk.misceval.callsim(obj["__setattr__"], obj, new Sk.builtin.str(nameJS), data);
+        r = Sk.misceval.callsimOrSuspend(obj["__setattr__"], obj, new Sk.builtin.str(nameJS), data);
+        return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
     } else if (obj.tp$setattr !== undefined) {
         obj.tp$setattr(nameJS, data);
     } else {

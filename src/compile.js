@@ -680,19 +680,26 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             mangled = fixReservedNames(mangled);
             switch (e.ctx) {
                 case AugLoad:
-                    return this._gr("lattr", "Sk.abstr.gattr(", augvar, ",'", mangled, "')");
+                    out("$ret = Sk.abstr.gattr(", augvar, ",'", mangled, "', true);");
+                    this._checkSuspension(e);
+                    return this._gr("lattr", "$ret");
                 case Load:
-                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",'", mangled, "')");
+                    out("$ret = Sk.abstr.gattr(", val, ",'", mangled, "', true);");
+                    this._checkSuspension(e);
+                    return this._gr("lattr", "$ret");
                 case AugStore:
                     // To be more correct, we shouldn't sattr() again if the in-place update worked.
                     // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
+                    out("$ret = undefined;");
                     out("if(", data, "!==undefined){");
-                    out("Sk.abstr.sattr(", augvar, ",'", mangled, "',", data, ");");
+                    out("$ret = Sk.abstr.sattr(", augvar, ",'", mangled, "',", data, ", true);");
                     out("}");
+                    this._checkSuspension(e);
                     break;
                 case Store:
-                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
+                    out("$ret = Sk.abstr.sattr(", val, ",'", mangled, "',", data, ", true);");
+                    this._checkSuspension(e);
                     break;
                 case Del:
                     goog.asserts.fail("todo Del;");

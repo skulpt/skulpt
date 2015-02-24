@@ -17,7 +17,7 @@ name: A
   namespaces: [
     Sym_type: class
     Sym_name: A
-    Sym_lineno: 2
+    Sym_lineno: 3
     Sym_nested: False
     Sym_haschildren: True
     Class_methods: ['__getattr__', '__init__', '__setattr__']
@@ -35,7 +35,7 @@ name: A
       namespaces: [
         Sym_type: function
         Sym_name: __getattr__
-        Sym_lineno: 6
+        Sym_lineno: 7
         Sym_nested: False
         Sym_haschildren: False
         Func_params: ['attr', 'self']
@@ -105,7 +105,7 @@ name: A
       namespaces: [
         Sym_type: function
         Sym_name: __init__
-        Sym_lineno: 3
+        Sym_lineno: 4
         Sym_nested: False
         Sym_haschildren: False
         Func_params: ['self']
@@ -151,7 +151,7 @@ name: A
       namespaces: [
         Sym_type: function
         Sym_name: __setattr__
-        Sym_lineno: 17
+        Sym_lineno: 18
         Sym_nested: False
         Sym_haschildren: False
         Func_params: ['attr', 'self', 'value']
@@ -221,7 +221,190 @@ name: A
           ]
       ]
   ]
+name: B
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: True
+  namespaces: [
+    Sym_type: class
+    Sym_name: B
+    Sym_lineno: 36
+    Sym_nested: False
+    Sym_haschildren: True
+    Class_methods: ['__getattr__', '__setattr__']
+    -- Identifiers --
+    name: __getattr__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __getattr__
+        Sym_lineno: 37
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['attr', 'self']
+        Func_locals: ['attr', 'self']
+        Func_globals: ['object', 'sleep']
+        Func_frees: []
+        -- Identifiers --
+        name: attr
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: object
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: sleep
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+    name: __setattr__
+      is_referenced: False
+      is_imported: False
+      is_parameter: False
+      is_global: False
+      is_declared_global: False
+      is_local: True
+      is_free: False
+      is_assigned: True
+      is_namespace: True
+      namespaces: [
+        Sym_type: function
+        Sym_name: __setattr__
+        Sym_lineno: 41
+        Sym_nested: False
+        Sym_haschildren: False
+        Func_params: ['attr', 'self', 'value']
+        Func_locals: ['attr', 'self', 'value']
+        Func_globals: ['object', 'sleep']
+        Func_frees: []
+        -- Identifiers --
+        name: attr
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: object
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: self
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: sleep
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: value
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+      ]
+  ]
 name: a
+  is_referenced: True
+  is_imported: False
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
+  is_free: False
+  is_assigned: True
+  is_namespace: False
+  namespaces: [
+  ]
+name: b
   is_referenced: True
   is_imported: False
   is_parameter: False
@@ -240,6 +423,18 @@ name: object
   is_global: True
   is_declared_global: False
   is_local: False
+  is_free: False
+  is_assigned: False
+  is_namespace: False
+  namespaces: [
+  ]
+name: sleep
+  is_referenced: False
+  is_imported: True
+  is_parameter: False
+  is_global: False
+  is_declared_global: False
+  is_local: True
   is_free: False
   is_assigned: False
   is_namespace: False
