@@ -303,6 +303,9 @@ Compiler.prototype._jump = function (block) {
     }
 };
 
+/**
+ * @param {Object=} e Object with keys 'lineno' and 'col_offset'
+ */
 Compiler.prototype._checkSuspension = function(e) {
     var retblk;
     if (this.u.canSuspend) {
@@ -310,6 +313,8 @@ Compiler.prototype._checkSuspension = function(e) {
         retblk = this.newBlock("function return or resume suspension");
         this._jump(retblk);
         this.setBlock(retblk);
+
+        e = e || {lineno: "currLineNo", col_offset: "currColNo"};
 
         out ("if ($ret instanceof Sk.misceval.Suspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
 
@@ -558,10 +563,13 @@ Compiler.prototype.vslice = function (s, ctx, obj, dataToStore) {
 
 Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
     if (ctx === Load || ctx === AugLoad) {
-        return this._gr("lsubscr", "Sk.abstr.objectGetItem(", obj, ",", subs, ")");
+        out("$ret = Sk.abstr.objectGetItem(", obj, ",", subs, ", true);");
+        this._checkSuspension();
+        return this._gr("lsubscr", "$ret");
     }
     else if (ctx === Store || ctx === AugStore) {
-        out("Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ");");
+        out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
+        this._checkSuspension();
     }
     else if (ctx === Del) {
         out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
@@ -712,7 +720,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Subscript:
             switch (e.ctx) {
                 case AugLoad:
-                    return this._gr("gitem", "Sk.abstr.objectGetItem(",augvar,",",augsubs,")");
+                    out("$ret = Sk.abstr.objectGetItem(",augvar,",",augsubs,", true);");
+                    this._checkSuspension(e)
+                    return this._gr("gitem", "$ret");
                 case Load:
                 case Store:
                 case Del:
@@ -722,9 +732,11 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                     // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
                     // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
 
+                    out("$ret=undefined;");
                     out("if(", data, "!==undefined){");
-                    out("Sk.abstr.objectSetItem(",augvar,",",augsubs,",",data,")");
+                    out("$ret=Sk.abstr.objectSetItem(",augvar,",",augsubs,",",data,", true)");
                     out("}");
+                    this._checkSuspension(e);
                     break;
                 case Param:
                 default:

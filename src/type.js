@@ -150,17 +150,19 @@ Sk.builtin.type = function (name, bases, dict) {
             goog.asserts.assert(iternextf !== undefined, "iter() should have caught this");
             return Sk.misceval.callsim(iternextf);
         };
-        klass.prototype.tp$getitem = function (key) {
-            var getf = this.tp$getattr("__getitem__");
+        klass.prototype.tp$getitem = function (key, canSuspend) {
+            var getf = this.tp$getattr("__getitem__"), r;
             if (getf !== undefined) {
-                return Sk.misceval.apply(getf, undefined, undefined, undefined, [key]);
+                r = Sk.misceval.applyOrSuspend(getf, undefined, undefined, undefined, [key]);
+                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support indexing");
         };
-        klass.prototype.tp$setitem = function (key, value) {
-            var setf = this.tp$getattr("__setitem__");
+        klass.prototype.tp$setitem = function (key, value, canSuspend) {
+            var setf = this.tp$getattr("__setitem__"), r;
             if (setf !== undefined) {
-                return Sk.misceval.apply(setf, undefined, undefined, undefined, [key, value]);
+                r = Sk.misceval.applyOrSuspend(setf, undefined, undefined, undefined, [key, value]);
+                return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
             }
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
         };
