@@ -179,20 +179,64 @@ Sk.doOneTimeInitialization = function () {
     Sk.builtin.object["$d"] = new Sk.builtin.dict([]);
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+    Sk.builtin.object["__dict__"] = Sk.builtin.object["$d"]; // should be inherited automatically
 
     // setup ["$d"] to make builtins subclassable
-    var builtinObjList = ["dict", "list", "type", "set", "tuple"];
-    var i;
+    var builtinObjList = ["dict", "list", "type", "set", "tuple", "Exception"];
+    var i, k, v;
     var builtin_;
+    //var mro;
+    var prop;
+    var richname;
+
     for(i in builtinObjList) {
         builtin_ = builtinObjList[i];
         Sk.builtin[builtin_]["$d"] = new Sk.builtin.dict([]);
+
         // builtins have only object as __bases__
         Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.object]));
         // builtins have object and self as __mro__
-        Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object, Sk.builtin[builtin_]]));
+        Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin[builtin_], Sk.builtin.object]));
+        // the methods from the parent class get automatically mapped by the buildTypeObj code
 
-        // ToDo: copy existing
+        // copy existing methods to internal dict
+        // we need to map the internal functions to special names
+        // https://docs.python.org/2/reference/datamodel.html#specialnames
+        // https://docs.python.org/2.7/c-api/typeobj.html#tp_as_number
+        // https://docs.python.org/3/reference/datamodel.html#special-method-names
+        // or push them to the prototype
+        // https://docs.python.org/2/reference/datamodel.html#emulating-numeric-types
+
+        for(k in Sk.builtin[builtin_]) {
+            if(Sk.builtin[builtin_].hasOwnProperty(k)) {
+                prop = Sk.builtin[builtin_][k]; // get current property
+                richname = Sk.builtin.dir.slotNameToRichName(k); // get richname from internal slot function names
+                //Sk.debugout("try map: k=" + k + " richname=" + richname + "in builtin: " + builtin_ + " prop type: " + (typeof prop));
+                // this lacks special name look up to properly map them to internal methods
+
+                if(prop === undefined || prop === null) {
+                    //Sk.debugout("cannot map: k= " + k + " richname=" + richname);
+                    continue; // early continue
+                }
+
+                // first case could be merged with large case, though for testing purposes
+                // this allows better debug output
+                if(richname === k && prop instanceof Sk.builtin.func) {
+                    Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(k), prop);
+                } else if(richname !== k && prop instanceof Function) {
+                    Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), new Sk.builtin.func(prop)); // try to add as func
+                } else if(richname !== k && (prop instanceof String || typeof prop === "string")) {
+                    Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), new Sk.builtin.str(prop));
+                } else if(richname !== k && (Sk.builtin.checkFunction(prop) || Sk.builtin.checkString(prop) ||
+                    Sk.builtin.checkClass(prop) || Sk.builtin.checkBool(prop) || Sk.builtin.checkNumber(prop) ||
+                    Sk.builtin.checkNone(prop) || Sk.builtin.checkSequence(prop) || Sk.builtin.checkIterable(prop))) {
+                    Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), prop);
+                } else {
+                    // ignore
+                    //Sk.debugout("could not map: " + k + " in builtin: " + builtin_ + " prop type: " + (typeof prop));
+                }
+            }
+        }
     }
 };
 

@@ -55,7 +55,7 @@ Sk.builtin.set.prototype["$r"] = function () {
 };
 Sk.builtin.set.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 // todo; you can't hash a set() -- what should this be?
-Sk.builtin.set.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+Sk.builtin.set.prototype.tp$hash = Sk.builtin.none.none$;
 
 Sk.builtin.set.prototype.tp$richcompare = function (w, op) {
     // todo; NotImplemented if either isn't a set

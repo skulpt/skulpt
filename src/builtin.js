@@ -595,8 +595,47 @@ Sk.builtin.dir = function dir (x) {
 };
 
 Sk.builtin.dir.slotNameToRichName = function (k) {
-    // todo; map tp$xyz to __xyz__ properly
-    return undefined;
+    var map = {
+        nb$add: "__add__",
+        nb$subtract: "__sub__",
+        nb$multiply: "__mul__",
+        nb$divide: "__div__",
+        nb$floor_divide: "__floordiv__",
+        nb$remainder: "__mod__",
+        nb$power: "__pow__",
+        nb$lshift: "__lshift__",
+        nb$rshift: "__rshift__",
+        nb$and: "__and__",
+        nb$xor: "__xor__",
+        nb$or: "__or__",
+        nb$negative: "__neg__",
+        nb$positive: "__pos__",
+        nb$invert: "__invert__",
+        $d: "__dict__",
+        tp$iter: "__iter__",
+        tp$hash: "__hash__",
+        tp$str: "__str__",
+        tp$mro: "__mro__",
+        tp$name: "__name__",
+        tp$richcompare: "__cmp__",
+        $r: "__repr__",
+        sq$length: "__len__",
+        sq$contains: "__contains__",
+        mp$length: "__len__",
+        ob$type: "__class__",
+
+    };
+
+   if (k.substring(0,3) === "tp$") {
+       return "__" + k.substring(3) + "__";
+    } else if(k.lastIndexOf("nb$inplace_", 0) === 0) {
+        // inplace ops
+        return "__i" + k.substring(11) + "__";
+    } else if(map[k] !== undefined) {
+        return map[k];
+    }
+
+    return k;
 };
 
 Sk.builtin.repr = function repr (x) {
@@ -696,14 +735,18 @@ Sk.builtin.hash = function hash (value) {
         return 0;
     }};
 
+    if ((value instanceof Object) && Sk.builtin.checkNone(value.tp$hash)) {
+        // python sets the hash function to None , so we have to catch this case here
+        throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
+    }
+
     if ((value instanceof Object) && (value.tp$hash !== undefined)) {
         if (value.$savedHash_) {
             return value.$savedHash_;
         }
         value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
-    }
-    else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
+    } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
         return Sk.misceval.callsim(value.__hash__, value);
     }
     else if (value instanceof Sk.builtin.bool) {
@@ -728,7 +771,6 @@ Sk.builtin.hash = function hash (value) {
     }
 
     return new Sk.builtin.str((typeof value) + " " + String(value));
-    // todo; throw properly for unhashable types
 };
 
 Sk.builtin.getattr = function getattr (obj, name, default_) {

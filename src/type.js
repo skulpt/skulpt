@@ -411,7 +411,7 @@ Sk.builtin.type.buildMRO_ = function (klass) {
         [klass]
     ];
 
-    // Sk.debugout("buildMRO for", klass.tp$name);
+    //Sk.debugout("buildMRO for", klass.tp$name);
 
     var kbases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
     for (i = 0; i < kbases.v.length; ++i) {

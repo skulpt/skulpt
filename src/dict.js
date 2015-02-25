@@ -251,7 +251,7 @@ Sk.builtin.dict.prototype.mp$length = function () {
 };
 
 Sk.builtin.dict.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.dict.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+Sk.builtin.dict.prototype.tp$hash = Sk.builtin.none.none$; // hash should be NoneType when not available
 
 Sk.builtin.dict.prototype.tp$richcompare = function (other, op) {
     // if the comparison allows for equality then short-circuit it here
