@@ -77,13 +77,21 @@ $builtinmodule = function (name) {
 	    
 	    // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
 	    $loc.updatePixel = new Sk.builtin.func(function (self, pixel){
-            var x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
-	        var y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
-            var index = (y * 4) * self.width + (x * 4);
-            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
-            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
-            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
-            self.imagedata.data[index + 3] = 255;
+            var susp = new Sk.misceval.Suspension();
+            susp.resume = function() { return Sk.builtin.none.none$; }
+            susp.data = {
+                type: "Sk.promise",
+                promise: new Promise(function(resolve) {
+                    var x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
+                    var y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
+                    var index = (y * 4) * self.width + (x * 4);
+                    self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+                    self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+                    self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+                    self.imagedata.data[index + 3] = 255;
+                    resolve();
+                })};
+            return susp;
 	    });
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
