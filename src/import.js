@@ -181,6 +181,12 @@ Sk.doOneTimeInitialization = function () {
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
     Sk.builtin.object["__dict__"] = Sk.builtin.object["$d"]; // should be inherited automatically
 
+    /*
+        Exceptions need special handling, because makeIntoTypeObj is not available when we are defining them
+        ToDo: do we maintain a list of Exceptions here?
+    */
+    Sk.builtin.Exception.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("Exception", Sk.builtin.Exception);
+
     // setup ["$d"] to make builtins subclassable
     var builtinObjList = ["dict", "list", "type", "set", "tuple", "Exception"];
     var i, k, v;

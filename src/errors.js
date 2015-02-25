@@ -41,7 +41,10 @@ Sk.builtin.Exception = function (args) {
         this.traceback.push({lineno: this.args.v[2],
                              filename: this.args.v[1].v || "<unknown>"});
     }
+
+    this.__class__ = Sk.builtin.Exception;
 };
+
 Sk.builtin.Exception.prototype.tp$name = "Exception";
 
 Sk.builtin.Exception.prototype.tp$str = function () {
