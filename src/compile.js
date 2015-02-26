@@ -533,11 +533,6 @@ Compiler.prototype.eslice = function (dims) {
 Compiler.prototype.vslicesub = function (s) {
     var subs;
     switch (s.constructor) {
-        case Number:
-        case String:
-            // Already compiled, should only happen for augmented assignments
-            subs = s;
-            break;
         case Index:
             subs = this.vexpr(s.value);
             break;
@@ -617,10 +612,12 @@ Compiler.prototype.cboolop = function (e) {
  *
  * @param {Object} e
  * @param {string=} data data to store in a store operation
- * @param {Object=} augstoreval value to store to for an aug operation (not
- * vexpr'd yet)
+ * @param {Object=} augvar var to load/store to for augmented assignments like '+='.
+ *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
+ * @param {Object=} augsubs precomputed subscript for augmented assignments like '+='.
+ *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
  */
-Compiler.prototype.vexpr = function (e, data, augstoreval) {
+Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     var mangled;
     var val;
     var result;
@@ -673,7 +670,7 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Str:
             return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");
         case Attribute:
-            if (e.ctx !== AugStore) {
+            if (e.ctx !== AugLoad && e.ctx !== AugStore) {
                 val = this.vexpr(e.value);
             }
             mangled = e.attr["$r"]().v;
@@ -683,12 +680,15 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
             mangled = fixReservedNames(mangled);
             switch (e.ctx) {
                 case AugLoad:
+                    return this._gr("lattr", "Sk.abstr.gattr(", augvar, ",'", mangled, "')");
                 case Load:
                     return this._gr("lattr", "Sk.abstr.gattr(", val, ",'", mangled, "')");
                 case AugStore:
-                    out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
-                    val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
+                    // To be more correct, we shouldn't sattr() again if the in-place update worked.
+                    // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
+                    // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
+                    out("if(", data, "!==undefined){");
+                    out("Sk.abstr.sattr(", augvar, ",'", mangled, "',", data, ");");
                     out("}");
                     break;
                 case Store:
@@ -705,14 +705,18 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Subscript:
             switch (e.ctx) {
                 case AugLoad:
+                    return this._gr("gitem", "Sk.abstr.objectGetItem(",augvar,",",augsubs,")");
                 case Load:
                 case Store:
                 case Del:
                     return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
                 case AugStore:
-                    out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
-                    val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    this.vslice(e.slice, e.ctx, val, data);
+                    // To be more correct, we shouldn't sattr() again if the in-place update worked.
+                    // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
+                    // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
+
+                    out("if(", data, "!==undefined){");
+                    out("Sk.abstr.objectSetItem(",augvar,",",augsubs,",",data,")");
                     out("}");
                     break;
                 case Param:
@@ -760,21 +764,23 @@ Compiler.prototype.caugassign = function (s) {
     e = s.target;
     switch (e.constructor) {
         case Attribute:
+            to = this.vexpr(e.value);
             auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
-            aug = this.vexpr(auge);
+            aug = this.vexpr(auge, undefined, to);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopattr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
             auge.ctx = AugStore;
-            return this.vexpr(auge, res, e.value);
+            return this.vexpr(auge, res, to);
         case Subscript:
             // Only compile the subscript value once
+            to = this.vexpr(e.value);
             augsub = this.vslicesub(e.slice);
             auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
-            aug = this.vexpr(auge);
+            aug = this.vexpr(auge, undefined, to, augsub);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopsubscr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
             auge.ctx = AugStore;
-            return this.vexpr(auge, res, e.value);
+            return this.vexpr(auge, res, to, augsub);
         case Name:
             to = this.nameop(e.id, Load);
             val = this.vexpr(s.value);
