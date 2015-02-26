@@ -16,18 +16,43 @@ $builtinmodule = function (name) {
 
     var image = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, imageId) {
-            self.image = document.getElementById(imageId.v);
-            if (self.image == null) {
-                throw "There is no image on this page named: " + imageId.v;
+            try {
+                self.image = document.getElementById(Sk.ffi.remapToJs(imageId));
+            } catch(e) {
+                self.image = null;
             }
-            self.width = self.image.width;
-            self.height = self.image.height;
-            self.canvas = document.createElement("canvas");
-            self.canvas.height = self.height;
-            self.canvas.width = self.width;
-            self.ctx = self.canvas.getContext("2d");
-            self.ctx.drawImage(self.image, 0, 0);
-            self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
+            if (self.image == null) {
+                var susp = new Sk.misceval.Suspension();
+                susp.resume = function() {
+                    // Should the post image get stuff go here??
+                    console.log("resuming");
+                };
+                susp.data = {
+                    type    : 'Sk.promise',
+                    promise : new Promise(function(resolve) {
+                            var newImg = new Image();
+                            newImg.crossOrigin = '';
+                            newImg.onload = function() {
+                                self.image = this;
+                                console.log('got goldy')
+                                self.width = self.image.width;
+                                self.height = self.image.height;
+                                self.canvas = document.createElement("canvas");
+                                self.canvas.height = self.height;
+                                self.canvas.width = self.width;
+                                self.ctx = self.canvas.getContext("2d");
+                                self.ctx.drawImage(self.image, 0, 0);
+                                self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
+                                resolve();
+                            };
+                            // look for mapping from imagename to url and possible an image proxy server
+                            newImg.src = Sk.ffi.remapToJs(imageId);
+                        }
+                    )
+                };
+                return susp;
+            }
+
         });
         
 	    //get a one-dimensional array of pixel objects - Zhu
