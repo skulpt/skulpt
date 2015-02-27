@@ -25,18 +25,23 @@ $builtinmodule = function (name) {
                 var susp = new Sk.misceval.Suspension();
                 susp.resume = function() {
                     // Should the post image get stuff go here??
-                    console.log("resuming");
+                    if (susp.data["error"]) {
+                        throw new Sk.builtin.IOError(susp.data["error"].message);
+                    }
                 };
                 susp.data = {
                     type    : 'Sk.promise',
-                    promise : new Promise(function(resolve) {
+                    promise : new Promise(function(resolve,reject) {
                             var newImg = new Image();
                             newImg.crossOrigin = '';
+                            newImg.onerror = function() {
+                                reject(Error("Failed to load URL: "+ newImg.src));
+                            }
                             newImg.onload = function() {
                                 self.image = this;
-                                console.log('got goldy')
                                 self.width = self.image.width;
                                 self.height = self.image.height;
+                                self.delay = 0;
                                 self.canvas = document.createElement("canvas");
                                 self.canvas.height = self.height;
                                 self.canvas.width = self.width;
@@ -54,7 +59,20 @@ $builtinmodule = function (name) {
             }
 
         });
-        
+
+        var remapImageIdToURL = function(imageId) {
+            // if imageId starts with http -- OK
+            // if imageId is in Sk.imageMap -- look it up
+            // if imageId is the name of an image file prepend http://host/app/book/_static/
+            // if image proxy server is configured construct url for proxy
+            // return the final URL
+        }
+
+        $loc.setDelay = new Sk.builtin.func(function(self,delay) {
+            self.delay = Sk.ffi.remapToJs(delay);
+        });
+
+
 	    //get a one-dimensional array of pixel objects - Zhu
 	    $loc.getPixels = new Sk.builtin.func(function(self){
 		    var arr = [];//initial array
@@ -106,7 +124,7 @@ $builtinmodule = function (name) {
             susp.resume = function() { return Sk.builtin.none.none$; }
             susp.data = {
                 type: "Sk.promise",
-                promise: new Promise(function(resolve) {
+                promise: new Promise(function(resolve, reject) {
                     var x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
                     var y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
                     var index = (y * 4) * self.width + (x * 4);
@@ -114,7 +132,13 @@ $builtinmodule = function (name) {
                     self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
                     self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
                     self.imagedata.data[index + 3] = 255;
-                    resolve();
+                    self.lastCtx.putImageData(self.imagedata, 0, 0, x, y, 1, 1);
+
+                    if (self.delay > 0) {
+                        window.setTimeout(resolve, self.delay);
+                    } else {
+                        resolve();
+                    }
                 })};
             return susp;
 	    });
@@ -133,6 +157,7 @@ $builtinmodule = function (name) {
             uly = Sk.builtin.asnum$(uly);
             var can = Sk.misceval.callsim(win.getWin, win);
             var ctx = can.getContext("2d");
+            self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
             //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
             if (!ulx) {
                 ulx = 0;
