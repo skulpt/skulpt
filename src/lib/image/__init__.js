@@ -13,6 +13,7 @@ $builtinmodule = function (name) {
     var pixel;
     var eImage;
     var mod = {};
+    var updateImageAndSuspend;
 
     var image = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, imageId) {
@@ -96,6 +97,24 @@ $builtinmodule = function (name) {
             return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
         });
 
+        updateImageAndSuspend = function(self,x,y) {
+            var susp = new Sk.misceval.Suspension();
+            susp.resume = function() { return Sk.builtin.none.none$; }
+            susp.data = {
+                type : "Sk.promise",
+                promise : new Promise(function(resolve, reject) {
+                    self.lastCtx.putImageData(self.imagedata, 0, 0, x, y, 1, 1);
+
+                    if (self.delay > 0) {
+                        window.setTimeout(resolve, self.delay);
+                    } else {
+                        resolve();
+                    }
+                })
+            }
+            return susp;
+        }
+
         $loc.setPixel = new Sk.builtin.func(function (self, x, y, pix) {
             x = Sk.builtin.asnum$(x);
             y = Sk.builtin.asnum$(y);
@@ -104,6 +123,7 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
             self.imagedata.data[index + 3] = 255;
+            return updateImageAndSuspend(self,x,y);
         });
         
 	    // update the image with the pixel at the given count - Zhu
@@ -116,6 +136,7 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
+            return updateImageAndSuspend(self,x,y);
 	    });
 	    
 	    // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
@@ -152,18 +173,35 @@ $builtinmodule = function (name) {
         });
 
         $loc.draw = new Sk.builtin.func(function (self, win, ulx, uly) {
-            win = Sk.builtin.asnum$(win);
-            ulx = Sk.builtin.asnum$(ulx);
-            uly = Sk.builtin.asnum$(uly);
-            var can = Sk.misceval.callsim(win.getWin, win);
-            var ctx = can.getContext("2d");
-            self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
-            //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
-            if (!ulx) {
-                ulx = 0;
-                uly = 0;
-            }
-            ctx.putImageData(self.imagedata, ulx, uly);
+            var susp = new Sk.misceval.Suspension();
+            susp.resume = function() { return Sk.builtin.none.none$; }
+            susp.data = {
+                type: "Sk.promise",
+                promise : new Promise(function(resolve,reject) {
+                    win = Sk.builtin.asnum$(win);
+                    ulx = Sk.builtin.asnum$(ulx);
+                    uly = Sk.builtin.asnum$(uly);
+                    var can = Sk.misceval.callsim(win.getWin, win);
+                    var ctx = can.getContext("2d");
+                    self.lastUlx = ulx;
+                    self.lastUly = uly;
+                    self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
+                    //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
+                    if (!ulx) {
+                        ulx = 0;
+                        uly = 0;
+                    }
+                    ctx.putImageData(self.imagedata, ulx, uly);
+
+                    if (self.delay > 0) {
+                        window.setTimeout(resolve, self.delay);
+                    } else {
+                        window.setTimeout(resolve, 200);
+                    }
+                })
+            };
+            return susp;
+
         });
 
         // toList
