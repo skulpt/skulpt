@@ -13,7 +13,7 @@ $builtinmodule = function (name) {
     var pixel;
     var eImage;
     var mod = {};
-    var updateImageAndSuspend;
+    var updateCanvasAndSuspend;
 
     var image = function ($gbl, $loc) {
         $loc.__init__ = new Sk.builtin.func(function (self, imageId) {
@@ -43,6 +43,10 @@ $builtinmodule = function (name) {
                                 self.width = self.image.width;
                                 self.height = self.image.height;
                                 self.delay = 0;
+                                self.updateCount = 0;
+                                self.updateInterval = 1;
+                                self.lastx = 0;
+                                self.lasty = 0;
                                 self.canvas = document.createElement("canvas");
                                 self.canvas.height = self.height;
                                 self.canvas.width = self.width;
@@ -69,8 +73,15 @@ $builtinmodule = function (name) {
             // return the final URL
         }
 
-        $loc.setDelay = new Sk.builtin.func(function(self,delay) {
+        $loc.setDelay = new Sk.builtin.func(function(self,delay,interval) {
+            var i;
             self.delay = Sk.ffi.remapToJs(delay);
+            i = Sk.builtin.asnum$(interval);
+            if (!i) {
+                self.updateInterval = 1;
+            } else {
+                self.updateInterval = i;
+            }
         });
 
 
@@ -97,16 +108,34 @@ $builtinmodule = function (name) {
             return Sk.misceval.callsim(mod.Pixel, red, green, blue, x, y);
         });
 
-        updateImageAndSuspend = function(self,x,y) {
+        updateCanvasAndSuspend = function(self,x,y) {
             var susp = new Sk.misceval.Suspension();
             susp.resume = function() { return Sk.builtin.none.none$; }
             susp.data = {
                 type : "Sk.promise",
                 promise : new Promise(function(resolve, reject) {
-                    self.lastCtx.putImageData(self.imagedata, 0, 0, x, y, 1, 1);
-
-                    if (self.delay > 0) {
-                        window.setTimeout(resolve, self.delay);
+                    self.updateCount++;
+                    if ((self.updateCount % self.updateInterval) === 0) {
+                        if (self.lastx + self.updateInterval >= self.width) {
+                            self.lastCtx.putImageData(self.imagedata,self.lastUlx, self.lastUly,
+                                0, self.lasty,self.width,2);
+                        } else if (self.lasty+self.updateInterval >= self.height) {
+                            self.lastCtx.putImageData(self.imagedata,self.lastUlx, self.lastUly,
+                                self.lastx, 0,2,self.height);
+                        } else {
+                            self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
+                                Math.min(x, self.lastx),
+                                Math.min(y, self.lasty),
+                                Math.max(Math.abs(x - self.lastx),1),
+                                Math.max(Math.abs(y - self.lasty),1));
+                        }
+                        self.lastx = x;
+                        self.lasty = y;
+                        if (self.delay > 0) {
+                            window.setTimeout(resolve, self.delay);
+                        } else {
+                            resolve();
+                        }
                     } else {
                         resolve();
                     }
@@ -123,7 +152,7 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getGreen, pix));
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pix.getBlue, pix));
             self.imagedata.data[index + 3] = 255;
-            return updateImageAndSuspend(self,x,y);
+            return updateCanvasAndSuspend(self,x,y);
         });
         
 	    // update the image with the pixel at the given count - Zhu
@@ -136,32 +165,19 @@ $builtinmodule = function (name) {
             self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
             self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
             self.imagedata.data[index + 3] = 255;
-            return updateImageAndSuspend(self,x,y);
+            return updateCanvasAndSuspend(self,x,y);
 	    });
 	    
 	    // new updatePixel that uses the saved x and y location in the pixel - Barb Ericson
 	    $loc.updatePixel = new Sk.builtin.func(function (self, pixel){
-            var susp = new Sk.misceval.Suspension();
-            susp.resume = function() { return Sk.builtin.none.none$; }
-            susp.data = {
-                type: "Sk.promise",
-                promise: new Promise(function(resolve, reject) {
-                    var x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
-                    var y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
-                    var index = (y * 4) * self.width + (x * 4);
-                    self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
-                    self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
-                    self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
-                    self.imagedata.data[index + 3] = 255;
-                    self.lastCtx.putImageData(self.imagedata, 0, 0, x, y, 1, 1);
-
-                    if (self.delay > 0) {
-                        window.setTimeout(resolve, self.delay);
-                    } else {
-                        resolve();
-                    }
-                })};
-            return susp;
+            var x = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getX, pixel));
+            var y = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getY, pixel));
+            var index = (y * 4) * self.width + (x * 4);
+            self.imagedata.data[index] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getRed, pixel));
+            self.imagedata.data[index + 1] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getGreen, pixel));
+            self.imagedata.data[index + 2] = Sk.builtin.asnum$(Sk.misceval.callsim(pixel.getBlue, pixel));
+            self.imagedata.data[index + 3] = 255;
+            return updateCanvasAndSuspend(self,x,y);
 	    });
 
         $loc.getHeight = new Sk.builtin.func(function (self) {
@@ -183,14 +199,14 @@ $builtinmodule = function (name) {
                     uly = Sk.builtin.asnum$(uly);
                     var can = Sk.misceval.callsim(win.getWin, win);
                     var ctx = can.getContext("2d");
-                    self.lastUlx = ulx;
-                    self.lastUly = uly;
-                    self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
-                    //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
                     if (!ulx) {
                         ulx = 0;
                         uly = 0;
                     }
+                    self.lastUlx = ulx;
+                    self.lastUly = uly;
+                    self.lastCtx = ctx;  // save a reference to the context of the window the image was last drawn in
+                    //ctx.putImageData(self.imagedata,0,0,0,0,self.imagedata.width,self.imagedata.height);
                     ctx.putImageData(self.imagedata, ulx, uly);
 
                     if (self.delay > 0) {
