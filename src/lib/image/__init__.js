@@ -14,11 +14,30 @@ $builtinmodule = function (name) {
     var eImage;
     var mod = {};
     var updateCanvasAndSuspend;
+    var initializeImage;
 
     var image = function ($gbl, $loc) {
+        initializeImage = function(self) {
+            self.width = self.image.width;
+            self.height = self.image.height;
+            self.delay = 0;
+            self.updateCount = 0;
+            self.updateInterval = 1;
+            self.lastx = 0;
+            self.lasty = 0;
+            self.canvas = document.createElement("canvas");
+            self.canvas.height = self.height;
+            self.canvas.width = self.width;
+            self.ctx = self.canvas.getContext("2d");
+            self.ctx.drawImage(self.image, 0, 0);
+            self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
+        }
+
+
         $loc.__init__ = new Sk.builtin.func(function (self, imageId) {
             try {
                 self.image = document.getElementById(Sk.ffi.remapToJs(imageId));
+                initializeImage(self);
             } catch(e) {
                 self.image = null;
             }
@@ -40,19 +59,7 @@ $builtinmodule = function (name) {
                             }
                             newImg.onload = function() {
                                 self.image = this;
-                                self.width = self.image.width;
-                                self.height = self.image.height;
-                                self.delay = 0;
-                                self.updateCount = 0;
-                                self.updateInterval = 1;
-                                self.lastx = 0;
-                                self.lasty = 0;
-                                self.canvas = document.createElement("canvas");
-                                self.canvas.height = self.height;
-                                self.canvas.width = self.width;
-                                self.ctx = self.canvas.getContext("2d");
-                                self.ctx.drawImage(self.image, 0, 0);
-                                self.imagedata = self.ctx.getImageData(0, 0, self.width, self.height);
+                                initializeImage(self);
                                 resolve();
                             };
                             // look for mapping from imagename to url and possible an image proxy server
