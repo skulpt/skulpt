@@ -1,38 +1,54 @@
 /**
  * @constructor
  * @param {Array.<Object>=} L
+ * @param {boolean=} canSuspend (defaults to true in this case, as list() is used directly from Python)
  * @extends Sk.builtin.object
  */
-Sk.builtin.list = function (L) {
-    var it, i;
-    if (!(this instanceof Sk.builtin.list)) {
-        return new Sk.builtin.list(L);
+Sk.builtin.list = function (L, canSuspend) {
+    var v, it;
+
+    if (this instanceof Sk.builtin.list) {
+        canSuspend = false;
+    } else if (canSuspend === undefined) {
+        // Default to true in this case, because 'list' gets called directly from Python
+        canSuspend = true;
     }
 
     if (L === undefined) {
-        this.v = [];
+        v = [];
     }
     else if (Object.prototype.toString.apply(L) === "[object Array]") {
-        this.v = L;
+        v = L;
+    }
+    else if (L.tp$iter) {
+        v = [];
+        it = L.tp$iter();
+        return (function next(i) {
+            while(true) {
+                if (i instanceof Sk.misceval.Suspension) {
+                    return new Sk.misceval.Suspension(next, i);
+                } else if (i === undefined) {
+                    // done!
+                    return new Sk.builtin.list(v);
+                } else {
+                    v.push(i);
+                    i = it.tp$iternext(canSuspend);
+                }
+            }
+        })(it.tp$iternext(canSuspend));
     }
     else {
-        if (L.tp$iter) {
-            this.v = [];
-            for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                this.v.push(i);
-            }
-        }
-        else {
-            throw new Sk.builtin.ValueError("expecting Array or iterable");
-        }
+        throw new Sk.builtin.ValueError("expecting Array or iterable");
     }
 
+    if (!(this instanceof Sk.builtin.list)) {
+        return new Sk.builtin.list(v);
+    }
     this.__class__ = Sk.builtin.list;
 
-    this["v"] = this.v;
+    this["v"] = this.v = v;
     return this;
 };
-
 
 Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("list", Sk.builtin.list);
 
@@ -67,7 +83,7 @@ Sk.builtin.list.prototype.list_concat_ = function (other) {
     for (i = 0; i < other.v.length; ++i) {
         ret.push(other.v[i]);
     }
-    return new Sk.builtin.list(ret);
+    return new Sk.builtin.list(ret, false);
 };
 
 Sk.builtin.list.prototype.list_extend_ = function (other) {
@@ -129,7 +145,7 @@ Sk.builtin.list.prototype.list_ass_slice_ = function (ilow, ihigh, v) {
     ihigh = Sk.builtin.asnum$(ihigh);
 
     if (v.tp$iter) {
-        args = new Sk.builtin.list(v).v.slice(0);
+        args = new Sk.builtin.list(v, false).v.slice(0);
     } else {
         throw new Sk.builtin.TypeError("can only assign an iterable");
     }
@@ -247,7 +263,7 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
             ret.push(this.v[j]);
         }
     }
-    return new Sk.builtin.list(ret);
+    return new Sk.builtin.list(ret, false);
 };
 Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.sq$repeat;
 Sk.builtin.list.prototype.nb$inplace_multiply = Sk.builtin.list.prototype.sq$repeat;
@@ -285,7 +301,7 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
         index.sssiter$(this, function (i, wrt) {
             ret.push(wrt.v[i]);
         });
-        return new Sk.builtin.list(ret);
+        return new Sk.builtin.list(ret, false);
     }
 
     throw new Sk.builtin.TypeError("list indices must be integers, not " + Sk.abstr.typeName(index));
