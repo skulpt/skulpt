@@ -7,13 +7,20 @@
 Sk.builtin.file = function (name, mode, buffering) {
     var i;
     var elem;
+    var event;
+
+    // r = read-only, w = write (erasing existing contents), a = append, r+ = read/write
     this.mode = mode;
     this.name = name;
     this.closed = false;
     if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
         elem = document.getElementById(name.v);
         if (elem == null) {
-            throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+            if (mode.v == "w" || mode.v == "a") {
+              this.data$ = "";
+            } else {
+              throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
+            }
         } else {
             if (elem.nodeName.toLowerCase() == "textarea") {
                 this.data$ = elem.value;
@@ -22,6 +29,11 @@ Sk.builtin.file = function (name, mode, buffering) {
                 this.data$ = elem.textContent;
             }
         }
+
+        event = document.createEvent("Event");
+        event.data = this.mode.v + ":" + this.name.v;
+        event.initEvent("SkfileOpen", true, true);
+        document.dispatchEvent(event);
     } else {
         this.data$ = Sk.read(name.v);
     }
@@ -146,7 +158,11 @@ Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size
 });
 
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
-    goog.asserts.fail();
+    var event = document.createEvent("Event");
+    event.data = self.name.v + ":" + str.v;
+    event.initEvent("SkfileWrite", true, true);
+    document.dispatchEvent(event);
+    //goog.asserts.fail();
 });
 
 

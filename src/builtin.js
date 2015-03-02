@@ -610,9 +610,9 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
     if (mode === undefined) {
         mode = new Sk.builtin.str("r");
     }
-    if (mode.v !== "r" && mode.v !== "rb") {
-        throw "todo; haven't implemented non-read opens";
-    }
+    //if (mode.v !== "r" && mode.v !== "rb") {
+    //    throw "todo: haven't implemented non-read opens";
+    //}
     return new Sk.builtin.file(filename, mode, bufsize);
 };
 
