@@ -20,9 +20,9 @@ name: A
     Sym_lineno: 3
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ['__getattr__', '__init__', '__setattr__']
+    Class_methods: ['__getitem__', '__setitem__']
     -- Identifiers --
-    name: __getattr__
+    name: __getitem__
       is_referenced: False
       is_imported: False
       is_parameter: False
@@ -34,27 +34,15 @@ name: A
       is_namespace: True
       namespaces: [
         Sym_type: function
-        Sym_name: __getattr__
-        Sym_lineno: 7
+        Sym_name: __getitem__
+        Sym_lineno: 4
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ['attr', 'self']
-        Func_locals: ['attr', 'self']
+        Func_params: ['item', 'self']
+        Func_locals: ['item', 'self']
         Func_globals: ['isinstance', 'str']
         Func_frees: []
         -- Identifiers --
-        name: attr
-          is_referenced: True
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
         name: isinstance
           is_referenced: True
           is_imported: False
@@ -62,6 +50,18 @@ name: A
           is_global: True
           is_declared_global: False
           is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: item
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
           is_free: False
           is_assigned: False
           is_namespace: False
@@ -92,7 +92,7 @@ name: A
           namespaces: [
           ]
       ]
-    name: __init__
+    name: __setitem__
       is_referenced: False
       is_imported: False
       is_parameter: False
@@ -104,73 +104,15 @@ name: A
       is_namespace: True
       namespaces: [
         Sym_type: function
-        Sym_name: __init__
-        Sym_lineno: 4
+        Sym_name: __setitem__
+        Sym_lineno: 11
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ['self']
-        Func_locals: ['self']
-        Func_globals: ['object']
-        Func_frees: []
-        -- Identifiers --
-        name: object
-          is_referenced: True
-          is_imported: False
-          is_parameter: False
-          is_global: True
-          is_declared_global: False
-          is_local: False
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
-        name: self
-          is_referenced: True
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
-      ]
-    name: __setattr__
-      is_referenced: False
-      is_imported: False
-      is_parameter: False
-      is_global: False
-      is_declared_global: False
-      is_local: True
-      is_free: False
-      is_assigned: True
-      is_namespace: True
-      namespaces: [
-        Sym_type: function
-        Sym_name: __setattr__
-        Sym_lineno: 18
-        Sym_nested: False
-        Sym_haschildren: False
-        Func_params: ['attr', 'self', 'value']
-        Func_locals: ['attr', 'self', 'value']
+        Func_params: ['item', 'self', 'value']
+        Func_locals: ['item', 'self', 'value']
         Func_globals: ['isinstance', 'str']
         Func_frees: []
         -- Identifiers --
-        name: attr
-          is_referenced: True
-          is_imported: False
-          is_parameter: True
-          is_global: False
-          is_declared_global: False
-          is_local: True
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
         name: isinstance
           is_referenced: True
           is_imported: False
@@ -178,6 +120,18 @@ name: A
           is_global: True
           is_declared_global: False
           is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: item
+          is_referenced: True
+          is_imported: False
+          is_parameter: True
+          is_global: False
+          is_declared_global: False
+          is_local: True
           is_free: False
           is_assigned: False
           is_namespace: False
@@ -234,12 +188,12 @@ name: B
   namespaces: [
     Sym_type: class
     Sym_name: B
-    Sym_lineno: 36
+    Sym_lineno: 24
     Sym_nested: False
     Sym_haschildren: True
-    Class_methods: ['__getattr__', '__setattr__']
+    Class_methods: ['__getitem__', '__setitem__']
     -- Identifiers --
-    name: __getattr__
+    name: __getitem__
       is_referenced: False
       is_imported: False
       is_parameter: False
@@ -251,16 +205,16 @@ name: B
       is_namespace: True
       namespaces: [
         Sym_type: function
-        Sym_name: __getattr__
-        Sym_lineno: 37
+        Sym_name: __getitem__
+        Sym_lineno: 25
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ['attr', 'self']
-        Func_locals: ['attr', 'self']
-        Func_globals: ['object', 'sleep']
+        Func_params: ['item', 'self']
+        Func_locals: ['item', 'self']
+        Func_globals: ['sleep']
         Func_frees: []
         -- Identifiers --
-        name: attr
+        name: item
           is_referenced: True
           is_imported: False
           is_parameter: True
@@ -272,20 +226,8 @@ name: B
           is_namespace: False
           namespaces: [
           ]
-        name: object
-          is_referenced: True
-          is_imported: False
-          is_parameter: False
-          is_global: True
-          is_declared_global: False
-          is_local: False
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
         name: self
-          is_referenced: True
+          is_referenced: False
           is_imported: False
           is_parameter: True
           is_global: False
@@ -309,7 +251,7 @@ name: B
           namespaces: [
           ]
       ]
-    name: __setattr__
+    name: __setitem__
       is_referenced: False
       is_imported: False
       is_parameter: False
@@ -321,16 +263,16 @@ name: B
       is_namespace: True
       namespaces: [
         Sym_type: function
-        Sym_name: __setattr__
-        Sym_lineno: 41
+        Sym_name: __setitem__
+        Sym_lineno: 30
         Sym_nested: False
         Sym_haschildren: False
-        Func_params: ['attr', 'self', 'value']
-        Func_locals: ['attr', 'self', 'value']
-        Func_globals: ['object', 'sleep']
+        Func_params: ['item', 'self', 'value']
+        Func_locals: ['item', 'self', 'value']
+        Func_globals: ['sleep', 'str']
         Func_frees: []
         -- Identifiers --
-        name: attr
+        name: item
           is_referenced: True
           is_imported: False
           is_parameter: True
@@ -342,20 +284,8 @@ name: B
           is_namespace: False
           namespaces: [
           ]
-        name: object
-          is_referenced: True
-          is_imported: False
-          is_parameter: False
-          is_global: True
-          is_declared_global: False
-          is_local: False
-          is_free: False
-          is_assigned: False
-          is_namespace: False
-          namespaces: [
-          ]
         name: self
-          is_referenced: True
+          is_referenced: False
           is_imported: False
           is_parameter: True
           is_global: False
@@ -367,6 +297,18 @@ name: B
           namespaces: [
           ]
         name: sleep
+          is_referenced: True
+          is_imported: False
+          is_parameter: False
+          is_global: True
+          is_declared_global: False
+          is_local: False
+          is_free: False
+          is_assigned: False
+          is_namespace: False
+          namespaces: [
+          ]
+        name: str
           is_referenced: True
           is_imported: False
           is_parameter: False
@@ -413,18 +355,6 @@ name: b
   is_local: True
   is_free: False
   is_assigned: True
-  is_namespace: False
-  namespaces: [
-  ]
-name: object
-  is_referenced: True
-  is_imported: False
-  is_parameter: False
-  is_global: True
-  is_declared_global: False
-  is_local: False
-  is_free: False
-  is_assigned: False
   is_namespace: False
   namespaces: [
   ]

@@ -86,7 +86,7 @@ Sk.misceval.asIndex = function (o) {
 /**
  * return u[v:w]
  */
-Sk.misceval.applySlice = function (u, v, w) {
+Sk.misceval.applySlice = function (u, v, w, canSuspend) {
     var ihigh;
     var ilow;
     if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
@@ -100,14 +100,14 @@ Sk.misceval.applySlice = function (u, v, w) {
         }
         return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
     }
-    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null));
+    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
 };
 goog.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
 
 /**
  * u[v:w] = x
  */
-Sk.misceval.assignSlice = function (u, v, w, x) {
+Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
     var slice;
     var ihigh;
     var ilow;
@@ -127,7 +127,7 @@ Sk.misceval.assignSlice = function (u, v, w, x) {
             return Sk.abstr.objectDelItem(u, slice);
         }
         else {
-            return Sk.abstr.objectSetItem(u, slice, x);
+            return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
         }
     }
 };

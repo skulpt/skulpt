@@ -484,7 +484,7 @@ Sk.abstr.sequenceGetCountOf = function (seq, ob) {
     throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
-Sk.abstr.sequenceGetItem = function (seq, i) {
+Sk.abstr.sequenceGetItem = function (seq, i, canSuspend) {
     var seqtypename;
     if (seq.mp$subscript) {
         return seq.mp$subscript(i);
@@ -494,7 +494,7 @@ Sk.abstr.sequenceGetItem = function (seq, i) {
     throw new Sk.builtin.TypeError("'" + seqtypename + "' object is unsubscriptable");
 };
 
-Sk.abstr.sequenceSetItem = function (seq, i, x) {
+Sk.abstr.sequenceSetItem = function (seq, i, x, canSuspend) {
     var seqtypename;
     if (seq.mp$ass_subscript) {
         return seq.mp$ass_subscript(i, x);
@@ -642,17 +642,17 @@ Sk.abstr.objectDelItem = function (o, key) {
 };
 goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 
-Sk.abstr.objectGetItem = function (o, key) {
+Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
     if (o !== null) {
         if (o.mp$subscript) {
-            return o.mp$subscript(key);
+            return o.mp$subscript(key, canSuspend);
         }
         else if (Sk.misceval.isIndex(key) && o.sq$item) {
-            return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key));
+            return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
         }
         else if (o.tp$getitem) {
-            return o.tp$getitem(key);
+            return o.tp$getitem(key, canSuspend);
         }
     }
 
@@ -661,17 +661,17 @@ Sk.abstr.objectGetItem = function (o, key) {
 };
 goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 
-Sk.abstr.objectSetItem = function (o, key, v) {
+Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     var otypename;
     if (o !== null) {
         if (o.mp$ass_subscript) {
-            return o.mp$ass_subscript(key, v);
+            return o.mp$ass_subscript(key, v, canSuspend);
         }
         else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
-            return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v);
+            return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
         }
         else if (o.tp$setitem) {
-            return o.tp$setitem(key, v);
+            return o.tp$setitem(key, v, canSuspend);
         }
     }
 
@@ -681,7 +681,7 @@ Sk.abstr.objectSetItem = function (o, key, v) {
 goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
-Sk.abstr.gattr = function (obj, nameJS) {
+Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
     var ret;
     var objname = Sk.abstr.typeName(obj);
 
@@ -695,24 +695,28 @@ Sk.abstr.gattr = function (obj, nameJS) {
     }
 
     if (ret === undefined && obj["__getattr__"] && obj["__getattr__"] !== Sk.builtin.object.prototype["__getattr__"]) {
-        ret = Sk.misceval.callsim(obj["__getattr__"], obj, new Sk.builtin.str(nameJS));
+        ret = Sk.misceval.callsimOrSuspend(obj["__getattr__"], obj, new Sk.builtin.str(nameJS));
     }
 
-    if (ret === undefined) {
-        throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    }
+    ret = Sk.misceval.chain(ret, function(r) {
+        if (r === undefined) {
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
+        }
+        return r;
+    });
 
-    return ret;
+    return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
 };
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
-Sk.abstr.sattr = function (obj, nameJS, data) {
-    var objname = Sk.abstr.typeName(obj);
+Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
+    var objname = Sk.abstr.typeName(obj), r;
 
     if (obj === null) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
     } else if (obj["__setattr__"]) {
-        Sk.misceval.callsim(obj["__setattr__"], obj, new Sk.builtin.str(nameJS), data);
+        r = Sk.misceval.callsimOrSuspend(obj["__setattr__"], obj, new Sk.builtin.str(nameJS), data);
+        return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
     } else if (obj.tp$setattr !== undefined) {
         obj.tp$setattr(nameJS, data);
     } else {
