@@ -928,6 +928,7 @@ function generateTurtleModule(_target) {
 
         proto.$dot = function(size, color, g, b, a) {
             pushUndo(this);
+            size = Sk.builtin.asnum$(size);
             size = (typeof size === "number") ?
                 Math.max(1, Math.abs(size) | 0) :
                 Math.max(this._size + 4, this._size * 2);
@@ -1690,9 +1691,9 @@ function generateTurtleModule(_target) {
             yScale  = screen.yScale;
 
         if (!context) return;
-
         context.beginPath();
         context.moveTo(this.x, this.y);
+        size = size * Math.min(Math.abs(xScale),Math.abs(yScale));
         context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
         context.closePath();
         context.fillStyle = color || this.color;
