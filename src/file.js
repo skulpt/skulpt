@@ -7,9 +7,6 @@
 Sk.builtin.file = function (name, mode, buffering) {
     var i;
     var elem;
-    var event;
-
-    // r = read-only, w = write (erasing existing contents), a = append, r+ = read/write
     this.mode = mode;
     this.name = name;
     this.closed = false;
@@ -30,10 +27,9 @@ Sk.builtin.file = function (name, mode, buffering) {
             }
         }
 
-        event = document.createEvent("Event");
-        event.data = this.mode.v + ":" + this.name.v;
-        event.initEvent("SkfileOpen", true, true);
-        document.dispatchEvent(event);
+        if (Sk.fileopen) {
+          Sk.fileopen(this);
+        }
     } else {
         this.data$ = Sk.read(name.v);
     }
@@ -158,11 +154,11 @@ Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size
 });
 
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
-    var event = document.createEvent("Event");
-    event.data = self.name.v + ":" + str.v;
-    event.initEvent("SkfileWrite", true, true);
-    document.dispatchEvent(event);
-    //goog.asserts.fail();
+    if (Sk.filewrite) {
+      Sk.filewrite(self, str);
+    } else {
+      goog.asserts.fail();
+    }
 });
 
 

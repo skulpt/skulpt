@@ -30,6 +30,15 @@ Sk.configure = function (options) {
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 
+    Sk.nonreadopen = options["nonreadopen"] || false;
+    goog.asserts.assert(typeof Sk.nonreadopen === "boolean");
+
+    Sk.fileopen = options["fileopen"] || Sk.fileopen;
+    goog.asserts.assert(typeof Sk.fileopen === "function");
+
+    Sk.filewrite = options["filewrite"] || Sk.filewrite;
+    goog.asserts.assert(typeof Sk.filewrite === "function");
+
     Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
     goog.asserts.assert(typeof Sk.timeoutMsg === "function");
     goog.exportSymbol("Sk.timeoutMsg", Sk.timeoutMsg);
@@ -106,6 +115,18 @@ Sk.output = function (x) {
  */
 Sk.read = function (x) {
     throw "Sk.read has not been implemented";
+};
+
+/*
+ * Replacable function to call alongside any file open.
+ */
+Sk.fileopen = function(x) {
+};
+
+/*
+ * Replacable function to support writing to files.
+ */
+Sk.filewrite = function(x, y) {
 };
 
 /*
