@@ -16,6 +16,9 @@ var Sk = Sk || {}; //jshint ignore:line
  * strings.
  * syspath: Setable to emulate PYTHONPATH environment variable (for finding
  * modules). Should be an array of JS strings.
+ * nonreadopen: Boolean - set to true to allow non-read file operations
+ * fileopen: Optional function to call any time a file is opened
+ * filewrite: Optional function to call when writing to a file
  *
  * Any variables that aren't set will be left alone.
  */
@@ -33,11 +36,11 @@ Sk.configure = function (options) {
     Sk.nonreadopen = options["nonreadopen"] || false;
     goog.asserts.assert(typeof Sk.nonreadopen === "boolean");
 
-    Sk.fileopen = options["fileopen"] || Sk.fileopen;
-    goog.asserts.assert(typeof Sk.fileopen === "function");
+    Sk.fileopen = options["fileopen"] || undefined;
+    goog.asserts.assert(typeof Sk.fileopen === "function" || typeof Sk.fileopen === "undefined");
 
-    Sk.filewrite = options["filewrite"] || Sk.filewrite;
-    goog.asserts.assert(typeof Sk.filewrite === "function");
+    Sk.filewrite = options["filewrite"] || undefined;
+    goog.asserts.assert(typeof Sk.filewrite === "function" || typeof Sk.filewrite === "undefined");
 
     Sk.timeoutMsg = options["timeoutMsg"] || Sk.timeoutMsg;
     goog.asserts.assert(typeof Sk.timeoutMsg === "function");
@@ -115,18 +118,6 @@ Sk.output = function (x) {
  */
 Sk.read = function (x) {
     throw "Sk.read has not been implemented";
-};
-
-/*
- * Replacable function to call alongside any file open.
- */
-Sk.fileopen = function(x) {
-};
-
-/*
- * Replacable function to support writing to files.
- */
-Sk.filewrite = function(x, y) {
 };
 
 /*
