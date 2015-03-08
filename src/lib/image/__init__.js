@@ -88,7 +88,6 @@ $builtinmodule = function (name) {
             if (window.location.host !== url.host) {
                 ret = Sk.imageProxy + "/" + ret;
             }
-            console.log(ret);
             return ret;
         };
 
