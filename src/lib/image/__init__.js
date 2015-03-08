@@ -65,7 +65,7 @@ $builtinmodule = function (name) {
                                 resolve();
                             };
                             // look for mapping from imagename to url and possible an image proxy server
-                            newImg.src = Sk.ffi.remapToJs(imageId);
+                            newImg.src = remapImageIdToURL(imageId);
                         }
                     )
                 };
@@ -80,6 +80,16 @@ $builtinmodule = function (name) {
             // if imageId is the name of an image file prepend http://host/app/book/_static/
             // if image proxy server is configured construct url for proxy
             // return the final URL
+            var url;
+            var ret;
+            ret = Sk.ffi.remapToJs(imageId);
+            url = document.createElement("a");
+            url.href = ret;
+            if (window.location.host !== url.host) {
+                ret = Sk.imageProxy + "/" + ret;
+            }
+            console.log(ret);
+            return ret;
         };
 
         checkPixelRange = function (self, x, y) {
