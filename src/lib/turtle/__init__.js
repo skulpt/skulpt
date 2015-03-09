@@ -1017,28 +1017,6 @@ function generateTurtleModule(_target) {
         };
         proto.$shape.minArgs = 0;
 
-        proto.$window_width = function() {
-            return this._screen.$window_width();
-        };
-
-        proto.$window_height = function() {
-            return this._screen.$window_height();
-        };
-
-        proto.$tracer = function(n, delay) {
-            return this._screen.$tracer(n, delay);
-        };
-        proto.$tracer.minArgs = 0;
-
-        proto.$update = function() {
-            return this._screen.$update();
-        };
-
-        proto.$delay = function(delay) {
-            return this._screen.$delay(delay);
-        };
-        proto.$delay.minArgs = 0;
-
         proto.$reset = function() {
             this.reset();
             return this.$clear();
@@ -1992,7 +1970,7 @@ function generateTurtleModule(_target) {
         };
     }
 
-    function addModuleMethod(klass, module, method, classMethod) {
+    function addModuleMethod(klass, module, method, scopeGenerator) {
         var publicMethodName = method.replace(/^\$/, ""),
             displayName      = publicMethodName.replace(/_\$[a-z]+\$$/i, ""),
             maxArgs          = klass.prototype[method].length,
@@ -2007,10 +1985,11 @@ function generateTurtleModule(_target) {
         }
 
         wrapperFn = function() {
-            var args       = Array.prototype.slice.call(arguments, 0),
-                self       = classMethod ? ensureAnonymous() : args.shift(),
-                instance   = self.instance,
+            var args     = Array.prototype.slice.call(arguments, 0),
+                instance = scopeGenerator ? scopeGenerator() : args.shift().instance,
                 i, result, susp, resolution, lengthError;
+
+            console.log(method, scopeGenerator, instance);
 
             if (args < minArgs || args.length > maxArgs) {
                 lengthError = minArgs === maxArgs ?
@@ -2095,7 +2074,7 @@ function generateTurtleModule(_target) {
             for(var i = 0; i < minArgs; i++) {
                 wrapperFn.co_varnames.unshift("");
             }
-            if (!classMethod) {
+            if (!scopeGenerator) {
                 // make room for the "self" argument
                 wrapperFn.co_varnames.unshift("");
             }
@@ -2131,9 +2110,22 @@ function generateTurtleModule(_target) {
 
     for(var key in Turtle.prototype) {
         if (/^\$[a-z_]+/.test(key)) {
-            addModuleMethod(Turtle, _module, key, true);
+            addModuleMethod(Turtle, _module, key, ensureAnonymous);
         }
     }
+
+    // add Screen method aliases to the main turtle module
+    // to allow things like:
+    //   import turtle
+    //   turtle.mainloop()
+    addModuleMethod(Screen, _module, "$mainloop", getScreen);
+    addModuleMethod(Screen, _module, "$done", getScreen);
+    addModuleMethod(Screen, _module, "$bye", getScreen);
+    addModuleMethod(Screen, _module, "$tracer", getScreen);
+    addModuleMethod(Screen, _module, "$update", getScreen);
+    addModuleMethod(Screen, _module, "$delay", getScreen);
+    addModuleMethod(Screen, _module, "$window_width", getScreen);
+    addModuleMethod(Screen, _module, "$window_height", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
