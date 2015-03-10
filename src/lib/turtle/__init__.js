@@ -51,6 +51,12 @@ function generateTurtleModule(_target) {
         _anonymousTurtle,
         _mouseHandler;
 
+    // Ensure that the turtle DOM target has a tabindex
+    // so that it can accept keyboard focus and events
+    if (!_target.hasAttribute('tabindex')) {
+        _target.setAttribute('tabindex', 0);
+    }
+
     Types.FLOAT = function(value) {
         return Sk.builtin.float_(value);
     };
@@ -1134,12 +1140,12 @@ function generateTurtleModule(_target) {
             }
 
             if (this._keyDownListener) {
-                window.removeEventListener("keydown", this._keyDownListener);
+                getTarget().removeEventListener("keydown", this._keyDownListener);
                 this._keyDownListener = undefined;
             }
 
             if (this._keyUpListener) {
-                window.removeEventListener("keyup", this._keyUpListener);
+                getTarget().removeEventListener("keyup", this._keyUpListener);
                 this._keyUpListener = undefined;
             }
 
@@ -1395,7 +1401,7 @@ function generateTurtleModule(_target) {
                 }
             };
 
-            window.addEventListener("keydown", this._keyDownListener);
+            getTarget().addEventListener("keydown", this._keyDownListener);
         };
 
         proto._createKeyUpListener = function() {
@@ -1412,7 +1418,7 @@ function generateTurtleModule(_target) {
                 }
             };
             
-            window.addEventListener("keyup", this._keyUpListener);
+            getTarget().addEventListener("keyup", this._keyUpListener);
         };
 
         proto.$listen = function() {
@@ -2139,10 +2145,17 @@ function generateTurtleModule(_target) {
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
 
     // Calling focus(false) will block turtle key/mouse events
-    // until focus(true) is called again.
+    // until focus(true) is called again or until the turtle DOM target
+    // is clicked/tabbed into.
     function focusTurtle(value) {
         if (value !== undefined) {
             _focus = !!value;
+            if (_focus) {
+                getTarget().focus();
+            }
+            else {
+                getTarget().blur();
+            }
         }
 
         return _focus;
