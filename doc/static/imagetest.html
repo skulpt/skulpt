@@ -7,8 +7,10 @@
 
 </head>
 <body>
+<p>To use this as a test file, you need to run it in a local server.  python -m http.server --port 8889 should work.</p>
 
-<img id="meme" src="NorseApps.png">
+
+<img id="meme" src="logo.png">
 
 <script type="text/javascript">
 function outf(text) {
@@ -42,11 +44,12 @@ function runit(myDiv) {
    Sk.configure({output:outf,
   	        read: builtinRead
               });
-   try {
-      Sk.importMainWithBody("<stdin>",false,prog);
-   } catch (e) {
-      alert(e);
-   }
+       var myPromise = Sk.misceval.asyncToPromise(function() {
+                return Sk.importMainWithBody("<stdin>",false,prog,true);
+       });
+       myPromise.then(function(mod) {}, function(err) {
+          console.log(err.toString());
+            });
 }
 </script>
 <h3>Try This</h3>
@@ -56,6 +59,8 @@ function runit(myDiv) {
 import image
 img = image.Image("meme")
 win = image.ImageWin()
+img.draw(win)
+img.setDelay(1,15)
 
 for col in range(img.getWidth()):
     for row in range(img.getHeight()):
@@ -65,14 +70,12 @@ for col in range(img.getWidth()):
        p.setBlue(255-p.getBlue())
        img.setPixel(col,row,p)
 
-img.draw(win)
-
 </textarea>
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
 
-<canvas id="example1_canvas" height="500" width="800"
-	style="border-style: solid; display: none"></canvas>
+<div id="example1_canvas" height="500" width="800"
+	style="border-style: solid; display: none"></div>
 
 <pre id="example1_pre"></pre>
 
