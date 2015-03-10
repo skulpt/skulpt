@@ -1989,8 +1989,6 @@ function generateTurtleModule(_target) {
                 instance = scopeGenerator ? scopeGenerator() : args.shift().instance,
                 i, result, susp, resolution, lengthError;
 
-            console.log(method, scopeGenerator, instance);
-
             if (args < minArgs || args.length > maxArgs) {
                 lengthError = minArgs === maxArgs ?
                     "exactly " + maxArgs :
