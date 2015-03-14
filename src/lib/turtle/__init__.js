@@ -1023,6 +1023,28 @@ function generateTurtleModule(_target) {
         };
         proto.$shape.minArgs = 0;
 
+        proto.$window_width = function() {
+            return this._screen.$window_width();
+        };
+        
+        proto.$window_height = function() {
+            return this._screen.$window_height();
+        };
+        
+        proto.$tracer = function(n, delay) {
+            return this._screen.$tracer(n, delay);
+        };
+        proto.$tracer.minArgs = 0;
+        
+        proto.$update = function() {
+            return this._screen.$update();
+        };
+        
+        proto.$delay = function(delay) {
+            return this._screen.$delay(delay);
+        };
+        proto.$delay.minArgs = 0;
+
         proto.$reset = function() {
             this.reset();
             return this.$clear();
