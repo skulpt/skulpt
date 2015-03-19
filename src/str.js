@@ -707,12 +707,12 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     var zeroes;
     var offset;
     var pad = "";
-    
+
     Sk.builtin.pyCheckArgs("zfill", arguments, 2, 2);
     if (! Sk.builtin.checkInt(len)) {
         throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(len));
     }
-    
+
     // figure out how many zeroes are needed to make the proper length
     zeroes = len.v - str.length;
     // offset by 1 if there is a +/- at the beginning of the string
@@ -723,7 +723,7 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
     // combine the string and the zeroes
     ret = str.substr(0, offset) + pad + str.substr(offset);
     return new Sk.builtin.str(ret);
-    
+
 
 });
 
@@ -744,14 +744,14 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     // var split;
     // var spacestr = "";
     // var spacerem;
-    
-    
+
+
     var spaces;
     var expanded;
 
     Sk.builtin.pyCheckArgs("expandtabs", arguments, 1, 2);
-    
-    
+
+
     if ((tabsize !== undefined) && ! Sk.builtin.checkInt(tabsize)) {
         throw new Sk.builtin.TypeError("integer argument exepected, got " + Sk.abstr.typeName(tabsize));
     }
@@ -761,10 +761,10 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
     else {
         tabsize = Sk.builtin.asnum$(tabsize);
     }
-    
+
     spaces = (new Array(tabsize + 1)).join(" ");
     expanded = self.v.replace(/([^\r\n\t]*)\t/g, function(a, b) {
-      return b + spaces.slice(b.length % tabsize);
+        return b + spaces.slice(b.length % tabsize);
     });
     return new Sk.builtin.str(expanded);
 });
@@ -772,8 +772,8 @@ Sk.builtin.str.prototype["expandtabs"] = new Sk.builtin.func(function (self, tab
 Sk.builtin.str.prototype["swapcase"] = new Sk.builtin.func(function (self) {
     var ret;
     Sk.builtin.pyCheckArgs("swapcase", arguments, 1, 1);
-    
-    
+
+
     ret = self.v.replace(/[a-z]/gi, function(c) {
         var lc = c.toLowerCase();
         return lc === c ? c.toUpperCase() : lc;
@@ -839,7 +839,7 @@ Sk.builtin.str.prototype["splitlines"] = new Sk.builtin.func(function (self, kee
 
 Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
     var ret;
-    
+
     Sk.builtin.pyCheckArgs("title", arguments, 1, 1);
 
     ret = self.v.replace(/[a-z][a-z]*/gi, function(str) {

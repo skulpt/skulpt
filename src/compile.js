@@ -317,6 +317,9 @@ Compiler.prototype._jump = function (block) {
     }
 };
 
+/**
+ * @param {Object=} e Object with keys 'lineno' and 'col_offset'
+ */
 Compiler.prototype._checkSuspension = function(e) {
     var retblk;
     if (this.u.canSuspend) {
@@ -324,6 +327,8 @@ Compiler.prototype._checkSuspension = function(e) {
         retblk = this.newBlock("function return or resume suspension");
         this._jump(retblk);
         this.setBlock(retblk);
+
+        e = e || {lineno: "currLineNo", col_offset: "currColNo"};
 
         out ("if ($ret instanceof Sk.misceval.Suspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
 
@@ -369,22 +374,22 @@ Compiler.prototype.cdict = function (e) {
 Compiler.prototype.clistcomp = function(e) {
     goog.asserts.assert(e instanceof ListComp);
     var tmp = this._gr("_compr", "new Sk.builtins['list']([])"); // note: _ is impt. for hack in name mangling (same as cpy)
-    return this.ccompgen("list", tmp, e.generators, 0, e.elt, null);
+    return this.ccompgen("list", tmp, e.generators, 0, e.elt, null, e);
 };
 
 Compiler.prototype.cdictcomp = function(e) {
     goog.asserts.assert(e instanceof DictComp);
     var tmp = this._gr("_dcompr", "new Sk.builtins.dict([])");
-    return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key);
+    return this.ccompgen("dict", tmp, e.generators, 0, e.value, e.key, e);
 };
 
 Compiler.prototype.csetcomp = function(e) {
     goog.asserts.assert(e instanceof SetComp);
     var tmp = this._gr("_setcompr", "new Sk.builtins.set([])");
-    return this.ccompgen("set", tmp, e.generators, 0, e.elt, null);
+    return this.ccompgen("set", tmp, e.generators, 0, e.elt, null, e);
 };
 
-Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key) {
+Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, value, key, e) {
     var start = this.newBlock(type + " comp start");
     var skip = this.newBlock(type + " comp skip");
     var anchor = this.newBlock(type + " comp anchor");
@@ -404,7 +409,11 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     this.setBlock(start);
 
     // load targets
-    nexti = this._gr("next", "Sk.abstr.iternext(", iter, ")");
+    out("$ret = Sk.abstr.iternext(", iter, ", true);");
+
+    this._checkSuspension(e);
+
+    nexti = this._gr("next", "$ret");
     this._jumpundef(nexti, anchor); // todo; this should be handled by StopIteration
     target = this.vexpr(l.target, nexti);
 
@@ -415,7 +424,7 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     }
 
     if (++genIndex < generators.length) {
-        this.ccompgen(type, tmpname, generators, genIndex, value, key);
+        this.ccompgen(type, tmpname, generators, genIndex, value, key, e);
     }
 
     if (genIndex >= generators.length) {
@@ -547,11 +556,6 @@ Compiler.prototype.eslice = function (dims) {
 Compiler.prototype.vslicesub = function (s) {
     var subs;
     switch (s.constructor) {
-        case Number:
-        case String:
-            // Already compiled, should only happen for augmented assignments
-            subs = s;
-            break;
         case Index:
             subs = this.vexpr(s.value);
             break;
@@ -577,10 +581,13 @@ Compiler.prototype.vslice = function (s, ctx, obj, dataToStore) {
 
 Compiler.prototype.chandlesubscr = function (ctx, obj, subs, data) {
     if (ctx === Load || ctx === AugLoad) {
-        return this._gr("lsubscr", "Sk.abstr.objectGetItem(", obj, ",", subs, ")");
+        out("$ret = Sk.abstr.objectGetItem(", obj, ",", subs, ", true);");
+        this._checkSuspension();
+        return this._gr("lsubscr", "$ret");
     }
     else if (ctx === Store || ctx === AugStore) {
-        out("Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ");");
+        out("$ret = Sk.abstr.objectSetItem(", obj, ",", subs, ",", data, ", true);");
+        this._checkSuspension();
     }
     else if (ctx === Del) {
         out("Sk.abstr.objectDelItem(", obj, ",", subs, ");");
@@ -631,10 +638,12 @@ Compiler.prototype.cboolop = function (e) {
  *
  * @param {Object} e
  * @param {string=} data data to store in a store operation
- * @param {Object=} augstoreval value to store to for an aug operation (not
- * vexpr'd yet)
+ * @param {Object=} augvar var to load/store to for augmented assignments like '+='.
+ *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
+ * @param {Object=} augsubs precomputed subscript for augmented assignments like '+='.
+ *                  (already vexpr'ed, so we can evaluate it once and reuse for both load and store ops)
  */
-Compiler.prototype.vexpr = function (e, data, augstoreval) {
+Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     var mangled;
     var val;
     var result;
@@ -687,7 +696,7 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Str:
             return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");
         case Attribute:
-            if (e.ctx !== AugStore) {
+            if (e.ctx !== AugLoad && e.ctx !== AugStore) {
                 val = this.vexpr(e.value);
             }
             mangled = e.attr["$r"]().v;
@@ -697,16 +706,26 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
             mangled = fixReservedNames(mangled);
             switch (e.ctx) {
                 case AugLoad:
+                    out("$ret = Sk.abstr.gattr(", augvar, ",'", mangled, "', true);");
+                    this._checkSuspension(e);
+                    return this._gr("lattr", "$ret");
                 case Load:
-                    return this._gr("lattr", "Sk.abstr.gattr(", val, ",'", mangled, "')");
+                    out("$ret = Sk.abstr.gattr(", val, ",'", mangled, "', true);");
+                    this._checkSuspension(e);
+                    return this._gr("lattr", "$ret");
                 case AugStore:
-                    out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
-                    val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
+                    // To be more correct, we shouldn't sattr() again if the in-place update worked.
+                    // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
+                    // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
+                    out("$ret = undefined;");
+                    out("if(", data, "!==undefined){");
+                    out("$ret = Sk.abstr.sattr(", augvar, ",'", mangled, "',", data, ", true);");
                     out("}");
+                    this._checkSuspension(e);
                     break;
                 case Store:
-                    out("Sk.abstr.sattr(", val, ",'", mangled, "',", data, ");");
+                    out("$ret = Sk.abstr.sattr(", val, ",'", mangled, "',", data, ", true);");
+                    this._checkSuspension(e);
                     break;
                 case Del:
                     goog.asserts.fail("todo Del;");
@@ -719,15 +738,23 @@ Compiler.prototype.vexpr = function (e, data, augstoreval) {
         case Subscript:
             switch (e.ctx) {
                 case AugLoad:
+                    out("$ret = Sk.abstr.objectGetItem(",augvar,",",augsubs,", true);");
+                    this._checkSuspension(e)
+                    return this._gr("gitem", "$ret");
                 case Load:
                 case Store:
                 case Del:
                     return this.vslice(e.slice, e.ctx, this.vexpr(e.value), data);
                 case AugStore:
-                    out("if(", data, "!==undefined){"); // special case to avoid re-store if inplace worked
-                    val = this.vexpr(augstoreval || null); // the || null can never happen, but closure thinks we can get here with it being undef
-                    this.vslice(e.slice, e.ctx, val, data);
+                    // To be more correct, we shouldn't sattr() again if the in-place update worked.
+                    // At the time of writing (26/Feb/2015), Sk.abstr.numberInplaceBinOp never returns undefined,
+                    // so this will never *not* execute. But it could, if Sk.abstr.numberInplaceBinOp were fixed.
+
+                    out("$ret=undefined;");
+                    out("if(", data, "!==undefined){");
+                    out("$ret=Sk.abstr.objectSetItem(",augvar,",",augsubs,",",data,", true)");
                     out("}");
+                    this._checkSuspension(e);
                     break;
                 case Param:
                 default:
@@ -774,21 +801,23 @@ Compiler.prototype.caugassign = function (s) {
     e = s.target;
     switch (e.constructor) {
         case Attribute:
+            to = this.vexpr(e.value);
             auge = new Attribute(e.value, e.attr, AugLoad, e.lineno, e.col_offset);
-            aug = this.vexpr(auge);
+            aug = this.vexpr(auge, undefined, to);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopattr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
             auge.ctx = AugStore;
-            return this.vexpr(auge, res, e.value);
+            return this.vexpr(auge, res, to);
         case Subscript:
             // Only compile the subscript value once
+            to = this.vexpr(e.value);
             augsub = this.vslicesub(e.slice);
             auge = new Subscript(e.value, augsub, AugLoad, e.lineno, e.col_offset);
-            aug = this.vexpr(auge);
+            aug = this.vexpr(auge, undefined, to, augsub);
             val = this.vexpr(s.value);
             res = this._gr("inplbinopsubscr", "Sk.abstr.numberInplaceBinOp(", aug, ",", val, ",'", s.op.prototype._astname, "')");
             auge.ctx = AugStore;
-            return this.vexpr(auge, res, e.value);
+            return this.vexpr(auge, res, to, augsub);
         case Name:
             to = this.nameop(e.id, Load);
             val = this.vexpr(s.value);

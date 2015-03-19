@@ -40,6 +40,9 @@ Sk.configure = function (options) {
     Sk.python3 = options["python3"] || Sk.python3;
     goog.asserts.assert(typeof Sk.python3 === "boolean");
 
+    Sk.imageProxy = options["imageProxy"] || "http://localhost:8080/320x";
+    goog.asserts.assert(typeof Sk.imageProxy === "string");
+
     Sk.inputfun = options["inputfun"] || Sk.inputfun;
     goog.asserts.assert(typeof Sk.inputfun === "function");
 

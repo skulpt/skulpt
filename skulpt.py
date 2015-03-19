@@ -9,6 +9,7 @@
 
 from optparse import OptionParser
 from subprocess import Popen, PIPE
+import subprocess
 import os
 import sys
 import glob
@@ -129,7 +130,7 @@ def buildNamedTestsFile():
         nt.write("'%s',\n" % f)
     nt.write("];")
     nt.close()
-    
+
 def isClean():
     repo = Repo(".")
     return not repo.is_dirty()
@@ -193,16 +194,22 @@ def test(debug_mode=False):
     ret1 = os.system("{0} {1} {2} -- {3}".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST)), ' '.join(TestFiles), debugon))
     ret2 = 0
     ret3 = 0
+    ret4 = 0
     if ret1 == 0:
         print "Running jshint"
         if sys.platform == "win32":
             jshintcmd = "{0} {1}".format("jshint", ' '.join(f for f in glob.glob("src/*.js")))
+            jscscmd = "{0} {1} --reporter=inline".format("jscs", ' '.join(f for f in glob.glob("src/*.js")))
         else:
             jshintcmd = "jshint src/*.js"
+            jscscmd = "jscs src/*.js --reporter=inline"
         ret2 = os.system(jshintcmd)
+        print "Running JSCS"
+        ret3 = os.system(jscscmd)
+        #ret3 = os.system(jscscmd)
         print "Now running new unit tests"
-        ret3 = rununits()
-    return ret1 | ret2 | ret3
+        ret4 = rununits()
+    return ret1 | ret2 | ret3 | ret4
 
 def debugbrowser():
     tmpl = """

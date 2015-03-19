@@ -68,6 +68,11 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericGetAttr", Sk.builtin.object.prototype.GenericGetAttr);
 
+Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
+    return Sk.builtin.object.prototype.GenericGetAttr.call(self, name.v);
+};
+goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
+
 Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
     goog.asserts.assert(typeof name === "string");
     // todo; lots o' stuff
@@ -80,12 +85,23 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
 };
 goog.exportSymbol("Sk.builtin.object.prototype.GenericSetAttr", Sk.builtin.object.prototype.GenericSetAttr);
 
+Sk.builtin.object.prototype.GenericPythonSetAttr = function(self, name, value) {
+    return Sk.builtin.object.prototype.GenericSetAttr.call(self, name.v, value);
+};
+goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonSetAttr", Sk.builtin.object.prototype.GenericPythonSetAttr);
+
 Sk.builtin.object.prototype.HashNotImplemented = function () {
     throw new Sk.builtin.TypeError("unhashable type: '" + Sk.abstr.typeName(this) + "'");
 };
 
 Sk.builtin.object.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+
+// Although actual attribute-getting happens in pure Javascript via tp$getattr, classes
+// overriding __getattr__ etc need to be able to call object.__getattr__ etc from Python
+Sk.builtin.object.prototype["__getattr__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
+Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
+
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 
 /**

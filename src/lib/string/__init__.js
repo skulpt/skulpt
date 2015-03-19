@@ -74,7 +74,7 @@ var $builtinmodule = function (name) {
             capWords.push(cap);
         }
 
-        return Sk.misceval.callsim(mod.join, Sk.builtin.list(capWords), sep);
+        return Sk.misceval.callsim(mod.join, new Sk.builtin.list(capWords), sep);
     });
 
 

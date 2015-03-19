@@ -48,7 +48,8 @@ There is plenty of work still to do in making improvements to Skulpt.  If you wo
 
 1. Create a Github account if you don't already have one
 2. Create a Fork of the Skulpt repository -- This will make a clone of the repository in your account.  **DO NOT** clone this one.  Once you've made the fork you will clone the forked version in your account to your local machine for development.
-3. Read the HACKING.rst file to get the "lay of the land".  If you plan to work on creating  a module then you may also find this [blog post] (http://reputablejournal.com/blog/2011/03/19/adding-a-module-to-skulpt/) helpful.
+3. Install node.js first, then install jshint and jscs using npm.
+3. Read the HACKING.rst file to get the "lay of the land".  If you plan to work on creating  a module then you may also find this [blog post] (http://reputablejournal.com/posts/2011/03/adding-a-module-to-skulpt.html) helpful.
 3. Check the issues list for something to do.
 4. Fix or add your own features.  Commit and push to your forked version of the repository.  When everything is tested and ready to be incorporated into the master version...
 5. Make a Pull Request to get your feature(s) added to the main repository.
@@ -60,7 +61,15 @@ Check out the mailing list:  https://groups.google.com/forum/?fromgroups#!forum/
 
 ## Acknowledgements
 
+As time goes on its getting more dangerous to try to acknowledge everyone who has contributed to the project.  And, after all, this is git, so their names are all in the historical record.  But there are a few to call out.
+
 * First and foremost to Scott Graham for starting the original project.
 * Bob Lacatena for lots of work on Python longs
 * Charles Severence for bug fixes and the re module.
+* Leszek Swirski and Meredydd Luff for Suspensions
+* Albert-Jan Nijburg for countless bug fixes and process improvements
+* Ben Wheeler for the new and improved turtle module
+* Scott Rixner and students for many bug fixes and improvements
+* Of course, The complete list is here:  https://github.com/skulpt/skulpt/graphs/contributors
+
 

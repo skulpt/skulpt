@@ -2,12 +2,41 @@ var $builtinmodule = function (name) {
 "use strict";
 
 // See if the TurtleGraphics module has already been loaded
-if (Sk.TurtleGraphics && Sk.TurtleGraphics.module) {
-    Sk.TurtleGraphics.reset();
-    return Sk.TurtleGraphics.module;
+// for the currently configured DOM target element.
+var currentTarget = getConfiguredTarget();
+
+if (!currentTarget.turtleInstance) {
+    currentTarget.turtleInstance = generateTurtleModule(currentTarget);
+}
+else {
+    currentTarget.turtleInstance.reset();
 }
 
-return (function() {
+Sk.TurtleGraphics.module = currentTarget.turtleInstance.skModule;
+Sk.TurtleGraphics.reset  = currentTarget.turtleInstance.reset;
+Sk.TurtleGraphics.focus  = currentTarget.turtleInstance.focus;
+Sk.TurtleGraphics.raw = {
+    Turtle : currentTarget.turtleInstance.Turtle,
+    Screen : currentTarget.turtleInstance.Screen
+};
+
+return currentTarget.turtleInstance.skModule;
+
+function getConfiguredTarget() {
+    var selector, target;
+
+    selector = (Sk.TurtleGraphics && Sk.TurtleGraphics.target) || "turtle",
+    target   = typeof selector === "string" ?
+        document.getElementById(selector) :
+        selector;
+    // ensure that the canvas container is empty
+    while (target.firstChild) {
+        target.removeChild(target.firstChild);
+    }
+    return target;
+}
+
+function generateTurtleModule(_target) {
     var _module              = {},
         _durationSinceRedraw = 0,
         _focus               = true,
@@ -19,9 +48,14 @@ return (function() {
         _frameRequestTimeout,
         _screenInstance,
         _config,
-        _target,
         _anonymousTurtle,
         _mouseHandler;
+
+    // Ensure that the turtle DOM target has a tabindex
+    // so that it can accept keyboard focus and events
+    if (!_target.hasAttribute('tabindex')) {
+        _target.setAttribute('tabindex', 0);
+    }
 
     Types.FLOAT = function(value) {
         return Sk.builtin.float_(value);
@@ -73,37 +107,6 @@ return (function() {
                 animate    : true, // enabled/disable all animated rendering
                 bufferSize : 0, // default turtle buffer size
                 allowUndo  : true, // enable ability to use the undo buffer
-                // Calling focus(false) will block turtle key/mouse events
-                // until focus(true) is called again.
-                focus : function(value) {
-                    if (value !== undefined) {
-                        _focus = !!value;
-                    }
-
-                    return _focus;
-                },
-                reset   : function() {
-                    cancelAnimationFrame();
-                    getScreen().reset();
-                    getFrameManager().reset();
-
-                    if (_target) {
-                        while (_target.firstChild) {
-                            _target.removeChild(_target.firstChild);
-                        }
-                    }
-
-                    if (_mouseHandler) {
-                        _mouseHandler.reset();
-                    }
-
-                    _durationSinceRedraw = 0;
-                    _screenInstance      = undefined;
-                    _target              = undefined;
-                    _anonymousTurtle     = undefined;
-                    _mouseHandler        = undefined;
-                    TURTLE_COUNT         = 0;
-                }
             },
             key;
 
@@ -931,6 +934,7 @@ return (function() {
 
         proto.$dot = function(size, color, g, b, a) {
             pushUndo(this);
+            size = Sk.builtin.asnum$(size);
             size = (typeof size === "number") ?
                 Math.max(1, Math.abs(size) | 0) :
                 Math.max(this._size + 4, this._size * 2);
@@ -1022,20 +1026,20 @@ return (function() {
         proto.$window_width = function() {
             return this._screen.$window_width();
         };
-
+        
         proto.$window_height = function() {
             return this._screen.$window_height();
         };
-
+        
         proto.$tracer = function(n, delay) {
             return this._screen.$tracer(n, delay);
         };
         proto.$tracer.minArgs = 0;
-
+        
         proto.$update = function() {
             return this._screen.$update();
         };
-
+        
         proto.$delay = function(delay) {
             return this._screen.$delay(delay);
         };
@@ -1087,13 +1091,21 @@ return (function() {
     })(Turtle.prototype);
 
     function Screen() {
+        var w,h;
         this._frames    = 1;
         this._delay     = undefined;
         this._bgcolor   = "none";
         this._mode      = "standard";
         this._managers  = {};
         this._keyLogger = {};
-        this.setUpWorld(-200,-200,200,200);
+        if (_config.height && _config.width) {
+            w = _config.width/2;
+            h = _config.height/2;
+        } else {
+            w = _config.defaultSetup.width/2;
+            h = _config.defaultSetup.height/2;
+        }
+        this.setUpWorld(-w,-h,w,h);
     }
 
     (function(proto) {
@@ -1128,12 +1140,12 @@ return (function() {
             }
 
             if (this._keyDownListener) {
-                window.removeEventListener("keydown", this._keyDownListener);
+                getTarget().removeEventListener("keydown", this._keyDownListener);
                 this._keyDownListener = undefined;
             }
 
             if (this._keyUpListener) {
-                window.removeEventListener("keyup", this._keyUpListener);
+                getTarget().removeEventListener("keyup", this._keyUpListener);
                 this._keyUpListener = undefined;
             }
 
@@ -1317,7 +1329,7 @@ return (function() {
         proto.$exitonclick = function() {
             this._exitOnClick = true;
             return this.getManager("mousedown").addHandler(function() {
-                Sk.TurtleGraphics.reset();
+                resetTurtle();
             }, false);
         };
 
@@ -1370,7 +1382,7 @@ return (function() {
             if (this._keyDownListener) return;
 
             this._keyDownListener = function(e) {
-                if (!Sk.TurtleGraphics.focus()) return;
+                if (!focusTurtle()) return;
 
                 var code    = e.charCode || e.keyCode,
                     pressed = String.fromCharCode(code).toLowerCase(),
@@ -1389,7 +1401,7 @@ return (function() {
                 }
             };
 
-            window.addEventListener("keydown", this._keyDownListener);
+            getTarget().addEventListener("keydown", this._keyDownListener);
         };
 
         proto._createKeyUpListener = function() {
@@ -1406,7 +1418,7 @@ return (function() {
                 }
             };
             
-            window.addEventListener("keyup", this._keyUpListener);
+            getTarget().addEventListener("keyup", this._keyUpListener);
         };
 
         proto.$listen = function() {
@@ -1461,15 +1473,6 @@ return (function() {
     }
 
     function getTarget() {
-        if (!_target) {
-            _target = typeof _config.target === "string" ?
-                document.getElementById(_config.target) :
-                _config.target;
-            // ensure that the canvas container is empty
-            while (_target.firstChild) {
-                _target.removeChild(_target.firstChild);
-            }
-        }
         return _target;
     }
 
@@ -1694,9 +1697,9 @@ return (function() {
             yScale  = screen.yScale;
 
         if (!context) return;
-
         context.beginPath();
         context.moveTo(this.x, this.y);
+        size = size * Math.min(Math.abs(xScale),Math.abs(yScale));
         context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
         context.closePath();
         context.fillStyle = color || this.color;
@@ -1995,7 +1998,7 @@ return (function() {
         };
     }
 
-    function addModuleMethod(klass, module, method, classMethod) {
+    function addModuleMethod(klass, module, method, scopeGenerator) {
         var publicMethodName = method.replace(/^\$/, ""),
             displayName      = publicMethodName.replace(/_\$[a-z]+\$$/i, ""),
             maxArgs          = klass.prototype[method].length,
@@ -2010,9 +2013,8 @@ return (function() {
         }
 
         wrapperFn = function() {
-            var args       = Array.prototype.slice.call(arguments, 0),
-                self       = classMethod ? ensureAnonymous() : args.shift(),
-                instance   = self.instance,
+            var args     = Array.prototype.slice.call(arguments, 0),
+                instance = scopeGenerator ? scopeGenerator() : args.shift().instance,
                 i, result, susp, resolution, lengthError;
 
             if (args < minArgs || args.length > maxArgs) {
@@ -2098,7 +2100,7 @@ return (function() {
             for(var i = 0; i < minArgs; i++) {
                 wrapperFn.co_varnames.unshift("");
             }
-            if (!classMethod) {
+            if (!scopeGenerator) {
                 // make room for the "self" argument
                 wrapperFn.co_varnames.unshift("");
             }
@@ -2134,21 +2136,69 @@ return (function() {
 
     for(var key in Turtle.prototype) {
         if (/^\$[a-z_]+/.test(key)) {
-            addModuleMethod(Turtle, _module, key, true);
+            addModuleMethod(Turtle, _module, key, ensureAnonymous);
         }
     }
+
+    // add Screen method aliases to the main turtle module
+    // to allow things like:
+    //   import turtle
+    //   turtle.mainloop()
+    addModuleMethod(Screen, _module, "$mainloop", getScreen);
+    addModuleMethod(Screen, _module, "$done", getScreen);
+    addModuleMethod(Screen, _module, "$bye", getScreen);
+    addModuleMethod(Screen, _module, "$tracer", getScreen);
+    addModuleMethod(Screen, _module, "$update", getScreen);
+    addModuleMethod(Screen, _module, "$delay", getScreen);
+    addModuleMethod(Screen, _module, "$window_width", getScreen);
+    addModuleMethod(Screen, _module, "$window_height", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
 
-    Sk.TurtleGraphics.raw = {
+    // Calling focus(false) will block turtle key/mouse events
+    // until focus(true) is called again or until the turtle DOM target
+    // is clicked/tabbed into.
+    function focusTurtle(value) {
+        if (value !== undefined) {
+            _focus = !!value;
+            if (_focus) {
+                getTarget().focus();
+            }
+            else {
+                getTarget().blur();
+            }
+        }
+
+        return _focus;
+    }
+
+    function resetTurtle() {
+        cancelAnimationFrame();
+        getScreen().reset();
+        getFrameManager().reset();
+
+        while (_target.firstChild) {
+            _target.removeChild(_target.firstChild);
+        }
+
+        if (_mouseHandler) {
+            _mouseHandler.reset();
+        }
+
+        _durationSinceRedraw = 0;
+        _screenInstance      = undefined;
+        _anonymousTurtle     = undefined;
+        _mouseHandler        = undefined;
+        TURTLE_COUNT         = 0;
+    }
+
+    return {
+        skModule : _module,
+        reset    : resetTurtle,
+        focus    : focusTurtle,
         Turtle   : Turtle,
-        Screen : Screen
+        Screen   : Screen
     };
-
-    Sk.TurtleGraphics.module = _module;
-
-    return _module;
-
-})();
+};
 };

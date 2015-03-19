@@ -86,7 +86,7 @@ Sk.misceval.asIndex = function (o) {
 /**
  * return u[v:w]
  */
-Sk.misceval.applySlice = function (u, v, w) {
+Sk.misceval.applySlice = function (u, v, w, canSuspend) {
     var ihigh;
     var ilow;
     if (u.sq$slice && Sk.misceval.isIndex(v) && Sk.misceval.isIndex(w)) {
@@ -100,14 +100,14 @@ Sk.misceval.applySlice = function (u, v, w) {
         }
         return Sk.abstr.sequenceGetSlice(u, ilow, ihigh);
     }
-    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null));
+    return Sk.abstr.objectGetItem(u, new Sk.builtin.slice(v, w, null), canSuspend);
 };
 goog.exportSymbol("Sk.misceval.applySlice", Sk.misceval.applySlice);
 
 /**
  * u[v:w] = x
  */
-Sk.misceval.assignSlice = function (u, v, w, x) {
+Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
     var slice;
     var ihigh;
     var ilow;
@@ -127,7 +127,7 @@ Sk.misceval.assignSlice = function (u, v, w, x) {
             return Sk.abstr.objectDelItem(u, slice);
         }
         else {
-            return Sk.abstr.objectSetItem(u, slice, x);
+            return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
         }
     }
 };
@@ -877,6 +877,44 @@ Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, a
 };
 goog.exportSymbol("Sk.misceval.applyAsync", Sk.misceval.applyAsync);
 
+/**
+ * Chain together a set of functions, each of which might return a value or
+ * an Sk.misceval.Suspension. Each function is called with the return value of
+ * the preceding function, but does not see any suspensions. If a function suspends,
+ * Sk.misceval.chain() returns a suspension that will resume the chain once an actual
+ * return value is available.
+ *
+ * The idea is to allow a Promise-like chaining of possibly-suspending steps without
+ * repeating boilerplate suspend-and-resume code.
+ *
+ * For example, imagine we call Sk.misceval.chain(x, f).
+ *  - If x is a value, we return f(x).
+ *  - If x is a suspension, we suspend. We will suspend and resume until we get a
+ *    return value, and then we will return f(<resumed-value).
+ * This can be expanded to an arbitrary number of functions
+ * (eg Sk.misceval.chain(x, f, g), which is equivalent to chain(chain(x, f), g).)
+ *
+ * @param {*}              initialValue
+ * @param {...function(*)} chainedFns
+ */
+
+Sk.misceval.chain = function (initialValue, chainedFns) {
+    var fs = arguments, i = 1;
+
+    return (function nextStep(r) {
+        while (i < fs.length) {
+            if (r instanceof Sk.misceval.Suspension) {
+                return new Sk.misceval.Suspension(nextStep, r);
+            }
+
+            r = fs[i](r);
+            i++;
+        }
+
+        return r;
+    })(initialValue);
+};
+goog.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
 
 /**
  * same as Sk.misceval.call except args is an actual array, rather than
