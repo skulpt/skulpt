@@ -501,6 +501,47 @@ Sk.builtin.bin = function bin (x) {
     return Sk.builtin.int2str_(x, 2, "0b");
 };
 
+/* Implementation of dir() -- if obj is NULL, returns the names in the current
+   (local) scope.  Otherwise, performs introspection of the object: returns a
+   sorted list of attribute names (supposedly) accessible from the object
+*/
+/*
+Sk.builtin.dir2 = function dir(obj) {
+    Sk.builtin.pyCheckArgs("dir", arguments, 0, 0);
+    return (obj === null || obj === undefined) ? Sk.builtin.dir2._dir_locals() : Sk.builtin.dir2._dir_object(obj);
+};
+
+Sk.builtin.dir2._dir_locals = function() {
+    var names;
+    var locals;
+
+    locals = Sk.builtin.locals();
+    if(locals === null) {
+        return null;
+    }
+
+    // unwrap locals before this call?
+    //names = PyMapping_Keys(locals);
+
+    // unwarp here
+
+    if(names === null) {
+        return null;
+    }
+
+    if(!(names instanceof Sk.builtin.list)) {
+        throw new TypeError("dir(): expected keys() of locals to be a list, not '" + Sk.abstr.typeName(names) + "'");
+    }
+
+    // sort list
+    names.sort(function (a, b) {
+        return (a.v > b.v) - (a.v < b.v);
+    });
+
+    return new Sk.builtin.list(names);
+};
+*/
+
 Sk.builtin.dir = function dir (x) {
     var last;
     var it;
@@ -534,46 +575,54 @@ Sk.builtin.dir = function dir (x) {
 
     names = [];
 
-    // Add all object properties
-    for (k in x.constructor.prototype) {
-        s = getName(k);
-        if (s) {
-            names.push(new Sk.builtin.str(s));
+    // check for custom __dir__ method
+    var customDir = x["$d"].mp$lookup(new Sk.builtin.str("__dir__"));
+    Sk.debugout("customDir: " + customDir);
+    if(customDir !== undefined && Sk.builtin.checkFunction(customDir)) {
+        Sk.debugout("in custom __dir__");
+        names = Sk.misceval.callsim(customDir, x);
+    } else {
+        // Add all object properties
+        for (k in x.constructor.prototype) {
+            s = getName(k);
+            if (s) {
+                names.push(new Sk.builtin.str(s));
+            }
         }
-    }
 
-    // Add all attributes
-    if (x["$d"]) {
-        if (x["$d"].tp$iter) {
-            // Dictionary
-            it = x["$d"].tp$iter();
-            for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                s = new Sk.builtin.str(i);
-                s = getName(s.v);
-                if (s) {
+        // Add all attributes
+        if (x["$d"]) {
+            if (x["$d"].tp$iter) {
+                // Dictionary
+                it = x["$d"].tp$iter();
+                for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                    s = new Sk.builtin.str(i);
+                    s = getName(s.v);
+                    if (s) {
+                        names.push(new Sk.builtin.str(s));
+                    }
+                }
+            }
+            else {
+                // Object
+                for (s in x["$d"]) {
                     names.push(new Sk.builtin.str(s));
                 }
             }
         }
-        else {
-            // Object
-            for (s in x["$d"]) {
-                names.push(new Sk.builtin.str(s));
-            }
-        }
-    }
 
-    // Add all class attributes
-    mro = x.tp$mro;
-    if (mro) {
+        // Add all class attributes
         mro = x.tp$mro;
-        for (i = 0; i < mro.v.length; ++i) {
-            base = mro.v[i];
-            for (prop in base) {
-                if (base.hasOwnProperty(prop)) {
-                    s = getName(prop);
-                    if (s) {
-                        names.push(new Sk.builtin.str(s));
+        if (mro) {
+            mro = x.tp$mro;
+            for (i = 0; i < mro.v.length; ++i) {
+                base = mro.v[i];
+                for (prop in base) {
+                    if (base.hasOwnProperty(prop)) {
+                        s = getName(prop);
+                        if (s) {
+                            names.push(new Sk.builtin.str(s));
+                        }
                     }
                 }
             }
@@ -596,34 +645,33 @@ Sk.builtin.dir = function dir (x) {
 
 Sk.builtin.dir.slotNameToRichName = function (k) {
     var map = {
-        nb$add: "__add__",
-        nb$subtract: "__sub__",
-        nb$multiply: "__mul__",
-        nb$divide: "__div__",
-        nb$floor_divide: "__floordiv__",
-        nb$remainder: "__mod__",
-        nb$power: "__pow__",
-        nb$lshift: "__lshift__",
-        nb$rshift: "__rshift__",
-        nb$and: "__and__",
-        nb$xor: "__xor__",
-        nb$or: "__or__",
-        nb$negative: "__neg__",
-        nb$positive: "__pos__",
-        nb$invert: "__invert__",
-        $d: "__dict__",
-        tp$iter: "__iter__",
-        tp$hash: "__hash__",
-        tp$str: "__str__",
-        tp$mro: "__mro__",
-        tp$name: "__name__",
-        tp$richcompare: "__cmp__",
-        $r: "__repr__",
-        sq$length: "__len__",
-        sq$contains: "__contains__",
-        mp$length: "__len__",
-        ob$type: "__class__",
-
+        "nb$add": "__add__",
+        "nb$subtract": "__sub__",
+        "nb$multiply": "__mul__",
+        "nb$divide": "__div__",
+        "nb$floor_divide": "__floordiv__",
+        "nb$remainder": "__mod__",
+        "nb$power": "__pow__",
+        "nb$lshift": "__lshift__",
+        "nb$rshift": "__rshift__",
+        "nb$and": "__and__",
+        "nb$xor": "__xor__",
+        "nb$or": "__or__",
+        "nb$negative": "__neg__",
+        "nb$positive": "__pos__",
+        "nb$invert": "__invert__",
+        "$d": "__dict__",
+        "tp$iter": "__iter__",
+        "tp$hash": "__hash__",
+        "tp$str": "__str__",
+        "tp$mro": "__mro__",
+        "tp$name": "__name__",
+        "tp$richcompare": "__cmp__",
+        "$r": "__repr__",
+        "sq$length": "__len__",
+        "sq$contains": "__contains__",
+        "mp$length": "__len__",
+        "ob$type": "__class__"
     };
 
    if (k.substring(0,3) === "tp$") {
@@ -1261,6 +1309,9 @@ Sk.builtin.help = function help () {
 Sk.builtin.iter = function iter () {
     throw new Sk.builtin.NotImplementedError("iter is not yet implemented");
 };
+/*
+    https://github.com/python/cpython/blob/0e4655fbb6e81d3fe8ab7b7ef03979bc808521f5/Python/ceval.c#L4057
+*/
 Sk.builtin.locals = function locals () {
     throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
 };

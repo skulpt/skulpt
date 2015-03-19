@@ -1,3 +1,3 @@
-['__init__', '__module__', 'a', 'b', 'c']
-['__init__', '__module__', 'a', 'b', 'c', 'd']
-['__dir__', '__init__', '__module__', 'a', 'b', 'c', 'd']
+['__call__', '__class__', '__descr_get__', '__getattr__', '__getitem__', '__init__', '__iter__', '__iternext__', '__length__', '__module__', '__name__', '__repr__', '__setattr__', '__setitem__', '__str__', 'a', 'b', 'c']
+['__call__', '__class__', '__descr_get__', '__getattr__', '__getitem__', '__init__', '__iter__', '__iternext__', '__length__', '__module__', '__name__', '__repr__', '__setattr__', '__setitem__', '__str__', 'a', 'b', 'c', 'd']
+['__call__', '__class__', '__descr_get__', '__dir__', '__getattr__', '__getitem__', '__init__', '__iter__', '__iternext__', '__length__', '__module__', '__name__', '__repr__', '__setattr__', '__setitem__', '__str__', 'a', 'b', 'c', 'd']

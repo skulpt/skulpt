@@ -276,7 +276,23 @@ goog.inherits(Sk.builtin.SuspensionError, Sk.builtin.Exception);
 Sk.builtin.SuspensionError.prototype.tp$name = "SuspensionError";
 goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
 
-
+/**
+ * @constructor
+ * @extends Sk.builtin.Exception
+ * @param {...*} args
+ */
+Sk.builtin.KeyboardInterrupt = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.KeyboardInterrupt)) {
+        o = Object.create(Sk.builtin.KeyboardInterrupt.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.Exception.apply(this, arguments);
+};
+goog.inherits(Sk.builtin.KeyboardInterrupt, Sk.builtin.Exception);
+Sk.builtin.KeyboardInterrupt.prototype.tp$name = "KeyboardInterrupt";
+goog.exportSymbol("Sk.builtin.KeyboardInterrupt", Sk.builtin.KeyboardInterrupt);
 /**
  * @constructor
  * @extends Sk.builtin.Exception
