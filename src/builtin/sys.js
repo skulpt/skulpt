@@ -19,7 +19,7 @@ var $builtinmodule = function (name) {
 
     sys.getExecutionLimit = new Sk.builtin.func(function () {
         if (Sk.execLimit === null) {
-            return Sk.buildin.none.none$;
+            return Sk.builtin.none.none$;
         }
         return Sk.builtin.assk$(Sk.execLimit, Sk.builtin.nmber.int$);
     });
@@ -39,7 +39,7 @@ var $builtinmodule = function (name) {
 
     sys.getYieldLimit = new Sk.builtin.func(function () {
         if (Sk.yieldLimit === null) {
-            return Sk.buildin.none.none$;
+            return Sk.builtin.none.none$;
         }
         return Sk.builtin.assk$(Sk.yieldLimit, Sk.builtin.nmber.int$);
     });
