@@ -405,22 +405,22 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
             key = Sk.ffi.remapToJs(key);
             if (key === "x") {
-                return mod.processing.mouseX;
+                return new Sk.builtin.nmber(mod.processing.mouseX);
             }
             else if (key === "y") {
-                return mod.processing.mouseY;
+                return new Sk.builtin.nmber(mod.processing.mouseY);
             }
             else if (key === "px") {
-                return mod.processing.pmouseX;
+                return new Sk.builtin.nmber(mod.processing.pmouseX);
             }
             else if (key === "py") {
-                return mod.processing.pmouseY;
+                return new Sk.builtin.nmber(mod.processing.pmouseY);
             }
             else if (key === "pressed") {
-                return mod.processing.mousePressed;
+                return new Sk.builtin.bool(mod.processing.mousePressed);
             }
             else if (key === "button") {
-                return mod.processing.mouseButton;
+                return new Sk.builtin.bool(mod.processing.mouseButton);
             }
         });
 
@@ -458,22 +458,22 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
             key = Sk.ffi.remapToJs(key);
             if (key === "frameCount") {
-                return mod.processing.frameCount;
+                return new Sk.builtin.nmber(mod.processing.frameCount);
             }
             else if (key === "frameRate") {
-                return mod.processing.frameRate;
+                return new Sk.builtin.nmber(mod.processing.frameRate);
             }
             else if (key === "height") {
-                return mod.processing.height;
+                return new Sk.builtin.nmber(mod.processing.height);
             }
             else if (key === "width") {
-                return mod.processing.width;
+                return new Sk.builtin.nmber(mod.processing.width);
             }
             else if (key === "online") {
-                return mod.processing.online;
+                return new Sk.builtin.bool(mod.processing.online);
             }
             else if (key === "focused") {
-                return mod.processing.focused;
+                return new Sk.builtin.bool(mod.processing.focused);
             }
         });
 
@@ -492,10 +492,10 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
             key = Sk.ffi.remapToJs(key);
             if (key === "height") {
-                return mod.processing.height;
+                return new Sk.builtin.nmber(mod.processing.height);
             }
             else if (key === "width") {
-                return mod.processing.width;
+                return new Sk.builtin.nmber(mod.processing.width);
             }
             else if (key === "pixels") {
                 if (self.pixels == null) {
@@ -560,10 +560,10 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
             key = Sk.ffi.remapToJs(key);
             if (key === "width") {
-                return self.v.width;
+                return new Sk.builtin.nmber(self.v.width);
             }
             if (key === "height") {
-                return self.v.height;
+                return new Sk.builtin.nmber(self.v.height);
             }
         });
 
