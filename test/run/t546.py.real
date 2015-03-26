@@ -1,0 +1,9 @@
+Getting x
+b.x = x
+Setting x to BAR
+b.x = BAR
+Getting x early
+c.x = FOO
+Setting x to BAR
+Getting x early
+c.x = FOO

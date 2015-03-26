@@ -682,7 +682,7 @@ goog.exportSymbol("Sk.abstr.objectSetItem", Sk.abstr.objectSetItem);
 
 
 Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
-    var ret;
+    var ret, f;
     var objname = Sk.abstr.typeName(obj);
 
     if (obj === null) {
@@ -691,14 +691,29 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
 
 
     if (obj.tp$getattr !== undefined) {
-        ret = obj.tp$getattr(nameJS);
+        f = obj.tp$getattr("__getattribute__");
     }
 
-    if (ret === undefined && obj["__getattr__"] && obj["__getattr__"] !== Sk.builtin.object.prototype["__getattr__"]) {
-        ret = Sk.misceval.callsimOrSuspend(obj["__getattr__"], obj, new Sk.builtin.str(nameJS));
+    if (f !== undefined) {
+        ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
     }
 
-    ret = Sk.misceval.chain(ret, function(r) {
+    ret = Sk.misceval.chain(ret, function(ret) {
+        var f;
+
+        if (ret === undefined && obj.tp$getattr !== undefined) {
+            ret = obj.tp$getattr(nameJS);
+
+            if (ret === undefined) {
+                f = obj.tp$getattr("__getattr__");
+
+                if (f !== undefined) {
+                    ret = Sk.misceval.callsimOrSuspend(f, new Sk.builtin.str(nameJS));
+                }
+            }
+        }
+        return ret;
+    }, function(r) {
         if (r === undefined) {
             throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
         }
@@ -710,14 +725,21 @@ Sk.abstr.gattr = function (obj, nameJS, canSuspend) {
 goog.exportSymbol("Sk.abstr.gattr", Sk.abstr.gattr);
 
 Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
-    var objname = Sk.abstr.typeName(obj), r;
+    var objname = Sk.abstr.typeName(obj), r, setf;
 
     if (obj === null) {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
-    } else if (obj["__setattr__"]) {
-        r = Sk.misceval.callsimOrSuspend(obj["__setattr__"], obj, new Sk.builtin.str(nameJS), data);
-        return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
-    } else if (obj.tp$setattr !== undefined) {
+    }
+
+    if (obj.tp$getattr !== undefined) {
+        setf = obj.tp$getattr("__setattr__");
+        if (setf !== undefined) {
+            r = Sk.misceval.callsimOrSuspend(setf, new Sk.builtin.str(nameJS), data);
+            return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
+        }
+    }
+
+    if (obj.tp$setattr !== undefined) {
         obj.tp$setattr(nameJS, data);
     } else {
         throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + nameJS + "'");
