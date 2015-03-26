@@ -63,7 +63,7 @@ var print_f = function function_print(kwa) {
     }
 
     if(args.length > 0 && kw_list.sep.length > 0) {
-      s = s.substring(0, s.length-kw_list.sep.length);
+        s = s.substring(0, s.length-kw_list.sep.length);
     }
 
     s += kw_list.end;

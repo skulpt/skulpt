@@ -176,6 +176,7 @@ Sk.doOneTimeInitialization = function () {
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
+
     Sk.builtin.object["$d"] = new Sk.builtin.dict([]);
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));

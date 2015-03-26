@@ -577,9 +577,7 @@ Sk.builtin.dir = function dir (x) {
 
     // check for custom __dir__ method
     var customDir = x["$d"].mp$lookup(new Sk.builtin.str("__dir__"));
-    Sk.debugout("customDir: " + customDir);
     if(customDir !== undefined && Sk.builtin.checkFunction(customDir)) {
-        Sk.debugout("in custom __dir__");
         names = Sk.misceval.callsim(customDir, x);
     } else {
         // Add all object properties
@@ -674,8 +672,8 @@ Sk.builtin.dir.slotNameToRichName = function (k) {
         "ob$type": "__class__"
     };
 
-   if (k.substring(0,3) === "tp$") {
-       return "__" + k.substring(3) + "__";
+    if (k.substring(0,3) === "tp$") {
+        return "__" + k.substring(3) + "__";
     } else if(k.lastIndexOf("nb$inplace_", 0) === 0) {
         // inplace ops
         return "__i" + k.substring(11) + "__";

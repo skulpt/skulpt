@@ -108,15 +108,14 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
 };
 
 Sk.builtin.dict.prototype.mp$subscript = function (key) {
-    Sk.builtin.pyCheckArgs("[]", arguments, 1, 1, false, false);
+    Sk.builtin.pyCheckArgs("[]", arguments, 1, 2, false, false);
     var s;
     var res = this.mp$lookup(key);
 
     if (res !== undefined) {
         // Found in dictionary
         return res;
-    }
-    else {
+    } else {
         // Not found in dictionary
         s = new Sk.builtin.str(key);
         throw new Sk.builtin.KeyError(s.v);
@@ -491,6 +490,10 @@ var update_f = function (kwargs, self, other) {
 
 update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
+
+Sk.builtin.dict.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
+    return Sk.builtin.list.prototype.mp$subscript.call(self, index);
+});
 
 Sk.builtin.dict.prototype.tp$name = "dict";
 

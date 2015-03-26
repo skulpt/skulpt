@@ -114,8 +114,8 @@ Parser.prototype.addtoken = function (type, value, context) {
                     && states[state][0][1] === state) // states[state] == [(0, state)])
                 {
                     if(tp.node.type === Sk.ParseTables.sym.import_stmt) {
-                      // t === 303
-                      this.future_hack();
+                        // t === 303
+                        this.future_hack();
                     }
                     this.pop();
                     //print("in after pop:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
@@ -151,8 +151,8 @@ Parser.prototype.addtoken = function (type, value, context) {
             // an accepting state, pop it and try somethign else
             //print("WAA");
             if(tp.node.type === Sk.ParseTables.sym.import_stmt) {
-              // t === 303
-              this.future_hack();
+                // t === 303
+                this.future_hack();
             }
             this.pop();
             if (this.stack.length === 0) {
@@ -187,19 +187,19 @@ Parser.prototype.future_hack = function() {
     /* from __future__ import ..., must have at least 4 children */
     n = CHILD(n, 0); // unpack first object
     if(NCH(n) < 4) {
-      return; // nothing todo here
+        return; // nothing todo here
     }
 
     // from
     ch = CHILD(n, 0);
     if(ch.value !== "from") {
-      return;
+        return;
     }
 
     // __future__
     ch = CHILD(n, 1);
     if(NCH(ch) === 1 && typeof CHILD(ch, 0).value === "string" && CHILD(ch, 0).value !==  "__future__") {
-       return;
+        return;
     }
 
     // check imported names
@@ -212,17 +212,17 @@ Parser.prototype.future_hack = function() {
 
     /* iterate over flags and check for with, print and unicode */
     for(i = 0; i < NCH(ch); i += 2) {
-      cch = CHILD(ch, i);
-      if(NCH(cch) >= 1 && CHILD(cch, 0).type === Sk.Tokenizer.Tokens.T_NAME) {
-        var str_ch = CHILD(cch, 0).value;
-        if(str_ch === Parser.FUTURE_PRINT_FUNCTION) {
-          this.p_flags |= Parser.CO_FUTURE_PRINT_FUNCTION;
-        } else if (str_ch === Parser.FUTURE_UNICODE_LITERALS) {
-          this.p_flags |= Parser.CO_FUTURE_UNICODE_LITERALS;
-        } else if (str_ch === Parser.FUTURE_WITH_STATEMENT) {
-          this.p_flags |= Parser.CO_FUTURE_WITH_STATEMENT;
+        cch = CHILD(ch, i);
+        if(NCH(cch) >= 1 && CHILD(cch, 0).type === Sk.Tokenizer.Tokens.T_NAME) {
+            var str_ch = CHILD(cch, 0).value;
+            if(str_ch === Parser.FUTURE_PRINT_FUNCTION) {
+                this.p_flags |= Parser.CO_FUTURE_PRINT_FUNCTION;
+            } else if (str_ch === Parser.FUTURE_UNICODE_LITERALS) {
+                this.p_flags |= Parser.CO_FUTURE_UNICODE_LITERALS;
+            } else if (str_ch === Parser.FUTURE_WITH_STATEMENT) {
+                this.p_flags |= Parser.CO_FUTURE_WITH_STATEMENT;
+            }
         }
-      }
     }
 };
 

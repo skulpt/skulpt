@@ -1,3 +1,4 @@
+from __future__ import print_function
 __author__ = 'bmiller'
 '''
 This is the start of something that behaves like
@@ -132,13 +133,13 @@ class TestCase:
             self.numPassed += 1
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
-            print msg
+            print(msg)
             self.numFailed += 1
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print "ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
-                                               self.numPassed, self.numFailed)
+        print("ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
+                                               self.numPassed, self.numFailed))
 
 
 
