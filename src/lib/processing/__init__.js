@@ -222,7 +222,7 @@ var $builtinmodule = function (name) {
 
     mod.rect = new Sk.builtin.func(function (x, y, width, height, radius) {
         var rad;
-        if (typeof(radius) == "undefined") {
+        if (typeof(radius) === "undefined") {
             rad = 0;
         } else {
             rad = radius.v;
@@ -250,13 +250,13 @@ var $builtinmodule = function (name) {
         //      a color object
         // g, and b may be undefined.  If they hold values it will
         // be assumed that we have an r,g,b color tuple
-        if (typeof(g) !== "undefined") {
-            g = g.v;
-        }
-        if (typeof(b) !== "undefined") {
-            b = b.v;
-        }
-        mod.processing.alpha(r.v, g, b);
+        if (typeof(g) === "undefined") {
+            mod.processing.alpha(r.v);
+        } else if (typeof(b) === "undefined") {
+            mod.processing.alpha(r.v, g.v);
+        } else {
+            mod.processing.alpha(r.v, g.v, b.v);
+	}
     });
 
     mod.ambient = new Sk.builtin.func(function (r, g, b) {
@@ -267,28 +267,27 @@ var $builtinmodule = function (name) {
         //      a color object
         // g, and b may be undefined.  If they hold values it will
         // be assumed that we have an r,g,b color tuple
-        if (typeof(g) !== "undefined") {
-            g = g.v;
-        }
-        if (typeof(b) !== "undefined") {
-            b = b.v;
-        }
-        mod.processing.ambient(r.v, g, b);
+        if (typeof(g) === "undefined") {
+            mod.processing.ambient(r.v);
+        } else if (typeof(b) === "undefined") {
+            mod.processing.ambient(r.v, g.v);
+        } else {
+            mod.processing.ambient(r.v, g.v, b.v);
+	}
     });
 
     mod.ambientLight = new Sk.builtin.func(function (v1, v2, v3, x, y, z) {
 	// ambientLight(v1,v2,v3)
 	// ambientLight(v1,v2,v3,x,y,z)
-        if (typeof(x) !== "undefined") {
-            x = x.v;
-        }
-        if (typeof(y) !== "undefined") {
-            y = y.v;
-        }
-        if (typeof(z) !== "undefined") {
-            z = z.v;
-        }
-        mod.processing.ambientLight(v1.v, v2.v, v3.v, x, y, z);
+        if (typeof(x) === "undefined") {
+            mod.processing.ambientLight(v1.v, v2.v, v3.v);
+        } else if (typeof(y) === "undefined") {
+            mod.processing.ambientLight(v1.v, v2.v, v3.v, x.v);
+        } else if (typeof(z) === "undefined") {
+            mod.processing.ambientLight(v1.v, v2.v, v3.v, x.v, y.v);
+        } else {
+            mod.processing.ambientLight(v1.v, v2.v, v3.v, x.v, y.v, z.v);
+	}
     });
 
     mod.beginCamera = new Sk.builtin.func(function () {
@@ -327,17 +326,18 @@ var $builtinmodule = function (name) {
 						    v7, v8, v9) {
 	// bezierVertex(cx1, cy1, cx2, cy2,   x,   y)
 	// bezierVertex(cx1, cy1, cz1, cx2, cy2, cz2, x, y, z)
-        if (typeof(v7) !== "undefined") {
-	    v7 = v7.v;
+        if (typeof(v7) === "undefined") {
+	    mod.processing.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v);
+	} else if (typeof(v8) === "undefined") {
+	    mod.processing.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
+					v7.v);
+	} else if (typeof(v9) === "undefined") {
+	    mod.processing.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
+					v7.v, v8.v);
+	} else {
+	    mod.processing.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
+					v7.v, v8.v, v9.v);
 	}
-        if (typeof(v8) !== "undefined") {
-	    v8 = v8.v;
-	}
-        if (typeof(v9) !== "undefined") {
-	    v9 = v9.v;
-	}
-	mod.processing.bezierVertex(v1.v, v2.v, v3.v, v4.v, v5.v, v6.v,
-				    v7, v8, v9);
     });
 
     mod.blend = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
@@ -359,13 +359,13 @@ var $builtinmodule = function (name) {
     });
 
     mod.brightness = new Sk.builtin.func(function (r, g, b) {
-        if (typeof(g) !== "undefined") {
-            g = g.v;
-        }
-        if (typeof(b) !== "undefined") {
-            b = b.v;
-        }
-	mod.processing.brightness(r.v, g, b);
+        if (typeof(g) === "undefined") {
+	    mod.processing.brightness(r.v);
+        } else if (typeof(b) === "undefined") {
+	    mod.processing.brightness(r.v, g.v);
+        } else {
+	    mod.processing.brightness(r.v, g.v, b.v);
+	}
     });
 
     mod.camera = new Sk.builtin.func(function (eyeX, eyeY, eyeZ,
@@ -404,22 +404,23 @@ var $builtinmodule = function (name) {
 	// createFont(name, size)
 	// createFont(name, size, smooth)
 	// createFont(name, size, smooth, charset)
-        if (typeof(smooth) !== "undefined") {
-	    smooth = smooth.v;
+        if (typeof(smooth) === "undefined") {
+	    return mod.processing.createFont(name.v, size.v);
+	} else if (typeof(charset) === "undefined") {
+	    return mod.processing.createFont(name.v, size.v, smooth.v);
+	} else {
+	    return mod.processing.createFont(name.v, size.v, smooth.v, charset.v);
 	}
-        if (typeof(charset) !== "undefined") {
-	    charset = charset.v;
-	}
-	return mod.processing.createFont(name.v, size.v, smooth, charset);
     });
 
     mod.createGraphics = new Sk.builtin.func(function (width, height, renderer, filename) {
 	// createGraphics(width, height, renderer)
 	// createGraphics(width, height, renderer, filename)
-        if (typeof(filename) !== "undefined") {
-	    filename = filename.v;
+        if (typeof(filename) === "undefined") {
+	    return mod.processing.createGraphics(width.v, height.v, renderer.v);
+	} else {
+	    return mod.processing.createGraphics(width.v, height.v, renderer.v, filename.v);
 	}
-	return mod.processing.createGraphics(width.v, height.v, renderer.v, filename);
     });
 
     mod.createImage = new Sk.builtin.func(function (width, height, format) {
@@ -430,39 +431,42 @@ var $builtinmodule = function (name) {
 	// cursor()
 	// cursor(MODE)
 	// cursor(image,x,y)
-        if (typeof(v) !== "undefined") {
-	    v = v.v;
+        if (typeof(v) === "undefined") {
+	    mod.processing.cursor();
+	} else if (typeof(x) === "undefined") {
+	    mod.processing.cursor(v.v);
+	} else if (typeof(y) === "undefined") {
+	    mod.processing.cursor(v.v, x.v);
+	} else {
+	    mod.processing.cursor(v.v, x.v, y.v);
 	}
-        if (typeof(x) !== "undefined") {
-	    x = x.v;
-	}
-        if (typeof(y) !== "undefined") {
-	    y = y.v;
-	}
-	mod.processing.cursor(v, x, y);
     });
 
-    // TODO:
     mod.curve = new Sk.builtin.func(function (v1, v2, v3, v4,
 					      v5, v6, v7, v8,
 					      v9, v10, v11, v12) {
 	// curve(x1, y1, x2, y2, x3, y3, x4, y4);
 	// curve(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4);
-        if (typeof(v9) !== "undefined") {
-	    v9 = v9.v;
+        if (typeof(v9) === "undefined") {
+	    mod.processing.curve(v1.v, v2.v, v3.v, v4.v,
+				 v5.v, v6.v, v7.v, v8.v);
+	} else if (typeof(v10) === "undefined") {
+	    mod.processing.curve(v1.v, v2.v, v3.v, v4.v,
+				 v5.v, v6.v, v7.v, v8.v,
+				 v9.v);
+	} else if (typeof(v11) === "undefined") {
+	    mod.processing.curve(v1.v, v2.v, v3.v, v4.v,
+				 v5.v, v6.v, v7.v, v8.v,
+				 v9.v, v10.v);
+	} else if (typeof(v12) === "undefined") {
+	    mod.processing.curve(v1.v, v2.v, v3.v, v4.v,
+				 v5.v, v6.v, v7.v, v8.v,
+				 v9.v, v10.v, v11.v);
+	} else {
+	    mod.processing.curve(v1.v, v2.v, v3.v, v4.v,
+				 v5.v, v6.v, v7.v, v8.v,
+				 v9.v, v10.v, v11.v, v12.v);
 	}
-        if (typeof(v10) !== "undefined") {
-	    v10 = v10.v;
-	}
-        if (typeof(v11) !== "undefined") {
-	    v11 = v11.v;
-	}
-        if (typeof(v12) !== "undefined") {
-	    v12 = v12.v;
-	}
-	mod.processing.curve(v1.v, v2.v, v3.v, v4.v,
-			     v5.v, v6.v, v7.v, v8.v,
-			     v9, v10, v11, v12);
     });
 
     mod.curveDetail = new Sk.builtin.func(function (detail) {
@@ -488,10 +492,11 @@ var $builtinmodule = function (name) {
     mod.curveVertex = new Sk.builtin.func(function (x, y, z) {
 	// curveVertex(x, y) 
 	// curveVertex(x, y, z)
-        if (typeof(z) !== "undefined") {
-	    z = z.v;
+        if (typeof(z) === "undefined") {
+	    mod.processing.curveVertex(x.v, y.v);
+	} else {
+	    mod.processing.curveVertex(x.v, y.v, z.v);
 	}
-	mod.processing.curveVertex(x.v, y.v, z);
     });
 
     mod.day = new Sk.builtin.func(function () {
@@ -512,26 +517,26 @@ var $builtinmodule = function (name) {
     mod.dist = new Sk.builtin.func(function (x1, y1, z1, x2, y2, z2) {
 	// dist(x1, y1, x2, y2)
 	// dist(x1, y1, z1, x2, y2, z2)
-        if (typeof(y2) !== "undefined") {
-	    y2 = y2.v;
+        if (typeof(y2) === "undefined") {
+	    mod.processing.dist(x1.v, y1.v, z1.v, x2.v);
+	} else if (typeof(z2) === "undefined") {
+	    mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v);
+	} else {
+	    mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v, z2.v);
 	}
-        if (typeof(z2) !== "undefined") {
-	    z2 = z2.v;
-	}
-	mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2, z2);
     });
 
     mod.emissive = new Sk.builtin.func(function (v1, v2, v3) {
 	// emissive(gray)
 	// emissive(color)
 	// emissive(v1,v2,v3)
-        if (typeof(v2) !== "undefined") {
-	    v2 = v2.v;
+        if (typeof(v2) === "undefined") {
+	    mod.processing.emissive(v1.v);
+	} else if (typeof(v3) === "undefined") {
+	    mod.processing.emissive(v1.v, v2.v);
+	} else {
+	    mod.processing.emissive(v1.v, v2.v, v3.v);
 	}
-        if (typeof(v3) !== "undefined") {
-	    v3 = v3.v;
-	}
-	mod.processing.emissive(v1.v, v2, v3);
     });
 
     mod.endCamera = new Sk.builtin.func(function () {
@@ -542,19 +547,21 @@ var $builtinmodule = function (name) {
     mod.endShape = new Sk.builtin.func(function (mode) {
 	// endShape()
 	// endShape(MODE)
-        if (typeof(mode) !== "undefined") {
-	    mode = mode.v;
+        if (typeof(mode) === "undefined") {
+	    mod.processing.endShape();
+	} else {
+	    mod.processing.endShape(mode.v);
 	}
-	mod.processing.endShape(mode);
     });
 
     mod.filter = new Sk.builtin.func(function (mode, srcImg) {
 	// filter(MODE)
 	// filter(MODE, srcImg)
-        if (typeof(srcImg) !== "undefined") {
-	    srcImg = srcImg.v;
+        if (typeof(srcImg) === "undefined") {
+	    mod.processing.filter(mode.v);
+	} else {
+	    mod.processing.filter(mode.v, srcImg.v);
 	}
-	mod.processing.filter(mode.v, srcImg);
     });
 
     mod.frustum = new Sk.builtin.func(function (left, right, bottom, top, near, far) {
@@ -636,11 +643,13 @@ var $builtinmodule = function (name) {
 	// mag(a,b)
 	// mag(a,b,c)
 	// returns magnitude as float
-        if (typeof(c) !== "undefined") {
-            c = c.v;
-        }
-	return Sk.builtin.assk$(mod.processing.mag(a.v, b.v, c),
-				Sk.builtin.nmber.float$);
+        if (typeof(c) === "undefined") {
+	    return Sk.builtin.assk$(mod.processing.mag(a.v, b.v),
+				    Sk.builtin.nmber.float$);
+        } else {
+	    return Sk.builtin.assk$(mod.processing.mag(a.v, b.v, c.v),
+				    Sk.builtin.nmber.float$);
+	}
     });
 
     mod.map = new Sk.builtin.func(function (value,low1,high1,low2,high2) {
@@ -723,14 +732,16 @@ var $builtinmodule = function (name) {
 	// noise(x, y)
 	// noise(x, y, z)
 	// returns float
-        if (typeof(y) !== "undefined") {
-            y = y.v;
-        }
-        if (typeof(z) !== "undefined") {
-            z = z.v;
-        }
-	return Sk.builtin.assk$(mod.processing.noise(x.v, y, z),
-				Sk.builtin.nmber.float$);
+        if (typeof(y) === "undefined") {
+	    return Sk.builtin.assk$(mod.processing.noise(x.v),
+				    Sk.builtin.nmber.float$);
+        } else if (typeof(z) === "undefined") {
+	    return Sk.builtin.assk$(mod.processing.noise(x.v, y.v),
+				    Sk.builtin.nmber.float$);
+        } else {
+	    return Sk.builtin.assk$(mod.processing.noise(x.v, y.v, z.v),
+				    Sk.builtin.nmber.float$);
+	}
     });
 
     mod.noiseDetail = new Sk.builtin.func(function (octaves, falloff) {
@@ -775,21 +786,19 @@ var $builtinmodule = function (name) {
 
     mod.perspective = new Sk.builtin.func(function (fov, aspect, zNear, zFar) {
 	// perspective()
-	// perspective(fov, aspect, zNear,zFar)
+	// perspective(fov, aspect, zNear, zFar)
 	// returns None
-        if (typeof(fov) !== "undefined") {
-            fov = fov.v;
-        }
-        if (typeof(aspect) !== "undefined") {
-            aspect = aspect.v;
-        }
-        if (typeof(zNear) !== "undefined") {
-            zNear = zNear.v;
-        }
-        if (typeof(zFar) !== "undefined") {
-            zFar = zFar.v;
-        }
-	mod.processing.perspective(fov, aspect, zNear, zFar);
+        if (typeof(fov) === "undefined") {
+	    mod.processing.perspective();
+        } else if (typeof(aspect) === "undefined") {
+	    mod.processing.perspective(fov.v);
+        } else if (typeof(zNear) === "undefined") {
+	    mod.processing.perspective(fov.v, aspect.v);
+        } else if (typeof(zFar) === "undefined") {
+	    mod.processing.perspective(fov.v, aspect.v, zNear.v);
+        } else {
+	    mod.processing.perspective(fov.v, aspect.v, zNear.v, zFar.v);
+	}
     });
 
     mod.pointLight = new Sk.builtin.func(function (v1,v2,v3,nx,ny,nz) {
@@ -834,23 +843,26 @@ var $builtinmodule = function (name) {
 	// random(high);
 	// random(low, high);
 	// returns float
-        if (typeof(v1) !== "undefined") {
-            v1 = v1.v;
-        }
-        if (typeof(v2) !== "undefined") {
-            v2 = v2.v;
-        }
-	return Sk.builtin.assk$(mod.processing.random(v1, v2),
-				Sk.builtin.nmber.float$);
+        if (typeof(v1) === "undefined") {
+	    return Sk.builtin.assk$(mod.processing.random(),
+				    Sk.builtin.nmber.float$);
+        } else if (typeof(v2) === "undefined") {
+	    return Sk.builtin.assk$(mod.processing.random(v1.v),
+				    Sk.builtin.nmber.float$);
+        } else {
+	    return Sk.builtin.assk$(mod.processing.random(v1.v, v2.v),
+				    Sk.builtin.nmber.float$);
+	}
     });
 
     mod.requestImage = new Sk.builtin.func(function (filename, extension) {
 	// requestImage(filename)
 	// requestImage(filename, extension)
-        if (typeof(extension) !== "undefined") {
-            extension = extension.v;
-        }
-	return mod.processing.requestImage(filename.v, extension);
+        if (typeof(extension) === "undefined") {
+	    return mod.processing.requestImage(filename.v);
+        } else {
+	    return mod.processing.requestImage(filename.v, extension.v);
+	}
     });
 
     mod.saturation = new Sk.builtin.func(function (color) {
@@ -870,10 +882,11 @@ var $builtinmodule = function (name) {
 	// saveFrame()
 	// saveFrame(filename-####.ext)
 	// returns None
-        if (typeof(filename) !== "undefined") {
-            filename = filename.v;
-        }
-	mod.processing.saveFrame(filename.v);
+        if (typeof(filename) === "undefined") {
+	    mod.processing.saveFrame();
+        } else {
+	    mod.processing.saveFrame(filename.v);
+	}
     });
 
     mod.saveStrings = new Sk.builtin.func(function (filename, strings) {
@@ -911,19 +924,17 @@ var $builtinmodule = function (name) {
 	// shape(sh,x,y)
 	// shape(sh,x,y,width,height)
 	// returns?
-        if (typeof(x) !== "undefined") {
-            x = x.v;
-        }
-        if (typeof(y) !== "undefined") {
-            y = y.v;
-        }
-        if (typeof(width) !== "undefined") {
-            width = width.v;
-        }
-        if (typeof(height) !== "undefined") {
-            height = height.v;
-        }
-	mod.processing.shape(sh.v,x,y,width,height);
+        if (typeof(x) === "undefined") {
+	    mod.processing.shape(sh.v);
+        } else if (typeof(y) === "undefined") {
+	    mod.processing.shape(sh.v,x.v);
+        } else if (typeof(width) === "undefined") {
+	    mod.processing.shape(sh.v,x.v,y.v);
+        } else if (typeof(height) === "undefined") {
+	    mod.processing.shape(sh.v,x.v,y.v,width.v);
+        } else {
+	    mod.processing.shape(sh.v,x.v,y.v,width.v,height.v);
+	}
     });
 
     mod.shapeMode = new Sk.builtin.func(function (mode) {
@@ -941,13 +952,13 @@ var $builtinmodule = function (name) {
 	// specular(gray)
 	// specular(color)
 	// specular(v1,v2,v3)
-        if (typeof(v2) !== "undefined") {
-            v2 = v2.v;
-        }
-        if (typeof(v3) !== "undefined") {
-            v3 = v3.v;
-        }
-	mod.processing.specular(v1.v,v2,v3);
+        if (typeof(v2) === "undefined") {
+	    mod.processing.specular(v1.v);
+        } else if (typeof(v3) === "undefined") {
+	    mod.processing.specular(v1.v,v2.v);
+        } else {
+	    mod.processing.specular(v1.v,v2.v,v3.v);
+	}
     });
 
     mod.spotLight = new Sk.builtin.func(function (v1,v2,v3,nx,ny,nz,angle,concentration) {
@@ -972,10 +983,11 @@ var $builtinmodule = function (name) {
 	// textAlign(ALIGN)
 	// textAlign(ALIGN, YALIGN)
 	// returns None
-        if (typeof(yalign) !== "undefined") {
-            yalign = yalign.v;
-        }
-	mod.processing.textAlign(align.v, yalign);
+        if (typeof(yalign) === "undefined") {
+	    mod.processing.textAlign(align.v);
+        } else {
+	    mod.processing.textAlign(align.v, yalign.v);
+	}
     });
 
     mod.textAscent = new Sk.builtin.func(function () {
@@ -993,10 +1005,11 @@ var $builtinmodule = function (name) {
     mod.textFont = new Sk.builtin.func(function (font, size) {
 	// textFont(font)
 	// textFont(font, size)
-        if (typeof(size) !== "undefined") {
-            size = size.v;
-        }
-	mod.processing.textFont(font.v, size);
+        if (typeof(size) === "undefined") {
+	    mod.processing.textFont(font.v);
+        } else {
+	    mod.processing.textFont(font.v, size.v);
+	}
     });
 
     mod.textLeading = new Sk.builtin.func(function (dist) {
@@ -1045,16 +1058,15 @@ var $builtinmodule = function (name) {
 	// tint(color, alpha)
 	// tint(hex)
 	// tint(hex, alpha)
-        if (typeof(v2) !== "undefined") {
-            v2 = v2.v;
-        }
-        if (typeof(v3) !== "undefined") {
-            v3 = v3.v;
-        }
-        if (typeof(v4) !== "undefined") {
-            v4 = v4.v;
-        }
-	mod.processing.tint(v1.v, v2, v3, v4);
+        if (typeof(v2) === "undefined") {
+	    mod.processing.tint(v1.v);
+        } else if (typeof(v3) === "undefined") {
+	    mod.processing.tint(v1.v, v2.v);
+        } else if (typeof(v4) === "undefined") {
+	    mod.processing.tint(v1.v, v2.v, v3.v);
+        } else {
+	    mod.processing.tint(v1.v, v2.v, v3.v, v4.v);
+	}
     });
 
     mod.updatePixels = new Sk.builtin.func(function () {
@@ -1067,16 +1079,15 @@ var $builtinmodule = function (name) {
 	// vertex(x, y, z); 
 	// vertex(x, y, u, v); 
 	// vertex(x, y, z, u, v);
-        if (typeof(z) !== "undefined") {
-            z = z.v;
-        }
-        if (typeof(u) !== "undefined") {
-            u = u.v;
-        }
-        if (typeof(v) !== "undefined") {
-            v = v.v;
-        }
-	mod.processing.vertex(x.v, y.v, z, u, v);
+        if (typeof(z) === "undefined") {
+	    mod.processing.vertex(x.v, y.v);
+        } else if (typeof(u) === "undefined") {
+	    mod.processing.vertex(x.v, y.v, z.v);
+        } else if (typeof(v) === "undefined") {
+	    mod.processing.vertex(x.v, y.v, z.v, u.v);
+        } else {
+	    mod.processing.vertex(x.v, y.v, z.v, u.v, v.v);
+	}
     });
 
     mod.year = new Sk.builtin.func(function () {
@@ -1314,12 +1325,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.scale = new Sk.builtin.func(function (sx, sy, sz) {
-        if (typeof(sy) == "undefined") {
+        if (typeof(sy) === "undefined") {
             sy = 1.0;
         } else {
             sy = sy.v;
         }
-        if (typeof(sz) == "undefined") {
+        if (typeof(sz) === "undefined") {
             sz = 1.0;
         } else {
             sz = sz.v;
@@ -1328,12 +1339,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.translate = new Sk.builtin.func(function (sx, sy, sz) {
-        if (typeof(sy) == "undefined") {
+        if (typeof(sy) === "undefined") {
             sy = 1.0;
         } else {
             sy = sy.v;
         }
-        if (typeof(sz) == "undefined") {
+        if (typeof(sz) === "undefined") {
             sz = 1.0;
         } else {
             sz = sz.v;
