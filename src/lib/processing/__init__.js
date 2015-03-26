@@ -395,6 +395,7 @@ var $builtinmodule = function (name) {
     mouseClass = function ($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+            key = Sk.ffi.remapToJs(key);
             if (key === "x") {
                 return mod.processing.mouseX;
             }
@@ -425,6 +426,7 @@ var $builtinmodule = function (name) {
     keyboardClass = function ($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+            key = Sk.ffi.remapToJs(key);
             if (key === "key") {
                 return new Sk.builtin.str(mod.processing.key.toString());
             }
@@ -446,6 +448,7 @@ var $builtinmodule = function (name) {
     environmentClass = function ($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+            key = Sk.ffi.remapToJs(key);
             if (key === "frameCount") {
                 return mod.processing.frameCount;
             }
@@ -479,6 +482,7 @@ var $builtinmodule = function (name) {
         });
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+            key = Sk.ffi.remapToJs(key);
             if (key === "height") {
                 return mod.processing.height;
             }
@@ -546,6 +550,7 @@ var $builtinmodule = function (name) {
         });
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+            key = Sk.ffi.remapToJs(key);
             if (key === "width") {
                 return self.v.width;
             }
