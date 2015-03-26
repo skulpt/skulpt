@@ -105,7 +105,7 @@ Compiler.prototype.annotateSource = function (ast) {
         }
         out("^\n//\n");
 
-        out("currLineNo = ", lineno, ";\ncurrColNo = ", col_offset, "\n\n");
+        out("currLineNo = ", lineno, ";\ncurrColNo = ", col_offset, ";\n\n");
     }
 };
 
@@ -268,7 +268,7 @@ Compiler.prototype._gr = function (hint, rest) {
 Compiler.prototype.outputInterruptTest = function () { // Added by RNL
     var output = "";
     if (Sk.execLimit !== null) {
-        output += "if (new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}";
+        output += "if (new Date() - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg());}";
     }
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
         output += "if (new Date() - Sk.lastYield > Sk.yieldLimit) {";
@@ -1509,10 +1509,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // all function invocations in call
     this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=this,$err=undefined,$ret=undefined,currLineNo=undefined,currColNo=undefined;";
     if (Sk.execLimit !== null) {
-        this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
+        this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date();}";
     }
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
-        this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
+        this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date();}";
     }
 
     //
@@ -1827,10 +1827,10 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += "return(function " + s.name.v + "(){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;";
     if (Sk.execLimit !== null) {
-        this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
+        this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date();}";
     }
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
-        this.u.switchCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
+        this.u.switchCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date();}";
     }
     this.u.switchCode += "while(true){";
     this.u.switchCode += this.outputInterruptTest();
@@ -2091,7 +2091,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             switch (ctx) {
                 case Load:
                     // can't be || for loc.x = 0 or null
-                    return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl);");
+                    return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl)");
                 case Store:
                     out(mangled, "=", dataToStore, ";");
                     break;
@@ -2225,17 +2225,17 @@ Compiler.prototype.cmod = function (mod) {
     this.u.prefixCode = "var " + modf + "=(function($modname){";
     this.u.varDeclsCode = "var $gbl = {}, $blk=" + entryBlock + ",$exc=[],$loc=$gbl,$err=undefined;$gbl.__name__=$modname,$ret=undefined,currLineNo=undefined,currColNo=undefined;";
     if (Sk.execLimit !== null) {
-        this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
+        this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date();}";
     }
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
-        this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
+        this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date();}";
     }
 
     this.u.varDeclsCode += "try {";
 
     this.u.varDeclsCode += "if ("+modf+".wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
         "if (Sk.retainGlobals) {" +
-        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl }" +
+        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; }" +
         "    else { Sk.globals = $gbl; }" +
         "} else { Sk.globals = $gbl; }";
 
