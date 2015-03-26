@@ -291,7 +291,7 @@ var $builtinmodule = function (name) {
         mod.processing.ambientLight(v1.v, v2.v, v3.v, x, y, z);
     });
 
-    mod.beginCamera = new Sk.builtin.func(function (mode) {
+    mod.beginCamera = new Sk.builtin.func(function () {
 	mod.processing.beginCamera();
     });
 
