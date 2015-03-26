@@ -767,7 +767,7 @@ function generateTurtleModule(_target) {
             }
             w  = extent / steps;
             w2 = 0.5 * w;
-            l  = radius * Math.sin(w/self._fullCircle*Turtle.RADIANS);
+            l  = 2 * radius * Math.sin(w*Math.PI/self._fullCircle);
 
             if (radius < 0) {
                 l = -l;
