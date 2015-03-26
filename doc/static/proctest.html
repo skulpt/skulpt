@@ -79,16 +79,15 @@ the more I think about it the more I wonder...
                var mypre = document.getElementById(myDiv+"_pre");
                mypre.innerHTML = '';
                Sk.canvas = myDiv+"_canvas";
-                var can = document.getElementById(Sk.canvas);
-                can.style.display = 'block';
-                if (can) {
-                    can.width = can.width;
-                    if (Sk.tg) {
-                        Sk.tg.canvasInit = false;
-                        Sk.tg.turtleList = [];
-                    }
-                }
-            
+               var can = document.getElementById(Sk.canvas);
+               can.style.display = 'block';
+               if (can) {
+                   can.width = can.width;
+                   if (Sk.tg) {
+                       Sk.tg.canvasInit = false;
+                       Sk.tg.turtleList = [];
+                   }
+               }
                Sk.pre = myDiv+"_pre";
                Sk.configure({output:outf,
                         read: builtinRead

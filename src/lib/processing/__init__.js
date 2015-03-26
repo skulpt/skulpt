@@ -829,6 +829,21 @@ var $builtinmodule = function (name) {
 				Sk.builtin.nmber.float$);
     });
 
+    mod.random = new Sk.builtin.func(function (v1, v2) {
+	// random();
+	// random(high);
+	// random(low, high);
+	// returns float
+        if (typeof(v1) !== "undefined") {
+            v1 = v1.v;
+        }
+        if (typeof(v2) !== "undefined") {
+            v2 = v2.v;
+        }
+	return Sk.builtin.assk$(mod.processing.random(v1, v2),
+				Sk.builtin.nmber.float$);
+    });
+
     mod.requestImage = new Sk.builtin.func(function (filename, extension) {
 	// requestImage(filename)
 	// requestImage(filename, extension)
