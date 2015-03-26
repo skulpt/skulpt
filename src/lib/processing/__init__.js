@@ -1413,6 +1413,14 @@ var $builtinmodule = function (name) {
         }
 
         var canvas = document.getElementById(Sk.canvas);
+        if (canvas.tagName !== "CANVAS") {
+            var mydiv = canvas;
+            canvas = document.createElement('canvas');
+            while (mydiv.firstChild) {
+                mydiv.removeChild(mydiv.firstChild);
+            }
+            mydiv.appendChild(canvas);
+        }
         window.$(canvas).show();
         window.Processing.logger = { log : function(message) {
             Sk.misceval.print_(message);
@@ -1425,6 +1433,7 @@ var $builtinmodule = function (name) {
     mouseClass = function ($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
             if (key === "x") {
                 return mod.processing.mouseX;
             }
@@ -1455,6 +1464,7 @@ var $builtinmodule = function (name) {
     keyboardClass = function ($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
             if (key === "key") {
                 return new Sk.builtin.str(mod.processing.key.toString());
             }
@@ -1476,6 +1486,7 @@ var $builtinmodule = function (name) {
     environmentClass = function ($gbl, $loc) {
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
             if (key === "frameCount") {
                 return mod.processing.frameCount;
             }
@@ -1509,6 +1520,7 @@ var $builtinmodule = function (name) {
         });
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
             if (key === "height") {
                 return mod.processing.height;
             }
@@ -1576,6 +1588,7 @@ var $builtinmodule = function (name) {
         });
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
             if (key === "width") {
                 return self.v.width;
             }

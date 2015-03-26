@@ -93,11 +93,10 @@ the more I think about it the more I wonder...
                Sk.configure({output:outf,
                         read: builtinRead
                           });
-               try {
-                  Sk.importMainWithBody("<stdin>",false,prog);
-               } catch (e) {
-                  alert(e);
-               }
+	       var myPromise = Sk.misceval.asyncToPromise(function() {
+                  return Sk.importMainWithBody("<stdin>",false,prog,true);
+               });
+               myPromise.then(function() {}, function(err) {alert(err.toString())});
             }
         </script>
         <div class="page">
@@ -134,7 +133,7 @@ def drawCircle(x, radius, level):
 run()
                         </textarea>
                         <button onclick="runit('example2')" type="button">Run</button>
-                        <canvas id="example2_canvas" height="500" width="800" style="border-style: solid; display: none"></canvas>
+                        <div id="example2_canvas" height="500" width="800" style="border-style: solid; display: none"></div>
                     </div>
                     <pre id="example2_pre"></pre>
                     <h1>Try These</h1>
@@ -204,7 +203,7 @@ run()
                             </textarea>
                             <button onclick="runit('example1')" type="button">Run</button>
                         </form>
-                        <canvas id="example1_canvas" height="500" width="800" style="border-style: solid; display: none"></canvas>
+                        <div id="example1_canvas" height="500" width="800" style="border-style: solid; display: none"></div>
                         <pre id="example1_pre"></pre>
                     </div>
 
