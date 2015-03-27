@@ -439,6 +439,10 @@ Sk.abstr.sequenceContains = function (seq, ob) {
         return seq.sq$contains(ob);
     }
 
+    if(seq.tp$getattr("__contains__")) {
+        return Sk.misceval.callsim(seq.__contains__, seq, ob);
+    }
+
     seqtypename = Sk.abstr.typeName(seq);
     if (!seq.tp$iter) {
         throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");

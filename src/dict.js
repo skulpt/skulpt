@@ -103,7 +103,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     return undefined;
 };
 
@@ -171,7 +171,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     s = new Sk.builtin.str(key);
     throw new Sk.builtin.KeyError(s.v);
 };
@@ -214,12 +214,6 @@ Sk.builtin.dict.prototype.tp$iter = function () {
     };
     return ret;
 };
-
-Sk.builtin.dict.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
-
-    return self.tp$iter();
-});
 
 Sk.builtin.dict.prototype["$r"] = function () {
     var v;
@@ -491,8 +485,111 @@ var update_f = function (kwargs, self, other) {
 update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
-Sk.builtin.dict.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
-    return Sk.builtin.list.prototype.mp$subscript.call(self, index);
+/* Py_Dict_Type_Mapping */
+/*
+        "nb$add": "__add__",
+        "nb$subtract": "__sub__",
+        "nb$multiply": "__mul__",
+        "nb$divide": "__div__",
+        "nb$floor_divide": "__floordiv__",
+        "nb$remainder": "__mod__",
+        "nb$power": "__pow__",
+        "nb$lshift": "__lshift__",
+        "nb$rshift": "__rshift__",
+        "nb$and": "__and__",
+        "nb$xor": "__xor__",
+        "nb$or": "__or__",
+        "nb$negative": "__neg__",
+        "nb$positive": "__pos__",
+        "nb$invert": "__invert__",
+        "$d": "__dict__",
+        "tp$iter": "__iter__",
+        "tp$hash": "__hash__",
+        "tp$str": "__str__",
+        "tp$mro": "__mro__",
+        "tp$name": "__name__",
+        "tp$richcompare": "__cmp__",
+        "$r": "__repr__",
+        "sq$length": "__len__",
+        "sq$contains": "__contains__",
+        "mp$length": "__len__",
+        "ob$type": "__class__"
+
+*/
+
+Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
+    Sk.builtin.pyCheckArgs("__contains__()", arguments, 1, 1, false, true);
+    return Sk.builtin.dict.prototype.sq$contains.call(self, item);
+});
+
+Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, op);
+});
+
+Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
+    Sk.builtin.pyCheckArgs("__delitem__()", arguments, 1, 1, false, true);
+    return Sk.builtin.dict.prototype.mp$del_subscript.call(self, item);
+});
+
+Sk.builtin.dict.prototype.__getitem__ = new Sk.builtin.func(function (self, item) {
+    Sk.builtin.pyCheckArgs("__getitem__()", arguments, 1, 1, false, true);
+    return Sk.builtin.dict.prototype.mp$subscript.call(self, item);
+});
+
+Sk.builtin.dict.prototype.__setitem__ = new Sk.builtin.func(function (self, item, value) {
+    Sk.builtin.pyCheckArgs("__setitem__()", arguments, 2, 2, false, true);
+    return Sk.builtin.dict.prototype.mp$ass_subscript.call(self, item, value);
+});
+
+Sk.builtin.dict.prototype.__hash__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__hash__()", arguments, 0, 0, false, true);
+    return Sk.builtin.dict.prototype.tp$hash.call(self);
+});
+
+Sk.builtin.dict.prototype.__len__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__len__()", arguments, 0, 0, false, true);
+    return Sk.builtin.dict.prototype.mp$length.call(self);
+});
+
+Sk.builtin.dict.prototype.__getattr__ = new Sk.builtin.func(function (self, attr) {
+    Sk.builtin.pyCheckArgs("__getattr__()", arguments, 1, 1, false, true);
+    return Sk.builtin.dict.prototype.tp$getattr.call(self, attr);
+});
+
+Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__iter__()", arguments, 0, 0, false, true);
+
+    return self.tp$iter();
+});
+
+Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {
+    Sk.builtin.pyCheckArgs("__repr__()", arguments, 0, 0, false, true);
+    return Sk.builtin.dict.prototype["$r"].call(self);
+});
+
+/* python3 recommends implementing simple ops */
+Sk.builtin.dict.prototype.__eq__ = new Sk.builtin.func(function (self, other) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Eq");
+});
+
+Sk.builtin.dict.prototype.__ne__ = new Sk.builtin.func(function (self, other) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
+});
+
+Sk.builtin.dict.prototype.__gt__ = new Sk.builtin.func(function (self, other) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
+});
+
+Sk.builtin.dict.prototype.__ge__ = new Sk.builtin.func(function (self, other) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "NotEq");
+});
+
+Sk.builtin.dict.prototype.__le__ = new Sk.builtin.func(function (self, other) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "GtE");
+});
+
+Sk.builtin.dict.prototype.__lt__ = new Sk.builtin.func(function (self, other) {
+    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Lt");
 });
 
 Sk.builtin.dict.prototype.tp$name = "dict";

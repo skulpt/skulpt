@@ -67,7 +67,7 @@ class DictTest(unittest.TestCase):
             The direct call of __contains__ on a dict is currently not working
             in skulpt
         '''
-        #self.assertRaises(TypeError, d.__contains__)
+        self.assertRaises(TypeError, d.__contains__)
 
     def test_len(self):
         d = {}
@@ -166,9 +166,9 @@ class DictTest(unittest.TestCase):
         self.assertEqual(repr(d), '{1: 2}')
         d = {}
         d[1] = d
-        #self.assertEqual(repr(d), '{1: {...}}')
+        self.assertEqual(repr(d), '{1: {...}}')
 
-        '''
+
         # we cannot subclass Exceptions -.-
         class Exc(Exception): pass
 
@@ -178,7 +178,6 @@ class DictTest(unittest.TestCase):
 
         d = {1: BadRepr()}
         self.assertRaises(Exc, repr, d)
-        '''
 
     def test_get(self):
         d = {}
