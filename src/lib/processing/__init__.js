@@ -527,11 +527,14 @@ var $builtinmodule = function (name) {
 	// dist(x1, y1, x2, y2)
 	// dist(x1, y1, z1, x2, y2, z2)
         if (typeof(y2) === "undefined") {
-	    mod.processing.dist(x1.v, y1.v, z1.v, x2.v);
+	    return Sk.builtin.assk$(mod.processing.dist(x1.v, y1.v, z1.v, x2.v),
+				    Sk.builtin.nmber.float$);
 	} else if (typeof(z2) === "undefined") {
-	    mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v);
+	    return Sk.builtin.assk$(mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v),
+				    Sk.builtin.nmber.float$);
 	} else {
-	    mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v, z2.v);
+	    return Sk.builtin.assk$(mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v, z2.v),
+				    Sk.builtin.nmber.float$);
 	}
     });
 
