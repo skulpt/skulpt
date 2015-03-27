@@ -230,8 +230,6 @@ Sk.doOneTimeInitialization = function () {
             // this allows better debug output
             if(richname === k && prop instanceof Sk.builtin.func) {
                 Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(k), prop);
-            } else if(richname !== k && prop instanceof Function) {
-                Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), new Sk.builtin.func(prop)); // try to add as func
             } else if(richname !== k && (prop instanceof String || typeof prop === "string")) {
                 Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), new Sk.builtin.str(prop));
             } else if(richname !== k && (Sk.builtin.checkFunction(prop) || Sk.builtin.checkString(prop) ||
