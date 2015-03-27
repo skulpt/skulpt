@@ -251,11 +251,11 @@ var $builtinmodule = function (name) {
         // g, and b may be undefined.  If they hold values it will
         // be assumed that we have an r,g,b color tuple
         if (typeof(g) === "undefined") {
-            mod.processing.alpha(r.v);
+            return Sk.builtin.assk$(mod.processing.alpha(r.v), Sk.builtin.nmber.float$);
         } else if (typeof(b) === "undefined") {
-            mod.processing.alpha(r.v, g.v);
+            return Sk.builtin.assk$(mod.processing.alpha(r.v, g.v), Sk.builtin.nmber.float$);
         } else {
-            mod.processing.alpha(r.v, g.v, b.v);
+            return Sk.builtin.assk$(mod.processing.alpha(r.v, g.v, b.v), Sk.builtin.nmber.float$);
 	}
     });
 
@@ -355,16 +355,25 @@ var $builtinmodule = function (name) {
 
     mod.blendColor = new Sk.builtin.func(function (c1, c2, mode) {
 	// blendColor(c1,c2,MODE)
-	mod.processing.blendColor(c1.v, c2.v, mode.v);
+	// FIXME: return Python object
+        var c = Sk.misceval.callsim(mod.color,
+				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
+				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
+				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$));
+	c.v = mod.processing.blendColor(c1.v, c2.v, mode.v);
+	return c;
     });
 
     mod.brightness = new Sk.builtin.func(function (r, g, b) {
         if (typeof(g) === "undefined") {
-	    mod.processing.brightness(r.v);
+	    return Sk.builtin.assk$(mod.processing.brightness(r.v),
+				    Sk.builtin.nmber.float$);
         } else if (typeof(b) === "undefined") {
-	    mod.processing.brightness(r.v, g.v);
+	    return Sk.builtin.assk$(mod.processing.brightness(r.v, g.v),
+				    Sk.builtin.nmber.float$);
         } else {
-	    mod.processing.brightness(r.v, g.v, b.v);
+	    return Sk.builtin.assk$(mod.processing.brightness(r.v, g.v, b.v),
+				    Sk.builtin.nmber.float$);
 	}
     });
 
@@ -580,8 +589,8 @@ var $builtinmodule = function (name) {
 
     mod.hue = new Sk.builtin.func(function (color) {
 	// hue(color)
-	// returns color
-	return mod.processing.hue(color.v);
+	return Sk.builtin.assk$(mod.processing.hue(color.v),
+				Sk.builtin.nmber.float$);
     });
 
     mod.imageMode = new Sk.builtin.func(function (mode) {
@@ -598,7 +607,12 @@ var $builtinmodule = function (name) {
     mod.lerpColor = new Sk.builtin.func(function (c1, c2, amt) {
 	// lerpColor(c1, c2, amt)
 	// returns color
-	return mod.processing.lerpColor(c1.v, c2.v, amt.v);
+        var c = Sk.misceval.callsim(mod.color,
+				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
+				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
+				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$));
+	c.v = mod.processing.lerpColor(c1.v, c2.v, amt.v);
+	return c;
     });
 
     mod.lightFalloff = new Sk.builtin.func(function (constant, linear, quadratic) {
