@@ -326,20 +326,40 @@ function generateTurtleModule(_target) {
                 self.onEvent("mousemove", e);
             }
         };
+        for (var key in this._handlers) {
+            this._target.addEventListener(key, this._handlers[key]);
+        }
     }
 
     (function(proto) {
         proto.onEvent = function(type, e) {
-            var world    = getScreen(),
-                rect     = world.spriteLayer().canvas.getBoundingClientRect(),
-                x        = e.clientX - rect.left | 0,
-                y        = e.clientY - rect.top  | 0,
-                localX   = x * world.xScale + world.llx,
-                localY   = y * world.yScale + world.ury,
-                managers = this._managers[type],
-                i;
+            var managers     = this._managers[type],
+                moveManagers = this._managers["mousemove"],
+                computed     = false,
+                x, y, localX, localY, i;
+
+            function computeCoordinates() {
+                if (computed) return;
+                var world = getScreen();
+                var rect  = world.spriteLayer().canvas.getBoundingClientRect();
+                x         = e.clientX - rect.left | 0;
+                y         = e.clientY - rect.top  | 0;
+                localX    = x * world.xScale + world.llx;
+                localY    = y * world.yScale + world.ury;
+                computed = true;
+            }
+
+            if ((type === "mousedown" || type === "mouseup") && moveManagers && moveManagers.length) {
+                computeCoordinates();
+                for (i = moveManagers.length; --i >= 0;) {
+                    if (moveManagers[i].test(x, y, localX, localY)) {
+                        moveManagers[i].canMove(type === "mousedown");
+                    }
+                }
+            }
 
             if (managers && managers.length) {
+                computeCoordinates()
                 for (i = managers.length; --i >= 0;) {
                     if (type === "mousemove") {
                         if (managers[i].canMove()) {
@@ -348,12 +368,7 @@ function generateTurtleModule(_target) {
                         continue;
                     }
 
-                    managers[i].canMove(false);
-
                     if (managers[i].test(x, y, localX, localY)) {
-                        if (type === "mousedown") {
-                            managers[i].canMove(true);
-                        }
                         managers[i].trigger([localX, localY]);
                     }
                 }
@@ -361,18 +376,12 @@ function generateTurtleModule(_target) {
         };
 
         proto.reset = function() {
-            if (this._target) {
-                for(var key in this._handlers) {
-                    this._target.removeEventListener(key, this._handlers[key]);
-                }
-            }
             this._managers = {};
         };
 
         proto.addManager = function(type, manager) {
             if (!this._managers[type]) {
                 this._managers[type] = [];
-                this._target.addEventListener(type, this._handlers[type]);
             }
 
             this._managers[type].push(manager);
