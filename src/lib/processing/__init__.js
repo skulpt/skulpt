@@ -9,7 +9,7 @@ var $builtinmodule = function (name) {
     //var fontClass;
     //var graphicsClass;
     //var shapeClass;
-    //var vectorClass
+    var vectorClass
 
     var mod = {};
     var imList = [];
@@ -355,7 +355,6 @@ var $builtinmodule = function (name) {
 
     mod.blendColor = new Sk.builtin.func(function (c1, c2, mode) {
 	// blendColor(c1,c2,MODE)
-	// FIXME: return Python object
         var c = Sk.misceval.callsim(mod.color,
 				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
 				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
@@ -710,36 +709,6 @@ var $builtinmodule = function (name) {
 	return Sk.builtin.assk$(mod.processing.month(), Sk.builtin.nmber.int$);
     });
 
-    mod.mouseClicked = new Sk.builtin.func(function () {
-	// FIXME: return Skulpt boolean?
-	return mod.processing.mouseClicked();
-    });
-
-    mod.mouseDragged = new Sk.builtin.func(function () {
-	// FIXME: return Skulpt boolean?
-	return mod.processing.mouseDragged();
-    });
-
-    mod.mouseMoved = new Sk.builtin.func(function () {
-	// FIXME: return Skulpt boolean?
-	return mod.processing.mouseMoved();
-    });
-
-    mod.mouseOut = new Sk.builtin.func(function () {
-	// FIXME: return Skulpt boolean?
-	return mod.processing.mouseOut();
-    });
-
-    mod.mouseOver = new Sk.builtin.func(function () {
-	// FIXME: return Skulpt boolean?
-	return mod.processing.mouseOver();
-    });
-
-    mod.mouseReleased = new Sk.builtin.func(function () {
-	// FIXME: return Skulpt boolean?
-	return mod.processing.mouseReleased();
-    });
-
     mod.noCursor = new Sk.builtin.func(function () {
 	mod.processing.noCursor();
     });
@@ -780,7 +749,7 @@ var $builtinmodule = function (name) {
 
     mod.norm = new Sk.builtin.func(function (value, low, high) {
 	// norm(value, low, high)
-	// return float
+	// returns float
 	return Sk.builtin.assk$(mod.processing.norm(value.v, low.v, high.v),
 				Sk.builtin.nmber.float$);
     });
@@ -1014,7 +983,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.textDescent = new Sk.builtin.func(function () {
-	// return float
+	// returns float
 	return Sk.builtin.assk$(mod.processing.textDescent(),
 				Sk.builtin.nmber.float$);
     });
@@ -1111,13 +1080,6 @@ var $builtinmodule = function (name) {
 	return Sk.builtin.assk$(mod.processing.year(), Sk.builtin.nmber.int$);
     });
 
-    // Classes
-    // TODO
-    //mod.PFont = Sk.misceval.buildClass(mod, fontClass, "PFont", []);
-    //mod.PGraphics = Sk.misceval.buildClass(mod, graphicsClass, "PGraphics", []);
-    //mod.PShape = Sk.misceval.buildClass(mod, shapeClass, "PShape", []);
-    //mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
-
     // 3D Primitives
 
     mod.box = new Sk.builtin.func(function(size) {
@@ -1206,7 +1168,7 @@ var $builtinmodule = function (name) {
 
     mod.loop = new Sk.builtin.func(function () {
         if (mod.processing === null) {
-            throw new Sk.builtin.Exception("Loop should be called in setup");
+            throw new Sk.builtin.Exception("loop() should be called after run()");
         }
         looping = true;
         mod.processing.loop();
@@ -1214,35 +1176,36 @@ var $builtinmodule = function (name) {
 
     mod.noLoop = new Sk.builtin.func(function () {
         if (mod.processing === null) {
-            throw new Sk.builtin.Exception("noLoop should be called in setup");
+            throw new Sk.builtin.Exception("noLoop() should be called after run()");
         }
         looping = false;
         mod.processing.noLoop();
     });
 
     // NOTE: difference with ProcessingJS
-    // frameRate is only a function, not a variable: see getFrameRate()
+    // frameRate is only a function, not a variable: 
+    // use environment.frameRate for value
     mod.frameRate = new Sk.builtin.func(function (fr) {
         mod.processing.frameRate(fr.v);
     });
 
     // NOTE: difference with ProcessingJS
-    // Use getFrameRate() rather than frameRate
-    mod.getFrameRate = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.__frameRate, Sk.builtin.nmber.int$);
-    });
+    // Use mouse.pressed rather than mousePressed
 
     // NOTE: difference with ProcessingJS
-    // Use getMousePressed() rather than mousePressed
-    mod.getMousePressed = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.__mousePressed, Sk.builtin.nmber.int$);
-    });
+    // Use environment.keyPressed rather than keyPressed
 
     // NOTE: difference with ProcessingJS
-    // Use getKeyPressed() rather than keyPressed
-    mod.getKeyPressed = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.__keyPressed, Sk.builtin.nmber.int$);
-    });
+    // Use environment.frameCount 
+
+    // NOTE: difference with ProcessingJS
+    // Use environment.frameCount
+    
+    // NOTE: difference with ProcessingJS
+    // Use environment.online
+
+    // NOTE: difference with ProcessingJS
+    // Use environment.focused
 
     mod.size = new Sk.builtin.func(function (h, w, mode) {
         if (typeof(mode) === "undefined") {
@@ -1253,13 +1216,13 @@ var $builtinmodule = function (name) {
     });
 
     // NOTE: difference with ProcessingJS
-    // Use width() rather than width
+    // Use width() or environment.height rather than width
     mod.width = new Sk.builtin.func(function () {
         return Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
     });
 
     // NOTE: difference with ProcessingJS
-    // use height() rather than height
+    // use height() or environment.height rather than height
     mod.height = new Sk.builtin.func(function () {
         return Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$);
     });
@@ -1269,25 +1232,25 @@ var $builtinmodule = function (name) {
     });
 
     // NOTE: difference with ProcessingJS
-    // Use mouseX() rather than mouseX
+    // Use mouseX() or mouse.x rather than mouseX
     mod.mouseX = new Sk.builtin.func(function () {
         return Sk.builtin.assk$(mod.processing.mouseX, Sk.builtin.nmber.int$);
     });
 
     // NOTE: difference with ProcessingJS
-    // Use mouseY() rather than mouseY
+    // Use mouseY() or mouse.y rather than mouseY
     mod.mouseY = new Sk.builtin.func(function () {
         return Sk.builtin.assk$(mod.processing.mouseY, Sk.builtin.nmber.int$);
     });
 
     // NOTE: difference with ProcessingJS
-    // Use pmouseX() rather than pmouseX
+    // Use pmouseX() or mouse.px rather than pmouseX
     mod.pmouseX = new Sk.builtin.func(function () {
         return Sk.builtin.assk$(mod.processing.pmouseX, Sk.builtin.nmber.int$);
     });
 
     // NOTE: difference with ProcessingJS
-    // Use pmouseY() rather than pmouseY
+    // Use pmouseY() or mouse.py rather than pmouseY
     mod.pmouseY = new Sk.builtin.func(function () {
         return Sk.builtin.assk$(mod.processing.pmouseY, Sk.builtin.nmber.int$);
     });
@@ -1413,6 +1376,7 @@ var $builtinmodule = function (name) {
             // }
 
 
+            // FIXME if no Sk.globals["draw"], then no need for this
             processing.draw = function () {
                 // if there are pending image loads then just use the natural looping calls to 
                 // retry until all the images are loaded.  If noLoop was called in setup then make
@@ -1441,13 +1405,12 @@ var $builtinmodule = function (name) {
                 mod.frameCount = processing.frameCount;
                 if (Sk.globals["draw"]) {
                     Sk.misceval.callsim(Sk.globals["draw"]);
-                }
+		}
             };
 
             var callBacks = ["setup", "mouseMoved", "mouseClicked", "mouseDragged", "mouseMoved", "mouseOut",
                 "mouseOver", "mousePressed", "mouseReleased", "keyPressed", "keyReleased", "keyTyped"
             ];
-
             for (var cb in callBacks) {
                 if (Sk.globals[callBacks[cb]]) {
                     processing[callBacks[cb]] = new Function("Sk.misceval.callsim(Sk.globals['" + callBacks[cb] + "']);");
@@ -1668,6 +1631,135 @@ var $builtinmodule = function (name) {
     mod.set = new Sk.builtin.func(function (x, y, color) {
         mod.processing.set(x.v, y.v, color.v);
     });
+
+    // --- classes
+
+    vectorClass = function ($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self, x, y, z) {
+	    // PVector()
+	    // PVector(x,y)
+	    // PVector(x,y,z)
+            if (typeof(x) === "undefined") {
+		self.v = new mod.processing.PVector();
+            } else if (typeof(z) === "undefined") {
+		self.v = new mod.processing.PVector(x.v, y.v);
+            } else {
+		self.v = new mod.processing.PVector(x.v, y.v, z.v);
+	    }
+        });
+
+        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
+            if (key === "x") {
+                return new Sk.builtin.nmber(self.v.x);
+            } else if (key === "y") {
+                return new Sk.builtin.nmber(self.v.y);
+            } else if (key === "z") {
+                return new Sk.builtin.nmber(self.v.z);
+	    }
+	});
+	    
+        $loc.get = new Sk.builtin.func(function (self) {
+	    // get() Gets a copy of the vector
+            new_vec = Sk.misceval.callsim(mod.PVector);
+	    new_vec.v = self.v.get();
+	    return new_vec;
+	});
+	
+	$loc.set = new Sk.builtin.func(function (self, x, y, x) {
+	    // set() Sets the x, y, z component of the vector
+	    if (typeof(z) === "undefined") {
+		self.v.set(x.v, y.v);
+	    } else {
+		self.v.set(x.v, y.v, z.v);
+	    }
+	});
+
+	$loc.mag = new Sk.builtin.func(function (self) {
+	    // mag() Calculates the magnitude (length) of the vector
+	    // and returns the result as a float
+	    return new Sk.builtin.nmber(self.v.mag());
+	});
+
+	$loc.add = new Sk.builtin.func(function (self, vec) {
+	    // add()	Adds one vector to another
+            new_vec = Sk.misceval.callsim(mod.PVector);
+	    new_vec.v = self.v.add(vec.v);
+	    return new_vec;
+	});
+
+	$loc.sub = new Sk.builtin.func(function (self, vec) {
+	    // sub()	Subtracts one vector from another
+            new_vec = Sk.misceval.callsim(mod.PVector);
+	    new_vec.v = self.v.sub(vec.v);
+	    return new_vec;
+	});
+
+	$loc.mult = new Sk.builtin.func(function (self, vec) {
+	    // mult()	Multiplies the vector by a scalar
+            new_vec = Sk.misceval.callsim(mod.PVector);
+	    new_vec.v = self.v.mult(vec.v);
+	    return new_vec;
+	});
+
+	$loc.div = new Sk.builtin.func(function (self, vec) {
+	    // div()	Divides the vector by a scalar
+            new_vec = Sk.misceval.callsim(mod.PVector);
+	    new_vec.v = self.v.dic(vec.v);
+	    return new_vec;
+	});
+
+	$loc.dist = new Sk.builtin.func(function (self, vec) {
+	    // dist()	Calculate the Euclidean distance between two points
+	    return new Sk.builtin.nmber(self.v.dist(vec.v));
+	});
+
+	$loc.dot = new Sk.builtin.func(function (self, v1, v2, v3) {
+	    // dot()	Calculates the dot product
+	    // returns float
+	    // vec.dot(x,y,z)
+	    // vec.dot(v)	    
+	    if (typeof(v2) === 'undefined') {
+		return new Sk.builtin.nmber(self.v.dot(v1.v));
+	    } else {
+		return new Sk.builtin.nmber(self.v.dot(v1.v, v2.v, v3.v));
+	    }
+	});
+
+	$loc.cross = new Sk.builtin.func(function (self, vec) {
+	    // cross()	Calculates the cross product
+            new_vec = Sk.misceval.callsim(mod.PVector);
+	    new_vec.v = self.v.cross(vec.v);
+	    return new_vec;
+	});
+
+	$loc.normalize = new Sk.builtin.func(function (self) {
+	    // normalize()	Normalizes the vector
+	    self.v.normalize(vec.v);
+	});
+
+	$loc.limit = new Sk.builtin.func(function (self, value) {
+	    // limit()	Limits the magnitude of the vector
+	    self.v.limit(value.v);
+	});
+
+	$loc.angleBetween = new Sk.builtin.func(function (self, vec) {
+	    // angleBetween()	Calculates the angle between two vectors
+	    return new Sk.builtin.nmber(self.v.angleBetween(vec.v));
+	});
+
+	$loc.array = new Sk.builtin.func(function (self) {
+	    // array()	
+	    return new Sk.builtin.list(self.v.array());
+	});
+    };
+
+    // Classes
+    // TODO
+    //mod.PFont = Sk.misceval.buildClass(mod, fontClass, "PFont", []);
+    //mod.PGraphics = Sk.misceval.buildClass(mod, graphicsClass, "PGraphics", []);
+    //mod.PShape = Sk.misceval.buildClass(mod, shapeClass, "PShape", []);
+    mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
 
     return mod;
 };
