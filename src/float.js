@@ -38,8 +38,35 @@ Sk.builtin.float_ = function (x) {
         return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
     }
 
+    // try calling __float__
+    if(x.tp$getattr("__float__")) {
+        return Sk.misceval.callsim(x.__float__, x);
+    }
+
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
+
+Sk.builtin.float_.prototype.__int__ = new Sk.builtin.func(function(self) {
+    // get value
+    var v = Sk.ffi.remapToJs(self);
+
+    if (v < 0) {
+        v = Math.ceil(v);
+    } else {
+        v = Math.floor(v);
+    }
+
+    return new Sk.builtin.nmber(v, Sk.builtin.nmber.int$);
+});
+
+Sk.builtin.float_.prototype.__float__ = new Sk.builtin.func(function(self) {
+    return self;
+});
+
+Sk.builtin.float_.prototype.__complex__ = new Sk.builtin.func(function(self) {
+    throw new Sk.builtin.TypeError("__complex__ is not implemented for type 'int'.");
+    //return new Sk.builtin.complex(self); // create new complex number
+});
 
 Sk.builtin.float_.prototype.tp$name = "float";
 Sk.builtin.float_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("float", Sk.builtin.float_);

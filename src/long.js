@@ -59,6 +59,22 @@ Sk.builtin.lng.prototype.tp$hash = function () {
     return new Sk.builtin.nmber(this.tp$index(), Sk.builtin.nmber.int$);
 };
 
+Sk.builtin.lng.prototype.__int__ = new Sk.builtin.func(function(self) {
+    if (self.cantBeInt()) {
+        return new Sk.builtin.lng(self);
+    }
+
+    return new Sk.builtin.nmber(self.toInt$(), Sk.builtin.nmber.int$);
+});
+
+Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
+    return this.__int__.call(this, self);
+});
+
+Sk.builtin.lng.prototype.__float__ = new Sk.builtin.func(function(self) {
+    return new Sk.builtin.nmber(Sk.ffi.remapToJs(self), Sk.builtin.nmber.float$);
+});
+
 Sk.builtin.lng.prototype.tp$name = "long";
 Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("long", Sk.builtin.lng);
 

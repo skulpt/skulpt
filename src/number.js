@@ -19,15 +19,16 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
         this.skType = x.skType;
     } else if (typeof x === "number") {
         this.v = x;
+
         if (skType === undefined) {
             if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$ || x % 1 !== 0) {
                 this.skType = Sk.builtin.nmber.float$;
-            }
-            else {
+            } else {
                 this.skType = Sk.builtin.nmber.int$;
             }
         } else {
             this.skType = skType;
+
             if (skType === Sk.builtin.nmber.int$) {
                 if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
                     return new Sk.builtin.lng(x);
@@ -36,9 +37,11 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
         }
     } else if (typeof x === "string") {
         result = Sk.numberFromStr(x);
+
         if (skType !== undefined) {
             result.skType = skType;
         }
+
         if (skType === Sk.builtin.nmber.int$) {
             if (result.v > Sk.builtin.nmber.threshold$ || result.v < -Sk.builtin.nmber.threshold$ - 1) {
                 return new Sk.builtin.lng(x);
@@ -49,9 +52,11 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
         return Sk.numberFromStr(x.str$(10, true));
     } else if (x instanceof Sk.builtin.biginteger) {
         result = Sk.numberFromStr(x.toString());
+
         if (skType !== undefined) {
             result.skType = skType;
         }
+
         if (skType === Sk.builtin.nmber.int$) {
             if (result.v > Sk.builtin.nmber.threshold$ || result.v < -Sk.builtin.nmber.threshold$) {
                 return new Sk.builtin.lng(x);
@@ -59,10 +64,10 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
         }
     } else {
         this.v = 0;
+
         if (skType === undefined) {
             this.skType = Sk.builtin.nmber.int$;
-        }
-        else {
+        } else {
             this.skType = skType;
         }
     }

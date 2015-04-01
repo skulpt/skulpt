@@ -18,6 +18,16 @@ Sk.builtin.bool.prototype["$r"] = function () {
     return new Sk.builtin.str("False");
 };
 
+Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function(self) {
+    var v = Sk.builtin.asnum$(self);
+
+    return new Sk.builtin.nmber(v, Sk.builtin.nmber.int$);
+});
+
+Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
+    return new Sk.builtin.nmber(Sk.ffi.remapToJs(self), Sk.builtin.nmber.float$);
+});
+
 Sk.builtin.bool.true$ = Object.create(Sk.builtin.bool.prototype, {v: {value: true, enumerable: true}});
 Sk.builtin.bool.false$ = Object.create(Sk.builtin.bool.prototype, {v: {value: false, enumerable: true}});
 

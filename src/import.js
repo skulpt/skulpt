@@ -199,6 +199,7 @@ Sk.doOneTimeInitialization = function () {
     for(i in builtinObjList) {
         builtin_ = builtinObjList[i];
         Sk.builtin[builtin_]["$d"] = new Sk.builtin.dict([]);
+        Sk.builtin[builtin_]["__dict__"] = Sk.builtin[builtin_]["$d"];
 
         // builtins have only object as __bases__
         Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.object]));
