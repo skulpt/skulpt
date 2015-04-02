@@ -40,6 +40,10 @@ Sk.builtin.float_ = function (x) {
 
     // try calling __float__
     if(x.tp$getattr("__float__")) {
+        // calling a method which contains im_self and im_func
+        // causes skulpt to automatically map the im_self as first argument
+        return Sk.misceval.callsim(x.tp$getattr("__float__"));
+    } else if(x.__float__) {
         return Sk.misceval.callsim(x.__float__, x);
     }
 
@@ -56,16 +60,12 @@ Sk.builtin.float_.prototype.__int__ = new Sk.builtin.func(function(self) {
         v = Math.floor(v);
     }
 
+    // this should take care of int/long fitting
     return new Sk.builtin.nmber(v, Sk.builtin.nmber.int$);
 });
 
 Sk.builtin.float_.prototype.__float__ = new Sk.builtin.func(function(self) {
     return self;
-});
-
-Sk.builtin.float_.prototype.__complex__ = new Sk.builtin.func(function(self) {
-    throw new Sk.builtin.TypeError("__complex__ is not implemented for type 'int'.");
-    //return new Sk.builtin.complex(self); // create new complex number
 });
 
 Sk.builtin.float_.prototype.tp$name = "float";

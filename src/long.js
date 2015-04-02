@@ -18,17 +18,21 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
         this.biginteger = new Sk.builtin.biginteger(0);
         return this;
     }
+
     if (x instanceof Sk.builtin.lng) {
         this.biginteger = x.biginteger.clone();
         return this;
     }
+
     if (x instanceof Sk.builtin.biginteger) {
         this.biginteger = x;
         return this;
     }
-    if (x instanceof String) {
+
+    if (x instanceof String || typeof x === "string") {
         return Sk.longFromStr(x, base);
     }
+
     if (x instanceof Sk.builtin.str) {
         return Sk.longFromStr(x.v, base);
     }

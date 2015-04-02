@@ -1,3 +1,7 @@
+if(Sk.builtin === undefined) {
+    Sk.builtin = {};
+}
+
 /**
  *
  * @constructor
@@ -16,7 +20,6 @@
  *
  * calling the type or calling an instance of the type? or both?
  */
-
 Sk.builtin.type = function (name, bases, dict) {
     var mro;
     var obj;

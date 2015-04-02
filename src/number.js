@@ -815,6 +815,29 @@ Sk.builtin.nmber.prototype.__ge__ = function (me, other) {
     return me.numberCompare(other) >= 0;
 };
 
+Sk.builtin.nmber.prototype.__round__ = function (self, ndigits) {
+    Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
+
+    var result, multiplier, number;
+
+    if ((ndigits !== undefined) && !Sk.misceval.isIndex(ndigits)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(ndigits) + "' object cannot be interpreted as an index");
+    }
+
+    if (ndigits === undefined) {
+        ndigits = 0;
+    }
+
+    number = Sk.builtin.asnum$(self);
+    ndigits = Sk.misceval.asIndex(ndigits);
+
+    multiplier = Math.pow(10, ndigits);
+    result = Math.round(number * multiplier) / multiplier;
+
+    return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+};
+
+
 Sk.builtin.nmber.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 Sk.builtin.nmber.prototype["$r"] = function () {

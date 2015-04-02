@@ -81,6 +81,12 @@ Sk.builtin.checkInt = function (arg) {
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
+Sk.builtin.checkFloat = function (arg) {
+    return (arg !== null) && (arg instanceof Sk.builtin.nmber &&
+            arg.skType === Sk.builtin.nmber.float$);
+};
+goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
+
 Sk.builtin.checkString = function (arg) {
     return (arg !== null && arg.__class__ == Sk.builtin.str);
 };

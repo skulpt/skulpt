@@ -1,6 +1,6 @@
 // builtins are supposed to come from the __builtin__ module, but we don't do
 // that yet.
-Sk.builtin = {};
+Sk.builtin = Sk.builtin || {};
 
 // todo; these should all be func objects too, otherwise str() of them won't
 // work, etc.
@@ -228,13 +228,17 @@ Sk.builtin.round = function round (number, ndigits) {
         ndigits = 0;
     }
 
-    number = Sk.builtin.asnum$(number);
-    ndigits = Sk.misceval.asIndex(ndigits);
+    // for built-in types round is delegated to number.__round__
+    if(Sk.builtin.checkNumber(number)) {
+        return Sk.builtin.nmber.prototype.__round__.call(number, number, ndigits);
+    }
 
-    multiplier = Math.pow(10, ndigits);
-    result = Math.round(number * multiplier) / multiplier;
-
-    return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+    // try calling internal magic method
+    if((number.tp$getattr && number.tp$getattr("__round__"))) {
+        return Sk.misceval.callsim(number.tp$getattr("__round__"), ndigits);
+    } else if(number.__round__) {
+        return Sk.misceval.callsim(number.__round__, number, ndigits);
+    }
 };
 
 Sk.builtin.len = function len (item) {
@@ -1198,7 +1202,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
     return list;
 };
 Sk.builtin.sorted.co_varnames = ["cmp", "key", "reverse"];
-Sk.builtin.sorted.$defaults = [Sk.builtin.none, Sk.builtin.none, false];
+Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
 Sk.builtin.sorted.co_numargs = 4;
 
 Sk.builtin.issubclass = function issubclass (c1, c2) {
