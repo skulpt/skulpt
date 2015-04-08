@@ -1,27 +1,6 @@
 var $builtinmodule = function (name) {
 "use strict";
 
-// See if the TurtleGraphics module has already been loaded
-// for the currently configured DOM target element.
-var currentTarget = getConfiguredTarget();
-
-if (!currentTarget.turtleInstance) {
-    currentTarget.turtleInstance = generateTurtleModule(currentTarget);
-}
-else {
-    currentTarget.turtleInstance.reset();
-}
-
-Sk.TurtleGraphics.module = currentTarget.turtleInstance.skModule;
-Sk.TurtleGraphics.reset  = currentTarget.turtleInstance.reset;
-Sk.TurtleGraphics.focus  = currentTarget.turtleInstance.focus;
-Sk.TurtleGraphics.raw = {
-    Turtle : currentTarget.turtleInstance.Turtle,
-    Screen : currentTarget.turtleInstance.Screen
-};
-
-return currentTarget.turtleInstance.skModule;
-
 function getConfiguredTarget() {
     var selector, target;
 
@@ -53,8 +32,8 @@ function generateTurtleModule(_target) {
 
     // Ensure that the turtle DOM target has a tabindex
     // so that it can accept keyboard focus and events
-    if (!_target.hasAttribute('tabindex')) {
-        _target.setAttribute('tabindex', 0);
+    if (!_target.hasAttribute("tabindex")) {
+        _target.setAttribute("tabindex", 0);
     }
 
     Types.FLOAT = function(value) {
@@ -359,7 +338,7 @@ function generateTurtleModule(_target) {
             }
 
             if (managers && managers.length) {
-                computeCoordinates()
+                computeCoordinates();
                 for (i = managers.length; --i >= 0;) {
                     if (type === "mousemove") {
                         if (managers[i].canMove()) {
@@ -2209,5 +2188,27 @@ function generateTurtleModule(_target) {
         Turtle   : Turtle,
         Screen   : Screen
     };
+}
+
+// See if the TurtleGraphics module has already been loaded
+// for the currently configured DOM target element.
+var currentTarget = getConfiguredTarget();
+
+if (!currentTarget.turtleInstance) {
+    currentTarget.turtleInstance = generateTurtleModule(currentTarget);
+}
+else {
+    currentTarget.turtleInstance.reset();
+}
+
+Sk.TurtleGraphics.module = currentTarget.turtleInstance.skModule;
+Sk.TurtleGraphics.reset  = currentTarget.turtleInstance.reset;
+Sk.TurtleGraphics.focus  = currentTarget.turtleInstance.focus;
+Sk.TurtleGraphics.raw = {
+    Turtle : currentTarget.turtleInstance.Turtle,
+    Screen : currentTarget.turtleInstance.Screen
 };
+
+return currentTarget.turtleInstance.skModule;
+
 };
