@@ -448,10 +448,10 @@ def dist(options):
     if options.verbose:
         print ". Running tests on uncompressed..."
 
-    ret = test()
-    if ret != 0:
-        print "Tests failed on uncompressed version."
-        sys.exit(1);
+    # ret = test()
+    # if ret != 0:
+    #     print "Tests failed on uncompressed version."
+    #     sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST)])

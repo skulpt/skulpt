@@ -23,6 +23,17 @@ function generateTurtleModule(_target) {
         SHAPES               = {},
         TURTLE_COUNT         = 0,
         Types                = {},
+        _defaultSetup        = {
+            target     : "turtle", // DOM element or id of parent container
+            width      : 400, // if set to 0 it will use the target width
+            height     : 400, // if set to 0 it will use the target height
+            worldWidth : 0, // if set to 0 it will use config.width
+            worldHeight: 0, // if set to 0 it will use config.height
+            animate    : true, // enabled/disable all animated rendering
+            bufferSize : 0, // default turtle buffer size
+            allowUndo  : true, // enable ability to use the undo buffer
+            assets     : {}
+        },
         _frameRequest,
         _frameRequestTimeout,
         _screenInstance,
@@ -80,24 +91,15 @@ function generateTurtleModule(_target) {
     ];
 
     _config = (function() {
-        var defaultSetup = {
-                target     : "turtle", // DOM element or id of parent container
-                width      : 400, // if set to 0 it will use the target width
-                height     : 400, // if set to 0 it will use the target height
-                animate    : true, // enabled/disable all animated rendering
-                bufferSize : 0, // default turtle buffer size
-                allowUndo  : true, // enable ability to use the undo buffer
-                assets     : {}
-            },
-            key;
+        var key;
 
         if (!Sk.TurtleGraphics) {
             Sk.TurtleGraphics = {};
         }
 
-        for(key in defaultSetup) {
+        for(key in _defaultSetup) {
             if (!Sk.TurtleGraphics.hasOwnProperty(key)) {
-                Sk.TurtleGraphics[key] = defaultSetup[key];
+                Sk.TurtleGraphics[key] = _defaultSetup[key];
             }
         }
 
@@ -1109,13 +1111,10 @@ function generateTurtleModule(_target) {
         this._mode      = "standard";
         this._managers  = {};
         this._keyLogger = {};
-        if (_config.height && _config.width) {
-            w = _config.width/2;
-            h = _config.height/2;
-        } else {
-            w = _config.defaultSetup.width/2;
-            h = _config.defaultSetup.height/2;
-        }
+
+        w = (_config.worldWidth || _config.width || getWidth()) / 2;
+        h = (_config.worldHeight || _config.height || getHeight()) / 2;
+
         this.setUpWorld(-w,-h,w,h);
     }
 
@@ -1526,7 +1525,8 @@ function generateTurtleModule(_target) {
         return (
             (_screenInstance && _screenInstance._width) ||
             _config.width ||
-            getTarget().clientWidth
+            getTarget().clientWidth ||
+            _defaultSetup.width
         ) | 0;
     }
 
@@ -1534,7 +1534,8 @@ function generateTurtleModule(_target) {
         return (
             (_screenInstance && _screenInstance._height) ||
             _config.height ||
-            getTarget().clientHeight
+            getTarget().clientHeight ||
+            _defaultSetup.height
         ) | 0;
     }
 
@@ -1742,7 +1743,7 @@ function generateTurtleModule(_target) {
         context.beginPath();
         context.moveTo(this.x, this.y);
         size = size * Math.min(Math.abs(xScale),Math.abs(yScale));
-        context.arc(this.x, this.y, size, 0, Turtle.RADIANS);
+        context.arc(this.x, this.y, size/2, 0, Turtle.RADIANS);
         context.closePath();
         context.fillStyle = color || this.color;
         context.fill();
