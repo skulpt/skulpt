@@ -1187,6 +1187,18 @@ Sk.builtin.globals = function globals () {
 
 };
 
+Sk.builtin.divmod = function divmod (a, b) {
+    var ret;
+
+    Sk.builtin.pyCheckArgs("divmod", arguments, 2, 2);
+    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
+    Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
+
+    ret = [a.nb$floor_divide(b), a.nb$remainder(b)];
+
+    return Sk.builtin.tuple(ret);
+};
+
 
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
@@ -1199,9 +1211,6 @@ Sk.builtin.complex = function complex () {
 };
 Sk.builtin.delattr = function delattr () {
     throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
-};
-Sk.builtin.divmod = function divmod () {
-    throw new Sk.builtin.NotImplementedError("divmod is not yet implemented");
 };
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
