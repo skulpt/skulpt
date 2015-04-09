@@ -1196,7 +1196,7 @@ Sk.builtin.divmod = function divmod (a, b) {
 
     ret = [a.nb$floor_divide(b), a.nb$remainder(b)];
 
-    return Sk.builtin.tuple(ret);
+    return new Sk.builtin.tuple(ret);
 };
 
 
