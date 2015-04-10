@@ -1188,15 +1188,7 @@ Sk.builtin.globals = function globals () {
 };
 
 Sk.builtin.divmod = function divmod (a, b) {
-    var ret;
-
-    Sk.builtin.pyCheckArgs("divmod", arguments, 2, 2);
-    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-    Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
-
-    ret = [a.nb$floor_divide(b), a.nb$remainder(b)];
-
-    return new Sk.builtin.tuple(ret);
+    return Sk.abstr.numberBinOp(a, b, "DivMod");
 };
 
 

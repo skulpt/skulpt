@@ -107,6 +107,11 @@ var $builtinmodule = function (name) {
     });
     mod.__mod__ = mod.mod;
 
+    mod.divmod = new Sk.builtin.func(function (a, b) {
+        return Sk.builtin.nmber.prototype['nb$divmod'].call(a, b);
+    });
+    mod.__divmod__ = mod.divmod;
+
     mod.mul = new Sk.builtin.func(function (a, b) {
         return Sk.builtin.nmber.prototype['nb$multiply'].call(a, b);
     });

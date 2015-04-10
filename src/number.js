@@ -548,6 +548,32 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
     return undefined;
 };
 
+Sk.builtin.nmber.prototype.nb$divmod = function (other) {
+    var thisAsLong;
+    var result;
+
+    if (typeof other === "number") {
+        other = new Sk.builtin.nmber(other, undefined);
+    }
+    else if (other instanceof Sk.builtin.bool) {
+        other = new Sk.builtin.nmber(Sk.builtin.asnum$(other), undefined);
+    }
+
+    if (other instanceof Sk.builtin.bool) {
+        other = new Sk.builtin.nmber(Sk.builtin.asnum$(other), undefined);
+    }
+
+    if (other instanceof Sk.builtin.nmber || other instanceof Sk.builtin.lng) {
+        return new Sk.builtin.tuple([
+            this.nb$floor_divide(other),
+            this.nb$remainder(other)
+        ]);
+    }
+
+    return undefined;
+
+};
+
 Sk.builtin.nmber.prototype.nb$power = function (other) {
     var thisAsLong;
     var result;
