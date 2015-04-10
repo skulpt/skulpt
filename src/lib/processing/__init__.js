@@ -81,12 +81,12 @@ var $builtinmodule = function (name) {
 
     mod.bezier = new Sk.builtin.func(function (x1, y1, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) {
         if (typeof(a7) === "undefined") {
-	    // bezier(x1, y1, cx1, cy1, cx2, cy2,  x2,  y2);
+      // bezier(x1, y1, cx1, cy1, cx2, cy2,  x2,  y2);
             mod.processing.bezier(x1.v, y1.v, a1.v, a2.v, a3.v, a4.v, a5.v, a6.v);
-	} else {
-	    // bezier(x1, y1,  z1, cx1, cy1, cz1, cx2, cy2, cz2, x2, y2, z2);
+  } else {
+      // bezier(x1, y1,  z1, cx1, cy1, cz1, cx2, cy2, cz2, x2, y2, z2);
             mod.processing.bezier(x1.v, y1.v, a1.v, a2.v, a3.v, a4.v, a5.v, a6.v, a7.v, a8.v, a9.v, a10.v);
-	}
+  }
     });
 
     // 3D Primitives
@@ -392,9 +392,22 @@ var $builtinmodule = function (name) {
 
     });
 
+    getAttrWrapper = function(getter) {
+        return new Sk.builtin.func(function(self, key) {
+            if (key instanceof Sk.builtin.str) {
+                key = key.v;
+            }
+            else if (typeof key !== "string") {
+                throw new Sk.builtin.TypeError("__getattribute__ expects the key to be a string");
+            }
+
+            return getter(self, key);
+        });
+    };
+
     mouseClass = function ($gbl, $loc) {
 
-        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+        $loc.__getattr__ = getAttrWrapper(function (self, key) {
             if (key === "x") {
                 return mod.processing.mouseX;
             }
@@ -423,8 +436,7 @@ var $builtinmodule = function (name) {
     mod.mouse = Sk.misceval.callsim(mod.Mouse);
 
     keyboardClass = function ($gbl, $loc) {
-
-        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+        $loc.__getattr__ = getAttrWrapper(function (self, key) {
             if (key === "key") {
                 return new Sk.builtin.str(mod.processing.key.toString());
             }
@@ -445,7 +457,7 @@ var $builtinmodule = function (name) {
 
     environmentClass = function ($gbl, $loc) {
 
-        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+        $loc.__getattr__ = getAttrWrapper(function (self, key) {
             if (key === "frameCount") {
                 return mod.processing.frameCount;
             }
@@ -478,7 +490,7 @@ var $builtinmodule = function (name) {
             self.pixels = null;
         });
 
-        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+        $loc.__getattr__ = getAttrWrapper(function (self, key) {
             if (key === "height") {
                 return mod.processing.height;
             }
@@ -545,7 +557,7 @@ var $builtinmodule = function (name) {
             self.height = Sk.builtin.assk$(im.height, Sk.builtin.nmber.int$);
         });
 
-        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+        $loc.__getattr__ = getAttrWrapper(function (self, key) {
             if (key === "width") {
                 return self.v.width;
             }
