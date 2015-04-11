@@ -797,7 +797,7 @@ var $builtinmodule = function (name) {
 	// loadShape(filename)
 	// returns shape
 	var shape = Sk.misceval.callsim(mod.PShapeSVG, 
-					new Sk.builtin.str("string")
+					new Sk.builtin.str("string"),
 					filename);
 	return shape;
     });
