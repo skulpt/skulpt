@@ -25,6 +25,66 @@ var $builtinmodule = function (name) {
     mod.processing = null;
     mod.p = null;
 
+    mod.X = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
+    mod.Y = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
+    mod.Z = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
+
+    mod.R = Sk.builtin.assk$( 3, Sk.builtin.nmber.int$);
+    mod.G = Sk.builtin.assk$( 4, Sk.builtin.nmber.int$);
+    mod.B = Sk.builtin.assk$( 5, Sk.builtin.nmber.int$);
+    mod.A = Sk.builtin.assk$( 6, Sk.builtin.nmber.int$);
+    
+    mod.U = Sk.builtin.assk$( 7, Sk.builtin.nmber.int$);
+    mod.V = Sk.builtin.assk$( 8, Sk.builtin.nmber.int$);
+    
+    mod.NX = Sk.builtin.assk$( 9, Sk.builtin.nmber.int$);
+    mod.NY = Sk.builtin.assk$( 10, Sk.builtin.nmber.int$);
+    mod.NZ = Sk.builtin.assk$( 11, Sk.builtin.nmber.int$);
+    
+    mod.EDGE = Sk.builtin.assk$( 12, Sk.builtin.nmber.int$);
+    
+    // Stroke
+    mod.SR = Sk.builtin.assk$( 13, Sk.builtin.nmber.int$);
+    mod.SG = Sk.builtin.assk$( 14, Sk.builtin.nmber.int$);
+    mod.SB = Sk.builtin.assk$( 15, Sk.builtin.nmber.int$);
+    mod.SA = Sk.builtin.assk$( 16, Sk.builtin.nmber.int$);
+    
+    mod.SW = Sk.builtin.assk$( 17, Sk.builtin.nmber.int$);
+    
+    // Transformations (2D and 3D)
+    mod.TX = Sk.builtin.assk$( 18, Sk.builtin.nmber.int$);
+    mod.TY = Sk.builtin.assk$( 19, Sk.builtin.nmber.int$);
+    mod.TZ = Sk.builtin.assk$( 20, Sk.builtin.nmber.int$);
+    
+    mod.VX = Sk.builtin.assk$( 21, Sk.builtin.nmber.int$);
+    mod.VY = Sk.builtin.assk$( 22, Sk.builtin.nmber.int$);
+    mod.VZ = Sk.builtin.assk$( 23, Sk.builtin.nmber.int$);
+    mod.VW = Sk.builtin.assk$( 24, Sk.builtin.nmber.int$);
+    
+    // Material properties
+    mod.AR = Sk.builtin.assk$( 25, Sk.builtin.nmber.int$);
+    mod.AG = Sk.builtin.assk$( 26, Sk.builtin.nmber.int$);
+    mod.AB = Sk.builtin.assk$( 27, Sk.builtin.nmber.int$);
+    
+    mod.DR = Sk.builtin.assk$( 3, Sk.builtin.nmber.int$);
+    mod.DG = Sk.builtin.assk$( 4, Sk.builtin.nmber.int$);
+    mod.DB = Sk.builtin.assk$( 5, Sk.builtin.nmber.int$);
+    mod.DA = Sk.builtin.assk$( 6, Sk.builtin.nmber.int$);
+    
+    mod.SPR = Sk.builtin.assk$( 28, Sk.builtin.nmber.int$);
+    mod.SPG = Sk.builtin.assk$( 29, Sk.builtin.nmber.int$);
+    mod.SPB = Sk.builtin.assk$( 30, Sk.builtin.nmber.int$);
+    
+    mod.SHINE = Sk.builtin.assk$( 31, Sk.builtin.nmber.int$);
+    
+    mod.ER = Sk.builtin.assk$( 32, Sk.builtin.nmber.int$);
+    mod.EG = Sk.builtin.assk$( 33, Sk.builtin.nmber.int$);
+    mod.EB = Sk.builtin.assk$( 34, Sk.builtin.nmber.int$);
+    
+    mod.BEEN_LIT = Sk.builtin.assk$( 35, Sk.builtin.nmber.int$);
+    
+    mod.VERTEX_FIELD_COUNT = Sk.builtin.assk$( 36, Sk.builtin.nmber.int$);
+    
     // Shape drawing modes
     mod.CENTER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
     mod.RADIUS = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
@@ -32,6 +92,36 @@ var $builtinmodule = function (name) {
     mod.CORNER = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
     mod.DIAMETER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
     
+    // Text vertical alignment modes
+    // Default vertical alignment for text placement
+    mod.BASELINE = Sk.builtin.assk$( 0,    Sk.builtin.nmber.int$);
+    // Align text to the top
+    mod.TOP = Sk.builtin.assk$(      101,  Sk.builtin.nmber.int$);
+    // Align text from the bottom, using the baseline
+    mod.BOTTOM = Sk.builtin.assk$(   102,  Sk.builtin.nmber.int$);
+    
+    // UV Texture coordinate modes
+    mod.NORMAL = Sk.builtin.assk$(     1, Sk.builtin.nmber.int$);
+    mod.NORMALIZED = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
+    mod.IMAGE = Sk.builtin.assk$(      2, Sk.builtin.nmber.int$);
+    
+    // Text placement modes
+    mod.MODEL = Sk.builtin.assk$( 4, Sk.builtin.nmber.int$);
+    mod.SHAPE = Sk.builtin.assk$( 5, Sk.builtin.nmber.int$);
+    
+    // Stroke modes
+    mod.SQUARE = Sk.builtin.assk$(  'butt', Sk.builtin.nmber.str);
+    mod.ROUND = Sk.builtin.assk$(   'round', Sk.builtin.nmber.str);
+    mod.PROJECT = Sk.builtin.assk$( 'square', Sk.builtin.nmber.str);
+    mod.MITER = Sk.builtin.assk$(   'miter', Sk.builtin.nmber.str);
+    mod.BEVEL = Sk.builtin.assk$(   'bevel', Sk.builtin.nmber.str);
+    
+    // Lighting modes
+    mod.AMBIENT = Sk.builtin.assk$(     0, Sk.builtin.nmber.int$);
+    mod.DIRECTIONAL = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
+    //POINT:     2, Shared with Shape constant
+    mod.SPOT = Sk.builtin.assk$(        3, Sk.builtin.nmber.int$);
+
     // Color modes
     mod.RGB = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
     mod.ARGB = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
@@ -61,6 +151,19 @@ var $builtinmodule = function (name) {
     mod.PDF = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
     mod.DXF  = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
 
+    // Platform IDs
+    mod.OTHER = Sk.builtin.assk$(   0, Sk.builtin.nmber.int$);
+    mod.WINDOWS = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
+    mod.MAXOSX = Sk.builtin.assk$(  2, Sk.builtin.nmber.int$);
+    mod.LINUX = Sk.builtin.assk$(   3, Sk.builtin.nmber.int$);
+    
+    mod.EPSILON = Sk.builtin.assk$( 0.0001, Sk.builtin.nmber.float$);
+
+    mod.MAX_FLOAT = Sk.builtin.assk$(  3.4028235e+38, Sk.builtin.nmber.float$);
+    mod.MIN_FLOAT = Sk.builtin.assk$( -3.4028235e+38, Sk.builtin.nmber.float$);
+    mod.MAX_INT = Sk.builtin.assk$(    2147483647, Sk.builtin.nmber.int$);
+    mod.MIN_INT = Sk.builtin.assk$(   -2147483648, Sk.builtin.nmber.int$);
+    
     // Constants
     mod.HALF_PI = Sk.builtin.assk$(Math.PI / 2.0, Sk.builtin.nmber.float$);
     mod.THIRD_PI = Sk.builtin.assk$(Math.PI / 3.0, Sk.builtin.nmber.float$);
@@ -69,6 +172,11 @@ var $builtinmodule = function (name) {
     mod.TAU = Sk.builtin.assk$(Math.PI * 2.0, Sk.builtin.nmber.float$);
     mod.QUARTER_PI = Sk.builtin.assk$(Math.PI / 4.0, Sk.builtin.nmber.float$);
 
+    mod.DEG_TO_RAD = Sk.builtin.assk$( Math.PI / 180, Sk.builtin.nmber.float$);
+    mod.RAD_TO_DEG = Sk.builtin.assk$( 180 / Math.PI, Sk.builtin.nmber.float$);
+    
+    mod.WHITESPACE = Sk.builtin.assk$(" \t\n\r\f\u00A0", Sk.builtin.nmber.str);
+    
     // Shape modes
     mod.POINT = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
     mod.POINTS = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
@@ -90,6 +198,18 @@ var $builtinmodule = function (name) {
     mod.SPHERE = Sk.builtin.assk$(40, Sk.builtin.nmber.int$);
     mod.BOX = Sk.builtin.assk$(41, Sk.builtin.nmber.int$);
 
+    mod.GROUP = Sk.builtin.assk$(          0, Sk.builtin.nmber.int$);
+    mod.PRIMITIVE = Sk.builtin.assk$(      1, Sk.builtin.nmber.int$);
+    //PATH:         21, // shared with Shape PATH
+    mod.GEOMETRY = Sk.builtin.assk$(       3, Sk.builtin.nmber.int$);
+    
+    // Shape Vertex
+    mod.VERTEX = Sk.builtin.assk$(        0, Sk.builtin.nmber.int$);
+    mod.BEZIER_VERTEX = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
+    mod.CURVE_VERTEX = Sk.builtin.assk$(  2, Sk.builtin.nmber.int$);
+    mod.BREAK = Sk.builtin.assk$(         3, Sk.builtin.nmber.int$);
+    mod.CLOSESHAPE = Sk.builtin.assk$(    4, Sk.builtin.nmber.int$);
+    
     // Blend modes
     mod.REPLACE    = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
     mod.BLEND      = Sk.builtin.assk$(1 << 0, Sk.builtin.nmber.int$);
@@ -107,13 +227,25 @@ var $builtinmodule = function (name) {
     mod.DODGE      = Sk.builtin.assk$(1 << 12, Sk.builtin.nmber.int$);
     mod.BURN       = Sk.builtin.assk$(1 << 13, Sk.builtin.nmber.int$);
 
+    // Color component bit masks
+    mod.ALPHA_MASK = Sk.builtin.assk$( 0xff000000, Sk.builtin.nmber.int$);
+    mod.RED_MASK = Sk.builtin.assk$(   0x00ff0000, Sk.builtin.nmber.int$);
+    mod.GREEN_MASK = Sk.builtin.assk$( 0x0000ff00, Sk.builtin.nmber.int$);
+    mod.BLUE_MASK = Sk.builtin.assk$(  0x000000ff, Sk.builtin.nmber.int$);
+    
+    // Projection matrices
+    mod.CUSTOM = Sk.builtin.assk$(       0, Sk.builtin.nmber.int$);
+    mod.ORTHOGRAPHIC = Sk.builtin.assk$( 2, Sk.builtin.nmber.int$);
+    mod.PERSPECTIVE = Sk.builtin.assk$(  3, Sk.builtin.nmber.int$);
+    
     // Cursors
-    mod.ARROW = Sk.builtin.str('default', Sk.builtin.str);
-    mod.CROSS = Sk.builtin.str('crosshair', Sk.builtin.str);
-    mod.HAND = Sk.builtin.str('pointer', Sk.builtin.str);
-    mod.MOVE = Sk.builtin.str('move', Sk.builtin.str);
-    mod.TEXT = Sk.builtin.str('text', Sk.builtin.str);
-    mod.WAIT = Sk.builtin.str('wait', Sk.builtin.str);
+    mod.ARROW = Sk.builtin.assk$('default', Sk.builtin.str);
+    mod.CROSS = Sk.builtin.assk$('crosshair', Sk.builtin.str);
+    mod.HAND = Sk.builtin.assk$('pointer', Sk.builtin.str);
+    mod.MOVE = Sk.builtin.assk$('move', Sk.builtin.str);
+    mod.TEXT = Sk.builtin.assk$('text', Sk.builtin.str);
+    mod.WAIT = Sk.builtin.assk$('wait', Sk.builtin.str);
+    mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto", Sk.builtin.nmber.str);
 
     // Hints
     mod.DISABLE_OPENGL_2X_SMOOTH = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
@@ -1754,11 +1886,142 @@ var $builtinmodule = function (name) {
 	});
     };
 
-    // Classes
-    // TODO
-    //mod.PFont = Sk.misceval.buildClass(mod, fontClass, "PFont", []);
-    //mod.PGraphics = Sk.misceval.buildClass(mod, graphicsClass, "PGraphics", []);
-    //mod.PShape = Sk.misceval.buildClass(mod, shapeClass, "PShape", []);
+    fontClass = function ($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self, input) {
+	    // PFont()
+	    // PFont(input)
+            if (typeof(input) === "undefined") {
+		self.v = new mod.processing.PFont();
+            } else {
+		self.v = new mod.processing.PVector(input.v);
+	    }
+        });
+
+        $loc.list = new Sk.builtin.func(function (self) {
+	    // font.list()
+	    return new Sk.builtin.list(self.v.list());
+	});
+    };
+
+    graphicsClass = function ($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self, x, y, z) {
+	    // PGraphics()
+	    // PGraphics(width,height)
+	    // PGraphics(width,height,applet)
+            if (typeof(x) === "undefined") {
+		self.v = new mod.processing.PVector();
+            } else if (typeof(z) === "undefined") {
+		self.v = new mod.processing.PVector(x.v, y.v);
+            } else {
+		self.v = new mod.processing.PVector(x.v, y.v, z.v);
+	    }
+        });
+
+        $loc.beginDraw = new Sk.builtin.func(function (self) {
+	    self.v.beginDraw();
+	});
+
+        $loc.endDraw = new Sk.builtin.func(function (self) {
+	    self.v.endDraw();
+	});
+    };
+    
+    shapeClass = function ($gbl, $loc) {
+        $loc.__init__ = new Sk.builtin.func(function (self) {
+	    // PShape()
+	    self.v = new mod.processing.PShape();
+        });
+
+        $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
+	    key = Sk.ffi.remapToJs(key);
+            if (key === "width") {
+                return new Sk.builtin.nmber(self.v.width);
+            } else if (key === "height") {
+                return new Sk.builtin.nmber(self.v.height);
+	    }
+	});
+
+        $loc.isVisible = new Sk.builtin.func(function (self) {
+	    // isVisible() Returns a boolean value "true" if the image is set to be visible, "false" if not
+	    return new Sk.builtin.bool(self.v.isVisible());
+	});
+
+        $loc.setVisible = new Sk.builtin.func(function (self, value) {
+	    // setVisible() Sets the shape to be visible or invisible
+	    self.v.setVisible(value.v);
+	});
+
+        $loc.disableStyle = new Sk.builtin.func(function (self) {
+	    // disableStyle() Disables the shape's style data and uses Processing styles
+	    self.v.disableStyle();
+	});
+
+        $loc.enableStyle = new Sk.builtin.func(function (self) {
+	    // enableStyle() Enables the shape's style data and ignores the Processing styles
+	    self.v.enableStyle();
+	});
+
+        $loc.getChild = new Sk.builtin.func(function (self, shape) {
+	    // getChild() Returns a child element of a shape as a PShape object
+	    var child = self.v.getChild(shape.v);
+	    if (child != null) {
+		var new_shape = new mod.processing.PShape();
+		new_shape.v = child;
+		return new_shape;
+	    } else {
+		return null;
+	    }
+	});
+
+        $loc.translate = new Sk.builtin.func(function (self, x, y, z) {
+	    // translate() Displaces the shape
+	    // sh.translate(x,y)
+	    // sh.translate(x,y,z)
+            if (typeof(z) === "undefined") {
+		self.v.translate(x.v, y.v);
+	    } else {
+		self.v.translate(x.v, y.v, z.v);
+	    }
+	});
+
+        $loc.rotate = new Sk.builtin.func(function (self, angle) {
+	    // rotate() Rotates the shape
+	    self.v.rotate(angle.v);
+	});
+
+        $loc.rotateX = new Sk.builtin.func(function (self, angle) {
+	    // rotateX() Rotates the shape around the x-axis
+	    self.v.rotateX(angle.v);
+	});
+
+        $loc.rotateY = new Sk.builtin.func(function (self) {
+	    // rotateY() Rotates the shape around the y-axis
+	    self.v.rotateY(angle.v);
+	});
+
+        $loc.rotateZ = new Sk.builtin.func(function (self) {
+	    // rotateZ() Rotates the shape around the z-axis
+	    self.v.rotateZ(angle.v);
+	});
+
+        $loc.scale = new Sk.builtin.func(function (self, x, y, z) {
+	    // scale() Increases and decreases the size of a shape
+	    // sh.scale(size)
+	    // sh.scale(x,y)
+	    // sh.scale(x,y,z)
+            if (typeof(y) === "undefined") {
+		self.v.scale(x.v);
+	    } else if (typeof(z) === "undefined") {
+		self.v.scale(x.v, y.v);
+	    } else {
+		self.v.scale(x.v, y.v, z.v);
+	    }
+	});
+    };
+
+    mod.PFont = Sk.misceval.buildClass(mod, fontClass, "PFont", []);
+    mod.PGraphics = Sk.misceval.buildClass(mod, graphicsClass, "PGraphics", []);
+    mod.PShape = Sk.misceval.buildClass(mod, shapeClass, "PShape", []);
     mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
 
     return mod;
