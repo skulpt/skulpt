@@ -4,7 +4,9 @@
   Testing/debugging:
 
   ProcessingJS from Skulpt:
-  Sk.misceval.callsim(Sk.globals.processing.$d.PShapeSVG, "string", "bot1.svg")
+  Sk.misceval.callsim(Sk.globals.processing.$d.PShapeSVG, 
+      new Sk.builtin.str("string"), 
+      new Sk.builtin.str("bot1.svg"))
 
   ProcessingJS direct:
   p = Processing.instances[0]
@@ -794,7 +796,9 @@ var $builtinmodule = function (name) {
     mod.loadShape = new Sk.builtin.func(function (filename) {
 	// loadShape(filename)
 	// returns shape
-	var shape = Sk.misceval.callsim(mod.PShapeSVG, "string", filename.v);
+	var shape = Sk.misceval.callsim(mod.PShapeSVG, 
+					new Sk.builtin.str("string")
+					filename);
 	return shape;
     });
 
