@@ -1,3 +1,16 @@
+/*
+  Skulpt Processing
+
+  Testing/debugging:
+
+  ProcessingJS from Skulpt:
+  Sk.misceval.callsim(Sk.globals.processing.$d.PShapeSVG, "string", "bot1.svg")
+
+  ProcessingJS direct:
+  p = Processing.instances[0]
+  p.PShapeSVG("string", "bot1.svg")
+*/
+
 var $builtinmodule = function (name) {
     var imageClass;
     var colorClass;
@@ -5,10 +18,6 @@ var $builtinmodule = function (name) {
     var environmentClass;
     var keyboardClass;
     var mouseClass;
-    // TODO:
-    //var fontClass;
-    //var graphicsClass;
-    //var shapeClass;
     var vectorClass
 
     var mod = {};
@@ -355,11 +364,10 @@ var $builtinmodule = function (name) {
     mod.rect = new Sk.builtin.func(function (x, y, width, height, radius) {
         var rad;
         if (typeof(radius) === "undefined") {
-            rad = 0;
+            mod.processing.rect(x.v, y.v, width.v, height.v);
         } else {
-            rad = radius.v;
+            mod.processing.rect(x.v, y.v, width.v, height.v, radius.v);
         }
-        mod.processing.rect(x.v, y.v, width.v, height.v, rad);
     });
 
     mod.triangle = new Sk.builtin.func(function (x1, y1, x2, y2, x3, y3) {
@@ -544,27 +552,33 @@ var $builtinmodule = function (name) {
 	// createFont(name, size)
 	// createFont(name, size, smooth)
 	// createFont(name, size, smooth, charset)
+	var font = Sk.misceval.callsim(mod.PFont);
         if (typeof(smooth) === "undefined") {
-	    return mod.processing.createFont(name.v, size.v);
+	    font.v = mod.processing.createFont(name.v, size.v);
 	} else if (typeof(charset) === "undefined") {
-	    return mod.processing.createFont(name.v, size.v, smooth.v);
+	    font.v = mod.processing.createFont(name.v, size.v, smooth.v);
 	} else {
-	    return mod.processing.createFont(name.v, size.v, smooth.v, charset.v);
+	    font.v = mod.processing.createFont(name.v, size.v, smooth.v, charset.v);
 	}
+	return font;
     });
 
     mod.createGraphics = new Sk.builtin.func(function (width, height, renderer, filename) {
 	// createGraphics(width, height, renderer)
 	// createGraphics(width, height, renderer, filename)
+	var graphics = Sk.misceval.callsim(mod.PGraphics);
         if (typeof(filename) === "undefined") {
-	    return mod.processing.createGraphics(width.v, height.v, renderer.v);
+	    graphics.v = mod.processing.createGraphics(width.v, height.v, renderer.v);
 	} else {
-	    return mod.processing.createGraphics(width.v, height.v, renderer.v, filename.v);
+	    graphics.v = mod.processing.createGraphics(width.v, height.v, renderer.v, filename.v);
 	}
+	return graphics;
     });
 
     mod.createImage = new Sk.builtin.func(function (width, height, format) {
-	return mod.processing.createImage(width.v, height.v, format.v);
+	var image = Sk.misceval.callsim(mod.PImage);
+	image.v = mod.processing.createImage(width.v, height.v, format.v);
+	return image;
     });
 
     mod.cursor = new Sk.builtin.func(function (v, x, y) {
@@ -766,25 +780,28 @@ var $builtinmodule = function (name) {
     mod.loadBytes = new Sk.builtin.func(function (filename) {
 	// loadBytes(filename)
 	// returns byte[]
-	mod.processing.loadBytes(filename.v);
+	return new Sk.builtin.list(mod.processing.loadBytes(filename.v));
     });
 
     mod.loadFont = new Sk.builtin.func(function (fontname) {
 	// loadFont(fontname)
 	// returns font
-	mod.processing.loadFont(fontname.v);
+	var font = Sk.misceval.callsim(mod.PFont);
+	font.v = mod.processing.loadFont(fontname.v);
+	return font;
     });
 
     mod.loadShape = new Sk.builtin.func(function (filename) {
 	// loadShape(filename)
 	// returns shape
-	mod.processing.loadShape(filename.v);
+	var shape = Sk.misceval.callsim(mod.PShapeSVG, "string", filename.v);
+	return shape;
     });
 
     mod.loadStrings = new Sk.builtin.func(function (filename) {
 	// loadStrings(filename)
 	// returns string []
-	mod.processing.loadStrings(filename.v);
+	return new Sk.builtin.list(mod.processing.loadStrings(filename.v));
     });
 
     mod.mag = new Sk.builtin.func(function (a, b, c) {
@@ -976,11 +993,13 @@ var $builtinmodule = function (name) {
     mod.requestImage = new Sk.builtin.func(function (filename, extension) {
 	// requestImage(filename)
 	// requestImage(filename, extension)
+	var image = Sk.misceval.callsim(mod.PImage);
         if (typeof(extension) === "undefined") {
-	    return mod.processing.requestImage(filename.v);
+	    image.v = mod.processing.requestImage(filename.v);
         } else {
-	    return mod.processing.requestImage(filename.v, extension.v);
+	    image.v = mod.processing.requestImage(filename.v, extension.v);
 	}
+	return image;
     });
 
     mod.saturation = new Sk.builtin.func(function (color) {
@@ -1719,10 +1738,20 @@ var $builtinmodule = function (name) {
     //
     imageClass = function ($gbl, $loc) {
         /* images are loaded async.. so its best to preload them */
-        $loc.__init__ = new Sk.builtin.func(function (self, im) {
-            self.v = im;
-            self.width = Sk.builtin.assk$(im.width, Sk.builtin.nmber.int$);
-            self.height = Sk.builtin.assk$(im.height, Sk.builtin.nmber.int$);
+        $loc.__init__ = new Sk.builtin.func(function (self, arg1, arg2, arg3) {
+	    // PImage()
+	    // PImage(img)
+	    // PImage(width,height)
+	    // PImage(width,height,format)
+	    if (typeof(arg1) === "undefined") {
+		self.v = new mod.processing.PImage();
+	    } else if (typeof(arg2) === "undefined") {
+		self.v = new mod.processing.PImage(arg1.v);
+	    } else if (typeof(arg3) === "undefined") {
+		self.v = new mod.processing.PImage(arg1.v, arg2.v);
+	    } else {
+		self.v = new mod.processing.PImage(arg1.v, arg2.v, arg3.v);
+	    }
         });
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
@@ -1737,18 +1766,21 @@ var $builtinmodule = function (name) {
 
     };
 
-    mod.PImage = Sk.misceval.buildClass(mod, imageClass, "PImage", []);
-
     mod.loadImage = new Sk.builtin.func(function (imfile) {
         var i = mod.processing.loadImage(imfile.v);
         imList.push(i);
-        return Sk.misceval.callsim(mod.PImage, i);
+	var image = Sk.misceval.callsim(mod.PImage);
+	image.v = i;
+        return image;
     });
 
-
-    mod.image = new Sk.builtin.func(function (im, x, y) {
-        if (im.v.width > 0) {
-            mod.processing.image(im.v, x.v, y.v, im.v.width, im.v.height);
+    mod.image = new Sk.builtin.func(function (im, x, y, w, h) {
+	// image(img, x, y)
+	// image(img, x, y, width, height)
+	if (typeof(w) === "undefined") {
+            mod.processing.image(im.v, x.v, y.v);
+	} else {
+            mod.processing.image(im.v, x.v, y.v, w.v, h.v);
         }
     });
 
@@ -1793,7 +1825,7 @@ var $builtinmodule = function (name) {
 	    
         $loc.get = new Sk.builtin.func(function (self) {
 	    // get() Gets a copy of the vector
-            new_vec = Sk.misceval.callsim(mod.PVector);
+            var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.get();
 	    return new_vec;
 	});
@@ -1815,28 +1847,28 @@ var $builtinmodule = function (name) {
 
 	$loc.add = new Sk.builtin.func(function (self, vec) {
 	    // add()	Adds one vector to another
-            new_vec = Sk.misceval.callsim(mod.PVector);
+            var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.add(vec.v);
 	    return new_vec;
 	});
 
 	$loc.sub = new Sk.builtin.func(function (self, vec) {
 	    // sub()	Subtracts one vector from another
-            new_vec = Sk.misceval.callsim(mod.PVector);
+            var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.sub(vec.v);
 	    return new_vec;
 	});
 
 	$loc.mult = new Sk.builtin.func(function (self, vec) {
 	    // mult()	Multiplies the vector by a scalar
-            new_vec = Sk.misceval.callsim(mod.PVector);
+            var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.mult(vec.v);
 	    return new_vec;
 	});
 
 	$loc.div = new Sk.builtin.func(function (self, vec) {
 	    // div()	Divides the vector by a scalar
-            new_vec = Sk.misceval.callsim(mod.PVector);
+            var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.dic(vec.v);
 	    return new_vec;
 	});
@@ -1860,7 +1892,7 @@ var $builtinmodule = function (name) {
 
 	$loc.cross = new Sk.builtin.func(function (self, vec) {
 	    // cross()	Calculates the cross product
-            new_vec = Sk.misceval.callsim(mod.PVector);
+            var new_vec = Sk.misceval.callsim(mod.PVector);
 	    new_vec.v = self.v.cross(vec.v);
 	    return new_vec;
 	});
@@ -1927,9 +1959,18 @@ var $builtinmodule = function (name) {
     };
     
     shapeClass = function ($gbl, $loc) {
-        $loc.__init__ = new Sk.builtin.func(function (self) {
-	    // PShape()
-	    self.v = new mod.processing.PShape();
+        $loc.__init__ = new Sk.builtin.func(function (self, arg1, arg2, arg3) {
+	    if (typeof(arg1) === "undefined") {
+		// special version for Skulpt
+		self.v = null;
+		// Will fill in manually in getChild()
+	    } else if (typeof(arg2) === "undefined") {
+		self.v = new mod.processing.PShapeSVG(arg1.v);
+	    } else if (typeof(arg3) === "undefined") {
+		self.v = new mod.processing.PShapeSVG(arg1.v, arg2.v);
+	    } else {
+		self.v = new mod.processing.PShapeSVG(arg1.v, arg2.v, arg3.v);
+	    }
         });
 
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
@@ -1962,10 +2003,12 @@ var $builtinmodule = function (name) {
 	});
 
         $loc.getChild = new Sk.builtin.func(function (self, shape) {
-	    // getChild() Returns a child element of a shape as a PShape object
+	    // getChild() Returns a child element of a shape as a PShapeSVG object
 	    var child = self.v.getChild(shape.v);
 	    if (child != null) {
-		var new_shape = new mod.processing.PShape();
+		// special method for Skulpt:
+		var new_shape = Sk.misceval.callsim(mod.PShapeSVG);
+		// Now fill in value:
 		new_shape.v = child;
 		return new_shape;
 	    } else {
@@ -2021,8 +2064,9 @@ var $builtinmodule = function (name) {
 
     mod.PFont = Sk.misceval.buildClass(mod, fontClass, "PFont", []);
     mod.PGraphics = Sk.misceval.buildClass(mod, graphicsClass, "PGraphics", []);
-    mod.PShape = Sk.misceval.buildClass(mod, shapeClass, "PShape", []);
+    mod.PShapeSVG = Sk.misceval.buildClass(mod, shapeClass, "PShapeSVG", []);
     mod.PVector = Sk.misceval.buildClass(mod, vectorClass, "PVector", []);
+    mod.PImage = Sk.misceval.buildClass(mod, imageClass, "PImage", []);
 
     return mod;
 };
