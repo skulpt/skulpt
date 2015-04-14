@@ -1608,10 +1608,10 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.nmber(mod.processing.pmouseY);
             }
             else if (key === "pressed") {
-                return new Sk.builtin.bool(mod.processing.mousePressed);
+                    return new Sk.builtin.bool(mod.processing.__mousePressed);
             }
             else if (key === "button") {
-                return new Sk.builtin.bool(mod.processing.mouseButton);
+                return new Sk.builtin.nmber(mod.processing.mouseButton);
             }
         });
 
