@@ -4,6 +4,8 @@
  * @param {Object} real part of the complex number
  * @param {?Object=} imag part of the complex number
  * @this {Sk.builtin.object}
+ *
+ * Prefering here == instead of ===, otherwise also undefined has to be matched explicitly
  */
 Sk.builtin.complex = function (real, imag) {
     Sk.builtin.pyCheckArgs("complex", arguments, 0, 2);
@@ -23,15 +25,15 @@ Sk.builtin.complex = function (real, imag) {
 
     // check if kwargs
     // ToDo: this is only a temporary replacement
-    r = real;
+    r = real == null ? Sk.builtin.bool.false$ : real; // r = Py_False;
     i = imag;
 
     // handle case if passed in arguments are of type complex
-    if (real instanceof Sk.builtin.complex && imag === undefined) {
+    if (r instanceof Sk.builtin.complex && i == null) {
         return real;
     }
 
-    if(Sk.builtin.checkString(r)) {
+    if(r != null && Sk.builtin.checkString(r)) {
         if(i != null) {
             throw new Sk.builtin.TypeError("complex() can't take second arg if first is a string");
         }
@@ -57,7 +59,7 @@ Sk.builtin.complex = function (real, imag) {
     }
 
     // check for valid arguments
-    if(nbr === null || !Sk.builtin.checkFloat(r) || ((i !== null) && (nbi === null || !Sk.builtin.checkFloat(i)))) {
+    if(nbr == null || !Sk.builtin.checkNumber(r) || ((i != null) && (nbi == null || !Sk.builtin.checkNumber(i)))) {
         throw new Sk.builtin.TypeError("complex() argument must be a string or number");
     }
 
@@ -82,7 +84,7 @@ Sk.builtin.complex = function (real, imag) {
         Just treat it as a double. */
         tmp = Sk.ffi.remapToJs(r); // tmp = PyNumber_Float(r);
 
-        if(tmp === null) {
+        if(tmp == null) {
             return null;
         }
 
@@ -90,7 +92,7 @@ Sk.builtin.complex = function (real, imag) {
         cr.imag = 0.0;
     }
 
-    if(i === null) {
+    if(i == null) {
         ci.real = 0.0;
     } else if(Sk.builtin.complex._complex_check(i)) {
         ci.real = i.real;
@@ -102,7 +104,7 @@ Sk.builtin.complex = function (real, imag) {
         Just treat it as a double. */
         tmp = Sk.ffi.remapToJs(i); // tmp = PyNumber_Float(i);
 
-        if(tmp === null) {
+        if(tmp == null) {
             return null;
         }
 
@@ -136,6 +138,11 @@ Sk.builtin.complex.try_complex_special_method = function(op) {
     var complexstr = new Sk.builtin.str("__complex__");
     var f; // PyObject
     var res;
+
+    // return early
+    if(op == null) {
+        return null;
+    }
 
     //PyInstance_Check, check if we are dealing with a builtin or not
     if(Sk.builtin.checkClass(op)) {

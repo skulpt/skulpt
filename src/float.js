@@ -41,8 +41,14 @@ Sk.builtin.float_ = function (x) {
         return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
     }
 
+    // this is a special internal case
+    if(typeof x === "boolean") {
+        x = x ? 1.0 : 0.0;
+        return new Sk.builtin.nmber(x, Sk.builtin.nmber.float$);
+    }
+
     // try calling __float__
-    if(x.tp$getattr("__float__")) {
+    if(x.tp$getattr && x.tp$getattr("__float__")) {
         // calling a method which contains im_self and im_func
         // causes skulpt to automatically map the im_self as first argument
         return Sk.misceval.callsim(x.tp$getattr("__float__"));

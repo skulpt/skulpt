@@ -12,11 +12,11 @@ Sk.builtin.object = function () {
 Sk.builtin.object._PyObject_LookupSpecial = function(op, str) {
     var res;
 
-    if(!op) {
+    if(op == null) {
         return null;
     }
 
-    if(op.tp$getattr(str)) {
+    if(op.tp$getattr && op.tp$getattr(str)) {
         return op.tp$getattr(str);
     }
 
