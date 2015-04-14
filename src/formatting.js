@@ -92,15 +92,15 @@ var format = function (kwa) {
             index++;
         }
 
-         else if(field_name === undefined || field_name === ""){
+        else if(field_name === undefined || field_name === ""){
             return_str = arg_dict[index];
             index++;
             value = return_str;
         }
         else if(field_name instanceof Sk.builtin.nmber || field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
-           return_str = arg_dict[field_name];
-           index++;
-           value = return_str;
+            return_str = arg_dict[field_name];
+            index++;
+            value = return_str;
         }
 
         if (precision === "") { // ff passes '' here aswell causing problems with G,g, etc.
@@ -129,7 +129,7 @@ var format = function (kwa) {
                 }
             }
             if(zero_pad){
-            alternateForm = "#".indexOf(zero_pad) !== -1;
+                alternateForm = "#".indexOf(zero_pad) !== -1;
             }
             if(fieldWidth !== undefined && fieldWidth !== ""){
                 if(fill_char === undefined || fill_char === ""){
@@ -305,7 +305,7 @@ var format = function (kwa) {
             return formatNumber(value, 16).toUpperCase();
         } else if (conversionType === "f" || conversionType === "F" || conversionType === "e" || conversionType === "E" || conversionType === "g" || conversionType === "G") {
             if(alternateForm){
-               throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
+                throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
             }
             convValue = Sk.builtin.asnum$(value);
             if (typeof convValue === "string") {
