@@ -32,32 +32,32 @@ Sk.builtin.complex = function (real, imag) {
     }
 
     if(Sk.builtin.checkString(r)) {
-        if(i !== null) {
+        if(i != null) {
             throw new Sk.builtin.TypeError("complex() can't take second arg if first is a string");
         }
 
         return Sk.builtin.complex.complex_subtype_from_string(r);
     }
 
-    if(i !== null && Sk.builtin.checkString(i)) {
+    if(i != null && Sk.builtin.checkString(i)) {
         throw new Sk.builtin.TypeError("complex() second arg can't be a string");
     }
 
 
     // try_complex_special_method
     tmp = Sk.builtin.complex.try_complex_special_method(r);
-    if(tmp !== null) {
+    if(tmp != null) {
         r = tmp;
     }
 
     // this replaces the above check: !Sk.builtin.checkNumber(real) && !Sk.builtin.checkString(real)
     nbr = Sk.builtin.asnum$(r);
-    if(i !== null) {
+    if(i != null) {
         nbi = Sk.builtin.asnum$(i);
     }
 
     // check for valid arguments
-    if(nbr === null || !Sk.builtin.checkFloat(nbr) || ((i !== null) && (nbi === null || !Sk.builtin.checkFloat(nbi)))) {
+    if(nbr === null || !Sk.builtin.checkFloat(r) || ((i !== null) && (nbi === null || !Sk.builtin.checkFloat(i)))) {
         throw new Sk.builtin.TypeError("complex() argument must be a string or number");
     }
 
@@ -122,12 +122,9 @@ Sk.builtin.complex = function (real, imag) {
         ci.real += cr.imag;
     }
 
+    // save them as properties
     this.real = new Sk.builtin.float_(cr.real);
     this.imag = new Sk.builtin.float_(ci.real);
-
-    // save them as properties
-    //this.tp$setattr("real", this.real);
-    //this.tp$setattr("imag", this.imag);
 
     this.__class__ = Sk.builtin.complex;
 
@@ -234,6 +231,13 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
     var got_bracket = false;  // flag for braces
     var len;                  // total length of val
     var match;                // regex result
+
+    // first check if val is javascript string or python string
+    if(Sk.builtin.checkString(val)) {
+        val = Sk.ffi.remapToJs(val);
+    } else if(typeof val !== "string") {
+        throw new TypeError("provided unsupported string-alike argument");
+    }
 
     // transform to unicode
     // ToDo: do we need this?
@@ -640,8 +644,41 @@ Sk.builtin.complex.prototype.__float__ = function (self) {
 };
 
 
-Sk.builtin.complex.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.complex.prototype.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
+Sk.builtin.complex.prototype.tp$getattr = function(name) {
+    if(name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
+        var _name = name;
+
+        // get javascript string
+        if(Sk.builtin.checkString(name)) {
+            _name = Sk.ffi.remapToJs(name);
+        }
+
+        if(_name === "real" || _name === "imag") {
+            return this[_name];
+        }
+    }
+
+    // if we have not returned yet, try the genericgetattr
+    return Sk.builtin.object.prototype.GenericGetAttr.call(this, name);
+};
+
+Sk.builtin.complex.prototype.tp$setattr = function(name, value) {
+    if(name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
+        var _name = name;
+
+        // get javascript string
+        if(Sk.builtin.checkString(name)) {
+            _name = Sk.ffi.remapToJs(name);
+        }
+
+        if(_name === "real" || _name === "imag") {
+            throw new Sk.builtin.AttributeError("readonly attribute");
+        }
+    }
+
+    // if we have not returned yet, try the genericgetattr
+    return Sk.builtin.object.prototype.GenericSetAttr.call(this, name, value);
+};
 
 Sk.builtin.complex.prototype["$r"] = function () {
     if(this.tp$getattr("real").v === 0) {
