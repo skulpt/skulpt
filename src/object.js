@@ -9,6 +9,24 @@ Sk.builtin.object = function () {
     return this;
 };
 
+Sk.builtin.object._PyObject_LookupSpecial = function(op, str) {
+    var res;
+
+    if(!op) {
+        return null;
+    }
+
+    if(op.tp$getattr(str)) {
+        return op.tp$getattr(str);
+    }
+
+    if(op[str]) {
+        return op[str];
+    }
+
+    return null;
+};
+
 /**
  * @return {undefined}
  */

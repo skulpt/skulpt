@@ -1286,9 +1286,11 @@ Sk.builtin.bytearray = function bytearray () {
 Sk.builtin.callable = function callable () {
     throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
 };
+/*
 Sk.builtin.complex = function complex () {
     throw new Sk.builtin.NotImplementedError("complex is not yet implemented");
 };
+*/
 Sk.builtin.delattr = function delattr () {
     throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
 };

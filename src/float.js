@@ -1,3 +1,6 @@
+/**
+ * @constructor
+ */
 Sk.builtin.float_ = function (x) {
     var tmp;
     if (x === undefined) {

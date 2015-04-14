@@ -87,6 +87,7 @@ Files = [
         'src/long.js',
         'src/int.js',
         'src/float.js',
+        'src/complex.js',
         'src/slice.js',
         'src/set.js',
         'src/print.js',

@@ -142,6 +142,26 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.nmber(Math.ceil(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
+    mod.copysign = new Sk.builtin.func(function (x, y) {
+        Sk.builtin.pyCheckArgs("ceil", arguments, 2, 2);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+
+        var _x = Sk.ffi.remapToJs(x);
+        var _y = Sk.ffi.remapToJs(y);
+        var res;
+
+        // if both signs are equal, just return _y
+        if((_x >= 0 && _y >= 0) || (_x < 0 && _y < 0)) {
+            res = _y;
+        } else if((_x >= 0 && _y < 0) || (_x < 0 && _y >= 0)) {
+            // if different, invert sign
+            res = _y * -1;
+        }
+
+        return new Sk.builtin.nmber(res, Sk.builtin.nmber.float$);
+    });
+
     mod.floor = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("floor", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
