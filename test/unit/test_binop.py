@@ -337,18 +337,22 @@ class RatTestCase(unittest.TestCase):
     #     self.assertEqual(Rat(10) // 4, 2)
     #     self.assertEqual(10 // Rat(4), 2)
 
-    # def test_eq(self):
-    #     self.assertEqual(Rat(10), Rat(20, 2))
-    #     self.assertEqual(Rat(10), 10)
-    #     self.assertEqual(10, Rat(10))
-    #     self.assertEqual(Rat(10), 10.0)
-    #     self.assertEqual(10.0, Rat(10))
+#    def test_eq(self):
+#         self.assertEqual(Rat(10), Rat(20, 2))
+#         self.assertEqual(Rat(10), 10)
+#         self.assertEqual(10, Rat(10))
+#         self.assertEqual(Rat(10), 10.0)
+#         self.assertEqual(10.0, Rat(10))
 
     def test_divmod(self):
         self.assertEqual(divmod(Rat(10), Rat(4)), (2, 2))
         self.assertEqual(divmod(Rat(10, 3), Rat(4, 3)), (2, Rat(2, 3)))
         self.assertEqual(divmod(Rat(10), 4), (2, 2))
         self.assertEqual(divmod(10, Rat(4)), (2, 2))
+        self.assertEqual(divmod(10, 4), (2, 2))     
+        self.assertEqual(divmod(5, 2.5), (2.0, 0.0))
+        self.assertEqual(divmod(10, 4.5), (2.0, 1.0))        
+        self.assertEqual(divmod(10, 5.5), (1.0, 4.5))                
 
     # XXX Ran out of steam; TO DO: mod, future division
 
