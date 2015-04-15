@@ -104,6 +104,7 @@ Files = [
         'src/compile.js',
         'src/import.js',
         'src/timsort.js',
+        'src/sorted.js',
         'src/builtindict.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
