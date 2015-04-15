@@ -52,6 +52,8 @@ Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
         return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__floordiv__"];
     case "Mod":
         return obj.nb$remainder ? obj.nb$remainder : obj["__mod__"];
+    case "DivMod":
+        return obj.nb$divmod ? obj.nb$divmod : obj["__divmod__"];
     case "Pow":
         return obj.nb$power ? obj.nb$power : obj["__pow__"];
     case "LShift":
@@ -85,6 +87,8 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
         return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__rfloordiv__"];
     case "Mod":
         return obj.nb$remainder ? obj.nb$remainder : obj["__rmod__"];
+    case "DivMod":
+        return obj.nb$divmod ? obj.nb$divmod : obj["__rdivmod__"];
     case "Pow":
         return obj.nb$power ? obj.nb$power : obj["__rpow__"];
     case "LShift":
