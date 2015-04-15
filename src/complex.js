@@ -395,18 +395,25 @@ Sk.builtin.complex.prototype.nb$add = function (other) {
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
 };
 
+/* internal subtract/diff function that calls internal float diff */
+Sk.builtin.complex._c_diff = function(a, b) {
+    var r, i; // Py_Float
+    r = a.real.nb$subtract.call(a.real, b.real);
+    i = a.imag.nb$subtract.call(a.imag, b.imag);
+
+    return new Sk.builtin.complex(r, i);
+};
 
 Sk.builtin.complex.prototype.nb$subtract = function (other) {
-    var real;
-    var imag;
+    var result; // Py_complex
+    var a, b; // Py_complex
 
-    other = Sk.builtin.complex.check_number_or_complex(other);
+    a = Sk.builtin.complex.check_number_or_complex(this);
+    b = Sk.builtin.complex.check_number_or_complex(other);
 
-    real = this.tp$getattr("real").v - other.tp$getattr("real").v;
-    imag = this.tp$getattr("imag").v - other.tp$getattr("imag").v;
+    result = Sk.builtin.complex._c_diff(a, b);
 
-
-    return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
+    return result;
 };
 
 Sk.builtin.complex.prototype.nb$multiply = function (other) {
@@ -543,8 +550,8 @@ Sk.builtin.complex.prototype.nb$negative = function () {
     var real;
     var imag;
     // this == a
-    var areal = this.tp$getattr("real").v;
-    var aimag = this.tp$getattr("imag").v;
+    var areal = this.real.v;
+    var aimag = this.imag.v;
 
     real = -areal;
     imag = -aimag;

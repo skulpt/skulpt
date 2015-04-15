@@ -1775,8 +1775,7 @@ function parsenumber (c, s, lineno) {
 
     // todo; no complex support
     if (end === "j" || end === "J") {
-        val = new Sk.builtin.nmber(parseFloat(s.substr(0, s.length - 1)), Sk.builtin.nmber.float$);
-        return new Sk.builtin.complex(new Sk.builtin.nmber(0, Sk.builtin.nmber.float$), val);
+        return Sk.builtin.complex.complex_subtype_from_string(s);
         //throw new Sk.builtin.SyntaxError("complex numbers are currently unsupported", c.c_filename, lineno);
     }
 
