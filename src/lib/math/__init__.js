@@ -204,6 +204,19 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.nmber(ret, Sk.builtin.nmber.float$);
     });
 
+    /* Return True if x is a NaN (not a number), and False otherwise. */
+    mod.isnan = Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("log10", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "float", Sk.builtin.checkFloat(x));
+
+        var _x = Sk.builtin.asnum$(x);
+        if(isNaN(_x)) {
+            return Sk.builtin.bool.true$;
+        } else {
+            return Sk.builtin.bool.false$;
+        }
+    });
+
     mod.exp = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("exp", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));

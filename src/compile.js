@@ -692,6 +692,9 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             else if (e.n instanceof Sk.builtin.lng) {
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             }
+            else if (e.n instanceof Sk.builtin.complex) {
+                return "Sk.builtin.complex.complex_subtype_from_string('" + e.n.tp$str().v + "')";
+            }
             goog.asserts.fail("unhandled Num type");
         case Str:
             return this._gr("str", "new Sk.builtins['str'](", e.s["$r"]().v, ")");

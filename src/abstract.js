@@ -238,12 +238,12 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     }
 
     if (a.constructor === Sk.builtin.lng) {
-//      if (b.constructor == Sk.builtin.nmber)
-//          if (b.skType == Sk.builtin.nmber.float$) {
-//              var tmp = new Sk.builtin.nmber(a.tp$str(), Sk.builtin.nmber.float$);
-//              return [tmp, b];
-//          } else
-//              return [a, b.v];
+        //      if (b.constructor == Sk.builtin.nmber)
+        //          if (b.skType == Sk.builtin.nmber.float$) {
+        //              var tmp = new Sk.builtin.nmber(a.tp$str(), Sk.builtin.nmber.float$);
+        //              return [tmp, b];
+        //          } else
+        //              return [a, b.v];
         return [a, b];
     } else if (a.constructor === Sk.builtin.nmber) {
         return [a, b];

@@ -12,9 +12,9 @@ var print_f = function function_print(kwa) {
 
     // defaults, null for None
     var kw_list = {
-       "sep": " ",
-       "end": "\n",
-       "file": null
+        "sep": " ",
+        "end": "\n",
+        "file": null
     };
 
     var remap_val;

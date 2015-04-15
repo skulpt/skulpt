@@ -900,7 +900,7 @@ Sk.builtin.biginteger.prototype.bnIntValue = function () {
     else if (this.t === 0) {
         return 0;
     }
-// assumes 16 < DB < 32
+    // assumes 16 < DB < 32
     return ((this[1] & ((1 << (32 - this.DB)) - 1)) << this.DB) | this[0];
 };
 
@@ -1439,7 +1439,7 @@ Sk.builtin.biginteger.prototype.bnpMultiplyUpperTo = function (a, n, r) {
  * @extends Sk.builtin.biginteger
  */
 Sk.builtin.biginteger.Barrett = function (m) {
-// setup Barrett
+    // setup Barrett
     this.r2 = Sk.builtin.biginteger.nbi();
     this.q3 = Sk.builtin.biginteger.nbi();
     Sk.builtin.biginteger.ONE.dlShiftTo(2 * m.t, this.r2);
@@ -1537,7 +1537,7 @@ Sk.builtin.biginteger.prototype.bnModPow = function (e, m) {
         z = new Sk.builtin.biginteger.Montgomery(m);
     }
 
-// precomputation
+    // precomputation
     g = [];
     n = 3;
     k1 = k - 1;
