@@ -298,11 +298,31 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
         are also accepted, though support for these forms my be removed from
         a future version of Python.
     */
-    var float_regex = /^([+-]?\d+(?:\.\d+)?(?:[eE][+-]\d+)?)/;
-    val_wws = val.substr(index); // val with removed ws and (
+
+    //var float_regex = /^(?:[+-]?(?:\d*(?:\.\d+)?|\d+\.)(?:[eE][+-]\d+)?)/;
+
+    /**
+     *      This is a complete regular expression for matching any valid python floats, e.g.:
+     *          - 1.0
+     *          - 0.
+     *          - .1
+     *          - nan/inf/infinity
+     *          - +-1.0
+     *          - +3.E-3
+     *
+     *      In order to work, this pattern requires only lower case characters
+     *      There is case insensitive group option in js.
+     *
+     *      the [eE] could be refactored to soley e
+     */
+    var float_regex2 = /^(?:[+-]?(?:(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[eE][+-]\d+)?|nan|inf|infinity))/;
+    val_wws = val.substr(index); // val with removed whitespace and "("
+
+    // next we need to replace any inf to Infinity and any writing of nan to NaN
+    val_wws = val_wws.toLowerCase();
 
     /* first try to match a float at the beginning */
-    match = val_wws.match(float_regex);
+    match = val_wws.match(float_regex2);
     if(match !== null) {
         // one of the first 4 cases
         index += match[0].length;
@@ -315,7 +335,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
             /* <float><signed-float>j | <float><sign>j */
             x = parseFloat(match[0]);
 
-            match = val.substr(index).match(float_regex);
+            match = val.substr(index).match(float_regex2);
             if(match !== null) {
                 /* <float><signed-float>j */
                 y = parseFloat(match[0]);
