@@ -8,6 +8,9 @@ $(document).ready(function () {
         "Ctrl-Enter" : function (editor) {
             Sk.configure({output: outf, read: builtinRead});
             Sk.canvas = "mycanvas";
+            if (editor.getValue().indexOf('turtle') > -1 ) {
+                $('#mycanvas').show()
+            }
             Sk.pre = "edoutput";
             (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
             try {
@@ -22,6 +25,9 @@ $(document).ready(function () {
             Sk.configure({output: outf, read: builtinRead});
             Sk.canvas = "mycanvas";
             Sk.pre = "edoutput";
+            if (editor.getValue().indexOf('turtle') > -1 ) {
+                $('#mycanvas').show()
+            }
             try {
                 Sk.misceval.asyncToPromise(function() {
                     return Sk.importMainWithBody("<stdin>",false,editor.getValue(),true);
