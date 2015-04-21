@@ -647,6 +647,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     var mangled;
     var val;
     var result;
+    var nStr;
     if (e.lineno > this.u.lineno) {
         this.u.lineno = e.lineno;
         this.u.linenoSet = false;
@@ -687,13 +688,17 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return e.n;
             }
             else if (e.n instanceof Sk.builtin.nmber) {
-                return "new Sk.builtin.nmber(" + e.n.v + ",'" + e.n.skType + "')";
+                nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v.toString();
+                return "new Sk.builtin.nmber(" + nStr + ",'" + e.n.skType + "')";
             }
             else if (e.n instanceof Sk.builtin.lng) {
+                nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v.toString();
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             }
             else if (e.n instanceof Sk.builtin.complex) {
-                return "Sk.builtin.complex.complex_subtype_from_string('" + e.n.tp$str().v + "')";
+                // ToDo: preserve sign of zero here too
+                return "new Sk.builtin.complex(new Sk.builtin.float_(" + e.n.real.v + "), new Sk.builtin.float_(" + e.n.imag.v + "));";
+                //return "Sk.builtin.complex.complex_subtype_from_string('" + e.n.tp$str().v + "')";
             }
             goog.asserts.fail("unhandled Num type");
         case Str:

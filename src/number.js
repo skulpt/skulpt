@@ -880,6 +880,7 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     var idx;
     var tmp;
     var work;
+
     if (isNaN(this.v)) {
         return "nan";
     }
@@ -891,9 +892,11 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     if (this.v == Infinity) {
         return "inf";
     }
+
     if (this.v == -Infinity && sign) {
         return "-inf";
     }
+
     if (this.v == -Infinity && !sign) {
         return "inf";
     }
@@ -904,6 +907,9 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     if (base === undefined || base === 10) {
         if (this.skType == Sk.builtin.nmber.float$) {
             tmp = work.toPrecision(12);
+            // restore negative zero sign
+            nZeroSign = this.v === 0 && 1/this.v === -Infinity ? "-" :"";
+            tmp = nZeroSign + tmp;
 
             // transform fractions with 4 or more leading zeroes into exponents
             idx = tmp.indexOf(".");
@@ -936,9 +942,15 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
         tmp = work.toString(base);
     }
 
+    // restore negative zero sign, if required
+    if(this.v === 0 && 1/this.v === -Infinity) {
+        tmp = "-" + tmp;
+    }
+
     if (this.skType !== Sk.builtin.nmber.float$) {
         return tmp;
     }
+
     if (tmp.indexOf(".") < 0 && tmp.indexOf("E") < 0 && tmp.indexOf("e") < 0) {
         tmp = tmp + ".0";
     }
