@@ -301,6 +301,8 @@ Sk.builtin.lng.prototype.nb$remainder = function (other) {
             tmp = tmp.nb$add(other);
         }
     }
+
+    // ensure positive return values
     return tmp;
 };
 

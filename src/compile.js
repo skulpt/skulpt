@@ -688,11 +688,12 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return e.n;
             }
             else if (e.n instanceof Sk.builtin.nmber) {
-                nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v.toString();
+                // Preserve sign of zero for floats
+                nStr = e.n.skType === Sk.builtin.nmber.float$ && e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
                 return "new Sk.builtin.nmber(" + nStr + ",'" + e.n.skType + "')";
             }
             else if (e.n instanceof Sk.builtin.lng) {
-                nStr = e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v.toString();
+                // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             }
             else if (e.n instanceof Sk.builtin.complex) {

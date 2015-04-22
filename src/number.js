@@ -72,6 +72,12 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
         }
     }
 
+    // adjust sign of zero
+    // only floats have negative zeros
+    if(this.skType === Sk.builtin.nmber.int$) {
+        this.v = this.v === 0 ? 0 : this.v;
+    }
+
     return this;
 };
 
@@ -493,6 +499,7 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
 
         //	Javacript logic on negatives doesn't work for Python... do this instead
         tmp = this.v % other.v;
+
         if (this.v < 0) {
             if (other.v > 0 && tmp < 0) {
                 tmp = tmp + other.v;
@@ -502,11 +509,19 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
                 tmp = tmp + other.v;
             }
         }
-        if (this.skType === Sk.builtin.nmber.float$ || other.skType === Sk.builtin.nmber.float$) {
-            result = new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
+
+        if (other.v < 0 && tmp === 0) {
+            tmp = -0.0; // otherwise the sign gets lost by javascript modulo
+        } else if (tmp === 0 && Infinity/tmp === -Infinity) {
+            tmp = 0.0;
         }
-        else {
-            //	tmp = Math.floor(tmp);
+
+        // <float> % <int|long|bool> --> zero must not have negative sign
+        if (this.skType === Sk.builtin.nmber.float$ || other.skType === Sk.builtin.nmber.float$) {        
+            result = new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
+        } else {
+            // <not float> % <not float> --> zero must not have negative sign
+            tmp = tmp === 0 ? 0 : tmp; // transforms negative zero to positive one
             result = new Sk.builtin.nmber(tmp, Sk.builtin.nmber.int$);
             if (result.v > Sk.builtin.nmber.threshold$ || result.v < -Sk.builtin.nmber.threshold$) {
                 //	Promote to long
@@ -533,6 +548,7 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
         if (this.skType === Sk.builtin.nmber.float$) {  // float / long --> float
             op2 = parseFloat(other.str$(10, true));
             tmp = this.v % op2;
+                    
             if (tmp < 0) {
                 if (op2 > 0 && tmp !== 0) {
                     tmp = tmp + op2;
@@ -542,6 +558,13 @@ Sk.builtin.nmber.prototype.nb$remainder = function (other) {
                     tmp = tmp + op2;
                 }
             }
+
+            if (other.nb$isnegative() && tmp === 0) {
+                tmp = -0.0; // otherwise the sign gets lost by javascript modulo
+            } else if (tmp === 0 && Infinity/tmp === -Infinity) {
+                tmp = 0.0;
+            }
+
             result = new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);
         } else {	//	int - long --> long
             thisAsLong = new Sk.builtin.lng(this.v);
@@ -880,6 +903,7 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     var idx;
     var tmp;
     var work;
+    var nZeroSign;
 
     if (isNaN(this.v)) {
         return "nan";
@@ -907,9 +931,6 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     if (base === undefined || base === 10) {
         if (this.skType == Sk.builtin.nmber.float$) {
             tmp = work.toPrecision(12);
-            // restore negative zero sign
-            nZeroSign = this.v === 0 && 1/this.v === -Infinity ? "-" :"";
-            tmp = nZeroSign + tmp;
 
             // transform fractions with 4 or more leading zeroes into exponents
             idx = tmp.indexOf(".");
@@ -942,13 +963,13 @@ Sk.builtin.nmber.prototype.str$ = function (base, sign) {
         tmp = work.toString(base);
     }
 
-    // restore negative zero sign, if required
-    if(this.v === 0 && 1/this.v === -Infinity) {
-        tmp = "-" + tmp;
-    }
-
     if (this.skType !== Sk.builtin.nmber.float$) {
         return tmp;
+    }
+
+    // restore negative zero sign, only applies for float
+    if(this.v === 0 && 1/this.v === -Infinity) {
+        tmp = "-" + tmp;
     }
 
     if (tmp.indexOf(".") < 0 && tmp.indexOf("E") < 0 && tmp.indexOf("e") < 0) {
