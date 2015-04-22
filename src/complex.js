@@ -315,7 +315,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
      *
      *      the [eE] could be refactored to soley e
      */
-    var float_regex2 = /^(?:[+-]?(?:(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[eE][+-]\d+)?|nan|inf|infinity))/;
+    var float_regex2 = /^(?:[+-]?(?:(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[eE][+-]?\d+)?|nan|inf|infinity))/;
     val_wws = val.substr(index); // val with removed whitespace and "("
 
     // next we need to replace any inf to Infinity and any writing of nan to NaN
@@ -748,16 +748,15 @@ Sk.builtin.complex.complex_format = function(v, precision, format_code){
     if (v.real.v === 0.0 && copysign(1.0, v.real.v) == 1.0) {
         re = "";
         im = v.imag.v; //v.imag.tp$str.call(v.imag).v; // ToDo: this should use precision and format_code
-        if(v.imag.v >= 0) {
-            im = "+" + im; // force sign
-        }
     } else {
         /* Format imaginary part with sign, real part without */
         pre = v.real.v; //v.real.tp$str.call(v.real).v; // ToDo: this should use precision and format_code
         re = pre;
 
         im = v.imag.v;//v.imag.tp$str.call(v.imag).v; // ToDo: this should use precision and format_code
-        if(v.imag.v >= 0) {
+        if (v.imag.v === 0 && 1/v.imag.v === -Infinity){
+            im = "-" + im; // force negative zero sign
+        } else if(v.imag.v >= 0) {
             im = "+" + im; // force sign
         }
 
@@ -932,6 +931,12 @@ Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(function(self, oth
     z = new Sk.builtin.tuple([div, mod]);
 
     return z;
+});
+
+Sk.builtin.complex.prototype.__getnewargs__ = new Sk.builtin.func(function(self){
+    Sk.builtin.pyCheckArgs("__getnewargs__", arguments, 0, 0, true);
+
+    return new Sk.builtin.tuple([self.real, self.imag]);
 });
 
 // ToDo: think about inplace methods too
