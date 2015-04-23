@@ -1283,6 +1283,16 @@ Sk.builtin.divmod = function divmod (a, b) {
     return Sk.abstr.numberBinOp(a, b, "DivMod");
 };
 
+/**
+ * Convert a value to a “formatted” representation, as controlled by format_spec. The interpretation of format_spec 
+ * will depend on the type of the value argument, however there is a standard formatting syntax that is used by most
+ * built-in types: Format Specification Mini-Language.
+ */
+Sk.builtin.format = function format (value, format_spec) {
+    Sk.builtin.pyCheckArgs("format", arguments, 1, 2);
+
+    return Sk.abstr.objectFormat(value, format_spec);
+};
 
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
@@ -1301,9 +1311,7 @@ Sk.builtin.delattr = function delattr () {
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
-Sk.builtin.format = function format () {
-    throw new Sk.builtin.NotImplementedError("format is not yet implemented");
-};
+
 Sk.builtin.frozenset = function frozenset () {
     throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };

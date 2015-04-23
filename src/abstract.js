@@ -588,6 +588,31 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
 // Object
 //
 
+Sk.abstr.objectFormat = function (obj, format_spec) {
+    var meth; // PyObject
+    var result; // PyObject
+
+    // If no format_spec is provided, use an empty string
+    if(format_spec == null) {
+        format_spec = "";
+    }
+
+    // Find the (unbound!) __format__ method (a borrowed reference)
+    meth = Sk.builtin.object._PyObject_LookupSpecial(obj, "__format__");
+    if (meth == null) {
+        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + "doesn't define __format__");
+    }
+
+    // And call it
+    result = Sk.misceval.callsim(meth, obj, format_spec);
+    if (!Sk.builtin.checkString(result)) {
+        throw new Sk.builtin.TypeError("__format__ must return a str, not " + Sk.abstr.typeName(result));
+    }
+
+    return result;
+};
+
+
 Sk.abstr.objectAdd = function (a, b) {
     var btypename;
     var atypename;

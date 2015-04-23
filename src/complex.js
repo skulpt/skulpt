@@ -263,6 +263,10 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
     // ToDo: do we need this?
     index = 0; // first char
 
+    // do some replacements for javascript floats
+    val = val.replace(/inf|infinity/gi, "Infinity");
+    val = val.replace(/nan/gi, "NaN");
+
     /* position on first nonblank */
     start = 0;
     while(val === " ") {
@@ -297,11 +301,6 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
 
         are also accepted, though support for these forms my be removed from
         a future version of Python.
-    */
-
-    //var float_regex = /^(?:[+-]?(?:\d*(?:\.\d+)?|\d+\.)(?:[eE][+-]\d+)?)/;
-
-    /**
      *      This is a complete regular expression for matching any valid python floats, e.g.:
      *          - 1.0
      *          - 0.
@@ -315,11 +314,8 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
      *
      *      the [eE] could be refactored to soley e
      */
-    var float_regex2 = /^(?:[+-]?(?:(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[eE][+-]?\d+)?|nan|inf|infinity))/;
+    var float_regex2 = /^(?:[+-]?(?:(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[eE][+-]?\d+)?|NaN|Infinity))/;
     val_wws = val.substr(index); // val with removed whitespace and "("
-
-    // next we need to replace any inf to Infinity and any writing of nan to NaN
-    val_wws = val_wws.toLowerCase();
 
     /* first try to match a float at the beginning */
     match = val_wws.match(float_regex2);
@@ -747,17 +743,17 @@ Sk.builtin.complex.complex_format = function(v, precision, format_code){
 
     if (v.real.v === 0.0 && copysign(1.0, v.real.v) == 1.0) {
         re = "";
-        im = v.imag.v; //v.imag.tp$str.call(v.imag).v; // ToDo: this should use precision and format_code
+        im = Sk.builtin.nmber.PyOS_double_to_string(v.imag.v, format_code, precision, 0, null);
+        // im = v.imag.v;
     } else {
         /* Format imaginary part with sign, real part without */
-        pre = v.real.v; //v.real.tp$str.call(v.real).v; // ToDo: this should use precision and format_code
+        pre = Sk.builtin.nmber.PyOS_double_to_string(v.real.v, format_code, precision, 0, null);
         re = pre;
 
-        im = v.imag.v;//v.imag.tp$str.call(v.imag).v; // ToDo: this should use precision and format_code
-        if (v.imag.v === 0 && 1/v.imag.v === -Infinity){
+        im = Sk.builtin.nmber.PyOS_double_to_string(v.imag.v, format_code, precision, Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_SIGN, null);
+        
+        if (v.imag.v === 0 && 1/v.imag.v === -Infinity && im && im[0] !== "-"){
             im = "-" + im; // force negative zero sign
-        } else if(v.imag.v >= 0) {
-            im = "+" + im; // force sign
         }
 
         lead = "(";
@@ -774,12 +770,36 @@ Sk.builtin.complex.prototype["$r"] = function () {
 };
 
 Sk.builtin.complex.prototype.tp$str = function () {
-    return Sk.builtin.complex.complex_format(this, 12, "g"); // 12 == Py_Float_STR_PRECISION
+    return Sk.builtin.complex.complex_format(this, null, "g"); // g, 12 == Py_Float_STR_PRECISION
 };
 
-Sk.builtin.complex.prototype.__format__ = new Sk.builtin.func(function(self){
-    throw new Sk.builtin.NotImplementedError("__format__ is not implemented for complex object");
+/**
+ * https://hg.python.org/cpython/file/3cf2990d19ab/Objects/complexobject.c#l907
+ * also see _PyComplex_FormatAdvanced
+ *
+ * We currently use the signature (self, format_spec) instead of (self, args). So we do
+ * not need to unwrap the args.
+ */ 
+Sk.builtin.complex.prototype.__format__ = new Sk.builtin.func(function(self, format_spec){
+    var result; // PyObject
+
+    if(format_spec == null) {
+        return null;
+    }
+
+    if(Sk.builtin.checkString(format_spec)) {
+        result = Sk.builtin.complex._PyComplex_FormatAdvanced(self, format_spec);
+
+        return result;
+    }
+
+
+    throw new Sk.builtin.TypeError("__format__ requires str or unicode");
 });
+
+Sk.builtin.complex._PyComplex_FormatAdvanced = function(self, format_spec) {
+    throw new Sk.builtin.NotImplementedError("__format__ is not implemented for complex type.");
+};
 
 /**
     Return true if float or double are is neither infinite nor NAN, else false

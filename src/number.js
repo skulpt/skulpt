@@ -897,6 +897,120 @@ Sk.builtin.nmber.prototype.tp$str = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
+/**
+ * Convert a double val to a string using supplied format_code, precision, and flags.
+ *
+ * format_code must be one of 'e', 'E', 'f', 'F', 'g', 'G' or 'r'. For 'r', the supplied precision must be 0 and is ignored. The 'r' format code specifies the standard repr() format.
+ *
+ * flags can be zero or more of the values Py_DTSF_SIGN, Py_DTSF_ADD_DOT_0, or Py_DTSF_ALT, or-ed together:
+ *
+ * Py_DTSF_SIGN means to always precede the returned string with a sign character, even if val is non-negative.
+ * Py_DTSF_ADD_DOT_0 means to ensure that the returned string will not look like an integer.
+ * Py_DTSF_ALT means to apply “alternate” formatting rules. See the documentation for the PyOS_snprintf() '#' specifier for details.
+ * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an 
+ * infinite number, or not a number, respectively.
+ */
+Sk.builtin.nmber.PyOS_double_to_string = function(val, format_code, precision, flags, type) {
+    var format;
+    var buf;
+    var t;
+    var exp;
+    var upper = false;
+
+    // Validate format code, and map upper and lower case
+    switch(format_code) {
+        case "e": /* exponent */
+        case "f": /* fixed */
+        case "g": /* general */
+            break;
+        case "E":
+            upper = true;
+            format_code = "e";
+            break;
+        case "F":
+            upper = true;
+            format_code = "f";
+            break;
+        case "r": /* repr format */
+            // Supplied precision is unused, must be 0.
+            if(precision !== 0) {
+                throw new Error("Bad internall call"); // only happens when somebody messes up calling this in js
+            }
+
+            // repr() precision is 17 significant decimal digits
+            precision = 17;
+            format_code = "g";
+            break;
+        default:
+            throw new Error("Bad internall call");
+    }
+
+    // no need for buffer size calculation like in cpython
+
+    // Handle nan and inf
+    if(isNaN(val)) {
+        buf = "nan";
+        t = Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_NAN;
+    } else if (val === Infinity) {
+        buf = "inf";
+        t = Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_INFINITE;
+    } else if (val === -Infinity) {
+        buf = "-inf";
+        t = Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_INFINITE;       
+    } else {
+        t = Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_FINITE;
+        if(flags & Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
+            format_code = "g"; // "Z"; _PyOS_ascii_formatd converts "Z" to "g"
+        }
+
+        // ToDo: call snprintf here
+        // ToDo: call ascii_formatd
+        var format_str = "%";
+        format_str += flags & Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_ALT ? "#" : "";
+        
+        if(precision != null) {
+            format_str += ".";
+            format_str += precision;
+        }
+
+        format_str += format_code;
+        format_str = new Sk.builtin.str(format_str);
+
+        /** 
+         * We cann call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
+         * already a javascript number
+         */
+        buf = format_str.nb$remainder(val);
+        buf = buf.v; // get javascript string
+    }
+
+    /**
+     * Add sign when requested. It's convenient (esp. when formatting complex numbers) to
+     * include sign even for inf and nan.
+     */
+    if(flags & Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
+        buf = "+" + buf;
+    }
+
+    if(upper) {
+        // Convert to upper case
+        buf = buf.toUpperCase();
+    }
+
+    return buf;
+};
+
+/* PyOS_double_to_string's "flags" parameter can be set to 0 or more of: */
+Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_SIGN = 0x01; // always add the sign
+Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_ADD_DOT_0 = 0x02; // if the result is an integer add ".0"
+Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_ALT = 0x04; // "alternate" formatting. it's format_code specific
+
+/* PyOS_double_to_string's "type", if non-NULL, will be set to one of: */
+Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_FINITE = 0; 
+Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_INFINITE = 1; 
+Sk.builtin.nmber.PyOS_double_to_string.Py_DTST_NAN = 2; 
+
+
 Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     var post;
     var pre;

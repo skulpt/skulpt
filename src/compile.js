@@ -698,7 +698,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
             }
             else if (e.n instanceof Sk.builtin.complex) {
                 // ToDo: preserve sign of zero here too
-                return "new Sk.builtin.complex(new Sk.builtin.float_(" + e.n.real.v + "), new Sk.builtin.float_(" + e.n.imag.v + "));";
+                return "new Sk.builtin.complex(new Sk.builtin.float_(" + e.n.real.v + "), new Sk.builtin.float_(" + e.n.imag.v + "))";
                 //return "Sk.builtin.complex.complex_subtype_from_string('" + e.n.tp$str().v + "')";
             }
             goog.asserts.fail("unhandled Num type");
