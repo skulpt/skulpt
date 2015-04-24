@@ -19,6 +19,9 @@ Math.hypot = Math.hypot || function() {
  * @this {Sk.builtin.object}
  *
  * Prefering here == instead of ===, otherwise also undefined has to be matched explicitly
+ *
+ * FIXME: it seems that we somehow need to call __float__/__int__ if arguments provide those methods
+ * 
  */
 Sk.builtin.complex = function (real, imag) {
     Sk.builtin.pyCheckArgs("complex", arguments, 0, 2);
@@ -62,6 +65,10 @@ Sk.builtin.complex = function (real, imag) {
     // try_complex_special_method
     tmp = Sk.builtin.complex.try_complex_special_method(r);
     if(tmp != null) {
+        if (!Sk.builtin.checkComplex(tmp)) {
+            throw new Sk.builtin.TypeError("__complex__ should return a complex object");
+        }
+
         r = tmp;
     }
 
@@ -71,8 +78,9 @@ Sk.builtin.complex = function (real, imag) {
         nbi = Sk.builtin.asnum$(i);
     }
 
+    // FIXME: seems that calling complex() with custom class which implements __complex__ this check fails
     // check for valid arguments
-    if(nbr == null || !Sk.builtin.checkNumber(r) || ((i != null) && (nbi == null || !Sk.builtin.checkNumber(i)))) {
+    if(nbr == null || (!Sk.builtin.checkNumber(r) && !Sk.builtin.checkComplex(r)) || ((i != null) && (nbi == null || (!Sk.builtin.checkNumber(i) && !Sk.builtin.checkComplex(i))))) {
         throw new Sk.builtin.TypeError("complex() argument must be a string or number");
     }
 
@@ -88,8 +96,8 @@ Sk.builtin.complex = function (real, imag) {
         /* Note that if r is of a complex subtype, we're only
         retaining its real & imag parts here, and the return
         value is (properly) of the builtin complex type. */
-        cr.real = r.real;
-        cr.imag = r.imag;
+        cr.real = r.real.v;
+        cr.imag = r.imag.v;
         cr_is_complex = true;
     } else {
         /* The "real" part really is entirely real, and contributes
@@ -108,8 +116,8 @@ Sk.builtin.complex = function (real, imag) {
     if(i == null) {
         ci.real = 0.0;
     } else if(Sk.builtin.complex._complex_check(i)) {
-        ci.real = i.real;
-        ci.imag = i.imag;
+        ci.real = i.real.v;
+        ci.imag = i.imag.v;
         ci_is_complex = true;
     } else {
         /* The "imag" part really is entirely imaginary, and
@@ -137,6 +145,11 @@ Sk.builtin.complex = function (real, imag) {
         ci.real += cr.imag;
     }
 
+    // adjust for negated imaginary literal
+    if(cr.real === 0 && (ci.real < 0 || Sk.builtin.complex._isNegativeZero(ci.real))) {
+        cr.real = -0;   
+    }
+
     // save them as properties
     this.real = new Sk.builtin.float_(cr.real);
     this.imag = new Sk.builtin.float_(ci.real);
@@ -146,6 +159,17 @@ Sk.builtin.complex = function (real, imag) {
     return this;
 };
 
+Sk.builtin.complex.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("complex", Sk.builtin.complex);
+Sk.builtin.complex.prototype.tp$name = "complex";
+//Sk.builtin.complex.co_kwargs = true;
+
+Sk.builtin.complex._isNegativeZero = function (val) {
+    if (val !== 0) {
+        return false;
+    }
+
+    return 1/val === -Infinity;
+};
 
 Sk.builtin.complex.try_complex_special_method = function(op) {
     var complexstr = new Sk.builtin.str("__complex__");
@@ -158,11 +182,12 @@ Sk.builtin.complex.try_complex_special_method = function(op) {
     }
 
     //PyInstance_Check, check if we are dealing with a builtin or not
-    if(Sk.builtin.checkClass(op)) {
-        f = op.tp$getattr(op, complexstr);
-    } else {
-        f = Sk.builtin.object._PyObject_LookupSpecial(op, "__complex__");
-    }
+    //if(Sk.builtin.checkClass(op)) {
+    //    f = op.tp$getattr(op, complexstr);
+    //} else {
+    // the lookup special method does already all the magic
+    f = Sk.builtin.object._PyObject_LookupSpecial(op, "__complex__");
+    //}
 
     if(f !== null) {
         if(Sk.builtin.checkFunction(f)) {
@@ -177,50 +202,6 @@ Sk.builtin.complex.try_complex_special_method = function(op) {
 
     return null;
 };
-
-Sk.builtin.complex.complex_new = function(kwa) {
-    Sk.builtin.pyCheckArgs("complex", arguments, 0, 2);
-    var r, i, tmp; // PyObject
-    var nbr, nbi; // PyNumberMethods
-    var own_r = 0;
-    var cr_is_complex = false;
-    var ci_is_complex = false;
-
-    var kwlist = ["real", "imag"];
-
-    r = false; // Py_False;
-    i = null;
-    //Sk.builtin.complex._PyArg_ParseTupleAndKeywords(arguments, kwa, kwlist);
-};
-
-/*
-// allowed format str: "|OO:complex"
-// so, we can call complex(), complex(complex), complex(O) or complex(O,O)
-Sk.builtin.complex._PyArg_ParseTupleAndKeywords = function(args, kwds, kwlist) {
-    var _args = Array.prototype.slice.call(args, 1);
-    var kwargs = new Sk.builtins.dict(kwds); // is pretty useless for handling kwargs
-    var _kwargs = Sk.ffi.remapToJs(kwargs); // create a proper dict
-
-    var res = {};
-    // max length is check by pyCheckargs function
-    var len = args.length + _kwargs.length;
-
-    if(len > kwlist.length) {
-        // ToDo: throw exception too many arguments
-    }
-
-    var k,v;
-    for(k in args) {
-
-    }
-
-    return res;
-};
-*/
-
-Sk.builtin.complex.prototype.tp$name = "complex";
-Sk.builtin.complex.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("complex", Sk.builtin.complex);
-Sk.builtin.complex.co_kwargs = true;
 
 /**
     Check if given argument is number or complex and always
@@ -259,6 +240,15 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
         throw new TypeError("provided unsupported string-alike argument");
     }
 
+    /* This is an python specific error, this does not do any harm in js, but we want
+     * to be as close to the orginial impl. as possible.
+     * 
+     * Check also for empty strings. They are not allowed.
+     */
+    if (val.indexOf("\0") !== -1 || val.length === 0 || val === "") {
+        throw new Sk.builtin.ValueError("complex() arg is a malformed string");
+    }
+
     // transform to unicode
     // ToDo: do we need this?
     index = 0; // first char
@@ -269,7 +259,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
 
     /* position on first nonblank */
     start = 0;
-    while(val === " ") {
+    while(val[index] === " ") {
         index++;
     }
 
@@ -277,7 +267,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
         /* skip over possible bracket from repr(). */
         got_bracket = true;
         index++;
-        while(val === " ") {
+        while(val[index] === " ") {
             index++;
         }
     }
@@ -324,7 +314,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
         index += match[0].length;
 
         /* <float>j */
-        if(val[index] === "j") {
+        if(val[index] === "j" || val[index] === "J") {
             y = parseFloat(match[0]);
             index++;
         } else if(val[index] === "+" || val[index] === "-") {
@@ -343,7 +333,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
             }
 
             if(val[index] !== "j" && val[index] !== "J") {
-                throw new Sk.builtin.ParseError("complex() arg is malformed string");
+                throw new Sk.builtin.ValueError("complex() arg is malformed string");
             }
 
             index++;
@@ -353,7 +343,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
         }
     } else {
         // maybe <sign>j or j
-        match = match = val_wws.match(/^([+-]?j)/);
+        match = match = val_wws.match(/^([+-]?[jJ])/);
         if(match !== null) {
             if(match[0].length === 1) {
                 y = 1.0; // must be j
@@ -373,7 +363,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
         /* if there was an opening parenthesis, then the corresponding
            closing parenthesis should be right here */
         if(val[index] !== ")") {
-            throw new Sk.builtin.ParseError("complex() arg is malformed string");
+            throw new Sk.builtin.ValueError("complex() arg is malformed string");
         }
 
         index++;
@@ -385,7 +375,7 @@ Sk.builtin.complex.complex_subtype_from_string = function(val) {
 
     /* we should now be at the end of the string */
     if(val.length !== index) {
-        throw new Sk.builtin.ParseError("complex() arg is malformed string");
+        throw new Sk.builtin.ValueError("complex() arg is malformed string");
     }
 
     // return here complex number parts
@@ -435,11 +425,13 @@ Sk.builtin.complex.prototype.nb$subtract = function (other) {
 Sk.builtin.complex.prototype.nb$multiply = function (other) {
     var real;
     var imag;
+    var a, b; // Py_complex
 
-    other = Sk.builtin.complex.check_number_or_complex(other);
+    a = this;
+    b = Sk.builtin.complex.check_number_or_complex(other);
 
-    real = this.tp$getattr("real").v * other.tp$getattr("real").v - this.tp$getattr("imag").v * other.tp$getattr("imag").v;
-    imag = this.tp$getattr("real").v + other.tp$getattr("imag").v + this.tp$getattr("imag").v * other.tp$getattr("real").v;
+    real = a.real.v * b.real.v - a.imag.v * b.imag.v;
+    imag = a.real.v * b.imag.v + a.imag.v * b.real.v;
 
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
 };
@@ -448,6 +440,8 @@ Sk.builtin.complex.prototype.nb$multiply = function (other) {
  * Otherwise google closure complains about ZeroDivisionError not being
  * defined
  * @suppress {missingProperties}
+ *
+ * implementation based on complexobject.c:c_quot
  */
 Sk.builtin.complex.prototype.nb$divide = function (other) {
     var real;
@@ -459,32 +453,36 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
     var denom;
 
     // other == b
-    var breal = other.tp$getattr("real").v;
-    var bimag = other.tp$getattr("imag").v;
+    var breal = other.real.v;
+    var bimag = other.imag.v;
     // this == a
-    var areal = this.tp$getattr("real").v;
-    var aimag = this.tp$getattr("imag").v;
+    var areal = this.real.v;
+    var aimag = this.imag.v;
 
-    var abs_breal = breal < 0 ? -breal : breal;
-    var abs_bimag = bimag < 0 ? -bimag : bimag;
+    var abs_breal = Math.abs(breal);
+    var abs_bimag = Math.abs(bimag);
 
-    if(abs_breal >= abs_bimag) {
-        /* divide tops and bottom by breal */
+    if (abs_breal >= abs_bimag) {
+        // divide tops and bottom by breal
         if(abs_breal === 0.0) {
             throw new Sk.builtin.ZeroDivisionError("complex division by zero");
         } else {
             ratio = bimag / breal;
             denom = breal + bimag * ratio;
             real = (areal + aimag * ratio) / denom;
-            imag = (aimag + areal * ratio) / denom;
+            imag = (aimag - areal * ratio) / denom;
         }
-    } else {
-        /* divide tops and bottom by b.imag */
+    } else if (abs_bimag >= abs_breal) {
+        // divide tops and bottom by b.imag
         ratio = breal / bimag;
         denom = breal * ratio + bimag;
         goog.asserts.assert(bimag !== 0.0);
         real = (areal * ratio + aimag) / denom;
         imag = (aimag * ratio - areal) / denom;
+    } else {
+        // At least one of b.real or b.imag is a NaN
+        real = NaN;
+        imag = NaN;
     }
 
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
@@ -499,33 +497,55 @@ Sk.builtin.complex.prototype.nb$remainder = function (other) {
 };
 
 /**
- * Otherwise google closure complains about ZeroDivisionError not being
- * defined
- * @suppress {missingProperties}
+ * @param {?Object=} z, modulo operation
  */
-Sk.builtin.complex.prototype.nb$power = function (other) {
-    var real;
-    var imag;
+Sk.builtin.complex.prototype.nb$power = function (other, z) {
+    var p;
+    var exponent;
+    var int_exponent;
+    var a, b;
+
+    // none is allowed
+    if (z != null && !Sk.builtin.checkNone(z)) {
+        throw new Sk.builtin.ValueError("complex modulo");  
+    }
+
+    a = this;
+    b = Sk.builtin.complex.check_number_or_complex(other);
+
+    exponent = b;
+    int_exponent = b.real.v | 0; // js convert to int
+    if (exponent.imag.v === 0.0 && exponent.real.v === int_exponent) {
+        p = Sk.builtin.complex.c_powi(a, int_exponent);
+    } else {
+        p = Sk.builtin.complex.c_pow(a, exponent);
+    }
+
+    return p;
+};
+
+// power of complex a and complex exponent b
+Sk.builtin.complex.c_pow = function(a, b) {
+    var real, imag; // Py_complex
+
     var vabs;
     var len;
     var at;
     var phase;
 
-    other = Sk.builtin.complex.check_number_or_complex(other);
-
     // other == b
-    var breal = other.tp$getattr("real").v;
-    var bimag = other.tp$getattr("imag").v;
+    var breal = b.real.v;
+    var bimag = b.imag.v;
     // this == a
-    var areal = this.tp$getattr("real").v;
-    var aimag = this.tp$getattr("imag").v;
+    var areal = a.real.v;
+    var aimag = a.imag.v;
 
     if(breal === 0.0 && bimag === 0.0) {
         real = 1.0;
         imag = 0.0;
     } else if(areal === 0.0 && aimag === 0.0) {
         if(bimag !== 0.0 || breal < 0.0) {
-            throw new Sk.builtin.ZeroDivisonError("complex division by zero");
+            throw new Sk.builtin.ZeroDivisionError("complex division by zero");
         }
 
         real = 0.0;
@@ -547,6 +567,42 @@ Sk.builtin.complex.prototype.nb$power = function (other) {
 
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
 };
+
+// power of complex x and integer exponent n
+Sk.builtin.complex.c_powi = function(x, n) {
+    var cn; // Py_complex
+    var c1;
+
+    if (n > 100 || n < -100) {
+        cn = new Sk.builtin.complex(new Sk.builtin.float_(n), new Sk.builtin.float_(0.0));
+        return Sk.builtin.complex.c_pow(x, cn);
+    } else if (n > 0) {
+        return Sk.builtin.complex.c_powu(x, n);
+    } else {
+        //  return c_quot(c_1,c_powu(x,-n));
+        c1 = new Sk.builtin.complex(new Sk.builtin.float_(1.0), new Sk.builtin.float_(0.0));
+        return c1.nb$divide(Sk.builtin.complex.c_powu(x,-n));
+    }
+};
+
+Sk.builtin.complex.c_powu = function(x, n) {
+    var r, p; // Py_complex
+    var mask = 1;
+    r = new Sk.builtin.complex(new Sk.builtin.float_(1.0), new Sk.builtin.float_(0.0));
+    p = x;
+
+    while (mask > 0 && n >= mask) {
+        if (n & mask) {
+            r = r.nb$multiply(p);
+        }
+
+        mask <<= 1;
+        p = p.nb$multiply(p);
+    }
+
+    return r;
+};
+
 
 Sk.builtin.complex.prototype.nb$inplace_add = Sk.builtin.complex.prototype.nb$add;
 
@@ -605,6 +661,11 @@ Sk.builtin.complex.prototype.tp$richcompare = function(w, op) {
     var i;
 
     if(op !== "Eq" && op !== "NotEq") {
+        if(Sk.builtin.checkNumber(w) || Sk.builtin.complex._complex_check(w)) {
+            throw new Sk.builtin.TypeError("no ordering relation is defined for complex numbers");
+        }
+
+        // FIXME: should return NotImplemented constant not an error
         throw new Sk.builtin.NotImplementedError();
     }
 
@@ -621,6 +682,8 @@ Sk.builtin.complex.prototype.tp$richcompare = function(w, op) {
         // if true, the complex number has just a real part
         if(_imag === 0.0) {
             equal = Sk.misceval.richCompareBool(new Sk.builtin.float_(_real), w, op);
+            result = Sk.builtin.bool(equal);
+            return result;
         } else {
             equal = false;
         }
@@ -682,6 +745,8 @@ Sk.builtin.complex.prototype.__int__ = function (self) {
 };
 
 
+Sk.builtin.complex.prototype._internalGenericGetAttr = Sk.builtin.object.prototype.GenericGetAttr;
+
 Sk.builtin.complex.prototype.tp$getattr = function(name) {
     if(name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
         var _name = name;
@@ -697,8 +762,9 @@ Sk.builtin.complex.prototype.tp$getattr = function(name) {
     }
 
     // if we have not returned yet, try the genericgetattr
-    return Sk.builtin.type.prototype.tp$getattr.call(this.ob$type, name);
+    return this._internalGenericGetAttr(name);
 };
+
 
 Sk.builtin.complex.prototype.tp$setattr = function(name, value) {
     if(name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
@@ -818,8 +884,8 @@ Sk.builtin.complex._is_infinity = function (val) {
  */
 Sk.builtin.complex.prototype.__abs__  = new Sk.builtin.func(function (self) {
     var result;
-    var _real = this.tp$getattr("real").v;
-    var _imag = this.tp$getattr("imag").v;
+    var _real = self.real.v;
+    var _imag = self.imag.v;
 
     if(!Sk.builtin.complex._is_finite(_real) || !Sk.builtin.complex._is_finite(_imag)) {
         /* C99 rules: if either the real or the imaginary part is an
@@ -909,9 +975,9 @@ Sk.builtin.complex.prototype.__mod__ = new Sk.builtin.func(function(self, other)
     return self.nb$remainder.call(self, other);
 });
 
-Sk.builtin.complex.prototype.__pow__ = new Sk.builtin.func(function(self, other){
-    Sk.builtin.pyCheckArgs("__pow__", arguments, 1, 1, true);
-    return self.nb$power.call(self, other);
+Sk.builtin.complex.prototype.__pow__ = new Sk.builtin.func(function(self, other, z){
+    Sk.builtin.pyCheckArgs("__pow__", arguments, 1, 2, true);
+    return self.nb$power.call(self, other, z);
 });
 
 Sk.builtin.complex.prototype.__neg__ = new Sk.builtin.func(function(self){
@@ -932,6 +998,7 @@ Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(function(self){
     return new Sk.builtin.complex(self.real, new Sk.builtin.nmber(_imag, Sk.builtin.nmber.float$));
 });
 
+// deprecated
 Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(function(self, other){
     Sk.builtin.pyCheckArgs("__divmod__", arguments, 1, 1, true);
 
@@ -958,6 +1025,17 @@ Sk.builtin.complex.prototype.__getnewargs__ = new Sk.builtin.func(function(self)
 
     return new Sk.builtin.tuple([self.real, self.imag]);
 });
+
+Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(function(self){
+    Sk.builtin.pyCheckArgs("__nonzero__", arguments, 0, 0, true);
+
+    if(self.real.v !== 0.0 || self.imag.v !== 0.0) {
+        return Sk.builtin.bool.true$;
+    } else {
+        return Sk.builtin.bool.false$;
+    }
+});
+
 
 // ToDo: think about inplace methods too
 

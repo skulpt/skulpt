@@ -697,9 +697,10 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
             }
             else if (e.n instanceof Sk.builtin.complex) {
-                // ToDo: preserve sign of zero here too
-                return "new Sk.builtin.complex(new Sk.builtin.float_(" + e.n.real.v + "), new Sk.builtin.float_(" + e.n.imag.v + "))";
-                //return "Sk.builtin.complex.complex_subtype_from_string('" + e.n.tp$str().v + "')";
+                // preserve sign of zero here too
+                var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
+                var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
+                return "new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))";
             }
             goog.asserts.fail("unhandled Num type");
         case Str:

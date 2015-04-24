@@ -978,9 +978,10 @@ Sk.builtin.nmber.PyOS_double_to_string = function(val, format_code, precision, f
 
         /** 
          * We cann call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
-         * already a javascript number
+         * already a javascript number. If we do not pass a float, we can't distinguish between ints and floats
+         * and therefore we can't adjust the sign of the zero accordingly
          */
-        buf = format_str.nb$remainder(val);
+        buf = format_str.nb$remainder(new Sk.builtin.nmber(val, Sk.builtin.nmber.float$));
         buf = buf.v; // get javascript string
     }
 

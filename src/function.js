@@ -72,6 +72,11 @@ Sk.builtin.checkNumber = function (arg) {
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
+Sk.builtin.checkComplex = function (arg) {
+    return Sk.builtin.complex._complex_check(arg);
+};
+goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
+
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
         (arg instanceof Sk.builtin.nmber &&

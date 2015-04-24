@@ -41,16 +41,16 @@ class TestCase:
         self.showSummary()
 
     def assertEqual(self, actual, expected, feedback=""):
-        res = actual==expected
-        self.appendResult(res,str(actual)+' to be equal to ',expected, feedback)
+        res = actual == expected
+        self.appendResult(res, str(actual)+' to be equal to ',expected, feedback)
 
     def assertNotEqual(actual, expected, feedback=""):
         res = actual != expected
         self.appendResult(res,str(actual)+' to not equal ',expected,feedback)
 
-    def assertTrue(self,x, feedback=""):
-        res = x
-        self.appendResult(res,str(x)+' to be ',True,feedback)
+    def assertTrue(self, x, feedback=""):
+        res = bool(x) is True
+        self.appendResult(res, str(x)+' to be ',True,feedback)
 
     def assertFalse(self,x, feedback=""):
         res = not x

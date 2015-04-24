@@ -1129,7 +1129,15 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     precision = 7;
                 }
             }
-            result = (convValue)[convName](precision);
+            
+            result = (convValue)[convName](precision); // possible loose of negative zero sign
+            
+            if(Sk.builtin.checkFloat(value)) {
+                if(convValue === 0 && 1/convValue === -Infinity) {
+                    result = "-" + result; // add sign for zero
+                }
+            }
+
             if ("EFG".indexOf(conversionType) !== -1) {
                 result = result.toUpperCase();
             }
