@@ -116,7 +116,7 @@ Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {v: {value: nul
 Sk.builtin.NotImplemented = function() {};
 Sk.builtin.NotImplemented.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("NotImplementedType", Sk.builtin.NotImplemented);
 Sk.builtin.NotImplemented.prototype.tp$name = "NotImplementedType";
-Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.str("NotImplemented"); }
+Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.str("NotImplemented"); };
 Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, {v: {value: null, enumerable: false}});
 
 
