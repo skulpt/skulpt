@@ -723,7 +723,7 @@ Sk.builtin.complex.prototype.__ne__ = function (me, other) {
 
 /**
  * Do we really need to implement those? Otherwise I can't find in Sk.abstr a place where this particular 
- * expcetion is thrown.
+ * expcetion is thrown.git co
  */
 Sk.builtin.complex.prototype.__lt__ = function (me, other) {
     throw new Sk.builtin.TypeError("unorderable types: " + Sk.abstr.typeName(me) + " < " + Sk.abstr.typeName(other));
@@ -857,7 +857,7 @@ Sk.builtin.complex.prototype.tp$str = function () {
  *
  * We currently use the signature (self, format_spec) instead of (self, args). So we do
  * not need to unwrap the args.
- */ 
+ */
 Sk.builtin.complex.prototype.__format__ = new Sk.builtin.func(function (self, format_spec){
     var result; // PyObject
 
