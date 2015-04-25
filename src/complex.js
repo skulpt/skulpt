@@ -667,8 +667,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
             throw new Sk.builtin.TypeError("no ordering relation is defined for complex numbers");
         }
 
-        // FIXME: should return NotImplemented constant not an error
-        throw new Sk.builtin.NotImplementedError();
+        return Sk.builtin.NotImplemented.NotImplemented$;
     }
 
     // assert(PyComplex_Check(v)));
@@ -722,6 +721,10 @@ Sk.builtin.complex.prototype.__ne__ = function (me, other) {
     return Sk.builtin.complex.prototype.tp$richcompare.call(me, other, "NotEq");
 };
 
+/**
+ * Do we really need to implement those? Otherwise I can't find in Sk.abstr a place where this particular 
+ * expcetion is thrown.
+ */
 Sk.builtin.complex.prototype.__lt__ = function (me, other) {
     throw new Sk.builtin.TypeError("unorderable types: " + Sk.abstr.typeName(me) + " < " + Sk.abstr.typeName(other));
 };
