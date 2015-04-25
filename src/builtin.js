@@ -1,9 +1,9 @@
-// builtins are supposed to come from the __builtin__ module, but we don't do
-// that yet.
-Sk.builtin = Sk.builtin || {};
-
-// todo; these should all be func objects too, otherwise str() of them won't
-// work, etc.
+/** 
+ * builtins are supposed to come from the __builtin__ module, but we don't do
+ * that yet.
+ * todo; these should all be func objects too, otherwise str() of them won't
+ * work, etc.
+ */
 
 Sk.builtin.range = function range (start, stop, step) {
     var ret = [];
@@ -509,47 +509,6 @@ Sk.builtin.bin = function bin (x) {
     }
     return Sk.builtin.int2str_(x, 2, "0b");
 };
-
-/* Implementation of dir() -- if obj is NULL, returns the names in the current
-   (local) scope.  Otherwise, performs introspection of the object: returns a
-   sorted list of attribute names (supposedly) accessible from the object
-*/
-/*
-Sk.builtin.dir2 = function dir(obj) {
-    Sk.builtin.pyCheckArgs("dir", arguments, 0, 0);
-    return (obj === null || obj === undefined) ? Sk.builtin.dir2._dir_locals() : Sk.builtin.dir2._dir_object(obj);
-};
-
-Sk.builtin.dir2._dir_locals = function() {
-    var names;
-    var locals;
-
-    locals = Sk.builtin.locals();
-    if(locals === null) {
-        return null;
-    }
-
-    // unwrap locals before this call?
-    //names = PyMapping_Keys(locals);
-
-    // unwarp here
-
-    if(names === null) {
-        return null;
-    }
-
-    if(!(names instanceof Sk.builtin.list)) {
-        throw new TypeError("dir(): expected keys() of locals to be a list, not '" + Sk.abstr.typeName(names) + "'");
-    }
-
-    // sort list
-    names.sort(function (a, b) {
-        return (a.v > b.v) - (a.v < b.v);
-    });
-
-    return new Sk.builtin.list(names);
-};
-*/
 
 Sk.builtin.dir = function dir (x) {
     var last;
@@ -1310,11 +1269,6 @@ Sk.builtin.bytearray = function bytearray () {
 Sk.builtin.callable = function callable () {
     throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
 };
-/*
-Sk.builtin.complex = function complex () {
-    throw new Sk.builtin.NotImplementedError("complex is not yet implemented");
-};
-*/
 Sk.builtin.delattr = function delattr () {
     throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
 };

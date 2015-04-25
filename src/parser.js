@@ -412,6 +412,10 @@ Sk.parse = function parse (filename, input) {
     for (i = 0; i < lines.length; ++i) {
         ret = parseFunc(lines[i] + ((i === lines.length - 1) ? "" : "\n"));
     }
+
+    /*
+     * Small adjustments here in order to return th flags and the cst
+     */
     return {"cst": ret, "flags": parseFunc.p_flags};
 };
 

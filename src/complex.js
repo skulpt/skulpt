@@ -1,3 +1,6 @@
+/**
+ * hypot is a ESCMA6 function and maybe not available across all browsers
+ */
 Math.hypot = Math.hypot || function() {
     var y = 0;
     var length = arguments.length;

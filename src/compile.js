@@ -2411,15 +2411,19 @@ goog.exportSymbol("Sk.futureFromAst", Sk.futureFromAst);
  * @param {string} mode one of 'exec', 'eval', or 'single'
  */
 Sk.compile = function (source, filename, mode) {
+    // parse returns an array with cst and flags
     var parse = Sk.parse(filename, source);
+
     var p_flags = parse.flags; // returns Parser flags __future__
     var ast = Sk.astFromParse(parse.cst, filename, p_flags);
 
-    // check for other non parser future statements
-    // unicode_literals and print_function and with_statements must be detected at parsing level
-    // others are parser independend
-    // ToDo: https://github.com/python/cpython/blob/2.7/Python/compile.c#L272
-    // https://github.com/python/cpython/blob/2.7/Python/future.c
+    /**
+     * check for other non parser future statements
+     * unicode_literals and print_function and with_statements must be detected at parsing level
+     * others are parser independend
+     * ToDo: https://github.com/python/cpython/blob/2.7/Python/compile.c#L272
+     * https://github.com/python/cpython/blob/2.7/Python/future.c
+     */
     var c_future = Sk.futureFromAst(ast, filename);
     var merged;
     var flags = {};

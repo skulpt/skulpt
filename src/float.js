@@ -48,6 +48,7 @@ Sk.builtin.float_ = function (x) {
     }
 
     // try calling __float__
+    // ToDo: Refactor for using Sk.builtin.object._PyObject_LookupSpecial
     if(x.tp$getattr && x.tp$getattr("__float__")) {
         // calling a method which contains im_self and im_func
         // causes skulpt to automatically map the im_self as first argument

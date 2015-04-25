@@ -9,6 +9,13 @@ Sk.builtin.object = function () {
     return this;
 };
 
+/*
+ * Special method look up. First try getting the method via
+ * internal dict and getattr. If gettattr is not present (builtins)
+ * try if method is defined on the object itself
+ *
+ * Return null if not found or the function
+ */
 Sk.builtin.object._PyObject_LookupSpecial = function(op, str) {
     var res;
 

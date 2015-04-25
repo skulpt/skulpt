@@ -280,6 +280,9 @@ goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
  * @constructor
  * @extends Sk.builtin.Exception
  * @param {...*} args
+ *
+ * Exception thrown when external flag is set and suspension is running 
+ * into this specific check
  */
 Sk.builtin.KeyboardInterrupt = function (args) {
     var o;

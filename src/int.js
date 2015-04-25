@@ -160,7 +160,11 @@ Sk.builtin.int_ = function (x, base) {
         x = 0;
     }
 
-    // try calling internal magic method
+    /**
+     * try calling special methods:
+     *  1. __int__
+     *  2. __trunc__
+     */
     if(x !== undefined && (x.tp$getattr && x.tp$getattr("__int__"))) {
         // calling a method which contains im_self and im_func
         // causes skulpt to automatically map the im_self as first argument

@@ -188,6 +188,17 @@ Sk.doOneTimeInitialization = function () {
     */
     Sk.builtin.Exception.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("Exception", Sk.builtin.Exception);
 
+    /**
+     * ToDo: Maybe use the same approach as cpython does, and use some kind of map of the implemented methods.
+     * Currently, objects like complex does implement all internal methods aswell the special methods. This allows
+     * all kind of tests to run.
+     *
+     * Some ressources:
+     * - https://docs.python.org/2/reference/datamodel.html#specialnames
+     * - https://docs.python.org/2.7/c-api/typeobj.html#tp_as_number
+     * - https://docs.python.org/2/reference/datamodel.html#emulating-numeric-types
+     */
+
     // setup ["$d"] to make builtins subclassable
     var builtinObjList = ["dict", "list", "type", "set", "tuple", "Exception"];
     var i, k, v;
@@ -203,32 +214,34 @@ Sk.doOneTimeInitialization = function () {
 
         // builtins have only object as __bases__
         Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+        
         // builtins have object and self as __mro__
         Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin[builtin_], Sk.builtin.object]));
         // the methods from the parent class get automatically mapped by the buildTypeObj code
 
-        // copy existing methods to internal dict
-        // we need to map the internal functions to special names
-        // https://docs.python.org/2/reference/datamodel.html#specialnames
-        // https://docs.python.org/2.7/c-api/typeobj.html#tp_as_number
-        // https://docs.python.org/3/reference/datamodel.html#special-method-names
-        // or push them to the prototype
-        // https://docs.python.org/2/reference/datamodel.html#emulating-numeric-types
-
+        /**
+         * copy existing methods to internal dict
+         * we need to map the internal functions to special names (or we just implement stubs for the special ones)
+         */
         for(k in Sk.builtin[builtin_].prototype) {
-            //if(Sk.builtin[builtin_].hasOwnProperty(k)) {
             prop = Sk.builtin[builtin_].prototype[k]; // get current property
-            richname = Sk.builtin.dir.slotNameToRichName(k); // get richname from internal slot function names
-            //Sk.debugout("try map: k=" + k + " richname=" + richname + "in builtin: " + builtin_ + " prop type: " + (typeof prop));
-            // this lacks special name look up to properly map them to internal methods
+            
+            /**
+             * get richname from internal slot function names
+             * this lacks special name look up to properly map them to internal methods
+             */
+            richname = Sk.builtin.dir.slotNameToRichName(k); // 
 
+            // early continue
             if(prop === undefined || prop === null) {
                 //Sk.debugout("cannot map: k= " + k + " richname=" + richname);
-                continue; // early continue
+                continue; 
             }
 
-            // first case could be merged with large case, though for testing purposes
-            // this allows better debug output
+            /** 
+             * first case could be merged with large case, though for testing purposes
+             * this allows better debug output
+             */
             if(richname === k && prop instanceof Sk.builtin.func) {
                 Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(k), prop);
             } else if(richname !== k && (prop instanceof String || typeof prop === "string")) {
@@ -241,7 +254,6 @@ Sk.doOneTimeInitialization = function () {
                 // ignore
                 //Sk.debugout("could not map: " + k + " in builtin: " + builtin_ + " prop type: " + (typeof prop));
             }
-            //}
         }
     }
 };
