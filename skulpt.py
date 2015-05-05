@@ -80,6 +80,7 @@ Files = [
         'src/mergesort.js',
         'src/list.js',
         'src/str.js',
+        'src/formatting.js',
         'src/tuple.js',
         'src/dict.js',
         'src/biginteger.js',
@@ -103,6 +104,7 @@ Files = [
         'src/compile.js',
         'src/import.js',
         'src/timsort.js',
+        'src/sorted.js',
         'src/builtindict.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
