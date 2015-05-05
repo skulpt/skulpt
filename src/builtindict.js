@@ -52,7 +52,6 @@ Sk.builtins = {
     "SystemExit"         : Sk.builtin.SystemExit,
     "OverflowError"      : Sk.builtin.OverflowError,
     "OperationError"     : Sk.builtin.OperationError,
-    "NegativePowerError" : Sk.builtin.NegativePowerError,
 
     "dict"      : Sk.builtin.dict,
     "file"      : Sk.builtin.file,

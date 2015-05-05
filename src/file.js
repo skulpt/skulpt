@@ -13,11 +13,7 @@ Sk.builtin.file = function (name, mode, buffering) {
     if (Sk.inBrowser) {  // todo:  Maybe provide a replaceable function for non-import files
         elem = document.getElementById(name.v);
         if (elem == null) {
-            if (mode.v == "w" || mode.v == "a") {
-              this.data$ = "";
-            } else {
-              throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
-            }
+            throw new Sk.builtin.IOError("[Errno 2] No such file or directory: '" + name.v + "'");
         } else {
             if (elem.nodeName.toLowerCase() == "textarea") {
                 this.data$ = elem.value;
@@ -38,10 +34,6 @@ Sk.builtin.file = function (name, mode, buffering) {
     this.pos$ = 0;
 
     this.__class__ = Sk.builtin.file;
-
-    if (Sk.fileopen) {
-        Sk.fileopen(this);
-    }
 
     return this;
 };
@@ -154,19 +146,7 @@ Sk.builtin.file.prototype["truncate"] = new Sk.builtin.func(function (self, size
 });
 
 Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function (self, str) {
-    if (Sk.filewrite) {
-        if (self.closed) {
-            throw new Sk.builtin.ValueError("I/O operation on closed file");
-        }
-
-        if (self.mode.v === "w" || self.mode.v === "wb" || self.mode.v === "a" || self.mode.v === "ab") {
-            Sk.filewrite(self, str);
-        } else {
-            throw new Sk.builtin.IOError("File not open for writing");
-        }
-    } else {
-        goog.asserts.fail();
-    }
+    goog.asserts.fail();
 });
 
 
