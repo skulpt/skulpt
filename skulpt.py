@@ -80,7 +80,6 @@ Files = [
         'src/mergesort.js',
         'src/list.js',
         'src/str.js',
-        'src/formatting.js',
         'src/tuple.js',
         'src/dict.js',
         'src/biginteger.js',
@@ -104,7 +103,6 @@ Files = [
         'src/compile.js',
         'src/import.js',
         'src/timsort.js',
-        'src/sorted.js',
         'src/builtindict.js',
         ("support/jsbeautify/beautify.js", FILE_TYPE_TEST),
         ]
@@ -450,10 +448,10 @@ def dist(options):
     if options.verbose:
         print ". Running tests on uncompressed..."
 
-    # ret = test()
-    # if ret != 0:
-    #     print "Tests failed on uncompressed version."
-    #     sys.exit(1);
+    ret = test()
+    if ret != 0:
+        print "Tests failed on uncompressed version."
+        sys.exit(1);
 
     # compress
     uncompfiles = ' '.join(['--js ' + x for x in getFileList(FILE_TYPE_DIST)])
