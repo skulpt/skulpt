@@ -2222,7 +2222,7 @@ Compiler.prototype.cmod = function (mod) {
 
     this.u.varDeclsCode += "if ("+modf+".wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
         "if (Sk.retainGlobals) {" +
-        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl }" +
+        "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
         "    else { Sk.globals = $gbl; }" +
         "} else { Sk.globals = $gbl; }"
 
