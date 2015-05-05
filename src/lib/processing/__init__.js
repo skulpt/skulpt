@@ -81,12 +81,12 @@ var $builtinmodule = function (name) {
 
     mod.bezier = new Sk.builtin.func(function (x1, y1, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) {
         if (typeof(a7) === "undefined") {
-      // bezier(x1, y1, cx1, cy1, cx2, cy2,  x2,  y2);
+            // bezier(x1, y1, cx1, cy1, cx2, cy2,  x2,  y2);
             mod.processing.bezier(x1.v, y1.v, a1.v, a2.v, a3.v, a4.v, a5.v, a6.v);
-  } else {
-      // bezier(x1, y1,  z1, cx1, cy1, cz1, cx2, cy2, cz2, x2, y2, z2);
+        } else {
+            // bezier(x1, y1,  z1, cx1, cy1, cz1, cx2, cy2, cz2, x2, y2, z2);
             mod.processing.bezier(x1.v, y1.v, a1.v, a2.v, a3.v, a4.v, a5.v, a6.v, a7.v, a8.v, a9.v, a10.v);
-  }
+        }
     });
 
     // 3D Primitives

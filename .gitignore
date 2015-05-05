@@ -11,5 +11,6 @@ test/namedtests.js
 /.d8_history
 /.idea
 /.vagrant
-
+.settings
+/.c9revisions
 Vagrantfile

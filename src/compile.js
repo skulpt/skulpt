@@ -2002,6 +2002,9 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     if (name.v === "False") {
         return "Sk.builtin.bool.false$";
     }
+    if (name.v === "NotImplemented") {
+        return "Sk.builtin.NotImplemented.NotImplemented$";
+    }
 
     mangled = mangleName(this.u.private_, name).v;
     // Have to do this before looking it up in the scope
