@@ -132,6 +132,7 @@ var reservedWords_ = {
     "class": true,
     "continue": true,
     "const": true,
+    "Date": true,
     "debugger": true,
     "default": true,
     "delete": true,
@@ -1834,7 +1835,7 @@ Compiler.prototype.cclass = function (s) {
     entryBlock = this.newBlock("class entry");
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
-    this.u.switchCode += "return(function " + s.name.v + "(){";
+    this.u.switchCode += "return(function " + fixReservedNames(s.name.v) + "(){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date();}";
@@ -2306,32 +2307,32 @@ Sk.futureFromAst = function(mod, filename) {
 
         names = stmt.names;
         for(i = 0; i < names.length; i++) {
-          name = names[i];
-          feature = name.name.v; // feature name as js string
+            name = names[i];
+            feature = name.name.v; // feature name as js string
 
-          if(!feature) {
-            return false;
-          }
+            if(!feature) {
+                return false;
+            }
 
-          if(feature === Parser.FUTURE_NESTED_SCOPES) {
-            continue;
-          } else if (feature === Parser.FUTURE_GENERATORS) {
-            continue;
-          } else if(feature === Parser.FUTURE_DIVISION) {
-            ff.ff_features |= Parser.CO_FUTURE_DIVISON;
-          } else if(feature === Parser.FUTURE_ABSOLUTE_IMPORT) {
-            ff.ff_features |= Parser.CO_FUTURE_ABSOLUTE_IMPORT;
-          } else if(feature === Parser.FUTURE_WITH_STATEMENT) {
-            ff.ff_features |= Parser.CO_FUTURE_WITH_STATEMENT;
-          } else if(feature === Parser.FUTURE_PRINT_FUNCTION) {
-            ff.ff_features |= Parser.CO_FUTURE_PRINT_FUNCTION;
-          } else if(feature === Parser.FUTURE_UNICODE_LITERALS) {
-            ff.ff_features |= Parser.CO_FUTURE_UNICODE_LITERALS;
-          } else if (feature === "braces") {
-            throw new Sk.builtin.SyntaxError(new Sk.builtin.str("not a chance"), new Sk.builtin.str(filename), stmt.lineno);
-          } else {
-            throw new Sk.builtin.SyntaxError(new Sk.builtin.str("future feature " + feature + " is not defined"), new Sk.builtin.str(filename), stmt.lineno);
-          }
+            if(feature === Parser.FUTURE_NESTED_SCOPES) {
+                continue;
+            } else if (feature === Parser.FUTURE_GENERATORS) {
+                continue;
+            } else if(feature === Parser.FUTURE_DIVISION) {
+                ff.ff_features |= Parser.CO_FUTURE_DIVISON;
+            } else if(feature === Parser.FUTURE_ABSOLUTE_IMPORT) {
+                ff.ff_features |= Parser.CO_FUTURE_ABSOLUTE_IMPORT;
+            } else if(feature === Parser.FUTURE_WITH_STATEMENT) {
+                ff.ff_features |= Parser.CO_FUTURE_WITH_STATEMENT;
+            } else if(feature === Parser.FUTURE_PRINT_FUNCTION) {
+                ff.ff_features |= Parser.CO_FUTURE_PRINT_FUNCTION;
+            } else if(feature === Parser.FUTURE_UNICODE_LITERALS) {
+                ff.ff_features |= Parser.CO_FUTURE_UNICODE_LITERALS;
+            } else if (feature === "braces") {
+                throw new Sk.builtin.SyntaxError(new Sk.builtin.str("not a chance"), new Sk.builtin.str(filename), stmt.lineno);
+            } else {
+                throw new Sk.builtin.SyntaxError(new Sk.builtin.str("future feature " + feature + " is not defined"), new Sk.builtin.str(filename), stmt.lineno);
+            }
         }
 
         return true;
