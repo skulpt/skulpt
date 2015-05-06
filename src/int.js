@@ -202,6 +202,8 @@ Sk.builtin.int_ = function (x, base) {
     return new Sk.builtin.nmber(parseInt(x, base), Sk.builtin.nmber.int$);
 };
 
+Sk.builtin.int_.prototype.__doc__ = new Sk.builtin.str("int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4");
+
 Sk.builtin.int_.prototype.__int__ = new Sk.builtin.func(function(self) {
     return self;
 });

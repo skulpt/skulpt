@@ -53,6 +53,9 @@ Sk.builtin.dict = function dict (L) {
 
 Sk.builtin.dict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("dict", Sk.builtin.dict);
 
+/* doc string, needs to initialized later */
+// Sk.builtin.dict.prototype.__doc__ = new Sk.builtin.str("dict() -> new empty dictionary\ndict(mapping) -> new dictionary initialized from a mapping object's\n    (key, value) pairs\ndict(iterable) -> new dictionary initialized as if via:\n    d = {}\n    for k, v in iterable:\n\t\t\td[k] = v\ndict(**kwargs) -> new dictionary initialized with the name=value pairs\n    in the keyword argument list.  For example:  dict(one=1, two=2)");
+
 var kf = Sk.builtin.hash;
 
 Sk.builtin.dict.prototype.key$lookup = function (bucket, key) {

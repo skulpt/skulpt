@@ -166,6 +166,8 @@ Sk.builtin.complex.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("complex"
 Sk.builtin.complex.prototype.tp$name = "complex";
 //Sk.builtin.complex.co_kwargs = true;
 
+Sk.builtin.complex.prototype.__doc__ = new Sk.builtin.str("complex(real[, imag]) -> complex number\n\nCreate a complex number from a real part and an optional imaginary part.\nThis is equivalent to (real + imag*1j) where imag defaults to 0.");
+
 Sk.builtin.complex._isNegativeZero = function (val) {
     if (val !== 0) {
         return false;

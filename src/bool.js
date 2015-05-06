@@ -11,6 +11,9 @@ Sk.builtin.bool = function (x) {
 Sk.builtin.bool.prototype.tp$name = "bool";
 Sk.builtin.bool.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("bool", Sk.builtin.bool);
 
+/* doc string, needs to initialized later */
+// Sk.builtin.bool.prototype.__doc__ = new Sk.builtin.str("bool(x) -> bool\n\nReturns True when the argument x is true, False otherwise.\nThe builtins True and False are the only two instances of the class bool.\nThe class bool is a subclass of the class int, and cannot be subclassed.");
+
 Sk.builtin.bool.prototype["$r"] = function () {
     if (this.v) {
         return new Sk.builtin.str("True");

@@ -60,6 +60,9 @@ Sk.builtin.float_ = function (x) {
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
+/* doc string, needs to initialized later */
+// Sk.builtin.float_.prototype.__doc__ = new Sk.builtin.str("float(x) -> floating point number\n\nConvert a string or number to a floating point number, if possible.");
+
 Sk.builtin.float_.prototype.__int__ = new Sk.builtin.func(function(self) {
     // get value
     var v = Sk.ffi.remapToJs(self);

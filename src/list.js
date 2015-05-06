@@ -50,6 +50,9 @@ Sk.builtin.list = function (L, canSuspend) {
     return this;
 };
 
+/* doc string, needs to initialized later */
+// Sk.builtin.list.prototype.__doc__ = new Sk.builtin.str("list() -> new empty list\nlist(iterable) -> new list initialized from iterable's items");
+
 Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("list", Sk.builtin.list);
 
 Sk.builtin.list.prototype.list_iter_ = function () {

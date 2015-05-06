@@ -9,6 +9,9 @@ Sk.builtin.object = function () {
     return this;
 };
 
+/* doc string, needs to initialized later */
+// Sk.builtin.object.prototype.__doc__ = new Sk.builtin.str("The most base type");
+
 /*
  * Special method look up. First try getting the method via
  * internal dict and getattr. If gettattr is not present (builtins)

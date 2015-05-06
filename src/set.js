@@ -28,6 +28,7 @@ Sk.builtin.set = function (S) {
     return this;
 };
 
+Sk.builtin.set.prototype.__doc__ = new Sk.builtin.str("set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.");
 
 Sk.builtin.set.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("set", Sk.builtin.set);
 

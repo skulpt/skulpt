@@ -47,6 +47,9 @@ Sk.builtin.range = function range (start, stop, step) {
     return new Sk.builtin.list(ret);
 };
 
+/* doc string, needs to initialized later */
+// Sk.builtin.range.__doc__ = new Sk.builtin.str("range(stop) -> range object\nrange(start, stop[, step]) -> range object\n\nReturn a sequence of numbers from start to stop by step.");
+
 Sk.builtin.asnum$ = function (a) {
     if (a === undefined) {
         return a;

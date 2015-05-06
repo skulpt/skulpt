@@ -312,6 +312,9 @@ Sk.builtin.type.prototype.tp$setattr = function (name, value) {
     this[name] = value;
 };
 
+/* doc string, needs to initialized later */
+// Sk.builtin.type.prototype.__doc__ = new Sk.builtin.str("type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type");
+
 Sk.builtin.type.typeLookup = function (type, name) {
     var mro = type.tp$mro;
     var pyname = new Sk.builtin.str(name);
