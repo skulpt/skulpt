@@ -726,10 +726,12 @@ Sk.importMain("%s", false);
         print outs
         if errs:
             print errs
-        g = re.match(r'.*\n.*passed: (\d+) failed: (\d+)',outs,flags=re.MULTILINE)
-        if g:
-            passTot += int(g.group(1))
-            failTot += int(g.group(2))
+        outlines = outs.split('\n')
+        for ol in outlines:
+            g = re.match(r'Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)',ol)
+            if g:
+                passTot += int(g.group(1))
+                failTot += int(g.group(2))
 
     print "Summary"
     print "Passed: %5d Failed %5d" % (passTot, failTot)
