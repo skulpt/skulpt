@@ -1,4 +1,3 @@
-from __future__ import print_function
 __author__ = 'bmiller'
 '''
 This is the start of something that behaves like
@@ -8,13 +7,12 @@ the unittest module from cpython.
 
 
 class TestCase:
-    failureException = AssertionError
-    longMessage = False
-
     def __init__(self):
         self.numPassed = 0
         self.numFailed = 0
-
+        self.assertPassed = 0
+        self.assertFailed = 0
+        self.verbose = True
         self.tlist = []
         testNames = {}
         for name in dir(self):
@@ -27,30 +25,44 @@ class TestCase:
 
     def tearDown(self):
         pass
-
+    def cleanName(self,funcName):
+    # work around skulpts lack of an __name__ 
+        funcName = str(funcName)
+        funcName = funcName[13:]
+        funcName = funcName[:funcName.find('<')-3]
+        return funcName
+        
     def main(self):
 
         for func in self.tlist:
             try:
                 self.setup()
+                self.assertPassed = 0
+                self.assertFailed = 0
                 func()
                 self.tearDown()
+                if self.assertFailed == 0:
+                    self.numPassed += 1
+                else:
+                    self.numFailed += 1
+                    if self.verbose:
+                        print 'Tests failed in %s ' % self.cleanName(func)
             except:
                 self.appendResult('Error',None,None,None)
                 self.numFailed += 1
         self.showSummary()
 
     def assertEqual(self, actual, expected, feedback=""):
-        res = actual == expected
-        self.appendResult(res, str(actual)+' to be equal to ',expected, feedback)
+        res = actual==expected
+        self.appendResult(res,str(actual)+' to be equal to ',expected, feedback)
 
     def assertNotEqual(actual, expected, feedback=""):
         res = actual != expected
         self.appendResult(res,str(actual)+' to not equal ',expected,feedback)
 
-    def assertTrue(self, x, feedback=""):
-        res = bool(x) is True
-        self.appendResult(res, str(x)+' to be ',True,feedback)
+    def assertTrue(self,x, feedback=""):
+        res = x
+        self.appendResult(res,str(x)+' to be ',True,feedback)
 
     def assertFalse(self,x, feedback=""):
         res = not x
@@ -112,33 +124,20 @@ class TestCase:
         res = a <= b
         self.appendResult(res,str(a)+' to be less than or equal to ',b,feedback)
 
-    def assertRaises(self, exception, callable=None, *args, **kwds):
-        # with is currently not supported hence we just try and catch
-        if callable is None:
-            raise NotImplementedError("assertRaises does currently not support assert contexts")
-
-        res = False
-        try:
-            callable(*args)
-        except exception as ex:
-            res = True
-
-        self.appendResult(res, str(callable) + ' raises exception: ', exception, None);
-
     def appendResult(self,res,actual,expected,feedback):
         if res == 'Error':
             msg = 'Error'
         elif res:
             msg = 'Pass'
-            self.numPassed += 1
+            self.assertPassed += 1
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
-            print(msg)
-            self.numFailed += 1
+            print msg
+            self.assertFailed += 1
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print("ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
+        print ("Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
                                                self.numPassed, self.numFailed))
 
 
