@@ -1362,24 +1362,16 @@ var $builtinmodule = function (name) {
     // NOTE: difference with ProcessingJS
     // Use environment.focused
 
-    mod.size = new Sk.builtin.func(function (h, w, mode) {
+    mod.width = Sk.builtin.assk$(100, Sk.builtin.nmber.int$);
+    mod.height = Sk.builtin.assk$(100, Sk.builtin.nmber.int$);
+
+    mod.size = new Sk.builtin.func(function (w, h, mode) {
         if (typeof(mode) === "undefined") {
             mode = mod.P2D;
         }
-
-        mod.processing.size(h.v, w.v, mode.v);
-    });
-
-    // NOTE: difference with ProcessingJS
-    // Use width() or environment.height rather than width
-    mod.width = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
-    });
-
-    // NOTE: difference with ProcessingJS
-    // use height() or environment.height rather than height
-    mod.height = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$);
+        mod.processing.size(w.v, h.v, mode.v);
+	mod.width = Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
+	mod.height = Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$);
     });
 
     mod.exitp = new Sk.builtin.func(function (h, w) {
