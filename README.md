@@ -12,11 +12,13 @@ Skulpt is the brainchild of Scott Graham.  See [Skulpt.org](http://skulpt.org) f
 
 Brad Miller has been shepherding the development since sometime in 2010/2011.
 
-## How can I help
+## How can I help?
 
-Check out the ideas list below. And then some practical things for getting started after that.
+Welcome to the Skulpt developer community! Check out the ideas list below. And then some practical things for getting started after that.
 
 ### Ideas List
+
+We are coordinating sprints on some of the ideas below, builtins, stdlib, third party modules, and core performance [here](https://github.com/skulpt/skulpt/issues/400).  We always welcome interested developers becoming Primarily Repsonsible Persons (PRP) for features they're working on. 
 
 6. Expand the skulpt standard library to include more modules from the CPython standard library.  So far we have math, random, turtle, time (partial) random (partial) urllib (partial) unittest, image, DOM (partial) and re (partial).  Any of the partial modules could be completed, or many other CPython modules could be added.  Potential new modules from the standard library include:  functools, itertools, collections, datetime, operator, and string.  Many of these would be relatively easy projects for a less exeperienced student to take on.
 
