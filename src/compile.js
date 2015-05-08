@@ -211,8 +211,7 @@ var reservedNames_ = {
     "unwatch": true,
     "valueOf": true,
     "watch": true,
-    "length": true,
-    "Date": true
+    "length": true
 };
 
 function fixReservedNames (name) {
@@ -1810,7 +1809,7 @@ Compiler.prototype.cclass = function (s) {
     entryBlock = this.newBlock("class entry");
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
-    this.u.switchCode += "return(function " + fixReservedNames(s.name.v) + "(){";
+    this.u.switchCode += "return(function $" + s.name.v + "$_closure(){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;"
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date()}";
