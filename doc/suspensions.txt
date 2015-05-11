@@ -1,0 +1,192 @@
+                        Notes on Suspensions
+                        --------------------
+
+
+v1:	Meredydd Luff, 23/Sep/2014
+
+
+Suspensions are continuations, generated on demand by returning an instance
+of Sk.misceval.Suspension from a function. They allow Python execution to be
+suspended and subsequently resumed, allowing simulation of blocking I/O,
+time-slicing to keep web pages responsive, and even multi-threading.
+
+Normally, a suspension is initiated by a callee (Javascript) function,
+but there is also a 'debugging' option (passed to Sk.configure()) which
+causes the compiler to generate a suspension before each statement.
+As each suspension also captures all stack frames and local variables,
+this can be used to implement a single-step debugger. An optional
+breakpoints() callback (also passed to Sk.configure()) allows the user
+to dynamically filter which of these suspensions actually happen.
+
+Suspensions have a 'data' property, which is an object indicating the reason
+for the suspension (and under what circumstances it may be resumed).
+'data.type' is a string. The following types are defined by Skulpt:
+
+    'Sk.promise': Resume when the Javascript Promise 'data.promise' resolves
+                  or yields an error.
+    'Sk.debug':   A suspension caused by the 'debugging' option (see above)
+
+Suspensions also have an 'optional' property. If set to true, this suspension
+may be resumed immediately if it is not convenient to wait. 'Sk.debug'
+suspensions have 'optional' set, so they are ignored rather than causing
+errors in non-suspendable call stacks (see below).
+
+
+Example: --------------------------------------------------------------------
+
+Skulpt provides utility functions for calling Python code that might suspend,
+and returning its result as a Javascript Promise. (For browsers that do not
+support Promises natively, Skulpt embeds the "es6-promises" poly-fill.)
+
+Here is some Javascript code that calls a Python function that might suspend,
+then logs its return value to the console:
+
+    Sk.misceval.callsimAsync(null, pyFunction).then(function success(r) {
+        console.log("Function returned: " + r.v);
+
+    }, function failure(e) {
+        console.log("Function threw an exception: " + e);
+    });
+
+
+
+You can also pass an object map of custom suspension handlers, which are
+called if a specific type of suspension occurs. Suspension handlers return
+a promise which is resolved with the return value of susp.resume(), or
+rejected with an exception. For example:
+
+    var handlers = {};
+    handlers["Sk.debug"] = function(susp) {
+      try {
+        console.log("Suspended! Now resuming...");
+
+        // Return an already-resolved promise in this case
+        return Promise.resolve(susp.resume());
+      } catch(e) {
+        return Promise.reject(e);
+      }
+    };
+
+    Sk.misceval.callsimAsync(handlers, pyFunction).then(...)
+
+
+
+Alternatively, you can use functions that return Suspensions directly.
+Sk.importMain() is one such example. If you pass 'true' as its third
+argument, it will return a Suspension if its code suspends. (If you don't
+give it a third argument, it will throw an error if the code tries to
+suspend. This is for backward compatibility.)
+
+However, doing this manually is awkward, so Skulpt provides a utility
+function:
+
+var p = Sk.misceval.asyncToPromise(function() {
+    return Sk.importMain("%s", true, true);
+});
+
+p.then(function (module) {
+    console.log("Script completed");
+}, function (err) {
+    console.log("Script aborted with error: " + err);
+});
+
+
+Completeness notes: ---------------------------------------------------------
+
+There are many places that don't currently support suspension that should.
+These include:
+
+ * Imports. Both the fetching of the imported module source and the running
+   of that code should be able to suspend. However, Sk.import*() is a maze of
+   twisty code paths and loops that make continuation transformation
+   non-trivial.
+
+
+
+Implementation notes: -------------------------------------------------------
+
+ * Not every Javascript calling context can handle getting a suspension
+   instead of a return value. There are many awkward cases within the Skulpt
+   codebase, let alone existing users of the library. Therefore, uses of
+   Sk.misceval.callsim()/call()/apply() do not support suspensions, and will
+   throw a SuspensionError if their callee tries to suspend non-optionally.
+   (Likewise, suspending part-way through a class declaration will produce
+   an error.)
+
+   Other APIs which call into Python, such as import and Sk.abstr.iternext(),
+   now have an extra parameter, 'canSuspend'. If false or undefined, they
+   will throw a SuspensionError if their callee suspends non-optionally. If
+   true, they may return a Suspension instead of a result.
+
+   If a Suspension with the 'optional' flag is returned in a non-suspendable
+   context, its resume() method will be called immediately rather than
+   causing an error.
+
+ * Suspensions save the call stack as they are processed. This provides a
+   Python stack trace of every suspension. This could be used to provide
+   stack traces on exceptions, which is currently a missing feature.
+
+ * Likewise, suspensions would be a natural way of implementing generators.
+   The current generator implementation is quite limited (it does not support
+   varargs or keyword args) and not quite correct (it does not preserve
+   temporaries between calls - see below), so would benefit from unification.
+
+ * Suspensions would also be a good way of implementing timeouts, as well as
+   keeping the browser responsive during long computations. I have not
+   changed the existing timeout code, which still throws errors. A
+   suspension-based timeout should first return optional suspensions (in case
+   the timeout triggers on a non-suspendable stack), and then, after a grace
+   period, issue a non-optional suspension that will terminate a
+   non-suspendable stack.
+
+Reliability and testing notes: ----------------------------------------------
+
+ * Deliberate suspensions are tested by the (newly implemented) time.sleep()
+   function, which is exercised by the tests t544.py and t555.py.
+
+ * We test that a wide variety of generated code is robust to being suspended
+   by running the entire test suite in 'debugging' mode (see above). This
+   causes suspensions and resumptions at every statement boundary, giving us
+   good confidence that any feature exercised by the test suite is robust to
+   suspension.
+
+   Of course, the test suite must also be run in normal mode, to verify that
+   it works when *not* suspending at every statement boundary.
+
+Performance notes:
+
+ * Essential overhead in the fast case (ie code that does not suspend) is
+   kept quite low, at two conditionals per function call (one by the caller,
+   to check whether a call completed or suspended, and one by the callee,
+   to check whether this is a normal call or a suspension being resumed).
+   Given the number of conditionals and nested function calls in
+   Sk.misceval.call/callsim/apply, this is probably negligible.
+
+ * There is additional implementation-dependent overhead (ie overhead that
+   can be whittled down if it proves too much, and would not require global
+   changes to implementations strategy to mitigate). I have not attacked
+   these too aggressively, as the indications are that the performance hit
+   already isn't that bad (~5% on the test suite on my machine, but of course
+   we'd need bigger benchmarks to say for sure). Still, here are some
+   pointers for future improvement:
+
+    - Sk.misceval.call/apply and friends are now wrappers around
+      applyOrSuspend, with an additional check for suspensions (to throw an
+      error)
+
+    - Each function call creates a new block for "after this function
+      returns" (this is where we resume to if that function call suspends),
+      and jumps to it via the normal continue-based mechanism. With more
+      invasive modification to the block generator, we could use switch-case-
+      fallthrough to remove this penalty for ordinary function returns.
+
+    - Any temporary that might be required to persist across *any* suspension
+      in a scope (ie any function call) is saved on *every* suspension. This
+      is conservative but correct (unlike existing generator support, which
+      just breaks if you try something like x = str((yield y)), as the
+      temporary used to look up 'str' is not preserved). However, this does
+      impede the compiler's ability to infer variable lifetimes. This
+      could be mitigated by generating separate save and resume code for
+      each suspension site, but that again requires intrusive modification
+      to the block system.
+

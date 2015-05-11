@@ -89,8 +89,8 @@ for c in ['red', 'green', 'yellow', 'blue']:
     <pre id="edoutput">
     </pre>
 
-    <canvas id="mycanvas" height="400" width="400"
-            style="border-style: solid; display: none"></canvas>
+    <div id="mycanvas" height="400" width="400"
+            style="border-style: solid;"></div>
 
     <h2>Interactive:</h2>
     <p>This is a very cool new feature that is just getting off the ground.  This would be a great project to jump in and help out on!</p>
@@ -112,6 +112,9 @@ for c in ['red', 'green', 'yellow', 'blue']:
     <h2>What's New?</h2>
     <p>
         <ul>
+            <li>Suspensions!  This may not mean a lot to you, but trust me its going to be big.  Suspensions provide the foundation for the asynchronous execution we need to build an interactive debugger, a smoother turtle module, enhanced urllib and other cool features.  For developers you should check out the time module and the suspensions.txt file under doc/.</li>
+            <li>Stub implementations of the standard library modules. You will now get an unimplemented exceptions rather than some other file not found error.</li>
+            <li>General cleanup and standardization of the code.  See the short description of the coding standards in the CONTRIBUTING file</li>
             <li>Loads of bugfixes: <a href="https://github.com/skulpt/skulpt/compare/0.9.2...0.9.4">see</a></li>
             <li><span style='font-family: "Consolas","Lucida Console","Monaco",monospace;'>slice()</span> function implemented. And improvements to list slicing.</li>
             <li><span style='font-family: "Consolas","Lucida Console","Monaco",monospace;'>string</span> and <span style='font-family: "Consolas","Lucida Console","Monaco",monospace;'>operator</span> module added.</li>
@@ -126,8 +129,10 @@ for c in ['red', 'green', 'yellow', 'blue']:
             <a href="https://github.com/mchat">Marie Chatfield</a>,
             <a href="https://github.com/isaacdontjelindell">Isaac Dontje Lindell</a>,
             <a href="https://github.com/jaspervdg">jaspervdg</a>,
-            <a href="https://github.com/Lalaland">Ethan Steinberg</a> and
-            <a href="https://github.com/Jeff-Tian">Jeff-Tian</a>
+            <a href="https://github.com/Lalaland">Ethan Steinberg</a>,
+            <a href="https://github.com/Jeff-Tian">Jeff-Tian</a>,
+            <a href="https://github.com/meredydd">Meredydd Luff</a> and
+            <a href="https://github.com/LeszekSwirski">Leszek Swirski</a>
         </p>
     </p>
 
@@ -191,6 +196,10 @@ for c in ['red', 'green', 'yellow', 'blue']:
     following gist shows how to include one of them in a page.
 
     <script src="https://gist.github.com/bnmnetp/20bd9105f11f2a164fc0.js"></script>
+
+    <h2>Customizing modules after import</h2>
+    <p>If you want to customize how a module behaves you can use the ``onAfterImport`` hook.  Here is a gist of how the trinket guys do it.</p>
+    <script src="https://gist.github.com/bzwheeler/8a5a833ee2a6a7d2c7ba.js"></script>
 
     <h2>License</h2>
 

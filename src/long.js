@@ -10,7 +10,9 @@
  */
 Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     base = Sk.builtin.asnum$(base);
-    if (!(this instanceof Sk.builtin.lng)) { return new Sk.builtin.lng(x, base); }
+    if (!(this instanceof Sk.builtin.lng)) {
+        return new Sk.builtin.lng(x, base);
+    }
 
     if (x === undefined) {
         this.biginteger = new Sk.builtin.biginteger(0);
@@ -58,7 +60,7 @@ Sk.builtin.lng.prototype.tp$hash = function () {
 };
 
 Sk.builtin.lng.prototype.tp$name = "long";
-Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('long', Sk.builtin.lng);
+Sk.builtin.lng.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("long", Sk.builtin.lng);
 
 //    Threshold to determine when types should be converted to long
 //Sk.builtin.lng.threshold$ = Sk.builtin.nmber.threshold$;
@@ -86,7 +88,9 @@ Sk.longFromStr = function (s, base) {
             }
             return new Sk.builtin.biginteger(s, base);
         },
-        biginteger = Sk.str2number(s, base, parser, function (x) { return x.negate(); }, "long");
+        biginteger = Sk.str2number(s, base, parser, function (x) {
+            return x.negate();
+        }, "long");
 
     return new Sk.builtin.lng(biginteger);
 };
@@ -157,13 +161,14 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
 Sk.builtin.lng.prototype.nb$inplace_subtract = Sk.builtin.lng.prototype.nb$subtract;
 
 Sk.builtin.lng.prototype.nb$multiply = function (other) {
+    var thisAsFloat;
     if (other instanceof Sk.builtin.bool) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
     if (other instanceof Sk.builtin.nmber) {
         if (other.skType === Sk.builtin.nmber.float$) {
-            var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
             return thisAsFloat.nb$multiply(other);
         }
         other = new Sk.builtin.lng(other.v);
@@ -223,13 +228,14 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
 Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
 
 Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
+    var thisAsFloat;
     if (other instanceof Sk.builtin.bool) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
     if (other instanceof Sk.builtin.nmber) {
         if (other.skType === Sk.builtin.nmber.float$) {
-            var thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
             return thisAsFloat.nb$floor_divide(other);
         }
     }
@@ -427,7 +433,9 @@ Sk.builtin.lng.prototype.nb$negative = function () {
     return new Sk.builtin.lng(this.biginteger.negate());
 };
 
-Sk.builtin.lng.prototype.nb$positive = function () { return this.clone(); };
+Sk.builtin.lng.prototype.nb$positive = function () {
+    return this.clone();
+};
 
 Sk.builtin.lng.prototype.nb$nonzero = function () {
     return this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) !== 0;
@@ -474,11 +482,11 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
 
 //tests fail if ===
 Sk.builtin.lng.prototype.__eq__ = function (me, other) {
-    return me.longCompare(other) == 0 && !(other instanceof Sk.builtin.none);
+    return me.longCompare(other) == 0 && !(other instanceof Sk.builtin.none); //jshint ignore:line
 };
 
 Sk.builtin.lng.prototype.__ne__ = function (me, other) {
-    return me.longCompare(other) != 0 || (other instanceof Sk.builtin.none);
+    return me.longCompare(other) != 0 || (other instanceof Sk.builtin.none); //jshint ignore:line
 };
 
 Sk.builtin.lng.prototype.__lt__ = function (me, other) {
@@ -506,9 +514,12 @@ Sk.builtin.lng.prototype.tp$str = function () {
 };
 
 Sk.builtin.lng.prototype.str$ = function (base, sign) {
-    if (sign === undefined) { sign = true; }
+    var work;
+    if (sign === undefined) {
+        sign = true;
+    }
 
-    var work = sign ? this.biginteger : this.biginteger.abs();
+    work = sign ? this.biginteger : this.biginteger.abs();
 
     if (base === undefined || base === 10) {
         return work.toString();

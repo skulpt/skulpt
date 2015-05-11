@@ -35,6 +35,7 @@ t = turtle.Turtle()
 wn.setup(800,800)
 
 t.speed(10)
+t.tracer(10,30)
 print "initial heading = ", t.heading()
 for i in range(10,361,10):
     t.left(10)
@@ -93,8 +94,8 @@ wn.exitonclick()
 <button onclick="runit('example1')" type="button">Run</button>
 </form>
 
-<canvas id="example1_canvas" height="500" width="800"
-	style="border-style: solid; display: none"></canvas>
+<div id="example1_canvas">
+</div>
 
 <pre id="example1_pre"></pre>
 
@@ -130,33 +131,15 @@ function runit(myDiv) {
     var prog = window.Cm.getValue();
     var mypre = document.getElementById(myDiv+"_pre");
     mypre.innerHTML = '';
-    Sk.canvas = myDiv+"_canvas";
-    // TurtleGraphics = { fadeOnExit: true };
-    var can = document.getElementById(Sk.canvas);
-    can.style.display = 'block';
-    if (can) {
-        can.width = can.width;
-        if (Sk.tg) {
-            Sk.tg.canvasInit = false;
-            Sk.tg.turtleList = [];
-        }
-    }
+
+    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'example1_canvas';
 
     Sk.pre = myDiv+"_pre";
     Sk.configure({ output:outf, read: builtinRead });
-	
-//	TurtleGraphics = {
-//		defaults: {
-//			animate: true,
-//			canvasID: Sk.canvas,
-//		}
-//	};
-   
-//    try {
-        Sk.importMainWithBody("<stdin>",false,prog);
-//    } catch (e) {
-//        alert(e);
-//    }
+
+    Sk.misceval.asyncToPromise(function() {
+      return Sk.importMainWithBody("<stdin>",false,prog,true);
+    });
 }
 </script>
 </body>

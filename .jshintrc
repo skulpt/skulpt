@@ -1,0 +1,40 @@
+{
+  /*** Globals ***/
+  // To ignore any custom global variables, enable the `predef` option and list
+  // your variables within it.
+
+  "predef": [
+    "Sk",
+    "goog",
+    "COMPILED",
+    "Promise"
+  ],
+
+  /*** Enforcing options ***/
+  // Set these to `true` to enforce, or `false` to relax.
+  "bitwise":      false,
+  "immed":        true,
+  "indent":       4,
+  "latedef":      true,
+  "nonew":        true,
+  "plusplus":     false,
+  "quotmark":     "double",
+  "undef":        true,
+  "strict":       false,
+
+  /*** Relaxing options ***/
+  // Set these to `true` to relax, or `false` to enforce.
+  "boss":         true,
+  "eqnull":       true,
+  "evil":         true,
+  "expr":         true,
+  "smarttabs":    true,
+  "sub":          true,
+  "validthis":    true,
+
+
+  /*** Environments ***/
+  // Set each environment that you're using to `true`.
+  "browser":      true,
+  "devel":        false
+}

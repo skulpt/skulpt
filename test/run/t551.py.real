@@ -1,0 +1,14 @@
+a.x = 42
+attr is a string, as it should be
+Getting y
+a.y = 41
+attr is a string, as it should be
+Getting z
+a.z = 43
+attr is a string, as it should be
+Intercepted attempt to set x to 0
+a.x = 42
+attr is a string, as it should be
+Intercepted attempt to set x to 43
+b.x = 42
+b.x = 43

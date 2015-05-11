@@ -1,0 +1,12 @@
+attr is a string, as it should be
+Intercepted attempt to set x to 0
+item is a string, as it should be
+Getting x
+a["x"] = 42
+Intercepted attempt to set x to 0
+Getting x
+b["x"] = 42
+Getting x
+Intercepted attempt to set x to 43
+Getting x
+b["x"] = 42

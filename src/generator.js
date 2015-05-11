@@ -11,28 +11,31 @@
  *
  * co_varnames and co_name come from generated code, must access as dict.
  */
-Sk.builtin.generator = function(code, globals, args, closure, closure2)
-{
-    if (!code) return; // ctor hack
+Sk.builtin.generator = function (code, globals, args, closure, closure2) {
+    var k;
+    var i;
+    if (!code) {
+        return;
+    } // ctor hack
     this.func_code = code;
     this.func_globals = globals || null;
-    this.gi$running = false;
-    this['gi$resumeat'] = 0;
-    this['gi$sentvalue'] = undefined;
-    this['gi$locals'] = {};
-    this['gi$cells'] = {};
-    if (args.length > 0)
-    {
+    this["gi$running"] = false;
+    this["gi$resumeat"] = 0;
+    this["gi$sentvalue"] = undefined;
+    this["gi$locals"] = {};
+    this["gi$cells"] = {};
+    if (args.length > 0) {
         // store arguments into locals because they have to be maintained
         // too. 'fast' var lookups are locals in generator functions.
-        for (var i = 0; i < code['co_varnames'].length; ++i)
-            this['gi$locals'][code['co_varnames'][i]] = args[i];
+        for (i = 0; i < code["co_varnames"].length; ++i) {
+            this["gi$locals"][code["co_varnames"][i]] = args[i];
+        }
     }
-    if (closure2 !== undefined)
-    {
+    if (closure2 !== undefined) {
         // todo; confirm that modification here can't cause problems
-        for (var k in closure2)
+        for (k in closure2) {
             closure[k] = closure2[k];
+        }
     }
     //print(JSON.stringify(closure));
     this.func_closure = closure;
@@ -42,56 +45,64 @@ goog.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
 
 Sk.builtin.generator.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
-Sk.builtin.generator.prototype.tp$iter = function()
-{
+Sk.builtin.generator.prototype.tp$iter = function () {
     return this;
 };
 
-Sk.builtin.generator.prototype.tp$iternext = function(yielded)
-{
-    this.gi$running = true;
-    if (yielded === undefined) yielded = null;
-    this['gi$sentvalue'] = yielded;
+Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
+    var ret;
+    var args;
+    var self = this;
+    this["gi$running"] = true;
+    if (yielded === undefined) {
+        yielded = null;
+    }
+    this["gi$sentvalue"] = yielded;
 
     // note: functions expect 'this' to be globals to avoid having to
     // slice/unshift onto the main args
-    var args = [ this ];
-    if (this.func_closure)
+    args = [ this ];
+    if (this.func_closure) {
         args.push(this.func_closure);
-    var ret = this.func_code.apply(this.func_globals, args); 
-    //print("ret", JSON.stringify(ret));
-    this.gi$running = false;
-    goog.asserts.assert(ret !== undefined);
-    if (ret !== Sk.builtin.none.none$)
-    {
-        // returns a pair: resume target and yielded value
-        this['gi$resumeat'] = ret[0];
-        ret = ret[1];
     }
-    else
-    {
-        // todo; StopIteration
-        return undefined;
-    }
-    //print("returning:", JSON.stringify(ret));
-    return ret;
+    ret = this.func_code.apply(this.func_globals, args);
+    return (function finishIteration(ret) {
+        if (ret instanceof Sk.misceval.Suspension) {
+            if (canSuspend) {
+                return new Sk.misceval.Suspension(finishIteration, ret);
+            } else {
+                ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+            }
+        }
+        //print("ret", JSON.stringify(ret));
+        self["gi$running"] = false;
+        goog.asserts.assert(ret !== undefined);
+        if (ret !== Sk.builtin.none.none$) {
+            // returns a pair: resume target and yielded value
+            self["gi$resumeat"] = ret[0];
+            ret = ret[1];
+        }
+        else {
+            // todo; StopIteration
+            return undefined;
+        }
+        //print("returning:", JSON.stringify(ret));
+        return ret;
+    })(ret);
 };
 
-Sk.builtin.generator.prototype['next'] = new Sk.builtin.func(function(self)
-{
-    return self.tp$iternext();
+Sk.builtin.generator.prototype["next"] = new Sk.builtin.func(function (self) {
+    return self.tp$iternext(true);
 });
 
-Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('generator', Sk.builtin.generator);
+Sk.builtin.generator.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("generator", Sk.builtin.generator);
 
-Sk.builtin.generator.prototype['$r'] = function()
-{
-    return new Sk.builtin.str("<generator object " + this.func_code['co_name'].v + ">");
+Sk.builtin.generator.prototype["$r"] = function () {
+    return new Sk.builtin.str("<generator object " + this.func_code["co_name"].v + ">");
 };
 
-Sk.builtin.generator.prototype['send'] = new Sk.builtin.func(function(self, value)
-{
-    return self.tp$iternext(value);
+Sk.builtin.generator.prototype["send"] = new Sk.builtin.func(function (self, value) {
+    return self.tp$iternext(true, value);
 });
 
 /**
@@ -99,20 +110,18 @@ Sk.builtin.generator.prototype['send'] = new Sk.builtin.func(function(self, valu
  * instance data. Useful in Javascript-implemented modules to implement
  * the __iter__ method.
  */
-Sk.builtin.makeGenerator = function(next, data)
-{
-  var gen = new Sk.builtin.generator(null,null,null);
-  gen.tp$iternext = next;
+Sk.builtin.makeGenerator = function (next, data) {
+    var key;
+    var gen = new Sk.builtin.generator(null, null, null);
+    gen.tp$iternext = next;
 
-  for (var key in data)
-  {
-    if (data.hasOwnProperty(key))
-    {
-      gen[key] = data[key];
+    for (key in data) {
+        if (data.hasOwnProperty(key)) {
+            gen[key] = data[key];
+        }
     }
-  }
 
-  return gen;
+    return gen;
 };
 goog.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);
 

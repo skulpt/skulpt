@@ -10,7 +10,9 @@ class TestCase:
     def __init__(self):
         self.numPassed = 0
         self.numFailed = 0
-
+        self.assertPassed = 0
+        self.assertFailed = 0
+        self.verbose = True
         self.tlist = []
         testNames = {}
         for name in dir(self):
@@ -23,14 +25,28 @@ class TestCase:
 
     def tearDown(self):
         pass
-
+    def cleanName(self,funcName):
+    # work around skulpts lack of an __name__ 
+        funcName = str(funcName)
+        funcName = funcName[13:]
+        funcName = funcName[:funcName.find('<')-3]
+        return funcName
+        
     def main(self):
 
         for func in self.tlist:
             try:
                 self.setup()
+                self.assertPassed = 0
+                self.assertFailed = 0
                 func()
                 self.tearDown()
+                if self.assertFailed == 0:
+                    self.numPassed += 1
+                else:
+                    self.numFailed += 1
+                    if self.verbose:
+                        print 'Tests failed in %s ' % self.cleanName(func)
             except:
                 self.appendResult('Error',None,None,None)
                 self.numFailed += 1
@@ -113,14 +129,16 @@ class TestCase:
             msg = 'Error'
         elif res:
             msg = 'Pass'
-            self.numPassed += 1
+            self.assertPassed += 1
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
-            self.numFailed += 1
+            print msg
+            self.assertFailed += 1
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print "ran %d tests, passed %d \n" % (self.numPassed+self.numFailed, self.numPassed)
+        print "Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
+                                               self.numPassed, self.numFailed)
 
 
 
@@ -128,5 +146,8 @@ def main():
     glob = globals()  # globals() still needs work
     for name in glob:
         if issubclass(glob[name],TestCase):
-            glob[name]().main()  
+            try:
+                glob[name]().main()  
+            except:
+                print("Uncaught Error in: ", name)
 
