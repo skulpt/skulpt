@@ -130,6 +130,10 @@ Sk.builtin.set.prototype.sq$length = function () {
     return this["v"].mp$length();
 };
 
+Sk.builtin.set.prototype.sq$contains = function(ob) {
+    return this["v"].sq$contains(ob);
+};
+
 Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, other) {
     // requires all items in self to not be in other
     var isIn;
