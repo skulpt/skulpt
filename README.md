@@ -26,6 +26,11 @@ We are coordinating sprints on some of the ideas below, builtins, stdlib, third 
 
 5. Expand and clean up the foreign function API.  This API is critical for implementing parts of the standard library.
 
+
+1. Currently builtin types (list, tuple, string, etc) are not subclassable.  Making the builtins subclassable would eliminate several known bugs in Skulpt.
+
+1. Implement decorators.  This would enable a whole bunch of pure python modules to be added to skulpt, plus allow us to add things like properties in a nice way.
+
 3. Do a better job of supporting Python3 semantics, but make
 Python2/Python3 behavior configurable with a single flag. Sk.python3 is
 already there for this purpose.  Another positive step in this direction would be to update our grammar to Python2.7.  Updating the grammar would allow us to add set literals, dictionary comprehensions, and other features present in 2.7.x and Python 3.3.x.  This would be an excellent project for a student interested in language design, parsing, and the use of abstract syntax trees.
@@ -33,12 +38,8 @@ already there for this purpose.  Another positive step in this direction would b
 4. Make fully workable, and expand support for DOM access as
 part of the standard library.
 
-1. Currently builtin types (list, tuple, string, etc) are not subclassable.  Making the builtins subclassable would eliminate several known bugs in Skulpt.
 
 1. Expand and improve overall language coverage.   Currently Skulpt does an excellent job of meeting the 80/20 rule.  We cover the vast majority of the language features used by the 80% (maybe even 90%) of the code.  But there are builtins that are not implemented at all, and there are builtins with only partial implementations.  
-
-1.  Change the execution model so that each line/step is interruptible.
-Currently, skulplt runs an entire python program from beginning to end.  We have an interrupt timer in place to prevent programs from running more than 30 seconds, during that thirty seconds, the browser is locked up.  Over time we have had various suggestions on how to restructure the main interpreter so that the program could be interrupted after each line.  This is an advanced project, that would need a lot of testing and a lot of Javascript skill to make sure that we do not sacrifice too much performance for the gain of interruptability.
 
 2.  Implement the hooks for a debugger. This may be a half step towards
 1 or may be in a completely different direction, but allowing students
