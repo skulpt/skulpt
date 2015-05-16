@@ -316,13 +316,13 @@ Compiler.prototype._checkSuspension = function(e) {
 
         e = e || {lineno: "currLineNo", col_offset: "currColNo"};
 
-        out ("if ($ret instanceof Sk.misceval.Suspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
+        out ("if ($ret && $ret.isSuspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
 
         this.u.doesSuspend = true;
         this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
 
     } else {
-        out ("if ($ret instanceof Sk.misceval.Suspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
+        out ("if ($ret && $ret.isSuspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
     }
 };
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
