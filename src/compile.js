@@ -927,7 +927,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
         }
     }
 
-    output +=  "try { $ret=susp.child.resume(); } catch(err) { if (!(err instanceof Sk.builtin.Exception)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; } }" +
+    output +=  "try { $ret=susp.child.resume(); } catch(err) { if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; } }" +
                 "};";
 
     output += "var $saveSuspension = function(child, filename, lineno, colno) {" +
@@ -1586,7 +1586,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.switchCode = "while(true){try{"
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.Exception)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
+    this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
     //
     // jump back to the handler so it can do the main actual work of the
@@ -2225,8 +2225,6 @@ Compiler.prototype.cmod = function (mod) {
         this.u.varDeclsCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date()}";
     }
 
-    this.u.varDeclsCode += "try {";
-
     this.u.varDeclsCode += "if ("+modf+".wakingSuspension!==undefined) { $wakeFromSuspension(); }" +
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
@@ -2245,8 +2243,8 @@ Compiler.prototype.cmod = function (mod) {
     this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.Exception)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }" +
-        " }catch(err){ if (err instanceof Sk.builtin.SystemExit && !Sk.throwSystemExit) { Sk.misceval.print_(err.toString() + '\\n'); return $loc; } else { throw err; } } });";
+    this.u.suffixCode = "}"
+    this.u.suffixCode += "}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those
