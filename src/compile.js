@@ -8,12 +8,14 @@ Sk.gensymcount = 0;
  * @param {string} filename
  * @param {SymbolTable} st
  * @param {number} flags
+ * @param {boolean=} canSuspend whether compiled code can suspend
  * @param {string=} sourceCodeForAnnotation used to add original source to listing if desired
  */
-function Compiler (filename, st, flags, sourceCodeForAnnotation) {
+function Compiler (filename, st, flags, canSuspend, sourceCodeForAnnotation) {
     this.filename = filename;
     this.st = st;
     this.flags = flags;
+    this.canSuspend = canSuspend;
     this.interactive = false;
     this.nestlevel = 0;
 
@@ -1430,7 +1432,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     // enter the new scope, and create the first block
     //
-    scopename = this.enterScope(coname, n, n.lineno, true);
+    scopename = this.enterScope(coname, n, n.lineno, this.canSuspend);
 
     isGenerator = this.u.ste.generator;
     hasFree = this.u.ste.hasFree;
@@ -2213,7 +2215,7 @@ Compiler.prototype.cprint = function (s) {
 Compiler.prototype.cmod = function (mod) {
     //print("-----");
     //print(Sk.astDump(mod));
-    var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0, true);
+    var modf = this.enterScope(new Sk.builtin.str("<module>"), mod, 0, this.canSuspend);
 
     var entryBlock = this.newBlock("module entry");
     this.u.prefixCode = "var " + modf + "=(function($modname){";
@@ -2279,13 +2281,14 @@ Compiler.prototype.cmod = function (mod) {
  * @param {string} source the code
  * @param {string} filename where it came from
  * @param {string} mode one of 'exec', 'eval', or 'single'
+ * @param {boolean=} canSuspend if the generated code supports suspension
  */
-Sk.compile = function (source, filename, mode) {
+Sk.compile = function (source, filename, mode, canSuspend) {
     //print("FILE:", filename);
     var cst = Sk.parse(filename, source);
     var ast = Sk.astFromParse(cst, filename);
     var st = Sk.symboltable(ast, filename);
-    var c = new Compiler(filename, st, 0, source); // todo; CO_xxx
+    var c = new Compiler(filename, st, 0, canSuspend, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
     var ret = c.result.join("");
     return {
