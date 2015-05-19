@@ -96,7 +96,7 @@ var $builtinmodule = function (name) {
                 Sk.builtin.assk$(utc ? date.getUTCMinutes() : date.getMinutes()), 
                 Sk.builtin.assk$(utc ? date.getUTCSeconds() : date.getSeconds()), 
                 Sk.builtin.assk$(((utc ? date.getUTCDay() : date.getDay()) + 6) % 7), // Want Monday == 0
-                Sk.builtin.assk$(Math.ceil((date - new Date(utc ? date.getUTCFullYear() : date.getFullYear(),0,1)) / 86400000)), // Want January, 1 == 1
+                Sk.builtin.assk$(getDayOfYear(date)), // Want January, 1 == 1
                 Sk.builtin.assk$(utc ? 0 : (dst(date) ? 1 : 0)) // 1 for DST /0 for non-DST /-1 for unknown
             ]
         );
