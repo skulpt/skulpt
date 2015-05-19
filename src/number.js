@@ -846,82 +846,81 @@ Sk.builtin.nmber.prototype.tp$str = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
-// <<<<<<< HEAD
-Sk.builtin.nmber.prototype.str$ = function(base, sign)
-{
-    var work;
-    var tmp;
-    var idx;
-    var pre;
+Sk.builtin.nmber.prototype.str$ = function (base, sign) {
     var post;
+    var pre;
+    var idx;
+    var tmp;
+    var work;
 
-	if (isNaN(this.v)) {
-		return "nan";
+    if (isNaN(this.v)) {
+        return "nan";
     }
 
-	if (sign === undefined) {
+    if (sign === undefined) {
         sign = true;
     }
 
-	if (this.v == Infinity) {
-		return "inf";
+    if (this.v == Infinity) {
+        return "inf";
     }
-	if (this.v == -Infinity && sign) {
-		return "-inf";
+    if (this.v == -Infinity && sign) {
+        return "-inf";
     }
-	if (this.v == -Infinity && !sign) {
-		return "inf";
+    if (this.v == -Infinity && !sign) {
+        return "inf";
     }
 
-	work = sign ? this.v : Math.abs(this.v);
+    work = sign ? this.v : Math.abs(this.v);
 
-	if (base === undefined || base === 10) {
-		if (this.skType == Sk.builtin.nmber.float$) {
-			tmp = work.toPrecision(12);
 
-		    // transform fractions with 4 or more leading zeroes into exponents
-		    idx = tmp.indexOf(".");
-		    pre = work.toString().slice(0,idx);
-		    post = work.toString().slice(idx);
-		    
+    if (base === undefined || base === 10) {
+        if (this.skType == Sk.builtin.nmber.float$) {
+            tmp = work.toPrecision(12);
+
+            // transform fractions with 4 or more leading zeroes into exponents
+            idx = tmp.indexOf(".");
+            pre = work.toString().slice(0, idx);
+            post = work.toString().slice(idx);
+
             if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
-			    if (tmp.length < 12) {
-			        tmp = work.toExponential();
+                if (tmp.length < 12) {
+                    tmp = work.toExponential();
                 }
-    			else {
-    			    tmp = work.toExponential(11);
+                else {
+                    tmp = work.toExponential(11);
                 }
-    		}
-
-            if (tmp.indexOf("e") < 0 && tmp.indexOf(".") >= 0) {
-    			while (tmp.charAt(tmp.length-1) == "0") {
-    				tmp = tmp.substring(0,tmp.length-1);
-    			}
-    			if (tmp.charAt(tmp.length-1) == ".") {
-    				tmp = tmp + "0";
-    			}
             }
 
-		    tmp = tmp.replace(new RegExp("\\.0+e"), "e", "i");
-		    // make exponent two digits instead of one (ie e+09 not e+9)
-		    tmp = tmp.replace(/(e[-+])([1-9])$/, "$10$2");
-		    // remove trailing zeroes before the exponent
-		    tmp = tmp.replace(/0+(e.*)/, "$1");
+            if (tmp.indexOf("e") < 0 && tmp.indexOf(".") >= 0) {
+                while (tmp.charAt(tmp.length-1) == "0") {
+                    tmp = tmp.substring(0,tmp.length-1);
+                }
+                if (tmp.charAt(tmp.length-1) == ".") {
+                    tmp = tmp + "0";
+                }
+            }
 
-		} else {
-			tmp = work.toString();
-		}
-	} else {
-		tmp = work.toString(base);
-	}
+            tmp = tmp.replace(new RegExp("\\.0+e"), "e", "i");
+            // make exponent two digits instead of one (ie e+09 not e+9)
+            tmp = tmp.replace(/(e[-+])([1-9])$/, "$10$2");
+            // remove trailing zeroes before the exponent
+            tmp = tmp.replace(/0+(e.*)/, "$1");
 
-	if (this.skType !== Sk.builtin.nmber.float$) {
-		return tmp;
-    } 
-	if (tmp.indexOf(".") < 0 && tmp.indexOf("E") < 0 && tmp.indexOf("e") < 0) {
-		tmp = tmp + ".0";
+        } else {
+            tmp = work.toString();
+        }
+    } else {
+        tmp = work.toString(base);
     }
-	return tmp;
+
+    if (this.skType !== Sk.builtin.nmber.float$) {
+        return tmp;
+    }
+    if (tmp.indexOf(".") < 0 && tmp.indexOf("E") < 0 && tmp.indexOf("e") < 0) {
+        tmp = tmp + ".0";
+    }
+    return tmp;
 };
 
 goog.exportSymbol("Sk.builtin.nmber", Sk.builtin.nmber);
