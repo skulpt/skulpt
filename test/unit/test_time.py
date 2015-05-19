@@ -24,7 +24,7 @@ class TimeTestCase(unittest.TestCase):
         self.assertTrue(long(time.mktime(time.localtime(self.t)))
                      == long(self.t))        
 
-    def test_sleep(self):
+    def _test_sleep(self):
         time.sleep(1.2)
 
 if __name__ == '__main__':
