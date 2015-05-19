@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python2.7
 
 #
@@ -91,6 +92,7 @@ Files = [
         'src/slice.js',
         'src/set.js',
         'src/module.js',
+        'src/structseq.js',  
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',
