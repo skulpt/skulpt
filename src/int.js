@@ -153,6 +153,9 @@ Sk.builtin.int_ = function (x, base) {
     if (x > Sk.builtin.nmber.threshold$ || x < -Sk.builtin.nmber.threshold$) {
         return new Sk.builtin.lng(x);
     }
+    if ((x > -1) && (x < 1)) {
+        x = 0;
+    }
     return new Sk.builtin.nmber(parseInt(x, base), Sk.builtin.nmber.int$);
 };
 Sk.builtin.int_.co_varnames = [ "base" ];
