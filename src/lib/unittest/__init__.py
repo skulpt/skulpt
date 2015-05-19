@@ -45,11 +45,11 @@ class TestCase:
                     self.numPassed += 1
                 else:
                     self.numFailed += 1
-                    if self.verbose:
-                        print 'Tests failed in %s ' % self.cleanName(func)
-            except:
-                self.appendResult('Error',None,None,None)
+                    print 'Tests failed in %s ' % self.cleanName(func)
+            except Exception as e:
+                self.assertFailed += 1
                 self.numFailed += 1
+                print 'Test threw exception in %s (%s)' % (self.cleanName(func), e)
         self.showSummary()
 
     def assertEqual(self, actual, expected, feedback=""):
@@ -125,15 +125,21 @@ class TestCase:
         self.appendResult(res,str(a)+' to be less than or equal to ',b,feedback)
 
     def appendResult(self,res,actual,expected,feedback):
-        if res == 'Error':
-            msg = 'Error'
-        elif res:
+        if res:
             msg = 'Pass'
             self.assertPassed += 1
         else:
             msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
             print msg
             self.assertFailed += 1
+
+    def fail(self, msg=None):
+        if msg is None:
+            msg = 'Fail'
+        else:
+            msg = 'Fail: ' + msg
+        print msg
+        self.assertFailed += 1
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
