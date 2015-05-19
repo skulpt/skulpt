@@ -133,6 +133,18 @@ class TestCase:
             print msg
             self.assertFailed += 1
 
+    def assertRaises(self,expectederror,code,feedback=""):
+        res = False
+        actualerror = "no exception"
+        try:
+            x = code()
+        except expectederror:
+            res = True
+        except Exception as inst:
+            res = False
+            actualerror = str(inst)
+        self.appendResult(res,str(expectederror()),actualerror,feedback)
+        
     def fail(self, msg=None):
         if msg is None:
             msg = 'Fail'
