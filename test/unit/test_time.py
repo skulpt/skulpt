@@ -17,10 +17,15 @@ class TimeTestCase(unittest.TestCase):
         time.clock()
 
     def test_conversions(self):
+        time.localtime(self.t)
+        time.asctime(time.localtime(self.t))
         self.assertTrue(time.ctime(self.t)
                      == time.asctime(time.localtime(self.t)))
         self.assertTrue(long(time.mktime(time.localtime(self.t)))
                      == long(self.t))        
+
+    def test_sleep(self):
+        time.sleep(1.2)
 
 if __name__ == '__main__':
     unittest.main()

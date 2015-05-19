@@ -11,8 +11,18 @@
 var $builtinmodule = function (name) {
     var mod = {};
 
+    var struct_time_fields = ['tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min', 'tm_sec', 'tm_wday', 'tm_yday', 'tm_isdst'];
+
+    var struct_time_f = Sk.builtin.make_structseq('time', 'struct_time', struct_time_fields);
+    mod.struct_time = struct_time_f;
+
     mod.time = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(new Date().getTime() / 1000, undefined);
+        var res = new Date().getTime();
+        if (performance && performance.now)
+        {
+            res = res + performance.now() % 1;
+        }
+        return Sk.builtin.assk$(res / 1000, undefined);
     });
 
     // This is an experimental implementation of time.sleep(), using suspensions
@@ -74,33 +84,45 @@ var $builtinmodule = function (name) {
         }
     }
 
-    function localtime(time) {
-        Sk.builtin.pyCheckArgs("localtime", arguments, 1, 1);
-        Sk.builtin.pyCheckType("time", "number", Sk.builtin.checkNumber(time));
-        var d = new Date();
-        if (typeof time !== "undefined" && !(time instanceof Sk.builtin.none))
-        {
-            var seconds = Sk.builtin.asnum$(time);
-            d.setTime(seconds * 1000);
-        }
+    function date_to_struct_time(date, utc) {
+        utc = utc || false;
         // y, m, d, hh, mm, ss, weekday, jday, dst
-        return new Sk.builtin.tuple(
+        return new struct_time_f(
             [
-                Sk.builtin.assk$(d.getFullYear()), 
-                Sk.builtin.assk$(d.getMonth() + 1), 
-                Sk.builtin.assk$(d.getDate()), 
-                Sk.builtin.assk$(d.getHours()), 
-                Sk.builtin.assk$(d.getMinutes()), 
-                Sk.builtin.assk$(d.getSeconds()), 
-                Sk.builtin.assk$((d.getDay() + 6) % 7), 
-                Sk.builtin.assk$(getDayOfYear(d)),
-                Sk.builtin.assk$(dst(d) ? 1 : 0) // 1 for DST /0 for non-DST /-1 for unknown
+                Sk.builtin.assk$(utc ? date.getUTCFullYear() : date.getFullYear()), 
+                Sk.builtin.assk$((utc ? date.getUTCMonth() : date.getMonth()) + 1), // want January == 1
+                Sk.builtin.assk$(utc ? date.getUTCDate() : date.getDate()), 
+                Sk.builtin.assk$(utc ? date.getUTCHours() : date.getHours()), 
+                Sk.builtin.assk$(utc ? date.getUTCMinutes() : date.getMinutes()), 
+                Sk.builtin.assk$(utc ? date.getUTCSeconds() : date.getSeconds()), 
+                Sk.builtin.assk$(((utc ? date.getUTCDay() : date.getDay()) + 6) % 7), // Want Monday == 0
+                Sk.builtin.assk$(Math.ceil((date - new Date(utc ? date.getUTCFullYear() : date.getFullYear(),0,1)) / 86400000)), // Want January, 1 == 1
+                Sk.builtin.assk$(utc ? 0 : (dst(date) ? 1 : 0)) // 1 for DST /0 for non-DST /-1 for unknown
             ]
         );
     }
 
-    mod.localtime = new Sk.builtin.func(function(secs) {
-        return localtime(secs);
+    function localtime_f(secs) {
+        Sk.builtin.pyCheckArgs("localtime", arguments, 0, 1);
+        var d = new Date();
+        if (secs) {
+            Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
+            var seconds = Sk.builtin.asnum$(secs);
+            d.setTime(seconds * 1000);
+        }
+        return date_to_struct_time(d);
+    }
+    mod.localtime = new Sk.builtin.func(localtime_f);
+
+    mod.gmtime = new Sk.builtin.func(function(secs) {
+        Sk.builtin.pyCheckArgs("localtime", arguments, 0, 1);
+        var d = new Date();
+        if (secs) {
+            Sk.builtin.pyCheckType("secs", "number", Sk.builtin.checkNumber(secs));
+            var seconds = Sk.builtin.asnum$(secs);
+            d.setTime(seconds * 1000);
+        }
+        return date_to_struct_time(d, true);
     });
 
     var monthnames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -130,9 +152,11 @@ var $builtinmodule = function (name) {
     by localtime() is used. Locale information is not used by asctime().    
     */
     function asctime(time) {
-        if (typeof time === "undefined" || time instanceof Sk.builtin.none)
+        if (!time || Sk.builtin.checkNone(time))
         {
-            time = localtime();
+            time = localtime_f();
+        } else if (!(time instanceof struct_time_f)) {
+            time = new struct_time_f(time);
         }
         if (time instanceof Sk.builtin.tuple && time.v.length == 9)
         {
@@ -150,7 +174,6 @@ var $builtinmodule = function (name) {
 
             return Sk.builtin.str(parts.join(" "));
         }
-        // structtime throw error
     }
 
     mod.asctime = new Sk.builtin.func(function(secs) {
@@ -163,7 +186,7 @@ var $builtinmodule = function (name) {
     asctime(localtime(secs)). Locale information is not used by ctime().
     */
     mod.ctime = new Sk.builtin.func(function(secs) {
-        return asctime(localtime(secs));
+        return asctime(localtime_f(secs));
     });
 
     /*
