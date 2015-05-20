@@ -2,7 +2,16 @@
     "fileExtensions": [ ".js", "jscs" ],
     "disallowMixedSpacesAndTabs": true,
     "validateIndentation": 4,
-
+    "requireCurlyBraces": [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "try",
+        "catch"
+    ],
+    "disallowNewlineBeforeBlockStatements": true,
     "excludeFiles": [
         "src/tokenize.js",
         "src/symtable.js",
