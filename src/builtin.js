@@ -128,7 +128,7 @@ Sk.builtin.asnum$nofloat = function (a) {
         a = a.toString();
     }
 
-    //	Sk.debugout("INITIAL: " + a);
+//	Sk.debugout("INITIAL: " + a);
 
     //	If not a float, great, just return this
     if (a.indexOf(".") < 0 && a.indexOf("e") < 0 && a.indexOf("E") < 0) {
@@ -147,16 +147,16 @@ Sk.builtin.asnum$nofloat = function (a) {
         mantissa = a;
     }
 
-    //	Sk.debugout("e:" + expon);
+//	Sk.debugout("e:" + expon);
 
     expon = parseInt(expon, 10);
 
-    //	Sk.debugout("MANTISSA:" + mantissa);
-    //	Sk.debugout("EXPONENT:" + expon);
+//	Sk.debugout("MANTISSA:" + mantissa);
+//	Sk.debugout("EXPONENT:" + expon);
 
     decimal = mantissa.indexOf(".");
 
-    //	Sk.debugout("DECIMAL: " + decimal);
+//	Sk.debugout("DECIMAL: " + decimal);
 
     //	Simplest case, no decimal
     if (decimal < 0) {
@@ -187,17 +187,17 @@ Sk.builtin.asnum$nofloat = function (a) {
         mantissa = mantissa.substr(0, decimal);
     }
 
-    //	Sk.debugout("NO DECIMAL: " + mantissa);
+//	Sk.debugout("NO DECIMAL: " + mantissa);
 
     decimal = decimal + expon;
 
-    //	Sk.debugout("MOVE DECIM: " + decimal);
+//	Sk.debugout("MOVE DECIM: " + decimal);
 
     while (decimal > mantissa.length) {
         mantissa += "0";
     }
 
-    //	Sk.debugout("PADDED    : " + mantissa);
+//	Sk.debugout("PADDED    : " + mantissa);
 
     if (decimal <= 0) {
         mantissa = 0;
@@ -205,8 +205,8 @@ Sk.builtin.asnum$nofloat = function (a) {
         mantissa = mantissa.substr(0, decimal);
     }
 
-    //	Sk.debugout("LENGTH: " + mantissa.length);
-    //	Sk.debugout("RETURN: " + mantissa);
+//	Sk.debugout("LENGTH: " + mantissa.length);
+//	Sk.debugout("RETURN: " + mantissa);
 
     return mantissa;
 };

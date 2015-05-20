@@ -375,8 +375,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
         namestr = "new Sk.builtin.str('" + modname + "')";
         finalcode += "\n" + co.funcname + "(" + namestr + ");";
 
-        //	if (Sk.debugCode)
-        //		Sk.debugout(finalcode);
+    //	if (Sk.debugCode)
+    //		Sk.debugout(finalcode);
 
         modlocs = goog.global["eval"](finalcode);
 

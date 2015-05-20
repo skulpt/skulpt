@@ -84,7 +84,7 @@ goog.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
 
 /**
  * @constructor
- * @extends Sk.builtin.BaseException
+ * @extends Sk.builtin.Exception
  * @param {...*} args
  */
 Sk.builtin.Exception = function (args) {
@@ -102,7 +102,7 @@ goog.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
 
 /**
  * @constructor
- * @extends Sk.builtin.Exception
+ * @extends Sk.builtin.StandardError
  * @param {...*} args
  */
 Sk.builtin.StandardError = function (args) {

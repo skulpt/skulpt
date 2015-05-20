@@ -74,7 +74,7 @@ Sk.builtins = {
     "quit"      : Sk.builtin.quit,
     "exit"      : Sk.builtin.quit,
 
-    // Functions below are not implemented
+// Functions below are not implemented
     "bytearray" : Sk.builtin.bytearray,
     "callable"  : Sk.builtin.callable,
     "complex"   : Sk.builtin.complex,
