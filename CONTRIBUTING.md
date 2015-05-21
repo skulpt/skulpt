@@ -14,6 +14,7 @@ This is the contribute.md of our project. Great to have you here. Here are a few
 * [Charles Severance](https://github.com/csev)
 * [Scott Graham](https://github.com/sgraham) -- although not active at the moment, Scott is the father of Skulpt
 
+
 ## Learn & listen
 
 This section includes ways to get started with your open source project. Include links to documentation and to different communication channels:
@@ -86,6 +87,36 @@ quickly revealed to you by the jshint program.
 Our Travis script will run jshint over all the source.  You should run jshint as well.  
 Many editors and IDEs do this automatically for you -- Atom, PyCharm, TextMate has a
 nice plugin called JSLintMate.  You can easily install [jshint](http://jshint.org) using the ``npm`` package manager that comes with [node](http://nodejs.org).
+
+
+## Committers
+
+The committers are people who are responsible for reviewing and approving pull requests .  These are 
+generally people who have been around the project for a while and have "proven" themselves by contributing
+good code and ideas to the Skulpt.  This list may change over time as people gain or lose interest in
+Skulpt.  If you would like to volunteer contact Brad.
+
+Although a lot of our testing, and checking for adherence to the style guidelines is done automatically
+the review process is generally as follows:
+
+1.  Look at the diffs for each file on github, if it is pretty obvious what they are doing then great.
+2.  Look at the tests provided with the PR and try to think if there are additional tests that would provide better coverage. If you think additional tests are needed
+then you should let the owner of the PR know and have them add more tests.  I think that all new PRs that are adding new features
+should be using the new unittest framework, not the old numbered framework.
+3.  Pull the the PR down to your local machine and run all the tests manually locally.  (Unless it is really trivial)
+4.  If the code looked a bit more complicated when you examined the diffs, then you should bring it up in your editor and look over the code in context and try to understand it better.  If there are 
+issues with how the code is written or if it is unclear about why something was done, then have that conversation with the owner of the PR.
+5.  Many of us have our own projects that exercise Skulpt to its limits. If you are particularly concerned about a PR then you may want to try out the built js files in your environment.
+6.  I think its always appropriate to raise questions and have a group conversation about anything that looks particularly problematic or risky.
+7.  With the new style unit tests, You should aks the submitter to file issues for tests that they comment out.  This will let us track completeness over time.
+ 
+The current group of committers is as follows:
+
+* Brad Miller  bnmnetp
+* Scott Rixner rixner
+* Albert-Jan   albertjan
+* Meredydd Luff meredydd
+* Leszek Swirski  LeszekSwirski 
 
 # Documentation
 
