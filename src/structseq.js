@@ -1,8 +1,14 @@
 Sk.builtin.structseq_types = {};
 
-Sk.builtin.make_structseq = function (module, name, fields) {
+Sk.builtin.make_structseq = function (module, name, fields, doc) {
     var nm = module + "." + name;
-    var flds = fields;
+    var flds = [];
+    var docs = [];
+    for (var key in fields)
+    {
+        flds.push(key);
+        docs.push(fields[key]);
+    }
 
     var cons = function structseq_constructor(args) {
         Sk.builtin.pyCheckArgs(nm, arguments, 1, 1);
@@ -32,7 +38,7 @@ Sk.builtin.make_structseq = function (module, name, fields) {
                 }
             }  else {
                 throw new Sk.builtin.TypeError("constructor requires a sequence");
-            } 
+            }
         }
 
         Sk.builtin.tuple.apply(this, arguments);
@@ -43,6 +49,7 @@ Sk.builtin.make_structseq = function (module, name, fields) {
     Sk.builtin.structseq_types[nm] = cons;
 
     goog.inherits(cons, Sk.builtin.tuple);
+    cons.prototype.__doc__ = doc;
     cons.prototype.tp$name = nm;
     cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
     cons.prototype.ob$type["$d"] = new Sk.builtin.dict([]);
@@ -54,13 +61,19 @@ Sk.builtin.make_structseq = function (module, name, fields) {
         return Sk.builtin.tuple.prototype.mp$subscript.call(self, index);
     });
 
-    function makeGetter(i) {
-        return function() {
-            return this.v[i];
-        };
+
+    function makeGetter(i, doc, tp) {
+        var x = i;
+        var f = new Sk.builtin.func(function(self) {
+            return self.v[x];
+        });
+        f.__doc__ = doc;
+        return f;
     }
+
     for(var i=0; i<flds.length; i++) {
         cons.prototype[flds[i]] = makeGetter;
+        cons.prototype.ob$type["$d"].mp$ass_subscript(flds[i], getter);
     }
 
     cons.prototype["$r"] = function () {
@@ -85,7 +98,18 @@ Sk.builtin.make_structseq = function (module, name, fields) {
         if (i >= 0) {
             this.v[i] = value;
         }
+<<<<<<< HEAD
     };
+=======
+    };
+    cons.prototype.tp$getattr = function (name) {
+        var i = flds.indexOf(name);
+        if (i >= 0)
+        {
+            return this.v[i];
+        }
+    };
+>>>>>>> Time module / structseq update
 
     return cons;
 };
