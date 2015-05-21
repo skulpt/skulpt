@@ -496,10 +496,83 @@ var $builtinmodule = function(name)
     }
 
     // namedtuple
-    mod.namedtuple = function namedtuple(typename, fieldnames) {
-        // verbose and rename are keyword args
-        throw new Sk.builtin.NotImplementedError("namedtuple is not implemented")
-    }
+    mod.namedtuples = {}
+
+    mod.namedtuple = function (name, fields) {
+        var nm = name.v;
+        var flds = fields.v;
+
+        var cons = function nametuple_constructor(args)
+        {
+            var o;
+            if (!(this instanceof mod.namedtuples[nm])) {
+                o = Object.create(mod.namedtuples[nm].prototype);
+                o.constructor.apply(o, arguments);
+                return o;
+            }
+            var it, i;
+            if (Object.prototype.toString.apply(args) === "[object Array]") {
+                this.v = args;
+            }
+            else if (args.tp$iter) {
+                if (args.v.length == flds.length)
+                {
+                    this.v = [];
+                    for (it = args.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                        this.v.push(i);
+                    }
+                } else {
+                    throw new Sk.builtin.TypeError(nm + "() takes a " + flds.length + "-sequence (" + args.v.length + "-sequence given)");
+                }
+            } else {
+                throw new Sk.builtin.TypeError("constructor requires a sequence");
+            }
+
+            Sk.builtin.tuple.apply(this, arguments);
+
+            this.__class__ = mod.namedtuples[nm];
+        };
+        mod.namedtuples[nm] = cons;
+
+        goog.inherits(cons, Sk.builtin.tuple);
+        cons.prototype.tp$name = nm;
+        cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, mod.namedtuples[nm]);
+        cons.prototype["$r"] = function () {
+            var ret;
+            var i;
+            var bits;
+            if (this.v.length === 0) {
+                return new Sk.builtin.str(nm + "()");
+            }
+            bits = [];
+            for (i = 0; i < this.v.length; ++i) {
+                bits[i] = flds[i] + "=" + Sk.misceval.objectRepr(this.v[i]).v;
+            }
+            ret = bits.join(", ");
+            if (this.v.length === 1) {
+                ret += ",";
+            }
+            return new Sk.builtin.str(nm + "(" + ret + ")");
+        };
+        cons.prototype.tp$getattr = function (name) {
+            var i = flds.indexOf(name);
+            if (i >= 0)
+            {
+                return this.v[i];
+            }
+            return undefined;
+        };
+        cons.prototype.tp$setattr = function (name, value) {
+            var i = flds.indexOf(name);
+            if (i >= 0)
+            {
+                this.v[i] = value;
+            }
+        };
+
+        return cons;
+    };
 
     return mod;
-}
+};
+
