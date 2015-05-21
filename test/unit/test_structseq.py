@@ -5,7 +5,7 @@ import time
 
 class StructSeqTest(unittest.TestCase):
 
-    def test_tuple(self):
+    def _test_tuple(self):
         t = time.gmtime()
         self.assertIsInstance(t, tuple)
         astuple = tuple(t)
@@ -111,6 +111,13 @@ class StructSeqTest(unittest.TestCase):
                 for step in indices[1:]:
                     self.assertEqual(list(t[start:stop:step]),
                                      L[start:stop:step])
+
+    def test_writability(self):
+        x = time.struct_time((1,2,3,4,5,6,7,8,9))
+        y = time.struct_time((9,8,7,6,5,4,3,2,1))
+        x.tm_mon = 30
+        self.assertEqual(x.tm_mon, 30)
+        self.assertEqual(y.tm_mon, 8)
 
 if __name__ == '__main__':
     unittest.main()
