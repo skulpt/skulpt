@@ -269,6 +269,25 @@ var $builtinmodule = function (name) {
     %Z  Time zone name (no characters if no time zone exists).   
     %%  A literal '%' character.         
     */
+    // accept2dyear
+    mod.accept2year = function accept2year() {
+        throw new Sk.builtin.NotImplementedError("accept2year is not implemented")
+    };
+
+    // strftime()
+    mod.strftime = function strftime() {
+        throw new Sk.builtin.NotImplementedError("strftime is not implemented")
+    };
+
+    // strptime()
+    mod.strptime = function strptime() {
+        throw new Sk.builtin.NotImplementedError("strptime is not implemented")
+    };
+
+    // tzset()
+    mod.tzset = function tzset() {
+        throw new Sk.builtin.NotImplementedError("tzset is not implemented")
+    };
 
     return mod;
 };
