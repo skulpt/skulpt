@@ -11,6 +11,8 @@
         "try",
         "catch"
     ],
+    "requireKeywordsOnNewLine": ["else"],
+    "requireSemicolons": true,
     "disallowNewlineBeforeBlockStatements": true,
     "excludeFiles": [
         "src/tokenize.js",
