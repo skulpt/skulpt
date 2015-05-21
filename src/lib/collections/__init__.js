@@ -299,5 +299,22 @@ var $builtinmodule = function(name)
         }
     });
 
+
+    // OrderedDict
+    mod.OrderedDict = function OrderedDict(items) {
+        throw new Sk.builtin.NotImplementedError("OrderedDict is not implemented")
+    }
+
+    // deque
+    mod.deque = function deque(iterable, maxlen) {
+        throw new Sk.builtin.NotImplementedError("deque is not implemented")
+    }
+
+    // namedtuple
+    mod.namedtuple = function namedtuple(typename, fieldnames) {
+        // verbose and rename are keyword args
+        throw new Sk.builtin.NotImplementedError("namedtuple is not implemented")
+    }
+
     return mod;
 }
