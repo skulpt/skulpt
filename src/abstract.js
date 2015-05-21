@@ -136,7 +136,6 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-    print(typeof(obj.constructor))
     switch (name) {
     case "USub":
         return obj.nb$negative ? obj.nb$negative : obj["__neg__"];
