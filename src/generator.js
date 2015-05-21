@@ -81,8 +81,7 @@ Sk.builtin.generator.prototype.tp$iternext = function (canSuspend, yielded) {
             // returns a pair: resume target and yielded value
             self["gi$resumeat"] = ret[0];
             ret = ret[1];
-        }
-        else {
+        } else {
             // todo; StopIteration
             return undefined;
         }
@@ -124,4 +123,3 @@ Sk.builtin.makeGenerator = function (next, data) {
     return gen;
 };
 goog.exportSymbol("Sk.builtin.makeGenerator", Sk.builtin.makeGenerator);
-

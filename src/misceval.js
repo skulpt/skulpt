@@ -88,7 +88,7 @@ Sk.misceval.asIndex = function (o) {
     if (idxfn) {
         ret = Sk.misceval.callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {
-            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " + 
+            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
                                            Sk.abstr.typeName(ret) + ")");
         }
         return Sk.builtin.asnum$(ret);
@@ -129,17 +129,14 @@ Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
         ihigh = Sk.misceval.asIndex(w) || 1e100;
         if (x === null) {
             Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
-        }
-        else {
+        } else {
             Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
         }
-    }
-    else {
+    } else {
         slice = new Sk.builtin.slice(v, w);
         if (x === null) {
             return Sk.abstr.objectDelItem(u, slice);
-        }
-        else {
+        } else {
             return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
         }
     }
@@ -162,8 +159,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     if (arg instanceof Sk.builtin.set) {
         // this is a Sk.builtin.set
         arg = arg.tp$iter().$obj;
-    }
-    else if (arg instanceof Sk.builtin.dict) {
+    } else if (arg instanceof Sk.builtin.dict) {
         // this is a Sk.builtin.list
         arg = Sk.builtin.dict.prototype["keys"].func_code(arg);
     }
@@ -171,8 +167,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     // shouldn't else if here as the above may output lists to arg.
     if (arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple) {
         return arg.v;
-    }
-    else if (arg.tp$iter !== undefined) {
+    } else if (arg.tp$iter !== undefined) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
         for (it = arg.tp$iter(), i = it.tp$iternext();
@@ -326,8 +321,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     if (op === "Is") {
         if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
             return (v.numberCompare(w) === 0) && (v.skType === w.skType);
-        }
-        else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
             return v.longCompare(w) === 0;
         }
 
@@ -337,8 +331,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     if (op === "IsNot") {
         if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
             return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
-        }
-        else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
 
@@ -387,8 +380,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         if (res != Sk.builtin.NotImplemented.NotImplemented$) {
             return res;
         }
-    }
-    else if (w[swapped_method]) {
+    } else if (w[swapped_method]) {
         res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
         if (res != Sk.builtin.NotImplemented.NotImplemented$) {
             return res;
@@ -400,20 +392,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         ret = Sk.builtin.asnum$(ret);
         if (op === "Eq") {
             return ret === 0;
-        }
-        else if (op === "NotEq") {
+        } else if (op === "NotEq") {
             return ret !== 0;
-        }
-        else if (op === "Lt") {
+        } else if (op === "Lt") {
             return ret < 0;
-        }
-        else if (op === "Gt") {
+        } else if (op === "Gt") {
             return ret > 0;
-        }
-        else if (op === "LtE") {
+        } else if (op === "LtE") {
             return ret <= 0;
-        }
-        else if (op === "GtE") {
+        } else if (op === "GtE") {
             return ret >= 0;
         }
     }
@@ -424,20 +411,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         ret = Sk.builtin.asnum$(ret);
         if (op === "Eq") {
             return ret === 0;
-        }
-        else if (op === "NotEq") {
+        } else if (op === "NotEq") {
             return ret !== 0;
-        }
-        else if (op === "Lt") {
+        } else if (op === "Lt") {
             return ret > 0;
-        }
-        else if (op === "Gt") {
+        } else if (op === "Gt") {
             return ret < 0;
-        }
-        else if (op === "LtE") {
+        } else if (op === "LtE") {
             return ret >= 0;
-        }
-        else if (op === "GtE") {
+        } else if (op === "GtE") {
             return ret <= 0;
         }
     }
@@ -494,35 +476,28 @@ Sk.misceval.objectRepr = function (v) {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
     if ((v === null) || (v instanceof Sk.builtin.none)) {
         return new Sk.builtin.str("None");
-    } // todo; these should be consts
-    else if (v === true) {
+    } else if (v === true) {
+        // todo; these should be consts
         return new Sk.builtin.str("True");
-    }
-    else if (v === false) {
+    } else if (v === false) {
         return new Sk.builtin.str("False");
-    }
-    else if (typeof v === "number") {
+    } else if (typeof v === "number") {
         return new Sk.builtin.str("" + v);
-    }
-    else if (!v["$r"]) {
+    } else if (!v["$r"]) {
         if (v.tp$name) {
             return new Sk.builtin.str("<" + v.tp$name + " object>");
         } else {
             return new Sk.builtin.str("<unknown>");
         }
-    }
-    else if (v.constructor === Sk.builtin.nmber) {
+    } else if (v.constructor === Sk.builtin.nmber) {
         if (v.v === Infinity) {
             return new Sk.builtin.str("inf");
-        }
-        else if (v.v === -Infinity) {
+        } else if (v.v === -Infinity) {
             return new Sk.builtin.str("-inf");
-        }
-        else {
+        } else {
             return v["$r"]();
         }
-    }
-    else {
+    } else {
         return v["$r"]();
     }
 };
@@ -595,8 +570,8 @@ Sk.misceval.isTrue = function (x) {
 goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
-Sk.misceval.print_ = function (x)   // this was function print(x)   not sure why...
-{
+Sk.misceval.print_ = function (x) {
+    // this was function print(x)   not sure why...
     var isspace;
     var s;
     if (Sk.misceval.softspace_) {
@@ -957,8 +932,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    }
-    else if (typeof func === "function") {
+    } else if (typeof func === "function") {
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
@@ -1014,8 +988,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         }
         //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
-    }
-    else {
+    } else {
         fcall = func.tp$call;
         if (fcall !== undefined) {
             if (varargseq) {

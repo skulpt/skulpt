@@ -56,16 +56,14 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     if (this["$d"]) {
         if (this["$d"].mp$lookup) {
             res = this["$d"].mp$lookup(new Sk.builtin.str(name));
-        }
-        else if (this["$d"].mp$subscript) {
+        } else if (this["$d"].mp$subscript) {
             try {
                 res = this["$d"].mp$subscript(new Sk.builtin.str(name));
             } catch (x) {
                 res = undefined;
             }
-        }
-        else if (typeof this["$d"] === "object") // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
-        {
+        } else if (typeof this["$d"] === "object") {
+            // todo; definitely the wrong place for this. other custom tp$getattr won't work on object -- bnm -- implemented custom __getattr__ in abstract.js
             res = this["$d"][name];
         }
         if (res !== undefined) {
@@ -96,8 +94,7 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
     // todo; lots o' stuff
     if (this["$d"].mp$ass_subscript) {
         this["$d"].mp$ass_subscript(new Sk.builtin.str(name), value);
-    }
-    else if (typeof this["$d"] === "object") {
+    } else if (typeof this["$d"] === "object") {
         this["$d"][name] = value;
     }
 };

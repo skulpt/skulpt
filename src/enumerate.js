@@ -20,8 +20,7 @@ Sk.builtin.enumerate = function (iterable, start) {
         } else {
             start = Sk.misceval.asIndex(start);
         }
-    }
-    else {
+    } else {
         start = 0;
     }
 

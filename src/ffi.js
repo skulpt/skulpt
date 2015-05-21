@@ -17,22 +17,18 @@ Sk.ffi.remapToPy = function (obj) {
             arr.push(Sk.ffi.remapToPy(obj[i]));
         }
         return new Sk.builtin.list(arr);
-    }
-    else if (typeof obj === "object") {
+    } else if (typeof obj === "object") {
         kvs = [];
         for (k in obj) {
             kvs.push(Sk.ffi.remapToPy(k));
             kvs.push(Sk.ffi.remapToPy(obj[k]));
         }
         return new Sk.builtin.dict(kvs);
-    }
-    else if (typeof obj === "string") {
+    } else if (typeof obj === "string") {
         return new Sk.builtin.str(obj);
-    }
-    else if (typeof obj === "number") {
+    } else if (typeof obj === "number") {
         return new Sk.builtin.nmber(obj, undefined);
-    }
-    else if (typeof obj === "boolean") {
+    } else if (typeof obj === "boolean") {
         return obj;
     }
     goog.asserts.fail("unhandled remap type " + typeof(obj));
@@ -62,24 +58,19 @@ Sk.ffi.remapToJs = function (obj) {
             ret[kAsJs] = Sk.ffi.remapToJs(v);
         }
         return ret;
-    }
-    else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
+    } else if (obj instanceof Sk.builtin.list || obj instanceof Sk.builtin.tuple) {
         ret = [];
         for (i = 0; i < obj.v.length; ++i) {
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         }
         return ret;
-    }
-    else if (obj instanceof Sk.builtin.nmber) {
+    } else if (obj instanceof Sk.builtin.nmber) {
         return Sk.builtin.asnum$(obj);
-    }
-    else if (obj instanceof Sk.builtin.lng) {
+    } else if (obj instanceof Sk.builtin.lng) {
         return Sk.builtin.asnum$(obj);
-    }
-    else if (typeof obj === "number" || typeof obj === "boolean") {
+    } else if (typeof obj === "number" || typeof obj === "boolean") {
         return obj;
-    }
-    else {
+    } else {
         return obj.v;
     }
 };
