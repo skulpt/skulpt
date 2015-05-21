@@ -30,7 +30,6 @@ Sk.quickSort = function (arr, cmp, key, reverse) {
         var tmp;
         var piv = arr[pivot];
 
-//		swap pivot, end-1
         tmp = arr[pivot];
         arr[pivot] = arr[end - 1];
         arr[end - 1] = tmp;
@@ -43,7 +42,6 @@ Sk.quickSort = function (arr, cmp, key, reverse) {
                 cmpresult = Sk.misceval.callsim(cmp, arr[ix], piv);
             }
             if (Sk.builtin.asnum$(cmpresult) < 0) {
-//				swap store, ix
                 tmp = arr[store];
                 arr[store] = arr[ix];
                 arr[ix] = tmp;
@@ -51,7 +49,6 @@ Sk.quickSort = function (arr, cmp, key, reverse) {
             }
         }
 
-//		swap end-1, store
         tmp = arr[end - 1];
         arr[end - 1] = arr[store];
         arr[store] = tmp;
