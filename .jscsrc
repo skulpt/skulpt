@@ -14,6 +14,9 @@
     "requireKeywordsOnNewLine": ["else"],
     "requireSemicolons": true,
     "disallowNewlineBeforeBlockStatements": true,
+    "disallowKeywordsOnNewLine": [
+        "else"
+    ]
     "excludeFiles": [
         "src/tokenize.js",
         "src/symtable.js",
