@@ -505,7 +505,9 @@ Sk.builtin.ExternalError = function (nativeError, args) {
     // but save a reference to the real thing for Javascript consumption
     args = Array.prototype.slice.call(arguments);
     this.nativeError = args[0];
-    args[0] = ""+args[0];
+    if (!(args[0] instanceof Sk.builtin.str)) {
+        args[0] = ""+args[0];
+    }
     Sk.builtin.StandardError.apply(this, args);
 };
 goog.inherits(Sk.builtin.ExternalError, Sk.builtin.StandardError);
