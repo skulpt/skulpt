@@ -444,7 +444,9 @@ var $builtinmodule = function (name) {
 
     function strptime_f()
     {
-        Sk.builtin.pyCheckArgs("strptime", arguments, 1, 2);        
+        Sk.builtin.pyCheckArgs("strptime", arguments, 1, 2);   
+
+        throw new NotImplementedError("time.strptime() is not yet implemented");
     }
 
     mod.strptime = new Sk.builtin.func(strptime_f);
