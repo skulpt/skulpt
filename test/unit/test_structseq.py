@@ -112,12 +112,12 @@ class StructSeqTest(unittest.TestCase):
                     self.assertEqual(list(t[start:stop:step]),
                                      L[start:stop:step])
 
-    def test_writability(self):
+    def _test_writability(self):
+        def change(s):
+            s.tm_mon = 30
+
         x = time.struct_time((1,2,3,4,5,6,7,8,9))
-        y = time.struct_time((9,8,7,6,5,4,3,2,1))
-        x.tm_mon = 30
-        self.assertEqual(x.tm_mon, 30)
-        self.assertEqual(y.tm_mon, 8)
+        self.assertRaises(AttributeError, lambda: change(x))
 
 if __name__ == '__main__':
     unittest.main()

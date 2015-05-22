@@ -63,7 +63,9 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
     cons.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
         return Sk.builtin.tuple.prototype.mp$subscript.call(self, index);
     });
-
+    cons.prototype.__reduce__ = new Sk.builtin.func(function (self) {
+        return new Sk.builtin.str("oh no");
+    });
 
     function makeGetter(i, doc, tp) {
         var x = i;
@@ -99,17 +101,16 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
     cons.prototype.tp$setattr = function (name, value) {
-        var i = flds.indexOf(name);
-        if (i >= 0)
-        {
-            this.v[i] = value;
-        }
+        throw new Sk.builtin.AttributeError("readonly property");
     }; 
+
     cons.prototype.tp$getattr = function (name) {
         var i = flds.indexOf(name);
         if (i >= 0)
         {
             return this.v[i];
+        } else {
+            return  Sk.builtin.object.prototype.GenericGetAttr(name);
         }
     };      
 
