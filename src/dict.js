@@ -386,6 +386,33 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.list(ret);
 });
 
+Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
+    var k;
+    var iter;
+
+    for (iter = self.tp$iter(), k = iter.tp$iternext();
+         k !== undefined;
+         k = iter.tp$iternext()) {
+        self.mp$del_subscript(k);
+    }
+});
+
+Sk.builtin.dict.prototype["setdefault"] = new Sk.builtin.func(function (self, key, default_) {
+    try
+    {
+        return self.mp$subscript(key);
+    }
+    catch (e)
+    {
+        if (default_ === undefined)
+        {
+            default_ = Sk.builtin.none.none$;
+        }
+        self.mp$ass_subscript(key, default_);
+        return default_;
+    }
+});
+
 Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
