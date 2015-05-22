@@ -45,14 +45,15 @@ var $builtinmodule = function (name) {
         return ((year % 100) != 0 || (year % 400) == 0);
     };
 
-    function getDayOfYear(date) {
+    function getDayOfYear(date,utc) {
+        utc = utc || false;
         var dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-        var mn = date.getMonth();
-        var dn = date.getDate();
+        var mn = utc ? date.getUTCMonth() : date.getMonth();
+        var dn = utc ? date.getUTCDate() : date.getDate();
         var dayOfYear = dayCount[mn] + dn;
-        if(mn > 1 && isLeapYear(date.getFullYear())) dayOfYear++;
+        if(mn > 1 && isLeapYear(utc ? date.getUTCFullYear() : date.getFullYear())) dayOfYear++;
         return dayOfYear;
-    };
+    }
 
     function stdTimezoneOffset() {
         var jan = new Date(2002, 0, 1);
@@ -96,7 +97,7 @@ var $builtinmodule = function (name) {
                 Sk.builtin.assk$(utc ? date.getUTCMinutes() : date.getMinutes()), 
                 Sk.builtin.assk$(utc ? date.getUTCSeconds() : date.getSeconds()), 
                 Sk.builtin.assk$(((utc ? date.getUTCDay() : date.getDay()) + 6) % 7), // Want Monday == 0
-                Sk.builtin.assk$(getDayOfYear(date)), // Want January, 1 == 1
+                Sk.builtin.assk$(getDayOfYear(date, utc)), // Want January, 1 == 1
                 Sk.builtin.assk$(utc ? 0 : (dst(date) ? 1 : 0)) // 1 for DST /0 for non-DST /-1 for unknown
             ]
         );
