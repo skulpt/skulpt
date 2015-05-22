@@ -28,7 +28,7 @@ Sk.abstr.unop_type_error = function (v, name) {
         uop = {
             "UAdd"  : "+",
             "USub"  : "-",
-            "Inver": "~"
+            "Invert": "~"
         }[name];
 
     throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
@@ -136,7 +136,6 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-
     switch (name) {
     case "USub":
         return obj.nb$negative ? obj.nb$negative : obj["__neg__"];
