@@ -35,6 +35,8 @@ class TestCase:
     def main(self):
 
         for func in self.tlist:
+            if self.verbose:
+                print 'Running %s' % self.cleanName(func)
             try:
                 self.setup()
                 self.assertPassed = 0
@@ -56,7 +58,7 @@ class TestCase:
         res = actual==expected
         self.appendResult(res,str(actual)+' to be equal to ',expected, feedback)
 
-    def assertNotEqual(actual, expected, feedback=""):
+    def assertNotEqual(self, actual, expected, feedback=""):
         res = actual != expected
         self.appendResult(res,str(actual)+' to not equal ',expected,feedback)
 
@@ -160,12 +162,14 @@ class TestCase:
 
 
 
-def main():
+def main(verbose=False):
     glob = globals()  # globals() still needs work
     for name in glob:
         if issubclass(glob[name],TestCase):
             try:
-                glob[name]().main()  
+                tc = glob[name]()
+                tc.verbose = verbose
+                tc.main()
             except:
                 print("Uncaught Error in: ", name)
 
