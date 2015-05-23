@@ -733,6 +733,19 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
     return ret;
 };
 
+Sk.builtin.setattr = function setattr (obj, name, default_) {
+    var ret;
+    Sk.builtin.pyCheckArgs("setattr", arguments, 2, 3);
+    if (!Sk.builtin.checkString(name)) {
+        throw new Sk.builtin.TypeError("attribute name must be string");
+    }
+    if (obj.tp$setattr) {
+        obj.tp$setattr(name.v, default_);
+    } else {
+        throw new Sk.builtin.AttributeError("object has no attribute " + name.v);
+    }
+};
+
 Sk.builtin.raw_input = function (prompt) {
     var x, resolution, susp;
 
