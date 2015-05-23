@@ -100,15 +100,12 @@ Although a lot of our testing, and checking for adherence to the style guideline
 the review process is generally as follows:
 
 1.  Look at the diffs for each file on github, if it is pretty obvious what they are doing then great.
-2.  Look at the tests provided with the PR and try to think if there are additional tests that would provide better coverage. If you think additional tests are needed
-then you should let the owner of the PR know and have them add more tests.  I think that all new PRs that are adding new features
-should be using the new unittest framework, not the old numbered framework.
+2.  Look at the tests provided with the PR and try to think if there are additional tests that would provide better coverage. If you think additional tests are needed then you should let the owner of the PR know and have them add more tests. All new PRs that are adding new features should be using the new unittest framework, not the old numbered framework.
 3.  Pull the the PR down to your local machine and run all the tests manually locally.  (Unless it is really trivial)
-4.  If the code looked a bit more complicated when you examined the diffs, then you should bring it up in your editor and look over the code in context and try to understand it better.  If there are 
-issues with how the code is written or if it is unclear about why something was done, then have that conversation with the owner of the PR.
+4.  If the code looked a bit more complicated when you examined the diffs, then you should bring it up in your editor and look over the code in context and try to understand it better.  If there are issues with how the code is written or if it is unclear about why something was done, then have that conversation with the owner of the PR.
 5.  Many of us have our own projects that exercise Skulpt to its limits. If you are particularly concerned about a PR then you may want to try out the built js files in your environment.
-6.  I think its always appropriate to raise questions and have a group conversation about anything that looks particularly problematic or risky.
-7.  With the new style unit tests, You should aks the submitter to file issues for tests that they comment out.  This will let us track completeness over time.
+6.  It is always appropriate to raise questions and have a group conversation about anything that looks particularly problematic or risky.
+7.  With the new style unit tests, You should ask the submitter to file issues for tests that they comment out.  This will let us track completeness over time.  Not every test needs its own issue.  Something like 'when blah feature is added enable  tests x,y,z in foo_test.py' should work.
  
 The current group of committers is as follows:
 
@@ -117,6 +114,7 @@ The current group of committers is as follows:
 * Albert-Jan   albertjan
 * Meredydd Luff meredydd
 * Leszek Swirski  LeszekSwirski 
+* Ben Wheeler  bzwheeler
 
 # Documentation
 
