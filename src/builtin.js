@@ -733,16 +733,16 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
     return ret;
 };
 
-Sk.builtin.setattr = function setattr (obj, name, default_) {
+Sk.builtin.setattr = function setattr (obj, name, value) {
     var ret;
-    Sk.builtin.pyCheckArgs("setattr", arguments, 2, 3);
+    Sk.builtin.pyCheckArgs("setattr", arguments, 3, 3);
     if (!Sk.builtin.checkString(name)) {
         throw new Sk.builtin.TypeError("attribute name must be string");
     }
     if (obj.tp$setattr) {
-        obj.tp$setattr(name.v, default_);
+        obj.tp$setattr(Sk.ffi.remapToJs(name), value);
     } else {
-        throw new Sk.builtin.AttributeError("object has no attribute " + name.v);
+        throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
     }
 };
 
