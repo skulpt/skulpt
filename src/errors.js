@@ -317,8 +317,6 @@ goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
  * @extends Sk.builtin.BaseException
  * @param {...*} args
  *
- * Exception thrown when external flag is set and suspension is running 
- * into this specific check
  */
 Sk.builtin.KeyboardInterrupt = function (args) {
     var o;
@@ -327,11 +325,12 @@ Sk.builtin.KeyboardInterrupt = function (args) {
         o.constructor.apply(o, arguments);
         return o;
     }
-    Sk.builtin.Exception.apply(this, arguments);
+    Sk.builtin.BaseException.apply(this, arguments);
 };
 goog.inherits(Sk.builtin.KeyboardInterrupt, Sk.builtin.BaseException);
 Sk.builtin.KeyboardInterrupt.prototype.tp$name = "KeyboardInterrupt";
 goog.exportSymbol("Sk.builtin.KeyboardInterrupt", Sk.builtin.KeyboardInterrupt);
+
 /**
  * @constructor
  * @extends Sk.builtin.BaseException
