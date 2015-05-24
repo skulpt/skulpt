@@ -35,6 +35,8 @@ class TestCase:
     def main(self):
 
         for func in self.tlist:
+            if self.verbose:
+                print 'Running %s' % self.cleanName(func)
             try:
                 self.setup()
                 self.assertPassed = 0
@@ -56,7 +58,7 @@ class TestCase:
         res = actual==expected
         self.appendResult(res,str(actual)+' to be equal to ',expected, feedback)
 
-    def assertNotEqual(actual, expected, feedback=""):
+    def assertNotEqual(self, actual, expected, feedback=""):
         res = actual != expected
         self.appendResult(res,str(actual)+' to not equal ',expected,feedback)
 
@@ -129,21 +131,30 @@ class TestCase:
             msg = 'Pass'
             self.assertPassed += 1
         else:
-            msg = 'Fail: expected %s  %s ' % (str(actual),str(expected)) + feedback
+            msg = 'Fail: expected %s got %s ' % (str(actual),str(expected)) + feedback
             print msg
             self.assertFailed += 1
 
-    def assertRaises(self,expectederror,code,feedback=""):
+    def assertRaises(self, exception, callable=None, *args, **kwds):
+        # with is currently not supported hence we just try and catch
+        if callable is None:
+            raise NotImplementedError("assertRaises does currently not support assert contexts")
+        if kwds:
+            raise NotImplementedError("assertRaises does currently not support **kwds")
+
         res = False
-        actualerror = "no exception"
+        actualerror = str(exception())
         try:
-            x = code()
-        except expectederror:
+            callable(*args)
+        except exception as ex:
             res = True
         except Exception as inst:
-            res = False
             actualerror = str(inst)
-        self.appendResult(res,str(expectederror()),actualerror,feedback)
+            print("ACT = ", actualerror, str(exception()))
+        else:
+            actualerror = "No Error"
+
+        self.appendResult(res, str(exception()), actualerror, "")
         
     def fail(self, msg=None):
         if msg is None:
@@ -160,12 +171,14 @@ class TestCase:
 
 
 
-def main():
+def main(verbose=False):
     glob = globals()  # globals() still needs work
     for name in glob:
         if issubclass(glob[name],TestCase):
             try:
-                glob[name]().main()  
+                tc = glob[name]()
+                tc.verbose = verbose
+                tc.main()
             except:
                 print("Uncaught Error in: ", name)
 
