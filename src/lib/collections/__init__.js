@@ -456,17 +456,11 @@ var $builtinmodule = function (name) {
     mod.namedtuples = {};
 
     mod.namedtuple = function (name, fields) {
-        var nm = name.v;
-        var flds;
-        // fields could be a tuple or a string
-        if (fields instanceof Sk.builtin.tuple) {
-            flds = [];
-            for (it = fields.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                flds.push(i.v);
-            }
+        var nm = Sk.ffi.remapToJs(name);
+        var flds = Sk.ffi.remapToJs(fields);
 
-        } else {
-            flds = fields.v.split(/\s+/);
+        if (typeof(flds) === 'string') {
+            flds = flds.split(/\s+/);
         }
 
         var cons = function nametuple_constructor() {
