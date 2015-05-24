@@ -160,7 +160,7 @@ Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     var wl;
     var vl;
     var v;
-    if (!w.__class__ || w.__class__ != Sk.builtin.tuple) {
+    if (!w.__class__ || !Sk.builtin.isinstance(w, Sk.builtin.tuple)) {
         // shortcuts for eq/not
         if (op === "Eq") {
             return false;

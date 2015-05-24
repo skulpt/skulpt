@@ -33,8 +33,7 @@ Sk.builtin.set.prototype.__doc__ = new Sk.builtin.str("set() -> new empty set ob
 Sk.builtin.set.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("set", Sk.builtin.set);
 
 Sk.builtin.set.prototype.set_iter_ = function () {
-    var ret = Sk.builtin.dict.prototype["keys"].func_code(this["v"]);
-    return ret.tp$iter();
+    return this["v"].tp$iter();
 };
 
 Sk.builtin.set.prototype.set_reset_ = function () {
@@ -134,6 +133,10 @@ Sk.builtin.set.prototype.tp$richcompare = function (w, op) {
 Sk.builtin.set.prototype.tp$iter = Sk.builtin.set.prototype.set_iter_;
 Sk.builtin.set.prototype.sq$length = function () {
     return this["v"].mp$length();
+};
+
+Sk.builtin.set.prototype.sq$contains = function(ob) {
+    return this["v"].sq$contains(ob);
 };
 
 Sk.builtin.set.prototype["isdisjoint"] = new Sk.builtin.func(function (self, other) {

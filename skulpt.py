@@ -93,6 +93,7 @@ Files = [
         'src/set.js',
         'src/print.js',
         'src/module.js',
+        'src/structseq.js',
         'src/generator.js',
         'src/file.js',
         'src/ffi.js',

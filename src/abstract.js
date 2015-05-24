@@ -28,7 +28,7 @@ Sk.abstr.unop_type_error = function (v, name) {
         uop = {
             "UAdd"  : "+",
             "USub"  : "-",
-            "Inver": "~"
+            "Invert": "~"
         }[name];
 
     throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
@@ -136,7 +136,6 @@ Sk.abstr.uoNameToSlotFunc_ = function (obj, name) {
     if (obj === null) {
         return undefined;
     }
-
     switch (name) {
     case "USub":
         return obj.nb$negative ? obj.nb$negative : obj["__neg__"];
@@ -242,12 +241,6 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     }
 
     if (a.constructor === Sk.builtin.lng) {
-        //      if (b.constructor == Sk.builtin.nmber)
-        //          if (b.skType == Sk.builtin.nmber.float$) {
-        //              var tmp = new Sk.builtin.nmber(a.tp$str(), Sk.builtin.nmber.float$);
-        //              return [tmp, b];
-        //          } else
-        //              return [a, b.v];
         return [a, b];
     } else if (a.constructor === Sk.builtin.nmber && b.constructor === Sk.builtin.complex) {
         // special case of upconverting nmber and complex

@@ -455,6 +455,10 @@ Sk.builtin.lng.prototype.nb$negative = function () {
     return new Sk.builtin.lng(this.biginteger.negate());
 };
 
+Sk.builtin.lng.prototype.nb$invert = function () {
+    return new Sk.builtin.lng(this.biginteger.not());
+};
+
 Sk.builtin.lng.prototype.nb$positive = function () {
     return this.clone();
 };
