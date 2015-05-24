@@ -113,10 +113,6 @@ Parser.prototype.addtoken = function (type, value, context) {
                     && states[state][0][0] === 0
                     && states[state][0][1] === state) // states[state] == [(0, state)])
                 {
-                    if(tp.node.type === Sk.ParseTables.sym.import_stmt) {
-                        // t === 303
-                        this.future_hack();
-                    }
                     this.pop();
                     //print("in after pop:"+JSON.stringify(states[state]) + ":state:"+state+":"+JSON.stringify(states[state]));
                     if (this.stack.length === 0) {
@@ -150,10 +146,6 @@ Parser.prototype.addtoken = function (type, value, context) {
         if (findInDfa(arcs, [0, tp.state])) {
             // an accepting state, pop it and try somethign else
             //print("WAA");
-            if(tp.node.type === Sk.ParseTables.sym.import_stmt) {
-                // t === 303
-                this.future_hack();
-            }
             this.pop();
             if (this.stack.length === 0) {
                 throw new Sk.builtin.ParseError("too much input", this.filename);
@@ -166,66 +158,6 @@ Parser.prototype.addtoken = function (type, value, context) {
     }
 };
 
-Parser.prototype.future_hack = function() {
-    function CHILD (n, i) {
-        goog.asserts.assert(n !== undefined);
-        goog.asserts.assert(i !== undefined);
-        return n.children[i];
-    }
-
-    function NCH (n) {
-        goog.asserts.assert(n !== undefined);
-        if (n.children === null) {
-            return 0;
-        }
-        return n.children.length;
-    }
-
-    var n = this.stack[this.stack.length -1].node;
-    var ch, cch, i;
-
-    /* from __future__ import ..., must have at least 4 children */
-    n = CHILD(n, 0); // unpack first object
-    if(NCH(n) < 4) {
-        return; // nothing todo here
-    }
-
-    // from
-    ch = CHILD(n, 0);
-    if(ch.value !== "from") {
-        return;
-    }
-
-    // __future__
-    ch = CHILD(n, 1);
-    if(NCH(ch) === 1 && typeof CHILD(ch, 0).value === "string" && CHILD(ch, 0).value !==  "__future__") {
-        return;
-    }
-
-    // check imported names
-    ch = CHILD(n, 3);
-    /* ch can be a star, a parenthesis or import_as_names */
-    if (ch.type == Sk.Tokenizer.Tokens.T_STAR)
-        return;
-    if (ch.type == Sk.Tokenizer.Tokens.T_LPAR)
-        ch = CHILD(n, 4);
-
-    /* iterate over flags and check for with, print and unicode */
-    for(i = 0; i < NCH(ch); i += 2) {
-        cch = CHILD(ch, i);
-        if(NCH(cch) >= 1 && CHILD(cch, 0).type === Sk.Tokenizer.Tokens.T_NAME) {
-            var str_ch = CHILD(cch, 0).value;
-            if(str_ch === Parser.FUTURE_PRINT_FUNCTION) {
-                this.p_flags |= Parser.CO_FUTURE_PRINT_FUNCTION;
-            } else if (str_ch === Parser.FUTURE_UNICODE_LITERALS) {
-                this.p_flags |= Parser.CO_FUTURE_UNICODE_LITERALS;
-            } else if (str_ch === Parser.FUTURE_WITH_STATEMENT) {
-                this.p_flags |= Parser.CO_FUTURE_WITH_STATEMENT;
-            }
-        }
-    }
-};
-
 // turn a token into a label
 Parser.prototype.classify = function (type, value, context) {
     var ilabel;
@@ -233,8 +165,9 @@ Parser.prototype.classify = function (type, value, context) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
 
+        /* Check for handling print as an builtin function */
         if(value === "print" && (this.p_flags & Parser.CO_FUTURE_PRINT_FUNCTION || Sk.python3 === true)) {
-            ilabel = false; // treat print as normal function
+            ilabel = false; // ilabel determines if the value is a keyword
         }
 
         if (ilabel) {
