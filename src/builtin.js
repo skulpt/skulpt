@@ -744,6 +744,8 @@ Sk.builtin.setattr = function setattr (obj, name, value) {
     } else {
         throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
     }
+
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtin.raw_input = function (prompt) {
