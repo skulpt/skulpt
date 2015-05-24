@@ -68,6 +68,7 @@ Sk.builtins = {
     "type"      : Sk.builtin.type,
     "input"     : Sk.builtin.input,
     "raw_input" : Sk.builtin.raw_input,
+    "setattr"   : Sk.builtin.setattr,
     /*'read': Sk.builtin.read,*/
     "jseval"    : Sk.builtin.jseval,
     "jsmillis"  : Sk.builtin.jsmillis,
