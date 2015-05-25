@@ -112,7 +112,7 @@ Sk.builtin.complex = function (real, imag) {
             return null;
         }
 
-        cr.real = tmp; // PyFLoat_AsDouble(tmp);
+        cr.real = Sk.builtin.float_.PyFloat_AsDouble(tmp);
         cr.imag = 0.0;
     }
 
@@ -126,7 +126,7 @@ Sk.builtin.complex = function (real, imag) {
         /* The "imag" part really is entirely imaginary, and
         contributes nothing in the real direction.
         Just treat it as a double. */
-        tmp = Sk.ffi.remapToJs(i); // tmp = PyNumber_Float(i);
+        tmp = Sk.builtin.float_.PyFloat_AsDouble(i);
 
         if (tmp == null) {
             return null;
@@ -176,6 +176,9 @@ Sk.builtin.complex._isNegativeZero = function (val) {
     return 1/val === -Infinity;
 };
 
+/**
+ * Internal method to check if op has __complex__
+ */
 Sk.builtin.complex.try_complex_special_method = function (op) {
     var complexstr = new Sk.builtin.str("__complex__");
     var f; // PyObject
@@ -691,7 +694,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
             equal = false;
         }
     } else if (Sk.builtin.checkFloat(w)) {
-        equal = (_real === Sk.ffi.remapToJs(w) && _imag === 0.0);
+        equal = (_real === Sk.builtin.float_.PyFloat_AsDouble(w) && _imag === 0.0);
     } else if (Sk.builtin.complex._complex_check(w)) {
         // ToDo: figure if we need to call to_complex
         var w_real = w.tp$getattr("real").v;
