@@ -454,13 +454,21 @@ var $builtinmodule = function (name) {
 
     // namedtuple
     mod.namedtuples = {};
+    var keywds = Sk.importModule("keyword", false, false);
 
     mod.namedtuple = function (name, fields) {
         var nm = Sk.ffi.remapToJs(name);
+        // fields could be a string or a tuple or list of strings
         var flds = Sk.ffi.remapToJs(fields);
 
         if (typeof(flds) === 'string') {
             flds = flds.split(/\s+/);
+        }
+        // import the keyword module here and use iskeyword
+        for (i = 0; i < flds.length; i++) {
+            if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],Sk.ffi.remapToPy(flds[i])))) {
+                throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + flds[i]);
+            }
         }
 
         var cons = function nametuple_constructor() {
@@ -497,6 +505,7 @@ var $builtinmodule = function (name) {
             }
             return new Sk.builtin.str(nm + "(" + ret + ")");
         };
+
         cons.prototype.tp$getattr = function (name) {
             var i = flds.indexOf(name);
             if (i >= 0) {
@@ -504,11 +513,9 @@ var $builtinmodule = function (name) {
             }
             return undefined;
         };
+
         cons.prototype.tp$setattr = function (name, value) {
-            var i = flds.indexOf(name);
-            if (i >= 0) {
-                this.v[i] = value;
-            }
+            throw new Sk.builtin.AttributeError("can't set attribute");
         };
 
         return cons;
