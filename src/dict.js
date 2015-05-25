@@ -398,17 +398,17 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     return new Sk.builtin.list(ret);
 });
 
-/*
-    Remove all items from the dictionary.
-*/
 Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("clear()", arguments, 0, 0, false, true);
-    var iter, k;
-    for (iter = self.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+    var k;
+    var iter;
+
+    for (iter = self.tp$iter(), k = iter.tp$iternext();
+         k !== undefined;
+         k = iter.tp$iternext()) {
         self.mp$del_subscript(k);
     }
 });
-
 
 /*
     this function mimics the cpython implementation, which is also the reason for the
@@ -488,38 +488,6 @@ var update_f = function (kwargs, self, other) {
 update_f.co_kwargs = true;
 Sk.builtin.dict.prototype.update = new Sk.builtin.func(update_f);
 
-/* Py_Dict_Type_Mapping */
-/*
-        "nb$add": "__add__",
-        "nb$subtract": "__sub__",
-        "nb$multiply": "__mul__",
-        "nb$divide": "__div__",
-        "nb$floor_divide": "__floordiv__",
-        "nb$remainder": "__mod__",
-        "nb$power": "__pow__",
-        "nb$lshift": "__lshift__",
-        "nb$rshift": "__rshift__",
-        "nb$and": "__and__",
-        "nb$xor": "__xor__",
-        "nb$or": "__or__",
-        "nb$negative": "__neg__",
-        "nb$positive": "__pos__",
-        "nb$invert": "__invert__",
-        "$d": "__dict__",
-        "tp$iter": "__iter__",
-        "tp$hash": "__hash__",
-        "tp$str": "__str__",
-        "tp$mro": "__mro__",
-        "tp$name": "__name__",
-        "tp$richcompare": "__cmp__",
-        "$r": "__repr__",
-        "sq$length": "__len__",
-        "sq$contains": "__contains__",
-        "mp$length": "__len__",
-        "ob$type": "__class__"
-
-*/
-
 Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, item) {
     Sk.builtin.pyCheckArgs("__contains__", arguments, 1, 1, false, true);
     return Sk.builtin.dict.prototype.sq$contains.call(self, item);
@@ -595,80 +563,55 @@ Sk.builtin.dict.prototype.__lt__ = new Sk.builtin.func(function (self, other) {
     return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, "Lt");
 });
 
+Sk.builtin.dict.prototype["setdefault"] = new Sk.builtin.func(function (self, key, default_) {
+    try {
+        return self.mp$subscript(key);
+    }
+    catch (e) {
+        if (default_ === undefined) {
+            default_ = Sk.builtin.none.none$;
+        }
+        self.mp$ass_subscript(key, default_);
+        return default_;
+    }
+});
+
+Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function (seq, value) {
+    throw new Sk.builtin.NotImplementedError("dict.fromkeys is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["iteritems"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["iterkeys"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.iterkeys is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["itervalues"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.itervalues is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["popitem"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.popitem is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["viewitems"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.viewitems is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["viewkeys"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.viewkeys is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
+});
+
 Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
-
-/*
-
- $.prototype.copy = function() { throw "todo; dict.copy"; };
- $.prototype.fromkeys = function() { throw "todo; dict.fromkeys"; };
- $.prototype.get = function() { throw "todo; dict.get"; };
-
- $.prototype.has_key = function(key)
- {
- return this.hasOwnProperty(kf(key));
- };
-
- $.prototype.items = function() { throw "todo; dict.items"; };
- $.prototype.iteritems = function() { throw "todo; dict.iteritems"; };
- $.prototype.iterkeys = function() { throw "todo; dict.iterkeys"; };
- $.prototype.itervalues = function() { throw "todo; dict.itervalues"; };
- $.prototype.pop = function() { throw "todo; dict.pop"; };
- $.prototype.popitem = function() { throw "todo; dict.popitem"; };
- $.prototype.setdefault = function() { throw "todo; dict.setdefault"; };
- $.prototype.values = function() { throw "todo; dict.values"; };
-
- $.prototype.__getitem__ = function(key)
- {
- var entry = this[kf(key)];
- return typeof entry === 'undefined' ? undefined : entry.rhs;
- };
-
- $.prototype.__delitem__ = function(key)
- {
- var k = kf(key);
-
- if (this.hasOwnProperty(k))
- {
- this.size -= 1;
- delete this[k];
- }
-
- return this;
- };
-
- $.prototype.__class__ = new Sk.builtin.type('dict', [Sk.types.object], {});
-
- $.prototype.__iter__ = function()
- {
- var allkeys = [];
- for (var k in this)
- {
- if (this.hasOwnProperty(k))
- {
- var i = this[k];
- if (i && i.hasOwnProperty('lhs')) // skip internal stuff. todo; merge pyobj and this
- {
- allkeys.push(k);
- }
- }
- }
- //print(allkeys);
-
- var ret =
- {
- __iter__: function() { return ret; },
- $obj: this,
- $index: 0,
- $keys: allkeys,
- next: function()
- {
- // todo; StopIteration
- if (ret.$index >= ret.$keys.length) return undefined;
- return ret.$obj[ret.$keys[ret.$index++]].lhs;
- }
- };
- return ret;
- };
- */

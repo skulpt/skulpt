@@ -301,9 +301,194 @@ var $builtinmodule = function(name)
 
 
     // OrderedDict
-    mod.OrderedDict = function OrderedDict(items) {
-        throw new Sk.builtin.NotImplementedError("OrderedDict is not implemented")
+    mod.OrderedDict = function OrderedDict(items)
+    {
+        if (!(this instanceof mod.OrderedDict))
+        {
+            return new mod.OrderedDict(items);
+        }
+
+        this.orderedkeys = [];
+
+        Sk.builtin.dict.call(this, items);
+
+        return this;
     }
+
+    mod.OrderedDict.prototype = Object.create(Sk.builtin.dict.prototype);
+
+    mod.OrderedDict.prototype.tp$name = 'OrderedDict'
+
+    mod.OrderedDict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('OrderedDict', mod.OrderedDict);
+
+    mod.OrderedDict.prototype['$r'] = function()
+    {
+        var v;
+        var iter, k;
+        var ret = [];
+        var pairstr;
+        for (iter = this.tp$iter(), k = iter.tp$iternext();
+             k !== undefined;
+             k = iter.tp$iternext()) {
+            v = this.mp$subscript(k);
+            if (v === undefined) {
+                //print(k, "had undefined v");
+                v = null;
+            }
+            ret.push("(" + Sk.misceval.objectRepr(k).v + ", " + Sk.misceval.objectRepr(v).v + ")");
+        }
+        pairstr = ret.join(", ");
+        if (ret.length > 0)
+        {
+            pairstr = "[" + pairstr + "]";
+        }
+        return new Sk.builtin.str("OrderedDict(" + pairstr + ")");
+    }
+
+    mod.OrderedDict.prototype.mp$ass_subscript = function(key, w)
+    {
+        var idx = this.orderedkeys.indexOf(key);
+        if (idx == -1)
+        {
+            this.orderedkeys.push(key);
+        }
+
+        return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
+    }
+
+    mod.OrderedDict.prototype.mp$del_subscript = function(key)
+    {
+        var idx = this.orderedkeys.indexOf(key);
+        if (idx != -1)
+        {
+            this.orderedkeys.splice(idx, 1);
+        }
+
+        return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
+    }
+
+    mod.OrderedDict.prototype.tp$iter = function()
+    {
+        var ret;
+        ret =
+        {
+            tp$iter    : function () {
+                return ret;
+            },
+            $obj       : this,
+            $index     : 0,
+            $keys      : this.orderedkeys.slice(0),
+            tp$iternext: function () {
+                // todo; StopIteration
+                if (ret.$index >= ret.$keys.length) {
+                    return undefined;
+                }
+                return ret.$keys[ret.$index++];
+            }
+        };
+        return ret;
+    }
+
+    mod.OrderedDict.prototype.tp$richcompare = function (other, op) 
+    {
+        var v, otherv;
+        var k, otherk;
+        var iter, otheriter;
+        var l, otherl;
+
+        if (!(other instanceof mod.OrderedDict)) 
+        {
+            return Sk.builtin.dict.prototype.tp$richcompare.call(this, other, op);
+        }
+
+        // Both are OrderedDicts
+        if (this === other && Sk.misceval.opAllowsEquality(op)) 
+        {
+            return true;
+        }
+
+        // Only support Eq and NotEq comparisons
+        switch (op) {
+            case "Lt":
+                return undefined;
+            case "LtE":
+                return undefined;
+            case "Eq":
+                break;
+            case "NotEq":
+                break;
+            case "Gt":
+                return undefined;
+            case "GtE":
+                return undefined;
+            default:
+                goog.asserts.fail();
+        }
+
+        l = this.size;
+        otherl = other.size;
+
+        if (l !== otherl) {
+            return op !== "Eq";
+        }
+
+        for (iter = this.tp$iter(), otheriter = other.tp$iter(),
+             k = iter.tp$iternext(), otherk = otheriter.tp$iternext();
+             k !== undefined;
+             k = iter.tp$iternext(), otherk = otheriter.tp$iternext()) 
+        {
+            if (!Sk.misceval.richCompareBool(k, otherk, "Eq"))
+            {
+                return op !== "Eq";
+            }
+            v = this.mp$subscript(k);
+            otherv = other.mp$subscript(otherk);
+            
+            if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
+                return op !== "Eq";
+            }
+        }
+
+        return op === "Eq";        
+    }
+
+    mod.OrderedDict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
+        var s;
+        var idx;
+
+        Sk.builtin.pyCheckArgs('pop', arguments, 2, 3);
+
+        idx = self.orderedkeys.indexOf(key);
+        if (idx != -1)
+        {
+            self.orderedkeys.splice(idx, 1);
+        }
+
+        return Sk.misceval.callsim(Sk.builtin.dict.prototype["pop"], self, key, d);
+    });
+
+    mod.OrderedDict.prototype["popitem"] = new Sk.builtin.func(function (self, last) {
+        var key, val;
+        var s;
+
+        Sk.builtin.pyCheckArgs('popitem', arguments, 1, 2);
+
+        // Empty dictionary
+        if (self.orderedkeys.length == 0)
+        {
+            s = new Sk.builtin.str('dictionary is empty');
+            throw new Sk.builtin.KeyError(s.v);
+        }
+
+        key = self.orderedkeys[0];
+        if (last === undefined || Sk.misceval.isTrue(last))
+        {
+            key = self.orderedkeys[self.orderedkeys.length - 1];
+        }
+
+        val = Sk.misceval.callsim(self["pop"], self, key);
+        return Sk.builtin.tuple([key, val]);
+    });
 
     // deque
     mod.deque = function deque(iterable, maxlen) {
