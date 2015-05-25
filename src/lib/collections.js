@@ -449,9 +449,37 @@ var $builtinmodule = function (name) {
     // namedtuple
     mod.namedtuples = {};
     var keywds = Sk.importModule("keyword", false, false);
+    // should cover most things.  Does not:
+    // * keyword args
+    // _make
+    // _replace
+    // _asdict
+    // _fields
+
+
+    var hasDupes = function(a) {
+        var counts = [];
+        for(var i = 0; i <= a.length; i++) {
+            if(counts[a[i]] === undefined) {
+                counts[a[i]] = 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
 
     mod.namedtuple = function (name, fields) {
+        if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],name ))) {
+            throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + name.v);
+        }
         var nm = Sk.ffi.remapToJs(name);
+        startsw = new RegExp(/^[0-9].*/);
+        startsw2 = new RegExp(/^[0-9_].*/);
+        alnum = new RegExp(/^\w*$/);
+        if (startsw.test(nm) || (! alnum.test(nm))) {
+            throw new Sk.builtin.ValueError(" Bad type name " + nm);
+        }
         // fields could be a string or a tuple or list of strings
         var flds = Sk.ffi.remapToJs(fields);
 
@@ -460,14 +488,21 @@ var $builtinmodule = function (name) {
         }
         // import the keyword module here and use iskeyword
         for (i = 0; i < flds.length; i++) {
-            if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],Sk.ffi.remapToPy(flds[i])))) {
+            if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],Sk.ffi.remapToPy(flds[i]))) ||
+                  startsw2.test(flds[i]) || (! alnum.test(flds[i]))
+            ) {
                 throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + flds[i]);
             }
+        }
+        if (hasDupes(flds)) {
+            throw new Sk.builtin.ValueError("Field names must be unique.");
         }
 
         var cons = function nametuple_constructor() {
             var o;
-
+            if (arguments.length !== flds.length ) {
+                throw new Sk.builtin.TypeError("Number of arguments must match");
+            }
             if (!(this instanceof mod.namedtuples[nm])) {
                 o = Object.create(mod.namedtuples[nm].prototype);
                 o.constructor.apply(o, arguments);
