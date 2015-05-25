@@ -554,6 +554,14 @@ to remap the parameter from a javascript string to a Python string object.  Henc
 in the parameter.  Since ``iskeyword`` will return a Python bool object we need to remap that back
 to javscript for our if statement.
 
+You can use a similar strategy for creating an instance of a class:
+
+.. code-block:: javascript
+
+   var io = Sk.importModule("io", false, false);
+   var stdin = Sk.misceval.callsim(io.$d["TextIOWrapper"]);
+
+
 Seems like a lot of work to check for a keyword in an array.  But knowing how to do this for much more
 complicated methods in other modules will pay off.
 
