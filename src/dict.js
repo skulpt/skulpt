@@ -398,14 +398,11 @@ Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.dict.prototype["setdefault"] = new Sk.builtin.func(function (self, key, default_) {
-    try
-    {
+    try {
         return self.mp$subscript(key);
     }
-    catch (e)
-    {
-        if (default_ === undefined)
-        {
+    catch (e) {
+        if (default_ === undefined) {
             default_ = Sk.builtin.none.none$;
         }
         self.mp$ass_subscript(key, default_);
@@ -413,83 +410,46 @@ Sk.builtin.dict.prototype["setdefault"] = new Sk.builtin.func(function (self, ke
     }
 });
 
+Sk.builtin.dict.prototype["copy"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.copy is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["fromkeys"] = new Sk.builtin.func(function (seq, value) {
+    throw new Sk.builtin.NotImplementedError("dict.fromkeys is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["iteritems"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.iteritems is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["iterkeys"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.iterkeys is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["itervalues"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.itervalues is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["popitem"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.popitem is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["update"] = new Sk.builtin.func(function (self, other) {
+    throw new Sk.builtin.NotImplementedError("dict.update is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["viewitems"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.viewitems is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["viewkeys"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.viewkeys is not yet implemented in Skulpt");
+});
+
+Sk.builtin.dict.prototype["viewvalues"] = new Sk.builtin.func(function (self) {
+    throw new Sk.builtin.NotImplementedError("dict.viewvalues is not yet implemented in Skulpt");
+});
+
 Sk.builtin.dict.prototype.tp$name = "dict";
 
 goog.exportSymbol("Sk.builtin.dict", Sk.builtin.dict);
-
-/*
-
- $.prototype.clear = function() { throw "todo; dict.clear"; };
- $.prototype.copy = function() { throw "todo; dict.copy"; };
- $.prototype.fromkeys = function() { throw "todo; dict.fromkeys"; };
- $.prototype.get = function() { throw "todo; dict.get"; };
-
- $.prototype.has_key = function(key)
- {
- return this.hasOwnProperty(kf(key));
- };
-
- $.prototype.items = function() { throw "todo; dict.items"; };
- $.prototype.iteritems = function() { throw "todo; dict.iteritems"; };
- $.prototype.iterkeys = function() { throw "todo; dict.iterkeys"; };
- $.prototype.itervalues = function() { throw "todo; dict.itervalues"; };
- $.prototype.keys = function() { throw "todo; dict.keys"; };
- $.prototype.pop = function() { throw "todo; dict.pop"; };
- $.prototype.popitem = function() { throw "todo; dict.popitem"; };
- $.prototype.setdefault = function() { throw "todo; dict.setdefault"; };
- $.prototype.update = function() { throw "todo; dict.update"; };
- $.prototype.values = function() { throw "todo; dict.values"; };
-
- $.prototype.__getitem__ = function(key)
- {
- var entry = this[kf(key)];
- return typeof entry === 'undefined' ? undefined : entry.rhs;
- };
-
- $.prototype.__delitem__ = function(key)
- {
- var k = kf(key);
-
- if (this.hasOwnProperty(k))
- {
- this.size -= 1;
- delete this[k];
- }
-
- return this;
- };
-
- $.prototype.__class__ = new Sk.builtin.type('dict', [Sk.types.object], {});
-
- $.prototype.__iter__ = function()
- {
- var allkeys = [];
- for (var k in this)
- {
- if (this.hasOwnProperty(k))
- {
- var i = this[k];
- if (i && i.hasOwnProperty('lhs')) // skip internal stuff. todo; merge pyobj and this
- {
- allkeys.push(k);
- }
- }
- }
- //print(allkeys);
-
- var ret =
- {
- __iter__: function() { return ret; },
- $obj: this,
- $index: 0,
- $keys: allkeys,
- next: function()
- {
- // todo; StopIteration
- if (ret.$index >= ret.$keys.length) return undefined;
- return ret.$obj[ret.$keys[ret.$index++]].lhs;
- }
- };
- return ret;
- };
- */
