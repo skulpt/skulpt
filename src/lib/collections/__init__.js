@@ -252,7 +252,6 @@ var $builtinmodule = function (name) {
 
 
     // OrderedDict
-<<<<<<< HEAD
     mod.OrderedDict = function OrderedDict(items)
     {
         if (!(this instanceof mod.OrderedDict))
@@ -307,11 +306,6 @@ var $builtinmodule = function (name) {
 
         return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
     }
-=======
-    mod.OrderedDict = function OrderedDict(items) {
-        throw new Sk.builtin.NotImplementedError("OrderedDict is not implemented")
-    };
->>>>>>> can create with a string or tuple now
 
     mod.OrderedDict.prototype.mp$del_subscript = function(key, w)
     {
