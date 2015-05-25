@@ -469,6 +469,16 @@ var $builtinmodule = function (name) {
         return false;
     }
 
+    var Skinherits = function(childCtor, parentCtor) {
+      /** @constructor */
+      function tempCtor() {};
+      tempCtor.prototype = parentCtor.prototype;
+      childCtor.superClass_ = parentCtor.prototype;
+      childCtor.prototype = new tempCtor();
+      /** @override */
+      childCtor.prototype.constructor = childCtor;
+    };
+
     mod.namedtuple = function (name, fields) {
         if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],name ))) {
             throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + name.v);
@@ -514,7 +524,7 @@ var $builtinmodule = function (name) {
         };
         mod.namedtuples[nm] = cons;
 
-        goog.inherits(cons, Sk.builtin.tuple);
+        Skinherits(cons, Sk.builtin.tuple);
         cons.prototype.tp$name = nm;
         cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, mod.namedtuples[nm]);
         cons.prototype["$r"] = function () {
