@@ -5,16 +5,13 @@ This is the contribute.md of our project. Great to have you here. Here are a few
 
 ## Team members
 
-* [Brad Miller](https://github.com/bnmnetp) -- Current maintainer
-* [Scott Rixner](https://github.com/rixner)
-* [Marie Chatfield](https://github.com/mchat)
-* [Albert-Jan Nijburg](https://github.com/albertjan)
-* [Bob LaCatena](https://github.com/blacatena)
-* [David Holmes](https://github.com/david-geo-holmes)
-* [Charles Severance](https://github.com/csev)
-* [Scott Graham](https://github.com/sgraham) -- although not active at the moment, Scott is the father of Skulpt
+The list of people who have contributed to Skulpt is too big and dynamic to be accurate 
+in a document like this.  Luckily Github does an excellent job of keeping track of
+[people who have contributed](https://github.com/skulpt/skulpt/graphs/contributors)
 
-
+[Brad Miller](https://github.com/bnmnetp) is the current owner of the project.  But see below for 
+the full list of people with commit privileges.
+ 
 ## Learn & listen
 
 This section includes ways to get started with your open source project. Include links to documentation and to different communication channels:
@@ -62,6 +59,20 @@ We try to get to pull requests in a very timely way so they don't languish. Noth
 
 
 ## Coding Style and Conventions
+
+Here are some coding conventions to keep in mind:
+ 
+* ``Sk.ffi.remapToJs`` and ``Sk.ffi.remapToPy`` are your friends.  They take care of the details 
+of going from a Python type to a Javascript type and vice versa.  They are smart enough to work
+with common types and even work well recursively converting containers.  ``Sk.ffi.remapToJs`` is 
+**definitely preferred** over  ``foo.v``  
+* Use the ``pyCheckArgs`` function at the beginning of anything that will be exposed to a Python programmer.
+* Check the types of arguments when you know what they must be.
+* Explicitly return ``Sk.builtin.null.null$`` for functions and methds that should return ``None``
+* If you are adding a module or package to the library, respect the package/module conventions.
+    * modules should be named ``foo.js`` or ``foo.py`` 
+    * packages should be a directory with an ``__init__.js`` or ``__init__.py`` file, and possibly additional modules.
+
 
 In summer of 2014, we adopted the following style and conventions for our code:
 
