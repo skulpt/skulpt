@@ -19,6 +19,7 @@ This is the contribute.md of our project. Great to have you here. Here are a few
 This section includes ways to get started with your open source project. Include links to documentation and to different communication channels:
 
 * github: Lots of good discussion happens around pull requests and bug reports
+* [gitter discussion](https://gitter.im/skulpt/skulpt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * [Mailing list](https://groups.google.com/forum/#!forum/skulpt)
 * IRC channel: [#skulpt](http://webchat.freenode.net/?channels=skulpt)
 * Blog: Some stuff about getting started is on [Brad's blog](http://reputablejournal.com)
