@@ -120,12 +120,12 @@ the review process I would recommend for committers is as follows:
  
 The current group of committers is as follows:
 
-* Brad Miller  bnmnetp
-* Scott Rixner rixner
-* Albert-Jan   albertjan
-* Meredydd Luff meredydd
-* Leszek Swirski  LeszekSwirski 
-* Ben Wheeler  bzwheeler
+* [Brad Miller](https://github.com/bnmnetp)
+* [Scott Rixner](https://github.com/ixner)
+* [Albert-Jan](https://github.com/albertjan)
+* [Meredydd Luff](https://github.com/meredydd)
+* [Leszek Swirski](https://github.com/LeszekSwirski)
+* [Ben Wheeler](https://github.com/bzwheeler)
 
 # Documentation
 
