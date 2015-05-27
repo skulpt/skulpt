@@ -432,8 +432,24 @@ Sk.abstr.fixSeqIndex_ = function (seq, i) {
 Sk.abstr.sequenceContains = function (seq, ob) {
     var it, i;
     var seqtypename;
+    var special;
+
     if (seq.sq$contains) {
         return seq.sq$contains(ob);
+    }
+
+    /** 
+     *  Look for special method and call it, we have to distinguish between built-ins and 
+     *  python objects
+     */
+    special = Sk.builtin.object._PyObject_LookupSpecial(seq, "__contains__");
+    if (special != null) {
+        if (Sk.builtin.checkFunction(special)) {
+            return Sk.misceval.callsim(special, ob);
+        } else {
+            // method on builtin, provide this arg
+            return Sk.misceval.callsim(special, seq, ob);
+        }
     }
 
     seqtypename = Sk.abstr.typeName(seq);
@@ -567,6 +583,30 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
         seqtypename = Sk.abstr.typeName(seq);
         throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
     }
+};
+
+Sk.abstr.objectFormat = function (obj, format_spec) {
+    var meth; // PyObject
+    var result; // PyObject
+
+    // If no format_spec is provided, use an empty string
+    if(format_spec == null) {
+        format_spec = "";
+    }
+
+    // Find the (unbound!) __format__ method (a borrowed reference)
+    meth = Sk.builtin.object._PyObject_LookupSpecial(obj, "__format__");
+    if (meth == null) {
+        throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + "doesn't define __format__");
+    }
+
+    // And call it
+    result = Sk.misceval.callsim(meth, obj, format_spec);
+    if (!Sk.builtin.checkString(result)) {
+        throw new Sk.builtin.TypeError("__format__ must return a str, not " + Sk.abstr.typeName(result));
+    }
+
+    return result;
 };
 
 //

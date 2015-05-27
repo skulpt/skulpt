@@ -396,6 +396,11 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             }
 
             module["$d"] = modlocs;
+            
+            // empty doc string if not present
+            if (!modlocs["__doc__"]) {
+                modlocs["__doc__"] = new Sk.builtin.str("");
+            }
 
             // If an onAfterImport method is defined on the global Sk
             // then call it now after a library has been successfully imported
