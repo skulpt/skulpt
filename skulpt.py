@@ -724,6 +724,8 @@ Sk.importMain("%s", false);
                 getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
+        if p.returncode != 0:
+            failTot += 1
         print outs
         if errs:
             print errs
