@@ -329,6 +329,15 @@ var $builtinmodule = function (name) {
         step = Sk.builtin.asnum$(step);
         return randrange(start, stop, step);
     });
+  
+    mod.uniform = new Sk.builtin.func(function (a, b) {
+        Sk.builtin.pyCheckArgs("uniform", arguments, 2, 2);
+
+        a = Sk.builtin.asnum$(a);
+        b = Sk.builtin.asnum$(b);
+        var rnd = myGenerator.genrand_res53();
+        return a + rnd * (b - a);
+    });
 
     mod.choice = new Sk.builtin.func(function (seq) {
         Sk.builtin.pyCheckArgs("choice", arguments, 1, 1);
