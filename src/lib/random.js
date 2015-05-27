@@ -336,7 +336,8 @@ var $builtinmodule = function (name) {
         a = Sk.builtin.asnum$(a);
         b = Sk.builtin.asnum$(b);
         var rnd = myGenerator.genrand_res53();
-        return a + rnd * (b - a);
+        c = a + rnd * (b - a)
+        return new Sk.builtin.nmber(c, Sk.builtin.nmber.float$);
     });
 
     mod.choice = new Sk.builtin.func(function (seq) {
