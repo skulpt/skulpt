@@ -77,7 +77,6 @@ Files = [
         'src/method.js',
         'src/misceval.js',
         'src/abstract.js',
-        'src/mergesort.js',
         'src/list.js',
         'src/str.js',
         'src/formatting.js',
