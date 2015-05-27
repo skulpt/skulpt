@@ -82,8 +82,12 @@ $(function () {
 
 		try {
             //Evaluate
-            Sk.importMainWithBody("repl", false, lines.join('\n'));
-            //remove print statements when a block is created that doesn't define anything
+            if (!lines || /^\s*$/.test(lines)) {
+                return;
+            }
+            else {
+                Sk.importMainWithBody("repl", false, lines.join('\n'));            
+            }
         } catch (err) {
             repl.print(err);
 

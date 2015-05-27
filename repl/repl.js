@@ -78,7 +78,12 @@ while (true) {
 
     try {
         //Evaluate
-        Sk.importMainWithBody("repl", false, lines.join('\n'));
+        if (!lines || /^\s*$/.test(lines)) {
+            continue
+        }
+        else {
+            Sk.importMainWithBody("repl", false, lines.join('\n'));            
+        }
     } catch (err) {
         if (err instanceof Sk.builtin.SystemExit) {
             quit();
