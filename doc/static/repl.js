@@ -83,7 +83,7 @@ $(function () {
 		try {
             //Evaluate
             if (!lines || /^\s*$/.test(lines)) {
-                continue
+                return;
             }
             else {
                 Sk.importMainWithBody("repl", false, lines.join('\n'));            
