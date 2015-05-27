@@ -783,8 +783,22 @@ Build the distribution files for skulpt:
 * skulpt.min.js  -- This is a minified version of the core interpreter files.
 * skulpt-stdlib.js  -- This is an unminified version of library functions.  This file may contain javascript that implements a module, such as turtle or math, or it may contain pure python.
 
+Bulding on windows
+~~~~~~~~~~~~~~~~~~
 
+Running ``.\skulpt.cmd dist`` on windows requires some extra work, because the
+tests check against the text output, things with line-endings tend to get icky.
 
+We want to make use we checkout skulpt with ``LF`` line endings, which is not
+default on windows. You have to configure git and reset your working directory.
+Like this:
+
+.. code-block:: shell
+
+    > git config core.autocrlf input
+    > git update-index --refresh
+    > git rm --cached -r .
+    > git reset --hard
 
 Getting stack traces from an exception
 --------------------------------------
