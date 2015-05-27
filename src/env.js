@@ -160,6 +160,7 @@ if (!Sk.inBrowser) {
 }
 
 Sk.python3 = false;
+
 Sk.inputfun = function (args) {
     return window.prompt(args);
 };

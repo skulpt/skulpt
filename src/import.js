@@ -176,9 +176,86 @@ Sk.doOneTimeInitialization = function () {
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
+
     Sk.builtin.object["$d"] = new Sk.builtin.dict([]);
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
     Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+    Sk.builtin.object["__dict__"] = Sk.builtin.object["$d"]; // should be inherited automatically
+
+    /*
+        Exceptions need special handling, because makeIntoTypeObj is not available when we are defining them
+        ToDo: do we maintain a list of Exceptions here?
+    */
+    Sk.builtin.Exception.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("Exception", Sk.builtin.Exception);
+
+    /**
+     * ToDo: Maybe use the same approach as cpython does, and use some kind of map of the implemented methods.
+     * Currently, objects like complex does implement all internal methods aswell the special methods. This allows
+     * all kind of tests to run.
+     *
+     * Some ressources:
+     * - https://docs.python.org/2/reference/datamodel.html#specialnames
+     * - https://docs.python.org/2.7/c-api/typeobj.html#tp_as_number
+     * - https://docs.python.org/2/reference/datamodel.html#emulating-numeric-types
+     */
+
+    // setup ["$d"] to make builtins subclassable
+    var builtinObjList = ["dict", "list", "type", "set", "tuple", "Exception"];
+    var i, k, v;
+    var builtin_;
+    //var mro;
+    var prop;
+    var richname;
+
+    for(i in builtinObjList) {
+        builtin_ = builtinObjList[i];
+        Sk.builtin[builtin_]["$d"] = new Sk.builtin.dict([]);
+        Sk.builtin[builtin_]["__dict__"] = Sk.builtin[builtin_]["$d"];
+
+        // builtins have only object as __bases__
+        Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+        
+        // builtins have object and self as __mro__
+        Sk.builtin[builtin_]["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin[builtin_], Sk.builtin.object]));
+        // the methods from the parent class get automatically mapped by the buildTypeObj code
+
+        /**
+         * copy existing methods to internal dict
+         * we need to map the internal functions to special names (or we just implement stubs for the special ones)
+         */
+        for(k in Sk.builtin[builtin_].prototype) {
+            prop = Sk.builtin[builtin_].prototype[k]; // get current property
+            
+            /**
+             * get richname from internal slot function names
+             * this lacks special name look up to properly map them to internal methods
+             */
+            richname = Sk.builtin.dir.slotNameToRichName(k); // 
+
+            // early continue
+            if(prop === undefined || prop === null) {
+                //Sk.debugout("cannot map: k= " + k + " richname=" + richname);
+                continue; 
+            }
+
+            /** 
+             * first case could be merged with large case, though for testing purposes
+             * this allows better debug output
+             */
+            if(richname === k && prop instanceof Sk.builtin.func) {
+                Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(k), prop);
+            } else if(richname !== k && (prop instanceof String || typeof prop === "string")) {
+                Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), new Sk.builtin.str(prop));
+            } else if(richname !== k && (Sk.builtin.checkFunction(prop) || Sk.builtin.checkString(prop) ||
+                Sk.builtin.checkClass(prop) || Sk.builtin.checkBool(prop) || Sk.builtin.checkNumber(prop) ||
+                Sk.builtin.checkNone(prop) || Sk.builtin.checkSequence(prop) || Sk.builtin.checkIterable(prop))) {
+                Sk.builtin[builtin_]["$d"].mp$ass_subscript(new Sk.builtin.str(richname), prop);
+            } else {
+                // ignore
+                //Sk.debugout("could not map: " + k + " in builtin: " + builtin_ + " prop type: " + (typeof prop));
+            }
+        }
+    }
 };
 
 /**
@@ -228,7 +305,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     var finalcode;
     var result;
     var filename, codeAndPath, co, isPy, googClosure, external;
-    var module;
+    var module_;
     var prev;
     var parentModName;
     var modNameSplit;
@@ -289,8 +366,8 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     // - add module object to sys.modules
     // - compile source to (function(){...});
     // - run module and set the module locals returned to the module __dict__
-    module = new Sk.builtin.module();
-    Sk.sysmodules.mp$ass_subscript(name, module);
+    module_ = new Sk.builtin.module();
+    Sk.sysmodules.mp$ass_subscript(name, module_);
 
     if (suppliedPyBody) {
         filename = name + ".py";
@@ -340,7 +417,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             return canSuspend ? new Sk.misceval.Suspension(importCompiledCode, co) : Sk.misceval.retryOptionalSuspensionOrThrow(co);
         }
 
-        module.$js = co.code; // todo; only in DEBUG?
+        module_.$js = co.code; // todo; only in DEBUG?
         finalcode = co.code;
         if (Sk.dateSet == null || !Sk.dateSet) {
             finalcode = "Sk.execStart = Sk.lastYield = new Date();\n" + co.code;
@@ -374,7 +451,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
 
         namestr = "new Sk.builtin.str('" + modname + "')";
         finalcode += "\n" + co.funcname + "(" + namestr + ");";
-
         modlocs = goog.global["eval"](finalcode);
 
         return (function finishLoading(modlocs) {
@@ -395,7 +471,12 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                 modlocs["__name__"] = new Sk.builtin.str(modname);
             }
 
-            module["$d"] = modlocs;
+            // empty doc string if not present
+            if (!modlocs["__doc__"]) {
+                modlocs["__doc__"] = new Sk.builtin.str("");
+            }
+
+            module_["$d"] = modlocs;
 
             // If an onAfterImport method is defined on the global Sk
             // then call it now after a library has been successfully imported
@@ -411,14 +492,14 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                 // if we were a dotted name, then we want to return the top-most
                 // package. we store ourselves into our parent as an attribute
                 parentModule = Sk.sysmodules.mp$subscript(parentModName);
-                parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module);
+                parentModule.tp$setattr(modNameSplit[modNameSplit.length - 1], module_);
                 //print("import returning parent module, modname", modname, "__name__", toReturn.tp$getattr("__name__").v);
                 return toReturn;
             }
 
             //print("name", name, "modname", modname, "returning leaf");
             // otherwise we return the actual module that we just imported
-            return module;
+            return module_;
         })(modlocs);
     })(co);
 };
@@ -481,14 +562,14 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     })(ret);
 };
 
-Sk.importStar = function (module, loc, global) {
+Sk.importStar = function (module_, loc, global) {
     // from the global scope, globals and locals can be the same.  So the loop below
     // could accidentally overwrite __name__, erasing __main__.
     var i;
     var nn = global["__name__"];
-    var props = Object["getOwnPropertyNames"](module["$d"]);
+    var props = Object["getOwnPropertyNames"](module_["$d"]);
     for (i in props) {
-        loc[props[i]] = module["$d"][props[i]];
+        loc[props[i]] = module_["$d"][props[i]];
     }
     if (global["__name__"] !== nn) {
         global["__name__"] = nn;

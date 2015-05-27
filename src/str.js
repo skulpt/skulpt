@@ -76,6 +76,8 @@ goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
 Sk.builtin.str.$emptystr = new Sk.builtin.str("");
 
+Sk.builtin.str.prototype.__doc__ = new Sk.builtin.str("str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to sys.getdefaultencoding().\nerrors defaults to 'strict'.");
+
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
     index = Sk.builtin.asnum$(index);
@@ -1129,7 +1131,15 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     precision = 7;
                 }
             }
-            result = (convValue)[convName](precision);
+            
+            result = (convValue)[convName](precision); // possible loose of negative zero sign
+            
+            if(Sk.builtin.checkFloat(value)) {
+                if(convValue === 0 && 1/convValue === -Infinity) {
+                    result = "-" + result; // add sign for zero
+                }
+            }
+
             if ("EFG".indexOf(conversionType) !== -1) {
                 result = result.toUpperCase();
             }

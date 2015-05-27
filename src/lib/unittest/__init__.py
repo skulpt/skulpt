@@ -63,11 +63,11 @@ class TestCase:
         self.appendResult(res,str(actual)+' to not equal ',expected,feedback)
 
     def assertTrue(self,x, feedback=""):
-        res = x
+        res = bool(x) is True
         self.appendResult(res,str(x)+' to be ',True,feedback)
 
     def assertFalse(self,x, feedback=""):
-        res = not x
+        res = not bool(x)
         self.appendResult(res,str(x)+' to be ',False,feedback)
 
     def assertIs(self,a,b, feedback=""):
@@ -166,8 +166,8 @@ class TestCase:
 
     def showSummary(self):
         pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print "Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
-                                               self.numPassed, self.numFailed)
+        print ("Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
+                                               self.numPassed, self.numFailed))
 
 
 

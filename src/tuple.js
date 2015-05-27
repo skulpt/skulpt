@@ -33,6 +33,8 @@ Sk.builtin.tuple = function (L) {
     return this;
 };
 
+Sk.builtin.tuple.prototype.__doc__ = new Sk.builtin.str("tuple() -> empty tuple\ntuple(iterable) -> tuple initialized from iterable's items\n\nIf the argument is a tuple, the return value is the same object.");
+
 Sk.builtin.tuple.prototype.tp$name = "tuple";
 Sk.builtin.tuple.prototype["$r"] = function () {
     var ret;

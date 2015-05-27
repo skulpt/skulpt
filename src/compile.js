@@ -107,7 +107,7 @@ Compiler.prototype.annotateSource = function (ast) {
         }
         out("^\n//\n");
 
-        out("currLineNo = ", lineno, ";\ncurrColNo = ", col_offset, "\n\n");
+        out("currLineNo = ", lineno, ";\ncurrColNo = ", col_offset, ";\n\n");
     }
 };
 
@@ -134,6 +134,7 @@ var reservedWords_ = {
     "class": true,
     "continue": true,
     "const": true,
+    "Date": true,
     "debugger": true,
     "default": true,
     "delete": true,
@@ -284,6 +285,20 @@ Compiler.prototype.outputInterruptTest = function () { // Added by RNL
             this.u.doesSuspend = true;
         }
     }
+    return output;
+};
+
+/**
+ * Function to test if an interrupt should occur if external Sk.hardInterrupt flag has been set
+ * This function is executed at every test/branch operation.
+             if("hardInterrupt" in Sk && Sk.hardInterrupt === true) {
+                throw new Sk.builtin.KeyboardInterrupt("aborted execution");
+            }
+ */
+Compiler.prototype.keyboardInterrupt = function () {
+    var output = "";
+    output += "if (Sk.hasOwnProperty('hardInterrupt') && Sk.hardInterrupt === true) {throw new Sk.builtin.KeyboardInterrupt('aborted execution');}";
+
     return output;
 };
 
@@ -638,6 +653,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     var mangled;
     var val;
     var result;
+    var nStr;
     if (e.lineno > this.u.lineno) {
         this.u.lineno = e.lineno;
         this.u.linenoSet = false;
@@ -678,10 +694,19 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return e.n;
             }
             else if (e.n instanceof Sk.builtin.nmber) {
-                return "new Sk.builtin.nmber(" + e.n.v + ",'" + e.n.skType + "')";
+                // Preserve sign of zero for floats
+                nStr = e.n.skType === Sk.builtin.nmber.float$ && e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
+                return "new Sk.builtin.nmber(" + nStr + ",'" + e.n.skType + "')";
             }
             else if (e.n instanceof Sk.builtin.lng) {
+                // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
+            }
+            else if (e.n instanceof Sk.builtin.complex) {
+                // preserve sign of zero here too
+                var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
+                var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
+                return "new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))";
             }
             goog.asserts.fail("unhandled Num type");
         case Str:
@@ -1588,8 +1613,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // this.u.suffixCode = "}break;}});";
 
     // New switch code to catch exceptions
-    this.u.switchCode = "while(true){try{"
+    this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
+    this.u.switchCode += this.keyboardInterrupt();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
 
@@ -1821,16 +1847,17 @@ Compiler.prototype.cclass = function (s) {
     entryBlock = this.newBlock("class entry");
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$rest){var $gbl=$globals,$loc=$locals;";
-    this.u.switchCode += "return(function $" + s.name.v + "$_closure(){";
-    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;"
+    this.u.switchCode += "return(function " + fixReservedNames(s.name.v) + "(){";
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,currLineNo=undefined,currColNo=undefined;";
     if (Sk.execLimit !== null) {
-        this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
+        this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = new Date();}";
     }
     if (Sk.yieldLimit !== null && this.u.canSuspend) {
-        this.u.switchCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = Date.now()}";
+        this.u.switchCode += "if (typeof Sk.lastYield === 'undefined') {Sk.lastYield = new Date();}";
     }
     this.u.switchCode += "while(true){";
     this.u.switchCode += this.outputInterruptTest();
+    this.u.switchCode += this.keyboardInterrupt();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}break;}}).apply(null,$rest);});";
 
@@ -2090,7 +2117,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             switch (ctx) {
                 case Load:
                     // can't be || for loc.x = 0 or null
-                    return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl);");
+                    return this._gr("loadname", mangled, "!==undefined?", mangled, ":Sk.misceval.loadname('", mangledNoPre, "',$gbl)");
                 case Store:
                     out(mangled, "=", dataToStore, ";");
                     break;
@@ -2234,7 +2261,7 @@ Compiler.prototype.cmod = function (mod) {
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
         "    else { Sk.globals = $gbl; }" +
-        "} else { Sk.globals = $gbl; }"
+        "} else { Sk.globals = $gbl; }";
 
     // Add the try block that pops the try/except stack if one exists
     // Github Issue #38
@@ -2247,6 +2274,7 @@ Compiler.prototype.cmod = function (mod) {
     // New Code:
     this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
+    this.u.switchCode += this.keyboardInterrupt();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}"
     this.u.suffixCode += "}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: currLineNo, colno: currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } });";
@@ -2285,23 +2313,29 @@ Compiler.prototype.cmod = function (mod) {
  * @param {boolean=} canSuspend if the generated code supports suspension
  */
 Sk.compile = function (source, filename, mode, canSuspend) {
-    //print("FILE:", filename);
-    var cst = Sk.parse(filename, source);
-    var ast = Sk.astFromParse(cst, filename);
+    // parse returns an array with cst and flags
+    var parse = Sk.parse(filename, source);
+    var ast = Sk.astFromParse(parse.cst, filename, parse.flags);
+
+    /*
+     * Passing of compiler flags, there maybe more than compiler ones  
+     */
+    var flags = {};
+    flags.cf_flags = parse.flags;
+
     var st = Sk.symboltable(ast, filename);
-    var c = new Compiler(filename, st, 0, canSuspend, source); // todo; CO_xxx
+    var c = new Compiler(filename, st, flags.cf_flags, canSuspend, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
+
     var ret = c.result.join("");
     return {
         funcname: funcname,
         code    : ret
     };
 };
-
 goog.exportSymbol("Sk.compile", Sk.compile);
 
 Sk.resetCompiler = function () {
     Sk.gensymcount = 0;
 };
-
 goog.exportSymbol("Sk.resetCompiler", Sk.resetCompiler);

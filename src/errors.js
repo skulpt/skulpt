@@ -41,7 +41,10 @@ Sk.builtin.BaseException = function (args) {
         this.traceback.push({lineno: this.args.v[2],
                              filename: this.args.v[1].v || "<unknown>"});
     }
+
+    this.__class__ = Sk.builtin.Exception;
 };
+
 Sk.builtin.BaseException.prototype.tp$name = "BaseException";
 
 Sk.builtin.BaseException.prototype.tp$str = function () {
@@ -309,6 +312,24 @@ goog.inherits(Sk.builtin.SuspensionError, Sk.builtin.StandardError);
 Sk.builtin.SuspensionError.prototype.tp$name = "SuspensionError";
 goog.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
 
+/**
+ * @constructor
+ * @extends Sk.builtin.BaseException
+ * @param {...*} args
+ *
+ */
+Sk.builtin.KeyboardInterrupt = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.KeyboardInterrupt)) {
+        o = Object.create(Sk.builtin.KeyboardInterrupt.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.BaseException.apply(this, arguments);
+};
+goog.inherits(Sk.builtin.KeyboardInterrupt, Sk.builtin.BaseException);
+Sk.builtin.KeyboardInterrupt.prototype.tp$name = "KeyboardInterrupt";
+goog.exportSymbol("Sk.builtin.KeyboardInterrupt", Sk.builtin.KeyboardInterrupt);
 
 /**
  * @constructor

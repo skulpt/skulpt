@@ -1,9 +1,9 @@
-// builtins are supposed to come from the __builtin__ module, but we don't do
-// that yet.
-Sk.builtin = {};
-
-// todo; these should all be func objects too, otherwise str() of them won't
-// work, etc.
+/** 
+ * builtins are supposed to come from the __builtin__ module, but we don't do
+ * that yet.
+ * todo; these should all be func objects too, otherwise str() of them won't
+ * work, etc.
+ */
 
 Sk.builtin.range = function range (start, stop, step) {
     var ret = [];
@@ -46,6 +46,9 @@ Sk.builtin.range = function range (start, stop, step) {
 
     return new Sk.builtin.list(ret);
 };
+
+/* doc string, needs to initialized later */
+// Sk.builtin.range.__doc__ = new Sk.builtin.str("range(stop) -> range object\nrange(start, stop[, step]) -> range object\n\nReturn a sequence of numbers from start to stop by step.");
 
 Sk.builtin.asnum$ = function (a) {
     if (a === undefined) {
@@ -148,7 +151,6 @@ Sk.builtin.asnum$nofloat = function (a) {
     }
 
     expon = parseInt(expon, 10);
-
     decimal = mantissa.indexOf(".");
 
     //	Simplest case, no decimal
@@ -181,6 +183,7 @@ Sk.builtin.asnum$nofloat = function (a) {
     }
 
     decimal = decimal + expon;
+
     while (decimal > mantissa.length) {
         mantissa += "0";
     }
@@ -211,13 +214,17 @@ Sk.builtin.round = function round (number, ndigits) {
         ndigits = 0;
     }
 
-    number = Sk.builtin.asnum$(number);
-    ndigits = Sk.misceval.asIndex(ndigits);
+    // for built-in types round is delegated to number.__round__
+    if(Sk.builtin.checkNumber(number)) {
+        return Sk.builtin.nmber.prototype.__round__.call(number, number, ndigits);
+    }
 
-    multiplier = Math.pow(10, ndigits);
-    result = Math.round(number * multiplier) / multiplier;
-
-    return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+    // try calling internal magic method
+    if((number.tp$getattr && number.tp$getattr("__round__"))) {
+        return Sk.misceval.callsim(number.tp$getattr("__round__"), ndigits);
+    } else if(number.__round__) {
+        return Sk.misceval.callsim(number.__round__, number, ndigits);
+    }
 };
 
 Sk.builtin.len = function len (item) {
@@ -404,9 +411,14 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
 
-    return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+    if (Sk.builtin.checkNumber(x)) {
+        return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+    } else if (Sk.builtin.checkComplex(x)) {
+        return Sk.misceval.callsim(x.__abs__, x);
+    }
+    
+    throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");   
 };
 
 Sk.builtin.ord = function ord (x) {
@@ -517,46 +529,52 @@ Sk.builtin.dir = function dir (x) {
 
     names = [];
 
-    // Add all object properties
-    for (k in x.constructor.prototype) {
-        s = getName(k);
-        if (s) {
-            names.push(new Sk.builtin.str(s));
+    // check for custom __dir__ method
+    var customDir = x["$d"].mp$lookup(new Sk.builtin.str("__dir__"));
+    if(customDir !== undefined && Sk.builtin.checkFunction(customDir)) {
+        names = Sk.misceval.callsim(customDir, x);
+    } else {
+        // Add all object properties
+        for (k in x.constructor.prototype) {
+            s = getName(k);
+            if (s) {
+                names.push(new Sk.builtin.str(s));
+            }
         }
-    }
 
-    // Add all attributes
-    if (x["$d"]) {
-        if (x["$d"].tp$iter) {
-            // Dictionary
-            it = x["$d"].tp$iter();
-            for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                s = new Sk.builtin.str(i);
-                s = getName(s.v);
-                if (s) {
+        // Add all attributes
+        if (x["$d"]) {
+            if (x["$d"].tp$iter) {
+                // Dictionary
+                it = x["$d"].tp$iter();
+                for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                    s = new Sk.builtin.str(i);
+                    s = getName(s.v);
+                    if (s) {
+                        names.push(new Sk.builtin.str(s));
+                    }
+                }
+            }
+            else {
+                // Object
+                for (s in x["$d"]) {
                     names.push(new Sk.builtin.str(s));
                 }
             }
         }
-        else {
-            // Object
-            for (s in x["$d"]) {
-                names.push(new Sk.builtin.str(s));
-            }
-        }
-    }
 
-    // Add all class attributes
-    mro = x.tp$mro;
-    if (mro) {
+        // Add all class attributes
         mro = x.tp$mro;
-        for (i = 0; i < mro.v.length; ++i) {
-            base = mro.v[i];
-            for (prop in base) {
-                if (base.hasOwnProperty(prop)) {
-                    s = getName(prop);
-                    if (s) {
-                        names.push(new Sk.builtin.str(s));
+        if (mro) {
+            mro = x.tp$mro;
+            for (i = 0; i < mro.v.length; ++i) {
+                base = mro.v[i];
+                for (prop in base) {
+                    if (base.hasOwnProperty(prop)) {
+                        s = getName(prop);
+                        if (s) {
+                            names.push(new Sk.builtin.str(s));
+                        }
                     }
                 }
             }
@@ -578,8 +596,46 @@ Sk.builtin.dir = function dir (x) {
 };
 
 Sk.builtin.dir.slotNameToRichName = function (k) {
-    // todo; map tp$xyz to __xyz__ properly
-    return undefined;
+    var map = {
+        "nb$add": "__add__",
+        "nb$subtract": "__sub__",
+        "nb$multiply": "__mul__",
+        "nb$divide": "__div__",
+        "nb$floor_divide": "__floordiv__",
+        "nb$remainder": "__mod__",
+        "nb$power": "__pow__",
+        "nb$lshift": "__lshift__",
+        "nb$rshift": "__rshift__",
+        "nb$and": "__and__",
+        "nb$xor": "__xor__",
+        "nb$or": "__or__",
+        "nb$negative": "__neg__",
+        "nb$positive": "__pos__",
+        "nb$invert": "__invert__",
+        "$d": "__dict__",
+        "tp$iter": "__iter__",
+        "tp$hash": "__hash__",
+        "tp$str": "__str__",
+        "tp$mro": "__mro__",
+        "tp$name": "__name__",
+        "tp$richcompare": "__cmp__",
+        "$r": "__repr__",
+        "sq$length": "__len__",
+        "sq$contains": "__contains__",
+        "mp$length": "__len__",
+        "ob$type": "__class__"
+    };
+
+    if (k.substring(0,3) === "tp$") {
+        return "__" + k.substring(3) + "__";
+    } else if(k.lastIndexOf("nb$inplace_", 0) === 0) {
+        // inplace ops
+        return "__i" + k.substring(11) + "__";
+    } else if(map[k] !== undefined) {
+        return map[k];
+    }
+
+    return k;
 };
 
 Sk.builtin.repr = function repr (x) {
@@ -679,14 +735,18 @@ Sk.builtin.hash = function hash (value) {
         return 0;
     }};
 
+    if ((value instanceof Object) && Sk.builtin.checkNone(value.tp$hash)) {
+        // python sets the hash function to None , so we have to catch this case here
+        throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
+    }
+
     if ((value instanceof Object) && (value.tp$hash !== undefined)) {
         if (value.$savedHash_) {
             return value.$savedHash_;
         }
         value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
-    }
-    else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
+    } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
         return Sk.misceval.callsim(value.__hash__, value);
     }
     else if (value instanceof Sk.builtin.bool) {
@@ -711,7 +771,6 @@ Sk.builtin.hash = function hash (value) {
     }
 
     return new Sk.builtin.str((typeof value) + " " + String(value));
-    // todo; throw properly for unhashable types
 };
 
 Sk.builtin.getattr = function getattr (obj, name, default_) {
@@ -995,6 +1054,11 @@ Sk.builtin.pow = function pow (a, b, c) {
         c = undefined;
     }
 
+    // add complex type hook here, builtin is messed up anyways
+    if (Sk.builtin.checkComplex(a)) {
+        return a.nb$power(b, c); // call complex pow function
+    }
+
     a_num = Sk.builtin.asnum$(a);
     b_num = Sk.builtin.asnum$(b);
     c_num = Sk.builtin.asnum$(c);
@@ -1050,6 +1114,66 @@ Sk.builtin.quit = function quit (msg) {
     throw new Sk.builtin.SystemExit(s);
 };
 
+Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
+    var arr;
+    var next;
+    var iter;
+    var compare_func;
+    var list;
+    if (key !== undefined && !(key instanceof Sk.builtin.none)) {
+        if (cmp instanceof Sk.builtin.none || cmp === undefined) {
+            compare_func = function (a, b) {
+                return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+            };
+        }
+        else {
+            compare_func = function (a, b) {
+                return Sk.misceval.callsim(cmp, a[0], b[0]);
+            };
+        }
+        iter = iterable.tp$iter();
+        next = iter.tp$iternext();
+        arr = [];
+        while (next !== undefined) {
+            arr.push([Sk.misceval.callsim(key, next), next]);
+            next = iter.tp$iternext();
+        }
+        list = new Sk.builtin.list(arr);
+    }
+    else {
+        if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
+            compare_func = cmp;
+        }
+        list = new Sk.builtin.list(iterable);
+    }
+
+    if (compare_func !== undefined) {
+        list.list_sort_(list, compare_func);
+    }
+    else {
+        list.list_sort_(list);
+    }
+
+    if (reverse) {
+        list.list_reverse_(list);
+    }
+
+    if (key !== undefined && !(key instanceof Sk.builtin.none)) {
+        iter = list.tp$iter();
+        next = iter.tp$iternext();
+        arr = [];
+        while (next !== undefined) {
+            arr.push(next[1]);
+            next = iter.tp$iternext();
+        }
+        list = new Sk.builtin.list(arr);
+    }
+
+    return list;
+};
+Sk.builtin.sorted.co_varnames = ["cmp", "key", "reverse"];
+Sk.builtin.sorted.$defaults = [Sk.builtin.none.none$, Sk.builtin.none.none$, false];
+Sk.builtin.sorted.co_numargs = 4;
 
 Sk.builtin.issubclass = function issubclass (c1, c2) {
     var i;
@@ -1129,6 +1253,16 @@ Sk.builtin.divmod = function divmod (a, b) {
     return Sk.abstr.numberBinOp(a, b, "DivMod");
 };
 
+/**
+ * Convert a value to a “formatted” representation, as controlled by format_spec. The interpretation of format_spec 
+ * will depend on the type of the value argument, however there is a standard formatting syntax that is used by most
+ * built-in types: Format Specification Mini-Language.
+ */
+Sk.builtin.format = function format (value, format_spec) {
+    Sk.builtin.pyCheckArgs("format", arguments, 1, 2);
+
+    return Sk.abstr.objectFormat(value, format_spec);
+};
 
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
@@ -1136,18 +1270,13 @@ Sk.builtin.bytearray = function bytearray () {
 Sk.builtin.callable = function callable () {
     throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
 };
-Sk.builtin.complex = function complex () {
-    throw new Sk.builtin.NotImplementedError("complex is not yet implemented");
-};
 Sk.builtin.delattr = function delattr () {
     throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
 };
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
-Sk.builtin.format = function format () {
-    throw new Sk.builtin.NotImplementedError("format is not yet implemented");
-};
+
 Sk.builtin.frozenset = function frozenset () {
     throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };
@@ -1158,6 +1287,9 @@ Sk.builtin.help = function help () {
 Sk.builtin.iter = function iter () {
     throw new Sk.builtin.NotImplementedError("iter is not yet implemented");
 };
+/*
+    https://github.com/python/cpython/blob/0e4655fbb6e81d3fe8ab7b7ef03979bc808521f5/Python/ceval.c#L4057
+*/
 Sk.builtin.locals = function locals () {
     throw new Sk.builtin.NotImplementedError("locals is not yet implemented");
 };

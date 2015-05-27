@@ -307,7 +307,7 @@ var $builtinmodule = function (name) {
         return Sk.builtin.dict.prototype.mp$ass_subscript.call(this, key, w);
     }
 
-    mod.OrderedDict.prototype.mp$del_subscript = function(key, w)
+    mod.OrderedDict.prototype.mp$del_subscript = function(key)
     {
         var idx = this.orderedkeys.indexOf(key);
         if (idx != -1)
@@ -315,7 +315,7 @@ var $builtinmodule = function (name) {
             this.orderedkeys.splice(idx, 1);
         }
 
-        return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key, w);
+        return Sk.builtin.dict.prototype.mp$del_subscript.call(this, key);
     }
 
     mod.OrderedDict.prototype.tp$iter = function()

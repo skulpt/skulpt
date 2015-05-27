@@ -28,6 +28,7 @@ Sk.builtin.set = function (S) {
     return this;
 };
 
+Sk.builtin.set.prototype.__doc__ = new Sk.builtin.str("set() -> new empty set object\nset(iterable) -> new set object\n\nBuild an unordered collection of unique elements.");
 
 Sk.builtin.set.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("set", Sk.builtin.set);
 
@@ -46,11 +47,15 @@ Sk.builtin.set.prototype["$r"] = function () {
     for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         ret.push(Sk.misceval.objectRepr(i).v);
     }
-    return new Sk.builtin.str("set([" + ret.join(", ") + "])");
+    if(Sk.python3) {
+        return new Sk.builtin.str("{" + ret.join(", ") + "}");
+    } else {
+        return new Sk.builtin.str("set([" + ret.join(", ") + "])");
+    }
 };
 Sk.builtin.set.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 // todo; you can't hash a set() -- what should this be?
-Sk.builtin.set.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+Sk.builtin.set.prototype.tp$hash = Sk.builtin.none.none$;
 
 Sk.builtin.set.prototype.tp$richcompare = function (w, op) {
     // todo; NotImplemented if either isn't a set

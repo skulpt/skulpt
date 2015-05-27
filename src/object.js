@@ -9,6 +9,34 @@ Sk.builtin.object = function () {
     return this;
 };
 
+/* doc string, needs to initialized later */
+// Sk.builtin.object.prototype.__doc__ = new Sk.builtin.str("The most base type");
+
+/*
+ * Special method look up. First try getting the method via
+ * internal dict and getattr. If gettattr is not present (builtins)
+ * try if method is defined on the object itself
+ *
+ * Return null if not found or the function
+ */
+Sk.builtin.object._PyObject_LookupSpecial = function(op, str) {
+    var res;
+
+    if(op == null) {
+        return null;
+    }
+
+    if(op.tp$getattr && op.tp$getattr(str)) {
+        return op.tp$getattr(str);
+    }
+
+    if(op[str]) {
+        return op[str];
+    }
+
+    return null;
+};
+
 /**
  * @return {undefined}
  */
@@ -107,8 +135,7 @@ Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", 
 /**
  * @constructor
  */
-Sk.builtin.none = function () {
-};
+Sk.builtin.none = function () { };
 Sk.builtin.none.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("NoneType", Sk.builtin.none);
 Sk.builtin.none.prototype.tp$name = "NoneType";
 Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {v: {value: null, enumerable: true}});

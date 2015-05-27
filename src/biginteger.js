@@ -900,6 +900,7 @@ Sk.builtin.biginteger.prototype.bnIntValue = function () {
     else if (this.t === 0) {
         return 0;
     }
+
     return ((this[1] & ((1 << (32 - this.DB)) - 1)) << this.DB) | this[0];
 };
 

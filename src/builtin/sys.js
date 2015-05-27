@@ -12,7 +12,14 @@ var $builtinmodule = function (name) {
     sys.copyright = Sk.builtin["str"]("Copyright 2009-2010 Scott Graham.\nAll Rights Reserved.\n");
 
     sys.maxint = Sk.builtin.assk$(Math.pow(2,53)-1, Sk.builtin.nmber.int$);
-    
+
+    /*  The largest positive integer supported by the platform’s Py_ssize_t type,
+     *  and thus the maximum size lists, strings, dicts, and many other containers can have.
+     *
+     *  In skulpt this is the same as maxint, due to the underlying implementation in javascript
+     */
+    sys.maxsize = Sk.builtin.assk$(Math.pow(2,53)-1, Sk.builtin.nmber.int$);
+
     sys.modules = Sk.sysmodules;
 
     sys.path = Sk.realsyspath;
@@ -56,6 +63,10 @@ var $builtinmodule = function (name) {
     sys.debug = new Sk.builtin.func(function () {
         debugger;
     });
+
+    // make sys.version_info a sublcass of tuple
+    //version_info_f = 
+    sys.version_info = new Sk.builtin.tuple([new Sk.builtin.int_(3), new Sk.builtin.int_(0), new Sk.builtin.int_(0), new Sk.builtin.str("beta"), new Sk.builtin.int_(0)]);
 
     return sys;
 };

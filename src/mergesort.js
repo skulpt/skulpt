@@ -42,6 +42,7 @@ Sk.quickSort = function (arr, cmp, key, reverse) {
                 cmpresult = Sk.misceval.callsim(cmp, arr[ix], piv);
             }
             if (Sk.builtin.asnum$(cmpresult) < 0) {
+
                 tmp = arr[store];
                 arr[store] = arr[ix];
                 arr[ix] = tmp;
