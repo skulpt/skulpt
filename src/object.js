@@ -11,7 +11,7 @@ Sk.builtin.object = function () {
 
 /**
  * Special method look up. First try getting the method via
- * internal dict and getattr. If gettattr is not present (builtins)
+ * internal dict and getattr. If getattr is not present (builtins)
  * try if method is defined on the object itself
  *
  * Return null if not found or the function
