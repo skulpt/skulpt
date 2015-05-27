@@ -1,3 +1,7 @@
+if(Sk.builtin === undefined) {
+    Sk.builtin = {};
+}
+
 /**
  *
  * @constructor
@@ -16,7 +20,6 @@
  *
  * calling the type or calling an instance of the type? or both?
  */
-
 Sk.builtin.type = function (name, bases, dict) {
     var mro;
     var obj;
@@ -244,7 +247,7 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
             cname = mod.v + ".";
         }
         ctype = "class";
-        if (!mod && !t.sk$klass) {
+        if (!mod && !t.sk$klass && !Sk.python3) {
             ctype = "type";
         }
         return new Sk.builtin.str("<" + ctype + " '" + cname + t.tp$name + "'>");
@@ -254,13 +257,18 @@ Sk.builtin.type.makeIntoTypeObj = function (name, t) {
     t.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
     t.tp$richcompare = Sk.builtin.type.prototype.tp$richcompare;
     t.sk$type = true;
+
     return t;
 };
 
 Sk.builtin.type.ob$type = Sk.builtin.type;
 Sk.builtin.type.tp$name = "type";
 Sk.builtin.type["$r"] = function () {
-    return new Sk.builtin.str("<type 'type'>");
+    if(Sk.python3) {
+        return new Sk.builtin.str("<class 'type'>");
+    } else {
+        return new Sk.builtin.str("<type 'type'>");
+    }
 };
 
 //Sk.builtin.type.prototype.tp$descr_get = function() { print("in type descr_get"); };
@@ -303,6 +311,9 @@ Sk.builtin.type.prototype.tp$setattr = function (name, value) {
     // class attributes are direct properties of the object
     this[name] = value;
 };
+
+/* doc string, needs to initialized later */
+// Sk.builtin.type.prototype.__doc__ = new Sk.builtin.str("type(object_or_name, bases, dict)\ntype(object) -> the object's type\ntype(name, bases, dict) -> a new type");
 
 Sk.builtin.type.typeLookup = function (type, name) {
     var mro = type.tp$mro;
@@ -408,7 +419,7 @@ Sk.builtin.type.buildMRO_ = function (klass) {
         [klass]
     ];
 
-    // Sk.debugout("buildMRO for", klass.tp$name);
+    //Sk.debugout("buildMRO for", klass.tp$name);
 
     var kbases = klass["$d"].mp$subscript(Sk.builtin.type.basesStr_);
     for (i = 0; i < kbases.v.length; ++i) {

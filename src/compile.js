@@ -107,7 +107,7 @@ Compiler.prototype.annotateSource = function (ast) {
         }
         out("^\n//\n");
 
-        out("currLineNo = ", lineno, ";\ncurrColNo = ", col_offset, "\n\n");
+        out("currLineNo = ", lineno, ";\ncurrColNo = ", col_offset, ";\n\n");
     }
 };
 
@@ -2234,7 +2234,7 @@ Compiler.prototype.cmod = function (mod) {
         "if (Sk.retainGlobals) {" +
         "    if (Sk.globals) { $gbl = Sk.globals; Sk.globals = $gbl; $loc = $gbl; }" +
         "    else { Sk.globals = $gbl; }" +
-        "} else { Sk.globals = $gbl; }"
+        "} else { Sk.globals = $gbl; }";
 
     // Add the try block that pops the try/except stack if one exists
     // Github Issue #38
@@ -2286,11 +2286,17 @@ Compiler.prototype.cmod = function (mod) {
  */
 Sk.compile = function (source, filename, mode, canSuspend) {
     //print("FILE:", filename);
-    var cst = Sk.parse(filename, source);
-    var ast = Sk.astFromParse(cst, filename);
+    var parse = Sk.parse(filename, source);
+    var ast = Sk.astFromParse(parse.cst, filename, parse.flags);
+
+    // compilers flags, later we can add other ones too
+    var flags = {};
+    flags.cf_flags = parse.flags;
+
     var st = Sk.symboltable(ast, filename);
-    var c = new Compiler(filename, st, 0, canSuspend, source); // todo; CO_xxx
+    var c = new Compiler(filename, st, flags.cf_flags, canSuspend, source); // todo; CO_xxx
     var funcname = c.cmod(ast);
+
     var ret = c.result.join("");
     return {
         funcname: funcname,
