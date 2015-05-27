@@ -102,12 +102,12 @@ class TestCase:
         res = not isinstance(a,b)
         self.appendResult(res,str(a)+' to not be an instance of ',b,feedback)
 
-    def assertAlmostEqual(self,a,b, feedback=""):
-        res = round(a-b,7) == 0
+    def assertAlmostEqual(self, a, b, places=7, feedback=""):
+        res = round(a-b, places) == 0
         self.appendResult(res,str(a)+' to equal ',b,feedback)
 
-    def assertNotAlmostEqual(self,a,b, feedback=""):
-        res = round(a-b,7) != 0
+    def assertNotAlmostEqual(self, a, b, places=7, feedback=""):
+        res = round(a-b, places) != 0
         self.appendResult(res,str(a)+' to not equal ',b,feedback)
 
     def assertGreater(self,a,b, feedback=""):
