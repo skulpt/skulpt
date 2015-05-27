@@ -726,6 +726,11 @@ Sk.importMain("%s", false);
                 getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
 
         outs, errs = p.communicate()
+
+        if p.returncode != 0:
+            failTot += 1
+            print "{} exited with error code {}".format(fn,p.returncode)
+
         print outs
         if errs:
             print errs

@@ -509,6 +509,62 @@ The Sk.builtin.func method creates a function.  For module creation we typically
 
 Well, I think this should be enough to get you going.  Its worth repeating, if you made it this far, don't forget to call m docbi or m dist after you make changes in your module, its easy to get into the mode of thinking that the new javascript is automatically loaded.  But skulpt-stdlib.js is not automatically rebuilt!
 
+Importing/Using a module in another module
+------------------------------------------
+
+While working on the namedtuple factory in the collections module I needed to add code to make
+sure that the fields named in the named tuple did not duplicate python keywords.  while I was
+looking around for a list of keywords I discovered that there already was a list of keywords
+in the keyword module.  Why not use that?  A couple of problems:
+
+* How do you import a module into another module?  Especially under the condition
+where you are writing a module in javascript and the module you want to include is a python
+module?
+
+* How do you call a function that was imported from a python module?  Here is the snippet
+that demonstrates
+
+.. code-block:: javascript
+
+    var keywds = Sk.importModule("keyword", false, false);
+
+    mod.namedtuple = function (name, fields) {
+        var nm = Sk.ffi.remapToJs(name);
+        // fields could be a string or a tuple or list of strings
+        var flds = Sk.ffi.remapToJs(fields);
+
+        if (typeof(flds) === 'string') {
+            flds = flds.split(/\s+/);
+        }
+        // use the keyword module function iskeyword
+        for (i = 0; i < flds.length; i++) {
+            if (Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],Sk.ffi.remapToPy(flds[i])))) {
+                throw new Sk.builtin.ValueError("Type names and field names cannot be a keyword: " + flds[i]);
+            }
+        }
+
+The importing part is easy:   ``Sk.importModule(name, dumpJS, canSuspend)``
+
+The not-so-obvious part is the
+line:  ``Sk.ffi.remapToJs(Sk.misceval.callsim(keywds.$d['iskeyword'],Sk.ffi.remapToPy(flds[i])))``
+
+Working inside out:  We use ``Sk.misceval.callsim`` to call the python function ``iskeyword``  which we
+retrieve from the module's dictionary of methods ``$d``  Because we are calling a Python function we need
+to remap the parameter from a javascript string to a Python string object.  Hence the ``remapToPy`` call
+in the parameter.  Since ``iskeyword`` will return a Python bool object we need to remap that back
+to javscript for our if statement.
+
+You can use a similar strategy for creating an instance of a class:
+
+.. code-block:: javascript
+
+   var io = Sk.importModule("io", false, false);
+   var stdin = Sk.misceval.callsim(io.$d["TextIOWrapper"]);
+
+
+Seems like a lot of work to check for a keyword in an array.  But knowing how to do this for much more
+complicated methods in other modules will pay off.
+
 
 Debugging
 ---------
