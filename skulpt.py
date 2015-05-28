@@ -850,10 +850,9 @@ class HttpHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         else:
             SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
-def host():
+def host(PORT = 20710):
     """simple http host from root of dir for testing"""
     import SocketServer
-    PORT = 20710
     httpd = SocketServer.TCPServer(("", PORT), HttpHandler)
     print "serving at port", PORT
     httpd.serve_forever()
@@ -877,7 +876,7 @@ Commands:
     regentests       Regenerate all of the above
 
     help             Display help information about Skulpt
-    host             Start a simple HTTP server for testing
+    host [PORT]      Start a simple HTTP server for testing. Default port: 20710
     upload           Run appcfg.py to upload doc to live GAE site
     doctest          Run the GAE development server for doc testing
     nrt              Generate a file for a new test case
@@ -980,7 +979,14 @@ def main():
     elif cmd == "vfs":
         buildVFS()
     elif cmd == "host":
-        host()
+        if len(sys.argv) < 3:
+            host()
+        else:
+            try:
+                host(int(sys.argv[2]))
+            except ValueError:
+                print "Port must be an integer"
+                sys.exit(2)
     elif cmd == "shell":
         shell(sys.argv[2]);
     elif cmd == "repl":
