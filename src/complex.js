@@ -83,6 +83,7 @@ Sk.builtin.complex = function (real, imag) {
 
     // FIXME: seems that calling complex() with custom class which implements __complex__ this check fails
     // check for valid arguments
+    // the checkNumber must be replaced with a function that also checks for types that implement __float__
     if (nbr == null || (!Sk.builtin.checkNumber(r) && !Sk.builtin.checkComplex(r)) || ((i != null) && (nbi == null || (!Sk.builtin.checkNumber(i) && !Sk.builtin.checkComplex(i))))) {
         throw new Sk.builtin.TypeError("complex() argument must be a string or number");
     }
@@ -655,7 +656,8 @@ Sk.builtin.complex._complex_check = function (op) {
         return true;
     }
 
-    if (Sk.builtin.issubclass(op, Sk.builtin.complex)) {
+    // check if type of ob is a subclass
+    if (Sk.builtin.issubclass(Sk.builtin.type(op), Sk.builtin.complex)) {
         return true;
     }
 
