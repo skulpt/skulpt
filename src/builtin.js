@@ -495,6 +495,7 @@ Sk.builtin.dir = function dir (x) {
     var k;
     var names;
     var getName;
+    // todo; should also be callable with 0 params: gives locals then
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
     getName = function (k) {
