@@ -638,6 +638,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
     var mangled;
     var val;
     var result;
+    var nStr; // used for preserving signs for floats (zeros)
     if (e.lineno > this.u.lineno) {
         this.u.lineno = e.lineno;
         this.u.linenoSet = false;
@@ -678,10 +679,19 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
                 return e.n;
             }
             else if (e.n instanceof Sk.builtin.nmber) {
-                return "new Sk.builtin.nmber(" + e.n.v + ",'" + e.n.skType + "')";
+                // Preserve sign of zero for floats
+                nStr = e.n.skType === Sk.builtin.nmber.float$ && e.n.v === 0 && 1/e.n.v === -Infinity ? "-0" : e.n.v;
+                return "new Sk.builtin.nmber(" + nStr + ",'" + e.n.skType + "')";
             }
             else if (e.n instanceof Sk.builtin.lng) {
+                // long uses the tp$str() method which delegates to nmber.str$ which preserves the sign
                 return "Sk.longFromStr('" + e.n.tp$str().v + "')";
+            }
+            else if (e.n instanceof Sk.builtin.complex) {
+                // preserve sign of zero here too
+                var real_val = e.n.real.v === 0 && 1/e.n.real.v === -Infinity ? "-0" : e.n.real.v;
+                var imag_val = e.n.imag.v === 0 && 1/e.n.imag.v === -Infinity ? "-0" : e.n.imag.v;
+                return "new Sk.builtin.complex(new Sk.builtin.float_(" + real_val + "), new Sk.builtin.float_(" + imag_val + "))";
             }
             goog.asserts.fail("unhandled Num type");
         case Str:

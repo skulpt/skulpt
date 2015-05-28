@@ -412,9 +412,13 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-    return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+    if (Sk.builtin.checkNumber(x)) {
+        return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+    } else if (Sk.builtin.checkComplex(x)) {
+        return Sk.misceval.callsim(x.__abs__, x);
+    }
+    
+    throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
 Sk.builtin.ord = function ord (x) {
@@ -1030,6 +1034,11 @@ Sk.builtin.pow = function pow (a, b, c) {
         c = undefined;
     }
 
+    // add complex type hook here, builtin is messed up anyways
+    if (Sk.builtin.checkComplex(a)) {
+        return a.nb$power(b, c); // call complex pow function
+    }
+
     a_num = Sk.builtin.asnum$(a);
     b_num = Sk.builtin.asnum$(b);
     c_num = Sk.builtin.asnum$(c);
@@ -1181,18 +1190,14 @@ Sk.builtin.bytearray = function bytearray () {
 Sk.builtin.callable = function callable () {
     throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
 };
-Sk.builtin.complex = function complex () {
-    throw new Sk.builtin.NotImplementedError("complex is not yet implemented");
-};
+
 Sk.builtin.delattr = function delattr () {
     throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
 };
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
-Sk.builtin.format = function format () {
-    throw new Sk.builtin.NotImplementedError("format is not yet implemented");
-};
+
 Sk.builtin.frozenset = function frozenset () {
     throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };

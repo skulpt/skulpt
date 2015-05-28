@@ -80,11 +80,11 @@ Sk.builtins = {
     "globals"   : Sk.builtin.globals,
     "issubclass": Sk.builtin.issubclass,
     "iter"      : Sk.builtin.iter,
+    "complex"   : Sk.builtin.complex,
 
     // Functions below are not implemented
     "bytearray" : Sk.builtin.bytearray,
     "callable"  : Sk.builtin.callable,
-    "complex"   : Sk.builtin.complex,
     "delattr"   : Sk.builtin.delattr,
     "eval_$rn$" : Sk.builtin.eval_,
     "execfile"  : Sk.builtin.execfile,

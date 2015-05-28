@@ -242,6 +242,11 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
 
     if (a.constructor === Sk.builtin.lng) {
         return [a, b];
+    } else if (a.constructor === Sk.builtin.nmber && b.constructor === Sk.builtin.complex) {
+        // special case of upconverting nmber and complex
+        // can we use here the Sk.builtin.checkComplex() method?
+        tmp = new Sk.builtin.complex(a);
+        return [tmp, b];
     } else if (a.constructor === Sk.builtin.nmber) {
         return [a, b];
     } else if (typeof a === "number") {

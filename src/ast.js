@@ -1773,9 +1773,9 @@ function parsenumber (c, s, lineno) {
     var tmp;
     var end = s.charAt(s.length - 1);
 
-    // todo; no complex support
+    // call internal complex type constructor for complex strings
     if (end === "j" || end === "J") {
-        throw new Sk.builtin.SyntaxError("complex numbers are currently unsupported", c.c_filename, lineno);
+        return Sk.builtin.complex.complex_subtype_from_string(s);
     }
 
     // Handle longs
