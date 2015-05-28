@@ -460,6 +460,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
     // a Python language module.  for some reason, __name__ gets overwritten.
     var saveSk = Sk.globals;
+    var tret;
     var ret = Sk.importModuleInternal_(name, undefined, undefined, undefined, true);
 
     return (function finalizeImport(ret) {
@@ -476,6 +477,15 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist) {
         // if there's a fromlist we want to return the actual module, not the
         // toplevel namespace
         ret = Sk.sysmodules.mp$subscript(name);
+        // But if there is a fromlist it might also be a module in a package
+        // so we should try to import it
+        if (fromlist.length == 1) {
+            try {
+                tret = Sk.importModuleInternal_(name+"."+fromlist[0]);
+                //            Sk.abstr.sattr(ret,fromlist[i],tret);
+                return  tret;
+            } catch (x) {}
+        }
         goog.asserts.assert(ret);
         return ret;
     })(ret);
