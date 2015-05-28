@@ -256,11 +256,11 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     var j;
     var i;
     var ret;
-    if (!Sk.builtin.checkInt(n)) {
+    if (!Sk.misceval.isIndex(n)) {
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
     }
 
-    n = Sk.builtin.asnum$(n);
+    n = Sk.misceval.asIndex(n);
     ret = [];
     for (i = 0; i < n; ++i) {
         for (j = 0; j < this.v.length; ++j) {
@@ -346,7 +346,7 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
         }
     }
     else if (index instanceof Sk.builtin.slice) {
-        indices = index.indices(this.v.length);
+        indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_ass_slice_(indices[0], indices[1], value);
         }
@@ -387,7 +387,7 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
         }
     }
     else if (index instanceof Sk.builtin.slice) {
-        indices = index.indices(this.v.length);
+        indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_del_slice_(indices[0], indices[1]);
         }
