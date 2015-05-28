@@ -171,9 +171,11 @@ class TestCase:
 
 
 
-def main(verbose=False):
-    glob = globals()  # globals() still needs work
-    for name in glob:
+def main(verbose=False, names=None):
+    glob = globals() # globals() still needs work
+    if names == None:
+        names = glob
+    for name in names:
         if issubclass(glob[name],TestCase):
             try:
                 tc = glob[name]()
