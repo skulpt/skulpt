@@ -47,16 +47,21 @@ Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
 goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
 
 Sk.misceval.isIndex = function (o) {
-    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index ||
-        o === true || o === false) {
+    if (Sk.builtin.checkInt(o)) {
         return true;
     }
-
-    return Sk.builtin.checkInt(o);
+    if (o.tp$getattr) {
+        if (o.tp$getattr("__index__")) {
+            return true;
+        }
+    }
+    return false;
 };
 goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
 Sk.misceval.asIndex = function (o) {
+    var idxfn, ret;
+
     if (!Sk.misceval.isIndex(o)) {
         return undefined;
     }
@@ -80,6 +85,17 @@ Sk.misceval.asIndex = function (o) {
     }
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
+    }
+    if (o.tp$getattr) {
+        idxfn = o.tp$getattr("__index__");
+        if (idxfn) {
+            ret = Sk.misceval.callsim(idxfn.im_func, o);
+            if (!Sk.builtin.checkInt(ret)) {
+                throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " + 
+                                               Sk.abstr.typeName(ret) + ")");
+            }
+            return Sk.builtin.asnum$(ret);
+        }
     }
     goog.asserts.fail("todo asIndex;");
 };
