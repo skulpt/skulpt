@@ -49,7 +49,10 @@ Sk.builtin.make_structseq = function (module, name, fields, doc) {
     Sk.builtin.structseq_types[nm] = cons;
 
     goog.inherits(cons, Sk.builtin.tuple);
-    cons.prototype.__doc__ = doc;
+    if (doc)
+    {
+        cons.prototype.__doc__ = doc;
+    }
     cons.prototype.tp$name = nm;
     cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
     cons.prototype.ob$type["$d"] = new Sk.builtin.dict([]);
