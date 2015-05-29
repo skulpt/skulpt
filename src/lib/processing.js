@@ -1370,8 +1370,8 @@ var $builtinmodule = function (name) {
             mode = mod.P2D;
         }
         mod.processing.size(w.v, h.v, mode.v);
-	mod.width = Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
-	mod.height = Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$);
+    mod.width = Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
+    mod.height = Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$);
     });
 
     mod.exitp = new Sk.builtin.func(function (h, w) {

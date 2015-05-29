@@ -69,13 +69,14 @@ Sk.builtins = {
     "type"      : Sk.builtin.type,
     "input"     : Sk.builtin.input,
     "raw_input" : Sk.builtin.raw_input,
+    "setattr"   : Sk.builtin.setattr,
     /*'read': Sk.builtin.read,*/
     "jseval"    : Sk.builtin.jseval,
     "jsmillis"  : Sk.builtin.jsmillis,
     "quit"      : Sk.builtin.quit,
     "exit"      : Sk.builtin.quit,
 
-// Functions below are not implemented
+    // Functions below are not implemented
     "bytearray" : Sk.builtin.bytearray,
     "callable"  : Sk.builtin.callable,
     "complex"   : Sk.builtin.complex,

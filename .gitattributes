@@ -1,0 +1,9 @@
+# Mark python files as text ending with lf
+*.py             text eol=lf
+
+# Mark test outputs as non-text, to prevent line-ending normalization
+/test/**/*.expect         -text
+/test/**/*.trans          -text
+/test/**/*.py.symtab      -text
+/test/**/*.py.real        -text
+/test/**/*.py.real.alt    -text

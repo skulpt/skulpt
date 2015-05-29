@@ -1,0 +1,10 @@
+TypeError: 'int' object is not iterable on line 4
+TypeError: elements() takes exactly 1 arguments (2 given) on line 11
+TypeError: most_common() takes at most 2 arguments (3 given) on line 16
+TypeError: an integer is required on line 21
+[]
+[('l', 2), ('e', 1), ('h', 1), ('o', 1)]
+TypeError: update() takes at most 2 arguments (3 given) on line 29
+TypeError: 'int' object is not iterable on line 34
+TypeError: subtract() takes at most 2 arguments (3 given) on line 39
+TypeError: 'float' object is not iterable on line 44

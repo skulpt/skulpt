@@ -228,7 +228,11 @@ function testRun(name, nocatch, debugMode)
     if (!nocatch)
     {
         promise = promise.then(null, function(e) {
-            if (e.name !== undefined)
+            if (e instanceof Sk.builtin.SystemExit) {
+                // SystemExit isn't a failing exception, so treat it specially
+                got += e.toString() + "\n";
+            }
+            else if (e.name !== undefined)
             {
                 // js exception, currently happens for del'd objects. shouldn't
                 // really though.
