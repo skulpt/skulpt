@@ -362,7 +362,7 @@ class ComplexTest(unittest.TestCase):
 
         # FIXME: currently complex does not call internal __float__ method
         # FIXME: complex does not support keyword args
-        #self.assertAlmostEqual(complex(float2(42.)), 42)
+        self.assertAlmostEqual(complex(float2(42.)), 42)
         #self.assertAlmostEqual(complex(real=float2(17.), imag=float2(23.)), 17+23j)
         #self.assertRaises(TypeError, complex, float2(None))
 

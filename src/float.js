@@ -88,11 +88,17 @@ Sk.builtin.float_.PyFloat_Check = function (op) {
         return false;
     }
 
+    // this is a little bit hacky
+    // ToDo: subclassable builtins do not require this
+    if (Sk.builtin.checkNumber(op)) {
+        return true;
+    }
+
     if (Sk.builtin.checkFloat(op)) {
         return true;
     }
 
-    if (Sk.builtin.issubclass(op, Sk.builtin.float_)) {
+    if (Sk.builtin.issubclass(op.ob$type, Sk.builtin.float_)) {
         return true;
     }
 
@@ -121,18 +127,13 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
     }
 
     // check if special method exists (nb_float is not implemented in skulpt, hence we use __float__)
-    f = Sk.builtin.object._PyObject_LookupSpecial(op, "__float__");
+    f = Sk.builtin.type.typeLookup(op.ob$type, "__float__");
     if (f == null) {
         throw new Sk.builtin.TypeError("a float is required");
     }
 
     // call internal float method
-    if (Sk.builtin.checkFunction(f)) {
-        fo = Sk.misceval.callsim(f);
-    } else {
-        // method on builtin, provide this arg
-        fo = Sk.misceval.callsim(f, op);
-    }
+    fo = Sk.misceval.callsim(f, op);
 
     // return value of __float__ must be a python float
     if (!Sk.builtin.float_.PyFloat_Check(fo)) {

@@ -1103,25 +1103,6 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         throw new Sk.builtin.TypeError("issubclass() arg 2 must be a classinfo, type, or tuple of classes and types");
     }
 
-    //print("c1 name: " + c1.tp$name);
-
-    if (c2 === Sk.builtin.int_.prototype.ob$type) {
-        return true;
-    }
-
-    if (c2 === Sk.builtin.float_.prototype.ob$type) {
-        return true;
-    }
-
-    if (c2 === Sk.builtin.none.prototype.ob$type) {
-        return true;
-    }
-
-    // Normal case
-    if (c1.ob$type === c2) {
-        return true;
-    }
-
     issubclass_internal = function (klass, base) {
         var i;
         var bases;
@@ -1144,6 +1125,15 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         return false;
     };
 
+    if (Sk.builtin.checkClass(c2)) {
+        /* Quick test for an exact match */
+        if (c1 === c2) {
+            return true;
+        }
+
+        return issubclass_internal(c1, c2);
+    }
+
     // Handle tuple type argument
     if (c2 instanceof Sk.builtin.tuple) {
         for (i = 0; i < c2.v.length; ++i) {
@@ -1153,9 +1143,6 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         }
         return false;
     }
-
-    return issubclass_internal(c1, c2);
-
 };
 
 Sk.builtin.globals = function globals () {

@@ -75,16 +75,27 @@ Sk.builtin.complex = function (real, imag) {
         r = tmp;
     }
 
-    // this replaces the above check: !Sk.builtin.checkNumber(real) && !Sk.builtin.checkString(real)
+    // this check either returns a javascript number or the passed object
+    // but it actually, should check for r->ob_type->tp_as_number
+    // this check is useless
     nbr = Sk.builtin.asnum$(r);
     if (i != null) {
         nbi = Sk.builtin.asnum$(i);
     }
 
-    // FIXME: seems that calling complex() with custom class which implements __complex__ this check fails
+    // this function mimics the tp_as_number->nb_float check in cpython
+    var nb_float = function(op) {
+        if(Sk.builtin.checkNumber(op)) {
+            return true;
+        }
+
+        if(Sk.builtin.type.typeLookup(op.ob$type, "__float__") !== undefined) {
+            return true;
+        }
+    };
+
     // check for valid arguments
-    // the checkNumber must be replaced with a function that also checks for types that implement __float__
-    if (nbr == null || (!Sk.builtin.checkNumber(r) && !Sk.builtin.checkComplex(r)) || ((i != null) && (nbi == null || (!Sk.builtin.checkNumber(i) && !Sk.builtin.checkComplex(i))))) {
+    if (nbr == null || (!nb_float(r) && !Sk.builtin.checkComplex(r)) || ((i != null) && (nbi == null || (!nb_float(i) && !Sk.builtin.checkComplex(i))))) {
         throw new Sk.builtin.TypeError("complex() argument must be a string or number");
     }
 
