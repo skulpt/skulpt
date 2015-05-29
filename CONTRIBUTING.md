@@ -5,20 +5,19 @@ This is the contribute.md of our project. Great to have you here. Here are a few
 
 ## Team members
 
-* [Brad Miller](https://github.com/bnmnetp) -- Current maintainer
-* [Scott Rixner](https://github.com/rixner)
-* [Marie Chatfield](https://github.com/mchat)
-* [Albert-Jan Nijburg](https://github.com/albertjan)
-* [Bob LaCatena](https://github.com/blacatena)
-* [David Holmes](https://github.com/david-geo-holmes)
-* [Charles Severance](https://github.com/csev)
-* [Scott Graham](https://github.com/sgraham) -- although not active at the moment, Scott is the father of Skulpt
+The list of people who have contributed to Skulpt is too big and dynamic to be accurate 
+in a document like this.  Luckily Github does an excellent job of keeping track of
+[people who have contributed](https://github.com/skulpt/skulpt/graphs/contributors)
 
+[Brad Miller](https://github.com/bnmnetp) is the current owner of the project.  But see below for 
+the full list of people with commit privileges.
+ 
 ## Learn & listen
 
 This section includes ways to get started with your open source project. Include links to documentation and to different communication channels:
 
 * github: Lots of good discussion happens around pull requests and bug reports
+* [gitter discussion](https://gitter.im/skulpt/skulpt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * [Mailing list](https://groups.google.com/forum/#!forum/skulpt)
 * IRC channel: [#skulpt](http://webchat.freenode.net/?channels=skulpt)
 * Blog: Some stuff about getting started is on [Brad's blog](http://reputablejournal.com)
@@ -61,6 +60,20 @@ We try to get to pull requests in a very timely way so they don't languish. Noth
 
 ## Coding Style and Conventions
 
+Here are some coding conventions to keep in mind:
+ 
+* ``Sk.ffi.remapToJs`` and ``Sk.ffi.remapToPy`` are your friends.  They take care of the details 
+of going from a Python type to a Javascript type and vice versa.  They are smart enough to work
+with common types and even work well recursively converting containers.  ``Sk.ffi.remapToJs`` is 
+**definitely preferred** over  ``foo.v``  
+* Use the ``pyCheckArgs`` function at the beginning of anything that will be exposed to a Python programmer.
+* Check the types of arguments when you know what they must be.
+* Explicitly return ``Sk.builtin.null.null$`` for functions and methds that should return ``None``
+* If you are adding a module or package to the library, respect the package/module conventions.
+    * modules should be named ``foo.js`` or ``foo.py`` 
+    * packages should be a directory with an ``__init__.js`` or ``__init__.py`` file, and possibly additional modules.
+
+
 In summer of 2014, we adopted the following style and conventions for our code:
 
 * Braces:  One True Brace style -- that means open braces go on the same line as the
@@ -85,6 +98,34 @@ quickly revealed to you by the jshint program.
 Our Travis script will run jshint over all the source.  You should run jshint as well.  
 Many editors and IDEs do this automatically for you -- Atom, PyCharm, TextMate has a
 nice plugin called JSLintMate.  You can easily install [jshint](http://jshint.org) using the ``npm`` package manager that comes with [node](http://nodejs.org).
+
+
+## Committers
+
+The committers are people who are responsible for reviewing and approving pull requests .  These are 
+generally people who have been around the project for a while and have "proven" themselves by contributing
+good code and ideas to the Skulpt.  This list may change over time as people gain or lose interest in
+Skulpt.  If you would like to volunteer contact Brad.
+
+Although a lot of our testing, and checking for adherence to the style guidelines is done automatically
+the review process I would recommend for committers is as follows:
+
+1.  Look at the diffs for each file on github, if it is pretty obvious what they are doing is correct then that is a good sign.
+2.  Look at the tests provided with the PR and try to think if there are additional tests that would provide better coverage. If you think additional tests are needed then you should let the owner of the PR know and have them add more tests. All new PRs that are adding new features should be using the new unittest framework, not the old numbered framework.
+3.  Pull the the PR down to your local machine and run all the tests locally.  (Unless it is really trivial)
+4.  If the code looked a bit more complicated when you examined the diffs, then you should bring it up in your editor and look over the code in context and try to understand it better.  If there are issues with how the code is written or if it is unclear about why something was done, then have that conversation with the owner of the PR.
+5.  Many of us have our own projects that exercise Skulpt to its limits. If you are particularly concerned about a PR then you may want to try out the built js files in your environment.
+6.  It is always appropriate to raise questions and have a group conversation about anything that looks particularly problematic or risky.
+7.  With the new style unit tests, You should ask the submitter to file issues for tests that they comment out.  This will let us track completeness over time.  Not every test needs its own issue.  Something like 'when blah feature is added enable  tests x,y,z in foo_test.py' should work.
+ 
+The current group of committers is as follows:
+
+* [Brad Miller](https://github.com/bnmnetp)
+* [Scott Rixner](https://github.com/ixner)
+* [Albert-Jan](https://github.com/albertjan)
+* [Meredydd Luff](https://github.com/meredydd)
+* [Leszek Swirski](https://github.com/LeszekSwirski)
+* [Ben Wheeler](https://github.com/bzwheeler)
 
 # Documentation
 

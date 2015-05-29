@@ -1,0 +1,7 @@
+TypeError: first argument must be callable on line 4
+TypeError: first argument must be callable on line 9
+TypeError: object is not iterable on line 14
+KeyError: 5 on line 20
+None
+TypeError: __missing__() takes at most 1 arguments (2 given) on line 30
+KeyError: {1: 2} on line 35

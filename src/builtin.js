@@ -128,7 +128,7 @@ Sk.builtin.asnum$nofloat = function (a) {
         a = a.toString();
     }
 
-//	Sk.debugout("INITIAL: " + a);
+    //	Sk.debugout("INITIAL: " + a);
 
     //	If not a float, great, just return this
     if (a.indexOf(".") < 0 && a.indexOf("e") < 0 && a.indexOf("E") < 0) {
@@ -147,16 +147,9 @@ Sk.builtin.asnum$nofloat = function (a) {
         mantissa = a;
     }
 
-//	Sk.debugout("e:" + expon);
-
     expon = parseInt(expon, 10);
 
-//	Sk.debugout("MANTISSA:" + mantissa);
-//	Sk.debugout("EXPONENT:" + expon);
-
     decimal = mantissa.indexOf(".");
-
-//	Sk.debugout("DECIMAL: " + decimal);
 
     //	Simplest case, no decimal
     if (decimal < 0) {
@@ -187,26 +180,16 @@ Sk.builtin.asnum$nofloat = function (a) {
         mantissa = mantissa.substr(0, decimal);
     }
 
-//	Sk.debugout("NO DECIMAL: " + mantissa);
-
     decimal = decimal + expon;
-
-//	Sk.debugout("MOVE DECIM: " + decimal);
-
     while (decimal > mantissa.length) {
         mantissa += "0";
     }
-
-//	Sk.debugout("PADDED    : " + mantissa);
 
     if (decimal <= 0) {
         mantissa = 0;
     } else {
         mantissa = mantissa.substr(0, decimal);
     }
-
-//	Sk.debugout("LENGTH: " + mantissa.length);
-//	Sk.debugout("RETURN: " + mantissa);
 
     return mantissa;
 };
@@ -753,6 +736,21 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
         }
     }
     return ret;
+};
+
+Sk.builtin.setattr = function setattr (obj, name, value) {
+
+    Sk.builtin.pyCheckArgs("setattr", arguments, 3, 3);
+    if (!Sk.builtin.checkString(name)) {
+        throw new Sk.builtin.TypeError("attribute name must be string");
+    }
+    if (obj.tp$setattr) {
+        obj.tp$setattr(Sk.ffi.remapToJs(name), value);
+    } else {
+        throw new Sk.builtin.AttributeError("object has no attribute " + Sk.ffi.remapToJs(name));
+    }
+
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtin.raw_input = function (prompt) {

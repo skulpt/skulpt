@@ -16,3 +16,9 @@ try:
     raise TypeError
 except TypeError as e:
     print "caught", e
+
+try:
+    x = TypeError("abc")
+    raise x
+except TypeError as e:
+    print "caught", e

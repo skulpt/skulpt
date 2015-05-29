@@ -96,7 +96,7 @@ Sk.loadExternalLibrary = function (name) {
         co = { funcname: "$builtinmodule", code: module };
     }
     else {
-        co = Sk.compile(module, path, "exec");
+        co = Sk.compile(module, path, "exec", true);
     }
 
     Sk.externalLibraryCache[name] = co;
@@ -294,7 +294,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
 
     if (suppliedPyBody) {
         filename = name + ".py";
-        co = Sk.compile(suppliedPyBody, filename, "exec");
+        co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
     }
     else {
         // If an onBeforeImport method is supplied, call it and if
@@ -327,7 +327,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
                     isPy = true;
                     return compileReadCode(Sk.importSearchPathForName(name, ".py", false, canSuspend));
                 } else {
-                    return isPy ? Sk.compile(codeAndPath.code, codeAndPath.filename, "exec")
+                    return isPy ? Sk.compile(codeAndPath.code, codeAndPath.filename, "exec", canSuspend)
                         : { funcname: "$builtinmodule", code: codeAndPath.code };
                 }
             })(codeAndPath);
@@ -374,9 +374,6 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
 
         namestr = "new Sk.builtin.str('" + modname + "')";
         finalcode += "\n" + co.funcname + "(" + namestr + ");";
-
-    //	if (Sk.debugCode)
-    //		Sk.debugout(finalcode);
 
         modlocs = goog.global["eval"](finalcode);
 

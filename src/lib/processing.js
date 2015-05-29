@@ -196,12 +196,17 @@ var $builtinmodule = function (name) {
 
     });
 
-    mod.size = new Sk.builtin.func(function (h, w, mode) {
+    mod.width = Sk.builtin.assk$(100, Sk.builtin.nmber.int$);
+    mod.height = Sk.builtin.assk$(100, Sk.builtin.nmber.int$);
+
+    mod.size = new Sk.builtin.func(function (w, h, mode) {
         if (typeof(mode) === "undefined") {
             mode = mod.P2D;
         }
 
-        mod.processing.size(h.v, w.v, mode);
+        mod.processing.size(w.v, h.v, mode.v);
+        mod.width = Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
+        mod.height = Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$); 
     });
 
     mod.exitp = new Sk.builtin.func(function (h, w) {
