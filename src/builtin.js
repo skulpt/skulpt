@@ -495,11 +495,12 @@ Sk.builtin.dir = function dir (x) {
     var k;
     var names;
     var getName;
+    // todo; should also be callable with 0 params: gives locals then
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
     getName = function (k) {
         var s = null;
-        var internal = ["__bases__", "__mro__", "__class__"];
+        var internal = ["__bases__", "__mro__", "__class__", "__name__"];
         if (internal.indexOf(k) !== -1) {
             return null;
         }
@@ -548,8 +549,10 @@ Sk.builtin.dir = function dir (x) {
 
     // Add all class attributes
     mro = x.tp$mro;
+    if(!mro && x.ob$type) {
+        mro = x.ob$type.tp$mro;
+    }
     if (mro) {
-        mro = x.tp$mro;
         for (i = 0; i < mro.v.length; ++i) {
             base = mro.v[i];
             for (prop in base) {

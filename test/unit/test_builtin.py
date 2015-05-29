@@ -25,8 +25,20 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, 1, 'spam', 9)
         self.assertRaises(TypeError, setattr)
 
+    def test_dir_subclasses(self):
+        class Base:
+            def method1(self):
+                pass
 
+        class Sub(Base):
+            def method2(self):
+                pass
 
+        self.assertIn("method1", dir(Sub))
+        self.assertIn("method2", dir(Sub))
+        sub = Sub()
+        self.assertIn("method1", dir(sub))
+        self.assertIn("method2", dir(sub))
 
 if __name__ == "__main__":
     unittest.main()
