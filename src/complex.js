@@ -201,21 +201,12 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
         return null;
     }
 
-    //PyInstance_Check, check if we are dealing with a builtin or not
-    //if(Sk.builtin.checkClass(op)) {
-    //    f = op.tp$getattr(op, complexstr);
-    //} else {
     // the lookup special method does already all the magic
-    f = Sk.builtin.object._PyObject_LookupSpecial(op, "__complex__");
-    //}
+    f = Sk.builtin.object._PyObject_LookupSpecial(op.ob$type, "__complex__");
 
-    if (f !== null) {
-        if (Sk.builtin.checkFunction(f)) {
-            res = Sk.misceval.callsim(f);
-        } else {
-            // method on builtin, provide this arg
-            res = Sk.misceval.callsim(f, op);
-        }
+    if (f != null) {
+        // method on builtin, provide this arg
+        res = Sk.misceval.callsim(f, op);
 
         return res;
     }

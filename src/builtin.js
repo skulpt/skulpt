@@ -217,14 +217,10 @@ Sk.builtin.round = function round (number, ndigits) {
     }
 
     // try calling internal magic method
-    special = Sk.builtin.object._PyObject_LookupSpecial(number, "__round__");
+    special = Sk.builtin.object._PyObject_LookupSpecial(number.ob$type, "__round__");
     if (special != null) {
-        if (Sk.builtin.checkFunction(special)) {
-            return Sk.misceval.callsim(special, ndigits);
-        } else {
-            // method on builtin, provide this arg
-            return Sk.misceval.callsim(special, number, ndigits);
-        }
+        // method on builtin, provide this arg
+        return Sk.misceval.callsim(special, number, ndigits);
     }
 };
 
@@ -531,14 +527,10 @@ Sk.builtin.dir = function dir (x) {
     var _seq;
 
     // try calling magic method
-    var special = Sk.builtin.object._PyObject_LookupSpecial(x, "__dir__");
+    var special = Sk.builtin.object._PyObject_LookupSpecial(x.ob$type, "__dir__");
     if(special != null) {
-        if (Sk.builtin.checkFunction(special)) {
-            _seq =  Sk.misceval.callsim(special);
-        } else {
-            // method on builtin, provide this arg
-            _seq = Sk.misceval.callsim(special, x);
-        }
+        // method on builtin, provide this arg
+        _seq = Sk.misceval.callsim(special, x);
 
         if (!Sk.builtin.checkSequence(_seq)) {
             throw new Sk.builtin.TypeError("__dir__ must return sequence.");

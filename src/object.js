@@ -23,18 +23,7 @@ Sk.builtin.object._PyObject_LookupSpecial = function(op, str) {
         return null;
     }
 
-    if (op.tp$getattr) {
-        res = op.tp$getattr(str);
-        if (res != null) {
-            return res;
-        }
-    }
-
-    if (op[str]) {
-        return op[str];
-    }
-
-    return null;
+    return Sk.builtin.type.typeLookup(op, str);
 };
 
 /**

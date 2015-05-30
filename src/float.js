@@ -48,14 +48,10 @@ Sk.builtin.float_ = function (x) {
     }
 
     // try calling __float__
-    var special = Sk.builtin.object._PyObject_LookupSpecial(x, "__float__");
+    var special = Sk.builtin.object._PyObject_LookupSpecial(x.ob$type, "__float__");
     if (special != null) {
-        if (Sk.builtin.checkFunction(special)) {
-            return Sk.misceval.callsim(special);
-        } else {
-            // method on builtin, provide this arg
-            return Sk.misceval.callsim(special, x);
-        }
+        // method on builtin, provide this arg
+        return Sk.misceval.callsim(special, x);
     }
 
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
