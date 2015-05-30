@@ -217,7 +217,7 @@ Sk.builtin.round = function round (number, ndigits) {
     }
 
     // try calling internal magic method
-    special = Sk.builtin.object._PyObject_LookupSpecial(number.ob$type, "__round__");
+    special = Sk.builtin.object.PyObject_LookupSpecial_(number.ob$type, "__round__");
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.callsim(special, number, ndigits);
@@ -507,7 +507,7 @@ Sk.builtin.dir = function dir (x) {
 
     getName = function (k) {
         var s = null;
-        var internal = ["__bases__", "__mro__", "__class__"];
+        var internal = ["__bases__", "__mro__", "__class__", "__name__"];
         if (internal.indexOf(k) !== -1) {
             return null;
         }
@@ -524,10 +524,11 @@ Sk.builtin.dir = function dir (x) {
     };
 
     names = [];
+
     var _seq;
 
     // try calling magic method
-    var special = Sk.builtin.object._PyObject_LookupSpecial(x.ob$type, "__dir__");
+    var special = Sk.builtin.object.PyObject_LookupSpecial_(x.ob$type, "__dir__");
     if(special != null) {
         // method on builtin, provide this arg
         _seq = Sk.misceval.callsim(special, x);
@@ -574,8 +575,10 @@ Sk.builtin.dir = function dir (x) {
 
         // Add all class attributes
         mro = x.tp$mro;
+        if(!mro && x.ob$type) {
+            mro = x.ob$type.tp$mro;
+        }
         if (mro) {
-            mro = x.tp$mro;
             for (i = 0; i < mro.v.length; ++i) {
                 base = mro.v[i];
                 for (prop in base) {
@@ -589,6 +592,7 @@ Sk.builtin.dir = function dir (x) {
             }
         }
     }
+
     // Sort results
     names.sort(function (a, b) {
         return (a.v > b.v) - (a.v < b.v);

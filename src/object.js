@@ -16,9 +16,10 @@ Sk.builtin.object = function () {
  *
  * Return null if not found or the function
  */
-Sk.builtin.object._PyObject_LookupSpecial = function(op, str) {
+Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
     var res;
 
+    // if op is null, return null
     if (op == null) {
         return null;
     }

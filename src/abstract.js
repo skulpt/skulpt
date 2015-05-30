@@ -447,7 +447,7 @@ Sk.abstr.sequenceContains = function (seq, ob) {
      *  Look for special method and call it, we have to distinguish between built-ins and 
      *  python objects
      */
-    special = Sk.builtin.object._PyObject_LookupSpecial(seq.ob$type, "__contains__");
+    special = Sk.builtin.object.PyObject_LookupSpecial_(seq.ob$type, "__contains__");
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.callsim(special, seq, ob);
@@ -596,7 +596,7 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     }
 
     // Find the (unbound!) __format__ method (a borrowed reference)
-    meth = Sk.builtin.object._PyObject_LookupSpecial(obj.ob$type, "__format__");
+    meth = Sk.builtin.object.PyObject_LookupSpecial_(obj.ob$type, "__format__");
     if (meth == null) {
         throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + "doesn't define __format__");
     }
