@@ -1,0 +1,63 @@
+.editbox {
+  padding: .4em;
+  margin: 0;
+  font-family: "Consolas","Lucida Console","Monaco",monospace;
+  font-size: 9pt;
+  line-height: 1.1em;
+  color: #c0c0c0;
+  background: rgb(18,58,80);
+}
+
+
+pre.code, .editbox {
+  color: #666666;
+}
+
+.code p {
+  margin: 0;
+}
+
+span.py-delimiter {
+  color: #666666;
+}
+
+span.py-special {
+  color: brown;
+}
+
+span.py-operator {
+  color: #666666;
+}
+
+span.py-error {
+  background-color: #ff2828;
+  color: #ffffff;
+}
+
+span.py-keyword {
+  color: yellow;
+}
+
+span.py-literal {
+  color: #228811;
+}
+
+span.py-identifier {
+  color: #c0c0c0;
+}
+
+span.py-func {
+  color: cyan;
+}
+
+span.py-type, span.py-decorator {
+  color: green;
+}
+
+span.py-comment {
+  color: #80a0ff;
+}
+
+span.py-string, span.py-bytes, span.py-raw, span.py-unicode {
+  color: orange;
+}

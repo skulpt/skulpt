@@ -1,0 +1,96 @@
+<html>
+<!--
+Example of using the turtle module in skulpt to draw a fractal tree.
+ - Implement some part of the random module to make this more --
+  --realistic...
+
+Author:  Brad Miller
+
+Note:  One important convention, since I plan to use
+multiple turtle canvases on a page I am passing the runit
+function a prefix to use in creating the id for the following:
+  - textarea containing the code
+  - pre tag for any printed output
+  - canvas tag for the turtle
+I've enclosed the whole group of them in a div because I was thinking
+at one point about creating the pre tag and the canvas tag on the fly
+the more I think about it the more I wonder...
+-->
+<head>
+<script src="skulpt.js" type="text/javascript"></script>
+<script src="builtin.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+<script type="text/javascript">
+function outf(text) {
+   var mypre = document.getElementById(Sk.pre);
+   mypre.innerHTML = mypre.innerHTML + text;
+}
+
+function builtinRead(x)
+{
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+function runit(myDiv) {
+   var prog = document.getElementById(myDiv+"_code").value;
+   var mypre = document.getElementById(myDiv+"_pre");
+   mypre.innerHTML = '';
+   Sk.canvas = myDiv+"_canvas";
+   Sk.pre = myDiv+"_pre";
+   Sk.configure({output:outf,
+  	        read: builtinRead
+              });
+   try {
+      Sk.importMainWithBody("<stdin>",false,prog);
+   } catch (e) {
+      alert(e);
+   }
+}
+</script>
+<h3>Try This</h3>
+<div id="example1">
+<form>
+<textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
+import turtle
+import random
+
+def tree(trunkLength,t):
+    if trunkLength < 5:
+        return
+    else:
+        t.forward(trunkLength)
+        tAmount = random.randint(10,30)
+        t.right(tAmount)
+        dsub = random.randint(5,15)
+        tree(trunkLength-dsub,t)
+        t.left(2*tAmount)
+        tree(trunkLength-dsub,t)
+        t.right(tAmount)
+        t.backward(trunkLength)
+
+t = turtle.Turtle()
+t.speed(5)
+t.width(1)
+t.left(90)
+t.up()
+t.backward(300)
+t.down()
+t.color('brown')
+tree(85,t) 
+</textarea>
+<button onclick="runit('example1')" type="button">Run</button>
+</form>
+
+<canvas id="example1_canvas" height="500" width="800"
+	style="border-style: solid;"></canvas>
+
+<pre id="example1_pre"></pre>
+
+</div>
+</body>
+</html>

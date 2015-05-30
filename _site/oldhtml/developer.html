@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<title></title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document">
+
+
+<div class="section" id="some-things-you-need-to-know-to-hack-on-skulpt">
+<h1>Some things you need to know to hack on Skulpt</h1>
+<p>Skulpt is a pretty complex system, and there is very little documentation about the core concepts in skulpt. This document is an attempt to create document answers to important questions developers might have who want to start hacking on skulpt.</p>
+<p>I started this document in response to issue #182 (thanks &#64;mseddon).  Please check that issue and feel free to contribute to the discussion there.</p>
+<div class="section" id="the-source">
+<h2>The Source</h2>
+<p>The src directory contains the javascript that implements skulpt as well as parts of the standard library.  library modules are in src/lib.  The source files could roughly be divided into two pieces.  The compiler and the runtime.  The compiler files are:  <tt class="docutils literal">ast.js, parser.js, symtable.js, compile.js, and tokenize.js</tt>  The compiler part of skulpt reads python code and generates a Javascript program.  If you want to change the syntax of Python these are the files to look at.  The syntax used in skulpt is taken right from the Python 2.6.5 distribution.</p>
+<p>When you run the program in the browser the javascript part is 'evaled' by javascript.  The runtime files roughly correspond to all of the major object types in Python plus builtins:</p>
+<ul class="simple">
+<li>abstract.js  -- contains lots of abstract function defs</li>
+<li>biginteger.js  -- implements Python's long integer type</li>
+<li>bool.js</li>
+<li>skulpt-stdlib.js  -- builtin functions: range, min, max, etc. are defined here</li>
+<li>builtindict.js -- Provides a mapping from the standard Python name to the internal name in skulpt-stdlib.js</li>
+<li>dict.js</li>
+<li>enumerate.js</li>
+<li>env.js</li>
+<li>errors.js  -- Exceptions are defined here</li>
+<li>file.js</li>
+<li>float.js</li>
+<li>function.js</li>
+<li>generator.js</li>
+<li>import.js</li>
+<li>int.js</li>
+<li>list.js</li>
+<li>long.js</li>
+<li>mergesort.js  -- old version of mergesort.  Not used anymore -- see timsort  Should be removed</li>
+<li>method.js</li>
+<li>module.js</li>
+<li>native.js</li>
+<li>number.js</li>
+<li>object.js  -- most things &quot;inherit&quot; from object this contains source for GenericXxx functions</li>
+<li>set.js</li>
+<li>slice.js</li>
+<li>str.js</li>
+<li>timsort.js</li>
+<li>tuple.js</li>
+<li>type.js</li>
+</ul>
+<p>Perhaps one of the trickiest things to remember about Skulpt is that we are always moving back and forth between Python objects and Javascript objects.  For example Python string objects have a <tt class="docutils literal">v</tt> attribute that contains the Javascript string.  Numeric objects also contain a <tt class="docutils literal">v</tt> object to represent the javascript number.   functions are similar, Python functions are not the same as Javascript functions, and so need to be handled differently.  You can't just call a user defined python function that has been compiled to javscript and expect it to behave.  Thats what <tt class="docutils literal">Sk.misceval.callsim</tt> is for.  The two files below are here to make the transition back and forth from Javascript to Python more clear.  Although the code tends to be inconsistent about using some of the ffi functions and you will see <tt class="docutils literal">blah.v</tt> used in many places where it would be better to use <tt class="docutils literal">Sk.ffi.unwrapo(blah)</tt>.</p>
+<ul class="simple">
+<li>ffi.js</li>
+<li>misceval.js</li>
+</ul>
+</div>
+<div class="section" id="the-generated-code">
+<h2>The Generated Code</h2>
+<p>Perhaps one of the most instructive things you can do to understand Skulpt and how the pieces begin to fit together is to look at a simple Python program, and its translation to Javscript.  So lets begin with Hello World.</p>
+<div class="section" id="python-version">
+<h3>Python Version</h3>
+<pre class="code python literal-block">
+<span class="keyword">print</span> <span class="literal string">&quot;hello world&quot;</span>
+</pre>
+</div>
+<div class="section" id="javascript-translation">
+<h3>Javascript Translation</h3>
+<pre class="code javascript literal-block">
+<span class="comment multiline">/*     1 */</span> <span class="keyword declaration">var</span> <span class="name other">$scope0</span> <span class="operator">=</span> <span class="punctuation">(</span><span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">$modname</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*     2 */</span>     <span class="keyword declaration">var</span> <span class="name other">$blk</span> <span class="operator">=</span> <span class="literal number integer">0</span><span class="punctuation">,</span>
+<span class="comment multiline">/*     3 */</span>         <span class="name other">$exc</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="punctuation">],</span>
+<span class="comment multiline">/*     4 */</span>         <span class="name other">$gbl</span> <span class="operator">=</span> <span class="punctuation">{</span><span class="punctuation">},</span>
+<span class="comment multiline">/*     5 */</span>         <span class="name other">$loc</span> <span class="operator">=</span> <span class="name other">$gbl</span><span class="punctuation">,</span>
+<span class="comment multiline">/*     6 */</span>         <span class="name other">$err</span> <span class="operator">=</span> <span class="keyword constant">undefined</span><span class="punctuation">;</span>
+<span class="comment multiline">/*     7 */</span>     <span class="name other">$gbl</span><span class="punctuation">.</span><span class="name other">__name__</span> <span class="operator">=</span> <span class="name other">$modname</span><span class="punctuation">;</span>
+<span class="comment multiline">/*     8 */</span>     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">globals</span> <span class="operator">=</span> <span class="name other">$gbl</span><span class="punctuation">;</span>
+<span class="comment multiline">/*     9 */</span>     <span class="keyword">try</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    10 */</span>         <span class="keyword">while</span> <span class="punctuation">(</span><span class="keyword constant">true</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    11 */</span>             <span class="keyword">try</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    12 */</span>                 <span class="keyword">switch</span> <span class="punctuation">(</span><span class="name other">$blk</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    13 */</span>                 <span class="keyword">case</span> <span class="literal number integer">0</span><span class="operator">:</span>
+<span class="comment multiline">/*    14 */</span>                     <span class="comment multiline">/* --- module entry --- */</span>
+<span class="comment multiline">/*    15 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    16 */</span>                     <span class="comment single">// line 1:
+</span><span class="comment multiline">/*    17 */</span>                     <span class="comment single">// print &quot;hello world&quot;
+</span><span class="comment multiline">/*    18 */</span>                     <span class="comment single">// ^
+</span><span class="comment multiline">/*    19 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    20 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currLineNo</span> <span class="operator">=</span> <span class="literal number integer">1</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    21 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currColNo</span> <span class="operator">=</span> <span class="literal number integer">0</span>
+<span class="comment multiline">/*    22 */</span>
+<span class="comment multiline">/*    23 */</span>
+<span class="comment multiline">/*    24 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currFilename</span> <span class="operator">=</span> <span class="literal string single">'./simple.py'</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    25 */</span>
+<span class="comment multiline">/*    26 */</span>                     <span class="keyword declaration">var</span> <span class="name other">$str1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span><span class="punctuation">[</span><span class="literal string single">'str'</span><span class="punctuation">](</span><span class="literal string single">'hello world'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    27 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span><span class="punctuation">(</span><span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span><span class="punctuation">[</span><span class="literal string single">'str'</span><span class="punctuation">](</span><span class="name other">$str1</span><span class="punctuation">).</span><span class="name other">v</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    28 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span><span class="punctuation">(</span><span class="literal string double">&quot;\n&quot;</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    29 */</span>                     <span class="keyword">return</span> <span class="name other">$loc</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    30 */</span>                     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">SystemError</span><span class="punctuation">(</span><span class="literal string single">'internal error: unterminated block'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    31 */</span>                 <span class="punctuation">}</span>
+<span class="comment multiline">/*    32 */</span>             <span class="punctuation">}</span> <span class="keyword">catch</span> <span class="punctuation">(</span><span class="name other">err</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    33 */</span>                 <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">$exc</span><span class="punctuation">.</span><span class="name other">length</span> <span class="operator">&gt;</span> <span class="literal number integer">0</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    34 */</span>                     <span class="name other">$err</span> <span class="operator">=</span> <span class="name other">err</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    35 */</span>                     <span class="name other">$blk</span> <span class="operator">=</span> <span class="name other">$exc</span><span class="punctuation">.</span><span class="name other">pop</span><span class="punctuation">(</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    36 */</span>                     <span class="keyword">continue</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    37 */</span>                 <span class="punctuation">}</span> <span class="keyword">else</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    38 */</span>                     <span class="keyword">throw</span> <span class="name other">err</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    39 */</span>                 <span class="punctuation">}</span>
+<span class="comment multiline">/*    40 */</span>             <span class="punctuation">}</span>
+<span class="comment multiline">/*    41 */</span>         <span class="punctuation">}</span>
+<span class="comment multiline">/*    42 */</span>     <span class="punctuation">}</span> <span class="keyword">catch</span> <span class="punctuation">(</span><span class="name other">err</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    43 */</span>         <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">err</span> <span class="keyword">instanceof</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">SystemExit</span> <span class="operator">&amp;&amp;</span> <span class="operator">!</span><span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">throwSystemExit</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    44 */</span>             <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span><span class="punctuation">(</span><span class="name other">err</span><span class="punctuation">.</span><span class="name other">toString</span><span class="punctuation">(</span><span class="punctuation">)</span> <span class="operator">+</span> <span class="literal string single">'\n'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    45 */</span>             <span class="keyword">return</span> <span class="name other">$loc</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    46 */</span>         <span class="punctuation">}</span> <span class="keyword">else</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    47 */</span>             <span class="keyword">throw</span> <span class="name other">err</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    48 */</span>         <span class="punctuation">}</span>
+<span class="comment multiline">/*    49 */</span>     <span class="punctuation">}</span>
+<span class="comment multiline">/*    50 */</span> <span class="punctuation">});</span>
+</pre>
+<p>So, one line of python becomes 50 lines of Javscript.  Luckily lots of this is boiler plate that is the same for every program.  One important convention is that variables that start with a $ are variables that are generated by the compiler.  So, in the above example $scope0, $blk, $str1, etc are all generated by the compiler not by the Python program.  Each line of the python program gets a corresponding entry in the Sk.currLineNo so that runtime error messages or exceptions can reference the line that caused them.</p>
+<p>For now lets concentrate on the parts of the code that were generated specifically for our program.  That would be lines 26-29 above.</p>
+<ul class="simple">
+<li>26: The compiler creates a variable to hold the string literal &quot;hello world&quot;  A Python version of the string literal is created by calling the constructor <tt class="docutils literal"><span class="pre">Sk.builtins['str']</span></tt> passing the javascript string literal.</li>
+<li>27: The <tt class="docutils literal">Sk.misceval.print_</tt> function is called.  Here is an interesting part of the runtime.  The code for <a href="#id1"><span class="problematic" id="id2">Sk.misceval.print_</span></a> is below.  The key line is  <tt class="docutils literal">Sk.output(s.v)</tt>  <tt class="docutils literal">Sk.output</tt> is configurable to be any function that the web developer might want to provide.  For example you might write a function that takes a javascript string as a parameter and updates a pre element.  Or you might simply write a function that calls alert.  Notice that <tt class="docutils literal">print_</tt> simply expects to get an object.  It converts this object into a Python string object by once again calling the string constructor <tt class="docutils literal">Sk.builtin.str</tt>.  If you've been keeping close watch, this is actually the third time our string liter has undergone this transformation.  Luckily the string constructor is smart enough to simply return its parameter if the parameter is already a Python string.  You might logically ask why does the compiler emit a call on line 27 when the runtime function takes care of the same issue.  Not sure, maybe this is an optimization.</li>
+</ul>
+<pre class="code javascript literal-block">
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span> <span class="operator">=</span> <span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">x</span><span class="punctuation">)</span>   <span class="comment single">// this was function print(x)   not sure why...
+</span><span class="punctuation">{</span>
+    <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">softspace_</span><span class="punctuation">)</span>
+    <span class="punctuation">{</span>
+        <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">x</span> <span class="operator">!==</span> <span class="literal string double">&quot;\n&quot;</span><span class="punctuation">)</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">output</span><span class="punctuation">(</span><span class="literal string single">' '</span><span class="punctuation">);</span>
+        <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">softspace_</span> <span class="operator">=</span> <span class="keyword constant">false</span><span class="punctuation">;</span>
+    <span class="punctuation">}</span>
+    <span class="keyword declaration">var</span> <span class="name other">s</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">str</span><span class="punctuation">(</span><span class="name other">x</span><span class="punctuation">);</span>
+    <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">output</span><span class="punctuation">(</span><span class="name other">s</span><span class="punctuation">.</span><span class="name other">v</span><span class="punctuation">);</span>
+    <span class="keyword declaration">var</span> <span class="name other">isspace</span> <span class="operator">=</span> <span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">c</span><span class="punctuation">)</span>
+    <span class="punctuation">{</span>
+        <span class="keyword">return</span> <span class="name other">c</span> <span class="operator">===</span> <span class="literal string single">'\n'</span> <span class="operator">||</span> <span class="name other">c</span> <span class="operator">===</span> <span class="literal string single">'\t'</span> <span class="operator">||</span> <span class="name other">c</span> <span class="operator">===</span> <span class="literal string single">'\r'</span><span class="punctuation">;</span>
+    <span class="punctuation">};</span>
+    <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">s</span><span class="punctuation">.</span><span class="name other">v</span><span class="punctuation">.</span><span class="name other">length</span> <span class="operator">===</span> <span class="literal number integer">0</span> <span class="operator">||</span> <span class="operator">!</span><span class="name other">isspace</span><span class="punctuation">(</span><span class="name other">s</span><span class="punctuation">.</span><span class="name other">v</span><span class="punctuation">[</span><span class="name other">s</span><span class="punctuation">.</span><span class="name other">v</span><span class="punctuation">.</span><span class="name other">length</span> <span class="operator">-</span> <span class="literal number integer">1</span><span class="punctuation">])</span> <span class="operator">||</span> <span class="name other">s</span><span class="punctuation">.</span><span class="name other">v</span><span class="punctuation">[</span><span class="name other">s</span><span class="punctuation">.</span><span class="name other">v</span><span class="punctuation">.</span><span class="name other">length</span> <span class="operator">-</span> <span class="literal number integer">1</span><span class="punctuation">]</span> <span class="operator">===</span> <span class="literal string single">' '</span><span class="punctuation">)</span>
+        <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">softspace_</span> <span class="operator">=</span> <span class="keyword constant">true</span><span class="punctuation">;</span>
+<span class="punctuation">};</span>
+</pre>
+<ul class="simple">
+<li>28:  print always results in a newline.  So do it.</li>
+<li>29:  done return.  This gets us out of the while(true) loop.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="naming-conventions">
+<h2>Naming Conventions</h2>
+<ul class="simple">
+<li><tt class="docutils literal">Sk</tt>   The <tt class="docutils literal">Sk</tt> object contains all of the core Skulpt objects and functions.  Its pretty easy to get from Sk.blah to its source.  Usually you will see something like <tt class="docutils literal">Sk.builtin.foo</tt>  which indicates that you should look in <tt class="docutils literal"><span class="pre">skulpt-stdlib.js</span></tt> to find the source for foo.  Similarly <tt class="docutils literal">Sk.misceval.callsim</tt> tells you that you should look in <tt class="docutils literal">misceval.js</tt> for the callsim function.</li>
+<li>$xxx  represents a compiler generated variable</li>
+<li>tp$xxx   These things represent the <tt class="docutils literal">magic methods</tt> for an object that are defined by the Skulpt system itself.  So for example <tt class="docutils literal">__str__</tt> is called <tt class="docutils literal">tp$str</tt>.  I always think of tp as a mnemonic for type.</li>
+<li>mp$xxx  similar to tp but for sequences.  As best as I know these are almost always related to subscripts.</li>
+</ul>
+<p>Ok, lets look at a slightly more complex example:</p>
+<div class="section" id="python">
+<h3>Python</h3>
+<pre class="code python literal-block">
+<span class="name">x</span> <span class="operator">=</span> <span class="literal number integer">1</span>
+<span class="name">y</span> <span class="operator">=</span> <span class="literal number integer">2</span>
+<span class="name">z</span> <span class="operator">=</span> <span class="name">x</span> <span class="operator">+</span> <span class="name">y</span>
+<span class="keyword">print</span> <span class="name">z</span>
+</pre>
+</div>
+<div class="section" id="javascript">
+<h3>Javascript</h3>
+<pre class="code javascript literal-block">
+<span class="comment multiline">/*     1 */</span> <span class="keyword declaration">var</span> <span class="name other">$scope0</span> <span class="operator">=</span> <span class="punctuation">(</span><span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">$modname</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*     2 */</span>     <span class="keyword declaration">var</span> <span class="name other">$blk</span> <span class="operator">=</span> <span class="literal number integer">0</span><span class="punctuation">,</span>
+<span class="comment multiline">/*     3 */</span>         <span class="name other">$exc</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="punctuation">],</span>
+<span class="comment multiline">/*     4 */</span>         <span class="name other">$gbl</span> <span class="operator">=</span> <span class="punctuation">{</span><span class="punctuation">},</span>
+<span class="comment multiline">/*     5 */</span>         <span class="name other">$loc</span> <span class="operator">=</span> <span class="name other">$gbl</span><span class="punctuation">,</span>
+<span class="comment multiline">/*     6 */</span>         <span class="name other">$err</span> <span class="operator">=</span> <span class="keyword constant">undefined</span><span class="punctuation">;</span>
+<span class="comment multiline">/*     7 */</span>     <span class="name other">$gbl</span><span class="punctuation">.</span><span class="name other">__name__</span> <span class="operator">=</span> <span class="name other">$modname</span><span class="punctuation">;</span>
+<span class="comment multiline">/*     8 */</span>     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">globals</span> <span class="operator">=</span> <span class="name other">$gbl</span><span class="punctuation">;</span>
+<span class="comment multiline">/*     9 */</span>     <span class="keyword">try</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    10 */</span>         <span class="keyword">while</span> <span class="punctuation">(</span><span class="keyword constant">true</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    11 */</span>             <span class="keyword">try</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    12 */</span>                 <span class="keyword">switch</span> <span class="punctuation">(</span><span class="name other">$blk</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    13 */</span>                 <span class="keyword">case</span> <span class="literal number integer">0</span><span class="operator">:</span>
+<span class="comment multiline">/*    14 */</span>                     <span class="comment multiline">/* --- module entry --- */</span>
+<span class="comment multiline">/*    15 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    16 */</span>                     <span class="comment single">// line 1:
+</span><span class="comment multiline">/*    17 */</span>                     <span class="comment single">// x = 1
+</span><span class="comment multiline">/*    18 */</span>                     <span class="comment single">// ^
+</span><span class="comment multiline">/*    19 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    20 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currLineNo</span> <span class="operator">=</span> <span class="literal number integer">1</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    21 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currColNo</span> <span class="operator">=</span> <span class="literal number integer">0</span>
+<span class="comment multiline">/*    22 */</span>
+<span class="comment multiline">/*    23 */</span>
+<span class="comment multiline">/*    24 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currFilename</span> <span class="operator">=</span> <span class="literal string single">'./simple.py'</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    25 */</span>
+<span class="comment multiline">/*    26 */</span>                     <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">nmber</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal string single">'int'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    27 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    28 */</span>                     <span class="comment single">// line 2:
+</span><span class="comment multiline">/*    29 */</span>                     <span class="comment single">// y = 2
+</span><span class="comment multiline">/*    30 */</span>                     <span class="comment single">// ^
+</span><span class="comment multiline">/*    31 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    32 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currLineNo</span> <span class="operator">=</span> <span class="literal number integer">2</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    33 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currColNo</span> <span class="operator">=</span> <span class="literal number integer">0</span>
+<span class="comment multiline">/*    34 */</span>
+<span class="comment multiline">/*    35 */</span>
+<span class="comment multiline">/*    36 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currFilename</span> <span class="operator">=</span> <span class="literal string single">'./simple.py'</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    37 */</span>
+<span class="comment multiline">/*    38 */</span>                     <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">y</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">nmber</span><span class="punctuation">(</span><span class="literal number integer">2</span><span class="punctuation">,</span> <span class="literal string single">'int'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    39 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    40 */</span>                     <span class="comment single">// line 3:
+</span><span class="comment multiline">/*    41 */</span>                     <span class="comment single">// z = x + y
+</span><span class="comment multiline">/*    42 */</span>                     <span class="comment single">// ^
+</span><span class="comment multiline">/*    43 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    44 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currLineNo</span> <span class="operator">=</span> <span class="literal number integer">3</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    45 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currColNo</span> <span class="operator">=</span> <span class="literal number integer">0</span>
+<span class="comment multiline">/*    46 */</span>
+<span class="comment multiline">/*    47 */</span>
+<span class="comment multiline">/*    48 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currFilename</span> <span class="operator">=</span> <span class="literal string single">'./simple.py'</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    49 */</span>
+<span class="comment multiline">/*    50 */</span>                     <span class="keyword declaration">var</span> <span class="name other">$loadname1</span> <span class="operator">=</span> <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">x</span> <span class="operator">!==</span> <span class="keyword constant">undefined</span> <span class="operator">?</span> <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">x</span> <span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">loadname</span><span class="punctuation">(</span><span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="name other">$gbl</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    51 */</span>                     <span class="keyword declaration">var</span> <span class="name other">$loadname2</span> <span class="operator">=</span> <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">y</span> <span class="operator">!==</span> <span class="keyword constant">undefined</span> <span class="operator">?</span> <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">y</span> <span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">loadname</span><span class="punctuation">(</span><span class="literal string single">'y'</span><span class="punctuation">,</span> <span class="name other">$gbl</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    52 */</span>                     <span class="keyword declaration">var</span> <span class="name other">$binop3</span> <span class="operator">=</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">abstr</span><span class="punctuation">.</span><span class="name other">numberBinOp</span><span class="punctuation">(</span><span class="name other">$loadname1</span><span class="punctuation">,</span> <span class="name other">$loadname2</span><span class="punctuation">,</span> <span class="literal string single">'Add'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    53 */</span>                     <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">z</span> <span class="operator">=</span> <span class="name other">$binop3</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    54 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    55 */</span>                     <span class="comment single">// line 4:
+</span><span class="comment multiline">/*    56 */</span>                     <span class="comment single">// print z
+</span><span class="comment multiline">/*    57 */</span>                     <span class="comment single">// ^
+</span><span class="comment multiline">/*    58 */</span>                     <span class="comment single">//
+</span><span class="comment multiline">/*    59 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currLineNo</span> <span class="operator">=</span> <span class="literal number integer">4</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    60 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currColNo</span> <span class="operator">=</span> <span class="literal number integer">0</span>
+<span class="comment multiline">/*    61 */</span>
+<span class="comment multiline">/*    62 */</span>
+<span class="comment multiline">/*    63 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">currFilename</span> <span class="operator">=</span> <span class="literal string single">'./simple.py'</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    64 */</span>
+<span class="comment multiline">/*    65 */</span>                     <span class="keyword declaration">var</span> <span class="name other">$loadname4</span> <span class="operator">=</span> <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">z</span> <span class="operator">!==</span> <span class="keyword constant">undefined</span> <span class="operator">?</span> <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">z</span> <span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">loadname</span><span class="punctuation">(</span><span class="literal string single">'z'</span><span class="punctuation">,</span> <span class="name other">$gbl</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    66 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span><span class="punctuation">(</span><span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span><span class="punctuation">[</span><span class="literal string single">'str'</span><span class="punctuation">](</span><span class="name other">$loadname4</span><span class="punctuation">).</span><span class="name other">v</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    67 */</span>                     <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span><span class="punctuation">(</span><span class="literal string double">&quot;\n&quot;</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    68 */</span>                     <span class="keyword">return</span> <span class="name other">$loc</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    69 */</span>                     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">SystemError</span><span class="punctuation">(</span><span class="literal string single">'internal error: unterminated block'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    70 */</span>                 <span class="punctuation">}</span>
+<span class="comment multiline">/*    71 */</span>             <span class="punctuation">}</span> <span class="keyword">catch</span> <span class="punctuation">(</span><span class="name other">err</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    72 */</span>                 <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">$exc</span><span class="punctuation">.</span><span class="name other">length</span> <span class="operator">&gt;</span> <span class="literal number integer">0</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    73 */</span>                     <span class="name other">$err</span> <span class="operator">=</span> <span class="name other">err</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    74 */</span>                     <span class="name other">$blk</span> <span class="operator">=</span> <span class="name other">$exc</span><span class="punctuation">.</span><span class="name other">pop</span><span class="punctuation">(</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    75 */</span>                     <span class="keyword">continue</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    76 */</span>                 <span class="punctuation">}</span> <span class="keyword">else</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    77 */</span>                     <span class="keyword">throw</span> <span class="name other">err</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    78 */</span>                 <span class="punctuation">}</span>
+<span class="comment multiline">/*    79 */</span>             <span class="punctuation">}</span>
+<span class="comment multiline">/*    80 */</span>         <span class="punctuation">}</span>
+<span class="comment multiline">/*    81 */</span>     <span class="punctuation">}</span> <span class="keyword">catch</span> <span class="punctuation">(</span><span class="name other">err</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    82 */</span>         <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">err</span> <span class="keyword">instanceof</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">SystemExit</span> <span class="operator">&amp;&amp;</span> <span class="operator">!</span><span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">throwSystemExit</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    83 */</span>             <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">print_</span><span class="punctuation">(</span><span class="name other">err</span><span class="punctuation">.</span><span class="name other">toString</span><span class="punctuation">(</span><span class="punctuation">)</span> <span class="operator">+</span> <span class="literal string single">'\n'</span><span class="punctuation">);</span>
+<span class="comment multiline">/*    84 */</span>             <span class="keyword">return</span> <span class="name other">$loc</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    85 */</span>         <span class="punctuation">}</span> <span class="keyword">else</span> <span class="punctuation">{</span>
+<span class="comment multiline">/*    86 */</span>             <span class="keyword">throw</span> <span class="name other">err</span><span class="punctuation">;</span>
+<span class="comment multiline">/*    87 */</span>         <span class="punctuation">}</span>
+<span class="comment multiline">/*    88 */</span>     <span class="punctuation">}</span>
+<span class="comment multiline">/*    89 */</span> <span class="punctuation">});</span>
+</pre>
+<p>So, here we create some local variables.  x, y, do some math to create a third local variable z, and then print it.  Line 26 illustrates creating a local variable <tt class="docutils literal">x</tt> (stored as an attribute of $loc)  <tt class="docutils literal">new Sk.builtin.nmber(1, <span class="pre">'int');</span></tt>  By now you can probably guess that <tt class="docutils literal">Sk.builtin.nmber</tt> is a constructor that creates a Python number object that is of type int, and has the value of 1.  The same thing happens for <tt class="docutils literal">y</tt>.</p>
+<p>Next,  on lines 40 -- 53 we see what happens in an assignment statement. first we load the values of x and y into temporary variables $loadname1 and $loadname2.  Why not just use $loc.x ??  Well, we need to use Python's scoping rules.   If $loc.x is undefined then we should check the outer scope to see if it exists there.  <tt class="docutils literal">Sk.misceval.loadname</tt>  If loadname does not find a name <tt class="docutils literal">x</tt> or <tt class="docutils literal">y</tt> it throws a NameError, and execution would abort.    You can see where this works by changing the assignment statement to <tt class="docutils literal">z = x + t</tt> to purposely cause the error.  The compiler blindly first tries $loc.t and then again calls loadname, which in this case does abort with an error!</p>
+<p>On lines 52 and 53 we perform the addition using <tt class="docutils literal"><span class="pre">Sk.abstr.numberBinOp($loadname1,</span> $loadname2, <span class="pre">'Add');</span></tt>  Note the abstract (see abstract.js) nature of <tt class="docutils literal">numberBinOp</tt> -- two parameters for the operands, and one parameter <tt class="docutils literal">'Add'</tt> that indicates the operator.  Finally the temporary result returned by numberBinOp is stored in $loc.z.  Its important to note that $loc.z contains a Python number object.  Down in the bowels of numberBinOp, the javascript numeric values for x and y are retrieved and result of adding two javascript numbers is converted to the appropriate type of Python object.</p>
+</div>
+<div class="section" id="function-calls-conditionals-and-loops">
+<h3>Function Calls, Conditionals, and Loops</h3>
+<p>Oh my!  so what is the deal with this while(true)/try/switch thing?  To understand this we need a bit more complicated example, so lets look at a program that contains an if/else conditional. We'll see that we now have a much more interesting switch statement.</p>
+<p>Without showing all of the generated code, lets consider a simple python program like the one below.  There will be two scope functions generated by the compiler for this example.  $scope0 is for the main program where foo is defined and there is an if statement.  The second $scope1 is for when the foo function is actually called.  The $scope1 while/switch combo contains four cases: 0, 1, 2, and 3.  You can imagine this python code consisting of four blocks.  The first block starts at the beginning and goes through the evaluation of the if condition.  The second block is the if true block of the if.  The third block is the else block of the if statement, and the final block is the rest of the program after the if/else is all done.  You can verify this for yourself by putting this program into a file <tt class="docutils literal">simple.py</tt> and runing <tt class="docutils literal">./skulpt.py run simple.py</tt> If you examine the output you will see that the <tt class="docutils literal">$blk</tt> variable is manipulated to control which <tt class="docutils literal">case</tt> is executed the next time through the while loop.  Very clever!  If Javascript had <tt class="docutils literal">goto statements</tt> this would probably look a lot different.</p>
+<pre class="code python literal-block">
+ <span class="comment"># &lt;--- $blk 0 starts</span>
+<span class="keyword">def</span> <span class="name function">foo</span><span class="punctuation">(</span><span class="name">bar</span><span class="punctuation">):</span>
+    <span class="keyword">print</span> <span class="name">bar</span>
+
+<span class="name">x</span> <span class="operator">=</span> <span class="literal number integer">2</span>
+
+<span class="keyword">if</span> <span class="name">x</span> <span class="operator">%</span> <span class="literal number integer">2</span> <span class="operator">==</span> <span class="literal number integer">0</span><span class="punctuation">:</span>         <span class="comment"># &lt;---- end of $blk 0</span>
+    <span class="name">foo</span><span class="punctuation">(</span><span class="literal string">&quot;hello&quot;</span><span class="punctuation">)</span>        <span class="comment"># &lt;---- $blk 3</span>
+<span class="keyword">else</span><span class="punctuation">:</span>
+    <span class="name">foo</span><span class="punctuation">(</span><span class="literal string">&quot;goodbye&quot;</span><span class="punctuation">)</span>  <span class="comment"># &lt;---- $blk 2</span>
+<span class="comment"># &lt;--- $blk 1   end of if</span>
+
+
+<span class="name">When</span> <span class="name">foo</span> <span class="operator word">is</span> <span class="name">called</span><span class="punctuation">,</span> <span class="name">it</span> <span class="name">has</span> <span class="name">its</span> <span class="name">own</span> <span class="name">scope</span> <span class="error">$</span><span class="name">scope1</span> <span class="name">created</span> <span class="operator word">and</span> <span class="name">called</span> <span class="name">using</span> <span class="name">Sk</span><span class="operator">.</span><span class="name">misceval</span><span class="operator">.</span><span class="name">callsim</span><span class="operator">.</span>
+</pre>
+</div>
+</div>
+<div class="section" id="how-do-i-add-feature-x-or-fix-bug-y">
+<h2>How do I add Feature X or Fix bug Y</h2>
+<p>Probably the biggest hurdle in working with skulpt is, &quot;where do I start?&quot;  So, let me take you through a recent scenario, that is pretty illustrative of how I go about doing development on Skulpt.</p>
+<p>The question was &quot;how do I add keyword parameters (cmp, key, and reverse)&quot; to the builtin sorted function.  This is pretty tricky as Javascript does not support keyword parameters so there is no real straightforward path.  So start as follows:</p>
+<pre class="literal-block">
+x = [1,2,3]
+print(sorted(x,reverse=True))
+</pre>
+<p>Now run this using <tt class="docutils literal">skulpt.py run test.py</tt> and you will get a compiled program.  With a little bit of sleuthing you find:</p>
+<pre class="literal-block">
+/*    35 */                     // line 2:
+/*    36 */                     // print(sorted(x,reverse=True))
+/*    37 */                     // ^
+/*    38 */                     //
+/*    39 */                     Sk.currLineNo = 2;
+/*    40 */                     Sk.currColNo = 0
+/*    41 */
+/*    42 */
+/*    43 */                     Sk.currFilename = './sd.py';
+/*    44 */
+/*    45 */                     var $loadname8 = $loc.sorted !== undefined ? $loc.sorted : Sk.misceval.loadname('sorted', $gbl);
+/*    46 */                     var $loadname9 = $loc.x !== undefined ? $loc.x : Sk.misceval.loadname('x', $gbl);
+/*    47 */                     var $call10 = Sk.misceval.call($loadname8, undefined, undefined, ['reverse', Sk.builtin.bool.true$], $loadname9);
+</pre>
+<p>Where the important thing is to notice how the call is formatted after it is compiled.  The fourth parameter to <tt class="docutils literal">Sk.misceval.call</tt> is <tt class="docutils literal">['reverse', Sk.builtin.bool.true$]</tt>  Now if you check the source for misceval, you will see that these parameters are passed on to the apply function.  In the apply function you will see that there is an assertion that the fourth parameter should be empty.  Ok, here's our starting point to add in what's needed to actually process these key value parameters successfully.</p>
+<p>In the case of a bug fix, you would do a similar thing, except that the line where your get an exception is likely to be closer to helping you figure out your next steps.</p>
+</div>
+</div>
+<div class="section" id="how-to">
+<h1>HOW TO</h1>
+<p>This section is for providing specific examples, or documentation on how to do a specific task.  Suggestions for additional tasks are welcome!</p>
+<div class="section" id="default-parameters">
+<h2>Default Parameters</h2>
+<p>How do I add a function with named parameters with default values?</p>
+<p>The key to this is that as the author of either a builtin function, or a method in a module, you need to add some meta data to the function definition.  Here's an example of how we added the named parameters to the <tt class="docutils literal">sorted</tt> function.</p>
+<pre class="code javascript literal-block">
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">sorted</span> <span class="operator">=</span> <span class="keyword declaration">function</span> <span class="name other">sorted</span><span class="punctuation">(</span><span class="name other">iterable</span><span class="punctuation">,</span> <span class="name other">cmp</span><span class="punctuation">,</span> <span class="name other">key</span><span class="punctuation">,</span> <span class="name other">reverse</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+
+<span class="comment multiline">/* body of sorted here */</span>
+<span class="punctuation">}</span>
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">sorted</span><span class="punctuation">.</span><span class="name other">co_varnames</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="literal string single">'cmp'</span><span class="punctuation">,</span> <span class="literal string single">'key'</span><span class="punctuation">,</span> <span class="literal string single">'reverse'</span><span class="punctuation">];</span>
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">sorted</span><span class="punctuation">.</span><span class="name other">$defaults</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">none</span><span class="punctuation">,</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">none</span><span class="punctuation">,</span> <span class="keyword constant">false</span><span class="punctuation">];</span>
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">sorted</span><span class="punctuation">.</span><span class="name other">co_numargs</span> <span class="operator">=</span> <span class="literal number integer">4</span><span class="punctuation">;</span>
+</pre>
+</div>
+<div class="section" id="kwargs">
+<h2>kwargs</h2>
+<p>How do I add a function with <tt class="docutils literal">**kwargs</tt>?</p>
+<p>Again the idea comes down to adding some meta-data after the function is defined.  Here is an example of adding <tt class="docutils literal">**kwargs</tt> to a method in a module:</p>
+<pre class="code javascript literal-block">
+<span class="keyword declaration">var</span> <span class="name other">plotk_f</span> <span class="operator">=</span> <span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">kwa</span><span class="punctuation">)</span>
+    <span class="punctuation">{</span>
+        <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">pyCheckArgs</span><span class="punctuation">(</span><span class="literal string double">&quot;plotk&quot;</span><span class="punctuation">,</span> <span class="name other">arguments</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">,</span> <span class="keyword constant">Infinity</span><span class="punctuation">,</span> <span class="keyword constant">true</span><span class="punctuation">,</span> <span class="keyword constant">false</span><span class="punctuation">)</span>
+        <span class="name other">args</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span><span class="punctuation">[</span><span class="literal string single">'tuple'</span><span class="punctuation">](</span><span class="name builtin">Array</span><span class="punctuation">.</span><span class="name other">prototype</span><span class="punctuation">.</span><span class="name other">slice</span><span class="punctuation">.</span><span class="name other">call</span><span class="punctuation">(</span><span class="name other">arguments</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">));</span> <span class="comment multiline">/*vararg*/</span>
+        <span class="name other">kwargs</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span><span class="punctuation">[</span><span class="literal string single">'dict'</span><span class="punctuation">](</span><span class="name other">kwa</span><span class="punctuation">);</span>
+
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span><span class="punctuation">[</span><span class="literal string single">'tuple'</span><span class="punctuation">](</span><span class="punctuation">[</span><span class="name other">args</span><span class="punctuation">,</span> <span class="name other">kwargs</span><span class="punctuation">]);</span>
+    <span class="punctuation">};</span>
+    <span class="name other">plotk_f</span><span class="punctuation">[</span><span class="literal string single">'co_kwargs'</span><span class="punctuation">]</span> <span class="operator">=</span> <span class="keyword constant">true</span><span class="punctuation">;</span>
+    <span class="name other">mod</span><span class="punctuation">.</span><span class="name other">plotk</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">func</span><span class="punctuation">(</span><span class="name other">plotk_f</span><span class="punctuation">);</span>
+</pre>
+</div>
+<div class="section" id="adding-a-module">
+<h2>Adding a Module</h2>
+<p>This section is from a blog post I made in 2011, slightly updated.</p>
+<p>So, here's the deal.  skulpt relies on two javascript files the first is skulpt.min.js  and skulpt-stdlib.js  A very minimal installation only uses skulpt.min.js, whereas if you want to use any modules they are in skulpt-stdlib.js.  Looking around the distribution you will not immediately find skulpt.min.js because you need to build it. You get a sculpt.js file by using the m script that comes with the distribution.  running m --help will give you the full list of commands, but the two that you probably most care about are m dist and m docbi The dist command builds both skulpt.min.js and skulpt-stdlib.js  docbi builds skulpt-stdlib.js and puts a new copy of it in the doc/static directory.
+Lets begin with a quick tour of the source tree:</p>
+<ul class="simple">
+<li>src - contains the implementation of the Python interpreter</li>
+<li>src/lib - has the module implementations of webgl and goog.  This is where turtle will live and any other modules I implement along the way.</li>
+<li>doc - This directory contains a google app engine application and is what you see on skulpt.org There are a couple of important files to check out in here.  One of them is doc/static/env/editor.js  This is the code that ties together the interactive editor on the home page with the skulpt interpreter and the codemirror editor.  If you know how to build a google app engine app then this directory makes sense.  One thing about the home page is that it is not set up to use any of the modules.  The modules are used in the more advanced ide, which you can find in doc/ide/static.  I'm going to tell you how to add modules to the simpler editor later in this article.</li>
+<li>test - this directory contains a bunch of files for testing the implementation in a batch mode.  These tests are run whenever you run m dist, or m test.</li>
+<li>dist - This directory gets created and populated when you run the m dist command.  It contains the built and compressed versions of skulpt.min.js and skulpt-stdlib.js</li>
+</ul>
+<p>To illustrate how to make use of modules, here's an extended version of my earlier hello world style example.</p>
+<pre class="code html literal-block">
+<span class="name tag">&lt;html&gt;</span>
+<span class="name tag">&lt;head&gt;</span>
+<span class="name tag">&lt;script </span><span class="name attribute">src=</span><span class="literal string">&quot;skulpt.min.js&quot;</span> <span class="name attribute">type=</span><span class="literal string">&quot;text/javascript&quot;</span><span class="name tag">&gt;&lt;/script&gt;</span>
+<span class="name tag">&lt;script </span><span class="name attribute">src=</span><span class="literal string">&quot;skulpt-stdlib.js&quot;</span> <span class="name attribute">type=</span><span class="literal string">&quot;text/javascript&quot;</span><span class="name tag">&gt;&lt;/script&gt;</span>
+
+<span class="name tag">&lt;/head&gt;</span>
+
+<span class="name tag">&lt;body&gt;</span>
+<span class="name tag">&lt;script </span><span class="name attribute">type=</span><span class="literal string">&quot;text/javascript&quot;</span><span class="name tag">&gt;</span>
+<span class="keyword declaration">function</span> <span class="name other">outf</span><span class="punctuation">(</span><span class="name other">text</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+   <span class="keyword declaration">var</span> <span class="name other">mypre</span> <span class="operator">=</span> <span class="name builtin">document</span><span class="punctuation">.</span><span class="name other">getElementById</span><span class="punctuation">(</span><span class="literal string double">&quot;output&quot;</span><span class="punctuation">);</span>
+   <span class="name other">mypre</span><span class="punctuation">.</span><span class="name other">innerHTML</span> <span class="operator">=</span> <span class="name other">mypre</span><span class="punctuation">.</span><span class="name other">innerHTML</span> <span class="operator">+</span> <span class="name other">text</span><span class="punctuation">;</span>
+<span class="punctuation">}</span>
+
+<span class="keyword declaration">function</span> <span class="name other">builtinRead</span><span class="punctuation">(</span><span class="name other">x</span><span class="punctuation">)</span>
+<span class="punctuation">{</span>
+    <span class="keyword">if</span> <span class="punctuation">(</span><span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtinFiles</span> <span class="operator">===</span> <span class="keyword constant">undefined</span> <span class="operator">||</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtinFiles</span><span class="punctuation">[</span><span class="literal string double">&quot;files&quot;</span><span class="punctuation">][</span><span class="name other">x</span><span class="punctuation">]</span> <span class="operator">===</span> <span class="keyword constant">undefined</span><span class="punctuation">)</span>
+        <span class="keyword">throw</span> <span class="literal string double">&quot;File not found: '&quot;</span> <span class="operator">+</span> <span class="name other">x</span> <span class="operator">+</span> <span class="literal string double">&quot;'&quot;</span><span class="punctuation">;</span>
+    <span class="keyword">return</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtinFiles</span><span class="punctuation">[</span><span class="literal string double">&quot;files&quot;</span><span class="punctuation">][</span><span class="name other">x</span><span class="punctuation">];</span>
+<span class="punctuation">}</span>
+
+<span class="keyword declaration">function</span> <span class="name other">runit</span><span class="punctuation">(</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+   <span class="keyword declaration">var</span> <span class="name other">prog</span> <span class="operator">=</span> <span class="name builtin">document</span><span class="punctuation">.</span><span class="name other">getElementById</span><span class="punctuation">(</span><span class="literal string double">&quot;yourcode&quot;</span><span class="punctuation">).</span><span class="name other">value</span><span class="punctuation">;</span>
+   <span class="keyword declaration">var</span> <span class="name other">mypre</span> <span class="operator">=</span> <span class="name builtin">document</span><span class="punctuation">.</span><span class="name other">getElementById</span><span class="punctuation">(</span><span class="literal string double">&quot;output&quot;</span><span class="punctuation">);</span>
+   <span class="name other">mypre</span><span class="punctuation">.</span><span class="name other">innerHTML</span> <span class="operator">=</span> <span class="literal string single">''</span><span class="punctuation">;</span>
+   <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">configure</span><span class="punctuation">(</span><span class="punctuation">{</span><span class="name other">output</span><span class="operator">:</span><span class="name other">outf</span><span class="punctuation">,</span>
+           <span class="name other">read</span><span class="operator">:</span> <span class="name other">builtinRead</span>
+              <span class="punctuation">});</span>
+   <span class="keyword">try</span> <span class="punctuation">{</span>
+      <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">importMainWithBody</span><span class="punctuation">(</span><span class="literal string double">&quot;&lt;stdin&gt;&quot;</span><span class="punctuation">,</span><span class="keyword constant">false</span><span class="punctuation">,</span><span class="name other">prog</span><span class="punctuation">);</span>
+   <span class="punctuation">}</span> <span class="keyword">catch</span> <span class="punctuation">(</span><span class="name other">e</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+      <span class="name other">alert</span><span class="punctuation">(</span><span class="name other">e</span><span class="punctuation">);</span>
+   <span class="punctuation">}</span>
+<span class="punctuation">}</span>
+<span class="name tag">&lt;/script&gt;</span>
+<span class="name tag">&lt;h3&gt;</span>Try This<span class="name tag">&lt;/h3&gt;</span>
+<span class="name tag">&lt;form&gt;</span>
+<span class="name tag">&lt;textarea</span> <span class="name attribute">edit_id=</span><span class="literal string">&quot;eta_5&quot;</span> <span class="name attribute">id=</span><span class="literal string">&quot;yourcode&quot;</span><span class="name tag">&gt;</span>
+print &quot;Hello World&quot;
+<span class="name tag">&lt;/textarea&gt;</span>
+<span class="name tag">&lt;button</span> <span class="name attribute">onclick=</span><span class="literal string">&quot;runit()&quot;</span> <span class="name attribute">type=</span><span class="literal string">&quot;button&quot;</span><span class="name tag">&gt;</span>Run<span class="name tag">&lt;/button&gt;</span>
+<span class="name tag">&lt;/form&gt;</span>
+
+<span class="name tag">&lt;pre</span> <span class="name attribute">id=</span><span class="literal string">&quot;output&quot;</span><span class="name tag">&gt;&lt;/pre&gt;</span>
+
+<span class="name tag">&lt;/body&gt;</span>
+<span class="name tag">&lt;/html&gt;</span>
+</pre>
+<p>There are some important differences between this version, and the version and the non-module version.  First off, the call to Sk.configure contains another key value pair which sets up a specialized read function.  This is the function that is responsible for returning your module out of the large array of files that are contained in the skulpt-stdlib.js file.  You will see that all of the modules are contained in this one file, stored in a big JSON structure.  The extra key value pair is:
+read: builtinRead</p>
+<p>The read function is just for loading modules and is called when you do an import statement of some kind.  In this case the function accesses the variable builtinFiles which is created from the skulpt-stdlib.js file.  The other difference, of course, is that you have to include skulpt-stdlib.js in your html file.  Note that skulpt-stdlib.js must be included after skulpt.min.js</p>
+<p>Now as far as the module itself goes, the easiest thing to do is to start your module in the src/lib directory.  This way it will automatically get built and included in skulpt-stdlib.js.  If you don't put it there then you are going to have to modify the m script, specifically the docbi function in the m script to include your module.  Suppose that you want to have a module called bnm.test  Here's what you have to do.  First, you need to make a bnm directory under lib.  In this directory you will need to have either __init__.py or __init__.js or bnm.js to stand in for the bnm module.  There doesn't need to be anything in the file as long as it exists.  This is just like CPython by the way.  Then to make a test module you can either make a test directory and put all your javascript code in __init__.js or you can simply create a test.js file in the bnm directory.  Lets look at the test module.</p>
+<pre class="code javascript literal-block">
+<span class="keyword declaration">var</span> <span class="name other">$builtinmodule</span> <span class="operator">=</span> <span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">name</span><span class="punctuation">)</span>
+<span class="punctuation">{</span>
+    <span class="keyword declaration">var</span> <span class="name other">mod</span> <span class="operator">=</span> <span class="punctuation">{</span><span class="punctuation">};</span>
+    <span class="keyword declaration">var</span> <span class="name other">myfact</span> <span class="operator">=</span> <span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">n</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+ <span class="keyword">if</span><span class="punctuation">(</span><span class="name other">n</span> <span class="operator">&lt;</span> <span class="literal number integer">1</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+     <span class="keyword">return</span> <span class="literal number integer">1</span><span class="punctuation">;</span>
+ <span class="punctuation">}</span> <span class="keyword">else</span> <span class="punctuation">{</span>
+     <span class="keyword">return</span> <span class="name other">n</span> <span class="operator">*</span> <span class="name other">myfact</span><span class="punctuation">(</span><span class="name other">n</span><span class="operator">-</span><span class="literal number integer">1</span><span class="punctuation">);</span>
+ <span class="punctuation">}</span>
+    <span class="punctuation">}</span>
+    <span class="name other">mod</span><span class="punctuation">.</span><span class="name other">fact</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">func</span><span class="punctuation">(</span><span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">a</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+ <span class="keyword">return</span> <span class="name other">myfact</span><span class="punctuation">(</span><span class="name other">a</span><span class="punctuation">);</span>
+    <span class="punctuation">});</span>
+    <span class="name other">mod</span><span class="punctuation">.</span><span class="name other">Stack</span> <span class="operator">=</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">misceval</span><span class="punctuation">.</span><span class="name other">buildClass</span><span class="punctuation">(</span><span class="name other">mod</span><span class="punctuation">,</span> <span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">$gbl</span><span class="punctuation">,</span> <span class="name other">$loc</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+ <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">__init__</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">func</span><span class="punctuation">(</span><span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">self</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+     <span class="name other">self</span><span class="punctuation">.</span><span class="name other">stack</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="punctuation">];</span>
+ <span class="punctuation">});</span>
+
+ <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">push</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">func</span><span class="punctuation">(</span><span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">self</span><span class="punctuation">,</span><span class="name other">x</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+     <span class="name other">self</span><span class="punctuation">.</span><span class="name other">stack</span><span class="punctuation">.</span><span class="name other">push</span><span class="punctuation">(</span><span class="name other">x</span><span class="punctuation">);</span>
+ <span class="punctuation">});</span>
+ <span class="name other">$loc</span><span class="punctuation">.</span><span class="name other">pop</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">func</span><span class="punctuation">(</span><span class="keyword declaration">function</span><span class="punctuation">(</span><span class="name other">self</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+     <span class="keyword">return</span> <span class="name other">self</span><span class="punctuation">.</span><span class="name other">stack</span><span class="punctuation">.</span><span class="name other">pop</span><span class="punctuation">(</span><span class="punctuation">);</span>
+ <span class="punctuation">});</span>
+    <span class="punctuation">},</span>
+    <span class="literal string single">'Stack'</span><span class="punctuation">,</span> <span class="punctuation">[</span><span class="punctuation">]);</span>
+
+
+    <span class="keyword">return</span> <span class="name other">mod</span><span class="punctuation">;</span>
+<span class="punctuation">}</span>
+</pre>
+<p>All modules start out with the $var builtinmodule = statement.
+This test module exposes a single method to the outside world, called fact, There are a couple of key functions for building up a module.  The Sk.builtin.func   call for adding functions to your module, and the Sk.misceval.buildClass method.  This test module defines a simple factorial function called fact, and a class called stack.  Here's a simple Python program that exercises the module:</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">import</span> <span class="name namespace">bnm.test</span>
+<span class="keyword">print</span> <span class="literal string">'starting'</span>
+<span class="keyword">print</span> <span class="name">bnm</span><span class="operator">.</span><span class="name">test</span><span class="operator">.</span><span class="name">fact</span><span class="punctuation">(</span><span class="literal number integer">10</span><span class="punctuation">)</span>
+<span class="name">x</span> <span class="operator">=</span> <span class="name">bnm</span><span class="operator">.</span><span class="name">test</span><span class="operator">.</span><span class="name">Stack</span><span class="punctuation">()</span>
+<span class="name">x</span><span class="operator">.</span><span class="name">push</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="name">x</span><span class="operator">.</span><span class="name">push</span><span class="punctuation">(</span><span class="literal number integer">2</span><span class="punctuation">)</span>
+<span class="keyword">print</span> <span class="name">x</span><span class="operator">.</span><span class="name">pop</span><span class="punctuation">()</span>
+<span class="keyword">print</span> <span class="literal string">'done'</span>
+</pre>
+<p>Its not obvious, but the buildClass method takes four parameters:  globals, func, name, bases
+It seems that you always pass the mod object itself as the globals parameter, the func parameter is a function that represents the class object, the Name is the external name of the class, and bases presumably would be if the class is inheriting from another class.</p>
+<p>The Sk.builtin.func method creates a function.  For module creation we typically only have to worry about the one parameter, func, which is the javascript implementation of our Python function.  The method can also take a globals object and two closure objects.  Look at the comments in function.js if you want more explanation of how the builtin.func method works.</p>
+<p>Well, I think this should be enough to get you going.  Its worth repeating, if you made it this far, don't forget to call m docbi or m dist after you make changes in your module, its easy to get into the mode of thinking that the new javascript is automatically loaded.  But skulpt-stdlib.js is not automatically rebuilt!</p>
+</div>
+<div class="section" id="debugging">
+<h2>Debugging</h2>
+<p>How do I use the debugger in the browser to help me debug my code?</p>
+<p>Easy, just add the statement:  <tt class="docutils literal">debugger;</tt> to your code.  Now if you have the javscript deveoper tools open in the browser you will have it.</p>
+<p>If you want to start the debugger from a python function that you have written you can also add a debugger statement</p>
+<p>If you want to enable debugging generally for use with <tt class="docutils literal">debugbrowser</tt> follow these handy instructions:</p>
+<ul class="simple">
+<li>I make a new test using ./m nrt</li>
+<li>then add a debugger; to the start of the statement at <a class="reference external" href="https://github.com/skulpt/skulpt/blob/master/src/import.js#L179">https://github.com/skulpt/skulpt/blob/master/src/import.js#L179</a> the line would like this: <tt class="docutils literal">finalcode += &quot;\ndebugger;&quot; + co.funcname + &quot;(&quot; + namestr + <span class="pre">&quot;);&quot;;</span></tt></li>
+<li>run <tt class="docutils literal">./skulpt.py debugbrowser</tt> wait until all tests have run</li>
+<li>startup the developer tools cmd+alt+i on a mac or F12 on a PC in chrome that is</li>
+<li>run the test I added before and it stops right before you enter the compiled code!</li>
+</ul>
+</div>
+<div class="section" id="development-workflow">
+<h2>Development Workflow</h2>
+<ol class="arabic simple">
+<li>Make a fork of the repository on github. DO NOT simply clone <a class="reference external" href="http://github.com/bnmnetp/runestone">http://github.com/bnmnetp/runestone</a>. Make a Fork. If you don't know how to make a fork consult the documentation here: <a class="reference external" href="https://help.github.com/articles/fork-a-repo">https://help.github.com/articles/fork-a-repo</a></li>
+<li>Make a simple myabs.py file that contains a few lines of python that exercise the abs function. Say it looks like this:</li>
+</ol>
+<pre class="code python literal-block">
+<span class="keyword">print</span> <span class="name builtin">abs</span><span class="punctuation">(</span><span class="operator">-</span><span class="literal number float">1.0</span><span class="punctuation">)</span>
+<span class="keyword">print</span> <span class="name builtin">abs</span><span class="punctuation">(</span><span class="literal number integer">24</span><span class="punctuation">)</span>
+</pre>
+<ol class="arabic simple" start="3">
+<li>Now go edit the source. To implement abs you would edit the builtin.js file. Now abs is pretty easy to add, because you can just have our skulpt version of abs call Math.abs So here it is</li>
+</ol>
+<pre class="code javascript literal-block">
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">abs</span> <span class="operator">=</span> <span class="keyword declaration">function</span> <span class="name other">abs</span><span class="punctuation">(</span><span class="name other">x</span><span class="punctuation">)</span>
+<span class="punctuation">{</span>
+    <span class="keyword">return</span> <span class="name builtin">Math</span><span class="punctuation">.</span><span class="name other">abs</span><span class="punctuation">(</span><span class="name other">x</span><span class="punctuation">);</span>
+<span class="punctuation">};</span>
+</pre>
+<p>You are not done yet, because builtin functions also have to be declared in the builtindict.js object as follows:</p>
+<pre class="code javascript literal-block">
+<span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtins</span> <span class="operator">=</span> <span class="punctuation">{</span>
+<span class="literal string single">'range'</span><span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">range</span><span class="punctuation">,</span>
+<span class="literal string single">'len'</span><span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">len</span><span class="punctuation">,</span>
+<span class="literal string single">'min'</span><span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">min</span><span class="punctuation">,</span>
+<span class="literal string single">'max'</span><span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">max</span><span class="punctuation">,</span>
+<span class="literal string single">'sum'</span><span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">sum</span><span class="punctuation">,</span>
+<span class="literal string single">'abs'</span><span class="operator">:</span> <span class="name other">Sk</span><span class="punctuation">.</span><span class="name other">builtin</span><span class="punctuation">.</span><span class="name other">abs</span><span class="punctuation">,</span>
+<span class="punctuation">...</span>
+<span class="punctuation">}</span>
+</pre>
+<p>Now you can test your modifications from the command line by running:</p>
+<pre class="literal-block">
+./skulpt.py run myabs.py
+
+
+-----
+print abs(-1.0)
+print abs(24)
+-----
+/*     1 */ var $scope0 = (function($modname) {
+/*     2 */     var $blk = 0,
+/*     3 */         $exc = [],
+/*     4 */         $gbl = {},
+/*     5 */         $loc = $gbl;
+/*     6 */     $gbl.__name__ = $modname;
+/*     7 */     while (true) {
+/*     8 */         try {
+/*     9 */             switch ($blk) {
+/*    10 */             case 0:
+/*    11 */                 /* --- module entry --- */
+/*    12 */                 //
+/*    13 */                 // line 1:
+/*    14 */                 // print abs(-1.0)
+/*    15 */                 // ^
+/*    16 */                 //
+/*    17 */                 Sk.currLineNo = 1;
+/*    18 */                 Sk.currColNo = 0
+/*    19 */
+/*    20 */
+/*    21 */                 Sk.currFilename = './myabs.py';
+/*    22 */
+/*    23 */                 var $loadname1 = $loc.abs !== undefined ? $loc.abs : Sk.misceval.loadname('abs', $gbl);
+/*    24 */                 var $call2 = Sk.misceval.callsim($loadname1, Sk.numberFromStr('-1.0'));
+/*    25 */                 Sk.misceval.print_(new Sk.builtins['str']($call2).v);
+/*    26 */                 Sk.misceval.print_(&quot;\n&quot;);
+/*    27 */                 //
+/*    28 */                 // line 2:
+/*    29 */                 // print abs(24)
+/*    30 */                 // ^
+/*    31 */                 //
+/*    32 */                 Sk.currLineNo = 2;
+/*    33 */                 Sk.currColNo = 0
+/*    34 */
+/*    35 */
+/*    36 */                 Sk.currFilename = './myabs.py';
+/*    37 */
+/*    38 */                 var $loadname3 = $loc.abs !== undefined ? $loc.abs : Sk.misceval.loadname('abs', $gbl);
+/*    39 */                 var $call4 = Sk.misceval.callsim($loadname3, Sk.numberFromStr('24'));
+/*    40 */                 Sk.misceval.print_(new Sk.builtins['str']($call4).v);
+/*    41 */                 Sk.misceval.print_(&quot;\n&quot;);
+/*    42 */                 return $loc;
+/*    43 */                 goog.asserts.fail('unterminated block');
+/*    44 */             }
+/*    45 */         } catch (err) {
+/*    46 */             if ($exc.length &gt; 0) {
+/*    47 */                 $blk = $exc.pop();
+/*    48 */                 continue;
+/*    49 */             } else {
+/*    50 */                 throw err;
+/*    51 */             }
+/*    52 */         }
+/*    53 */     }
+/*    54 */ });
+1
+24
+</pre>
+<p>This is all incredibly useful information.</p>
+<p>First it demonstrates that your addition actually worked. You can see the output at the bottom.
+Second, you can see how skulpt 'compiled' your python program into its intermediate Javascript form. While this may not be all that helpful in this particular case it can be very very helpful in figuring out what skulpt is actually doing.
+Now you should run all of the unit tests to make sure you have broken anything else accidentally. This is really easy:</p>
+<pre class="literal-block">
+./skulpt.py test
+</pre>
+<p>If any tests fail it will be obvious that they did, and you'll have to do some investigation to figure out why. At the time of this writing you should see:</p>
+<pre class="literal-block">
+run: 343/343 (+1 disabled)
+closure: skipped
+</pre>
+<p>Once you are satisfied that your extension is working fine. You should add a test case to test/run see: New Tests for instructions. This way we will have a permanent test in the bank of test cases in order to check for any future regressions.</p>
+<p>Finally make a pull request on github to have your new feature integrated into the master copy. I probably will not accept your pull request if you haven't done step 4.</p>
+<p>Outside of your editor, your browser, and your wits, the main development tool for skulpt is the skulpt.py command (also linked to m for historical compatibility).</p>
+<pre class="literal-block">
+ ./skulpt.py --help
+Usage:
+
+    skulpt.py &lt;command&gt; [&lt;options&gt;] [script.py]
+
+Commands:
+
+    run              Run a Python file using Skulpt
+    test             Run all test cases
+    dist             Build core and library distribution files
+    docbi            Build library distribution file only and copy to doc/static
+
+    regenparser      Regenerate parser tests
+    regenasttests    Regen abstract symbol table tests
+    regenruntests    Regenerate runtime unit tests
+    regensymtabtests Regenerate symbol table tests
+    regentests       Regenerate all of the above
+
+    help             Display help information about Skulpt
+    host             Start a simple HTTP server for testing
+    upload           Run appcfg.py to upload doc to live GAE site
+    doctest          Run the GAE development server for doc testing
+    nrt              Generate a file for a new test case
+    runopt           Run a Python file optimized
+    browser          Run all tests in the browser
+    shell            Run a Python program but keep a shell open (like python -i)
+    vfs              Build a virtual file system to support Skulpt read tests
+
+    debugbrowser     Debug in the browser -- open your javascript console
+
+Options:
+
+    -q, --quiet        Only output important information
+    -s, --silent       Do not output anything, besides errors
+    -u, --uncompressed Makes uncompressed core distribution file for debugging
+    -v, --verbose      Make output more verbose [default]
+    --version          Returns the version string in Bower configuration file.
+
+
+Options:
+  --version           show program's version number and exit
+  -h, --help          show this help message and exit
+  -q, --quiet
+  -s, --silent
+  -u, --uncompressed
+  -v, --verbose       Make output more verbose [default]
+</pre>
+<div class="section" id="run">
+<h3>run</h3>
+<p>The command <tt class="docutils literal">./skulpt.py run foo.py</tt> compiles and runs a Python program generating output similar to the examples shown in the previous section.  This is very common for development.  For example if you find a bug, that you can express in a small Python program you can start by running the program from the command line and inspecting the generated code.  Usually this will give you a pretty good idea where the bug might be.</p>
+</div>
+<div class="section" id="test">
+<h3>test</h3>
+<p>Run all the unit tests.</p>
+</div>
+<div class="section" id="dist">
+<h3>dist</h3>
+<p>Build the distribution files for skulpt:</p>
+<ul class="simple">
+<li>skulpt.min.js  -- This is a minified version of the core interpreter files.</li>
+<li>skulpt-stdlib.js  -- This is an unminified version of library functions.  This file may contain javascript that implements a module, such as turtle or math, or it may contain pure python.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="system-messages section">
+<h1>Docutils System Messages</h1>
+<div class="system-message" id="id1">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">HACKING.rst</tt>, line 125); <em><a href="#id2">backlink</a></em></p>
+Unknown target name: &quot;sk.misceval.print&quot;.</div>
+</div>
+</div>
+</body>
+</html>

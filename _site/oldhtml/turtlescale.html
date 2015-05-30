@@ -1,0 +1,105 @@
+<html>
+<!--
+Example of using the turtle module in skulpt.
+Author:  Brad Miller
+
+Note:  One important convention, since I plan to use
+multiple turtle canvases on a page I am passing the runit
+function a prefix to use in creating the id for the following:
+  - textarea containing the code
+  - pre tag for any printed output
+  - canvas tag for the turtle
+I've enclosed the whole group of them in a div because I was thinking
+at one point about creating the pre tag and the canvas tag on the fly
+the more I think about it the more I wonder...
+-->
+<head>
+<script src="skulpt.js" type="text/javascript"></script>
+<script src="builtin.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" ></script>
+
+</head>
+
+<body>
+<script type="text/javascript">
+function outf(text) {
+   var mypre = document.getElementById(Sk.pre);
+   mypre.innerHTML = mypre.innerHTML + text;
+}
+
+function builtinRead(x)
+{
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+function runit(myDiv) {
+    var prog = document.getElementById(myDiv + "_code").value;
+    var mypre = document.getElementById(myDiv + "_pre");
+    mypre.innerHTML = '';
+    Sk.canvas = myDiv + "_canvas";
+    Sk.pre = myDiv + "_pre";
+    // The following lines reset the canvas so that each time the run button
+    // is pressed the turtle(s) get a clean canvas.
+    var can = document.getElementById(Sk.canvas);
+    can.width = can.width;
+    if (Sk.tg) {
+        Sk.tg.canvasInit = false;
+        Sk.tg.turtleList = [];
+    }
+    // configure Skulpt output function, and module reader
+
+    Sk.configure({output:outf,
+                read: builtinRead
+            });
+    try {
+        Sk.importMainWithBody("<stdin>", false, prog);
+    } catch (e) {
+        alert(e);
+    }
+}
+</script>
+<h3>Try This</h3>
+<div id="example1">
+<form>
+<textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
+import turtle
+import math
+
+t = turtle.Turtle()
+s = turtle.Turtle()
+
+t.setworldcoordinates(-3.14,-1.0,3.14,1)
+t.color('blue')
+s.color('red')
+t.width(2)
+s.width(2)
+t.up()
+s.up()
+t.goto(-3.14,math.sin(-3.14))
+s.goto(-3.14,math.cos(-3.14))
+t.down()
+s.down()
+t.speed(4)
+s.speed(4)
+i = -3.14
+while i <= 3.14:
+   t.goto(i,math.sin(i))
+   s.goto(i,math.cos(i))
+   t.dot(5,'red')
+   s.dot(5,'blue')
+   i += 0.1
+
+</textarea>
+<button onclick="runit('example1')" type="button">Run</button>
+</form>
+
+<canvas id="example1_canvas" height="500" width="800"
+	style="border-style: solid;"></canvas>
+
+<pre id="example1_pre"></pre>
+
+</div>
+</body>
+</html>

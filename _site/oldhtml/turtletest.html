@@ -1,0 +1,146 @@
+<html>
+<!--
+Example of using the turtle module in skulpt.
+Author:  Brad Miller
+
+Note:  One important convention, since I plan to use
+multiple turtle canvases on a page I am passing the runit
+function a prefix to use in creating the id for the following:
+  - textarea containing the code
+  - pre tag for any printed output
+  - canvas tag for the turtle
+I've enclosed the whole group of them in a div because I was thinking
+at one point about creating the pre tag and the canvas tag on the fly
+the more I think about it the more I wonder...
+-->
+<head>
+<script src="skulpt.min.js" type="text/javascript"></script>
+<script src="skulpt-stdlib.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" >
+</script>
+<script src="codemirror.js" type="application/javascript"></script>
+<script src="python.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="codemirror.css">
+<link rel="stylesheet" type="text/css" media="all" href="solarized.css">
+</head>
+
+<body>
+<h3>Try This</h3>
+<div id="example1">
+<form>
+<textarea edit_id="eta_5" id="example1_code" cols="60" rows="10">
+import turtle
+wn = turtle.Screen()
+t = turtle.Turtle()
+wn.setup(800,800)
+
+t.speed(10)
+t.tracer(10,30)
+print "initial heading = ", t.heading()
+for i in range(10,361,10):
+    t.left(10)
+    print i, t.heading()
+t.up()
+for i in range(4):
+    t.forward(100)
+    t.dot(20,'blue')
+    t.right(90)
+t.goto(50,50)
+t.down()
+t.shape('square')
+t.color('green')
+for i in range(4):
+    t.forward(100)
+    t.right(90)
+
+t.up()
+t.goto(-300,200)
+t.down()
+t.fillcolor('red')
+t.begin_fill()
+for i in range(4):
+    t.forward(150)
+    t.right(90)
+t.end_fill()
+t.up();
+t.goto(10,-200)
+for i in range(0,400,10):
+    t.goto(i,-200)
+    t.dot(2,'violet')
+    t.goto(400,250)
+t.down()
+t.setheading(t.towards(0,0))
+t.forward(200)
+print "turtle position is: ", t.position()
+t.fillcolor("black")
+t.write("Hello world",None,None,"bold 30px sans-serif")
+t.up()
+t.goto(300,-100)
+t.down()
+t.circle(20)
+t.up()
+t.goto(-200,-200)
+t.setheading(0)
+t.color('orange')
+t.width(8)
+for i in range(20):
+    if i % 2 == 0:
+        t.down()
+    else:
+        t.up()
+    t.forward(10)
+wn.exitonclick()
+</textarea>
+<button onclick="runit('example1')" type="button">Run</button>
+</form>
+
+<div id="example1_canvas">
+</div>
+
+<pre id="example1_pre"></pre>
+
+</div>
+
+<script type="text/javascript">
+function outf(text) {
+   var mypre = document.getElementById(Sk.pre);
+   mypre.innerHTML = mypre.innerHTML + text;
+}
+
+window.Cm = CodeMirror.fromTextArea(document.getElementById("example1_code"), {
+    parserfile: ["parsepython.js"],
+    autofocus: true,
+    theme: "solarized dark",
+    lineNumbers: true,
+    textWrapping: false,
+    indentUnit: 4,
+    height: "160px",
+    fontSize: "9pt",
+    autoMatchParens: true,
+    parserConfig: { 'pythonVersion': 2, 'strictErrors': true }
+});
+    
+function builtinRead(x)
+{
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+function runit(myDiv) {
+    var prog = window.Cm.getValue();
+    var mypre = document.getElementById(myDiv+"_pre");
+    mypre.innerHTML = '';
+
+    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'example1_canvas';
+
+    Sk.pre = myDiv+"_pre";
+    Sk.configure({ output:outf, read: builtinRead });
+
+    Sk.misceval.asyncToPromise(function() {
+      return Sk.importMainWithBody("<stdin>",false,prog,true);
+    });
+}
+</script>
+</body>
+</html>

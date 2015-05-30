@@ -1,0 +1,14 @@
+name : Skulpt.org Homepage
+brand : Skulpt
+description : A Browser-based Python interpreter for education
+keyword : 
+url : http://skulpt.org
+email : skulpt-dev@groups.google.com
+twitter : 
+author : Brad Miller
+analytics : UA-10993568-1
+year : 2015
+markdown : kramdown
+
+repository: skulpt/skulpt
+gems: ['jekyll-github-metadata']

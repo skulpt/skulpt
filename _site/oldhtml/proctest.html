@@ -1,0 +1,223 @@
+<html>
+<!--
+Example of using the turtle module in skulpt.
+Author:  Brad Miller
+
+Note:  One important convention, since I plan to use
+multiple turtle canvases on a page I am passing the runit
+function a prefix to use in creating the id for the following:
+  - textarea containing the code
+  - pre tag for any printed output
+  - canvas tag for the turtle
+I've enclosed the whole group of them in a div because I was thinking
+at one point about creating the pre tag and the canvas tag on the fly
+the more I think about it the more I wonder...
+-->
+    <head>
+        <title>Processing Integration with Skulpt</title>
+        <link rel="stylesheet" type="text/css" media="all" href="codemirror.css">
+        <link rel="stylesheet" type="text/css" media="all" href="solarized.css">
+        <link rel="stylesheet" type="text/css" media="all" href="main.css">
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script src="codemirrorepl.js" type="text/javascript"></script>
+        <script src="python.js" type="text/javascript"></script>
+        <script src="skulpt.min.js" type="text/javascript"></script>
+        <script src="skulpt-stdlib.js" type="text/javascript"></script>
+        <script src="processing-1.4.1.min.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <a href="https://github.com/skulpt/skulpt"><img style="position: absolute; top: 0; left: 0; border: 0;"
+                                                 src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png"
+                                                 alt="Fork me on GitHub"></a>
+        
+        <script type="text/javascript">
+            //on dom loaded    
+            $(document).ready(function(){
+                var editor2 = CodeMirror.fromTextArea(document.getElementById('example2_code'), {
+                    autofocus: true,
+                    theme: "solarized dark",
+                    lineNumbers: true,
+                    textWrapping: false,
+                    indentUnit: 4,
+                    height: "160px",
+                    fontSize: "9pt",
+                    autoMatchParens: true,
+                    parserConfig: {'pythonVersion': 2, 'strictErrors': true},
+                });
+                
+                var editor1= CodeMirror.fromTextArea(document.getElementById('example1_code'), {
+                    autofocus: true,
+                    theme: "solarized dark",
+                    lineNumbers: true,
+                    textWrapping: false,
+                    indentUnit: 4,
+                    height: "160px",
+                    fontSize: "9pt",
+                    autoMatchParens: true,
+                    parserConfig: {'pythonVersion': 2, 'strictErrors': true},
+                });
+                editors = {}
+                editors['example2_code'] = editor2;
+                editors['example1_code'] = editor1;
+            });    
+                
+            function outf(text) {
+               var mypre = document.getElementById(Sk.pre);
+               mypre.innerHTML = mypre.innerHTML + text;
+            }
+            
+            function builtinRead(x)
+            {
+                if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                    throw "File not found: '" + x + "'";
+                return Sk.builtinFiles["files"][x];
+            }
+            
+            function runit(myDiv) {
+//               var prog = document.getElementById(myDiv+"_code").value;
+               var prog = editors[myDiv+'_code'].getValue();
+               var mypre = document.getElementById(myDiv+"_pre");
+               mypre.innerHTML = '';
+               Sk.canvas = myDiv+"_canvas";
+               var can = document.getElementById(Sk.canvas);
+               can.style.display = 'block';
+               if (can) {
+                   can.width = can.width;
+                   if (Sk.tg) {
+                       Sk.tg.canvasInit = false;
+                       Sk.tg.turtleList = [];
+                   }
+               }
+               Sk.pre = myDiv+"_pre";
+               Sk.configure({output:outf,
+                        read: builtinRead
+                          });
+	       var myPromise = Sk.misceval.asyncToPromise(function() {
+                  return Sk.importMainWithBody("<stdin>",false,prog,true);
+               });
+               myPromise.then(function() {}, function(err) {alert(err.toString())});
+            }
+        </script>
+        <div class="page">
+            <div class="body">
+                <div class="main">
+                    <a href="/"><img src="logo.png" alt="Skulpt" id="logo"></a>
+                    
+                    <h1>Integrating Processing-js and Skulpt!</h1>
+                    <h1>Recursive Circles</h1>
+                    <p>This illustrates how processing and skulpt work together.  You must define a draw function that does the drawing, and then you must call the run function to start things off.  You may optionally define a setup call that does one time initialization of size and color etc.</p>
+
+                    <div id="example2" style="overflow: hidden">
+                        <textarea edit_id="eta_5a" id="example2_code" cols="60" rows="21">
+from processing import *
+
+def setup():
+    size(400,400)
+    noStroke()
+    smooth()
+    noLoop()
+
+def draw():
+    drawCircle(200,170,6)
+
+def drawCircle(x, radius, level):
+    tt = 128.0 * level / 4.0
+    fill(tt)
+    ellipse(x, 200, radius*2, radius*2)
+    if level > 1:
+        level = level - 1
+        drawCircle(x - radius / 2, radius/2, level)
+        drawCircle(x + radius / 2, radius/2, level)
+
+run()
+                        </textarea>
+                        <button onclick="runit('example2')" type="button">Run</button>
+                        <div id="example2_canvas" height="500" width="800" style="border-style: solid; display: none"></div>
+                    </div>
+                    <pre id="example2_pre"></pre>
+                    <h1>Try These</h1>
+                    <p>There are three functions defined in this example, each returns a draw function.</p>
+                    <ul>
+                        <li>ellipseFun  -- Watch the pulsing ball follow your mouse</li>
+                        <li>colorFun -- a rainbow of color</li>
+                        <li>distanceFun -- Watch the circles changes as you move your mouse</li>
+                    </ul>
+                    <p>Click the run button and then move your mouse over the picture.  To try one of the other examples change the second to the last line to make draw refer to a different function.</p>
+                    
+                    <div id="example1">
+                        <form>
+                            <textarea edit_id="eta_5" id="example1_code" cols="60" rows="15">
+from math import sin, sqrt
+from processing import *
+
+X = 30
+Y = 30
+delay = 16
+radius = 30
+
+def setup():
+    strokeWeight(10)
+    frameRate(20)
+    size(300,300)
+
+def ellipseFun():
+    global X, Y, radius
+    background(100)
+    fill(0,121,184)
+    stroke(255)
+    fc = environment.frameCount
+
+    X += (mouse.x-X)/delay;
+    Y += (mouse.y-Y)/delay;
+
+    radius = radius + sin(fc / 4)
+
+    ellipse(X,Y,radius,radius)
+
+def colorFun():
+    noStroke()
+    noLoop()
+    colorMode(RGB,300)
+    for r in range(300):
+        for g in range(300):
+            stroke(r, g, 0)
+            point(r,g)
+
+def dist(x1,y1,x2,y2):
+    o = y2-y1
+    a = x2-x1
+    return sqrt(o*o + a*a)
+
+def distanceFun():
+    background(51)
+    strokeWeight(1)
+    for i in range(0,environment.width,20):
+        for j in range(0,environment.width,20):
+            size = dist(mouse.x,mouse.y,i,j)
+            size = size/dist(0,0,environment.height,environment.width) * 100
+            ellipse(i,j,size,size)
+
+draw = distanceFun    # try colorFun or ellipseFun
+run()
+                            </textarea>
+                            <button onclick="runit('example1')" type="button">Run</button>
+                        </form>
+                        <div id="example1_canvas" height="500" width="800" style="border-style: solid; display: none"></div>
+                        <pre id="example1_pre"></pre>
+                    </div>
+
+                    <script type="text/javascript">
+                        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+                        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+                    </script>
+                    <script type="text/javascript">
+                        try {
+                            var pageTracker = _gat._getTracker("UA-10993568-1");
+                            pageTracker._trackPageview();
+                        } catch(err) {}
+                    </script>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
