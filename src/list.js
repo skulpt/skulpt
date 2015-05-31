@@ -440,13 +440,13 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
         };
     }
 
-    if (reverse) {
+    if (Sk.ffi.remapToJs(reverse)) {
         timsort.list.list_reverse_(timsort.list);
     }
 
     timsort.sort();
 
-    if (reverse) {
+    if (Sk.ffi.remapToJs(reverse)) {
         timsort.list.list_reverse_(timsort.list);
     }
 
