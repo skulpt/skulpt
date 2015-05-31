@@ -705,7 +705,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
         var w_imag = w.tp$getattr("imag").v;
         equal = _real === w_real && _imag === w_imag;
     } else {
-        throw new Sk.builtin.NotImplementedError();
+        return Sk.builtin.NotImplemented.NotImplemented$;
     }
 
     // invert result if op == NotEq

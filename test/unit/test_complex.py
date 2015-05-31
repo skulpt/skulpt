@@ -119,6 +119,8 @@ class ComplexTest(unittest.TestCase):
         self.assertIs(complex.__eq__(1+1j, 2+2j), False)
         self.assertIs(complex.__ne__(1+1j, 1+1j), False)
         self.assertIs(complex.__ne__(1+1j, 2+2j), True)
+        self.assertFalse(complex.__eq__(1j, None), False)
+        self.assertFalse(complex.__eq__(1j, NotImplemented), False)
 
         for i in range(1, 100):
             f = i / 100.0
