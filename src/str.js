@@ -98,7 +98,7 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
         return new Sk.builtin.str(ret);
     }
     else {
-        throw new Sk.builtin.TypeError("string indices must be numbers, not " + typeof index);
+        throw new Sk.builtin.TypeError("string indices must be integers, not " + Sk.abstr.typeName(index));
     }
 };
 
