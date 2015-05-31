@@ -107,7 +107,11 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     var j;
     var i;
     var ret;
-    n = Sk.builtin.asnum$(n);
+    if (!Sk.misceval.isIndex(n)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
+
+    n = Sk.misceval.asIndex(n);
     ret = [];
     for (i = 0; i < n; ++i) {
         for (j = 0; j < this.v.length; ++j) {

@@ -78,8 +78,8 @@ Sk.builtin.str.$emptystr = new Sk.builtin.str("");
 
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
-    index = Sk.builtin.asnum$(index);
-    if (typeof index === "number" && Math.floor(index) === index /* not a float*/) {
+    if (Sk.misceval.isIndex(index)) {
+        index = Sk.misceval.asIndex(index);
         if (index < 0) {
             index = this.v.length + index;
         }
@@ -118,11 +118,11 @@ Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
 Sk.builtin.str.prototype.sq$repeat = function (n) {
     var i;
     var ret;
-    if (!Sk.builtin.checkInt(n)) {
+    if (!Sk.misceval.isIndex(n)) {
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
     }
 
-    n = Sk.builtin.asnum$(n);
+    n = Sk.misceval.asIndex(n);
     ret = "";
     for (i = 0; i < n; ++i) {
         ret += this.v;

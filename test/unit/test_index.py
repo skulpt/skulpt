@@ -120,15 +120,15 @@ class SeqTestCase(unittest.TestCase):
         self.assertEqual(self.o * self.seq, self.seq * 3)
         #self.assertEqual(self.n * self.seq, self.seq * 2)
 
-    def test_wrappers(self):
-        self.o.ind = 4
-        #self.n.ind = 5
-        self.assertEqual(self.seq.__getitem__(self.o), self.seq[4])
-        self.assertEqual(self.seq.__mul__(self.o), self.seq * 4)
-        self.assertEqual(self.seq.__rmul__(self.o), self.seq * 4)
-        #self.assertEqual(self.seq.__getitem__(self.n), self.seq[5])
-        #self.assertEqual(self.seq.__mul__(self.n), self.seq * 5)
-        #self.assertEqual(self.seq.__rmul__(self.n), self.seq * 5)
+    # def test_wrappers(self):
+    #     self.o.ind = 4
+    #     self.n.ind = 5
+    #     self.assertEqual(self.seq.__getitem__(self.o), self.seq[4])
+    #     self.assertEqual(self.seq.__mul__(self.o), self.seq * 4)
+    #     self.assertEqual(self.seq.__rmul__(self.o), self.seq * 4)
+    #     self.assertEqual(self.seq.__getitem__(self.n), self.seq[5])
+    #     self.assertEqual(self.seq.__mul__(self.n), self.seq * 5)
+    #     self.assertEqual(self.seq.__rmul__(self.n), self.seq * 5)
 
     # def test_subclasses(self):
     #     self.assertEqual(self.seq[TrapInt()], self.seq[0])
@@ -223,11 +223,11 @@ class StringTestCase(SeqTestCase):
 # class ByteArrayTestCase(SeqTestCase):
 #     seq = bytearray("this is a test")
 
-class UnicodeTestCase(SeqTestCase):
-    seq = u"this is a test"
+# class UnicodeTestCase(SeqTestCase):
+#     seq = u"this is a test"
 
-class ClassicSeqTestCase(SeqTestCase):
-    seq = ClassicSeq((0,10,20,30,40,50))
+# class ClassicSeqTestCase(SeqTestCase):
+#     seq = ClassicSeq((0,10,20,30,40,50))
 
 # class NewSeqTestCase(SeqTestCase):
 #     seq = NewSeq((0,10,20,30,40,50))
@@ -307,8 +307,7 @@ def test_main():
     tests = ["BaseTestCase",
              "ListTestCase",
              "TupleTestCase",
-             "StringTestCase",
-             "ClassicSeqTestCase"]
+             "StringTestCase"]
 
     unittest.main(False, tests)
 
