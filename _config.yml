@@ -9,6 +9,9 @@ author : Brad Miller
 analytics : UA-10993568-1
 year : 2015
 markdown : kramdown
+kramdown:
+  input: GFM
+highlighter: pygments
 
 repository: skulpt/skulpt
 gems: ['jekyll-github-metadata']
