@@ -331,7 +331,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     regex = /[\s]+/g;
     str = self.v;
     if (on === null) {
-        str = str.trimLeft();
+        str = goog.string.trimLeft(str);
     } else {
         // Escape special characters in "on" so we can use a regexp
         s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
