@@ -343,11 +343,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined) {
-        return res;
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
 
     if (w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        return res;
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
 
 
@@ -367,10 +371,16 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     swapped_method = op2method[Sk.misceval.swappedOp_[op]];
 
     if (v[method]) {
-        return Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
+        res = Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
     else if (w[swapped_method]) {
-        return Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
+        res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
 
     if (v["__cmp__"]) {
@@ -531,6 +541,11 @@ Sk.misceval.isTrue = function (x) {
     if (x.constructor === Sk.builtin.none) {
         return false;
     }
+
+    if (x.constructor === Sk.builtin.NotImplemented) {
+        return false;
+    }
+
     if (x.constructor === Sk.builtin.bool) {
         return x.v;
     }

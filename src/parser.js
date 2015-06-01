@@ -17,9 +17,23 @@
 function Parser (filename, grammar) {
     this.filename = filename;
     this.grammar = grammar;
+    this.p_flags = 0;
     return this;
 }
 
+// all possible parser flags
+Parser.FUTURE_PRINT_FUNCTION = "print_function";
+Parser.FUTURE_UNICODE_LITERALS = "unicode_literals";
+Parser.FUTURE_DIVISION = "division";
+Parser.FUTURE_ABSOLUTE_IMPORT = "absolute_import";
+Parser.FUTURE_WITH_STATEMENT = "with_statement";
+Parser.FUTURE_NESTED_SCOPES = "nested_scopes";
+Parser.FUTURE_GENERATORS = "generators";
+Parser.CO_FUTURE_PRINT_FUNCTION = 0x10000;
+Parser.CO_FUTURE_UNICODE_LITERALS = 0x20000;
+Parser.CO_FUTURE_DIVISON = 0x2000;
+Parser.CO_FUTURE_ABSOLUTE_IMPORT = 0x4000;
+Parser.CO_FUTURE_WITH_STATEMENT = 0x8000;
 
 Parser.prototype.setup = function (start) {
     var stackentry;
@@ -151,6 +165,12 @@ Parser.prototype.classify = function (type, value, context) {
     if (type === Sk.Tokenizer.Tokens.T_NAME) {
         this.used_names[value] = true;
         ilabel = this.grammar.keywords.hasOwnProperty(value) && this.grammar.keywords[value];
+
+        /* Check for handling print as an builtin function */
+        if(value === "print" && (this.p_flags & Parser.CO_FUTURE_PRINT_FUNCTION || Sk.python3 === true)) {
+            ilabel = false; // ilabel determines if the value is a keyword
+        }
+
         if (ilabel) {
             //print("is keyword");
             return ilabel;
@@ -298,7 +318,9 @@ function makeParser (filename, style) {
             return true;
         }
     });
-    return function (line) {
+
+    // create parser function
+    var parseFunc = function (line) {
         var ret = tokenizer.generateTokens(line);
         //print("tok:"+ret);
         if (ret) {
@@ -309,6 +331,10 @@ function makeParser (filename, style) {
         }
         return false;
     };
+
+    // set flags, and return
+    parseFunc.p_flags = p.p_flags;
+    return parseFunc;
 }
 
 Sk.parse = function parse (filename, input) {
@@ -324,7 +350,11 @@ Sk.parse = function parse (filename, input) {
     for (i = 0; i < lines.length; ++i) {
         ret = parseFunc(lines[i] + ((i === lines.length - 1) ? "" : "\n"));
     }
-    return ret;
+
+    /*
+     * Small adjustments here in order to return th flags and the cst
+     */
+    return {"cst": ret, "flags": parseFunc.p_flags};
 };
 
 Sk.parseTreeDump = function parseTreeDump (n, indent) {

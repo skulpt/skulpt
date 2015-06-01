@@ -14,9 +14,10 @@ var COMP_GENEXP = 0;
 var COMP_SETCOMP = 1;
 
 /** @constructor */
-function Compiling (encoding, filename) {
+function Compiling (encoding, filename, c_flags) {
     this.c_encoding = encoding;
     this.c_filename = filename;
+    this.c_flags = c_flags || 0;
 }
 
 /**
@@ -1716,6 +1717,12 @@ function parsestr (c, s) {
     var rawmode = false;
     var unicode = false;
 
+    // treats every sequence as unicodes even if they are not treated with uU prefix
+    // kinda hacking though working for most purposes
+    if((c.c_flags & Parser.CO_FUTURE_UNICODE_LITERALS || Sk.python3 === true)) {
+        unicode = true;
+    }
+
     if (quote === "u" || quote === "U") {
         s = s.substr(1);
         quote = s.charAt(0);
@@ -1766,9 +1773,9 @@ function parsenumber (c, s, lineno) {
     var tmp;
     var end = s.charAt(s.length - 1);
 
-    // todo; no complex support
+    // call internal complex type constructor for complex strings
     if (end === "j" || end === "J") {
-        throw new Sk.builtin.SyntaxError("complex numbers are currently unsupported", c.c_filename, lineno);
+        return Sk.builtin.complex.complex_subtype_from_string(s);
     }
 
     // Handle longs
@@ -2217,12 +2224,12 @@ function astForStmt (c, n) {
     }
 }
 
-Sk.astFromParse = function (n, filename) {
+Sk.astFromParse = function (n, filename, c_flags) {
     var j;
     var num;
     var ch;
     var i;
-    var c = new Compiling("utf-8", filename);
+    var c = new Compiling("utf-8", filename, c_flags);
     var stmts = [];
     var k = 0;
     switch (n.type) {

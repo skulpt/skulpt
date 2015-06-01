@@ -159,12 +159,16 @@ Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
     for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        ret.push(Sk.misceval.objectRepr(i).v);
+        if(i === this) {
+            ret.push("[...]");
+        } else {
+            ret.push(Sk.misceval.objectRepr(i).v);
+        }
     }
     return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };
 Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.list.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+Sk.builtin.list.prototype.tp$hash = Sk.builtin.none.none$;
 
 Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
@@ -266,7 +270,26 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     return new Sk.builtin.list(ret, false);
 };
 Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.sq$repeat;
-Sk.builtin.list.prototype.nb$inplace_multiply = Sk.builtin.list.prototype.sq$repeat;
+Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
+    var j;
+    var i;
+    var len;
+    if (!Sk.builtin.checkInt(n)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
+
+    // works on list itself --> inplace
+    n = Sk.builtin.asnum$(n);
+    len = this.v.length;
+    for (i = 1; i < n; ++i) {
+        for (j = 0; j < len; ++j) {
+            this.v.push(this.v[j]);
+        }
+    }
+
+    return this;
+};
+
 /*
  Sk.builtin.list.prototype.sq$item = list_item;
  Sk.builtin.list.prototype.sq$slice = list_slice;

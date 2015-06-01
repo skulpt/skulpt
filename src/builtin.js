@@ -1,9 +1,9 @@
-// builtins are supposed to come from the __builtin__ module, but we don't do
-// that yet.
-Sk.builtin = {};
-
-// todo; these should all be func objects too, otherwise str() of them won't
-// work, etc.
+/** 
+ * builtins are supposed to come from the __builtin__ module, but we don't do
+ * that yet.
+ * todo; these should all be func objects too, otherwise str() of them won't
+ * work, etc.
+ */
 
 Sk.builtin.range = function range (start, stop, step) {
     var ret = [];
@@ -196,7 +196,7 @@ Sk.builtin.asnum$nofloat = function (a) {
 goog.exportSymbol("Sk.builtin.asnum$nofloat", Sk.builtin.asnum$nofloat);
 
 Sk.builtin.round = function round (number, ndigits) {
-    var result, multiplier;
+    var result, multiplier, special;
     Sk.builtin.pyCheckArgs("round", arguments, 1, 2);
 
     if (!Sk.builtin.checkNumber(number)) {
@@ -211,13 +211,17 @@ Sk.builtin.round = function round (number, ndigits) {
         ndigits = 0;
     }
 
-    number = Sk.builtin.asnum$(number);
-    ndigits = Sk.misceval.asIndex(ndigits);
+    // for built-in types round is delegated to number.__round__
+    if(Sk.builtin.checkNumber(number)) {
+        return Sk.builtin.nmber.prototype.__round__.call(number, number, ndigits);
+    }
 
-    multiplier = Math.pow(10, ndigits);
-    result = Math.round(number * multiplier) / multiplier;
-
-    return new Sk.builtin.nmber(result, Sk.builtin.nmber.float$);
+    // try calling internal magic method
+    special = Sk.builtin.object.PyObject_LookupSpecial_(number.ob$type, "__round__");
+    if (special != null) {
+        // method on builtin, provide this arg
+        return Sk.misceval.callsim(special, number, ndigits);
+    }
 };
 
 Sk.builtin.len = function len (item) {
@@ -404,9 +408,13 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
-    Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-    return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+    if (Sk.builtin.checkNumber(x)) {
+        return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
+    } else if (Sk.builtin.checkComplex(x)) {
+        return Sk.misceval.callsim(x.__abs__, x);
+    }
+    
+    throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
 Sk.builtin.ord = function ord (x) {
@@ -495,7 +503,6 @@ Sk.builtin.dir = function dir (x) {
     var k;
     var names;
     var getName;
-    // todo; should also be callable with 0 params: gives locals then
     Sk.builtin.pyCheckArgs("dir", arguments, 1, 1);
 
     getName = function (k) {
@@ -518,48 +525,68 @@ Sk.builtin.dir = function dir (x) {
 
     names = [];
 
-    // Add all object properties
-    for (k in x.constructor.prototype) {
-        s = getName(k);
-        if (s) {
-            names.push(new Sk.builtin.str(s));
-        }
-    }
+    var _seq;
 
-    // Add all attributes
-    if (x["$d"]) {
-        if (x["$d"].tp$iter) {
-            // Dictionary
-            it = x["$d"].tp$iter();
-            for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-                s = new Sk.builtin.str(i);
-                s = getName(s.v);
-                if (s) {
+    // try calling magic method
+    var special = Sk.builtin.object.PyObject_LookupSpecial_(x.ob$type, "__dir__");
+    if(special != null) {
+        // method on builtin, provide this arg
+        _seq = Sk.misceval.callsim(special, x);
+
+        if (!Sk.builtin.checkSequence(_seq)) {
+            throw new Sk.builtin.TypeError("__dir__ must return sequence.");
+        }
+
+        // proper unwrapping
+        _seq = Sk.ffi.remapToJs(_seq);
+       
+        for (i = 0; i < _seq.length; ++i) {
+            names.push(new Sk.builtin.str(_seq[i]));
+        }
+    } else {
+        // Add all object properties
+        for (k in x.constructor.prototype) {
+            s = getName(k);
+            if (s) {
+                names.push(new Sk.builtin.str(s));
+            }
+        }
+
+        // Add all attributes
+        if (x["$d"]) {
+            if (x["$d"].tp$iter) {
+                // Dictionary
+                it = x["$d"].tp$iter();
+                for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+                    s = new Sk.builtin.str(i);
+                    s = getName(s.v);
+                    if (s) {
+                        names.push(new Sk.builtin.str(s));
+                    }
+                }
+            }
+            else {
+                // Object
+                for (s in x["$d"]) {
                     names.push(new Sk.builtin.str(s));
                 }
             }
         }
-        else {
-            // Object
-            for (s in x["$d"]) {
-                names.push(new Sk.builtin.str(s));
-            }
-        }
-    }
 
-    // Add all class attributes
-    mro = x.tp$mro;
-    if(!mro && x.ob$type) {
-        mro = x.ob$type.tp$mro;
-    }
-    if (mro) {
-        for (i = 0; i < mro.v.length; ++i) {
-            base = mro.v[i];
-            for (prop in base) {
-                if (base.hasOwnProperty(prop)) {
-                    s = getName(prop);
-                    if (s) {
-                        names.push(new Sk.builtin.str(s));
+        // Add all class attributes
+        mro = x.tp$mro;
+        if(!mro && x.ob$type) {
+            mro = x.ob$type.tp$mro;
+        }
+        if (mro) {
+            for (i = 0; i < mro.v.length; ++i) {
+                base = mro.v[i];
+                for (prop in base) {
+                    if (base.hasOwnProperty(prop)) {
+                        s = getName(prop);
+                        if (s) {
+                            names.push(new Sk.builtin.str(s));
+                        }
                     }
                 }
             }
@@ -681,6 +708,11 @@ Sk.builtin.hash = function hash (value) {
     junk = {__hash__: function () {
         return 0;
     }};
+
+    if ((value instanceof Object) && Sk.builtin.checkNone(value.tp$hash)) {
+        // python sets the hash function to None , so we have to catch this case here
+        throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
+    }
 
     if ((value instanceof Object) && (value.tp$hash !== undefined)) {
         if (value.$savedHash_) {
@@ -998,6 +1030,11 @@ Sk.builtin.pow = function pow (a, b, c) {
         c = undefined;
     }
 
+    // add complex type hook here, builtin is messed up anyways
+    if (Sk.builtin.checkComplex(a)) {
+        return a.nb$power(b, c); // call complex pow function
+    }
+
     a_num = Sk.builtin.asnum$(a);
     b_num = Sk.builtin.asnum$(b);
     c_num = Sk.builtin.asnum$(c);
@@ -1062,25 +1099,6 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         throw new Sk.builtin.TypeError("issubclass() arg 2 must be a classinfo, type, or tuple of classes and types");
     }
 
-    //print("c1 name: " + c1.tp$name);
-
-    if (c2 === Sk.builtin.int_.prototype.ob$type) {
-        return true;
-    }
-
-    if (c2 === Sk.builtin.float_.prototype.ob$type) {
-        return true;
-    }
-
-    if (c2 === Sk.builtin.none.prototype.ob$type) {
-        return true;
-    }
-
-    // Normal case
-    if (c1.ob$type === c2) {
-        return true;
-    }
-
     issubclass_internal = function (klass, base) {
         var i;
         var bases;
@@ -1103,6 +1121,15 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         return false;
     };
 
+    if (Sk.builtin.checkClass(c2)) {
+        /* Quick test for an exact match */
+        if (c1 === c2) {
+            return true;
+        }
+
+        return issubclass_internal(c1, c2);
+    }
+
     // Handle tuple type argument
     if (c2 instanceof Sk.builtin.tuple) {
         for (i = 0; i < c2.v.length; ++i) {
@@ -1112,9 +1139,6 @@ Sk.builtin.issubclass = function issubclass (c1, c2) {
         }
         return false;
     }
-
-    return issubclass_internal(c1, c2);
-
 };
 
 Sk.builtin.globals = function globals () {
@@ -1132,6 +1156,16 @@ Sk.builtin.divmod = function divmod (a, b) {
     return Sk.abstr.numberBinOp(a, b, "DivMod");
 };
 
+/**
+ * Convert a value to a “formatted” representation, as controlled by format_spec. The interpretation of format_spec 
+ * will depend on the type of the value argument, however there is a standard formatting syntax that is used by most
+ * built-in types: Format Specification Mini-Language.
+ */
+Sk.builtin.format = function format (value, format_spec) {
+    Sk.builtin.pyCheckArgs("format", arguments, 1, 2);
+
+    return Sk.abstr.objectFormat(value, format_spec);
+};
 
 Sk.builtin.bytearray = function bytearray () {
     throw new Sk.builtin.NotImplementedError("bytearray is not yet implemented");
@@ -1139,18 +1173,14 @@ Sk.builtin.bytearray = function bytearray () {
 Sk.builtin.callable = function callable () {
     throw new Sk.builtin.NotImplementedError("callable is not yet implemented");
 };
-Sk.builtin.complex = function complex () {
-    throw new Sk.builtin.NotImplementedError("complex is not yet implemented");
-};
+
 Sk.builtin.delattr = function delattr () {
     throw new Sk.builtin.NotImplementedError("delattr is not yet implemented");
 };
 Sk.builtin.execfile = function execfile () {
     throw new Sk.builtin.NotImplementedError("execfile is not yet implemented");
 };
-Sk.builtin.format = function format () {
-    throw new Sk.builtin.NotImplementedError("format is not yet implemented");
-};
+
 Sk.builtin.frozenset = function frozenset () {
     throw new Sk.builtin.NotImplementedError("frozenset is not yet implemented");
 };
