@@ -407,8 +407,12 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     var timsort;
     var has_key = key !== undefined && key !== null;
     var has_cmp = cmp !== undefined && cmp !== null;
-    if (reverse === undefined) {
-        reverse = false;
+    var rev;
+
+    if (reverse === undefined || reverse === Sk.builtin.none.$none) {
+        rev = false;
+    } else {
+        rev = Sk.ffi.remapToJs(reverse);
     }
 
     timsort = new Sk.builtin.timSort(self);
@@ -440,13 +444,13 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
         };
     }
 
-    if (Sk.ffi.remapToJs(reverse)) {
+    if (rev) {
         timsort.list.list_reverse_(timsort.list);
     }
 
     timsort.sort();
 
-    if (Sk.ffi.remapToJs(reverse)) {
+    if (rev) {
         timsort.list.list_reverse_(timsort.list);
     }
 
