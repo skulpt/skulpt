@@ -409,10 +409,12 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     var has_cmp = cmp !== undefined && cmp !== null;
     var rev;
 
-    if (reverse === undefined || reverse === Sk.builtin.none.$none) {
+    if (reverse === undefined) {
         rev = false;
+    } else if (reverse === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("an integer is required");
     } else {
-        rev = Sk.ffi.remapToJs(reverse);
+        rev = Sk.ffi.remapToJs(Sk.builtin.bool(reverse));
     }
 
     timsort = new Sk.builtin.timSort(self);
