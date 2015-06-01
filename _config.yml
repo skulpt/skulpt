@@ -11,4 +11,3 @@ year : 2015
 markdown : kramdown
 
 repository: skulpt/skulpt
-gems: ['jekyll-github-metadata']
