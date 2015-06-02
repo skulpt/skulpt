@@ -274,12 +274,12 @@ Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
     var j;
     var i;
     var len;
-    if (!Sk.builtin.checkInt(n)) {
+    if (!Sk.misceval.isIndex(n)) {
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
     }
 
     // works on list itself --> inplace
-    n = Sk.builtin.asnum$(n);
+    n = Sk.misceval.asIndex(n);
     len = this.v.length;
     for (i = 1; i < n; ++i) {
         for (j = 0; j < len; ++j) {
