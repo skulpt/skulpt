@@ -10,6 +10,24 @@ Sk.builtin.object = function () {
 };
 
 /**
+ * Special method look up. First try getting the method via
+ * internal dict and getattr. If getattr is not present (builtins)
+ * try if method is defined on the object itself
+ *
+ * Return null if not found or the function
+ */
+Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
+    var res;
+
+    // if op is null, return null
+    if (op == null) {
+        return null;
+    }
+
+    return Sk.builtin.type.typeLookup(op, str);
+};
+
+/**
  * @return {undefined}
  */
 Sk.builtin.object.prototype.GenericGetAttr = function (name) {

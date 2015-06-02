@@ -80,9 +80,8 @@ var $builtinmodule = function (name) {
     });
     mod.__floordiv__ = mod.floordiv;
 
-    // Doesn't look like anything has the __index__ magic function anyway
     mod.index = new Sk.builtin.func(function (a) {
-        throw new Sk.builtin.NotImplementedError("operator.index() is not yet implemented in Skulpt");
+        return Sk.builtin.assk$(Sk.misceval.asIndex(a));
     });
     mod.__index__ = mod.index;
 

@@ -78,8 +78,8 @@ Sk.builtin.str.$emptystr = new Sk.builtin.str("");
 
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
-    index = Sk.builtin.asnum$(index);
-    if (typeof index === "number" && Math.floor(index) === index /* not a float*/) {
+    if (Sk.misceval.isIndex(index)) {
+        index = Sk.misceval.asIndex(index);
         if (index < 0) {
             index = this.v.length + index;
         }
@@ -98,7 +98,7 @@ Sk.builtin.str.prototype.mp$subscript = function (index) {
         return new Sk.builtin.str(ret);
     }
     else {
-        throw new Sk.builtin.TypeError("string indices must be numbers, not " + typeof index);
+        throw new Sk.builtin.TypeError("string indices must be integers, not " + Sk.abstr.typeName(index));
     }
 };
 
@@ -118,11 +118,11 @@ Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
 Sk.builtin.str.prototype.sq$repeat = function (n) {
     var i;
     var ret;
-    if (!Sk.builtin.checkInt(n)) {
+    if (!Sk.misceval.isIndex(n)) {
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
     }
 
-    n = Sk.builtin.asnum$(n);
+    n = Sk.misceval.asIndex(n);
     ret = "";
     for (i = 0; i < n; ++i) {
         ret += this.v;
@@ -331,7 +331,7 @@ Sk.builtin.str.prototype["split"] = new Sk.builtin.func(function (self, on, howm
     regex = /[\s]+/g;
     str = self.v;
     if (on === null) {
-        str = str.trimLeft();
+        str = goog.string.trimLeft(str);
     } else {
         // Escape special characters in "on" so we can use a regexp
         s = on.v.replace(/([.*+?=|\\\/()\[\]\{\}^$])/g, "\\$1");
@@ -1129,7 +1129,15 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     precision = 7;
                 }
             }
-            result = (convValue)[convName](precision);
+            result = (convValue)[convName](precision); // possible loose of negative zero sign
+            
+            // apply sign to negative zeros, floats only!
+            if(Sk.builtin.checkFloat(value)) {
+                if(convValue === 0 && 1/convValue === -Infinity) {
+                    result = "-" + result; // add sign for zero
+                }
+            }
+
             if ("EFG".indexOf(conversionType) !== -1) {
                 result = result.toUpperCase();
             }

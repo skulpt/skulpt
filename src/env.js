@@ -30,6 +30,9 @@ Sk.configure = function (options) {
     Sk.debugout = options["debugout"] || Sk.debugout;
     goog.asserts.assert(typeof Sk.debugout === "function");
 
+    Sk.uncaughtException = options["uncaughtException"] || Sk.uncaughtException;
+    goog.asserts.assert(typeof Sk.uncaughtException === "function");
+
     Sk.read = options["read"] || Sk.read;
     goog.asserts.assert(typeof Sk.read === "function");
 
@@ -87,6 +90,13 @@ Sk.configure = function (options) {
     Sk.misceval.softspace_ = false;
 };
 goog.exportSymbol("Sk.configure", Sk.configure);
+
+ /*
+ * Replaceable handler for uncaught exceptions
+ */
+Sk.uncaughtException = function(err) {
+    throw err;
+}
 
 /*
  *	Replaceable message for message timeouts

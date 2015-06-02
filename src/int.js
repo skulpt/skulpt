@@ -111,22 +111,39 @@ Sk.str2number = function (s, base, parser, negater, fname) {
     return val;
 };
 
+/*
+ * type int, all integers are created with this method, it is also used
+ * for the builtin int()
+ *
+ * Takes also implemented __int__ and __trunc__ methods for x into account
+ * and tries to use __index__ and/or __int__ if base is not a number
+ */
 Sk.builtin.int_ = function (x, base) {
     "use strict";
     var val;
-    if ((x !== undefined) && (!Sk.builtin.checkString(x) && !Sk.builtin.checkNumber(x))) {
-        if (x instanceof Sk.builtin.bool) {
-            x = Sk.builtin.asnum$(x);
+    var ret; // return value
+    var magicName; // name of magic method
+
+    // if base is not of type int, try calling .__index__
+    if(base !== undefined && !Sk.builtin.checkInt(base)) {
+        if(base.tp$getattr("__index__")) {
+            base = Sk.misceval.callsim(base.__index__, base);
+        } else if(base.tp$getattr("__int__")) {
+            base = Sk.misceval.callsim(base.__int__, base);
+        } else if(Sk.builtin.checkFloat(base)) {
+            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
         } else {
-            throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
+            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");
         }
     }
 
     if (x instanceof Sk.builtin.str) {
         base = Sk.builtin.asnum$(base);
+
         val = Sk.str2number(x.v, base, parseInt, function (x) {
             return -x;
         }, "int");
+
         if ((val > Sk.builtin.nmber.threshold$) || (val < -Sk.builtin.nmber.threshold$)) {
             // Too big for int, convert to long
             return new Sk.builtin.lng(x, base);
@@ -134,6 +151,7 @@ Sk.builtin.int_ = function (x, base) {
 
         return new Sk.builtin.nmber(val, Sk.builtin.nmber.int$);
     }
+
     if (base !== undefined) {
         throw new Sk.builtin.TypeError("int() can't convert non-string with explicit base");
     }
@@ -142,11 +160,39 @@ Sk.builtin.int_ = function (x, base) {
         x = 0;
     }
 
-    if (x instanceof Sk.builtin.lng) {
-        if (x.cantBeInt()) {
-            return new Sk.builtin.lng(x);
-        }
-        return new Sk.builtin.nmber(x.toInt$(), Sk.builtin.nmber.int$);
+    /**
+     * try calling special methods:
+     *  1. __int__
+     *  2. __trunc__
+     */
+    if(x !== undefined && (x.tp$getattr && x.tp$getattr("__int__"))) {
+        // calling a method which contains im_self and im_func
+        // causes skulpt to automatically map the im_self as first argument
+        ret = Sk.misceval.callsim(x.tp$getattr("__int__"));
+        magicName = "__int__";
+    } else if(x !== undefined && x.__int__) {
+        // required for internal types
+        // __int__ method is on prototype
+        ret = Sk.misceval.callsim(x.__int__, x);
+        magicName = "__int__";
+    } else if(x !== undefined && (x.tp$getattr && x.tp$getattr("__trunc__"))) {
+        ret = Sk.misceval.callsim(x.tp$getattr("__trunc__"));
+        magicName = "__trunc__";
+    } else if(x !== undefined && x.__trunc__) {
+        ret = Sk.misceval.callsim(x.__trunc__, x);
+        magicName = "__trunc__";
+    }
+
+    // check return type of magic methods
+    if(ret !== undefined && !Sk.builtin.checkInt(ret)) {
+        throw new Sk.builtin.TypeError(magicName + " returned non-Integral (type " + Sk.abstr.typeName(ret)+")");
+    } else if(ret !== undefined){
+        x = ret; // valid return value, proceed in function
+    }
+
+    // check type even without magic numbers
+    if(!Sk.builtin.checkNumber(x)) {
+        throw new Sk.builtin.TypeError("int() argument must be a string or a number, not '" + Sk.abstr.typeName(x) + "'");
     }
 
     x = Sk.builtin.asnum$(x);
@@ -161,6 +207,26 @@ Sk.builtin.int_ = function (x, base) {
 Sk.builtin.int_.co_varnames = [ "base" ];
 Sk.builtin.int_.co_numargs = 2;
 Sk.builtin.int_.$defaults = [ new Sk.builtin.nmber(10, Sk.builtin.nmber.int$) ];
+
+Sk.builtin.int_.prototype.__int__ = new Sk.builtin.func(function(self) {
+    return self;
+});
+
+Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function(self) {
+    return self;
+});
+
+Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function(self) {
+    return self;
+});
+
+Sk.builtin.int_.prototype.__float__ = new Sk.builtin.func(function(self) {
+    return new Sk.builtin.nmber(Sk.ffi.remapToJs(self), Sk.builtin.nmber.float$);
+});
+
+Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function(self) {
+    throw new Sk.builtin.TypeError("__complex__ is not implemented for type 'int'.");
+});
 
 Sk.builtin.int_.prototype.tp$name = "int";
 Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("int", Sk.builtin.int_);

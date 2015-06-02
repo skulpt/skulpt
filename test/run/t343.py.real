@@ -58,7 +58,7 @@ Op 1 :::  <type 'int'> 1
                1 * -1.0 = -1.0 <type 'float'>
                1 / -1.0 = -1.0 <type 'float'>
                1 ** -1.0 = 1.0 <type 'float'>
-               1 % -1.0 = 0.0 <type 'float'>
+               1 % -1.0 = -0.0 <type 'float'>
                1 < -1.0 = False <type 'bool'>
                1 = -1.0 = False <type 'bool'>
                1 > -1.0 = True <type 'bool'>
@@ -280,7 +280,7 @@ Op 1 :::  <type 'float'> 1.0
                1.0 * -1 = -1.0 <type 'float'>
                1.0 / -1 = -1.0 <type 'float'>
                1.0 ** -1 = 1.0 <type 'float'>
-               1.0 % -1 = 0.0 <type 'float'>
+               1.0 % -1 = -0.0 <type 'float'>
                1.0 < -1 = False <type 'bool'>
                1.0 = -1 = False <type 'bool'>
                1.0 > -1 = True <type 'bool'>
@@ -293,7 +293,7 @@ Op 1 :::  <type 'float'> 1.0
                1.0 * -1.0 = -1.0 <type 'float'>
                1.0 / -1.0 = -1.0 <type 'float'>
                1.0 ** -1.0 = 1.0 <type 'float'>
-               1.0 % -1.0 = 0.0 <type 'float'>
+               1.0 % -1.0 = -0.0 <type 'float'>
                1.0 < -1.0 = False <type 'bool'>
                1.0 = -1.0 = False <type 'bool'>
                1.0 > -1.0 = True <type 'bool'>
@@ -306,7 +306,7 @@ Op 1 :::  <type 'float'> 1.0
                1.0 * -1 = -1.0 <type 'float'>
                1.0 / -1 = -1.0 <type 'float'>
                1.0 ** -1 = 1.0 <type 'float'>
-               1.0 % -1 = 0.0 <type 'float'>
+               1.0 % -1 = -0.0 <type 'float'>
                1.0 < -1 = False <type 'bool'>
                1.0 = -1 = False <type 'bool'>
                1.0 > -1 = True <type 'bool'>
@@ -528,7 +528,7 @@ Op 1 :::  <type 'long'> 1
                1 * -1.0 = -1.0 <type 'float'>
                1 / -1.0 = -1.0 <type 'float'>
                1 ** -1.0 = 1.0 <type 'float'>
-               1 % -1.0 = 0.0 <type 'float'>
+               1 % -1.0 = -0.0 <type 'float'>
                1 < -1.0 = False <type 'bool'>
                1 = -1.0 = False <type 'bool'>
                1 > -1.0 = True <type 'bool'>
@@ -763,7 +763,7 @@ Op 1 :::  <type 'int'> -1
                -1 * -1.0 = 1.0 <type 'float'>
                -1 / -1.0 = 1.0 <type 'float'>
                -1 ** -1.0 = -1.0 <type 'float'>
-               -1 % -1.0 = 0.0 <type 'float'>
+               -1 % -1.0 = -0.0 <type 'float'>
                -1 < -1.0 = False <type 'bool'>
                -1 = -1.0 = True <type 'bool'>
                -1 > -1.0 = False <type 'bool'>
@@ -985,7 +985,7 @@ Op 1 :::  <type 'float'> -1.0
                -1.0 * -1 = 1.0 <type 'float'>
                -1.0 / -1 = 1.0 <type 'float'>
                -1.0 ** -1 = -1.0 <type 'float'>
-               -1.0 % -1 = 0.0 <type 'float'>
+               -1.0 % -1 = -0.0 <type 'float'>
                -1.0 < -1 = False <type 'bool'>
                -1.0 = -1 = True <type 'bool'>
                -1.0 > -1 = False <type 'bool'>
@@ -998,7 +998,7 @@ Op 1 :::  <type 'float'> -1.0
                -1.0 * -1.0 = 1.0 <type 'float'>
                -1.0 / -1.0 = 1.0 <type 'float'>
                -1.0 ** -1.0 = -1.0 <type 'float'>
-               -1.0 % -1.0 = 0.0 <type 'float'>
+               -1.0 % -1.0 = -0.0 <type 'float'>
                -1.0 < -1.0 = False <type 'bool'>
                -1.0 = -1.0 = True <type 'bool'>
                -1.0 > -1.0 = False <type 'bool'>
@@ -1011,7 +1011,7 @@ Op 1 :::  <type 'float'> -1.0
                -1.0 * -1 = 1.0 <type 'float'>
                -1.0 / -1 = 1.0 <type 'float'>
                -1.0 ** -1 = -1.0 <type 'float'>
-               -1.0 % -1 = 0.0 <type 'float'>
+               -1.0 % -1 = -0.0 <type 'float'>
                -1.0 < -1 = False <type 'bool'>
                -1.0 = -1 = True <type 'bool'>
                -1.0 > -1 = False <type 'bool'>
@@ -1233,7 +1233,7 @@ Op 1 :::  <type 'long'> -1
                -1 * -1.0 = 1.0 <type 'float'>
                -1 / -1.0 = 1.0 <type 'float'>
                -1 ** -1.0 = -1.0 <type 'float'>
-               -1 % -1.0 = 0.0 <type 'float'>
+               -1 % -1.0 = -0.0 <type 'float'>
                -1 < -1.0 = False <type 'bool'>
                -1 = -1.0 = True <type 'bool'>
                -1 > -1.0 = False <type 'bool'>
@@ -1468,7 +1468,7 @@ Op 1 :::  <type 'int'> 2
                2 * -1.0 = -2.0 <type 'float'>
                2 / -1.0 = -2.0 <type 'float'>
                2 ** -1.0 = 0.5 <type 'float'>
-               2 % -1.0 = 0.0 <type 'float'>
+               2 % -1.0 = -0.0 <type 'float'>
                2 < -1.0 = False <type 'bool'>
                2 = -1.0 = False <type 'bool'>
                2 > -1.0 = True <type 'bool'>
@@ -1546,7 +1546,7 @@ Op 1 :::  <type 'int'> 2
                2 * -2.0 = -4.0 <type 'float'>
                2 / -2.0 = -1.0 <type 'float'>
                2 ** -2.0 = 0.25 <type 'float'>
-               2 % -2.0 = 0.0 <type 'float'>
+               2 % -2.0 = -0.0 <type 'float'>
                2 < -2.0 = False <type 'bool'>
                2 = -2.0 = False <type 'bool'>
                2 > -2.0 = True <type 'bool'>
@@ -1690,7 +1690,7 @@ Op 1 :::  <type 'float'> 2.0
                2.0 * -1 = -2.0 <type 'float'>
                2.0 / -1 = -2.0 <type 'float'>
                2.0 ** -1 = 0.5 <type 'float'>
-               2.0 % -1 = 0.0 <type 'float'>
+               2.0 % -1 = -0.0 <type 'float'>
                2.0 < -1 = False <type 'bool'>
                2.0 = -1 = False <type 'bool'>
                2.0 > -1 = True <type 'bool'>
@@ -1703,7 +1703,7 @@ Op 1 :::  <type 'float'> 2.0
                2.0 * -1.0 = -2.0 <type 'float'>
                2.0 / -1.0 = -2.0 <type 'float'>
                2.0 ** -1.0 = 0.5 <type 'float'>
-               2.0 % -1.0 = 0.0 <type 'float'>
+               2.0 % -1.0 = -0.0 <type 'float'>
                2.0 < -1.0 = False <type 'bool'>
                2.0 = -1.0 = False <type 'bool'>
                2.0 > -1.0 = True <type 'bool'>
@@ -1716,7 +1716,7 @@ Op 1 :::  <type 'float'> 2.0
                2.0 * -1 = -2.0 <type 'float'>
                2.0 / -1 = -2.0 <type 'float'>
                2.0 ** -1 = 0.5 <type 'float'>
-               2.0 % -1 = 0.0 <type 'float'>
+               2.0 % -1 = -0.0 <type 'float'>
                2.0 < -1 = False <type 'bool'>
                2.0 = -1 = False <type 'bool'>
                2.0 > -1 = True <type 'bool'>
@@ -1768,7 +1768,7 @@ Op 1 :::  <type 'float'> 2.0
                2.0 * -2 = -4.0 <type 'float'>
                2.0 / -2 = -1.0 <type 'float'>
                2.0 ** -2 = 0.25 <type 'float'>
-               2.0 % -2 = 0.0 <type 'float'>
+               2.0 % -2 = -0.0 <type 'float'>
                2.0 < -2 = False <type 'bool'>
                2.0 = -2 = False <type 'bool'>
                2.0 > -2 = True <type 'bool'>
@@ -1781,7 +1781,7 @@ Op 1 :::  <type 'float'> 2.0
                2.0 * -2.0 = -4.0 <type 'float'>
                2.0 / -2.0 = -1.0 <type 'float'>
                2.0 ** -2.0 = 0.25 <type 'float'>
-               2.0 % -2.0 = 0.0 <type 'float'>
+               2.0 % -2.0 = -0.0 <type 'float'>
                2.0 < -2.0 = False <type 'bool'>
                2.0 = -2.0 = False <type 'bool'>
                2.0 > -2.0 = True <type 'bool'>
@@ -1794,7 +1794,7 @@ Op 1 :::  <type 'float'> 2.0
                2.0 * -2 = -4.0 <type 'float'>
                2.0 / -2 = -1.0 <type 'float'>
                2.0 ** -2 = 0.25 <type 'float'>
-               2.0 % -2 = 0.0 <type 'float'>
+               2.0 % -2 = -0.0 <type 'float'>
                2.0 < -2 = False <type 'bool'>
                2.0 = -2 = False <type 'bool'>
                2.0 > -2 = True <type 'bool'>
@@ -1938,7 +1938,7 @@ Op 1 :::  <type 'long'> 2
                2 * -1.0 = -2.0 <type 'float'>
                2 / -1.0 = -2.0 <type 'float'>
                2 ** -1.0 = 0.5 <type 'float'>
-               2 % -1.0 = 0.0 <type 'float'>
+               2 % -1.0 = -0.0 <type 'float'>
                2 < -1.0 = False <type 'bool'>
                2 = -1.0 = False <type 'bool'>
                2 > -1.0 = True <type 'bool'>
@@ -2016,7 +2016,7 @@ Op 1 :::  <type 'long'> 2
                2 * -2.0 = -4.0 <type 'float'>
                2 / -2.0 = -1.0 <type 'float'>
                2 ** -2.0 = 0.25 <type 'float'>
-               2 % -2.0 = 0.0 <type 'float'>
+               2 % -2.0 = -0.0 <type 'float'>
                2 < -2.0 = False <type 'bool'>
                2 = -2.0 = False <type 'bool'>
                2 > -2.0 = True <type 'bool'>
@@ -2173,7 +2173,7 @@ Op 1 :::  <type 'int'> -2
                -2 * -1.0 = 2.0 <type 'float'>
                -2 / -1.0 = 2.0 <type 'float'>
                -2 ** -1.0 = -0.5 <type 'float'>
-               -2 % -1.0 = 0.0 <type 'float'>
+               -2 % -1.0 = -0.0 <type 'float'>
                -2 < -1.0 = True <type 'bool'>
                -2 = -1.0 = False <type 'bool'>
                -2 > -1.0 = False <type 'bool'>
@@ -2251,7 +2251,7 @@ Op 1 :::  <type 'int'> -2
                -2 * -2.0 = 4.0 <type 'float'>
                -2 / -2.0 = 1.0 <type 'float'>
                -2 ** -2.0 = 0.25 <type 'float'>
-               -2 % -2.0 = 0.0 <type 'float'>
+               -2 % -2.0 = -0.0 <type 'float'>
                -2 < -2.0 = False <type 'bool'>
                -2 = -2.0 = True <type 'bool'>
                -2 > -2.0 = False <type 'bool'>
@@ -2395,7 +2395,7 @@ Op 1 :::  <type 'float'> -2.0
                -2.0 * -1 = 2.0 <type 'float'>
                -2.0 / -1 = 2.0 <type 'float'>
                -2.0 ** -1 = -0.5 <type 'float'>
-               -2.0 % -1 = 0.0 <type 'float'>
+               -2.0 % -1 = -0.0 <type 'float'>
                -2.0 < -1 = True <type 'bool'>
                -2.0 = -1 = False <type 'bool'>
                -2.0 > -1 = False <type 'bool'>
@@ -2408,7 +2408,7 @@ Op 1 :::  <type 'float'> -2.0
                -2.0 * -1.0 = 2.0 <type 'float'>
                -2.0 / -1.0 = 2.0 <type 'float'>
                -2.0 ** -1.0 = -0.5 <type 'float'>
-               -2.0 % -1.0 = 0.0 <type 'float'>
+               -2.0 % -1.0 = -0.0 <type 'float'>
                -2.0 < -1.0 = True <type 'bool'>
                -2.0 = -1.0 = False <type 'bool'>
                -2.0 > -1.0 = False <type 'bool'>
@@ -2421,7 +2421,7 @@ Op 1 :::  <type 'float'> -2.0
                -2.0 * -1 = 2.0 <type 'float'>
                -2.0 / -1 = 2.0 <type 'float'>
                -2.0 ** -1 = -0.5 <type 'float'>
-               -2.0 % -1 = 0.0 <type 'float'>
+               -2.0 % -1 = -0.0 <type 'float'>
                -2.0 < -1 = True <type 'bool'>
                -2.0 = -1 = False <type 'bool'>
                -2.0 > -1 = False <type 'bool'>
@@ -2473,7 +2473,7 @@ Op 1 :::  <type 'float'> -2.0
                -2.0 * -2 = 4.0 <type 'float'>
                -2.0 / -2 = 1.0 <type 'float'>
                -2.0 ** -2 = 0.25 <type 'float'>
-               -2.0 % -2 = 0.0 <type 'float'>
+               -2.0 % -2 = -0.0 <type 'float'>
                -2.0 < -2 = False <type 'bool'>
                -2.0 = -2 = True <type 'bool'>
                -2.0 > -2 = False <type 'bool'>
@@ -2486,7 +2486,7 @@ Op 1 :::  <type 'float'> -2.0
                -2.0 * -2.0 = 4.0 <type 'float'>
                -2.0 / -2.0 = 1.0 <type 'float'>
                -2.0 ** -2.0 = 0.25 <type 'float'>
-               -2.0 % -2.0 = 0.0 <type 'float'>
+               -2.0 % -2.0 = -0.0 <type 'float'>
                -2.0 < -2.0 = False <type 'bool'>
                -2.0 = -2.0 = True <type 'bool'>
                -2.0 > -2.0 = False <type 'bool'>
@@ -2499,7 +2499,7 @@ Op 1 :::  <type 'float'> -2.0
                -2.0 * -2 = 4.0 <type 'float'>
                -2.0 / -2 = 1.0 <type 'float'>
                -2.0 ** -2 = 0.25 <type 'float'>
-               -2.0 % -2 = 0.0 <type 'float'>
+               -2.0 % -2 = -0.0 <type 'float'>
                -2.0 < -2 = False <type 'bool'>
                -2.0 = -2 = True <type 'bool'>
                -2.0 > -2 = False <type 'bool'>
@@ -2643,7 +2643,7 @@ Op 1 :::  <type 'long'> -2
                -2 * -1.0 = 2.0 <type 'float'>
                -2 / -1.0 = 2.0 <type 'float'>
                -2 ** -1.0 = -0.5 <type 'float'>
-               -2 % -1.0 = 0.0 <type 'float'>
+               -2 % -1.0 = -0.0 <type 'float'>
                -2 < -1.0 = True <type 'bool'>
                -2 = -1.0 = False <type 'bool'>
                -2 > -1.0 = False <type 'bool'>
@@ -2721,7 +2721,7 @@ Op 1 :::  <type 'long'> -2
                -2 * -2.0 = 4.0 <type 'float'>
                -2 / -2.0 = 1.0 <type 'float'>
                -2 ** -2.0 = 0.25 <type 'float'>
-               -2 % -2.0 = 0.0 <type 'float'>
+               -2 % -2.0 = -0.0 <type 'float'>
                -2 < -2.0 = False <type 'bool'>
                -2 = -2.0 = True <type 'bool'>
                -2 > -2.0 = False <type 'bool'>
@@ -2865,7 +2865,7 @@ Op 1 :::  <type 'float'> 1000000000.0
                1000000000.0 * -1 = -1000000000.0 <type 'float'>
                1000000000.0 / -1 = -1000000000.0 <type 'float'>
                1000000000.0 ** -1 = 1e-09 <type 'float'>
-               1000000000.0 % -1 = 0.0 <type 'float'>
+               1000000000.0 % -1 = -0.0 <type 'float'>
                1000000000.0 < -1 = False <type 'bool'>
                1000000000.0 = -1 = False <type 'bool'>
                1000000000.0 > -1 = True <type 'bool'>
@@ -2878,7 +2878,7 @@ Op 1 :::  <type 'float'> 1000000000.0
                1000000000.0 * -1.0 = -1000000000.0 <type 'float'>
                1000000000.0 / -1.0 = -1000000000.0 <type 'float'>
                1000000000.0 ** -1.0 = 1e-09 <type 'float'>
-               1000000000.0 % -1.0 = 0.0 <type 'float'>
+               1000000000.0 % -1.0 = -0.0 <type 'float'>
                1000000000.0 < -1.0 = False <type 'bool'>
                1000000000.0 = -1.0 = False <type 'bool'>
                1000000000.0 > -1.0 = True <type 'bool'>
@@ -2891,7 +2891,7 @@ Op 1 :::  <type 'float'> 1000000000.0
                1000000000.0 * -1 = -1000000000.0 <type 'float'>
                1000000000.0 / -1 = -1000000000.0 <type 'float'>
                1000000000.0 ** -1 = 1e-09 <type 'float'>
-               1000000000.0 % -1 = 0.0 <type 'float'>
+               1000000000.0 % -1 = -0.0 <type 'float'>
                1000000000.0 < -1 = False <type 'bool'>
                1000000000.0 = -1 = False <type 'bool'>
                1000000000.0 > -1 = True <type 'bool'>
@@ -2943,7 +2943,7 @@ Op 1 :::  <type 'float'> 1000000000.0
                1000000000.0 * -2 = -2000000000.0 <type 'float'>
                1000000000.0 / -2 = -500000000.0 <type 'float'>
                1000000000.0 ** -2 = 1e-18 <type 'float'>
-               1000000000.0 % -2 = 0.0 <type 'float'>
+               1000000000.0 % -2 = -0.0 <type 'float'>
                1000000000.0 < -2 = False <type 'bool'>
                1000000000.0 = -2 = False <type 'bool'>
                1000000000.0 > -2 = True <type 'bool'>
@@ -2956,7 +2956,7 @@ Op 1 :::  <type 'float'> 1000000000.0
                1000000000.0 * -2.0 = -2000000000.0 <type 'float'>
                1000000000.0 / -2.0 = -500000000.0 <type 'float'>
                1000000000.0 ** -2.0 = 1e-18 <type 'float'>
-               1000000000.0 % -2.0 = 0.0 <type 'float'>
+               1000000000.0 % -2.0 = -0.0 <type 'float'>
                1000000000.0 < -2.0 = False <type 'bool'>
                1000000000.0 = -2.0 = False <type 'bool'>
                1000000000.0 > -2.0 = True <type 'bool'>
@@ -2969,7 +2969,7 @@ Op 1 :::  <type 'float'> 1000000000.0
                1000000000.0 * -2 = -2000000000.0 <type 'float'>
                1000000000.0 / -2 = -500000000.0 <type 'float'>
                1000000000.0 ** -2 = 1e-18 <type 'float'>
-               1000000000.0 % -2 = 0.0 <type 'float'>
+               1000000000.0 % -2 = -0.0 <type 'float'>
                1000000000.0 < -2 = False <type 'bool'>
                1000000000.0 = -2 = False <type 'bool'>
                1000000000.0 > -2 = True <type 'bool'>
@@ -2995,7 +2995,7 @@ skipping pow of really big number
                1000000000.0 * -1000000000.0 = -1e+18 <type 'float'>
                1000000000.0 / -1000000000.0 = -1.0 <type 'float'>
                1000000000.0 ** -1000000000.0 = 0.0 <type 'float'>
-               1000000000.0 % -1000000000.0 = 0.0 <type 'float'>
+               1000000000.0 % -1000000000.0 = -0.0 <type 'float'>
                1000000000.0 < -1000000000.0 = False <type 'bool'>
                1000000000.0 = -1000000000.0 = False <type 'bool'>
                1000000000.0 > -1000000000.0 = True <type 'bool'>
@@ -3100,7 +3100,7 @@ Op 1 :::  <type 'float'> -1000000000.0
                -1000000000.0 * -1 = 1000000000.0 <type 'float'>
                -1000000000.0 / -1 = 1000000000.0 <type 'float'>
                -1000000000.0 ** -1 = -1e-09 <type 'float'>
-               -1000000000.0 % -1 = 0.0 <type 'float'>
+               -1000000000.0 % -1 = -0.0 <type 'float'>
                -1000000000.0 < -1 = True <type 'bool'>
                -1000000000.0 = -1 = False <type 'bool'>
                -1000000000.0 > -1 = False <type 'bool'>
@@ -3113,7 +3113,7 @@ Op 1 :::  <type 'float'> -1000000000.0
                -1000000000.0 * -1.0 = 1000000000.0 <type 'float'>
                -1000000000.0 / -1.0 = 1000000000.0 <type 'float'>
                -1000000000.0 ** -1.0 = -1e-09 <type 'float'>
-               -1000000000.0 % -1.0 = 0.0 <type 'float'>
+               -1000000000.0 % -1.0 = -0.0 <type 'float'>
                -1000000000.0 < -1.0 = True <type 'bool'>
                -1000000000.0 = -1.0 = False <type 'bool'>
                -1000000000.0 > -1.0 = False <type 'bool'>
@@ -3126,7 +3126,7 @@ Op 1 :::  <type 'float'> -1000000000.0
                -1000000000.0 * -1 = 1000000000.0 <type 'float'>
                -1000000000.0 / -1 = 1000000000.0 <type 'float'>
                -1000000000.0 ** -1 = -1e-09 <type 'float'>
-               -1000000000.0 % -1 = 0.0 <type 'float'>
+               -1000000000.0 % -1 = -0.0 <type 'float'>
                -1000000000.0 < -1 = True <type 'bool'>
                -1000000000.0 = -1 = False <type 'bool'>
                -1000000000.0 > -1 = False <type 'bool'>
@@ -3178,7 +3178,7 @@ Op 1 :::  <type 'float'> -1000000000.0
                -1000000000.0 * -2 = 2000000000.0 <type 'float'>
                -1000000000.0 / -2 = 500000000.0 <type 'float'>
                -1000000000.0 ** -2 = 1e-18 <type 'float'>
-               -1000000000.0 % -2 = 0.0 <type 'float'>
+               -1000000000.0 % -2 = -0.0 <type 'float'>
                -1000000000.0 < -2 = True <type 'bool'>
                -1000000000.0 = -2 = False <type 'bool'>
                -1000000000.0 > -2 = False <type 'bool'>
@@ -3191,7 +3191,7 @@ Op 1 :::  <type 'float'> -1000000000.0
                -1000000000.0 * -2.0 = 2000000000.0 <type 'float'>
                -1000000000.0 / -2.0 = 500000000.0 <type 'float'>
                -1000000000.0 ** -2.0 = 1e-18 <type 'float'>
-               -1000000000.0 % -2.0 = 0.0 <type 'float'>
+               -1000000000.0 % -2.0 = -0.0 <type 'float'>
                -1000000000.0 < -2.0 = True <type 'bool'>
                -1000000000.0 = -2.0 = False <type 'bool'>
                -1000000000.0 > -2.0 = False <type 'bool'>
@@ -3204,7 +3204,7 @@ Op 1 :::  <type 'float'> -1000000000.0
                -1000000000.0 * -2 = 2000000000.0 <type 'float'>
                -1000000000.0 / -2 = 500000000.0 <type 'float'>
                -1000000000.0 ** -2 = 1e-18 <type 'float'>
-               -1000000000.0 % -2 = 0.0 <type 'float'>
+               -1000000000.0 % -2 = -0.0 <type 'float'>
                -1000000000.0 < -2 = True <type 'bool'>
                -1000000000.0 = -2 = False <type 'bool'>
                -1000000000.0 > -2 = False <type 'bool'>
@@ -3230,7 +3230,7 @@ skipping pow of really big number
                -1000000000.0 * -1000000000.0 = 1e+18 <type 'float'>
                -1000000000.0 / -1000000000.0 = 1.0 <type 'float'>
                -1000000000.0 ** -1000000000.0 = 0.0 <type 'float'>
-               -1000000000.0 % -1000000000.0 = 0.0 <type 'float'>
+               -1000000000.0 % -1000000000.0 = -0.0 <type 'float'>
                -1000000000.0 < -1000000000.0 = False <type 'bool'>
                -1000000000.0 = -1000000000.0 = True <type 'bool'>
                -1000000000.0 > -1000000000.0 = False <type 'bool'>
@@ -3491,7 +3491,7 @@ skipping pow of really big number
                1e-09 * -1e-09 = -1e-18 <type 'float'>
                1e-09 / -1e-09 = -1.0 <type 'float'>
                1e-09 ** -1e-09 = 1.00000002072 <type 'float'>
-               1e-09 % -1e-09 = 0.0 <type 'float'>
+               1e-09 % -1e-09 = -0.0 <type 'float'>
                1e-09 < -1e-09 = False <type 'bool'>
                1e-09 = -1e-09 = False <type 'bool'>
                1e-09 > -1e-09 = True <type 'bool'>
@@ -3726,7 +3726,7 @@ skipping pow of really big number
                -1e-09 * -1e-09 = 1e-18 <type 'float'>
                -1e-09 / -1e-09 = 1.0 <type 'float'>
                -1e-09 ** -1e-09 = Can't  <type 'float'> ** <type 'float'>
-               -1e-09 % -1e-09 = 0.0 <type 'float'>
+               -1e-09 % -1e-09 = -0.0 <type 'float'>
                -1e-09 < -1e-09 = False <type 'bool'>
                -1e-09 = -1e-09 = True <type 'bool'>
                -1e-09 > -1e-09 = False <type 'bool'>
@@ -3818,7 +3818,7 @@ Op 1 :::  <type 'long'> 123456789
                123456789 * -1.0 = -123456789.0 <type 'float'>
                123456789 / -1.0 = -123456789.0 <type 'float'>
                123456789 ** -1.0 = 8.10000007371e-09 <type 'float'>
-               123456789 % -1.0 = 0.0 <type 'float'>
+               123456789 % -1.0 = -0.0 <type 'float'>
                123456789 < -1.0 = False <type 'bool'>
                123456789 = -1.0 = False <type 'bool'>
                123456789 > -1.0 = True <type 'bool'>
@@ -4053,7 +4053,7 @@ Op 1 :::  <type 'long'> 12345678901234567890123456789
                12345678901234567890123456789 * -1.0 = -1.23456789012e+28 <type 'float'>
                12345678901234567890123456789 / -1.0 = -1.23456789012e+28 <type 'float'>
                12345678901234567890123456789 ** -1.0 = 8.1000000729e-29 <type 'float'>
-               12345678901234567890123456789 % -1.0 = 0.0 <type 'float'>
+               12345678901234567890123456789 % -1.0 = -0.0 <type 'float'>
                12345678901234567890123456789 < -1.0 = False <type 'bool'>
                12345678901234567890123456789 = -1.0 = False <type 'bool'>
                12345678901234567890123456789 > -1.0 = True <type 'bool'>
@@ -4131,7 +4131,7 @@ Op 1 :::  <type 'long'> 12345678901234567890123456789
                12345678901234567890123456789 * -2.0 = -2.46913578025e+28 <type 'float'>
                12345678901234567890123456789 / -2.0 = -6.17283945062e+27 <type 'float'>
                12345678901234567890123456789 ** -2.0 = 6.5610001181e-57 <type 'float'>
-               12345678901234567890123456789 % -2.0 = 0.0 <type 'float'>
+               12345678901234567890123456789 % -2.0 = -0.0 <type 'float'>
                12345678901234567890123456789 < -2.0 = False <type 'bool'>
                12345678901234567890123456789 = -2.0 = False <type 'bool'>
                12345678901234567890123456789 > -2.0 = True <type 'bool'>

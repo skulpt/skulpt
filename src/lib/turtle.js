@@ -2037,7 +2037,7 @@ function generateTurtleModule(_target) {
             }
             return Sk.misceval.applyAsync(
                 undefined, pyValue, undefined, undefined, undefined, argsPy
-            );
+            ).catch(Sk.uncaughtException);
         };
     }
 

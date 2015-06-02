@@ -159,12 +159,16 @@ Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
     for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        ret.push(Sk.misceval.objectRepr(i).v);
+        if(i === this) {
+            ret.push("[...]");
+        } else {
+            ret.push(Sk.misceval.objectRepr(i).v);
+        }
     }
     return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };
 Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.list.prototype.tp$hash = Sk.builtin.object.prototype.HashNotImplemented;
+Sk.builtin.list.prototype.tp$hash = Sk.builtin.none.none$;
 
 Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
@@ -252,11 +256,11 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     var j;
     var i;
     var ret;
-    if (!Sk.builtin.checkInt(n)) {
+    if (!Sk.misceval.isIndex(n)) {
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
     }
 
-    n = Sk.builtin.asnum$(n);
+    n = Sk.misceval.asIndex(n);
     ret = [];
     for (i = 0; i < n; ++i) {
         for (j = 0; j < this.v.length; ++j) {
@@ -266,7 +270,26 @@ Sk.builtin.list.prototype.sq$repeat = function (n) {
     return new Sk.builtin.list(ret, false);
 };
 Sk.builtin.list.prototype.nb$multiply = Sk.builtin.list.prototype.sq$repeat;
-Sk.builtin.list.prototype.nb$inplace_multiply = Sk.builtin.list.prototype.sq$repeat;
+Sk.builtin.list.prototype.nb$inplace_multiply = function(n) {
+    var j;
+    var i;
+    var len;
+    if (!Sk.misceval.isIndex(n)) {
+        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
+    }
+
+    // works on list itself --> inplace
+    n = Sk.misceval.asIndex(n);
+    len = this.v.length;
+    for (i = 1; i < n; ++i) {
+        for (j = 0; j < len; ++j) {
+            this.v.push(this.v[j]);
+        }
+    }
+
+    return this;
+};
+
 /*
  Sk.builtin.list.prototype.sq$item = list_item;
  Sk.builtin.list.prototype.sq$slice = list_slice;
@@ -323,7 +346,7 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
         }
     }
     else if (index instanceof Sk.builtin.slice) {
-        indices = index.indices(this.v.length);
+        indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_ass_slice_(indices[0], indices[1], value);
         }
@@ -364,7 +387,7 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
         }
     }
     else if (index instanceof Sk.builtin.slice) {
-        indices = index.indices(this.v.length);
+        indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_del_slice_(indices[0], indices[1]);
         }
@@ -407,8 +430,14 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     var timsort;
     var has_key = key !== undefined && key !== null;
     var has_cmp = cmp !== undefined && cmp !== null;
+    var rev;
+
     if (reverse === undefined) {
-        reverse = false;
+        rev = false;
+    } else if (reverse === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    } else {
+        rev = Sk.misceval.isTrue(reverse);
     }
 
     timsort = new Sk.builtin.timSort(self);
@@ -440,13 +469,13 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
         };
     }
 
-    if (reverse) {
+    if (rev) {
         timsort.list.list_reverse_(timsort.list);
     }
 
     timsort.sort();
 
-    if (reverse) {
+    if (rev) {
         timsort.list.list_reverse_(timsort.list);
     }
 

@@ -63,11 +63,11 @@ class TestCase:
         self.appendResult(res,str(actual)+' to not equal ',expected,feedback)
 
     def assertTrue(self,x, feedback=""):
-        res = x
+        res = bool(x) is True
         self.appendResult(res,str(x)+' to be ',True,feedback)
 
     def assertFalse(self,x, feedback=""):
-        res = not x
+        res = not bool(x)
         self.appendResult(res,str(x)+' to be ',False,feedback)
 
     def assertIs(self,a,b, feedback=""):
@@ -171,9 +171,11 @@ class TestCase:
 
 
 
-def main(verbose=False):
-    glob = globals()  # globals() still needs work
-    for name in glob:
+def main(verbose=False, names=None):
+    glob = globals() # globals() still needs work
+    if names == None:
+        names = glob
+    for name in names:
         if issubclass(glob[name],TestCase):
             try:
                 tc = glob[name]()

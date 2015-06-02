@@ -142,6 +142,48 @@ var $builtinmodule = function (name) {
         return new Sk.builtin.nmber(Math.ceil(Sk.builtin.asnum$(x)), Sk.builtin.nmber.float$);
     });
 
+    // returns y with the sign of x
+    mod.copysign = new Sk.builtin.func(function (x, y) {
+        Sk.builtin.pyCheckArgs("ceil", arguments, 2, 2);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+
+        var _x = Sk.ffi.remapToJs(x);
+        var _y = Sk.ffi.remapToJs(y);
+        var res;
+
+        var isNeg_x = _x < 0;
+        var isNeg_y = _x < 0;
+
+        // special case for floats with negative zero
+        if(Sk.builtin.checkFloat(x)) {
+            if(_x === 0) {
+                isNeg_x = 1/_x === -Infinity ? true : false;
+            }
+        }
+
+        if(Sk.builtin.checkFloat(y)) {
+            if(_y === 0) {
+                isNeg_y = 1/_y === -Infinity ? true : false;
+            }
+        }
+
+        // if both signs are equal, just return _y
+        if((isNeg_x && isNeg_y) || (!isNeg_x && !isNeg_y)) {
+            res = _y;
+        } else if((isNeg_x && !isNeg_y) || (!isNeg_x && isNeg_y)) {
+            // if different, invert sign
+            if(y === 0) {
+                // special case for zero
+                res = isNeg_x ? -0.0 : 0.0;
+            } else {
+                res = _y * -1;
+            }
+        }
+
+        return new Sk.builtin.nmber(res, Sk.builtin.nmber.float$);
+    });
+
     mod.floor = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("floor", arguments, 1, 1);
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
@@ -182,6 +224,19 @@ var $builtinmodule = function (name) {
 
         var ret = Math.log(Sk.builtin.asnum$(x)) / Math.log(10);
         return new Sk.builtin.nmber(ret, Sk.builtin.nmber.float$);
+    });
+
+    /* Return True if x is a NaN (not a number), and False otherwise. */
+    mod.isnan = new Sk.builtin.func(function(x) {
+        Sk.builtin.pyCheckArgs("isnan", arguments, 1, 1);
+        Sk.builtin.pyCheckType("x", "float", Sk.builtin.checkFloat(x));
+
+        var _x = Sk.builtin.asnum$(x);
+        if(isNaN(_x)) {
+            return Sk.builtin.bool.true$;
+        } else {
+            return Sk.builtin.bool.false$;
+        }
     });
 
     mod.exp = new Sk.builtin.func(function (x) {
