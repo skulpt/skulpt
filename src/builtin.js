@@ -556,8 +556,7 @@ Sk.builtin.dir = function dir (x) {
                         names.push(new Sk.builtin.str(s));
                     }
                 }
-            }
-            else {
+            } else {
                 // Object
                 for (s in x["$d"]) {
                     names.push(new Sk.builtin.str(s));
