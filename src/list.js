@@ -430,8 +430,14 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     var timsort;
     var has_key = key !== undefined && key !== null;
     var has_cmp = cmp !== undefined && cmp !== null;
+    var rev;
+
     if (reverse === undefined) {
-        reverse = false;
+        rev = false;
+    } else if (reverse === Sk.builtin.none.none$) {
+        throw new Sk.builtin.TypeError("an integer is required");
+    } else {
+        rev = Sk.misceval.isTrue(reverse);
     }
 
     timsort = new Sk.builtin.timSort(self);
@@ -463,13 +469,13 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
         };
     }
 
-    if (reverse) {
+    if (rev) {
         timsort.list.list_reverse_(timsort.list);
     }
 
     timsort.sort();
 
-    if (reverse) {
+    if (rev) {
         timsort.list.list_reverse_(timsort.list);
     }
 
