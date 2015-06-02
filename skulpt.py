@@ -505,7 +505,9 @@ def dist(options):
 
         size = os.path.getsize("{0}/tmp.js.gz".format(DIST_DIR))
         os.unlink("{0}/tmp.js.gz".format(DIST_DIR))
+        os.unlink("{0}/tmp.js".format(DIST_DIR))
     else:
+        os.unlink("{0}/tmp.js".format(DIST_DIR))
         print "No gzip executable, can't get final size"
 
     with open(builtinfn, "w") as f:
