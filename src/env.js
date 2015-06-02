@@ -84,7 +84,8 @@ goog.exportSymbol("Sk.configure", Sk.configure);
  */
 Sk.uncaughtException = function(err) {
     throw err;
-}
+};
+goog.exportSymbol("Sk.uncaughtException", Sk.uncaughtException);
 
 /*
  *	Replaceable message for message timeouts
