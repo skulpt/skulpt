@@ -1,1 +1,1 @@
-EXCEPTION: TypeError: string indices must be numbers, not number on line 1
+EXCEPTION: TypeError: string indices must be integers, not float on line 1
