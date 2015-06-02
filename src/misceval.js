@@ -50,10 +50,8 @@ Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
-    if (o.tp$getattr) {
-        if (o.tp$getattr("__index__")) {
-            return true;
-        }
+    if (Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__")) {
+        return true;
     }
     return false;
 };
@@ -86,16 +84,14 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
     }
-    if (o.tp$getattr) {
-        idxfn = o.tp$getattr("__index__");
-        if (idxfn) {
-            ret = Sk.misceval.callsim(idxfn.im_func, o);
-            if (!Sk.builtin.checkInt(ret)) {
-                throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " + 
-                                               Sk.abstr.typeName(ret) + ")");
-            }
-            return Sk.builtin.asnum$(ret);
+    idxfn = Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__");
+    if (idxfn) {
+        ret = Sk.misceval.callsim(idxfn, o);
+        if (!Sk.builtin.checkInt(ret)) {
+            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " + 
+                                           Sk.abstr.typeName(ret) + ")");
         }
+        return Sk.builtin.asnum$(ret);
     }
     goog.asserts.fail("todo asIndex;");
 };
