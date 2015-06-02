@@ -414,7 +414,7 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     } else if (reverse === Sk.builtin.none.none$) {
         throw new Sk.builtin.TypeError("an integer is required");
     } else {
-        rev = Sk.ffi.remapToJs(Sk.builtin.bool(reverse));
+        rev = Sk.misceval.isTrue(reverse);
     }
 
     timsort = new Sk.builtin.timSort(self);
