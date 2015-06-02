@@ -17,8 +17,6 @@ class TimeTestCase(unittest.TestCase):
         time.clock()
 
     def test_conversions(self):
-        time.localtime(self.t)
-        time.asctime(time.localtime(self.t))
         self.assertTrue(time.ctime(self.t)
                      == time.asctime(time.localtime(self.t)))
         self.assertTrue(long(time.mktime(time.localtime(self.t)))
@@ -26,6 +24,30 @@ class TimeTestCase(unittest.TestCase):
 
     def _test_sleep(self):
         time.sleep(1.2)
+
+    def _test_dir(self):
+        # this test fails because the compare 
+        self.assertEqual(dir(time), [
+            '__file__'
+            '__name__', 
+            '__package__', 
+            'accept2dyear', 
+            'altzone', 
+            'asctime', 
+            'clock', 
+            'ctime', 
+            'daylight', 
+            'gmtime', 
+            'localtime', 
+            'mktime', 
+            'sleep', 
+            'strftime', 
+            'strptime', 
+            'struct_time', 
+            'time', 
+            'timezone', 
+            'tzname', 
+            'tzset']);
 
 if __name__ == '__main__':
     unittest.main()

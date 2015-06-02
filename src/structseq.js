@@ -1,8 +1,14 @@
 Sk.builtin.structseq_types = {};
 
-Sk.builtin.make_structseq = function (module, name, fields) {
+Sk.builtin.make_structseq = function (module, name, fields, doc) {
     var nm = module + "." + name;
-    var flds = fields;
+    var flds = [];
+    var docs = [];
+    for (var key in fields)
+    {
+        flds.push(key);
+        docs.push(fields[key]);
+    }
 
     var cons = function structseq_constructor(args)
     {
@@ -46,6 +52,10 @@ Sk.builtin.make_structseq = function (module, name, fields) {
     Sk.builtin.structseq_types[nm] = cons;
 
     goog.inherits(cons, Sk.builtin.tuple);
+    if (doc)
+    {
+        cons.prototype.__doc__ = doc;
+    }
     cons.prototype.tp$name = nm;
     cons.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(nm, Sk.builtin.structseq_types[nm]);
     cons.prototype.ob$type["$d"] = new Sk.builtin.dict([]);
@@ -56,15 +66,24 @@ Sk.builtin.make_structseq = function (module, name, fields) {
     cons.prototype.__getitem__ = new Sk.builtin.func(function (self, index) {
         return Sk.builtin.tuple.prototype.mp$subscript.call(self, index);
     });
+    cons.prototype.__reduce__ = new Sk.builtin.func(function (self) {
+        return new Sk.builtin.str("oh no");
+    });
 
-    function makeGetter(i) {
-        return function() {
-            return this.v[i];
-        };
+    function makeGetter(i, doc, tp) {
+        var x = i;
+        var f = new Sk.builtin.func(function(self) {
+            return self.v[x];
+        });
+        f.__doc__ = doc;
+        return f;
     }
+
     for(var i=0; i<flds.length; i++)
     {
-        cons.prototype[flds[i]] = makeGetter;
+        var getter = makeGetter(i, docs[i], cons);
+        cons.prototype[flds[i]] = getter;
+        cons.prototype.ob$type["$d"].mp$ass_subscript(flds[i], getter);
     }
 
     cons.prototype["$r"] = function () {
@@ -85,12 +104,18 @@ Sk.builtin.make_structseq = function (module, name, fields) {
         return new Sk.builtin.str(nm + "(" + ret + ")");
     };
     cons.prototype.tp$setattr = function (name, value) {
+        throw new Sk.builtin.AttributeError("readonly property");
+    }; 
+
+    cons.prototype.tp$getattr = function (name) {
         var i = flds.indexOf(name);
         if (i >= 0)
         {
-            this.v[i] = value;
+            return this.v[i];
+        } else {
+            return  Sk.builtin.object.prototype.GenericGetAttr(name);
         }
-    };    
+    };      
 
     return cons;
 };
