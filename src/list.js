@@ -340,7 +340,7 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.indices(this.v.length);
+        indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_ass_slice_(indices[0], indices[1], value);
         } else {
@@ -379,7 +379,7 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
             return;
         }
     } else if (index instanceof Sk.builtin.slice) {
-        indices = index.indices(this.v.length);
+        indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_del_slice_(indices[0], indices[1]);
         } else {
