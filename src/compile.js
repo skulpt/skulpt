@@ -335,8 +335,9 @@ Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
     var items;
     goog.asserts.assert(tuporlist === "tuple" || tuporlist === "list" || tuporlist === "set");
     if (e.ctx === Store) {
+        items = this._gr("items", "Sk.abstr.sequenceUnpack(" + data + "," + e.elts.length + ")");
         for (i = 0; i < e.elts.length; ++i) {
-            this.vexpr(e.elts[i], "Sk.abstr.objectGetItem(" + data + "," + i + ")");
+            this.vexpr(e.elts[i], items + "[" + i + "]");
         }
     }
     else if (e.ctx === Load || tuporlist === "set") { //because set's can't be assigned to.

@@ -571,6 +571,37 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
     }
 };
 
+// seq - Python object to unpack
+// n   - JavaScript number of items to unpack
+Sk.abstr.sequenceUnpack = function (seq, n) {
+    var res = [];
+    var it, i;
+
+    if (!Sk.builtin.checkIterable(seq)) {
+        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
+    }
+
+    for (it = seq.tp$iter(), i = it.tp$iternext(); 
+         (i !== undefined) && (res.length < n); 
+         i = it.tp$iternext()) {
+        res.push(i);
+    }
+
+    if (res.length < n) {
+        throw new Sk.builtin.ValueError("need more than " + res.length + " values to unpack");
+    }
+    if (i !== undefined) {
+        throw new Sk.builtin.ValueError("too many values to unpack");
+    }
+
+    // Return Javascript array of items
+    return res;
+};
+
+//
+// Object
+//
+
 Sk.abstr.objectFormat = function (obj, format_spec) {
     var meth; // PyObject
     var result; // PyObject
@@ -594,10 +625,6 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
 
     return result;
 };
-
-//
-// Object
-//
 
 Sk.abstr.objectAdd = function (a, b) {
     var btypename;
