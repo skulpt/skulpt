@@ -1551,8 +1551,13 @@ var $builtinmodule = function (name) {
 
                 mod.frameCount = processing.frameCount;
                 if (Sk.globals["draw"]) {
-                    Sk.misceval.callsim(Sk.globals["draw"]);
-		}
+                	try {
+                   	    Sk.misceval.callsim(Sk.globals["draw"]);
+                    }
+                    catch(e) {
+                        Sk.uncaughtException(e);
+                    }
+				}
             };
 
             var callBacks = ["setup", "mouseMoved", "mouseClicked", "mouseDragged", "mouseMoved", "mouseOut",
@@ -1560,7 +1565,7 @@ var $builtinmodule = function (name) {
             ];
             for (var cb in callBacks) {
                 if (Sk.globals[callBacks[cb]]) {
-                    processing[callBacks[cb]] = new Function("Sk.misceval.callsim(Sk.globals['" + callBacks[cb] + "']);");
+                    processing[callBacks[cb]] = new Function("try {Sk.misceval.callsim(Sk.globals['" + callBacks[cb] + "']);} catch(e) {Sk.uncaughtException(e);}");
                 }
             }
         }
