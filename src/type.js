@@ -172,11 +172,6 @@ Sk.builtin.type = function (name, bases, dict) {
                 ret = Sk.misceval.callsim(iterf);
                 return ret;
             }
-            var gitem = this.tp$getattr("__getitem__");
-            if (gitem) {
-                this.iteridx = 0
-                return this;
-            }
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
         klass.prototype.tp$iternext = function () {

@@ -27,6 +27,36 @@ Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
     return Sk.builtin.type.typeLookup(op, str);
 };
 
+
+Sk.builtin.object.getIter_ = function(obj) {
+    if (obj.tp$iter) {   // builtin  or check for tp$nextiter
+        return obj.tp$iter();
+    }
+
+    if (obj.tp$getattr) {
+        iter = obj.tp$getattr("__iter__");
+        if (iter) {
+            return Sk.misceval.callsim(iter);
+        }
+    }
+    getit = obj.tp$getattr("__getitem__");
+    if (getit) {
+        // create internal iterobject if __getitem__
+        print("returning internal iterator");
+        return new function () {
+            this.idx = 0,
+            this.myobj = obj,
+            this.tp$iternext = function () {
+                var ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, this.idx);
+                this.idx++;
+                return ret;
+            }
+        }
+    }
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
+};
+
+
 /**
  * @return {undefined}
  */
