@@ -79,7 +79,7 @@ Sk.configure = function (options) {
 };
 goog.exportSymbol("Sk.configure", Sk.configure);
 
- /*
+/*
  * Replaceable handler for uncaught exceptions
  */
 Sk.uncaughtException = function(err) {
