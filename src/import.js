@@ -94,8 +94,7 @@ Sk.loadExternalLibrary = function (name) {
 
     if (ext === "js") {
         co = { funcname: "$builtinmodule", code: module };
-    }
-    else {
+    } else {
         co = Sk.compile(module, path, "exec", true);
     }
 
@@ -249,8 +248,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
         // if we're a dotted module, return the top level, otherwise ourselves
         if (modNameSplit.length > 1) {
             return Sk.sysmodules.mp$subscript(modNameSplit[0]);
-        }
-        else {
+        } else {
             return prev;
         }
     } catch (x) {
@@ -295,8 +293,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
     if (suppliedPyBody) {
         filename = name + ".py";
         co = Sk.compile(suppliedPyBody, filename, "exec", canSuspend);
-    }
-    else {
+    } else {
         // If an onBeforeImport method is supplied, call it and if
         // the result is false or a string, prevent the import.
         // This allows for a user to conditionally prevent the usage
@@ -305,8 +302,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             result = Sk.onBeforeImport(name);
             if (result === false) {
                 throw new Sk.builtin.ImportError("Importing " + name + " is not allowed");
-            }
-            else if (typeof result === "string") {
+            } else if (typeof result === "string") {
                 throw new Sk.builtin.ImportError(result);
             }
         }
@@ -347,30 +343,30 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, canS
             Sk.dateSet = true;
         }
 
-        //if (!COMPILED)
-        {
-            if (dumpJS) {
-                withLineNumbers = function (code) {
-                    var j;
-                    var pad;
-                    var width;
-                    var i;
-                    var beaut = js_beautify(code);
-                    var lines = beaut.split("\n");
-                    for (i = 1; i <= lines.length; ++i) {
-                        width = ("" + i).length;
-                        pad = "";
-                        for (j = width; j < 5; ++j) {
-                            pad += " ";
-                        }
-                        lines[i - 1] = "/* " + pad + i + " */ " + lines[i - 1];
+        // if (!COMPILED)
+        // {
+        if (dumpJS) {
+            withLineNumbers = function (code) {
+                var j;
+                var pad;
+                var width;
+                var i;
+                var beaut = js_beautify(code);
+                var lines = beaut.split("\n");
+                for (i = 1; i <= lines.length; ++i) {
+                    width = ("" + i).length;
+                    pad = "";
+                    for (j = width; j < 5; ++j) {
+                        pad += " ";
                     }
-                    return lines.join("\n");
-                };
-                finalcode = withLineNumbers(finalcode);
-                Sk.debugout(finalcode);
-            }
+                    lines[i - 1] = "/* " + pad + i + " */ " + lines[i - 1];
+                }
+                return lines.join("\n");
+            };
+            finalcode = withLineNumbers(finalcode);
+            Sk.debugout(finalcode);
         }
+        // }
 
         namestr = "new Sk.builtin.str('" + modname + "')";
         finalcode += "\n" + co.funcname + "(" + namestr + ");";

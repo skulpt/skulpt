@@ -5,7 +5,7 @@
 
 /*
  * Basic JavaScript BN library - subset useful for RSA encryption.
- * 
+ *
  * Copyright (c) 2003-2005  Tom Wu
  * All Rights Reserved.
  *
@@ -20,9 +20,9 @@
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
  *
  * IN NO EVENT SHALL TOM WU BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
  * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
@@ -48,11 +48,9 @@ Sk.builtin.biginteger = function (a, b, c) {
     if (a != null) {
         if ("number" == typeof a) {
             this.fromNumber(a, b, c);
-        }
-        else if (b == null && "string" != typeof a) {
+        } else if (b == null && "string" != typeof a) {
             this.fromString(a, 256);
-        }
-        else {
+        } else {
             this.fromString(a, b);
         }
     }
@@ -123,7 +121,7 @@ Sk.builtin.biginteger.prototype.am3 = function (i, x, w, j, c, n) {
     return c;
 };
 
-// We need to select the fastest one that works in this environment. 
+// We need to select the fastest one that works in this environment.
 //if (Sk.builtin.biginteger.j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
 //	Sk.builtin.biginteger.prototype.am = am2;
 //	Sk.builtin.biginteger.dbits = 30;
@@ -189,11 +187,9 @@ Sk.builtin.biginteger.prototype.bnpFromInt = function (x) {
     this.s = (x < 0) ? -1 : 0;
     if (x > 0) {
         this[0] = x;
-    }
-    else if (x < -1) {
+    } else if (x < -1) {
         this[0] = x + this.DV;
-    }
-    else {
+    } else {
         this.t = 0;
     }
 };
@@ -212,23 +208,18 @@ Sk.builtin.biginteger.prototype.bnpFromString = function (s, b) {
     var k;
     if (b == 16) {
         k = 4;
-    }
-    else if (b == 8) {
+    } else if (b == 8) {
         k = 3;
-    }
-    else if (b == 256) {
+    } else if (b == 256) {
         k = 8;
-    } // byte array
-    else if (b == 2) {
+    }  else if (b == 2) {
+        // byte array
         k = 1;
-    }
-    else if (b == 32) {
+    } else if (b == 32) {
         k = 5;
-    }
-    else if (b == 4) {
+    } else if (b == 4) {
         k = 2;
-    }
-    else {
+    } else {
         this.fromRadix(s, b);
         return;
     }
@@ -248,12 +239,10 @@ Sk.builtin.biginteger.prototype.bnpFromString = function (s, b) {
         mi = false;
         if (sh === 0) {
             this[this.t++] = x;
-        }
-        else if (sh + k > this.DB) {
+        } else if (sh + k > this.DB) {
             this[this.t - 1] |= (x & ((1 << (this.DB - sh)) - 1)) << sh;
             this[this.t++] = (x >> (this.DB - sh));
-        }
-        else {
+        } else {
             this[this.t - 1] |= x << sh;
         }
         sh += k;
@@ -291,20 +280,15 @@ Sk.builtin.biginteger.prototype.bnToString = function (b) {
     }
     if (b == 16) {
         k = 4;
-    }
-    else if (b == 8) {
+    } else if (b == 8) {
         k = 3;
-    }
-    else if (b == 2) {
+    } else if (b == 2) {
         k = 1;
-    }
-    else if (b == 32) {
+    } else if (b == 32) {
         k = 5;
-    }
-    else if (b == 4) {
+    } else if (b == 4) {
         k = 2;
-    }
-    else {
+    } else {
         return this.toRadix(b);
     }
     km = (1 << k) - 1, m = false, r = "", i = this.t;
@@ -318,8 +302,7 @@ Sk.builtin.biginteger.prototype.bnToString = function (b) {
             if (p < k) {
                 d = (this[i] & ((1 << p) - 1)) << (k - p);
                 d |= this[--i] >> (p += this.DB - k);
-            }
-            else {
+            } else {
                 d = (this[i] >> (p -= k)) & km;
                 if (p <= 0) {
                     p += this.DB;
@@ -489,8 +472,7 @@ Sk.builtin.biginteger.prototype.bnpSubTo = function (a, r) {
             c >>= this.DB;
         }
         c += this.s;
-    }
-    else {
+    } else {
         c += this.s;
         while (i < a.t) {
             c -= a[i];
@@ -502,8 +484,7 @@ Sk.builtin.biginteger.prototype.bnpSubTo = function (a, r) {
     r.s = (c < 0) ? -1 : 0;
     if (c < -1) {
         r[i++] = this.DV + c;
-    }
-    else if (c > 0) {
+    } else if (c > 0) {
         r[i++] = c;
     }
     r.t = i;
@@ -587,8 +568,7 @@ Sk.builtin.biginteger.prototype.bnpDivRemTo = function (m, q, r) {
     if (nsh > 0) {
         pm.lShiftTo(nsh, y);
         pt.lShiftTo(nsh, r);
-    }
-    else {
+    } else {
         pm.copyTo(y);
         pt.copyTo(r);
     }
@@ -660,8 +640,7 @@ Sk.builtin.biginteger.Classic = function (m) {
 Sk.builtin.biginteger.prototype.cConvert = function (x) {
     if (x.s < 0 || x.compareTo(this.m) >= 0) {
         return x.mod(this.m);
-    }
-    else {
+    } else {
         return x;
     }
 };
@@ -755,8 +734,8 @@ Sk.builtin.biginteger.prototype.montReduce = function (x) {
     var u0;
     var j;
     var i;
-    while (x.t <= this.mt2)	// pad x so am has enough room later
-    {
+    while (x.t <= this.mt2) {
+        // pad x so am has enough room later
         x[x.t++] = 0;
     }
     for (i = 0; i < this.m.t; ++i) {
@@ -818,8 +797,7 @@ Sk.builtin.biginteger.prototype.bnpExp = function (e, z) {
         z.sqrTo(r, r2);
         if ((e & (1 << i)) > 0) {
             z.mulTo(r2, g, r);
-        }
-        else {
+        } else {
             t = r;
             r = r2;
             r2 = t;
@@ -889,15 +867,12 @@ Sk.builtin.biginteger.prototype.bnIntValue = function () {
     if (this.s < 0) {
         if (this.t == 1) {
             return this[0] - this.DV;
-        }
-        else if (this.t === 0) {
+        } else if (this.t === 0) {
             return -1;
         }
-    }
-    else if (this.t == 1) {
+    } else if (this.t == 1) {
         return this[0];
-    }
-    else if (this.t === 0) {
+    } else if (this.t === 0) {
         return 0;
     }
     return ((this[1] & ((1 << (32 - this.DB)) - 1)) << this.DB) | this[0];
@@ -922,11 +897,9 @@ Sk.builtin.biginteger.prototype.bnpChunkSize = function (r) {
 Sk.builtin.biginteger.prototype.bnSigNum = function () {
     if (this.s < 0) {
         return -1;
-    }
-    else if (this.t <= 0 || (this.t == 1 && this[0] <= 0)) {
+    } else if (this.t <= 0 || (this.t == 1 && this[0] <= 0)) {
         return 0;
-    }
-    else {
+    } else {
         return 1;
     }
 };
@@ -1004,11 +977,10 @@ Sk.builtin.biginteger.prototype.bnpFromNumber = function (a, b, c) {
         // new Sk.builtin.biginteger(int,int,RNG)
         if (a < 2) {
             this.fromInt(1);
-        }
-        else {
+        } else {
             this.fromNumber(a, c);
-            if (!this.testBit(a - 1))	// force MSB set
-            {
+            if (!this.testBit(a - 1))	{
+                // force MSB set
                 this.bitwiseTo(Sk.builtin.biginteger.ONE.shiftLeft(a - 1), Sk.builtin.biginteger.op_or, this);
             }
             if (this.isEven()) {
@@ -1041,8 +1013,7 @@ Sk.builtin.biginteger.prototype.bnToByteArray = function () {
             if (p < 8) {
                 d = (this[i] & ((1 << p) - 1)) << (8 - p);
                 d |= this[--i] >> (p += this.DB - 8);
-            }
-            else {
+            } else {
                 d = (this[i] >> (p -= 8)) & 0xff;
                 if (p <= 0) {
                     p += this.DB;
@@ -1085,8 +1056,7 @@ Sk.builtin.biginteger.prototype.bnpBitwiseTo = function (a, op, r) {
             r[i] = op(this[i], f);
         }
         r.t = this.t;
-    }
-    else {
+    } else {
         f = this.s & this.DM;
         for (i = m; i < a.t; ++i) {
             r[i] = op(f, a[i]);
@@ -1281,8 +1251,7 @@ Sk.builtin.biginteger.prototype.bnpAddTo = function (a, r) {
             c >>= this.DB;
         }
         c += this.s;
-    }
-    else {
+    } else {
         c += this.s;
         while (i < a.t) {
             c += a[i];
@@ -1294,8 +1263,7 @@ Sk.builtin.biginteger.prototype.bnpAddTo = function (a, r) {
     r.s = (c < 0) ? -1 : 0;
     if (c > 0) {
         r[i++] = c;
-    }
-    else if (c < -1) {
+    } else if (c < -1) {
         r[i++] = this.DV + c;
     }
     r.t = i;
@@ -1449,11 +1417,9 @@ Sk.builtin.biginteger.prototype.barrettConvert = function (x) {
     var r;
     if (x.s < 0 || x.t > 2 * this.m.t) {
         return x.mod(this.m);
-    }
-    else if (x.compareTo(this.m) < 0) {
+    } else if (x.compareTo(this.m) < 0) {
         return x;
-    }
-    else {
+    } else {
         r = Sk.builtin.biginteger.nbi();
         x.copyTo(r);
         this.reduce(r);
@@ -1509,29 +1475,22 @@ Sk.builtin.biginteger.prototype.bnModPow = function (e, m) {
     var i = e.bitLength(), k, r = Sk.builtin.biginteger.nbv(1), z;
     if (i <= 0) {
         return r;
-    }
-    else if (i < 18) {
+    } else if (i < 18) {
         k = 1;
-    }
-    else if (i < 48) {
+    } else if (i < 48) {
         k = 3;
-    }
-    else if (i < 144) {
+    } else if (i < 144) {
         k = 4;
-    }
-    else if (i < 768) {
+    } else if (i < 768) {
         k = 5;
-    }
-    else {
+    } else {
         k = 6;
     }
     if (i < 8) {
         z = new Sk.builtin.biginteger.Classic(m);
-    }
-    else if (m.isEven()) {
+    } else if (m.isEven()) {
         z = new Sk.builtin.biginteger.Barrett(m);
-    }
-    else {
+    } else {
         z = new Sk.builtin.biginteger.Montgomery(m);
     }
 
@@ -1557,8 +1516,7 @@ Sk.builtin.biginteger.prototype.bnModPow = function (e, m) {
     while (j >= 0) {
         if (i >= k1) {
             w = (e[j] >> (i - k1)) & km;
-        }
-        else {
+        } else {
             w = (e[j] & ((1 << (i + 1)) - 1)) << (k1 - i);
             if (j > 0) {
                 w |= e[j - 1] >> (this.DB + i - k1);
@@ -1577,8 +1535,7 @@ Sk.builtin.biginteger.prototype.bnModPow = function (e, m) {
         if (is1) {	// ret == 1, don't bother squaring or multiplying it
             g[w].copyTo(r);
             is1 = false;
-        }
-        else {
+        } else {
             while (n > 1) {
                 z.sqrTo(r, r2);
                 z.sqrTo(r2, r);
@@ -1641,8 +1598,7 @@ Sk.builtin.biginteger.prototype.bnGCD = function (a) {
         if (x.compareTo(y) >= 0) {
             x.subTo(y, x);
             x.rShiftTo(1, x);
-        }
-        else {
+        } else {
             y.subTo(x, y);
             y.rShiftTo(1, y);
         }
@@ -1665,8 +1621,7 @@ Sk.builtin.biginteger.prototype.bnpModInt = function (n) {
     if (this.t > 0) {
         if (d === 0) {
             r = this[0] % n;
-        }
-        else {
+        } else {
             for (i = this.t - 1; i >= 0; --i) {
                 r = (d * r + this[i]) % n;
             }
@@ -1698,8 +1653,7 @@ Sk.builtin.biginteger.prototype.bnModInverse = function (m) {
                     b.subTo(m, b);
                 }
                 a.rShiftTo(1, a);
-            }
-            else if (!b.isEven()) {
+            } else if (!b.isEven()) {
                 b.subTo(m, b);
             }
             b.rShiftTo(1, b);
@@ -1712,8 +1666,7 @@ Sk.builtin.biginteger.prototype.bnModInverse = function (m) {
                     d.subTo(m, d);
                 }
                 c.rShiftTo(1, c);
-            }
-            else if (!d.isEven()) {
+            } else if (!d.isEven()) {
                 d.subTo(m, d);
             }
             d.rShiftTo(1, d);
@@ -1724,8 +1677,7 @@ Sk.builtin.biginteger.prototype.bnModInverse = function (m) {
                 a.subTo(c, a);
             }
             b.subTo(d, b);
-        }
-        else {
+        } else {
             v.subTo(u, v);
             if (ac) {
                 c.subTo(a, c);

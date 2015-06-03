@@ -11,18 +11,13 @@ Sk.builtin.float_ = function (x) {
 
         if (x.v.match(/^-inf$/i)) {
             tmp = -Infinity;
-        }
-        else if (x.v.match(/^[+]?inf$/i)) {
+        } else if (x.v.match(/^[+]?inf$/i)) {
             tmp = Infinity;
-        }
-        else if (x.v.match(/^[-+]?nan$/i)) {
+        } else if (x.v.match(/^[-+]?nan$/i)) {
             tmp = NaN;
-        }
-
-        else if (!isNaN(x.v)) {
+        } else if (!isNaN(x.v)) {
             tmp = parseFloat(x.v);
-        }
-        else {
+        } else {
             throw new Sk.builtin.ValueError("float: Argument: " + x.v + " is not number");
         }
         return new Sk.builtin.nmber(tmp, Sk.builtin.nmber.float$);

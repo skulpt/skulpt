@@ -9,8 +9,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             compare_func = function (a, b) {
                 return Sk.misceval.richCompareBool(a[0], b[0], "Lt") ? new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$) : new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
             };
-        }
-        else {
+        } else {
             compare_func = function (a, b) {
                 return Sk.misceval.callsim(cmp, a[0], b[0]);
             };
@@ -23,8 +22,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
             next = iter.tp$iternext();
         }
         list = new Sk.builtin.list(arr);
-    }
-    else {
+    } else {
         if (!(cmp instanceof Sk.builtin.none) && cmp !== undefined) {
             compare_func = cmp;
         }
@@ -33,8 +31,7 @@ Sk.builtin.sorted = function sorted (iterable, cmp, key, reverse) {
 
     if (compare_func !== undefined) {
         list.list_sort_(list, compare_func);
-    }
-    else {
+    } else {
         list.list_sort_(list);
     }
 

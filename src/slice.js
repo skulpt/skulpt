@@ -124,8 +124,7 @@ Sk.builtin.slice.prototype.slice_indices_ = function (length) {
         if (stop < 0) {
             stop = length + stop;
         }
-    }
-    else {
+    } else {
         if (start === null) {
             start = length - 1;
         }
@@ -169,8 +168,7 @@ Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {
                 return;
             }
         }	//	wrt or wrtv? RNL
-    }
-    else {
+    } else {
         for (i = sss[0]; i > sss[1]; i += sss[2]) {
             if (f(i, wrtv) === false) {
                 return;

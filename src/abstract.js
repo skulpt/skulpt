@@ -235,8 +235,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
         } else {
             return ans;
         }
-    }
-    else if (a === undefined || b === undefined) {
+    } else if (a === undefined || b === undefined) {
         throw new Sk.builtin.NameError("Undefined variable in expression");
     }
 
@@ -278,16 +277,14 @@ Sk.abstr.boNumPromote_ = {
     "Div"     : function (a, b) {
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
-        }
-        else {
+        } else {
             return a / b;
         }
     },
     "FloorDiv": function (a, b) {
         if (b === 0) {
             throw new Sk.builtin.ZeroDivisionError("division or modulo by zero");
-        }
-        else {
+        } else {
             return Math.floor(a / b);
         } // todo; wrong? neg?
     },
@@ -321,8 +318,7 @@ Sk.abstr.boNumPromote_ = {
         m = a << b;
         if (m > a) {
             return m;
-        }
-        else {
+        } else {
             // Fail, this will get recomputed with longs
             return a * Math.pow(2, b);
         }
@@ -348,14 +344,11 @@ Sk.abstr.numberBinOp = function (v, w, op) {
         tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        }
-        else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
             return tmp;
-        }
-        else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
             return tmp;
-        }
-        else if (tmp !== undefined) {
+        } else if (tmp !== undefined) {
             v = tmp[0];
             w = tmp[1];
         }
@@ -372,14 +365,11 @@ Sk.abstr.numberInplaceBinOp = function (v, w, op) {
         tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        }
-        else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
             return tmp;
-        }
-        else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
             return tmp;
-        }
-        else if (tmp !== undefined) {
+        } else if (tmp !== undefined) {
             v = tmp[0];
             w = tmp[1];
         }
@@ -393,8 +383,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     var value;
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    }
-    else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
+    } else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
         value = Sk.builtin.asnum$(v);
         if (op === "USub") {
             return new Sk.builtin.nmber(-value, v.skType);
@@ -405,8 +394,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
         if (op === "Invert") {
             return new Sk.builtin.nmber(~value, v.skType);
         }
-    }
-    else {
+    } else {
         if (op === "USub" && v.nb$negative) {
             return v.nb$negative();
         }
@@ -548,8 +536,7 @@ Sk.abstr.sequenceGetSlice = function (seq, i1, i2) {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
         return seq.sq$slice(i1, i2);
-    }
-    else if (seq.mp$subscript) {
+    } else if (seq.mp$subscript) {
         return seq.mp$subscript(new Sk.builtin.slice(i1, i2));
     }
 
@@ -576,11 +563,9 @@ Sk.abstr.sequenceSetSlice = function (seq, i1, i2, x) {
         i1 = Sk.abstr.fixSeqIndex_(seq, i1);
         i2 = Sk.abstr.fixSeqIndex_(seq, i2);
         seq.sq$ass_slice(i1, i2, x);
-    }
-    else if (seq.mp$ass_subscript) {
+    } else if (seq.mp$ass_subscript) {
         seq.mp$ass_subscript(new Sk.builtin.slice(i1, i2), x);
-    }
-    else {
+    } else {
         seqtypename = Sk.abstr.typeName(seq);
         throw new Sk.builtin.TypeError("'" + seqtypename + "' object doesn't support slice assignment");
     }
@@ -685,11 +670,9 @@ Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     if (o !== null) {
         if (o.mp$subscript) {
             return o.mp$subscript(key, canSuspend);
-        }
-        else if (Sk.misceval.isIndex(key) && o.sq$item) {
+        } else if (Sk.misceval.isIndex(key) && o.sq$item) {
             return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
-        }
-        else if (o.tp$getitem) {
+        } else if (o.tp$getitem) {
             return o.tp$getitem(key, canSuspend);
         }
     }
@@ -704,11 +687,9 @@ Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     if (o !== null) {
         if (o.mp$ass_subscript) {
             return o.mp$ass_subscript(key, v, canSuspend);
-        }
-        else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
+        } else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
             return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
-        }
-        else if (o.tp$setitem) {
+        } else if (o.tp$setitem) {
             return o.tp$setitem(key, v, canSuspend);
         }
     }
@@ -788,8 +769,7 @@ goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 Sk.abstr.iter = function (obj) {
     if (obj.tp$iter) {
         return obj.tp$iter();
-    }
-    else {
+    } else {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
     }
 };

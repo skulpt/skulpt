@@ -19,7 +19,7 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     var kwargsarr;
     var expectskw;
     var name;
-    
+
     goog.asserts.assert(this.im_self, "should just be a function, not a method since there's no self?");
     goog.asserts.assert(this.im_func instanceof Sk.builtin.func);
 
@@ -30,7 +30,7 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
     //print("calling method");
     // todo; modification OK?
     args.unshift(this.im_self);
-    
+
     expectskw = this.im_func.func_code["co_kwargs"];
     kwargsarr = [];
 
@@ -53,13 +53,11 @@ Sk.builtin.method.prototype.tp$call = function (args, kw) {
             }
             if (varnames && j !== numvarnames) {
                 args[j] = kw[i + 1];
-            }
-            else if (expectskw) {
+            } else if (expectskw) {
                 // build kwargs dict
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
-            }
-            else {
+            } else {
                 name = (this.im_func.func_code && this.im_func.func_code["co_name"] && this.im_func.func_code["co_name"].v) || "<native JS>";
                 throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }

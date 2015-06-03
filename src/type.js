@@ -32,14 +32,12 @@ Sk.builtin.type = function (name, bases, dict) {
         if (obj.constructor === Sk.builtin.nmber) {
             if (obj.skType === Sk.builtin.nmber.int$) {
                 return Sk.builtin.int_.prototype.ob$type;
-            }
-            else {
+            } else {
                 return Sk.builtin.float_.prototype.ob$type;
             }
         }
         return obj.ob$type;
-    }
-    else {
+    } else {
 
         // argument dict must be of type dict
         if(dict.tp$name !== "dict") {
@@ -364,8 +362,7 @@ Sk.builtin.type.mroMerge_ = function (seqs) {
                 break;
             }
         }
-        if (i === seqs.length) // all empty
-        {
+        if (i === seqs.length) { // all empty
             return res;
         }
         cands = [];

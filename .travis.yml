@@ -1,11 +1,16 @@
 language: python
+sudo: false
 python:
 - '2.6'
 install:
+- npm install npm@latest -g
+- npm install jscs -g
+- npm install jshint -g
+- npm install
+- jscs -V
+- jshint -v
 - pip install "GitPython>=0.2.0-beta1" --use-mirrors
 - mkdir -p vendors
-- npm install git://github.com/jshint/jshint/
-- npm install jscs
 script:
 - ./skulpt.py dist
 - jshint src/*.js

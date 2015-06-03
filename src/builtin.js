@@ -1,4 +1,4 @@
-/** 
+/**
  * builtins are supposed to come from the __builtin__ module, but we don't do
  * that yet.
  * todo; these should all be func objects too, otherwise str() of them won't
@@ -162,8 +162,7 @@ Sk.builtin.asnum$nofloat = function (a) {
         } else {
             if (mantissa.length > -expon) {
                 return mantissa.substr(0, mantissa.length + expon);
-            }
-            else {
+            } else {
                 return 0;
             }
         }
@@ -172,11 +171,9 @@ Sk.builtin.asnum$nofloat = function (a) {
     //	Negative exponent OR decimal (neg or pos exp)
     if (decimal === 0) {
         mantissa = mantissa.substr(1);
-    }
-    else if (decimal < mantissa.length) {
+    } else if (decimal < mantissa.length) {
         mantissa = mantissa.substr(0, decimal) + mantissa.substr(decimal + 1);
-    }
-    else {
+    } else {
         mantissa = mantissa.substr(0, decimal);
     }
 
@@ -334,8 +331,7 @@ Sk.builtin.sum = function sum (iter, start) {
     }
     if (start === undefined) {
         tot = new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-    }
-    else {
+    } else {
         tot = start;
     }
 
@@ -382,8 +378,7 @@ Sk.builtin.zip = function zip () {
     for (i = 0; i < arguments.length; i++) {
         if (arguments[i].tp$iter) {
             iters.push(arguments[i].tp$iter());
-        }
-        else {
+        } else {
             throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
         }
     }
@@ -413,7 +408,7 @@ Sk.builtin.abs = function abs (x) {
     } else if (Sk.builtin.checkComplex(x)) {
         return Sk.misceval.callsim(x.__abs__, x);
     }
-    
+
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
@@ -422,8 +417,7 @@ Sk.builtin.ord = function ord (x) {
 
     if (!Sk.builtin.checkString(x)) {
         throw new Sk.builtin.TypeError("ord() expected a string of length 1, but " + Sk.abstr.typeName(x) + " found");
-    }
-    else if (x.v.length !== 1) {
+    } else if (x.v.length !== 1) {
         throw new Sk.builtin.TypeError("ord() expected a character, but string of length " + x.v.length + " found");
     }
     return new Sk.builtin.nmber((x.v).charCodeAt(0), Sk.builtin.nmber.int$);
@@ -513,11 +507,9 @@ Sk.builtin.dir = function dir (x) {
         }
         if (k.indexOf("$") !== -1) {
             s = Sk.builtin.dir.slotNameToRichName(k);
-        }
-        else if (k.charAt(k.length - 1) !== "_") {
+        } else if (k.charAt(k.length - 1) !== "_") {
             s = k;
-        }
-        else if (k.charAt(0) === "_") {
+        } else if (k.charAt(0) === "_") {
             s = k;
         }
         return s;
@@ -539,7 +531,7 @@ Sk.builtin.dir = function dir (x) {
 
         // proper unwrapping
         _seq = Sk.ffi.remapToJs(_seq);
-       
+
         for (i = 0; i < _seq.length; ++i) {
             names.push(new Sk.builtin.str(_seq[i]));
         }
@@ -564,8 +556,7 @@ Sk.builtin.dir = function dir (x) {
                         names.push(new Sk.builtin.str(s));
                     }
                 }
-            }
-            else {
+            } else {
                 // Object
                 for (s in x["$d"]) {
                     names.push(new Sk.builtin.str(s));
@@ -640,8 +631,7 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
     if (type === Sk.builtin.int_.prototype.ob$type) {
         if ((obj.tp$name === "number") && (obj.skType === Sk.builtin.nmber.int$)) {
             return Sk.builtin.bool.true$;
-        }
-        else {
+        } else {
             return Sk.builtin.bool.false$;
         }
     }
@@ -649,8 +639,7 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
     if (type === Sk.builtin.float_.prototype.ob$type) {
         if ((obj.tp$name === "number") && (obj.skType === Sk.builtin.nmber.float$)) {
             return Sk.builtin.bool.true$;
-        }
-        else {
+        } else {
             return Sk.builtin.bool.false$;
         }
     }
@@ -658,8 +647,7 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
     if (type === Sk.builtin.none.prototype.ob$type) {
         if (obj instanceof Sk.builtin.none) {
             return Sk.builtin.bool.true$;
-        }
-        else {
+        } else {
             return Sk.builtin.bool.false$;
         }
     }
@@ -720,27 +708,22 @@ Sk.builtin.hash = function hash (value) {
         }
         value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
-    }
-    else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
+    } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
         return Sk.misceval.callsim(value.__hash__, value);
-    }
-    else if (value instanceof Sk.builtin.bool) {
+    } else if (value instanceof Sk.builtin.bool) {
         if (value.v) {
             return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
         }
         return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-    }
-    else if (value instanceof Sk.builtin.none) {
+    } else if (value instanceof Sk.builtin.none) {
         return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-    }
-    else if (value instanceof Object) {
+    } else if (value instanceof Object) {
         if (value.__id === undefined) {
             Sk.builtin.hashCount += 1;
             value.__id = Sk.builtin.hashCount;
         }
         return new Sk.builtin.nmber(value.__id, Sk.builtin.nmber.int$);
-    }
-    else if (typeof value === "number" || value === null ||
+    } else if (typeof value === "number" || value === null ||
         value === true || value === false) {
         throw new Sk.builtin.TypeError("unsupported Javascript type");
     }
@@ -760,8 +743,7 @@ Sk.builtin.getattr = function getattr (obj, name, default_) {
     if (ret === undefined) {
         if (default_ !== undefined) {
             return default_;
-        }
-        else {
+        } else {
             throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(obj) + "' object has no attribute '" + name.v + "'");
         }
     }
@@ -808,8 +790,7 @@ Sk.builtin.raw_input = function (prompt) {
         };
 
         return susp;
-    }
-    else {
+    } else {
         return new Sk.builtin.str(x);
     }
 };
@@ -866,15 +847,13 @@ Sk.builtin.map = function map (fun, seq) {
                 if (next === undefined) {
                     args.push(Sk.builtin.none.none$);
                     nones++;
-                }
-                else {
+                } else {
                     args.push(next);
                 }
             }
             if (nones !== iterables.length) {
                 combined.push(args);
-            }
-            else {
+            } else {
                 // All iterables are done
                 break;
             }
@@ -897,8 +876,7 @@ Sk.builtin.map = function map (fun, seq) {
                 item = new Sk.builtin.tuple(item);
             }
             retval.push(item);
-        }
-        else {
+        } else {
             if (!(item instanceof Array)) {
                 // If there was only one iterable, convert to Javascript
                 // Array for call to apply.
@@ -971,8 +949,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
         ret = function (iter) {
             return iter;
         };
-    }
-    else if (iterable.__class__ === Sk.builtin.tuple) {
+    } else if (iterable.__class__ === Sk.builtin.tuple) {
         ret = function (iter) {
             return new Sk.builtin.tuple(iter);
         };
@@ -985,8 +962,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
             result = Sk.builtin.bool(item);
-        }
-        else {
+        } else {
             result = Sk.misceval.callsim(fun, item);
         }
 
@@ -1063,8 +1039,7 @@ Sk.builtin.pow = function pow (a, b, c) {
         }
 
         return res;
-    }
-    else {
+    } else {
         if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c)) {
             throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
         }
@@ -1077,8 +1052,7 @@ Sk.builtin.pow = function pow (a, b, c) {
             // convert a to a long so that we can use biginteger's modPowInt method
             a = new Sk.builtin.lng(a);
             return a.nb$power(b, c);
-        }
-        else {
+        } else {
             ret = new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.int$);
             return ret.nb$remainder(c);
         }
@@ -1157,7 +1131,7 @@ Sk.builtin.divmod = function divmod (a, b) {
 };
 
 /**
- * Convert a value to a “formatted” representation, as controlled by format_spec. The interpretation of format_spec 
+ * Convert a value to a “formatted” representation, as controlled by format_spec. The interpretation of format_spec
  * will depend on the type of the value argument, however there is a standard formatting syntax that is used by most
  * built-in types: Format Specification Mini-Language.
  */
