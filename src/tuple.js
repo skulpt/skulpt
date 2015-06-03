@@ -14,15 +14,13 @@ Sk.builtin.tuple = function (L) {
 
     if (Object.prototype.toString.apply(L) === "[object Array]") {
         this.v = L;
-    }
-    else {
+    } else {
         if (L.tp$iter) {
             this.v = [];
             for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 this.v.push(i);
             }
-        }
-        else {
+        } else {
             throw new Sk.builtin.ValueError("expecting Array or iterable");
         }
     }
@@ -66,8 +64,7 @@ Sk.builtin.tuple.prototype.mp$subscript = function (index) {
             }
             return this.v[i];
         }
-    }
-    else if (index instanceof Sk.builtin.slice) {
+    } else if (index instanceof Sk.builtin.slice) {
         ret = [];
         index.sssiter$(this, function (i, wrt) {
             ret.push(wrt.v[i]);

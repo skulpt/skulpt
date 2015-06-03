@@ -65,12 +65,9 @@ Sk.builtin.checkIterable = function (arg) {
 goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
 Sk.builtin.checkCallable = function (arg) {
-    if (typeof arg === "function")
-    {
+    if (typeof arg === "function") {
         return (!(arg instanceof Sk.builtin.none) && (arg.ob$type !== undefined));
-    }
-    else
-    {
+    } else {
         return ((arg.tp$call !== undefined) || (arg.__call__ !== undefined));
     }
 };
@@ -215,13 +212,11 @@ Sk.builtin.func.prototype.tp$call = function (args, kw) {
             }
             if (varnames && j !== numvarnames) {
                 args[j] = kw[i + 1];
-            }
-            else if (expectskw) {
+            } else if (expectskw) {
                 // build kwargs dict
                 kwargsarr.push(new Sk.builtin.str(kw[i]));
                 kwargsarr.push(kw[i + 1]);
-            }
-            else {
+            } else {
                 name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
                 throw new Sk.builtin.TypeError(name + "() got an unexpected keyword argument '" + kw[i] + "'");
             }

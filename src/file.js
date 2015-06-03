@@ -17,8 +17,7 @@ Sk.builtin.file = function (name, mode, buffering) {
         } else {
             if (elem.nodeName.toLowerCase() == "textarea") {
                 this.data$ = elem.value;
-            }
-            else {
+            } else {
                 this.data$ = elem.textContent;
             }
         }

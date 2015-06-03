@@ -11,8 +11,7 @@ Sk.builtin.timSort = function (list, length) {
     this.MIN_GALLOP = 7;
     if (length) {
         this.listlength = length;
-    }
-    else {
+    } else {
         this.listlength = list.sq$length();
     }
 };
@@ -57,8 +56,7 @@ Sk.builtin.timSort.prototype.binary_sort = function (a, sorted) {
             p = l + ((r - l) >> 1);
             if (this.lt(pivot, a.getitem(p))) {
                 r = p;
-            }
-            else {
+            } else {
                 l = p + 1;
             }
         }
@@ -99,27 +97,23 @@ Sk.builtin.timSort.prototype.count_run = function (a) {
     if (a.len <= 1) {
         n = a.len;
         descending = false;
-    }
-    else {
+    } else {
         n = 2;
         if (this.lt(a.getitem(a.base + 1), a.getitem(a.base))) {
             descending = true;
             for (p = a.base + 2; p < a.base + a.len; p++) {
                 if (this.lt(a.getitem(p), a.getitem(p - 1))) {
                     n++;
-                }
-                else {
+                } else {
                     break;
                 }
             }
-        }
-        else {
+        } else {
             descending = false;
             for (p = a.base + 2; p < a.base + a.len; p++) {
                 if (this.lt(a.getitem(p), a.getitem(p - 1))) {
                     break;
-                }
-                else {
+                } else {
                     n++;
                 }
             }
@@ -157,8 +151,7 @@ Sk.builtin.timSort.prototype.sort = function () {
             sorted = cr.run.len;
             if (minrun < remaining.len) {
                 cr.run.len = minrun;
-            }
-            else {
+            } else {
                 cr.run.len = remaining.len;
             }
             this.binary_sort(cr.run, sorted);
@@ -211,8 +204,7 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
         lower = function (a, b) {
             return self.le(a, b);
         }; // search for the largest k for which a[k] <= key
-    }
-    else {
+    } else {
         lower = function (a, b) {
             return self.lt(a, b);
         }; // search for the largest k for which a[k] < key
@@ -233,8 +225,7 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
                 } catch (err) {
                     ofs = maxofs;
                 }
-            }
-            else {
+            } else {
                 // key <= a[hint + ofs]
                 break;
             }
@@ -245,16 +236,14 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
         // Translate back to offsets relative to a.
         lastofs += hint;
         ofs += hint;
-    }
-    else {
+    } else {
         // key <= a[hint] -- gallop left, until
         // a[hint - ofs] < key <= a[hint - lastofs]
         maxofs = hint + 1;   // a[0] is lowest
         while (ofs < maxofs) {
             if (lower(a.getitem(p - ofs), key)) {
                 break;
-            }
-            else {
+            } else {
                 // key <= a[hint - ofs]
                 lastofs = ofs;
                 try {
@@ -284,8 +273,7 @@ Sk.builtin.timSort.prototype.gallop = function (key, a, hint, rightmost) {
         m = lastofs + ((ofs - lastofs) >> 1);
         if (lower(a.getitem(a.base + m), key)) {
             lastofs = m + 1;   // a[m] < key
-        }
-        else {
+        } else {
             ofs = m;         // key <= a[m]
         }
     }
@@ -359,8 +347,7 @@ Sk.builtin.timSort.prototype.merge_lo = function (a, b) {
                     if (bcount >= min_gallop) {
                         break;
                     }
-                }
-                else {
+                } else {
                     this.setitem(dest, a.popleft());
                     dest++;
                     if (a.len == 1) {
@@ -492,8 +479,7 @@ Sk.builtin.timSort.prototype.merge_hi = function (a, b) {
                     if (acount >= min_gallop) {
                         break;
                     }
-                }
-                else {
+                } else {
                     dest--;
                     this.setitem(dest, nextb);
                     b.len--;
@@ -619,8 +605,7 @@ Sk.builtin.timSort.prototype.merge_at = function (i) {
     // minimize the temporary storage needed.
     if (a.len <= b.len) {
         this.merge_lo(a, b);
-    }
-    else {
+    } else {
         this.merge_hi(a, b);
     }
 };
@@ -638,14 +623,12 @@ Sk.builtin.timSort.prototype.merge_collapse = function () {
         if (p.length >= 3 && p[p.length - 3].len <= p[p.length - 2].len + p[p.length - 1].len) {
             if (p[p.length - 3].len < p[p.length - 1].len) {
                 this.merge_at(-3);
-            }
-            else {
+            } else {
                 this.merge_at(-2);
             }
         } else if (p[p.length - 2].len <= p[p.length - 1].len) {
             this.merge_at(-2);
-        }
-        else {
+        } else {
             break;
         }
     }
@@ -659,8 +642,7 @@ Sk.builtin.timSort.prototype.merge_force_collapse = function () {
     while (p.length > 1) {
         if (p.length >= 3 && p[p.length - 3].len < p[p.length - 1].len) {
             this.merge_at(-3);
-        }
-        else {
+        } else {
             this.merge_at(-2);
         }
     }

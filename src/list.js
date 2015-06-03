@@ -16,11 +16,9 @@ Sk.builtin.list = function (L, canSuspend) {
 
     if (L === undefined) {
         v = [];
-    }
-    else if (Object.prototype.toString.apply(L) === "[object Array]") {
+    } else if (Object.prototype.toString.apply(L) === "[object Array]") {
         v = L;
-    }
-    else if (L.tp$iter) {
+    } else if (L.tp$iter) {
         v = [];
         it = L.tp$iter();
         return (function next(i) {
@@ -36,8 +34,7 @@ Sk.builtin.list = function (L, canSuspend) {
                 }
             }
         })(it.tp$iternext(canSuspend));
-    }
-    else {
+    } else {
         throw new Sk.builtin.ValueError("expecting Array or iterable");
     }
 
@@ -103,8 +100,7 @@ Sk.builtin.list.prototype.list_extend_ = function (other) {
 
         // Concatenate
         this.v.push.apply(this.v, newb);
-    }
-    else {
+    } else {
         for (it = other.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             this.v.push(i);
         }
@@ -318,8 +314,7 @@ Sk.builtin.list.prototype.list_subscript_ = function (index) {
             }
             return this.v[i];
         }
-    }
-    else if (index instanceof Sk.builtin.slice) {
+    } else if (index instanceof Sk.builtin.slice) {
         ret = [];
         index.sssiter$(this, function (i, wrt) {
             ret.push(wrt.v[i]);
@@ -344,13 +339,11 @@ Sk.builtin.list.prototype.list_ass_subscript_ = function (index, value) {
             this.list_ass_item_(i, value);
             return;
         }
-    }
-    else if (index instanceof Sk.builtin.slice) {
+    } else if (index instanceof Sk.builtin.slice) {
         indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_ass_slice_(indices[0], indices[1], value);
-        }
-        else {
+        } else {
             tosub = [];
             index.sssiter$(this, function (i, wrt) {
                 tosub.push(i);
@@ -385,13 +378,11 @@ Sk.builtin.list.prototype.list_del_subscript_ = function (index) {
             this.list_del_item_(i);
             return;
         }
-    }
-    else if (index instanceof Sk.builtin.slice) {
+    } else if (index instanceof Sk.builtin.slice) {
         indices = index.slice_indices_(this.v.length);
         if (indices[2] === 1) {
             this.list_del_slice_(indices[0], indices[1]);
-        }
-        else {
+        } else {
             self = this;
             dec = 0; // offset of removal for next index (because we'll have removed, but the iterator is giving orig indices)
             offdir = indices[2] > 0 ? 1 : 0;
@@ -451,8 +442,7 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
                 var res = Sk.misceval.callsim(cmp, a[0], b[0]);
                 return Sk.misceval.richCompareBool(res, zero, "Lt");
             };
-        }
-        else {
+        } else {
             timsort.lt = function (a, b) {
                 return Sk.misceval.richCompareBool(a[0], b[0], "Lt");
             };
@@ -543,8 +533,7 @@ Sk.builtin.list.prototype["insert"] = new Sk.builtin.func(function (self, i, x) 
     }
     if (i < 0) {
         i = 0;
-    }
-    else if (i > self.v.length) {
+    } else if (i > self.v.length) {
         i = self.v.length;
     }
     self.v.splice(i, 0, x);

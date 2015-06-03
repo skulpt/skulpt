@@ -103,7 +103,7 @@ Sk.builtin.dict.prototype.mp$lookup = function (key) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     return undefined;
 };
 
@@ -115,8 +115,7 @@ Sk.builtin.dict.prototype.mp$subscript = function (key) {
     if (res !== undefined) {
         // Found in dictionary
         return res;
-    }
-    else {
+    } else {
         // Not found in dictionary
         s = new Sk.builtin.str(key);
         throw new Sk.builtin.KeyError(s.v);
@@ -172,7 +171,7 @@ Sk.builtin.dict.prototype.mp$del_subscript = function (key) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     s = new Sk.builtin.str(key);
     throw new Sk.builtin.KeyError(s.v);
 };
@@ -186,8 +185,8 @@ Sk.builtin.dict.prototype.tp$iter = function () {
     for (k in this) {
         if (this.hasOwnProperty(k)) {
             bucket = this[k];
-            if (bucket && bucket.$hash !== undefined) // skip internal stuff. todo; merge pyobj and this
-            {
+            if (bucket && bucket.$hash !== undefined) {
+                // skip internal stuff. todo; merge pyobj and this
                 for (i = 0; i < bucket.items.length; i++) {
                     allkeys.push(bucket.items[i].lhs);
                 }
@@ -338,7 +337,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
         }
     }
 
-    // Not found in dictionary     
+    // Not found in dictionary
     if (d !== undefined) {
         return d;
     }
