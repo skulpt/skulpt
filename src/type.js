@@ -170,17 +170,27 @@ Sk.builtin.type = function (name, bases, dict) {
             var tname = Sk.abstr.typeName(this);
             if (iterf) {
                 ret = Sk.misceval.callsim(iterf);
-                // This check does not work for builtin iterators
-                // if (ret.tp$getattr("next") === undefined)
-                //    throw new Sk.builtin.TypeError("iter() return non-iterator of type '" + tname + "'");
                 return ret;
+            }
+            var gitem = this.tp$getattr("__getitem__");
+            if (gitem) {
+                this.iteridx = 0
+                return this;
             }
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
         klass.prototype.tp$iternext = function () {
             var iternextf = this.tp$getattr("next");
-            goog.asserts.assert(iternextf !== undefined, "iter() should have caught this");
-            return Sk.misceval.callsim(iternextf);
+            if (iternextf) {
+                return Sk.misceval.callsim(iternextf);
+            }
+            var gitem = this.tp$getattr("__getitem__");
+            if (gitem) {
+                print(arguments[0])
+                ret = Sk.misceval.callsim(gitem,this.iteridx);
+                this.iteridx++;
+                return ret;
+            }
         };
         klass.prototype.tp$getitem = function (key, canSuspend) {
             var getf = this.tp$getattr("__getitem__"), r;
