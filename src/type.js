@@ -175,7 +175,8 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
         klass.prototype.tp$iternext = function () {
-            var iternextf = this.tp$getattr("__next__");
+            var iternextf = this.tp$getattr("next");
+            var ret;
             if (iternextf) {
                 try {
                     ret = Sk.misceval.callsim(iternextf);

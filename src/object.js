@@ -27,42 +27,47 @@ Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
     return Sk.builtin.type.typeLookup(op, str);
 };
 
-
+function seqIter(obj) {
+    var ret;
+    this.idx = 0,
+        this.myobj = obj,
+        this.tp$iternext = function () {
+            try {
+                ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, Sk.ffi.remapToPy(this.idx));
+            } catch (e) {
+                if (e instanceof Sk.builtin.IndexError) {
+                    return undefined;
+                } else {
+                    throw e;
+                }
+            }
+            this.idx++;
+            return ret;
+        };
+}
 
 Sk.builtin.object.getIter_ = function(obj) {
     var iter;
     var getit;
-    debugger;
-    if (obj.tp$iter) {   // builtin  or check for tp$nextiter
-        return obj.tp$iter();
-    }
+    var ret;
     if (obj.tp$getattr) {
         iter = obj.tp$getattr("__iter__");
         if (iter) {
             return Sk.misceval.callsim(iter);
         }
     }
+    if (obj.tp$iter) {
+        try {  // catch and ignore not iterable error here.
+            ret = obj.tp$iter();
+            if (ret.tp$iternext) {
+                return ret;
+            }
+        } catch (e) { }
+    }
     getit = obj.tp$getattr("__getitem__");
     if (getit) {
         // create internal iterobject if __getitem__
-        print("returning internal iterator");
-        return new function () {
-            this.idx = 0,
-            this.myobj = obj,
-            this.tp$iternext = function () {
-                try {
-                    var ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, this.idx);
-                } catch(e) {
-                    if (e instanceof Sk.builtin.IndexError) {
-                        return undefined;
-                    } else {
-                        throw e;
-                    }
-                }
-                this.idx++;
-                return ret;
-            };
-        }();
+        return new seqIter(obj);
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
