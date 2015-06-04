@@ -28,11 +28,14 @@ Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
 };
 
 
+
 Sk.builtin.object.getIter_ = function(obj) {
+    var iter;
+    var getit;
+    debugger;
     if (obj.tp$iter) {   // builtin  or check for tp$nextiter
         return obj.tp$iter();
     }
-
     if (obj.tp$getattr) {
         iter = obj.tp$getattr("__iter__");
         if (iter) {
@@ -50,8 +53,8 @@ Sk.builtin.object.getIter_ = function(obj) {
                 var ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, this.idx);
                 this.idx++;
                 return ret;
-            }
-        }
+            };
+        }();
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };

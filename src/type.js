@@ -179,13 +179,6 @@ Sk.builtin.type = function (name, bases, dict) {
             if (iternextf) {
                 return Sk.misceval.callsim(iternextf);
             }
-            var gitem = this.tp$getattr("__getitem__");
-            if (gitem) {
-                print(arguments[0])
-                ret = Sk.misceval.callsim(gitem,this.iteridx);
-                this.iteridx++;
-                return ret;
-            }
         };
         klass.prototype.tp$getitem = function (key, canSuspend) {
             var getf = this.tp$getattr("__getitem__"), r;
