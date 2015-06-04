@@ -27,6 +27,9 @@ Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
     return Sk.builtin.type.typeLookup(op, str);
 };
 
+/**
+ * @constructor
+ */
 function seqIter(obj) {
     var ret;
     this.idx = 0,
