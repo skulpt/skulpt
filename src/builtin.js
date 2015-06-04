@@ -214,7 +214,7 @@ Sk.builtin.round = function round (number, ndigits) {
     }
 
     // try calling internal magic method
-    special = Sk.builtin.object.PyObject_LookupSpecial_(number.ob$type, "__round__");
+    special = Sk.builtin.object.lookupSpecial_(number, "__round__");
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.callsim(special, number, ndigits);
@@ -520,7 +520,7 @@ Sk.builtin.dir = function dir (x) {
     var _seq;
 
     // try calling magic method
-    var special = Sk.builtin.object.PyObject_LookupSpecial_(x.ob$type, "__dir__");
+    var special = Sk.builtin.object.lookupSpecial_(x, "__dir__");
     if(special != null) {
         // method on builtin, provide this arg
         _seq = Sk.misceval.callsim(special, x);

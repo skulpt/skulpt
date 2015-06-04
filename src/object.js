@@ -16,15 +16,16 @@ Sk.builtin.object = function () {
  *
  * Return null if not found or the function
  */
-Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
+Sk.builtin.object.lookupSpecial_ = function(op, str) {
     var res;
-
-    // if op is null, return null
-    if (op == null) {
+    var obtp;
+    if (op.ob$type) {
+        obtp = op.ob$type;
+    } else {
         return null;
     }
 
-    return Sk.builtin.type.typeLookup(op, str);
+    return Sk.builtin.type.typeLookup(obtp, str);
 };
 
 /**
@@ -54,9 +55,9 @@ Sk.builtin.object.getIter_ = function(obj) {
     var getit;
     var ret;
     if (obj.tp$getattr) {
-        iter = obj.tp$getattr("__iter__");
+        iter =  Sk.builtin.object.lookupSpecial_(obj,"__iter__");
         if (iter) {
-            return Sk.misceval.callsim(iter);
+            return Sk.misceval.callsim(iter,obj);
         }
     }
     if (obj.tp$iter) {
@@ -67,7 +68,7 @@ Sk.builtin.object.getIter_ = function(obj) {
             }
         } catch (e) { }
     }
-    getit = obj.tp$getattr("__getitem__");
+    getit = Sk.builtin.object.lookupSpecial_(obj, "__getitem__");
     if (getit) {
         // create internal iterobject if __getitem__
         return new seqIter(obj);
