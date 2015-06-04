@@ -175,14 +175,31 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
         klass.prototype.tp$iternext = function () {
-            var iternextf = this.tp$getattr("next");
+            var iternextf = this.tp$getattr("__next__");
             if (iternextf) {
-                return Sk.misceval.callsim(iternextf);
+                try {
+                    ret = Sk.misceval.callsim(iternextf);
+                } catch (e) {
+                    if (e instanceof Sk.builtin.StopIteration) {
+                        ret = undefined;
+                    } else {
+                        throw e;
+                    }
+                }
+                return ret;
             }
             var gitem = this.tp$getattr("__getitem__");
             if (gitem) {
                 print(arguments[0])
-                ret = Sk.misceval.callsim(gitem,this.iteridx);
+                try {
+                    ret = Sk.misceval.callsim(gitem,this.iteridx);
+                } catch (e) {
+                    if (e instanceof Sk.builtin.IndexError) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
+                }
                 this.iteridx++;
                 return ret;
             }
