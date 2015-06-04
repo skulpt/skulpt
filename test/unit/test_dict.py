@@ -129,7 +129,7 @@ class DictTest(unittest.TestCase):
                 return BogonIter()
             def __getitem__(self, key):
                 return key
-        #self.assertRaises(Exception, d.update, FailingUserDict())
+        self.assertRaises(Exception, d.update, FailingUserDict())
 
         class FailingUserDict:
             def keys(self):

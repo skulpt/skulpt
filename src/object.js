@@ -50,7 +50,15 @@ Sk.builtin.object.getIter_ = function(obj) {
             this.idx = 0,
             this.myobj = obj,
             this.tp$iternext = function () {
-                var ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, this.idx);
+                try {
+                    var ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, this.idx);
+                } catch(e) {
+                    if (e instanceof Sk.builtin.IndexError) {
+                        return undefined;
+                    } else {
+                        throw e;
+                    }
+                }
                 this.idx++;
                 return ret;
             };

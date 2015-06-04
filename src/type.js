@@ -175,11 +175,21 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + tname + "' object is not iterable");
         };
         klass.prototype.tp$iternext = function () {
-            var iternextf = this.tp$getattr("next");
+            var iternextf = this.tp$getattr("__next__");
             if (iternextf) {
-                return Sk.misceval.callsim(iternextf);
+                try {
+                    ret = Sk.misceval.callsim(iternextf);
+                } catch (e) {
+                    if (e instanceof Sk.builtin.StopIteration) {
+                        ret = undefined;
+                    } else {
+                        throw e;
+                    }
+                }
+                return ret;
             }
         };
+
         klass.prototype.tp$getitem = function (key, canSuspend) {
             var getf = this.tp$getattr("__getitem__"), r;
             if (getf !== undefined) {
