@@ -60,7 +60,22 @@ Sk.builtin.checkSequence = function (arg) {
 goog.exportSymbol("Sk.builtin.checkSequence", Sk.builtin.checkSequence);
 
 Sk.builtin.checkIterable = function (arg) {
-    return (arg !== null && arg.tp$iter !== undefined);
+    var ret = false;
+    if (arg !== null ) {
+        try {
+            ret = Sk.builtin.object.getIter_(arg);
+            if (ret) {
+                return true;
+            }
+        } catch (e) {
+            if (e instanceof Sk.builtin.TypeError) {
+                return null;
+            } else {
+                throw e;
+            }
+        }
+    }
+    return ret;
 };
 goog.exportSymbol("Sk.builtin.checkIterable", Sk.builtin.checkIterable);
 
