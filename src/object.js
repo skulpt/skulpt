@@ -32,21 +32,21 @@ Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
  */
 function seqIter(obj) {
     var ret;
-    this.idx = 0,
-        this.myobj = obj,
-        this.tp$iternext = function () {
-            try {
-                ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, Sk.ffi.remapToPy(this.idx));
-            } catch (e) {
-                if (e instanceof Sk.builtin.IndexError) {
-                    return undefined;
-                } else {
-                    throw e;
-                }
+    this.idx = 0;
+    this.myobj = obj;
+    this.tp$iternext = function () {
+        try {
+            ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, Sk.ffi.remapToPy(this.idx));
+        } catch (e) {
+            if (e instanceof Sk.builtin.IndexError) {
+                return undefined;
+            } else {
+                throw e;
             }
-            this.idx++;
-            return ret;
-        };
+        }
+        this.idx++;
+        return ret;
+    };
 }
 
 Sk.builtin.object.getIter_ = function(obj) {

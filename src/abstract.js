@@ -581,7 +581,7 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    for (it = seq.tp$iter(), i = it.tp$iternext(); 
+    for (it = Sk.builtin.object.getIter_(seq), i = it.tp$iternext();
          (i !== undefined) && (res.length < n); 
          i = it.tp$iternext()) {
         res.push(i);

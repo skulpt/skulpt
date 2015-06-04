@@ -63,49 +63,49 @@ class UnpackTest(unittest.TestCase):
         self.assertRaises(ValueError, tup_too_small)
         self.assertRaises(ValueError, list_too_small)
 
-    # def test_class(self):
-    #     class Seq:
-    #         def __getitem__(self, i):
-    #             if i >= 0 and i < 3: return i
-    #             raise IndexError
-    
-    #     a, b, c = Seq()
-    #     self.assertEqual(a, 0)
-    #     self.assertEqual(b, 1)
-    #     self.assertEqual(c, 2)
+    def test_class(self):
+        class Seq:
+            def __getitem__(self, i):
+                if i >= 0 and i < 3: return i
+                raise IndexError
 
-    # def test_class_fail(self):
-    #     class Seq:
-    #         def __getitem__(self, i):
-    #             if i >= 0 and i < 3: return i
-    #             raise IndexError
+        a, b, c = Seq()
+        self.assertEqual(a, 0)
+        self.assertEqual(b, 1)
+        self.assertEqual(c, 2)
 
-    #     def too_small():
-    #         a, b, c, d = Seq()
-    #     def too_big():
-    #         a, b = Seq()
-        
-    #     self.assertRaises(ValueError, too_small)
-    #     self.assertRaises(ValueError, too_big)
+    def test_class_fail(self):
+        class Seq:
+            def __getitem__(self, i):
+                if i >= 0 and i < 3: return i
+                raise IndexError
 
-    # def test_bad_class(self):
-    #     class BadSeq:
-    #         def __getitem__(self, i):
-    #             if i >=0 and i < 3:
-    #                 return i
-    #             elif i ==3:
-    #                 raise NameError
-    #             else:
-    #                 raise IndexError
+        def too_small():
+            a, b, c, d = Seq()
+        def too_big():
+            a, b = Seq()
 
-    #     def raise_bad_error1():
-    #         a, b, c, d, e = BadSeq()
+        self.assertRaises(ValueError, too_small)
+        self.assertRaises(ValueError, too_big)
 
-    #     def raise_bad_error2():
-    #         a, b, c = BadSeq()
+    def test_bad_class(self):
+        class BadSeq:
+            def __getitem__(self, i):
+                if i >=0 and i < 3:
+                    return i
+                elif i ==3:
+                    raise NameError
+                else:
+                    raise IndexError
 
-    #     self.assertRaises(NameError, raise_bad_error1)
-    #     self.assertRaises(NameError, raise_bad_error2)
+        def raise_bad_error1():
+            a, b, c, d, e = BadSeq()
+
+        def raise_bad_error2():
+            a, b, c = BadSeq()
+
+        self.assertRaises(NameError, raise_bad_error1)
+        self.assertRaises(NameError, raise_bad_error2)
 
 if __name__ == "__main__":
     unittest.main()
