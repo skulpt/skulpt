@@ -12,12 +12,78 @@ A few key preliminary points
 Objects and Methods
 -------------------
 
-* skulpt.exec(code) -- handles promises, exceptions, calls skulpt.error when an error occurs...
-* skulpt.eval(code)  -- returns a javascript object
-* skulpt.input = function
-* skulpt.output = function
-* skulpt.error = function
-* skulpt.config()  to configure things like Suspensions, timeLimits, python3, etc.
+* skulpt.exec(code) -- handles promises, exceptions, calls skulpt.error when an error occurs...  returns true if no errors/exceptions false otherwise
+* skulpt.eval(code)  -- returns a javascript object resulting from evaling a Python expression
+* skulpt.input  --  function -- called when ``input`` is called a default with a dialog provided
+* skulpt.import -- function called for importing files the current builtinRead
+* skulpt.output = function   -- A default would be provided that would append text to a configured html element
+* skulpt.error = function  -- A default would be provided that would append text to a configured html element
+* skulpt.config()  to configure things such as
+* skulpt.global(name) -- returns a javascript object mapping names to javscript values based on the last exec or if name the value for that name
+
+    * Suspensions
+    * timeLimits
+    * python3 basics
+    * default output element
+    * default error element
+    * turtle canvas?
+    * retain globals
+
+
+
+Lets look at a current example and then reimagine that example under a new API.
+
+.. code-block:: javascript
+
+   <script type="text/javascript">
+   // output functions are configurable.  This one just appends some text
+   // to a pre element.
+   function outf(text) {
+       var mypre = document.getElementById("output");
+       mypre.innerHTML = mypre.innerHTML + text;
+   }
+   function builtinRead(x) {
+       if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+               throw "File not found: '" + x + "'";
+       return Sk.builtinFiles["files"][x];
+   }
+
+   // Here's everything you need to run a python program in skulpt
+   // grab the code from your textarea
+   // get a reference to your pre element for output
+   // configure the output function
+   // call Sk.importMainWithBody()
+   function runit() {
+      var prog = document.getElementById("yourcode").value;
+      var mypre = document.getElementById("output");
+      mypre.innerHTML = '';
+      Sk.pre = "output";
+      Sk.configure({output:outf, read:builtinRead});
+      (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+      var myPromise = Sk.misceval.asyncToPromise(function() {
+          return Sk.importMainWithBody("<stdin>", false, prog, true);
+      });
+      myPromise.then(function(mod) {
+          console.log('success');
+      },
+          function(err) {
+          console.log(err.toString());
+      });
+   }
+   </script>
+
+The new API could look like this
+
+.. code-block:: javascript
+
+   <script type="text/javascript">
+   function runit() {
+      var prog = document.getElementById("yourcode").value;
+      var mypre = document.getElementById("output");
+      skulpt.configure({outelem: mypre, turtleCanvas: 'mycanvas'})
+      skulpt.exec(code)
+   }
+   </script>
 
 
 
