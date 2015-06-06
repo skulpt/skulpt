@@ -69,7 +69,7 @@ Sk.builtin.checkIterable = function (arg) {
             }
         } catch (e) {
             if (e instanceof Sk.builtin.TypeError) {
-                return null;
+                return false;
             } else {
                 throw e;
             }
