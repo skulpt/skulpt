@@ -50,7 +50,7 @@ Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
-    if (Sk.builtin.object.lookupSpecial_(o, "__index__")) {
+    if (Sk.abstr.lookupSpecial(o, "__index__")) {
         return true;
     }
     return false;
@@ -84,7 +84,7 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
     }
-    idxfn = Sk.builtin.object.lookupSpecial_(o, "__index__");
+    idxfn = Sk.abstr.lookupSpecial(o, "__index__");
     if (idxfn) {
         ret = Sk.misceval.callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {

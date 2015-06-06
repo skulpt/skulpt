@@ -202,7 +202,7 @@ Sk.builtin.complex.try_complex_special_method = function (op) {
     }
 
     // the lookup special method does already all the magic
-    f = Sk.builtin.object.lookupSpecial_(op, "__complex__");
+    f = Sk.abstr.lookupSpecial(op, "__complex__");
 
     if (f != null) {
         // method on builtin, provide this arg

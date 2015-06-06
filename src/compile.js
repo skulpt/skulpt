@@ -1125,7 +1125,7 @@ Compiler.prototype.cfor = function (s) {
         out(iter, "=Sk.abstr.iter(", toiter, ");");
     }
     else {
-        iter = this._gr("iter", "Sk.builtin.object.getIter_(", toiter, ")");
+        iter = this._gr("iter", "Sk.abstr.getIter_(", toiter, ")");
         this.u.tempsToSave.push(iter); // Save it across suspensions
     }
 
