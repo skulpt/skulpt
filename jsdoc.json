@@ -1,0 +1,18 @@
+{
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
+    "source": {
+       "include": ["src/misceval.js", "src/abstract.js", "src/function.js", "src/ffi.js"]
+    },
+    "plugins": ["plugins/markdown"],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false
+    },
+    "opts": {
+    "encoding": "utf8",               // same as -e utf8
+    "destination": "./doc/ProgMan"          // same as -d ./out/
+    }
+}

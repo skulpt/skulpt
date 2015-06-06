@@ -1,3 +1,7 @@
+/**
+ * @namespace Sk.abstr
+ *
+ */
 Sk.abstr = {};
 
 //
@@ -34,6 +38,13 @@ Sk.abstr.unop_type_error = function (v, name) {
     throw new Sk.builtin.TypeError("bad operand type for unary " + uop + ": '" + vtypename + "'");
 };
 
+/**
+ * lookup and return the LHS object slot function method.  This coudl be either a builtin slot function or a dunder method defined by the user.
+ * @param obj
+ * @param name
+ * @returns {Object|null|undefined}
+ * @private
+ */
 Sk.abstr.boNameToSlotFuncLhs_ = function (obj, name) {
     if (obj === null) {
         return undefined;

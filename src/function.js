@@ -1,4 +1,9 @@
 /**
+ * @namespace Sk.builtin
+ */
+
+
+/**
  * Check arguments to Python functions to ensure the correct number of
  * arguments are passed.
  *
@@ -131,6 +136,13 @@ goog.exportSymbol("Sk.builtin.checkFunction", Sk.builtin.checkFunction);
 
 /**
  * @constructor
+ * Sk.builtin.func
+ *
+ * @description
+ * This function converts a Javascript function into a Python object that is callable.  Or just
+ * think of it as a Python function rather than a Javascript function now.  This is an important
+ * distinction in skulpt because once you have Python function you cannot just call it.
+ * You must now use Sk.misceval.callsim to call the Python function.
  *
  * @param {Function} code the javascript implementation of this function
  * @param {Object=} globals the globals where this function was defined.

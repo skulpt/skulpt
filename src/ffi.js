@@ -1,3 +1,8 @@
+/**
+ * @namespace Sk.ffi
+ *
+ */
+
 Sk.ffi = Sk.ffi || {};
 
 /**
@@ -36,7 +41,12 @@ Sk.ffi.remapToPy = function (obj) {
 goog.exportSymbol("Sk.ffi.remapToPy", Sk.ffi.remapToPy);
 
 /**
- * maps from Python dict/list/str to Javascript Object/Array/string.
+ * Maps from Python dict/list/str/number to Javascript Object/Array/string/number.
+ *
+ * If obj is a
+ *
+ * @param obj {Object}  Any Python object (except a function)
+ *
  */
 Sk.ffi.remapToJs = function (obj) {
     var i;

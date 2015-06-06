@@ -119,6 +119,37 @@ Although the more I think about it the more I think we just need to do a better 
     - Sk.abstr.iternext = function (it, canSuspend)
 
 
+Sk.misceval
+
+Misc
+* Sk.misceval.Suspension = function Suspension(resume, child, data)
+* Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message)
+* Sk.misceval.isIndex = function (o)
+* Sk.misceval.asIndex = function (o)
+* Sk.misceval.applySlice = function (u, v, w, canSuspend)
+* Sk.misceval.assignSlice = function (u, v, w, x, canSuspend)
+* Sk.misceval.arrayFromArguments = function (args)
+* Sk.misceval.swappedOp_ =
+* Sk.misceval.richCompareBool = function (v, w, op)
+* Sk.misceval.objectRepr = function (v)
+* Sk.misceval.opAllowsEquality = function (op)
+* Sk.misceval.isTrue = function (x)
+* Sk.misceval.softspace_ = fals
+* Sk.misceval.print_ = function (x)
+* Sk.misceval.loadname = function (name, other)
+* Sk.misceval.call = function (func, kwdict, varargseq, kws, args)
+* Sk.misceval.callAsync = function (suspensionHandlers, func, kwdict, varargseq, kws, args)
+* Sk.misceval.callOrSuspend = function (func, kwdict, varargseq, kws, args)
+* Sk.misceval.callsim = function (func, args)
+* Sk.misceval.callsimAsync = function (suspensionHandlers, func, args)
+* Sk.misceval.callsimOrSuspend = function (func, args)
+* Sk.misceval.apply = function (func, kwdict, varargseq, kws, args)
+* Sk.misceval.asyncToPromise = function(suspendablefn, suspHandlers)
+* Sk.misceval.applyAsync = function (suspHandlers, func, kwdict, varargseq, kws, args)
+* Sk.misceval.chain = function (initialValue, chainedFns)
+* Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args)
+* Sk.misceval.buildClass = function (globals, func, name, bases)
+
 
 
 - Understanding the mapping from Skupt api functions to dunder methods
