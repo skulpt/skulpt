@@ -822,6 +822,21 @@ function seqIter(obj) {
     };
 }
 
+/**
+ * Get the iterator for a Python object  This iterator could be one of the following.
+ * This is the preferred mechanism for consistently getting the correct iterator.  You should
+ * not just use tp$iter because that could lead to incorrect behavior of a user created class.
+ *
+ * - tp$iter
+ * - A user defined `__iter__` method
+ * - A user defined `__getitem__` method
+ *
+ * @param obj
+ *
+ * @throws {Sk.builtin.TypeError}
+ * @returns {Object}
+ */
+
 Sk.abstr.iter = function(obj) {
     var iter;
     var getit;
@@ -854,7 +869,7 @@ goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
  * internal dict and getattr. If getattr is not present (builtins)
  * try if method is defined on the object itself
  *
- * Return null if not found or the function
+ * @returns {null|Object} Return null if not found or the function
  */
 Sk.abstr.lookupSpecial = function(op, str) {
     var res;
