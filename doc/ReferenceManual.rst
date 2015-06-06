@@ -9,7 +9,14 @@ Although the more I think about it the more I think we just need to do a better 
 
 - Terminology
   - "Python objects" versus "Javascript objects"
-  -
+  - Sk.builtin
+  - Sk.misceval
+  - Sk.ffi
+  - Sk.abstr
+  - slot functions
+  - builtin functions
+  - magic methods
+
 - Standard Data Type Interfaces
     - Checking types
         - Checking argument types  Sk.builtin.pyCheckType -- weird function that takes one of the below as an argument
