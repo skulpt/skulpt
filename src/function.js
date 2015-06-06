@@ -63,7 +63,7 @@ Sk.builtin.checkIterable = function (arg) {
     var ret = false;
     if (arg !== null ) {
         try {
-            ret = Sk.abstr.getIter_(arg);
+            ret = Sk.abstr.iter(arg);
             if (ret) {
                 return true;
             }

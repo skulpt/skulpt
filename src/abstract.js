@@ -581,7 +581,7 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    for (it = Sk.abstr.getIter_(seq), i = it.tp$iternext();
+    for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
          (i !== undefined) && (res.length < n); 
          i = it.tp$iternext()) {
         res.push(i);
@@ -793,14 +793,6 @@ Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
 };
 goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
-Sk.abstr.iter = function (obj) {
-    if (obj.tp$iter) {
-        return obj.tp$iter();
-    } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
-    }
-};
-goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
@@ -830,7 +822,7 @@ function seqIter(obj) {
     };
 }
 
-Sk.abstr.getIter_ = function(obj) {
+Sk.abstr.iter = function(obj) {
     var iter;
     var getit;
     var ret;
@@ -855,6 +847,7 @@ Sk.abstr.getIter_ = function(obj) {
     }
     throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
 };
+goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 /**
  * Special method look up. First try getting the method via
@@ -874,3 +867,4 @@ Sk.abstr.lookupSpecial = function(op, str) {
 
     return Sk.builtin.type.typeLookup(obtp, str);
 };
+goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
