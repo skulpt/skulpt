@@ -75,6 +75,8 @@ So, 50 lines of Javascript for hello world eh?  That sounds kind of crazy, but y
 
 In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skuplt runtime.  It is usually the case that to extend Skupt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment. 
 
+An important thing to keep in mind as you are trying to understand Skulpt is that it is heavily influenced by the implementation of CPython.  So although Python and Javascript are both object oriented languages many parts of the skulpt implementation are quite procedural.  For example using functions that take an object as their first parameter may seem strange as we should have just created a method on that object.  But in order to follow the CPython implementation this decision was made early on.
+
 The Source
 ----------
 
