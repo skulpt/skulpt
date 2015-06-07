@@ -1,11 +1,79 @@
-Some things you need to know to hack on Skulpt
-==============================================
+Programming Skulpt
+==================
 
-Skulpt is a pretty complex system, and there is very little
-documentation about the core concepts in skulpt. This document is an
-attempt to create document answers to important questions developers
-might have who want to start hacking on skulpt.
+If you are reading this document, chances are you have used Skulpt in some form or another, maybe on skulpt.org or some other website.  Or maybe you have embedded Skulpt on your own website.  But, Skulpt is not complete.  Bits and pieces of the Python language are missing, and now one of them is causing you enough pain that you have decided that you want to extend Skulpt with that missing bit. Or maybe you are just interested in learning a bit more about Skulpt and now you have found this document.  Congratulations, thanks, and welcome.
 
+What is Skulpt?
+---------------
+
+Skulpt is a system that compiles Python (of the 2.6-ish variety) into Javascript.  But its not Javascript that you can paste in to your browser and run.  Python and Javascript are very different languanges, their types are different, their scoping rules are different.  Python is designed to be run on Linux, or Windows, or Mac OS X, not in the browser! So, to provide a True Python experience Skulpt must provide a runtime environment in which the compiled code executes.  This runtime environment is provided by the skulpt.min.js and skulpt-stdlib.js files that you must include in your web page in order to make Skulpt work. 
+
+To give you some idea of what is going on behind the scenes with skulpt lets look at what happens when our friend "hello world" is is compiled from Python to Skulpt. We will revisit this program later and go into more detail, so for now, don't get bogged down in the detail, just have a look to see how much is really happening
+
+**Python Version**
+
+
+    print "hello world"
+
+
+**Javascript Translation**
+
+
+    /*     1 */ var $scope0 = (function($modname) {
+    /*     2 */     var $blk = 0,
+    /*     3 */         $exc = [],
+    /*     4 */         $gbl = {},
+    /*     5 */         $loc = $gbl,
+    /*     6 */         $err = undefined;
+    /*     7 */     $gbl.__name__ = $modname;
+    /*     8 */     Sk.globals = $gbl;
+    /*     9 */     try {
+    /*    10 */         while (true) {
+    /*    11 */             try {
+    /*    12 */                 switch ($blk) {
+    /*    13 */                 case 0:
+    /*    14 */                     /* --- module entry --- */
+    /*    15 */                     //
+    /*    16 */                     // line 1:
+    /*    17 */                     // print "hello world"
+    /*    18 */                     // ^
+    /*    19 */                     //
+    /*    20 */                     Sk.currLineNo = 1;
+    /*    21 */                     Sk.currColNo = 0
+    /*    22 */
+    /*    23 */
+    /*    24 */                     Sk.currFilename = './simple.py';
+    /*    25 */
+    /*    26 */                     var $str1 = new Sk.builtins['str']('hello world');
+    /*    27 */                     Sk.misceval.print_(new Sk.builtins['str']($str1).v);
+    /*    28 */                     Sk.misceval.print_("\n");
+    /*    29 */                     return $loc;
+    /*    30 */                     throw new Sk.builtin.SystemError('internal error: unterminated block');
+    /*    31 */                 }
+    /*    32 */             } catch (err) {
+    /*    33 */                 if ($exc.length > 0) {
+    /*    34 */                     $err = err;
+    /*    35 */                     $blk = $exc.pop();
+    /*    36 */                     continue;
+    /*    37 */                 } else {
+    /*    38 */                     throw err;
+    /*    39 */                 }
+    /*    40 */             }
+    /*    41 */         }
+    /*    42 */     } catch (err) {
+    /*    43 */         if (err instanceof Sk.builtin.SystemExit && !Sk.throwSystemExit) {
+    /*    44 */             Sk.misceval.print_(err.toString() + '\n');
+    /*    45 */             return $loc;
+    /*    46 */         } else {
+    /*    47 */             throw err;
+    /*    48 */         }
+    /*    49 */     }
+    /*    50 */ });
+
+
+So, 50 lines of Javascript for hello world eh?  That sounds kind of crazy, but you have to recognize that the environment with global variables, local variables, error handling, etc all has to happen even for the simplest program to run.  The parts of the program above that really print "hello world" are lines 26-29.  If you have a look at them you will see that we have to construct a string object from the string literal and then pass that off to some print function.
+
+In the example above `Sk.builtin.str` and `Sk.misceval.print_` are part of the Skuplt runtime.  It is usually the case that to extend Skupt one of these runtime functions must be modified, or a new runtime function must be created and exposed so that it can be used in an ordinary Python program.  The rest of this manual will take you through the essential parts of Skulpt so you can feel comfortable working on and extending the runtime environment. 
 
 The Source
 ----------
@@ -43,14 +111,11 @@ object types in Python plus builtins:
 -   int.js
 -   list.js
 -   long.js
--   mergesort.js -- old version of mergesort. Not used anymore -- see
-    timsort Should be removed
 -   method.js
 -   module.js
 -   native.js
 -   number.js
--   object.js -- most things "inherit" from object this contains source
-    for GenericXxx functions
+-   object.js -- most things "inherit" from object
 -   set.js
 -   slice.js
 -   str.js
@@ -58,22 +123,60 @@ object types in Python plus builtins:
 -   tuple.js
 -   type.js
 
-Perhaps one of the trickiest things to remember about Skulpt is that we
-are always moving back and forth between Python objects and Javascript
-objects. For example Python string objects have a `v` attribute that
-contains the Javascript string. Numeric objects also contain a `v`
-object to represent the javascript number. functions are similar, Python
-functions are not the same as Javascript functions, and so need to be
-handled differently. You can't just call a user defined python function
-that has been compiled to javscript and expect it to behave. Thats what
-`Sk.misceval.callsim` is for. The two files below are here to make the
-transition back and forth from Javascript to Python more clear. Although
-the code tends to be inconsistent about using some of the ffi functions
-and you will see `blah.v` used in many places where it would be better
-to use `Sk.ffi.unwrapo(blah)`.
+Types and Namespaces
+--------------------
 
--   ffi.js
--   misceval.js
+
+The `Sk` object contains all of the core Skulpt objects and
+functions. Its pretty easy to get from Sk.blah to its source.
+Usually you will see something like `Sk.builtin.foo` which indicates
+that you will likely find a corresponding file for foo in the src directory.
+Similarly `Sk.misceval.callsim` tells you that you should look
+in `misceval.js` for the callsim function.
+
+Perhaps one of the most important concepts to learn when starting to program Skulpt is that you
+are always moving back and forth between Python objects and Javascript objects.  Much of your job
+as a skulpt hacker is to either create Python objects as part of a builtin or module function,
+or interact with objects that have been created by the users "regular" Python code.  Knowing when
+you are working with what is critical.  For example a Javascript string is not the same thing as a 
+python string.  A Python string is really an instance of ``Sk.builtin.str`` and a Javscript string is
+an instance of ``string``.  You can't compare the two directly, and you definitely cannot use them 
+interchangeably.
+
+Python  |  Skulpt              | Javascript
+--------|----------------------|-----------
+int     | Sk.builtin.int       | number
+float   | Sk.builtin.float     | number 
+long    | Sk.builtin.lng       | NA
+complex | Sk.builtin.complex   | NA
+list    | Sk.builtin.list      | Array
+dict    | Sk.builtin.dict      | Object
+set     | Sk.builtin.set       | NA
+bool    | Sk.builtin.bool      | bool
+tuple   | Sk.builtin.tuple     | NA
+
+
+So how do I get the equivalent value?  How do I work with these Python objects from Javascript?
+
+There are two key functions in Sk.ffi:   `Sk.ffi.remapToJs` and `Sk.ffi.remapToPy` These utility functions are smart enough to remap most builtin data types back and forth.  So if you have a Python string and want to compare it to a Javascript string literal you just need to do `Sk.ffi.remapToJs(pystring)` to get a Javscript string you can compare.
+
+If the Python object in question is a collection, remapToJs will work recursively and not only remap the top level object but also all of the contained objects.
+
+When would you want to convert from Javascript to Python?  Very often, in your implementation you will calculate a value that you want to return.  The returned value needs to be a valid Python type. So lets say you calculate the factorial of a number in a new function you are adding to math.  Then the resulting Javascript number must be turned into a Python object using `Sk.ffi.remapToPy(myresult)`.
+
+
+In many places in the current codebase you will see the use of `somePythonObject.v`  Where `v` is the actual
+javascript value hidden away inside the Python object.  This is not the preferred way to obtain the mapping.  Use 
+the `Sk.ffi` API.
+
+Skulpt is divided into several namespaces, you have already seen a couple of them, so here is the list
+
+* Sk.abstr  -- To extend skulpt you should know these functions
+* Sk.builtin -- This is a big namespace that roughly corresponds to the Python `__builtin__` namespace
+* Sk.ffi  -- This is the foreign function interface.  Good for mapping back and forth from Python to Javascript
+* Sk.misceval -- To extend skulpt you should know these functions
+
+
 
 The Generated Code
 ------------------
@@ -177,6 +280,7 @@ specifically for our program. That would be lines 26-29 above.
     takes care of the same issue. Not sure, maybe this is an
     optimization.
 
+
     Sk.misceval.print_ = function(x)   // this was function print(x)   not sure why...
     {
         if (Sk.misceval.softspace_)
@@ -198,24 +302,9 @@ specifically for our program. That would be lines 26-29 above.
 -   28: print always results in a newline. So do it.
 -   29: done return. This gets us out of the while(true) loop.
 
-Naming Conventions
+Another Example Naming Conventions
 ------------------
 
--   `Sk` The `Sk` object contains all of the core Skulpt objects and
-    functions. Its pretty easy to get from Sk.blah to its source.
-    Usually you will see something like `Sk.builtin.foo` which indicates
-    that you should look in `skulpt-stdlib.js` to find the source for
-    foo. Similarly `Sk.misceval.callsim` tells you that you should look
-    in `misceval.js` for the callsim function.
--   $xxx represents a compiler generated variable
--   tp$xxx These things represent the `magic methods` for an object
-    that are defined by the Skulpt system itself. So for example
-    `__str__` is called `tp$str`. I always think of tp as a mnemonic for
-    type.
--   mp$xxx similar to tp but for sequences. As best as I know these are
-    almost always related to subscripts.
-
-Ok, lets look at a slightly more complex example:
 
 ### Python
 
@@ -956,7 +1045,7 @@ Build the distribution files for skulpt:
     functions. This file may contain javascript that implements a
     module, such as turtle or math, or it may contain pure python.
 
-### Bulding on windows
+### Building on windows
 
 Running `.\skulpt.cmd dist` on windows requires some extra work, because
 the tests check against the text output, things with line-endings tend
