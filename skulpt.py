@@ -489,6 +489,8 @@ def dist(options):
         print "Tests failed on compressed unit tests"
         sys.exit(1)
 
+    doc()
+
     try:
         shutil.copy(compfn, os.path.join(DIST_DIR, "tmp.js"))
     except:
@@ -572,6 +574,11 @@ def regenruntests(togen="{0}/run/*.py".format(TEST_DIR)):
         if crlfprog:
             os.system("python %s %s.real" % (crlfprog, f))
 
+def doc():
+    print "Building Documentation in docs/ProgMan"
+    ret = os.system("jsdoc -c jsdoc.json HACKING.md")
+    if ret != 0:
+        print "Build of docs failed.  Is jsdoc installed?"
 
 
 def symtabdump(fn):
@@ -967,6 +974,8 @@ def main():
         doctest()
     elif cmd == "docbi":
         docbi(options)
+    elif cmd == "doc":
+        doc()
     elif cmd == "nrt":
         print "Warning: nrt is deprectated."
         print "It is preferred that you enhance one of the unit tests in test/unit"

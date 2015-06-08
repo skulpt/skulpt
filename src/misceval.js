@@ -1,3 +1,7 @@
+/**
+ * @namespace Sk.misceval
+ *
+ */
 Sk.misceval = {};
 
 /*
@@ -11,6 +15,8 @@ Sk.misceval = {};
 */
 
 /**
+ *
+ * Hi kids lets make a suspension...
  * @constructor
  * @param{function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
  * @param{Object=} child A child suspension. 'optional' will be copied from here if supplied.
@@ -32,6 +38,9 @@ Sk.misceval.Suspension = function Suspension(resume, child, data) {
 goog.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 
 /**
+ *
+ * Well this seems pretty obvious by the name what it should do..
+ *
  * @param{Sk.misceval.Suspension} susp
  * @param{string=} message
  */
@@ -46,6 +55,11 @@ Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
 };
 goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
 
+/**
+ * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
+ * @param o
+ * @returns {boolean}
+ */
 Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
@@ -687,7 +701,6 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  *
  * TODO I think all the above is out of date.
  */
-
 Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation

@@ -1,3 +1,8 @@
+/**
+ * @namespace Sk
+ *
+ */
+
 // this is stored into sys specially, rather than created by sys
 Sk.sysmodules = new Sk.builtin.dict([]);
 Sk.realsyspath = undefined;
@@ -445,6 +450,17 @@ Sk.importMain = function (name, dumpJS, canSuspend) {
     return Sk.importModuleInternal_(name, dumpJS, "__main__", undefined, canSuspend);
 };
 
+/**
+ * **Run Python Code in Skulpt**
+ *
+ * When you want to hand Skulpt a string corresponding to a Python program this is the function.
+ *
+ * @param name {string}  File name to use for messages related to this run
+ * @param dumpJS {boolean} print out the compiled javascript
+ * @param body {string} Python Code
+ * @param canSuspend {boolean}  Use Suspensions for async execution
+ *
+ */
 Sk.importMainWithBody = function (name, dumpJS, body, canSuspend) {
     Sk.dateSet = false;
     Sk.filesLoaded = false;
