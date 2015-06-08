@@ -247,6 +247,10 @@ Sk.builtin.int_.prototype.nb$power = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$abs = function () {
+    return new Sk.builtin.int_(Math.abs(this.v));
+};
+
 Sk.builtin.int_.prototype.nb$and = function (other) {
     if (other instanceof Sk.builtin.int_) {
         var tmp;

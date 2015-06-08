@@ -301,6 +301,11 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
 Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 
+
+Sk.builtin.lng.prototype.nb$abs = function () {
+    return new Sk.builtin.lng(this.biginteger.bnAbs());
+};
+
 Sk.builtin.lng.prototype.nb$lshift = function (other) {
 
     if (other instanceof Sk.builtin.int_) {

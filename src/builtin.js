@@ -403,10 +403,12 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
+    if (x.__abs__) {
+        return Sk.misceval.callsim(x.__abs__, x);
+    }
+
     if (Sk.builtin.checkNumber(x)) {
         return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
-    } else if (Sk.builtin.checkComplex(x)) {
-        return Sk.misceval.callsim(x.__abs__, x);
     }
 
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");

@@ -8,12 +8,12 @@ Sk.abstr.setUpInheritance("NumericType", Sk.builtin.numtype, Sk.builtin.object);
 
 Sk.builtin.numtype.prototype["__abs__"] = new Sk.builtin.func(function (self) {
 
-    if (self.nb$__abs__ === undefined) {
-		throw new Sk.builtin.NotImplementedError("__abs__ is not yet implemented");
-	}
+    if (self.nb$abs === undefined) {
+        throw new Sk.builtin.NotImplementedError("__abs__ is not yet implemented");
+    }
 
-	Sk.builtin.pyCheckArgs("__abs__", arguments, 0, 0, false, true);
-	return self.nb$__abs__();
+    Sk.builtin.pyCheckArgs("__abs__", arguments, 0, 0, false, true);
+    return self.nb$abs();
     
 });
 

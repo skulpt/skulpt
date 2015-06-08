@@ -426,6 +426,10 @@ Sk.builtin.float_.prototype.nb$power = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.float_.prototype.nb$abs = function () {
+    return new Sk.builtin.float_(Math.abs(this.v));
+};
+
 Sk.builtin.float_.prototype.nb$inplace_add = Sk.builtin.float_.prototype.nb$add;
 
 Sk.builtin.float_.prototype.nb$inplace_subtract = Sk.builtin.float_.prototype.nb$subtract;
