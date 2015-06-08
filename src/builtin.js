@@ -69,7 +69,10 @@ Sk.builtin.asnum$ = function (a) {
     if (typeof a === "string") {
         return a;
     }
-    if (a.constructor === Sk.builtin.nmber) {
+    if (a instanceof Sk.builtin.int_) {
+        return a.v;
+    }
+    if (a instanceof Sk.builtin.float_) {
         return a.v;
     }
     if (a.constructor === Sk.builtin.lng) {
@@ -79,8 +82,8 @@ Sk.builtin.asnum$ = function (a) {
         return a.toInt$();
     }
     if (a.constructor === Sk.builtin.biginteger) {
-        if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.nmber.threshold$)) > 0) ||
-            (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.nmber.threshold$)) < 0)) {
+        if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.int_.threshold$)) > 0) ||
+            (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.int_.threshold$)) < 0)) {
             return a.toString();
         }
         return a.intValue();
@@ -106,10 +109,10 @@ Sk.builtin.asnum$nofloat = function (a) {
     if (a === null) {
         return a;
     }
-    if (a.constructor === Sk.builtin.none) {
+    if (a instanceof Sk.builtin.none) {
         return null;
     }
-    if (a.constructor === Sk.builtin.bool) {
+    if (a instanceof Sk.builtin.bool) {
         if (a.v) {
             return 1;
         }
@@ -118,13 +121,13 @@ Sk.builtin.asnum$nofloat = function (a) {
     if (typeof a === "number") {
         a = a.toString();
     }
-    if (a.constructor === Sk.builtin.nmber) {
+    if (a instanceof Sk.builtin.int_ || a instanceof Sk.builtin.float_) {
         a = a.v.toString();
     }
-    if (a.constructor === Sk.builtin.lng) {
+    if (a instanceof Sk.builtin.lng) {
         a = a.str$(10, true);
     }
-    if (a.constructor === Sk.builtin.biginteger) {
+    if (a instanceof Sk.builtin.biginteger) {
         a = a.toString();
     }
 
@@ -253,7 +256,7 @@ Sk.builtin.min = function min () {
     }
 
     for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], lowest, "Lt")) {
+        if (Sk.misceval.isTrue(Sk.misceval.richCompareBool(args[i], lowest, "Lt"))) {
             lowest = args[i];
         }
     }
@@ -630,30 +633,6 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
         throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
     }
 
-    if (type === Sk.builtin.int_.prototype.ob$type) {
-        if ((obj.tp$name === "number") && (obj.skType === Sk.builtin.nmber.int$)) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    if (type === Sk.builtin.float_.prototype.ob$type) {
-        if ((obj.tp$name === "number") && (obj.skType === Sk.builtin.nmber.float$)) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    if (type === Sk.builtin.none.prototype.ob$type) {
-        if (obj instanceof Sk.builtin.none) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
     // Normal case
     if (obj.ob$type === type) {
         return Sk.builtin.bool.true$;
@@ -667,6 +646,11 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
             }
         }
         return Sk.builtin.bool.false$;
+    }
+
+    // Handle subclassed builtins
+    if (obj instanceof type) {
+        return Sk.builtin.bool.true$;
     }
 
     issubclass = function (klass, base) {
@@ -712,13 +696,6 @@ Sk.builtin.hash = function hash (value) {
         return value.$savedHash_;
     } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
         return Sk.misceval.callsim(value.__hash__, value);
-    } else if (value instanceof Sk.builtin.bool) {
-        if (value.v) {
-            return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
-        }
-        return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-    } else if (value instanceof Sk.builtin.none) {
-        return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     } else if (value instanceof Object) {
         if (value.__id === undefined) {
             Sk.builtin.hashCount += 1;

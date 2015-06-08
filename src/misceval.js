@@ -89,14 +89,11 @@ Sk.misceval.asIndex = function (o) {
     if (typeof o === "number") {
         return o;
     }
-    if (o.constructor === Sk.builtin.nmber) {
+    if (o instanceof Sk.builtin.int_ || o instanceof Sk.builtin.float_) {
         return o.v;
     }
-    if (o.constructor === Sk.builtin.lng) {
+    if (o instanceof Sk.builtin.lng) {
         return o.tp$index();
-    }
-    if (o.constructor === Sk.builtin.bool) {
-        return Sk.builtin.asnum$(o);
     }
     idxfn = Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__");
     if (idxfn) {
@@ -332,10 +329,14 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
 
     // handle identity and membership comparisons
+    // Note: Use constructor, not instanceof check, because numbers must have same
+    // class exactly and same value for identity
     if (op === "Is") {
-        if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
-            return (v.numberCompare(w) === 0) && (v.skType === w.skType);
-        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        if (v.constructor === Sk.builtin.int_ && w.constructor === Sk.builtin.int_) {
+            return v.ob$eq(w);
+        } else if (v.constructor === Sk.builtin.float_ && w.constructor === Sk.builtin.float_) {
+            return v.ob$eq(w);
+        } else if (v.constructor === Sk.builtin.lng && w.constructor === Sk.builtin.lng) {
             return v.longCompare(w) === 0;
         }
 
@@ -343,9 +344,11 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     }
 
     if (op === "IsNot") {
-        if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
-            return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
-        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        if (v.constructor === Sk.builtin.int_ && w.constructor === Sk.builtin.int_) {
+            return v.ob$ne(w);
+        } else if (v.constructor === Sk.builtin.float_ && w.constructor === Sk.builtin.float_) {
+            return v.ob$ne(w);
+        } else if (v.constructor === Sk.builtin.lng && w.constructor === Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
 
@@ -390,13 +393,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     swapped_method = op2method[Sk.misceval.swappedOp_[op]];
 
     if (v[method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+        res = Sk.misceval.callsim(v[method], v, w);
+        if (!(res instanceof Sk.builtin.NotImplemented)) {
             return res;
         }
-    } else if (w[swapped_method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+    }
+
+    if (w[swapped_method]) {
+        res = Sk.misceval.callsim(w[swapped_method], w, v);
+        if (!(res instanceof Sk.builtin.NotImplemented)) {
             return res;
         }
     }
@@ -503,14 +508,6 @@ Sk.misceval.objectRepr = function (v) {
         } else {
             return new Sk.builtin.str("<unknown>");
         }
-    } else if (v.constructor === Sk.builtin.nmber) {
-        if (v.v === Infinity) {
-            return new Sk.builtin.str("inf");
-        } else if (v.v === -Infinity) {
-            return new Sk.builtin.str("-inf");
-        } else {
-            return v["$r"]();
-        }
     } else {
         return v["$r"]();
     }
@@ -539,15 +536,15 @@ Sk.misceval.isTrue = function (x) {
     if (x === null) {
         return false;
     }
-    if (x.constructor === Sk.builtin.none) {
+    if (x instanceof Sk.builtin.none) {
         return false;
     }
 
-    if (x.constructor === Sk.builtin.NotImplemented) {
+    if (x instanceof Sk.builtin.NotImplemented) {
         return false;
     }
 
-    if (x.constructor === Sk.builtin.bool) {
+    if (x instanceof Sk.builtin.bool) {
         return x.v;
     }
     if (typeof x === "number") {
@@ -556,7 +553,7 @@ Sk.misceval.isTrue = function (x) {
     if (x instanceof Sk.builtin.lng) {
         return x.nb$nonzero();
     }
-    if (x.constructor === Sk.builtin.nmber) {
+    if (x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.float_) {
         return x.v !== 0;
     }
     if (x.mp$length) {
@@ -594,7 +591,13 @@ Sk.misceval.print_ = function (x) {
         }
         Sk.misceval.softspace_ = false;
     }
-    s = new Sk.builtin.str(x);
+    if (x instanceof Sk.builtin.str) {
+        s = x;
+    } else if (x["__str__"]) {
+        s = Sk.misceval.callsim(x["__str__"], x);
+    } else {
+        s = new Sk.builtin.str(x);
+    }
     Sk.output(s.v);
     isspace = function (c) {
         return c === "\n" || c === "\t" || c === "\r";
