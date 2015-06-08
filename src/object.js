@@ -23,8 +23,15 @@ Sk.builtin.object.PyObject_LookupSpecial_ = function(op, str) {
     if (op == null) {
         return null;
     }
-
-    return Sk.builtin.type.typeLookup(op, str);
+    if (op[str]) {
+        print("found it for the object")
+        return op[str]
+    }
+    if (op.ob$type) {
+        res = Sk.builtin.type.typeLookup(op.ob$type, str);
+        print("checking using type and res  = " + res)
+    }
+    return res
 };
 
 /**

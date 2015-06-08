@@ -235,6 +235,13 @@ Sk.builtin.nmber.prototype.nb$subtract = function (other) {
     return undefined;
 };
 
+Sk.builtin.nmber.prototype["__sub__"] = new Sk.builtin.func(function (self, other) {
+    print("using the wrapped nb$subtract")
+    Sk.builtin.pyCheckArgs("__sub__", arguments, 1, 2, false, true);
+    return Sk.builtin.nmber.prototype.nb$subtract.call(self,other);
+});
+
+
 Sk.builtin.nmber.prototype.nb$multiply = function (other) {
     var thisAsLong;
     var result;
