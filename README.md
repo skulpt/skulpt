@@ -76,7 +76,7 @@ The generated HTML is now in a folder called `out`
 
 4. `git checkout gh-pages`
 5. `git checkout -b new-branch-name`
-6. `mv out docs`
+6. `rsync --remove-source-files -r out/ docs/`
 7. `git diff .` to see the changes, `git add .` to add them, `git commit -m "Commit message here"`
 
 :boom: Instant docs.
