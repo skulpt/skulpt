@@ -56,8 +56,7 @@ Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
 goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
 
 /**
- * @namespace Sk.misceval
- *
+ * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
  * @param o
  * @returns {boolean}
  */
