@@ -26,7 +26,11 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>Sk.misceval = {};
+            <pre class="prettyprint source linenums"><code>/**
+ * @namespace Sk.misceval
+ *
+ */
+Sk.misceval = {};
 
 /*
   Suspension object format:
@@ -39,6 +43,8 @@
 */
 
 /**
+ *
+ * Hi kids lets make a suspension...
  * @constructor
  * @param{function(?)=} resume A function to be called on resume. child is resumed first and its return value is passed to this function.
  * @param{Object=} child A child suspension. 'optional' will be copied from here if supplied.
@@ -60,6 +66,9 @@ Sk.misceval.Suspension = function Suspension(resume, child, data) {
 goog.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 
 /**
+ *
+ * Well this seems pretty obvious by the name what it should do..
+ *
  * @param{Sk.misceval.Suspension} susp
  * @param{string=} message
  */
@@ -74,17 +83,25 @@ Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
 };
 goog.exportSymbol("Sk.misceval.retryOptionalSuspensionOrThrow", Sk.misceval.retryOptionalSuspensionOrThrow);
 
+/**
+ * Check if the given object is valid to use as an index. Only ints, or if the object has an `__index__` method.
+ * @param o
+ * @returns {boolean}
+ */
 Sk.misceval.isIndex = function (o) {
-    if (o === null || o.constructor === Sk.builtin.lng || o.tp$index ||
-        o === true || o === false) {
+    if (Sk.builtin.checkInt(o)) {
         return true;
     }
-
-    return Sk.builtin.checkInt(o);
+    if (Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__")) {
+        return true;
+    }
+    return false;
 };
 goog.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 
 Sk.misceval.asIndex = function (o) {
+    var idxfn, ret;
+
     if (!Sk.misceval.isIndex(o)) {
         return undefined;
     }
@@ -108,6 +125,15 @@ Sk.misceval.asIndex = function (o) {
     }
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
+    }
+    idxfn = Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__");
+    if (idxfn) {
+        ret = Sk.misceval.callsim(idxfn, o);
+        if (!Sk.builtin.checkInt(ret)) {
+            throw new Sk.builtin.TypeError("__index__ returned non-(int,long) (type " +
+                                           Sk.abstr.typeName(ret) + ")");
+        }
+        return Sk.builtin.asnum$(ret);
     }
     goog.asserts.fail("todo asIndex;");
 };
@@ -145,17 +171,14 @@ Sk.misceval.assignSlice = function (u, v, w, x, canSuspend) {
         ihigh = Sk.misceval.asIndex(w) || 1e100;
         if (x === null) {
             Sk.abstr.sequenceDelSlice(u, ilow, ihigh);
-        }
-        else {
+        } else {
             Sk.abstr.sequenceSetSlice(u, ilow, ihigh, x);
         }
-    }
-    else {
+    } else {
         slice = new Sk.builtin.slice(v, w);
         if (x === null) {
             return Sk.abstr.objectDelItem(u, slice);
-        }
-        else {
+        } else {
             return Sk.abstr.objectSetItem(u, slice, x, canSuspend);
         }
     }
@@ -178,8 +201,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     if (arg instanceof Sk.builtin.set) {
         // this is a Sk.builtin.set
         arg = arg.tp$iter().$obj;
-    }
-    else if (arg instanceof Sk.builtin.dict) {
+    } else if (arg instanceof Sk.builtin.dict) {
         // this is a Sk.builtin.list
         arg = Sk.builtin.dict.prototype["keys"].func_code(arg);
     }
@@ -187,8 +209,7 @@ Sk.misceval.arrayFromArguments = function (args) {
     // shouldn't else if here as the above may output lists to arg.
     if (arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple) {
         return arg.v;
-    }
-    else if (arg.tp$iter !== undefined) {
+    } else if (arg.tp$iter !== undefined) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
         for (it = arg.tp$iter(), i = it.tp$iternext();
@@ -342,8 +363,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     if (op === "Is") {
         if (v instanceof Sk.builtin.nmber &amp;&amp; w instanceof Sk.builtin.nmber) {
             return (v.numberCompare(w) === 0) &amp;&amp; (v.skType === w.skType);
-        }
-        else if (v instanceof Sk.builtin.lng &amp;&amp; w instanceof Sk.builtin.lng) {
+        } else if (v instanceof Sk.builtin.lng &amp;&amp; w instanceof Sk.builtin.lng) {
             return v.longCompare(w) === 0;
         }
 
@@ -353,8 +373,7 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     if (op === "IsNot") {
         if (v instanceof Sk.builtin.nmber &amp;&amp; w instanceof Sk.builtin.nmber) {
             return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
-        }
-        else if (v instanceof Sk.builtin.lng &amp;&amp; w instanceof Sk.builtin.lng) {
+        } else if (v instanceof Sk.builtin.lng &amp;&amp; w instanceof Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
 
@@ -371,11 +390,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
     // use comparison methods if they are given for either object
     if (v.tp$richcompare &amp;&amp; (res = v.tp$richcompare(w, op)) !== undefined) {
-        return res;
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
 
     if (w.tp$richcompare &amp;&amp; (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        return res;
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
 
 
@@ -395,10 +418,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     swapped_method = op2method[Sk.misceval.swappedOp_[op]];
 
     if (v[method]) {
-        return Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
-    }
-    else if (w[swapped_method]) {
-        return Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
+        res = Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
+    } else if (w[swapped_method]) {
+        res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return res;
+        }
     }
 
     if (v["__cmp__"]) {
@@ -406,20 +434,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         ret = Sk.builtin.asnum$(ret);
         if (op === "Eq") {
             return ret === 0;
-        }
-        else if (op === "NotEq") {
+        } else if (op === "NotEq") {
             return ret !== 0;
-        }
-        else if (op === "Lt") {
+        } else if (op === "Lt") {
             return ret &lt; 0;
-        }
-        else if (op === "Gt") {
+        } else if (op === "Gt") {
             return ret > 0;
-        }
-        else if (op === "LtE") {
+        } else if (op === "LtE") {
             return ret &lt;= 0;
-        }
-        else if (op === "GtE") {
+        } else if (op === "GtE") {
             return ret >= 0;
         }
     }
@@ -430,20 +453,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         ret = Sk.builtin.asnum$(ret);
         if (op === "Eq") {
             return ret === 0;
-        }
-        else if (op === "NotEq") {
+        } else if (op === "NotEq") {
             return ret !== 0;
-        }
-        else if (op === "Lt") {
+        } else if (op === "Lt") {
             return ret > 0;
-        }
-        else if (op === "Gt") {
+        } else if (op === "Gt") {
             return ret &lt; 0;
-        }
-        else if (op === "LtE") {
+        } else if (op === "LtE") {
             return ret >= 0;
-        }
-        else if (op === "GtE") {
+        } else if (op === "GtE") {
             return ret &lt;= 0;
         }
     }
@@ -500,35 +518,28 @@ Sk.misceval.objectRepr = function (v) {
     goog.asserts.assert(v !== undefined, "trying to repr undefined");
     if ((v === null) || (v instanceof Sk.builtin.none)) {
         return new Sk.builtin.str("None");
-    } // todo; these should be consts
-    else if (v === true) {
+    } else if (v === true) {
+        // todo; these should be consts
         return new Sk.builtin.str("True");
-    }
-    else if (v === false) {
+    } else if (v === false) {
         return new Sk.builtin.str("False");
-    }
-    else if (typeof v === "number") {
+    } else if (typeof v === "number") {
         return new Sk.builtin.str("" + v);
-    }
-    else if (!v["$r"]) {
+    } else if (!v["$r"]) {
         if (v.tp$name) {
             return new Sk.builtin.str("&lt;" + v.tp$name + " object>");
         } else {
             return new Sk.builtin.str("&lt;unknown>");
         }
-    }
-    else if (v.constructor === Sk.builtin.nmber) {
+    } else if (v.constructor === Sk.builtin.nmber) {
         if (v.v === Infinity) {
             return new Sk.builtin.str("inf");
-        }
-        else if (v.v === -Infinity) {
+        } else if (v.v === -Infinity) {
             return new Sk.builtin.str("-inf");
-        }
-        else {
+        } else {
             return v["$r"]();
         }
-    }
-    else {
+    } else {
         return v["$r"]();
     }
 };
@@ -559,6 +570,11 @@ Sk.misceval.isTrue = function (x) {
     if (x.constructor === Sk.builtin.none) {
         return false;
     }
+
+    if (x.constructor === Sk.builtin.NotImplemented) {
+        return false;
+    }
+
     if (x.constructor === Sk.builtin.bool) {
         return x.v;
     }
@@ -596,8 +612,8 @@ Sk.misceval.isTrue = function (x) {
 goog.exportSymbol("Sk.misceval.isTrue", Sk.misceval.isTrue);
 
 Sk.misceval.softspace_ = false;
-Sk.misceval.print_ = function (x)   // this was function print(x)   not sure why...
-{
+Sk.misceval.print_ = function (x) {
+    // this was function print(x)   not sure why...
     var isspace;
     var s;
     if (Sk.misceval.softspace_) {
@@ -713,7 +729,6 @@ goog.exportSymbol("Sk.misceval.loadname", Sk.misceval.loadname);
  *
  * TODO I think all the above is out of date.
  */
-
 Sk.misceval.call = function (func, kwdict, varargseq, kws, args) {
     args = Array.prototype.slice.call(arguments, 4);
     // todo; possibly inline apply to avoid extra stack frame creation
@@ -958,8 +973,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
 
     if (func === null || func instanceof Sk.builtin.none) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' object is not callable");
-    }
-    else if (typeof func === "function") {
+    } else if (typeof func === "function") {
         // todo; i believe the only time this happens is the wrapper
         // function around generators (that creates the iterator).
         // should just make that a real function object and get rid
@@ -1015,8 +1029,7 @@ Sk.misceval.applyOrSuspend = function (func, kwdict, varargseq, kws, args) {
         }
         //append kw args to args, filling in the default value where none is provided.
         return func.apply(null, args);
-    }
-    else {
+    } else {
         fcall = func.tp$call;
         if (fcall !== undefined) {
             if (varargseq) {
@@ -1104,13 +1117,13 @@ goog.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Sk.builtin.func.html">func</a></li><li><a href="Sk.misceval.Suspension.html">Suspension</a></li></ul><h3>Namespaces</h3><ul><li><a href="Sk.abstr.html">abstr</a></li><li><a href="Sk.builtin.html">builtin</a></li><li><a href="Sk.ffi.html">ffi</a></li><li><a href="Sk.misceval.html">misceval</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0</a> on Sun Jun 07 2015 19:06:56 GMT+0000 (UTC)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.1</a> on Mon Jun 08 2015 21:31:44 GMT+0000 (UTC)
 </footer>
 
 <script> prettyPrint(); </script>
