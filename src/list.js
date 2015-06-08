@@ -18,9 +18,9 @@ Sk.builtin.list = function (L, canSuspend) {
         v = [];
     } else if (Object.prototype.toString.apply(L) === "[object Array]") {
         v = L;
-    } else if (L.tp$iter) {
+    } else if (Sk.builtin.checkIterable(L)) {
         v = [];
-        it = L.tp$iter();
+        it = Sk.abstr.iter(L);
         return (function next(i) {
             while(true) {
                 if (i instanceof Sk.misceval.Suspension) {
