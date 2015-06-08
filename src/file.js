@@ -7,6 +7,13 @@
 Sk.builtin.file = function (name, mode, buffering) {
     var i;
     var elem;
+
+    if (!(this instanceof Sk.builtin.file)) {
+        return new Sk.builtin.file(name, mode, buffering);
+    }
+
+    Sk.abstr.superConstructor(this);
+
     this.mode = mode;
     this.name = name;
     this.closed = false;
@@ -37,9 +44,7 @@ Sk.builtin.file = function (name, mode, buffering) {
     return this;
 };
 
-Sk.builtin.file.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("file", Sk.builtin.file);
-
-Sk.builtin.file.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+Sk.abstr.setUpInheritance("file", Sk.builtin.file, Sk.builtin.object);
 
 Sk.builtin.file.prototype["$r"] = function () {
     return new Sk.builtin.str("<" +

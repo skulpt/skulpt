@@ -42,8 +42,7 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
             if (result.v > Sk.builtin.nmber.threshold$ || result.v < -Sk.builtin.nmber.threshold$ - 1) {
                 return new Sk.builtin.lng(x);
             }
-        }
-        return result;
+        }g
     } else if (x instanceof Sk.builtin.lng) {
         return Sk.numberFromStr(x.str$(10, true));
     } else if (x instanceof Sk.builtin.biginteger) {
@@ -72,9 +71,11 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
      */
     if (this.skType === Sk.builtin.nmber.int$) {
         this.v = this.v === 0 ? 0 : this.v;
-    }
 
-    return this;
+        return new Sk.builtin.int_(this.v);
+    } else {
+        return new Sk.builtin.float_(this.v);
+    }
 };
 
 Sk.builtin.nmber.prototype.tp$index = function () {

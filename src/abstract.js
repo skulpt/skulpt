@@ -817,3 +817,28 @@ Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
 goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
+
+Sk.abstr.registerPythonFunctions = function (thisClass, funcNames) {
+    for (var i = 0; i < funcNames.length; i++) {
+        thisClass.prototype.pythonFunctions.push(funcNames[i]);
+    }
+};
+
+Sk.abstr.markUnhashable = function (thisClass) {
+    var proto = thisClass.prototype;
+    proto.pythonFunctions.splice(proto.pythonFunctions.indexOf("__hash__"), 1);
+    proto.__hash__ = Sk.builtin.none.none$;
+    proto.tp$hash = Sk.builtin.none.none$;
+};
+
+Sk.abstr.setUpInheritance = function (childName, child, parent) {
+    goog.inherits(child, parent);
+    child.prototype.tp$base = parent;
+    child.prototype.tp$name = childName;
+    child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
+    child.prototype.pythonFunctions = parent.prototype.pythonFunctions.slice();
+};
+
+Sk.abstr.superConstructor = function (self) {
+    self.tp$base.call(self);
+};

@@ -79,9 +79,7 @@ Sk.builtin.checkCallable = function (arg) {
 
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number" ||
-        arg instanceof Sk.builtin.nmber ||
-        arg instanceof Sk.builtin.lng ||
-        arg instanceof Sk.builtin.bool));
+        arg instanceof Sk.builtin.numtype));
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
@@ -96,16 +94,14 @@ goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
-        (arg instanceof Sk.builtin.nmber &&
-            arg.skType === Sk.builtin.nmber.int$) ||
+        (arg instanceof Sk.builtin.int_) ||
         arg instanceof Sk.builtin.lng ||
         arg instanceof Sk.builtin.bool);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
-    return (arg !== null) && (arg instanceof Sk.builtin.nmber &&
-            arg.skType === Sk.builtin.nmber.float$);
+    return (arg !== null) && (arg instanceof Sk.builtin.float_);
 };
 goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 
@@ -258,3 +254,19 @@ Sk.builtin.func.prototype["$r"] = function () {
     var name = (this.func_code && this.func_code["co_name"] && this.func_code["co_name"].v) || "<native JS>";
     return new Sk.builtin.str("<function " + name + ">");
 };
+
+/**
+ * Wrap Javascript functions, defined object.js before Sk.builtin.func was
+ * defined, inside Python functions.
+ */
+function oneTimeInitialization () {
+    var proto = Sk.builtin.object.prototype;
+    var name, i;
+
+    for (i = 0; i < proto.pythonFunctions.length; i++) {
+        name = proto.pythonFunctions[i];
+        proto[name] = new Sk.builtin.func(proto[name]);
+    }
+};
+
+oneTimeInitialization();
