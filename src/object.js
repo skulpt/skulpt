@@ -169,7 +169,7 @@ Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetA
 // overriding __getattr__ etc need to be able to call object.__getattr__ etc from Python
 Sk.builtin.object.prototype["__getattr__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
 Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
-
+Sk.builtin.object.prototype.tp$name = "object";
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
 
 /** Default implementations of dunder methods found in all Python objects */
@@ -231,7 +231,7 @@ Sk.builtin.object.prototype["__ge__"] = function (self, other) {
 /** Default implementations of Javascript functions used in dunder methods */
 
 Sk.builtin.object.prototype["$r"] = function () {
-    return new Sk.builtin.str("<object " + this.tp$hash().v + ">");
+    return new Sk.builtin.str("<object>");
 };
 
 Sk.builtin.hashCount = 0;
