@@ -9,7 +9,7 @@ var $builtinmodule = function (name) {
             return new mod.defaultdict(default_, args);
         }
 
-        Sk.builtin.dict.call(this, args);
+        Sk.abstr.superConstructor(mod.defaultdict, this, args);
 
         if (default_ === undefined) {
             this.default_factory = Sk.builtin.none.none$;
@@ -31,11 +31,7 @@ var $builtinmodule = function (name) {
         return this;
     };
 
-    mod.defaultdict.prototype = Object.create(Sk.builtin.dict.prototype);
-
-    mod.defaultdict.prototype.tp$name = 'defaultdict';
-
-    mod.defaultdict.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('defaultdict', mod.defaultdict);
+    Sk.abstr.setUpInheritance("defaultdict", mod.defaultdict, Sk.builtin.dict);
 
     mod.defaultdict.prototype['$r'] = function () {
         var def_str = Sk.misceval.objectRepr(this.default_factory).v;
@@ -77,14 +73,15 @@ var $builtinmodule = function (name) {
         }
 
         if (iter_or_map instanceof Sk.builtin.dict || iter_or_map === undefined) {
-            Sk.builtin.dict.call(this, iter_or_map);
+            Sk.abstr.superConstructor(mod.Counter, this, iter_or_map);
+
         }
         else {
             if (!(Sk.builtin.checkIterable(iter_or_map))) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter_or_map) + "' object is not iterable");
             }
 
-            Sk.builtin.dict.call(this);
+            Sk.abstr.superConstructor(mod.Counter, this);
             var one = Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
 
             for (var iter = iter_or_map.tp$iter(), k = iter.tp$iternext();
@@ -99,11 +96,7 @@ var $builtinmodule = function (name) {
         return this;
     };
 
-    mod.Counter.prototype = Object.create(Sk.builtin.dict.prototype);
-
-    mod.Counter.prototype.tp$name = 'Counter';
-
-    mod.Counter.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj('Counter', mod.Counter);
+    Sk.abstr.setUpInheritance("Counter", mod.Counter, Sk.builtin.dict);
 
     mod.Counter.prototype['$r'] = function () {
         var dict_str = this.size > 0 ? Sk.builtin.dict.prototype['$r'].call(this).v : '';
