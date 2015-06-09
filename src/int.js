@@ -182,6 +182,10 @@ Sk.builtin.int_.prototype.nb$divide = function (other) {
     return this.nb$floor_divide(other);
 };
 
+Sk.builtin.int_.prototype.nb$reflected_divide = function (other) {
+    return this.nb$reflected_floor_divide(other);
+};
+
 Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     if (other instanceof Sk.builtin.int_) {
 
@@ -190,6 +194,14 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
         }
 
         return new Sk.builtin.int_(Math.floor(this.v / other.v));
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.int_.prototype.nb$reflected_floor_divide = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$divide(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -225,6 +237,14 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_remainder = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$remainder(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
+
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong;
     var result;
@@ -239,6 +259,17 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_divmod = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return new Sk.builtin.tuple([
+            other.nb$floor_divide(this),
+            other.nb$remainder(this)
+        ]);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 Sk.builtin.int_.prototype.nb$power = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(Math.pow(this.v, other.v));
@@ -246,6 +277,14 @@ Sk.builtin.int_.prototype.nb$power = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.int_.prototype.nb$reflected_power = function (other, mod) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$power(this, mod);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
 
 Sk.builtin.int_.prototype.nb$abs = function () {
     return new Sk.builtin.int_(Math.abs(this.v));
@@ -268,6 +307,8 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_and = Sk.builtin.int_.prototype.nb$and;
+
 Sk.builtin.int_.prototype.nb$or = function (other) {
     if (other instanceof Sk.builtin.int_) {
         var tmp;
@@ -285,6 +326,8 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_or = Sk.builtin.int_.prototype.nb$or;
+
 Sk.builtin.int_.prototype.nb$xor = function (other) {
     if (other instanceof Sk.builtin.int_) {
         var tmp;
@@ -301,6 +344,8 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.int_.prototype.nb$reflected_xor = Sk.builtin.int_.prototype.nb$xor;
 
 Sk.builtin.int_.prototype.nb$lshift = function (other) {
     if (other instanceof Sk.builtin.int_) {
@@ -326,6 +371,14 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_lshift = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$lshift(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 Sk.builtin.int_.prototype.nb$rshift = function (other) {
     if (other instanceof Sk.builtin.int_) {
         var tmp;
@@ -345,6 +398,14 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
         if (tmp !== undefined) {
             return new Sk.builtin.int_(tmp);
         }
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.int_.prototype.nb$reflected_rshift = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$rshift(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;

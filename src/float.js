@@ -253,6 +253,19 @@ Sk.builtin.float_.prototype.nb$divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.nb$divide(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
+
 Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
 
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
@@ -297,6 +310,19 @@ Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.nb$floor_divide(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
 
 Sk.builtin.float_.prototype.nb$remainder = function (other) {
     var thisAsLong;
@@ -380,13 +406,46 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.nb$remainder(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
+
+
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
     if (other instanceof Sk.builtin.int_ ||
-        other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
         return new Sk.builtin.tuple([
             this.nb$floor_divide(other),
             this.nb$remainder(other)
+        ]);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return new Sk.builtin.tuple([
+            other.nb$floor_divide(this),
+            other.nb$remainder(this)
         ]);
     }
 
@@ -425,6 +484,19 @@ Sk.builtin.float_.prototype.nb$power = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.float_.prototype.nb$reflected_power = function (n, mod) {
+    if (n instanceof Sk.builtin.int_ ||
+        n instanceof Sk.builtin.lng) {
+        n = new Sk.builtin.float_(n);
+    }
+
+    if (n instanceof Sk.builtin.float_) {
+        return n.nb$power(this, mod);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
 
 Sk.builtin.float_.prototype.nb$abs = function () {
     return new Sk.builtin.float_(Math.abs(this.v));

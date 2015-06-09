@@ -210,16 +210,59 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
+Sk.builtin.lng.prototype.nb$reflected_divide = function (other) {
+    var thisneg, otherneg, result;
 
-Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        //  Promote an int to long
+        other = new Sk.builtin.lng(other.v);
+    }
 
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng) {
-        return this.nb$divide(other);
+    //    Standard, long result mode
+    if (other instanceof Sk.builtin.lng) {
+        return other.nb$divide(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.lng.prototype.nb$divmod = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        // Promote an int to long
+        other = new Sk.builtin.lng(other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        return new Sk.builtin.tuple([
+            this.nb$floor_divide(other),
+            this.nb$remainder(other)
+        ]);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.lng.prototype.nb$reflected_divmod = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        // Promote an int to long
+        other = new Sk.builtin.lng(other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        return new Sk.builtin.tuple([
+            other.nb$floor_divide(this),
+            other.nb$remainder(this)
+        ]);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.lng.prototype.nb$inplace_divide = Sk.builtin.lng.prototype.nb$divide;
+
+Sk.builtin.lng.prototype.nb$floor_divide = Sk.builtin.lng.prototype.nb$divide;
+
+Sk.builtin.lng.prototype.nb$reflected_floor_divide = Sk.builtin.lng.prototype.nb$reflected_divide;
 
 Sk.builtin.lng.prototype.nb$inplace_floor_divide = Sk.builtin.lng.prototype.nb$floor_divide;
 
@@ -253,6 +296,18 @@ Sk.builtin.lng.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.lng.prototype.nb$reflected_remainder = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        other = new Sk.builtin.lng(other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        return other.nb$remainder(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
+
 Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
 /**
@@ -274,6 +329,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
             return new Sk.builtin.lng(this.biginteger.modPowInt(n, mod));
         }
+
 
         if (n.nb$isnegative()) {
             thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
@@ -299,8 +355,20 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
+Sk.builtin.lng.prototype.nb$reflected_power = function (n, mod) {
+    if (n instanceof Sk.builtin.int_) {
+        // Promote an int to long
+        n = new Sk.builtin.lng(n.v);
+    }
 
+    if (n instanceof Sk.builtin.lng) {
+        return n.nb$power(this, mod);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
+
+Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 
 Sk.builtin.lng.prototype.nb$abs = function () {
     return new Sk.builtin.lng(this.biginteger.bnAbs());
@@ -324,6 +392,19 @@ Sk.builtin.lng.prototype.nb$lshift = function (other) {
             throw new Sk.builtin.ValueError("negative shift count");
         }
         return new Sk.builtin.lng(this.biginteger.shiftLeft(other));
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.lng.prototype.nb$reflected_lshift = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        // Promote an int to long
+        other = new Sk.builtin.lng(other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        return other.nb$lshift(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -353,6 +434,19 @@ Sk.builtin.lng.prototype.nb$rshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.lng.prototype.nb$reflected_rshift = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        // Promote an int to long
+        other = new Sk.builtin.lng(other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        return other.nb$rshift(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 Sk.builtin.lng.prototype.nb$inplace_rshift = Sk.builtin.lng.prototype.nb$rshift;
 
 Sk.builtin.lng.prototype.nb$and = function (other) {
@@ -370,6 +464,8 @@ Sk.builtin.lng.prototype.nb$and = function (other) {
 
    return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.lng.prototype.nb$reflected_and = Sk.builtin.lng.prototype.nb$and;
 
 Sk.builtin.lng.prototype.nb$inplace_and = Sk.builtin.lng.prototype.nb$and;
 
@@ -389,6 +485,9 @@ Sk.builtin.lng.prototype.nb$or = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+
+Sk.builtin.lng.prototype.nb$reflected_or = Sk.builtin.lng.prototype.nb$or;
+
 Sk.builtin.lng.prototype.nb$inplace_or = Sk.builtin.lng.prototype.nb$or;
 
 Sk.builtin.lng.prototype.nb$xor = function (other) {
@@ -406,6 +505,8 @@ Sk.builtin.lng.prototype.nb$xor = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.lng.prototype.nb$reflected_xor = Sk.builtin.lng.prototype.nb$xor;
 
 Sk.builtin.lng.prototype.nb$inplace_xor = Sk.builtin.lng.prototype.nb$xor;
 
