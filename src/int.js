@@ -25,12 +25,12 @@ Sk.builtin.int_ = function (x, base) {
 
     // if base is not of type int, try calling .__index__
     if(base !== undefined && !Sk.builtin.checkInt(base)) {
-        if(base.tp$getattr("__index__")) {
+        if (Sk.builtin.checkFloat(base)) {
+            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
+        } else if (base.tp$getattr("__index__")) {
             base = Sk.misceval.callsim(base.__index__, base);
         } else if(base.tp$getattr("__int__")) {
             base = Sk.misceval.callsim(base.__int__, base);
-        } else if(Sk.builtin.checkFloat(base)) {
-            throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
         } else {
             throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");
         }
