@@ -171,8 +171,18 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
 };
 
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
+    var product, thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(this.v * other.v);
+        product = this.v * other.v;
+
+        if (product > Sk.builtin.int_.threshold$ ||
+            product < -Sk.builtin.int_.threshold$) {
+            thisAsLong = new Sk.builtin.lng(this.v);
+            return thisAsLong.nb$multiply(other);
+        } else {
+            return new Sk.builtin.int_(product);
+        }
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -246,9 +256,6 @@ Sk.builtin.int_.prototype.nb$reflected_remainder = function (other) {
 }
 
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
-    var thisAsLong;
-    var result;
-
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.tuple([
             this.nb$floor_divide(other),
