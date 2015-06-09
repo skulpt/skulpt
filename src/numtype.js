@@ -288,3 +288,41 @@ Sk.builtin.numtype.prototype.nb$reflected_subtract = function (other) {
 Sk.builtin.numtype.prototype.nb$reflected_multiply = function (other) {
     return this.nb$multiply(other);
 };
+
+// js string (not Sk.builtin.str) -> long. used to create longs in transformer, respects
+// 0x, 0o, 0b, etc.
+Sk.numberFromStr = function (s) {
+    var tmp;
+    var res;
+    if (s == "inf") {
+        return new Sk.builtin.float_(Infinity);
+    }
+    if (s == "-inf") {
+        return new Sk.builtin.float_(-Infinity);
+    }
+
+    if (s.indexOf(".") !== -1 || s.indexOf("e") !== -1 || s.indexOf("E") !== -1) {
+        res = parseFloat(s);
+        return new Sk.builtin.float_(res);
+    }
+
+    // ugly gunk to placate an overly-nanny closure-compiler:
+    // http://code.google.com/p/closure-compiler/issues/detail?id=111
+    // this is all just to emulate "parseInt(s)" with no radix.
+    tmp = s;
+    if (s.charAt(0) === "-") {
+        tmp = s.substr(1);
+    }
+    if (tmp.charAt(0) === "0" && (tmp.charAt(1) === "x" || tmp.charAt(1) === "X")) {
+        res = parseInt(s, 16);
+    } else if (tmp.charAt(0) === "0" && (tmp.charAt(1) === "b" || tmp.charAt(1) === "B")) {
+        res = parseInt(s, 2);
+    } else if (tmp.charAt(0) === "0") {
+        res = parseInt(s, 8);
+    } else {
+        res = parseInt(s, 10);
+    }
+
+    return new Sk.builtin.int_(res);
+};
+goog.exportSymbol("Sk.numberFromStr", Sk.numberFromStr);
