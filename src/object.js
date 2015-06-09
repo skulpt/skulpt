@@ -6,9 +6,12 @@ Sk.builtin.object = function () {
         return new Sk.builtin.object();
     }
 
-    // Temporarily disable -- cannot instantiate a Python dictionary
-    // in the superclass of a Python dictionary
-    // this["$d"] = new Sk.builtin.dict([]);
+    // Python builtin instances do not maintain an internal Python dictionary
+    // (this causes problems when calling the super constructor on a dict
+    // instance). Instead, they maintain a Javascript object.
+    this["$d"] = {
+        "Sk.builtin.object": true   // Indicates this is a builtin object
+    };
 
     return this;
 };
@@ -143,11 +146,18 @@ Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
 Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
+    var objname = Sk.abstr.typeName(this);
     goog.asserts.assert(typeof name === "string");
     // todo; lots o' stuff
+
     if (this["$d"].mp$ass_subscript) {
         this["$d"].mp$ass_subscript(new Sk.builtin.str(name), value);
     } else if (typeof this["$d"] === "object") {
+        // Cannot add new attributes to a builtin object
+        if (this["$d"]["Sk.builtin.object"] && this["$d"][name] === undefined) {
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + name + "'");
+        }
+
         this["$d"][name] = value;
     }
 };
