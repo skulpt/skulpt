@@ -284,13 +284,13 @@ Sk.builtin.max = function max () {
 Sk.builtin.any = function any (iter) {
     var it, i;
 
-    Sk.builtin.pyCheckArgs("any", arguments, 1);
+    Sk.builtin.pyCheckArgs("any", arguments, 1, 1);
     if (!Sk.builtin.checkIterable(iter)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
             "' object is not iterable");
     }
 
-    it = iter.tp$iter();
+    it = Sk.abstr.iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.isTrue(i)) {
             return Sk.builtin.bool.true$;
@@ -303,13 +303,13 @@ Sk.builtin.any = function any (iter) {
 Sk.builtin.all = function all (iter) {
     var it, i;
 
-    Sk.builtin.pyCheckArgs("all", arguments, 1);
+    Sk.builtin.pyCheckArgs("all", arguments, 1, 1);
     if (!Sk.builtin.checkIterable(iter)) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(iter) +
             "' object is not iterable");
     }
 
-    it = iter.tp$iter();
+    it = Sk.abstr.iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (!Sk.misceval.isTrue(i)) {
             return Sk.builtin.bool.false$;
@@ -335,7 +335,7 @@ Sk.builtin.sum = function sum (iter, start) {
         tot = start;
     }
 
-    it = iter.tp$iter();
+    it = Sk.abstr.iter(iter);
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (i.skType === Sk.builtin.nmber.float$) {
             has_float = true;
@@ -351,7 +351,7 @@ Sk.builtin.sum = function sum (iter, start) {
             }
         }
 
-        if (tot.nb$add(i) !== undefined) {
+        if ((tot.nb$add !== undefined) && (tot.nb$add(i) !== undefined)) {
             tot = tot.nb$add(i);
         } else {
             throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
@@ -377,7 +377,7 @@ Sk.builtin.zip = function zip () {
     iters = [];
     for (i = 0; i < arguments.length; i++) {
         if (arguments[i].tp$iter) {
-            iters.push(arguments[i].tp$iter());
+            iters.push(Sk.abstr.iter(arguments[i]));
         } else {
             throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
         }
@@ -836,7 +836,7 @@ Sk.builtin.map = function map (fun, seq) {
                 argnum = parseInt(i, 10) + 2;
                 throw new Sk.builtin.TypeError("argument " + argnum + " to map() must support iteration");
             }
-            iterables[i] = iterables[i].tp$iter();
+            iterables[i] = Sk.abstr.iter(iterables[i]);
         }
 
         while (true) {
@@ -866,7 +866,7 @@ Sk.builtin.map = function map (fun, seq) {
 
     retval = [];
 
-    for (iter = seq.tp$iter(), item = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(seq), item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
@@ -898,7 +898,7 @@ Sk.builtin.reduce = function reduce (fun, seq, initializer) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    iter = seq.tp$iter();
+    iter = Sk.abstr.iter(seq);
     if (initializer === undefined) {
         initializer = iter.tp$iternext();
         if (initializer === undefined) {
@@ -957,7 +957,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
 
     retval = ctor();
 
-    for (iter = iterable.tp$iter(), item = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(iterable), item = iter.tp$iternext();
          item !== undefined;
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
