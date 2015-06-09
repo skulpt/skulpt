@@ -195,18 +195,18 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         } else {  // assume that vop is an __xxx__ type method
             ret = Sk.misceval.callsim(vop, v, w); //  added to be like not-in-place... is this okay?
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
-    wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
+    wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
     if (wop !== undefined) {
         if (wop.call) {
             ret = wop.call(w, v);
         } else { // assume that wop is an __xxx__ type method
             ret = Sk.misceval.callsim(wop, w, v); //  added to be like not-in-place... is this okay?
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
