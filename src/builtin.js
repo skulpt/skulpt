@@ -973,69 +973,75 @@ Sk.builtin.hasattr = function hasattr (obj, attr) {
 
 Sk.builtin.pow = function pow (a, b, c) {
     var ret;
-    var res;
-    var right;
-    var left;
-    var c_num;
-    var b_num;
-    var a_num;
+    var remainder;
     Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
 
-    if (c instanceof Sk.builtin.none) {
-        c = undefined;
-    }
+    // Attempt LHS with mod, if any
+    if (a.__pow__) {
+        ret = Sk.misceval.callsim(a.__pow__, a, b, c);
 
-    // add complex type hook here, builtin is messed up anyways
-    if (Sk.builtin.checkComplex(a)) {
-        return a.nb$power(b, c); // call complex pow function
-    }
-
-    a_num = Sk.builtin.asnum$(a);
-    b_num = Sk.builtin.asnum$(b);
-    c_num = Sk.builtin.asnum$(c);
-
-    if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b)) {
-        if (c === undefined) {
-            throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
+        if (!(ret instanceof Sk.builtin.NotImplemented)) {
+            return ret;
         }
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
+
+        // If LHS with mod is not implemented, manually raise power
+        // then mod the result if possible
+        if (c !== undefined && !(c instanceof Sk.builtin.none)) {
+            ret = Sk.misceval.callsim(a.__pow__, a, b);
+
+            if (ret.__mod__) {
+                remainder = Sk.misceval.callsim(ret.__mod__, ret, c);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+
+            if (c.__rmod__) {
+                remainder = Sk.misceval.callsim(c.__rmod__, c, ret);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+        }
     }
-    if (a_num < 0 && b.skType === Sk.builtin.nmber.float$) {
-        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
+
+    // Attempt RHS with mod, if any
+    if (b.__rpow__) {
+        ret = Sk.misceval.callsim(b.__rpow__, b, a, c);
+
+        if (!(ret instanceof Sk.builtin.NotImplemented)) {
+            return ret;
+        }
+
+        // If RHS with mod is not implemented, manually raise power
+        // then mod the result if possible
+        if (c !== undefined && !(c instanceof Sk.builtin.none)) {
+            ret = Sk.misceval.callsim(b.__rpow__, b, a);
+
+            if (ret.__mod__) {
+                remainder = Sk.misceval.callsim(ret.__mod__, ret, c);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+
+            if (c.__rmod__) {
+                remainder = Sk.misceval.callsim(c.__rmod__, c, ret);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+        }
     }
 
     if (c === undefined) {
-        if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0)) {
-            return new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.float$);
-        }
-
-        left = new Sk.builtin.nmber(a_num, Sk.builtin.nmber.int$);
-        right = new Sk.builtin.nmber(b_num, Sk.builtin.nmber.int$);
-        res = left.nb$power(right);
-
-        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng) {
-            return new Sk.builtin.lng(res);
-        }
-
-        return res;
-    } else {
-        if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c)) {
-            throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
-        }
-        if (b_num < 0) {
-            throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
-        }
-
-        if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng) ||
-            (Math.pow(a_num, b_num) === Infinity)) {
-            // convert a to a long so that we can use biginteger's modPowInt method
-            a = new Sk.builtin.lng(a);
-            return a.nb$power(b, c);
-        } else {
-            ret = new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.int$);
-            return ret.nb$remainder(c);
-        }
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
     }
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
 };
 
 Sk.builtin.quit = function quit (msg) {

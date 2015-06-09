@@ -452,16 +452,19 @@ Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.float_.prototype.nb$power = function (other) {
-    var thisAsLong;
+Sk.builtin.float_.prototype.nb$power = function (other, mod) {
     var result;
+
+    if (mod !== undefined) {
+        throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
+    }
 
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         if (this.v < 0 && other.v % 1 !== 0) {
-            throw new Sk.builtin.NegativePowerError("cannot raise a negative number to a fractional power");
+            throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
         }
         if (this.v === 0 && other.v < 0) {
-            throw new Sk.builtin.NegativePowerError("cannot raise zero to a negative power");
+            throw new Sk.builtin.ZeroDivisionError("0.0 cannot be raised to a negative power");
         }
 
         result = new Sk.builtin.float_(Math.pow(this.v, other.v));

@@ -226,25 +226,35 @@ Sk.builtin.numtype.prototype["__rdivmod__"] = new Sk.builtin.func(function (self
 
 });
 
-Sk.builtin.numtype.prototype["__pow__"] = new Sk.builtin.func(function (self, other) {
+Sk.builtin.numtype.prototype["__pow__"] = new Sk.builtin.func(function (self, other, mod) {
 
     if (self.nb$power === undefined) {
 		throw new Sk.builtin.NotImplementedError("__pow__ is not yet implemented");
 	}
 
-	Sk.builtin.pyCheckArgs("__pow__", arguments, 1, 1, false, true);
-	return self.nb$power(other);
+	Sk.builtin.pyCheckArgs("__pow__", arguments, 1, 2, false, true);
+
+    if (mod instanceof Sk.builtin.none) {
+        mod = undefined;
+    }
+
+	return self.nb$power(other, mod);
     
 });
 
-Sk.builtin.numtype.prototype["__rpow__"] = new Sk.builtin.func(function (self, other) {
+Sk.builtin.numtype.prototype["__rpow__"] = new Sk.builtin.func(function (self, other, mod) {
 
     if (self.nb$reflected_power === undefined) {
 		throw new Sk.builtin.NotImplementedError("__rpow__ is not yet implemented");
 	}
 
-	Sk.builtin.pyCheckArgs("__rpow__", arguments, 1, 1, false, true);
-	return self.nb$reflected_power(other);
+	Sk.builtin.pyCheckArgs("__rpow__", arguments, 1, 2, false, true);
+
+    if (mod instanceof Sk.builtin.none) {
+        mod = undefined;
+    }
+
+	return self.nb$reflected_power(other, mod);
 
 });
 

@@ -277,9 +277,32 @@ Sk.builtin.int_.prototype.nb$reflected_divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.int_.prototype.nb$power = function (other) {
-    if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(Math.pow(this.v, other.v));
+Sk.builtin.int_.prototype.nb$power = function (other, mod) {
+    var power, thisAsLong, ret;
+
+    if (other instanceof Sk.builtin.int_ && (mod === undefined || mod instanceof Sk.builtin.int_)) {
+
+        power = Math.pow(this.v, other.v);
+
+        if (power > Sk.builtin.int_.threshold$ ||
+            power < -Sk.builtin.int_.threshold$) {
+            thisAsLong = new Sk.builtin.lng(this.v);
+            ret = thisAsLong.nb$power(other, mod);
+        } else if (other.v < 0) {
+            ret = new Sk.builtin.float_(power);
+        } else {
+            ret = new Sk.builtin.int_(power);
+        }
+
+        if (mod !== undefined) {
+            if (other.v < 0) {
+                throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
+            }
+
+            return ret.nb$remainder(mod);
+        } else {
+            return ret;
+        }
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
