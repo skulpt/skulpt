@@ -236,8 +236,7 @@ Sk.builtin.object.prototype["$r"] = function () {
 
 Sk.builtin.hashCount = 1;
 Sk.builtin.object.prototype.tp$hash = function () {
-    if (!this.$savedHash_)
-    {
+    if (!this.$savedHash_) {
         this.$savedHash_ = new Sk.builtin.int_(Sk.builtin.hashCount++);
     }
 
@@ -293,7 +292,7 @@ Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 Sk.builtin.none.prototype["$r"] = function () { return new Sk.builtin.str("None"); };
 Sk.builtin.none.prototype.tp$hash = function () {
     return new Sk.builtin.int_(0);
-}
+};
 Sk.builtin.none.none$ = new Sk.builtin.none();
 
 Sk.builtin.NotImplemented = function() {

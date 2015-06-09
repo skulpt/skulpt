@@ -306,7 +306,7 @@ Sk.builtin.lng.prototype.nb$reflected_remainder = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
@@ -316,6 +316,7 @@ Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$rema
  * @suppress {checkTypes}
  */
 Sk.builtin.lng.prototype.nb$power = function (n, mod) {
+    var thisAsFloat;
 
     if (n instanceof Sk.builtin.int_) {
         //  Promote an int to long
@@ -366,7 +367,7 @@ Sk.builtin.lng.prototype.nb$reflected_power = function (n, mod) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.lng.prototype.nb$inplace_power = Sk.builtin.lng.prototype.nb$power;
 
@@ -462,7 +463,7 @@ Sk.builtin.lng.prototype.nb$and = function (other) {
         return new Sk.builtin.lng(this.biginteger.and(other));
     }
 
-   return Sk.builtin.NotImplemented.NotImplemented$;
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.lng.prototype.nb$reflected_and = Sk.builtin.lng.prototype.nb$and;

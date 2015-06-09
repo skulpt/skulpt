@@ -264,7 +264,7 @@ Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
 
@@ -322,7 +322,7 @@ Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.float_.prototype.nb$remainder = function (other) {
     var thisAsLong;
@@ -378,7 +378,7 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
         }
 
         if (this.v === 0) {
-           return new Sk.builtin.float_(0);
+            return new Sk.builtin.float_(0);
         }
 
         op2 = parseFloat(other.str$(10, true));
@@ -417,7 +417,7 @@ Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
@@ -499,7 +499,7 @@ Sk.builtin.float_.prototype.nb$reflected_power = function (n, mod) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.float_.prototype.nb$abs = function () {
     return new Sk.builtin.float_(Math.abs(this.v));

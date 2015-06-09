@@ -60,4 +60,4 @@ Sk.builtin.enumerate.prototype["next"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.enumerate.prototype["$r"] = function () {
     return new Sk.builtin.str("<enumerate object>");
-}
+};

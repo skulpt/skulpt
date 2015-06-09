@@ -297,6 +297,7 @@ Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.list_del_slic
 
 Sk.builtin.list.prototype.sq$contains = function (item) {
     var it;
+    var i;
 
     for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.richCompareBool(i, item, "Eq")) {
@@ -304,7 +305,7 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
         }
     }
     return false;
-}
+};
 /*
  Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
  Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;

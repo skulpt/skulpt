@@ -42,7 +42,7 @@ Sk.builtin.nmber = function (x, skType)    /* number is a reserved word */ {
             if (result.v > Sk.builtin.nmber.threshold$ || result.v < -Sk.builtin.nmber.threshold$ - 1) {
                 return new Sk.builtin.lng(x);
             }
-        }g
+        }
     } else if (x instanceof Sk.builtin.lng) {
         return Sk.numberFromStr(x.str$(10, true));
     } else if (x instanceof Sk.builtin.biginteger) {

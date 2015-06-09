@@ -267,6 +267,6 @@ function oneTimeInitialization () {
         name = proto.pythonFunctions[i];
         proto[name] = new Sk.builtin.func(proto[name]);
     }
-};
+}
 
 oneTimeInitialization();

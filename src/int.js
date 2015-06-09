@@ -253,7 +253,7 @@ Sk.builtin.int_.prototype.nb$reflected_remainder = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     if (other instanceof Sk.builtin.int_) {
@@ -314,7 +314,7 @@ Sk.builtin.int_.prototype.nb$reflected_power = function (other, mod) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.int_.prototype.nb$abs = function () {
     return new Sk.builtin.int_(Math.abs(this.v));
