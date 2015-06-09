@@ -23,7 +23,7 @@ Sk.builtin.dict = function dict (L) {
         }
     } else if (L instanceof Sk.builtin.dict) {
         // Handle calls of type "dict(mapping)" from Python code
-        for (it = L.tp$iter(), k = it.tp$iternext();
+        for (it = Sk.abstr.iter(L), k = it.tp$iternext();
              k !== undefined;
              k = it.tp$iternext()) {
             v = L.mp$subscript(k);
@@ -33,9 +33,9 @@ Sk.builtin.dict = function dict (L) {
             }
             this.mp$ass_subscript(k, v);
         }
-    } else if (L.tp$iter) {
+    } else if (Sk.builtin.checkIterable(L)) {
         // Handle calls of type "dict(iterable)" from Python code
-        for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
             if (i.mp$subscript) {
                 this.mp$ass_subscript(i.mp$subscript(0), i.mp$subscript(1));
             } else {
@@ -225,7 +225,7 @@ Sk.builtin.dict.prototype["$r"] = function () {
     var v;
     var iter, k;
     var ret = [];
-    for (iter = this.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = this.mp$subscript(k);
@@ -292,7 +292,7 @@ Sk.builtin.dict.prototype.tp$richcompare = function (other, op) {
         return op !== "Eq";
     }
 
-    for (iter = this.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = this.mp$subscript(k);
@@ -357,7 +357,7 @@ Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
@@ -375,7 +375,7 @@ Sk.builtin.dict.prototype["keys"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         ret.push(k);
@@ -389,7 +389,7 @@ Sk.builtin.dict.prototype["values"] = new Sk.builtin.func(function (self) {
     var iter, k;
     var ret = [];
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         v = self.mp$subscript(k);
@@ -406,7 +406,7 @@ Sk.builtin.dict.prototype["clear"] = new Sk.builtin.func(function (self) {
     var k;
     var iter;
 
-    for (iter = self.tp$iter(), k = iter.tp$iternext();
+    for (iter = Sk.abstr.iter(self), k = iter.tp$iternext();
          k !== undefined;
          k = iter.tp$iternext()) {
         self.mp$del_subscript(k);
@@ -445,7 +445,7 @@ Sk.builtin.dict.prototype.dict_merge = function(b) {
     } else {
         // generic slower way
         var keys = Sk.misceval.callsim(b["keys"], b);
-        for (iter = keys.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
+        for (iter = Sk.abstr.iter(keys), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext()) {
             v = b.tp$getitem(k); // get value
             if (v === undefined) {
                 throw new Sk.builtin.AttributeError("cannot get item for key: " + k.v);
@@ -469,7 +469,7 @@ var update_f = function (kwargs, self, other) {
         var iter;
         var k, v;
         var seq_i = 0; // index of current sequence item
-        for (iter = other.tp$iter(), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
+        for (iter = Sk.abstr.iter(other), k = iter.tp$iternext(); k !== undefined; k = iter.tp$iternext(), seq_i++) {
             // check if value is iter
             if (!Sk.builtin.checkIterable(k)) {
                 throw new Sk.builtin.TypeError("cannot convert dictionary update sequence element #" + seq_i + " to a sequence");
@@ -478,7 +478,7 @@ var update_f = function (kwargs, self, other) {
             // cpython impl. would transform iterable into sequence
             // we just call iternext twice if k has length of 2
             if(k.sq$length() === 2) {
-                var k_iter = k.tp$iter();
+                var k_iter = Sk.abstr.iter(k);
                 var k_key = k_iter.tp$iternext();
                 var k_value = k_iter.tp$iternext();
                 self.mp$ass_subscript(k_key, k_value);
