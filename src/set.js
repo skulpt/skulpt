@@ -9,7 +9,7 @@ Sk.builtin.set = function (S) {
         return new Sk.builtin.set(S);
     }
 
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.set, this);
 
     if (typeof(S) === "undefined") {
         S = [];

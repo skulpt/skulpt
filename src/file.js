@@ -12,7 +12,7 @@ Sk.builtin.file = function (name, mode, buffering) {
         return new Sk.builtin.file(name, mode, buffering);
     }
 
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.file, this);
 
     this.mode = mode;
     this.name = name;

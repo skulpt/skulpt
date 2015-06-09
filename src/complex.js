@@ -42,7 +42,7 @@ Sk.builtin.complex = function (real, imag) {
         return new Sk.builtin.complex(real, imag);
     }
 
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.complex, this);
 
     // check if kwargs
     // ToDo: this is only a temporary replacement

@@ -10,7 +10,7 @@ Sk.builtin.dict = function dict (L) {
         return new Sk.builtin.dict(L);
     }
 
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.dict, this);
 
     if (L === undefined) {
         L = [];

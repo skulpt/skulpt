@@ -839,6 +839,6 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
     child.prototype.pythonFunctions = parent.prototype.pythonFunctions.slice();
 };
 
-Sk.abstr.superConstructor = function (self) {
-    self.tp$base.call(self);
+Sk.abstr.superConstructor = function (thisClass, self) {
+    thisClass.prototype.tp$base.call(self);
 };
