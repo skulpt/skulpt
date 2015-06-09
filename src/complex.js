@@ -69,7 +69,7 @@ Sk.builtin.complex = function (real, imag) {
 
     // try_complex_special_method
     tmp = Sk.builtin.complex.try_complex_special_method(r);
-    if (tmp != null) {
+    if (tmp != null && !(tmp instanceof Sk.builtin.NotImplemented)) {
         if (!Sk.builtin.checkComplex(tmp)) {
             throw new Sk.builtin.TypeError("__complex__ should return a complex object");
         }
@@ -500,13 +500,31 @@ Sk.builtin.complex.prototype.nb$divide = function (other) {
     return new Sk.builtin.complex(new Sk.builtin.float_(real), new Sk.builtin.float_(imag));
 };
 
+Sk.builtin.complex.prototype.nb$reflected_divide = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng ||
+        other instanceof Sk.builtin.float_) {
+        other = new Sk.builtin.complex(other);
+    }
+
+    if (other instanceof Sk.builtin.complex) {
+        return other.nb$divide(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 Sk.builtin.complex.prototype.nb$floor_divide = function (other) {
     throw new Sk.builtin.TypeError("can't take floor of complex number.");
 };
 
+Sk.builtin.complex.prototype.nb$reflected_floor_divide = Sk.builtin.complex.prototype.nb$floor_divide;
+
 Sk.builtin.complex.prototype.nb$remainder = function (other) {
     throw new Sk.builtin.TypeError("can't mod complex numbers.");
 };
+
+Sk.builtin.complex.prototype.nb$reflected_remainder = Sk.builtin.complex.prototype.nb$remainder;
 
 /**
  * @param {?Object=} z, modulo operation
@@ -534,6 +552,20 @@ Sk.builtin.complex.prototype.nb$power = function (other, z) {
     }
 
     return p;
+};
+
+Sk.builtin.complex.prototype.nb$reflected_power = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng ||
+        other instanceof Sk.builtin.float_) {
+        other = new Sk.builtin.complex(other);
+    }
+
+    if (other instanceof Sk.builtin.complex) {
+        return other.nb$power(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 // power of complex a and complex exponent b
