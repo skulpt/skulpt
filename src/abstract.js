@@ -167,7 +167,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         } else {
             ret = Sk.misceval.callsim(vop, v, w);
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
@@ -178,7 +178,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         } else {
             ret = Sk.misceval.callsim(wop, w, v);
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
