@@ -126,11 +126,12 @@ Sk.builtin.lng.prototype.nb$add = function (other) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.float$) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$add(other);
-        }
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$add(other);
+    }
+
+    if (other instanceof Sk.builtin.int_) {
         //    Promote an int to long
         other = new Sk.builtin.lng(other.v);
     }
@@ -154,11 +155,12 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.float$) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$subtract(other);
-        }
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$subtract(other);
+    }
+
+    if (other instanceof Sk.builtin.int_) {
         //    Promote an int to long
         other = new Sk.builtin.lng(other.v);
     }
@@ -182,11 +184,12 @@ Sk.builtin.lng.prototype.nb$multiply = function (other) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.float$) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$multiply(other);
-        }
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$multiply(other);
+    }
+
+    if (other instanceof Sk.builtin.int_) {
         other = new Sk.builtin.lng(other.v);
     }
 
@@ -209,11 +212,12 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.float$) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$divide(other);
-        }
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$divide(other);
+    }
+
+    if (other instanceof Sk.builtin.int_) {
         //    Promote an int to long
         other = new Sk.builtin.lng(other.v);
     }
@@ -249,11 +253,9 @@ Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
         other = new Sk.builtin.lng(Sk.builtin.asnum$(other));
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.float$) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$floor_divide(other);
-        }
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$floor_divide(other);
     }
 
     return this.nb$divide(other);
@@ -268,17 +270,18 @@ Sk.builtin.lng.prototype.nb$remainder = function (other) {
     }
 
     if (this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
-        if (other instanceof Sk.builtin.nmber && other.skType === Sk.builtin.nmber.float$) {
+        if (other instanceof Sk.builtin.float_) {
             return new Sk.builtin.nmber(0, Sk.builtin.nmber.float$);
         }
         return new Sk.builtin.lng(0);
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.float$) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$remainder(other);
-        }
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$remainder(other);
+    }
+
+    if (other instanceof Sk.builtin.int_) {
         //    Promote an int to long
         other = new Sk.builtin.lng(other.v);
     }
@@ -327,11 +330,13 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
         return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(Sk.builtin.asnum$(n))));
     }
 
-    if (n instanceof Sk.builtin.nmber) {
-        if (n.skType === Sk.builtin.nmber.float$ || n.v < 0) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
-            return thisAsFloat.nb$power(n);
-        }
+    if (n instanceof Sk.builtin.float_ || 
+        (n instanceof Sk.builtin.int_ && n.v < 0)) {
+        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        return thisAsFloat.nb$power(n);
+    }
+
+    if (n instanceof Sk.builtin.int_) {
         //    Promote an int to long
         n = new Sk.builtin.lng(n.v);
     }
@@ -480,11 +485,13 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
         other = new Sk.builtin.lng(other);
     }
 
-    if (other instanceof Sk.builtin.nmber) {
-        if (other.skType === Sk.builtin.nmber.int$ || other.v % 1 === 0) {
-            otherAsLong = new Sk.builtin.lng(other.v);
-            return this.longCompare(otherAsLong);
-        }
+    if (other instanceof Sk.builtin.int_ || 
+        (other instanceof Sk.builtin.float_ && other.v % 1 === 0)) {
+        otherAsLong = new Sk.builtin.lng(other.v);
+        return this.longCompare(otherAsLong);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
         thisAsFloat = new Sk.builtin.nmber(this, Sk.builtin.nmber.float$);
         return thisAsFloat.numberCompare(other);
     }

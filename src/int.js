@@ -152,8 +152,20 @@ Sk.builtin.int_.prototype.clone = function () {
 };
 
 Sk.builtin.int_.prototype.nb$add = function (other) {
+    var thisAsLong, thisAsFloat;
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(this.v + other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$add(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$add(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -161,16 +173,40 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
 
 
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
+    var thisAsLong, thisAsFloat;
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(this.v - other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$subtract(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$subtract(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
+    var thisAsLong, thisAsFloat;
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(this.v * other.v);
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$multiply(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$multiply(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -181,6 +217,8 @@ Sk.builtin.int_.prototype.nb$divide = function (other) {
 };
 
 Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
+    var thisAsLong, thisAsFloat;
+
     if (other instanceof Sk.builtin.int_) {
 
         if (other.v === 0) {
@@ -190,10 +228,21 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
         return new Sk.builtin.int_(Math.floor(this.v / other.v));
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$divide(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$divide(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$remainder = function (other) {
+    var thisAsLong, thisAsFloat;
     var tmp;
 
     if (other instanceof Sk.builtin.int_) {
@@ -220,12 +269,21 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
         return new Sk.builtin.int_(tmp);
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$remainder(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$remainder(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong;
-    var result;
 
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.tuple([
@@ -234,18 +292,42 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
         ]);
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$remainder(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$remainder(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$power = function (other) {
+    var thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(Math.pow(this.v, other.v));
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$power(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        thisAsFloat = new Sk.builtin.float_(this.v);
+        return thisAsFloat.nb$power(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$and = function (other) {
+    var thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         other = Sk.builtin.asnum$(other);
@@ -259,10 +341,17 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
         }
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$and(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$or = function (other) {
+    var thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         other = Sk.builtin.asnum$(other);
@@ -276,10 +365,17 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
         }
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$and(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$xor = function (other) {
+    var thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         other = Sk.builtin.asnum$(other);
@@ -293,10 +389,17 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
         }
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$xor(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$lshift = function (other) {
+    var thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         var shift = Sk.builtin.asnum$(other);
@@ -317,10 +420,17 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
         }
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$lshift(other);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.int_.prototype.nb$rshift = function (other) {
+    var thisAsLong;
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         var shift = Sk.builtin.asnum$(other);
@@ -339,6 +449,11 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
         if (tmp !== undefined) {
             return new Sk.builtin.int_(tmp);
         }
+    }
+
+    if (other instanceof Sk.builtin.lng) {
+        thisAsLong = new Sk.builtin.lng(this.v);
+        return thisAsLong.nb$rshift(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
