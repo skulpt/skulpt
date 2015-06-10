@@ -397,7 +397,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
     _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
  */
 Sk.builtin.complex.prototype.tp$hash = function () {
-    return new Sk.builtin.nmber(this.tp$getattr("imag").v * 1000003 + this.tp$getattr("real").v, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(this.tp$getattr("imag").v * 1000003 + this.tp$getattr("real").v);
 };
 
 Sk.builtin.complex.prototype.nb$add = function (other) {
@@ -927,7 +927,7 @@ Sk.builtin.complex.prototype.__abs__  = new Sk.builtin.func(function (self) {
         /* either the real or imaginary part is a NaN,
            and neither is infinite. Result should be NaN. */
 
-        return new Sk.builtin.nmber(NaN, Sk.builtin.nmber.float$);
+        return new Sk.builtin.float_(NaN);
     }
 
     result = Math.hypot(_real, _imag);
@@ -1016,7 +1016,7 @@ Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(function (self){
     var _imag = self.imag.v;
     _imag = -_imag;
 
-    return new Sk.builtin.complex(self.real, new Sk.builtin.nmber(_imag, Sk.builtin.nmber.float$));
+    return new Sk.builtin.complex(self.real, new Sk.builtin.float_(_imag));
 });
 
 // deprecated
@@ -1031,8 +1031,8 @@ Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(function (self, ot
 
     div = a.nb$divide.call(a, b); // the raw divisor value
 
-    div.real = new Sk.builtin.nmber(Math.floor(div.real.v), Sk.builtin.nmber.float$);
-    div.imag = new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
+    div.real = new Sk.builtin.float_(Math.floor(div.real.v));
+    div.imag = new Sk.builtin.float_(0.0);
 
     mod = a.nb$subtract.call(a, b.nb$multiply.call(b, div));
 

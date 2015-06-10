@@ -45,7 +45,7 @@ function generateTurtleModule(_target) {
         }
         else {
             for(var i = 0; i < 3; i++) {
-                value[i] = new Sk.builtin.nmber(value[i], undefined);
+                value[i] = Sk.builtin.assk$(value[i]);
             }
             if (value.length === 4) {
                 value[3] = Sk.builtin.float_(value[3]);

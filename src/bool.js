@@ -20,11 +20,11 @@ Sk.builtin.bool.prototype["$r"] = function () {
 Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function(self) {
     var v = Sk.builtin.asnum$(self);
 
-    return new Sk.builtin.nmber(v, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(v);
 });
 
 Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
-    return new Sk.builtin.nmber(Sk.ffi.remapToJs(self), Sk.builtin.nmber.float$);
+    return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
 Sk.builtin.bool.true$ = Object.create(Sk.builtin.bool.prototype, {v: {value: true, enumerable: true}});

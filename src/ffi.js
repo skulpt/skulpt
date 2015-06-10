@@ -32,7 +32,7 @@ Sk.ffi.remapToPy = function (obj) {
     } else if (typeof obj === "string") {
         return new Sk.builtin.str(obj);
     } else if (typeof obj === "number") {
-        return new Sk.builtin.nmber(obj, undefined);
+        return Sk.builtin.assk$(obj);
     } else if (typeof obj === "boolean") {
         return obj;
     }

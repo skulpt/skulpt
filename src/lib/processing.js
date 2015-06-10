@@ -1554,22 +1554,22 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "x") {
-                return new Sk.builtin.nmber(mod.processing.mouseX);
+                return Sk.builtin.assk$(mod.processing.mouseX);
             }
             else if (key === "y") {
-                return new Sk.builtin.nmber(mod.processing.mouseY);
+                return Sk.builtin.assk$(mod.processing.mouseY);
             }
             else if (key === "px") {
-                return new Sk.builtin.nmber(mod.processing.pmouseX);
+                return Sk.builtin.assk$(mod.processing.pmouseX);
             }
             else if (key === "py") {
-                return new Sk.builtin.nmber(mod.processing.pmouseY);
+                return Sk.builtin.assk$(mod.processing.pmouseY);
             }
             else if (key === "pressed") {
                     return new Sk.builtin.bool(mod.processing.__mousePressed);
             }
             else if (key === "button") {
-                return new Sk.builtin.nmber(mod.processing.mouseButton);
+                return Sk.builtin.assk$(mod.processing.mouseButton);
             }
         });
 
@@ -1588,7 +1588,7 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.str(mod.processing.key.toString());
             }
             else if (key === "keyCode") {
-                return new Sk.builtin.nmber(mod.processing.keyCode);
+                return Sk.builtin.assk$(mod.processing.keyCode);
             }
             else if (key === "keyPressed") {
                 return new Sk.builtin.str(mod.processing.keyPressed);
@@ -1607,16 +1607,16 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "frameCount") {
-                return new Sk.builtin.nmber(mod.processing.frameCount);
+                return Sk.builtin.assk$(mod.processing.frameCount);
             }
             else if (key === "frameRate") {
-                return new Sk.builtin.nmber(mod.processing.frameRate);
+                return Sk.builtin.assk$(mod.processing.frameRate);
             }
             else if (key === "height") {
-                return new Sk.builtin.nmber(mod.processing.height);
+                return Sk.builtin.assk$(mod.processing.height);
             }
             else if (key === "width") {
-                return new Sk.builtin.nmber(mod.processing.width);
+                return Sk.builtin.assk$(mod.processing.width);
             }
             else if (key === "online") {
                 return new Sk.builtin.bool(mod.processing.online);
@@ -1641,10 +1641,10 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "height") {
-                return new Sk.builtin.nmber(mod.processing.height);
+                return Sk.builtin.assk$(mod.processing.height);
             }
             else if (key === "width") {
-                return new Sk.builtin.nmber(mod.processing.width);
+                return Sk.builtin.assk$(mod.processing.width);
             }
             else if (key === "pixels") {
                 if (self.pixels == null) {
@@ -1719,10 +1719,10 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "width") {
-                return new Sk.builtin.nmber(self.v.width);
+                return Sk.builtin.assk$(self.v.width);
             }
             if (key === "height") {
-                return new Sk.builtin.nmber(self.v.height);
+                return Sk.builtin.assk$(self.v.height);
             }
         });
 
@@ -1777,11 +1777,11 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "x") {
-                return new Sk.builtin.nmber(self.v.x);
+                return Sk.builtin.assk$(self.v.x);
             } else if (key === "y") {
-                return new Sk.builtin.nmber(self.v.y);
+                return Sk.builtin.assk$(self.v.y);
             } else if (key === "z") {
-                return new Sk.builtin.nmber(self.v.z);
+                return Sk.builtin.assk$(self.v.z);
 	    }
 	});
 	    
@@ -1804,7 +1804,7 @@ var $builtinmodule = function (name) {
 	$loc.mag = new Sk.builtin.func(function (self) {
 	    // mag() Calculates the magnitude (length) of the vector
 	    // and returns the result as a float
-	    return new Sk.builtin.nmber(self.v.mag());
+	    return Sk.builtin.assk$(self.v.mag());
 	});
 
 	$loc.add = new Sk.builtin.func(function (self, vec) {
@@ -1837,7 +1837,7 @@ var $builtinmodule = function (name) {
 
 	$loc.dist = new Sk.builtin.func(function (self, vec) {
 	    // dist()	Calculate the Euclidean distance between two points
-	    return new Sk.builtin.nmber(self.v.dist(vec.v));
+	    return Sk.builtin.assk$(self.v.dist(vec.v));
 	});
 
 	$loc.dot = new Sk.builtin.func(function (self, v1, v2, v3) {
@@ -1846,9 +1846,9 @@ var $builtinmodule = function (name) {
 	    // vec.dot(x,y,z)
 	    // vec.dot(v)	    
 	    if (typeof(v2) === 'undefined') {
-		return new Sk.builtin.nmber(self.v.dot(v1.v));
+		return Sk.builtin.assk$(self.v.dot(v1.v));
 	    } else {
-		return new Sk.builtin.nmber(self.v.dot(v1.v, v2.v, v3.v));
+		return Sk.builtin.assk$(self.v.dot(v1.v, v2.v, v3.v));
 	    }
 	});
 
@@ -1871,7 +1871,7 @@ var $builtinmodule = function (name) {
 
 	$loc.angleBetween = new Sk.builtin.func(function (self, vec) {
 	    // angleBetween()	Calculates the angle between two vectors
-	    return new Sk.builtin.nmber(self.v.angleBetween(vec.v));
+	    return Sk.builtin.assk$(self.v.angleBetween(vec.v));
 	});
 
 	$loc.array = new Sk.builtin.func(function (self) {
@@ -1938,9 +1938,9 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "width") {
-                return new Sk.builtin.nmber(self.v.width);
+                return Sk.builtin.assk$(self.v.width);
             } else if (key === "height") {
-                return new Sk.builtin.nmber(self.v.height);
+                return Sk.builtin.assk$(self.v.height);
 	    }
 	});
 

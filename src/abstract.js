@@ -239,7 +239,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     if (typeof a === "number" && typeof b === "number") {
         ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
-        if ((ans > Sk.builtin.nmber.threshold$ || ans < -Sk.builtin.nmber.threshold$) && Math.floor(ans) === ans) {
+        if ((ans > Sk.builtin.int_.threshold$ || ans < -Sk.builtin.int_.threshold$) && Math.floor(ans) === ans) {
             return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
         } else {
             return ans;
@@ -261,7 +261,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
                a.constructor === Sk.builtin.float_) {
         return [a, b];
     } else if (typeof a === "number") {
-        tmp = new Sk.builtin.nmber(a, undefined);
+        tmp = Sk.builtin.assk$(a);
         return [tmp, b];
     } else {
         return undefined;
@@ -402,13 +402,13 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     } else if (v instanceof Sk.builtin.bool) {
         value = Sk.builtin.asnum$(v);
         if (op === "USub") {
-            return new Sk.builtin.nmber(-value, v.skType);
+            return new Sk.builtin.int_(-value);
         }
         if (op === "UAdd") {
-            return new Sk.builtin.nmber(value, v.skType);
+            return new Sk.builtin.int_(value);
         }
         if (op === "Invert") {
-            return new Sk.builtin.nmber(~value, v.skType);
+            return new Sk.builtin.int_(~value);
         }
     } else {
         if (op === "USub" && v.nb$negative) {
@@ -659,8 +659,12 @@ Sk.abstr.objectNegative = function (obj) {
     var objtypename;
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
-    if (typeof obj_asnum === "number") {
-        return Sk.builtin.nmber.prototype["nb$negative"].call(obj);
+    if (obj instanceof Sk.builtin.bool) {
+        obj = new Sk.builtin.int_(obj_asnum);
+    }
+
+    if (obj.nb$negative) {
+        return obj.nb$negative();
     }
 
     objtypename = Sk.abstr.typeName(obj);
@@ -672,11 +676,12 @@ Sk.abstr.objectPositive = function (obj) {
     var objtypename = Sk.abstr.typeName(obj);
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
-    if (objtypename === "bool") {
-        return new Sk.builtin.nmber(obj_asnum, "int");
+    if (obj instanceof Sk.builtin.bool) {
+        obj = new Sk.builtin.int_(obj_asnum);
     }
-    if (typeof obj_asnum === "number") {
-        return Sk.builtin.nmber.prototype["nb$positive"].call(obj);
+
+    if (obj.nb$negative) {
+        return obj.nb$positive();
     }
 
     throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");

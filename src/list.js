@@ -434,7 +434,7 @@ Sk.builtin.list.prototype.list_sort_ = function (self, cmp, key, reverse) {
     timsort = new Sk.builtin.timSort(self);
 
     self.v = [];
-    zero = new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+    zero = new Sk.builtin.int_(0);
 
     if (has_key) {
         if (has_cmp) {
@@ -626,7 +626,7 @@ Sk.builtin.list.prototype["count"] = new Sk.builtin.func(function (self, item) {
             count += 1;
         }
     }
-    return new Sk.builtin.nmber(count, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(count);
 });
 
 Sk.builtin.list.prototype["reverse"] = new Sk.builtin.func(Sk.builtin.list.prototype.list_reverse_);

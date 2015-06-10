@@ -85,7 +85,7 @@ var $builtinmodule = function (name) {
             }
 
             Sk.builtin.dict.call(this);
-            var one = Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+            var one = new Sk.builtin.int_(1);
 
             for (var iter = iter_or_map.tp$iter(), k = iter.tp$iternext();
                  k !== undefined;
@@ -115,7 +115,7 @@ var $builtinmodule = function (name) {
             return Sk.builtin.dict.prototype.mp$subscript.call(this, key);
         }
         catch (e) {
-            return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(0);
         }
     };
 
@@ -214,7 +214,7 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
             }
 
-            var one = new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+            var one = new Sk.builtin.int_(1);
             for (var iter = other.tp$iter(), k = iter.tp$iternext();
                  k !== undefined;
                  k = iter.tp$iternext()) {
@@ -240,7 +240,7 @@ var $builtinmodule = function (name) {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(other) + "' object is not iterable");
             }
 
-            var one = new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
+            var one = new Sk.builtin.int_(1);
             for (var iter = other.tp$iter(), k = iter.tp$iternext();
                  k !== undefined;
                  k = iter.tp$iternext()) {
