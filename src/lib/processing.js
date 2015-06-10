@@ -484,7 +484,7 @@ var $builtinmodule = function (name) {
 
     mod.blend = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9, v10) {
-	if (other instanceof Sk.builtin.nmber) {
+	if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 	    // blend(x,     y,width,height,dx,    dy,dwidth,dheight,MODE)
 	    mod.processing.blend(v1.v, v2.v, v3.v, v4.v, v5.v,
 				 v6.v, v7.v, v8.v, v9.v);
@@ -539,7 +539,7 @@ var $builtinmodule = function (name) {
 
     mod.copy = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9) {
-	if (other instanceof Sk.builtin.nmber) {
+	if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 	    // copy(x,     y,width,height,dx,    dy,dwidth,dheight)
 	    mod.processing.copy(v1.v, v2.v, v3.v, v4.v, v5.v,
 				v6.v, v7.v, v8.v);

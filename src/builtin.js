@@ -69,7 +69,10 @@ Sk.builtin.asnum$ = function (a) {
     if (typeof a === "string") {
         return a;
     }
-    if (a.constructor === Sk.builtin.nmber) {
+    if (a.constructor === Sk.builtin.int_) {
+        return a.v;
+    }
+    if (a.constructor === Sk.builtin.float_) {
         return a.v;
     }
     if (a.constructor === Sk.builtin.lng) {
@@ -118,7 +121,10 @@ Sk.builtin.asnum$nofloat = function (a) {
     if (typeof a === "number") {
         a = a.toString();
     }
-    if (a.constructor === Sk.builtin.nmber) {
+    if (a.constructor === Sk.builtin.int_) {
+        a = a.v.toString();
+    }
+    if (a.constructor === Sk.builtin.float_) {
         a = a.v.toString();
     }
     if (a.constructor === Sk.builtin.lng) {

@@ -79,7 +79,8 @@ Sk.builtin.checkCallable = function (arg) {
 
 Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number" ||
-        arg instanceof Sk.builtin.nmber ||
+        arg instanceof Sk.builtin.int_ ||
+        arg instanceof Sk.builtin.float_ ||
         arg instanceof Sk.builtin.lng ||
         arg instanceof Sk.builtin.bool));
 };
@@ -96,16 +97,14 @@ goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
-        (arg instanceof Sk.builtin.nmber &&
-            arg.skType === Sk.builtin.nmber.int$) ||
+        arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.lng ||
         arg instanceof Sk.builtin.bool);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 
 Sk.builtin.checkFloat = function (arg) {
-    return (arg !== null) && (arg instanceof Sk.builtin.nmber &&
-            arg.skType === Sk.builtin.nmber.float$);
+    return (arg !== null) && (arg instanceof Sk.builtin.float_);
 };
 goog.exportSymbol("Sk.builtin.checkFloat", Sk.builtin.checkFloat);
 

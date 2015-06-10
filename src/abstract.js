@@ -10,9 +10,7 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function (v) {
     var vtypename;
-    if (v instanceof Sk.builtin.nmber) {
-        vtypename = v.skType;
-    } else if (v.tp$name !== undefined) {
+    if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
     } else {
         vtypename = "<invalid type>";
@@ -252,12 +250,15 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
 
     if (a.constructor === Sk.builtin.lng) {
         return [a, b];
-    } else if (a.constructor === Sk.builtin.nmber && b.constructor === Sk.builtin.complex) {
+    } else if ((a.constructor === Sk.builtin.int_ ||
+                a.constructor === Sk.builtin.float_) &&
+                b.constructor === Sk.builtin.complex) {
         // special case of upconverting nmber and complex
         // can we use here the Sk.builtin.checkComplex() method?
         tmp = new Sk.builtin.complex(a);
         return [tmp, b];
-    } else if (a.constructor === Sk.builtin.nmber) {
+    } else if (a.constructor === Sk.builtin.int_ ||
+               a.constructor === Sk.builtin.float_) {
         return [a, b];
     } else if (typeof a === "number") {
         tmp = new Sk.builtin.nmber(a, undefined);
@@ -355,7 +356,9 @@ Sk.abstr.numberBinOp = function (v, w, op) {
         tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
+            return tmp;
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
             return tmp;
         } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
             return tmp;
@@ -376,7 +379,9 @@ Sk.abstr.numberInplaceBinOp = function (v, w, op) {
         tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
+            return tmp;
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
             return tmp;
         } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
             return tmp;
@@ -394,7 +399,8 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     var value;
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    } else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
+    } else if (v instanceof Sk.builtin.int_ || v instanceof Sk.builtin.float_ ||
+               v instanceof Sk.builtin.bool) {
         value = Sk.builtin.asnum$(v);
         if (op === "USub") {
             return new Sk.builtin.nmber(-value, v.skType);

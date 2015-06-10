@@ -74,7 +74,9 @@ Sk.ffi.remapToJs = function (obj) {
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         }
         return ret;
-    } else if (obj instanceof Sk.builtin.nmber) {
+    } else if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    } else if (obj instanceof Sk.builtin.float_) {
         return Sk.builtin.asnum$(obj);
     } else if (obj instanceof Sk.builtin.lng) {
         return Sk.builtin.asnum$(obj);
@@ -108,7 +110,10 @@ goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
  * number|string, etc.
  */
 Sk.ffi.basicwrap = function (obj) {
-    if (obj instanceof Sk.builtin.nmber) {
+    if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    }
+    if (obj instanceof Sk.builtin.float_) {
         return Sk.builtin.asnum$(obj);
     }
     if (obj instanceof Sk.builtin.lng) {

@@ -972,11 +972,14 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     neg = true;
                 }
                 r = n.toString(base);
-            } else if (n instanceof Sk.builtin.nmber) {
+            } else if (n instanceof Sk.builtin.float_) {
                 r = n.str$(base, false);
                 if (r.length > 2 && r.substr(-2) === ".0") {
                     r = r.substr(0, r.length - 2);
                 }
+                neg = n.nb$isnegative();
+            } else if (n instanceof Sk.builtin.int_) {
+                r = n.str$(base, false);
                 neg = n.nb$isnegative();
             } else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
@@ -1101,7 +1104,9 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return String.fromCharCode(value);
-            } else if (value instanceof Sk.builtin.nmber) {
+            } else if (value instanceof Sk.builtin.int_) {
+                return String.fromCharCode(value.v);
+            } else if (value instanceof Sk.builtin.float_) {
                 return String.fromCharCode(value.v);
             } else if (value instanceof Sk.builtin.lng) {
                 return String.fromCharCode(value.str$(10, false)[0]);
