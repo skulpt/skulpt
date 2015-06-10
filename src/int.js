@@ -352,12 +352,12 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
 
     if (other instanceof Sk.builtin.lng) {
         thisAsLong = new Sk.builtin.lng(this.v);
-        return thisAsLong.nb$remainder(other);
+        return thisAsLong.nb$divmod(other);
     }
 
     if (other instanceof Sk.builtin.float_) {
         thisAsFloat = new Sk.builtin.float_(this.v);
-        return thisAsFloat.nb$remainder(other);
+        return thisAsFloat.nb$divmod(other);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -626,6 +626,14 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
         return this.v - 0;
     }
 
+    if (other instanceof Sk.builtin.lng) {
+        return other.longCompare(this);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.numberCompare(this);
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -633,7 +641,8 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
 // as == and !=  Unless you modify the logic of numberCompare do not change
 // these.
 Sk.builtin.int_.prototype.__eq__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
+        other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none); //jshint ignore:line
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -641,7 +650,8 @@ Sk.builtin.int_.prototype.__eq__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__ne__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
+        other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return (me.numberCompare(other) != 0) || (other instanceof Sk.builtin.none); //jshint ignore:line
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -649,7 +659,8 @@ Sk.builtin.int_.prototype.__ne__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__lt__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
+        other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return me.numberCompare(other) < 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -657,7 +668,8 @@ Sk.builtin.int_.prototype.__lt__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__le__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
+        other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return me.numberCompare(other) <= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -665,7 +677,8 @@ Sk.builtin.int_.prototype.__le__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__gt__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
+        other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return me.numberCompare(other) > 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -673,7 +686,8 @@ Sk.builtin.int_.prototype.__gt__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__ge__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
+        other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
         return me.numberCompare(other) >= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
