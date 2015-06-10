@@ -409,6 +409,13 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
+
+    if (x instanceof Sk.builtin.int_) {
+        return new Sk.builtin.int_(Math.abs(x.v));
+    }
+    if (x instanceof Sk.builtin.float_) {
+        return new Sk.builtin.float_(Math.abs(x.v));
+    }
     if (Sk.builtin.checkNumber(x)) {
         return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
     } else if (Sk.builtin.checkComplex(x)) {
