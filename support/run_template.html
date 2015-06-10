@@ -2,9 +2,8 @@
 <html>
 <head>
     <title></title>
-    <script src="skulpt.js" type="text/javascript"></script>
+    %(scripts)s
     <script src="skulpt-stdlib.js" type="text/javascript"></script>
-    <script src="beautify.js" type="text/javascript"></script>
 
 </head>
 <body>
@@ -55,7 +54,7 @@ function runit(myDiv) {
                 return Sk.importMainWithBody("<stdin>",true,prog,true);
        });
        myPromise.then(function(mod) {}, function(err) {
-          console.log(err.toString());
+           console.log(err.toString());
             });
 }
 </script>

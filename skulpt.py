@@ -45,7 +45,7 @@ def bowerProperty(name):
 # Symbolic constants for the project structure.
 DIST_DIR        = 'dist'
 TEST_DIR        = 'test'
-RUN_DIR         = 'run'
+RUN_DIR         = 'support/tmp'
 
 # Symbolic constants for the naming of distribution files.
 STANDARD_NAMING = True
@@ -540,17 +540,19 @@ def make_skulpt_js(options,dest):
 def run_in_browser(fn, options):
     shutil.rmtree(RUN_DIR, ignore_errors=True)
     if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
-    make_skulpt_js(options,RUN_DIR)
     docbi(options,RUN_DIR)
-    shutil.copy("support/jsbeautify/beautify.js","{0}/beautify.js".format(RUN_DIR))
-    shutil.copy("support/closure-library/closure/goog/deps.js","{0}/deps.js".format(RUN_DIR))
-    #
+    scripts = []
+    for f in getFileList(FILE_TYPE_TEST):
+        scripts.append('<script type="text/javascript" src="%s"></script>' %
+                os.path.join('../..', f))
+    scripts = "\n".join(scripts)
+
     with open (fn,'r') as runfile:
         prog = runfile.read()
 
     with open('support/run_template.html') as tpfile:
         page = tpfile.read()
-        page = page % dict(code=prog)
+        page = page % dict(code=prog,scripts=scripts)
 
     with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
         htmlfile.write(page)
@@ -559,6 +561,8 @@ def run_in_browser(fn, options):
         os.system("open {0}/run.html".format(RUN_DIR))
     elif sys.platform == "linux2":
         os.system("xdg-open {0}/run.html".format(RUN_DIR))
+    elif sys.platform == "win32":
+        os.system("start {0}/run.html".format(RUN_DIR))
     else:
         print("open or refresh {0}/run.html in your browser to test/debug".format(RUN_DIR))
 
