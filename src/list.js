@@ -35,7 +35,7 @@ Sk.builtin.list = function (L, canSuspend) {
             }
         })(it.tp$iternext(canSuspend));
     } else {
-        throw new Sk.builtin.ValueError("expecting Array or iterable");
+        throw new Sk.builtin.TypeError("expecting Array or iterable");
     }
 
     if (!(this instanceof Sk.builtin.list)) {

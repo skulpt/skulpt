@@ -21,7 +21,7 @@ Sk.builtin.tuple = function (L) {
                 this.v.push(i);
             }
         } else {
-            throw new Sk.builtin.ValueError("expecting Array or iterable");
+            throw new Sk.builtin.TypeError("expecting Array or iterable");
         }
     }
 
