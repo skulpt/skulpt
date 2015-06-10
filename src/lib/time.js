@@ -216,18 +216,18 @@ var $builtinmodule = function (name) {
     The offset of the local (non-DST) timezone, in seconds west of UTC (negative in most of Western Europe, 
     positive in the US, zero in the UK).
     */
-    mod.timezone = Sk.builtin.assk$(stdTimezoneOffset() * 60, Sk.builtin.nmber.int$);
+    mod.timezone = new Sk.builtin.int_(stdTimezoneOffset() * 60);
 
     /*
     The offset of the local DST timezone, in seconds west of UTC, if one is defined. This is negative if the
     local DST timezone is east of UTC (as in Western Europe, including the UK). Only use this if daylight is nonzero.
     */
-    mod.altzone = Sk.builtin.assk$(altTimezoneOffset() * 60, Sk.builtin.nmber.int$);
+    mod.altzone = new Sk.builtin.int_(altTimezoneOffset() * 60);
 
     /*
     Nonzero if a DST timezone is defined.
     */
-    mod.daylight = Sk.builtin.assk$(dst(new Date()) ? 1 : 0, Sk.builtin.nmber.int$);
+    mod.daylight = new Sk.builtin.int_(dst(new Date()) ? 1 : 0);
 
     /*
     A tuple of two strings: the first is the name of the local non-DST timezone, the second is the name of the local 
@@ -243,7 +243,7 @@ var $builtinmodule = function (name) {
         } else {
             res = new Date().getTime() / 1000;
         }
-        return Sk.builtin.assk$(res, Sk.builtin.nmber.float$);
+        return new Sk.builtin.float_(res);
     });
 
     /*

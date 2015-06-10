@@ -1,7 +1,7 @@
 var $builtinmodule = function (name) {
     var mod = {};
-    mod.pi = Sk.builtin.assk$(Math.PI, Sk.builtin.nmber.float$);
-    mod.e = Sk.builtin.assk$(Math.E, Sk.builtin.nmber.float$);
+    mod.pi = new Sk.builtin.float_(Math.PI);
+    mod.e = new Sk.builtin.float_(Math.E);
 
     mod.fabs = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgs("fabs", arguments, 1, 1);

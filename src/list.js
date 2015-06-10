@@ -605,7 +605,7 @@ Sk.builtin.list.prototype["index"] = new Sk.builtin.func(function (self, item, s
 
     for (i = start; i < stop; ++i) {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
-            return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(i);
         }
     }
     throw new Sk.builtin.ValueError("list.index(x): x not in list");

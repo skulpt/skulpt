@@ -37,7 +37,7 @@ Sk.builtin.enumerate = function (iterable, start) {
         if (next === undefined) {
             return undefined;
         }
-        idx = Sk.builtin.assk$(this.$index++, Sk.builtin.nmber.int$);
+        idx = new Sk.builtin.int_(this.$index++);
         return new Sk.builtin.tuple([idx, next]);
     };
 

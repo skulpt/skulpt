@@ -81,7 +81,7 @@ var $builtinmodule = function (name) {
     mod.__floordiv__ = mod.floordiv;
 
     mod.index = new Sk.builtin.func(function (a) {
-        return Sk.builtin.assk$(Sk.misceval.asIndex(a));
+        return new Sk.builtin.int_(Sk.misceval.asIndex(a));
     });
     mod.__index__ = mod.index;
 

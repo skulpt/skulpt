@@ -94,8 +94,12 @@ Sk.builtin.asnum$ = function (a) {
 
 goog.exportSymbol("Sk.builtin.asnum$", Sk.builtin.asnum$);
 
-Sk.builtin.assk$ = function (a, b) {
-    return new Sk.builtin.nmber(a, b);
+Sk.builtin.assk$ = function (a) {
+    if (a % 1 === 0) {
+        return new Sk.builtin.int_(a);
+    } else {
+        return new Sk.builtin.float_(a);
+    }
 };
 goog.exportSymbol("Sk.builtin.assk$", Sk.builtin.assk$);
 
