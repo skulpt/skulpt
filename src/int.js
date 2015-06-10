@@ -154,6 +154,14 @@ Sk.builtin.int_.prototype.clone = function () {
 Sk.builtin.int_.prototype.nb$add = function (other) {
     var thisAsLong, thisAsFloat;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(this.v + other.v);
     }
@@ -175,6 +183,14 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
     var thisAsLong, thisAsFloat;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(this.v - other.v);
     }
@@ -194,6 +210,14 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
 
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
     var product, thisAsLong, thisAsFloat;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
 
     if (other instanceof Sk.builtin.int_) {
         product = this.v * other.v;
@@ -227,6 +251,14 @@ Sk.builtin.int_.prototype.nb$divide = function (other) {
 Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     var thisAsLong, thisAsFloat;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
 
         if (other.v === 0) {
@@ -252,6 +284,14 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
 Sk.builtin.int_.prototype.nb$remainder = function (other) {
     var thisAsLong, thisAsFloat;
     var tmp;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
 
     if (other instanceof Sk.builtin.int_) {
 
@@ -293,6 +333,14 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.tuple([
             this.nb$floor_divide(other),
@@ -316,6 +364,14 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
 Sk.builtin.int_.prototype.nb$power = function (other) {
     var thisAsLong;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.int_(Math.pow(this.v, other.v));
     }
@@ -335,6 +391,14 @@ Sk.builtin.int_.prototype.nb$power = function (other) {
 
 Sk.builtin.int_.prototype.nb$and = function (other) {
     var thisAsLong;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
@@ -360,6 +424,14 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
 Sk.builtin.int_.prototype.nb$or = function (other) {
     var thisAsLong;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         other = Sk.builtin.asnum$(other);
@@ -384,6 +456,14 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
 Sk.builtin.int_.prototype.nb$xor = function (other) {
     var thisAsLong;
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
+
     if (other instanceof Sk.builtin.int_) {
         var tmp;
         other = Sk.builtin.asnum$(other);
@@ -407,6 +487,14 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
 
 Sk.builtin.int_.prototype.nb$lshift = function (other) {
     var thisAsLong;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
@@ -438,6 +526,14 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
 
 Sk.builtin.int_.prototype.nb$rshift = function (other) {
     var thisAsLong;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.int_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.int_(0);
+    }
 
     if (other instanceof Sk.builtin.int_) {
         var tmp;
@@ -520,6 +616,14 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
         return this.v - other.v;
     }
 
+    if (other === Sk.builtin.bool.true$) {
+        return this.v - 1;
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        return this.v - 0;
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -527,7 +631,7 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
 // as == and !=  Unless you modify the logic of numberCompare do not change
 // these.
 Sk.builtin.int_.prototype.__eq__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
         return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none); //jshint ignore:line
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -535,7 +639,7 @@ Sk.builtin.int_.prototype.__eq__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__ne__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
         return (me.numberCompare(other) != 0) || (other instanceof Sk.builtin.none); //jshint ignore:line
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -543,7 +647,7 @@ Sk.builtin.int_.prototype.__ne__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__lt__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) < 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -551,7 +655,7 @@ Sk.builtin.int_.prototype.__lt__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__le__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) <= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -559,7 +663,7 @@ Sk.builtin.int_.prototype.__le__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__gt__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) > 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -567,7 +671,7 @@ Sk.builtin.int_.prototype.__gt__ = function (me, other) {
 };
 
 Sk.builtin.int_.prototype.__ge__ = function (me, other) {
-    if (other instanceof Sk.builtin.int_) {
+    if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) >= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;

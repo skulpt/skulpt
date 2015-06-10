@@ -167,6 +167,14 @@ Sk.builtin.float_.prototype.toFixed = function (x) {
 };
 
 Sk.builtin.float_.prototype.nb$add = function (other) {
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
+
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v + other.v);
     } else if (other instanceof Sk.builtin.lng) {
@@ -178,6 +186,14 @@ Sk.builtin.float_.prototype.nb$add = function (other) {
 
 
 Sk.builtin.float_.prototype.nb$subtract = function (other) {
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
+
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v - other.v);
     } else if (other instanceof Sk.builtin.lng) {
@@ -188,6 +204,14 @@ Sk.builtin.float_.prototype.nb$subtract = function (other) {
 };
 
 Sk.builtin.float_.prototype.nb$multiply = function (other) {
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
+
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v * other.v);
     } else if (other instanceof Sk.builtin.lng) {
@@ -198,6 +222,14 @@ Sk.builtin.float_.prototype.nb$multiply = function (other) {
 };
 
 Sk.builtin.float_.prototype.nb$divide = function (other) {
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
+
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 
         if (other.v === 0) {
@@ -254,6 +286,14 @@ Sk.builtin.float_.prototype.nb$divide = function (other) {
 
 Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
 
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
+
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 
         if (this.v === Infinity || this.v === -Infinity) {
@@ -302,6 +342,14 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
     var op2;
     var tmp;
     var result;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
 
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 
@@ -382,7 +430,8 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return new Sk.builtin.tuple([
             this.nb$floor_divide(other),
             this.nb$remainder(other)
@@ -395,6 +444,14 @@ Sk.builtin.float_.prototype.nb$divmod = function (other) {
 Sk.builtin.float_.prototype.nb$power = function (other) {
     var thisAsLong;
     var result;
+
+    if (other === Sk.builtin.bool.true$) {
+        other = new Sk.builtin.float_(1);
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        other = new Sk.builtin.float_(0);
+    }
 
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         if (this.v < 0 && other.v % 1 !== 0) {
@@ -488,6 +545,14 @@ Sk.builtin.float_.prototype.numberCompare = function (other) {
         }
     }
 
+    if (other === Sk.builtin.bool.true$) {
+        return this.v - 1;
+    }
+
+    if (other === Sk.builtin.bool.false$) {
+        return this.v - 0;
+    }
+
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -497,7 +562,8 @@ Sk.builtin.float_.prototype.numberCompare = function (other) {
 Sk.builtin.float_.prototype.__eq__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none); //jshint ignore:line
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -507,7 +573,8 @@ Sk.builtin.float_.prototype.__eq__ = function (me, other) {
 Sk.builtin.float_.prototype.__ne__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return (me.numberCompare(other) != 0) || (other instanceof Sk.builtin.none); //jshint ignore:line
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -517,7 +584,8 @@ Sk.builtin.float_.prototype.__ne__ = function (me, other) {
 Sk.builtin.float_.prototype.__lt__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) < 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -527,7 +595,8 @@ Sk.builtin.float_.prototype.__lt__ = function (me, other) {
 Sk.builtin.float_.prototype.__le__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) <= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -537,7 +606,8 @@ Sk.builtin.float_.prototype.__le__ = function (me, other) {
 Sk.builtin.float_.prototype.__gt__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) > 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
@@ -547,7 +617,8 @@ Sk.builtin.float_.prototype.__gt__ = function (me, other) {
 Sk.builtin.float_.prototype.__ge__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.float_ ||
+        other instanceof Sk.builtin.bool) {
         return me.numberCompare(other) >= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
