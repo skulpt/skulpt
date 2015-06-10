@@ -87,31 +87,31 @@ Sk.abstr.boNameToSlotFuncRhs_ = function (obj, name) {
 
     switch (name) {
     case "Add":
-        return obj.nb$add ? obj.nb$add : obj["__radd__"];
+        return obj.nb$reflected_add ? obj.nb$reflected_add : obj["__radd__"];
     case "Sub":
-        return obj.nb$subtract ? obj.nb$subtract : obj["__rsub__"];
+        return obj.nb$reflected_subtract ? obj.nb$reflected_subtract : obj["__rsub__"];
     case "Mult":
-        return obj.nb$multiply ? obj.nb$multiply : obj["__rmul__"];
+        return obj.nb$reflected_multiply ? obj.nb$reflected_multiply : obj["__rmul__"];
     case "Div":
-        return obj.nb$divide ? obj.nb$divide : obj["__rdiv__"];
+        return obj.nb$reflected_divide ? obj.nb$reflected_divide : obj["__rdiv__"];
     case "FloorDiv":
-        return obj.nb$floor_divide ? obj.nb$floor_divide : obj["__rfloordiv__"];
+        return obj.nb$reflected_floor_divide ? obj.nb$reflected_floor_divide : obj["__rfloordiv__"];
     case "Mod":
-        return obj.nb$remainder ? obj.nb$remainder : obj["__rmod__"];
+        return obj.nb$reflected_remainder ? obj.nb$reflected_remainder : obj["__rmod__"];
     case "DivMod":
-        return obj.nb$divmod ? obj.nb$divmod : obj["__rdivmod__"];
+        return obj.nb$reflected_divmod ? obj.nb$reflected_divmod : obj["__rdivmod__"];
     case "Pow":
-        return obj.nb$power ? obj.nb$power : obj["__rpow__"];
+        return obj.nb$reflected_power ? obj.nb$reflected_power : obj["__rpow__"];
     case "LShift":
-        return obj.nb$lshift ? obj.nb$lshift : obj["__rlshift__"];
+        return obj.nb$reflected_lshift ? obj.nb$reflected_lshift : obj["__rlshift__"];
     case "RShift":
-        return obj.nb$rshift ? obj.nb$rshift : obj["__rrshift__"];
+        return obj.nb$reflected_rshift ? obj.nb$reflected_rshift : obj["__rrshift__"];
     case "BitAnd":
-        return obj.nb$and ? obj.nb$and : obj["__rand__"];
+        return obj.nb$reflected_and ? obj.nb$reflected_and : obj["__rand__"];
     case "BitXor":
-        return obj.nb$xor ? obj.nb$xor : obj["__rxor__"];
+        return obj.nb$reflected_xor ? obj.nb$reflected_xor : obj["__rxor__"];
     case "BitOr":
-        return obj.nb$or ? obj.nb$or : obj["__ror__"];
+        return obj.nb$reflected_or ? obj.nb$reflected_or : obj["__ror__"];
     }
 };
 
@@ -167,7 +167,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         } else {
             ret = Sk.misceval.callsim(vop, v, w);
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
@@ -178,7 +178,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         } else {
             ret = Sk.misceval.callsim(wop, w, v);
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
@@ -195,18 +195,18 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         } else {  // assume that vop is an __xxx__ type method
             ret = Sk.misceval.callsim(vop, v, w); //  added to be like not-in-place... is this okay?
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
-    wop = Sk.abstr.iboNameToSlotFunc_(w, opname);
+    wop = Sk.abstr.boNameToSlotFuncRhs_(w, opname);
     if (wop !== undefined) {
         if (wop.call) {
             ret = wop.call(w, v);
         } else { // assume that wop is an __xxx__ type method
             ret = Sk.misceval.callsim(wop, w, v); //  added to be like not-in-place... is this okay?
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && !(ret instanceof Sk.builtin.NotImplemented)) {
             return ret;
         }
     }
@@ -817,3 +817,29 @@ Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
 goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
+
+Sk.abstr.registerPythonFunctions = function (thisClass, funcNames) {
+    for (var i = 0; i < funcNames.length; i++) {
+        thisClass.prototype.pythonFunctions.push(funcNames[i]);
+    }
+};
+
+Sk.abstr.markUnhashable = function (thisClass) {
+    var proto = thisClass.prototype;
+    proto.pythonFunctions.splice(proto.pythonFunctions.indexOf("__hash__"), 1);
+    proto.__hash__ = Sk.builtin.none.none$;
+    proto.tp$hash = Sk.builtin.none.none$;
+};
+
+Sk.abstr.setUpInheritance = function (childName, child, parent) {
+    goog.inherits(child, parent);
+    child.prototype.tp$base = parent;
+    child.prototype.tp$name = childName;
+    child.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(childName, child);
+    child.prototype.pythonFunctions = parent.prototype.pythonFunctions.slice();
+};
+
+Sk.abstr.superConstructor = function (thisClass, self) {
+    var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);
+    thisClass.prototype.tp$base.apply(self, argumentsForConstructor);
+};

@@ -5,7 +5,14 @@ Sk.builtin.object = function () {
     if (!(this instanceof Sk.builtin.object)) {
         return new Sk.builtin.object();
     }
-    this["$d"] = new Sk.builtin.dict([]);
+
+    // Python builtin instances do not maintain an internal Python dictionary
+    // (this causes problems when calling the super constructor on a dict
+    // instance). Instead, they maintain a Javascript object.
+    this["$d"] = {
+        "Sk.builtin.object": true   // Indicates this is a builtin object
+    };
+
     return this;
 };
 
@@ -139,11 +146,18 @@ Sk.builtin.object.prototype.GenericPythonGetAttr = function(self, name) {
 goog.exportSymbol("Sk.builtin.object.prototype.GenericPythonGetAttr", Sk.builtin.object.prototype.GenericPythonGetAttr);
 
 Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
+    var objname = Sk.abstr.typeName(this);
     goog.asserts.assert(typeof name === "string");
     // todo; lots o' stuff
+
     if (this["$d"].mp$ass_subscript) {
         this["$d"].mp$ass_subscript(new Sk.builtin.str(name), value);
     } else if (typeof this["$d"] === "object") {
+        // Cannot add new attributes to a builtin object
+        if (this["$d"]["Sk.builtin.object"] && this["$d"][name] === undefined) {
+            throw new Sk.builtin.AttributeError("'" + objname + "' object has no attribute '" + name + "'");
+        }
+
         this["$d"][name] = value;
     }
 };
@@ -165,24 +179,139 @@ Sk.builtin.object.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetA
 // overriding __getattr__ etc need to be able to call object.__getattr__ etc from Python
 Sk.builtin.object.prototype["__getattr__"] = Sk.builtin.object.prototype.GenericPythonGetAttr;
 Sk.builtin.object.prototype["__setattr__"] = Sk.builtin.object.prototype.GenericPythonSetAttr;
-
+Sk.builtin.object.prototype.tp$name = "object";
 Sk.builtin.object.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("object", Sk.builtin.object);
+
+/** Default implementations of dunder methods found in all Python objects */
+
+Sk.builtin.object.prototype["__repr__"] = function (self) {
+    Sk.builtin.pyCheckArgs("__repr__", arguments, 0, 0, false, true);
+
+    return self["$r"]();
+};
+
+Sk.builtin.object.prototype["__str__"] = function (self) {
+    Sk.builtin.pyCheckArgs("__str__", arguments, 0, 0, false, true);
+
+    return self["$r"]();
+};
+
+Sk.builtin.object.prototype["__hash__"] = function (self) {
+    Sk.builtin.pyCheckArgs("__hash__", arguments, 0, 0, false, true);
+
+    return self.tp$hash();
+};
+
+Sk.builtin.object.prototype["__eq__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__eq__", arguments, 1, 1, false, true);
+
+    return self.ob$eq(other);
+};
+
+Sk.builtin.object.prototype["__ne__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__ne__", arguments, 1, 1, false, true);
+
+    return self.ob$ne(other);
+};
+
+Sk.builtin.object.prototype["__lt__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__lt__", arguments, 1, 1, false, true);
+
+    return self.ob$lt(other);
+};
+
+Sk.builtin.object.prototype["__le__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__le__", arguments, 1, 1, false, true);
+
+    return self.ob$le(other);
+};
+
+Sk.builtin.object.prototype["__gt__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__gt__", arguments, 1, 1, false, true);
+
+    return self.ob$gt(other);
+};
+
+Sk.builtin.object.prototype["__ge__"] = function (self, other) {
+    Sk.builtin.pyCheckArgs("__ge__", arguments, 1, 1, false, true);
+
+    return self.ob$ge(other);
+};
+
+/** Default implementations of Javascript functions used in dunder methods */
+
+Sk.builtin.object.prototype["$r"] = function () {
+    return new Sk.builtin.str("<object>");
+};
+
+Sk.builtin.hashCount = 1;
+Sk.builtin.object.prototype.tp$hash = function () {
+    if (!this.$savedHash_) {
+        this.$savedHash_ = new Sk.builtin.int_(Sk.builtin.hashCount++);
+    }
+
+    return this.$savedHash_;
+};
+
+Sk.builtin.object.prototype.ob$eq = function (other) {
+    if (this === other) {
+        return Sk.builtin.bool.true$;
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.object.prototype.ob$ne = function (other) {
+    if (this === other) {
+        return Sk.builtin.bool.false$;
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.object.prototype.ob$lt = function (other) {
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.object.prototype.ob$le = function (other) {
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.object.prototype.ob$gt = function (other) {
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.object.prototype.ob$ge = function (other) {
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+// Wrap the following functions in Sk.builtin.func once that class is initialized
+Sk.builtin.object.prototype.pythonFunctions = ["__repr__", "__str__", "__hash__",
+"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
 
 /**
  * @constructor
  */
 Sk.builtin.none = function () {
+    // Initialize this instance's superclass
+    Sk.abstr.superConstructor(Sk.builtin.none, this);
+
+    this.v = {value: null, enumerable: false};
 };
-Sk.builtin.none.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("NoneType", Sk.builtin.none);
-Sk.builtin.none.prototype.tp$name = "NoneType";
-Sk.builtin.none.none$ = Object.create(Sk.builtin.none.prototype, {v: {value: null, enumerable: true}});
+Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
+Sk.builtin.none.prototype["$r"] = function () { return new Sk.builtin.str("None"); };
+Sk.builtin.none.prototype.tp$hash = function () {
+    return new Sk.builtin.int_(0);
+};
+Sk.builtin.none.none$ = new Sk.builtin.none();
 
-Sk.builtin.NotImplemented = function() {};
-Sk.builtin.NotImplemented.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("NotImplementedType", Sk.builtin.NotImplemented);
-Sk.builtin.NotImplemented.prototype.tp$name = "NotImplementedType";
+Sk.builtin.NotImplemented = function() {
+    // Initialize this instance's superclass
+    Sk.abstr.superConstructor(Sk.builtin.NotImplemented, this);
+};
+Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.str("NotImplemented"); };
-Sk.builtin.NotImplemented.NotImplemented$ = Object.create(Sk.builtin.NotImplemented.prototype, {v: {value: null, enumerable: false}});
-
+Sk.builtin.NotImplemented.NotImplemented$ = new Sk.builtin.NotImplemented();
 
 goog.exportSymbol("Sk.builtin.none", Sk.builtin.none);
 goog.exportSymbol("Sk.builtin.NotImplemented", Sk.builtin.NotImplemented);

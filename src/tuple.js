@@ -8,6 +8,8 @@ Sk.builtin.tuple = function (L) {
         return new Sk.builtin.tuple(L);
     }
 
+    Sk.abstr.superConstructor(Sk.builtin.tuple, this);
+
     if (L === undefined) {
         L = [];
     }
@@ -31,7 +33,8 @@ Sk.builtin.tuple = function (L) {
     return this;
 };
 
-Sk.builtin.tuple.prototype.tp$name = "tuple";
+Sk.abstr.setUpInheritance("tuple", Sk.builtin.tuple, Sk.builtin.seqtype);
+
 Sk.builtin.tuple.prototype["$r"] = function () {
     var ret;
     var i;
@@ -104,9 +107,6 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
     var j;
     var i;
     var ret;
-    if (!Sk.misceval.isIndex(n)) {
-        throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
-    }
 
     n = Sk.misceval.asIndex(n);
     ret = [];
@@ -119,9 +119,6 @@ Sk.builtin.tuple.prototype.sq$repeat = function (n) {
 };
 Sk.builtin.tuple.prototype.nb$multiply = Sk.builtin.tuple.prototype.sq$repeat;
 Sk.builtin.tuple.prototype.nb$inplace_multiply = Sk.builtin.tuple.prototype.sq$repeat;
-
-
-Sk.builtin.tuple.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("tuple", Sk.builtin.tuple);
 
 Sk.builtin.tuple.prototype.tp$iter = function () {
     var ret =
@@ -137,7 +134,8 @@ Sk.builtin.tuple.prototype.tp$iter = function () {
                 return undefined;
             }
             return ret.$obj.v[ret.$index++];
-        }
+        },
+        tp$name    : "tuple_iterator"
     };
     return ret;
 };
@@ -147,8 +145,6 @@ Sk.builtin.tuple.prototype["__iter__"] = new Sk.builtin.func(function (self) {
 
     return self.tp$iter();
 });
-
-Sk.builtin.tuple.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 Sk.builtin.tuple.prototype.tp$richcompare = function (w, op) {
     //print("  tup rc", JSON.stringify(this.v), JSON.stringify(w), op);
@@ -228,6 +224,18 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     }
 
     return new Sk.builtin.tuple(this.v.concat(other.v));
+};
+
+Sk.builtin.tuple.prototype.sq$contains = function (ob) {
+    var it, i;
+
+    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;

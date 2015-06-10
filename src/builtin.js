@@ -69,7 +69,10 @@ Sk.builtin.asnum$ = function (a) {
     if (typeof a === "string") {
         return a;
     }
-    if (a.constructor === Sk.builtin.nmber) {
+    if (a instanceof Sk.builtin.int_) {
+        return a.v;
+    }
+    if (a instanceof Sk.builtin.float_) {
         return a.v;
     }
     if (a.constructor === Sk.builtin.lng) {
@@ -79,8 +82,8 @@ Sk.builtin.asnum$ = function (a) {
         return a.toInt$();
     }
     if (a.constructor === Sk.builtin.biginteger) {
-        if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.nmber.threshold$)) > 0) ||
-            (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.nmber.threshold$)) < 0)) {
+        if ((a.trueCompare(new Sk.builtin.biginteger(Sk.builtin.int_.threshold$)) > 0) ||
+            (a.trueCompare(new Sk.builtin.biginteger(-Sk.builtin.int_.threshold$)) < 0)) {
             return a.toString();
         }
         return a.intValue();
@@ -106,10 +109,10 @@ Sk.builtin.asnum$nofloat = function (a) {
     if (a === null) {
         return a;
     }
-    if (a.constructor === Sk.builtin.none) {
+    if (a instanceof Sk.builtin.none) {
         return null;
     }
-    if (a.constructor === Sk.builtin.bool) {
+    if (a instanceof Sk.builtin.bool) {
         if (a.v) {
             return 1;
         }
@@ -118,13 +121,13 @@ Sk.builtin.asnum$nofloat = function (a) {
     if (typeof a === "number") {
         a = a.toString();
     }
-    if (a.constructor === Sk.builtin.nmber) {
+    if (a instanceof Sk.builtin.int_ || a instanceof Sk.builtin.float_) {
         a = a.v.toString();
     }
-    if (a.constructor === Sk.builtin.lng) {
+    if (a instanceof Sk.builtin.lng) {
         a = a.str$(10, true);
     }
-    if (a.constructor === Sk.builtin.biginteger) {
+    if (a instanceof Sk.builtin.biginteger) {
         a = a.toString();
     }
 
@@ -253,7 +256,7 @@ Sk.builtin.min = function min () {
     }
 
     for (i = 1; i < args.length; ++i) {
-        if (Sk.misceval.richCompareBool(args[i], lowest, "Lt")) {
+        if (Sk.misceval.isTrue(Sk.misceval.richCompareBool(args[i], lowest, "Lt"))) {
             lowest = args[i];
         }
     }
@@ -403,10 +406,12 @@ Sk.builtin.zip = function zip () {
 
 Sk.builtin.abs = function abs (x) {
     Sk.builtin.pyCheckArgs("abs", arguments, 1, 1);
+    if (x.__abs__) {
+        return Sk.misceval.callsim(x.__abs__, x);
+    }
+
     if (Sk.builtin.checkNumber(x)) {
         return new Sk.builtin.nmber(Math.abs(Sk.builtin.asnum$(x)), x.skType);
-    } else if (Sk.builtin.checkComplex(x)) {
-        return Sk.misceval.callsim(x.__abs__, x);
     }
 
     throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
@@ -628,30 +633,6 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
         throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
     }
 
-    if (type === Sk.builtin.int_.prototype.ob$type) {
-        if ((obj.tp$name === "number") && (obj.skType === Sk.builtin.nmber.int$)) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    if (type === Sk.builtin.float_.prototype.ob$type) {
-        if ((obj.tp$name === "number") && (obj.skType === Sk.builtin.nmber.float$)) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
-    if (type === Sk.builtin.none.prototype.ob$type) {
-        if (obj instanceof Sk.builtin.none) {
-            return Sk.builtin.bool.true$;
-        } else {
-            return Sk.builtin.bool.false$;
-        }
-    }
-
     // Normal case
     if (obj.ob$type === type) {
         return Sk.builtin.bool.true$;
@@ -665,6 +646,11 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
             }
         }
         return Sk.builtin.bool.false$;
+    }
+
+    // Handle subclassed builtins
+    if (obj instanceof type) {
+        return Sk.builtin.bool.true$;
     }
 
     issubclass = function (klass, base) {
@@ -687,7 +673,6 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
 
     return issubclass(obj.ob$type, type);
 };
-Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash (value) {
     var junk;
     Sk.builtin.pyCheckArgs("hash", arguments, 1, 1);
@@ -710,13 +695,6 @@ Sk.builtin.hash = function hash (value) {
         return value.$savedHash_;
     } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
         return Sk.misceval.callsim(value.__hash__, value);
-    } else if (value instanceof Sk.builtin.bool) {
-        if (value.v) {
-            return new Sk.builtin.nmber(1, Sk.builtin.nmber.int$);
-        }
-        return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
-    } else if (value instanceof Sk.builtin.none) {
-        return new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
     } else if (value instanceof Object) {
         if (value.__id === undefined) {
             Sk.builtin.hashCount += 1;
@@ -994,69 +972,75 @@ Sk.builtin.hasattr = function hasattr (obj, attr) {
 
 Sk.builtin.pow = function pow (a, b, c) {
     var ret;
-    var res;
-    var right;
-    var left;
-    var c_num;
-    var b_num;
-    var a_num;
+    var remainder;
     Sk.builtin.pyCheckArgs("pow", arguments, 2, 3);
 
-    if (c instanceof Sk.builtin.none) {
-        c = undefined;
-    }
+    // Attempt LHS with mod, if any
+    if (a.__pow__) {
+        ret = Sk.misceval.callsim(a.__pow__, a, b, c);
 
-    // add complex type hook here, builtin is messed up anyways
-    if (Sk.builtin.checkComplex(a)) {
-        return a.nb$power(b, c); // call complex pow function
-    }
-
-    a_num = Sk.builtin.asnum$(a);
-    b_num = Sk.builtin.asnum$(b);
-    c_num = Sk.builtin.asnum$(c);
-
-    if (!Sk.builtin.checkNumber(a) || !Sk.builtin.checkNumber(b)) {
-        if (c === undefined) {
-            throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
+        if (!(ret instanceof Sk.builtin.NotImplemented)) {
+            return ret;
         }
-        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
+
+        // If LHS with mod is not implemented, manually raise power
+        // then mod the result if possible
+        if (c !== undefined && !(c instanceof Sk.builtin.none)) {
+            ret = Sk.misceval.callsim(a.__pow__, a, b);
+
+            if (ret.__mod__) {
+                remainder = Sk.misceval.callsim(ret.__mod__, ret, c);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+
+            if (c.__rmod__) {
+                remainder = Sk.misceval.callsim(c.__rmod__, c, ret);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+        }
     }
-    if (a_num < 0 && b.skType === Sk.builtin.nmber.float$) {
-        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
+
+    // Attempt RHS with mod, if any
+    if (b.__rpow__) {
+        ret = Sk.misceval.callsim(b.__rpow__, b, a, c);
+
+        if (!(ret instanceof Sk.builtin.NotImplemented)) {
+            return ret;
+        }
+
+        // If RHS with mod is not implemented, manually raise power
+        // then mod the result if possible
+        if (c !== undefined && !(c instanceof Sk.builtin.none)) {
+            ret = Sk.misceval.callsim(b.__rpow__, b, a);
+
+            if (ret.__mod__) {
+                remainder = Sk.misceval.callsim(ret.__mod__, ret, c);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+
+            if (c.__rmod__) {
+                remainder = Sk.misceval.callsim(c.__rmod__, c, ret);
+
+                if (!(remainder instanceof Sk.builtin.NotImplemented)) {
+                    return remainder;
+                }
+            }
+        }
     }
 
     if (c === undefined) {
-        if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0)) {
-            return new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.float$);
-        }
-
-        left = new Sk.builtin.nmber(a_num, Sk.builtin.nmber.int$);
-        right = new Sk.builtin.nmber(b_num, Sk.builtin.nmber.int$);
-        res = left.nb$power(right);
-
-        if (a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng) {
-            return new Sk.builtin.lng(res);
-        }
-
-        return res;
-    } else {
-        if (!Sk.builtin.checkInt(a) || !Sk.builtin.checkInt(b) || !Sk.builtin.checkInt(c)) {
-            throw new Sk.builtin.TypeError("pow() 3rd argument not allowed unless all arguments are integers");
-        }
-        if (b_num < 0) {
-            throw new Sk.builtin.TypeError("pow() 2nd argument cannot be negative when 3rd argument specified");
-        }
-
-        if ((a instanceof Sk.builtin.lng || b instanceof Sk.builtin.lng || c instanceof Sk.builtin.lng) ||
-            (Math.pow(a_num, b_num) === Infinity)) {
-            // convert a to a long so that we can use biginteger's modPowInt method
-            a = new Sk.builtin.lng(a);
-            return a.nb$power(b, c);
-        } else {
-            ret = new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.int$);
-            return ret.nb$remainder(c);
-        }
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "' and '" + Sk.abstr.typeName(b) + "'");
     }
+    throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
 };
 
 Sk.builtin.quit = function quit (msg) {
