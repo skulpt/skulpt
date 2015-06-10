@@ -193,10 +193,18 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
 };
 
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
-    var thisAsLong, thisAsFloat;
+    var product, thisAsLong, thisAsFloat;
 
     if (other instanceof Sk.builtin.int_) {
-        return new Sk.builtin.int_(this.v * other.v);
+        product = this.v * other.v;
+
+        if (product > Sk.builtin.int_.threshold$ ||
+            product < -Sk.builtin.int_.threshold$) {
+            thisAsLong = new Sk.builtin.lng(this.v);
+            return thisAsLong.nb$multiply(other);
+        } else {
+            return new Sk.builtin.int_(product);
+        }
     }
 
     if (other instanceof Sk.builtin.lng) {
