@@ -328,7 +328,7 @@ Sk.builtin.lng.prototype.nb$divmod = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.float_(this.v);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$divmod(other);
     }
 

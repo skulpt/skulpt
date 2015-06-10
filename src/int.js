@@ -1,12 +1,16 @@
 /* jslint nomen: true, bitwise: true */
 /* global Sk: true */
 
-/*
+/**
  * type int, all integers are created with this method, it is also used
  * for the builtin int()
  *
  * Takes also implemented __int__ and __trunc__ methods for x into account
  * and tries to use __index__ and/or __int__ if base is not a number
+ *
+ * @constructor
+ * @param {*} x
+ * @param {number=} base
  */
 Sk.builtin.int_ = function (x, base) {
     "use strict";
@@ -27,9 +31,9 @@ Sk.builtin.int_ = function (x, base) {
     if(base !== undefined && !Sk.builtin.checkInt(base)) {
         if (Sk.builtin.checkFloat(base)) {
             throw new Sk.builtin.TypeError("integer argument expected, got " + Sk.abstr.typeName(base));
-        } else if (base.tp$getattr("__index__")) {
+        } else if (base.__index__) {
             base = Sk.misceval.callsim(base.__index__, base);
-        } else if(base.tp$getattr("__int__")) {
+        } else if(base.__int__) {
             base = Sk.misceval.callsim(base.__int__, base);
         } else {
             throw new Sk.builtin.AttributeError(Sk.abstr.typeName(base) + " instance has no attribute '__index__' or '__int__'");

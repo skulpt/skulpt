@@ -319,7 +319,7 @@ Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
             }
         }
 
-        return Sk.builtin.float_(Math.floor(this.v / other.v));
+        return new Sk.builtin.float_(Math.floor(this.v / other.v));
     }
 
     if (other instanceof Sk.builtin.lng) {
