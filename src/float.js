@@ -564,7 +564,9 @@ Sk.builtin.float_.prototype.__eq__ = function (me, other) {
         other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_ ||
         other instanceof Sk.builtin.bool) {
-        return (me.numberCompare(other) == 0) && !(other instanceof Sk.builtin.none); //jshint ignore:line
+        return me.numberCompare(other) == 0; //jshint ignore:line
+    } else if (other instanceof Sk.builtin.none) {
+        return false;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -575,7 +577,9 @@ Sk.builtin.float_.prototype.__ne__ = function (me, other) {
         other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_ ||
         other instanceof Sk.builtin.bool) {
-        return (me.numberCompare(other) != 0) || (other instanceof Sk.builtin.none); //jshint ignore:line
+        return me.numberCompare(other) != 0; //jshint ignore:line
+    } else if (other instanceof Sk.builtin.none) {
+        return true;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
