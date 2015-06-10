@@ -543,6 +543,7 @@ def run_in_browser(fn, options):
     make_skulpt_js(options,RUN_DIR)
     docbi(options,RUN_DIR)
     shutil.copy("support/jsbeautify/beautify.js","{0}/beautify.js".format(RUN_DIR))
+    shutil.copy("support/closure-library/closure/goog/deps.js","{0}/deps.js".format(RUN_DIR))
     #
     with open (fn,'r') as runfile:
         prog = runfile.read()
@@ -904,6 +905,7 @@ def usageString(program):
 Commands:
 
     run              Run a Python file using Skulpt
+    brun             Run a Python file using Skulpt but in your browser
     test             Run all test cases
     dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
