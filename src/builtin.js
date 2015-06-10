@@ -343,9 +343,9 @@ Sk.builtin.sum = function sum (iter, start) {
 
     it = iter.tp$iter();
     for (i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
-        if (i.skType === Sk.builtin.nmber.float$) {
+        if (i instanceof Sk.builtin.float_) {
             has_float = true;
-            if (tot.skType !== Sk.builtin.nmber.float$) {
+            if (!(tot instanceof Sk.builtin.float_)) {
                 tot = new Sk.builtin.nmber(Sk.builtin.asnum$(tot),
                     Sk.builtin.nmber.float$);
             }
@@ -1018,12 +1018,12 @@ Sk.builtin.pow = function pow (a, b, c) {
         }
         throw new Sk.builtin.TypeError("unsupported operand type(s) for pow(): '" + Sk.abstr.typeName(a) + "', '" + Sk.abstr.typeName(b) + "', '" + Sk.abstr.typeName(c) + "'");
     }
-    if (a_num < 0 && b.skType === Sk.builtin.nmber.float$) {
+    if (a_num < 0 && b instanceof Sk.builtin.float_) {
         throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
     }
 
     if (c === undefined) {
-        if ((a.skType === Sk.builtin.nmber.float$ || b.skType === Sk.builtin.nmber.float$) || (b_num < 0)) {
+        if ((a instanceof Sk.builtin.float_ || b instanceof Sk.builtin.float_) || (b_num < 0)) {
             return new Sk.builtin.nmber(Math.pow(a_num, b_num), Sk.builtin.nmber.float$);
         }
 

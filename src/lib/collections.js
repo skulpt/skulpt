@@ -159,7 +159,7 @@ var $builtinmodule = function (name) {
         }
         else {
             if (!Sk.builtin.checkInt(n)) {
-                if (n.skType === Sk.builtin.nmber.float$) {
+                if (n instanceof Sk.builtin.float_) {
                     throw new Sk.builtin.TypeError("integer argument expected, got float");
                 }
                 else {
