@@ -441,12 +441,12 @@ Sk.abstr.sequenceContains = function (seq, ob) {
         return Sk.misceval.callsim(special, seq, ob);
     }
 
-    seqtypename = Sk.abstr.typeName(seq);
-    if (!seq.tp$iter) {
+    if (!Sk.builtin.checkIterable(seq)) {
+        seqtypename = Sk.abstr.typeName(seq);
         throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
-    for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
             return true;
         }

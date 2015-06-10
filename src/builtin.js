@@ -376,7 +376,7 @@ Sk.builtin.zip = function zip () {
 
     iters = [];
     for (i = 0; i < arguments.length; i++) {
-        if (arguments[i].tp$iter) {
+        if (Sk.builtin.checkIterable(arguments[i])) {
             iters.push(Sk.abstr.iter(arguments[i]));
         } else {
             throw new Sk.builtin.TypeError("argument " + i + " must support iteration");
