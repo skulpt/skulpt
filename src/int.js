@@ -333,7 +333,7 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
 };
 
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
-    var thisAsLong;
+    var thisAsLong, thisAsFloat;
 
     if (other === Sk.builtin.bool.true$) {
         other = new Sk.builtin.int_(1);
@@ -364,7 +364,7 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
 };
 
 Sk.builtin.int_.prototype.nb$power = function (other, mod) {
-    var power, thisAsLong;
+    var power, ret, thisAsLong, thisAsFloat;
 
     if (other === Sk.builtin.bool.true$) {
         other = new Sk.builtin.int_(1);
@@ -413,7 +413,7 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
 };
 
 Sk.builtin.int_.prototype.nb$and = function (other) {
-    var thisAsLong;
+    var thisAsLong, thisAsFloat;
 
     if (other === Sk.builtin.bool.true$) {
         other = new Sk.builtin.int_(1);

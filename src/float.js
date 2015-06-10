@@ -399,7 +399,7 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
         }
 
         if (this.v === 0) {
-           return new Sk.builtin.float_(0);
+            return new Sk.builtin.float_(0);
         }
 
         op2 = parseFloat(other.str$(10, true));
