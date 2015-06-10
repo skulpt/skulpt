@@ -49,14 +49,14 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
 };
 Sk.builtin.lng.co_varnames = [ "base" ];
 Sk.builtin.lng.co_numargs = 2;
-Sk.builtin.lng.$defaults = [ new Sk.builtin.nmber(10, Sk.builtin.nmber.int$) ];
+Sk.builtin.lng.$defaults = [ new Sk.builtin.int_(10) ];
 
 Sk.builtin.lng.prototype.tp$index = function () {
     return parseInt(this.str$(10, true), 10);
 };
 
 Sk.builtin.lng.prototype.tp$hash = function () {
-    return new Sk.builtin.nmber(this.tp$index(), Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(this.tp$index());
 };
 
 Sk.builtin.lng.prototype.__int__ = new Sk.builtin.func(function(self) {
@@ -64,7 +64,7 @@ Sk.builtin.lng.prototype.__int__ = new Sk.builtin.func(function(self) {
         return new Sk.builtin.lng(self);
     }
 
-    return new Sk.builtin.nmber(self.toInt$(), Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(self.toInt$());
 });
 
 Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
@@ -72,7 +72,7 @@ Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
 });
 
 Sk.builtin.lng.prototype.__float__ = new Sk.builtin.func(function(self) {
-    return new Sk.builtin.nmber(Sk.ffi.remapToJs(self), Sk.builtin.nmber.float$);
+    return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
 Sk.builtin.lng.prototype.tp$name = "long";
@@ -127,7 +127,7 @@ Sk.builtin.lng.prototype.nb$add = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$add(other);
     }
 
@@ -156,7 +156,7 @@ Sk.builtin.lng.prototype.nb$subtract = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$subtract(other);
     }
 
@@ -185,7 +185,7 @@ Sk.builtin.lng.prototype.nb$multiply = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$multiply(other);
     }
 
@@ -213,7 +213,7 @@ Sk.builtin.lng.prototype.nb$divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$divide(other);
     }
 
@@ -254,7 +254,7 @@ Sk.builtin.lng.prototype.nb$floor_divide = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$floor_divide(other);
     }
 
@@ -271,13 +271,13 @@ Sk.builtin.lng.prototype.nb$remainder = function (other) {
 
     if (this.biginteger.trueCompare(Sk.builtin.biginteger.ZERO) === 0) {
         if (other instanceof Sk.builtin.float_) {
-            return new Sk.builtin.nmber(0, Sk.builtin.nmber.float$);
+            return new Sk.builtin.float_(0);
         }
         return new Sk.builtin.lng(0);
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$remainder(other);
     }
 
@@ -320,7 +320,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
     }
     if (typeof n === "number") {
         if (n < 0) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
             return thisAsFloat.nb$power(n);
         }
         return new Sk.builtin.lng(this.biginteger.pow(new Sk.builtin.biginteger(n)));
@@ -332,7 +332,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
     if (n instanceof Sk.builtin.float_ || 
         (n instanceof Sk.builtin.int_ && n.v < 0)) {
-        thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
         return thisAsFloat.nb$power(n);
     }
 
@@ -343,7 +343,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
     if (n instanceof Sk.builtin.lng) {
         if (n.nb$isnegative()) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
             return thisAsFloat.nb$power(n);
         }
         return new Sk.builtin.lng(this.biginteger.pow(n.biginteger));
@@ -351,7 +351,7 @@ Sk.builtin.lng.prototype.nb$power = function (n, mod) {
 
     if (n instanceof Sk.builtin.biginteger) {
         if (n.isnegative()) {
-            thisAsFloat = new Sk.builtin.nmber(this.str$(10, true), Sk.builtin.nmber.float$);
+            thisAsFloat = new Sk.builtin.float_(this.str$(10, true));
             return thisAsFloat.nb$power(n);
         }
         return new Sk.builtin.lng(this.biginteger.pow(n));
@@ -492,7 +492,7 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
     }
 
     if (other instanceof Sk.builtin.float_) {
-        thisAsFloat = new Sk.builtin.nmber(this, Sk.builtin.nmber.float$);
+        thisAsFloat = new Sk.builtin.float_(this);
         return thisAsFloat.numberCompare(other);
     }
 
