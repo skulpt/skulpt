@@ -807,9 +807,10 @@ function seqIter(obj) {
     var ret;
     this.idx = 0;
     this.myobj = obj;
+    this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
     this.tp$iternext = function () {
         try {
-            ret = Sk.misceval.callsim(this.myobj["__getitem__"], this.myobj, Sk.ffi.remapToPy(this.idx));
+            ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
         } catch (e) {
             if (e instanceof Sk.builtin.IndexError) {
                 return undefined;
