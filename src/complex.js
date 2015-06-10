@@ -67,7 +67,7 @@ Sk.builtin.complex = function (real, imag) {
 
     // try_complex_special_method
     tmp = Sk.builtin.complex.try_complex_special_method(r);
-    if (tmp != null) {
+    if (tmp != null && tmp !== Sk.builtin.NotImplemented.NotImplemented$) {
         if (!Sk.builtin.checkComplex(tmp)) {
             throw new Sk.builtin.TypeError("__complex__ should return a complex object");
         }

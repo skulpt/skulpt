@@ -128,7 +128,7 @@ Sk.builtin.int_.prototype.__float__ = new Sk.builtin.func(function(self) {
 });
 
 Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function(self) {
-    throw new Sk.builtin.TypeError("__complex__ is not implemented for type 'int'.");
+    return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
 Sk.builtin.int_.prototype.tp$name = "int";
