@@ -45,6 +45,7 @@ def bowerProperty(name):
 # Symbolic constants for the project structure.
 DIST_DIR        = 'dist'
 TEST_DIR        = 'test'
+RUN_DIR         = 'run'
 
 # Symbolic constants for the naming of distribution files.
 STANDARD_NAMING = True
@@ -426,23 +427,7 @@ def dist(options):
     if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
 
     if options.uncompressed:
-        if options.verbose:
-            print ". Writing combined version..."
-        combined = ''
-        linemap = open(os.path.join(DIST_DIR, OUTFILE_MAP), "w")
-        curline = 1
-        for file in getFileList(FILE_TYPE_DIST):
-            curfiledata = open(file).read()
-            combined += curfiledata
-            print >>linemap, "%d:%s" % (curline, file)
-            curline += len(curfiledata.split("\n")) - 1
-        linemap.close()
-        uncompfn = os.path.join(DIST_DIR, OUTFILE_REG)
-        open(uncompfn, "w").write(combined)
-        # Prevent accidental editing of the uncompressed distribution file.
-        if sys.platform != "win32":
-            os.chmod(os.path.join(DIST_DIR, OUTFILE_REG), 0o444)
-
+        make_skulpt_js(options,DIST_DIR)
 
     # Make the compressed distribution.
     compfn = os.path.join(DIST_DIR, OUTFILE_MIN)
@@ -532,6 +517,49 @@ def dist(options):
         print ". Wrote {0}.".format(compfn)
         if has_gzip:
             print ". gzip of compressed: %d bytes" % size
+
+
+def make_skulpt_js(options,dest):
+    if options.verbose:
+        print ". Writing combined version..."
+    combined = ''
+    linemap = open(os.path.join(dest, OUTFILE_MAP), "w")
+    curline = 1
+    for file in getFileList(FILE_TYPE_DIST):
+        curfiledata = open(file).read()
+        combined += curfiledata
+        print >> linemap, "%d:%s" % (curline, file)
+        curline += len(curfiledata.split("\n")) - 1
+    linemap.close()
+    uncompfn = os.path.join(dest, OUTFILE_REG)
+    open(uncompfn, "w").write(combined)
+    # Prevent accidental editing of the uncompressed distribution file.
+    if sys.platform != "win32":
+        os.chmod(os.path.join(dest, OUTFILE_REG), 0o444)
+
+def run_in_browser(fn, options):
+    shutil.rmtree(RUN_DIR, ignore_errors=True)
+    if not os.path.exists(RUN_DIR): os.mkdir(RUN_DIR)
+    make_skulpt_js(options,RUN_DIR)
+    docbi(options,RUN_DIR)
+    shutil.copy("support/jsbeautify/beautify.js","{0}/beautify.js".format(RUN_DIR))
+    #
+    with open (fn,'r') as runfile:
+        prog = runfile.read()
+
+    with open('support/run_template.html') as tpfile:
+        page = tpfile.read()
+        page = page % dict(code=prog)
+
+    with open("{0}/run.html".format(RUN_DIR),"w") as htmlfile:
+        htmlfile.write(page)
+
+    if sys.platform == "darwin":
+        os.system("open {0}/run.html".format(RUN_DIR))
+    elif sys.platform == "linux2":
+        os.system("xdg-open {0}/run.html".format(RUN_DIR))
+    else:
+        print("open or refresh {0}/run.html in your browser to test/debug".format(RUN_DIR))
 
 def regenparser():
     """regenerate the parser/ast source code"""
@@ -647,8 +675,8 @@ def upload():
 def doctest():
     ret = os.system("python2.6 ~/Desktop/3rdparty/google_appengine/dev_appserver.py -p 20710 doc")
 
-def docbi(options):
-    builtinfn = "doc/static/{0}".format(OUTFILE_LIB)
+def docbi(options,dest="doc/dstatic"):
+    builtinfn = "{0}/{1}".format(dest,OUTFILE_LIB)
     with open(builtinfn, "w") as f:
         f.write(getBuiltinsAsJson(options))
         if options.verbose:
@@ -915,7 +943,7 @@ def main():
     parser.add_option("-v", "--verbose",
         action="store_true",
         dest="verbose",
-        default=True,
+        default=False,
         help="Make output more verbose [default]")
     (options, args) = parser.parse_args()
 
@@ -952,6 +980,8 @@ def main():
         regensymtabtests()
     elif cmd == "run":
         run(sys.argv[2])
+    elif cmd == "brun":
+        run_in_browser(sys.argv[2],options)
     elif cmd == 'rununits':
         rununits()
     elif cmd == "runopt":
