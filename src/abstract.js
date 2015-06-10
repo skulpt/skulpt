@@ -399,8 +399,7 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     var value;
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    } else if (v instanceof Sk.builtin.int_ || v instanceof Sk.builtin.float_ ||
-               v instanceof Sk.builtin.bool) {
+    } else if (v instanceof Sk.builtin.bool) {
         value = Sk.builtin.asnum$(v);
         if (op === "USub") {
             return new Sk.builtin.nmber(-value, v.skType);
