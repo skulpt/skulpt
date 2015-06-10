@@ -367,6 +367,11 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Return this int raised to the power of other, with optional mod.
+ * @param  {*} other
+ * @param  {*=} mod
+ */
 Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     var power, ret, thisAsLong, thisAsFloat;
 

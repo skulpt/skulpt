@@ -441,7 +441,12 @@ Sk.builtin.float_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-Sk.builtin.float_.prototype.nb$power = function (other) {
+/**
+ * Return this float raised to the power of other, with optional mod.
+ * @param  {*} other
+ * @param  {*=} mod
+ */
+Sk.builtin.float_.prototype.nb$power = function (other, mod) {
     var thisAsLong;
     var result;
 
