@@ -183,6 +183,10 @@ Sk.builtin.int_.prototype.tp$name = "int";
 Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("int", Sk.builtin.int_);
 
 /**
+ * @function
+ * @name  tp$getattr
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * The function used to get attributes from this class and its instances.
  *
  * Javascript function, returns Python or Javascript function.
@@ -817,6 +821,10 @@ Sk.builtin.int_.prototype.nb$invert = function () {
 };
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Add a Python object to this instance and return the result (i.e. this += other).
  *
  * Returns NotImplemented if inplace addition between int and other type is unsupported.
@@ -829,6 +837,10 @@ Sk.builtin.int_.prototype.nb$invert = function () {
 Sk.builtin.int_.prototype.nb$inplace_add = Sk.builtin.int_.prototype.nb$add;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Subtract a Python object from this instance and return the result (i.e. this -= other).
  *
  * Returns NotImplemented if inplace subtraction between int and other type is unsupported.
@@ -841,6 +853,10 @@ Sk.builtin.int_.prototype.nb$inplace_add = Sk.builtin.int_.prototype.nb$add;
 Sk.builtin.int_.prototype.nb$inplace_subtract = Sk.builtin.int_.prototype.nb$subtract;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Multiply this instance by a Python object and return the result (i.e. this *= other).
  *
  * Returns NotImplemented if inplace multiplication between int and other type is unsupported.
@@ -854,6 +870,10 @@ Sk.builtin.int_.prototype.nb$inplace_subtract = Sk.builtin.int_.prototype.nb$sub
 Sk.builtin.int_.prototype.nb$inplace_multiply = Sk.builtin.int_.prototype.nb$multiply;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Divide this instance by a Python object and return the result (i.e this /= other).
  *
  * Returns NotImplemented if inplace division between int and other type is unsupported.
@@ -866,6 +886,10 @@ Sk.builtin.int_.prototype.nb$inplace_multiply = Sk.builtin.int_.prototype.nb$mul
 Sk.builtin.int_.prototype.nb$inplace_divide = Sk.builtin.int_.prototype.nb$divide;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Modulo this instance by a Python object and return the result (i.e. this %= other).
  *
  * Returns NotImplemented if inplace modulation between int and other type is unsupported.
@@ -878,6 +902,10 @@ Sk.builtin.int_.prototype.nb$inplace_divide = Sk.builtin.int_.prototype.nb$divid
 Sk.builtin.int_.prototype.nb$inplace_remainder = Sk.builtin.int_.prototype.nb$remainder;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Floor divide this instance by a Python object and return the result (i.e. this //= other).
  *
  * Returns NotImplemented if inplace floor division between int and other type is unsupported.
@@ -890,6 +918,10 @@ Sk.builtin.int_.prototype.nb$inplace_remainder = Sk.builtin.int_.prototype.nb$re
 Sk.builtin.int_.prototype.nb$inplace_floor_divide = Sk.builtin.int_.prototype.nb$floor_divide;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
  *
  * If mod is undefined, return this \*\*= other. Else, return (this \*\*= other) %= mod.
@@ -905,6 +937,10 @@ Sk.builtin.int_.prototype.nb$inplace_floor_divide = Sk.builtin.int_.prototype.nb
 Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Compute the bitwise AND of this instance and a Python object (i.e. this &= other).
  *
  * Returns NotImplemented if inplace bitwise AND operation between int and other type is unsupported.
@@ -917,6 +953,10 @@ Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
 Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Compute the bitwise OR of this instance and a Python object (i.e. this |= other).
  *
  * Returns NotImplemented if inplace bitwise OR operation between int and other type is unsupported.
@@ -929,6 +969,10 @@ Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
 Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Compute the bitwise XOR of this instance and a Python object (i.e. this ^= other).
  *
  * Returns NotImplemented if inplace bitwise XOR operation between int and other type is unsupported.
@@ -941,6 +985,10 @@ Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
 Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Compute the bitwise left shift of this instance by a Python object (i.e. this <<= other).
  *
  * Returns NotImplemented if inplace bitwise left shift operation between int and other type is unsupported.
@@ -953,6 +1001,10 @@ Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
 Sk.builtin.int_.prototype.nb$inplace_lshift = Sk.builtin.int_.prototype.nb$lshift;
 
 /**
+ * @function
+ * @name  nb$inplace_add
+ * @memberOf Sk.builtin.int_.prototype
+ * @description
  * Compute the bitwise right shift of this instance by a Python object (i.e. this >>= other).
  *
  * Returns NotImplemented if inplace bitwise right shift operation between int and other type is unsupported.
