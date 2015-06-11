@@ -192,11 +192,11 @@ Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("int", Sk.bu
 Sk.builtin.int_.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 /**
- * Return this instance as an index.
+ * Return this instance's Javascript value.
  *
  * Javascript function, returns Javascript object.
  *
- * @return {number} This instance as an index.
+ * @return {number} This instance's value.
  */
 Sk.builtin.int_.prototype.tp$index = function () {
     return this.v;
