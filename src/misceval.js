@@ -208,6 +208,8 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         method,
         op2method,
         res,
+        vcmp,
+        wcmp,
         w_seq_type,
         w_num_type,
         v_seq_type,
@@ -349,13 +351,13 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     // use comparison methods if they are given for either object
     if (v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined) {
         if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+            return Sk.misceval.isTrue(res);
         }
     }
 
     if (w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
         if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+            return Sk.misceval.isTrue(res);
         }
     }
 
@@ -372,23 +374,25 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         "LtE"  : "__le__"
     };
 
-    method = op2method[op];
-    swapped_method = op2method[Sk.misceval.swappedOp_[op]];
-
-    if (v[method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
+    method = Sk.abstr.lookupSpecial(v, op2method[op]);
+    if (method) {
+        res = Sk.misceval.callsim(method, v, w);
         if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
-        }
-    } else if (w[swapped_method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+            return Sk.misceval.isTrue(res);
         }
     }
 
-    if (v["__cmp__"]) {
-        ret = Sk.misceval.callsim(v["__cmp__"], v, w);
+    swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
+    if (swapped_method) {
+        res = Sk.misceval.callsim(swapped_method, w, v);
+        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(res);
+        }
+    }
+
+    vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
+    if (vcmp) {
+        ret = Sk.misceval.callsim(vcmp, v, w);
         ret = Sk.builtin.asnum$(ret);
         if (op === "Eq") {
             return ret === 0;
@@ -405,9 +409,10 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         }
     }
 
-    if (w["__cmp__"]) {
+    wcmp = Sk.abstr.lookupSpecial(w, "__cmp__");
+    if (wcmp) {
         // note, flipped on return value and call
-        ret = Sk.misceval.callsim(w["__cmp__"], w, v);
+        ret = Sk.misceval.callsim(wcmp, w, v);
         ret = Sk.builtin.asnum$(ret);
         if (op === "Eq") {
             return ret === 0;
