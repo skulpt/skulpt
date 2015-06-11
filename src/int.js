@@ -2,15 +2,25 @@
 /* global Sk: true */
 
 /**
+ * @namespace Sk.builtin
+ */
+
+/**
+ * @constructor
+ * Sk.builtin.int_
+ *
+ * @description
+ * Constructor for Python int. If provided number is greater than integer threshold, will return a Python long instead.
+ *
  * type int, all integers are created with this method, it is also used
  * for the builtin int()
  *
- * Takes also implemented __int__ and __trunc__ methods for x into account
- * and tries to use __index__ and/or __int__ if base is not a number
+ * Takes also implemented \_\_int\_\_ and \_\_trunc\_\_ methods for x into account
+ * and tries to use \_\_index\_\_ and/or \_\_int\_\_ if base is not a number
  *
- * @constructor
- * @param {*} x
- * @param {number=} base
+ * @param  {!(Object|number)} x    Python object or Javascript number to convert to Python int
+ * @param  {!(Object|number)=} base Optional base, can only be used when x is Sk.builtin.str
+ * @return {(Sk.builtin.int_|Sk.builtin.lng)}      Python int (or long, if overflow)
  */
 Sk.builtin.int_ = function (x, base) {
     "use strict";
@@ -135,28 +145,81 @@ Sk.builtin.int_.prototype.__complex__ = new Sk.builtin.func(function(self) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
+/**
+ * The name of this class's type.
+ * @type {string}
+ */
 Sk.builtin.int_.prototype.tp$name = "int";
+
+/**
+ * The type object of this class.
+ * @type {Sk.builtin.type}
+ */
 Sk.builtin.int_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("int", Sk.builtin.int_);
 
+/**
+ * The function used to get attributes from this class and its instances.
+ *
+ * Javascript function, returns Python or Javascript function.
+ *
+ * @type {function(string):?}
+ */
 Sk.builtin.int_.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
+/**
+ * Return this instance as an index.
+ *
+ * Javascript function, returns Javascript object.
+ *
+ * @return {number} This instance as an index.
+ */
 Sk.builtin.int_.prototype.tp$index = function () {
     return this.v;
 };
 
+/**
+ * Return the hash value of this instance.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} The hash value
+ */
 Sk.builtin.int_.prototype.tp$hash = function () {
     //the hash of all numbers should be an int and since javascript doesn't really
     //care every number can be an int.
     return new Sk.builtin.int_(this.v);
 };
 
-//  Threshold to determine when types should be converted to long
+/**
+ * Threshold to determine when types should be converted to long.
+ *
+ * Note: be sure to check against threshold in both positive and negative directions.
+ *
+ * @type {number}
+ */
 Sk.builtin.int_.threshold$ = Math.pow(2, 53) - 1;
 
+/**
+ * Returns a copy of this instance.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} The copy
+ */
 Sk.builtin.int_.prototype.clone = function () {
     return new Sk.builtin.int_(this.v);
 };
 
+/**
+ * Add a Python object to this instance and return the result (i.e. this + other).
+ *
+ * Returns NotImplemented if addition between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to add.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the addition.
+ */
 Sk.builtin.int_.prototype.nb$add = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -185,7 +248,16 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-
+/**
+ * Subtract a Python object from this instance and return the result (i.e. this - other).
+ *
+ * Returns NotImplemented if subtraction between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to subtract.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the subtraction.
+ */
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -214,6 +286,16 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Multiply this instance by a Python object and return the result (i.e. this * other).
+ *
+ * Returns NotImplemented if multiplication between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The multiplier, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the multiplication
+ */
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
     var product, thisAsLong, thisAsFloat;
 
@@ -250,10 +332,30 @@ Sk.builtin.int_.prototype.nb$multiply = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Divide this instance by a Python object and return the result (i.e this / other).
+ *
+ * Returns NotImplemented if division between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the division
+ */
 Sk.builtin.int_.prototype.nb$divide = function (other) {
     return this.nb$floor_divide(other);
 };
 
+/**
+ * Floor divide this instance by a Python object and return the result (i.e. this // other).
+ *
+ * Returns NotImplemented if floor division between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the floor division
+ */
 Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -287,6 +389,16 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Modulo this instance by a Python object and return the result (i.e. this % other).
+ *
+ * Returns NotImplemented if modulation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the modulation
+ */
 Sk.builtin.int_.prototype.nb$remainder = function (other) {
     var thisAsLong, thisAsFloat;
     var tmp;
@@ -336,6 +448,18 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+
+/**
+ * Compute the quotient and the remainder of this instance and a given Python object and return the result.
+ *
+ * Returns NotImplemented if division or modulo operations between int and other type are unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.tuple|Sk.builtin.NotImplemented)} The result of the operation.
+ * If both operations are supported, a Python tuple containing (quotient, remainder) in that order.
+ */
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -367,10 +491,19 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+
 /**
- * Return this int raised to the power of other, with optional mod.
- * @param  {*} other
- * @param  {*=} mod
+ * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
+ *
+ * If mod is undefined, return this \*\* other. Else, return (this \*\* other) % mod.
+ *
+ * Returns NotImplemented if exponentiation or modulation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The exponent, which must be a Python object.
+ * @param  {!Object=} mod The optional divisor, which must be a Python object if defined.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the exponentiation.
  */
 Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     var power, ret, thisAsLong, thisAsFloat;
@@ -421,6 +554,16 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Compute the bitwise AND of this instance and a Python object (i.e. this & other).
+ *
+ * Returns NotImplemented if bitwise AND operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to AND with this one
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the conjunction
+ */
 Sk.builtin.int_.prototype.nb$and = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -453,6 +596,16 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Compute the bitwise OR of this instance and a Python object (i.e. this | other).
+ *
+ * Returns NotImplemented if bitwise OR operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to OR with this one
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the disjunction
+ */
 Sk.builtin.int_.prototype.nb$or = function (other) {
     var thisAsLong;
 
@@ -485,6 +638,16 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Compute the bitwise XOR of this instance and a Python object (i.e. this ^ other).
+ *
+ * Returns NotImplemented if bitwise XOR operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to XOR with this one
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the exclusive disjunction
+ */
 Sk.builtin.int_.prototype.nb$xor = function (other) {
     var thisAsLong;
 
@@ -517,6 +680,16 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Compute the bitwise left shift of this instance by a Python object (i.e. this << other).
+ *
+ * Returns NotImplemented if bitwise left shift operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object by which to left shift
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the left shift
+ */
 Sk.builtin.int_.prototype.nb$lshift = function (other) {
     var thisAsLong;
 
@@ -544,6 +717,7 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
         }
 
         if (tmp !== undefined) {
+            tmp = /** @type {number} */ (tmp);
             return new Sk.builtin.int_(tmp);
         }
     }
@@ -556,6 +730,16 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Compute the bitwise right shift of this instance by a Python object (i.e. this >> other).
+ *
+ * Returns NotImplemented if bitwise right shift operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object by which to right shift
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the right shift
+ */
 Sk.builtin.int_.prototype.nb$rshift = function (other) {
     var thisAsLong;
 
@@ -583,6 +767,7 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
         }
 
         if (tmp !== undefined) {
+            tmp = /** @type {number} */ (tmp);
             return new Sk.builtin.int_(tmp);
         }
     }
@@ -595,54 +780,229 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/**
+ * Compute the bitwise inverse of this instance (i.e. ~this).
+ *
+ * Javscript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} The result of the inversion
+ */
 Sk.builtin.int_.prototype.nb$invert = function () {
     return new Sk.builtin.int_(~this.v);
 };
 
+/**
+ * Add a Python object to this instance and return the result (i.e. this += other).
+ *
+ * Returns NotImplemented if inplace addition between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to add.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the addition.
+ */
 Sk.builtin.int_.prototype.nb$inplace_add = Sk.builtin.int_.prototype.nb$add;
 
+/**
+ * Subtract a Python object from this instance and return the result (i.e. this -= other).
+ *
+ * Returns NotImplemented if inplace subtraction between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to subtract.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the subtraction.
+ */
 Sk.builtin.int_.prototype.nb$inplace_subtract = Sk.builtin.int_.prototype.nb$subtract;
+
+/**
+ * Multiply this instance by a Python object and return the result (i.e. this *= other).
+ *
+ * Returns NotImplemented if inplace multiplication between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The multiplier, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the multiplication
+ */
 
 Sk.builtin.int_.prototype.nb$inplace_multiply = Sk.builtin.int_.prototype.nb$multiply;
 
+/**
+ * Divide this instance by a Python object and return the result (i.e this /= other).
+ *
+ * Returns NotImplemented if inplace division between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the division
+ */
 Sk.builtin.int_.prototype.nb$inplace_divide = Sk.builtin.int_.prototype.nb$divide;
 
+/**
+ * Modulo this instance by a Python object and return the result (i.e. this %= other).
+ *
+ * Returns NotImplemented if inplace modulation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the modulation
+ */
 Sk.builtin.int_.prototype.nb$inplace_remainder = Sk.builtin.int_.prototype.nb$remainder;
 
+/**
+ * Floor divide this instance by a Python object and return the result (i.e. this //= other).
+ *
+ * Returns NotImplemented if inplace floor division between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The divisor, which must be a Python object.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the floor division
+ */
 Sk.builtin.int_.prototype.nb$inplace_floor_divide = Sk.builtin.int_.prototype.nb$floor_divide;
 
+/**
+ * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
+ *
+ * If mod is undefined, return this \*\*= other. Else, return (this \*\*= other) %= mod.
+ *
+ * Returns NotImplemented if inplace exponentiation or inplace modulation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The exponent, which must be a Python object.
+ * @param  {!Object=} mod The optional divisor, which must be a Python object if defined.
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the exponentiation.
+ */
 Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
 
+/**
+ * Compute the bitwise AND of this instance and a Python object (i.e. this &= other).
+ *
+ * Returns NotImplemented if inplace bitwise AND operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to AND with this one
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the conjunction
+ */
 Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
 
+/**
+ * Compute the bitwise OR of this instance and a Python object (i.e. this |= other).
+ *
+ * Returns NotImplemented if inplace bitwise OR operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to OR with this one
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the disjunction
+ */
 Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
 
+/**
+ * Compute the bitwise XOR of this instance and a Python object (i.e. this ^= other).
+ *
+ * Returns NotImplemented if inplace bitwise XOR operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object to XOR with this one
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the exclusive disjunction
+ */
 Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
 
+/**
+ * Compute the bitwise left shift of this instance by a Python object (i.e. this <<= other).
+ *
+ * Returns NotImplemented if inplace bitwise left shift operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object by which to left shift
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the left shift
+ */
 Sk.builtin.int_.prototype.nb$inplace_lshift = Sk.builtin.int_.prototype.nb$lshift;
 
+/**
+ * Compute the bitwise right shift of this instance by a Python object (i.e. this >>= other).
+ *
+ * Returns NotImplemented if inplace bitwise right shift operation between int and other type is unsupported.
+ *
+ * Javscript function, returns Python object.
+ *
+ * @param  {!Object} other The Python object by which to right shift
+ * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the right shift
+ */
 Sk.builtin.int_.prototype.nb$inplace_rshift = Sk.builtin.int_.prototype.nb$rshift;
 
+/**
+ * Compute the unary negative of this instance (i.e. -this).
+ *
+ * Javscript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} A copy of this instance with the value negated
+ */
 Sk.builtin.int_.prototype.nb$negative = function () {
     return new Sk.builtin.int_(-this.v);
 };
 
+/**
+ * Compute the unary positive of this instance (i.e. +this).
+ *
+ * Javscript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} A copy of this instance with the value unchanged
+ */
 Sk.builtin.int_.prototype.nb$positive = function () {
     return this.clone();
 };
 
+/**
+ * Determine if this instance is nonzero.
+ *
+ * Javscript function, returns Javascript object.
+ *
+ * @return {boolean} true if this instance is not equal to zero, false otherwise
+ */
 Sk.builtin.int_.prototype.nb$nonzero = function () {
     return this.v !== 0;
 };
 
+/**
+ * Determine if this instance is negative.
+ *
+ * Javscript function, returns Javascript object.
+ *
+ * @return {boolean} true if this instance is negative, false otherwise
+ */
 Sk.builtin.int_.prototype.nb$isnegative = function () {
     return this.v < 0;
 };
 
+/**
+ * Determine if this instance is positive.
+ *
+ * Javscript function, returns Javascript object.
+ *
+ * @return {boolean} true if this instance is positive, false otherwise
+ */
 Sk.builtin.int_.prototype.nb$ispositive = function () {
     return this.v >= 0;
 };
 
+/**
+ * Compare this instance's value to another Python object's value.
+ *
+ * Returns NotImplemented if comparison between int and other type is unsupported.
+ *
+ * Javscript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @return {(number|Sk.builtin.NotImplemented)} negative if this < other, zero if this == other, positive if this > other
+ */
 Sk.builtin.int_.prototype.numberCompare = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return this.v - other.v;
@@ -670,6 +1030,18 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
 // Despite what jshint may want us to do, these two  functions need to remain
 // as == and !=  Unless you modify the logic of numberCompare do not change
 // these.
+
+/**
+ * Perform equality check between this instance and a Python object (i.e. this == other).
+ *
+ * Implements \_\_eq\_\_ dunder method.
+ *
+ * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @param  {Sk.builtin.int_} me This instance.
+ * @param  {Object} other The Python object to check for equality.
+ * @return {(boolean|Sk.builtin.NotImplemented)} true if equal, false otherwise
+ */
 Sk.builtin.int_.prototype.__eq__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
         other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
@@ -681,6 +1053,17 @@ Sk.builtin.int_.prototype.__eq__ = function (me, other) {
     }
 };
 
+/**
+ * Perform non-equality check between this instance and a Python object (i.e. this != other).
+ *
+ * Implements \_\_ne\_\_ dunder method.
+ *
+ * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @param  {Sk.builtin.int_} me This instance.
+ * @param  {Object} other The Python object to check for non-equality.
+ * @return {(boolean|Sk.builtin.NotImplemented)} true if not equal, false otherwise
+ */
 Sk.builtin.int_.prototype.__ne__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
         other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
@@ -692,6 +1075,17 @@ Sk.builtin.int_.prototype.__ne__ = function (me, other) {
     }
 };
 
+/**
+ * Determine if this instance is less than a Python object (i.e. this < other).
+ *
+ * Implements \_\_lt\_\_ dunder method.
+ *
+ * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @param  {Sk.builtin.int_} me This instance.
+ * @param  {Object} other The Python object to compare.
+ * @return {(boolean|Sk.builtin.NotImplemented)} true if this < other, false otherwise
+ */
 Sk.builtin.int_.prototype.__lt__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
         other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
@@ -701,6 +1095,17 @@ Sk.builtin.int_.prototype.__lt__ = function (me, other) {
     }
 };
 
+/**
+ * Determine if this instance is less than or equal to a Python object (i.e. this <= other).
+ *
+ * Implements \_\_le\_\_ dunder method.
+ *
+ * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @param  {Sk.builtin.int_} me This instance.
+ * @param  {Object} other The Python object to compare.
+ * @return {(boolean|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
+ */
 Sk.builtin.int_.prototype.__le__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
         other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
@@ -710,6 +1115,17 @@ Sk.builtin.int_.prototype.__le__ = function (me, other) {
     }
 };
 
+/**
+ * Determine if this instance is greater than a Python object (i.e. this > other).
+ *
+ * Implements \_\_gt\_\_ dunder method.
+ *
+ * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @param  {Sk.builtin.int_} me This instance.
+ * @param  {Object} other The Python object to compare.
+ * @return {(boolean|Sk.builtin.NotImplemented)} true if this > other, false otherwise
+ */
 Sk.builtin.int_.prototype.__gt__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
         other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
@@ -719,6 +1135,17 @@ Sk.builtin.int_.prototype.__gt__ = function (me, other) {
     }
 };
 
+/**
+ * Determine if this instance is greater than or equal to a Python object (i.e. this >= other).
+ *
+ * Implements \_\_ge\_\_ dunder method.
+ *
+ * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ *
+ * @param  {Sk.builtin.int_} me This instance.
+ * @param  {Object} other The Python object to compare.
+ * @return {(boolean|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
+ */
 Sk.builtin.int_.prototype.__ge__ = function (me, other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.bool ||
         other instanceof Sk.builtin.lng || other instanceof Sk.builtin.float_) {
@@ -728,6 +1155,17 @@ Sk.builtin.int_.prototype.__ge__ = function (me, other) {
     }
 };
 
+/**
+ * Round this instance to a given number of digits, or zero if omitted.
+ *
+ * Implements \_\_round\_\_ dunder method.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @param  {Sk.builtin.int_} self This instance.
+ * @param  {Object|number=} ndigits The number of digits after the decimal point to which to round.
+ * @return {Sk.builtin.int_} The rounded integer.
+ */
 Sk.builtin.int_.prototype.__round__ = function (self, ndigits) {
     Sk.builtin.pyCheckArgs("__round__", arguments, 1, 2);
 
@@ -750,14 +1188,37 @@ Sk.builtin.int_.prototype.__round__ = function (self, ndigits) {
     return new Sk.builtin.int_(result);
 };
 
+/**
+ * Return the string representation of this instance.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.str} The Python string representation of this instance.
+ */
 Sk.builtin.int_.prototype["$r"] = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
+/**
+ * Return the string representation of this instance.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.str} The Python string representation of this instance.
+ */
 Sk.builtin.int_.prototype.tp$str = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };
 
+/**
+ * Convert this instance's value to a Javascript string.
+ *
+ * Javascript function, returns Javascript object.
+ *
+ * @param {number} base The base of the value.
+ * @param {boolean} sign true if the value should be signed, false otherwise.
+ * @return {string} The Javascript string representation of this instance.
+ */
 Sk.builtin.int_.prototype.str$ = function (base, sign) {
     var tmp;
     var work;
@@ -777,17 +1238,19 @@ Sk.builtin.int_.prototype.str$ = function (base, sign) {
     return tmp;
 };
 
-// Takes a JavaScript string and returns a number using the
-// parser and negater functions (for int/long right now)
-//
-// parser should take a string that is a postive number which only
-// contains characters that are valid in the given base and a base and
-// return a number
-//
-// negater should take a number and return its negation
-//
-// fname is a string containing the function name to be used in error
-// messages
+/**
+ * Takes a JavaScript string and returns a number using the parser and negater
+ *  functions (for int/long right now)
+ * @param  {string} s       Javascript string to convert to a number.
+ * @param  {number} base    The base of the number.
+ * @param  {function(string, number): number} parser  Function which should take
+ *  a string that is a postive number which only contains characters that are
+ *  valid in the given base and a base and return a number.
+ * @param  {function((number|Sk.builtin.biginteger)): number} negater Function which should take a
+ *  number and return its negation
+ * @param  {string} fname   The name of the calling function, to be used in error messages
+ * @return {number}         The number equivalent of the string in the given base
+ */
 Sk.str2number = function (s, base, parser, negater, fname) {
     "use strict";
     var origs = s,

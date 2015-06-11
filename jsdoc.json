@@ -4,7 +4,7 @@
         "dictionaries": ["jsdoc","closure"]
     },
     "source": {
-       "include": ["src/misceval.js", "src/abstract.js", "src/function.js", "src/ffi.js", "src/import.js"]
+       "include": ["src/misceval.js", "src/abstract.js", "src/function.js", "src/ffi.js", "src/import.js", "src/int.js"]
     },
     "plugins": ["plugins/markdown"],
     "templates": {
