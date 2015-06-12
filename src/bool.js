@@ -7,8 +7,7 @@ Sk.builtin.bool = function (x) {
     }
 };
 
-Sk.builtin.bool.prototype.tp$name = "bool";
-Sk.builtin.bool.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("bool", Sk.builtin.bool);
+Sk.abstr.setUpInheritance("bool", Sk.builtin.bool, Sk.builtin.int_);
 
 Sk.builtin.bool.prototype["$r"] = function () {
     if (this.v) {
@@ -16,6 +15,10 @@ Sk.builtin.bool.prototype["$r"] = function () {
     }
     return new Sk.builtin.str("False");
 };
+
+Sk.builtin.bool.prototype.tp$hash = function () {
+    return new Sk.builtin.int_(this.v);
+}
 
 Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function(self) {
     var v = Sk.builtin.asnum$(self);
