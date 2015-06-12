@@ -207,7 +207,6 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         swapped_method,
         method,
         op2method,
-        res,
         vcmp,
         wcmp,
         w_seq_type,
@@ -349,15 +348,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
 
     // use comparison methods if they are given for either object
-    if (v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined) {
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(res);
+    if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(res);
+    if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
@@ -376,36 +375,38 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
     method = Sk.abstr.lookupSpecial(v, op2method[op]);
     if (method) {
-        res = Sk.misceval.callsim(method, v, w);
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(res);
+        ret = Sk.misceval.callsim(method, v, w);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
     swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
     if (swapped_method) {
-        res = Sk.misceval.callsim(swapped_method, w, v);
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return Sk.misceval.isTrue(res);
+        ret = Sk.misceval.callsim(swapped_method, w, v);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
     vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
     if (vcmp) {
         ret = Sk.misceval.callsim(vcmp, v, w);
-        ret = Sk.builtin.asnum$(ret);
-        if (op === "Eq") {
-            return ret === 0;
-        } else if (op === "NotEq") {
-            return ret !== 0;
-        } else if (op === "Lt") {
-            return ret < 0;
-        } else if (op === "Gt") {
-            return ret > 0;
-        } else if (op === "LtE") {
-            return ret <= 0;
-        } else if (op === "GtE") {
-            return ret >= 0;
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            ret = Sk.builtin.asnum$(ret);
+            if (op === "Eq") {
+                return ret === 0;
+            } else if (op === "NotEq") {
+                return ret !== 0;
+            } else if (op === "Lt") {
+                return ret < 0;
+            } else if (op === "Gt") {
+                return ret > 0;
+            } else if (op === "LtE") {
+                return ret <= 0;
+            } else if (op === "GtE") {
+                return ret >= 0;
+            }
         }
     }
 
@@ -413,19 +414,21 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     if (wcmp) {
         // note, flipped on return value and call
         ret = Sk.misceval.callsim(wcmp, w, v);
-        ret = Sk.builtin.asnum$(ret);
-        if (op === "Eq") {
-            return ret === 0;
-        } else if (op === "NotEq") {
-            return ret !== 0;
-        } else if (op === "Lt") {
-            return ret > 0;
-        } else if (op === "Gt") {
-            return ret < 0;
-        } else if (op === "LtE") {
-            return ret >= 0;
-        } else if (op === "GtE") {
-            return ret <= 0;
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            ret = Sk.builtin.asnum$(ret);
+            if (op === "Eq") {
+                return ret === 0;
+            } else if (op === "NotEq") {
+                return ret !== 0;
+            } else if (op === "Lt") {
+                return ret > 0;
+            } else if (op === "Gt") {
+                return ret < 0;
+            } else if (op === "LtE") {
+                return ret >= 0;
+            } else if (op === "GtE") {
+                return ret <= 0;
+            }
         }
     }
 
