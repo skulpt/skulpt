@@ -693,7 +693,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
         // if true, the complex number has just a real part
         if (_imag === 0.0) {
             equal = Sk.misceval.richCompareBool(new Sk.builtin.float_(_real), w, op);
-            result = Sk.builtin.bool(equal);
+            result = new Sk.builtin.bool( equal);
             return result;
         } else {
             equal = false;
@@ -715,7 +715,7 @@ Sk.builtin.complex.prototype.tp$richcompare = function (w, op) {
     }
 
     // wrap as bool
-    result = Sk.builtin.bool(equal);
+    result = new Sk.builtin.bool( equal);
 
     return result;
 };
@@ -941,7 +941,7 @@ Sk.builtin.complex.prototype.__abs__  = new Sk.builtin.func(function (self) {
 });
 
 Sk.builtin.complex.prototype.__bool__   = new Sk.builtin.func(function (self) {
-    return Sk.builtin.bool(self.tp$getattr("real").v || self.tp$getattr("real").v);
+    return new Sk.builtin.bool( self.tp$getattr("real").v || self.tp$getattr("real").v);
 });
 
 Sk.builtin.complex.prototype.__truediv__ = new Sk.builtin.func(function (self, other){

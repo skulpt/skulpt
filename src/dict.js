@@ -349,7 +349,7 @@ Sk.builtin.dict.prototype["pop"] = new Sk.builtin.func(function (self, key, d) {
 
 Sk.builtin.dict.prototype["has_key"] = new Sk.builtin.func(function (self, k) {
     Sk.builtin.pyCheckArgs("has_key()", arguments, 1, 1, false, true);
-    return Sk.builtin.bool(self.sq$contains(k));
+    return new Sk.builtin.bool( self.sq$contains(k));
 });
 
 Sk.builtin.dict.prototype["items"] = new Sk.builtin.func(function (self) {

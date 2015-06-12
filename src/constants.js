@@ -1,7 +1,18 @@
 Sk.builtin.str.$emptystr = new Sk.builtin.str("");
 
-Sk.builtin.bool.true$ = Object.create(Sk.builtin.bool.prototype, {v: {value: 1, enumerable: true}});
-Sk.builtin.bool.false$ = Object.create(Sk.builtin.bool.prototype, {v: {value: 0, enumerable: true}});
+/**
+ * Python bool True constant.
+ * @type {Sk.builtin.bool}
+ * @memberOf Sk.builtin.bool
+ */
+Sk.builtin.bool.true$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builtin.bool.prototype, {v: {value: 1, enumerable: true}}));
+
+/**
+ * Python bool False constant.
+ * @type {Sk.builtin.bool}
+ * @memberOf Sk.builtin.bool
+ */
+Sk.builtin.bool.false$ = /** @type {Sk.builtin.bool} */ (Object.create(Sk.builtin.bool.prototype, {v: {value: 0, enumerable: true}}));
 
 // Manually call super constructors on boolean singletons
 Sk.abstr.superConstructor(Sk.builtin.bool, Sk.builtin.bool.true$);

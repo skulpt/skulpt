@@ -973,7 +973,7 @@ Sk.builtin.filter = function filter (fun, iterable) {
          item !== undefined;
          item = iter.tp$iternext()) {
         if (fun === Sk.builtin.none.none$) {
-            result = Sk.builtin.bool(item);
+            result = new Sk.builtin.bool( item);
         } else {
             result = Sk.misceval.callsim(fun, item);
         }

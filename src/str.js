@@ -10,7 +10,7 @@ Sk.builtin.str = function (x) {
     if (x === undefined) {
         x = "";
     }
-    if (x instanceof Sk.builtin.str && x !== Sk.builtin.str.prototype.ob$type) {
+    if (x instanceof Sk.builtin.str) {
         return x;
     }
     if (!(this instanceof Sk.builtin.str)) {
@@ -636,14 +636,14 @@ Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, st
 Sk.builtin.str.prototype["startswith"] = new Sk.builtin.func(function (self, tgt) {
     Sk.builtin.pyCheckArgs("startswith", arguments, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return Sk.builtin.bool(self.v.indexOf(tgt.v) === 0);
+    return new Sk.builtin.bool( self.v.indexOf(tgt.v) === 0);
 });
 
 // http://stackoverflow.com/questions/280634/endswith-in-javascript
 Sk.builtin.str.prototype["endswith"] = new Sk.builtin.func(function (self, tgt) {
     Sk.builtin.pyCheckArgs("endswith", arguments, 2, 2);
     Sk.builtin.pyCheckType("tgt", "string", Sk.builtin.checkString(tgt));
-    return Sk.builtin.bool(self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
+    return new Sk.builtin.bool( self.v.indexOf(tgt.v, self.v.length - tgt.v.length) !== -1);
 });
 
 Sk.builtin.str.prototype["replace"] = new Sk.builtin.func(function (self, oldS, newS, count) {
@@ -704,12 +704,12 @@ Sk.builtin.str.prototype["zfill"] = new Sk.builtin.func(function (self, len) {
 
 Sk.builtin.str.prototype["isdigit"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isdigit", arguments, 1, 1);
-    return Sk.builtin.bool(/^\d+$/.test(self.v));
+    return new Sk.builtin.bool( /^\d+$/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isspace"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isspace", arguments, 1, 1);
-    return Sk.builtin.bool(/^\s+$/.test(self.v));
+    return new Sk.builtin.bool( /^\s+$/.test(self.v));
 });
 
 
@@ -823,28 +823,28 @@ Sk.builtin.str.prototype["title"] = new Sk.builtin.func(function (self) {
 
 Sk.builtin.str.prototype["isalpha"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isalpha", arguments, 1, 1);
-    return Sk.builtin.bool(self.v.length && goog.string.isAlpha(self.v));
+    return new Sk.builtin.bool( self.v.length && goog.string.isAlpha(self.v));
 });
 
 Sk.builtin.str.prototype["isalnum"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isalnum", arguments, 1, 1);
-    return Sk.builtin.bool(self.v.length && goog.string.isAlphaNumeric(self.v));
+    return new Sk.builtin.bool( self.v.length && goog.string.isAlphaNumeric(self.v));
 });
 
 // does not account for unicode numeric values
 Sk.builtin.str.prototype["isnumeric"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isnumeric", arguments, 1, 1);
-    return Sk.builtin.bool(self.v.length && goog.string.isNumeric(self.v));
+    return new Sk.builtin.bool( self.v.length && goog.string.isNumeric(self.v));
 });
 
 Sk.builtin.str.prototype["islower"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("islower", arguments, 1, 1);
-    return Sk.builtin.bool(self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
+    return new Sk.builtin.bool( self.v.length && /[a-z]/.test(self.v) && !/[A-Z]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["isupper"] = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("isupper", arguments, 1, 1);
-    return Sk.builtin.bool(self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
+    return new Sk.builtin.bool( self.v.length && !/[a-z]/.test(self.v) && /[A-Z]/.test(self.v));
 });
 
 Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
@@ -860,20 +860,20 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
         ch = input.charAt(pos);
         if (! /[a-z]/.test(ch) && /[A-Z]/.test(ch)) {
             if (previous_is_cased) {
-                return Sk.builtin.bool(false);
+                return new Sk.builtin.bool( false);
             }
             previous_is_cased = true;
             cased = true;
         } else if (/[a-z]/.test(ch) && ! /[A-Z]/.test(ch)) {
             if (! previous_is_cased) {
-                return Sk.builtin.bool(false);
+                return new Sk.builtin.bool( false);
             }
             cased = true;
         } else {
             previous_is_cased = false;
         }
     }
-    return Sk.builtin.bool(cased);
+    return new Sk.builtin.bool( cased);
 });
 
 Sk.builtin.str.prototype.nb$remainder = function (rhs) {
