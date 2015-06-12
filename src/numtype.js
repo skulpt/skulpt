@@ -250,12 +250,7 @@ Sk.builtin.numtype.prototype["__rpow__"] = new Sk.builtin.func(function (self, o
 
 Sk.builtin.numtype.prototype["__coerce__"] = new Sk.builtin.func(function (self, other) {
 
-    if (self.nb$coerce === undefined) {
-		throw new Sk.builtin.NotImplementedError("__coerce__ is not yet implemented");
-	}
-
-	Sk.builtin.pyCheckArgs("__coerce__", arguments, 1, 1, false, true);
-	return self.nb$coerce(other);
+    throw new Sk.builtin.NotImplementedError("__coerce__ is not yet implemented");
 
 });
 
