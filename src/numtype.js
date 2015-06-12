@@ -1,6 +1,6 @@
 Sk.builtin.numtype = function () {
 
-    Sk.builtin.numtype.prototype.tp$base.call(this);
+    Sk.abstr.superConstructor(Sk.builtin.numtype, this);
 
 };
 

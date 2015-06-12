@@ -22,7 +22,7 @@ Sk.builtin.float_ = function (x) {
         return new Sk.builtin.float_(x);
     }
 
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.float_, this);
 
     if (x instanceof Sk.builtin.str) {
 

@@ -1,6 +1,6 @@
 Sk.builtin.seqtype = function () {
 
-    Sk.builtin.seqtype.prototype.tp$base.call(this);
+    Sk.abstr.superConstructor(Sk.builtin.seqtype, this);
 
 };
 

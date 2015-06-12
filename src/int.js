@@ -32,7 +32,11 @@ Sk.builtin.int_ = function (x, base) {
         return new Sk.builtin.int_(x, base);
     }
 
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.int_, this);
+
+    if (this instanceof Sk.builtin.bool) {
+        return this;
+    }
 
     if (x instanceof Sk.builtin.int_ && base === undefined) {
         this.v = x.v;
@@ -127,7 +131,6 @@ Sk.abstr.setUpInheritance("int", Sk.builtin.int_, Sk.builtin.numtype);
 
 Sk.builtin.int_.co_varnames = [ "base" ];
 Sk.builtin.int_.co_numargs = 2;
-Sk.builtin.int_.$defaults = [ new Sk.builtin.int_(10) ];
 
 Sk.builtin.int_.prototype.nb$int_ = function () {
     return this;

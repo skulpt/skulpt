@@ -230,7 +230,7 @@ Sk.builtin.object.prototype.pythonFunctions = ["__repr__", "__str__", "__hash__"
  */
 Sk.builtin.none = function () {
     // Initialize this instance's superclass
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.none, this);
 
     this.v = {value: null, enumerable: false};
 };
@@ -247,7 +247,7 @@ Sk.builtin.none.none$ = new Sk.builtin.none();
  */
 Sk.builtin.NotImplemented = function() {
     // Initialize this instance's superclass
-    Sk.abstr.superConstructor(this);
+    Sk.abstr.superConstructor(Sk.builtin.NotImplemented, this);
 };
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 Sk.builtin.NotImplemented.prototype["$r"] = function () { return new Sk.builtin.str("NotImplemented"); };
