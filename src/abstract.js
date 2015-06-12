@@ -953,5 +953,6 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
 };
 
 Sk.abstr.superConstructor = function (thisClass, self) {
-    thisClass.prototype.tp$base.call(self);
+    var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);
+    thisClass.prototype.tp$base.apply(self, argumentsForConstructor);
 };
