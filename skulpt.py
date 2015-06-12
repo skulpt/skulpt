@@ -78,6 +78,7 @@ Files = [
         'src/native.js',
         'src/method.js',
         'src/misceval.js',
+        'src/seqtype.js',
         'src/list.js',
         'src/str.js',
         'src/formatting.js',

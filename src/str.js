@@ -17,6 +17,8 @@ Sk.builtin.str = function (x) {
         return new Sk.builtin.str(x);
     }
 
+    Sk.abstr.superConstructor(this);
+
     // convert to js string
     if (x === true) {
         ret = "True";
@@ -65,6 +67,8 @@ Sk.builtin.str = function (x) {
 };
 goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
+Sk.abstr.setUpInheritance("str", Sk.builtin.str, Sk.builtin.seqtype);
+
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
     if (Sk.misceval.isIndex(index)) {
@@ -105,6 +109,7 @@ Sk.builtin.str.prototype.nb$inplace_add = Sk.builtin.str.prototype.sq$concat;
 Sk.builtin.str.prototype.sq$repeat = function (n) {
     var i;
     var ret;
+
     if (!Sk.misceval.isIndex(n)) {
         throw new Sk.builtin.TypeError("can't multiply sequence by non-int of type '" + Sk.abstr.typeName(n) + "'");
     }
@@ -137,8 +142,6 @@ Sk.builtin.str.prototype.sq$contains = function (ob) {
     return this.v.indexOf(ob.v) != -1;
 };
 
-Sk.builtin.str.prototype.tp$name = "str";
-Sk.builtin.str.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 Sk.builtin.str.prototype.tp$iter = function () {
     var ret =
     {
@@ -871,8 +874,6 @@ Sk.builtin.str.prototype["istitle"] = new Sk.builtin.func(function (self) {
     }
     return Sk.builtin.bool(cased);
 });
-
-Sk.builtin.str.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("str", Sk.builtin.str);
 
 Sk.builtin.str.prototype.nb$remainder = function (rhs) {
     // % format op. rhs can be a value, a tuple, or something with __getitem__ (dict)

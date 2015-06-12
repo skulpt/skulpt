@@ -9,6 +9,7 @@ Sk.builtin.list = function (L, canSuspend) {
 
     if (this instanceof Sk.builtin.list) {
         canSuspend = false;
+        Sk.abstr.superConstructor(this);
     } else if (canSuspend === undefined) {
         // Default to true in this case, because 'list' gets called directly from Python
         canSuspend = true;
@@ -41,13 +42,15 @@ Sk.builtin.list = function (L, canSuspend) {
     if (!(this instanceof Sk.builtin.list)) {
         return new Sk.builtin.list(v);
     }
+
     this.__class__ = Sk.builtin.list;
 
     this["v"] = this.v = v;
     return this;
 };
 
-Sk.builtin.list.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("list", Sk.builtin.list);
+Sk.abstr.setUpInheritance("list", Sk.builtin.list, Sk.builtin.seqtype);
+Sk.abstr.markUnhashable(Sk.builtin.list);
 
 Sk.builtin.list.prototype.list_iter_ = function () {
     var ret =
@@ -150,7 +153,6 @@ Sk.builtin.list.prototype.list_ass_slice_ = function (ilow, ihigh, v) {
     this.v.splice.apply(this.v, args);
 };
 
-Sk.builtin.list.prototype.tp$name = "list";
 Sk.builtin.list.prototype["$r"] = function () {
     var it, i;
     var ret = [];
@@ -163,8 +165,6 @@ Sk.builtin.list.prototype["$r"] = function () {
     }
     return new Sk.builtin.str("[" + ret.join(", ") + "]");
 };
-Sk.builtin.list.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-Sk.builtin.list.prototype.tp$hash = Sk.builtin.none.none$;
 
 Sk.builtin.list.prototype.tp$richcompare = function (w, op) {
     // todo; can't figure out where cpy handles this silly case (test/run/t96.py)
@@ -294,7 +294,17 @@ Sk.builtin.list.prototype.sq$ass_item = Sk.builtin.list.prototype.list_ass_item_
 Sk.builtin.list.prototype.sq$del_item = Sk.builtin.list.prototype.list_del_item_;
 Sk.builtin.list.prototype.sq$ass_slice = Sk.builtin.list.prototype.list_ass_slice_;
 Sk.builtin.list.prototype.sq$del_slice = Sk.builtin.list.prototype.list_del_slice_;
-//Sk.builtin.list.prototype.sq$contains // iter version is fine
+
+Sk.builtin.list.prototype.sq$contains = function (item) {
+    var it, i;
+
+    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(i, item, "Eq")) {
+            return true;
+        }
+    }
+    return false;
+}
 /*
  Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
  Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;
