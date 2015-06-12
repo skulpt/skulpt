@@ -170,7 +170,7 @@ Sk.builtin.object.prototype["$r"] = function () {
     return new Sk.builtin.str("<object>");
 };
 
-Sk.builtin.hashCount = 0;
+Sk.builtin.hashCount = 1;
 Sk.builtin.object.prototype.tp$hash = function () {
     if (!this.$savedHash_)
     {
@@ -227,6 +227,9 @@ Sk.builtin.none = function () {
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 Sk.builtin.none.prototype["$r"] = function () { return new Sk.builtin.str("None"); };
+Sk.builtin.none.prototype.tp$hash = function () {
+    return new Sk.builtin.int_(0);
+}
 Sk.builtin.none.none$ = new Sk.builtin.none();
 
 /**

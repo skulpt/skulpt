@@ -700,7 +700,6 @@ Sk.builtin.isinstance = function isinstance (obj, type) {
 
     return issubclass(obj.ob$type, type);
 };
-Sk.builtin.hashCount = 0;
 Sk.builtin.hash = function hash (value) {
     var junk;
     Sk.builtin.pyCheckArgs("hash", arguments, 1, 1);
