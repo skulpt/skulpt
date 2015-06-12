@@ -465,21 +465,43 @@ Sk.abstr.sequenceConcat = function (seq1, seq2) {
 
 Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
     var seqtypename;
+    var i, it;
+    var index;
     if (seq.index) {
         return Sk.misceval.callsim(seq.index, seq, ob);
     }
+    if (Sk.builtin.checkIterable(seq)) {
+        index = 0;
+        for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
+             i !== undefined; i = it.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+                return Sk.builtin.assk$(index, Sk.builtin.nmber.int$);
+            }
+            index += 1;
+        }
+        throw new Sk.builtin.ValueError("sequence.index(x): x not in sequence");
+    }
 
     seqtypename = Sk.abstr.typeName(seq);
-    if (seqtypename === "dict") {
-        throw new Sk.builtin.NotImplementedError("looking up dict key from value is not yet implemented (supported in Python 2.6)");
-    }
     throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
 Sk.abstr.sequenceGetCountOf = function (seq, ob) {
     var seqtypename;
+    var i, it;
+    var count;
     if (seq.count) {
         return Sk.misceval.callsim(seq.count, seq, ob);
+    }
+    if (Sk.builtin.checkIterable(seq)) {
+        count = 0;
+        for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
+             i !== undefined; i = it.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+                count += 1;
+            }
+        }
+        return Sk.builtin.assk$(count, Sk.builtin.nmber.int$);
     }
 
     seqtypename = Sk.abstr.typeName(seq);
