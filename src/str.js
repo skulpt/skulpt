@@ -65,8 +65,6 @@ Sk.builtin.str = function (x) {
 };
 goog.exportSymbol("Sk.builtin.str", Sk.builtin.str);
 
-Sk.builtin.str.$emptystr = new Sk.builtin.str("");
-
 Sk.builtin.str.prototype.mp$subscript = function (index) {
     var ret;
     if (Sk.misceval.isIndex(index)) {

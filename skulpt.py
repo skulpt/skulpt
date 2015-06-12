@@ -96,6 +96,7 @@ Files = [
         'src/structseq.js',
         'src/generator.js',
         'src/file.js',
+        'src/constants.js',
         'src/ffi.js',
         'src/enumerate.js',
         'src/tokenize.js',

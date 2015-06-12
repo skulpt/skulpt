@@ -27,7 +27,4 @@ Sk.builtin.bool.prototype.__float__ = new Sk.builtin.func(function(self) {
     return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
-Sk.builtin.bool.true$ = Object.create(Sk.builtin.bool.prototype, {v: {value: true, enumerable: true}});
-Sk.builtin.bool.false$ = Object.create(Sk.builtin.bool.prototype, {v: {value: false, enumerable: true}});
-
 goog.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
