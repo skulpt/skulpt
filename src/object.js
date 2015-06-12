@@ -282,7 +282,7 @@ Sk.builtin.object.prototype.tp$hash = function () {
  *
  * Implements \_\_eq\_\_ dunder method.
  *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ * Javascript function, returns Python object.
  *
  * @param  {Object} other The Python object to check for equality.
  * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if equal, false otherwise
@@ -300,7 +300,7 @@ Sk.builtin.object.prototype.ob$eq = function (other) {
  *
  * Implements \_\_ne\_\_ dunder method.
  *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ * Javascript function, returns Python object.
  *
  * @param  {Object} other The Python object to check for non-equality.
  * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if not equal, false otherwise
@@ -318,10 +318,10 @@ Sk.builtin.object.prototype.ob$ne = function (other) {
  *
  * Implements \_\_lt\_\_ dunder method.
  *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ * Javascript function, returns Python object.
  *
  * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this < other, false otherwise
+ * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this < other, false otherwise
  */
 Sk.builtin.object.prototype.ob$lt = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -332,10 +332,10 @@ Sk.builtin.object.prototype.ob$lt = function (other) {
  *
  * Implements \_\_le\_\_ dunder method.
  *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ * Javascript function, returns Python object.
  *
  * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
+ * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
  */
 Sk.builtin.object.prototype.ob$le = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -346,10 +346,10 @@ Sk.builtin.object.prototype.ob$le = function (other) {
  *
  * Implements \_\_gt\_\_ dunder method.
  *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ * Javascript function, returns Python object.
  *
  * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this > other, false otherwise
+ * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this > other, false otherwise
  */
 Sk.builtin.object.prototype.ob$gt = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -360,10 +360,10 @@ Sk.builtin.object.prototype.ob$gt = function (other) {
  *
  * Implements \_\_ge\_\_ dunder method.
  *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
+ * Javascript function, returns Python object.
  *
  * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
+ * @return {(Sk.builtin.bool|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
  */
 Sk.builtin.object.prototype.ob$ge = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
