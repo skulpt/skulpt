@@ -214,7 +214,7 @@ Sk.builtin.object.prototype.ob$ge = function (other) {
 
 // Wrap the following functions in Sk.builtin.func once that class is initialized
 Sk.builtin.object.prototype.pythonFunctions = ["__repr__", "__str__", "__hash__",
-"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__"];
+"__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "__getattr__", "__setattr__"];
 
 /**
  * @constructor
