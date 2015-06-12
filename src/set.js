@@ -84,7 +84,11 @@ Sk.builtin.set.prototype.ob$ne = function (other) {
         return Sk.builtin.bool.true$;
     }
 
-    return !this["issubset"].func_code(this, other);
+    if (this["issubset"].func_code(this, other).v) {
+        return Sk.builtin.bool.false$;
+    } else {
+        return Sk.builtin.bool.true$;
+    }
 };
 
 Sk.builtin.set.prototype.ob$lt = function (other) {
