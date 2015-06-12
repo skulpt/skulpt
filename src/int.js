@@ -129,14 +129,17 @@ Sk.builtin.int_.co_varnames = [ "base" ];
 Sk.builtin.int_.co_numargs = 2;
 Sk.builtin.int_.$defaults = [ new Sk.builtin.int_(10) ];
 
-/**
- * Python wrapper of \_\_int\_\_ dunder method.
- *
- * @instance
- */
-Sk.builtin.int_.prototype.__int__ = new Sk.builtin.func(function(self) {
-    return self;
-});
+Sk.builtin.int_.prototype.nb$int_ = function () {
+    return this;
+};
+
+Sk.builtin.int_.prototype.nb$float_ = function() {
+    return new Sk.builtin.float_(this.v);
+};
+
+Sk.builtin.int_.prototype.nb$lng = function () {
+    return new Sk.builtin.lng(this.v);
+};
 
 /**
  * Python wrapper of \_\_trunc\_\_ dunder method.
@@ -154,15 +157,6 @@ Sk.builtin.int_.prototype.__trunc__ = new Sk.builtin.func(function(self) {
  */
 Sk.builtin.int_.prototype.__index__ = new Sk.builtin.func(function(self) {
     return self;
-});
-
-/**
- * Python wrapper of \_\_float\_\_ dunder method.
- *
- * @instance
- */
-Sk.builtin.int_.prototype.__float__ = new Sk.builtin.func(function(self) {
-    return new Sk.builtin.float_(Sk.ffi.remapToJs(self));
 });
 
 /**

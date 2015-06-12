@@ -75,15 +75,8 @@ Sk.builtin.float_ = function (x) {
 
 Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
 
-/**
- * Python wrapper of \_\_int\_\_ dunder method.
- *
- * @instance
- */
-
-Sk.builtin.float_.prototype.__int__ = new Sk.builtin.func(function(self) {
-    // get value
-    var v = Sk.ffi.remapToJs(self);
+Sk.builtin.float_.prototype.nb$int_ = function () {
+    var v = this.v;
 
     if (v < 0) {
         v = Math.ceil(v);
@@ -93,16 +86,15 @@ Sk.builtin.float_.prototype.__int__ = new Sk.builtin.func(function(self) {
 
     // this should take care of int/long fitting
     return new Sk.builtin.int_(v);
-});
+};
 
-/**
- * Python wrapper of \_\_float\_\_ dunder method.
- *
- * @instance
- */
-Sk.builtin.float_.prototype.__float__ = new Sk.builtin.func(function(self) {
-    return self;
-});
+Sk.builtin.float_.prototype.nb$float_ = function() {
+    return this;
+};
+
+Sk.builtin.float_.prototype.nb$lng = function () {
+    return new Sk.builtin.lng(this.v);
+};
 
 /**
  * Checks for float subtypes, though skulpt does not allow to
@@ -201,7 +193,7 @@ Sk.builtin.float_.prototype.tp$index = function () {
 Sk.builtin.float_.prototype.tp$hash = function () {
     //the hash of all numbers should be an int and since javascript doesn't really
     //care every number can be an int.
-    return this.__int__.func_code(this);
+    return this.nb$int_();
 };
 
 

@@ -76,6 +76,10 @@ Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
     return self.nb$int_(self);
 });
 
+Sk.builtin.lng.prototype.nb$lng_ = function () {
+    return this;
+}
+
 Sk.builtin.lng.prototype.nb$float_ = function() {
     return new Sk.builtin.float_(Sk.ffi.remapToJs(this));
 };
