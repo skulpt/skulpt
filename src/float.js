@@ -357,7 +357,7 @@ Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 /**
  * Floor divide this instance by a Python object and return the result (i.e. this // other).

@@ -78,7 +78,7 @@ Sk.builtin.lng.prototype.__index__ = new Sk.builtin.func(function(self) {
 
 Sk.builtin.lng.prototype.nb$lng_ = function () {
     return this;
-}
+};
 
 Sk.builtin.lng.prototype.nb$float_ = function() {
     return new Sk.builtin.float_(Sk.ffi.remapToJs(this));
@@ -364,7 +364,7 @@ Sk.builtin.lng.prototype.nb$reflected_remainder = function (other) {
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
-}
+};
 
 Sk.builtin.lng.prototype.nb$inplace_remainder = Sk.builtin.lng.prototype.nb$remainder;
 
@@ -569,7 +569,7 @@ Sk.builtin.lng.prototype.nb$and = function (other) {
         return new Sk.builtin.lng(this.biginteger.and(other));
     }
 
-   return Sk.builtin.NotImplemented.NotImplemented$;
+    return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
 Sk.builtin.lng.prototype.nb$reflected_and = Sk.builtin.lng.prototype.nb$and;

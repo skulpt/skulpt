@@ -305,7 +305,7 @@ Sk.builtin.list.prototype.sq$contains = function (item) {
         }
     }
     return false;
-}
+};
 /*
  Sk.builtin.list.prototype.sq$inplace_concat = list_inplace_concat;
  Sk.builtin.list.prototype.sq$inplace_repeat = list_inplace_repeat;

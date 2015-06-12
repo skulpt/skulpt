@@ -18,7 +18,7 @@ Sk.builtin.bool.prototype["$r"] = function () {
 
 Sk.builtin.bool.prototype.tp$hash = function () {
     return new Sk.builtin.int_(this.v);
-}
+};
 
 Sk.builtin.bool.prototype.__int__ = new Sk.builtin.func(function(self) {
     var v = Sk.builtin.asnum$(self);
