@@ -225,6 +225,18 @@ Sk.builtin.tuple.prototype.sq$concat = function (other) {
     return new Sk.builtin.tuple(this.v.concat(other.v));
 };
 
+Sk.builtin.tuple.prototype.sq$contains = function (ob) {
+    var it, i;
+
+    for (it = this.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+        if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 Sk.builtin.tuple.prototype.nb$add = Sk.builtin.tuple.prototype.sq$concat;
 Sk.builtin.tuple.prototype.nb$inplace_add = Sk.builtin.tuple.prototype.sq$concat;
 
