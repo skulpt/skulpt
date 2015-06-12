@@ -22,6 +22,8 @@ Sk.builtin.float_ = function (x) {
         return new Sk.builtin.float_(x);
     }
 
+    Sk.abstr.superConstructor(this);
+
     if (x instanceof Sk.builtin.str) {
 
         if (x.v.match(/^-inf$/i)) {
@@ -71,11 +73,14 @@ Sk.builtin.float_ = function (x) {
     throw new Sk.builtin.TypeError("float() argument must be a string or a number");
 };
 
+Sk.abstr.setUpInheritance("float", Sk.builtin.float_, Sk.builtin.numtype);
+
 /**
  * Python wrapper of \_\_int\_\_ dunder method.
  *
  * @instance
  */
+
 Sk.builtin.float_.prototype.__int__ = new Sk.builtin.func(function(self) {
     // get value
     var v = Sk.ffi.remapToJs(self);
@@ -176,18 +181,6 @@ Sk.builtin.float_.PyFloat_AsDouble = function (op) {
 };
 
 /**
- * The name of this class's type.
- * @type {string}
- */
-Sk.builtin.float_.prototype.tp$name = "float";
-
-/**
- * The type object of this class.
- * @type {Sk.builtin.type}
- */
-Sk.builtin.float_.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("float", Sk.builtin.float_);
-
-/**
  * Return this instance's Javascript value.
  *
  * Javascript function, returns Javascript object.
@@ -247,14 +240,6 @@ Sk.builtin.float_.prototype.toFixed = function (x) {
  * @return {(Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the addition.
  */
 Sk.builtin.float_.prototype.nb$add = function (other) {
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
-
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v + other.v);
     } else if (other instanceof Sk.builtin.lng) {
@@ -275,14 +260,6 @@ Sk.builtin.float_.prototype.nb$add = function (other) {
  * @return {(Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the subtraction.
  */
 Sk.builtin.float_.prototype.nb$subtract = function (other) {
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
-
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v - other.v);
     } else if (other instanceof Sk.builtin.lng) {
@@ -303,14 +280,6 @@ Sk.builtin.float_.prototype.nb$subtract = function (other) {
  * @return {(Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the multiplication
  */
 Sk.builtin.float_.prototype.nb$multiply = function (other) {
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
-
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         return new Sk.builtin.float_(this.v * other.v);
     } else if (other instanceof Sk.builtin.lng) {
@@ -331,14 +300,6 @@ Sk.builtin.float_.prototype.nb$multiply = function (other) {
  * @return {(Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the division
  */
 Sk.builtin.float_.prototype.nb$divide = function (other) {
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
-
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 
         if (other.v === 0) {
@@ -405,14 +366,6 @@ Sk.builtin.float_.prototype.nb$divide = function (other) {
  */
 Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
 
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
-
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 
         if (this.v === Infinity || this.v === -Infinity) {
@@ -471,14 +424,6 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
     var op2;
     var tmp;
     var result;
-
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
 
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 
@@ -570,8 +515,7 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
+        other instanceof Sk.builtin.float_) {
         return new Sk.builtin.tuple([
             this.nb$floor_divide(other),
             this.nb$remainder(other)
@@ -598,14 +542,6 @@ Sk.builtin.float_.prototype.nb$divmod = function (other) {
 Sk.builtin.float_.prototype.nb$power = function (other, mod) {
     var thisAsLong;
     var result;
-
-    if (other === Sk.builtin.bool.true$) {
-        other = new Sk.builtin.float_(1);
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        other = new Sk.builtin.float_(0);
-    }
 
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
         if (this.v < 0 && other.v % 1 !== 0) {
@@ -844,14 +780,6 @@ Sk.builtin.float_.prototype.numberCompare = function (other) {
         }
     }
 
-    if (other === Sk.builtin.bool.true$) {
-        return this.v - 1;
-    }
-
-    if (other === Sk.builtin.bool.false$) {
-        return this.v - 0;
-    }
-
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
@@ -866,16 +794,14 @@ Sk.builtin.float_.prototype.numberCompare = function (other) {
  *
  * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
  *
- * @param  {Sk.builtin.int_} me This instance.
  * @param  {Object} other The Python object to check for equality.
  * @return {(boolean|Sk.builtin.NotImplemented)} true if equal, false otherwise
  */
-Sk.builtin.float_.prototype.__eq__ = function (me, other) {
+Sk.builtin.float_.prototype.ob$eq = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
-        return me.numberCompare(other) == 0; //jshint ignore:line
+        other instanceof Sk.builtin.float_) {
+        return this.numberCompare(other) == 0; //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
         return false;
     } else {
@@ -890,16 +816,14 @@ Sk.builtin.float_.prototype.__eq__ = function (me, other) {
  *
  * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
  *
- * @param  {Sk.builtin.int_} me This instance.
  * @param  {Object} other The Python object to check for non-equality.
  * @return {(boolean|Sk.builtin.NotImplemented)} true if not equal, false otherwise
  */
-Sk.builtin.float_.prototype.__ne__ = function (me, other) {
+Sk.builtin.float_.prototype.ob$ne = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
-        return me.numberCompare(other) != 0; //jshint ignore:line
+        other instanceof Sk.builtin.float_) {
+        return this.numberCompare(other) != 0; //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
         return true;
     } else {
@@ -914,16 +838,14 @@ Sk.builtin.float_.prototype.__ne__ = function (me, other) {
  *
  * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
  *
- * @param  {Sk.builtin.int_} me This instance.
  * @param  {Object} other The Python object to compare.
  * @return {(boolean|Sk.builtin.NotImplemented)} true if this < other, false otherwise
  */
-Sk.builtin.float_.prototype.__lt__ = function (me, other) {
+Sk.builtin.float_.prototype.ob$lt = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
-        return me.numberCompare(other) < 0;
+        other instanceof Sk.builtin.float_) {
+        return this.numberCompare(other) < 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -936,16 +858,14 @@ Sk.builtin.float_.prototype.__lt__ = function (me, other) {
  *
  * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
  *
- * @param  {Sk.builtin.int_} me This instance.
  * @param  {Object} other The Python object to compare.
  * @return {(boolean|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
  */
-Sk.builtin.float_.prototype.__le__ = function (me, other) {
+Sk.builtin.float_.prototype.ob$le = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
-        return me.numberCompare(other) <= 0;
+        other instanceof Sk.builtin.float_) {
+        return this.numberCompare(other) <= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -958,16 +878,14 @@ Sk.builtin.float_.prototype.__le__ = function (me, other) {
  *
  * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
  *
- * @param  {Sk.builtin.int_} me This instance.
  * @param  {Object} other The Python object to compare.
  * @return {(boolean|Sk.builtin.NotImplemented)} true if this > other, false otherwise
  */
-Sk.builtin.float_.prototype.__gt__ = function (me, other) {
+Sk.builtin.float_.prototype.ob$gt = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
-        return me.numberCompare(other) > 0;
+        other instanceof Sk.builtin.float_) {
+        return this.numberCompare(other) > 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -980,16 +898,14 @@ Sk.builtin.float_.prototype.__gt__ = function (me, other) {
  *
  * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
  *
- * @param  {Sk.builtin.int_} me This instance.
  * @param  {Object} other The Python object to compare.
  * @return {(boolean|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
  */
-Sk.builtin.float_.prototype.__ge__ = function (me, other) {
+Sk.builtin.float_.prototype.ob$ge = function (other) {
     if (other instanceof Sk.builtin.int_ ||
         other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_ ||
-        other instanceof Sk.builtin.bool) {
-        return me.numberCompare(other) >= 0;
+        other instanceof Sk.builtin.float_) {
+        return this.numberCompare(other) >= 0;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -1027,19 +943,6 @@ Sk.builtin.float_.prototype.__round__ = function (self, ndigits) {
 
     return new Sk.builtin.float_(result);
 };
-
-/**
- * @function
- * @name  tp$getattr
- * @memberOf Sk.builtin.float_.prototype
- * @description
- * The function used to get attributes from this class and its instances.
- *
- * Javascript function, returns Python or Javascript function.
- *
- * @type {function(string):?}
- */
-Sk.builtin.float_.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
 
 /**
  * Return the string representation of this instance.

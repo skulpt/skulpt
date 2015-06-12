@@ -83,6 +83,7 @@ Files = [
         'src/formatting.js',
         'src/tuple.js',
         'src/dict.js',
+        'src/numtype.js',
         'src/biginteger.js',
         'src/int.js',
         'src/bool.js',

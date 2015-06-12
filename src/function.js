@@ -105,8 +105,7 @@ Sk.builtin.checkNumber = function (arg) {
     return (arg !== null && (typeof arg === "number" ||
         arg instanceof Sk.builtin.int_ ||
         arg instanceof Sk.builtin.float_ ||
-        arg instanceof Sk.builtin.lng ||
-        arg instanceof Sk.builtin.bool));
+        arg instanceof Sk.builtin.lng));
 };
 goog.exportSymbol("Sk.builtin.checkNumber", Sk.builtin.checkNumber);
 
@@ -122,8 +121,7 @@ goog.exportSymbol("Sk.builtin.checkComplex", Sk.builtin.checkComplex);
 Sk.builtin.checkInt = function (arg) {
     return (arg !== null) && ((typeof arg === "number" && arg === (arg | 0)) ||
         arg instanceof Sk.builtin.int_ ||
-        arg instanceof Sk.builtin.lng ||
-        arg instanceof Sk.builtin.bool);
+        arg instanceof Sk.builtin.lng);
 };
 goog.exportSymbol("Sk.builtin.checkInt", Sk.builtin.checkInt);
 

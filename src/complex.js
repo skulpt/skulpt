@@ -42,6 +42,8 @@ Sk.builtin.complex = function (real, imag) {
         return new Sk.builtin.complex(real, imag);
     }
 
+    Sk.abstr.superConstructor(this);
+
     // check if kwargs
     // ToDo: this is only a temporary replacement
     r = real == null ? Sk.builtin.bool.false$ : real; // r = Py_False;
@@ -174,8 +176,7 @@ Sk.builtin.complex = function (real, imag) {
     return this;
 };
 
-Sk.builtin.complex.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj("complex", Sk.builtin.complex);
-Sk.builtin.complex.prototype.tp$name = "complex";
+Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
 Sk.builtin.complex.prototype.__doc__ = new Sk.builtin.str("complex(real[, imag]) -> complex number\n\nCreate a complex number from a real part and an optional imaginary part.\nThis is equivalent to (real + imag*1j) where imag defaults to 0.");
