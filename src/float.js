@@ -573,6 +573,17 @@ Sk.builtin.float_.prototype.nb$power = function (other, mod) {
 };
 
 /**
+ * Compute the absolute value of this instance and return.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.float_} The absolute value
+ */
+Sk.builtin.float_.prototype.nb$abs = function () {
+    return new Sk.builtin.float_(Math.abs(this.v));
+};
+
+/**
  * @function
  * @name  nb$inplace_add
  * @memberOf Sk.builtin.float_.prototype

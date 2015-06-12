@@ -507,6 +507,17 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
 };
 
 /**
+ * Compute the absolute value of this instance and return.
+ *
+ * Javascript function, returns Python object.
+ *
+ * @return {Sk.builtin.int_} The absolute value
+ */
+Sk.builtin.int_.prototype.nb$abs = function () {
+    return new Sk.builtin.int_(Math.abs(this.v));
+};
+
+/**
  * Compute the bitwise AND of this instance and a Python object (i.e. this & other).
  *
  * Returns NotImplemented if bitwise AND operation between int and other type is unsupported.
