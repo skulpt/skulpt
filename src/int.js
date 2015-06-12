@@ -330,6 +330,10 @@ Sk.builtin.int_.prototype.nb$divide = function (other) {
     return this.nb$floor_divide(other);
 };
 
+Sk.builtin.int_.prototype.nb$reflected_divide = function (other) {
+    return this.nb$reflected_floor_divide(other);
+};
+
 /**
  * Floor divide this instance by a Python object and return the result (i.e. this // other).
  *
@@ -360,6 +364,14 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     if (other instanceof Sk.builtin.float_) {
         thisAsFloat = new Sk.builtin.float_(this.v);
         return thisAsFloat.nb$divide(other);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.int_.prototype.nb$reflected_floor_divide = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$divide(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -416,6 +428,13 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_remainder = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$remainder(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
 
 /**
  * Compute the quotient and the remainder of this instance and a given Python object and return the result.
@@ -451,6 +470,16 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_divmod = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return new Sk.builtin.tuple([
+            other.nb$floor_divide(this),
+            other.nb$remainder(this)
+        ]);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
 
 /**
  * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
@@ -506,6 +535,14 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_power = function (other, mod) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$power(this, mod);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 /**
  * Compute the absolute value of this instance and return.
  *
@@ -551,6 +588,8 @@ Sk.builtin.int_.prototype.nb$and = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_and = Sk.builtin.int_.prototype.nb$and;
+
 /**
  * Compute the bitwise OR of this instance and a Python object (i.e. this | other).
  *
@@ -585,6 +624,8 @@ Sk.builtin.int_.prototype.nb$or = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_or = Sk.builtin.int_.prototype.nb$or;
+
 /**
  * Compute the bitwise XOR of this instance and a Python object (i.e. this ^ other).
  *
@@ -618,6 +659,8 @@ Sk.builtin.int_.prototype.nb$xor = function (other) {
 
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
+
+Sk.builtin.int_.prototype.nb$reflected_xor = Sk.builtin.int_.prototype.nb$xor;
 
 /**
  * Compute the bitwise left shift of this instance by a Python object (i.e. this << other).
@@ -661,6 +704,14 @@ Sk.builtin.int_.prototype.nb$lshift = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.int_.prototype.nb$reflected_lshift = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$lshift(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 /**
  * Compute the bitwise right shift of this instance by a Python object (i.e. this >> other).
  *
@@ -698,6 +749,14 @@ Sk.builtin.int_.prototype.nb$rshift = function (other) {
     if (other instanceof Sk.builtin.lng) {
         thisAsLong = new Sk.builtin.lng(this.v);
         return thisAsLong.nb$rshift(other);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.int_.prototype.nb$reflected_rshift = function (other) {
+    if (other instanceof Sk.builtin.int_) {
+        return other.nb$rshift(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;

@@ -173,12 +173,12 @@ Sk.builtin.numtype.prototype["__floordiv__"] = new Sk.builtin.func(function (sel
 
 Sk.builtin.numtype.prototype["__rfloordiv__"] = new Sk.builtin.func(function (self, other) {
 
-    if (self.nb$reflected_floordivide === undefined) {
-		throw new Sk.builtin.NotImplementedError("__rfloordiv__ is not yet implemented");
-	}
+    if (self.nb$reflected_floor_divide === undefined) {
+        throw new Sk.builtin.NotImplementedError("__rfloordiv__ is not yet implemented");
+    }
 
-	Sk.builtin.pyCheckArgs("__rfloordiv__", arguments, 1, 1, false, true);
-	return self.nb$reflected_floordivide(other);
+    Sk.builtin.pyCheckArgs("__rfloordiv__", arguments, 1, 1, false, true);
+    return self.nb$reflected_floor_divide(other);
 
 });
 
@@ -206,23 +206,23 @@ Sk.builtin.numtype.prototype["__rmod__"] = new Sk.builtin.func(function (self, o
 
 Sk.builtin.numtype.prototype["__divmod__"] = new Sk.builtin.func(function (self, other) {
 
-    if (self.nb$__divmod__ === undefined) {
+    if (self.nb$divmod === undefined) {
 		throw new Sk.builtin.NotImplementedError("__divmod__ is not yet implemented");
 	}
 
 	Sk.builtin.pyCheckArgs("__divmod__", arguments, 1, 1, false, true);
-	return self.nb$__divmod__(other);
+	return self.nb$divmod(other);
 
 });
 
 Sk.builtin.numtype.prototype["__rdivmod__"] = new Sk.builtin.func(function (self, other) {
 
-    if (self.nb$__rdivmod__ === undefined) {
+    if (self.nb$reflected_divmod === undefined) {
 		throw new Sk.builtin.NotImplementedError("__rdivmod__ is not yet implemented");
 	}
 
 	Sk.builtin.pyCheckArgs("__rdivmod__", arguments, 1, 1, false, true);
-	return self.nb$__rdivmod__(other);
+	return self.nb$reflected_divmod(other);
 
 });
 
@@ -264,3 +264,17 @@ Sk.abstr.registerPythonFunctions(Sk.builtin.numtype,
      "__add__", "__radd__", "__sub__", "__rsub__", "__mul__", "__rmul__",
      "__div__", "__rdiv__", "__floordiv__", "__rfloordiv__",
      "__mod__", "__rmod__", "__divmod__", "__rdivmod__", "__coerce__"]);
+
+
+Sk.builtin.numtype.prototype.nb$reflected_add = function (other) {
+    return this.nb$add(other);
+};
+
+Sk.builtin.numtype.prototype.nb$reflected_subtract = function (other) {
+    var negative_this = this.nb$negative();
+    return negative_this.nb$add(other);
+};
+
+Sk.builtin.numtype.prototype.nb$reflected_multiply = function (other) {
+    return this.nb$multiply(other);
+};

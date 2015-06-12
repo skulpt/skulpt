@@ -354,6 +354,19 @@ Sk.builtin.float_.prototype.nb$divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.float_.prototype.nb$reflected_divide = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.nb$divide(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+}
+
 /**
  * Floor divide this instance by a Python object and return the result (i.e. this // other).
  *
@@ -404,6 +417,19 @@ Sk.builtin.float_.prototype.nb$floor_divide = function (other) {
         }
 
         return new Sk.builtin.float_(Math.floor(this.v / parseFloat(other.str$(10, true))));
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.float_.prototype.nb$reflected_floor_divide = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.nb$floor_divide(this);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
@@ -501,6 +527,19 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.float_.prototype.nb$reflected_remainder = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return other.nb$remainder(this);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 /**
  * Compute the quotient and the remainder of this instance and a given Python object and return the result.
  *
@@ -514,8 +553,11 @@ Sk.builtin.float_.prototype.nb$remainder = function (other) {
  */
 Sk.builtin.float_.prototype.nb$divmod = function (other) {
     if (other instanceof Sk.builtin.int_ ||
-        other instanceof Sk.builtin.lng ||
-        other instanceof Sk.builtin.float_) {
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
         return new Sk.builtin.tuple([
             this.nb$floor_divide(other),
             this.nb$remainder(other)
@@ -525,6 +567,21 @@ Sk.builtin.float_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+Sk.builtin.float_.prototype.nb$reflected_divmod = function (other) {
+    if (other instanceof Sk.builtin.int_ ||
+        other instanceof Sk.builtin.lng) {
+        other = new Sk.builtin.float_(other);
+    }
+
+    if (other instanceof Sk.builtin.float_) {
+        return new Sk.builtin.tuple([
+            other.nb$floor_divide(this),
+            other.nb$remainder(this)
+        ]);
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
 
 /**
  * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
@@ -567,6 +624,19 @@ Sk.builtin.float_.prototype.nb$power = function (other, mod) {
         }
 
         return new Sk.builtin.float_(Math.pow(this.v, parseFloat(other.str$(10, true))));
+    }
+
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.float_.prototype.nb$reflected_power = function (n, mod) {
+    if (n instanceof Sk.builtin.int_ ||
+        n instanceof Sk.builtin.lng) {
+        n = new Sk.builtin.float_(n);
+    }
+
+    if (n instanceof Sk.builtin.float_) {
+        return n.nb$power(this, mod);
     }
 
     return Sk.builtin.NotImplemented.NotImplemented$;
