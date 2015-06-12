@@ -712,7 +712,7 @@ Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
 
 /**
  * @function
- * @name  nb$inplace_add
+ * @name  nb$inplace_and
  * @memberOf Sk.builtin.int_.prototype
  * @description
  * Compute the bitwise AND of this instance and a Python object (i.e. this &= other).
@@ -728,7 +728,7 @@ Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
 
 /**
  * @function
- * @name  nb$inplace_add
+ * @name  nb$inplace_or
  * @memberOf Sk.builtin.int_.prototype
  * @description
  * Compute the bitwise OR of this instance and a Python object (i.e. this |= other).
@@ -744,7 +744,7 @@ Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
 
 /**
  * @function
- * @name  nb$inplace_add
+ * @name  nb$inplace_xor
  * @memberOf Sk.builtin.int_.prototype
  * @description
  * Compute the bitwise XOR of this instance and a Python object (i.e. this ^= other).
@@ -760,7 +760,7 @@ Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
 
 /**
  * @function
- * @name  nb$inplace_add
+ * @name  nb$inplace_lshift
  * @memberOf Sk.builtin.int_.prototype
  * @description
  * Compute the bitwise left shift of this instance by a Python object (i.e. this <<= other).
@@ -776,7 +776,7 @@ Sk.builtin.int_.prototype.nb$inplace_lshift = Sk.builtin.int_.prototype.nb$lshif
 
 /**
  * @function
- * @name  nb$inplace_add
+ * @name  nb$inplace_rshift
  * @memberOf Sk.builtin.int_.prototype
  * @description
  * Compute the bitwise right shift of this instance by a Python object (i.e. this >>= other).
