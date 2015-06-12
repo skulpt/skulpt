@@ -18,6 +18,8 @@
  * Takes also implemented \_\_int\_\_ and \_\_trunc\_\_ methods for x into account
  * and tries to use \_\_index\_\_ and/or \_\_int\_\_ if base is not a number
  *
+ * @extends {Sk.builtin.numtype}
+ * 
  * @param  {!(Object|number)} x    Python object or Javascript number to convert to Python int
  * @param  {!(Object|number)=} base Optional base, can only be used when x is Sk.builtin.str
  * @return {(Sk.builtin.int_|Sk.builtin.lng)}      Python int (or long, if overflow)
@@ -182,13 +184,7 @@ Sk.builtin.int_.prototype.tp$index = function () {
     return this.v;
 };
 
-/**
- * Return the hash value of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.int_} The hash value
- */
+/** @override */
 Sk.builtin.int_.prototype.tp$hash = function () {
     //the hash of all numbers should be an int and since javascript doesn't really
     //care every number can be an int.
@@ -215,16 +211,7 @@ Sk.builtin.int_.prototype.clone = function () {
     return new Sk.builtin.int_(this.v);
 };
 
-/**
- * Add a Python object to this instance and return the result (i.e. this + other).
- *
- * Returns NotImplemented if addition between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The Python object to add.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the addition.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$add = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -245,16 +232,7 @@ Sk.builtin.int_.prototype.nb$add = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Subtract a Python object from this instance and return the result (i.e. this - other).
- *
- * Returns NotImplemented if subtraction between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The Python object to subtract.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the subtraction.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$subtract = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -275,16 +253,7 @@ Sk.builtin.int_.prototype.nb$subtract = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Multiply this instance by a Python object and return the result (i.e. this * other).
- *
- * Returns NotImplemented if multiplication between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The multiplier, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the multiplication
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$multiply = function (other) {
     var product, thisAsLong, thisAsFloat;
 
@@ -313,34 +282,17 @@ Sk.builtin.int_.prototype.nb$multiply = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Divide this instance by a Python object and return the result (i.e this / other).
- *
- * Returns NotImplemented if division between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the division
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$divide = function (other) {
     return this.nb$floor_divide(other);
 };
 
+/** @override */
 Sk.builtin.int_.prototype.nb$reflected_divide = function (other) {
     return this.nb$reflected_floor_divide(other);
 };
 
-/**
- * Floor divide this instance by a Python object and return the result (i.e. this // other).
- *
- * Returns NotImplemented if floor division between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the floor division
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -366,6 +318,7 @@ Sk.builtin.int_.prototype.nb$floor_divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/** @override */
 Sk.builtin.int_.prototype.nb$reflected_floor_divide = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return other.nb$divide(this);
@@ -374,16 +327,7 @@ Sk.builtin.int_.prototype.nb$reflected_floor_divide = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Modulo this instance by a Python object and return the result (i.e. this % other).
- *
- * Returns NotImplemented if modulation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the modulation
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$remainder = function (other) {
     var thisAsLong, thisAsFloat;
     var tmp;
@@ -425,6 +369,7 @@ Sk.builtin.int_.prototype.nb$remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/** @override */
 Sk.builtin.int_.prototype.nb$reflected_remainder = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return other.nb$remainder(this);
@@ -433,17 +378,7 @@ Sk.builtin.int_.prototype.nb$reflected_remainder = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Compute the quotient and the remainder of this instance and a given Python object and return the result.
- *
- * Returns NotImplemented if division or modulo operations between int and other type are unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.tuple|Sk.builtin.NotImplemented)} The result of the operation.
- * If both operations are supported, a Python tuple containing (quotient, remainder) in that order.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$divmod = function (other) {
     var thisAsLong, thisAsFloat;
 
@@ -467,6 +402,7 @@ Sk.builtin.int_.prototype.nb$divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/** @override */
 Sk.builtin.int_.prototype.nb$reflected_divmod = function (other) {
     if (other instanceof Sk.builtin.int_) {
         return new Sk.builtin.tuple([
@@ -478,19 +414,7 @@ Sk.builtin.int_.prototype.nb$reflected_divmod = function (other) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
- *
- * If mod is undefined, return this \*\* other. Else, return (this \*\* other) % mod.
- *
- * Returns NotImplemented if exponentiation or modulation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The exponent, which must be a Python object.
- * @param  {!Object=} mod The optional divisor, which must be a Python object if defined.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the exponentiation.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     var power, ret, thisAsLong, thisAsFloat;
 
@@ -532,6 +456,7 @@ Sk.builtin.int_.prototype.nb$power = function (other, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
+/** @override */
 Sk.builtin.int_.prototype.nb$reflected_power = function (other, mod) {
     if (other instanceof Sk.builtin.int_) {
         return other.nb$power(this, mod);
@@ -540,13 +465,7 @@ Sk.builtin.int_.prototype.nb$reflected_power = function (other, mod) {
     return Sk.builtin.NotImplemented.NotImplemented$;
 };
 
-/**
- * Compute the absolute value of this instance and return.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.int_} The absolute value
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$abs = function () {
     return new Sk.builtin.int_(Math.abs(this.v));
 };
@@ -558,7 +477,7 @@ Sk.builtin.int_.prototype.nb$abs = function () {
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object to AND with this one
+ * @param  {!Sk.builtin.object} other The Python object to AND with this one
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the conjunction
  */
 Sk.builtin.int_.prototype.nb$and = function (other) {
@@ -594,7 +513,7 @@ Sk.builtin.int_.prototype.nb$reflected_and = Sk.builtin.int_.prototype.nb$and;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object to OR with this one
+ * @param  {!Sk.builtin.object} other The Python object to OR with this one
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the disjunction
  */
 Sk.builtin.int_.prototype.nb$or = function (other) {
@@ -630,7 +549,7 @@ Sk.builtin.int_.prototype.nb$reflected_or = Sk.builtin.int_.prototype.nb$or;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object to XOR with this one
+ * @param  {!Sk.builtin.object} other The Python object to XOR with this one
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the exclusive disjunction
  */
 Sk.builtin.int_.prototype.nb$xor = function (other) {
@@ -666,7 +585,7 @@ Sk.builtin.int_.prototype.nb$reflected_xor = Sk.builtin.int_.prototype.nb$xor;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object by which to left shift
+ * @param  {!Sk.builtin.object} other The Python object by which to left shift
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the left shift
  */
 Sk.builtin.int_.prototype.nb$lshift = function (other) {
@@ -716,7 +635,7 @@ Sk.builtin.int_.prototype.nb$reflected_lshift = function (other) {
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object by which to right shift
+ * @param  {!Sk.builtin.object} other The Python object by which to right shift
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the right shift
  */
 Sk.builtin.int_.prototype.nb$rshift = function (other) {
@@ -770,120 +689,25 @@ Sk.builtin.int_.prototype.nb$invert = function () {
     return new Sk.builtin.int_(~this.v);
 };
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Add a Python object to this instance and return the result (i.e. this += other).
- *
- * Returns NotImplemented if inplace addition between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The Python object to add.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the addition.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_add = Sk.builtin.int_.prototype.nb$add;
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Subtract a Python object from this instance and return the result (i.e. this -= other).
- *
- * Returns NotImplemented if inplace subtraction between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The Python object to subtract.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the subtraction.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_subtract = Sk.builtin.int_.prototype.nb$subtract;
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Multiply this instance by a Python object and return the result (i.e. this *= other).
- *
- * Returns NotImplemented if inplace multiplication between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The multiplier, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the multiplication
- */
-
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_multiply = Sk.builtin.int_.prototype.nb$multiply;
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Divide this instance by a Python object and return the result (i.e this /= other).
- *
- * Returns NotImplemented if inplace division between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the division
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_divide = Sk.builtin.int_.prototype.nb$divide;
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Modulo this instance by a Python object and return the result (i.e. this %= other).
- *
- * Returns NotImplemented if inplace modulation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the modulation
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_remainder = Sk.builtin.int_.prototype.nb$remainder;
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Floor divide this instance by a Python object and return the result (i.e. this //= other).
- *
- * Returns NotImplemented if inplace floor division between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The divisor, which must be a Python object.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the floor division
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_floor_divide = Sk.builtin.int_.prototype.nb$floor_divide;
 
-/**
- * @function
- * @name  nb$inplace_add
- * @memberOf Sk.builtin.int_.prototype
- * @description
- * Raise this instance by a Python object, optionally modulo the exponent, and return the final result.
- *
- * If mod is undefined, return this \*\*= other. Else, return (this \*\*= other) %= mod.
- *
- * Returns NotImplemented if inplace exponentiation or inplace modulation between int and other type is unsupported.
- *
- * Javscript function, returns Python object.
- *
- * @param  {!Object} other The exponent, which must be a Python object.
- * @param  {!Object=} mod The optional divisor, which must be a Python object if defined.
- * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.float_|Sk.builtin.NotImplemented)} The result of the exponentiation.
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
 
 /**
@@ -897,7 +721,7 @@ Sk.builtin.int_.prototype.nb$inplace_power = Sk.builtin.int_.prototype.nb$power;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object to AND with this one
+ * @param  {!Sk.builtin.object} other The Python object to AND with this one
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the conjunction
  */
 Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
@@ -913,7 +737,7 @@ Sk.builtin.int_.prototype.nb$inplace_and = Sk.builtin.int_.prototype.nb$and;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object to OR with this one
+ * @param  {!Sk.builtin.object} other The Python object to OR with this one
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the disjunction
  */
 Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
@@ -929,7 +753,7 @@ Sk.builtin.int_.prototype.nb$inplace_or = Sk.builtin.int_.prototype.nb$or;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object to XOR with this one
+ * @param  {!Sk.builtin.object} other The Python object to XOR with this one
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the exclusive disjunction
  */
 Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
@@ -945,7 +769,7 @@ Sk.builtin.int_.prototype.nb$inplace_xor = Sk.builtin.int_.prototype.nb$xor;
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object by which to left shift
+ * @param  {!Sk.builtin.object} other The Python object by which to left shift
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the left shift
  */
 Sk.builtin.int_.prototype.nb$inplace_lshift = Sk.builtin.int_.prototype.nb$lshift;
@@ -961,62 +785,32 @@ Sk.builtin.int_.prototype.nb$inplace_lshift = Sk.builtin.int_.prototype.nb$lshif
  *
  * Javscript function, returns Python object.
  *
- * @param  {!Object} other The Python object by which to right shift
+ * @param  {!Sk.builtin.object} other The Python object by which to right shift
  * @return {(Sk.builtin.int_|Sk.builtin.lng|Sk.builtin.NotImplemented)} The result of the right shift
  */
 Sk.builtin.int_.prototype.nb$inplace_rshift = Sk.builtin.int_.prototype.nb$rshift;
 
-/**
- * Compute the unary negative of this instance (i.e. -this).
- *
- * Javscript function, returns Python object.
- *
- * @return {Sk.builtin.int_} A copy of this instance with the value negated
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$negative = function () {
     return new Sk.builtin.int_(-this.v);
 };
 
-/**
- * Compute the unary positive of this instance (i.e. +this).
- *
- * Javscript function, returns Python object.
- *
- * @return {Sk.builtin.int_} A copy of this instance with the value unchanged
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$positive = function () {
     return this.clone();
 };
 
-/**
- * Determine if this instance is nonzero.
- *
- * Javscript function, returns Javascript object.
- *
- * @return {boolean} true if this instance is not equal to zero, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$nonzero = function () {
     return this.v !== 0;
 };
 
-/**
- * Determine if this instance is negative.
- *
- * Javscript function, returns Javascript object.
- *
- * @return {boolean} true if this instance is negative, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$isnegative = function () {
     return this.v < 0;
 };
 
-/**
- * Determine if this instance is positive.
- *
- * Javscript function, returns Javascript object.
- *
- * @return {boolean} true if this instance is positive, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.nb$ispositive = function () {
     return this.v >= 0;
 };
@@ -1050,119 +844,65 @@ Sk.builtin.int_.prototype.numberCompare = function (other) {
 // as == and !=  Unless you modify the logic of numberCompare do not change
 // these.
 
-/**
- * Perform equality check between this instance and a Python object (i.e. this == other).
- *
- * Implements \_\_eq\_\_ dunder method.
- *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @param  {Object} other The Python object to check for equality.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if equal, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.ob$eq = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.numberCompare(other) == 0; //jshint ignore:line
+        return new Sk.builtin.bool(this.numberCompare(other) == 0); //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
-        return false;
+        return Sk.builtin.bool.false$;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
 };
 
-/**
- * Perform non-equality check between this instance and a Python object (i.e. this != other).
- *
- * Implements \_\_ne\_\_ dunder method.
- *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @param  {Object} other The Python object to check for non-equality.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if not equal, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.ob$ne = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.numberCompare(other) != 0; //jshint ignore:line
+        return new Sk.builtin.bool(this.numberCompare(other) != 0); //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
-        return true;
+        return Sk.builtin.bool.true$;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
 };
 
-/**
- * Determine if this instance is less than a Python object (i.e. this < other).
- *
- * Implements \_\_lt\_\_ dunder method.
- *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this < other, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.ob$lt = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.numberCompare(other) < 0;
+        return new Sk.builtin.bool(this.numberCompare(other) < 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
 };
 
-/**
- * Determine if this instance is less than or equal to a Python object (i.e. this <= other).
- *
- * Implements \_\_le\_\_ dunder method.
- *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this <= other, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.ob$le = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.numberCompare(other) <= 0;
+        return new Sk.builtin.bool(this.numberCompare(other) <= 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
 };
 
-/**
- * Determine if this instance is greater than a Python object (i.e. this > other).
- *
- * Implements \_\_gt\_\_ dunder method.
- *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this > other, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.ob$gt = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.numberCompare(other) > 0;
+        return new Sk.builtin.bool(this.numberCompare(other) > 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
 };
 
-/**
- * Determine if this instance is greater than or equal to a Python object (i.e. this >= other).
- *
- * Implements \_\_ge\_\_ dunder method.
- *
- * Javascript function, returns Javascript object or Sk.builtin.NotImplemented.
- *
- * @param  {Object} other The Python object to compare.
- * @return {(boolean|Sk.builtin.NotImplemented)} true if this >= other, false otherwise
- */
+/** @override */
 Sk.builtin.int_.prototype.ob$ge = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.numberCompare(other) >= 0;
+        return new Sk.builtin.bool(this.numberCompare(other) >= 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -1201,13 +941,7 @@ Sk.builtin.int_.prototype.__round__ = function (self, ndigits) {
     return new Sk.builtin.int_(result);
 };
 
-/**
- * Return the string representation of this instance.
- *
- * Javascript function, returns Python object.
- *
- * @return {Sk.builtin.str} The Python string representation of this instance.
- */
+/** @override */
 Sk.builtin.int_.prototype["$r"] = function () {
     return new Sk.builtin.str(this.str$(10, true));
 };

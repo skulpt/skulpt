@@ -5,8 +5,16 @@
 //  Using javascript BigInteger by Tom Wu
 /**
  * @constructor
- * @param {*} x
- * @param {number=} base
+ * Sk.builtin.lng
+ *
+ * @description
+ * Constructor for Python long. Also used for builtin long().
+ *
+ * @extends {Sk.builtin.numtype}
+ * 
+ * @param {*} x Object or number to convert to Python long.
+ * @param {number=} base Optional base.
+ * @return {Sk.builtin.lng} Python long
  */
 Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
     base = Sk.builtin.asnum$(base);
@@ -672,9 +680,9 @@ Sk.builtin.lng.prototype.longCompare = function (other) {
 Sk.builtin.lng.prototype.ob$eq = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.longCompare(other) == 0; //jshint ignore:line
+        return new Sk.builtin.bool(this.longCompare(other) == 0); //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
-        return false;
+        return Sk.builtin.bool.false$;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -683,9 +691,9 @@ Sk.builtin.lng.prototype.ob$eq = function (other) {
 Sk.builtin.lng.prototype.ob$ne = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.longCompare(other) != 0; //jshint ignore:line
+        return new Sk.builtin.bool(this.longCompare(other) != 0); //jshint ignore:line
     } else if (other instanceof Sk.builtin.none) {
-        return true;
+        return Sk.builtin.bool.true$;
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -694,7 +702,7 @@ Sk.builtin.lng.prototype.ob$ne = function (other) {
 Sk.builtin.lng.prototype.ob$lt = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.longCompare(other) < 0;
+        return new Sk.builtin.bool(this.longCompare(other) < 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -703,7 +711,7 @@ Sk.builtin.lng.prototype.ob$lt = function (other) {
 Sk.builtin.lng.prototype.ob$le = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.longCompare(other) <= 0;
+        return new Sk.builtin.bool(this.longCompare(other) <= 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -712,7 +720,7 @@ Sk.builtin.lng.prototype.ob$le = function (other) {
 Sk.builtin.lng.prototype.ob$gt = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.longCompare(other) > 0;
+        return new Sk.builtin.bool(this.longCompare(other) > 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
@@ -721,7 +729,7 @@ Sk.builtin.lng.prototype.ob$gt = function (other) {
 Sk.builtin.lng.prototype.ob$ge = function (other) {
     if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.lng ||
         other instanceof Sk.builtin.float_) {
-        return this.longCompare(other) >= 0;
+        return new Sk.builtin.bool(this.longCompare(other) >= 0);
     } else {
         return Sk.builtin.NotImplemented.NotImplemented$;
     }
