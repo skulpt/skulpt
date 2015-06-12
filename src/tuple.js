@@ -134,7 +134,8 @@ Sk.builtin.tuple.prototype.tp$iter = function () {
                 return undefined;
             }
             return ret.$obj.v[ret.$index++];
-        }
+        },
+        tp$name    : "tuple_iterator"
     };
     return ret;
 };

@@ -156,7 +156,8 @@ Sk.builtin.str.prototype.tp$iter = function () {
                 return undefined;
             }
             return new Sk.builtin.str(ret.$obj.v.substr(ret.$index++, 1));
-        }
+        },
+        tp$name    : "str_iterator"
     };
     return ret;
 };

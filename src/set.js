@@ -33,7 +33,10 @@ Sk.abstr.setUpInheritance("set", Sk.builtin.set, Sk.builtin.object);
 Sk.abstr.markUnhashable(Sk.builtin.set);
 
 Sk.builtin.set.prototype.set_iter_ = function () {
-    return this["v"].tp$iter();
+    var iter = this["v"].tp$iter();
+    iter.tp$name = "set_iterator";
+
+    return iter;
 };
 
 Sk.builtin.set.prototype.set_reset_ = function () {
@@ -142,6 +145,14 @@ Sk.builtin.set.prototype.ob$ge = function (other) {
 
     return this["issuperset"].func_code(this, other);
 };
+
+Sk.builtin.set.prototype["__iter__"] = new Sk.builtin.func(function(self) {
+
+    Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
+
+    return self.tp$iter();
+
+});
 
 Sk.builtin.set.prototype.tp$iter = Sk.builtin.set.prototype.set_iter_;
 Sk.builtin.set.prototype.sq$length = function () {

@@ -18,7 +18,7 @@ Sk.builtin.seqtype.prototype["__iter__"] = new Sk.builtin.func(function (self) {
 
     Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
 
-    throw new Sk.builtin.NotImplementedError("__iter__ is not yet implemented");
+    return self.tp$iter();
 
 });
 

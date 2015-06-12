@@ -66,7 +66,8 @@ Sk.builtin.list.prototype.list_iter_ = function () {
                 return undefined;
             }
             return ret.$obj.v[ret.$index++];
-        }
+        },
+        tp$name    : "list_iterator"
     };
     return ret;
 };
