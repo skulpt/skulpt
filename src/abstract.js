@@ -438,7 +438,7 @@ Sk.abstr.sequenceContains = function (seq, ob) {
     special = Sk.abstr.lookupSpecial(seq, "__contains__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, seq, ob);
+        return Sk.misceval.isTrue(Sk.misceval.callsim(special, seq, ob));
     }
 
     if (!Sk.builtin.checkIterable(seq)) {
