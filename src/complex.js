@@ -179,6 +179,18 @@ Sk.builtin.complex = function (real, imag) {
 Sk.abstr.setUpInheritance("complex", Sk.builtin.complex, Sk.builtin.numtype);
 //Sk.builtin.complex.co_kwargs = true;
 
+Sk.builtin.complex.prototype.nb$int_ = function () {
+    throw new Sk.builtin.TypeError("can't convert complex to int");
+};
+
+Sk.builtin.complex.prototype.nb$float_ = function() {
+    throw new Sk.builtin.TypeError("can't convert complex to float");
+};
+
+Sk.builtin.complex.prototype.nb$lng = function () {
+    throw new Sk.builtin.TypeError("can't convert complex to long");
+};
+
 Sk.builtin.complex.prototype.__doc__ = new Sk.builtin.str("complex(real[, imag]) -> complex number\n\nCreate a complex number from a real part and an optional imaginary part.\nThis is equivalent to (real + imag*1j) where imag defaults to 0.");
 
 Sk.builtin.complex._isNegativeZero = function (val) {
