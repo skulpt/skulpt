@@ -20,6 +20,7 @@ import re
 import pprint
 import json
 import shutil
+import time
 
 # Assume that the GitPython module is available until proven otherwise.
 GIT_MODULE_AVAILABLE = True
@@ -165,28 +166,34 @@ def is64bit():
     return sys.maxsize > 2**32
 
 if sys.platform == "win32":
-    jsengine = ".\\support\\d8\\d8.exe --debugger --harmony"
+    os.environ["D8_PATH"] = ".\\support\\d8\\x32"
+    jsengine = ".\\support\\d8\\x32\\d8.exe --debugger --harmony"
     nul = "nul"
     crlfprog = os.path.join(os.path.split(sys.executable)[0], "Tools/Scripts/crlf.py")
 elif sys.platform == "darwin":
-    jsengine = "./support/d8/d8m --debugger"
+    os.environ["D8_PATH"] = "./support/d8/mac"
+    jsengine = "./support/d8/mac/d8 --debugger"
     nul = "/dev/null"
     crlfprog = None
 elif sys.platform == "linux2":
     if is64bit():
-        jsengine = "support/d8/d8x64 --debugger --harmony_promises"
+        os.environ["D8_PATH"] = "support/d8/x64"
+        jsengine = "support/d8/linux/d8 --debugger --harmony_promises"
     else:
-        jsengine = "support/d8/d8 --debugger --harmony_promises"
+        os.environ["D8_PATH"] = "support/d8/x32"
+        jsengine = "support/d8/windows/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 else:
     # You're on your own...
-    jsengine = "support/d8/d8 --debugger --harmony_promises"
+    os.environ["D8_PATH"] = "support/d8/x32"
+    jsengine = "support/d8/x32/d8 --debugger --harmony_promises"
     nul = "/dev/null"
     crlfprog = None
 
 if os.environ.get("CI",False):
-    jsengine = "support/d8/d8x64 --harmony_promises"
+    os.environ["D8_PATH"] = "support/d8/x64"
+    jsengine = "support/d8/x64/d8 --harmony_promises"
     nul = "/dev/null"
 
 #jsengine = "rhino"
@@ -217,6 +224,72 @@ def test(debug_mode=False):
         print "Now running new unit tests"
         ret4 = rununits()
     return ret1 | ret2 | ret3 | ret4
+
+def profile(output=""):
+    """
+    Runs v8 profiler, which outputs tick information to v8.log Use
+    https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html
+    to analyze log.
+    """
+    jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
+
+    # Prepare named tests
+    buildNamedTestsFile()
+
+    # Prepare unit tests
+    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+    f = open("support/tmp/run.js", "w")
+    f.write("var input;\n")
+
+    for fn in testFiles:
+        modname = os.path.splitext(os.path.basename(fn))[0]
+        p3on = 'false'
+        f.write("""
+input = read('%s');
+print('%s');
+Sk.configure({syspath:["%s"], read:read, python3:%s});
+Sk.importMain("%s", false);
+        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+
+    f.close()
+
+    # Run profile
+    print("Running profile on test suite...")
+    startTime = time.time()
+    p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
+              ' '.join(getFileList(FILE_TYPE_TEST)),
+              ' '.join(TestFiles)),
+              shell=True, stdout=PIPE, stderr=PIPE)
+
+    outs, errs = p.communicate()
+
+    if p.returncode != 0:
+        failTot += 1
+        print "{} exited with error code {}".format(fn,p.returncode)
+
+    endTime = time.time()
+
+    if errs:
+        print errs
+
+    print "\n\nRunning time: ", (endTime - startTime), " seconds\n\n"
+
+    # Process and display results
+    if output != "":
+        output = " > " + output
+
+    print "Processing profile using d8 processor..."
+    if sys.platform == "win32":
+        os.system(".\\support\\d8\\tools\\windows-tick-processor.bat v8.log {0}".format(output))
+    elif sys.platform == "darwin":
+        os.system("./support/d8/tools/mac-tick-processor {0}".format(output))
+    elif sys.platform == "linux2":
+        os.system("./support/d8/tools/linux-tick-processor v8.log {0}".format(output))
+    else:
+        print """d8 processor is unsupported on this platform.
+Try using https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html."""
 
 def debugbrowser():
     tmpl = """
@@ -921,6 +994,7 @@ Commands:
     test             Run all test cases
     dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
+    profile [output] Profile Skulpt using d8 and show processed results
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -1048,6 +1122,11 @@ def main():
         shell(sys.argv[2]);
     elif cmd == "repl":
         repl()
+    elif cmd == "profile":
+        if len(sys.argv) < 3:
+            profile()
+        else:
+            profile(output=sys.argv[2])
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)
