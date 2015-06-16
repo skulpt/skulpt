@@ -17,7 +17,7 @@ Sk.builtin.str = function (x) {
         return new Sk.builtin.str(x);
     }
 
-    Sk.abstr.superConstructor(Sk.builtin.str, this);
+    Sk.abstr.setUpObject(this);
 
     // convert to js string
     if (x === true) {

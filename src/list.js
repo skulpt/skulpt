@@ -9,7 +9,7 @@ Sk.builtin.list = function (L, canSuspend) {
 
     if (this instanceof Sk.builtin.list) {
         canSuspend = false;
-        Sk.abstr.superConstructor(Sk.builtin.list, this);
+        Sk.abstr.setUpObject(this);
     } else if (canSuspend === undefined) {
         // Default to true in this case, because 'list' gets called directly from Python
         canSuspend = true;

@@ -11,7 +11,7 @@
  */
 Sk.builtin.seqtype = function () {
 
-    Sk.abstr.superConstructor(Sk.builtin.seqtype, this);
+    Sk.abstr.setUpObject(this);
 
 };
 

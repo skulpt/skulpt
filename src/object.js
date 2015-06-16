@@ -13,12 +13,7 @@ Sk.builtin.object = function () {
         return new Sk.builtin.object();
     }
 
-    // Python builtin instances do not maintain an internal Python dictionary
-    // (this causes problems when calling the super constructor on a dict
-    // instance). Instead, they maintain a Javascript object.
-    this["$d"] = {
-        "Sk.builtin.object": true   // Indicates this is a builtin object
-    };
+    Sk.abstr.setUpObject(this);
 
     return this;
 };
@@ -34,6 +29,7 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     var f;
     var descr;
     var tp;
+    var pyName = new Sk.builtin.str(name);
     goog.asserts.assert(typeof name === "string");
 
     tp = this.ob$type;
@@ -54,10 +50,10 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
     // todo; assert? force?
     if (this["$d"]) {
         if (this["$d"].mp$lookup) {
-            res = this["$d"].mp$lookup(new Sk.builtin.str(name));
+            res = this["$d"].mp$lookup(pyName);
         } else if (this["$d"].mp$subscript) {
             try {
-                res = this["$d"].mp$subscript(new Sk.builtin.str(name));
+                res = this["$d"].mp$subscript(pyName);
             } catch (x) {
                 res = undefined;
             }
@@ -385,7 +381,7 @@ Sk.builtin.object.prototype.pythonFunctions = ["__repr__", "__str__", "__hash__"
  */
 Sk.builtin.none = function () {
     // Initialize this instance's superclass
-    Sk.abstr.superConstructor(Sk.builtin.none, this);
+    Sk.abstr.setUpObject(this);
 
     this.v = {value: null, enumerable: false};
 };
@@ -413,7 +409,7 @@ Sk.builtin.none.none$ = new Sk.builtin.none();
  */
 Sk.builtin.NotImplemented = function() {
     // Initialize this instance's superclass
-    Sk.abstr.superConstructor(Sk.builtin.NotImplemented, this);
+    Sk.abstr.setUpObject(this);
 };
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 

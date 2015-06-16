@@ -9,6 +9,7 @@ var $builtinmodule = function (name) {
             return new mod.defaultdict(default_, args);
         }
 
+        Sk.abstr.setUpObject(this);
         Sk.abstr.superConstructor(mod.defaultdict, this, args);
 
         if (default_ === undefined) {
@@ -71,6 +72,8 @@ var $builtinmodule = function (name) {
         if (!(this instanceof mod.Counter)) {
             return new mod.Counter(iter_or_map);
         }
+
+        Sk.abstr.setUpObject(this);
 
         if (iter_or_map instanceof Sk.builtin.dict || iter_or_map === undefined) {
             Sk.abstr.superConstructor(mod.Counter, this, iter_or_map);
@@ -254,6 +257,7 @@ var $builtinmodule = function (name) {
 
         this.orderedkeys = [];
 
+        Sk.abstr.setUpObject(this);
         Sk.abstr.superConstructor(mod.OrderedDict, this, items);
 
         return this;

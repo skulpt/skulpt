@@ -34,7 +34,7 @@ Sk.builtin.int_ = function (x, base) {
         return new Sk.builtin.int_(x, base);
     }
 
-    Sk.abstr.superConstructor(Sk.builtin.int_, this);
+    Sk.abstr.setUpObject(this);
 
     if (this instanceof Sk.builtin.bool) {
         return this;

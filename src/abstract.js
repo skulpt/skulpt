@@ -952,6 +952,15 @@ Sk.abstr.setUpInheritance = function (childName, child, parent) {
     child.prototype.pythonFunctions = parent.prototype.pythonFunctions.slice();
 };
 
+Sk.abstr.setUpObject = function (self) {
+    // Python builtin instances do not maintain an internal Python dictionary
+    // (this causes problems when calling the super constructor on a dict
+    // instance). Instead, they maintain a Javascript object.
+    self["$d"] = {
+        "Sk.builtin.object": true   // Indicates this is a builtin object
+    };
+};
+
 Sk.abstr.superConstructor = function (thisClass, self) {
     var argumentsForConstructor = Array.prototype.slice.call(arguments, 2);
     thisClass.prototype.tp$base.apply(self, argumentsForConstructor);

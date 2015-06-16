@@ -11,7 +11,7 @@
  */
 Sk.builtin.numtype = function () {
 
-    Sk.abstr.superConstructor(Sk.builtin.numtype, this);
+    Sk.abstr.setUpObject(this);
 
 };
 

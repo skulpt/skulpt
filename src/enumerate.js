@@ -10,7 +10,7 @@ Sk.builtin.enumerate = function (iterable, start) {
         return new Sk.builtin.enumerate(iterable, start);
     }
 
-    Sk.abstr.superConstructor(Sk.builtin.enumerate, this);
+    Sk.abstr.setUpObject(this);
 
     Sk.builtin.pyCheckArgs("enumerate", arguments, 1, 2);
     if (!Sk.builtin.checkIterable(iterable)) {

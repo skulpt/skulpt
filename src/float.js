@@ -24,7 +24,7 @@ Sk.builtin.float_ = function (x) {
         return new Sk.builtin.float_(x);
     }
 
-    Sk.abstr.superConstructor(Sk.builtin.float_, this);
+    Sk.abstr.setUpObject(this);
 
     if (x instanceof Sk.builtin.str) {
 
