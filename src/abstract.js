@@ -823,29 +823,6 @@ goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
 
 
 /**
- * @constructor
- */
-function seqIter(obj) {
-    var ret;
-    this.idx = 0;
-    this.myobj = obj;
-    this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
-    this.tp$iternext = function () {
-        try {
-            ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
-        } catch (e) {
-            if (e instanceof Sk.builtin.IndexError) {
-                return undefined;
-            } else {
-                throw e;
-            }
-        }
-        this.idx++;
-        return ret;
-    };
-}
-
-/**
  * Get the iterator for a Python object  This iterator could be one of the following.
  * This is the preferred mechanism for consistently getting the correct iterator.  You should
  * not just use tp$iter because that could lead to incorrect behavior of a user created class.
@@ -864,6 +841,32 @@ Sk.abstr.iter = function(obj) {
     var iter;
     var getit;
     var ret;
+
+    /**
+     * Builds an iterator around classes that have a __getitem__ method.
+     * 
+     * @constructor
+     */
+    var seqIter = function (obj) {
+        this.idx = 0;
+        this.myobj = obj;
+        this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+        this.tp$iternext = function () {
+            var ret;
+            try {
+                ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
+            } catch (e) {
+                if (e instanceof Sk.builtin.IndexError) {
+                    return undefined;
+                } else {
+                    throw e;
+                }
+            }
+            this.idx++;
+            return ret;
+        };
+    };
+
     if (obj.tp$getattr) {
         iter =  Sk.abstr.lookupSpecial(obj,"__iter__");
         if (iter) {
