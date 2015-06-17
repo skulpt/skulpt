@@ -339,6 +339,7 @@ Sk.builtin.all = function all (iter) {
 
 Sk.builtin.sum = function sum (iter, start) {
     var tot;
+    var intermed;
     var it, i;
     var has_float;
 
@@ -368,13 +369,17 @@ Sk.builtin.sum = function sum (iter, start) {
             }
         }
 
-        if ((tot.nb$add !== undefined) && (tot.nb$add(i) !== undefined)) {
-            tot = tot.nb$add(i);
-        } else {
-            throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
-                Sk.abstr.typeName(tot) + "' and '" +
-                Sk.abstr.typeName(i) + "'");
+        if (tot.nb$add !== undefined) {
+            intermed = tot.nb$add(i);
+            if ((intermed !== undefined) && (intermed !== Sk.builtin.NotImplemented.NotImplemented$)) {
+                tot = tot.nb$add(i);
+                continue;
+            }
         }
+
+        throw new Sk.builtin.TypeError("unsupported operand type(s) for +: '" +
+                    Sk.abstr.typeName(tot) + "' and '" +
+                    Sk.abstr.typeName(i) + "'");
     }
 
     return tot;
