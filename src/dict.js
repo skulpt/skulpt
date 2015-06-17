@@ -10,7 +10,6 @@ Sk.builtin.dict = function dict (L) {
         return new Sk.builtin.dict(L);
     }
 
-    Sk.abstr.setUpObject(this);
 
     if (L === undefined) {
         L = [];

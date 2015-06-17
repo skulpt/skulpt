@@ -22,7 +22,6 @@ Sk.builtin.lng = function (x, base) {   /* long is a reserved word */
         return new Sk.builtin.lng(x, base);
     }
 
-    Sk.abstr.setUpObject(this);
 
     if (x === undefined) {
         this.biginteger = new Sk.builtin.biginteger(0);

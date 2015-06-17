@@ -12,7 +12,6 @@ Sk.builtin.file = function (name, mode, buffering) {
         return new Sk.builtin.file(name, mode, buffering);
     }
 
-    Sk.abstr.setUpObject(this);
 
     this.mode = mode;
     this.name = name;

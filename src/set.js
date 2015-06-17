@@ -9,7 +9,6 @@ Sk.builtin.set = function (S) {
         return new Sk.builtin.set(S);
     }
 
-    Sk.abstr.setUpObject(this);
 
     if (typeof(S) === "undefined") {
         S = [];

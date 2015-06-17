@@ -22,7 +22,6 @@ Sk.builtin.generator = function (code, globals, args, closure, closure2) {
         return new Sk.builtin.generator(code, globals, args, closure, closure2);
     }
 
-    Sk.abstr.setUpObject(this);
 
     this.func_code = code;
     this.func_globals = globals || null;

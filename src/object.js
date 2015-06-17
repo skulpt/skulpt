@@ -13,7 +13,6 @@ Sk.builtin.object = function () {
         return new Sk.builtin.object();
     }
 
-    Sk.abstr.setUpObject(this);
 
     return this;
 };
@@ -64,6 +63,12 @@ Sk.builtin.object.prototype.GenericGetAttr = function (name) {
         if (res !== undefined) {
             return res;
         }
+    } else if (this instanceof Sk.builtin.object) {
+        // Initialize inner dictionary for builtin types
+        // This is not done upon instantiation to improve performance
+        this["$d"] = {
+            "Sk.builtin.object": true   // Indicates this is a builtin object
+        };
     }
 
     if (f) {
@@ -88,6 +93,14 @@ Sk.builtin.object.prototype.GenericSetAttr = function (name, value) {
     var objname = Sk.abstr.typeName(this);
     goog.asserts.assert(typeof name === "string");
     // todo; lots o' stuff
+
+    if (this["$d"] === undefined && this instanceof Sk.builtin.object) {
+        // Initialize inner dictionary for builtin types
+        // This is not done upon instantiation to improve performance
+        this["$d"] = {
+            "Sk.builtin.object": true   // Indicates this is a builtin object
+        };
+    }
 
     if (this["$d"].mp$ass_subscript) {
         this["$d"].mp$ass_subscript(new Sk.builtin.str(name), value);
@@ -380,10 +393,7 @@ Sk.builtin.object.prototype.pythonFunctions = ["__repr__", "__str__", "__hash__"
  * @extends {Sk.builtin.object}
  */
 Sk.builtin.none = function () {
-    // Initialize this instance's superclass
-    Sk.abstr.setUpObject(this);
-
-    this.v = {value: null, enumerable: false};
+    this.v = null;
 };
 Sk.abstr.setUpInheritance("NoneType", Sk.builtin.none, Sk.builtin.object);
 
@@ -407,10 +417,7 @@ Sk.builtin.none.none$ = new Sk.builtin.none();
  *
  * @extends {Sk.builtin.object}
  */
-Sk.builtin.NotImplemented = function() {
-    // Initialize this instance's superclass
-    Sk.abstr.setUpObject(this);
-};
+Sk.builtin.NotImplemented = function() { };
 Sk.abstr.setUpInheritance("NotImplementedType", Sk.builtin.NotImplemented, Sk.builtin.object);
 
 /** @override */

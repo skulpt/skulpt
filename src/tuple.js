@@ -8,7 +8,6 @@ Sk.builtin.tuple = function (L) {
         return new Sk.builtin.tuple(L);
     }
 
-    Sk.abstr.setUpObject(this);
 
     if (L === undefined) {
         L = [];

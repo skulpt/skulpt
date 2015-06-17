@@ -15,7 +15,6 @@ Sk.builtin.slice = function slice (start, stop, step) {
         return new Sk.builtin.slice(start, stop, step);
     }
 
-    Sk.abstr.setUpObject(this);
 
     if (stop === undefined && step === undefined) {
         stop = start;

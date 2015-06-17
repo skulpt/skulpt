@@ -11,7 +11,7 @@
  */
 Sk.builtin.numtype = function () {
 
-    Sk.abstr.setUpObject(this);
+    throw new Sk.builtin.ExternalError("Cannot instantiate abstract Sk.builtin.numtype class");
 
 };
 
