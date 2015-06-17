@@ -409,44 +409,60 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
     vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
     if (vcmp) {
-        ret = Sk.misceval.callsim(vcmp, v, w);
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            ret = Sk.builtin.asnum$(ret);
-            if (op === "Eq") {
-                return ret === 0;
-            } else if (op === "NotEq") {
-                return ret !== 0;
-            } else if (op === "Lt") {
-                return ret < 0;
-            } else if (op === "Gt") {
-                return ret > 0;
-            } else if (op === "LtE") {
-                return ret <= 0;
-            } else if (op === "GtE") {
-                return ret >= 0;
+        try {
+            ret = Sk.misceval.callsim(vcmp, v, w);
+            if (Sk.builtin.checkNumber(ret)) {
+                ret = Sk.builtin.asnum$(ret);
+                if (op === "Eq") {
+                    return ret === 0;
+                } else if (op === "NotEq") {
+                    return ret !== 0;
+                } else if (op === "Lt") {
+                    return ret < 0;
+                } else if (op === "Gt") {
+                    return ret > 0;
+                } else if (op === "LtE") {
+                    return ret <= 0;
+                } else if (op === "GtE") {
+                    return ret >= 0;
+                }
             }
+
+            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                throw new Sk.builtin.TypeError("comparison did not return an int");
+            }
+        } catch (e) {
+            throw new Sk.builtin.TypeError("comparison did not return an int");
         }
     }
 
     wcmp = Sk.abstr.lookupSpecial(w, "__cmp__");
     if (wcmp) {
         // note, flipped on return value and call
-        ret = Sk.misceval.callsim(wcmp, w, v);
-        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
-            ret = Sk.builtin.asnum$(ret);
-            if (op === "Eq") {
-                return ret === 0;
-            } else if (op === "NotEq") {
-                return ret !== 0;
-            } else if (op === "Lt") {
-                return ret > 0;
-            } else if (op === "Gt") {
-                return ret < 0;
-            } else if (op === "LtE") {
-                return ret >= 0;
-            } else if (op === "GtE") {
-                return ret <= 0;
+        try {
+            ret = Sk.misceval.callsim(wcmp, w, v);
+            if (Sk.builtin.checkNumber(ret)) {
+                ret = Sk.builtin.asnum$(ret);
+                if (op === "Eq") {
+                    return ret === 0;
+                } else if (op === "NotEq") {
+                    return ret !== 0;
+                } else if (op === "Lt") {
+                    return ret > 0;
+                } else if (op === "Gt") {
+                    return ret < 0;
+                } else if (op === "LtE") {
+                    return ret >= 0;
+                } else if (op === "GtE") {
+                    return ret <= 0;
+                }
             }
+
+            if (ret !== Sk.builtin.NotImplemented.NotImplemented$) {
+                throw new Sk.builtin.TypeError("comparison did not return an int");
+            }
+        } catch (e) {
+            throw new Sk.builtin.TypeError("comparison did not return an int");
         }
     }
 
