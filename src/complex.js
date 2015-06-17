@@ -67,7 +67,7 @@ Sk.builtin.complex = function (real, imag) {
 
     // try_complex_special_method
     tmp = Sk.builtin.complex.try_complex_special_method(r);
-    if (tmp != null) {
+    if (tmp != null && tmp !== Sk.builtin.NotImplemented.NotImplemented$) {
         if (!Sk.builtin.checkComplex(tmp)) {
             throw new Sk.builtin.TypeError("__complex__ should return a complex object");
         }
@@ -397,7 +397,7 @@ Sk.builtin.complex.complex_subtype_from_string = function (val) {
     _PyHASH_IMAG refers to _PyHASH_MULTIPLIER which refers to 1000003
  */
 Sk.builtin.complex.prototype.tp$hash = function () {
-    return new Sk.builtin.nmber(this.tp$getattr("imag").v * 1000003 + this.tp$getattr("real").v, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(this.tp$getattr("imag").v * 1000003 + this.tp$getattr("real").v);
 };
 
 Sk.builtin.complex.prototype.nb$add = function (other) {
@@ -830,14 +830,14 @@ Sk.builtin.complex.complex_format = function (v, precision, format_code){
 
     if (v.real.v === 0.0 && copysign(1.0, v.real.v) == 1.0) {
         re = "";
-        im = Sk.builtin.nmber.PyOS_double_to_string(v.imag.v, format_code, precision, 0, null);
+        im = Sk.builtin.complex.PyOS_double_to_string(v.imag.v, format_code, precision, 0, null);
         // im = v.imag.v;
     } else {
         /* Format imaginary part with sign, real part without */
-        pre = Sk.builtin.nmber.PyOS_double_to_string(v.real.v, format_code, precision, 0, null);
+        pre = Sk.builtin.complex.PyOS_double_to_string(v.real.v, format_code, precision, 0, null);
         re = pre;
 
-        im = Sk.builtin.nmber.PyOS_double_to_string(v.imag.v, format_code, precision, Sk.builtin.nmber.PyOS_double_to_string.Py_DTSF_SIGN, null);
+        im = Sk.builtin.complex.PyOS_double_to_string(v.imag.v, format_code, precision, Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN, null);
         
         if (v.imag.v === 0 && 1/v.imag.v === -Infinity && im && im[0] !== "-"){
             im = "-" + im; // force negative zero sign
@@ -927,7 +927,7 @@ Sk.builtin.complex.prototype.__abs__  = new Sk.builtin.func(function (self) {
         /* either the real or imaginary part is a NaN,
            and neither is infinite. Result should be NaN. */
 
-        return new Sk.builtin.nmber(NaN, Sk.builtin.nmber.float$);
+        return new Sk.builtin.float_(NaN);
     }
 
     result = Math.hypot(_real, _imag);
@@ -1016,7 +1016,7 @@ Sk.builtin.complex.prototype.conjugate = new Sk.builtin.func(function (self){
     var _imag = self.imag.v;
     _imag = -_imag;
 
-    return new Sk.builtin.complex(self.real, new Sk.builtin.nmber(_imag, Sk.builtin.nmber.float$));
+    return new Sk.builtin.complex(self.real, new Sk.builtin.float_(_imag));
 });
 
 // deprecated
@@ -1031,8 +1031,8 @@ Sk.builtin.complex.prototype.__divmod__ = new Sk.builtin.func(function (self, ot
 
     div = a.nb$divide.call(a, b); // the raw divisor value
 
-    div.real = new Sk.builtin.nmber(Math.floor(div.real.v), Sk.builtin.nmber.float$);
-    div.imag = new Sk.builtin.nmber(0.0, Sk.builtin.nmber.float$);
+    div.real = new Sk.builtin.float_(Math.floor(div.real.v));
+    div.imag = new Sk.builtin.float_(0.0);
 
     mod = a.nb$subtract.call(a, b.nb$multiply.call(b, div));
 
@@ -1060,3 +1060,118 @@ Sk.builtin.complex.prototype.__nonzero__ = new Sk.builtin.func(function (self){
 
 // ToDo: think about inplace methods too
 goog.exportSymbol("Sk.builtin.complex", Sk.builtin.complex);
+
+
+/**
+ * Convert a double val to a string using supplied format_code, precision, and flags.
+ *
+ * format_code must be one of 'e', 'E', 'f', 'F', 'g', 'G' or 'r'. For 'r', the supplied precision must be 0 and is ignored. The 'r' format code specifies the standard repr() format.
+ *
+ * flags can be zero or more of the values Py_DTSF_SIGN, Py_DTSF_ADD_DOT_0, or Py_DTSF_ALT, or-ed together:
+ *
+ * Py_DTSF_SIGN means to always precede the returned string with a sign character, even if val is non-negative.
+ * Py_DTSF_ADD_DOT_0 means to ensure that the returned string will not look like an integer.
+ * Py_DTSF_ALT means to apply “alternate” formatting rules. See the documentation for the PyOS_snprintf() '#' specifier for details.
+ * If ptype is non-NULL, then the value it points to will be set to one of Py_DTST_FINITE, Py_DTST_INFINITE, or Py_DTST_NAN, signifying that val is a finite number, an
+ * infinite number, or not a number, respectively.
+ */
+Sk.builtin.complex.PyOS_double_to_string = function(val, format_code, precision, flags, type) {
+    var format;
+    var buf;
+    var t;
+    var exp;
+    var upper = false;
+
+    // Validate format code, and map upper and lower case
+    switch(format_code) {
+        case "e": /* exponent */
+        case "f": /* fixed */
+        case "g": /* general */
+            break;
+        case "E":
+            upper = true;
+            format_code = "e";
+            break;
+        case "F":
+            upper = true;
+            format_code = "f";
+            break;
+        case "r": /* repr format */
+            // Supplied precision is unused, must be 0.
+            if(precision !== 0) {
+                throw new Error("Bad internall call"); // only happens when somebody messes up calling this in js
+            }
+
+            // repr() precision is 17 significant decimal digits
+            precision = 17;
+            format_code = "g";
+            break;
+        default:
+            throw new Error("Bad internall call");
+    }
+
+    // no need for buffer size calculation like in cpython
+
+    // Handle nan and inf
+    if(isNaN(val)) {
+        buf = "nan";
+        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_NAN;
+    } else if (val === Infinity) {
+        buf = "inf";
+        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE;
+    } else if (val === -Infinity) {
+        buf = "-inf";
+        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE;
+    } else {
+        t = Sk.builtin.complex.PyOS_double_to_string.Py_DTST_FINITE;
+        if(flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0) {
+            format_code = "g"; // "Z"; _PyOS_ascii_formatd converts "Z" to "g"
+        }
+
+        // ToDo: call snprintf here
+        // ToDo: call ascii_formatd
+        var format_str = "%";
+        format_str += flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ALT ? "#" : "";
+
+        if(precision != null) {
+            format_str += ".";
+            format_str += precision;
+        }
+
+        format_str += format_code;
+        format_str = new Sk.builtin.str(format_str);
+
+        /**
+         * We cann call nb$remainder with val, because it gets unwrapped and it doesn't matter if it is
+         * already a javascript number. If we do not pass a float, we can't distinguish between ints and floats
+         * and therefore we can't adjust the sign of the zero accordingly
+         */
+        buf = format_str.nb$remainder(new Sk.builtin.float_(val));
+        buf = buf.v; // get javascript string
+    }
+
+    /**
+     * Add sign when requested. It's convenient (esp. when formatting complex numbers) to
+     * include sign even for inf and nan.
+     */
+    if(flags & Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN && buf[0] !== "-") {
+        buf = "+" + buf;
+    }
+
+    if(upper) {
+        // Convert to upper case
+        buf = buf.toUpperCase();
+    }
+
+    return buf;
+};
+
+/* PyOS_double_to_string's "flags" parameter can be set to 0 or more of: */
+Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_SIGN = 0x01; // always add the sign
+Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ADD_DOT_0 = 0x02; // if the result is an integer add ".0"
+Sk.builtin.complex.PyOS_double_to_string.Py_DTSF_ALT = 0x04; // "alternate" formatting. it's format_code specific
+
+/* PyOS_double_to_string's "type", if non-NULL, will be set to one of: */
+Sk.builtin.complex.PyOS_double_to_string.Py_DTST_FINITE = 0;
+Sk.builtin.complex.PyOS_double_to_string.Py_DTST_INFINITE = 1;
+Sk.builtin.complex.PyOS_double_to_string.Py_DTST_NAN = 2;

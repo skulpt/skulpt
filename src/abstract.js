@@ -10,9 +10,7 @@ Sk.abstr = {};
 
 Sk.abstr.typeName = function (v) {
     var vtypename;
-    if (v instanceof Sk.builtin.nmber) {
-        vtypename = v.skType;
-    } else if (v.tp$name !== undefined) {
+    if (v.tp$name !== undefined) {
         vtypename = v.tp$name;
     } else {
         vtypename = "<invalid type>";
@@ -167,7 +165,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         } else {
             ret = Sk.misceval.callsim(vop, v, w);
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
@@ -178,7 +176,7 @@ Sk.abstr.binary_op_ = function (v, w, opname) {
         } else {
             ret = Sk.misceval.callsim(wop, w, v);
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
@@ -195,7 +193,7 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         } else {  // assume that vop is an __xxx__ type method
             ret = Sk.misceval.callsim(vop, v, w); //  added to be like not-in-place... is this okay?
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
@@ -206,7 +204,7 @@ Sk.abstr.binary_iop_ = function (v, w, opname) {
         } else { // assume that wop is an __xxx__ type method
             ret = Sk.misceval.callsim(wop, w, v); //  added to be like not-in-place... is this okay?
         }
-        if (ret !== undefined) {
+        if (ret !== undefined && ret !== Sk.builtin.NotImplemented.NotImplemented$) {
             return ret;
         }
     }
@@ -241,7 +239,7 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
     if (typeof a === "number" && typeof b === "number") {
         ans = opfn(a, b);
         // todo; handle float   Removed RNL (bugs in lng, and it should be a question of precision, not magnitude -- this was just wrong)
-        if ((ans > Sk.builtin.nmber.threshold$ || ans < -Sk.builtin.nmber.threshold$) && Math.floor(ans) === ans) {
+        if ((ans > Sk.builtin.int_.threshold$ || ans < -Sk.builtin.int_.threshold$) && Math.floor(ans) === ans) {
             return [Sk.builtin.lng.fromInt$(a), Sk.builtin.lng.fromInt$(b)];
         } else {
             return ans;
@@ -252,15 +250,18 @@ Sk.abstr.numOpAndPromote = function (a, b, opfn) {
 
     if (a.constructor === Sk.builtin.lng) {
         return [a, b];
-    } else if (a.constructor === Sk.builtin.nmber && b.constructor === Sk.builtin.complex) {
+    } else if ((a.constructor === Sk.builtin.int_ ||
+                a.constructor === Sk.builtin.float_) &&
+                b.constructor === Sk.builtin.complex) {
         // special case of upconverting nmber and complex
         // can we use here the Sk.builtin.checkComplex() method?
         tmp = new Sk.builtin.complex(a);
         return [tmp, b];
-    } else if (a.constructor === Sk.builtin.nmber) {
+    } else if (a.constructor === Sk.builtin.int_ ||
+               a.constructor === Sk.builtin.float_) {
         return [a, b];
     } else if (typeof a === "number") {
-        tmp = new Sk.builtin.nmber(a, undefined);
+        tmp = Sk.builtin.assk$(a);
         return [tmp, b];
     } else {
         return undefined;
@@ -355,7 +356,9 @@ Sk.abstr.numberBinOp = function (v, w, op) {
         tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
+            return tmp;
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
             return tmp;
         } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
             return tmp;
@@ -376,7 +379,9 @@ Sk.abstr.numberInplaceBinOp = function (v, w, op) {
         tmp = Sk.abstr.numOpAndPromote(v, w, numPromoteFunc);
         if (typeof tmp === "number") {
             return tmp;
-        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.nmber) {
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.int_) {
+            return tmp;
+        } else if (tmp !== undefined && tmp.constructor === Sk.builtin.float_) {
             return tmp;
         } else if (tmp !== undefined && tmp.constructor === Sk.builtin.lng) {
             return tmp;
@@ -394,16 +399,16 @@ Sk.abstr.numberUnaryOp = function (v, op) {
     var value;
     if (op === "Not") {
         return Sk.misceval.isTrue(v) ? Sk.builtin.bool.false$ : Sk.builtin.bool.true$;
-    } else if (v instanceof Sk.builtin.nmber || v instanceof Sk.builtin.bool) {
+    } else if (v instanceof Sk.builtin.bool) {
         value = Sk.builtin.asnum$(v);
         if (op === "USub") {
-            return new Sk.builtin.nmber(-value, v.skType);
+            return new Sk.builtin.int_(-value);
         }
         if (op === "UAdd") {
-            return new Sk.builtin.nmber(value, v.skType);
+            return new Sk.builtin.int_(value);
         }
         if (op === "Invert") {
-            return new Sk.builtin.nmber(~value, v.skType);
+            return new Sk.builtin.int_(~value);
         }
     } else {
         if (op === "USub" && v.nb$negative) {
@@ -676,8 +681,12 @@ Sk.abstr.objectNegative = function (obj) {
     var objtypename;
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
-    if (typeof obj_asnum === "number") {
-        return Sk.builtin.nmber.prototype["nb$negative"].call(obj);
+    if (obj instanceof Sk.builtin.bool) {
+        obj = new Sk.builtin.int_(obj_asnum);
+    }
+
+    if (obj.nb$negative) {
+        return obj.nb$negative();
     }
 
     objtypename = Sk.abstr.typeName(obj);
@@ -689,11 +698,12 @@ Sk.abstr.objectPositive = function (obj) {
     var objtypename = Sk.abstr.typeName(obj);
     var obj_asnum = Sk.builtin.asnum$(obj); // this will also convert bool type to int
 
-    if (objtypename === "bool") {
-        return new Sk.builtin.nmber(obj_asnum, "int");
+    if (obj instanceof Sk.builtin.bool) {
+        obj = new Sk.builtin.int_(obj_asnum);
     }
-    if (typeof obj_asnum === "number") {
-        return Sk.builtin.nmber.prototype["nb$positive"].call(obj);
+
+    if (obj.nb$negative) {
+        return obj.nb$positive();
     }
 
     throw new Sk.builtin.TypeError("bad operand type for unary +: '" + objtypename + "'");

@@ -32,7 +32,7 @@ Sk.ffi.remapToPy = function (obj) {
     } else if (typeof obj === "string") {
         return new Sk.builtin.str(obj);
     } else if (typeof obj === "number") {
-        return new Sk.builtin.nmber(obj, undefined);
+        return Sk.builtin.assk$(obj);
     } else if (typeof obj === "boolean") {
         return obj;
     }
@@ -74,7 +74,9 @@ Sk.ffi.remapToJs = function (obj) {
             ret.push(Sk.ffi.remapToJs(obj.v[i]));
         }
         return ret;
-    } else if (obj instanceof Sk.builtin.nmber) {
+    } else if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    } else if (obj instanceof Sk.builtin.float_) {
         return Sk.builtin.asnum$(obj);
     } else if (obj instanceof Sk.builtin.lng) {
         return Sk.builtin.asnum$(obj);
@@ -108,7 +110,10 @@ goog.exportSymbol("Sk.ffi.stdwrap", Sk.ffi.stdwrap);
  * number|string, etc.
  */
 Sk.ffi.basicwrap = function (obj) {
-    if (obj instanceof Sk.builtin.nmber) {
+    if (obj instanceof Sk.builtin.int_) {
+        return Sk.builtin.asnum$(obj);
+    }
+    if (obj instanceof Sk.builtin.float_) {
         return Sk.builtin.asnum$(obj);
     }
     if (obj instanceof Sk.builtin.lng) {

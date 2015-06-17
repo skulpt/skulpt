@@ -153,9 +153,9 @@ Sk.builtin.slice.prototype["indices"] = new Sk.builtin.func(function (self, leng
     length = Sk.builtin.asnum$(length);
     var sss = self.slice_indices_(length);
 
-    return new Sk.builtin.tuple([Sk.builtin.assk$(sss[0], Sk.builtin.nmber.int$), 
-                                 Sk.builtin.assk$(sss[1], Sk.builtin.nmber.int$), 
-                                 Sk.builtin.assk$(sss[2], Sk.builtin.nmber.int$)]);
+    return new Sk.builtin.tuple([new Sk.builtin.int_(sss[0]), 
+                                 new Sk.builtin.int_(sss[1]), 
+                                 new Sk.builtin.int_(sss[2])]);
 });
 
 Sk.builtin.slice.prototype.sssiter$ = function (wrt, f) {

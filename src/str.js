@@ -461,9 +461,9 @@ Sk.builtin.str.prototype["count"] = new Sk.builtin.func(function (self, pat, sta
     slice = self.v.slice(start, end);
     ctl = slice.match(m);
     if (!ctl) {
-        return  new Sk.builtin.nmber(0, Sk.builtin.nmber.int$);
+        return  new Sk.builtin.int_(0);
     } else {
-        return new Sk.builtin.nmber(ctl.length, Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(ctl.length);
     }
 
 });
@@ -574,7 +574,7 @@ Sk.builtin.str.prototype["find"] = new Sk.builtin.func(function (self, tgt, star
     idx = self.v.indexOf(tgt.v, start);
     idx = ((idx >= start) && (idx < end)) ? idx : -1;
 
-    return new Sk.builtin.nmber(idx, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(idx);
 });
 
 Sk.builtin.str.prototype["index"] = new Sk.builtin.func(function (self, tgt, start, end) {
@@ -618,7 +618,7 @@ Sk.builtin.str.prototype["rfind"] = new Sk.builtin.func(function (self, tgt, sta
     idx = (idx !== end) ? idx : self.v.lastIndexOf(tgt.v, end - 1);
     idx = ((idx >= start) && (idx < end)) ? idx : -1;
 
-    return new Sk.builtin.nmber(idx, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(idx);
 });
 
 Sk.builtin.str.prototype["rindex"] = new Sk.builtin.func(function (self, tgt, start, end) {
@@ -972,11 +972,14 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
                     neg = true;
                 }
                 r = n.toString(base);
-            } else if (n instanceof Sk.builtin.nmber) {
+            } else if (n instanceof Sk.builtin.float_) {
                 r = n.str$(base, false);
                 if (r.length > 2 && r.substr(-2) === ".0") {
                     r = r.substr(0, r.length - 2);
                 }
+                neg = n.nb$isnegative();
+            } else if (n instanceof Sk.builtin.int_) {
+                r = n.str$(base, false);
                 neg = n.nb$isnegative();
             } else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
@@ -1101,7 +1104,9 @@ Sk.builtin.str.prototype.nb$remainder = function (rhs) {
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return String.fromCharCode(value);
-            } else if (value instanceof Sk.builtin.nmber) {
+            } else if (value instanceof Sk.builtin.int_) {
+                return String.fromCharCode(value.v);
+            } else if (value instanceof Sk.builtin.float_) {
                 return String.fromCharCode(value.v);
             } else if (value instanceof Sk.builtin.lng) {
                 return String.fromCharCode(value.str$(10, false)[0]);

@@ -36,89 +36,89 @@ var $builtinmodule = function (name) {
     mod.processing = null;
     mod.p = null;
 
-    mod.X = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-    mod.Y = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.Z = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
+    mod.X = new Sk.builtin.int_(0);
+    mod.Y = new Sk.builtin.int_(1);
+    mod.Z = new Sk.builtin.int_(2);
 
-    mod.R = Sk.builtin.assk$( 3, Sk.builtin.nmber.int$);
-    mod.G = Sk.builtin.assk$( 4, Sk.builtin.nmber.int$);
-    mod.B = Sk.builtin.assk$( 5, Sk.builtin.nmber.int$);
-    mod.A = Sk.builtin.assk$( 6, Sk.builtin.nmber.int$);
+    mod.R = new Sk.builtin.int_( 3);
+    mod.G = new Sk.builtin.int_( 4);
+    mod.B = new Sk.builtin.int_( 5);
+    mod.A = new Sk.builtin.int_( 6);
     
-    mod.U = Sk.builtin.assk$( 7, Sk.builtin.nmber.int$);
-    mod.V = Sk.builtin.assk$( 8, Sk.builtin.nmber.int$);
+    mod.U = new Sk.builtin.int_( 7);
+    mod.V = new Sk.builtin.int_( 8);
     
-    mod.NX = Sk.builtin.assk$( 9, Sk.builtin.nmber.int$);
-    mod.NY = Sk.builtin.assk$( 10, Sk.builtin.nmber.int$);
-    mod.NZ = Sk.builtin.assk$( 11, Sk.builtin.nmber.int$);
+    mod.NX = new Sk.builtin.int_( 9);
+    mod.NY = new Sk.builtin.int_( 10);
+    mod.NZ = new Sk.builtin.int_( 11);
     
-    mod.EDGE = Sk.builtin.assk$( 12, Sk.builtin.nmber.int$);
+    mod.EDGE = new Sk.builtin.int_( 12);
     
     // Stroke
-    mod.SR = Sk.builtin.assk$( 13, Sk.builtin.nmber.int$);
-    mod.SG = Sk.builtin.assk$( 14, Sk.builtin.nmber.int$);
-    mod.SB = Sk.builtin.assk$( 15, Sk.builtin.nmber.int$);
-    mod.SA = Sk.builtin.assk$( 16, Sk.builtin.nmber.int$);
+    mod.SR = new Sk.builtin.int_( 13);
+    mod.SG = new Sk.builtin.int_( 14);
+    mod.SB = new Sk.builtin.int_( 15);
+    mod.SA = new Sk.builtin.int_( 16);
     
-    mod.SW = Sk.builtin.assk$( 17, Sk.builtin.nmber.int$);
+    mod.SW = new Sk.builtin.int_( 17);
     
     // Transformations (2D and 3D)
-    mod.TX = Sk.builtin.assk$( 18, Sk.builtin.nmber.int$);
-    mod.TY = Sk.builtin.assk$( 19, Sk.builtin.nmber.int$);
-    mod.TZ = Sk.builtin.assk$( 20, Sk.builtin.nmber.int$);
+    mod.TX = new Sk.builtin.int_( 18);
+    mod.TY = new Sk.builtin.int_( 19);
+    mod.TZ = new Sk.builtin.int_( 20);
     
-    mod.VX = Sk.builtin.assk$( 21, Sk.builtin.nmber.int$);
-    mod.VY = Sk.builtin.assk$( 22, Sk.builtin.nmber.int$);
-    mod.VZ = Sk.builtin.assk$( 23, Sk.builtin.nmber.int$);
-    mod.VW = Sk.builtin.assk$( 24, Sk.builtin.nmber.int$);
+    mod.VX = new Sk.builtin.int_( 21);
+    mod.VY = new Sk.builtin.int_( 22);
+    mod.VZ = new Sk.builtin.int_( 23);
+    mod.VW = new Sk.builtin.int_( 24);
     
     // Material properties
-    mod.AR = Sk.builtin.assk$( 25, Sk.builtin.nmber.int$);
-    mod.AG = Sk.builtin.assk$( 26, Sk.builtin.nmber.int$);
-    mod.AB = Sk.builtin.assk$( 27, Sk.builtin.nmber.int$);
+    mod.AR = new Sk.builtin.int_( 25);
+    mod.AG = new Sk.builtin.int_( 26);
+    mod.AB = new Sk.builtin.int_( 27);
     
-    mod.DR = Sk.builtin.assk$( 3, Sk.builtin.nmber.int$);
-    mod.DG = Sk.builtin.assk$( 4, Sk.builtin.nmber.int$);
-    mod.DB = Sk.builtin.assk$( 5, Sk.builtin.nmber.int$);
-    mod.DA = Sk.builtin.assk$( 6, Sk.builtin.nmber.int$);
+    mod.DR = new Sk.builtin.int_( 3);
+    mod.DG = new Sk.builtin.int_( 4);
+    mod.DB = new Sk.builtin.int_( 5);
+    mod.DA = new Sk.builtin.int_( 6);
     
-    mod.SPR = Sk.builtin.assk$( 28, Sk.builtin.nmber.int$);
-    mod.SPG = Sk.builtin.assk$( 29, Sk.builtin.nmber.int$);
-    mod.SPB = Sk.builtin.assk$( 30, Sk.builtin.nmber.int$);
+    mod.SPR = new Sk.builtin.int_( 28);
+    mod.SPG = new Sk.builtin.int_( 29);
+    mod.SPB = new Sk.builtin.int_( 30);
     
-    mod.SHINE = Sk.builtin.assk$( 31, Sk.builtin.nmber.int$);
+    mod.SHINE = new Sk.builtin.int_( 31);
     
-    mod.ER = Sk.builtin.assk$( 32, Sk.builtin.nmber.int$);
-    mod.EG = Sk.builtin.assk$( 33, Sk.builtin.nmber.int$);
-    mod.EB = Sk.builtin.assk$( 34, Sk.builtin.nmber.int$);
+    mod.ER = new Sk.builtin.int_( 32);
+    mod.EG = new Sk.builtin.int_( 33);
+    mod.EB = new Sk.builtin.int_( 34);
     
-    mod.BEEN_LIT = Sk.builtin.assk$( 35, Sk.builtin.nmber.int$);
+    mod.BEEN_LIT = new Sk.builtin.int_( 35);
     
-    mod.VERTEX_FIELD_COUNT = Sk.builtin.assk$( 36, Sk.builtin.nmber.int$);
+    mod.VERTEX_FIELD_COUNT = new Sk.builtin.int_( 36);
     
     // Shape drawing modes
-    mod.CENTER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
-    mod.RADIUS = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.CORNERS = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.CORNER = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-    mod.DIAMETER = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
+    mod.CENTER = new Sk.builtin.int_(3);
+    mod.RADIUS = new Sk.builtin.int_(2);
+    mod.CORNERS = new Sk.builtin.int_(1);
+    mod.CORNER = new Sk.builtin.int_(0);
+    mod.DIAMETER = new Sk.builtin.int_(3);
     
     // Text vertical alignment modes
     // Default vertical alignment for text placement
-    mod.BASELINE = Sk.builtin.assk$( 0,    Sk.builtin.nmber.int$);
+    mod.BASELINE = new Sk.builtin.int_( 0);
     // Align text to the top
-    mod.TOP = Sk.builtin.assk$(      101,  Sk.builtin.nmber.int$);
+    mod.TOP = new Sk.builtin.int_(      101);
     // Align text from the bottom, using the baseline
-    mod.BOTTOM = Sk.builtin.assk$(   102,  Sk.builtin.nmber.int$);
+    mod.BOTTOM = new Sk.builtin.int_(   102);
     
     // UV Texture coordinate modes
-    mod.NORMAL = Sk.builtin.assk$(     1, Sk.builtin.nmber.int$);
-    mod.NORMALIZED = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
-    mod.IMAGE = Sk.builtin.assk$(      2, Sk.builtin.nmber.int$);
+    mod.NORMAL = new Sk.builtin.int_(     1);
+    mod.NORMALIZED = new Sk.builtin.int_( 1);
+    mod.IMAGE = new Sk.builtin.int_(      2);
     
     // Text placement modes
-    mod.MODEL = Sk.builtin.assk$( 4, Sk.builtin.nmber.int$);
-    mod.SHAPE = Sk.builtin.assk$( 5, Sk.builtin.nmber.int$);
+    mod.MODEL = new Sk.builtin.int_( 4);
+    mod.SHAPE = new Sk.builtin.int_( 5);
     
     // Stroke modes
     mod.SQUARE = Sk.builtin.assk$(  'butt', Sk.builtin.nmber.str);
@@ -128,23 +128,23 @@ var $builtinmodule = function (name) {
     mod.BEVEL = Sk.builtin.assk$(   'bevel', Sk.builtin.nmber.str);
     
     // Lighting modes
-    mod.AMBIENT = Sk.builtin.assk$(     0, Sk.builtin.nmber.int$);
-    mod.DIRECTIONAL = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
+    mod.AMBIENT = new Sk.builtin.int_(     0);
+    mod.DIRECTIONAL = new Sk.builtin.int_( 1);
     //POINT:     2, Shared with Shape constant
-    mod.SPOT = Sk.builtin.assk$(        3, Sk.builtin.nmber.int$);
+    mod.SPOT = new Sk.builtin.int_(        3);
 
     // Color modes
-    mod.RGB = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.ARGB = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.HSB = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
-    mod.ALPHA = Sk.builtin.assk$(4, Sk.builtin.nmber.int$);
-    mod.CMYK = Sk.builtin.assk$(5, Sk.builtin.nmber.int$);
+    mod.RGB = new Sk.builtin.int_(1);
+    mod.ARGB = new Sk.builtin.int_(2);
+    mod.HSB = new Sk.builtin.int_(3);
+    mod.ALPHA = new Sk.builtin.int_(4);
+    mod.CMYK = new Sk.builtin.int_(5);
     
     // Image file types
-    mod.TIFF = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-    mod.TARGA = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.JPEG = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.GIF = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
+    mod.TIFF = new Sk.builtin.int_(0);
+    mod.TARGA = new Sk.builtin.int_(1);
+    mod.JPEG = new Sk.builtin.int_(2);
+    mod.GIF = new Sk.builtin.int_(3);
 
     // Stroke modes
     mod.MITER = new Sk.builtin.str("miter");
@@ -154,100 +154,100 @@ var $builtinmodule = function (name) {
     mod.PROJECT = new Sk.builtin.str("square");
 
     // Renderer modes
-    mod.P2D = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.JAVA2D = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.WEBGL = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.P3D = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.OPENGL = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.PDF = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-    mod.DXF  = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
+    mod.P2D = new Sk.builtin.int_(1);
+    mod.JAVA2D = new Sk.builtin.int_(1);
+    mod.WEBGL = new Sk.builtin.int_(2);
+    mod.P3D = new Sk.builtin.int_(2);
+    mod.OPENGL = new Sk.builtin.int_(2);
+    mod.PDF = new Sk.builtin.int_(0);
+    mod.DXF  = new Sk.builtin.int_(0);
 
     // Platform IDs
-    mod.OTHER = Sk.builtin.assk$(   0, Sk.builtin.nmber.int$);
-    mod.WINDOWS = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
-    mod.MAXOSX = Sk.builtin.assk$(  2, Sk.builtin.nmber.int$);
-    mod.LINUX = Sk.builtin.assk$(   3, Sk.builtin.nmber.int$);
+    mod.OTHER = new Sk.builtin.int_(   0);
+    mod.WINDOWS = new Sk.builtin.int_( 1);
+    mod.MAXOSX = new Sk.builtin.int_(  2);
+    mod.LINUX = new Sk.builtin.int_(   3);
     
-    mod.EPSILON = Sk.builtin.assk$( 0.0001, Sk.builtin.nmber.float$);
+    mod.EPSILON = new Sk.builtin.float_( 0.0001);
 
-    mod.MAX_FLOAT = Sk.builtin.assk$(  3.4028235e+38, Sk.builtin.nmber.float$);
-    mod.MIN_FLOAT = Sk.builtin.assk$( -3.4028235e+38, Sk.builtin.nmber.float$);
-    mod.MAX_INT = Sk.builtin.assk$(    2147483647, Sk.builtin.nmber.int$);
-    mod.MIN_INT = Sk.builtin.assk$(   -2147483648, Sk.builtin.nmber.int$);
+    mod.MAX_FLOAT = new Sk.builtin.float_(  3.4028235e+38);
+    mod.MIN_FLOAT = new Sk.builtin.float_( -3.4028235e+38);
+    mod.MAX_INT = new Sk.builtin.int_(    2147483647);
+    mod.MIN_INT = new Sk.builtin.int_(   -2147483648);
     
     // Constants
-    mod.HALF_PI = Sk.builtin.assk$(Math.PI / 2.0, Sk.builtin.nmber.float$);
-    mod.THIRD_PI = Sk.builtin.assk$(Math.PI / 3.0, Sk.builtin.nmber.float$);
-    mod.PI = Sk.builtin.assk$(Math.PI, Sk.builtin.nmber.float$);
-    mod.TWO_PI = Sk.builtin.assk$(Math.PI * 2.0, Sk.builtin.nmber.float$);
-    mod.TAU = Sk.builtin.assk$(Math.PI * 2.0, Sk.builtin.nmber.float$);
-    mod.QUARTER_PI = Sk.builtin.assk$(Math.PI / 4.0, Sk.builtin.nmber.float$);
+    mod.HALF_PI = new Sk.builtin.float_(Math.PI / 2.0);
+    mod.THIRD_PI = new Sk.builtin.float_(Math.PI / 3.0);
+    mod.PI = new Sk.builtin.float_(Math.PI);
+    mod.TWO_PI = new Sk.builtin.float_(Math.PI * 2.0);
+    mod.TAU = new Sk.builtin.float_(Math.PI * 2.0);
+    mod.QUARTER_PI = new Sk.builtin.float_(Math.PI / 4.0);
 
-    mod.DEG_TO_RAD = Sk.builtin.assk$( Math.PI / 180, Sk.builtin.nmber.float$);
-    mod.RAD_TO_DEG = Sk.builtin.assk$( 180 / Math.PI, Sk.builtin.nmber.float$);
+    mod.DEG_TO_RAD = new Sk.builtin.float_( Math.PI / 180);
+    mod.RAD_TO_DEG = new Sk.builtin.float_( 180 / Math.PI);
     
     mod.WHITESPACE = Sk.builtin.assk$(" \t\n\r\f\u00A0", Sk.builtin.nmber.str);
     
     // Shape modes
-    mod.POINT = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.POINTS = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.LINE = Sk.builtin.assk$(4, Sk.builtin.nmber.int$);
-    mod.LINES = Sk.builtin.assk$(4, Sk.builtin.nmber.int$);
-    mod.TRIANGLE = Sk.builtin.assk$(8, Sk.builtin.nmber.int$);
-    mod.TRIANGLES = Sk.builtin.assk$(9, Sk.builtin.nmber.int$);
-    mod.TRIANGLE_FAN = Sk.builtin.assk$(11, Sk.builtin.nmber.int$);
-    mod.TRIANGLE_STRIP = Sk.builtin.assk$(10, Sk.builtin.nmber.int$);
-    mod.QUAD = Sk.builtin.assk$(16, Sk.builtin.nmber.int$);
-    mod.QUADS = Sk.builtin.assk$(16, Sk.builtin.nmber.int$);
-    mod.QUAD_STRIP = Sk.builtin.assk$(17, Sk.builtin.nmber.int$);
-    mod.POLYGON = Sk.builtin.assk$(20, Sk.builtin.nmber.int$);
+    mod.POINT = new Sk.builtin.int_(2);
+    mod.POINTS = new Sk.builtin.int_(2);
+    mod.LINE = new Sk.builtin.int_(4);
+    mod.LINES = new Sk.builtin.int_(4);
+    mod.TRIANGLE = new Sk.builtin.int_(8);
+    mod.TRIANGLES = new Sk.builtin.int_(9);
+    mod.TRIANGLE_FAN = new Sk.builtin.int_(11);
+    mod.TRIANGLE_STRIP = new Sk.builtin.int_(10);
+    mod.QUAD = new Sk.builtin.int_(16);
+    mod.QUADS = new Sk.builtin.int_(16);
+    mod.QUAD_STRIP = new Sk.builtin.int_(17);
+    mod.POLYGON = new Sk.builtin.int_(20);
 
-    mod.PATH = Sk.builtin.assk$(21, Sk.builtin.nmber.int$);
-    mod.RECT = Sk.builtin.assk$(30, Sk.builtin.nmber.int$);
-    mod.ELLIPSE = Sk.builtin.assk$(31, Sk.builtin.nmber.int$);
-    mod.ARC = Sk.builtin.assk$(32, Sk.builtin.nmber.int$);
-    mod.SPHERE = Sk.builtin.assk$(40, Sk.builtin.nmber.int$);
-    mod.BOX = Sk.builtin.assk$(41, Sk.builtin.nmber.int$);
+    mod.PATH = new Sk.builtin.int_(21);
+    mod.RECT = new Sk.builtin.int_(30);
+    mod.ELLIPSE = new Sk.builtin.int_(31);
+    mod.ARC = new Sk.builtin.int_(32);
+    mod.SPHERE = new Sk.builtin.int_(40);
+    mod.BOX = new Sk.builtin.int_(41);
 
-    mod.GROUP = Sk.builtin.assk$(          0, Sk.builtin.nmber.int$);
-    mod.PRIMITIVE = Sk.builtin.assk$(      1, Sk.builtin.nmber.int$);
+    mod.GROUP = new Sk.builtin.int_(          0);
+    mod.PRIMITIVE = new Sk.builtin.int_(      1);
     //PATH:         21, // shared with Shape PATH
-    mod.GEOMETRY = Sk.builtin.assk$(       3, Sk.builtin.nmber.int$);
+    mod.GEOMETRY = new Sk.builtin.int_(       3);
     
     // Shape Vertex
-    mod.VERTEX = Sk.builtin.assk$(        0, Sk.builtin.nmber.int$);
-    mod.BEZIER_VERTEX = Sk.builtin.assk$( 1, Sk.builtin.nmber.int$);
-    mod.CURVE_VERTEX = Sk.builtin.assk$(  2, Sk.builtin.nmber.int$);
-    mod.BREAK = Sk.builtin.assk$(         3, Sk.builtin.nmber.int$);
-    mod.CLOSESHAPE = Sk.builtin.assk$(    4, Sk.builtin.nmber.int$);
+    mod.VERTEX = new Sk.builtin.int_(        0);
+    mod.BEZIER_VERTEX = new Sk.builtin.int_( 1);
+    mod.CURVE_VERTEX = new Sk.builtin.int_(  2);
+    mod.BREAK = new Sk.builtin.int_(         3);
+    mod.CLOSESHAPE = new Sk.builtin.int_(    4);
     
     // Blend modes
-    mod.REPLACE    = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-    mod.BLEND      = Sk.builtin.assk$(1 << 0, Sk.builtin.nmber.int$);
-    mod.ADD        = Sk.builtin.assk$(1 << 1, Sk.builtin.nmber.int$);
-    mod.SUBTRACT   = Sk.builtin.assk$(1 << 2, Sk.builtin.nmber.int$);
-    mod.LIGHTEST   = Sk.builtin.assk$(1 << 3, Sk.builtin.nmber.int$);
-    mod.DARKEST    = Sk.builtin.assk$(1 << 4, Sk.builtin.nmber.int$);
-    mod.DIFFERENCE = Sk.builtin.assk$(1 << 5, Sk.builtin.nmber.int$);
-    mod.EXCLUSION  = Sk.builtin.assk$(1 << 6, Sk.builtin.nmber.int$);
-    mod.MULTIPLY   = Sk.builtin.assk$(1 << 7, Sk.builtin.nmber.int$);
-    mod.SCREEN     = Sk.builtin.assk$(1 << 8, Sk.builtin.nmber.int$);
-    mod.OVERLAY    = Sk.builtin.assk$(1 << 9, Sk.builtin.nmber.int$);
-    mod.HARD_LIGHT = Sk.builtin.assk$(1 << 10, Sk.builtin.nmber.int$);
-    mod.SOFT_LIGHT = Sk.builtin.assk$(1 << 11, Sk.builtin.nmber.int$);
-    mod.DODGE      = Sk.builtin.assk$(1 << 12, Sk.builtin.nmber.int$);
-    mod.BURN       = Sk.builtin.assk$(1 << 13, Sk.builtin.nmber.int$);
+    mod.REPLACE    = new Sk.builtin.int_(0);
+    mod.BLEND      = new Sk.builtin.int_(1 << 0);
+    mod.ADD        = new Sk.builtin.int_(1 << 1);
+    mod.SUBTRACT   = new Sk.builtin.int_(1 << 2);
+    mod.LIGHTEST   = new Sk.builtin.int_(1 << 3);
+    mod.DARKEST    = new Sk.builtin.int_(1 << 4);
+    mod.DIFFERENCE = new Sk.builtin.int_(1 << 5);
+    mod.EXCLUSION  = new Sk.builtin.int_(1 << 6);
+    mod.MULTIPLY   = new Sk.builtin.int_(1 << 7);
+    mod.SCREEN     = new Sk.builtin.int_(1 << 8);
+    mod.OVERLAY    = new Sk.builtin.int_(1 << 9);
+    mod.HARD_LIGHT = new Sk.builtin.int_(1 << 10);
+    mod.SOFT_LIGHT = new Sk.builtin.int_(1 << 11);
+    mod.DODGE      = new Sk.builtin.int_(1 << 12);
+    mod.BURN       = new Sk.builtin.int_(1 << 13);
 
     // Color component bit masks
-    mod.ALPHA_MASK = Sk.builtin.assk$( 0xff000000, Sk.builtin.nmber.int$);
-    mod.RED_MASK = Sk.builtin.assk$(   0x00ff0000, Sk.builtin.nmber.int$);
-    mod.GREEN_MASK = Sk.builtin.assk$( 0x0000ff00, Sk.builtin.nmber.int$);
-    mod.BLUE_MASK = Sk.builtin.assk$(  0x000000ff, Sk.builtin.nmber.int$);
+    mod.ALPHA_MASK = new Sk.builtin.int_( 0xff000000);
+    mod.RED_MASK = new Sk.builtin.int_(   0x00ff0000);
+    mod.GREEN_MASK = new Sk.builtin.int_( 0x0000ff00);
+    mod.BLUE_MASK = new Sk.builtin.int_(  0x000000ff);
     
     // Projection matrices
-    mod.CUSTOM = Sk.builtin.assk$(       0, Sk.builtin.nmber.int$);
-    mod.ORTHOGRAPHIC = Sk.builtin.assk$( 2, Sk.builtin.nmber.int$);
-    mod.PERSPECTIVE = Sk.builtin.assk$(  3, Sk.builtin.nmber.int$);
+    mod.CUSTOM = new Sk.builtin.int_(       0);
+    mod.ORTHOGRAPHIC = new Sk.builtin.int_( 2);
+    mod.PERSPECTIVE = new Sk.builtin.int_(  3);
     
     // Cursors
     mod.ARROW = Sk.builtin.assk$('default', Sk.builtin.str);
@@ -259,83 +259,83 @@ var $builtinmodule = function (name) {
     mod.NOCURSOR = Sk.builtin.assk$("url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), auto", Sk.builtin.nmber.str);
 
     // Hints
-    mod.DISABLE_OPENGL_2X_SMOOTH = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.ENABLE_OPENGL_2X_SMOOTH = Sk.builtin.assk$(-1, Sk.builtin.nmber.int$);
-    mod.ENABLE_OPENGL_4X_SMOOTH = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.ENABLE_NATIVE_FONTS = Sk.builtin.assk$(3, Sk.builtin.nmber.int$);
-    mod.DISABLE_DEPTH_TEST = Sk.builtin.assk$(4, Sk.builtin.nmber.int$);
-    mod.ENABLE_DEPTH_TEST = Sk.builtin.assk$(-4, Sk.builtin.nmber.int$);
-    mod.ENABLE_DEPTH_SORT = Sk.builtin.assk$(5, Sk.builtin.nmber.int$);
-    mod.DISABLE_DEPTH_SORT = Sk.builtin.assk$(-5, Sk.builtin.nmber.int$);
-    mod.DISABLE_OPENGL_ERROR_REPORT = Sk.builtin.assk$(6, Sk.builtin.nmber.int$);
-    mod.ENABLE_OPENGL_ERROR_REPORT = Sk.builtin.assk$(-6, Sk.builtin.nmber.int$);
-    mod.ENABLE_ACCURATE_TEXTURES = Sk.builtin.assk$(7, Sk.builtin.nmber.int$);
-    mod.DISABLE_ACCURATE_TEXTURES = Sk.builtin.assk$(-7, Sk.builtin.nmber.int$);
-    mod.HINT_COUNT = Sk.builtin.assk$(10, Sk.builtin.nmber.int$);
+    mod.DISABLE_OPENGL_2X_SMOOTH = new Sk.builtin.int_(1);
+    mod.ENABLE_OPENGL_2X_SMOOTH = new Sk.builtin.int_(-1);
+    mod.ENABLE_OPENGL_4X_SMOOTH = new Sk.builtin.int_(2);
+    mod.ENABLE_NATIVE_FONTS = new Sk.builtin.int_(3);
+    mod.DISABLE_DEPTH_TEST = new Sk.builtin.int_(4);
+    mod.ENABLE_DEPTH_TEST = new Sk.builtin.int_(-4);
+    mod.ENABLE_DEPTH_SORT = new Sk.builtin.int_(5);
+    mod.DISABLE_DEPTH_SORT = new Sk.builtin.int_(-5);
+    mod.DISABLE_OPENGL_ERROR_REPORT = new Sk.builtin.int_(6);
+    mod.ENABLE_OPENGL_ERROR_REPORT = new Sk.builtin.int_(-6);
+    mod.ENABLE_ACCURATE_TEXTURES = new Sk.builtin.int_(7);
+    mod.DISABLE_ACCURATE_TEXTURES = new Sk.builtin.int_(-7);
+    mod.HINT_COUNT = new Sk.builtin.int_(10);
 
     // Shape closing modes
-    mod.OPEN =  Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.CLOSE = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
+    mod.OPEN =  new Sk.builtin.int_(1);
+    mod.CLOSE = new Sk.builtin.int_(2);
 
     // Filter/convert types
-    mod.BLUR = Sk.builtin.assk$(11, Sk.builtin.nmber.int$);
-    mod.GRAY = Sk.builtin.assk$(12, Sk.builtin.nmber.int$);
-    mod.INVERT = Sk.builtin.assk$(13, Sk.builtin.nmber.int$);
-    mod.OPAQUE = Sk.builtin.assk$(14, Sk.builtin.nmber.int$);
-    mod.POSTERIZE = Sk.builtin.assk$(15, Sk.builtin.nmber.int$);
-    mod.THRESHOLD = Sk.builtin.assk$(16, Sk.builtin.nmber.int$);
-    mod.ERODE = Sk.builtin.assk$(17, Sk.builtin.nmber.int$);
-    mod.DILATE = Sk.builtin.assk$(18, Sk.builtin.nmber.int$);
+    mod.BLUR = new Sk.builtin.int_(11);
+    mod.GRAY = new Sk.builtin.int_(12);
+    mod.INVERT = new Sk.builtin.int_(13);
+    mod.OPAQUE = new Sk.builtin.int_(14);
+    mod.POSTERIZE = new Sk.builtin.int_(15);
+    mod.THRESHOLD = new Sk.builtin.int_(16);
+    mod.ERODE = new Sk.builtin.int_(17);
+    mod.DILATE = new Sk.builtin.int_(18);
 
     // Both key and keyCode will be equal to these values
-    mod.BACKSPACE = Sk.builtin.assk$( 8, Sk.builtin.nmber.int$);
-    mod.TAB = Sk.builtin.assk$(9, Sk.builtin.nmber.int$);
-    mod.ENTER = Sk.builtin.assk$(10, Sk.builtin.nmber.int$);
-    mod.RETURN = Sk.builtin.assk$(13, Sk.builtin.nmber.int$);
-    mod.ESC = Sk.builtin.assk$(27, Sk.builtin.nmber.int$);
-    mod.DELETE = Sk.builtin.assk$(127, Sk.builtin.nmber.int$);
-    mod.CODED = Sk.builtin.assk$(0xffff, Sk.builtin.nmber.int$);
+    mod.BACKSPACE = new Sk.builtin.int_( 8);
+    mod.TAB = new Sk.builtin.int_(9);
+    mod.ENTER = new Sk.builtin.int_(10);
+    mod.RETURN = new Sk.builtin.int_(13);
+    mod.ESC = new Sk.builtin.int_(27);
+    mod.DELETE = new Sk.builtin.int_(127);
+    mod.CODED = new Sk.builtin.int_(0xffff);
 
     // p.key will be CODED and p.keyCode will be this value
-    mod.SHIFT = Sk.builtin.assk$(16, Sk.builtin.nmber.int$);
-    mod.CONTROL = Sk.builtin.assk$(17, Sk.builtin.nmber.int$);
-    mod.ALT = Sk.builtin.assk$(18, Sk.builtin.nmber.int$);
-    mod.CAPSLK = Sk.builtin.assk$(20, Sk.builtin.nmber.int$);
-    mod.PGUP = Sk.builtin.assk$(33, Sk.builtin.nmber.int$);
-    mod.PGDN = Sk.builtin.assk$(34, Sk.builtin.nmber.int$);
-    mod.END = Sk.builtin.assk$(35, Sk.builtin.nmber.int$);
-    mod.HOME = Sk.builtin.assk$(36, Sk.builtin.nmber.int$);
-    mod.LEFT = Sk.builtin.assk$(37, Sk.builtin.nmber.int$);
-    mod.UP = Sk.builtin.assk$(38, Sk.builtin.nmber.int$);
-    mod.RIGHT = Sk.builtin.assk$(39, Sk.builtin.nmber.int$);
-    mod.DOWN = Sk.builtin.assk$(40, Sk.builtin.nmber.int$);
-    mod.F1 = Sk.builtin.assk$(112, Sk.builtin.nmber.int$);
-    mod.F2 = Sk.builtin.assk$(113, Sk.builtin.nmber.int$);
-    mod.F3 = Sk.builtin.assk$(114, Sk.builtin.nmber.int$);
-    mod.F4 = Sk.builtin.assk$(115, Sk.builtin.nmber.int$);
-    mod.F5 = Sk.builtin.assk$(116, Sk.builtin.nmber.int$);
-    mod.F6 = Sk.builtin.assk$(117, Sk.builtin.nmber.int$);
-    mod.F7 = Sk.builtin.assk$(118, Sk.builtin.nmber.int$);
-    mod.F8 = Sk.builtin.assk$(119, Sk.builtin.nmber.int$);
-    mod.F9 = Sk.builtin.assk$(120, Sk.builtin.nmber.int$);
-    mod.F10 = Sk.builtin.assk$(121, Sk.builtin.nmber.int$);
-    mod.F11 = Sk.builtin.assk$(122, Sk.builtin.nmber.int$);
-    mod.F12 = Sk.builtin.assk$(123, Sk.builtin.nmber.int$);
-    mod.NUMLK = Sk.builtin.assk$(144, Sk.builtin.nmber.int$);
-    mod.META = Sk.builtin.assk$(157, Sk.builtin.nmber.int$);
-    mod.INSERT = Sk.builtin.assk$(155, Sk.builtin.nmber.int$);
+    mod.SHIFT = new Sk.builtin.int_(16);
+    mod.CONTROL = new Sk.builtin.int_(17);
+    mod.ALT = new Sk.builtin.int_(18);
+    mod.CAPSLK = new Sk.builtin.int_(20);
+    mod.PGUP = new Sk.builtin.int_(33);
+    mod.PGDN = new Sk.builtin.int_(34);
+    mod.END = new Sk.builtin.int_(35);
+    mod.HOME = new Sk.builtin.int_(36);
+    mod.LEFT = new Sk.builtin.int_(37);
+    mod.UP = new Sk.builtin.int_(38);
+    mod.RIGHT = new Sk.builtin.int_(39);
+    mod.DOWN = new Sk.builtin.int_(40);
+    mod.F1 = new Sk.builtin.int_(112);
+    mod.F2 = new Sk.builtin.int_(113);
+    mod.F3 = new Sk.builtin.int_(114);
+    mod.F4 = new Sk.builtin.int_(115);
+    mod.F5 = new Sk.builtin.int_(116);
+    mod.F6 = new Sk.builtin.int_(117);
+    mod.F7 = new Sk.builtin.int_(118);
+    mod.F8 = new Sk.builtin.int_(119);
+    mod.F9 = new Sk.builtin.int_(120);
+    mod.F10 = new Sk.builtin.int_(121);
+    mod.F11 = new Sk.builtin.int_(122);
+    mod.F12 = new Sk.builtin.int_(123);
+    mod.NUMLK = new Sk.builtin.int_(144);
+    mod.META = new Sk.builtin.int_(157);
+    mod.INSERT = new Sk.builtin.int_(155);
 
     // PJS defined constants
-    mod.SINCOS_LENGTH = Sk.builtin.assk$(720, Sk.builtin.nmber.int$);
-    mod.PRECISIONB = Sk.builtin.assk$(15, Sk.builtin.nmber.int$);
-    mod.PRECISIONF = Sk.builtin.assk$(1 << 15, Sk.builtin.nmber.int$);
-    mod.PREC_MAXVAL = Sk.builtin.assk$((1 << 15) - 1, Sk.builtin.nmber.int$);
-    mod.PREC_ALPHA_SHIFT = Sk.builtin.assk$(24 - 15, Sk.builtin.nmber.int$);
-    mod.PREC_RED_SHIFT = Sk.builtin.assk$(16 - 15, Sk.builtin.nmber.int$);
-    mod.NORMAL_MODE_AUTO = Sk.builtin.assk$(0, Sk.builtin.nmber.int$);
-    mod.NORMAL_MODE_SHAPE = Sk.builtin.assk$(1, Sk.builtin.nmber.int$);
-    mod.NORMAL_MODE_VERTEX = Sk.builtin.assk$(2, Sk.builtin.nmber.int$);
-    mod.MAX_LIGHTS = Sk.builtin.assk$(8, Sk.builtin.nmber.int$);
+    mod.SINCOS_LENGTH = new Sk.builtin.int_(720);
+    mod.PRECISIONB = new Sk.builtin.int_(15);
+    mod.PRECISIONF = new Sk.builtin.int_(1 << 15);
+    mod.PREC_MAXVAL = new Sk.builtin.int_((1 << 15) - 1);
+    mod.PREC_ALPHA_SHIFT = new Sk.builtin.int_(24 - 15);
+    mod.PREC_RED_SHIFT = new Sk.builtin.int_(16 - 15);
+    mod.NORMAL_MODE_AUTO = new Sk.builtin.int_(0);
+    mod.NORMAL_MODE_SHAPE = new Sk.builtin.int_(1);
+    mod.NORMAL_MODE_VERTEX = new Sk.builtin.int_(2);
+    mod.MAX_LIGHTS = new Sk.builtin.int_(8);
 
     // 2D - Primitives
     mod.line = new Sk.builtin.func(function (x1, y1, x2, y2) {
@@ -393,11 +393,11 @@ var $builtinmodule = function (name) {
         // g, and b may be undefined.  If they hold values it will
         // be assumed that we have an r,g,b color tuple
         if (typeof(g) === "undefined") {
-            return Sk.builtin.assk$(mod.processing.alpha(r.v), Sk.builtin.nmber.float$);
+            return new Sk.builtin.float_(mod.processing.alpha(r.v));
         } else if (typeof(b) === "undefined") {
-            return Sk.builtin.assk$(mod.processing.alpha(r.v, g.v), Sk.builtin.nmber.float$);
+            return new Sk.builtin.float_(mod.processing.alpha(r.v, g.v));
         } else {
-            return Sk.builtin.assk$(mod.processing.alpha(r.v, g.v, b.v), Sk.builtin.nmber.float$);
+            return new Sk.builtin.float_(mod.processing.alpha(r.v, g.v, b.v));
 	}
     });
 
@@ -484,7 +484,7 @@ var $builtinmodule = function (name) {
 
     mod.blend = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9, v10) {
-	if (other instanceof Sk.builtin.nmber) {
+	if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 	    // blend(x,     y,width,height,dx,    dy,dwidth,dheight,MODE)
 	    mod.processing.blend(v1.v, v2.v, v3.v, v4.v, v5.v,
 				 v6.v, v7.v, v8.v, v9.v);
@@ -498,23 +498,20 @@ var $builtinmodule = function (name) {
     mod.blendColor = new Sk.builtin.func(function (c1, c2, mode) {
 	// blendColor(c1,c2,MODE)
         var c = Sk.misceval.callsim(mod.color,
-				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
-				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
-				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$));
+				    new Sk.builtin.int_(0),
+				    new Sk.builtin.int_(0),
+				    new Sk.builtin.int_(0));
 	c.v = mod.processing.blendColor(c1.v, c2.v, mode.v);
 	return c;
     });
 
     mod.brightness = new Sk.builtin.func(function (r, g, b) {
         if (typeof(g) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.brightness(r.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.brightness(r.v));
         } else if (typeof(b) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.brightness(r.v, g.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.brightness(r.v, g.v));
         } else {
-	    return Sk.builtin.assk$(mod.processing.brightness(r.v, g.v, b.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.brightness(r.v, g.v, b.v));
 	}
     });
 
@@ -533,13 +530,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.constrain = new Sk.builtin.func(function (value, min, max) {
-	return Sk.builtin.assk$(mod.processing.constrain(value.v, min.v, max.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.constrain(value.v, min.v, max.v));
     });
 
     mod.copy = new Sk.builtin.func(function (v1, v2, v3, v4, v5,
 					      v6, v7, v8, v9) {
-	if (other instanceof Sk.builtin.nmber) {
+	if (other instanceof Sk.builtin.int_ || other instanceof Sk.builtin.float_) {
 	    // copy(x,     y,width,height,dx,    dy,dwidth,dheight)
 	    mod.processing.copy(v1.v, v2.v, v3.v, v4.v, v5.v,
 				v6.v, v7.v, v8.v);
@@ -656,13 +652,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.day = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.day(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.day());
     });
 
     mod.degrees = new Sk.builtin.func(function (angle) {
 	// degrees(angle)
-	return Sk.builtin.assk$(mod.processing.degrees(angle.v), 
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.degrees(angle.v));
     });
 
     mod.directionalLight = new Sk.builtin.func(function (v1,v2,v3,nx,ny,nz) {
@@ -674,14 +669,11 @@ var $builtinmodule = function (name) {
 	// dist(x1, y1, x2, y2)
 	// dist(x1, y1, z1, x2, y2, z2)
         if (typeof(y2) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.dist(x1.v, y1.v, z1.v, x2.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.dist(x1.v, y1.v, z1.v, x2.v));
 	} else if (typeof(z2) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v));
 	} else {
-	    return Sk.builtin.assk$(mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v, z2.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.dist(x1.v, y1.v, z1.v, x2.v, y2.v, z2.v));
 	}
     });
 
@@ -734,13 +726,12 @@ var $builtinmodule = function (name) {
     });
 
     mod.hour = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.hour(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.hour());
     });
 
     mod.hue = new Sk.builtin.func(function (color) {
 	// hue(color)
-	return Sk.builtin.assk$(mod.processing.hue(color.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.hue(color.v));
     });
 
     mod.imageMode = new Sk.builtin.func(function (mode) {
@@ -750,17 +741,16 @@ var $builtinmodule = function (name) {
     mod.lerp = new Sk.builtin.func(function (value1, value2, amt) {
 	// lerp(value1, value2, amt)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.lerp(value1.v, value2.v, amt.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.lerp(value1.v, value2.v, amt.v));
     });
 
     mod.lerpColor = new Sk.builtin.func(function (c1, c2, amt) {
 	// lerpColor(c1, c2, amt)
 	// returns color
         var c = Sk.misceval.callsim(mod.color,
-				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
-				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$),
-				    Sk.builtin.assk$(0, Sk.builtin.nmber.int$));
+				    new Sk.builtin.int_(0),
+				    new Sk.builtin.int_(0),
+				    new Sk.builtin.int_(0));
 	c.v = mod.processing.lerpColor(c1.v, c2.v, amt.v);
 	return c;
     });
@@ -813,53 +803,47 @@ var $builtinmodule = function (name) {
 	// mag(a,b,c)
 	// returns magnitude as float
         if (typeof(c) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.mag(a.v, b.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.mag(a.v, b.v));
         } else {
-	    return Sk.builtin.assk$(mod.processing.mag(a.v, b.v, c.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.mag(a.v, b.v, c.v));
 	}
     });
 
     mod.map = new Sk.builtin.func(function (value,low1,high1,low2,high2) {
 	// map(value,low1,high1,low2,high2)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.map(value.v,low1.v,high1.v,
-						   low2.v,high2.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.map(value.v,low1.v,high1.v,
+						   low2.v,high2.v));
     });
 
     mod.millis = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.millis(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.millis());
     });
 
     mod.minute = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.minute(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.minute());
     });
 
     mod.modelX = new Sk.builtin.func(function (x, y, z) {
 	// modelX(x,y,z)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.modelX(x.v, y.v, z.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.modelX(x.v, y.v, z.v));
     });
 
     mod.modelY = new Sk.builtin.func(function (x, y, z) {
 	// modelY(x,y,z)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.modelY(x.v, y.v, z.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.modelY(x.v, y.v, z.v));
     });
 
     mod.modelZ = new Sk.builtin.func(function (x, y, z) {
 	// modelZ(x,y,z)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.modelZ(x.v, y.v, z.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.modelZ(x.v, y.v, z.v));
     });
 
     mod.month = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.month(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.month());
     });
 
     mod.noCursor = new Sk.builtin.func(function () {
@@ -872,14 +856,11 @@ var $builtinmodule = function (name) {
 	// noise(x, y, z)
 	// returns float
         if (typeof(y) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.noise(x.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.noise(x.v));
         } else if (typeof(z) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.noise(x.v, y.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.noise(x.v, y.v));
         } else {
-	    return Sk.builtin.assk$(mod.processing.noise(x.v, y.v, z.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.noise(x.v, y.v, z.v));
 	}
     });
 
@@ -892,8 +873,7 @@ var $builtinmodule = function (name) {
     mod.noiseSeed = new Sk.builtin.func(function (value) {
 	// noiseSeed(value); int
 	// returns float
-	return Sk.builtin.assk$(mod.processing.noiseSeed(value.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.noiseSeed(value.v));
     });
 
     mod.noLights = new Sk.builtin.func(function () {
@@ -903,8 +883,7 @@ var $builtinmodule = function (name) {
     mod.norm = new Sk.builtin.func(function (value, low, high) {
 	// norm(value, low, high)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.norm(value.v, low.v, high.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.norm(value.v, low.v, high.v));
     });
 
     mod.normal = new Sk.builtin.func(function (nx, ny, nz) {
@@ -966,15 +945,13 @@ var $builtinmodule = function (name) {
     mod.radians = new Sk.builtin.func(function (angle) {
 	// radians(angle)
 	// returns int or float
-	return Sk.builtin.assk$(mod.processing.radians(angle.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.radians(angle.v));
     });
 
     mod.randomSeed = new Sk.builtin.func(function (value) {
 	// noiseSeed(value);
 	// returns float
-	return Sk.builtin.assk$(mod.processing.randomSeed(value.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.randomSeed(value.v));
     });
 
     mod.random = new Sk.builtin.func(function (v1, v2) {
@@ -983,14 +960,11 @@ var $builtinmodule = function (name) {
 	// random(low, high);
 	// returns float
         if (typeof(v1) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.random(),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.random());
         } else if (typeof(v2) === "undefined") {
-	    return Sk.builtin.assk$(mod.processing.random(v1.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.random(v1.v));
         } else {
-	    return Sk.builtin.assk$(mod.processing.random(v1.v, v2.v),
-				    Sk.builtin.nmber.float$);
+	    return new Sk.builtin.float_(mod.processing.random(v1.v, v2.v));
 	}
     });
 
@@ -1009,8 +983,7 @@ var $builtinmodule = function (name) {
     mod.saturation = new Sk.builtin.func(function (color) {
 	// saturation(color)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.saturation(color.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.saturation(color.v));
     });
 
     mod.save = new Sk.builtin.func(function (filename) {
@@ -1038,26 +1011,23 @@ var $builtinmodule = function (name) {
     mod.screenX = new Sk.builtin.func(function (x, y, z) {
 	// screenX(x,y,z)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.screenX(x.v, y.v, z.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.screenX(x.v, y.v, z.v));
     });
 
     mod.screenY = new Sk.builtin.func(function (x, y, z) {
 	// screenY(x,y,z)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.screenY(x.v, y.v, z.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.screenY(x.v, y.v, z.v));
     });
 
     mod.screenZ = new Sk.builtin.func(function (x, y, z) {
 	// screenZ(x,y,z)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.screenZ(x.v, y.v, z.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.screenZ(x.v, y.v, z.v));
     });
 
     mod.second = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.second(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.second());
     });
 
     mod.shape = new Sk.builtin.func(function (sh, x, y, width, height) {
@@ -1111,8 +1081,7 @@ var $builtinmodule = function (name) {
     mod.sq = new Sk.builtin.func(function (value) {
 	// sq(value)
 	// returns squared number
-	return Sk.builtin.assk$(mod.processing.sq(value),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.sq(value));
     });
 
     mod.status = new Sk.builtin.func(function (text) {
@@ -1133,14 +1102,12 @@ var $builtinmodule = function (name) {
 
     mod.textAscent = new Sk.builtin.func(function () {
 	// returns float
-	return Sk.builtin.assk$(mod.processing.textAscent(),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.textAscent());
     });
 
     mod.textDescent = new Sk.builtin.func(function () {
 	// returns float
-	return Sk.builtin.assk$(mod.processing.textDescent(),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.textDescent());
     });
 
     mod.textFont = new Sk.builtin.func(function (font, size) {
@@ -1186,8 +1153,7 @@ var $builtinmodule = function (name) {
     mod.textWidth = new Sk.builtin.func(function (data) {
 	// textWidth(data)
 	// returns float
-	return Sk.builtin.assk$(mod.processing.textWidth(data.v),
-				Sk.builtin.nmber.float$);
+	return new Sk.builtin.float_(mod.processing.textWidth(data.v));
     });
 
     mod.tint = new Sk.builtin.func(function (v1, v2, v3, v4) {
@@ -1232,7 +1198,7 @@ var $builtinmodule = function (name) {
     });
 
     mod.year = new Sk.builtin.func(function () {
-	return Sk.builtin.assk$(mod.processing.year(), Sk.builtin.nmber.int$);
+	return new Sk.builtin.int_(mod.processing.year());
     });
 
     // 3D Primitives
@@ -1362,16 +1328,16 @@ var $builtinmodule = function (name) {
     // NOTE: difference with ProcessingJS
     // Use environment.focused
 
-    mod.width = Sk.builtin.assk$(100, Sk.builtin.nmber.int$);
-    mod.height = Sk.builtin.assk$(100, Sk.builtin.nmber.int$);
+    mod.width = new Sk.builtin.int_(100);
+    mod.height = new Sk.builtin.int_(100);
 
     mod.size = new Sk.builtin.func(function (w, h, mode) {
         if (typeof(mode) === "undefined") {
             mode = mod.P2D;
         }
         mod.processing.size(w.v, h.v, mode.v);
-	mod.width = Sk.builtin.assk$(mod.processing.width, Sk.builtin.nmber.int$);
-	mod.height = Sk.builtin.assk$(mod.processing.height, Sk.builtin.nmber.int$);
+	mod.width = new Sk.builtin.int_(mod.processing.width);
+	mod.height = new Sk.builtin.int_(mod.processing.height);
     });
 
     mod.exitp = new Sk.builtin.func(function (h, w) {
@@ -1381,25 +1347,25 @@ var $builtinmodule = function (name) {
     // NOTE: difference with ProcessingJS
     // Use mouseX() or mouse.x rather than mouseX
     mod.mouseX = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.mouseX, Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.mouseX);
     });
 
     // NOTE: difference with ProcessingJS
     // Use mouseY() or mouse.y rather than mouseY
     mod.mouseY = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.mouseY, Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.mouseY);
     });
 
     // NOTE: difference with ProcessingJS
     // Use pmouseX() or mouse.px rather than pmouseX
     mod.pmouseX = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.pmouseX, Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.pmouseX);
     });
 
     // NOTE: difference with ProcessingJS
     // Use pmouseY() or mouse.py rather than pmouseY
     mod.pmouseY = new Sk.builtin.func(function () {
-        return Sk.builtin.assk$(mod.processing.pmouseY, Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.pmouseY);
     });
 
     // Attributes
@@ -1593,22 +1559,22 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "x") {
-                return new Sk.builtin.nmber(mod.processing.mouseX);
+                return Sk.builtin.assk$(mod.processing.mouseX);
             }
             else if (key === "y") {
-                return new Sk.builtin.nmber(mod.processing.mouseY);
+                return Sk.builtin.assk$(mod.processing.mouseY);
             }
             else if (key === "px") {
-                return new Sk.builtin.nmber(mod.processing.pmouseX);
+                return Sk.builtin.assk$(mod.processing.pmouseX);
             }
             else if (key === "py") {
-                return new Sk.builtin.nmber(mod.processing.pmouseY);
+                return Sk.builtin.assk$(mod.processing.pmouseY);
             }
             else if (key === "pressed") {
                     return new Sk.builtin.bool(mod.processing.__mousePressed);
             }
             else if (key === "button") {
-                return new Sk.builtin.nmber(mod.processing.mouseButton);
+                return Sk.builtin.assk$(mod.processing.mouseButton);
             }
         });
 
@@ -1627,7 +1593,7 @@ var $builtinmodule = function (name) {
                 return new Sk.builtin.str(mod.processing.key.toString());
             }
             else if (key === "keyCode") {
-                return new Sk.builtin.nmber(mod.processing.keyCode);
+                return Sk.builtin.assk$(mod.processing.keyCode);
             }
             else if (key === "keyPressed") {
                 return new Sk.builtin.str(mod.processing.keyPressed);
@@ -1646,16 +1612,16 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "frameCount") {
-                return new Sk.builtin.nmber(mod.processing.frameCount);
+                return Sk.builtin.assk$(mod.processing.frameCount);
             }
             else if (key === "frameRate") {
-                return new Sk.builtin.nmber(mod.processing.frameRate);
+                return Sk.builtin.assk$(mod.processing.frameRate);
             }
             else if (key === "height") {
-                return new Sk.builtin.nmber(mod.processing.height);
+                return Sk.builtin.assk$(mod.processing.height);
             }
             else if (key === "width") {
-                return new Sk.builtin.nmber(mod.processing.width);
+                return Sk.builtin.assk$(mod.processing.width);
             }
             else if (key === "online") {
                 return new Sk.builtin.bool(mod.processing.online);
@@ -1680,10 +1646,10 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "height") {
-                return new Sk.builtin.nmber(mod.processing.height);
+                return Sk.builtin.assk$(mod.processing.height);
             }
             else if (key === "width") {
-                return new Sk.builtin.nmber(mod.processing.width);
+                return Sk.builtin.assk$(mod.processing.width);
             }
             else if (key === "pixels") {
                 if (self.pixels == null) {
@@ -1724,15 +1690,15 @@ var $builtinmodule = function (name) {
     mod.color = Sk.misceval.buildClass(mod, colorClass, "color", []);
 
     mod.red = new Sk.builtin.func(function (clr) {
-        return Sk.builtin.assk$(mod.processing.red(clr.v), Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.red(clr.v));
     });
 
     mod.green = new Sk.builtin.func(function (clr) {
-        return Sk.builtin.assk$(mod.processing.green(clr.v), Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.green(clr.v));
     });
 
     mod.blue = new Sk.builtin.func(function (clr) {
-        return Sk.builtin.assk$(mod.processing.blue(clr.v), Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(mod.processing.blue(clr.v));
     });
 
     // Image class and functions
@@ -1758,10 +1724,10 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "width") {
-                return new Sk.builtin.nmber(self.v.width);
+                return Sk.builtin.assk$(self.v.width);
             }
             if (key === "height") {
-                return new Sk.builtin.nmber(self.v.height);
+                return Sk.builtin.assk$(self.v.height);
             }
         });
 
@@ -1788,9 +1754,9 @@ var $builtinmodule = function (name) {
     mod.get = new Sk.builtin.func(function (x, y) {
         var clr = mod.processing.get(x.v, y.v);
         return Sk.misceval.callsim(mod.color,
-            Sk.builtin.assk$(mod.processing.red(clr), Sk.builtin.nmber.int$),
-            Sk.builtin.assk$(mod.processing.green(clr), Sk.builtin.nmber.int$),
-            Sk.builtin.assk$(mod.processing.blue(clr), Sk.builtin.nmber.int$));
+            new Sk.builtin.int_(mod.processing.red(clr)),
+            new Sk.builtin.int_(mod.processing.green(clr)),
+            new Sk.builtin.int_(mod.processing.blue(clr)));
     });
 
     mod.set = new Sk.builtin.func(function (x, y, color) {
@@ -1816,11 +1782,11 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "x") {
-                return new Sk.builtin.nmber(self.v.x);
+                return Sk.builtin.assk$(self.v.x);
             } else if (key === "y") {
-                return new Sk.builtin.nmber(self.v.y);
+                return Sk.builtin.assk$(self.v.y);
             } else if (key === "z") {
-                return new Sk.builtin.nmber(self.v.z);
+                return Sk.builtin.assk$(self.v.z);
 	    }
 	});
 	    
@@ -1843,7 +1809,7 @@ var $builtinmodule = function (name) {
 	$loc.mag = new Sk.builtin.func(function (self) {
 	    // mag() Calculates the magnitude (length) of the vector
 	    // and returns the result as a float
-	    return new Sk.builtin.nmber(self.v.mag());
+	    return Sk.builtin.assk$(self.v.mag());
 	});
 
 	$loc.add = new Sk.builtin.func(function (self, vec) {
@@ -1876,7 +1842,7 @@ var $builtinmodule = function (name) {
 
 	$loc.dist = new Sk.builtin.func(function (self, vec) {
 	    // dist()	Calculate the Euclidean distance between two points
-	    return new Sk.builtin.nmber(self.v.dist(vec.v));
+	    return Sk.builtin.assk$(self.v.dist(vec.v));
 	});
 
 	$loc.dot = new Sk.builtin.func(function (self, v1, v2, v3) {
@@ -1885,9 +1851,9 @@ var $builtinmodule = function (name) {
 	    // vec.dot(x,y,z)
 	    // vec.dot(v)	    
 	    if (typeof(v2) === 'undefined') {
-		return new Sk.builtin.nmber(self.v.dot(v1.v));
+		return Sk.builtin.assk$(self.v.dot(v1.v));
 	    } else {
-		return new Sk.builtin.nmber(self.v.dot(v1.v, v2.v, v3.v));
+		return Sk.builtin.assk$(self.v.dot(v1.v, v2.v, v3.v));
 	    }
 	});
 
@@ -1910,7 +1876,7 @@ var $builtinmodule = function (name) {
 
 	$loc.angleBetween = new Sk.builtin.func(function (self, vec) {
 	    // angleBetween()	Calculates the angle between two vectors
-	    return new Sk.builtin.nmber(self.v.angleBetween(vec.v));
+	    return Sk.builtin.assk$(self.v.angleBetween(vec.v));
 	});
 
 	$loc.array = new Sk.builtin.func(function (self) {
@@ -1977,9 +1943,9 @@ var $builtinmodule = function (name) {
         $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
 	    key = Sk.ffi.remapToJs(key);
             if (key === "width") {
-                return new Sk.builtin.nmber(self.v.width);
+                return Sk.builtin.assk$(self.v.width);
             } else if (key === "height") {
-                return new Sk.builtin.nmber(self.v.height);
+                return Sk.builtin.assk$(self.v.height);
 	    }
 	});
 

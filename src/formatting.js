@@ -92,7 +92,9 @@ var format = function (kwa) {
             return_str = arg_dict[index];
             index++;
             value = return_str;
-        } else if(field_name instanceof Sk.builtin.nmber || field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
+        } else if(field_name instanceof Sk.builtin.int_ ||
+                  field_name instanceof Sk.builtin.float_ ||
+                  field_name instanceof Sk.builtin.lng || !isNaN(parseInt(field_name, 10))){
             return_str = arg_dict[field_name];
             index++;
             value = return_str;
@@ -223,11 +225,14 @@ var format = function (kwa) {
                 }
                 n = Number(n.toString(base));
                 r = n.toFixed(precision);
-            } else if (n instanceof Sk.builtin.nmber) {
+            } else if (n instanceof Sk.builtin.float_) {
                 r = n.str$(base, false);
                 if (r.length > 2 && r.substr(-2) === ".0") {
                     r = r.substr(0, r.length - 2);
                 }
+                neg = n.nb$isnegative();
+            } else if (n instanceof Sk.builtin.int_) {
+                r = n.str$(base, false);
                 neg = n.nb$isnegative();
             } else if (n instanceof Sk.builtin.lng) {
                 r = n.str$(base, false);
@@ -311,7 +316,9 @@ var format = function (kwa) {
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return handleWidth("", String.fromCharCode(value));
-            } else if (value instanceof Sk.builtin.nmber) {
+            } else if (value instanceof Sk.builtin.int_) {
+                return handleWidth("", String.fromCharCode(value.v));
+            } else if (value instanceof Sk.builtin.float_) {
                 return handleWidth("", String.fromCharCode(value.v));
             } else if (value instanceof Sk.builtin.lng) {
                 return handleWidth("", String.fromCharCode(value.str$(10, false)[0]));

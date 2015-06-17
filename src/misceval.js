@@ -89,7 +89,7 @@ Sk.misceval.asIndex = function (o) {
     if (typeof o === "number") {
         return o;
     }
-    if (o.constructor === Sk.builtin.nmber) {
+    if (o.constructor === Sk.builtin.int_) {
         return o.v;
     }
     if (o.constructor === Sk.builtin.lng) {
@@ -334,8 +334,10 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
     // handle identity and membership comparisons
     if (op === "Is") {
-        if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
-            return (v.numberCompare(w) === 0) && (v.skType === w.skType);
+        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+            return v.numberCompare(w) === 0;
+        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
+            return v.numberCompare(w) === 0;
         } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
             return v.longCompare(w) === 0;
         }
@@ -344,9 +346,11 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     }
 
     if (op === "IsNot") {
-        if (v instanceof Sk.builtin.nmber && w instanceof Sk.builtin.nmber) {
-            return (v.numberCompare(w) !== 0) || (v.skType !== w.skType);
-        } else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
+        if (v instanceof Sk.builtin.int_ && w instanceof Sk.builtin.int_) {
+            return v.numberCompare(w) !== 0;
+        } else if (v instanceof Sk.builtin.float_ && w instanceof Sk.builtin.float_) {
+            return v.numberCompare(w) !== 0;
+        }else if (v instanceof Sk.builtin.lng && w instanceof Sk.builtin.lng) {
             return v.longCompare(w) !== 0;
         }
 
@@ -511,7 +515,7 @@ Sk.misceval.objectRepr = function (v) {
         } else {
             return new Sk.builtin.str("<unknown>");
         }
-    } else if (v.constructor === Sk.builtin.nmber) {
+    } else if (v.constructor === Sk.builtin.float_) {
         if (v.v === Infinity) {
             return new Sk.builtin.str("inf");
         } else if (v.v === -Infinity) {
@@ -519,6 +523,8 @@ Sk.misceval.objectRepr = function (v) {
         } else {
             return v["$r"]();
         }
+    } else if (v.constructor === Sk.builtin.int_) {
+        return v["$r"]();
     } else {
         return v["$r"]();
     }
@@ -564,7 +570,10 @@ Sk.misceval.isTrue = function (x) {
     if (x instanceof Sk.builtin.lng) {
         return x.nb$nonzero();
     }
-    if (x.constructor === Sk.builtin.nmber) {
+    if (x.constructor === Sk.builtin.int_) {
+        return x.v !== 0;
+    }
+    if (x.constructor === Sk.builtin.float_) {
         return x.v !== 0;
     }
     if (x.mp$length) {

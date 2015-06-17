@@ -88,7 +88,7 @@ Sk.builtin.tuple.prototype.tp$hash = function () {
     for (i = 0; i < len; ++i) {
         y = Sk.builtin.hash(this.v[i]).v;
         if (y === -1) {
-            return new Sk.builtin.nmber(-1, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(-1);
         }
         x = (x ^ y) * mult;
         mult += 82520 + len + len;
@@ -97,7 +97,7 @@ Sk.builtin.tuple.prototype.tp$hash = function () {
     if (x === -1) {
         x = -2;
     }
-    return new Sk.builtin.nmber(x | 0, Sk.builtin.nmber.int$);
+    return new Sk.builtin.int_(x | 0);
 };
 
 Sk.builtin.tuple.prototype.sq$repeat = function (n) {
@@ -244,7 +244,7 @@ Sk.builtin.tuple.prototype["index"] = new Sk.builtin.func(function (self, item) 
     var obj = self.v;
     for (i = 0; i < len; ++i) {
         if (Sk.misceval.richCompareBool(obj[i], item, "Eq")) {
-            return Sk.builtin.assk$(i, Sk.builtin.nmber.int$);
+            return new Sk.builtin.int_(i);
         }
     }
     throw new Sk.builtin.ValueError("tuple.index(x): x not in tuple");
@@ -260,7 +260,7 @@ Sk.builtin.tuple.prototype["count"] = new Sk.builtin.func(function (self, item) 
             count += 1;
         }
     }
-    return  new Sk.builtin.nmber(count, Sk.builtin.nmber.int$);
+    return  new Sk.builtin.int_(count);
 });
 
 goog.exportSymbol("Sk.builtin.tuple", Sk.builtin.tuple);
