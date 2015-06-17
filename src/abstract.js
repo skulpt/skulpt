@@ -446,18 +446,18 @@ Sk.abstr.sequenceContains = function (seq, ob) {
      *  Look for special method and call it, we have to distinguish between built-ins and 
      *  python objects
      */
-    special = Sk.builtin.object.PyObject_LookupSpecial_(seq.ob$type, "__contains__");
+    special = Sk.abstr.lookupSpecial(seq, "__contains__");
     if (special != null) {
         // method on builtin, provide this arg
-        return Sk.misceval.callsim(special, seq, ob);
+        return Sk.misceval.isTrue(Sk.misceval.callsim(special, seq, ob));
     }
 
-    seqtypename = Sk.abstr.typeName(seq);
-    if (!seq.tp$iter) {
+    if (!Sk.builtin.checkIterable(seq)) {
+        seqtypename = Sk.abstr.typeName(seq);
         throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
     }
 
-    for (it = seq.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+    for (it = Sk.abstr.iter(seq), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
         if (Sk.misceval.richCompareBool(i, ob, "Eq")) {
             return true;
         }
@@ -476,21 +476,43 @@ Sk.abstr.sequenceConcat = function (seq1, seq2) {
 
 Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
     var seqtypename;
+    var i, it;
+    var index;
     if (seq.index) {
         return Sk.misceval.callsim(seq.index, seq, ob);
     }
+    if (Sk.builtin.checkIterable(seq)) {
+        index = 0;
+        for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
+             i !== undefined; i = it.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+                return Sk.builtin.assk$(index, Sk.builtin.nmber.int$);
+            }
+            index += 1;
+        }
+        throw new Sk.builtin.ValueError("sequence.index(x): x not in sequence");
+    }
 
     seqtypename = Sk.abstr.typeName(seq);
-    if (seqtypename === "dict") {
-        throw new Sk.builtin.NotImplementedError("looking up dict key from value is not yet implemented (supported in Python 2.6)");
-    }
     throw new Sk.builtin.TypeError("argument of type '" + seqtypename + "' is not iterable");
 };
 
 Sk.abstr.sequenceGetCountOf = function (seq, ob) {
     var seqtypename;
+    var i, it;
+    var count;
     if (seq.count) {
         return Sk.misceval.callsim(seq.count, seq, ob);
+    }
+    if (Sk.builtin.checkIterable(seq)) {
+        count = 0;
+        for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
+             i !== undefined; i = it.tp$iternext()) {
+            if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
+                count += 1;
+            }
+        }
+        return Sk.builtin.assk$(count, Sk.builtin.nmber.int$);
     }
 
     seqtypename = Sk.abstr.typeName(seq);
@@ -592,7 +614,7 @@ Sk.abstr.sequenceUnpack = function (seq, n) {
         throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq) + "' object is not iterable");
     }
 
-    for (it = Sk.builtin.object.getIter_(seq), i = it.tp$iternext();
+    for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
          (i !== undefined) && (res.length < n); 
          i = it.tp$iternext()) {
         res.push(i);
@@ -623,7 +645,7 @@ Sk.abstr.objectFormat = function (obj, format_spec) {
     }
 
     // Find the (unbound!) __format__ method (a borrowed reference)
-    meth = Sk.builtin.object.PyObject_LookupSpecial_(obj.ob$type, "__format__");
+    meth = Sk.abstr.lookupSpecial(obj, "__format__");
     if (meth == null) {
         throw new Sk.builtin.TypeError("Type " + Sk.abstr.typeName(obj) + "doesn't define __format__");
     }
@@ -804,16 +826,97 @@ Sk.abstr.sattr = function (obj, nameJS, data, canSuspend) {
 };
 goog.exportSymbol("Sk.abstr.sattr", Sk.abstr.sattr);
 
-Sk.abstr.iter = function (obj) {
-    if (obj.tp$iter) {
-        return obj.tp$iter();
-    } else {
-        throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
-    }
-};
-goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
 
 Sk.abstr.iternext = function (it, canSuspend) {
     return it.tp$iternext(canSuspend);
 };
 goog.exportSymbol("Sk.abstr.iternext", Sk.abstr.iternext);
+
+
+/**
+ * Get the iterator for a Python object  This iterator could be one of the following.
+ * This is the preferred mechanism for consistently getting the correct iterator.  You should
+ * not just use tp$iter because that could lead to incorrect behavior of a user created class.
+ *
+ * - tp$iter
+ * - A user defined `__iter__` method
+ * - A user defined `__getitem__` method
+ *
+ * @param obj
+ *
+ * @throws {Sk.builtin.TypeError}
+ * @returns {Object}
+ */
+
+Sk.abstr.iter = function(obj) {
+    var iter;
+    var getit;
+    var ret;
+
+    /**
+     * Builds an iterator around classes that have a __getitem__ method.
+     * 
+     * @constructor
+     */
+    var seqIter = function (obj) {
+        this.idx = 0;
+        this.myobj = obj;
+        this.getitem = Sk.abstr.lookupSpecial(obj, "__getitem__");
+        this.tp$iternext = function () {
+            var ret;
+            try {
+                ret = Sk.misceval.callsim(this.getitem, this.myobj, Sk.ffi.remapToPy(this.idx));
+            } catch (e) {
+                if (e instanceof Sk.builtin.IndexError) {
+                    return undefined;
+                } else {
+                    throw e;
+                }
+            }
+            this.idx++;
+            return ret;
+        };
+    };
+
+    if (obj.tp$getattr) {
+        iter =  Sk.abstr.lookupSpecial(obj,"__iter__");
+        if (iter) {
+            return Sk.misceval.callsim(iter,obj);
+        }
+    }
+    if (obj.tp$iter) {
+        try {  // catch and ignore not iterable error here.
+            ret = obj.tp$iter();
+            if (ret.tp$iternext) {
+                return ret;
+            }
+        } catch (e) { }
+    }
+    getit = Sk.abstr.lookupSpecial(obj, "__getitem__");
+    if (getit) {
+        // create internal iterobject if __getitem__
+        return new seqIter(obj);
+    }
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(obj) + "' object is not iterable");
+};
+goog.exportSymbol("Sk.abstr.iter", Sk.abstr.iter);
+
+/**
+ * Special method look up. First try getting the method via
+ * internal dict and getattr. If getattr is not present (builtins)
+ * try if method is defined on the object itself
+ *
+ * @returns {null|Object} Return null if not found or the function
+ */
+Sk.abstr.lookupSpecial = function(op, str) {
+    var res;
+    var obtp;
+    if (op.ob$type) {
+        obtp = op.ob$type;
+    } else {
+        return null;
+    }
+
+    return Sk.builtin.type.typeLookup(obtp, str);
+};
+goog.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);

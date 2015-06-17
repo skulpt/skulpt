@@ -15,13 +15,13 @@ Sk.builtin.tuple = function (L) {
     if (Object.prototype.toString.apply(L) === "[object Array]") {
         this.v = L;
     } else {
-        if (L.tp$iter) {
+        if (Sk.builtin.checkIterable(L)) {
             this.v = [];
-            for (it = L.tp$iter(), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
+            for (it = Sk.abstr.iter(L), i = it.tp$iternext(); i !== undefined; i = it.tp$iternext()) {
                 this.v.push(i);
             }
         } else {
-            throw new Sk.builtin.ValueError("expecting Array or iterable");
+            throw new Sk.builtin.TypeError("expecting Array or iterable");
         }
     }
 

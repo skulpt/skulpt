@@ -64,7 +64,7 @@ Sk.misceval.isIndex = function (o) {
     if (Sk.builtin.checkInt(o)) {
         return true;
     }
-    if (Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__")) {
+    if (Sk.abstr.lookupSpecial(o, "__index__")) {
         return true;
     }
     return false;
@@ -98,7 +98,7 @@ Sk.misceval.asIndex = function (o) {
     if (o.constructor === Sk.builtin.bool) {
         return Sk.builtin.asnum$(o);
     }
-    idxfn = Sk.builtin.object.PyObject_LookupSpecial_(o.ob$type, "__index__");
+    idxfn = Sk.abstr.lookupSpecial(o, "__index__");
     if (idxfn) {
         ret = Sk.misceval.callsim(idxfn, o);
         if (!Sk.builtin.checkInt(ret)) {
@@ -181,10 +181,10 @@ Sk.misceval.arrayFromArguments = function (args) {
     // shouldn't else if here as the above may output lists to arg.
     if (arg instanceof Sk.builtin.list || arg instanceof Sk.builtin.tuple) {
         return arg.v;
-    } else if (arg.tp$iter !== undefined) {
+    } else if (Sk.builtin.checkIterable(arg)) {
         // handle arbitrary iterable (strings, generators, etc.)
         res = [];
-        for (it = arg.tp$iter(), i = it.tp$iternext();
+        for (it = Sk.abstr.iter(arg), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
             res.push(i);
         }
@@ -221,7 +221,8 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         swapped_method,
         method,
         op2method,
-        res,
+        vcmp,
+        wcmp,
         w_seq_type,
         w_num_type,
         v_seq_type,
@@ -361,15 +362,15 @@ Sk.misceval.richCompareBool = function (v, w, op) {
 
 
     // use comparison methods if they are given for either object
-    if (v.tp$richcompare && (res = v.tp$richcompare(w, op)) !== undefined) {
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+    if (v.tp$richcompare && (ret = v.tp$richcompare(w, op)) !== undefined) {
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (w.tp$richcompare && (res = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+    if (w.tp$richcompare && (ret = w.tp$richcompare(v, Sk.misceval.swappedOp_[op])) !== undefined) {
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
@@ -386,55 +387,62 @@ Sk.misceval.richCompareBool = function (v, w, op) {
         "LtE"  : "__le__"
     };
 
-    method = op2method[op];
-    swapped_method = op2method[Sk.misceval.swappedOp_[op]];
-
-    if (v[method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(v[method], v, w));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
-        }
-    } else if (w[swapped_method]) {
-        res = Sk.misceval.isTrue(Sk.misceval.callsim(w[swapped_method], w, v));
-        if (res != Sk.builtin.NotImplemented.NotImplemented$) {
-            return res;
+    method = Sk.abstr.lookupSpecial(v, op2method[op]);
+    if (method) {
+        ret = Sk.misceval.callsim(method, v, w);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (v["__cmp__"]) {
-        ret = Sk.misceval.callsim(v["__cmp__"], v, w);
-        ret = Sk.builtin.asnum$(ret);
-        if (op === "Eq") {
-            return ret === 0;
-        } else if (op === "NotEq") {
-            return ret !== 0;
-        } else if (op === "Lt") {
-            return ret < 0;
-        } else if (op === "Gt") {
-            return ret > 0;
-        } else if (op === "LtE") {
-            return ret <= 0;
-        } else if (op === "GtE") {
-            return ret >= 0;
+    swapped_method = Sk.abstr.lookupSpecial(w, op2method[Sk.misceval.swappedOp_[op]]);
+    if (swapped_method) {
+        ret = Sk.misceval.callsim(swapped_method, w, v);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            return Sk.misceval.isTrue(ret);
         }
     }
 
-    if (w["__cmp__"]) {
+    vcmp = Sk.abstr.lookupSpecial(v, "__cmp__");
+    if (vcmp) {
+        ret = Sk.misceval.callsim(vcmp, v, w);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            ret = Sk.builtin.asnum$(ret);
+            if (op === "Eq") {
+                return ret === 0;
+            } else if (op === "NotEq") {
+                return ret !== 0;
+            } else if (op === "Lt") {
+                return ret < 0;
+            } else if (op === "Gt") {
+                return ret > 0;
+            } else if (op === "LtE") {
+                return ret <= 0;
+            } else if (op === "GtE") {
+                return ret >= 0;
+            }
+        }
+    }
+
+    wcmp = Sk.abstr.lookupSpecial(w, "__cmp__");
+    if (wcmp) {
         // note, flipped on return value and call
-        ret = Sk.misceval.callsim(w["__cmp__"], w, v);
-        ret = Sk.builtin.asnum$(ret);
-        if (op === "Eq") {
-            return ret === 0;
-        } else if (op === "NotEq") {
-            return ret !== 0;
-        } else if (op === "Lt") {
-            return ret > 0;
-        } else if (op === "Gt") {
-            return ret < 0;
-        } else if (op === "LtE") {
-            return ret >= 0;
-        } else if (op === "GtE") {
-            return ret <= 0;
+        ret = Sk.misceval.callsim(wcmp, w, v);
+        if (ret != Sk.builtin.NotImplemented.NotImplemented$) {
+            ret = Sk.builtin.asnum$(ret);
+            if (op === "Eq") {
+                return ret === 0;
+            } else if (op === "NotEq") {
+                return ret !== 0;
+            } else if (op === "Lt") {
+                return ret > 0;
+            } else if (op === "Gt") {
+                return ret < 0;
+            } else if (op === "LtE") {
+                return ret >= 0;
+            } else if (op === "GtE") {
+                return ret <= 0;
+            }
         }
     }
 

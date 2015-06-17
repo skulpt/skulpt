@@ -43,7 +43,7 @@ Sk.builtin.float_ = function (x) {
     }
 
     // try calling __float__
-    var special = Sk.builtin.object.PyObject_LookupSpecial_(x.ob$type, "__float__");
+    var special = Sk.abstr.lookupSpecial(x, "__float__");
     if (special != null) {
         // method on builtin, provide this arg
         return Sk.misceval.callsim(special, x);

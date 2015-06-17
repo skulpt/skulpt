@@ -290,6 +290,24 @@ Sk.builtin.ParseError = function (args) {
 goog.inherits(Sk.builtin.ParseError, Sk.builtin.StandardError);
 Sk.builtin.ParseError.prototype.tp$name = "ParseError";
 
+/**
+ * @constructor
+ * @extends Sk.builtin.StandardError
+ * @param {...*} args
+ */
+Sk.builtin.RuntimeError = function (args) {
+    var o;
+    if (!(this instanceof Sk.builtin.RuntimeError)) {
+        o = Object.create(Sk.builtin.RuntimeError.prototype);
+        o.constructor.apply(o, arguments);
+        return o;
+    }
+    Sk.builtin.StandardError.apply(this, arguments);
+};
+goog.inherits(Sk.builtin.RuntimeError, Sk.builtin.StandardError);
+Sk.builtin.AssertionError.prototype.tp$name = "RuntimeError";
+goog.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
+
 
 /**
  * @constructor
