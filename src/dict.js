@@ -253,60 +253,6 @@ Sk.builtin.dict.prototype.mp$length = function () {
     return this.size;
 };
 
-Sk.builtin.dict.prototype.tp$richcompare = function (other, op) {
-    // if the comparison allows for equality then short-circuit it here
-    var otherv;
-    var v;
-    var iter, k;
-    var otherl;
-    var thisl;
-    if (this === other && Sk.misceval.opAllowsEquality(op)) {
-        return true;
-    }
-
-    // Only support Eq and NotEq comparisons
-    switch (op) {
-        case "Lt":
-            return undefined;
-        case "LtE":
-            return undefined;
-        case "Eq":
-            break;
-        case "NotEq":
-            break;
-        case "Gt":
-            return undefined;
-        case "GtE":
-            return undefined;
-        default:
-            goog.asserts.fail();
-    }
-
-    if (!(other instanceof Sk.builtin.dict)) {
-        return op !== "Eq";
-    }
-
-    thisl = this.size;
-    otherl = other.size;
-
-    if (thisl !== otherl) {
-        return op !== "Eq";
-    }
-
-    for (iter = Sk.abstr.iter(this), k = iter.tp$iternext();
-         k !== undefined;
-         k = iter.tp$iternext()) {
-        v = this.mp$subscript(k);
-        otherv = other.mp$subscript(k);
-
-        if (!Sk.misceval.richCompareBool(v, otherv, "Eq")) {
-            return op !== "Eq";
-        }
-    }
-
-    return op === "Eq";
-};
-
 Sk.builtin.dict.prototype["get"] = new Sk.builtin.func(function (self, k, d) {
     Sk.builtin.pyCheckArgs("get()", arguments, 1, 2, false, true);
     var ret;
@@ -511,7 +457,8 @@ Sk.builtin.dict.prototype.__contains__ = new Sk.builtin.func(function (self, ite
 });
 
 Sk.builtin.dict.prototype.__cmp__ = new Sk.builtin.func(function (self, other, op) {
-    return Sk.builtin.dict.prototype.tp$richcompare.call(self, other, op);
+    // __cmp__ cannot be supported until dict lt/le/gt/ge operations are supported
+    return Sk.builtin.NotImplemented.NotImplemented$;
 });
 
 Sk.builtin.dict.prototype.__delitem__ = new Sk.builtin.func(function (self, item) {
