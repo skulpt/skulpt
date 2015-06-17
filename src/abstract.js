@@ -491,7 +491,7 @@ Sk.abstr.sequenceGetIndexOf = function (seq, ob) {
         for (it = Sk.abstr.iter(seq), i = it.tp$iternext();
              i !== undefined; i = it.tp$iternext()) {
             if (Sk.misceval.richCompareBool(ob, i, "Eq")) {
-                return Sk.builtin.assk$(index, Sk.builtin.nmber.int$);
+                return new Sk.builtin.int_(index);
             }
             index += 1;
         }
@@ -517,7 +517,7 @@ Sk.abstr.sequenceGetCountOf = function (seq, ob) {
                 count += 1;
             }
         }
-        return Sk.builtin.assk$(count, Sk.builtin.nmber.int$);
+        return new Sk.builtin.int_(count);
     }
 
     seqtypename = Sk.abstr.typeName(seq);
