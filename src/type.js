@@ -87,10 +87,41 @@ Sk.builtin.type = function (name, bases, dict) {
                         return self;
                     }
                 })(s);
+            } else if (klass.prototype.tp$base !== undefined) {
+                // Call super constructor if subclass of a builtin with undefined __init__
+                args.unshift(klass, this);
+                Sk.abstr.superConstructor.apply(undefined, args);
             }
 
             return self;
         };
+
+        var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
+
+        var inheritsFromBuiltin = false;
+
+        if (bases.v.length === 0 && Sk.python3) {
+            // new style class, inherits from object by default
+            inheritsFromBuiltin = true;
+            Sk.abstr.setUpInheritance(_name, klass, Sk.builtin.object);
+        }
+
+        var parent, it;
+        // Set up inheritance from any builtins
+        for (it = bases.tp$iter(), parent = it.tp$iternext(); parent !== undefined; parent = it.tp$iternext()) {
+            if (parent.prototype instanceof Sk.builtin.object || parent === Sk.builtin.object) {
+                inheritsFromBuiltin = true;
+                Sk.abstr.setUpInheritance(_name, klass, parent);
+            }
+        }
+
+        if (!inheritsFromBuiltin) {
+            // old style class, does not inherit from object
+            klass.prototype.tp$name = _name;
+            klass.prototype.ob$type = Sk.builtin.type.makeIntoTypeObj(_name, klass);
+            klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
+            klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
+        }
 
         // set __module__ if not present (required by direct type(name, bases, dict) calls)
         var module_lk = new Sk.builtin.str("__module__");
@@ -100,7 +131,7 @@ Sk.builtin.type = function (name, bases, dict) {
 
         // copy properties into our klass object
         // uses python iter methods
-        var it, k;
+        var k;
         for (it = dict.tp$iter(), k = it.tp$iternext(); k !== undefined; k = it.tp$iternext()) {
             v = dict.mp$subscript(k);
             if (v === undefined) {
@@ -110,12 +141,9 @@ Sk.builtin.type = function (name, bases, dict) {
             klass[k.v] = v;
         }
 
-        var _name = Sk.ffi.remapToJs(name); // unwrap name string to js for latter use
         klass["__class__"] = klass;
         klass["__name__"] = name;
         klass.sk$klass = true;
-        klass.prototype.tp$getattr = Sk.builtin.object.prototype.GenericGetAttr;
-        klass.prototype.tp$setattr = Sk.builtin.object.prototype.GenericSetAttr;
         klass.prototype.tp$descr_get = function () {
             goog.asserts.fail("in type tp$descr_get");
         };
@@ -126,12 +154,19 @@ Sk.builtin.type = function (name, bases, dict) {
             if (reprf !== undefined) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
-            mod = dict.mp$subscript(module_lk); // lookup __module__
-            cname = "";
-            if (mod) {
-                cname = mod.v + ".";
+
+            if ((this.tp$base !== undefined) && (this.tp$base !== Sk.builtin.object)) {
+                // If subclass of a builtin which is not object, use that class' repr
+                return goog.base(this, "$r");
+            } else {
+                // Else, use default repr for a user-defined class instance
+                mod = dict.mp$subscript(module_lk); // lookup __module__
+                cname = "";
+                if (mod) {
+                    cname = mod.v + ".";
+                }
+                return new Sk.builtin.str("<" + cname + _name + " object>");
             }
-            return new Sk.builtin.str("<" + cname + _name + " object>");
         };
         klass.prototype.tp$str = function () {
             var strf = this.tp$getattr("__str__");
@@ -201,8 +236,6 @@ Sk.builtin.type = function (name, bases, dict) {
             throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(this) + "' object does not support item assignment");
         };
 
-        klass.prototype.tp$name = _name;
-
         if (bases) {
             //print("building mro for", name);
             //for (var i = 0; i < bases.length; ++i)
@@ -214,9 +247,6 @@ Sk.builtin.type = function (name, bases, dict) {
             klass.tp$mro = mro;
             //print("mro result", Sk.builtin.repr(mro).v);
         }
-
-        klass.prototype.ob$type = klass;
-        Sk.builtin.type.makeIntoTypeObj(_name, klass);
 
         // fix for class attributes
         klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;

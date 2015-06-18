@@ -17,6 +17,8 @@ Sk.builtin.numtype = function () {
 
 Sk.abstr.setUpInheritance("NumericType", Sk.builtin.numtype, Sk.builtin.object);
 
+Sk.builtin.numtype.sk$abstract = true;
+
 /**
  * Python wrapper of `__abs__` method.
  *

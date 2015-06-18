@@ -176,15 +176,35 @@ Sk.importSearchPathForName = function (name, ext, failok, canSuspend) {
 };
 
 Sk.doOneTimeInitialization = function () {
-    var proto, name, i;
+    var proto, name, i, x, func;
+    var builtins = [];
 
     // can't fill these out when making the type because tuple/dict aren't
     // defined yet.
     Sk.builtin.type.basesStr_ = new Sk.builtin.str("__bases__");
     Sk.builtin.type.mroStr_ = new Sk.builtin.str("__mro__");
-    Sk.builtin.object["$d"] = new Sk.builtin.dict([]);
-    Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple([]));
-    Sk.builtin.object["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([Sk.builtin.object]));
+
+    var setUpClass = function (child) {
+        var parent = child.tp$base;
+        var bases;
+        var base;
+
+        for (base = parent; base !== undefined; base = base.tp$base) {
+            bases.push(base);
+        }
+
+        child["$d"] = new Sk.builtin.dict([]);
+        child["$d"].mp$ass_subscript(Sk.builtin.type.basesStr_, new Sk.builtin.tuple(bases));
+        child["$d"].mp$ass_subscript(Sk.builtin.type.mroStr_, new Sk.builtin.tuple([child]));
+    };
+
+    for (x in Sk.builtin) {
+        func = Sk.builtin[x];
+        if ((func.prototype instanceof Sk.builtin.object ||
+             func === Sk.builtin.object) && !func.sk$abstract) {
+            setUpClass(func);
+        }
+    }
 
     // Wrap the inner Javascript code of Sk.builtin.object's Python methods inside
     // Sk.builtin.func, as that class was undefined when these functions were declared
