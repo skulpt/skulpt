@@ -2,6 +2,38 @@ if(Sk.builtin === undefined) {
     Sk.builtin = {};
 }
 
+Sk.dunderToSkulpt = {
+    "__eq__": "ob$eq",
+    "__ne__": "ob$ne",
+    "__lt__": "ob$lt",
+    "__le__": "ob$le",
+    "__gt__": "ob$gt",
+    "__ge__": "ob$ge",
+    "__abs__": "nb$abs",
+    "__neg__": "nb$negative",
+    "__pos__": "nb$positive",
+    "__int__": "nb$int_",
+    "__long__": "nb$lng",
+    "__float__": "nb$float_",
+    "__add__": "nb$add",
+    "__radd__": "nb$reflected_add",
+    "__sub__": "nb$subtract",
+    "__rsub__": "nb$reflected_subtract",
+    "__mul__": "nb$multiply",
+    "__rmul__": "nb$reflected_multiply",
+    "__div__": "nb$divide",
+    "__rdiv__": "nb$reflected_divide",
+    "__floordiv__": "nb$floor_divide",
+    "__rfloordiv__": "nb$reflected_floor_divide",
+    "__mod__": "nb$remainder",
+    "__rmod__": "nb$reflected_remainder",
+    "__divmod__": "nb$divmod",
+    "__rdivmod__": "nb$reflected_divmod",
+    "__pow__": "nb$power",
+    "__rpow__": "nb$reflected_power",
+    "__contains__": "sq$contains"
+};
+
 /**
  *
  * @constructor
@@ -59,6 +91,7 @@ Sk.builtin.type = function (name, bases, dict) {
             var init;
             var self = this;
             var s;
+            var args_copy;
             if (!(this instanceof klass)) {
                 return new klass(kwdict, varargseq, kws, args, canSuspend);
             }
@@ -66,6 +99,12 @@ Sk.builtin.type = function (name, bases, dict) {
             args = args || [];
             self["$d"] = new Sk.builtin.dict([]);
 
+            if (klass.prototype.tp$base !== undefined) {
+                // Call super constructor if subclass of a builtin with undefined __init__
+                args_copy = args.slice();
+                args_copy.unshift(klass, this);
+                Sk.abstr.superConstructor.apply(undefined, args_copy);
+            }
 
             init = Sk.builtin.type.typeLookup(self.ob$type, "__init__");
             if (init !== undefined) {
@@ -87,10 +126,6 @@ Sk.builtin.type = function (name, bases, dict) {
                         return self;
                     }
                 })(s);
-            } else if (klass.prototype.tp$base !== undefined) {
-                // Call super constructor if subclass of a builtin with undefined __init__
-                args.unshift(klass, this);
-                Sk.abstr.superConstructor.apply(undefined, args);
             }
 
             return self;
@@ -155,9 +190,11 @@ Sk.builtin.type = function (name, bases, dict) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
 
-            if ((this.tp$base !== undefined) && (this.tp$base !== Sk.builtin.object)) {
+            if ((this.tp$base !== undefined) &&
+                (this.tp$base !== Sk.builtin.object) &&
+                (this.tp$base.prototype["$r"] !== undefined)) {
                 // If subclass of a builtin which is not object, use that class' repr
-                return goog.base(this, "$r");
+                return this.tp$base.prototype["$r"].call(this);
             } else {
                 // Else, use default repr for a user-defined class instance
                 mod = dict.mp$subscript(module_lk); // lookup __module__
@@ -173,9 +210,11 @@ Sk.builtin.type = function (name, bases, dict) {
             if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype.__str__) {
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
             }
-            if ((this.tp$base !== undefined) && (this.tp$base !== Sk.builtin.object)) {
+            if ((this.tp$base !== undefined) &&
+                (this.tp$base !== Sk.builtin.object) &&
+                (this.tp$base.prototype.tp$str !== undefined)) {
                 // If subclass of a builtin which is not object, use that class' repr
-                return goog.base(this, "tp$str");
+                return this.tp$base.prototype.tp$str.call(this);
             }
             return this["$r"]();
         };
@@ -254,6 +293,25 @@ Sk.builtin.type = function (name, bases, dict) {
 
         // fix for class attributes
         klass.tp$setattr = Sk.builtin.type.prototype.tp$setattr;
+
+        var shortcutDunder = function (skulpt_name, magic_name, magic_func) {
+            klass.prototype[skulpt_name] = function () {
+                var args = Array.prototype.slice.call(arguments);
+                args.unshift(magic_func, this);
+                return Sk.misceval.callsim.apply(undefined, args);
+            };
+        };
+
+        // Register skulpt shortcuts to magic methods defined by this class
+        var dunder, skulpt_name;
+        for (dunder in Sk.dunderToSkulpt) {
+            skulpt_name = Sk.dunderToSkulpt[dunder];
+
+            if (klass[dunder]) {
+                // scope workaround
+                shortcutDunder(skulpt_name, dunder, klass[dunder]);
+            }
+        }
 
         return klass;
     }
