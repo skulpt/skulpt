@@ -151,7 +151,7 @@ Sk.builtin.type = function (name, bases, dict) {
             var cname;
             var mod;
             var reprf = this.tp$getattr("__repr__");
-            if (reprf !== undefined) {
+            if (reprf !== undefined && reprf.im_func !== Sk.builtin.object.prototype.__repr__) {
                 return Sk.misceval.apply(reprf, undefined, undefined, undefined, []);
             }
 
@@ -170,8 +170,12 @@ Sk.builtin.type = function (name, bases, dict) {
         };
         klass.prototype.tp$str = function () {
             var strf = this.tp$getattr("__str__");
-            if (strf !== undefined) {
+            if (strf !== undefined && strf.im_func !== Sk.builtin.object.prototype.__str__) {
                 return Sk.misceval.apply(strf, undefined, undefined, undefined, []);
+            }
+            if ((this.tp$base !== undefined) && (this.tp$base !== Sk.builtin.object)) {
+                // If subclass of a builtin which is not object, use that class' repr
+                return goog.base(this, "tp$str");
             }
             return this["$r"]();
         };
@@ -366,6 +370,9 @@ Sk.builtin.type.typeLookup = function (type, name) {
         res = base["$d"].mp$lookup(pyname);
         if (res !== undefined) {
             return res;
+        }
+        if (base.prototype && base.prototype[name] !== undefined) {
+            return base.prototype[name];
         }
     }
 
