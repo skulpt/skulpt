@@ -42,7 +42,7 @@ Sk.builtin.float_ = function (x) {
     }
 
     // Floats are just numbers
-    if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng) {
+    if (typeof x === "number" || x instanceof Sk.builtin.int_ || x instanceof Sk.builtin.lng || x instanceof Sk.builtin.float_) {
         this.v = Sk.builtin.asnum$(x);
         return this;
     }

@@ -54,10 +54,10 @@ Sk.builtin.asnum$ = function (a) {
     if (a === null) {
         return a;
     }
-    if (a.constructor === Sk.builtin.none) {
+    if (a instanceof Sk.builtin.none) {
         return null;
     }
-    if (a.constructor === Sk.builtin.bool) {
+    if (a instanceof Sk.builtin.bool) {
         if (a.v) {
             return 1;
         }
@@ -69,13 +69,13 @@ Sk.builtin.asnum$ = function (a) {
     if (typeof a === "string") {
         return a;
     }
-    if (a.constructor === Sk.builtin.int_) {
+    if (a instanceof Sk.builtin.int_) {
         return a.v;
     }
-    if (a.constructor === Sk.builtin.float_) {
+    if (a instanceof Sk.builtin.float_) {
         return a.v;
     }
-    if (a.constructor === Sk.builtin.lng) {
+    if (a instanceof Sk.builtin.lng) {
         if (a.cantBeInt()) {
             return a.str$(10, true);
         }
