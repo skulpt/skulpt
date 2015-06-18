@@ -5,13 +5,13 @@
  * @extends Sk.builtin.object
  */
 Sk.builtin.list = function (L, canSuspend) {
-    var v, it;
+    var v, it, thisList;
 
     if (this instanceof Sk.builtin.list) {
         canSuspend = false;
-    } else if (canSuspend === undefined) {
+    } else {
         // Default to true in this case, because 'list' gets called directly from Python
-        canSuspend = true;
+        return new Sk.builtin.list(L, canSuspend || true)
     }
 
     if (L === undefined) {
@@ -21,13 +21,17 @@ Sk.builtin.list = function (L, canSuspend) {
     } else if (Sk.builtin.checkIterable(L)) {
         v = [];
         it = Sk.abstr.iter(L);
+
+        thisList = this;
+
         return (function next(i) {
             while(true) {
                 if (i instanceof Sk.misceval.Suspension) {
                     return new Sk.misceval.Suspension(next, i);
                 } else if (i === undefined) {
                     // done!
-                    return new Sk.builtin.list(v);
+                    thisList.v = v;
+                    return thisList;
                 } else {
                     v.push(i);
                     i = it.tp$iternext(canSuspend);
@@ -36,10 +40,6 @@ Sk.builtin.list = function (L, canSuspend) {
         })(it.tp$iternext(canSuspend));
     } else {
         throw new Sk.builtin.TypeError("expecting Array or iterable");
-    }
-
-    if (!(this instanceof Sk.builtin.list)) {
-        return new Sk.builtin.list(v);
     }
 
     this.__class__ = Sk.builtin.list;
