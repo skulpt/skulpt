@@ -530,7 +530,10 @@ Sk.builtin.dir = function dir (x) {
 
     getName = function (k) {
         var s = null;
-        var internal = ["__bases__", "__mro__", "__class__", "__name__"];
+        var internal = [
+            "__bases__", "__mro__", "__class__", "__name__", "GenericGetAttr",
+            "GenericSetAttr", "GenericPythonGetAttr", "GenericPythonSetAttr",
+            "pythonFunctions", "HashNotImplemented", "constructor"];
         if (internal.indexOf(k) !== -1) {
             return null;
         }
@@ -720,14 +723,14 @@ Sk.builtin.hash = function hash (value) {
         throw new Sk.builtin.TypeError(new Sk.builtin.str("unhashable type: '" + Sk.abstr.typeName(value) + "'"));
     }
 
-    if ((value instanceof Object) && (value.tp$hash !== undefined)) {
+    if ((value instanceof Object) && (value.__hash__ !== undefined)) {
+        return Sk.misceval.callsim(value.__hash__, value);
+    } else if ((value instanceof Object) && (value.tp$hash !== undefined)) {
         if (value.$savedHash_) {
             return value.$savedHash_;
         }
         value.$savedHash_ = value.tp$hash();
         return value.$savedHash_;
-    } else if ((value instanceof Object) && (value.__hash__ !== undefined)) {
-        return Sk.misceval.callsim(value.__hash__, value);
     } else if (value instanceof Sk.builtin.bool) {
         if (value.v) {
             return new Sk.builtin.int_(1);
