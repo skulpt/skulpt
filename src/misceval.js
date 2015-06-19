@@ -358,10 +358,10 @@ Sk.misceval.richCompareBool = function (v, w, op) {
     }
 
     if (op === "In") {
-        return Sk.abstr.sequenceContains(w, v);
+        return Sk.misceval.isTrue(Sk.abstr.sequenceContains(w, v));
     }
     if (op === "NotIn") {
-        return !Sk.abstr.sequenceContains(w, v);
+        return !Sk.misceval.isTrue(Sk.abstr.sequenceContains(w, v));
     }
 
 
