@@ -2,6 +2,18 @@ if(Sk.builtin === undefined) {
     Sk.builtin = {};
 }
 
+/**
+ * Maps Python dunder names to the Skulpt Javascript function names that
+ * implement them.
+ *
+ * Note: __add__, __mul__, and __rmul__ can be used for either numeric or
+ * sequence types. Here, they default to the numeric versions (i.e. nb$add,
+ * nb$multiply, and nb$reflected_multiply). This works because Sk.abstr.binary_op_
+ * checks for the numeric shortcuts and not the sequence shortcuts when computing
+ * a binary operation.
+ *
+ * @type {Object}
+ */
 Sk.dunderToSkulpt = {
     "__eq__": "ob$eq",
     "__ne__": "ob$ne",
@@ -31,7 +43,9 @@ Sk.dunderToSkulpt = {
     "__rdivmod__": "nb$reflected_divmod",
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
-    "__contains__": "sq$contains"
+    "__contains__": "sq$contains",
+    "__len__": "sq$length",
+    "__getitem__": "mp$subscript"
 };
 
 /**
