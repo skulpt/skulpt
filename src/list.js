@@ -8,11 +8,13 @@ Sk.builtin.list = function (L, canSuspend) {
     var v, it, thisList;
 
     if (this instanceof Sk.builtin.list) {
-        canSuspend = false;
+        canSuspend = canSuspend || false;
     } else {
         // Default to true in this case, because 'list' gets called directly from Python
-        return new Sk.builtin.list(L, canSuspend || true)
+        return new Sk.builtin.list(L, canSuspend || true);
     }
+
+    this.__class__ = Sk.builtin.list;
 
     if (L === undefined) {
         v = [];
@@ -41,8 +43,6 @@ Sk.builtin.list = function (L, canSuspend) {
     } else {
         throw new Sk.builtin.TypeError("expecting Array or iterable");
     }
-
-    this.__class__ = Sk.builtin.list;
 
     this["v"] = this.v = v;
     return this;
