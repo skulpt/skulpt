@@ -218,12 +218,6 @@ Sk.builtin.dict.prototype.tp$iter = function () {
     return ret;
 };
 
-Sk.builtin.dict.prototype["__iter__"] = new Sk.builtin.func(function (self) {
-    Sk.builtin.pyCheckArgs("__iter__", arguments, 1, 1);
-
-    return self.tp$iter();
-});
-
 Sk.builtin.dict.prototype["$r"] = function () {
     var v;
     var iter, k;
@@ -493,7 +487,7 @@ Sk.builtin.dict.prototype.__getattr__ = new Sk.builtin.func(function (self, attr
 Sk.builtin.dict.prototype.__iter__ = new Sk.builtin.func(function (self) {
     Sk.builtin.pyCheckArgs("__iter__", arguments, 0, 0, false, true);
 
-    return self.tp$iter();
+    return Sk.builtin.dict.prototype.tp$iter.call(self);
 });
 
 Sk.builtin.dict.prototype.__repr__ = new Sk.builtin.func(function (self) {

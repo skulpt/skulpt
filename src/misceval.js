@@ -592,12 +592,6 @@ Sk.misceval.isTrue = function (x) {
     if (x.constructor === Sk.builtin.float_) {
         return x.v !== 0;
     }
-    if (x.mp$length) {
-        return x.mp$length() !== 0;
-    }
-    if (x.sq$length) {
-        return x.sq$length() !== 0;
-    }
     if (x["__nonzero__"]) {
         ret = Sk.misceval.callsim(x["__nonzero__"], x);
         if (!Sk.builtin.checkInt(ret)) {
@@ -611,6 +605,12 @@ Sk.misceval.isTrue = function (x) {
             throw new Sk.builtin.TypeError("__len__ should return an int");
         }
         return Sk.builtin.asnum$(ret) !== 0;
+    }
+    if (x.mp$length) {
+        return Sk.builtin.asnum$(x.mp$length()) !== 0;
+    }
+    if (x.sq$length) {
+        return Sk.builtin.asnum$(x.sq$length()) !== 0;
     }
     return true;
 };

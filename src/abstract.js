@@ -738,12 +738,12 @@ goog.exportSymbol("Sk.abstr.objectDelItem", Sk.abstr.objectDelItem);
 Sk.abstr.objectGetItem = function (o, key, canSuspend) {
     var otypename;
     if (o !== null) {
-        if (o.mp$subscript) {
+        if (o.tp$getitem) {
+            return o.tp$getitem(key, canSuspend);
+        } else if (o.mp$subscript) {
             return o.mp$subscript(key, canSuspend);
         } else if (Sk.misceval.isIndex(key) && o.sq$item) {
             return Sk.abstr.sequenceGetItem(o, Sk.misceval.asIndex(key), canSuspend);
-        } else if (o.tp$getitem) {
-            return o.tp$getitem(key, canSuspend);
         }
     }
 
@@ -755,12 +755,12 @@ goog.exportSymbol("Sk.abstr.objectGetItem", Sk.abstr.objectGetItem);
 Sk.abstr.objectSetItem = function (o, key, v, canSuspend) {
     var otypename;
     if (o !== null) {
-        if (o.mp$ass_subscript) {
+        if (o.tp$setitem) {
+            return o.tp$setitem(key, v, canSuspend);
+        } else if (o.mp$ass_subscript) {
             return o.mp$ass_subscript(key, v, canSuspend);
         } else if (Sk.misceval.isIndex(key) && o.sq$ass_item) {
             return Sk.abstr.sequenceSetItem(o, Sk.misceval.asIndex(key), v, canSuspend);
-        } else if (o.tp$setitem) {
-            return o.tp$setitem(key, v, canSuspend);
         }
     }
 

@@ -44,8 +44,7 @@ Sk.dunderToSkulpt = {
     "__pow__": "nb$power",
     "__rpow__": "nb$reflected_power",
     "__contains__": "sq$contains",
-    "__len__": "sq$length",
-    "__getitem__": "mp$subscript"
+    "__len__": "sq$length"
 };
 
 /**
