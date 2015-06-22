@@ -225,7 +225,7 @@ def test(debug_mode=False):
         ret4 = rununits()
     return ret1 | ret2 | ret3 | ret4
 
-def profile(output=""):
+def profile(fn="", process=True, output=""):
     """
     Runs v8 profiler, which outputs tick information to v8.log Use
     https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html
@@ -233,30 +233,61 @@ def profile(output=""):
     """
     jsprofengine = jsengine.replace('--debugger', '--prof --log-internal-timer-events')
 
-    # Prepare named tests
-    buildNamedTestsFile()
-
-    # Prepare unit tests
-    testFiles = ['test/unit/'+f for f in os.listdir('test/unit') if '.py' in f]
-    if not os.path.exists("support/tmp"):
-        os.mkdir("support/tmp")
     f = open("support/tmp/run.js", "w")
-    f.write("var input;\n")
 
-    for fn in testFiles:
+    # Profile single file
+    if fn:
+        if not os.path.exists(fn):
+            print "%s doesn't exist" % fn
+            raise SystemExit()
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+
         modname = os.path.splitext(os.path.basename(fn))[0]
-        p3on = 'false'
         f.write("""
-input = read('%s');
-print('%s');
-Sk.configure({syspath:["%s"], read:read, python3:%s});
-Sk.importMain("%s", false);
-        """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+    var input = read('%s');
+    print("-----");
+    print(input);
+    print("-----");
+    Sk.configure({syspath:["%s"], read:read, python3:false, debugging:false});
+    Sk.misceval.asyncToPromise(function() {
+        return Sk.importMain("%s", true, true);
+    }).then(function () {
+        print("-----");
+    }, function(e) {
+        print("UNCAUGHT EXCEPTION: " + e);
+        print(e.stack);
+    });
+        """ % (fn, os.path.split(fn)[0], modname))
+
+    # Profile test suite
+    else:
+        # Prepare named tests
+        buildNamedTestsFile()
+
+        # Prepare unit tests
+        testFiles = ['test/unit/'+fn for fn in os.listdir('test/unit') if '.py' in fn]
+        if not os.path.exists("support/tmp"):
+            os.mkdir("support/tmp")
+
+        f.write("var input;\n")
+
+        for fn in testFiles:
+            modname = os.path.splitext(os.path.basename(fn))[0]
+            p3on = 'false'
+            f.write("""
+    input = read('%s');
+    print('%s');
+    Sk.configure({syspath:["%s"], read:read, python3:%s});
+    Sk.importMain("%s", false);
+            """ % (fn, fn, os.path.split(fn)[0], p3on, modname))
+
+            fn = "test suite"
 
     f.close()
 
     # Run profile
-    print("Running profile on test suite...")
+    print("Running profile on %s..." % fn)
     startTime = time.time()
     p = Popen("{0} {1} {2} support/tmp/run.js".format(jsprofengine,
               ' '.join(getFileList(FILE_TYPE_TEST)),
@@ -277,19 +308,23 @@ Sk.importMain("%s", false);
     print "\n\nRunning time: ", (endTime - startTime), " seconds\n\n"
 
     # Process and display results
-    if output != "":
-        output = " > " + output
+    if process:
+        if output:
+            out_msg = " and saving in %s" % output
+            output = " > " + output
+        else:
+            out_msg = ""
 
-    print "Processing profile using d8 processor..."
-    if sys.platform == "win32":
-        os.system(".\\support\\d8\\tools\\windows-tick-processor.bat v8.log {0}".format(output))
-    elif sys.platform == "darwin":
-        os.system("./support/d8/tools/mac-tick-processor {0}".format(output))
-    elif sys.platform == "linux2":
-        os.system("./support/d8/tools/linux-tick-processor v8.log {0}".format(output))
-    else:
-        print """d8 processor is unsupported on this platform.
-Try using https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html."""
+        print "Processing profile using d8 processor%s..." % out_msg
+        if sys.platform == "win32":
+            os.system(".\\support\\d8\\tools\\windows-tick-processor.bat v8.log {0}".format(output))
+        elif sys.platform == "darwin":
+            os.system("./support/d8/tools/mac-tick-processor {0}".format(output))
+        elif sys.platform == "linux2":
+            os.system("./support/d8/tools/linux-tick-processor v8.log {0}".format(output))
+        else:
+            print """d8 processor is unsupported on this platform.
+    Try using https://v8.googlecode.com/svn/branches/bleeding_edge/tools/profviz/profviz.html."""
 
 def debugbrowser():
     tmpl = """
@@ -994,7 +1029,7 @@ Commands:
     test             Run all test cases
     dist             Build core and library distribution files
     docbi            Build library distribution file only and copy to doc/static
-    profile [output] Profile Skulpt using d8 and show processed results
+    profile [fn] [out] Profile Skulpt using d8 and show processed results
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -1123,10 +1158,34 @@ def main():
     elif cmd == "repl":
         repl()
     elif cmd == "profile":
-        if len(sys.argv) < 3:
-            profile()
-        else:
-            profile(output=sys.argv[2])
+        """
+    ./skulpt profile
+        Runs profile on test suite and outputs processed results to stdout
+
+    ./skulpt profile [output]
+        Runs profile on test suite and outputs processed results to output (should be clear text file)
+
+    ./skulpt profile [filename].py
+        Runs profile on Python file and outputs processed results to stdout
+
+    ./skulpt profile [filename].py output
+        Runs profile on Python file and outputs processed results to output (should be clear text file)
+        """
+
+        fn = ""
+        out = ""
+
+        if len(sys.argv) == 3:
+            if ".py" in sys.argv[2]:
+                fn = sys.argv[2]
+            else:
+                out = sys.argv[2]
+        elif len(sys.argv) == 4:
+            fn = sys.argv[2]
+            out = sys.argv[3]
+
+        profile(fn=fn, output=out)
+
     else:
         print usageString(os.path.basename(sys.argv[0]))
         sys.exit(2)
